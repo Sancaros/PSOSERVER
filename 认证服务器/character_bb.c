@@ -627,22 +627,19 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             /* 已获得角色数据... 将其从检索的行中复制出来. */
             mc.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
 
-            for (int i = 0; i < 16; ++i) {
+            for (int i = 0; i < BB_CHARACTER_NAME_LENGTH; ++i) {
                 mc.name[i] = char_data->character.name[i];
             }
 
             mc.level = char_data->character.disp.level;
             mc.exp = char_data->character.disp.exp;
-            mc.play_time = char_data->character.disp.dress_data.play_time;
-            //DBG_LOG("%u", mc.play_time);
-            mc.dress_data.unused[11] = mc.dress_data.unused[12] = mc.dress_data.unused[13] = mc.dress_data.unused[14] = 0;
+            mc.play_time = char_data->character.play_time;
+            DBG_LOG("%d", mc.dress_data.create_code);
+            //mc.dress_data.unused[11] = mc.dress_data.unused[12] = mc.dress_data.unused[13] = mc.dress_data.unused[14] = 0;
             
-            sprintf_s(myquery, _countof(myquery), "UPDATE %s SET play_time = '%d' WHERE guildcard = '%"
-                PRIu32 "' AND slot = '%"PRIu8"' ", CHARACTER_DATA, mc.play_time, c->guildcard, pkt->slot);
-            if (psocn_db_real_query(&conn, myquery))
+            if (db_updata_char_play_time(mc.play_time, c->guildcard, pkt->slot))
             {
-                SQLERR_LOG("无法更新角色 %s 数据!", CHARACTER_DATA);
-                //handle_todc(__LINE__, c);
+                ERR_LOG("无法更新角色 %s 游戏时间数据!", CHARACTER_DATA);
             }
 
             sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
@@ -698,7 +695,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
     psocn_bb_db_char_t *char_data;
     uint8_t cl = pkt->data.dress_data.ch_class;
 
-    //DBG_LOG("handle_update_char 标签 %d", flags);
+    DBG_LOG("handle_update_char 标签 %d", flags);
 
     char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
 
@@ -731,7 +728,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
         }
         
-        //DBG_LOG("重建角色 create_code 数值 %d", char_data->character.disp.dress_data.create_code);
+        DBG_LOG("重建角色 create_code 数值 %d", char_data->character.disp.dress_data.create_code);
 
         create_code = char_data->character.disp.dress_data.create_code;
 
@@ -739,7 +736,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             create_codeb[i] = char_data->character.disp.dress_data.create_codeb[i];
         }
 
-        char_data->character.disp.dress_data.play_time = 0;
+        char_data->character.play_time = 0;
 
         if (db_backup_bb_char_data(c->guildcard, pkt->slot))
             /*AUTH_LOG("备份已删除的玩家数据 (GC %"

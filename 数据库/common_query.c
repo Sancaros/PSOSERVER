@@ -20,6 +20,22 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
+int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot) {
+
+}
+
+int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot) {
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET play_time = '%d' WHERE guildcard = '%"
+        PRIu32 "' AND slot = '%"PRIu8"' ", CHARACTER_DATA, play_time, gc, slot);
+    if (psocn_db_real_query(&conn, myquery))
+    {
+        SQLERR_LOG("无法更新角色 %s 数据!", CHARACTER_DATA);
+        return -1;
+    }
+
+    return 0;
+}
+
 char* db_get_auth_ip(uint32_t gc, uint8_t slot) {
     void* result;
     char** row;
@@ -234,7 +250,7 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
 
-    play_time = char_data->character.disp.dress_data.play_time;
+    play_time = char_data->character.play_time;
 
     memcpy(&lastip, db_get_auth_ip(gc, slot), sizeof(lastip));
 
@@ -485,7 +501,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "(guildcard, slot, "
             "guildcard_name, "//4
             "dress_unk1, dress_unk2, name_color_b, name_color_g, name_color_r, "//5
-            "name_color_transparency, model, dress_unk3, play_time, name_color_checksum, section, "//5
+            "name_color_transparency, model, dress_unk3, create_code, name_color_checksum, section, "//5
             "ch_class, v2flags, version, v1flags, costume, "//5
             "skin, face, head, hair, "//4
             "hair_r, hair_g, hair_b, prop_x, prop_y) "//5
@@ -500,13 +516,13 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             gc, slot, 
             dress_data.guildcard_name, 
             dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
-            dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.play_time, dress_data.name_color_checksum, dress_data.section,
+            dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
             dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
             dress_data.skin, dress_data.face, dress_data.head, dress_data.hair, 
             dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, dress_data.prop_x, dress_data.prop_y
         );
 
-        DBG_LOG("保存角色更衣室数据 %d", dress_data.play_time);
+        DBG_LOG("保存角色更衣室数据 %d", dress_data.create_code);
 
         if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
@@ -543,7 +559,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "guildcard =  '%" PRIu32 "', slot = '%" PRIu8 "', "
             "guildcard_name = '%s', dress_unk1 = '%d', dress_unk2 = '%d', "
             "name_color_b = '%d', name_color_g = '%d', name_color_r = '%d', name_color_transparency = '%d', "
-            "model = '%d', dress_unk3 = '%s', play_time = '%d', name_color_checksum = '%d', section = '%d', "
+            "model = '%d', dress_unk3 = '%s', create_code = '%d', name_color_checksum = '%d', section = '%d', "
             "ch_class = '%d', v2flags = '%d', version = '%d', v1flags = '%d', "
             "costume = '%d', skin = '%d', face = '%d', head = '%d', "
             "hair = '%d', hair_r = '%d', hair_g = '%d', hair_b = '%d', "
@@ -552,7 +568,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             CHARACTER_DATA_DRESS_DATA, gc, slot,  
             dress_data.guildcard_name, dress_data.dress_unk1, dress_data.dress_unk2, 
             dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r, dress_data.name_color_transparency, 
-            dress_data.model, (char*)dress_data.dress_unk3, dress_data.play_time, dress_data.name_color_checksum, dress_data.section,
+            dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
             dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, 
             dress_data.costume, dress_data.skin, dress_data.face, dress_data.head, 
             dress_data.hair, dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, 
@@ -590,7 +606,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
                 "(guildcard, slot, "
                 "guildcard_name, "//4
                 "dress_unk1, dress_unk2, name_color_b, name_color_g, name_color_r, "//5
-                "name_color_transparency, model, dress_unk3, play_time, name_color_checksum, section, "//5
+                "name_color_transparency, model, dress_unk3, create_code, name_color_checksum, section, "//5
                 "ch_class, v2flags, version, v1flags, costume, "//5
                 "skin, face, head, hair, "//4
                 "hair_r, hair_g, hair_b, prop_x, prop_y) "//5
@@ -605,7 +621,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
                 gc, slot, 
                 dress_data.guildcard_name,
                 dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
-                dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.play_time, dress_data.name_color_checksum, dress_data.section,
+                dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
                 dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
                 dress_data.skin, dress_data.face, dress_data.head, dress_data.hair,
                 dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, dress_data.prop_x, dress_data.prop_y
@@ -679,9 +695,9 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
         dress_data.model = (uint8_t)strtoul(row[i], NULL, 0);
         i++;
         memcpy(&dress_data.dress_unk3, row[i], sizeof(dress_data.dress_unk3));
-        i += 2;
-        dress_data.play_time = (uint32_t)strtoul(row[i], NULL, 0);
-        //printf("%d %d %s\n", dress_data.play_time, (uint32_t)strtof(row[i], NULL), row[i]);
+        i++;
+        dress_data.create_code = (uint32_t)strtoul(row[i], NULL, 0);
+        //DBG_LOG("%d %d %s", dress_data.create_code, (uint32_t)strtof(row[i], NULL), row[i]);
         i++;
         dress_data.name_color_checksum = (uint32_t)strtoul(row[i], NULL, 0);
         i++;
@@ -764,7 +780,7 @@ int db_update_char_stat(psocn_bb_db_char_t* char_data,
     char name[64];
     char class_name[64];
 
-    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, 14);
+    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
 
     istrncpy(ic_gbk_to_utf8, class_name, classes_cn[char_data->character.disp.dress_data.ch_class], 64);
 

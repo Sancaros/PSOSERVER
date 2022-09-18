@@ -352,7 +352,7 @@ void client_destroy_connection(ship_client_t *c,
     /* If the client was on Blue Burst, update their db character */
     if(c->version == CLIENT_VERSION_BB &&
        !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
-        c->bb_pl->character.disp.dress_data.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                             c->bb_pl, sizeof(psocn_bb_db_char_t),
                             c->cur_block->b);
@@ -372,10 +372,10 @@ void client_destroy_connection(ship_client_t *c,
                                   c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_name);
     }
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
-        uint16_t bbname[17];
+        uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
 
-        memcpy(bbname, c->bb_pl->character.name, 16);
-        bbname[16] = 0;
+        memcpy(bbname, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
+        bbname[BB_CHARACTER_NAME_LENGTH] = 0;
         shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard,
                                      c->cur_block->b, bbname);
     }
@@ -449,7 +449,7 @@ void client_send_bb_data(ship_client_t* c) {
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB) {
-        c->bb_pl->character.disp.dress_data.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
             c->bb_pl, sizeof(psocn_bb_db_char_t),
             c->cur_block->b);
@@ -1053,7 +1053,7 @@ static int check_char_bb(ship_client_t* c, player_t* pl) {
     if (f1.b != f2.b)
         return -22;
 
-    if (memcmp(c->bb_pl->character.name, pl->bb.character.name, 16))
+    if (memcmp(c->bb_pl->character.name, pl->bb.character.name, BB_CHARACTER_NAME_LENGTH))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.

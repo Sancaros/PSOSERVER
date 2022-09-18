@@ -72,26 +72,32 @@ typedef union {
 #pragma pack(push, 1) 
 #endif
 
+/* DC V3 GC XBOX客户端数据头 */
 typedef struct dc_pkt_hdr {
     uint8_t pkt_type;
     uint8_t flags;
     uint16_t pkt_len;
 } PACKED dc_pkt_hdr_t;
 
+/* PC 客户端数据头 */
 typedef struct pc_pkt_hdr {
     uint16_t pkt_len;
     uint8_t pkt_type;
     uint8_t flags;
 } PACKED pc_pkt_hdr_t;
 
+/* BB 客户端数据头 */
 typedef struct bb_pkt_hdr {
     uint16_t pkt_len;
     uint16_t pkt_type;
     uint32_t flags;
 } PACKED bb_pkt_hdr_t;
 
+/* 客户端数据头联合结构 */
 typedef union pkt_header {
     dc_pkt_hdr_t dc;
+    dc_pkt_hdr_t gc;
+    dc_pkt_hdr_t xb;
     pc_pkt_hdr_t pc;
     bb_pkt_hdr_t bb;
 } pkt_header_t;
@@ -660,7 +666,7 @@ typedef struct dc_char_data {
 
 typedef struct bb_char_data {
     bb_pkt_hdr_t hdr;
-    bb_player_t data;
+    player_t data;
 } PACKED bb_char_data_pkt;
 
 /* The packet sent to clients when they join a lobby */
@@ -720,22 +726,6 @@ typedef struct xb_lobby_join {
         v1_player_t data;
     } entries[0];
 } PACKED xb_lobby_join_pkt;
-
-//typedef struct bb_lobby_join {
-//    bb_pkt_hdr_t hdr;
-//    uint8_t client_id;
-//    uint8_t leader_id;
-//    uint8_t one;                        /* 默认为 1 */
-//    uint8_t lobby_num;
-//    uint16_t block_num;
-//    uint16_t event;
-//    uint32_t padding;
-//    struct {
-//        bb_player_hdr_t hdr;
-//        inventory_t inv;
-//        psocn_bb_char_t data;
-//    } entries[0];
-//} PACKED bb_lobby_join_pkt;
 
 typedef struct bb_lobby_join {
     bb_pkt_hdr_t hdr;

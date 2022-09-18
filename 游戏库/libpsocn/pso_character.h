@@ -22,6 +22,9 @@
 #include <time.h>
 #include <stdint.h>
 
+#define BB_CHARACTER_NAME_LENGTH 0x0C
+#define PC_CHARACTER_NAME_LENGTH 0x10
+
 #ifdef PACKED
 #undef PACKED
 #endif
@@ -141,12 +144,14 @@ typedef struct psocn_dress_data {
         uint8_t unused[15];
         struct unuse_temp {
             uint8_t dress_unk3[11];
-            union hasvaule
+            struct temp_use
             {
-                uint8_t create_codeb[4];
-                uint16_t create_codel[2];
-                uint32_t create_code; //在创建角色时 这个数值有变化 分为机器人(590220180)和人类(590220660)两种
-                uint32_t play_time;
+                union hasvaule
+                {
+                    uint8_t create_codeb[4];
+                    uint16_t create_codel[2];
+                    uint32_t create_code; //在创建角色时 这个数值有变化 分为机器人(590220180)和人类(590220660)两种
+                };
             };
         };
     };
@@ -184,19 +189,60 @@ typedef struct psocn_bb_mini_char {
     uint32_t exp;
     uint32_t level;
     psocn_dress_data_t dress_data;
-    uint16_t name[0x10];
+    uint16_t name[0x0C];
+    uint8_t hw_info[0x08]; // 0x7C - 0x83
     uint32_t play_time;
 } PACKED psocn_bb_mini_char_t;
 
+typedef struct sylverant_bb_char {
+
+    psocn_stats_t stats;
+    //uint16_t unk1;
+    uint8_t opt_flag[10];
+    uint32_t level;
+    uint32_t exp;
+    uint32_t meseta;
+    char guildcard_str[16];
+    uint32_t dress_unk1;
+    uint32_t dress_unk2;
+    uint32_t name_color;
+    uint8_t model;
+    uint8_t unused[11];
+    uint32_t play_time;                 /* Placed here, like newserv */
+    uint32_t name_color_checksum;
+    uint8_t section;
+    uint8_t ch_class;
+    uint8_t v2flags;
+    uint8_t version;
+    uint32_t v1flags;
+    uint16_t costume;
+    uint16_t skin;
+    uint16_t face;
+    uint16_t head;
+    uint16_t hair;
+    uint16_t hair_r;
+    uint16_t hair_g;
+    uint16_t hair_b;
+    float prop_x;
+    float prop_y;
+    uint16_t name[16];
+    uint8_t config[0xE8];
+    uint8_t techniques[0x14];
+} PACKED sylverant_bb_char_t;
+
+static int char_bb_size1 = sizeof(sylverant_bb_char_t);
+
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 typedef struct psocn_bb_char {
-    psocn_disp_char_t disp;
-    uint16_t name[0x10];
-    uint8_t config[232];
-    uint8_t techniques[20];
+    psocn_disp_char_t disp; //101
+    uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
+    uint32_t play_time; //4
+    uint32_t unknown_a3; //4
+    uint8_t config[0xE8]; //232
+    uint8_t techniques[0x14]; //20
 } PACKED psocn_bb_char_t;
 
-static int char_bb_size = sizeof(psocn_bb_char_t);
+static int char_bb_size2 = sizeof(psocn_bb_char_t);
 
 typedef struct psocn_v1v2v3pc_char {
     psocn_disp_char_t disp;

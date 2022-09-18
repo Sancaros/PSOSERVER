@@ -223,7 +223,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
     char name[64];
     char class_name[64];
 
-    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, 14);
+    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
 
     istrncpy(ic_gbk_to_utf8, class_name, classes_cn[char_data->character.disp.dress_data.ch_class], 64);
 

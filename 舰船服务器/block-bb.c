@@ -851,14 +851,15 @@ static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
 }
 
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
-    uint16_t type = LE32(pkt->hdr.pkt_type);
-    uint32_t version = c->version;//
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    uint32_t version = pkt->hdr.flags;
     uint32_t v;
     int i;
 
-    /*DBG_LOG("%s(%d): BB处理角色数据 for GC %" PRIu32
+    DBG_LOG("%s(%d): BB处理角色数据 for GC %" PRIu32
         " 版本 = %d", ship->cfg->name, c->cur_block->b,
-        c->guildcard, version);*/
+        c->guildcard, version);
 
     pthread_mutex_lock(&c->mutex);
 
@@ -890,7 +891,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             c->guildcard, c->version);
     }
 
-    v = LE32(pkt->data.character.disp.level + 1);
+    v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
         send_msg_box(c, __(c, "\tE不允许作弊玩家进入\n"
             "这个服务器.\n\n"
@@ -903,6 +904,12 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
         return -1;
     }
 
+    if (pkt->data.bb.autoreply[0]) {
+        /* Copy in the autoreply */
+        client_set_autoreply(c, pkt->data.bb.autoreply,
+            len - 4 - sizeof(bb_player_t));
+    }
+
     /* Copy out the player data, and set up pointers. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     c->infoboard = (char*)c->pl->bb.infoboard;
@@ -911,7 +918,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
     /* Copy out the inventory data */
     memcpy(c->iitems, c->pl->bb.inv.iitems, sizeof(iitem_t) * 30);
-    c->item_count = c->pl->bb.inv.item_count;
+    c->item_count = (int)c->pl->bb.inv.item_count;
 
     /* Renumber the inventory data so we know what's going on later */
     for (i = 0; i < c->item_count; ++i) {
@@ -953,10 +960,13 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
         /* Do a few things that should only be done once per session... */
         if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
-            uint16_t bbname[17];
+            script_execute(ScriptActionClientBlockLogin, c, SCRIPT_ARG_PTR,
+                c, SCRIPT_ARG_END);
 
-            memcpy(bbname, c->bb_pl->character.name, 16);
-            bbname[16] = 0;
+            uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
+
+            memcpy(bbname, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
+            bbname[BB_CHARACTER_NAME_LENGTH] = 0;
 
             /* Notify the shipgate */
             shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard,
@@ -977,6 +987,10 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             else
                 ERR_LOG("shipgate_send_lobby_chg 错误");
         }
+
+        /* Send a ping so we know when they're done loading in. This is useful
+           for sending the MOTD as well as enforcing always-legit mode. */
+        send_simple(c, PING_TYPE, 0);
     }
 
     pthread_mutex_unlock(&c->mutex);

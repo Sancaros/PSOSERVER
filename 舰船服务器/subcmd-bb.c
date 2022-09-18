@@ -222,7 +222,7 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         memset(&pc, 0, sizeof(pc));
 
         /* First the name and text... */
-        memcpy(pc.name, &s->pl->bb.character.name[2], 28);
+        memcpy(pc.name, &s->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
         memcpy(pc.text, s->bb_pl->guildcard_desc, 176);
 
         /* Copy the rest over. */
@@ -253,7 +253,7 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         /* Convert the name (UTF-16 -> ASCII). */
         memset(&gc.name, '-', 16);
         in = 48;
-        out = 24;
+        out = BB_CHARACTER_NAME_LENGTH * 2;
         inptr = (char*)&s->pl->bb.character.name[2];
         outptr = gc.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
@@ -301,7 +301,7 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         /* Convert the name (UTF-16 -> ASCII). */
         memset(&xb.name, '-', 16);
         in = 48;
-        out = 24;
+        out = BB_CHARACTER_NAME_LENGTH * 2;
         inptr = (char*)&s->pl->bb.character.name[2];
         outptr = xb.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
@@ -349,7 +349,7 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         bb.type = SUBCMD_GUILDCARD;
         bb.size = 0x43;
         bb.guildcard = LE32(s->guildcard);
-        memcpy(bb.name, s->pl->bb.character.name, 32);
+        memcpy(bb.name, s->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
         memcpy(bb.guild_name, s->bb_opts->guild_name, 32);
         memcpy(bb.text, s->bb_pl->guildcard_desc, 176);
         bb.one = 1;

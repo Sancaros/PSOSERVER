@@ -100,7 +100,7 @@ static void* block_thd(void* d) {
             if (now > it->last_message + 90) {
                 if (it->bb_pl) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name[2], 64, 14);
+                        &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
@@ -352,7 +352,7 @@ static void* block_thd(void* d) {
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->bb_pl) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name[2], 64, 14);
+                        &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl) {
@@ -1313,9 +1313,9 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     uint32_t v;
     int i;
 
-    DBG_LOG("%s(%d): DC处理角色数据 for GC %" PRIu32
+    /*DBG_LOG("%s(%d): DC处理角色数据 for GC %" PRIu32
         "", ship->cfg->name, c->cur_block->b,
-        c->guildcard);
+        c->guildcard);*/
 
     pthread_mutex_lock(&c->mutex);
 

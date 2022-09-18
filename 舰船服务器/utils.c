@@ -326,7 +326,7 @@ int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     text[0x1FF] = '\0';
 
     istrncpy16_raw(ic_utf16_to_gbk, name, &c->pl->bb.character.name[2], 0x40,
-                   14);
+        BB_CHARACTER_NAME_LENGTH - 2);
 
     /* Attempt to open up the file. */
     fp = fopen(filename, "w");
@@ -688,7 +688,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.dress_data.name_color_transparency = sp->character.disp.dress_data.name_color_transparency;
     c->disp.dress_data.model = sp->character.disp.dress_data.model;
     memcpy(c->disp.dress_data.dress_unk3, sp->character.disp.dress_data.dress_unk3, 11);
-    c->disp.dress_data.play_time = sp->character.disp.dress_data.play_time;
+    c->disp.dress_data.create_code = sp->character.disp.dress_data.create_code;
     c->disp.dress_data.name_color_checksum = sp->character.disp.dress_data.name_color_checksum;
     c->disp.dress_data.section = sp->character.disp.dress_data.section;
     c->disp.dress_data.ch_class = sp->character.disp.dress_data.ch_class;
@@ -712,7 +712,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name[0] = LE16('\t');
     c->name[1] = LE16('J');
 
-    for(i = 2; i < 16; ++i) {
+    for(i = 2; i < BB_CHARACTER_NAME_LENGTH; ++i) {
         c->name[i] = LE16(sp->character.disp.dress_data.guildcard_name[i - 2]);
     }
 }
@@ -752,7 +752,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.dress_data.name_color_transparency = sp->disp.dress_data.name_color_transparency;
     c->character.disp.dress_data.model = sp->disp.dress_data.model;
     memcpy(c->character.disp.dress_data.dress_unk3, sp->disp.dress_data.dress_unk3, 11);
-    c->character.disp.dress_data.play_time = sp->disp.dress_data.play_time;
+    c->character.disp.dress_data.create_code = sp->disp.dress_data.create_code;
     c->character.disp.dress_data.name_color_checksum = sp->disp.dress_data.name_color_checksum;
     c->character.disp.dress_data.section = sp->disp.dress_data.section;
     c->character.disp.dress_data.ch_class = sp->disp.dress_data.ch_class;
@@ -773,7 +773,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(c->character.techniques, sp->techniques, 0x14);
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_name, &sp->name[2], 16, 16);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_name, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);
 }
 
 void make_disp_data(ship_client_t *s, ship_client_t *d, void *buf) {

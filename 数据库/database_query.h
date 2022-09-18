@@ -49,6 +49,12 @@
 
 /* 通用查询 */
 
+/* 更新角色安全数据至数据库 */
+int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot);
+
+/* 更新角色游戏时间至数据库 */
+int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot);
+
 /* 获取认证IP数据 */
 char* db_get_auth_ip(uint32_t gc, uint8_t slot);
 

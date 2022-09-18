@@ -2204,7 +2204,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
         c->disp.dress_data.dress_unk3[i] = mc->dress_data.dress_unk3[i];
     }
 
-    c->disp.dress_data.play_time = mc->play_time;
+    c->disp.dress_data.create_code = mc->dress_data.create_code;
     c->disp.dress_data.name_color_checksum = mc->dress_data.name_color_checksum;
     c->disp.dress_data.section = mc->dress_data.section;
     c->disp.dress_data.ch_class = mc->dress_data.ch_class;

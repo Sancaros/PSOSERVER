@@ -174,7 +174,7 @@ typedef struct login_client {
 
 #define CLIENT_VERSION_COUNT           8
 
-/* Extended version code bitfield values */
+/* 扩展版本代码位字段值 */
 #define CLIENT_EXTVER_DC            (1 << 0)
 #define CLIENT_EXTVER_PC            (1 << 1)
 #define CLIENT_EXTVER_GC            (1 << 2)

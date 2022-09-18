@@ -1457,7 +1457,7 @@ static void dumpinv_internal(ship_client_t *c) {
     }
     else {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
-                       14);
+            BB_CHARACTER_NAME_LENGTH);
         SHIPS_LOG("背包数据转储 %s (%d)", name, c->guildcard);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
