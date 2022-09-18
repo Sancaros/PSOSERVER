@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE psocn_global_config PUBLIC "-//Psocn//DTD Global Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_global_config.dtd">
+
+<psocn_global_config>
+	<shipgate 
+		port ="3455" 
+		cert="server.crt" 
+		key="server.key" 
+		ca-cert="ca.cer"
+		></shipgate>
+	<web_server
+		web_host="127.0.0.1"
+		web_port="88"
+		web_patch_motd="/server/Patch_Welcome.txt"
+		web_login_motd="/server/Login_Welcome.txt"
+		></web_server>
+	<quests 
+		dir="System/Quests"
+		></quests>
+	<limits 
+		id="0x80003300" 
+		file="Config/psocn_config_ship_limits.xml" 
+		name="unkown1" 
+		enforce="false"
+		></limits>
+	<info 
+		file="Motd/Login_Welcome.txt" 
+		desc="1111111111111111111111111111111111111111" 
+		gc="true" 
+		ep3="true" 
+		bb="true" 
+		xbox="true"
+		languages="en" 
+		></info>
+	<motd 
+		file="Motd/Patch_Welcome.txt" 
+		gc="true" 
+		ep3="true" 
+		bb="true" 
+		xbox="true"
+		languages="en" 
+		></motd>
+	<log 
+		dir="debug" 
+		prefix="test"
+		></log>
+	<patch 
+		dir="Patches"
+		></patch>
+	<scripts 
+		shipgate="Config/psocn_scripts_shipgate.xml" 
+		auth="Config/psocn_scripts_auth.xml"
+		></scripts>
+	<socket 
+		dir="socket"
+		></socket>
+	<registration_required 
+		dc="true" 
+		dcnte="true" 
+		pc="true" 
+		gc="true" 
+		xbox="true" 
+		bb="true"
+		></registration_required>
+</psocn_global_config>

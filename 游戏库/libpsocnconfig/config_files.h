@@ -1,0 +1,284 @@
+#pragma once
+/* 设置文件索引定义 */
+enum Config_Defines {
+	// LOGIN_CONFIG_
+	// PATCH_CONFIG_
+	PATCH_CONFIG_WINDOWS_SH_SWITCH = 0x00,
+	PATCH_CONFIG_UPDATE_DIR,
+	PATCH_CONFIG_UPDATE_MAXBYTES,
+
+	// 考虑分离登陆服务端和补丁服务端的设置
+	// SHIP_CONFIG_
+	// 
+	// Load_Config_File() login
+
+	WEB_SERVER_CONFIG_HOST = 0x00,
+	WEB_SERVER_CONFIG_PORT,
+	WEB_SERVER_CONFIG_PATCH_WELCOME_MESSAGE_FILE,
+	WEB_SERVER_CONFIG_LOGIN_WELCOME_MESSAGE_FILE,
+	WEB_SERVER_CONFIG_HELP_PLAYER_FILE = 0x02,
+	WEB_SERVER_CONFIG_HELP_GM_FILE,
+
+	GLOBAL_CONFIG_LOGIN_SERVER_HOST = 0x00,
+	GLOBAL_CONFIG_LOGIN_SERVER_WELCOME_MESSAGE,
+	GLOBAL_CONFIG_LOGIN_SERVER_PORT,
+	GLOBAL_CONFIG_CLIENT_VERSION_STRING,
+	GLOBAL_CONFIG_CLIENT_VERSION,
+	GLOBAL_CONFIG_CLIENT_MAX_CONNECTION,
+	GLOBAL_CONFIG_SHIP_SERVER_MAX_CONNECTION,
+	GLOBAL_CONFIG_WEB_SERVER,
+	GLOBAL_CONFIG_WINDOWS_SH_SWITCH,
+	GLOBAL_CONFIG_CONSOLE_LOG_SHOW,
+	GLOBAL_CONFIG_MAX,
+
+	GLOBAL_CONFIG_RATE_APPEARANCES_HILDEBEAR = 0x00,
+	GLOBAL_CONFIG_RATE_APPEARANCES_RAPPY,
+	GLOBAL_CONFIG_RATE_APPEARANCES_LILY,
+	GLOBAL_CONFIG_RATE_APPEARANCES_SLIME,
+	GLOBAL_CONFIG_RATE_APPEARANCES_MERISSA,
+	GLOBAL_CONFIG_RATE_APPEARANCES_PAZUZU,
+	GLOBAL_CONFIG_RATE_APPEARANCES_DORPHON_ECLAIR,
+	GLOBAL_CONFIG_RATE_APPEARANCES_KONDRIEU,
+	GLOBAL_CONFIG_NAME_COLOR_GLOBAL,
+	GLOBAL_CONFIG_NAME_COLOR_LOCAL,
+	GLOBAL_CONFIG_NAME_COLOR_NORMAL,
+	GLOBAL_CONFIG_E7BASE_MESETA,
+
+	// 
+	// Load_Config_File() ship
+	SHIP_CONFIG_HOST = 0x00,
+	SHIP_CONFIG_RECONNECT_TIME,
+	SHIP_CONFIG_PORT,
+	SHIP_CONFIG_BLOKS,
+	SHIP_CONFIG_MAX_CONNECTION,
+	SHIP_CONFIG_LOGIN_SERVER_HOST,
+	SHIP_CONFIG_NAME,
+	SHIP_CONFIG_KEY_PATH,
+	SHIP_CONFIG_RESPONSE_TIMES,
+	SHIP_CONFIG_CHARACTER_BACKUP_TIMES,
+	SHIP_CONFIG_EVENT,
+	SHIP_CONFIG_AUTO_EVENT,
+	SHIP_CONFIG_NIGHTS_SKIN,
+	SHIP_CONFIG_BP_KAIGUAN,
+	SHIP_CONFIG_WEB_SERVER,
+	SHIP_CONFIG_WINDOWS_SH_SWITCH,
+	SHIP_CONFIG_CONSOLE_LOG_SHOW,
+	SHIP_CONFIG_MAIN_MAX,
+
+	// Load_Log_Setting()
+	/*CONFIG_CONSOLE_LOG_SHOW_LOGIN = 0x00,
+	CONFIG_CONSOLE_LOG_SHOW_DEBUG,
+	CONFIG_CONSOLE_LOG_SHOW_SHIP,
+	CONFIG_CONSOLE_LOG_SHOW_QUESTERR,
+	CONFIG_CONSOLE_LOG_SHOW_GM,
+	CONFIG_CONSOLE_LOG_SHOW_LOGIN,
+	CONFIG_CONSOLE_LOG_SHOW_ERROR,
+	SHIP_CONFIG_MAIN_MAX,*/
+
+	SHIP_CONFIG_PARAM_HOSPITAL_HEAL_MESETA = 0x00,
+	SHIP_CONFIG_PARAM_DEATH_PUNISH,
+	SHIP_CONFIG_PARAM_DEATH_MESETA,
+	SHIP_CONFIG_PARAM_DEATH_DROP_ITEM,
+	SHIP_CONFIG_PARAM_DEATH_DROP_ITEM_COUNT,
+	SHIP_CONFIG_PARAM_TEKKING_ITEM_MESETA,
+	SHIP_CONFIG_PARAM_MAX,
+
+	SHIP_CONFIG_RATE_EXPERIENCE = 0x00,
+	SHIP_CONFIG_RATE_DROP_WEAPON,
+	SHIP_CONFIG_RATE_DROP_ARMOR,
+	SHIP_CONFIG_RATE_DROP_MAG,
+	SHIP_CONFIG_RATE_DROP_TOOL,
+	SHIP_CONFIG_RATE_DROP_MESETA,
+	SHIP_CONFIG_RATE_RARE_BOX_MULTIPLIER,
+	SHIP_CONFIG_RATE_RARE_MOB_BOX_MULTIPLIER,
+	SHIP_CONFIG_RATE_RARE_DROP_GLOBAL_MULTIPLIER,
+	SHIP_CONFIG_RATE_RARE_GLOBAL_MOB_APPEARANCES_MULTIPLIER,
+	SHIP_CONFIG_RATE_APPEARANCES_HILDEBEAR,
+	SHIP_CONFIG_RATE_APPEARANCES_RAPPY,
+	SHIP_CONFIG_RATE_APPEARANCES_LILY,
+	SHIP_CONFIG_RATE_APPEARANCES_SLIME,
+	SHIP_CONFIG_RATE_APPEARANCES_MERISSA,
+	SHIP_CONFIG_RATE_APPEARANCES_PAZUZU,
+	SHIP_CONFIG_RATE_APPEARANCES_DORPHON_ECLAIR,
+	SHIP_CONFIG_RATE_APPEARANCES_KONDRIEU,
+	SHIP_CONFIG_EVENT_PARAM_MAX,
+
+	SHIP_CONFIG_EVENT_0 = 0x00,
+	SHIP_CONFIG_EVENT_1,
+	SHIP_CONFIG_EVENT_2,
+	SHIP_CONFIG_EVENT_3,
+	SHIP_CONFIG_EVENT_4,
+	SHIP_CONFIG_EVENT_5,
+	SHIP_CONFIG_EVENT_6,
+	SHIP_CONFIG_EVENT_7,
+	SHIP_CONFIG_EVENT_8,
+	SHIP_CONFIG_EVENT_9,
+	SHIP_CONFIG_EVENT_10,
+	SHIP_CONFIG_EVENT_11,
+	SHIP_CONFIG_EVENT_12,
+	SHIP_CONFIG_EVENT_13,
+	SHIP_CONFIG_EVENT_14,
+	SHIP_CONFIG_EVENT_MAX,
+};
+
+/* 服务器相关指令 */
+enum Server_Command {
+	// LOGIN_COMMAND_
+	// PATCH_COMMAND_
+	// SHIP_COMMAND_
+	// 遵循三种服务器的命名
+	// 
+	// ShipSend0D login
+	LOGIN_COMMAND_SEND_SHIP_LIST = 0x00,
+	LOGIN_COMMAND_NEW_E7 = 0x00E7,
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// 
+	// SendEA ship
+	SHIP_COMMAND_UNK1 = 0x02,
+	SHIP_COMMAND_UNK2 = 0x04,
+	SHIP_COMMAND_UNK3 = 0x0E,
+	SHIP_COMMAND_UNK4 = 0x10,
+	SHIP_COMMAND_UNK5 = 0x11,
+	SHIP_COMMAND_UNK6 = 0x12,
+	SHIP_COMMAND_UNK7 = 0x13,
+	SHIP_COMMAND_UNK8 = 0x18,
+	SHIP_COMMAND_UNK9 = 0x19,
+	SHIP_COMMAND_UNK10 = 0x1A,
+	SHIP_COMMAND_UNK11 = 0x1D,
+	SHIP_COMMAND_UNK14 = 0x14,
+	// Ship_Client_Data_Send04 ship
+	SHIP_COMMAND_REQUEST_CDATA = 0x00,
+	SHIP_COMMAND_SEND_CDATA = 0x02,
+	SHIP_COMMAND_SEND_CMDATA = 0x03,
+	SHIP_COMMAND_SEND_Q2DATA = 0x04,
+	// ShipSend0E ship
+	SHIP_COMMAND_SEND_0E = 0x0E,
+	// ShipSend0D ship
+	SHIP_COMMAND_REQUEST_SHIP_LIST = 0x00,
+	// ShipSend0B ship
+	SHIP_COMMAND_SEND_0B = 0x0B,
+	//SHIP_COMMAND_UNK =,
+	//SHIP_COMMAND_UNK =,
+
+};
+
+const static char* config_files[] = {
+	"Config\\Config_Global.ini",//ok
+	"Config\\Config_Global_Param.ini",//ok
+	"Config\\Config_Mysql.ini",//ok
+	"Config\\Config_Web_Server.ini",//未完成
+	"Config\\Config_Lang.ini",//ok
+	"Config\\Config_LocalGM.ini",//ok
+	"Config\\Config_Log.ini",//ok
+	"Config\\Config_Patch.ini",//ok
+	"Config\\Config_Ship.ini",//ok
+	"Config\\Config_Ship_Quest.ini",//ok
+	"Config\\Config_Ship_Param.ini",//ok
+	"Config\\Config_Ship_Drop.ini",//ok
+	"Config\\Config_Ship_BattleParam_Up.ini",//ok
+	"Config\\Config_Ship_Event.ini",//ok
+};
+
+enum Config_Files_Num {
+	CONFIG_FILE_GLOBAL,
+	CONFIG_FILE_GLOBAL_PARAM,
+	CONFIG_FILE_MYSQL,
+	CONFIG_FILE_WEB_SERVER,
+	CONFIG_FILE_LANG,
+	CONFIG_FILE_LOCALGM,
+	CONFIG_FILE_LOG,
+	CONFIG_FILE_PATCH,
+	CONFIG_FILE_SHIP,
+	CONFIG_FILE_SHIP_Q,
+	CONFIG_FILE_SHIP_P,
+	CONFIG_FILE_SHIP_DROP,
+	CONFIG_FILE_SHIP_BP,
+	CONFIG_FILE_SHIP_EVENT,
+	CONFIG_FILE_MAX,
+};
+
+/*
+const static char* ship_event_name[] = {
+	"普通1", //编号 0 普通 默认
+	"圣诞节", //编号 1 圣诞节 12月25日 持续 1周
+	"普通2", //编号 2 普通（主题曲和0相同）默认2
+	"情人节", //编号 3 情人节 2月14日 持续 1周
+	"清明节", //编号 4 清明节 4月3日 持续 3天
+	"万圣节", //编号 5 万圣节 10月31日 持续 1个月
+	"索尼克纪念日", //编号 6 索尼克纪念日 6月23日 持续 1周
+	"新年", //编号 7 新年 1月1日 持续 3个月
+	"春季", //编号 8 春季（樱花）3月1日至5月1日 持续 2个月
+	"白色情人节", //编号 9 白色情人节 3月14日 持续 1周
+	"婚礼", //编号 10 婚礼主题音乐 持续 1周（需手动开启）
+	"秋季", //编号 11 秋季（红枫）8月23日 至 11月22日 持续 3个月
+	"七夕节1", //编号 12 七夕节 8月14日 持续 1周
+	"七夕节2", //编号 13 七夕节 （主题曲和12不同,12和13随机） 8月14日 持续 1周
+	"普通3", //编号 14 普通（主题曲和0不同）默认3
+};*/
+
+const static char* ship_event_files[] = {
+	"Config\\Event\\Config_Ship_Event_0.ini", //编号 0 普通1
+	"Config\\Event\\Config_Ship_Event_1.ini", //编号 1 圣诞节
+	"Config\\Event\\Config_Ship_Event_2.ini", //编号 2 普通2
+	"Config\\Event\\Config_Ship_Event_3.ini", //编号 3 情人节
+	"Config\\Event\\Config_Ship_Event_4.ini", //编号 4 清明节
+	"Config\\Event\\Config_Ship_Event_5.ini", //编号 5 万圣节
+	"Config\\Event\\Config_Ship_Event_6.ini", //编号 6 索尼克纪念日
+	"Config\\Event\\Config_Ship_Event_7.ini", //编号 7 新年
+	"Config\\Event\\Config_Ship_Event_8.ini", //编号 8 春季
+	"Config\\Event\\Config_Ship_Event_9.ini", //编号 9 白色情人节
+	"Config\\Event\\Config_Ship_Event_10.ini", //编号 10 婚礼
+	"Config\\Event\\Config_Ship_Event_11.ini", //编号 11 秋季
+	"Config\\Event\\Config_Ship_Event_12.ini", //编号 12 七夕节1
+	"Config\\Event\\Config_Ship_Event_13.ini", //编号 13 七夕节2
+	"Config\\Event\\Config_Ship_Event_14.ini", //编号 14 普通3
+};
+
+enum month_Num {
+	JANUARY = 1,
+	FEBRUARY,
+	MARCH,
+	APRIL,
+	MAY,
+	JUNE,
+	JULY,
+	AUGUST,
+	SEPTEMBER,
+	OCTOBER,
+	NOVEMBER,
+	DECEMBER,
+};
+
+const static char* login_lang_dir[] = {
+	"Config/messages/login/messages_",//ok
+	"Config/messages/login/messages.ini",//ok
+};
+
+const static char* ship_lang_dir[] = {
+	"Config/messages/ship/messages_",//ok
+	"Config/messages/ship/messages.ini",//ok
+};
+

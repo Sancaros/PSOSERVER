@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="auth_dc.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="auth_packets.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="auth_server.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="character_bb.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="auth.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="auth_bb.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="patch.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="auth.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="auth_packets.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="patch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="patch_stubs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{b5de2ea7-fab6-4ab0-82f7-74dfef131d00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{9ebdc53b-4728-4317-bfe2-318edfef59c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{5d59082b-42d8-4c8d-96e3-8647dde8c82e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icon\login_icon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,56 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeCommonLanguageInclude.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeGenericSystem.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeInitializeConfigs.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeLanguageInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeRCInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeSystemSpecificInformation.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CMakeSystemSpecificInitialize.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CPack.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CPackComponent.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckCSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckFunctionExists.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckIncludeFile.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckIncludeFileCXX.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckIncludeFiles.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckLibraryExists.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckTypeSize.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Compiler/MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindCURL.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindGit.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPackageMessage.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/FindPkgConfig.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Internal/CheckSourceCompiles.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-MSVC-C.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows-MSVC.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/Windows.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/Platform/WindowsPaths.cmake
+C:/Program Files/CMake/share/cmake-3.21/Modules/SelectLibraryConfigurations.cmake
+C:/Program Files/CMake/share/cmake-3.21/Templates/CPackConfig.cmake.in
+D:/PSOBB/mariadb-connector-c-3.2.0-src/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/CheckFunctions.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/CheckIncludeFiles.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/CheckTypes.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/ConnectorName.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/SearchLibrary.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/WindowsCache.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/install.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/install_plugins.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/misc.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/plugins.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/sign.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/cmake/version_info.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/include/ma_config.h.in
+D:/PSOBB/mariadb-connector-c-3.2.0-src/include/mariadb_version.h.in
+D:/PSOBB/mariadb-connector-c-3.2.0-src/plugins/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/plugins/auth/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/plugins/connection/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/plugins/io/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/plugins/pvio/CMakeLists.txt
+D:/PSOBB/mariadb-connector-c-3.2.0-src/win/resource.rc.in
+D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/3.21.1/CMakeCCompiler.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/3.21.1/CMakeRCCompiler.cmake
+D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/3.21.1/CMakeSystem.cmake

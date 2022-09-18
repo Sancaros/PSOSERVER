@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n-multi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_data.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_file_po.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_file_yts.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_file_csv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_list.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\mini18n_pv_conv_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\sylverant 2022.5.22\sylverant-mini18n\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9AA6926F-51CB-34E2-9B97-B6616E55F52C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

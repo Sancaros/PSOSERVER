@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="psoconfig.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psoconfig_ship.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="items.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="quest.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="debug.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mtwist.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="encryption.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psobb-crypt.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psogc-crypt.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psopc-crypt.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psopipe.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psoconfig_patch.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="utsname.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="f_checksum.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="f_logs.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Software_Defines.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psomemory.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Strptime_win.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cmd_name.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="f_iconv.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psoconfig_server.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="psoconfig_database.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="psoconfig.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="items.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="quest.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mtwist.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="encryption.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="psopipe.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="utsname.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="psobb-crypt_table.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="f_checksum.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="f_dirent.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="f_logs.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="queue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Software_Defines.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Strptime_win.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="psomemory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="WinSock_Defines.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="winsock2i.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="config_files.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="f_iconv.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

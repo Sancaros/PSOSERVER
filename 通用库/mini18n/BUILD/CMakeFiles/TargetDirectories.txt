@@ -1,0 +1,14 @@
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/CMakeFiles/PACKAGE.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/CMakeFiles/INSTALL.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/CMakeFiles/ALL_BUILD.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/CMakeFiles/ZERO_CHECK.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/doc/CMakeFiles/PACKAGE.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/doc/CMakeFiles/INSTALL.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/example/CMakeFiles/INSTALL.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/example/CMakeFiles/simple-example.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/example/CMakeFiles/multi-example.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/example/CMakeFiles/PACKAGE.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/src/CMakeFiles/PACKAGE.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/src/CMakeFiles/mini18n-shared.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/src/CMakeFiles/mini18n-static.dir
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/BUILD/src/CMakeFiles/INSTALL.dir

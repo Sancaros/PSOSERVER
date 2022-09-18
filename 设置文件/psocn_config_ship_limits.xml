@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE items PUBLIC "-//Psocn//DTD items Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_config_ship_limits.dtd">
+
+<items 
+	byteorder="big" 
+	default="allow" 
+	check_sranks="true" 
+	check_pbs="true" 
+	check_wrap="sega" 
+	check_jsword="true">
+	<item code=""></item>
+	<pbs pos="center" disallow=""></pbs>
+	<colors disallow="c14,c15"></colors>
+	<default_percents version="v1">
+		<max version="v1"></max>
+		<min version="v1"></min>
+	</default_percents>
+	<default_hit version="v1">
+		<max version="v1"></max>
+		<min version="v1"></min>
+	</default_hit>
+</items>

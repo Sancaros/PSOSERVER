@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="admin.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bans.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="block.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="clients.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="commands.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="gm.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="items.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="list.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lobby.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mapdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pmtdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ptdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="quest_functions.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="quests.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rtdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="scripts.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ship.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ship_packets.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ship_server.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shipgate.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="smutdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="subcmd.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="subcmd-dcnte.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="word_select.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="subcmd-bb.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="block-bb.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shopdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mag_bb.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="admin.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bans.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="block.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="clients.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="commands.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="items.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lobby.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mapdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pmtdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ptdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="quest_functions.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="quests.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rtdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="scripts.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ship.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ship_packets.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="shipgate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="smutdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="subcmd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="word_select.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="word_select-dc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="word_select-gc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="word_select-pc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="shopdata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mag_bb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="word_select-bb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icon\ship_icon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>资源文件</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

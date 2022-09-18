@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="admin.c" />
+    <ClCompile Include="bans.c" />
+    <ClCompile Include="block.c" />
+    <ClCompile Include="clients.c" />
+    <ClCompile Include="commands.c" />
+    <ClCompile Include="gm.c" />
+    <ClCompile Include="items.c" />
+    <ClCompile Include="list.c" />
+    <ClCompile Include="lobby.c" />
+    <ClCompile Include="mapdata.c" />
+    <ClCompile Include="pmtdata.c" />
+    <ClCompile Include="ptdata.c" />
+    <ClCompile Include="quests.c" />
+    <ClCompile Include="quest_functions.c" />
+    <ClCompile Include="rtdata.c" />
+    <ClCompile Include="scripts.c" />
+    <ClCompile Include="ship.c" />
+    <ClCompile Include="shipgate.c" />
+    <ClCompile Include="ship_packets.c" />
+    <ClCompile Include="ship_server.c" />
+    <ClCompile Include="smutdata.c" />
+    <ClCompile Include="subcmd-dcnte.c" />
+    <ClCompile Include="subcmd.c" />
+    <ClCompile Include="utils.c" />
+    <ClCompile Include="word_select.c" />
+    <ClCompile Include="subcmd-bb.c" />
+    <ClCompile Include="block-bb.c" />
+    <ClCompile Include="shopdata.c" />
+    <ClCompile Include="mag_bb.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="admin.h" />
+    <ClInclude Include="bans.h" />
+    <ClInclude Include="block.h" />
+    <ClInclude Include="clients.h" />
+    <ClInclude Include="commands.h" />
+    <ClInclude Include="gm.h" />
+    <ClInclude Include="items.h" />
+    <ClInclude Include="lobby.h" />
+    <ClInclude Include="mapdata.h" />
+    <ClInclude Include="pmtdata.h" />
+    <ClInclude Include="ptdata.h" />
+    <ClInclude Include="quests.h" />
+    <ClInclude Include="quest_functions.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rtdata.h" />
+    <ClInclude Include="scripts.h" />
+    <ClInclude Include="ship.h" />
+    <ClInclude Include="shipgate.h" />
+    <ClInclude Include="ship_packets.h" />
+    <ClInclude Include="smutdata.h" />
+    <ClInclude Include="subcmd.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="word_select-dc.h" />
+    <ClInclude Include="word_select-gc.h" />
+    <ClInclude Include="word_select-pc.h" />
+    <ClInclude Include="word_select.h" />
+    <ClInclude Include="shopdata.h" />
+    <ClInclude Include="mag_bb.h" />
+    <ClInclude Include="word_select-bb.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icon\ship_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\游戏库\libpsoarchive\libpso.vcxproj">
+      <Project>{ec1538af-ce8b-47d4-aca6-508a422f5d25}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\游戏库\libpsocnconfig\psoconfig.vcxproj">
+      <Project>{d216c3d9-12da-4863-bf95-d49538d3e29d}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{7ce79e98-3c10-4341-b9d3-422667314af6}</ProjectGuid>
+    <RootNamespace>舰船服务器</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Configuration)\远程服务器\</OutDir>
+    <IntDir>$(Configuration)\远程服务器\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>ENABLE_LUA;WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;HAVE_LIBMINI18N;VERBOSE_DEBUGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\regex\include;..\通用库\pthread;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\通用库\md5;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WarningLevel>Level3</WarningLevel>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\通用库\lua\Debug\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\regex\lib;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread\lib;..\通用库\pthread\lib\x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\Debug\Library;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>urlmon.lib;
+ws2_32.lib;
+wsock32.lib;
+netapi32.lib;libmariadb.lib;mariadbclient.lib;
+libiconv.lib;libz.lib;
+libxml2.lib;
+libevent.lib;
+libevent_core.lib
+;libevent_extras.lib;
+libevent_openssl.lib;pthread.lib;
+libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;
+md5.lib;gnutls.lib;regex.lib;lua5.4.4.lib;mini18n.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

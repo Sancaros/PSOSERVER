@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE scripts PUBLIC "-//Psocn//DTD scripts Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_scripts.dtd">
+
+<scripts>
+	<script event="STARTUP" dir="Scripts/" file="test.lua"></script>
+	<module dir="Scripts/modules/" file="test.lua" remote_file="test.lua" deleted="false"></module>
+	<ship event="STARTUP" dir="Scripts/" file="test.lua" remote_file="test.lua" deleted="false"></ship>
+</scripts>

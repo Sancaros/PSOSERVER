@@ -1,0 +1,343 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8C2399BA-0E10-3D2F-85C8-F63AA1A75B8B}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindCURL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\SelectLibraryConfigurations.cmake;C:\Program Files\CMake\share\cmake-3.21\Templates\CPackConfig.cmake.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckFunctions.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckIncludeFiles.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckTypes.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\ConnectorName.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\SearchLibrary.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\WindowsCache.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install_plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\misc.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\sign.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\version_info.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\ma_config.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\mariadb_version.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\connection\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\io\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\win\resource.rc.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeRCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindCURL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\SelectLibraryConfigurations.cmake;C:\Program Files\CMake\share\cmake-3.21\Templates\CPackConfig.cmake.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckFunctions.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckIncludeFiles.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckTypes.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\ConnectorName.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\SearchLibrary.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\WindowsCache.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install_plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\misc.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\sign.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\version_info.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\ma_config.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\mariadb_version.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\connection\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\io\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\win\resource.rc.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeRCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindCURL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\SelectLibraryConfigurations.cmake;C:\Program Files\CMake\share\cmake-3.21\Templates\CPackConfig.cmake.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckFunctions.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckIncludeFiles.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckTypes.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\ConnectorName.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\SearchLibrary.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\WindowsCache.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install_plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\misc.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\sign.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\version_info.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\ma_config.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\mariadb_version.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\connection\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\io\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\win\resource.rc.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeRCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFileCXX.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\CheckTypeSize.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindCURL.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-3.21\Modules\SelectLibraryConfigurations.cmake;C:\Program Files\CMake\share\cmake-3.21\Templates\CPackConfig.cmake.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckFunctions.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckIncludeFiles.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\CheckTypes.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\ConnectorName.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\SearchLibrary.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\WindowsCache.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\install_plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\misc.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\plugins.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\sign.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\cmake\version_info.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\ma_config.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\include\mariadb_version.h.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\connection\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\io\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio\CMakeLists.txt;D:\PSOBB\mariadb-connector-c-3.2.0-src\win\resource.rc.in;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeRCCompiler.cmake;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\3.21.1\CMakeSystem.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\ZERO_CHECK.vcxproj">
+      <Project>{908F469C-892C-3CFC-B8D2-786E0F580971}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\async.vcxproj">
+      <Project>{7248A451-7600-3B99-BE9B-11DAA223114D}</Project>
+      <Name>async</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\auth_gssapi_client.vcxproj">
+      <Project>{38045B31-78FB-3C2F-AD9F-917016CDE72A}</Project>
+      <Name>auth_gssapi_client</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\basic-t.vcxproj">
+      <Project>{311252EE-2381-3878-B400-28549B9B995F}</Project>
+      <Name>basic-t</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\bulk1.vcxproj">
+      <Project>{5F7038AE-5F98-38EF-AF9D-B791EF0BCC66}</Project>
+      <Name>bulk1</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\caching_sha2_password.vcxproj">
+      <Project>{CE08F11B-141F-3AFF-8011-D2EE6CCD27E2}</Project>
+      <Name>caching_sha2_password</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\mytap\cctap.vcxproj">
+      <Project>{DEBAD5B9-65AB-3F5B-8EBD-9D5F8E133DBE}</Project>
+      <Name>cctap</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\charset.vcxproj">
+      <Project>{5685043B-A413-3705-805B-371700A2C385}</Project>
+      <Name>charset</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\client_ed25519.vcxproj">
+      <Project>{729681DD-4803-3AD1-AC2E-F8166710204C}</Project>
+      <Name>client_ed25519</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\conc336.vcxproj">
+      <Project>{084D7508-8C01-3A6B-9A8E-C8C97E34E698}</Project>
+      <Name>conc336</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\connection.vcxproj">
+      <Project>{C190AF57-8766-3931-8F2D-209E59327EE8}</Project>
+      <Name>connection</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\cursor.vcxproj">
+      <Project>{96F4A6F9-63D4-345E-945F-540C5A631AFA}</Project>
+      <Name>cursor</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\dialog.vcxproj">
+      <Project>{9DC9B3C7-4866-335F-95AA-104BAE8FE5DE}</Project>
+      <Name>dialog</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\dyncol.vcxproj">
+      <Project>{B626FEE3-20F0-3C6F-9F06-9DD1954E1553}</Project>
+      <Name>dyncol</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\errors.vcxproj">
+      <Project>{77510083-DF1C-3466-B6D4-342BD049FB14}</Project>
+      <Name>errors</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\features-10_2.vcxproj">
+      <Project>{D1079406-4C1A-3889-BB20-3F95723A7A51}</Project>
+      <Name>features-10_2</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\fetch.vcxproj">
+      <Project>{EC01CA3F-87B5-316D-89C0-A629976A32C1}</Project>
+      <Name>fetch</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\libmariadb.vcxproj">
+      <Project>{91F06918-DFA1-3249-A492-194ACCAED799}</Project>
+      <Name>libmariadb</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\logs.vcxproj">
+      <Project>{6FA2A401-874A-3A58-8A2C-2B51960DD4A2}</Project>
+      <Name>logs</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\ma_getopt.vcxproj">
+      <Project>{73ED68D8-5204-3DF7-AAE2-9A5AE94C676B}</Project>
+      <Name>ma_getopt</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.vcxproj">
+      <Project>{7999A5EF-2553-3BE6-9434-96237D345975}</Project>
+      <Name>mariadb_obj</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadbclient.vcxproj">
+      <Project>{7DE8AC3D-F1B4-302B-BFB6-B6322356C4A0}</Project>
+      <Name>mariadbclient</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\misc.vcxproj">
+      <Project>{CA93ADF0-F07E-383A-854A-DC793151E670}</Project>
+      <Name>misc</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\mysql_clear_password.vcxproj">
+      <Project>{6C456F5E-8393-3766-9411-0D53A3571C57}</Project>
+      <Name>mysql_clear_password</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\performance.vcxproj">
+      <Project>{1C541E7B-2846-3C5E-8F8E-B69DDC021EFD}</Project>
+      <Name>performance</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\ps.vcxproj">
+      <Project>{ACFEE76D-4083-33A6-8153-307712B6AF9D}</Project>
+      <Name>ps</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\ps_bugs.vcxproj">
+      <Project>{CEE015F5-FC18-3DD9-B693-93B810797C82}</Project>
+      <Name>ps_bugs</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\ps_new.vcxproj">
+      <Project>{863340C0-FCB4-3B80-AAAF-5777223C0E38}</Project>
+      <Name>ps_new</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\pvio_npipe.vcxproj">
+      <Project>{D011F0ED-98AE-30CB-8003-83C1A9D90289}</Project>
+      <Name>pvio_npipe</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\pvio_shmem.vcxproj">
+      <Project>{D9BBAFBC-BDC3-3CB7-8A1D-FC68C9F7576B}</Project>
+      <Name>pvio_shmem</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\result.vcxproj">
+      <Project>{565F128F-01D1-30B1-AF09-22BE3375BE40}</Project>
+      <Name>result</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\rpl_api.vcxproj">
+      <Project>{7B6D818B-6860-3A28-9CB7-1D76EF7D7A6E}</Project>
+      <Name>rpl_api</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\sha256_password.vcxproj">
+      <Project>{08645017-D4CD-3EE5-A1BC-59F9C1A20A9D}</Project>
+      <Name>sha256_password</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\sp.vcxproj">
+      <Project>{50545B90-4E0E-3F96-BBC8-613D64AB8AF7}</Project>
+      <Name>sp</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\t_aurora.vcxproj">
+      <Project>{5B10619D-F483-3ED8-BF49-95EC828742A2}</Project>
+      <Name>t_aurora</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\t_conc173.vcxproj">
+      <Project>{99D0A808-4FE3-385F-852D-D921ED870CAC}</Project>
+      <Name>t_conc173</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\thread.vcxproj">
+      <Project>{0E124228-3328-3703-B61A-A3F986EE0DED}</Project>
+      <Name>thread</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\view.vcxproj">
+      <Project>{077CABE5-D4D8-317E-A0C8-CCDED7F4F65F}</Project>
+      <Name>view</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

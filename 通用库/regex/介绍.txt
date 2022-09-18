@@ -1,0 +1,156 @@
+在C中使用正则表达式<regex.h>--win32下载后也可用(2009-11-13 14:12:16)转载标签： 杂谈 分类： 编程技术  
+===================================================================================
+<regex.h>是linux下的一个东西，经过一天的探索，终于找到了在windows下可用的版本：
+是posix 在win32下regex的库，将.lib文件和.dll文件加放到工程中就可以用了=。=
+有问题可以在下面留言
+====================================================================================
+在GNU C 中要使用规则表达式，需要用到以下几个函数。（定义在/usr/include/regex.h文件中）
+int regcomp (regex_t *compiled, const char *pattern, int cflags)
+int regexec (regex_t *compiled, char *string, size_t nmatch, regmatch_t matchptr [], int
+　　　           eflags)
+void regfree (regex_t *compiled)
+size_t regerror (int errcode, regex_t *compiled, char *buffer, size_t length)
+
+　下面我就介绍分别一下这几个函数和它用到的一些数据类型。
+
+　　　 1.int regcomp (regex_t *compiled, const char *pattern, int cflags)
+
+　　　这个函数把指定的规则表达式pattern编译成一种特定的数据格式compiled，这样可以使匹配更有效。函数
+　　　 regexec 会使用这个数据在目标文
+　　　 本串中进行模式匹配。执行成功返回０。
+
+　　　 regex_t 是一个结构体数据类型，用来存放编译后的规则表达式，它的成员re_nsub 用来存储规则表达式中的子
+　　　 规则表达式的个数，子规则表
+　　　 达式就是用圆括号包起来的部分表达式。
+
+　　　 pattern 是指向我们写好的规则表达式的指针。
+　　　 cflags 有如下4个值或者是它们或运算(|)后的值:
+　　　 REG_EXTENDED 以功能更加强大的扩展规则表达式的方式进行匹配。
+　　　 REG_ICASE 匹配字母时忽略大小写。
+　　　 REG_NOSUB 不用存储匹配后的结果。
+　　　 REG_NEWLINE 识别换行符，这样'$'就可以从行尾开始匹配，'^'就可以从行的开头开始匹配。
+
+　　　 2. int regexec (regex_t *compiled, char *string, size_t nmatch, regmatch_t matchptr [], int
+　　　 eflags)
+
+　　　 当我们编译好规则表达式后，就可以用regexec 匹配我们的目标文本串了，如果在编译规则表达式的时候没有指
+　　　 定cflags的参数为
+　　　 REG_NEWLINE，则默认情况下是忽略换行符的，也就是把整个文本串当作一个字符串处理。执行成功返回０。
+
+　　　 regmatch_t 是一个结构体数据类型，成员rm_so 存放匹配文本串在目标串中的开始位置，rm_eo 存放结束位
+　　　 置。通常我们以数组的形式定义
+　　　一组这样的结构。因为往往我们的规则表达式中还包含子规则表达式。数组0单元存放主规则表达式位置，后边的
+　　　 单元依次存放子规则表达式位
+　　　 置。
+
+　　　 compiled 是已经用regcomp函数编译好的规则表达式。
+　　　 string 是目标文本串。
+　　　 nmatch 是regmatch_t结构体数组的长度。
+　　　 matchptr regmatch_t类型的结构体数组，存放匹配文本串的位置信息。
+　　　 eflags 有两个值
+　　　 REG_NOTBOL 按我的理解是如果指定了这个值，那么'^'就不会从我们的目标串开始匹配。总之我到现在还不是很
+　　　 明白这个参数的意义，
+　　　 原文如下：
+　　　 If this bit is set, then the beginning-of-line operator doesn't match the beginning of the
+　　　 string (presumably
+　　　 because it's not the beginning of a line).If not set, then the beginning-of-line operator
+　　　 does match the beginning
+　　　 of the string.
+　　　 REG_NOTEOL 和上边那个作用差不多，不过这个指定结束end of line。
+
+　　　 3. void regfree (regex_t *compiled)
+
+　　　当我们使用完编译好的规则表达式后，或者要重新编译其他规则表达式的时候，我们可以用这个函数清空
+　　　 compiled指向的regex_t结构体的内
+　　　容，请记住，如果是重新编译的话，一定要先清空regex_t结构体。
+
+　　　 4. size_t regerror (int errcode, regex_t *compiled, char *buffer, size_t length)
+
+　　　 当执行regcomp 或者regexec 产生错误的时候，就可以调用这个函数而返回一个包含错误信息的字符串。
+
+　　　 errcode 是由regcomp 和 regexec 函数返回的错误代号。
+　　　 compiled 是已经用regcomp函数编译好的规则表达式，这个值可以为NULL。
+　　　 buffer 指向用来存放错误信息的字符串的内存空间。
+　　　 length 指明buffer的长度，如果这个错误信息的长度大于这个值，则regerror 函数会自动截断超出的字符串，
+　　　 但他仍然会返回完整的字符
+　　　串的长度。所以我们可以用如下的方法先得到错误字符串的长度。
+　　　 size_t length = regerror (errcode, compiled, NULL, 0);
+
+----------------------------------------------------------------------------------------
+A simple example:
+#include <stdio.h>
+#include <string.h>
+#include "regex.h"
+
+#pragma comment(lib,"regex.lib")
+//#pragma comment(lib,"regex-bcc.lib")
+
+#define SUBSLEN 10             
+#define EBUFLEN 128         
+#define BUFLEN 1024         
+
+using namespace std;
+int main()
+{
+    size_t       len;
+    regex_t       re;            
+    regmatch_t    subs [SUBSLEN];
+    char          matched [BUFLEN];    
+    char          errbuf [EBUFLEN];
+    int           err, i;
+    char          src    [] = "111 <title>Hello World</title> 222";
+    char          pattern [] = "<title>(.*)</title>";
+   
+    printf("String : %s\n", src);
+    printf("Pattern: \"%s\"\n", pattern);
+   
+    err = regcomp(&re, pattern, REG_EXTENDED);
+    if (err)
+    {
+            len = regerror(err, &re, errbuf, sizeof(errbuf));
+            printf("error: regcomp: %s\n", errbuf);
+            return 1;
+    }
+   
+    printf("Total has subexpression_r_r: %d\n", re.re_nsub);
+   
+    err = regexec(&re, src, (size_t) SUBSLEN, subs, 0);
+    if (err == REG_NOMATCH)
+    {
+         printf("Sorry, no match ...\n");
+         regfree(&re);
+         return 0;
+    }
+    else if (err)
+    {  
+         len = regerror(err, &re, errbuf, sizeof(errbuf));
+         printf("error: regexec: %s\n", errbuf);
+         return 1;
+    }
+  
+   
+    printf("\nOK, has matched ...\n\n");
+    for (i = 0; i <= re.re_nsub; i++)
+    {
+        len = subs[i].rm_eo - subs[i].rm_so;
+        if (i == 0)
+        {
+            printf ("begin: %d, len = %d   ", subs[i].rm_so, len);
+        }
+        else
+        {
+            printf("subexpression_r_r %d begin: %d, len = %d   ", i, subs[i].rm_so, len);
+        }
+       
+        memcpy (matched, src + subs[i].rm_so, len);
+        matched[len] = '\0';
+        printf("match: %s\n", matched);
+     }
+    
+    
+     regfree(&re);
+    
+     system("pause");
+     return (0);
+}
+---------------------------------------------------------------------------------

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\CMakeFiles\366e5de4465ddf0a9135be6059ad3969\PACKAGE_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{07B2AF00-E27F-39AD-BEBA-11B48B52D11B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

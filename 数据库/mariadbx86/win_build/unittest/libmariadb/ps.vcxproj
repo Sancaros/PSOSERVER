@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ACFEE76D-4083-33A6-8153-307712B6AF9D}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.19041.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>Win32</Platform>
+    <ProjectName>ps</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ps.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ps</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ps.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ps</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">ps.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">ps</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">ps.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">ps</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.exe</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE="Windows";MARIADB_MACHINE_TYPE="AMD64";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE=\"Windows\";MARIADB_MACHINE_TYPE=\"AMD64\";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\mytap\Debug\cctap.lib;Debug\ma_getopt.lib;..\..\libmariadb\Debug\mariadbclient.lib;ws2_32.lib;advapi32.lib;kernel32.lib;shlwapi.lib;crypt32.lib;secur32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/Debug/ps.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/Debug/ps.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;DBUG_OFF;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE="Windows";MARIADB_MACHINE_TYPE="AMD64";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;DBUG_OFF;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE=\"Windows\";MARIADB_MACHINE_TYPE=\"AMD64\";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\mytap\Release\cctap.lib;Release\ma_getopt.lib;..\..\libmariadb\Release\mariadbclient.lib;ws2_32.lib;advapi32.lib;kernel32.lib;shlwapi.lib;crypt32.lib;secur32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/Release/ps.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/Release/ps.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE="Windows";MARIADB_MACHINE_TYPE="AMD64";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE=\"Windows\";MARIADB_MACHINE_TYPE=\"AMD64\";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\mytap\MinSizeRel\cctap.lib;MinSizeRel\ma_getopt.lib;..\..\libmariadb\MinSizeRel\mariadbclient.lib;ws2_32.lib;advapi32.lib;kernel32.lib;shlwapi.lib;crypt32.lib;secur32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/MinSizeRel/ps.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/MinSizeRel/ps.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;DBUG_OFF;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE="Windows";MARIADB_MACHINE_TYPE="AMD64";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;DBUG_OFF;WIN32_LEAN_AND_MEAN;MARIADB_SYSTEM_TYPE=\"Windows\";MARIADB_MACHINE_TYPE=\"AMD64\";HAVE_DLOPEN;_CRT_SECURE_NO_WARNINGS;HAVE_SCHANNEL;HAVE_TLS;LIBMARIADB;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\pvio;D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth;D:\PSOBB\mariadb-connector-c-3.2.0-src\include;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\mytap;D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\mytap\RelWithDebInfo\cctap.lib;RelWithDebInfo\ma_getopt.lib;..\..\libmariadb\RelWithDebInfo\mariadbclient.lib;ws2_32.lib;advapi32.lib;kernel32.lib;shlwapi.lib;crypt32.lib;secur32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/RelWithDebInfo/ps.lib</ImportLibrary>
+      <ProgramDataBaseFile>D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/RelWithDebInfo/ps.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/unittest/libmariadb/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/unittest/libmariadb/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/unittest/libmariadb/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule D:/PSOBB/mariadb-connector-c-3.2.0-src/unittest/libmariadb/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/PSOBB/mariadb-connector-c-3.2.0-src -BD:/PSOBB/mariadb-connector-c-3.2.0-src/win_build --check-stamp-file D:/PSOBB/mariadb-connector-c-3.2.0-src/win_build/unittest/libmariadb/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\unittest\libmariadb\ps.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\ZERO_CHECK.vcxproj">
+      <Project>{908F469C-892C-3CFC-B8D2-786E0F580971}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\mytap\cctap.vcxproj">
+      <Project>{DEBAD5B9-65AB-3F5B-8EBD-9D5F8E133DBE}</Project>
+      <Name>cctap</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\unittest\libmariadb\ma_getopt.vcxproj">
+      <Project>{73ED68D8-5204-3DF7-AAE2-9A5AE94C676B}</Project>
+      <Name>ma_getopt</Name>
+    </ProjectReference>
+    <ProjectReference Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadbclient.vcxproj">
+      <Project>{7DE8AC3D-F1B4-302B-BFB6-B6322356C4A0}</Project>
+      <Name>mariadbclient</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

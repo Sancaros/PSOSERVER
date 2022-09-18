@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE bans PUBLIC "-//Psocn//DTD Bans Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_config_ship_bans.dtd">
+
+<bans>
+	<ban 
+		set_by="" 
+		guildcard="" 
+		start="" 
+		end="" 
+		reason=""
+		></ban>
+	<ipban
+		set_by=""
+		ip=""
+		ipv6=""
+		netmask=""
+		start=""
+		end=""
+		reason=""
+		></ipban>
+</bans>

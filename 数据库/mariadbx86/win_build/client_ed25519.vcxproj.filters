@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ed25519.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_isnegative.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_sub.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p1p1_to_p2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p3_to_cached.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\open.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_isnonzero.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_tobytes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p1p1_to_p3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p3_to_p2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\sc_muladd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_add.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_mul.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_add.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p2_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_precomp_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\sc_reduce.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_cmov.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_neg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_double_scalarmult.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p2_dbl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_scalarmult_base.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\sign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_copy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_pow22523.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_frombytes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p3_0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_sub.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\verify.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_frombytes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_sq2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_madd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p3_dbl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_tobytes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_invert.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\fe_sq.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_msub.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\ge_p3_tobytes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\auth\ref10\keypair.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\libmariadb\secure\win_crypt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\plugins\plugin.def">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\win\client_ed25519.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7705DDEB-32CE-3982-9D64-A43DDC189031}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE psocn_server_config PUBLIC "-//Psocn//DTD Global Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_server_config.dtd">
+
+<psocn_server_config>
+	<server 
+		addr4="sanc.top"
+		addr6=""
+		ip4=""
+		ip6=""
+		></server>
+</psocn_server_config>

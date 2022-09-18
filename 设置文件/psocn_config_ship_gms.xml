@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE gms PUBLIC "-//Psocn//DTD GM Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/psocn_config_ship_gms.dtd">
+
+<gms>
+	<gm serial="499602D0" accesskey="12345678" guildcard="42004063" root="true" ></gm>
+	<gm serial="499602D3" accesskey="12345678" guildcard="42004064" root="true" ></gm>
+	<gm serial="499602D2" accesskey="12345678" guildcard="42004065" root="true" ></gm>
+</gms>

@@ -1,0 +1,4 @@
+# CMake generation dependency list for this directory.
+C:/Program Files/CMake/share/cmake-3.21/Modules/CheckFunctionExists.cmake
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/cmake/check_wcs_functions.c
+D:/PSOBB/sylverant 2022.5.22/sylverant-mini18n/src/CMakeLists.txt

@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\libmariadb\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadbclient.def">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\my_auth.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\old_password.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\pvio_socket.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_array.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_charset.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_hashtbl.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_net.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_charset.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_time.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_default.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_errmsg.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_lib.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_list.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_pvio.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_tls.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_alloc.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_compress.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_init.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_password.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_ll2str.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_sha1.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_stmt.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_loaddata.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_stmt_codec.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_string.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_dtoa.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_rpl.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_client_plugin.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_io.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\schannel.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_schannel.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\schannel_certs.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\win_iconv.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\win32_errmsg.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\adler32.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\compress.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\crc32.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\deflate.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\gzclose.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\gzlib.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\gzread.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\gzwrite.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\infback.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\inffast.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\inflate.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\inftrees.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\trees.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\uncompr.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\zutil.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_dyncol.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\mariadb_async.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\libmariadb\mariadb_obj.dir\$(Configuration)\ma_context.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="D:\PSOBB\mariadb-connector-c-3.2.0-src\win_build\win\libmariadb.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Object Libraries">
+      <UniqueIdentifier>{43772E0B-3A53-353B-914C-E829123390F4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7705DDEB-32CE-3982-9D64-A43DDC189031}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
