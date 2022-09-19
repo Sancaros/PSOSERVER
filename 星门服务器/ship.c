@@ -1617,7 +1617,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
 
-    DBG_LOG("舰船：BB处理数据 指令= 0x%04X %s 长度 = %d 字节", type, c_cmd_name(type, 0), len);
+    //DBG_LOG("舰船：BB处理数据 指令= 0x%04X %s 长度 = %d 字节", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_ADD_GUILDCARD_TYPE:
@@ -3277,7 +3277,7 @@ static int handle_useropt(ship_t* c, shipgate_user_opt_pkt* pkt) {
 static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     uint32_t gc, block;
     psocn_bb_db_opts_t opts;
-    psocn_bb_db_guild_t guild;
+    psocn_bb_db_guild_t guild_data;
     int rv = 0;
 
     /* Parse out the guildcard */
@@ -3286,7 +3286,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
 
     opts = db_get_bb_char_option(gc);
 
-    guild = db_get_bb_char_guild(gc);
+    guild_data.guild_data = db_get_bb_char_guild(gc);
 
     rv = send_bb_opts(c, gc, block, &opts);
 

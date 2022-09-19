@@ -628,7 +628,7 @@ static int handle_clinfo(ship_client_t *c, const char *params) {
     my_ntop(&cl->ip_addr, ip);
     return send_txt(c, "\tE\tC7名称: %s\nIP: %s\nGC: %u\n%s Lv.%d",
                     cl->pl->v1.character.disp.dress_data.guildcard_name, ip, cl->guildcard,
-                    classes_cn[cl->pl->v1.character.disp.dress_data.ch_class], cl->pl->v1.character.disp.level + 1);
+                    pso_class[cl->pl->v1.character.disp.dress_data.ch_class].cn_name, cl->pl->v1.character.disp.level + 1);
 }
 
 /* 用法: /gban:d guildcard reason */
@@ -1745,7 +1745,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
     /* Make sure the string is terminated properly. */
     str[511] = '\0';
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_msg_box(c, "%s", str);
 }
 

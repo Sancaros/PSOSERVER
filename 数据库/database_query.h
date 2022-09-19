@@ -92,11 +92,13 @@ int db_update_char_stat(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot
 ///////////////////////////////////////////////////////
 /* 认证查询 */
 
+int db_upload_temp_data(void* data, size_t size);
+
 /* 获取BB角色选项数据 */
 psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc);
 
 /* 获取BB角色公会数据 */
-psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc);
+bb_guild_t db_get_bb_char_guild(uint32_t gc);
 
 /* 更新BB角色认证数据*/
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot);
@@ -109,7 +111,7 @@ int db_update_char_dressflag(uint32_t gc, uint32_t flags);
 /* 获取玩家角色数据长度 */
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);
 
-/* 获取玩家角色数据大小*/
+/* 获取玩家角色数据大小 */
 uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot);
 
 /* 注意 一定要确保更衣室数据存在 才可以使用此函数 */
@@ -122,10 +124,13 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);
 /* 获取玩家角色数据项 */
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
-/* 更新BB角色选项数据*/
+/* 更新BB角色公会数据 */
+int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc);
+
+/* 更新BB角色选项数据 */
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);
 
-/* 更新BB角色挑战数据*/
+/* 更新BB角色挑战数据 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
 ///////////////////////////////////////////////////////
 #endif /* !PSOCN_DATABASE_QUERY */

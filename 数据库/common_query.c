@@ -21,7 +21,7 @@
 extern psocn_dbconn_t conn;
 
 int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot) {
-
+    return 0;
 }
 
 int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot) {
@@ -522,7 +522,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, dress_data.prop_x, dress_data.prop_y
         );
 
-        DBG_LOG("保存角色更衣室数据 %d", dress_data.create_code);
+        //DBG_LOG("保存角色更衣室数据 %d", dress_data.create_code);
 
         if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
@@ -782,7 +782,7 @@ int db_update_char_stat(psocn_bb_db_char_t* char_data,
 
     istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
 
-    istrncpy(ic_gbk_to_utf8, class_name, classes_cn[char_data->character.disp.dress_data.ch_class], 64);
+    istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.disp.dress_data.ch_class].cn_name, 64);
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(query, "INSERT INTO %s (guildcard, slot, name, class, class_name, meseta"

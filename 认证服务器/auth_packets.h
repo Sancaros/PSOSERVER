@@ -104,7 +104,7 @@ int send_ep3_rank_update(login_client_t *c);
 int send_ep3_card_update(login_client_t *c);
 
 /* Send a Blue Burst option reply to the client. */
-int send_bb_option_reply(login_client_t *c, psocn_bb_key_config_t keys, psocn_bb_guild_t guild_data);
+int send_bb_option_reply(login_client_t *c, bb_key_config_t keys, bb_guild_t guild_data);
 
 /* Send a Blue Burst character acknowledgement to the client. */
 int send_bb_char_ack(login_client_t *c, uint8_t slot, uint8_t code);

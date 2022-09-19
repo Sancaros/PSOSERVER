@@ -514,7 +514,7 @@ static int handle_option_request(login_client_t *c, bb_option_req_pkt* pkt) {
 
     opts = db_get_bb_char_option(c->guildcard);
 
-    guild_data = db_get_bb_char_guild(c->guildcard);
+    guild_data.guild_data = db_get_bb_char_guild(c->guildcard);
 
     rv = send_bb_option_reply(c, opts.key_cfg, guild_data.guild_data);
 
@@ -529,6 +529,9 @@ static int handle_option_request(login_client_t *c, bb_option_req_pkt* pkt) {
 
 /* 0x00E2 226*/
 static int handle_option(login_client_t* c, bb_opt_config_pkt* pkt) {
+
+    int config_size = sizeof(bb_opt_config_pkt);
+
     print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     DBG_LOG("测试是否经过");
@@ -634,12 +637,14 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             mc.level = char_data->character.disp.level;
             mc.exp = char_data->character.disp.exp;
             mc.play_time = char_data->character.play_time;
-            DBG_LOG("%d", mc.dress_data.create_code);
+            mc.dress_data.create_code = 0;
+            //DBG_LOG("%d", mc.dress_data.create_code);
             //mc.dress_data.unused[11] = mc.dress_data.unused[12] = mc.dress_data.unused[13] = mc.dress_data.unused[14] = 0;
             
             if (db_updata_char_play_time(mc.play_time, c->guildcard, pkt->slot))
             {
                 ERR_LOG("无法更新角色 %s 游戏时间数据!", CHARACTER_DATA);
+                return -3;
             }
 
             sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
@@ -695,7 +700,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
     psocn_bb_db_char_t *char_data;
     uint8_t cl = pkt->data.dress_data.ch_class;
 
-    DBG_LOG("handle_update_char 标签 %d", flags);
+    //DBG_LOG("handle_update_char 标签 %d", flags);
 
     char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
 
@@ -713,6 +718,24 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         break;
 
     case PSOCN_DB_SAVE_CHAR:
+
+        //if (db_upload_temp_data(&default_full_chars, sizeof(psocn_bb_full_char_t))) {
+
+        //    ERR_LOG("上传完整角色 数据失败!");
+        //    return -1;
+        //}
+        //for (int j = 0; j < 12; j++) {
+        //    if (db_upload_temp_data(&default_chars[j], sizeof(psocn_bb_db_char_t))) {
+
+        //        ERR_LOG("上传完整角色 数据失败!");
+        //        return -1;
+        //    }
+        //    else {
+        //        DBG_LOG("%d 上传完整 %s 角色", j, pso_class[j].cn_name);
+        //    }
+        //}
+
+
         /* 复制一份缓冲默认角色数据 根据选取的角色职业定义 */
         memcpy(char_data, &default_chars[cl], sizeof(psocn_bb_db_char_t));
 
@@ -728,7 +751,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
         }
         
-        DBG_LOG("重建角色 create_code 数值 %d", char_data->character.disp.dress_data.create_code);
+        //DBG_LOG("重建角色 create_code 数值 %d", char_data->character.disp.dress_data.create_code);
 
         create_code = char_data->character.disp.dress_data.create_code;
 
@@ -926,7 +949,7 @@ static int handle_guild_request(login_client_t *c) {
     uint32_t gc;
 
     if(!c->gc_data) {
-        c->gc_data = (bb_gc_data_t *)malloc(sizeof(bb_gc_data_t));
+        c->gc_data = (bb_guildcard_data_t *)malloc(sizeof(bb_guildcard_data_t));
 
         if(!c->gc_data) {
             /* XXXX: Should send an error message to the user */
@@ -935,7 +958,7 @@ static int handle_guild_request(login_client_t *c) {
     }
 
     /* Clear it out */
-    memset(c->gc_data, 0, sizeof(bb_gc_data_t));
+    memset(c->gc_data, 0, sizeof(bb_guildcard_data_t));
 
     /* Query the DB for the user's guildcard data */
     sprintf(query, "SELECT friend_gc, name, guild_name, text, language, "
@@ -1019,7 +1042,7 @@ static int handle_guild_request(login_client_t *c) {
     psocn_db_result_free(result);
 
     /* Calculate the checksum, and send the header */
-    checksum = psocn_crc32((uint8_t *)c->gc_data, sizeof(bb_gc_data_t));
+    checksum = psocn_crc32((uint8_t *)c->gc_data, sizeof(bb_guildcard_data_t));
 
     return send_bb_guild_header(c, checksum);
 }
@@ -1299,33 +1322,35 @@ void cleanup_param_data(void) {
 
 int load_bb_char_data(void) {
     FILE* fp;
+    long templen = 0, len = 0;
+    errno_t err = 0;
     int i;
     char file[64];
     psocn_bb_db_char_t* cur;
     uint8_t* buf;
     int decsize;
 
-    AUTH_LOG("读取初始角色数据文件");
-
     const char* path = "System\\Player\\character";
-    //const char* path = "System\\Player\\full_chartest";
 
-    /* Loop through each character class and grab the defaults */
+    /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
         cur = &default_chars[i];
         //sprintf(file, "%s\\默认_%s.nsc", path, classes_cn[i]);
-        sprintf(file, "%s\\%d_默认_%s.nsc", path, i, classes_cn[i]);
+        //sprintf(file, "%s\\%d_默认_%s.nsc", path, i, classes_cn[i]);
+        sprintf(file, "%s\\%s", path, pso_class[i].class_file);
         //DBG_LOG("测试读取角色数据文件: %s", file);
 
-        fp = fopen(file, "rb");
+        err = fopen_s(&fp , file, "rb");
 
-        if (!fp) {
+        if (err) {
             ERR_LOG("初始 %s 角色数据文件不存在",
-                classes_cn[i]);
+                pso_class[i].class_file);
             return -1;
         }
 
         /* Skip over the parts we don't care about, then read in the data. */
+        fseek(fp, 0, SEEK_END);
+        templen = ftell(fp);
         fseek(fp, 0x40 + sizeof(psocn_bb_mini_char_t), SEEK_SET);
         fread(cur->autoreply, 1, 344, fp);
         fread(&cur->bank, 1, sizeof(psocn_bank_t), fp);
@@ -1338,37 +1363,37 @@ int load_bb_char_data(void) {
         fread(cur->quest_data2, 1, 88, fp);
         fread(cur->tech_menu, 1, 40, fp);
         fclose(fp);
+        len += templen;
     }
 
-    /* Read the stats table */
-    AUTH_LOG("读取完整角色数据表.");
+    AUTH_LOG("读取初始角色数据文件 %d 个, 共 %d 字节.", i, len);
 
-    sprintf(file, "%s\\默认_完整角色.bin", path);
-    errno_t err = fopen_s(&fp, file, "rb");
+    /* 加载角色完整数据 */
+
+    sprintf(file, "%s\\%s", path, &pso_class[CLASS_FULL_CHAR].class_file);
+
+    err = fopen_s(&fp, file, "rb");
     if (err)
     {
         ERR_LOG("文件 %s 缺失!", file);
-        return -1;
+        //return -1;
     }
 
-    //long len = 0;
-
-    //fseek(fp, 0, SEEK_END);
-    //len = ftell(fp);
+    fseek(fp, 0, SEEK_END);
+    len = ftell(fp);
     fseek(fp, sizeof(bb_pkt_hdr_t), SEEK_SET);
-
-    //printf("加载 %s 数据 %d 字节...\n", file, len);
 
     if (!fread(&default_full_chars, 1, sizeof(psocn_bb_full_char_t), fp))
     {
         ERR_LOG("读取 %s 数据失败!", file);
-        return -1;
+        //return -1;
     }
+
+    AUTH_LOG("读取完整角色数据表,共 %d 字节.", len);
 
     fclose(fp);
 
-    /* Read the stats table */
-    AUTH_LOG("读取等级数据表.");
+    /* 加载角色等级初始数据 */
 
     /* Read in the file and decompress it. */
     if ((decsize = pso_prs_decompress_file("System\\player\\leveltbl\\PlyLevelTbl.prs", &buf)) < 0) {
@@ -1378,6 +1403,9 @@ int load_bb_char_data(void) {
     }
 
     memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
+
+    /* Read the stats table */
+    AUTH_LOG("读取等级数据表,共 %d 字节.", sizeof(bb_char_stats));
 
     /* Clean up... */
     free(buf);

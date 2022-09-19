@@ -96,14 +96,14 @@ static int pllist_ship(ship_client_t *c, const char *name, int first,
                 if(c2->cur_lobby) {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                             "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                            classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip,
                             skip_lang_code(c2->cur_lobby->name));
                 }
                 else {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                             "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                            classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip);
                 }
 
@@ -186,14 +186,14 @@ static int pllist_block(ship_client_t *c, const char *name, int first,
             if(c2->cur_lobby) {
                 sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                         "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                        classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                        pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                         c2->guildcard, c2->cur_block->b, ip,
                         skip_lang_code(c2->cur_lobby->name));
             }
             else {
                 sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                         "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                        classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                        pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                         c2->guildcard, c2->cur_block->b, ip);
             }
 
@@ -275,14 +275,14 @@ static int pllist_lobby(ship_client_t *c, const char *name, int first,
                 if(c2->cur_lobby) {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                             "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                            classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip,
                             skip_lang_code(c2->cur_lobby->name));
                 }
                 else {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
                             "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_name,
-                            classes_cn[c2->pl->v1.character.disp.dress_data.ch_class], c2->pl->v1.character.disp.level + 1,
+                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip);
                 }
 
@@ -420,7 +420,7 @@ int send_player_list(ship_client_t *c, const char *params) {
 
             /* Figure out which class number that is */
             for(ch_class = 0; ch_class < 12; ++ch_class) {
-                if(!strcmp(tok, classes_cn[ch_class])) {
+                if(!strcmp(tok, pso_class[ch_class].cn_name)) {
                     break;
                 }
             }

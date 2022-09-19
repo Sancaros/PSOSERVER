@@ -55,6 +55,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 //#define CHARACTER_DATA_TRADE "character_data_trade"
 
 #define CLIENTS_BLUEBURST "clients_blueburst"
+#define CLIENTS_BLUEBURST_GUILD "clients_blueburst_guild"
 #define CLIENTS_BLUEBURST_GUILDCARDS "clients_blueburst_guildcards"
 #define CLIENTS_BLUEBURST_OPTION "clients_blueburst_option"
 #define CLIENTS_DREAMCAST "clients_dreamcast"
@@ -62,7 +63,6 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CLIENTS_GAMECUBE "clients_gamecube"
 #define CLIENTS_PC "clients_pc"
 #define CLIENTS_XBOX "clients_xbox"
-#define CLIENTS_GUILD "clients_guild"
 #define CLIENTS_GUILDCARDS "clients_guildcards"
 #define CLIENTS_OPTIONS "clients_options"
 

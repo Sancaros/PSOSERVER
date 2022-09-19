@@ -143,7 +143,7 @@ typedef struct login_client {
     int sendbuf_size;
     int sendbuf_start;
 
-    bb_gc_data_t *gc_data;
+    bb_guildcard_data_t *gc_data;
     psocn_bb_db_guild_t *guild_data;
     bb_client_config_pkt sec_data;
     int hdr_read;

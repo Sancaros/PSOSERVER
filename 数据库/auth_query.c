@@ -21,9 +21,27 @@
 /* Database connection */
 extern psocn_dbconn_t conn;
 
+int db_upload_temp_data(void* data, uint32_t size) {
+    sprintf(myquery, "INSERT INTO temp_t (temp_data)"
+        " VALUES ('");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery),
+        (char*)data, size);
+
+    strcat(myquery, "')");
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法插入数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
 /* 获取 BB 的设置数据 */
 psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
-    char query[sizeof(psocn_bb_db_opts_t) * 2 + 256 + 1248 * 2];
+    //char query[sizeof(psocn_bb_db_opts_t) * 2 + 256 + 1248 * 2];
     void* result;
     char** row;
     psocn_bb_db_opts_t opts;
@@ -31,11 +49,11 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     memset(&opts, 0, sizeof(psocn_bb_db_opts_t));
 
     /* Look up the user's saved config */
-    sprintf(query, "SELECT key_config, joystick_config, "
+    sprintf(myquery, "SELECT key_config, joystick_config, "
         "option_flags, shortcuts, symbol_chats, guild_name FROM %s WHERE "
         "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_OPTION, gc);
 
-    if (!psocn_db_real_query(&conn, query)) {
+    if (!psocn_db_real_query(&conn, myquery)) {
         result = psocn_db_result_store(&conn);
 
         /* See if we got a hit... */
@@ -54,27 +72,27 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             memcpy(&opts.key_cfg.joystick_config, default_joystick_config, sizeof(default_joystick_config));
             memcpy(&opts.symbol_chats, default_symbolchats, sizeof(default_symbolchats));
 
-            sprintf(query, "INSERT INTO %s (guildcard, key_config, joystick_config, symbol_chats)"
+            sprintf(myquery, "INSERT INTO %s (guildcard, key_config, joystick_config, symbol_chats)"
                 " VALUES ('%" PRIu32"', '", CLIENTS_BLUEBURST_OPTION, gc);
 
-            psocn_db_escape_str(&conn, query + strlen(query),
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.key_cfg.key_config, sizeof(opts.key_cfg.key_config));
 
-            strcat(query, "', '");
+            strcat(myquery, "', '");
 
-            psocn_db_escape_str(&conn, query + strlen(query),
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.key_cfg.joystick_config, sizeof(opts.key_cfg.joystick_config));
 
-            strcat(query, "', '");
+            strcat(myquery, "', '");
 
-            psocn_db_escape_str(&conn, query + strlen(query),
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.symbol_chats, sizeof(opts.symbol_chats));
 
-            strcat(query, "')");
+            strcat(myquery, "')");
 
-            //printf("%s \n", query);
+            //printf("%s \n", myquery);
 
-            if (psocn_db_real_query(&conn, query)) {
+            if (psocn_db_real_query(&conn, myquery)) {
                 SQLERR_LOG("无法插入设置数据 "
                     "guildcard %" PRIu32 "", gc);
                 SQLERR_LOG("%s", psocn_db_error(&conn));
@@ -87,72 +105,72 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
 }
 
 /* 获取 BB 的公会？数据 */
-psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
-    char query[sizeof(psocn_bb_db_guild_t) * 2 + 256];
+bb_guild_t db_get_bb_char_guild(uint32_t gc) {
+    //char query[sizeof(bb_guild_t) * 2 + 256];
     void* result;
     char** row;
-    psocn_bb_db_guild_t guild;
+    bb_guild_t guild;
 
-    memset(&guild, 0, sizeof(psocn_bb_db_guild_t));
+    memset(&guild, 0, sizeof(bb_guild_t));
 
     /* 查询数据表 */
-    sprintf(query, "SELECT * FROM %s WHERE "
-        "guildcard='%" PRIu32 "'", CLIENTS_GUILD, gc);
+    sprintf(myquery, "SELECT * FROM %s WHERE "
+        "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, gc);
 
-    if (!psocn_db_real_query(&conn, query)) {
+    if (!psocn_db_real_query(&conn, myquery)) {
         result = psocn_db_result_store(&conn);
 
         /* 查找是否有数据 */
         if (psocn_db_result_rows(result)) {
             row = psocn_db_result_fetch(result);
-            memcpy(&guild.guild_data.guildcard, row[0], sizeof(guild.guild_data.guildcard));
-            guild.guild_data.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
-            memcpy(&guild.guild_data.guild_info, row[2], sizeof(guild.guild_data.guild_info));
-            memcpy(&guild.guild_data.guild_priv_level, row[3], sizeof(guild.guild_data.guild_priv_level));
-            memcpy(&guild.guild_data.reserved, row[4], sizeof(guild.guild_data.reserved));
-            memcpy(&guild.guild_data.guild_name, row[5], sizeof(guild.guild_data.guild_name));
-            memcpy(&guild.guild_data.guild_flag, row[6], sizeof(guild.guild_data.guild_flag));
-            guild.guild_data.guild_rewards[0] = (uint32_t)strtoul(row[7], NULL, 0);
-            guild.guild_data.guild_rewards[1] = (uint32_t)strtoul(row[8], NULL, 0);
+            guild.guildcard = (uint32_t)strtoul(row[0], NULL, 0);
+            guild.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
+            memcpy(&guild.guild_info, row[2], sizeof(guild.guild_info));
+            memcpy(&guild.guild_priv_level, row[3], sizeof(guild.guild_priv_level));
+            memcpy(&guild.reserved, row[4], sizeof(guild.reserved));
+            memcpy(&guild.guild_name, row[5], sizeof(guild.guild_name));
+            memcpy(&guild.guild_flag, row[6], sizeof(guild.guild_flag));
+            guild.guild_rewards[0] = (uint32_t)strtoul(row[7], NULL, 0);
+            guild.guild_rewards[1] = (uint32_t)strtoul(row[8], NULL, 0);
         }
         else {
             /* 初始化默认数据 */
-            guild.guild_data.guildcard = gc;
-            guild.guild_data.guild_id = -1;
+            guild.guildcard = gc;
+            guild.guild_id = -1;
 
             /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
-            guild.guild_data.guild_rewards[0] = 0xFFFFFFFF;
-            guild.guild_data.guild_rewards[1] = 0xFFFFFFFF;
+            guild.guild_rewards[0] = 0xFFFFFFFF;
+            guild.guild_rewards[1] = 0xFFFFFFFF;
 
-            sprintf(query, "INSERT INTO %s (guildcard, guild_id, guild_priv_level, guild_rewards1, guild_rewards2, "
+            sprintf(myquery, "INSERT INTO %s (guildcard, guild_id, guild_priv_level, guild_rewards1, guild_rewards2, "
                 "guild_info, reserved, guild_name, guild_flag)"
-                " VALUES ('%" PRIu32"', '%d', '%" PRIu16"', '%d', '%d', '", CLIENTS_GUILD,
-                guild.guild_data.guildcard, guild.guild_data.guild_id, guild.guild_data.guild_priv_level, 
-                guild.guild_data.guild_rewards[0], guild.guild_data.guild_rewards[1]);
+                " VALUES ('%" PRIu32"', '%d', '%" PRIu16"', '%d', '%d', '", CLIENTS_BLUEBURST_GUILD,
+                guild.guildcard, guild.guild_id, guild.guild_priv_level, 
+                guild.guild_rewards[0], guild.guild_rewards[1]);
 
-            psocn_db_escape_str(&conn, query + strlen(query),
-                (char*)&guild.guild_data.guild_info, sizeof(guild.guild_data.guild_info));
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                (char*)&guild.guild_info, sizeof(guild.guild_info));
 
-            strcat(query, "', '");
+            strcat(myquery, "', '");
 
-            psocn_db_escape_str(&conn, query + strlen(query),
-                (char*)&guild.guild_data.reserved, sizeof(guild.guild_data.reserved));
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                (char*)&guild.reserved, sizeof(guild.reserved));
 
-            strcat(query, "', '");
+            strcat(myquery, "', '");
 
-            psocn_db_escape_str(&conn, query + strlen(query),
-                (char*)&guild.guild_data.guild_name, sizeof(guild.guild_data.guild_name));
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                (char*)&guild.guild_name, sizeof(guild.guild_name));
 
-            strcat(query, "', '");
+            strcat(myquery, "', '");
 
-            psocn_db_escape_str(&conn, query + strlen(query),
-                (char*)&guild.guild_data.guild_flag, sizeof(guild.guild_data.guild_flag));
+            psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                (char*)&guild.guild_flag, sizeof(guild.guild_flag));
 
-            strcat(query, "')");
+            strcat(myquery, "')");
 
-            //printf("%s \n", query);
+            //printf("%s \n", myquery);
 
-            if (psocn_db_real_query(&conn, query)) {
+            if (psocn_db_real_query(&conn, myquery)) {
                 SQLERR_LOG("无法插入设置数据 "
                     "guildcard %" PRIu32 "", gc);
                 SQLERR_LOG("%s", psocn_db_error(&conn));
@@ -165,7 +183,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
 }
 
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot) {
-    char query[256];
+    //char query[256];
 
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
@@ -174,9 +192,9 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET ip = '%s', last_login_time = '%s'"
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET ip = '%s', last_login_time = '%s'"
         "WHERE guildcard = '%" PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DATA, ipstr, timestamp, gc, slot);
-    if (psocn_db_real_query(&conn, query))
+    if (psocn_db_real_query(&conn, myquery))
     {
         SQLERR_LOG("无法更新角色登录数据 (GC %" PRIu32 ", 槽位 %"
             PRIu8 "):\n%s", gc, slot,
@@ -188,13 +206,13 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 }
 
 int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
-    char query[256];
+    //char query[256];
     time_t servertime = time(NULL);
 
-    sprintf(query, "UPDATE %s SET dressflag = '%" PRIu32 "' WHERE "
+    sprintf(myquery, "UPDATE %s SET dressflag = '%" PRIu32 "' WHERE "
         "guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, flags, gc);
 
-    if (psocn_db_real_query(&conn, query)) {
+    if (psocn_db_real_query(&conn, myquery)) {
         /* Should send an error message to the user */
         SQLERR_LOG("无法初始化更衣室 (GC %" PRIu32 ", 标签 %"
             PRIu8 "):\n%s", gc, flags,

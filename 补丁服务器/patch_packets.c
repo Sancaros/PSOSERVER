@@ -106,7 +106,7 @@ int send_simple(patch_client_t *c, uint16_t type) {
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, pkt, PACKET_HEADER_LENGTH, 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, PACKET_HEADER_LENGTH);
 }
 
@@ -128,7 +128,7 @@ int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect) {
     pkt->server_vector = LE32(svect);
     pkt->client_vector = LE32(cvect);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, PATCH_WELCOME_LENGTH);
 }
 
@@ -188,7 +188,7 @@ int send_message(patch_client_t *c, uint16_t *msg, uint16_t size) {
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, pkt, s, 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, s);
 }
 
@@ -210,7 +210,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_REDIRECT_LENGTH, 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, PATCH_REDIRECT_LENGTH);
 }
 
@@ -231,7 +231,7 @@ int send_redirect6(patch_client_t *c, const uint8_t ip[16], uint16_t port) {
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_REDIRECT6_LENGTH, 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, PATCH_REDIRECT6_LENGTH);
 }
 
@@ -255,7 +255,7 @@ int send_chdir(patch_client_t *c, const char dir[]) {
     /* Encrypt the packet. */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_SET_DIRECTORY_LENGTH, 1);
 
-    /* Send the packet away. */
+    /* 将数据包发送出去. */
     return send_raw(c, PATCH_SET_DIRECTORY_LENGTH);
 }
 
@@ -278,7 +278,7 @@ int send_file_info(patch_client_t *c, uint32_t idx, const char fn[]) {
     /* Encrypt the packet. */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_INFO_LENGTH, 1);
 
-    /* Send the packet away. */
+    /* 将数据包发送出去. */
     return send_raw(c, PATCH_FILE_INFO_LENGTH);
 }
 
@@ -295,7 +295,7 @@ int send_send_info(patch_client_t *c, uint32_t size, uint32_t files) {
     /* Encrypt the packet. */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_SEND_INFO_LENGTH, 1);
 
-    /* Send the packet away. */
+    /* 将数据包发送出去. */
     return send_raw(c, PATCH_SEND_INFO_LENGTH);
 }
 
@@ -319,7 +319,7 @@ int send_file_send(patch_client_t *c, uint32_t size, const char fn[]) {
     /* Encrypt the packet. */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_SEND_LENGTH, 1);
 
-    /* Send the packet away. */
+    /* 将数据包发送出去. */
     return send_raw(c, PATCH_FILE_SEND_LENGTH);
 }
 
@@ -403,6 +403,6 @@ int send_file_done(patch_client_t *c) {
     /* Encrypt the packet. */
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_DONE_LENGTH, 1);
 
-    /* Send the packet away. */
+    /* 将数据包发送出去. */
     return send_raw(c, PATCH_FILE_DONE_LENGTH);
 }

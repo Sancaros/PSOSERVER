@@ -176,40 +176,81 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
-int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
-    static char query[sizeof(psocn_bb_db_opts_t) * 2 + 256 + 1248 * 2];
-    //DBG_LOG("更新设置");
+int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
+    DBG_LOG("更新 guild 设置");
 
     /* Build the db query */
-    sprintf(query, "UPDATE %s SET key_config='", CLIENTS_BLUEBURST_OPTION);
+    sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_BLUEBURST_GUILD);
 
-    psocn_db_escape_str(&conn, query + strlen(query), (char*)&opts.key_cfg.key_config,
-        sizeof(opts.key_cfg.key_config));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_info,
+        sizeof(guild.guild_info));
 
-    strcat(query, "', joystick_config = '");
+    strcat(myquery, "', reserved = '");
 
-    psocn_db_escape_str(&conn, query + strlen(query), (char*)&opts.key_cfg.joystick_config,
-        sizeof(opts.key_cfg.joystick_config));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.reserved,
+        sizeof(guild.reserved));
 
-    strcat(query, "', symbol_chats = '");
+    strcat(myquery, "', guild_name = '");
 
-    psocn_db_escape_str(&conn, query + strlen(query), (char*)&opts.symbol_chats,
-        sizeof(opts.symbol_chats));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_name,
+        sizeof(guild.guild_name));
 
-    strcat(query, "', shortcuts = '");
+    strcat(myquery, "', guild_flag = '");
 
-    psocn_db_escape_str(&conn, query + strlen(query), (char*)&opts.shortcuts,
-        sizeof(opts.shortcuts));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_flag,
+        sizeof(guild.guild_flag));
 
-    strcat(query, "', guild_name = '");
-
-    psocn_db_escape_str(&conn, query + strlen(query), (char*)&opts.guild_name,
-        sizeof(opts.guild_name));
-
-    sprintf(query + strlen(query), "', option_flags = '%d' WHERE guildcard='%" PRIu32 "'", opts.option_flags, gc);
+    sprintf(myquery + strlen(myquery),
+        "', guildcard = '%d', guild_id = '%d', guild_priv_level = '%" PRIu16"'"
+        ", guild_rewards1 = '%d', guild_rewards2 = '%d'"
+        " WHERE guildcard = '%" PRIu32 "'",
+        guild.guildcard, guild.guild_id, guild.guild_priv_level, 
+        guild.guild_rewards[0], guild.guild_rewards[1], gc);
 
     /* Execute the query */
-    if (psocn_db_real_query(&conn, query)) {
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
+int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
+    //static char query[sizeof(psocn_bb_db_opts_t) * 2 + 256 + 1248 * 2];
+    
+    //DBG_LOG("更新设置 %d", gc);
+
+    /* Build the db query */
+    sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_BLUEBURST_OPTION);
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.key_config,
+        sizeof(opts.key_cfg.key_config));
+
+    strcat(myquery, "', joystick_config = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.joystick_config,
+        sizeof(opts.key_cfg.joystick_config));
+
+    strcat(myquery, "', symbol_chats = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
+        sizeof(opts.symbol_chats));
+
+    strcat(myquery, "', shortcuts = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.shortcuts,
+        sizeof(opts.shortcuts));
+
+    strcat(myquery, "', guild_name = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.guild_name,
+        sizeof(opts.guild_name));
+
+    sprintf(myquery + strlen(myquery), "', option_flags = '%d' WHERE guildcard='%" PRIu32 "'", opts.option_flags, gc);
+
+    /* Execute the query */
+    if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
@@ -225,7 +266,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
     istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
 
-    istrncpy(ic_gbk_to_utf8, class_name, classes_cn[char_data->character.disp.dress_data.ch_class], 64);
+    istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.disp.dress_data.ch_class].cn_name, 64);
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(query, "INSERT INTO %s(guildcard, slot, name, class_name, version, data) "

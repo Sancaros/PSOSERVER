@@ -256,7 +256,7 @@ static int char_v1v2v3pc_size = sizeof(psocn_v1v2v3pc_char_t);
 typedef struct psocn_bb_key_config {
     uint8_t key_config[0x016C];           // 0114
     uint8_t joystick_config[0x0038];      // 0280
-} PACKED psocn_bb_key_config_t;
+} PACKED bb_key_config_t;
 
 /* BB公会数据结构 TODO*/
 typedef struct psocn_bb_guild {
@@ -268,7 +268,7 @@ typedef struct psocn_bb_guild {
     uint16_t guild_name[0x0010];           // 02CC
     uint8_t guild_flag[0x0800];            // 02EC
     uint32_t guild_rewards[2];             // 0AEC
-} PACKED psocn_bb_guild_t;
+} PACKED bb_guild_t;
 
 //   client_id  32       /        unk1  32       /          times[0]     /      times[1]
 //0x00, 0x00, 0x06, 0x00, 0x03, 0x00, 0x01, 0x00, 0x07, 0x00, 0x04, 0x00, 0x02, 0x00, 0x08, 0x00,
@@ -427,28 +427,40 @@ typedef struct psocn_bb_guild_card {
 
 /* BB 完整角色数据 0x00E7 TODO*/
 typedef struct psocn_bb_full_char {
-    inventory_t inv;                    // player
-    psocn_bb_char_t character;                    // player
+    inventory_t inv;                              // 玩家数据表
+    psocn_bb_char_t character;                    // 玩家数据表
+
     uint8_t name3[0x0010];                        // not saved
     uint32_t option_flags;                        // account
-    uint8_t quest_data1[0x0208];                  // player
-    psocn_bank_t bank;                            // player
-    psocn_bb_guild_card_t gc_data;
+
+    uint8_t quest_data1[0x0208];                  // 玩家数据表
+    psocn_bank_t bank;                            // 玩家数据表
+
+    psocn_bb_guild_card_t gc_data;                // 玩家数据表部分
+
     uint32_t unk2;                                // not saved
-    uint8_t symbol_chats[0x04E0];                 // account
-    uint8_t shortcuts[0x0A40];                    // account
-    uint16_t autoreply[0x00AC];                   // player
-    uint16_t infoboard[0x00AC];                   // player
+
+    uint8_t symbol_chats[0x04E0];                 // 选项数据表
+    uint8_t shortcuts[0x0A40];                    // 选项数据表
+
+    uint16_t autoreply[0x00AC];                   // 玩家数据表
+    uint16_t infoboard[0x00AC];                   // 玩家数据表
+
     uint8_t unk3[0x001C];                         // not saved
-    uint8_t challenge_data[0x0140];               // player
-    uint8_t tech_menu[0x0028];                    // player
+
+    uint8_t challenge_data[0x0140];               // 玩家数据表
+    uint8_t tech_menu[0x0028];                    // 玩家数据表
+
     uint8_t unk4[0x002C];                         // not saved
-    uint8_t quest_data2[0x0058];                  // player
-    uint8_t unk1[0x000C];                         //276 - 264 = 12
-    psocn_bb_guild_card_t gc_data2;               //264大小
+
+    uint8_t quest_data2[0x0058];                  // 玩家数据表
+
+    uint8_t unk1[0x000C];                         // 276 - 264 = 12
+    psocn_bb_guild_card_t gc_data2;               // 264大小
+
     //uint8_t unk_gc[0x114];
-    psocn_bb_key_config_t key_cfg;
-    psocn_bb_guild_t guild_data;                  // account
+    bb_key_config_t key_cfg;                // 选项数据表
+    bb_guild_t guild_data;                  // GUILD数据表
 } PACKED psocn_bb_full_char_t;
 
 /* 目前存储于数据库的角色数据结构. */
@@ -466,14 +478,14 @@ typedef struct psocn_bb_db_char {
 } PACKED psocn_bb_db_char_t;
 
 typedef struct psocn_bb_db_guild {
-    psocn_bb_guild_t guild_data;                  // account
+    bb_guild_t guild_data;                  // account
 } PACKED psocn_bb_db_guild_t;
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
     psocn_bb_guild_card_t data;
-    uint32_t padding;
     uint16_t comment[0x58];
+    uint32_t padding;
 } PACKED psocn_bb_guild_card_entry_t;
 
 //BB GC 数据文件 TODO 
@@ -484,19 +496,21 @@ typedef struct bb_guildcard_data {
     uint32_t black_gc_list[0x001E];//120
     psocn_bb_guild_card_entry_t entries[0x0069]; //105个 444大小/个
     //uint8_t unk3[0x01BC];
-} bb_gc_data_t; //54672
+} bb_guildcard_data_t; //54672
 
 /* BB 数据选项文件 TODO */
 /* 从完整BB角色数据中分离出来的设置数据,存储于 数据库 中,
 来自于 newserv 的 .nsa 文件. */
 typedef struct psocn_bb_db_opts {
-    uint32_t black_gc_list[0x001E];//30 120字节
-    psocn_bb_key_config_t key_cfg; //420
+    uint32_t black_gc_list[0x001E];//30 120字节             /* 黑名单列表 */
+    bb_key_config_t key_cfg; //420                          /* 键位设置数据 */
     uint32_t option_flags;
     uint8_t shortcuts[0x0A40];//2624
     uint8_t symbol_chats[0x04E0];//1248
     uint16_t guild_name[0x0010];//16
 } PACKED psocn_bb_db_opts_t;
+
+static int opt_size = sizeof(psocn_bb_db_opts_t);
 
 #ifndef _WIN32
 #else
@@ -531,17 +545,34 @@ const enum Character_Classes {
     CLASS_FOMARL, //人类女法师
     CLASS_FONEWM, //新人类男法师
     CLASS_FONEWEARL, //新人类女法师
-    CLASS_HUCASEAL, //机器人女枪手
+    CLASS_HUCASEAL, //机器人女猎人
     CLASS_FOMAR, //人类男法师
     CLASS_RAMARL, //人类女枪手
-    CLASS_MAX // 最大职业数量
+    CLASS_MAX, // 最大职业数量
+    CLASS_FULL_CHAR = 12
 };
 
-static const char* classes_cn[] = {
-    "人类男猎人", "新人类女猎人", "机器人男猎人",
-    "人类男枪手", "机器人男枪手", "机器人女枪手",
-    "人类女法师", "新人类男法师", "新人类女法师",
-    "机器人女猎人", "人类男法师", "人类女枪手"
+typedef struct full_class {
+    uint32_t class_code;
+    char cn_name[16];
+    char en_name[16];
+    char class_file[24];
+} full_class_t;
+
+static full_class_t pso_class[] = {
+    {CLASS_HUMAR,     "人类男猎人",    "HUmar",     "0_默认_人类男猎人.nsc"  },
+    {CLASS_HUNEWEARL, "新人类女猎人",  "HUnewearl", "1_默认_新人类女猎人.nsc"},
+    {CLASS_HUCAST,    "机器人男猎人",  "HUcast",    "2_默认_机器人男猎人.nsc"},
+    {CLASS_RAMAR,     "人类男枪手",    "RAmar",     "3_默认_人类男枪手.nsc"  },
+    {CLASS_RACAST,    "机器人男枪手",  "RAcast",    "4_默认_机器人男枪手.nsc"},
+    {CLASS_RACASEAL,  "机器人女枪手",  "RAcaseal",  "5_默认_机器人女枪手.nsc"},
+    {CLASS_FOMARL,    "人类女法师",    "FOmarl",    "6_默认_人类女法师.nsc"  },
+    {CLASS_FONEWM,    "新人类男法师",  "FOnewm",    "7_默认_新人类男法师.nsc"},
+    {CLASS_FONEWEARL, "新人类女法师",  "FOnewearl", "8_默认_新人类女法师.nsc"},
+    {CLASS_HUCASEAL,  "机器人女猎人",  "HUcaseal",  "9_默认_机器人女猎人.nsc"},
+    {CLASS_FOMAR,     "人类男法师",    "FOmar",     "10_默认_人类男法师.nsc" },
+    {CLASS_RAMARL,    "人类女枪手",    "RAmarl",    "11_默认_人类女枪手.nsc" },
+    {CLASS_FULL_CHAR, "完整角色",      "Full_char", "默认_完整角色.bin"      },
 };
 
 // 药物定义

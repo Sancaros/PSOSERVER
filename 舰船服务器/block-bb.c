@@ -853,13 +853,13 @@ static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint32_t version = pkt->hdr.flags;
+    uint32_t version = c->version;// pkt->hdr.flags;
     uint32_t v;
     int i;
 
-    DBG_LOG("%s(%d): BB处理角色数据 for GC %" PRIu32
-        " 版本 = %d", ship->cfg->name, c->cur_block->b,
-        c->guildcard, version);
+    //DBG_LOG("%s(%d): BB处理角色数据 for GC %" PRIu32
+    //    " 版本 = %d", ship->cfg->name, c->cur_block->b,
+    //    c->guildcard, version);
 
     pthread_mutex_lock(&c->mutex);
 
@@ -1494,6 +1494,17 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
 static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
+    //print_payload((unsigned char*)pkt, len);
+
+    DBG_LOG("name3 %s", pkt->data.name3); //空值 没做过数据交换
+    DBG_LOG("option_flags %d %d", pkt->data.option_flags, c->option_flags);
+    DBG_LOG("unk2 %d", pkt->data.unk2);
+    DBG_LOG("unk3 %s", pkt->data.unk3);
+    DBG_LOG("unk4 %s", pkt->data.unk4);
+    DBG_LOG("unk1 %s", pkt->data.unk1);
+
+    print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guild_card_t));
+
     if (c->version != CLIENT_VERSION_BB)
         return -1;
 
@@ -1528,6 +1539,9 @@ static int bb_process_opt_flags(ship_client_t* c, bb_options_update_pkt* pkt) {
     }
 
     memcpy(&c->bb_opts->option_flags, pkt->data, data_len);
+
+    c->option_flags = c->bb_opts->option_flags;
+
     return 0;
 }
 

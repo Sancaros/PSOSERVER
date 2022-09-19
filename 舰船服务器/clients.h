@@ -133,6 +133,7 @@ struct ship_client {
     uint32_t flags;
     uint32_t arrow;
     uint32_t blocklist_size;
+    uint32_t option_flags;
     //uint32_t play_time;
 
     uint32_t next_item[4];

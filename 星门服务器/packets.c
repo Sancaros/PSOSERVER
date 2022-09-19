@@ -131,7 +131,7 @@ int forward_dreamcast(ship_t *c, dc_pkt_hdr_t *dc, uint32_t sender,
     /* Copy in the packet, unchanged */
     memcpy(pkt->pkt, dc, dc_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len);
 }
 
@@ -163,7 +163,7 @@ int forward_pc(ship_t *c, dc_pkt_hdr_t *pc, uint32_t sender, uint32_t gc,
     /* Copy in the packet, unchanged */
     memcpy(pkt->pkt, pc, pc_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len);
 }
 
@@ -195,7 +195,7 @@ int forward_bb(ship_t *c, bb_pkt_hdr_t *bb, uint32_t sender, uint32_t gc,
     /* Copy in the packet, unchanged */
     memcpy(pkt->pkt, bb, bb_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len);
 }
 
@@ -225,7 +225,7 @@ int send_welcome(ship_t *c) {
     memcpy(pkt->ship_nonce, c->ship_nonce, 4);
     memcpy(pkt->gate_nonce, c->gate_nonce, 4);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, sizeof(shipgate_login_pkt));
 }
 
@@ -260,7 +260,7 @@ int send_ship_status(ship_t *c, ship_t *o, uint16_t status) {
     pkt->ship_number = (uint8_t)o->ship_number;
     pkt->privileges = htonl(o->privileges);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_ship_status6_pkt));
 }
 
@@ -439,7 +439,7 @@ int send_kick(ship_t *c, uint32_t requester, uint32_t user, uint32_t block,
     if(reason)
         strncpy(pkt->reason, reason, 64);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_kick_pkt));
 }
 
@@ -463,7 +463,7 @@ int send_friendlist(ship_t *c, uint32_t requester, uint32_t block,
     /* Copy the friend data */
     memcpy(pkt->entries, entries, sizeof(friendlist_data_t) * count);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, len);
 }
 
@@ -484,7 +484,7 @@ int send_global_msg(ship_t *c, uint32_t requester, const char *text,
     pkt->reserved = 0;
     memcpy(pkt->text, text, len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, len);
 }
 
@@ -570,7 +570,7 @@ int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
         "send_bb_opts:gc %d = %d block %d = %d",
         pkt->guildcard, gc, pkt->block, block);*/
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt));
 }
 

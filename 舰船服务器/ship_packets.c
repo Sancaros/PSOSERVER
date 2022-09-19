@@ -314,7 +314,7 @@ int send_dc_welcome(ship_client_t *c, uint32_t svect, uint32_t cvect) {
         fprint_packet(c->logfile, sendbuf, DC_WELCOME_LENGTH, 0);
     }
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, DC_WELCOME_LENGTH, sendbuf);
 }
 
@@ -350,7 +350,7 @@ int send_bb_welcome(ship_client_t *c, const uint8_t svect[48],
         fprint_packet(c->logfile, sendbuf, BB_WELCOME_LENGTH, 0);
     }
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_raw(c, BB_WELCOME_LENGTH, sendbuf);
 }
 
@@ -388,7 +388,7 @@ int send_dc_security(ship_client_t *c, uint32_t gc, uint8_t *data,
     if(data_len)
         memcpy(pkt->security_data, data, data_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, 0x0C + data_len, sendbuf);
 }
 
@@ -428,7 +428,7 @@ int send_bb_security(ship_client_t *c, uint32_t gc, uint32_t err,
     if(data_len)
         memcpy(&pkt->security_data, data, data_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, BB_SECURITY_LENGTH, sendbuf);
 }
 
@@ -461,7 +461,7 @@ static int send_dc_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     pkt->ip_addr = ip;
     pkt->port = LE16(port);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, DC_REDIRECT_LENGTH, sendbuf);
 }
 
@@ -485,7 +485,7 @@ static int send_bb_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     pkt->ip_addr = ip;
     pkt->port = LE16(port);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, BB_REDIRECT_LENGTH, sendbuf);
 }
 
@@ -540,7 +540,7 @@ static int send_redirect6_dc(ship_client_t *c, const uint8_t ip[16],
     memcpy(pkt->ip_addr, ip, 16);
     pkt->port = LE16(port);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, DC_REDIRECT6_LENGTH, sendbuf);
 }
 
@@ -566,7 +566,7 @@ static int send_redirect6_bb(ship_client_t *c, const uint8_t ip[16],
     memcpy(pkt->ip_addr, ip, 16);
     pkt->port = LE16(port);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, BB_REDIRECT6_LENGTH, sendbuf);
 }
 
@@ -630,7 +630,7 @@ static int send_dc_timestamp(ship_client_t *c) {
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
             rawtime.wMilliseconds);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, DC_TIMESTAMP_LENGTH, sendbuf);
 }
 
@@ -712,7 +712,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries - 1;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -778,7 +778,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries - 1;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -844,7 +844,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = LE32(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -929,7 +929,7 @@ static int send_dc_info_reply(ship_client_t *c, const char *msg) {
         pkt->hdr.pc.pkt_len = LE16((uint16_t)out);
     }
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, out, sendbuf);
 }
 
@@ -968,7 +968,7 @@ static int send_bb_info_reply(ship_client_t *c, const char *msg) {
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16((uint16_t)out);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, out, sendbuf);
 }
 
@@ -1005,7 +1005,7 @@ static int send_dc_simple(ship_client_t *c, int type, int flags) {
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, 4, sendbuf);
 }
 
@@ -1023,7 +1023,7 @@ static int send_pc_simple(ship_client_t *c, int type, int flags) {
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, 4, sendbuf);
 }
 
@@ -1043,7 +1043,7 @@ static int send_bb_simple(ship_client_t *c, int type, int flags) {
 
     /*ERR_LOG("send_bb_simple %d = %d %d = %d %d = 8", pkt->pkt_type, type, pkt->flags, flags, pkt->pkt_len);*/
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, 8, sendbuf);
 }
 
@@ -4813,7 +4813,7 @@ static int send_dc_info_list(ship_client_t *c, ship_t *s, uint32_t v) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -4877,7 +4877,7 @@ static int send_pc_info_list(ship_client_t *c, ship_t *s) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -4941,7 +4941,7 @@ static int send_bb_info_list(ship_client_t* c, ship_t* s) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -5000,7 +5000,7 @@ int send_pc_game_type_sel(ship_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -5016,7 +5016,7 @@ int send_bb_game_create(ship_client_t* c) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = 3;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -5047,7 +5047,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -5078,7 +5078,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -9027,7 +9027,7 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].name,
                      it->pl->v1.character.disp.dress_data.guildcard_name, 0x20);
 
-            sprintf(tmp, "%s Lvl %d\n", classes_cn[it->pl->v1.character.disp.dress_data.ch_class],
+            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name,
                     it->pl->v1.character.disp.level + 1);
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
@@ -9066,7 +9066,7 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
                iconv anything in here */
             strcpy(pkt->entries[entry].name, it->pl->v1.character.disp.dress_data.guildcard_name);
             sprintf(pkt->entries[entry].cl_lvl, "%s Lvl %d\n",
-                    classes_cn[it->pl->v1.character.disp.dress_data.ch_class], it->pl->v1.character.disp.level + 1);
+                    pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
 
             /* iconv the lobby name */
             if(it->cur_lobby->name[0] == '\t' &&
@@ -10887,7 +10887,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
         pkt->hdr.pc.pkt_len = LE16(len);
     }
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(d, len, sendbuf);
 }
 
@@ -10920,7 +10920,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     pkt->hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt->hdr.flags = 0;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(d, len, sendbuf);
 }
 
@@ -11044,15 +11044,16 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, 320);
     memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, 40);
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, 88);
-    memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(psocn_bb_key_config_t));
+    memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
+    memcpy(&pkt->data.guild_data, &c->bb_guild->guild_data, sizeof(bb_guild_t));
     //memcpy(pkt->key_cfg.key_config, c->bb_opts->key_cfg.key_config, 0x16C);//364 + 276 + 56 = 696
     //memcpy(pkt->key_cfg.joystick_config, c->bb_opts->key_cfg.joystick_config, 0x38);//56
-    pkt->data.guild_data.guildcard = LE32(c->guildcard);
-    pkt->data.guild_data.guild_rewards[0] = LE32(0xFFFFFFFF);
-    pkt->data.guild_data.guild_rewards[1] = LE32(0xFFFFFFFF);
+    //pkt->data.guild_data.guildcard = LE32(c->guildcard);
+    //pkt->data.guild_data.guild_rewards[0] = LE32(0xFFFFFFFF);
+    //pkt->data.guild_data.guild_rewards[1] = LE32(0xFFFFFFFF);
 
     /* FIXME: Various team stuff */
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, BB_FULL_CHARACTER_LENGTH, sendbuf);
 }
 
@@ -11130,7 +11131,7 @@ static int send_dc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -11196,7 +11197,7 @@ static int send_pc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -11262,7 +11263,7 @@ static int send_bb_gm_menu(ship_client_t *c, uint32_t menu_id) {
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = LE32(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -11384,7 +11385,7 @@ static int send_dc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -11435,7 +11436,7 @@ static int send_pc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 
@@ -11487,7 +11488,7 @@ static int send_bb_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = LE32(entries - 1);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
 }
 

@@ -1770,11 +1770,10 @@ typedef struct ep3_game_create {
 /* Blue Burst option configuration packet */
 typedef struct bb_opt_config {
     bb_pkt_hdr_t hdr;
-    //uint8_t unk[0x0114];
     uint8_t unk1[0x000C];                         //276 - 264 = 12
     psocn_bb_guild_card_t gc_data2;               //264ด๓ะก
-    psocn_bb_key_config_t key_cfg;
-    psocn_bb_guild_t guild_data;
+    bb_key_config_t key_cfg;
+    bb_guild_t guild_data;
 } PACKED bb_opt_config_pkt;
 
 #endif

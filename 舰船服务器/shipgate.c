@@ -2860,7 +2860,7 @@ int shipgate_fw_dc(shipgate_conn_t* c, const void* dcp, uint32_t flags,
     pkt->guildcard = htonl(req->guildcard);
     pkt->block = htonl(req->cur_block->b);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
 }
 
@@ -2894,7 +2894,7 @@ int shipgate_fw_pc(shipgate_conn_t* c, const void* pcp, uint32_t flags,
     pkt->guildcard = htonl(req->guildcard);
     pkt->block = htonl(req->cur_block->b);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
 }
 
@@ -2928,7 +2928,7 @@ int shipgate_fw_bb(shipgate_conn_t* c, const void* bbp, uint32_t flags,
     pkt->guildcard = htonl(req->guildcard);
     pkt->block = htonl(req->cur_block->b);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
 }
 
@@ -2962,7 +2962,7 @@ int shipgate_send_usrlogin(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     strncpy(pkt->username, username, 31);
     strncpy(pkt->password, password, 31);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_usrlogin_req_pkt), sendbuf);
 }
 
@@ -2999,7 +2999,7 @@ int shipgate_send_ban(shipgate_conn_t* c, uint16_t type, uint32_t requester,
     pkt->until = htonl(until);
     strncpy(pkt->message, msg, 255);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_ban_req_pkt), sendbuf);
 }
 
@@ -3025,7 +3025,7 @@ int shipgate_send_friend_del(shipgate_conn_t* c, uint32_t user,
     pkt->user_guildcard = htonl(user);
     pkt->friend_guildcard = htonl(friend_gc);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_friend_upd_pkt), sendbuf);
 }
 
@@ -3052,7 +3052,7 @@ int shipgate_send_friend_add(shipgate_conn_t* c, uint32_t user,
     strncpy(pkt->friend_nick, nick, 32);
     pkt->friend_nick[31] = 0;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_friend_add_pkt), sendbuf);
 }
 
@@ -3080,7 +3080,7 @@ int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t user,
     pkt->blocknum = htonl(block);
     strncpy(pkt->ch_name, name, 31);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_block_login_pkt), sendbuf);
 }
 
@@ -3107,7 +3107,7 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t user,
     pkt->blocknum = htonl(block);
     memcpy(pkt->ch_name, name, 32);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_block_login_pkt), sendbuf);
 }
 
@@ -3134,7 +3134,7 @@ int shipgate_send_lobby_chg(shipgate_conn_t* c, uint32_t user, uint32_t lobby,
     pkt->lobby_id = htonl(lobby);
     strncpy(pkt->lobby_name, lobby_name, 31);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_lobby_change_pkt), sendbuf);
 }
 
@@ -3214,7 +3214,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                 pkt->hdr.flags = 0;
                 pkt->count = htonl(count);
 
-                /* Send the packet away */
+                /* 将数据包发送出去 */
                 send_crypt(c, size, sendbuf);
             }
         }
@@ -3248,7 +3248,7 @@ int shipgate_send_kick(shipgate_conn_t* c, uint32_t requester, uint32_t user,
     if (reason)
         strncpy(pkt->reason, reason, 63);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_kick_pkt), sendbuf);
 }
 
@@ -3273,7 +3273,7 @@ int shipgate_send_frlist_req(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     pkt->block = htonl(block);
     pkt->start = htonl(start);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_friend_list_req), sendbuf);
 }
 
@@ -3305,7 +3305,7 @@ int shipgate_send_global_msg(shipgate_conn_t* c, uint32_t gc,
     memcpy(pkt->text, text, text_len);
     memset(pkt->text + text_len, 0, tl2 - text_len);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, len, sendbuf);
 }
 
@@ -3349,7 +3349,7 @@ int shipgate_send_user_opt(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     pkt->count = htonl(1);
     pkt->reserved = 0;
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, pkt_len, sendbuf);
 }
 
@@ -3375,7 +3375,7 @@ int shipgate_send_bb_opt_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
     //    " gc = %u block = %d 长度 = %d 2 = %d 类型 = %d",
     //    gc, block, sizeof(shipgate_bb_opts_req_pkt),sizeof(pkt), SHDR_TYPE_BBOPT_REQ);
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_req_pkt), sendbuf);
 }
 
@@ -3399,7 +3399,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->block = htonl(cl->cur_block->b);
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
 
-    /* Send the packet away */
+    /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
 }
 
