@@ -138,7 +138,7 @@ const char* name_for_server_behavior(server_behavior_e behavior) {
     case PC_CONSOLE_DETECT:
         return "pc_console_detect";
     case LOGIN_SERVER:
-        return "login_server";
+        return "auth_server";
     case LOBBY_SERVER:
         return "lobby_server";
     case DATA_SERVER_BB:
@@ -159,7 +159,7 @@ server_behavior_e server_behavior_for_name(const char* name) {
     if (!strcmp(name, "pc_console_detect")) {
         return PC_CONSOLE_DETECT;
     }
-    else if (!strcmp(name, "login_server") || !strcmp(name, "login")) {
+    else if (!strcmp(name, "auth_server") || !strcmp(name, "auth")) {
         return LOGIN_SERVER;
     }
     else if (!strcmp(name, "lobby_server") || !strcmp(name, "lobby")) {

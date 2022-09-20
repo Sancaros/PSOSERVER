@@ -266,7 +266,7 @@ int read_from_client(login_client_t* c);
 
 void disconnect_from_ships(uint32_t gcn);
 
-/* In login_server.c */
+/* In auth_server.c */
 int ship_transfer(login_client_t* c, uint32_t shipid);
 void read_quests();
 
