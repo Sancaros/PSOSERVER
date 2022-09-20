@@ -185,11 +185,6 @@ int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_info,
         sizeof(guild.guild_info));
 
-    strcat(myquery, "', reserved = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.reserved,
-        sizeof(guild.reserved));
-
     strcat(myquery, "', guild_name = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_name,
@@ -201,11 +196,11 @@ int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
         sizeof(guild.guild_flag));
 
     sprintf(myquery + strlen(myquery),
-        "', guildcard = '%d', guild_id = '%d', guild_priv_level = '%" PRIu16"'"
-        ", guild_rewards1 = '%d', guild_rewards2 = '%d'"
+        "', guildcard = '%d', guild_id = '%d', guild_priv_level = '%d'"
+        ", guild_rank = '%d', guild_rewards1 = '%d', guild_rewards2 = '%d'"
         " WHERE guildcard = '%" PRIu32 "'",
         guild.guildcard, guild.guild_id, guild.guild_priv_level, 
-        guild.guild_rewards[0], guild.guild_rewards[1], gc);
+        guild.guild_rank, guild.guild_rewards[0], guild.guild_rewards[1], gc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, myquery)) {

@@ -104,79 +104,131 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     return opts;
 }
 
+//是否与 db_update_bb_char_guild 函数重叠了？？？？？
+int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t guild_priv_level, uint32_t gc) {
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+        "guild_id = '%" PRIu32"', guild_priv_level = '%" PRIu32"' "
+        "WHERE guildcard = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, 
+        guild_id, guild_priv_level, 
+        gc);
+    if (psocn_db_real_query(&conn, myquery))
+    {
+        SQLERR_LOG("无法更新角色 %s 公会数据!", CHARACTER_DATA);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
 /* 获取 BB 的公会？数据 */
 bb_guild_t db_get_bb_char_guild(uint32_t gc) {
-    //char query[sizeof(bb_guild_t) * 2 + 256];
     void* result;
     char** row;
     bb_guild_t guild;
+    uint32_t guild_id, guild_priv_level;
 
     memset(&guild, 0, sizeof(bb_guild_t));
 
     /* 查询数据表 */
-    sprintf(myquery, "SELECT * FROM %s WHERE "
-        "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, gc);
+    sprintf(myquery, "SELECT guild_id, guild_priv_level  FROM %s WHERE "
+        "guildcard='%" PRIu32 "'", AUTH_DATA_ACCOUNT, gc);
 
     if (!psocn_db_real_query(&conn, myquery)) {
-        result = psocn_db_result_store(&conn);
 
-        /* 查找是否有数据 */
+        result = psocn_db_result_store(&conn);
         if (psocn_db_result_rows(result)) {
             row = psocn_db_result_fetch(result);
-            guild.guildcard = (uint32_t)strtoul(row[0], NULL, 0);
-            guild.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
-            memcpy(&guild.guild_info, row[2], sizeof(guild.guild_info));
-            memcpy(&guild.guild_priv_level, row[3], sizeof(guild.guild_priv_level));
-            memcpy(&guild.reserved, row[4], sizeof(guild.reserved));
-            memcpy(&guild.guild_name, row[5], sizeof(guild.guild_name));
-            memcpy(&guild.guild_flag, row[6], sizeof(guild.guild_flag));
-            guild.guild_rewards[0] = (uint32_t)strtoul(row[7], NULL, 0);
-            guild.guild_rewards[1] = (uint32_t)strtoul(row[8], NULL, 0);
+            guild_id = (uint32_t)strtoul(row[0], NULL, 0);
+            guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
+            psocn_db_result_free(result);
         }
         else {
-            /* 初始化默认数据 */
-            guild.guildcard = gc;
-            guild.guild_id = -1;
+            psocn_db_result_free(result);
+            return guild; 
+        }
 
-            /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
-            guild.guild_rewards[0] = 0xFFFFFFFF;
-            guild.guild_rewards[1] = 0xFFFFFFFF;
+        if (guild_id != -1) {
 
-            sprintf(myquery, "INSERT INTO %s (guildcard, guild_id, guild_priv_level, guild_rewards1, guild_rewards2, "
-                "guild_info, reserved, guild_name, guild_flag)"
-                " VALUES ('%" PRIu32"', '%d', '%" PRIu16"', '%d', '%d', '", CLIENTS_BLUEBURST_GUILD,
-                guild.guildcard, guild.guild_id, guild.guild_priv_level, 
-                guild.guild_rewards[0], guild.guild_rewards[1]);
+            /* 同步角色账号与角色公会数据的公会ID与公会等级 */
+            if (db_updata_bb_char_guild_data(guild_id, guild_priv_level, gc))
+                return guild;
 
-            psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&guild.guild_info, sizeof(guild.guild_info));
+            /* 查询数据表 */
+            sprintf(myquery, "SELECT * FROM %s WHERE "
+                "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, gc);
 
-            strcat(myquery, "', '");
+            if (!psocn_db_real_query(&conn, myquery)) {
+                result = psocn_db_result_store(&conn);
+                /* 查找是否有数据 */
+                if (psocn_db_result_rows(result)) {
+                    row = psocn_db_result_fetch(result);
+                    guild.guildcard = (uint32_t)strtoul(row[0], NULL, 0);
+                    guild.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
+                    memcpy(&guild.guild_info, row[2], sizeof(guild.guild_info));
+                    //memcpy(&guild.guild_priv_level, row[3], sizeof(guild.guild_priv_level));
+                    guild.guild_priv_level = (uint32_t)strtoul(row[3], NULL, 0);
+                    //memcpy(&guild.reserved, row[4], sizeof(guild.reserved));
 
-            psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&guild.reserved, sizeof(guild.reserved));
+                    /* 赋予名称颜色代码 */
+                    guild.guild_name[0] = 0x0009;
+                    guild.guild_name[1] = 0x0045;
+                    memcpy(&guild.guild_name, row[4], sizeof(guild.guild_name) - 4);
 
-            strcat(myquery, "', '");
+                    /* TODO 公会等级未实现 */
+                    guild.guild_rank = (uint32_t)strtoul(row[5], NULL, 0);
 
-            psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&guild.guild_name, sizeof(guild.guild_name));
+                    memcpy(&guild.guild_flag, row[6], sizeof(guild.guild_flag));
+                    guild.guild_rewards[0] = (uint32_t)strtoul(row[7], NULL, 0);
+                    guild.guild_rewards[1] = (uint32_t)strtoul(row[8], NULL, 0);
+                }
 
-            strcat(myquery, "', '");
+                psocn_db_result_free(result);
+            }
+            else {
+                /* 初始化默认数据 */
+                guild.guildcard = gc;
+                guild.guild_id = guild_id;
+                guild.guild_priv_level = guild_priv_level;
 
-            psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&guild.guild_flag, sizeof(guild.guild_flag));
+                guild.guild_rank = 0x00986C84; // ?? 应该是排行榜未完成的参数了
 
-            strcat(myquery, "')");
+                /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
+                guild.guild_rewards[0] = 0xFFFFFFFF; //和更衣室有关
+                guild.guild_rewards[1] = 0xFFFFFFFF;
 
-            //printf("%s \n", myquery);
+                sprintf(myquery, "INSERT INTO %s (guildcard, guild_id, guild_priv_level, "
+                    "guild_rank, guild_rewards1, guild_rewards2, "
+                    "guild_info, guild_name, guild_flag)"
+                    " VALUES ('%" PRIu32"', '%d', '%d', "
+                    "'%d', '%d', '%d', '", CLIENTS_BLUEBURST_GUILD,
+                    guild.guildcard, guild.guild_id, guild.guild_priv_level,
+                    guild.guild_rank, guild.guild_rewards[0], guild.guild_rewards[1]);
 
-            if (psocn_db_real_query(&conn, myquery)) {
-                SQLERR_LOG("无法插入设置数据 "
-                    "guildcard %" PRIu32 "", gc);
-                SQLERR_LOG("%s", psocn_db_error(&conn));
+                psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                    (char*)&guild.guild_info, sizeof(guild.guild_info));
+
+                strcat(myquery, "', '");
+
+                psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                    (char*)&guild.guild_name, sizeof(guild.guild_name));
+
+                strcat(myquery, "', '");
+
+                psocn_db_escape_str(&conn, myquery + strlen(myquery),
+                    (char*)&guild.guild_flag, sizeof(guild.guild_flag));
+
+                strcat(myquery, "')");
+
+                //printf("%s \n", myquery);
+
+                if (psocn_db_real_query(&conn, myquery)) {
+                    SQLERR_LOG("无法插入设置数据 "
+                        "guildcard %" PRIu32 "", gc);
+                    SQLERR_LOG("%s", psocn_db_error(&conn));
+                }
             }
         }
-        psocn_db_result_free(result);
     }
 
     return guild;
