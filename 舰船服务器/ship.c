@@ -462,7 +462,7 @@ static void* ship_thd(void* d) {
             /* Process the shipgate */
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
                 if((rv = shipgate_process_pkt(&s->sg))) {
-                    SHIPS_LOG("%s: 失去与星门的连接1 rv = %d",
+                    SHIPS_LOG("%s: 失去与船闸的连接1 rv = %d",
                         s->cfg->name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
@@ -472,7 +472,7 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
 
                     if (rv < -1) {
-                        SHIPS_LOG("%s: 与星门连接出错1, 断开!",
+                        SHIPS_LOG("%s: 与船闸连接出错1, 断开!",
                             s->cfg->name);
                         s->run = 0;
                     }
@@ -481,7 +481,7 @@ static void* ship_thd(void* d) {
 
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
                 if(rv = shipgate_send_pkts(&s->sg)) {
-                    SHIPS_LOG("%s: 失去与星门的连接2 rv = %d",
+                    SHIPS_LOG("%s: 失去与船闸的连接2 rv = %d",
                         s->cfg->name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
@@ -491,7 +491,7 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
                     
                     if (rv < -1) {
-                        SHIPS_LOG("%s: 与星门连接出错2, 断开!",
+                        SHIPS_LOG("%s: 与船闸连接出错2, 断开!",
                             s->cfg->name);
                     }
                 }
@@ -847,7 +847,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
 
     /* Connect to the shipgate. */
     if (shipgate_connect(rv, &rv->sg)) {
-        ERR_LOG("%s: 无法连接至星门!", s->name);
+        ERR_LOG("%s: 无法连接至船闸!", s->name);
         goto err_bans_locks;
     }
 

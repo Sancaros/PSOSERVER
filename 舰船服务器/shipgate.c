@@ -167,7 +167,7 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
         memset(rv, 0, sizeof(shipgate_conn_t));
     }
 
-    SHIPS_LOG("%s: 搜寻星门 (%s)...", s->cfg->name,
+    SHIPS_LOG("%s: 搜寻船闸 (%s)...", s->cfg->name,
         s->cfg->shipgate_host);
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -176,12 +176,12 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     snprintf(sg_port, sizeof(sg_port), "%hu", s->cfg->shipgate_port);
 
     if (getaddrinfo(s->cfg->shipgate_host, sg_port, &hints, &server)) {
-        ERR_LOG("%s: 星门地址无效: %s", s->cfg->name,
+        ERR_LOG("%s: 船闸地址无效: %s", s->cfg->name,
             s->cfg->shipgate_host);
         return -1;
     }
 
-    SHIPS_LOG("%s: 连接星门...", s->cfg->name);
+    SHIPS_LOG("%s: 连接船闸...", s->cfg->name);
 
     for (j = server; j != NULL; j = j->ai_next) {
         if (j->ai_family == PF_INET) {
@@ -220,7 +220,7 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
 
     /* Did we connect? */
     if (sock == SOCKET_ERROR) {
-        ERR_LOG("无法连接至星门!");
+        ERR_LOG("无法连接至船闸!");
         return -1;
     }
 
@@ -657,7 +657,7 @@ static int handle_dc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
     case GUILD_SEARCH_TYPE:
         /* We should never get these... Ignore them, but log a warning. */
-        SHIPS_LOG("星门发送了公会搜索?!");
+        SHIPS_LOG("船闸发送了公会搜索?!");
         return 0;
 
     case SIMPLE_MAIL_TYPE:
@@ -991,7 +991,7 @@ static int handle_login(shipgate_conn_t* conn, shipgate_login_pkt* pkt) {
         return -3;
     }
 
-    SHIPS_LOG("%s: 成功对接星门 版本 %d.%d.%d",
+    SHIPS_LOG("%s: 成功对接船闸 版本 %d.%d.%d",
         conn->ship->cfg->name, (int)pkt->ver_major, (int)pkt->ver_minor,
         (int)pkt->ver_micro);
 
@@ -1265,12 +1265,12 @@ static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
     if (flags & SHDR_FAILURE) {
         switch (err) {
         case ERR_LOGIN_BAD_PROTO:
-            SHIPS_LOG("%s: 不支持的星门协议版本!",
+            SHIPS_LOG("%s: 不支持的船闸协议版本!",
                 s->cfg->name);
             break;
 
         case ERR_BAD_ERROR:
-            SHIPS_LOG("%s: 星门连接出错, 稍后再尝试对接.",
+            SHIPS_LOG("%s: 船闸连接出错, 稍后再尝试对接.",
                 s->cfg->name);
             break;
 
@@ -1294,7 +1294,7 @@ static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
     else {
         /* We have a response. Set the has key flag. */
         conn->has_key = 1;
-        SHIPS_LOG("%s: 舰船与星门完成对接", s->cfg->name);
+        SHIPS_LOG("%s: 舰船与船闸完成对接", s->cfg->name);
     }
 
     /* Send the burst of client data if we have any to send */
@@ -1789,7 +1789,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 
     /* Make sure we have scripting enabled first, otherwise, just ignore this */
     if (!(s->cfg->shipgate_flags & LOGIN_FLAG_LUA)) {
-        SHIPS_LOG("当前脚本已禁用,但是星门服务器还是发送了脚本!");
+        SHIPS_LOG("当前脚本已禁用,但是船闸服务器还是发送了脚本!");
         return 0;
     }
 
@@ -1799,17 +1799,17 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 
     /* Basic sanity checks... */
     if (len > 32768) {
-        SHIPS_LOG("星门服务器发送了巨大的脚本数据");
+        SHIPS_LOG("船闸服务器发送了巨大的脚本数据");
         return -1;
     }
 
     if (pkt->filename[31] || chtype > SCHUNK_TYPE_MODULE) {
-        SHIPS_LOG("星门服务器发送了无效的脚本数据块!");
+        SHIPS_LOG("船闸服务器发送了无效的脚本数据块!");
         return -1;
     }
 
     if (action >= ScriptActionCount) {
-        SHIPS_LOG("星门服务器发送了未知类型的脚本文件!");
+        SHIPS_LOG("船闸服务器发送了未知类型的脚本文件!");
         return -1;
     }
 
@@ -1874,7 +1874,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
             }
         }
 
-        SHIPS_LOG("正在从星门服务器获取脚本文件 '%s'", pkt->filename);
+        SHIPS_LOG("正在从船闸服务器获取脚本文件 '%s'", pkt->filename);
 
         /* If we get here, we don't have a matching script, let the shipgate
            know by sending an error packet. */
@@ -1895,7 +1895,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
         /* Sanity check the packet. */
         if (psocn_crc32(pkt->chunk, len) != crc) {
             /* XXXX */
-            SHIPS_LOG("星门服务器发送了带有错误校验的脚本");
+            SHIPS_LOG("船闸服务器发送了带有错误校验的脚本");
             return 0;
         }
 
@@ -1916,7 +1916,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 
         fclose(fp);
 
-        SHIPS_LOG("星门服务器发送了脚本文件 '%s' (校验: %08" PRIx32 ")",
+        SHIPS_LOG("船闸服务器发送了脚本文件 '%s' (校验: %08" PRIx32 ")",
             filename, crc);
 
         /* If the action field is non-zero, go ahead and add the script now. */
@@ -1944,13 +1944,13 @@ static int handle_sset(shipgate_conn_t* c, shipgate_sset_pkt* pkt) {
 
     /* Sanity check the packet. */
     if (pkt->action >= ScriptActionCount) {
-        SHIPS_LOG("星门服务器设置了无效事件的脚本 %" PRIu32
+        SHIPS_LOG("船闸服务器设置了无效事件的脚本 %" PRIu32
             "", pkt->action);
         return -1;
     }
 
     if (pkt->filename[31]) {
-        SHIPS_LOG("星门服务器设置的脚本文件名过长");
+        SHIPS_LOG("船闸服务器设置的脚本文件名过长");
         return -1;
     }
 
@@ -2012,7 +2012,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
 
     /* Make sure the packet looks sane... */
     if (!(flags & SHDR_RESPONSE) || (flags & SHDR_FAILURE)) {
-        SHIPS_LOG("星门发送了错误的qflag数据包!");
+        SHIPS_LOG("船闸发送了错误的qflag数据包!");
         return -1;
     }
 
@@ -2044,7 +2044,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
                 if ((ctl & 0x80000000)) {
                     /* Drop the sync, because it either wasn't requested or
                        something else like that... */
-                    SHIPS_LOG("任务功能未做请求时,星门服务器尝试同步过长的FLAG!");
+                    SHIPS_LOG("任务功能未做请求时,船闸服务器尝试同步过长的FLAG!");
                     return 0;
                 }
 
@@ -2055,7 +2055,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
 
                 /* Make the value that the quest is expecting... */
                 if (flag_id > 0xFF) {
-                    SHIPS_LOG("星门服务器尝试同步无效的任务FLAG (ID %" PRIu32 ") FLAG 请求", flag_id);
+                    SHIPS_LOG("船闸服务器尝试同步无效的任务FLAG (ID %" PRIu32 ") FLAG 请求", flag_id);
                     return 0;
                 }
 
@@ -2122,7 +2122,7 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
                 if ((flag_id & 0x80000000)) {
                     /* Drop the sync, because it either wasn't requested or
                        something else like that... */
-                    SHIPS_LOG("任务功能未做请求时,星门服务器尝试同步过长的FLAG!");
+                    SHIPS_LOG("任务功能未做请求时,船闸服务器尝试同步过长的FLAG!");
                     return 0;
                 }
 
@@ -2170,7 +2170,7 @@ static int handle_sctl_sd(shipgate_conn_t* c, shipgate_sctl_shutdown_pkt* pkt,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_sctl_err_pkt* err = (shipgate_sctl_err_pkt*)sendbuf;
 
-    SHIPS_LOG("星门将要在 %" PRIu32 " 分钟后 %s ", when,
+    SHIPS_LOG("船闸将要在 %" PRIu32 " 分钟后 %s ", when,
         restart ? "重启" : "关闭");
     schedule_shutdown(NULL, when, restart, NULL);
 
@@ -2372,7 +2372,7 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
             list = (client_blocklist_t*)malloc(sizeof(client_blocklist_t) *
                 count);
             if (!list) {
-                ERR_LOG("%s: 从星门服务器处理客户端封禁列表时内存不足");
+                ERR_LOG("%s: 从船闸服务器处理客户端封禁列表时内存不足");
                 pthread_mutex_unlock(&i->mutex);
                 pthread_rwlock_unlock(&b->lock);
                 return -1;
@@ -2462,7 +2462,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return handle_qflag_err(conn, (shipgate_qflag_err_pkt*)pkt);
 
         default:
-            ERR_LOG("%s: 星门发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
+            ERR_LOG("%s: 船闸发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
                 , conn->ship->cfg->name, type, flags, conn->has_key);
             return -1;
         }
@@ -2575,7 +2575,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         default:
             ERR_LOG(
-                "%s: 星门发送未知错误2! 指令 = 0x%04X 标识 = %d 密钥 = %d"
+                "%s: 船闸发送未知错误2! 指令 = 0x%04X 标识 = %d 密钥 = %d"
                 , conn->ship->cfg->name, type, flags, conn->has_key
             );
             return 0;
@@ -2585,7 +2585,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     return -1;
 }
 
-/* 从星门服务器读取数据流. */
+/* 从船闸服务器读取数据流. */
 int shipgate_process_pkt(shipgate_conn_t* c) {
     ssize_t sz;
     uint16_t pkt_sz;

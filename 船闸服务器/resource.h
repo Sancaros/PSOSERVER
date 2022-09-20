@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 星门服务器
+    梦幻之星中国 船闸服务器
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ 生成的包含文件。
-// 供 星门服务器.rc 使用
+// 供 船闸服务器.rc 使用
 //
 #define IDI_ICON3                       104
 

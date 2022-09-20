@@ -24,7 +24,7 @@
     <ProjectGuid>{5b6a479f-79db-44af-b15c-760c71ba8692}</ProjectGuid>
     <RootNamespace>测试项目</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>星门服务器</ProjectName>
+    <ProjectName>船闸服务器</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -173,7 +173,7 @@ libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;database.lib;%(AdditionalDepende
     <ClInclude Include="ship.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="星门服务器.rc" />
+    <ResourceCompile Include="船闸服务器.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\数据库\数据库.vcxproj">

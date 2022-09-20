@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 星门服务器 数据包
+    梦幻之星中国 船闸服务器 数据包
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 
 /* The requisite message for the msg field of the shipgate_login_pkt. */
 static const char shipgate_login_msg[] =
-"梦幻之星中国 星门服务器 Copyright Sancaros";
+"梦幻之星中国 船闸服务器 Copyright Sancaros";
 
 /* Flags for the flags field of shipgate_hdr_t */
 #define SHDR_RESPONSE       0x8000      /* Response to a request 32768 */

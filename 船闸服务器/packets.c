@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 星门服务器
+    梦幻之星中国 船闸服务器
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ static int send_raw(ship_t *c, int len) {
         while(total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("星门发送端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("船闸发送端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if(rv < 0) {

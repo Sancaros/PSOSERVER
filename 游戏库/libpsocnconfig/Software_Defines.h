@@ -32,7 +32,7 @@
 #define PATCH_SERVER_NAME "补丁服务器"
 #define AUTH_SERVER_NAME  "认证服务器"
 #define SHIPS_SERVER_NAME "舰船服务器"
-#define SGATE_SERVER_NAME "星门服务器"
+#define SGATE_SERVER_NAME "船闸服务器"
 
 uint32_t log_server_name_num;
 

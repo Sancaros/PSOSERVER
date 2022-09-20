@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 星门服务器
+    梦幻之星中国 船闸服务器
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify

@@ -389,7 +389,7 @@ static int handle_shipgate(xmlNode* n, psocn_config_t* cur) {
 
     /* Make sure we have what we need... */
     if (!port || !cert || !key || !ca) {
-        ERR_LOG("星门设置参数不完整");
+        ERR_LOG("船闸设置参数不完整");
         rv = -1;
         goto err;
     }
@@ -398,7 +398,7 @@ static int handle_shipgate(xmlNode* n, psocn_config_t* cur) {
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {
-        ERR_LOG("星门端口无效: %s", (char*)port);
+        ERR_LOG("船闸端口无效: %s", (char*)port);
         rv = -3;
         goto err;
     }

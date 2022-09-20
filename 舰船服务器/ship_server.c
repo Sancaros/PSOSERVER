@@ -708,8 +708,8 @@ static void print_config(psocn_ship_t *cfg) {
     /* Print out the configuration. */
     CONFIG_LOG("设置参数:");
 
-    CONFIG_LOG("星门域名: %s", cfg->shipgate_host);
-    CONFIG_LOG("星门端口: %d", (int)cfg->shipgate_port);
+    CONFIG_LOG("船闸域名: %s", cfg->shipgate_host);
+    CONFIG_LOG("船闸端口: %d", (int)cfg->shipgate_port);
 
     /* Print out the ship's information. */
     CONFIG_LOG("舰船名称: %s", cfg->name);
@@ -812,7 +812,7 @@ static void print_config(psocn_ship_t *cfg) {
         CONFIG_LOG("默认 /legit 文件数量: %d", cfg->limits_default);
     }
 
-    CONFIG_LOG("星门标识: 0x%08X", cfg->shipgate_flags);
+    CONFIG_LOG("船闸标识: 0x%08X", cfg->shipgate_flags);
     CONFIG_LOG("支持版本:");
 
     if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NODCNTE))

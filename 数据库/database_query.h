@@ -106,7 +106,7 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 /* 更新BB角色更衣室数据*/
 int db_update_char_dressflag(uint32_t gc, uint32_t flags);
 ///////////////////////////////////////////////////////
-/* 星门查询 */
+/* 船闸查询 */
 
 /* 获取玩家角色数据长度 */
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);

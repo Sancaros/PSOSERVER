@@ -91,7 +91,7 @@ static const char* log_server_name[] = {
 	"补丁服务器",
 	"认证服务器",
 	"舰船服务器",
-	"星门服务器"
+	"船闸服务器"
 };
 
 static const char* log_header[] = {
@@ -101,7 +101,7 @@ static const char* log_header[] = {
 	"舰仓",
 	"错误",
 	"大厅",
-	"星门",
+	"船闸",
 	"登陆",
 	"物品",
 	"数据",

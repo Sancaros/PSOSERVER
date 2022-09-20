@@ -819,7 +819,7 @@ void HookupHandler() {
     }
     else {
         PATCH_LOG(
-            "%s启动完成.", SGATE_SERVER_NAME);
+            "%s启动完成.", PATCH_SERVER_NAME);
         already_hooked_up = true;
     }
 #ifdef _WIN32 

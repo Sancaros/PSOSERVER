@@ -66,12 +66,12 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
 
     /* Make sure we have all of them... */
     if (!port || !ca) {
-        ERR_LOG("必须为星门设置端口和ca");
+        ERR_LOG("必须为船闸设置端口和ca");
         rv = -1;
         goto err;
     }
     else if (!addr && !ip) {
-        ERR_LOG("必须为星门设置ip或addr");
+        ERR_LOG("必须为船闸设置ip或addr");
         rv = -4;
         goto err;
     }
@@ -87,7 +87,7 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
             rv = inet_pton(PF_INET6, (char*)ip, ip6);
 
             if (rv < 1) {
-                ERR_LOG("星门设置的IP无效: %s",
+                ERR_LOG("船闸设置的IP无效: %s",
                     (char*)ip);
                 rv = -2;
                 goto err;
@@ -101,7 +101,7 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {
-        ERR_LOG("星门设置的端口无效: %s", (char*)port);
+        ERR_LOG("船闸设置的端口无效: %s", (char*)port);
         rv = -3;
         goto err;
     }

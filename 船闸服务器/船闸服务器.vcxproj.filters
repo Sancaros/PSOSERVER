@@ -40,7 +40,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="星门服务器.rc">
+    <ResourceCompile Include="船闸服务器.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>

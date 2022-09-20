@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 星门服务器
+    梦幻之星中国 船闸服务器
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify
@@ -603,7 +603,7 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
         }
     }
 
-    SGATE_LOG("%s: 舰船与星门完成对接", c->name);
+    SGATE_LOG("%s: 舰船与船闸完成对接", c->name);
     return 0;
 }
 
@@ -1686,7 +1686,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 }
 
-/* 星门保存角色数据. */
+/* 船闸保存角色数据. */
 static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint32_t gc, slot;
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
@@ -4233,7 +4233,7 @@ int handle_pkt(ship_t* c) {
     sz = ship_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    //TEST_LOG("星门处理端口 %d 接收数据 %d 字节", c->sock, sz);
+    //TEST_LOG("船闸处理端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {
