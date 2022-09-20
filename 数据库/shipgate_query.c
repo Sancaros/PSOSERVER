@@ -204,6 +204,7 @@ int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_BLUEBURST_GUILD);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }

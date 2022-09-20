@@ -111,9 +111,8 @@ int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t guild_priv_level, u
         "WHERE guildcard = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, 
         guild_id, guild_priv_level, 
         gc);
-    if (psocn_db_real_query(&conn, myquery))
-    {
-        SQLERR_LOG("无法更新角色 %s 公会数据!", CHARACTER_DATA);
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_BLUEBURST_GUILD);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
