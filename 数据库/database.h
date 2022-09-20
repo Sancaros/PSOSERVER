@@ -21,6 +21,8 @@
 #include "psoconfig.h"
 #include <mysql.h>
 
+/* TODO Ìí¼Ó mariadb Ö§³Ö */
+
 #pragma comment(lib , "libmariadb.lib")
 #pragma comment(lib , "mariadbclient.lib")
 
