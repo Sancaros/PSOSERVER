@@ -173,9 +173,6 @@ libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;database.lib;%(AdditionalDepende
     <ClInclude Include="ship.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="船闸服务器.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\数据库\数据库.vcxproj">
       <Project>{7dad8d18-3fae-479b-b1f5-ee097563cb9a}</Project>
     </ProjectReference>
@@ -185,6 +182,12 @@ libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;database.lib;%(AdditionalDepende
     <ProjectReference Include="..\游戏库\libpsocnconfig\psoconfig.vcxproj">
       <Project>{d216c3d9-12da-4863-bf95-d49538d3e29d}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\icon\sgate_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="船闸服务器.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

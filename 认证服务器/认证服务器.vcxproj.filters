@@ -52,7 +52,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\icon\login_icon.ico">
+    <Image Include="..\icon\auth_icon.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

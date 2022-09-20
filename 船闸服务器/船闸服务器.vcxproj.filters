@@ -40,6 +40,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\icon\sgate_icon.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="船闸服务器.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
