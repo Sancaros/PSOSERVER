@@ -1,4 +1,4 @@
-static const uint32_t BB_Server_table[18 + 1024] =
+static const uint32_t bb_server_table[18 + 1024] =
 {
 0x640cded2,
 0xca6cf7cf,

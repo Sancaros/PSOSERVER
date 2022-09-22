@@ -115,7 +115,7 @@ void CRYPT_BB_CreateKeys(CRYPT_SETUP* pcry, void* salt)
     memcpy(s, salt, sizeof(s));
     L_CRYPT_BB_InitKey(s);
 
-    bbtbl = (uint16_t*)&BB_Server_table[0];
+    bbtbl = (uint16_t*)&bb_server_table[0];
     pcryp = (uint16_t*)&pcry->keys[0];
 
     eax = 0;
@@ -153,7 +153,7 @@ void CRYPT_BB_CreateKeys(CRYPT_SETUP* pcry, void* salt)
 
     */
 
-    memcpy(&pcry->keys[18], &BB_Server_table[18], 4096);
+    memcpy(&pcry->keys[18], &bb_server_table[18], 4096);
 
     ecx = 0;
     //total key[0] length is min 0x412
