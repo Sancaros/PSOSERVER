@@ -1657,35 +1657,10 @@ static int process_bb_guild_create(ship_client_t* c, bb_guild_create_pkt* pkt) {
     if (len != sizeof(bb_guild_create_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
-    // Create team 创建一个公会
-  /*  if (client->Full_Char.guild_id == 0)
-        Create_Guild((uint16_t*)&client->decrypt_buf_code[0x0C], client->guildcard, ship);
-
-    uint16_t* g;
-    uint32_t n;
-
-    n = 0;
-
-    ship->encrypt_buf_code[0x00] = 0x09;
-    ship->encrypt_buf_code[0x01] = 0x00;
-
-    g = (uint16_t*)&ship->encrypt_buf_code[0x02];
-
-    memset(g, 0, 24);
-    while ((*guildname != 0x0000) && (n < 11))
-    {
-        if ((*guildname != 0x0009) && (*guildname != 0x000A))
-            *(g++) = *guildname;
-        else
-            *(g++) = 0x0020;
-        guildname++;
-        n++;
-    }
-    *(uint32_t*)&ship->encrypt_buf_code[0x1A] = guildcard;*/
-    //Compress_Ship_Packet_Data(SHIP_SERVER, ship, &ship->encrypt_buf_code[0x00], 0x1E);
+    pkt->guildcard = c->guildcard;
 
     print_payload((uint8_t*)pkt, len);
 
@@ -2106,15 +2081,30 @@ static int process_bb_guild_rank_list(ship_client_t* c, bb_guild_rank_list_pkt* 
     //return 0;
 }
 
+static int process_bb_guild_unk_1DEA(ship_client_t* c, bb_guild_unk_1DEA_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+
+    if (len != sizeof(bb_guild_unk_1DEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        //return -1;
+    }
+
+    print_payload((uint8_t*)pkt, len);
+
+    return 0;
+}
+
 static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
     bb_guild_pkt_pkt* gpkt = (bb_guild_pkt_pkt*)pkt;
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
 
-    DBG_LOG("舰仓：公会功能指令 0x%04X %s", type, c_cmd_name(type, 0));
+    DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
-    send_txt(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+    send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
         __(c, "\tC7请等待完成."));
 
     switch (type) {
@@ -2211,8 +2201,9 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 
     case BB_GUILD_RANKING_LIST:
         return process_bb_guild_rank_list(c, (bb_guild_rank_list_pkt*)pkt);
-        //print_payload(pkt, len);
-        //break;
+
+    case BB_GUILD_UNK_1DEA:
+        return process_bb_guild_unk_1DEA(c, (bb_guild_unk_1DEA_pkt*)pkt);
 
     default:
         UDONE_CPD(type,pkt);
@@ -2624,6 +2615,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_UNK_1AEA:
     case BB_GUILD_UNK_1BEA:
     case BB_GUILD_RANKING_LIST:
+    case BB_GUILD_UNK_1DEA:
         return bb_process_guild(c, pkt);
 
     default:

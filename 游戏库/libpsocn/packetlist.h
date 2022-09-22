@@ -234,6 +234,7 @@
 #define BB_GUILD_UNK_1AEA               0x1AEA
 #define BB_GUILD_UNK_1BEA               0x1BEA
 #define BB_GUILD_RANKING_LIST           0x1CEA
+#define BB_GUILD_UNK_1DEA               0x1DEA
 //////////////////////////////////////////////////
 #define BB_PARAM_SEND_TYPE              0x00EB  //来自1.0 BB服务端 单指令 以下都是组合指令
 #define BB_PARAM_HEADER_TYPE            0x01EB

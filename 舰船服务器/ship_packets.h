@@ -153,6 +153,10 @@ int send_lobby_join(ship_client_t *c, lobby_t *l);
 int send_pkt_dc(ship_client_t *c, const dc_pkt_hdr_t *pkt);
 int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt);
 
+/* 发送数据包至特定的大厅. */
+int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
+    int check);
+
 /* Send a packet to all clients in the lobby when a new player joins. */
 int send_lobby_add_player(lobby_t *l, ship_client_t *c);
 
@@ -315,5 +319,8 @@ int send_info_file(ship_client_t* c, ship_t* s, uint32_t entry);
 int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     uint16_t enemy_id, uint16_t enemy_id2,
     uint16_t damage, uint32_t flags);
+
+/* 用于 0x00EA BB公会 指令*/
+int send_bb_guild(ship_client_t* c, uint16_t cmd_code);
 
 #endif /* !SHIP_PACKETS_H */

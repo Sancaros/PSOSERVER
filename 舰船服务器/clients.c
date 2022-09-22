@@ -431,6 +431,10 @@ void client_destroy_connection(ship_client_t *c,
         free_safe(c->bb_opts);
     }
 
+    if (c->bb_guild) {
+        free_safe(c->bb_guild);
+    }
+
     if(c->next_maps) {
         free_safe(c->next_maps);
     }

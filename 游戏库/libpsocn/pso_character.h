@@ -260,15 +260,14 @@ typedef struct psocn_bb_key_config {
 
 /* BB公会数据结构 TODO*/
 typedef struct psocn_bb_guild {
-    uint32_t guildcard;                    // 02B8
-    uint32_t guild_id;                     // 02BC
-    uint8_t guild_info[8];                 // 公会信息
-    uint32_t guild_priv_level;             // 会员等级
-    //uint16_t reserved;                     // 02CA
-    uint16_t guild_name[0x000E];           // 02CC
-    uint32_t guild_rank;                   // 公会排行
-    uint8_t guild_flag[0x0800];            // 公会图标
-    uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤
+    uint32_t guildcard;                    // 02B8         4
+    uint32_t guild_id;                     // 02BC         4 
+    uint8_t guild_info[8];                 // 公会信息     8
+    uint32_t guild_priv_level;             // 会员等级     4
+    uint16_t guild_name[0x000E];           // 02CC         28
+    uint32_t guild_rank;                   // 公会排行     4
+    uint8_t guild_flag[0x0800];            // 公会图标     2048
+    uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
 } PACKED bb_guild_t;
 
 //   client_id  32       /        unk1  32       /          times[0]     /      times[1]

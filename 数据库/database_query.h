@@ -49,6 +49,9 @@
 
 /* 通用查询 */
 
+/* 获取角色所在舰船ID */
+uint16_t db_get_char_ship_id(uint32_t gc);
+
 /* 更新角色安全数据至数据库 */
 int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot);
 
@@ -107,6 +110,9 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 int db_update_char_dressflag(uint32_t gc, uint32_t flags);
 ///////////////////////////////////////////////////////
 /* 船闸查询 */
+
+/* 处理BB 公会创建 */
+int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc);
 
 /* 获取玩家角色数据长度 */
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);

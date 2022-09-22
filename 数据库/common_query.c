@@ -20,6 +20,45 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
+uint16_t db_get_char_ship_id(uint32_t gc) {
+    void* result;
+    char** row;
+    uint16_t ship_id;
+
+    /* Figure out where the user requested is */
+    sprintf(myquery, "SELECT ship_id FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
+        gc);
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("获取角色舰船ID发生错误: %s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("无法获取角色舰船ID数据库结果: %s",
+            psocn_db_error(&conn));
+        return -2;
+    }
+
+    if (!(row = psocn_db_result_fetch(result))) {
+        /* The user's not online, see if we should save it. */
+        psocn_db_result_free(result);
+        return -3;
+    }
+
+    /* Grab the data from the result */
+    errno = 0;
+    ship_id = (uint16_t)strtoul(row[0], NULL, 0);
+    psocn_db_result_free(result);
+
+    if (errno) {
+        ERR_LOG("无法分析获取角色舰船ID: %s", strerror(errno));
+        return -4;
+    }
+
+    return ship_id;
+}
+
 int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot) {
     return 0;
 }

@@ -647,6 +647,95 @@ static int handle_bb_mail(shipgate_conn_t* conn, simple_mail_pkt* pkt) {
     return rv;
 }
 
+static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
+    bb_guild_data_pkt* bb = (bb_guild_data_pkt*)pkt->pkt;
+    uint16_t type = LE16(bb->hdr.pkt_type);
+    uint16_t len = LE16(bb->hdr.pkt_len);
+    uint32_t i;
+    ship_t* s = conn->ship;
+    block_t* b;
+    ship_client_t* c;
+    int done = 0, rv = 0;
+    uint32_t gc = bb->guild_data.guildcard;
+
+    DBG_LOG("G->S 指令0x%04X %d %d", type, gc, pkt->guildcard);
+
+    for (i = 0; i < s->cfg->blocks && !done; ++i) {
+        if (s->blocks[i]) {
+            b = s->blocks[i];
+            pthread_rwlock_rdlock(&b->lock);
+
+            TAILQ_FOREACH(c, b->clients, qentry) {
+                pthread_mutex_lock(&c->mutex);
+
+                if (c->guildcard == gc) {
+
+                    DBG_LOG("G->S 指令0x%04X", type);
+
+                    switch (type)
+                    {
+                    case BB_GUILD_CREATE:
+                        c->bb_guild->guild_data = bb->guild_data;
+                        send_bb_guild(c, BB_GUILD_UNK_02EA);
+                        send_bb_guild(c, BB_GUILD_UNK_15EA);
+                        send_bb_guild(c, BB_GUILD_UNK_12EA);
+                        send_bb_guild(c, BB_GUILD_UNK_1DEA);
+                        print_payload((uint8_t*)bb, len);
+                        break;
+
+                    case BB_GUILD_UNK_02EA:
+                    case BB_GUILD_MEMBER_ADD:
+                    case BB_GUILD_UNK_04EA:
+                    case BB_GUILD_MEMBER_REMOVE:
+                    case BB_GUILD_UNK_06EA:
+                    case BB_GUILD_MEMBER_CHAT:
+                    case BB_GUILD_MEMBER_SETTING:
+                    case BB_GUILD_UNK_09EA:
+                    case BB_GUILD_UNK_0AEA:
+                    case BB_GUILD_UNK_0BEA:
+                    case BB_GUILD_UNK_0CEA:
+                    case BB_GUILD_UNK_0DEA:
+                    case BB_GUILD_UNK_0EEA:
+                    case BB_GUILD_MEMBER_FLAG_SETTING:
+                    case BB_GUILD_DISSOLVE_TEAM:
+                    case BB_GUILD_MEMBER_PROMOTE:
+                    case BB_GUILD_UNK_12EA:
+                    case BB_GUILD_LOBBY_SETTING:
+                    case BB_GUILD_MEMBER_TITLE:
+                    case BB_GUILD_UNK_15EA:
+                    case BB_GUILD_UNK_16EA:
+                    case BB_GUILD_UNK_17EA:
+                    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+                    case BB_GUILD_PRIVILEGE_LIST:
+                    case BB_GUILD_UNK_1AEA:
+                    case BB_GUILD_UNK_1BEA:
+                    case BB_GUILD_RANKING_LIST:
+                    case BB_GUILD_UNK_1DEA:
+                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
+                        break;
+
+                    default:
+                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
+                        break;
+                    }
+
+                    done = 1;
+                }
+
+                pthread_mutex_unlock(&c->mutex);
+
+                if (done) {
+                    break;
+                }
+            }
+
+            pthread_rwlock_unlock(&b->lock);
+        }
+    }
+
+    return 0;
+}
+
 static int handle_dc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt->pkt;
     uint8_t type = dc->pkt_type;
@@ -682,6 +771,7 @@ static int handle_pc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt->pkt;
     uint16_t type = LE16(bb->pkt_type);
+    uint16_t len = LE16(bb->pkt_len);
     uint32_t block = ntohl(pkt->block);
 
     switch (type) {
@@ -690,6 +780,46 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
 
     case GUILD_REPLY_TYPE:
         return handle_bb_greply(conn, (bb_guild_reply_pkt*)bb, block);
+
+        /* 0x00EA 公会功能 */
+    case BB_GUILD_CREATE:
+    case BB_GUILD_UNK_02EA:
+    case BB_GUILD_MEMBER_ADD:
+    case BB_GUILD_UNK_04EA:
+    case BB_GUILD_MEMBER_REMOVE:
+    case BB_GUILD_UNK_06EA:
+    case BB_GUILD_MEMBER_CHAT:
+    case BB_GUILD_MEMBER_SETTING:
+    case BB_GUILD_UNK_09EA:
+    case BB_GUILD_UNK_0AEA:
+    case BB_GUILD_UNK_0BEA:
+    case BB_GUILD_UNK_0CEA:
+    case BB_GUILD_UNK_0DEA:
+    case BB_GUILD_UNK_0EEA:
+    case BB_GUILD_MEMBER_FLAG_SETTING:
+    case BB_GUILD_DISSOLVE_TEAM:
+    case BB_GUILD_MEMBER_PROMOTE:
+    case BB_GUILD_UNK_12EA:
+    case BB_GUILD_LOBBY_SETTING:
+    case BB_GUILD_MEMBER_TITLE:
+    case BB_GUILD_UNK_15EA:
+    case BB_GUILD_UNK_16EA:
+    case BB_GUILD_UNK_17EA:
+    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+    case BB_GUILD_PRIVILEGE_LIST:
+    case BB_GUILD_UNK_1AEA:
+    case BB_GUILD_UNK_1BEA:
+    case BB_GUILD_RANKING_LIST:
+    case BB_GUILD_UNK_1DEA:
+        return handle_bb_guild(conn, pkt);
+
+    default:
+        /* Warn the ship that sent the packet, then drop it
+         警告发送包裹的船，然后丢弃它
+        */
+        print_payload((uint8_t*)bb, len);
+        //UNK_SPD(type, (uint8_t*)bb);
+        return 0;
     }
 
     return -2;
@@ -2569,7 +2699,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         case SHDR_TYPE_UBLOCKS:
             return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
-
+            
         case SHDR_TYPE_8000:
             return 0;
 

@@ -97,7 +97,7 @@ psocn_config_t* cfg;
 psocn_dbconfig_t* dbcfg;
 psocn_dbconn_t conn;
 
-/* GnuTLS data... */
+/* GnuTLS 加密数据交换... */
 gnutls_anon_server_credentials_t anoncred;
 //gnutls_certificate_credentials_t tls_cred;
 gnutls_priority_t tls_prio;
@@ -296,7 +296,7 @@ static int read_events_table() {
     long long row_count, i, row_count2, j;
     char query[256];
 
-    SGATE_LOG("从数据库中获取节日事件...");
+    SGATE_LOG("获取数据库节日事件");
 
     sprintf(query, "SELECT event_id, title, start_time, "
         "end_time, difficulties, versions, "
@@ -458,14 +458,14 @@ static int read_events_table() {
 static void open_db() {
     char query[256];
 
-    SGATE_LOG("初始化数据库...");
+    SGATE_LOG("初始化数据库连接");
 
     if (psocn_db_open(dbcfg, &conn)) {
         SQLERR_LOG("无法连接至数据库");
         exit(EXIT_FAILURE);
     }
 
-    SGATE_LOG("初始化在线舰船数据表 ..."/*, SERVER_SHIPS_ONLINE*/);
+    SGATE_LOG("初始化在线舰船数据表"/*, SERVER_SHIPS_ONLINE*/);
 
     sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_SHIPS_ONLINE);
     if (psocn_db_real_query(&conn, query)) {
@@ -473,7 +473,7 @@ static void open_db() {
         exit(EXIT_FAILURE);
     }
 
-    SGATE_LOG("初始化在线玩家数据表 ..."/*, SERVER_CLIENTS_ONLINE*/);
+    SGATE_LOG("初始化在线玩家数据表"/*, SERVER_CLIENTS_ONLINE*/);
 
     sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_ONLINE);
     if (psocn_db_real_query(&conn, query)) {
@@ -487,7 +487,7 @@ static void open_db() {
         exit(EXIT_FAILURE);
     }
 
-    SGATE_LOG("初始化临时玩家数据表 ..."/*, SERVER_CLIENTS_TRANSIENT*/);
+    SGATE_LOG("初始化临时玩家数据表"/*, SERVER_CLIENTS_TRANSIENT*/);
 
     sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_TRANSIENT);
     if (psocn_db_real_query(&conn, query)) {
@@ -1031,6 +1031,8 @@ restart:
         ERR_EXIT("无法创建 IPv4 或 IPv6 TLS 端口 tsock值 = %d tsock6值 = %d!", tsock, tsock6);
 
     init_scripts();
+
+    load_guild_default_flag("System\\guild\\默认公会标志.flag");
 
     /* Clean up the DB now that we've done everything else that might fail... */
     open_db();

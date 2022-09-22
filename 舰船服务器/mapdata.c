@@ -81,7 +81,7 @@ typedef struct battle_param_entry_files {
     //uint32_t check_sum;
 } battle_param_entry_files_t;
 
-const battle_param_entry_files_t Battle_Param_Entry_files[NUM_BPEntry][5] = {
+const battle_param_entry_files_t battle_params_emtry_files[NUM_BPEntry][5] = {
     {"BattleParamEntry_on.dat"    , 0, 0, 0, 374, 0xB8A2D950},
     {"BattleParamEntry_on2.dat"   , 0, 0, 0, 374, 0xB8A2D950},
     {"BattleParamEntry_lab_on.dat", 0, 1, 0, 374, 0x4D4059CF},
@@ -1313,9 +1313,9 @@ int bb_read_params(psocn_ship_t *cfg) {
         //strcat(&buf[i][0], BattleParamEntry_files[i]);
         //printf("%s  %d %d\n", &buf[i][0], j, k);
         rv += read_bb_param_file(battle_params[j][k], path,
-            Battle_Param_Entry_files[i][0].file/*,
-            Battle_Param_Entry_files[i][0].check_sum.entry_num,
-            Battle_Param_Entry_files[i][0].check_sum.sum*/);
+            battle_params_emtry_files[i][0].file/*,
+            battle_params_emtry_files[i][0].check_sum.entry_num,
+            battle_params_emtry_files[i][0].check_sum.sum*/);
         if (j < 1 && i > 2)
             j++;
         if (k < 2)

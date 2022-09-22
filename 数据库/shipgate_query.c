@@ -313,3 +313,75 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
     return 0;
 }
+
+int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc) {
+    void* result;
+    char** row;
+    bb_guild_t* g_data;
+    uint8_t create_res;
+    int32_t guild_exists = 0, guild_id;
+    char guild_name_text[24];
+
+    g_data = (bb_guild_t*)malloc(sizeof(bb_guild_t));
+
+    if (!g_data) {
+        ERR_LOG("无法分配公会数据的内存空间");
+        ERR_LOG("%s", strerror(errno));
+        return -1;
+    }
+
+    memcpy(g_data->guild_name, guild_name, sizeof(g_data->guild_name));
+    memcpy(g_data->guild_flag, default_guild_flag, sizeof(g_data->guild_flag));
+
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
+
+    sprintf_s(myquery, _countof(myquery), "SELECT * from %s WHERE guild_name_text = '%s'",
+        CLIENTS_BLUEBURST_GUILD, guild_name_text);
+    if (!psocn_db_real_query(&conn, myquery))
+    {
+        result = psocn_db_result_store(&conn);
+        guild_exists = (int32_t)psocn_db_result_rows(result);
+        psocn_db_result_free(result);
+    }
+    else
+        create_res = 1;
+
+    if (!guild_exists)
+    {
+        // It doesn't... but it will now. :)
+        sprintf_s(myquery, _countof(myquery), "INSERT INTO %s "
+            "(guildcard, guild_name_text, guild_name, guild_flag) "
+            "VALUES ('%" PRIu32 "', '%s', '",
+            CLIENTS_BLUEBURST_GUILD, 
+            gc, guild_name_text);
+
+        psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_name,
+            sizeof(g_data->guild_name));
+
+        strcat(myquery, "', '");
+
+        psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_flag,
+            sizeof(g_data->guild_flag));
+
+        strcat(myquery, "')");
+
+        if (!psocn_db_real_query(&conn, myquery))
+        {
+            guild_id = (uint32_t)psocn_db_insert_id(&conn);
+            sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '%u', guild_priv_level = '%u' "
+                "WHERE guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, guild_id, 0x40, gc);
+            if (psocn_db_real_query(&conn, myquery))
+                create_res = 1;
+            else
+                create_res = 0;
+        }
+        else
+            create_res = 1;
+    }
+    else
+        create_res = 2;
+
+    free_safe(g_data);
+
+    return create_res;
+}

@@ -18,7 +18,7 @@
 #include "database.h"
 #include "packets_bb.h"
 
-/* Database connection */
+/* 数据库连接 */
 extern psocn_dbconn_t conn;
 
 int db_upload_temp_data(void* data, uint32_t size) {

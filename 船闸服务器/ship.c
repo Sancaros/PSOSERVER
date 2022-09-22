@@ -62,10 +62,10 @@
 #define VERSION_BB              4
 #define VERSION_XBOX            5
 
-/* Database connection */
+/* 数据库连接 */
 extern psocn_dbconn_t conn;
 
-/* GnuTLS data... */
+/* GnuTLS 加密数据交换... */
 extern gnutls_anon_server_credentials_t anoncred;
 extern gnutls_priority_t tls_prio;
 
@@ -78,6 +78,10 @@ extern uint32_t script_count;
 extern ship_script_t* scripts;
 
 static uint8_t recvbuf[65536];
+
+/* 公会相关 */
+static uint8_t default_guild_flag[2048];
+static uint8_t default_guild_flag_slashes[4098];
 
 /* Find a ship by its id */
 static ship_t* find_ship(uint16_t id) {
@@ -449,7 +453,7 @@ void destroy_connection(ship_t* c)
     free_safe(c);
 }
 
-/* Handle a ship's login response. */
+/* 处理 ship's login response. */
 static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     char query[512];
     ship_t* j;
@@ -607,7 +611,7 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     return 0;
 }
 
-/* Handle a ship's update counters packet. */
+/* 处理 ship's update counters packet. */
 static int handle_count(ship_t* c, shipgate_cnt_pkt* pkt) {
     char query[256];
     ship_t* j;
@@ -792,9 +796,6 @@ static int save_mail(uint32_t gc, uint32_t from, void* pkt, int version) {
 static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->dcmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    char query[256];
-    void* result;
-    char** row;
     uint16_t ship_id;
     ship_t* s;
 
@@ -802,36 +803,10 @@ static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
         return 0;
 
-    /* Figure out where the user requested is */
-    sprintf(query, "SELECT ship_id FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
-        guildcard);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("DC Mail 发生错误: %s", psocn_db_error(&conn));
-        return 0;
-    }
+    ship_id = db_get_char_ship_id(guildcard);
 
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("无法获取 DC mail 数据库结果: %s",
-            psocn_db_error(&conn));
-        return 0;
-    }
-
-    if (!(row = psocn_db_result_fetch(result))) {
-        /* The user's not online, see if we should save it. */
-        psocn_db_result_free(result);
+    if (ship_id < 0)
         return save_mail(guildcard, sender, pkt, VERSION_DC);
-    }
-
-    /* Grab the data from the result */
-    errno = 0;
-    ship_id = (uint16_t)strtoul(row[0], NULL, 0);
-    psocn_db_result_free(result);
-
-    if (errno) {
-        ERR_LOG("无法分析 dc mail: %s", strerror(errno));
-        return 0;
-    }
 
     /* If we've got this far, we should have the ship we need to send to */
     s = find_ship(ship_id);
@@ -840,7 +815,7 @@ static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
         return 0;
     }
 
-    /* Send it on, and finish up... */
+    /* 完成数据包设置,发送至舰船... */
     forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
     return 0;
 }
@@ -848,9 +823,6 @@ static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
 static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->pcmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    char query[256];
-    void* result;
-    char** row;
     uint16_t ship_id;
     ship_t* s;
 
@@ -858,36 +830,10 @@ static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
         return 0;
 
-    /* Figure out where the user requested is */
-    sprintf(query, "SELECT ship_id FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
-        guildcard);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("PC Mail 发生错误: %s", psocn_db_error(&conn));
-        return 0;
-    }
+    ship_id = db_get_char_ship_id(guildcard);
 
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("无法获取 PC mail 数据库结果: %s",
-            psocn_db_error(&conn));
-        return 0;
-    }
-
-    if (!(row = psocn_db_result_fetch(result))) {
-        /* The user's not online, see if we should save it. */
-        psocn_db_result_free(result);
+    if (ship_id < 0)
         return save_mail(guildcard, sender, pkt, VERSION_PC);
-    }
-
-    /* Grab the data from the result */
-    errno = 0;
-    ship_id = (uint16_t)strtoul(row[0], NULL, 0);
-    psocn_db_result_free(result);
-
-    if (errno) {
-        ERR_LOG("无法分析 pc mail: %s", strerror(errno));
-        return 0;
-    }
 
     /* If we've got this far, we should have the ship we need to send to */
     s = find_ship(ship_id);
@@ -896,7 +842,7 @@ static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
         return 0;
     }
 
-    /* Send it on, and finish up... */
+    /* 完成数据包设置,发送至舰船... */
     forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
     return 0;
 }
@@ -904,9 +850,6 @@ static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
 static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->bbmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    char query[256];
-    void* result;
-    char** row;
     uint16_t ship_id;
     ship_t* s;
 
@@ -914,36 +857,10 @@ static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
         return 0;
 
-    /* Figure out where the user requested is */
-    sprintf(query, "SELECT ship_id FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
-        guildcard);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("BB Mail 发生错误: %s", psocn_db_error(&conn));
-        return 0;
-    }
+    ship_id = db_get_char_ship_id(guildcard);
 
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("无法获取 BB mail 数据库结果: %s",
-            psocn_db_error(&conn));
-        return 0;
-    }
-
-    if (!(row = psocn_db_result_fetch(result))) {
-        /* The user's not online, see if we should save it. */
-        psocn_db_result_free(result);
+    if (ship_id < 0)
         return save_mail(guildcard, sender, pkt, VERSION_BB);
-    }
-
-    /* Grab the data from the result */
-    errno = 0;
-    ship_id = (uint16_t)strtoul(row[0], NULL, 0);
-    psocn_db_result_free(result);
-
-    if (errno) {
-        ERR_LOG("无法分析 bb mail: %s", strerror(errno));
-        return 0;
-    }
 
     /* If we've got this far, we should have the ship we need to send to */
     s = find_ship(ship_id);
@@ -952,7 +869,7 @@ static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
         return 0;
     }
 
-    /* Send it on, and finish up... */
+    /* 完成数据包设置,发送至舰船... */
     forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
     return 0;
 }
@@ -1334,7 +1251,7 @@ out:
     return 0;
 }
 
-/* Handle a Blue Burst user's request to add a guildcard to their list */
+/* 处理 Blue Burst user's request to add a guildcard to their list */
 static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guildcard_add_pkt* gc = (bb_guildcard_add_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
@@ -1379,7 +1296,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* Handle a Blue Burst user's request to delete a guildcard from their list */
+/* 处理 Blue Burst user's request to delete a guildcard from their list */
 static int handle_bb_gcdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guildcard_del_pkt* gc = (bb_guildcard_del_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
@@ -1409,7 +1326,7 @@ static int handle_bb_gcdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* Handle a Blue Burst user's request to sort guildcards */
+/* 处理 Blue Burst user's request to sort guildcards */
 static int handle_bb_gcsort(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guildcard_sort_pkt* gc = (bb_guildcard_sort_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
@@ -1440,7 +1357,7 @@ static int handle_bb_gcsort(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* Handle a Blue Burst user's request to add a user to their blacklist */
+/* 处理 Blue Burst user's request to add a user to their blacklist */
 static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_blacklist_add_pkt* gc = (bb_blacklist_add_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
@@ -1485,7 +1402,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* Handle a Blue Burst user's request to delete a user from their blacklist */
+/* 处理 Blue Burst user's request to delete a user from their blacklist */
 static int handle_bb_blacklistdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_blacklist_del_pkt* gc = (bb_blacklist_del_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
@@ -1515,7 +1432,7 @@ static int handle_bb_blacklistdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* Handle a Blue Burst set guildcard comment packet */
+/* 处理 Blue Burst set guildcard comment packet */
 static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guildcard_comment_pkt* gc = (bb_guildcard_comment_pkt*)pkt->pkt;
     uint16_t pkt_len = LE16(gc->hdr.pkt_len);
@@ -1556,19 +1473,804 @@ static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
+/* 处理 Blue Burst 公会 创建 */
+static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_create_pkt* g_data = (bb_guild_create_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t ship_id;
+    ship_t* s;
+    char guild_name[24];
+    uint32_t create_res;
+    bb_guild_data_pkt* guild;
+
+    if (len != sizeof(bb_guild_create_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    if (g_data->guildcard != sender) {
+        ERR_LOG("无效 BB %s 数据包 (%d) 公会创建者GC不一致(%d:%d)", 
+            c_cmd_name(type, 0), len, g_data->guildcard, sender);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
+
+    DBG_LOG("%s %d %d", guild_name, g_data->guildcard, sender);
+
+    create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard);
+
+    switch (create_res)
+    {
+    case 0x00:
+        guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
+
+        if (!guild) {
+            ERR_LOG("分配公会数据内存错误.");
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            create_res = 1;
+            return 0;
+        }
+
+        guild->guild_data = db_get_bb_char_guild(sender);
+
+        guild->hdr.pkt_type = g_data->hdr.pkt_type;
+        guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
+        guild->hdr.flags = g_data->hdr.flags;
+
+        ship_id = db_get_char_ship_id(sender);
+
+        if (ship_id < 0) {
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            return 0;
+        }
+
+        /* If we've got this far, we should have the ship we need to send to */
+        s = find_ship(ship_id);
+        if (!s) {
+            ERR_LOG("无效舰船?!?!?");
+            return 0;
+        }
+
+        forward_bb(s, (bb_pkt_hdr_t*)guild, c->key_idx, 0, 0);
+        DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
+        free_safe(guild);
+        break;
+
+    case 0x01:
+        ERR_LOG("创建GC %d 公会数据失败, 数据库错误.", sender);
+        break;
+
+    case 0x02:
+        ERR_LOG("创建GC %d 公会数据失败, %s 公会已存在.", sender, guild_name);
+        break;
+
+    case 0x03:
+        ERR_LOG("创建GC %d 公会数据失败,该 GC 已在公会中.", sender);
+        break;
+    }
+
+    /* 完成数据包设置,发送至舰船... */
+    return create_res;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_02EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_02EA_pkt* g_data = (bb_guild_unk_02EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_02EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 成员增加 */
+static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_add_pkt* g_data = (bb_guild_member_add_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_add_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_04EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_04EA_pkt* g_data = (bb_guild_unk_04EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_04EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 成员移除 */
+static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_remove_pkt* g_data = (bb_guild_member_remove_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_remove_pkt) + 0x0004) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_06EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_06EA_pkt* g_data = (bb_guild_unk_06EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_06EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 聊天 */
+static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_chat_pkt* g_data = (bb_guild_member_chat_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t* n;
+
+    if (len != sizeof(bb_guild_member_chat_pkt) + 0x004C) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    n = (uint16_t*)&pkt[0x2C];
+    while (*n != 0x0000)
+    {
+        if ((*n == 0x0009) || (*n == 0x000A))
+            *n = 0x0020;
+        n++;
+    }
+
+    //uint32_t size;
+
+    //ship->encrypt_buf_code[0x00] = 0x09;
+    //ship->encrypt_buf_code[0x01] = 0x04;
+    //*(uint32_t*)&ship->encrypt_buf_code[0x02] = teamid;
+    //while (chatsize % 8)
+    //    ship->encrypt_buf_code[6 + (chatsize++)] = 0x00;
+    //*text = chatsize;
+    //memcpy(&ship->encrypt_buf_code[0x06], text, chatsize);
+    //size = chatsize + 6;
+    //Compress_Ship_Packet_Data(SHIP_SERVER, ship, &ship->encrypt_buf_code[0x00], size);
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 成员设置 */
+static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_setting_pkt* g_data = (bb_guild_member_setting_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_setting_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_09EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_09EA_pkt* g_data = (bb_guild_unk_09EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_09EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_0AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_0AEA_pkt* g_data = (bb_guild_unk_0AEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_0AEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_0BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_0BEA_pkt* g_data = (bb_guild_unk_0BEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_0BEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_0CEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_0CEA_pkt* g_data = (bb_guild_unk_0CEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_0CEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_0DEA_pkt* g_data = (bb_guild_unk_0DEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_0DEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_0EEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_0EEA_pkt* g_data = (bb_guild_unk_0EEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_0EEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 成员图标设置 */
+static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_flag_setting_pkt* g_data = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_flag_setting_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 解散公会 */
+static int handle_bb_guild_dissolve_team(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_dissolve_team_pkt* g_data = (bb_guild_dissolve_team_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_dissolve_team_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 成员权限提升 */
+static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_promote_pkt* g_data = (bb_guild_member_promote_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_promote_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_12EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_12EA_pkt* g_data = (bb_guild_unk_12EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_12EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 大厅设置 */
+static int handle_bb_guild_lobby_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_lobby_setting_pkt* g_data = (bb_guild_lobby_setting_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_lobby_setting_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 人物抬头显示 */
+static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_member_tittle_pkt* g_data = (bb_guild_member_tittle_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_member_tittle_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_15EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_15EA_pkt* g_data = (bb_guild_unk_15EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_15EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_16EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_16EA_pkt* g_data = (bb_guild_unk_16EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_16EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_17EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_17EA_pkt* g_data = (bb_guild_unk_17EA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_17EA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 点数 */
+static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_buy_privilege_and_point_info_pkt* g_data = (bb_guild_buy_privilege_and_point_info_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 权限列表 */
+static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_privilege_list_pkt* g_data = (bb_guild_privilege_list_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_privilege_list_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_1AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_1AEA_pkt* g_data = (bb_guild_unk_1AEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_1AEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_1BEA_pkt* g_data = (bb_guild_unk_1BEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_1BEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会 排行榜 */
+static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_rank_list_pkt* g_data = (bb_guild_rank_list_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_rank_list_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+
+    return 0;
+}
+
+/* 处理 Blue Burst 公会  */
+static int handle_bb_guild_unk_1DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_unk_1DEA_pkt* g_data = (bb_guild_unk_1DEA_pkt*)pkt->pkt;
+    uint16_t type = LE16(g_data->hdr.pkt_type);
+    uint16_t len = LE16(g_data->hdr.pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
+
+    if (len != sizeof(bb_guild_unk_1DEA_pkt)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    print_payload((uint8_t*)g_data, len);
+    return 0;
+}
+
 /* 处理 Blue Burst 公会功能 */
 static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt->pkt;
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
+    uint32_t sender = ntohl(pkt->guildcard);
 
-    /* Warn the ship that sent the packet, then drop it */
-    send_error(c, SHDR_TYPE_PC, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
-        (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len));
+    DBG_LOG("舰闸：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+
+    ///* Warn the ship that sent the packet, then drop it */
+    //send_error(c, SHDR_TYPE_PC, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
+    //    (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len));
+
+    switch (type) {
+    case BB_GUILD_CREATE:
+        return handle_bb_guild_create(c, pkt);
+
+    case BB_GUILD_UNK_02EA:
+        return handle_bb_guild_unk_02EA(c, pkt);
+
+    case BB_GUILD_MEMBER_ADD:
+        return handle_bb_guild_member_add(c, pkt);
+
+    case BB_GUILD_UNK_04EA:
+        return handle_bb_guild_unk_04EA(c, pkt);
+
+    case BB_GUILD_MEMBER_REMOVE:
+        return handle_bb_guild_member_remove(c, pkt);
+
+    case BB_GUILD_UNK_06EA:
+        return handle_bb_guild_06EA(c, pkt);
+
+    case BB_GUILD_MEMBER_CHAT:
+        return handle_bb_guild_member_chat(c, pkt);
+
+    case BB_GUILD_MEMBER_SETTING:
+        return handle_bb_guild_member_setting(c, pkt);
+
+    case BB_GUILD_UNK_09EA:
+        return handle_bb_guild_unk_09EA(c, pkt);
+
+    case BB_GUILD_UNK_0AEA:
+        return handle_bb_guild_unk_0AEA(c, pkt);
+
+    case BB_GUILD_UNK_0BEA:
+        return handle_bb_guild_unk_0BEA(c, pkt);
+
+    case BB_GUILD_UNK_0CEA:
+        return handle_bb_guild_unk_0CEA(c, pkt);
+
+    case BB_GUILD_UNK_0DEA:
+        return handle_bb_guild_unk_0DEA(c, pkt);
+
+    case BB_GUILD_UNK_0EEA:
+        return handle_bb_guild_unk_0EEA(c, pkt);
+
+    case BB_GUILD_MEMBER_FLAG_SETTING:
+        return handle_bb_guild_member_flag_setting(c, pkt);
+
+    case BB_GUILD_DISSOLVE_TEAM:
+        return handle_bb_guild_dissolve_team(c, pkt);
+
+    case BB_GUILD_MEMBER_PROMOTE:
+        return handle_bb_guild_member_promote(c, pkt);
+
+    case BB_GUILD_UNK_12EA:
+        return handle_bb_guild_unk_12EA(c, pkt);
+
+    case BB_GUILD_LOBBY_SETTING:
+        return handle_bb_guild_lobby_setting(c, pkt);
+
+    case BB_GUILD_MEMBER_TITLE:
+        return handle_bb_guild_member_tittle(c, pkt);
+
+    case BB_GUILD_UNK_15EA:
+        return handle_bb_guild_unk_15EA(c, pkt);
+
+    case BB_GUILD_UNK_16EA:
+        return handle_bb_guild_unk_16EA(c, pkt);
+
+    case BB_GUILD_UNK_17EA:
+        return handle_bb_guild_unk_17EA(c, pkt);
+
+    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+        return handle_bb_guild_buy_privilege_and_point_info(c, pkt);
+
+    case BB_GUILD_PRIVILEGE_LIST:
+        return handle_bb_guild_privilege_list(c, pkt);
+
+    case BB_GUILD_UNK_1AEA:
+        return handle_bb_guild_unk_1AEA(c, pkt);
+
+    case BB_GUILD_UNK_1BEA:
+        return handle_bb_guild_unk_1BEA(c, pkt);
+
+    case BB_GUILD_RANKING_LIST:
+        return handle_bb_guild_rank_list(c, pkt);
+
+    case BB_GUILD_UNK_1DEA:
+        return handle_bb_guild_unk_1DEA(c, pkt);
+
+    default:
+        UDONE_CPD(type, pkt);
+        break;
+    }
+
+
     return 0;
 }
 
-/* Handle a ship's forwarded Dreamcast packet. */
+/* 处理 ship's forwarded Dreamcast packet. */
 static int handle_dreamcast(ship_t* c, shipgate_fw_9_pkt* pkt) {
     dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt->pkt;
     uint8_t type = hdr->pkt_type;
@@ -1592,7 +2294,7 @@ static int handle_dreamcast(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 }
 
-/* Handle a ship's forwarded PC packet. */
+/* 处理 ship's forwarded PC packet. */
 static int handle_pc(ship_t* c, shipgate_fw_9_pkt* pkt) {
     dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt->pkt;
     uint8_t type = hdr->pkt_type;
@@ -1673,6 +2375,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_UNK_1AEA:
     case BB_GUILD_UNK_1BEA:
     case BB_GUILD_RANKING_LIST:
+    case BB_GUILD_UNK_1DEA:
         return handle_bb_guild(c, pkt);
 
     default:
@@ -1926,7 +2629,7 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         (uint8_t*)&pkt->guildcard, 8);
 }
 
-/* Handle a ship's character data request packet. */
+/* 处理 ship's character data request packet. */
 static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t gc, slot;
     uint8_t *data;
@@ -1991,7 +2694,7 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
     return rv;
 }
 
-/* Handle a client login request coming from a ship. */
+/* 处理 client login request coming from a ship. */
 static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     uint32_t gc, block;
     char query[256];
@@ -2125,7 +2828,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     return send_usrloginreply(c, gc, block, 1, priv);
 }
 
-/* Handle a ban request coming from a ship. */
+/* 处理 ban request coming from a ship. */
 static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     uint32_t req, target, until;
     char query[1024];
@@ -3467,7 +4170,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
     return 0;
 }
 
-/* Handle a token-based user login request. */
+/* 处理 token-based user login request. */
 static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     uint32_t gc, block;
     char query[512];
@@ -4379,3 +5082,34 @@ int ship_register_lua(lua_State* l) {
 }
 
 #endif
+
+int load_guild_default_flag(char* file) {
+    FILE* fp;
+    errno_t err;
+    long len = 0;
+
+    err = fopen_s(&fp, file, "rb");
+    if (err)
+    {
+        ERR_LOG("文件 %s 缺失!", file);
+        return -1;
+    }
+
+    fseek(fp, 0, SEEK_END);
+    len = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    if (!fread(default_guild_flag, 1, sizeof(default_guild_flag), fp))
+    {
+        ERR_LOG("读取 %s 失败!", file);
+        return -1;
+    }
+
+    fclose(fp);
+
+    psocn_db_escape_str(&conn, &default_guild_flag_slashes[0], &default_guild_flag[0], sizeof(default_guild_flag));
+
+    SGATE_LOG("读取初始角色公会图标文件 共 %d 字节.", len);
+
+    return 0;
+}

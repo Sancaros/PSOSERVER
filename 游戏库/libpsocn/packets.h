@@ -1898,15 +1898,25 @@ typedef struct bb_guild_pkt {
 } PACKED bb_guild_pkt_pkt;
 
 //////////////////////////////////////////////////////////////////////////
-/* Blue Burst packet for Guild */
+/* Blue Burst 公会创建数据 */
+//               0x0020 + 8(数据头)     /0x0009 0x0042/  guild_name
+//( 00000000 )   28 00 EA 01 00 00 00 00  09 00 42 00 31 00 32 00    (.......     .B.1.2. //16
+// 
+//( 00000010 )   33 00 00 00 64 01 00 00  C0 54 25 23 3C 9F 81 00    3...d....T%#<...     //32
+//                          /
+//( 00000020 )   78 E3 31 20 C4 9C 98 00                             x.1 ....             //40
+//( 00000000 )   28 00 EA 01 00 00 00 00  09 00 42 00 33 00 33 00    (.......     .B.3.3.
+//( 00000010 )   33 00 33 00 33 00 33 00  33 00 33 00 33 00 33 00    3.3.3.3.3.3.3.3.
+//( 00000020 )   33 00 33 00 00 00 98 00                             3.3.....
+typedef struct bb_guild_data {
+    bb_pkt_hdr_t hdr;
+    bb_guild_t guild_data;
+} PACKED bb_guild_data_pkt;
 
 typedef struct bb_guild_create {
     bb_pkt_hdr_t hdr;
-    //uint8_t type;
-    //uint8_t size;
-    //char guild_name[24];
-    //uint32_t guildcard;
-    uint8_t data[];
+    uint16_t guild_name[0x000E];
+    uint32_t guildcard;
 } PACKED bb_guild_create_pkt;
 
 typedef struct bb_guild_unk_02EA {
@@ -1971,7 +1981,14 @@ typedef struct bb_guild_unk_0DEA {
 
 typedef struct bb_guild_unk_0EEA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t guildcard;                    // 02B8         4
+    uint32_t guild_id;                     // 02BC
+    uint8_t guild_info[8];                 // 公会信息     8
+    uint16_t guild_name[0x000E];           // 02CC
+    uint16_t unk_flag;
+    uint8_t guild_flag[0x0800];            // 公会图标
+    uint8_t unk2;
+    uint8_t unk3;
 } PACKED bb_guild_unk_0EEA_pkt;
 
 typedef struct bb_guild_member_flag_setting {
@@ -1991,7 +2008,13 @@ typedef struct bb_guild_member_promote {
 
 typedef struct bb_guild_unk_12EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t unk;//TODO ??
+    uint32_t guildcard;
+    uint32_t guild_id;
+    uint8_t guild_info[8];
+    uint32_t guild_priv_level;
+    uint16_t guild_name[0x000E];
+    uint32_t guild_rank;
 } PACKED bb_guild_unk_12EA_pkt;
 
 typedef struct bb_guild_lobby_setting {
@@ -2006,7 +2029,17 @@ typedef struct bb_guild_member_tittle {
 
 typedef struct bb_guild_unk_15EA {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t guildcard;
+    uint32_t guild_id;
+    uint8_t guild_info[8];
+    uint32_t guild_priv_level;
+    uint16_t guild_name[0x000E];
+    uint32_t guild_rank;
+    uint32_t guildcard2;
+    uint32_t client_id;
+    uint16_t char_name[12];
+    uint8_t guild_flag[0x0800];
+    uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
 } PACKED bb_guild_unk_15EA_pkt;
 
 typedef struct bb_guild_unk_16EA {
@@ -2043,6 +2076,11 @@ typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_rank_list_pkt;
+
+typedef struct bb_guild_unk_1DEA {
+    bb_pkt_hdr_t hdr;
+    uint8_t data[];
+} PACKED bb_guild_unk_1DEA_pkt;
 
 //////////////////////////////////////////////////////////////////////////
 /* TODO 完成挑战模式BLOCK DF指令*/
