@@ -5220,7 +5220,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     size_t in, out;
     char* inptr;
     char* outptr;
-    char tm[514];
+    char tm[514] = { 0 };
 
     /* Verify we got the sendbuf. */
     if (!sendbuf) {

@@ -1678,7 +1678,8 @@ static int process_bb_guild_unk_02EA(ship_client_t* c, bb_guild_unk_02EA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt* pkt) {
@@ -1693,7 +1694,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_04EA(ship_client_t* c, bb_guild_unk_04EA_pkt* pkt) {
@@ -1707,7 +1708,7 @@ static int process_bb_guild_unk_04EA(ship_client_t* c, bb_guild_unk_04EA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remove_pkt* pkt) {
@@ -1722,7 +1723,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
@@ -1736,7 +1737,7 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
@@ -1772,7 +1773,7 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_setting_pkt* pkt) {
@@ -1786,7 +1787,7 @@ static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_set
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_09EA(ship_client_t* c, bb_guild_unk_09EA_pkt* pkt) {
@@ -1801,7 +1802,7 @@ static int process_bb_guild_unk_09EA(ship_client_t* c, bb_guild_unk_09EA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_0AEA(ship_client_t* c, bb_guild_unk_0AEA_pkt* pkt) {
@@ -1815,7 +1816,7 @@ static int process_bb_guild_unk_0AEA(ship_client_t* c, bb_guild_unk_0AEA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_0BEA(ship_client_t* c, bb_guild_unk_0BEA_pkt* pkt) {
@@ -1830,7 +1831,7 @@ static int process_bb_guild_unk_0BEA(ship_client_t* c, bb_guild_unk_0BEA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pkt) {
@@ -1844,7 +1845,7 @@ static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_0DEA(ship_client_t* c, bb_guild_unk_0DEA_pkt* pkt) {
@@ -1859,7 +1860,7 @@ static int process_bb_guild_unk_0DEA(ship_client_t* c, bb_guild_unk_0DEA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_unk_0EEA_pkt* pkt) {
@@ -1873,7 +1874,7 @@ static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_unk_0EEA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_member_flag_setting_pkt* pkt) {
@@ -1888,7 +1889,7 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_dissolve_team(ship_client_t* c, bb_guild_dissolve_team_pkt* pkt) {
@@ -1902,7 +1903,7 @@ static int process_bb_guild_dissolve_team(ship_client_t* c, bb_guild_dissolve_te
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_promote_pkt* pkt) {
@@ -1917,7 +1918,7 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_12EA(ship_client_t* c, bb_guild_unk_12EA_pkt* pkt) {
@@ -1931,7 +1932,7 @@ static int process_bb_guild_unk_12EA(ship_client_t* c, bb_guild_unk_12EA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setting_pkt* pkt) {
@@ -1946,7 +1947,7 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_tittle_pkt* pkt) {
@@ -1960,7 +1961,7 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_15EA(ship_client_t* c, bb_guild_unk_15EA_pkt* pkt) {
@@ -1975,7 +1976,7 @@ static int process_bb_guild_unk_15EA(ship_client_t* c, bb_guild_unk_15EA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pkt) {
@@ -1989,7 +1990,7 @@ static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_17EA(ship_client_t* c, bb_guild_unk_17EA_pkt* pkt) {
@@ -2004,7 +2005,7 @@ static int process_bb_guild_unk_17EA(ship_client_t* c, bb_guild_unk_17EA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_guild_buy_privilege_and_point_info_pkt* pkt) {
@@ -2018,7 +2019,7 @@ static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_gu
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_list_pkt* pkt) {
@@ -2033,7 +2034,7 @@ static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_1AEA(ship_client_t* c, bb_guild_unk_1AEA_pkt* pkt) {
@@ -2047,7 +2048,7 @@ static int process_bb_guild_unk_1AEA(ship_client_t* c, bb_guild_unk_1AEA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unk_1BEA_pkt* pkt) {
@@ -2062,7 +2063,7 @@ static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unk_1BEA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_rank_list(ship_client_t* c, bb_guild_rank_list_pkt* pkt) {
@@ -2093,7 +2094,7 @@ static int process_bb_guild_unk_1DEA(ship_client_t* c, bb_guild_unk_1DEA_pkt* pk
 
     print_payload((uint8_t*)pkt, len);
 
-    return 0;
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
@@ -2104,8 +2105,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 
     DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
-    //send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-    //    __(c, "\tC7请等待完成."));
+    send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+        __(c, "\tC7请等待完成."));
 
     switch (type) {
     case BB_GUILD_CREATE:
