@@ -2039,7 +2039,7 @@ typedef struct bb_guild_unk_15EA {
     uint32_t client_id;
     uint16_t char_name[12];
     uint8_t guild_flag[0x0800];
-    uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
+    uint32_t guild_rewards[2];
 } PACKED bb_guild_unk_15EA_pkt;
 
 typedef struct bb_guild_unk_16EA {
@@ -2054,7 +2054,16 @@ typedef struct bb_guild_unk_17EA {
 
 typedef struct bb_guild_buy_privilege_and_point_info {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    //uint32_t guildcard;
+    //uint32_t guild_id;
+    //uint8_t guild_info[8];
+    //uint32_t guild_priv_level;
+    //uint32_t guild_rank;
+    //uint32_t guildcard2;
+    //uint32_t client_id;
+    //uint16_t char_name[12];
+    //uint32_t guild_rewards[2];
+    uint8_t data[0x4C];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
 typedef struct bb_guild_privilege_list {

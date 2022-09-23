@@ -130,8 +130,8 @@ bb_guild_t db_get_bb_char_guild(uint32_t gc) {
     memset(&guild, 0, sizeof(bb_guild_t));
 
     /* 查询数据表 */
-    sprintf(myquery, "SELECT guild_id, guild_priv_level  FROM %s WHERE "
-        "guildcard='%" PRIu32 "'", AUTH_DATA_ACCOUNT, gc);
+    sprintf(myquery, "SELECT guild_id, guild_priv_level FROM %s WHERE "
+        "guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, gc);
 
     if (!psocn_db_real_query(&conn, myquery)) {
 
@@ -155,7 +155,7 @@ bb_guild_t db_get_bb_char_guild(uint32_t gc) {
 
             /* 查询数据表 */
             sprintf(myquery, "SELECT * FROM %s WHERE "
-                "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, gc);
+                "guildcard = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, gc);
 
             if (!psocn_db_real_query(&conn, myquery)) {
                 result = psocn_db_result_store(&conn);

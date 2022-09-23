@@ -2104,8 +2104,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 
     DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
-    send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-        __(c, "\tC7请等待完成."));
+    //send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+    //    __(c, "\tC7请等待完成."));
 
     switch (type) {
     case BB_GUILD_CREATE:

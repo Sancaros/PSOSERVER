@@ -3991,7 +3991,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
 
     guild_data.guild_data = db_get_bb_char_guild(gc);
 
-    rv = send_bb_opts(c, gc, block, &opts);
+    rv = send_bb_opts(c, gc, block, &opts, &guild_data);
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,

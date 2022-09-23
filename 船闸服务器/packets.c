@@ -552,7 +552,7 @@ int send_user_options(ship_t *c) {
 
 /* Send a packet containing a user's Blue Burst options */
 int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
-                 psocn_bb_db_opts_t *opts) {
+                 psocn_bb_db_opts_t *opts, psocn_bb_db_guild_t *guild) {
     shipgate_bb_opts_pkt *pkt = (shipgate_bb_opts_pkt *)sendbuf;
 
     /* Fill in the packet */
@@ -565,6 +565,7 @@ int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
     pkt->guildcard = htonl(gc);
     pkt->block = htonl(block);
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
+    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
    /* ERR_LOG(
         "send_bb_opts:gc %d = %d block %d = %d",

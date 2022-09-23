@@ -316,7 +316,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
 int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc) {
     void* result;
-    char** row;
+    //char** row;
     bb_guild_t* g_data;
     uint8_t create_res;
     int32_t guild_exists = 0, guild_id;

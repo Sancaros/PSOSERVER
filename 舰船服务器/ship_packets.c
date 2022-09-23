@@ -11087,13 +11087,8 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, 88);
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
     memcpy(&pkt->data.guild_data, &c->bb_guild->guild_data, sizeof(bb_guild_t));
-    //memcpy(pkt->key_cfg.key_config, c->bb_opts->key_cfg.key_config, 0x16C);//364 + 276 + 56 = 696
-    //memcpy(pkt->key_cfg.joystick_config, c->bb_opts->key_cfg.joystick_config, 0x38);//56
-    //pkt->data.guild_data.guildcard = LE32(c->guildcard);
-    //pkt->data.guild_data.guild_rewards[0] = LE32(0xFFFFFFFF);
-    //pkt->data.guild_data.guild_rewards[1] = LE32(0xFFFFFFFF);
 
-    /* FIXME: Various team stuff */
+    /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */
     return crypt_send(c, BB_FULL_CHARACTER_LENGTH, sendbuf);
 }
@@ -11975,7 +11970,7 @@ int send_bb_guild(ship_client_t* c, uint16_t cmd_code) {
 
         memcpy(&pkt_15.char_name, &c->bb_pl->character.name[0], sizeof(pkt_15.char_name));
 
-        memcpy(&pkt_15.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
+        memcpy(&pkt_15.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15.guild_flag));
 
         pkt_15.hdr.pkt_len = 0x0864;
         pkt_15.hdr.pkt_type = cmd_code;
@@ -11983,22 +11978,22 @@ int send_bb_guild(ship_client_t* c, uint16_t cmd_code) {
 
         return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 1);
 
-    //case BB_GUILD_DISSOLVE_TEAM:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 8);
-    //    client->encrypt_buf_code[0x00] = 0x08;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x10;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 8);
-    //    break;
-    //case BB_GUILD_MEMBER_PROMOTE:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 8);
-    //    client->encrypt_buf_code[0x00] = 0x08;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x11;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 8);
-    //    break;
+    case BB_GUILD_DISSOLVE_TEAM:
+        bb_guild_dissolve_team_pkt pkt_DT;
+        memset(&pkt_DT, 0, sizeof(bb_guild_dissolve_team_pkt));
+        pkt_DT.hdr.pkt_len = 0x0008;
+        pkt_DT.hdr.pkt_type = cmd_code;
+        pkt_DT.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_DT);
+
+    case BB_GUILD_MEMBER_PROMOTE:
+        bb_guild_member_promote_pkt pkt_MP;
+        memset(&pkt_MP, 0, sizeof(bb_guild_member_promote_pkt));
+        pkt_MP.hdr.pkt_len = 0x0008;
+        pkt_MP.hdr.pkt_type = cmd_code;
+        pkt_MP.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_MP);
+
     case BB_GUILD_UNK_12EA:
         bb_guild_unk_12EA_pkt pkt_12;
         memset(&pkt_12, 0, sizeof(bb_guild_unk_12EA_pkt));
@@ -12019,127 +12014,123 @@ int send_bb_guild(ship_client_t* c, uint16_t cmd_code) {
 
         return send_lobby_pkt(l, c, (uint8_t*)&pkt_12, 1);
 
+    case BB_GUILD_LOBBY_SETTING:
+    {
+        ship_client_t* lc;
+        uint32_t /*ch, */total_clients = 0;
+        uint16_t EA15Offset = 0x0008;
 
-        //memset(&client->encrypt_buf_code[0x00], 0, 0x40);
-        //client->encrypt_buf_code[0x00] = 0x40;
-        //client->encrypt_buf_code[0x02] = 0xEA;
-        //client->encrypt_buf_code[0x03] = 0x12;
+        if (l->type == LOBBY_TYPE_DEFAULT) {
+            DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+        }
 
 
-        //if (client->Full_Char.guild_id)
-        //{
-        //    *(uint32_t*)&client->encrypt_buf_code[0x0C] = client->guildcard;//12 - 15
-        //    *(uint32_t*)&client->encrypt_buf_code[0x10] = client->Full_Char.guild_id;//16 - 19
-        //    //20 - 27
-        //    client->encrypt_buf_code[0x1C] = (uint8_t)client->Full_Char.guild_privilegeLevel;
-        //    memcpy(&client->encrypt_buf_code[0x20], &client->Full_Char.guild_name[0], 28);
-        //    client->encrypt_buf_code[0x3C] = 0x84;
-        //    client->encrypt_buf_code[0x3D] = 0x6C;
-        //    client->encrypt_buf_code[0x3E] = 0x98;
-        //}
-        //server_cipher_ptr = &client->server_cipher;
-        //encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 0x40);
-        //if (client->lobby_room_num < 0x10) //这里有关于创建房间的代码 sancaros 注意 原来处于屏蔽状态
-        //    Send_Packet_To_Lobby(client->Lobby_Room, 12, &client->encrypt_buf_code[0x00], 0x40, 0);
+
+
+        bb_guild_lobby_setting_pkt pkt_LS;
+        memset(&pkt_LS, 0, sizeof(bb_guild_lobby_setting_pkt));
+        pkt_LS.hdr.pkt_len = EA15Offset;
+        pkt_LS.hdr.pkt_type = cmd_code;
+        pkt_LS.hdr.flags = total_clients;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_LS);
+
+
+        //LOBBY_ROOM* l;
+        //CONNECTED_CLIENT* lClient;
+        //uint32_t ch, total_clients, EA15Offset, maxc;
+
+        //if (!client->Lobby_Room)
+        //    break;
+
+        //l = (LOBBY_ROOM*)client->Lobby_Room;
+
+        //if (client->lobby_room_num < 0x10)
+        //    maxc = 12;
         //else
-        //    Send_Packet_To_Lobby(client->Lobby_Room, 4, &client->encrypt_buf_code[0x00], 0x40, 0);
-        //break;
-    //case BB_GUILD_LOBBY_SETTING:
-    //{
-    //    LOBBY_ROOM* l;
-    //    CONNECTED_CLIENT* lClient;
-    //    uint32_t ch, total_clients, EA15Offset, maxc;
+        //    maxc = 4;
+        //EA15Offset = 0x08;
+        //total_clients = 0;
+        //for (ch = 0; ch < maxc; ch++)
+        //{
+        //    if ((l->slot_use[ch]) && (l->client[ch]))
+        //    {
+        //        lClient = l->client[ch];
+        //        *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.serial_number;
+        //        EA15Offset += 0x04;
+        //        *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.guild_id;
+        //        EA15Offset += 0x04;
+        //        memset(&client->encrypt_buf_code[EA15Offset], 0, 8);
+        //        EA15Offset += 0x08;
+        //        client->encrypt_buf_code[EA15Offset] = (uint8_t)lClient->Full_Char.guild_privilegeLevel;
+        //        EA15Offset += 4;
+        //        memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.guild_name[0], 28);
+        //        EA15Offset += 28;
+        //        if (lClient->Full_Char.guild_id != 0)
+        //        {
+        //            client->encrypt_buf_code[EA15Offset++] = 0x84;
+        //            client->encrypt_buf_code[EA15Offset++] = 0x6C;
+        //            client->encrypt_buf_code[EA15Offset++] = 0x98;
+        //            client->encrypt_buf_code[EA15Offset++] = 0x00;
+        //        }
+        //        else
+        //        {
+        //            memset(&client->encrypt_buf_code[EA15Offset], 0, 4);
+        //            EA15Offset += 4;
+        //        }
+        //        *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.guildCard;
+        //        EA15Offset += 4;
+        //        client->encrypt_buf_code[EA15Offset++] = lClient->clientID;
+        //        memset(&client->encrypt_buf_code[EA15Offset], 0, 3);
+        //        EA15Offset += 3;
+        //        memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.name[0], 24);
+        //        EA15Offset += 24;
+        //        memset(&client->encrypt_buf_code[EA15Offset], 0, 8);
+        //        EA15Offset += 8;
+        //        memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.guild_flag[0], 0x800);
+        //        EA15Offset += 0x800;
+        //        total_clients++;
+        //    }
+        //}
+        //*(uint16_t*)&client->encrypt_buf_code[0x00] = (uint16_t)EA15Offset;
+        //client->encrypt_buf_code[0x02] = 0xEA;
+        //client->encrypt_buf_code[0x03] = 0x13;
+        //*(uint32_t*)&client->encrypt_buf_code[0x04] = total_clients;
+        //server_cipher_ptr = &client->server_cipher;
+        //encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], EA15Offset);
+    }
 
-    //    if (!client->Lobby_Room)
-    //        break;
+    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+        bb_guild_buy_privilege_and_point_info_pkt pkt_PAPI;
+        memset(&pkt_PAPI, 0, sizeof(bb_guild_buy_privilege_and_point_info_pkt));
 
-    //    l = (LOBBY_ROOM*)client->Lobby_Room;
+        pkt_PAPI.data[0x14] = 0x01;
+        pkt_PAPI.data[0x18] = 0x01;
+        pkt_PAPI.data[0x1C] = (uint8_t)c->bb_guild->guild_data.guild_priv_level;
+        *(uint32_t*)&pkt_PAPI.data[0x20] = c->guildcard;
+        memcpy(&pkt_PAPI.data[0x24], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
+        pkt_PAPI.data[0x48] = 0x02;
 
-    //    if (client->lobby_room_num < 0x10)
-    //        maxc = 12;
-    //    else
-    //        maxc = 4;
-    //    EA15Offset = 0x08;
-    //    total_clients = 0;
-    //    for (ch = 0; ch < maxc; ch++)
-    //    {
-    //        if ((l->slot_use[ch]) && (l->client[ch]))
-    //        {
-    //            lClient = l->client[ch];
-    //            *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.serial_number;
-    //            EA15Offset += 0x04;
-    //            *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.guild_id;
-    //            EA15Offset += 0x04;
-    //            memset(&client->encrypt_buf_code[EA15Offset], 0, 8);
-    //            EA15Offset += 0x08;
-    //            client->encrypt_buf_code[EA15Offset] = (uint8_t)lClient->Full_Char.guild_privilegeLevel;
-    //            EA15Offset += 4;
-    //            memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.guild_name[0], 28);
-    //            EA15Offset += 28;
-    //            if (lClient->Full_Char.guild_id != 0)
-    //            {
-    //                client->encrypt_buf_code[EA15Offset++] = 0x84;
-    //                client->encrypt_buf_code[EA15Offset++] = 0x6C;
-    //                client->encrypt_buf_code[EA15Offset++] = 0x98;
-    //                client->encrypt_buf_code[EA15Offset++] = 0x00;
-    //            }
-    //            else
-    //            {
-    //                memset(&client->encrypt_buf_code[EA15Offset], 0, 4);
-    //                EA15Offset += 4;
-    //            }
-    //            *(uint32_t*)&client->encrypt_buf_code[EA15Offset] = lClient->Full_Char.guildCard;
-    //            EA15Offset += 4;
-    //            client->encrypt_buf_code[EA15Offset++] = lClient->clientID;
-    //            memset(&client->encrypt_buf_code[EA15Offset], 0, 3);
-    //            EA15Offset += 3;
-    //            memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.name[0], 24);
-    //            EA15Offset += 24;
-    //            memset(&client->encrypt_buf_code[EA15Offset], 0, 8);
-    //            EA15Offset += 8;
-    //            memcpy(&client->encrypt_buf_code[EA15Offset], &lClient->Full_Char.guild_flag[0], 0x800);
-    //            EA15Offset += 0x800;
-    //            total_clients++;
-    //        }
-    //    }
-    //    *(uint16_t*)&client->encrypt_buf_code[0x00] = (uint16_t)EA15Offset;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x13;
-    //    *(uint32_t*)&client->encrypt_buf_code[0x04] = total_clients;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], EA15Offset);
-    //}
-    //break;
-    //case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 0x4C);
-    //    client->encrypt_buf_code[0x00] = 0x4C;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x18;
-    //    client->encrypt_buf_code[0x14] = 0x01;
-    //    client->encrypt_buf_code[0x18] = 0x01;
-    //    client->encrypt_buf_code[0x1C] = (uint8_t)client->Full_Char.guild_privilegeLevel;
-    //    *(uint32_t*)&client->encrypt_buf_code[0x20] = client->Full_Char.guildCard;
-    //    memcpy(&client->encrypt_buf_code[0x24], &client->Full_Char.name[0], 24);
-    //    client->encrypt_buf_code[0x48] = 0x02;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 0x4C);
-    //    break;
-    //case BB_GUILD_PRIVILEGE_LIST:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 0x0C);
-    //    client->encrypt_buf_code[0x00] = 0x0C;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x19;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 0x0C);
-    //    break;
-    //case BB_GUILD_UNK_1AEA:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 0x0C);
-    //    client->encrypt_buf_code[0x00] = 0x0C;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x1A;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 0x0C);
-    //    break;
+        pkt_PAPI.hdr.pkt_len = 0x004C;
+        pkt_PAPI.hdr.pkt_type = cmd_code;
+        pkt_PAPI.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_PAPI);
+
+    case BB_GUILD_PRIVILEGE_LIST:
+        bb_guild_privilege_list_pkt pkt_PL;
+        memset(&pkt_PL, 0, sizeof(bb_guild_privilege_list_pkt));
+        pkt_PL.hdr.pkt_len = 0x000C;
+        pkt_PL.hdr.pkt_type = cmd_code;
+        pkt_PL.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_PL);
+
+    case BB_GUILD_UNK_1AEA:
+        bb_guild_unk_1AEA_pkt pkt_1A;
+        memset(&pkt_1A, 0, sizeof(bb_guild_unk_1AEA_pkt));
+        pkt_1A.hdr.pkt_len = 0x000C;
+        pkt_1A.hdr.pkt_type = cmd_code;
+        pkt_1A.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_1A);
+
     case BB_GUILD_UNK_1DEA:
         bb_guild_unk_1DEA_pkt pkt_1D;
         memset(&pkt_1D, 0, sizeof(bb_guild_unk_1DEA_pkt));
@@ -12148,29 +12139,14 @@ int send_bb_guild(ship_client_t* c, uint16_t cmd_code) {
         pkt_1D.hdr.flags = 0x00000000;
         return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_1D);
 
-        //memset(&client->encrypt_buf_code[0x00], 0, 8);
-        //client->encrypt_buf_code[0x00] = 0x08;
-        //client->encrypt_buf_code[0x02] = 0xEA;
-        //client->encrypt_buf_code[0x03] = 0x1D;
-        //server_cipher_ptr = &client->server_cipher;
-        //encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 8);
-        //Show_Undone_Client_Packet_Data("BB_GUILD_UNK_1DEA", client, __LINE__, cmd_code);
-        break;
-    //case BB_GUILD_MEMBER_TITLE:
-    //    memset(&client->encrypt_buf_code[0x00], 0, 8);
-    //    client->encrypt_buf_code[0x00] = 0x08;
-    //    client->encrypt_buf_code[0x02] = 0xEA;
-    //    client->encrypt_buf_code[0x03] = 0x14;
-    //    server_cipher_ptr = &client->server_cipher;
-    //    encrypt_data_copy(SHIP_SERVER, client, &client->encrypt_buf_code[0], 8);
+    case BB_GUILD_MEMBER_TITLE:
+        bb_guild_member_tittle_pkt pkt_MT;
+        memset(&pkt_MT, 0, sizeof(bb_guild_member_tittle_pkt));
+        pkt_MT.hdr.pkt_len = 0x0008;
+        pkt_MT.hdr.pkt_type = cmd_code;
+        pkt_MT.hdr.flags = 0x00000000;
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_MT);
 
-    //    Show_Undone_Client_Packet_Data("BB_GUILD_MEMBER_TITLE", client, __LINE__, cmd_code);
-    //    //Logs(__LINE__, error_log_console_show, ERR_LOG, "SendEA 0x14 未解析该命令.");
-    //    break;
-    //default:
-    //    Show_Unknow_Client_Packet_Data("Ship_Guild_Command_SendEA", client, __LINE__, cmd_code);
-    //    //Logs(__LINE__, error_log_console_show, ERR_LOG, "SendEA 0x\"%02x\" 未解析该命令.", cmd_code);
-    //    break;
     }
 
     return 0;

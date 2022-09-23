@@ -1886,8 +1886,11 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
         if (i->guildcard == gc) {
             pthread_mutex_lock(&i->mutex);
 
-            /* Copy the user's options */
+            /* 复制角色选项数据 */
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
+
+            /* 复制角色公会数据 */
+            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
@@ -3501,10 +3504,6 @@ int shipgate_send_bb_opt_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
     pkt->guildcard = htonl(gc);
     pkt->block = htonl(block);
 
-    //DBG_LOG("shipgate_send_bb_opt_req"
-    //    " gc = %u block = %d 长度 = %d 2 = %d 类型 = %d",
-    //    gc, block, sizeof(shipgate_bb_opts_req_pkt),sizeof(pkt), SHDR_TYPE_BBOPT_REQ);
-
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_req_pkt), sendbuf);
 }
@@ -3528,6 +3527,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->guildcard = htonl(cl->guildcard);
     pkt->block = htonl(cl->cur_block->b);
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
+    memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
