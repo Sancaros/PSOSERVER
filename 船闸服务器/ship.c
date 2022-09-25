@@ -1715,17 +1715,86 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t ship_id;
+    ship_t* s;
 
-    if (len != sizeof(bb_guild_member_setting_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)g_data, len);
+    uint32_t packet_offset = 0;
+    int32_t num_mates;
+    int32_t ch;
+    uint32_t guildcard, privlevel;
+    void* result;
+    char** row;
+
+    //if (len != (sizeof(bb_guild_member_setting_pkt) - 0x0008)) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)g_data, len);
+
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //    return 0;
+    //}
+
+    sprintf_s(myquery, _countof(myquery), "SELECT guildcard, guild_priv_level "
+        "FROM %s WHERE guild_id = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, g_data->guild_id);
+    if (!psocn_db_real_query(&conn, myquery))
+    {
+        result = psocn_db_result_store(&conn);
+        num_mates = (int32_t)psocn_db_result_rows(result);
+        *(uint32_t*)&g_data->data[packet_offset] = num_mates;
+        packet_offset += 4;
+        for (ch = 1; ch <= num_mates; ch++)
+        {
+            row = mysql_fetch_row(result);
+            guildcard = atoi(row[0]);
+            privlevel = atoi(row[1]);
+            *(uint32_t*)&g_data->data[packet_offset] = ch;
+            packet_offset += 4;
+            *(uint32_t*)&g_data->data[packet_offset] = privlevel;
+            packet_offset += 4;
+            *(uint32_t*)&g_data->data[packet_offset] = guildcard;
+            packet_offset += 4;
+            memcpy(&g_data->data[packet_offset], g_data->char_name, 24);
+            packet_offset += 24;
+            memset(&g_data->data[packet_offset], 0, 8);
+            packet_offset += 8;
+            DBG_LOG("%d %d %d %d", packet_offset, guildcard, privlevel, num_mates);
+        }
+        mysql_free_result(result);
+        //packet_offset -= 0x0A;
+        //*(uint16_t*)&temp_pkt[0x0A] = (uint16_t)packet_offset;
+        //packet_offset += 0x0A;
+
+        g_data->hdr.pkt_len = packet_offset;
+        g_data->hdr.pkt_type = BB_GUILD_UNK_09EA;
+        g_data->hdr.flags = 0x00000000;
+
+
+        ship_id = db_get_char_ship_id(sender);
+
+        if (ship_id < 0) {
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            return 0;
+        }
+
+        /* If we've got this far, we should have the ship we need to send to */
+        s = find_ship(ship_id);
+        if (!s) {
+            ERR_LOG("无效舰船?!?!?");
+            return 0;
+        }
+
+        forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
+    }
+    else
+    {
+        Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "未能找到 %u 队伍信息", g_data->guild_id);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2192,7 +2261,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_UNK_06EA:
         return handle_bb_guild_06EA(c, pkt);
 
-    case BB_GUILD_MEMBER_CHAT:
+    case BB_GUILD_CHAT:
         return handle_bb_guild_member_chat(c, pkt);
 
     case BB_GUILD_MEMBER_SETTING:
@@ -2353,7 +2422,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_UNK_04EA:
     case BB_GUILD_MEMBER_REMOVE:
     case BB_GUILD_UNK_06EA:
-    case BB_GUILD_MEMBER_CHAT:
+    case BB_GUILD_CHAT:
     case BB_GUILD_MEMBER_SETTING:
     case BB_GUILD_UNK_09EA:
     case BB_GUILD_UNK_0AEA:

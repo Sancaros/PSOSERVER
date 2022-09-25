@@ -1864,7 +1864,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
 
-    //DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
+    DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
 
     //print_payload((unsigned char*)pkt, len);
 

@@ -212,7 +212,7 @@
 #define BB_GUILD_UNK_04EA               0x04EA
 #define BB_GUILD_MEMBER_REMOVE          0x05EA
 #define BB_GUILD_UNK_06EA               0x06EA
-#define BB_GUILD_MEMBER_CHAT            0x07EA
+#define BB_GUILD_CHAT                   0x07EA
 #define BB_GUILD_MEMBER_SETTING         0x08EA
 #define BB_GUILD_UNK_09EA               0x09EA
 #define BB_GUILD_UNK_0AEA               0x0AEA

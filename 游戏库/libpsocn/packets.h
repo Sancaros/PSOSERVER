@@ -1951,6 +1951,9 @@ typedef struct bb_guild_member_chat {
 
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
+    uint32_t guildcard;
+    uint32_t guild_id;
+    uint16_t char_name[12];
     uint8_t data[];
 } PACKED bb_guild_member_setting_pkt;
 

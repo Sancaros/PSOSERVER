@@ -565,7 +565,7 @@ int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
     pkt->guildcard = htonl(gc);
     pkt->block = htonl(block);
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
-    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
+    //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
    /* ERR_LOG(
         "send_bb_opts:gc %d = %d block %d = %d",

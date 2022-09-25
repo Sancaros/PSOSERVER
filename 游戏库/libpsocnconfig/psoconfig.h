@@ -485,7 +485,7 @@ static c_cmd_map_st c_cmd_names[] = {
     { bb_guild_unk_04ea, "BB_GUILD_UNK_04EA", "0x04EA" },
     { bb_guild_member_remove, "BB_GUILD_MEMBER_REMOVE", "0x05EA" },
     { bb_guild_unk_06ea, "BB_GUILD_UNK_06EA", "0x06EA" },
-    { bb_guild_member_chat, "BB_GUILD_MEMBER_CHAT", "0x07EA" },
+    { bb_guild_member_chat, "BB_GUILD_CHAT", "0x07EA" },
     { bb_guild_member_setting, "BB_GUILD_MEMBER_SETTING", "0x08EA" },
     { bb_guild_unk_09ea, "BB_GUILD_UNK_09EA", "0x09EA" },
     { bb_guild_unk_0aea, "BB_GUILD_UNK_0AEA", "0x0AEA" },
