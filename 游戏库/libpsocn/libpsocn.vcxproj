@@ -89,8 +89,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Configuration)\Library\</OutDir>
-    <IntDir>$(Configuration)\Library\</IntDir>
+    <OutDir>$(SolutionDir)\Library\</OutDir>
+    <IntDir>Library\</IntDir>
     <ReferencePath>$(VC_ReferencesPath_x86)</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -94,8 +94,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Configuration)\Library\</OutDir>
-    <IntDir>$(Configuration)\Library\</IntDir>
+    <OutDir>$(SolutionDir)\Library\</OutDir>
+    <IntDir>Library\</IntDir>
     <PublicIncludeDirectories>..\libpso\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <AllProjectIncludesArePublic>true</AllProjectIncludesArePublic>
   </PropertyGroup>

@@ -61,8 +61,8 @@
     <_ProjectFileVersion>15.0.26228.4</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Configuration)\Library\</OutDir>
-    <IntDir>$(Configuration)\Library\</IntDir>
+    <OutDir>$(SolutionDir)\Library\</OutDir>
+    <IntDir>Library\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

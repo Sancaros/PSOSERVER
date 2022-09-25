@@ -455,10 +455,10 @@ typedef struct psocn_bb_full_char {
 
     uint8_t quest_data2[0x0058];                  // 玩家数据表
 
+    //uint8_t unk_gc[0x114];
     uint8_t unk1[0x000C];                         // 276 - 264 = 12
     psocn_bb_guild_card_t gc_data2;               // 264大小
 
-    //uint8_t unk_gc[0x114];
     bb_key_config_t key_cfg;                // 选项数据表
     bb_guild_t guild_data;                  // GUILD数据表
 } PACKED psocn_bb_full_char_t;

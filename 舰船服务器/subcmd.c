@@ -217,9 +217,9 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
 
 static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend_t *pkt) {
 
-    ERR_LOG(
+    /*ERR_LOG(
         "handle_pc_gcsend %d 类型 = %d 版本识别 = %d",
-        d->sock, pkt->hdr.pkt_type, d->version);
+        d->sock, pkt->hdr.pkt_type, d->version);*/
 
     /* This differs based on the destination client's version. */
     switch(d->version) {
@@ -227,8 +227,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             /* Don't allow guild cards to be sent to PC NTE, as it doesn't
                support them. */
             if((d->flags & CLIENT_FLAG_IS_NTE))
-                return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
-                                               "Card to that user."));
+                return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)pkt);
 
@@ -407,9 +406,9 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
 
 static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend_t *pkt) {
 
-    ERR_LOG(
+    /*ERR_LOG(
         "handle_gc_gcsend %d 类型 = %d 版本识别 = %d",
-        d->sock, pkt->hdr.pkt_type, d->version);
+        d->sock, pkt->hdr.pkt_type, d->version);*/
 
     /* This differs based on the destination client's version. */
     switch(d->version) {
@@ -486,8 +485,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             /* Don't allow guild cards to be sent to PC NTE, as it doesn't
                support them. */
             if((d->flags & CLIENT_FLAG_IS_NTE))
-                return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
-                                               "Card to that user."));
+                return send_txt(s, "%s", __(s, "\tE\tC无法发送GC至该玩家."));
 
             memset(&pc, 0, sizeof(pc));
 
@@ -581,9 +579,9 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
 
 int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt) {
 
-    ERR_LOG(
+    /*ERR_LOG(
         "handle_xb_gcsend %d 类型 = %d 版本识别 = %d",
-        d->sock, pkt->hdr.pkt_type, d->version);
+        d->sock, pkt->hdr.pkt_type, d->version);*/
 
     /* This differs based on the destination client's version. */
     switch(d->version) {
@@ -660,8 +658,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
                support them. */
             if((d->flags & CLIENT_FLAG_IS_NTE)) {
                 if(s)
-                    return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
-                                                   "Card to that user."));
+                    return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
                 else
                     return 0;
             }
@@ -891,8 +888,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
        flag is set... Log any we get. */
     if(!(l->flags & LOBBY_FLAG_QUESTING) &&
        !(c->flags & CLIENT_FLAG_SHOPPING)) {
-        ERR_LOG("GC %" PRIu32 " attempting to take item from "
-              "bank when bank not opened!", c->guildcard);
+        ERR_LOG("GC %" PRIu32 " 尝试在未打开银行的情况下取出物品!", c->guildcard);
     }
 
     /* Run the bank action script, if any. */
@@ -936,8 +932,8 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
 
             /* The item failed the check, so kick the user. */
             send_msg_box(c, "%s\n\n%s\n%s",
-                             __(c, "\tEYou have been kicked from the server."),
-                             __(c, "Reason:"),
+                             __(c, "\tE您已被踢出服务器."),
+                             __(c, "原因:"),
                              __(c, "Attempt to remove a non-legit item from\n"
                                 "the bank in a legit-mode game."));
             return -1;
@@ -1098,7 +1094,7 @@ static int handle_used_tech(ship_client_t *c, subcmd_used_tech_t *pkt) {
     /* We can't get these in default lobbies without someone messing with
        something that they shouldn't be... Disconnect anyone that tries. */
     if(l->type == LOBBY_TYPE_DEFAULT) {
-        ERR_LOG("GC %" PRIu32 " used tech in lobby!",
+        ERR_LOG("GC %" PRIu32 " 在大厅使用法术!",
               c->guildcard);
         return -1;
     }

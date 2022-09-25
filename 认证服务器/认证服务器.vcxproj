@@ -133,7 +133,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\Debug\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread\lib;..\通用库\pthread\lib\x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread\lib;..\通用库\pthread\lib\x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.4.4.lib;urlmon.lib;
 ws2_32.lib;
 wsock32.lib;
