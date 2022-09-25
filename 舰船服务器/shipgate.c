@@ -3629,7 +3629,6 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->guildcard = htonl(cl->guildcard);
     pkt->block = htonl(cl->cur_block->b);
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
-    //memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

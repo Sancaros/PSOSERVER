@@ -102,7 +102,7 @@ int send_user_options(ship_t *c);
 
 /* Send a packet containing a user's Blue Burst options */
 int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
-                 psocn_bb_db_opts_t *opts, psocn_bb_db_guild_t* guild);
+                 psocn_bb_db_opts_t *opts);
 
 /* Send a system-generated simple mail message. */
 int send_simple_mail(ship_t *c, uint32_t gc, uint32_t block, uint32_t sender,

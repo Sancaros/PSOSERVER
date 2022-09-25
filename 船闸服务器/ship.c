@@ -4049,7 +4049,6 @@ static int handle_useropt(ship_t* c, shipgate_user_opt_pkt* pkt) {
 static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     uint32_t gc, block;
     psocn_bb_db_opts_t opts;
-    psocn_bb_db_guild_t guild_data;
     int rv = 0;
 
     /* Parse out the guildcard */
@@ -4058,9 +4057,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
 
     opts = db_get_bb_char_option(gc);
 
-    guild_data.guild_data = db_get_bb_char_guild(gc);
-
-    rv = send_bb_opts(c, gc, block, &opts, &guild_data);
+    rv = send_bb_opts(c, gc, block, &opts);
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
