@@ -72,6 +72,8 @@ static const char shipgate_login_msg[] =
 #define SHDR_TYPE_SHIP_CTL  0x0030      /* Ship control packet 48 */
 #define SHDR_TYPE_UBLOCKS   0x0031      /* User blocklist 49 */
 #define SHDR_TYPE_UBL_ADD   0x0032      /* User blocklist add 50 */
+#define SHDR_TYPE_BBGUILD     0x0033      /* A user's Blue Burst guild data 51 */
+#define SHDR_TYPE_BBGUILD_REQ 0x0034      /* Request Blue Burst guild data 52 */
 #define SHDR_TYPE_8000      0x8000      /* 0x8000 51 */
 
 /* Flags that can be set in the login packet */

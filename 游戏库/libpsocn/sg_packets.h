@@ -402,20 +402,35 @@ typedef struct shipgate_user_options {
     shipgate_user_opt_t options[];
 } PACKED shipgate_user_opt_pkt;
 
-/* Packet used to request Blue Burst options */
+/* 请求 Blue Burst 选项数据包 */
 typedef struct shipgate_bb_opts_req {
     shipgate_hdr_t hdr;
     uint32_t guildcard;
     uint32_t block;
 } PACKED shipgate_bb_opts_req_pkt;
 
-/* Packet used to send Blue Burst options to a user */
+/* 发送 Blue Burst 选项数据包至客户端 */
 typedef struct shipgate_bb_opts {
     shipgate_hdr_t hdr;
     uint32_t guildcard;
     uint32_t block;
     psocn_bb_db_opts_t opts;
 } PACKED shipgate_bb_opts_pkt;
+
+/* 请求 Blue Burst 公会数据包 */
+typedef struct shipgate_bb_guild_req {
+    shipgate_hdr_t hdr;
+    uint32_t guildcard;
+    uint32_t block;
+} PACKED shipgate_bb_guild_req_pkt;
+
+/* 发送 Blue Burst 公会数据包至客户端 */
+typedef struct shipgate_bb_guild {
+    shipgate_hdr_t hdr;
+    uint32_t guildcard;
+    uint32_t block;
+    psocn_bb_db_guild_t guild;
+} PACKED shipgate_bb_guild_pkt;
 
 /* Packet used to send an update to the user's monster kill counts.
    Version 1 adds a client version code where there used to be a reserved byte

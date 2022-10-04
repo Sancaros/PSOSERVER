@@ -1199,6 +1199,11 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
         return -4;
     }
 
+    /* Request the user options from the shipgate */
+    if (shipgate_send_bb_guild_req(&ship->sg, c->guildcard, c->cur_block->b)) {
+        return -5;
+    }
+
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
     BLOCK_LOG("%s(%d): 版本 Blue Burst GC %d 已连接 IP %s",
@@ -1513,17 +1518,20 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     }
 
     /* No need if they've already maxed out. */
-    if (c->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL)
+    if (c->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL) {
+        ERR_LOG("GC %d 等级超过 200 (%d)", c->guildcard, c->bb_pl->character.disp.level + 1);
         return -1;
+    }
 
     /* BB has this in two places for now... */
-    memcpy(c->bb_pl->quest_data1, pkt->data.quest_data1, 0x0208);
-    memcpy(c->bb_pl->guildcard_desc, pkt->data.gc_data.guildcard_desc, 0x0058);
-    memcpy(c->bb_pl->autoreply, pkt->data.autoreply, 0x00AC);
-    memcpy(c->bb_pl->infoboard, pkt->data.infoboard, 0x00AC);
-    memcpy(c->bb_pl->challenge_data, pkt->data.challenge_data, 0x0140);
-    memcpy(c->bb_pl->tech_menu, pkt->data.tech_menu, 0x0028);
-    memcpy(c->bb_pl->quest_data2, pkt->data.quest_data2, 0x0058);
+    memcpy(c->bb_pl->quest_data1, pkt->data.quest_data1, sizeof(c->bb_pl->quest_data1));
+    memcpy(c->bb_pl->guildcard_desc, pkt->data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+    memcpy(c->bb_pl->autoreply, pkt->data.autoreply, sizeof(c->bb_pl->autoreply));
+    memcpy(c->bb_pl->infoboard, pkt->data.infoboard, sizeof(c->bb_pl->infoboard));
+    memcpy(c->bb_pl->challenge_data, pkt->data.challenge_data, sizeof(c->bb_pl->challenge_data));
+    memcpy(c->bb_pl->tech_menu, pkt->data.tech_menu, sizeof(c->bb_pl->tech_menu));
+    memcpy(c->bb_pl->quest_data2, pkt->data.quest_data2, sizeof(c->bb_pl->quest_data2));
+    memcpy(&c->bb_guild->guild_data, &pkt->data.guild_data, sizeof(bb_guild_t));
 
     return 0;
 }

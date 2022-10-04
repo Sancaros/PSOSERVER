@@ -656,7 +656,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     block_t* b;
     ship_client_t* c;
     int done = 0, rv = 0;
-    uint32_t gc = bb->guild_data.guildcard;
+    uint32_t gc = bb->guild.guild_data.guildcard;
 
     DBG_LOG("G->S 指令0x%04X %d %d", type, gc, pkt->guildcard);
 
@@ -675,7 +675,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     switch (type)
                     {
                     case BB_GUILD_CREATE:
-                        c->bb_guild->guild_data = bb->guild_data;
+                        c->bb_guild->guild_data = bb->guild.guild_data;
                         send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
@@ -1976,7 +1976,7 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
 
     /* Check the block number first. */
-    if((int)block > s->cfg->blocks) {
+    if(block > s->cfg->blocks) {
         return 0;
     }
 
@@ -1991,9 +1991,6 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             /* 复制角色选项数据 */
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
 
-            /* 复制角色公会数据 */
-            //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
-
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
             send_bb_full_char(i);
@@ -2005,6 +2002,42 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
     }
 
     pthread_rwlock_unlock(&b->lock);
+    return 0;
+}
+
+static int handle_bbguild(shipgate_conn_t* c, shipgate_bb_guild_pkt* pkt) {
+    ship_t* s = c->ship;
+    block_t* b;
+    ship_client_t* i;
+    uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
+
+    /* Check the block number first. */
+    if (block > s->cfg->blocks) {
+        return 0;
+    }
+
+    b = s->blocks[block - 1];
+    //pthread_rwlock_rdlock(&b->lock);
+
+    /* Find the requested client. */
+    TAILQ_FOREACH(i, b->clients, qentry) {
+        if (i->guildcard == gc) {
+            //pthread_mutex_lock(&i->mutex);
+
+            /* 复制角色选项数据 */
+            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
+
+            ///* Move the user on now that we have everything... */
+            //send_lobby_list(i);
+            //send_bb_full_char(i);
+            //send_simple(i, CHAR_DATA_REQUEST_TYPE, 0);
+
+            //pthread_mutex_unlock(&i->mutex);
+            break;
+        }
+    }
+
+    //pthread_rwlock_unlock(&b->lock);
     return 0;
 }
 
@@ -2637,8 +2670,8 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
 
-    //DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
-    //    , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
+    DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
+        , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
 
     if (!conn->has_key) {
         /* Silently ignore non-login packets when we're without a key
@@ -2776,6 +2809,9 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         case SHDR_TYPE_BBOPTS:
             return handle_bbopts(conn, (shipgate_bb_opts_pkt*)pkt);
+
+        case SHDR_TYPE_BBGUILD:
+            return handle_bbguild(conn, (shipgate_bb_guild_pkt*)pkt);
 
         case SHDR_TYPE_CBKUP:
             if (!(flags & SHDR_RESPONSE)) {
@@ -3632,6 +3668,52 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
+}
+
+int shipgate_send_bb_guild_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_bb_guild_req_pkt* pkt = (shipgate_bb_guild_req_pkt*)sendbuf;
+
+    /* Verify we got the sendbuf. */
+    if (!sendbuf) {
+        return -1;
+    }
+
+    /* Fill in the packet */
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_opts_req_pkt));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD_REQ);
+    pkt->hdr.version = pkt->hdr.reserved = 0;
+    pkt->hdr.flags = 0;
+
+    pkt->guildcard = htonl(gc);
+    pkt->block = htonl(block);
+
+    /* 将数据包发送出去 */
+    return send_crypt(c, sizeof(shipgate_bb_guild_req_pkt), sendbuf);
+}
+
+/* Send the user's Blue Burst options to be stored */
+int shipgate_send_bb_guild(shipgate_conn_t* c, ship_client_t* cl) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
+
+    /* Verify we got the sendbuf. */
+    if (!sendbuf) {
+        return -1;
+    }
+
+    /* Fill in the packet */
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_pkt));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD);
+    pkt->hdr.version = pkt->hdr.reserved = 0;
+    pkt->hdr.flags = 0;
+
+    pkt->guildcard = htonl(cl->guildcard);
+    pkt->block = htonl(cl->cur_block->b);
+    memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
+
+    /* 将数据包发送出去 */
+    return send_crypt(c, sizeof(shipgate_bb_guild_pkt), sendbuf);
 }
 
 /* Send the shipgate a character data backup request. */

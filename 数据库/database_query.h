@@ -100,8 +100,10 @@ int db_upload_temp_data(void* data, size_t size);
 /* 获取BB角色选项数据 */
 psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc);
 
+int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t guild_priv_level, uint32_t gc);
+
 /* 获取BB角色公会数据 */
-bb_guild_t db_get_bb_char_guild(uint32_t gc);
+psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc);
 
 /* 更新BB角色认证数据*/
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot);
@@ -131,7 +133,7 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
 /* 更新BB角色公会数据 */
-int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc);
+int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
 
 /* 更新BB角色选项数据 */
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);

@@ -477,10 +477,6 @@ typedef struct psocn_bb_db_char {
     uint8_t quest_data2[0x0058];
 } PACKED psocn_bb_db_char_t;
 
-typedef struct psocn_bb_db_guild {
-    bb_guild_t guild_data;                  // account
-} PACKED psocn_bb_db_guild_t;
-
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
     psocn_bb_guild_card_t data;
@@ -511,6 +507,13 @@ typedef struct psocn_bb_db_opts {
 } PACKED psocn_bb_db_opts_t;
 
 static int opt_size = sizeof(psocn_bb_db_opts_t);
+
+/* BB 公会数据文件 TODO */
+typedef struct psocn_bb_db_guild {
+    bb_guild_t guild_data;                  // account
+} PACKED psocn_bb_db_guild_t;
+
+static int guild_size = sizeof(psocn_bb_db_guild_t);
 
 #ifndef _WIN32
 #else

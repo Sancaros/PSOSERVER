@@ -1910,7 +1910,7 @@ typedef struct bb_guild_pkt {
 //( 00000020 )   33 00 33 00 00 00 98 00                             3.3.....
 typedef struct bb_guild_data {
     bb_pkt_hdr_t hdr;
-    bb_guild_t guild_data;
+    psocn_bb_db_guild_t guild;
 } PACKED bb_guild_data_pkt;
 
 typedef struct bb_guild_create {

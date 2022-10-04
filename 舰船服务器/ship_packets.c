@@ -11068,25 +11068,61 @@ int send_bb_full_char(ship_client_t *c) {
 
     /* Fill in all the parts of it... */
     memcpy(&pkt->data.inv, &c->bb_pl->inv, sizeof(inventory_t));
+
     memcpy(&pkt->data.character, &c->bb_pl->character,
            sizeof(psocn_bb_char_t));
+
     pkt->data.option_flags = c->bb_opts->option_flags;
-    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, 520);
+
+    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, sizeof(pkt->data.quest_data1));
+
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
+
     memcpy(pkt->data.gc_data.name, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
-    memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, 32);
-    memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, 176);
+
+    memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(pkt->data.gc_data.guild_name));
+
+    memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(pkt->data.gc_data.guildcard_desc));
+
     pkt->data.gc_data.present = pkt->data.gc_data.language = 1;
+
     pkt->data.gc_data.ch_class = c->bb_pl->character.disp.dress_data.ch_class;
-    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, 1248);
-    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, 2624);
-    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, 244);
-    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, 244);
-    memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, 320);
-    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, 40);
-    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, 88);
-    memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
-    memcpy(&pkt->data.guild_data, &c->bb_guild->guild_data, sizeof(bb_guild_t));
+
+    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(pkt->data.symbol_chats));
+
+    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(pkt->data.shortcuts));
+
+    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(pkt->data.autoreply));
+
+    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(pkt->data.infoboard));
+
+    memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, sizeof(pkt->data.challenge_data));
+
+    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(pkt->data.tech_menu));
+
+    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(pkt->data.quest_data2));
+
+    memcpy(pkt->data.key_cfg.key_config, c->bb_opts->key_cfg.key_config, sizeof(pkt->data.key_cfg.key_config));
+
+    memcpy(pkt->data.key_cfg.joystick_config, c->bb_opts->key_cfg.joystick_config, sizeof(pkt->data.key_cfg.joystick_config));
+
+    pkt->data.guild_data.guildcard = c->bb_guild->guild_data.guildcard;
+
+    pkt->data.guild_data.guild_id = c->bb_guild->guild_data.guild_id;
+
+    memcpy(pkt->data.guild_data.guild_info, c->bb_guild->guild_data.guild_info, sizeof(pkt->data.guild_data.guild_info));
+
+    pkt->data.guild_data.guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+
+    memcpy(pkt->data.guild_data.guild_name, c->bb_guild->guild_data.guild_name, sizeof(pkt->data.guild_data.guild_name));
+
+    pkt->data.guild_data.guild_rank = c->bb_guild->guild_data.guild_rank;
+
+    memcpy(pkt->data.guild_data.guild_flag, c->bb_guild->guild_data.guild_flag, sizeof(pkt->data.guild_data.guild_flag));
+
+    pkt->data.guild_data.guild_rewards[0] = c->bb_guild->guild_data.guild_rewards[0];
+
+    pkt->data.guild_data.guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
 
     /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */

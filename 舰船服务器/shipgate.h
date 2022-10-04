@@ -168,11 +168,17 @@ int shipgate_send_global_msg(shipgate_conn_t *c, uint32_t gc,
 int shipgate_send_user_opt(shipgate_conn_t *c, uint32_t gc, uint32_t block,
                            uint32_t opt, uint32_t len, const uint8_t *data);
 
-/* Send a request for the user's Blue Burst options */
+/* 请求 Blue Burst 客户端选项数据 */
 int shipgate_send_bb_opt_req(shipgate_conn_t *c, uint32_t gc, uint32_t block);
 
-/* Send the user's Blue Burst options to be stored */
+/* 发送 Blue Burst 客户端选项数据至数据库 */
 int shipgate_send_bb_opts(shipgate_conn_t *c, ship_client_t *cl);
+
+/* 请求 Blue Burst 客户端公会数据 */
+int shipgate_send_bb_guild_req(shipgate_conn_t* c, uint32_t gc, uint32_t block);
+
+/* 发送 Blue Burst 客户端公会数据至数据库 */
+int shipgate_send_bb_guild(shipgate_conn_t* c, ship_client_t* cl);
 
 /* Send the shipgate a character data backup request. */
 int shipgate_send_cbkup(shipgate_conn_t *c, uint32_t gc, uint32_t block,

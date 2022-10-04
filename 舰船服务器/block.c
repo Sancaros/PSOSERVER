@@ -371,9 +371,6 @@ static void* block_thd(void* d) {
                 client_destroy_connection(it, b->clients);
                 --b->num_clients;
             }
-            else {
-                client_send_bb_data(it);
-            }
 
             it = tmp;
         }

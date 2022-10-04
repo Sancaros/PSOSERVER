@@ -1522,7 +1522,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
             return 0;
         }
 
-        guild->guild_data = db_get_bb_char_guild(sender);
+        guild->guild = db_get_bb_char_guild(sender);
 
         guild->hdr.pkt_type = g_data->hdr.pkt_type;
         guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
@@ -4055,6 +4055,8 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     gc = ntohl(pkt->guildcard);
     block = ntohl(pkt->block);
 
+    memset(&opts, 0, sizeof(psocn_bb_db_opts_t));
+
     opts = db_get_bb_char_option(gc);
 
     rv = send_bb_opts(c, gc, block, &opts);
@@ -4078,6 +4080,46 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
+            (uint8_t*)&pkt->guildcard, 8);
+    }
+
+    return rv;
+}
+
+static int handle_bbguild_req(ship_t* c, shipgate_bb_guild_req_pkt* pkt) {
+    uint32_t gc, block;
+    psocn_bb_db_guild_t guild;
+    int rv = 0;
+
+    /* Parse out the guildcard */
+    gc = ntohl(pkt->guildcard);
+    block = ntohl(pkt->block);
+
+    memset(&guild, 0, sizeof(psocn_bb_db_guild_t));
+
+    guild = db_get_bb_char_guild(gc);
+
+    rv = send_bb_guild(c, gc, block, &guild);
+
+    if (rv) {
+        rv = send_error(c, SHDR_TYPE_BBGUILD, SHDR_FAILURE, ERR_BAD_ERROR,
+            (uint8_t*)&pkt->guildcard, 8);
+    }
+
+    return rv;
+}
+
+static int handle_bbguild(ship_t* c, shipgate_bb_guild_pkt* pkt) {
+    uint32_t gc;
+    int rv = 0;
+
+    /* Parse out the guildcard */
+    gc = ntohl(pkt->guildcard);
+
+    rv = db_update_bb_char_guild(pkt->guild, gc);
+
+    if (rv) {
+        rv = send_error(c, SHDR_TYPE_BBGUILD, SHDR_FAILURE, ERR_BAD_ERROR,
             (uint8_t*)&pkt->guildcard, 8);
     }
 
@@ -4846,7 +4888,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
 
-    //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+    DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
     //print_payload((unsigned char*)pkt, length);
 
     switch (type) {
@@ -4969,6 +5011,12 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
 
     case SHDR_TYPE_UBL_ADD:
         return handle_ubl_add(c, (shipgate_ubl_add_pkt*)pkt);
+
+    case SHDR_TYPE_BBGUILD:
+        return handle_bbguild(c, (shipgate_bb_guild_pkt*)pkt);
+
+    case SHDR_TYPE_BBGUILD_REQ:
+        return handle_bbguild_req(c, (shipgate_bb_guild_req_pkt*)pkt);
 
     default:
         UNK_SPD(type,(uint8_t*)pkt);

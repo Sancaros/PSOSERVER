@@ -169,7 +169,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             }
 
             rv->bb_guild =
-                (psocn_bb_db_guild_t*)malloc(sizeof(psocn_bb_db_guild_t));
+                (psocn_bb_db_guild_t *)malloc(sizeof(psocn_bb_db_guild_t));
 
             if (!rv->bb_guild) {
                 perror("malloc");
@@ -356,6 +356,7 @@ void client_destroy_connection(ship_client_t *c,
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                             c->bb_pl, sizeof(psocn_bb_db_char_t),
                             c->cur_block->b);
+        shipgate_send_bb_guild(&ship->sg, c);
         shipgate_send_bb_opts(&ship->sg, c);
     }
 

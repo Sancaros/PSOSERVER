@@ -100,9 +100,13 @@ void *user_options_append(void *p, uint32_t opt, uint32_t len,
 /* Finish off a user options packet and send it along */
 int send_user_options(ship_t *c);
 
-/* Send a packet containing a user's Blue Burst options */
+/* 发送客户端 Blue Burst 选项数据 */
 int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
                  psocn_bb_db_opts_t *opts);
+
+/* 发送客户端 Blue Burst 公会数据 */
+int send_bb_guild(ship_t *c, uint32_t gc, uint32_t block,
+                 psocn_bb_db_guild_t *guild);
 
 /* Send a system-generated simple mail message. */
 int send_simple_mail(ship_t *c, uint32_t gc, uint32_t block, uint32_t sender,

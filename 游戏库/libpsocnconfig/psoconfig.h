@@ -324,6 +324,8 @@ typedef const enum s_cmd_map_val {
     shdr_type_ship_ctl = 0x0030, /*Ship control packet 48 */
     shdr_type_ublocks = 0x0031, /*User blocklist 49 */
     shdr_type_ubl_add = 0x0032, /*User blocklist add 50 */
+    shdr_type_bbguild = 0x0033, /*A user's Blue Burst guild data 51 */
+    shdr_type_bbguild_req = 0x0034, /*Request Blue Burst guild data 52 */
     NoSuchsCmd = 0xFFFFFF
 } s_cmd_map_val_tbl;
 
@@ -612,6 +614,8 @@ static s_cmd_map_st s_cmd_names[] = {
     { shdr_type_ship_ctl, "SHDR_TYPE_SHIP_CTL", "Ship control packet 48" },
     { shdr_type_ublocks, "SHDR_TYPE_UBLOCKS", "User blocklist 49" },
     { shdr_type_ubl_add, "SHDR_TYPE_UBL_ADD", "User blocklist add 50" },
+    { shdr_type_bbguild, "SHDR_TYPE_BBGUILD", "A user's Blue Burst guild data 51" },
+    { shdr_type_bbguild_req, "SHDR_TYPE_BBGUILD_REQ", "Request Blue Burst guild data 52" },
     { NoSuchsCmd, "÷∏¡Ó≤ª¥Ê‘⁄" }
 };
 

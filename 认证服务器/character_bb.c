@@ -514,7 +514,7 @@ static int handle_option_request(login_client_t *c, bb_option_req_pkt* pkt) {
 
     opts = db_get_bb_char_option(c->guildcard);
 
-    guild_data.guild_data = db_get_bb_char_guild(c->guildcard);
+    guild_data = db_get_bb_char_guild(c->guildcard);
 
     rv = send_bb_option_reply(c, opts.key_cfg, guild_data.guild_data);
 

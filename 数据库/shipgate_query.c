@@ -148,18 +148,18 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     char** row;
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT data FROM %s WHERE guildcard='%u' "
-        "AND slot='%u'", CHARACTER_DATA, gc, slot);
+    sprintf(myquery, "SELECT data FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_DATA, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色数据 (%u: %u)", gc, slot);
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return 0;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色数据 (%u: %u)", gc, slot);
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return 0;
     }
@@ -167,7 +167,7 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         if (check) {
-            SQLERR_LOG("未找到保存的角色数据 (%u: %u)", gc, slot);
+            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
             SQLERR_LOG("%s", psocn_db_error(&conn));
         }
         return 0;
@@ -176,31 +176,31 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
-int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
-    DBG_LOG("更新 guild 设置");
+int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
+    //DBG_LOG("更新 guild 设置");
 
     /* Build the db query */
     sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_BLUEBURST_GUILD);
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_info,
-        sizeof(guild.guild_info));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_info,
+        sizeof(guild.guild_data.guild_info));
 
     strcat(myquery, "', guild_name = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_name,
-        sizeof(guild.guild_name));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_name,
+        sizeof(guild.guild_data.guild_name));
 
     strcat(myquery, "', guild_flag = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_flag,
-        sizeof(guild.guild_flag));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_flag,
+        sizeof(guild.guild_data.guild_flag));
 
     sprintf(myquery + strlen(myquery),
         "', guildcard = '%d', guild_id = '%d', guild_priv_level = '%d'"
         ", guild_rank = '%d', guild_rewards1 = '%d', guild_rewards2 = '%d'"
         " WHERE guildcard = '%" PRIu32 "'",
-        guild.guildcard, guild.guild_id, guild.guild_priv_level, 
-        guild.guild_rank, guild.guild_rewards[0], guild.guild_rewards[1], gc);
+        guild.guild_data.guildcard, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
+        guild.guild_data.guild_rank, guild.guild_data.guild_rewards[0], guild.guild_data.guild_rewards[1], gc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, myquery)) {
@@ -213,8 +213,6 @@ int db_update_bb_char_guild(bb_guild_t guild, uint32_t gc) {
 }
 
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
-    //static char query[sizeof(psocn_bb_db_opts_t) * 2 + 256 + 1248 * 2];
-    
     //DBG_LOG("更新设置 %d", gc);
 
     /* Build the db query */
