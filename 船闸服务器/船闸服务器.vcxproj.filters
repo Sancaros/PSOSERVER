@@ -26,9 +26,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="packets.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="scripts.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -36,6 +33,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ship.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="packets.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="packets.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
