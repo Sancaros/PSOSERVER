@@ -415,22 +415,23 @@ typedef struct shipgate_bb_opts {
     uint32_t guildcard;
     uint32_t block;
     psocn_bb_db_opts_t opts;
+    //psocn_bb_db_guild_t guild;
 } PACKED shipgate_bb_opts_pkt;
-
-/* 请求 Blue Burst 公会数据包 */
-typedef struct shipgate_bb_guild_req {
-    shipgate_hdr_t hdr;
-    uint32_t guildcard;
-    uint32_t block;
-} PACKED shipgate_bb_guild_req_pkt;
-
-/* 发送 Blue Burst 公会数据包至客户端 */
-typedef struct shipgate_bb_guild {
-    shipgate_hdr_t hdr;
-    uint32_t guildcard;
-    uint32_t block;
-    psocn_bb_db_guild_t guild;
-} PACKED shipgate_bb_guild_pkt;
+//
+///* 请求 Blue Burst 公会数据包 */
+//typedef struct shipgate_bb_guild_req {
+//    shipgate_hdr_t hdr;
+//    uint32_t guildcard;
+//    uint32_t block;
+//} PACKED shipgate_bb_guild_req_pkt;
+//
+///* 发送 Blue Burst 公会数据包至客户端 */
+//typedef struct shipgate_bb_guild {
+//    shipgate_hdr_t hdr;
+//    uint32_t guildcard;
+//    uint32_t block;
+//    psocn_bb_db_guild_t guild;
+//} PACKED shipgate_bb_guild_pkt;
 
 /* Packet used to send an update to the user's monster kill counts.
    Version 1 adds a client version code where there used to be a reserved byte

@@ -1199,10 +1199,10 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
         return -4;
     }
 
-    /* Request the user options from the shipgate */
-    if (shipgate_send_bb_guild_req(&ship->sg, c->guildcard, c->cur_block->b)) {
-        return -5;
-    }
+    ///* Request the user options from the shipgate */
+    //if (shipgate_send_bb_guild_req(&ship->sg, c->guildcard, c->cur_block->b)) {
+    //    return -5;
+    //}
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);

@@ -331,7 +331,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     memcpy(g_data->guild_name, guild_name, sizeof(g_data->guild_name));
     memcpy(g_data->guild_flag, default_guild_flag, sizeof(g_data->guild_flag));
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
+    istrncpy16_raw(ic_utf16_to_utf8, guild_name_text, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
 
     sprintf_s(myquery, _countof(myquery), "SELECT * from %s WHERE guild_name_text = '%s'",
         CLIENTS_BLUEBURST_GUILD, guild_name_text);

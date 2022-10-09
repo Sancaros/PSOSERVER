@@ -552,7 +552,7 @@ int send_user_options(ship_t* c) {
 
 /* 发送客户端 Blue Burst 选项数据 */
 int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
-    psocn_bb_db_opts_t* opts) {
+    psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild) {
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
     /* Fill in the packet */
@@ -565,30 +565,31 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     pkt->guildcard = htonl(gc);
     pkt->block = htonl(block);
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
+    //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt));
 }
-
-/* 发送客户端 Blue Burst 公会数据 */
-int send_bb_guild(ship_t* c, uint32_t gc, uint32_t block,
-    psocn_bb_db_guild_t* guild) {
-    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
-
-    /* Fill in the packet */
-    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_pkt));
-    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD);
-    pkt->hdr.reserved = 0;
-    pkt->hdr.version = 0;
-    pkt->hdr.flags = htons(SHDR_RESPONSE);
-
-    pkt->guildcard = htonl(gc);
-    pkt->block = htonl(block);
-    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
-
-    /* 将数据包发送出去 */
-    return send_crypt(c, sizeof(shipgate_bb_guild_pkt));
-}
+//
+///* 发送客户端 Blue Burst 公会数据 */
+//int send_bb_guild(ship_t* c, uint32_t gc, uint32_t block,
+//    psocn_bb_db_guild_t* guild) {
+//    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
+//
+//    /* Fill in the packet */
+//    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_pkt));
+//    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD);
+//    pkt->hdr.reserved = 0;
+//    pkt->hdr.version = 0;
+//    pkt->hdr.flags = htons(SHDR_RESPONSE);
+//
+//    pkt->guildcard = htonl(gc);
+//    pkt->block = htonl(block);
+//    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
+//
+//    /* 将数据包发送出去 */
+//    return send_crypt(c, sizeof(shipgate_bb_guild_pkt));
+//}
 
 /* Send a system-generated simple mail message. */
 int send_simple_mail(ship_t* c, uint32_t gc, uint32_t block, uint32_t sender,
