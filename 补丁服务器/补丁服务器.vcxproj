@@ -124,18 +124,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread\lib;..\通用库\pthread\lib\x86;..\Library;..\通用库\libevent\lib;..\数据库\mariadbx86\win_build\libmariadb\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>urlmon.lib;
-ws2_32.lib;
-wsock32.lib;
-netapi32.lib;libmariadb.lib;mariadbclient.lib;
-libiconv.lib;libz.lib;
-libxml2.lib;libxml2-static.lib;libxml2-static-for-dll.lib;
-libevent.lib;
-libevent_core.lib
-;libevent_extras.lib;
-libevent_openssl.lib;pthread.lib;
-md5.lib;gnutls.lib;libpsoconfig.lib;
-libpsoarchive.lib;libpsocn.lib;lua5.4.4.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libmariadb.lib;mariadbclient.lib;libiconv.lib;libz.lib;libxml2.lib;libxml2-static.lib;libxml2-static-for-dll.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthread.lib;md5.lib;gnutls.lib;libpsoconfig.lib;libpsoarchive.lib;libpsocn.lib;lua5.4.4.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
