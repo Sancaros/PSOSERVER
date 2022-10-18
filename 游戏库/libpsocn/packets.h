@@ -1612,7 +1612,24 @@ typedef struct bb_trade_D0_D3 { // D0 when sent by client, D3 when sent by serve
 //    item_t items;
 //} PACKED bb_trade_item_pkt;
 
-/* The packet used to send C-Rank Data */
+// DD (S->C): Send quest state to joining player (BB)
+// When a player joins a game with a quest already in progress, the server
+// should send this command to the leader. header.flag is the client ID that the
+// leader should send quest state to; the leader will then send a series of
+// target commands (62/6D) that the server can forward to the joining player.
+// No other arguments
+typedef struct bb_send_quest_state {
+    // Unused entries are set to FFFF
+    uint8_t data[0];
+} PACKED bb_send_quest_state_pkt;
+
+// DE (S->C): Rare monster list (BB)
+typedef struct bb_rare_monster_list {
+    // Unused entries are set to FFFF
+    uint16_t monster_ids[16];
+} PACKED bb_rare_monster_list_pkt;
+
+/* 舰船发送至客户端 C-Rank 数据包结构 */
 typedef struct dc_c_rank_update {
     dc_pkt_hdr_t hdr;
     struct {

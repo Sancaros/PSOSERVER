@@ -178,6 +178,8 @@
 #define BB_GUILDCARD_HEADER_TYPE        0x01DC
 #define BB_GUILDCARD_CHUNK_TYPE         0x02DC
 #define BB_GUILDCARD_CHUNK_REQ_TYPE     0x03DC
+#define BB_SEND_QUEST_STATE             0x00DD
+#define BB_RARE_MONSTER_LIST            0x00DE
 #define BB_CHALLENGE_DF                 0x00DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_01DF               0x01DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_02DF               0x02DF  //来自1.0 BB服务端 挑战模式数据
