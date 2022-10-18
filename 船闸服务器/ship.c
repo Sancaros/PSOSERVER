@@ -2698,7 +2698,7 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         (uint8_t*)&pkt->guildcard, 8);
 }
 
-/* 处理 ship's character data request packet. */
+/* 处理舰船角色数据请求. */
 static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t gc, slot;
     uint8_t *data;
