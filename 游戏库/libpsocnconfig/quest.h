@@ -28,6 +28,11 @@
 #define PSOCN_QUEST_BB   (1 << 3)
 #define PSOCN_QUEST_XBOX (1 << 4)
 
+#define PSOCN_QUEST_NOPC (1 << 8)
+#define PSOCN_QUEST_NODC (1 << 9)
+#define PSOCN_QUEST_NOXB (1 << 10)
+#define PSOCN_QUEST_NOGC (1 << 11)
+
 #define PSOCN_QUEST_NORMAL          (1 << 0)
 #define PSOCN_QUEST_BATTLE          (1 << 1)
 #define PSOCN_QUEST_CHALLENGE       (1 << 2)

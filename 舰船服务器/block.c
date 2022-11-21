@@ -957,6 +957,7 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
     c->guildcard = LE32(pkt->guildcard);
     c->language_code = pkt->language_code;
     c->q_lang = pkt->language_code;
+    c->flags |= CLIENT_FLAG_GC_MSG_BOXES;
 
     /* See if this person is a GM. */
     c->privilege = is_gm(c->guildcard, ship);

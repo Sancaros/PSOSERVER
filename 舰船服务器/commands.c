@@ -3471,8 +3471,6 @@ static int handle_logme(ship_client_t *c, const char *params) {
 #ifndef DEBUG
     return send_txt(c, "%s", __(c, "\tE\tC7无效指令."));
 #else
-    lobby_t *l = c->cur_lobby;
-
     /* Make sure the requester has permission to do this */
     if(!IS_TESTER(c))
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));

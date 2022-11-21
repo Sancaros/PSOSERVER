@@ -4056,9 +4056,6 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     gc = ntohl(pkt->guildcard);
     block = ntohl(pkt->block);
 
-    memset(&opts, 0, sizeof(psocn_bb_db_opts_t));
-    memset(&guild, 0, sizeof(psocn_bb_db_guild_t));
-
     opts = db_get_bb_char_option(gc);
     guild = db_get_bb_char_guild(gc);
 

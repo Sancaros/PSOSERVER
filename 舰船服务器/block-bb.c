@@ -1199,11 +1199,6 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
         return -4;
     }
 
-    ///* Request the user options from the shipgate */
-    //if (shipgate_send_bb_guild_req(&ship->sg, c->guildcard, c->cur_block->b)) {
-    //    return -5;
-    //}
-
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
     BLOCK_LOG("%s(%d): 版本 Blue Burst GC %d 已连接 IP %s",
@@ -1501,14 +1496,14 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
 
     //print_payload((unsigned char*)pkt, len);
 
-    DBG_LOG("name3 %s", pkt->data.name3); //空值 没做过数据交换
-    DBG_LOG("option_flags %d %d", pkt->data.option_flags, c->option_flags);
-    DBG_LOG("unk2 %d", pkt->data.unk2);
-    DBG_LOG("unk3 %s", pkt->data.unk3);
-    DBG_LOG("unk4 %s", pkt->data.unk4);
-    DBG_LOG("unk1 %s", pkt->data.unk1);
+    //DBG_LOG("name3 %s", pkt->data.name3); //空值 没做过数据交换
+    //DBG_LOG("option_flags %d %d", pkt->data.option_flags, c->option_flags);
+    //DBG_LOG("unk2 %d", pkt->data.unk2);
+    //DBG_LOG("unk3 %s", pkt->data.unk3);
+    //DBG_LOG("unk4 %s", pkt->data.unk4);
+    //DBG_LOG("unk1 %s", pkt->data.unk1);
 
-    print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guild_card_t));
+    //print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guild_card_t));
 
     if (c->version != CLIENT_VERSION_BB)
         return -1;

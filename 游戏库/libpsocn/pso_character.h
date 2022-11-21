@@ -22,8 +22,8 @@
 #include <time.h>
 #include <stdint.h>
 
-#define BB_CHARACTER_NAME_LENGTH 0x0C
-#define PC_CHARACTER_NAME_LENGTH 0x10
+#define BB_CHARACTER_NAME_LENGTH 0x000C
+#define PC_CHARACTER_NAME_LENGTH 0x0010
 
 #ifdef PACKED
 #undef PACKED

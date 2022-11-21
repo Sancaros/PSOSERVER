@@ -2776,6 +2776,12 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_GCBAN:
             return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
 
+        case SHDR_TYPE_BLKLOGIN:
+            return 0;
+
+        case SHDR_TYPE_BLKLOGOUT:
+            return 0;
+
         case SHDR_TYPE_FRLOGIN:
         case SHDR_TYPE_FRLOGOUT:
             return handle_friend(conn, (shipgate_friend_login_4_pkt*)pkt);
@@ -2838,6 +2844,15 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_UBLOCKS:
             return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
             
+        case SHDR_TYPE_8000:
+            return 0;
+
+        default:
+            ERR_LOG(
+                "%s: ´¬Õ¢·¢ËÍÎ´Öª´íÎó2! Ö¸Áî = 0x%04X ±êÊ¶ = %d ÃÜÔ¿ = %d"
+                , conn->ship->cfg->name, type, flags, conn->has_key
+            );
+            return 0;
         }
     }
 
