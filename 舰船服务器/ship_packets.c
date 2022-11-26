@@ -2341,6 +2341,11 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
 
     tm = (char*)malloc(4096);
 
+    if (!tm) {
+        ERR_LOG("无法发送DC聊天信息");
+        return -1;
+    }
+
     /* Verify we got the sendbuf. */
     if(!sendbuf) {
         free_safe(tm);
@@ -2436,6 +2441,11 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
 
     tm = (char*)malloc(4096);
 
+    if (!tm) {
+        ERR_LOG("无法发送PC聊天信息");
+        return -1;
+    }
+
     /* Verify we got the sendbuf. */
     if(!sendbuf) {
         free_safe(tm);
@@ -2502,6 +2512,11 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     char *outptr;
 
     tm = (char*)malloc(4096);
+
+    if (!tm) {
+        ERR_LOG("无法发送BB聊天信息");
+        return -1;
+    }
 
     /* Verify we got the sendbuf. */
     if(!sendbuf) {

@@ -543,7 +543,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     /* Game Selection */
     case MENU_ID_GAME:
     {
-        char passwd_cmp[17];
+        char passwd_cmp[17] = { 0 };
         lobby_t* l;
         int override = c->flags & CLIENT_FLAG_OVERRIDE_GAME;
 
