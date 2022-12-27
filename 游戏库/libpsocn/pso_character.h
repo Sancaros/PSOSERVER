@@ -195,7 +195,6 @@ typedef struct psocn_bb_mini_char {
 } PACKED psocn_bb_mini_char_t;
 
 typedef struct sylverant_bb_char {
-
     psocn_stats_t stats;
     //uint16_t unk1;
     uint8_t opt_flag[10];

@@ -1534,7 +1534,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
 /* Process a Blue Burst options update */
 static int bb_process_opt_flags(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_opts->option_flags);
+    size_t data_len = sizeof(c->bb_opts->option_flags);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB选项设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1550,7 +1550,7 @@ static int bb_process_opt_flags(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_symbols(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_opts->symbol_chats);
+    size_t data_len = sizeof(c->bb_opts->symbol_chats);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB表情设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1563,7 +1563,7 @@ static int bb_process_symbols(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_shortcuts(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_opts->shortcuts);
+    size_t data_len = sizeof(c->bb_opts->shortcuts);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB聊天快捷方式更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1576,7 +1576,7 @@ static int bb_process_shortcuts(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_keys(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_opts->key_cfg.key_config);
+    size_t data_len = sizeof(c->bb_opts->key_cfg.key_config);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB键位设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1589,7 +1589,7 @@ static int bb_process_keys(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_pad(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_opts->key_cfg.joystick_config);
+    size_t data_len = sizeof(c->bb_opts->key_cfg.joystick_config);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB键盘设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1602,7 +1602,7 @@ static int bb_process_pad(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_techs(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_pl->tech_menu);
+    size_t data_len = sizeof(c->bb_pl->tech_menu);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB法术设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1615,7 +1615,7 @@ static int bb_process_techs(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_config(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_pl->character.config);
+    size_t data_len = sizeof(c->bb_pl->character.config);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("BB设置更新的数据大小无效 (%d 数据大小:%d)", len, data_len);
@@ -1628,7 +1628,7 @@ static int bb_process_config(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_process_mode(ship_client_t* c, bb_options_update_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(c->bb_pl->challenge_data);
+    size_t data_len = sizeof(c->bb_pl->challenge_data);
 
     if (len != sizeof(bb_options_update_pkt) + data_len) {
         ERR_LOG("无效 BB 挑战模式更新数据包 (%d 数据大小:%d)", len, data_len);
@@ -1641,7 +1641,7 @@ static int bb_process_mode(ship_client_t* c, bb_options_update_pkt* pkt) {
 
 static int bb_set_guild_text(ship_client_t* c, bb_guildcard_set_txt_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t data_len = sizeof(bb_guildcard_set_txt_pkt);
+    size_t data_len = sizeof(bb_guildcard_set_txt_pkt);
 
     if (len != sizeof(bb_guildcard_set_txt_pkt)) {
         ERR_LOG("无效 BB GC 文本描述更新数据包大小 (%d 数据大小:%d)", len, data_len);

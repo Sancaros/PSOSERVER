@@ -1326,7 +1326,7 @@ int load_bb_char_data(void) {
     errno_t err = 0;
     int i;
     char file[64];
-    psocn_bb_db_char_t* cur;
+    psocn_bb_db_char_t* cur = { 0 };
     uint8_t* buf;
     int decsize;
 
@@ -1334,11 +1334,11 @@ int load_bb_char_data(void) {
 
     /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
+        memset(&default_chars[i], 0, sizeof(psocn_bb_db_char_t));//必须初始化为0
+
         cur = &default_chars[i];
-        //sprintf(file, "%s\\默认_%s.nsc", path, classes_cn[i]);
-        //sprintf(file, "%s\\%d_默认_%s.nsc", path, i, classes_cn[i]);
+
         sprintf(file, "%s\\%s", path, pso_class[i].class_file);
-        //DBG_LOG("测试读取角色数据文件: %s", file);
 
         err = fopen_s(&fp , file, "rb");
 

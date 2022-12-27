@@ -22,6 +22,9 @@
 extern psocn_dbconn_t conn;
 
 int db_upload_temp_data(void* data, uint32_t size) {
+
+    memset(myquery, 0, sizeof(myquery));
+
     sprintf(myquery, "INSERT INTO temp_t (temp_data)"
         " VALUES ('");
 
@@ -46,6 +49,8 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     psocn_bb_db_opts_t opts;
 
     memset(&opts, 0, sizeof(psocn_bb_db_opts_t));
+
+    memset(myquery, 0, sizeof(myquery));
 
     /* Look up the user's saved config */
     sprintf(myquery, "SELECT key_config, joystick_config, "
@@ -105,6 +110,9 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
 
 //是否与 db_update_bb_char_guild 函数重叠了？？？？？
 int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t guild_priv_level, uint32_t gc) {
+
+    memset(myquery, 0, sizeof(myquery));
+
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
         "guild_id = '%" PRIu32"', guild_priv_level = '%" PRIu32"' "
         "WHERE guildcard = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, 
@@ -127,6 +135,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     uint32_t guild_id, guild_priv_level;
 
     memset(&guild, 0, sizeof(bb_guild_t));
+
+    memset(myquery, 0, sizeof(myquery));
 
     /* 查询数据表 */
     sprintf(myquery, "SELECT guild_id, guild_priv_level FROM %s WHERE "
@@ -242,6 +252,8 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
 
+    memset(myquery, 0, sizeof(myquery));
+
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET ip = '%s', last_login_time = '%s'"
         "WHERE guildcard = '%" PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DATA, ipstr, timestamp, gc, slot);
     if (psocn_db_real_query(&conn, myquery))
@@ -258,6 +270,8 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
     //char query[256];
     time_t servertime = time(NULL);
+
+    memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET dressflag = '%" PRIu32 "' WHERE "
         "guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, flags, gc);

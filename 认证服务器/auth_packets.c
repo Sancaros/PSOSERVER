@@ -2037,7 +2037,7 @@ int send_ep3_card_update(login_client_t *c) {
     }
 
     /* Grab the card list */
-    fp = fopen("Ep3/cardupdate.mnr", "rb");
+    fp = fopen("System/Ep3/cardupdate.mnr", "rb");
     if(!fp) {
         return -1;
     }

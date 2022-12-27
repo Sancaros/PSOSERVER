@@ -25,6 +25,8 @@ uint16_t db_get_char_ship_id(uint32_t gc) {
     char** row;
     uint16_t ship_id;
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Figure out where the user requested is */
     sprintf(myquery, "SELECT ship_id FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
         gc);
@@ -64,6 +66,9 @@ int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot) {
 }
 
 int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot) {
+
+    memset(myquery, 0, sizeof(myquery));
+
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET play_time = '%d' WHERE guildcard = '%"
         PRIu32 "' AND slot = '%"PRIu8"' ", CHARACTER_DATA, play_time, gc, slot);
     if (psocn_db_real_query(&conn, myquery))
@@ -78,6 +83,8 @@ int db_updata_char_play_time(uint32_t play_time, uint32_t gc, uint8_t slot) {
 char* db_get_auth_ip(uint32_t gc, uint8_t slot) {
     void* result;
     char** row;
+
+    memset(myquery, 0, sizeof(myquery));
 
     /* Delete any character data already exising in that slot. */
     sprintf(myquery, "SELECT lastip FROM %s WHERE guildcard='%"PRIu32"'", AUTH_DATA_ACCOUNT, gc);
@@ -106,6 +113,8 @@ char* db_get_auth_ip(uint32_t gc, uint8_t slot) {
 char* db_get_char_create_time(uint32_t gc, uint8_t slot) {
     void* result;
     char** row;
+
+    memset(myquery, 0, sizeof(myquery));
 
     /* Delete any character data already exising in that slot. */
     sprintf(myquery, "SELECT create_time FROM %s WHERE guildcard = '%"
@@ -224,6 +233,8 @@ psocn_bb_db_char_t *db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
         ERR_LOG("%s", strerror(errno));
     }
 
+    memset(myquery, 0, sizeof(myquery));
+
     sprintf(myquery, "SELECT data, size FROM %s WHERE guildcard='%"
         PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DATA, gc, slot);
 
@@ -292,6 +303,8 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
     play_time = char_data->character.play_time;
 
     memcpy(&lastip, db_get_auth_ip(gc, slot), sizeof(lastip));
+
+    memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "SELECT data FROM %s WHERE guildcard='%"
         PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DATA, gc, slot);
@@ -535,6 +548,8 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
     //DBG_LOG("更新角色更衣室数据");
 
+    memset(myquery, 0, sizeof(myquery));
+
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(myquery, "INSERT INTO %s "
             "(guildcard, slot, "
@@ -688,6 +703,8 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
 
     memset(&dress_data, 0, sizeof(psocn_dress_data_t));
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* 查询数据库并获取数据 */
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%"
         PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DATA_DRESS_DATA, gc, slot);
@@ -792,6 +809,8 @@ int db_insert_char_data(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot
     sprintf(timestamp, "%u-%02u-%02u %02u:%02u:%02u",
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
+
+    memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s (guildcard, slot, size, ip, create_time, data) "
         "VALUES ('%" PRIu32 "', '%" PRIu8 "', '0', '%s', '%s', '", CHARACTER_DATA, gc,

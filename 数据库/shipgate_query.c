@@ -26,6 +26,8 @@ uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot) {
     unsigned long* len;
     uint32_t data_length;
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT data, size FROM %s WHERE guildcard='%u' "
         "AND slot='%u'", CHARACTER_DATA, gc, slot);
@@ -72,6 +74,8 @@ uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot) {
     char** row;
     uint32_t data_size;
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT size FROM %s WHERE guildcard='%u' "
         "AND slot='%u'", CHARACTER_DATA, gc, slot);
@@ -110,6 +114,8 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot) {
     char** row;
     uint32_t play_time;
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT play_time FROM %s WHERE guildcard='%u' "
         "AND slot='%u'", CHARACTER_DATA, gc, slot);
@@ -147,6 +153,8 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     void* result;
     char** row;
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT data FROM %s WHERE guildcard = '%" PRIu32 "' "
         "AND slot = '%u'", CHARACTER_DATA, gc, slot);
@@ -178,6 +186,8 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
 
 int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     //DBG_LOG("更新 guild 设置");
+
+    memset(myquery, 0, sizeof(myquery));
 
     /* Build the db query */
     sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_BLUEBURST_GUILD);
@@ -215,6 +225,8 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     //DBG_LOG("更新设置 %d", gc);
 
+    memset(myquery, 0, sizeof(myquery));
+
     /* Build the db query */
     sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_BLUEBURST_OPTION);
 
@@ -226,15 +238,15 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.joystick_config,
         sizeof(opts.key_cfg.joystick_config));
 
-    strcat(myquery, "', symbol_chats = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
-        sizeof(opts.symbol_chats));
-
     strcat(myquery, "', shortcuts = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.shortcuts,
         sizeof(opts.shortcuts));
+
+    strcat(myquery, "', symbol_chats = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
+        sizeof(opts.symbol_chats));
 
     strcat(myquery, "', guild_name = '");
 
@@ -332,6 +344,8 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     memcpy(g_data->guild_flag, default_guild_flag, sizeof(g_data->guild_flag));
 
     istrncpy16_raw(ic_utf16_to_utf8, guild_name_text, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
+
+    memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, _countof(myquery), "SELECT * from %s WHERE guild_name_text = '%s'",
         CLIENTS_BLUEBURST_GUILD, guild_name_text);

@@ -11198,20 +11198,20 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(&pkt->data.character, &c->bb_pl->character,
            sizeof(psocn_bb_char_t));
     pkt->data.option_flags = c->bb_opts->option_flags;
-    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, sizeof(pkt->data.quest_data1));
+    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, sizeof(c->bb_pl->quest_data1));
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
     memcpy(pkt->data.gc_data.name, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
-    memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(pkt->data.gc_data.guild_name));
-    memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(pkt->data.gc_data.guildcard_desc));
+    memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
+    memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
     pkt->data.gc_data.present = pkt->data.gc_data.language = 1;
     pkt->data.gc_data.ch_class = c->bb_pl->character.disp.dress_data.ch_class;
-    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(pkt->data.symbol_chats));
-    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(pkt->data.shortcuts));
-    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(pkt->data.autoreply));
-    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(pkt->data.infoboard));
-    memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, sizeof(pkt->data.challenge_data));
-    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(pkt->data.tech_menu));
-    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(pkt->data.quest_data2));
+    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(c->bb_opts->symbol_chats));
+    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));
+    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(c->bb_pl->autoreply));
+    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(c->bb_pl->infoboard));
+    memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, sizeof(c->bb_pl->challenge_data));
+    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(c->bb_pl->tech_menu));
+    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
     memcpy(&pkt->data.guild_data, &c->bb_guild->guild_data, sizeof(bb_guild_t));
 

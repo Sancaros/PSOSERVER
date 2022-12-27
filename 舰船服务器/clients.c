@@ -156,6 +156,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
+            memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
+
             rv->bb_opts =
                 (psocn_bb_db_opts_t *)malloc(sizeof(psocn_bb_db_opts_t));
 
@@ -167,6 +169,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 closesocket(sock);
                 return NULL;
             }
+
+            memset(rv->bb_opts, 0, sizeof(psocn_bb_db_opts_t));
 
             rv->bb_guild =
                 (psocn_bb_db_guild_t *)malloc(sizeof(psocn_bb_db_guild_t));
@@ -181,12 +185,13 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
-            memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
-            memset(rv->bb_opts, 0, sizeof(psocn_bb_db_opts_t));
             memset(rv->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
         }
         else if(version == CLIENT_VERSION_XBOX) {
-            if(!(rv->xbl_ip = (xbox_ip_t *)malloc(sizeof(xbox_ip_t)))) {
+
+            rv->xbl_ip = (xbox_ip_t*)malloc(sizeof(xbox_ip_t));
+
+            if(!rv->xbl_ip) {
                 perror("malloc");
                 free_safe(rv->enemy_kills);
                 free_safe(rv->pl);
@@ -194,6 +199,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 closesocket(sock);
                 return NULL;
             }
+
+            memset(rv->xbl_ip, 0, sizeof(xbox_ip_t));
         }
     }
 
