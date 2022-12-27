@@ -922,7 +922,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data_l[0], &pkt->data_l[0], sizeof(uint32_t) * 5);
+        memcpy(&item.data.data_l[0], &pkt->data_l[0], sizeof(uint32_t) * 5);
 
         if(!psocn_limits_check_item(l->limits_list, &item, v)) {
             DBG_LOG("Potentially non-legit item in legit mode:\n"
@@ -955,14 +955,14 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data_l[0] == pkt->data_l[0]) {
-                c->iitems[i].data_l[1] += pkt->data_l[1];
+            if(c->iitems[i].data.data_l[0] == pkt->data_l[0]) {
+                c->iitems[i].data.data_l[1] += pkt->data_l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count++].data_l[0], &pkt->data_l[0],
+    memcpy(&c->iitems[c->item_count++].data.data_l[0], &pkt->data_l[0],
            sizeof(uint32_t) * 5);
 
 send_pkt:
@@ -1013,7 +1013,7 @@ static int handle_itemdrop(ship_client_t *c, subcmd_itemgen_t *pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data_l[0], &pkt->item.data_l[0], 5 * sizeof(uint32_t));
+        memcpy(&item.data.data_l[0], &pkt->item.data_l[0], 5 * sizeof(uint32_t));
 
         if(!psocn_limits_check_item(l->limits_list, &item, v)) {
             /* The item failed the check, deal with it. */
@@ -1280,16 +1280,16 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data_l[0] == pkt->item[0]) {
-                c->iitems[i].data_l[1] += pkt->item[1];
+            if(c->iitems[i].data.data_l[0] == pkt->item[0]) {
+                c->iitems[i].data.data_l[1] += pkt->item[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count].data_l[0], &pkt->item[0],
+    memcpy(&c->iitems[c->item_count].data.data_l[0], &pkt->item[0],
            sizeof(uint32_t) * 4);
-    c->iitems[c->item_count++].data2_l = 0;
+    c->iitems[c->item_count++].data.data2_l = 0;
 
 send_pkt:
     return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t *)pkt, 0);

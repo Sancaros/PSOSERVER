@@ -59,36 +59,6 @@ typedef struct generic_menu_entry {
     uint32_t item_id;
     char text[0x10];
 } gen_menu_entry_t;
-//
-//#define MENU_ID_INFODESK    0x00000000
-//#define MENU_ID_BLOCK       0x00000001
-//#define MENU_ID_GAME        0x00000002
-//#define MENU_ID_QCATEGORY   0x00000003
-//#define MENU_ID_QUEST       0x00000004
-//#define MENU_ID_SHIP        0x00000005
-//#define MENU_ID_GAME_TYPE   0x00000006
-//#define MENU_ID_GM          0x00000007
-//#define MENU_ID_GAME_DROP   0x00000008
-//#define MENU_ID_DATABASE    0x00040000
-//#define MENU_ID_LOBBY       0xFFFFFFFF
-//
-///* Submenus of the GM menu. */
-//#define MENU_ID_GM_SHUTDOWN     0x00000407
-//#define MENU_ID_GM_RESTART      0x00000507
-//#define MENU_ID_GM_GAME_EVENT   0x00000607
-//#define MENU_ID_GM_LOBBY_EVENT  0x00000707
-//
-//#define ITEM_ID_EMPTY           0x00000000
-//#define ITEM_ID_LAST            0xFFFFFFFF
-//
-///* GM Options Item IDs */
-//#define ITEM_ID_GM_REF_QUESTS   0x00000001
-//#define ITEM_ID_GM_REF_GMS      0x00000002
-//#define ITEM_ID_GM_REF_LIMITS   0x00000003
-//#define ITEM_ID_GM_SHUTDOWN     0x00000004
-//#define ITEM_ID_GM_RESTART      0x00000005
-//#define ITEM_ID_GM_GAME_EVENT   0x00000006
-//#define ITEM_ID_GM_LOBBY_EVENT  0x00000007
 
 /* This must be placed into the copyright field in the DC welcome packet. */
 const static char dc_welcome_copyright[] =

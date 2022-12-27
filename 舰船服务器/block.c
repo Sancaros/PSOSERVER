@@ -829,7 +829,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
                 (l->highest_item[c->client_id]);
 
             for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
-                c->bb_pl->inv.iitems[i].item_id = LE32(id);
+                c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
             }
 
             --id;
@@ -841,7 +841,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
                 (l->highest_item[c->client_id]);
 
             for (i = 0; i < c->item_count; ++i, ++id) {
-                c->iitems[i].item_id = LE32(id);
+                c->iitems[i].data.item_id = LE32(id);
             }
 
             --id;
@@ -1398,7 +1398,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     /* Renumber the inventory data so we know what's going on later */
     for (i = 0; i < c->item_count; ++i) {
         v = 0x00210000 | i;
-        c->iitems[i].item_id = LE32(v);
+        c->iitems[i].data.item_id = LE32(v);
     }
 
     /* If this packet is coming after the client has left a game, then don't

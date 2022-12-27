@@ -2225,10 +2225,10 @@ static int check_and_send(ship_client_t *c, lobby_t *l, uint32_t item[4],
         }
 
         /* Fill in the item structure so we can check it. */
-        iitem.data_l[0] = LE32(item[0]);
-        iitem.data_l[1] = LE32(item[1]);
-        iitem.data_l[2] = LE32(item[2]);
-        iitem.data2_l = LE32(item[3]);
+        iitem.data.data_l[0] = LE32(item[0]);
+        iitem.data.data_l[1] = LE32(item[1]);
+        iitem.data.data_l[2] = LE32(item[2]);
+        iitem.data.data2_l = LE32(item[3]);
 
         if(!psocn_limits_check_item(l->limits_list, &iitem, v)) {
             section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;

@@ -817,9 +817,9 @@ static int handle_legit(ship_client_t *c, const char *params) {
 
         if(!irv) {
             SHIPS_LOG("Potentially non-legit item in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(item->data_l[0]),
-                  LE32(item->data_l[1]), LE32(item->data_l[2]),
-                  LE32(item->data2_l));
+                  "%08x %08x %08x %08x", LE32(item->data.data_l[0]),
+                  LE32(item->data.data_l[1]), LE32(item->data.data_l[2]),
+                  LE32(item->data.data2_l));
             pthread_rwlock_unlock(&ship->llock);
             return send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
                                            "check."));
@@ -1450,9 +1450,9 @@ static void dumpinv_internal(ship_client_t *c) {
 
         for(i = 0; i < c->item_count; ++i) {
             SHIPS_LOG("%d (%08x): %08x %08x %08x %08x: %s", i,
-                   LE32(c->iitems[i].item_id), LE32(c->iitems[i].data_l[0]),
-                   LE32(c->iitems[i].data_l[1]), LE32(c->iitems[i].data_l[2]),
-                   LE32(c->iitems[i].data2_l), iitem_get_name(&c->iitems[i], v));
+                   LE32(c->iitems[i].data.item_id), LE32(c->iitems[i].data.data_l[0]),
+                   LE32(c->iitems[i].data.data_l[1]), LE32(c->iitems[i].data.data_l[2]),
+                   LE32(c->iitems[i].data.data2_l), iitem_get_name(&c->iitems[i], v));
         }
     }
     else {
@@ -1462,11 +1462,11 @@ static void dumpinv_internal(ship_client_t *c) {
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
             SHIPS_LOG("%d (%08x): %08x %08x %08x %08x: %s", i,
-                  LE32(c->bb_pl->inv.iitems[i].item_id),
-                  LE32(c->bb_pl->inv.iitems[i].data_l[0]),
-                  LE32(c->bb_pl->inv.iitems[i].data_l[1]),
-                  LE32(c->bb_pl->inv.iitems[i].data_l[2]),
-                  LE32(c->bb_pl->inv.iitems[i].data2_l),
+                  LE32(c->bb_pl->inv.iitems[i].data.item_id),
+                  LE32(c->bb_pl->inv.iitems[i].data.data_l[0]),
+                  LE32(c->bb_pl->inv.iitems[i].data.data_l[1]),
+                  LE32(c->bb_pl->inv.iitems[i].data.data_l[2]),
+                  LE32(c->bb_pl->inv.iitems[i].data.data2_l),
                 iitem_get_name(&c->bb_pl->inv.iitems[i], v));
             SHIPS_LOG("\tFlags: %08x %04x %04x",
                   LE32(c->bb_pl->inv.iitems[i].flags),
@@ -1504,9 +1504,9 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
-                  LE32(j->d.item_id), LE32(j->d.data_l[0]),
-                  LE32(j->d.data_l[1]), LE32(j->d.data_l[2]),
-                  LE32(j->d.data2_l), iitem_get_name(&j->d, l->version));
+                  LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
+                  LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
+                  LE32(j->d.data.data2_l), iitem_get_name(&j->d, l->version));
         }
 
         pthread_mutex_unlock(&l->mutex);

@@ -768,40 +768,40 @@ int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid)
 
 	for (ch = 0; ch < c->pl->bb.inv.item_count; ch++)
 	{
-		if (c->pl->bb.inv.iitems[ch].item_id == magid)
+		if (c->pl->bb.inv.iitems[ch].data.item_id == magid)
 		{
 			// Found mag
-			if ((c->pl->bb.inv.iitems[ch].data_b[0] == 0x02) &&
-				(c->pl->bb.inv.iitems[ch].data_b[1] <= Mag_Agastya))
+			if ((c->pl->bb.inv.iitems[ch].data.data_b[0] == 0x02) &&
+				(c->pl->bb.inv.iitems[ch].data.data_b[1] <= Mag_Agastya))
 			{
 				found_mag = ch;
-				mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data_b[0];
+				mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data.data_b[0];
 				for (ch2 = 0; ch2 < c->pl->bb.inv.item_count; ch2++)
 				{
-					if (c->pl->bb.inv.iitems[ch2].item_id == itemid)
+					if (c->pl->bb.inv.iitems[ch2].data.item_id == itemid)
 					{
 						// Found item to feed
-						if ((c->pl->bb.inv.iitems[ch2].data_b[0] == 0x03) &&
-							(c->pl->bb.inv.iitems[ch2].data_b[1] < 0x07) &&
-							(c->pl->bb.inv.iitems[ch2].data_b[1] != 0x02) &&
-							(c->pl->bb.inv.iitems[ch2].data_b[5] > 0x00))
+						if ((c->pl->bb.inv.iitems[ch2].data.data_b[0] == 0x03) &&
+							(c->pl->bb.inv.iitems[ch2].data.data_b[1] < 0x07) &&
+							(c->pl->bb.inv.iitems[ch2].data.data_b[1] != 0x02) &&
+							(c->pl->bb.inv.iitems[ch2].data.data_b[5] > 0x00))
 						{
 							found_item = ch2;
-							switch (c->pl->bb.inv.iitems[ch2].data_b[1])
+							switch (c->pl->bb.inv.iitems[ch2].data.data_b[1])
 							{
 							case 0x00:
-								mt_index = c->pl->bb.inv.iitems[ch2].data_b[2];
+								mt_index = c->pl->bb.inv.iitems[ch2].data.data_b[2];
 								break;
 							case 0x01:
-								mt_index = 3 + c->pl->bb.inv.iitems[ch2].data_b[2];
+								mt_index = 3 + c->pl->bb.inv.iitems[ch2].data.data_b[2];
 								break;
 							case 0x03:
 							case 0x04:
 							case 0x05:
-								mt_index = 5 + c->pl->bb.inv.iitems[ch2].data_b[1];
+								mt_index = 5 + c->pl->bb.inv.iitems[ch2].data.data_b[1];
 								break;
 							case 0x06:
-								mt_index = 6 + c->pl->bb.inv.iitems[ch2].data_b[2];
+								mt_index = 6 + c->pl->bb.inv.iitems[ch2].data.data_b[2];
 								break;
 							}
 						}
@@ -837,15 +837,15 @@ int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid)
 		// Rescan to update Mag pointer (if changed due to clean up) 重新扫描以更新磁指针（如果由于清理而更改） 
 		for (ch = 0; ch < c->pl->bb.inv.item_count; ch++)
 		{
-			if (c->pl->bb.inv.iitems[ch].item_id == magid)
+			if (c->pl->bb.inv.iitems[ch].data.item_id == magid)
 			{
 				// Found mag (again) 再次搜寻玛古
-				if ((c->pl->bb.inv.iitems[ch].data_b[0] == 0x02) &&
-					(c->pl->bb.inv.iitems[ch].data_b[1] <= Mag_Agastya))
+				if ((c->pl->bb.inv.iitems[ch].data.data_b[0] == 0x02) &&
+					(c->pl->bb.inv.iitems[ch].data.data_b[1] <= Mag_Agastya))
 				{
 					found_mag = ch;
 
-					mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data_b[0];
+					mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data.data_b[0];
 					break;
 				}
 			}

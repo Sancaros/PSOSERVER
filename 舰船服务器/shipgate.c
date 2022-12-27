@@ -1155,7 +1155,7 @@ static int handle_creq(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
 
                         /* Clear the item ids from the inventory. */
                         for(i = 0; i < 30; ++i) {
-                            c->bb_pl->inv.iitems[i].item_id = 0xFFFFFFFF;
+                            c->bb_pl->inv.iitems[i].data.item_id = 0xFFFFFFFF;
                         }
                     }
                     done = 1;
@@ -1991,13 +1991,23 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             /* 复制角色选项数据 */
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
 
+            DBG_LOG("handle_bbopts 1");
+
             /* 复制角色选项数据 */
-            //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
+            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
+
+            DBG_LOG("handle_bbopts 2");
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
+            DBG_LOG("handle_bbopts 3");
+
             send_bb_full_char(i);
+            DBG_LOG("handle_bbopts 4");
+
             send_simple(i, CHAR_DATA_REQUEST_TYPE, 0);
+
+            DBG_LOG("handle_bbopts 5");
 
             pthread_mutex_unlock(&i->mutex);
             break;
@@ -2843,7 +2853,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         case SHDR_TYPE_UBLOCKS:
             return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
-            
+            /*
         case SHDR_TYPE_8000:
             return 0;
 
@@ -2852,7 +2862,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
                 "%s: 船闸发送未知错误2! 指令 = 0x%04X 标识 = %d 密钥 = %d"
                 , conn->ship->cfg->name, type, flags, conn->has_key
             );
-            return 0;
+            return 0;*/
         }
     }
 

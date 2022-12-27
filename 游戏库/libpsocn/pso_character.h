@@ -63,7 +63,8 @@ typedef struct psocn_iitem { // c bytes
     uint16_t equipped;
     uint16_t tech;
     uint32_t flags;
-    union data
+    item_t data;
+    /*union data
     {
         item_t data;
         struct item
@@ -82,7 +83,7 @@ typedef struct psocn_iitem { // c bytes
                 uint32_t data2_l;
             };
         };
-    };
+    };*/
 } PACKED iitem_t;
 
 typedef struct psocn_inventory {

@@ -51,21 +51,21 @@ uint32_t get_bb_shop_price(iitem_t* ci)
 00060000
 00000000
 00000000*/
-    switch (ci->data_b[0])
+    switch (ci->data.data_b[0])
     {
     case 0x00: // Weapons 武器
-        if (ci->data_b[4] & 0x80)
+        if (ci->data.data_b[4] & 0x80)
             price = 1; // Untekked = 1 meseta 取消选中 = 1美赛塔
         else
         {
-            if ((ci->data_b[1] < 0x0D) && (ci->data_b[2] < 0x05))
+            if ((ci->data.data_b[1] < 0x0D) && (ci->data.data_b[2] < 0x05))
             {
-                if ((ci->data_b[1] > 0x09) && (ci->data_b[2] > 0x03)) // Canes, Rods, Wands become rare faster  拐杖、棍棒、魔杖越来越稀少 
+                if ((ci->data.data_b[1] > 0x09) && (ci->data.data_b[2] > 0x03)) // Canes, Rods, Wands become rare faster  拐杖、棍棒、魔杖越来越稀少 
                     break;
-                price = pmt_weapon_bb[ci->data_b[1]][ci->data_b[2]]->atp_max + ci->data_b[3];
+                price = pmt_weapon_bb[ci->data.data_b[1]][ci->data.data_b[2]]->atp_max + ci->data.data_b[3];
                 price *= price;
                 price_calc = (float)price;
-                switch (ci->data_b[1])
+                switch (ci->data.data_b[1])
                 {
                 case 0x01:
                     price_calc /= 5.0;
@@ -110,12 +110,12 @@ uint32_t get_bb_shop_price(iitem_t* ci)
                 }
 
                 percent_add = 0;
-                if (ci->data_b[6])
-                    percent_add += (char)ci->data_b[7];
-                if (ci->data_b[8])
-                    percent_add += (char)ci->data_b[9];
-                if (ci->data_b[10])
-                    percent_add += (char)ci->data_b[11];
+                if (ci->data.data_b[6])
+                    percent_add += (char)ci->data.data_b[7];
+                if (ci->data.data_b[8])
+                    percent_add += (char)ci->data.data_b[9];
+                if (ci->data.data_b[10])
+                    percent_add += (char)ci->data.data_b[11];
 
                 if (percent_add != 0)
                 {
@@ -126,60 +126,60 @@ uint32_t get_bb_shop_price(iitem_t* ci)
                 }
                 price_calc /= 8.0;
                 price = (int32_t)(price_calc);
-                price += attrib[ci->data_b[4]];
+                price += attrib[ci->data.data_b[4]];
             }
         }
         break;
     case 0x01:
-        switch (ci->data_b[1])
+        switch (ci->data.data_b[1])
         {
         case 0x01: // Armor 装备
-            if (ci->data_b[2] < 0x18)
+            if (ci->data.data_b[2] < 0x18)
             {
                 // Calculate the amount to boost because of slots...
-                if (ci->data_b[5] > 4)
-                    price = armor_prices[(ci->data_b[2] * 5) + 4];
+                if (ci->data.data_b[5] > 4)
+                    price = armor_prices[(ci->data.data_b[2] * 5) + 4];
                 else
-                    price = armor_prices[(ci->data_b[2] * 5) + ci->data_b[5]];
-                price -= armor_prices[(ci->data_b[2] * 5)];
-                if (ci->data_b[6] > pmt_armor_bb[ci->data_b[2]]->dfp_range)
+                    price = armor_prices[(ci->data.data_b[2] * 5) + ci->data.data_b[5]];
+                price -= armor_prices[(ci->data.data_b[2] * 5)];
+                if (ci->data.data_b[6] > pmt_armor_bb[ci->data.data_b[2]]->dfp_range)
                     variation = 0;
                 else
-                    variation = ci->data_b[6];
-                if (ci->data_b[8] <= pmt_armor_bb[ci->data_b[2]]->dfp_range)
-                    variation += ci->data_b[8];
-                price += equip_prices[1][1][ci->data_b[2]][variation];
+                    variation = ci->data.data_b[6];
+                if (ci->data.data_b[8] <= pmt_armor_bb[ci->data.data_b[2]]->dfp_range)
+                    variation += ci->data.data_b[8];
+                price += equip_prices[1][1][ci->data.data_b[2]][variation];
             }
             break;
         case 0x02: // Shield 盾牌
-            if (ci->data_b[2] < 0x15)
+            if (ci->data.data_b[2] < 0x15)
             {
-                if (ci->data_b[6] > pmt_shield_bb[ci->data_b[2]]->dfp_range)
+                if (ci->data.data_b[6] > pmt_shield_bb[ci->data.data_b[2]]->dfp_range)
                     variation = 0;
                 else
-                    variation = ci->data_b[6];
-                if (ci->data_b[8] <= pmt_shield_bb[ci->data_b[2]]->evp_range)
-                    variation += ci->data_b[8];
-                price = equip_prices[1][2][ci->data_b[2]][variation];
+                    variation = ci->data.data_b[6];
+                if (ci->data.data_b[8] <= pmt_shield_bb[ci->data.data_b[2]]->evp_range)
+                    variation += ci->data.data_b[8];
+                price = equip_prices[1][2][ci->data.data_b[2]][variation];
             }
             break;
         case 0x03: // Units 插槽
-            if (ci->data_b[2] < 0x40)
-                price = unit_prices[ci->data_b[2]];
+            if (ci->data.data_b[2] < 0x40)
+                price = unit_prices[ci->data.data_b[2]];
             break;
         }
         break;
     case 0x03:
         // Tool 工具
-        if (ci->data_b[1] == 0x02) // Technique 魔法科技
+        if (ci->data.data_b[1] == 0x02) // Technique 魔法科技
         {
-            if (ci->data_b[4] < 0x13)
-                price = ((int32_t)(ci->data_b[2] + 1) * tech_prices[ci->data_b[4]]) / 100L;
+            if (ci->data.data_b[4] < 0x13)
+                price = ((int32_t)(ci->data.data_b[2] + 1) * tech_prices[ci->data.data_b[4]]) / 100L;
         }
         else
         {
             compare_item = 0;
-            memcpy(&compare_item, &ci->data_b[0], 3);
+            memcpy(&compare_item, &ci->data.data_b[0], 3);
             for (ch = 0; ch < (sizeof(tool_prices) / 4); ch += 2)
                 if (compare_item == tool_prices[ch])
                 {

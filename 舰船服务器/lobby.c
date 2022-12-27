@@ -1610,9 +1610,9 @@ int lobby_check_player_legit(lobby_t *l, ship_t *s, player_t *pl, uint32_t v) {
 
         if(!irv) {
             LOBBY_LOG("Potentially non-legit item in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(item->data_l[0]),
-                  LE32(item->data_l[1]), LE32(item->data_l[2]),
-                  LE32(item->data2_l));
+                  "%08x %08x %08x %08x", LE32(item->data.data_l[0]),
+                  LE32(item->data.data_l[1]), LE32(item->data.data_l[2]),
+                  LE32(item->data.data2_l));
             rv = irv;
         }
     }
@@ -1951,11 +1951,11 @@ iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]) {
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    item->d.item_id = LE32(l->next_game_item_id);
-    item->d.data_l[0] = LE32(item_data[0]);
-    item->d.data_l[1] = LE32(item_data[1]);
-    item->d.data_l[2] = LE32(item_data[2]);
-    item->d.data2_l = LE32(item_data[3]);
+    item->d.data.item_id = LE32(l->next_game_item_id);
+    item->d.data.data_l[0] = LE32(item_data[0]);
+    item->d.data.data_l[1] = LE32(item_data[1]);
+    item->d.data.data_l[2] = LE32(item_data[2]);
+    item->d.data.data2_l = LE32(item_data[3]);
 
     /* Increment the item ID, add it to the queue, and return the new item */
     ++l->next_game_item_id;
@@ -1992,13 +1992,13 @@ int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv) {
         return -1;
 
     memset(rv, 0, sizeof(iitem_t));
-    rv->data_l[0] = LE32(Item_NoSuchItem);
+    rv->data.data_l[0] = LE32(Item_NoSuchItem);
 
     i = TAILQ_FIRST(&l->item_queue);
     while(i) {
         tmp = TAILQ_NEXT(i, qentry);
 
-        if(i->d.item_id == item_id) {
+        if(i->d.data.item_id == item_id) {
             memcpy(rv, &i->d, sizeof(iitem_t));
             TAILQ_REMOVE(&l->item_queue, i, qentry);
             free_safe(i);

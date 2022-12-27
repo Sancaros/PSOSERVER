@@ -399,11 +399,11 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         return 0;
     }
     else {
-        item = LE32(iitem_data.data_l[0]);
+        item = LE32(iitem_data.data.data_l[0]);
 
         /* Is it meseta, or an item? */
         if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data2_l) + LE32(c->bb_pl->character.disp.meseta);
+            tmp = LE32(iitem_data.data.data2_l) + LE32(c->bb_pl->character.disp.meseta);
 
             /* Cap at 999,999 meseta. */
             if (tmp > 999999)
@@ -434,10 +434,10 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
 
     /* Let everybody know that the client picked it up, and remove it from the
        view. */
-    memcpy(ic, iitem_data.data_l, 3 * sizeof(uint32_t));
+    memcpy(ic, iitem_data.data.data_l, 3 * sizeof(uint32_t));
     subcmd_send_create_item(c, /*ic, */iitem_data.data/*, iitem_data.data2_l*/, 1);
 
-    return subcmd_send_destroy_map_item(c, pkt->area, iitem_data.item_id);
+    return subcmd_send_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
 
 static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
@@ -1056,7 +1056,7 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
             // Update player item ID
             l->next_item_id[c->client_id] = pkt->item_id;
             DBG_LOG("购买物品");
-            ii->item_id = l->next_item_id[c->client_id]++;
+            ii->data.item_id = l->next_item_id[c->client_id]++;
 
             DBG_LOG("购买物品");
             item_add_to_inv(c->bb_pl->inv.iitems,
@@ -1099,11 +1099,11 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
             throw logic_error("item tracking not enabled in BB game");
         }*/
 
-        if (!c->game_data.identify_result.item_id) {
+        if (!c->game_data.identify_result.data.item_id) {
             ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
                 c->guildcard);
         }
-        if (c->game_data.identify_result.item_id != pkt->item.item_id) {
+        if (c->game_data.identify_result.data.item_id != pkt->item.item_id) {
             ERR_LOG("GC %" PRIu32 " accepted item ID does not match previous identify request!",
                 c->guildcard);
         }
@@ -1239,14 +1239,14 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             /* Look for the item in the user's inventory. */
             inv = c->bb_pl->inv.item_count;
             for (i = 0; i < inv; ++i) {
-                if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+                if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
                     iitem = c->bb_pl->inv.iitems[i];
                     found = i;
 
                     /* If it is an equipped frame, we need to unequip all
                        the units that are attached to it. */
-                    if (iitem.data_b[0] == ITEM_TYPE_GUARD &&
-                        iitem.data_b[1] == ITEM_SUBTYPE_FRAME &&
+                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
+                        iitem.data.data_b[1] == ITEM_SUBTYPE_FRAME &&
                         (iitem.flags & LE32(0x00000008))) {
                         isframe = 1;
                     }
@@ -1262,7 +1262,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 return -1;
             }
 
-            stack = item_is_stackable(iitem.data_l[0]);
+            stack = item_is_stackable(iitem.data.data_l[0]);
 
             if (!stack && pkt->item_amount > 1) {
                 ERR_LOG("GC %" PRIu32 " banking multiple of "
@@ -1282,7 +1282,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
 
             /* Fill in the bank item. */
             if (stack) {
-                iitem.data_b[5] = pkt->item_amount;
+                iitem.data.data_b[5] = pkt->item_amount;
                 bitem.amount = LE16(pkt->item_amount);
             }
             else {
@@ -1290,18 +1290,18 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             }
 
             bitem.flags = LE16(1);
-            bitem.data_l[0] = iitem.data_l[0];
-            bitem.data_l[1] = iitem.data_l[1];
-            bitem.data_l[2] = iitem.data_l[2];
-            bitem.item_id = iitem.item_id;
-            bitem.data2_l = iitem.data2_l;
+            bitem.data_l[0] = iitem.data.data_l[0];
+            bitem.data_l[1] = iitem.data.data_l[1];
+            bitem.data_l[2] = iitem.data.data_l[2];
+            bitem.item_id = iitem.data.item_id;
+            bitem.data2_l = iitem.data.data2_l;
 
             /* Unequip any units, if the item was equipped and a frame. */
             if (isframe) {
                 for (i = 0; i < inv; ++i) {
                     iitem = c->bb_pl->inv.iitems[i];
-                    if (iitem.data_b[0] == ITEM_TYPE_GUARD &&
-                        iitem.data_b[1] == ITEM_SUBTYPE_UNIT) {
+                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
+                        iitem.data.data_b[1] == ITEM_SUBTYPE_UNIT) {
                         c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
                     }
                 }
@@ -1314,7 +1314,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 return -1;
             }
 
-            return subcmd_send_destroy_item(c, iitem.item_id,
+            return subcmd_send_destroy_item(c, iitem.data.item_id,
                 pkt->item_amount);
         }
 
@@ -1362,11 +1362,11 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             iitem.equipped = LE16(0x0001);
             iitem.tech = LE16(0x0000);
             iitem.flags = 0;
-            ic[0] = iitem.data_l[0] = bitem.data_l[0];
-            ic[1] = iitem.data_l[1] = bitem.data_l[1];
-            ic[2] = iitem.data_l[2] = bitem.data_l[2];
-            iitem.item_id = LE32(l->next_game_item_id);
-            iitem.data2_l = bitem.data2_l;
+            ic[0] = iitem.data.data_l[0] = bitem.data_l[0];
+            ic[1] = iitem.data.data_l[1] = bitem.data_l[1];
+            ic[2] = iitem.data.data_l[2] = bitem.data_l[2];
+            iitem.data.item_id = LE32(l->next_game_item_id);
+            iitem.data.data2_l = bitem.data2_l;
             ++l->next_game_item_id;
 
             /* Time to add it to the inventory... */
@@ -2220,13 +2220,13 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     item_id = pkt->item_id;
     for (i = 0; i < inv; ++i) {
         //DBG_LOG("进入循环");
-        if (c->bb_pl->inv.iitems[i].item_id == item_id) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
             found_item = 1;
             /*DBG_LOG("物品ID %08X %08X %08X( %08X %08X %08X - %08X %08X %08X )", c->pl->bb.inv.iitems[i].item_id, c->bb_pl->inv.iitems[i].item_id, pkt->item_id,
                 c->bb_pl->inv.iitems[j].data_l[0], c->bb_pl->inv.iitems[j].data_l[1], c->bb_pl->inv.iitems[j].data_l[2],
                 c->pl->bb.inv.iitems[i].data_l[0], c->pl->bb.inv.iitems[i].data_l[1], c->pl->bb.inv.iitems[i].data_l[2]
                 );*/
-            switch (c->bb_pl->inv.iitems[i].data_b[0])
+            switch (c->bb_pl->inv.iitems[i].data.data_b[0])
             {
             case ITEM_TYPE_WEAPON:
                 //DBG_LOG("武器识别");
@@ -2241,7 +2241,7 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                 else */{
                     // De-equip any other weapon on character. (Prevent stacking) 解除角色上任何其他武器的装备。（防止堆叠） 
                     for (j = 0; j < inv; j++)
-                        if ((c->bb_pl->inv.iitems[j].data_b[0] == ITEM_TYPE_WEAPON) &&
+                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_WEAPON) &&
                             (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
 
                             c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
@@ -2250,7 +2250,7 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                 }
                 break;
             case ITEM_TYPE_GUARD:
-                switch (c->bb_pl->inv.iitems[i].data_b[1])
+                switch (c->bb_pl->inv.iitems[i].data.data_b[1])
                 {
                 case ITEM_SUBTYPE_FRAME:
                     //DBG_LOG("装甲识别");
@@ -2265,13 +2265,13 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                         // Remove any other armor and equipped slot items.移除其他装甲和插槽
                         for (j = 0; j < inv; ++j)
                         {
-                            if ((c->bb_pl->inv.iitems[j].data_b[0] == ITEM_TYPE_GUARD) &&
-                                (c->bb_pl->inv.iitems[j].data_b[1] != ITEM_SUBTYPE_BARRIER) &&
+                            if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                                (c->bb_pl->inv.iitems[j].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
                                 (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
                             {
                                 //DBG_LOG("卸载装甲");
                                 c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                                c->bb_pl->inv.iitems[j].data_b[4] = 0x00;
+                                c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
                             }
                         }
                         break;
@@ -2289,13 +2289,13 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                     } else */{
                         // Remove any other barrier
                         for (j = 0; j < inv; ++j) {
-                            if ((c->bb_pl->inv.iitems[j].data_b[0] == ITEM_TYPE_GUARD) &&
-                                (c->bb_pl->inv.iitems[j].data_b[1] == ITEM_SUBTYPE_BARRIER) &&
+                            if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                                (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_BARRIER) &&
                                 (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
                             {
                                 //DBG_LOG("卸载护盾");
                                 c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                                c->bb_pl->inv.iitems[j].data_b[4] = 0x00;
+                                c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
                             }
                         }
                     }
@@ -2308,14 +2308,14 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                     for (j = 0; j < inv; j++)
                     {
                         // Another loop ;(
-                        if ((c->bb_pl->inv.iitems[j].data_b[0] == ITEM_TYPE_GUARD) &&
-                            (c->bb_pl->inv.iitems[j].data_b[1] == ITEM_SUBTYPE_UNIT))
+                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                            (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_UNIT))
                         {
                             //DBG_LOG("插槽 %d 识别", j);
                             if ((c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)) &&
-                                (c->bb_pl->inv.iitems[j].data_b[4] < 0x04)) {
+                                (c->bb_pl->inv.iitems[j].data.data_b[4] < 0x04)) {
 
-                                slot[c->bb_pl->inv.iitems[j].data_b[4]] = 1;
+                                slot[c->bb_pl->inv.iitems[j].data.data_b[4]] = 1;
                                 //DBG_LOG("插槽 %d 卸载", j);
                             }
                         }
@@ -2332,14 +2332,14 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
 
                     if (found_slot && (c->mode > 0)) {
                         found_slot--;
-                        c->bb_pl->inv.iitems[j].data_b[4] = (uint8_t)(found_slot);
+                        c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
                         //DBG_LOG("111111111111111");
                         //client->Full_Char.inventory[i].item.item_data1[4] = (uint8_t)(found_slot);
                     } else {
                         if (found_slot)
                         {
                             found_slot--;
-                            c->bb_pl->inv.iitems[j].data_b[4] = (uint8_t)(found_slot);
+                            c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
                             //DBG_LOG("111111111111111");
                         }
                         else
@@ -2360,7 +2360,7 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
                 //DBG_LOG("玛古识别");
                 // Remove equipped mag
                 for (j = 0; j < inv; j++)
-                    if ((c->bb_pl->inv.iitems[j].data_b[0] == ITEM_TYPE_MAG) &&
+                    if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_MAG) &&
                         (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
 
                         c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
@@ -2413,13 +2413,13 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     /* Find the item and remove the equip flag. */
     inv = c->bb_pl->inv.item_count;
     for (i = 0; i < inv; ++i) {
-        if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
             c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
 
             /* If its a frame, we have to make sure to unequip any units that
                may be equipped as well. */
-            if (c->bb_pl->inv.iitems[i].data_b[0] == ITEM_TYPE_GUARD &&
-                c->bb_pl->inv.iitems[i].data_b[1] == ITEM_SUBTYPE_FRAME) {
+            if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
+                c->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_FRAME) {
                 isframe = 1;
             }
 
@@ -2437,8 +2437,8 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     /* Clear any units if we unequipped a frame. */
     if (isframe) {
         for (i = 0; i < inv; ++i) {
-            if (c->bb_pl->inv.iitems[i].data_b[0] == ITEM_TYPE_GUARD &&
-                c->bb_pl->inv.iitems[i].data_b[1] == ITEM_SUBTYPE_UNIT) {
+            if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
+                c->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_UNIT) {
                 c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
@@ -2581,13 +2581,13 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
         /* Have we reached the end of the list? */
         if (pkt->item_ids[i] == 0xFFFFFFFF){
-            inv.iitems[i].item_id = 0xFFFFFFFF;
+            inv.iitems[i].data.item_id = 0xFFFFFFFF;
             break;
         }
 
         /* Look for the item in question. */
         for (j = 0; j < inv.item_count; ++j) {
-            if (c->bb_pl->inv.iitems[j].item_id == pkt->item_ids[i]) {
+            if (c->bb_pl->inv.iitems[j].data.item_id == pkt->item_ids[i]) {
                 /* Make sure they haven't used this one yet. */
                 if (item_used[j]) {
                     ERR_LOG("GC %" PRIu32 " 在背包整理中列出了两次同样的物品!", c->guildcard);
@@ -2606,7 +2606,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
 
         /* Look for the item in question. */
         for (j = 0; j < mode_inv.item_count; ++j) {
-            if (c->pl->bb.inv.iitems[j].item_id == pkt->item_ids[i]) {
+            if (c->pl->bb.inv.iitems[j].data.item_id == pkt->item_ids[i]) {
                 /* Make sure they haven't used this one yet. */
                 if (mode_item_used[j]) {
                     ERR_LOG("GC %" PRIu32 " 在背包整理中列出了两次同样的物品!", c->guildcard);
@@ -3360,14 +3360,14 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     inv = c->bb_pl->inv.item_count;
 
     for (i = 0; i < inv; ++i) {
-        if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
             found = i;
 
             /* If it is an equipped frame, we need to unequip all the units
                that are attached to it.
                如果它是一个装备好的护甲，我们需要取消与它相连的所有单元的装备*/
-            if (c->bb_pl->inv.iitems[i].data_b[0] == ITEM_TYPE_GUARD &&
-                c->bb_pl->inv.iitems[i].data_b[1] == ITEM_SUBTYPE_FRAME &&
+            if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
+                c->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_FRAME &&
                 (c->bb_pl->inv.iitems[i].flags & LE32(0x00000008))) {
                 isframe = 1;
             }
@@ -3389,8 +3389,8 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     /* Unequip any units, if the item was equipped and a frame. */
     if (isframe) {
         for (i = 0; i < inv; ++i) {
-            if (c->bb_pl->inv.iitems[i].data_b[0] == ITEM_TYPE_GUARD &&
-                c->bb_pl->inv.iitems[i].data_b[1] == ITEM_SUBTYPE_UNIT) {
+            if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
+                c->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_UNIT) {
                 c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
@@ -3445,7 +3445,7 @@ static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
     /* Look for the item in the user's inventory. */
     if (pkt->item_id != 0xFFFFFFFF) {
         for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+            if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
                 found = i;
                 break;
             }
@@ -3453,7 +3453,7 @@ static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
 
         if (c->mode > 0) {
             for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-                if (c->pl->bb.inv.iitems[i].item_id == pkt->item_id) {
+                if (c->pl->bb.inv.iitems[i].data.item_id == pkt->item_id) {
                     found = i;
                     break;
                 }
@@ -3524,7 +3524,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     if (pkt->item_id != 0xFFFFFFFF) {
         /* Look for the item in the user's inventory. */
         for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+            if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
                 found = i;
                 break;
             }
@@ -3538,14 +3538,14 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 
         /* Grab the item from the client's inventory and set up the split */
         item_data = c->iitems[found];
-        item_data.item_id = LE32((++l->highest_item[c->client_id]));
-        item_data.data_b[5] = (uint8_t)(LE32(pkt->amount));
+        item_data.data.item_id = LE32((++l->highest_item[c->client_id]));
+        item_data.data.data_b[5] = (uint8_t)(LE32(pkt->amount));
     }
     else {
-        item_data.data_l[0] = LE32(Item_Meseta);
-        item_data.data_l[1] = item_data.data_l[2] = 0;
-        item_data.data2_l = pkt->amount;
-        item_data.item_id = LE32((++l->highest_item[c->client_id]));
+        item_data.data.data_l[0] = LE32(Item_Meseta);
+        item_data.data.data_l[1] = item_data.data.data_l[2] = 0;
+        item_data.data.data2_l = pkt->amount;
+        item_data.data.item_id = LE32((++l->highest_item[c->client_id]));
     }
 
     /* Make sure the item id and amount match the most recent 0xC3. */
@@ -3923,10 +3923,10 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
 
     for (i = 0;i < c->bb_pl->inv.item_count;i++) {
         /* Look for the item in question. */
-        if (c->bb_pl->inv.iitems[i].item_id == pkt->item_id) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
 
-            if ((pkt->sell_num > 1) && (c->bb_pl->inv.iitems[i].data_b[0] != 0x03)) {
-                DBG_LOG("handle_bb_sell_item %d 0x%02X", pkt->sell_num, c->bb_pl->inv.iitems[i].data_b[0]);
+            if ((pkt->sell_num > 1) && (c->bb_pl->inv.iitems[i].data.data_b[0] != 0x03)) {
+                DBG_LOG("handle_bb_sell_item %d 0x%02X", pkt->sell_num, c->bb_pl->inv.iitems[i].data.data_b[0]);
                 break;
             }
             else
@@ -4503,12 +4503,12 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
     gen.y = req->y;
     gen.unk1 = LE32(tmp);       /* ??? */
 
-    gen.item.data_l[0] = LE32(item->data_l[0]);
-    gen.item.data_l[1] = LE32(item->data_l[1]);
-    gen.item.data_l[2] = LE32(item->data_l[2]);
-    gen.item.data2_l = LE32(item->data2_l);
+    gen.item.data_l[0] = LE32(item->data.data_l[0]);
+    gen.item.data_l[1] = LE32(item->data.data_l[1]);
+    gen.item.data_l[2] = LE32(item->data.data_l[2]);
+    gen.item.data2_l = LE32(item->data.data2_l);
 
-    gen.item.item_id = LE32(item->item_id);
+    gen.item.item_id = LE32(item->data.item_id);
 
     /* Send the packet to every client in the lobby. */
     for (i = 0; i < l->max_clients; ++i) {
@@ -4562,21 +4562,21 @@ int subcmd_send_bb_level(ship_client_t* c) {
     /* Add in the mag's bonus. */
     for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
         if ((c->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-            c->bb_pl->inv.iitems[i].data_b[0] == 0x02) {
+            c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) {
             base = LE16(pkt.dfp);
-            mag = LE16(c->bb_pl->inv.iitems[i].data_w[2]) / 100;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[2]) / 100;
             pkt.dfp = LE16((base + mag));
 
             base = LE16(pkt.atp);
-            mag = LE16(c->bb_pl->inv.iitems[i].data_w[3]) / 50;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[3]) / 50;
             pkt.atp = LE16((base + mag));
 
             base = LE16(pkt.ata);
-            mag = LE16(c->bb_pl->inv.iitems[i].data_w[4]) / 200;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[4]) / 200;
             pkt.ata = LE16((base + mag));
 
             base = LE16(pkt.mst);
-            mag = LE16(c->bb_pl->inv.iitems[i].data_w[5]) / 50;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[5]) / 50;
             pkt.mst = LE16((base + mag));
 
             break;
@@ -4602,11 +4602,11 @@ static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
     drop.area = area;
     drop.x = x;
     drop.z = z;
-    drop.item[0] = item->data_l[0];
-    drop.item[1] = item->data_l[1];
-    drop.item[2] = item->data_l[2];
-    drop.item_id = item->item_id;
-    drop.item2 = item->data2_l;
+    drop.item[0] = item->data.data_l[0];
+    drop.item[1] = item->data.data_l[1];
+    drop.item[2] = item->data.data_l[2];
+    drop.item_id = item->data.item_id;
+    drop.item2 = item->data.data2_l;
 
     return subcmd_send_lobby_bb(c->cur_lobby, NULL, (bb_subcmd_pkt_t*)&drop,
         0);

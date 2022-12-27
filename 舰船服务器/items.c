@@ -3833,32 +3833,32 @@ const char* item_get_name(item_t* item, int version) {
 }
 
 const char *iitem_get_name(iitem_t *item, int version) {
-    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
-        (item->data_b[2] << 16);
+    uint32_t code = item->data.data_b[0] | (item->data.data_b[1] << 8) |
+        (item->data.data_b[2] << 16);
 
     /* Make sure we take care of any v2 item codes */
-    switch (item->data_b[0]) {
+    switch (item->data.data_b[0]) {
     case ITEM_TYPE_WEAPON:  /* Weapon */
-        if (item->data_b[5]) {
-            code = (item->data_b[5] << 8);
+        if (item->data.data_b[5]) {
+            code = (item->data.data_b[5] << 8);
         }
         break;
 
     case ITEM_TYPE_GUARD:  /* Guard */
-        if (item->data_b[1] != 0x03 && item->data_b[3]) {
-            code = code | (item->data_b[3] << 16);
+        if (item->data.data_b[1] != 0x03 && item->data.data_b[3]) {
+            code = code | (item->data.data_b[3] << 16);
         }
         break;
 
     case ITEM_TYPE_MAG:  /* Mag */
-        if (item->data_b[1] == 0x00 && item->data_b[2] >= 0xC9) {
-            code = 0x02 | (((item->data_b[2] - 0xC9) + 0x2C) << 8);
+        if (item->data.data_b[1] == 0x00 && item->data.data_b[2] >= 0xC9) {
+            code = 0x02 | (((item->data.data_b[2] - 0xC9) + 0x2C) << 8);
         }
         break;
 
     case ITEM_TYPE_TOOL: /* Tool */
-        if (code == 0x060D03 && item->data_b[3]) {
-            code = 0x000E03 | ((item->data_b[3] - 1) << 16);
+        if (code == 0x060D03 && item->data.data_b[3]) {
+            code = 0x000E03 | ((item->data.data_b[3] - 1) << 16);
         }
         break;
 
@@ -3926,11 +3926,11 @@ void clear_iitem(iitem_t* iitem) {
     iitem->equipped = 0x0000;
     iitem->tech = 0x0000;
     iitem->flags = 0x00000000;
-    iitem->data_l[0] = 0;
-    iitem->data_l[1] = 0;
-    iitem->data_l[2] = 0;
-    iitem->item_id = 0xFFFFFFFF;
-    iitem->data2_l = 0;
+    iitem->data.data_l[0] = 0;
+    iitem->data.data_l[1] = 0;
+    iitem->data.data_l[2] = 0;
+    iitem->data.item_id = 0xFFFFFFFF;
+    iitem->data.data2_l = 0;
 }
 
 /* 生成物品ID */
@@ -3949,7 +3949,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Look for the item in question */
     for(i = 0; i < inv_count; ++i) {
-        if(inv[i].item_id == item_id) {
+        if(inv[i].data.item_id == item_id) {
             break;
         }
     }
@@ -3961,12 +3961,12 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(inv[i].data_l[0])) && amt != 0xFFFFFFFF) {
-        tmp = inv[i].data_b[5];
+    if(item_is_stackable(LE32(inv[i].data.data_l[0])) && amt != 0xFFFFFFFF) {
+        tmp = inv[i].data.data_b[5];
 
         if(amt < tmp) {
             tmp -= amt;
-            inv[i].data_b[5] = tmp;
+            inv[i].data.data_b[5] = tmp;
             return 0;
         }
     }
@@ -3989,18 +3989,18 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
 
     /* Look for the item in question. If it exists, we're in trouble! */
     for(i = 0; i < inv_count; ++i) {
-        if(inv[i].item_id == it->item_id) {
+        if(inv[i].data.item_id == it->data.item_id) {
             return -1;
         }
     }
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(it->data_l[0]))) {
+    if(item_is_stackable(LE32(it->data.data_l[0]))) {
         /* Look for anything that matches this item in the inventory. */
         for(i = 0; i < inv_count; ++i) {
-            if(inv[i].data_l[0] == it->data_l[0]) {
-                inv[i].data_b[5] += it->data_b[5];
+            if(inv[i].data.data_l[0] == it->data.data_l[0]) {
+                inv[i].data.data_b[5] += it->data.data_b[5];
                 return 0;
             }
         }

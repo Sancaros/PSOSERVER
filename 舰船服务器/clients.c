@@ -1198,8 +1198,8 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
         if(!irv) {
             SHIPS_LOG("Potentially non-legit found in inventory (GC: %"
                   PRIu32"):\n%08x %08x %08x %08x", c->guildcard,
-                  LE32(item->data_l[0]), LE32(item->data_l[1]),
-                  LE32(item->data_l[2]), LE32(item->data2_l));
+                  LE32(item->data.data_l[0]), LE32(item->data.data_l[1]),
+                  LE32(item->data.data_l[2]), LE32(item->data.data2_l));
             return -1;
         }
     }
@@ -1690,16 +1690,16 @@ static int client_item_lua(lua_State *l) {
         /* Create a table and put all 4 dwords of item data in it. */
         lua_newtable(l);
         lua_pushinteger(l, 1);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data_l[0]);
+        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.data_l[0]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data_l[1]);
+        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.data_l[1]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data_l[2]);
+        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.data_l[2]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data2_l);
+        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.data2_l);
         lua_settable(l, -3);
     }
     else {
@@ -1766,12 +1766,12 @@ static int client_hasItem_lua(lua_State *l) {
 
         for(i = 0; i < c->pl->v1.inv.item_count; ++i) {
             item = (iitem_t *)&c->pl->v1.inv.iitems[i];
-            val = item->data_l[0];
+            val = item->data.data_l[0];
 
             /* Grab the real item type, if its a v2 item.
                Note: Gamecube uses this byte for wrapping paper design. */
-            if(c->version < ITEM_VERSION_GC && item->data_b[5])
-                val = (item->data_b[5] << 8);
+            if(c->version < ITEM_VERSION_GC && item->data.data_b[5])
+                val = (item->data.data_b[5] << 8);
 
             if((val & 0x00FFFFFF) == ic) {
                 lua_pushboolean(l, 1);
@@ -1816,10 +1816,10 @@ static int client_legitCheckItem_lua(lua_State *l) {
         ic3 = lua_tointeger(l, 4);
         ic4 = lua_tointeger(l, 5);
 
-        item.data_l[0] = (uint32_t)ic1;
-        item.data_l[1] = (uint32_t)ic2;
-        item.data_l[2] = (uint32_t)ic3;
-        item.data2_l = (uint32_t)ic4;
+        item.data.data_l[0] = (uint32_t)ic1;
+        item.data.data_l[1] = (uint32_t)ic2;
+        item.data.data_l[2] = (uint32_t)ic3;
+        item.data.data2_l = (uint32_t)ic4;
 
         switch(c->version) {
             case CLIENT_VERSION_DCV1:
@@ -1846,8 +1846,8 @@ static int client_legitCheckItem_lua(lua_State *l) {
         if(!rv) {
             SHIPS_LOG("legitCheckItem failed for GC %" PRIu32 " with "
                   "item %08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32
-                  "", c->guildcard, item.data_l[0], item.data_l[1],
-                  item.data_l[2], item.data2_l);
+                  "", c->guildcard, item.data.data_l[0], item.data.data_l[1],
+                  item.data.data_l[2], item.data.data2_l);
         }
 
         lua_pushboolean(l, !!rv);
