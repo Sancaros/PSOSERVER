@@ -1991,23 +1991,13 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             /* 复制角色选项数据 */
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
 
-            DBG_LOG("handle_bbopts 1");
-
             /* 复制角色选项数据 */
-            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
-
-            DBG_LOG("handle_bbopts 2");
+            //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
-            DBG_LOG("handle_bbopts 3");
-
             send_bb_full_char(i);
-            DBG_LOG("handle_bbopts 4");
-
             send_simple(i, CHAR_DATA_REQUEST_TYPE, 0);
-
-            DBG_LOG("handle_bbopts 5");
 
             pthread_mutex_unlock(&i->mutex);
             break;
