@@ -415,6 +415,13 @@ typedef struct shipgate_bb_opts {
     uint32_t guildcard;
     uint32_t block;
     psocn_bb_db_opts_t opts;
+    uint32_t guild_id;                     // 02BC         4 
+    uint8_t guild_info[8];                 // 公会信息     8
+    uint32_t guild_priv_level;             // 会员等级     4
+    uint16_t guild_name[0x000E];           // 02CC         28
+    uint32_t guild_rank;                   // 公会排行     4
+    uint8_t guild_flag[0x0800];            // 公会图标     2048
+    uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
     //psocn_bb_db_guild_t guild;
 } PACKED shipgate_bb_opts_pkt;
 //

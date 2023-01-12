@@ -77,7 +77,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
         while(total < len) {
             rv = sg_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
+            TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if(rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
@@ -1992,6 +1992,19 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
 
             /* 复制角色选项数据 */
+            //TEST_LOG("1111 %d 发送数据 %d 字节", c->sock, pkt->guild_id);
+            if (pkt->guild_id != 0) {
+                i->bb_guild->guild_data.guildcard = i->guildcard;
+                i->bb_guild->guild_data.guild_id = pkt->guild_id;
+                memcpy(&i->bb_guild->guild_data.guild_info, pkt->guild_info, sizeof(pkt->guild_info));
+                i->bb_guild->guild_data.guild_priv_level = pkt->guild_priv_level;
+                memcpy(&i->bb_guild->guild_data.guild_name, pkt->guild_name, sizeof(pkt->guild_name));
+                i->bb_guild->guild_data.guild_rank = pkt->guild_rank;
+                memcpy(&i->bb_guild->guild_data.guild_flag, pkt->guild_flag, sizeof(pkt->guild_flag));
+                i->bb_guild->guild_data.guild_rewards[0] = pkt->guild_rewards[0];
+                i->bb_guild->guild_data.guild_rewards[1] = pkt->guild_rewards[1];
+            }
+
             //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
 
             /* Move the user on now that we have everything... */
@@ -2878,7 +2891,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
     sz = sg_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    //TEST_LOG("舰船接收数据 %d 接收数据 %d 字节", c->sock, sz);
+    TEST_LOG("舰船接收数据 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {
@@ -3668,6 +3681,16 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->guildcard = htonl(cl->guildcard);
     pkt->block = htonl(cl->cur_block->b);
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
+
+    pkt->guild_id = cl->bb_guild->guild_data.guild_id;
+    memcpy(&pkt->guild_info, cl->bb_guild->guild_data.guild_info, sizeof(cl->bb_guild->guild_data.guild_info));
+    pkt->guild_priv_level = cl->bb_guild->guild_data.guild_priv_level;
+    memcpy(&pkt->guild_name, cl->bb_guild->guild_data.guild_name, sizeof(cl->bb_guild->guild_data.guild_name));
+    pkt->guild_rank = cl->bb_guild->guild_data.guild_rank;
+    memcpy(&pkt->guild_flag, cl->bb_guild->guild_data.guild_flag, sizeof(cl->bb_guild->guild_data.guild_flag));
+    pkt->guild_rewards[0] = cl->bb_guild->guild_data.guild_rewards[0];
+    pkt->guild_rewards[1] = cl->bb_guild->guild_data.guild_rewards[1];
+
     //memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */

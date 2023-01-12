@@ -5050,7 +5050,7 @@ int handle_pkt(ship_t* c) {
     sz = ship_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    //TEST_LOG("船闸处理端口 %d 接收数据 %d 字节", c->sock, sz);
+    TEST_LOG("船闸处理端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {

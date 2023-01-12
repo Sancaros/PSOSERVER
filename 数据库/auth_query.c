@@ -127,7 +127,7 @@ int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t guild_priv_level, u
     return 0;
 }
 
-/* 获取 BB 的公会？数据 */
+/* 获取 BB 的公会数据 */
 psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     void* result;
     char** row;
