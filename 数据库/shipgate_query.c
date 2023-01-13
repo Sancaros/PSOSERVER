@@ -397,3 +397,36 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
 
     return create_res;
 }
+
+int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc) {
+    uint8_t FlagSlashes[4098] = { 0 };
+
+    psocn_db_escape_str(&conn, &FlagSlashes[0], guild_flag, 0x800);
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag='%s' WHERE guild_id='%u'",
+        CLIENTS_BLUEBURST_GUILD, (char*)&FlagSlashes[0], gc);
+    if (!psocn_db_real_query(&conn, myquery))
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+int db_dissolve_bb_guild(uint32_t gc) {
+    int res = 0;
+
+    sprintf_s(myquery, _countof(myquery), "DELETE from %s WHERE guild_id = '%u'", CLIENTS_BLUEBURST_GUILD, gc);
+    if (psocn_db_real_query(&conn, myquery))
+    {
+        res = 1;
+    }
+
+
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_DATA_ACCOUNT, gc);
+    if (psocn_db_real_query(&conn, myquery))
+    {
+        res = 2;
+    }
+
+    return res;
+}

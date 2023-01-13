@@ -223,7 +223,7 @@
 #define BB_GUILD_UNK_0DEA               0x0DEA
 #define BB_GUILD_UNK_0EEA               0x0EEA
 #define BB_GUILD_MEMBER_FLAG_SETTING    0x0FEA
-#define BB_GUILD_DISSOLVE_TEAM          0x10EA
+#define BB_GUILD_DISSOLVE               0x10EA
 #define BB_GUILD_MEMBER_PROMOTE         0x11EA
 #define BB_GUILD_UNK_12EA               0x12EA
 #define BB_GUILD_LOBBY_SETTING          0x13EA

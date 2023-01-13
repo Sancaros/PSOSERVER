@@ -1897,23 +1897,37 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
         //return -1;
     }
 
-    print_payload((uint8_t*)pkt, len);
+    if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
+        print_payload((uint8_t*)pkt, len);
+        return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    }
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return 0;
 }
 
-static int process_bb_guild_dissolve_team(ship_client_t* c, bb_guild_dissolve_team_pkt* pkt) {
+static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_dissolve_team_pkt)) {
+    if (len != sizeof(bb_guild_dissolve_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         //return -1;
     }
 
+    if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
+        print_payload((uint8_t*)pkt, len);
+        //pkt->guild_id = c->bb_guild->guild_data.guild_id;
+        shipgate_fw_bb(&ship->sg, pkt, 0, c);
+        send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
+        memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
+        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+        send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
+        send_msg_box(c, "%s", __(c, "\tE\tC4公会已成功解散!"));
+    }
+
     print_payload((uint8_t*)pkt, len);
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return 0;
 }
 
 static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_promote_pkt* pkt) {
@@ -2164,8 +2178,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_MEMBER_FLAG_SETTING:
         return process_bb_guild_member_flag_setting(c, (bb_guild_member_flag_setting_pkt*)pkt);
 
-    case BB_GUILD_DISSOLVE_TEAM:
-        return process_bb_guild_dissolve_team(c, (bb_guild_dissolve_team_pkt*)pkt);
+    case BB_GUILD_DISSOLVE:
+        return process_bb_guild_dissolve(c, (bb_guild_dissolve_pkt*)pkt);
 
     case BB_GUILD_MEMBER_PROMOTE:
         return process_bb_guild_member_promote(c, (bb_guild_member_promote_pkt*)pkt);
@@ -2613,7 +2627,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_UNK_0DEA:
     case BB_GUILD_UNK_0EEA:
     case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE_TEAM:
+    case BB_GUILD_DISSOLVE:
     case BB_GUILD_MEMBER_PROMOTE:
     case BB_GUILD_UNK_12EA:
     case BB_GUILD_LOBBY_SETTING:

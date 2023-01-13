@@ -77,7 +77,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
         while(total < len) {
             rv = sg_send(c, sendbuf + total, len - total);
 
-            TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if(rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
@@ -658,7 +658,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     int done = 0, rv = 0;
     uint32_t gc = bb->guild.guild_data.guildcard;
 
-    DBG_LOG("G->S 指令0x%04X %d %d", type, gc, pkt->guildcard);
+    //DBG_LOG("G->S 指令0x%04X %d %d", type, gc, pkt->guildcard);
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
         if (s->blocks[i]) {
@@ -670,7 +670,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                 if (c->guildcard == gc) {
 
-                    DBG_LOG("G->S 指令0x%04X", type);
+                    //DBG_LOG("G->S 指令0x%04X", type);
 
                     switch (type)
                     {
@@ -698,6 +698,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_REMOVE:
+                        send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         print_payload((uint8_t*)bb, len);
                         break;
@@ -747,13 +748,18 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_FLAG_SETTING:
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        c->bb_guild->guild_data = bb->guild.guild_data;
+                        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+                        //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
+                        //print_payload((uint8_t*)bb, len);
                         break;
 
-                    case BB_GUILD_DISSOLVE_TEAM:
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                    case BB_GUILD_DISSOLVE:
+                        memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
+                        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+                        send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
+                        //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
+                        //print_payload((uint8_t*)bb, len);
                         break;
 
                     case BB_GUILD_MEMBER_PROMOTE:
@@ -899,7 +905,7 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case BB_GUILD_UNK_0DEA:
     case BB_GUILD_UNK_0EEA:
     case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE_TEAM:
+    case BB_GUILD_DISSOLVE:
     case BB_GUILD_MEMBER_PROMOTE:
     case BB_GUILD_UNK_12EA:
     case BB_GUILD_LOBBY_SETTING:
@@ -2686,8 +2692,8 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
 
-    DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
-        , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
+    //DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
+        //, type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
 
     if (!conn->has_key) {
         /* Silently ignore non-login packets when we're without a key
@@ -2891,7 +2897,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
     sz = sg_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    TEST_LOG("舰船接收数据 %d 接收数据 %d 字节", c->sock, sz);
+    //TEST_LOG("舰船接收数据 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {

@@ -135,6 +135,12 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 /* 更新BB角色公会数据 */
 int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
 
+/* 更新BB角色公会标志 */
+int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc);
+
+/* 解散BB角色公会 */
+int db_dissolve_bb_guild(uint32_t gc);
+
 /* 更新BB角色选项数据 */
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);
 

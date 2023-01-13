@@ -1505,7 +1505,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     istrncpy16_raw(ic_utf16_to_gbk, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
 
-    DBG_LOG("%s %d %d", guild_name, g_data->guildcard, sender);
+    //DBG_LOG("%s %d %d", guild_name, g_data->guildcard, sender);
 
     create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard);
 
@@ -1544,7 +1544,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         }
 
         forward_bb(s, (bb_pkt_hdr_t*)guild, c->key_idx, 0, 0);
-        DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
+        //DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
         free_safe(guild);
         break;
 
@@ -1927,6 +1927,10 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t ship_id;
+    ship_t* s;
+    uint32_t res;
+    bb_guild_data_pkt* guild;
 
     if (len != sizeof(bb_guild_member_flag_setting_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1937,19 +1941,66 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
+
+    res = db_update_bb_guild_flag(g_data->guild_flag, sender);
+
+    if (!res)
+    {
+        guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
+
+        if (!guild) {
+            ERR_LOG("分配公会数据内存错误.");
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            res = 1;
+            return 0;
+        }
+
+        guild->guild = db_get_bb_char_guild(sender);
+
+        guild->hdr.pkt_type = g_data->hdr.pkt_type;
+        guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
+        guild->hdr.flags = g_data->hdr.flags;
+
+        memcpy(&guild->guild.guild_data.guild_flag, g_data->guild_flag, sizeof(g_data->guild_flag));
+
+        ship_id = db_get_char_ship_id(sender);
+
+        if (ship_id < 0) {
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            return 0;
+        }
+
+        /* If we've got this far, we should have the ship we need to send to */
+        s = find_ship(ship_id);
+        if (!s) {
+            ERR_LOG("无效舰船?!?!?");
+            return 0;
+        }
+
+        forward_bb(s, (bb_pkt_hdr_t*)guild, c->key_idx, 0, 0);
+        free_safe(guild);
+    }
+    else
+    {
+        Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "Could not update team flag for team %u", sender);
+        return res;
+    }
 
     return 0;
 }
 
 /* 处理 Blue Burst 公会 解散公会 */
-static int handle_bb_guild_dissolve_team(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_dissolve_team_pkt* g_data = (bb_guild_dissolve_team_pkt*)pkt->pkt;
+static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_dissolve_pkt* g_data = (bb_guild_dissolve_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    int res = 0;
 
-    if (len != sizeof(bb_guild_dissolve_team_pkt)) {
+    if (len != sizeof(bb_guild_dissolve_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
@@ -1958,8 +2009,25 @@ static int handle_bb_guild_dissolve_team(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
-    return 0;
+    res = db_dissolve_bb_guild(sender);
+
+    if (res == 1) {
+        ERR_LOG("GC %d 解散不存在的公会失败", sender);
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    if (res == 2) {
+        ERR_LOG("GC %d 更新账户公会信息失败", sender);
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    //TEST_LOG("%d dsdasdsadsad", sender);
+    //print_payload((uint8_t*)g_data, len);
+    return res;
 }
 
 /* 处理 Blue Burst 公会 成员权限提升 */
@@ -2288,8 +2356,8 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_MEMBER_FLAG_SETTING:
         return handle_bb_guild_member_flag_setting(c, pkt);
 
-    case BB_GUILD_DISSOLVE_TEAM:
-        return handle_bb_guild_dissolve_team(c, pkt);
+    case BB_GUILD_DISSOLVE:
+        return handle_bb_guild_dissolve(c, pkt);
 
     case BB_GUILD_MEMBER_PROMOTE:
         return handle_bb_guild_member_promote(c, pkt);
@@ -2431,7 +2499,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_UNK_0DEA:
     case BB_GUILD_UNK_0EEA:
     case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE_TEAM:
+    case BB_GUILD_DISSOLVE:
     case BB_GUILD_MEMBER_PROMOTE:
     case BB_GUILD_UNK_12EA:
     case BB_GUILD_LOBBY_SETTING:
@@ -4888,7 +4956,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
 
-    DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+    //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
     //print_payload((unsigned char*)pkt, length);
 
     switch (type) {
@@ -5050,7 +5118,7 @@ int handle_pkt(ship_t* c) {
     sz = ship_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    TEST_LOG("船闸处理端口 %d 接收数据 %d 字节", c->sock, sz);
+    //TEST_LOG("船闸处理端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {

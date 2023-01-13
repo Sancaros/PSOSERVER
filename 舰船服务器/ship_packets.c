@@ -1475,7 +1475,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LOBBY_JOIN_TYPE;
     pkt->leader_id = l->leader_id;
-    pkt->one = 0;
+    pkt->one = 1;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = LE16(l->block->b);
     pkt->event = LE16(event);
@@ -2088,7 +2088,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.pkt_len = LE16(0x0490);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 0;
+    pkt->one = 1;
     pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_DEFAULT) {
@@ -2162,7 +2162,7 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.flags = LE32(1);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->disable_udp = 0;
+    pkt->disable_udp = 1;
     pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_DEFAULT) {
@@ -5250,6 +5250,8 @@ static int send_message_box(ship_client_t* c, const char* fmt,
         SHIPS_LOG("Silently (to the user) dropping message box for GC");
         return 0;
     }
+
+    memset(&tm, 0, sizeof(tm));
 
     /* Do the formatting */
     vsnprintf(tm, 512, fmt, args);
@@ -12040,7 +12042,7 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     lobby_t* l = c->cur_lobby;
 
-    DBG_LOG("send_bb_guild %d", cmd_code);
+    DBG_LOG("向客户端发送公会指令send_bb_guild 0x%04X", cmd_code);
 
     switch (cmd_code)
     {
@@ -12103,11 +12105,11 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt_15.hdr.pkt_type = cmd_code;
         pkt_15.hdr.flags = 0x00000001;
 
-        return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 1);
+        return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 0);
 
-    case BB_GUILD_DISSOLVE_TEAM:
-        bb_guild_dissolve_team_pkt pkt_DT;
-        memset(&pkt_DT, 0, sizeof(bb_guild_dissolve_team_pkt));
+    case BB_GUILD_DISSOLVE:
+        bb_guild_dissolve_pkt pkt_DT;
+        memset(&pkt_DT, 0, sizeof(bb_guild_dissolve_pkt));
         pkt_DT.hdr.pkt_len = 0x0008;
         pkt_DT.hdr.pkt_type = cmd_code;
         pkt_DT.hdr.flags = 0x00000000;
@@ -12139,7 +12141,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt_12.hdr.pkt_type = cmd_code;
         pkt_12.hdr.flags = 0x00000000;
 
-        return send_lobby_pkt(l, c, (uint8_t*)&pkt_12, 1);
+        return send_lobby_pkt(l, c, (uint8_t*)&pkt_12, 0);
 
     case BB_GUILD_LOBBY_SETTING:
     {

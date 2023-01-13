@@ -2013,13 +2013,14 @@ typedef struct bb_guild_unk_0EEA {
 
 typedef struct bb_guild_member_flag_setting {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint8_t guild_flag[0x0800];
 } PACKED bb_guild_member_flag_setting_pkt;
 
-typedef struct bb_guild_dissolve_team {
+typedef struct bb_guild_dissolve {
     bb_pkt_hdr_t hdr;
+    //uint32_t guild_id;
     uint8_t data[];
-} PACKED bb_guild_dissolve_team_pkt;
+} PACKED bb_guild_dissolve_pkt;
 
 typedef struct bb_guild_member_promote {
     bb_pkt_hdr_t hdr;

@@ -49,7 +49,7 @@ static int send_raw(ship_t* c, int len) {
         while (total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            TEST_LOG("船闸发送端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("船闸发送端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if (rv < 0) {
@@ -577,7 +577,7 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
 
     //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
-    TEST_LOG("send_bb_opts发送数据 %d / %d %d 字节", c->sock, guild->guild_data.guild_id, pkt->guild_id);
+    //TEST_LOG("send_bb_opts发送数据 %d / %d %d 字节", c->sock, guild->guild_data.guild_id, pkt->guild_id);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt));
