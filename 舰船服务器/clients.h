@@ -195,6 +195,8 @@ struct ship_client {
     bb_client_config_pkt sec_data;
     psocn_bb_db_char_t *bb_pl;
     psocn_bb_db_opts_t *bb_opts;
+
+    int32_t guild_accept;
     psocn_bb_db_guild_t *bb_guild;
 
     client_game_data_t game_data;

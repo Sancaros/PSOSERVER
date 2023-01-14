@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 				if (num_rows)
 				{
 					printf("服务器上已经有一个该名称的帐户.\n");
-					myRow = mysql_fetch_row(myResult);
+					myRow = psocn_db_result_fetch(myResult);
 					max_fields = mysql_num_fields(myResult);
 					printf("输出数据:\n");
 					printf("-=-=-=-=-\n");

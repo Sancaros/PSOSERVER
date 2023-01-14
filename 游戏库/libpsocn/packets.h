@@ -1968,9 +1968,6 @@ typedef struct bb_guild_member_chat {
 
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
-    uint32_t guildcard;
-    uint32_t guild_id;
-    uint16_t char_name[12];
     uint8_t data[];
 } PACKED bb_guild_member_setting_pkt;
 
@@ -2075,16 +2072,7 @@ typedef struct bb_guild_unk_17EA {
 
 typedef struct bb_guild_buy_privilege_and_point_info {
     bb_pkt_hdr_t hdr;
-    //uint32_t guildcard;
-    //uint32_t guild_id;
-    //uint8_t guild_info[8];
-    //uint32_t guild_priv_level;
-    //uint32_t guild_rank;
-    //uint32_t guildcard2;
-    //uint32_t client_id;
-    //uint16_t char_name[12];
-    //uint32_t guild_rewards[2];
-    uint8_t data[0x4C];
+    uint8_t data[];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
 typedef struct bb_guild_privilege_list {

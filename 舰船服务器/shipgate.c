@@ -658,7 +658,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     int done = 0, rv = 0;
     uint32_t gc = bb->guild.guild_data.guildcard;
 
-    //DBG_LOG("G->S ЦёБо0x%04X %d %d", type, gc, pkt->guildcard);
+    DBG_LOG("G->S ЦёБо0x%04X %d %d", type, gc, pkt->guildcard);
+    print_payload((uint8_t*)bb, len);
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
         if (s->blocks[i]) {
@@ -677,7 +678,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_CREATE:
                         c->bb_guild->guild_data = bb->guild.guild_data;
                         send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);
                         break;
@@ -719,6 +720,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_UNK_09EA:
+
+                        send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+                        pthread_mutex_unlock(&c->mutex);
+                        pthread_rwlock_unlock(&b->lock);
+
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         print_payload((uint8_t*)bb, len);
                         break;
@@ -738,7 +744,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         print_payload((uint8_t*)bb, len);
                         break;
 
-                    case BB_GUILD_UNK_0DEA:
+                    case BB_GUILD_INVITE:
                         send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
                         break;
 
@@ -749,14 +755,14 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_MEMBER_FLAG_SETTING:
                         c->bb_guild->guild_data = bb->guild.guild_data;
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         //print_payload((uint8_t*)bb, len);
                         break;
 
                     case BB_GUILD_DISSOLVE:
                         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_15EA);
+                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
                         //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         //print_payload((uint8_t*)bb, len);
@@ -780,7 +786,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
                         break;
 
-                    case BB_GUILD_UNK_15EA:
+                    case BB_GUILD_FULL_DATA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         print_payload((uint8_t*)bb, len);
                         break;
@@ -902,7 +908,7 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case BB_GUILD_UNK_0AEA:
     case BB_GUILD_UNK_0BEA:
     case BB_GUILD_UNK_0CEA:
-    case BB_GUILD_UNK_0DEA:
+    case BB_GUILD_INVITE:
     case BB_GUILD_UNK_0EEA:
     case BB_GUILD_MEMBER_FLAG_SETTING:
     case BB_GUILD_DISSOLVE:
@@ -910,7 +916,7 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case BB_GUILD_UNK_12EA:
     case BB_GUILD_LOBBY_SETTING:
     case BB_GUILD_MEMBER_TITLE:
-    case BB_GUILD_UNK_15EA:
+    case BB_GUILD_FULL_DATA:
     case BB_GUILD_UNK_16EA:
     case BB_GUILD_UNK_17EA:
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:

@@ -142,7 +142,7 @@ main( int argc, char * argv[] )
 			num_rows = (int) mysql_num_rows ( myResult );
 			if (num_rows)
 			{
-				myRow = mysql_fetch_row ( myResult );
+				myRow = psocn_db_result_fetch( myResult );
 				cf = fopen ("exported.dat", "wb");
 				fwrite (myRow[2], 1, 14752, cf);
 				fclose ( cf );

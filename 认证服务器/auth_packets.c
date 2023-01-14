@@ -3655,7 +3655,7 @@ int send_disconnect(login_client_t* c, uint32_t flags) {
     if (flags) {
         c->islogged = 0;
 
-        sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastchar = '%d' where guildcard = '%u'",
+        sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastchar_slot = '%d' where guildcard = '%u'",
             AUTH_DATA_ACCOUNT, c->islogged, c->sec_data.slot, c->guildcard);
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", c->guildcard, psocn_db_error(&conn));

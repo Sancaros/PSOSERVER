@@ -220,7 +220,7 @@
 #define BB_GUILD_UNK_0AEA               0x0AEA
 #define BB_GUILD_UNK_0BEA               0x0BEA
 #define BB_GUILD_UNK_0CEA               0x0CEA
-#define BB_GUILD_UNK_0DEA               0x0DEA
+#define BB_GUILD_INVITE                 0x0DEA
 #define BB_GUILD_UNK_0EEA               0x0EEA
 #define BB_GUILD_MEMBER_FLAG_SETTING    0x0FEA
 #define BB_GUILD_DISSOLVE               0x10EA
@@ -228,7 +228,7 @@
 #define BB_GUILD_UNK_12EA               0x12EA
 #define BB_GUILD_LOBBY_SETTING          0x13EA
 #define BB_GUILD_MEMBER_TITLE           0x14EA
-#define BB_GUILD_UNK_15EA               0x15EA
+#define BB_GUILD_FULL_DATA               0x15EA
 #define BB_GUILD_UNK_16EA               0x16EA
 #define BB_GUILD_UNK_17EA               0x17EA
 #define BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO          0x18EA

@@ -3689,6 +3689,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     /* Clear the packet header */
+    memset(&tm, 0, sizeof(tm));
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Do the formatting */
@@ -12081,7 +12082,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_0E);
 
-    case BB_GUILD_UNK_15EA:
+    case BB_GUILD_FULL_DATA:
         bb_guild_unk_15EA_pkt pkt_15;
         memset(&pkt_15, 0, sizeof(bb_guild_unk_15EA_pkt));
 
