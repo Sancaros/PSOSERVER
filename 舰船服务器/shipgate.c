@@ -715,6 +715,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_SETTING:
+                        send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         print_payload((uint8_t*)bb, len);
                         break;

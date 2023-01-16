@@ -1564,6 +1564,8 @@ static int dc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
     if (!(u8msg = (char*)malloc((len + 1) << 2)))
         return -1;
 
+    memset(u8msg, 0, (len + 1) << 2);
+
     if ((pkt->msg[0] == '\t' && pkt->msg[1] == 'J') ||
         (c->flags & CLIENT_FLAG_IS_NTE)) {
         istrncpy(ic_sjis_to_gbk, u8msg, pkt->msg, (len + 1) << 2);
@@ -1625,6 +1627,8 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
     /* Convert it to UTF-8. */
     if (!(u8msg = (char*)malloc((len + 1) << 1)))
         return -1;
+
+    memset(u8msg, 0, (len + 1) << 1);
 
     istrncpy16(ic_utf16_to_gbk, u8msg, (uint16_t*)pkt->msg, (len + 1) << 1);
 

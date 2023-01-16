@@ -1773,22 +1773,33 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint16_t* n;
 
-    if (len != (sizeof(bb_guild_member_chat_pkt))) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        //return -1;
+    //if (len != (sizeof(bb_guild_member_chat_pkt))) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)pkt, len);
+    //    //return -1;
+    //}
+    if (c->bb_guild->guild_data.guild_id != 0) {
+        uint16_t* n;
+        if (len > 0x2B) {
+            n = (uint16_t*)&pkt->chat[0x2C];
+            while (*n != 0x0000)
+            {
+                if ((*n == 0x0009) || (*n == 0x000A))
+                    *n = 0x0020;
+                n++;
+            }
+
+            pkt->guild_id = c->bb_guild->guild_data.guild_id;
+
+            /* Add any padding needed */
+            while (len & 0x07) {
+                pkt->chat[len++] = 0;
+            }
+
+            return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+        }
     }
-
-    n = (uint16_t*)&pkt[0x2C];
-    while (*n != 0x0000)
-    {
-        if ((*n == 0x0009) || (*n == 0x000A))
-            *n = 0x0020;
-        n++;
-    }
-
     //uint32_t size;
 
     //ship->encrypt_buf_code[0x00] = 0x09;
@@ -1803,7 +1814,7 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
 
     print_payload((uint8_t*)pkt, len);
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return 0;
 }
 
 static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_setting_pkt* pkt) {
@@ -1816,12 +1827,7 @@ static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_set
         return -1;
     }
 
-    if (c->bb_guild->guild_data.guild_id != 0/* &&
-        c->guildcard == c->bb_guild->guild_data.guildcard*/) {
-        //pkt->guildcard = c->bb_guild->guild_data.guildcard;
-        //pkt->guild_id = c->bb_guild->guild_data.guild_id;
-        //ERR_LOG("BB %d 数据包 (%d)", pkt->guildcard, pkt->guild_id);
-        //memcpy(pkt->char_name, c->bb_pl->character.name, sizeof(pkt->char_name));
+    if (c->bb_guild->guild_data.guild_id != 0) {
         print_payload((uint8_t*)pkt, len);
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
@@ -1944,6 +1950,8 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         return -1;
     }
 
+    DBG_LOG("%d %d %d", c->bb_guild->guild_data.guild_priv_level, c->bb_guild->guild_data.guild_id, c->guildcard);
+
     if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
         print_payload((uint8_t*)pkt, len);
         //pkt->guild_id = c->bb_guild->guild_data.guild_id;
@@ -2000,7 +2008,10 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
 
     print_payload((uint8_t*)pkt, len);
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
+
+    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return 0;
 }
 
 static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_tittle_pkt* pkt) {
@@ -2065,11 +2076,11 @@ static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_gu
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        return -1;
-    }
+    //if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)pkt, len);
+    //    return -1;
+    //}
 
     print_payload((uint8_t*)pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
@@ -2158,9 +2169,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 
     DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
-    send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-        __(c, "\tC7请等待完成."));
-
     switch (type) {
     case BB_GUILD_CREATE:
         return process_bb_guild_create(c, (bb_guild_create_pkt*)pkt);
@@ -2169,12 +2177,16 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_02EA(c, (bb_guild_unk_02EA_pkt*)pkt);
 
     case BB_GUILD_MEMBER_ADD:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_add(c, (bb_guild_member_add_pkt*)pkt);
 
     case BB_GUILD_UNK_04EA:
         return process_bb_guild_unk_04EA(c, (bb_guild_unk_04EA_pkt*)pkt);
 
     case BB_GUILD_MEMBER_REMOVE:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_remove(c, (bb_guild_member_remove_pkt*)pkt);
 
     case BB_GUILD_UNK_06EA:
@@ -2184,6 +2196,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_member_chat(c, (bb_guild_member_chat_pkt*)pkt);
 
     case BB_GUILD_MEMBER_SETTING:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_setting(c, (bb_guild_member_setting_pkt*)pkt);
 
     case BB_GUILD_UNK_09EA:
@@ -2199,6 +2213,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_0CEA(c, (bb_guild_unk_0CEA_pkt*)pkt);
 
     case BB_GUILD_INVITE:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_invite_0DEA(c, (bb_guild_invite_0DEA_pkt*)pkt);
 
     case BB_GUILD_UNK_0EEA:
@@ -2211,6 +2227,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_dissolve(c, (bb_guild_dissolve_pkt*)pkt);
 
     case BB_GUILD_MEMBER_PROMOTE:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_promote(c, (bb_guild_member_promote_pkt*)pkt);
 
     case BB_GUILD_UNK_12EA:
@@ -2242,9 +2260,13 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_17EA(c, (bb_guild_unk_17EA_pkt*)pkt);
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_buy_privilege_and_point_info(c, (bb_guild_buy_privilege_and_point_info_pkt*)pkt);
 
     case BB_GUILD_PRIVILEGE_LIST:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_privilege_list(c, (bb_guild_privilege_list_pkt*)pkt);
 
     case BB_GUILD_UNK_1AEA:
@@ -2254,6 +2276,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_1BEA(c, (bb_guild_unk_1BEA_pkt*)pkt);
 
     case BB_GUILD_RANKING_LIST:
+        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
+            __(c, "\tC7请等待完成."));
         return process_bb_guild_rank_list(c, (bb_guild_rank_list_pkt*)pkt);
 
     case BB_GUILD_UNK_1DEA:

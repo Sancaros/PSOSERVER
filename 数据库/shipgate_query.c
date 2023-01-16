@@ -398,6 +398,19 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     return create_res;
 }
 
+int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t target_gc) 
+{
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+        "guild_id = '%d',guild_priv_level = '0' WHERE guildcard='%u'",
+        AUTH_DATA_ACCOUNT, guild_id, target_gc);
+    if (!psocn_db_real_query(&conn, myquery))
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
 int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc) {
     uint8_t FlagSlashes[4098] = { 0 };
 
@@ -420,7 +433,6 @@ int db_dissolve_bb_guild(uint32_t gc) {
     {
         res = 1;
     }
-
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_DATA_ACCOUNT, gc);
     if (psocn_db_real_query(&conn, myquery))

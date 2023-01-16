@@ -40,6 +40,7 @@
 #include <f_logs.h>
 #include <mtwist.h>
 #include <md5.h>
+#include <pso_menu.h>
 
 #ifdef ENABLE_LUA
 #include <lua.h>
@@ -1591,6 +1592,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    int res = 0, guild_id = 0, target_gc = 0;
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1601,9 +1603,11 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    res = db_update_bb_guild_member_add(guild_id, target_gc);
+
     print_payload((uint8_t*)g_data, len);
 
-    return 0;
+    return res;
 }
 
 /* 处理 Blue Burst 公会  */
@@ -1673,39 +1677,35 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    uint16_t* n;
+    uint16_t ship_id;
+    ship_t* s;
 
-    if (len != sizeof(bb_guild_member_chat_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)g_data, len);
+    //if (len != sizeof(bb_guild_member_chat_pkt)) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)g_data, len);
 
-        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //    return 0;
+    //}
+
+    ship_id = db_get_char_ship_id(sender);
+
+    if (ship_id < 0)
+        return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
+
+    /* If we've got this far, we should have the ship we need to send to */
+    s = find_ship(ship_id);
+    if (!s) {
+        ERR_LOG("无效舰船?!?!?");
         return 0;
     }
 
-    n = (uint16_t*)&pkt[0x2C];
-    while (*n != 0x0000)
-    {
-        if ((*n == 0x0009) || (*n == 0x000A))
-            *n = 0x0020;
-        n++;
-    }
-
-    //uint32_t size;
-
-    //ship->encrypt_buf_code[0x00] = 0x09;
-    //ship->encrypt_buf_code[0x01] = 0x04;
-    //*(uint32_t*)&ship->encrypt_buf_code[0x02] = teamid;
-    //while (chatsize % 8)
-    //    ship->encrypt_buf_code[6 + (chatsize++)] = 0x00;
-    //*text = chatsize;
-    //memcpy(&ship->encrypt_buf_code[0x06], text, chatsize);
-    //size = chatsize + 6;
-    //Compress_Ship_Packet_Data(SHIP_SERVER, ship, &ship->encrypt_buf_code[0x00], size);
-
     print_payload((uint8_t*)g_data, len);
 
+    /* 完成数据包设置,发送至舰船... */
+    forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
     return 0;
 }
 
@@ -1718,9 +1718,8 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t ship_id;
     ship_t* s;
 
-    uint32_t packet_offset = 0;
     int32_t num_mates;
-    int32_t ch;
+    int32_t ch = 0, size = 0, len2 = 0x30, len3 = BB_CHARACTER_NAME_LENGTH * 2;
     uint32_t guildcard, privlevel, guild_id;
     void* result;
     char** row;
@@ -1750,33 +1749,32 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         {
             result = psocn_db_result_store(&conn);
             num_mates = (int32_t)psocn_db_result_rows(result);
-            *(uint32_t*)&g_data->data[packet_offset] = num_mates;
-            packet_offset += 4;
-            for (ch = 1; ch <= num_mates; ch++)
+            for (ch = 1; ch <= num_mates; ++ch)
             {
                 row = psocn_db_result_fetch(result);
                 guildcard = atoi(row[0]);
                 privlevel = atoi(row[1]);
-                *(uint32_t*)&g_data->data[packet_offset] = ch;
-                packet_offset += 4;
-                *(uint32_t*)&g_data->data[packet_offset] = privlevel;
-                packet_offset += 4;
-                *(uint32_t*)&g_data->data[packet_offset] = guildcard;
-                packet_offset += 4;
-                memcpy(&g_data->data[packet_offset], row[2], 24);
-                packet_offset += 24;
-                memset(&g_data->data[packet_offset], 0, 8);
-                packet_offset += 8;
-                DBG_LOG("%d %d %d %d", packet_offset, guildcard, privlevel, num_mates);
+
+                g_data->entries[ch].member_num = ch;
+
+                g_data->entries[ch].guild_priv_level = LE32(atoi(row[1]));
+
+                g_data->entries[ch].guildcard_client = LE32(atoi(row[0]));
+
+                istrncpy(ic_gbk_to_utf16, (char*)g_data->entries[ch].char_name, row[2], len3);
+
+                g_data->entries[ch].guild_rewards[0] = LE32(0x00000000);
+
+                g_data->entries[ch].guild_rewards[1] = LE32(0x00000000);
+
+                size += len2;
+                DBG_LOG("%d %d %d %d", size, g_data->entries[ch].guildcard_client, privlevel, num_mates);
             }
             psocn_db_result_free(result);
-            packet_offset -= 0x0A;
-            *(uint16_t*)&g_data->data[0x0A] = (uint16_t)packet_offset;
-            packet_offset += 0x0A;
 
-            //g_data->hdr.pkt_len = packet_offset;
-            //g_data->hdr.pkt_type = BB_GUILD_UNK_09EA;
-            //g_data->hdr.flags = 0x00000000;
+            g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
+            g_data->hdr.pkt_len = LE16(size);
+            g_data->hdr.flags = ch - 1;
 
             ship_id = db_get_char_ship_id(sender);
 
@@ -1793,7 +1791,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
                 return 0;
             }
 
-            print_payload((uint8_t*)g_data, packet_offset);
+            print_payload((uint8_t*)g_data, size);
 
             forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
         }
@@ -1971,11 +1969,11 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
 
         guild->guild = db_get_bb_char_guild(sender);
 
+        memcpy(&guild->guild.guild_data.guild_flag, g_data->guild_flag, sizeof(g_data->guild_flag));
+
         guild->hdr.pkt_type = g_data->hdr.pkt_type;
         guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
         guild->hdr.flags = g_data->hdr.flags;
-
-        memcpy(&guild->guild.guild_data.guild_flag, g_data->guild_flag, sizeof(g_data->guild_flag));
 
         ship_id = db_get_char_ship_id(sender);
 
@@ -2192,17 +2190,35 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint16_t ship_id;
+    ship_t* s;
 
-    if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
+    /*if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
         return 0;
+    }*/
+
+    ship_id = db_get_char_ship_id(sender);
+
+    if (ship_id < 0)
+        return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+
+    /* If we've got this far, we should have the ship we need to send to */
+    s = find_ship(ship_id);
+    if (!s) {
+        ERR_LOG("无效舰船?!?!?");
+        return 0;
     }
 
     print_payload((uint8_t*)g_data, len);
+
+    /* 完成数据包设置,发送至舰船... */
+    forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
     return 0;
 }
 

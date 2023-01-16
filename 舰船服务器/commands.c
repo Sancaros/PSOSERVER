@@ -2323,7 +2323,7 @@ static int handle_qlang(ship_client_t *c, const char *params) {
 
     /* Make sure they only gave one character */
     if(strlen(params) != 2) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid language code."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效语言代码."));
     }
 
     /* Look for the specified language code */
@@ -2334,11 +2334,11 @@ static int handle_qlang(ship_client_t *c, const char *params) {
             shipgate_send_user_opt(&ship->sg, c->guildcard, c->cur_block->b,
                                    USER_OPT_QUEST_LANG, 1, &c->q_lang);
 
-            return send_txt(c, "%s", __(c, "\tE\tC7Quest language set."));
+            return send_txt(c, "%s", __(c, "\tE\tC7任务语言已设置."));
         }
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Invalid language code."));
+    return send_txt(c, "%s", __(c, "\tE\tC7无效语言代码."));
 }
 
 /* 用法: /friends page */

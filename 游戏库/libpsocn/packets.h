@@ -1943,6 +1943,7 @@ typedef struct bb_guild_unk_02EA {
 
 typedef struct bb_guild_member_add {
     bb_pkt_hdr_t hdr;
+    uint32_t target_guildcard;
     uint8_t data[];
 } PACKED bb_guild_member_add_pkt;
 
@@ -1963,12 +1964,20 @@ typedef struct bb_guild_unk_06EA {
 
 typedef struct bb_guild_member_chat {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t guild_id;                     // 02BC
+    uint8_t chat[];
 } PACKED bb_guild_member_chat_pkt;
 
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    struct {
+        uint32_t member_num;
+        uint32_t guild_priv_level;             // 会员等级     4
+        uint32_t guildcard_client;
+        uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
+        uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
+    } entries[0];
+    //uint8_t data[];
 } PACKED bb_guild_member_setting_pkt;
 
 typedef struct bb_guild_unk_09EA {
@@ -2037,7 +2046,19 @@ typedef struct bb_guild_unk_12EA {
 
 typedef struct bb_guild_lobby_setting {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    struct {
+        uint32_t guildcard;                    // 02B8         4
+        uint32_t guild_id;                     // 02BC         4 
+        uint8_t guild_info[8];                 // 公会信息     8
+        uint32_t guild_priv_level;             // 会员等级     4
+        uint16_t guild_name[0x000E];           // 02CC         28
+        uint32_t guild_rank;                   // 公会排行     4
+        uint32_t guildcard_client;
+        uint32_t client_id;
+        uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
+        uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
+        uint8_t guild_flag[0x0800];            // 公会图标     2048
+    } entries[0];
 } PACKED bb_guild_lobby_setting_pkt;
 
 typedef struct bb_guild_member_tittle {
@@ -2053,7 +2074,7 @@ typedef struct bb_guild_unk_15EA {
     uint32_t guild_priv_level;
     uint16_t guild_name[0x000E];
     uint32_t guild_rank;
-    uint32_t guildcard2;
+    uint32_t guildcard_client;
     uint32_t client_id;
     uint16_t char_name[12];
     uint8_t guild_flag[0x0800];
@@ -2072,7 +2093,11 @@ typedef struct bb_guild_unk_17EA {
 
 typedef struct bb_guild_buy_privilege_and_point_info {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint8_t unk_data[0x000C];
+    uint8_t guild_info[8];
+    uint32_t guild_priv_level;
+    uint32_t guildcard_client;
+    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
 typedef struct bb_guild_privilege_list {
