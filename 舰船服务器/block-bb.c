@@ -1887,11 +1887,11 @@ static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pk
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_unk_0DEA(ship_client_t* c, bb_guild_unk_0DEA_pkt* pkt) {
+static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_0DEA_pkt)) {
+    if (len != sizeof(bb_guild_invite_0DEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         //return -1;
@@ -2017,11 +2017,11 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_unk_15EA(ship_client_t* c, bb_guild_unk_15EA_pkt* pkt) {
+static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_15EA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_15EA_pkt)) {
+    if (len != sizeof(bb_guild_full_data_15EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         //return -1;
@@ -2199,7 +2199,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_0CEA(c, (bb_guild_unk_0CEA_pkt*)pkt);
 
     case BB_GUILD_INVITE:
-        return process_bb_guild_unk_0DEA(c, (bb_guild_unk_0DEA_pkt*)pkt);
+        return process_bb_guild_invite_0DEA(c, (bb_guild_invite_0DEA_pkt*)pkt);
 
     case BB_GUILD_UNK_0EEA:
         return process_bb_guild_unk_0EEA(c, (bb_guild_unk_0EEA_pkt*)pkt);
@@ -2233,7 +2233,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         //                  clientID                     char_name                          guild_flag
         // 0x00, 0x00, 0x00, 0x00, 0x00, 0x00........0x00........0x00, 0x00........0x00....................0x00
     case BB_GUILD_FULL_DATA:
-        return process_bb_guild_unk_15EA(c, (bb_guild_unk_15EA_pkt*)pkt);
+        return process_bb_guild_full_data_15EA(c, (bb_guild_full_data_15EA_pkt*)pkt);
 
     case BB_GUILD_UNK_16EA:
         return process_bb_guild_unk_16EA(c, (bb_guild_unk_16EA_pkt*)pkt);

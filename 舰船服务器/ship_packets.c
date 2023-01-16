@@ -12083,8 +12083,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt_0E);
 
     case BB_GUILD_FULL_DATA:
-        bb_guild_unk_15EA_pkt pkt_15;
-        memset(&pkt_15, 0, sizeof(bb_guild_unk_15EA_pkt));
+        bb_guild_full_data_15EA_pkt pkt_15;
+        memset(&pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
 
         pkt_15.guildcard = c->guildcard;
         pkt_15.guild_id = c->bb_guild->guild_data.guild_id;

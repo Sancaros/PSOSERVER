@@ -1991,10 +1991,10 @@ typedef struct bb_guild_unk_0CEA {
     uint8_t data[];
 } PACKED bb_guild_unk_0CEA_pkt;
 
-typedef struct bb_guild_unk_0DEA {
+typedef struct bb_guild_invite_0DEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
-} PACKED bb_guild_unk_0DEA_pkt;
+} PACKED bb_guild_invite_0DEA_pkt;
 
 typedef struct bb_guild_unk_0EEA {
     bb_pkt_hdr_t hdr;
@@ -2058,7 +2058,7 @@ typedef struct bb_guild_unk_15EA {
     uint16_t char_name[12];
     uint8_t guild_flag[0x0800];
     uint32_t guild_rewards[2];
-} PACKED bb_guild_unk_15EA_pkt;
+} PACKED bb_guild_full_data_15EA_pkt;
 
 typedef struct bb_guild_unk_16EA {
     bb_pkt_hdr_t hdr;

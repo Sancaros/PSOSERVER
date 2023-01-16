@@ -1892,14 +1892,14 @@ static int handle_bb_guild_unk_0CEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* 处理 Blue Burst 公会  */
-static int handle_bb_guild_unk_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_unk_0DEA_pkt* g_data = (bb_guild_unk_0DEA_pkt*)pkt->pkt;
+/* 处理 Blue Burst 公会 公会邀请*/
+static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_invite_0DEA_pkt* g_data = (bb_guild_invite_0DEA_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    if (len != sizeof(bb_guild_unk_0DEA_pkt)) {
+    if (len != sizeof(bb_guild_invite_0DEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
@@ -2124,14 +2124,14 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
-/* 处理 Blue Burst 公会  */
-static int handle_bb_guild_unk_15EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_unk_15EA_pkt* g_data = (bb_guild_unk_15EA_pkt*)pkt->pkt;
+/* 处理 Blue Burst 公会 完整公会数据*/
+static int handle_bb_guild_full_data_15EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_guild_full_data_15EA_pkt* g_data = (bb_guild_full_data_15EA_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    if (len != sizeof(bb_guild_unk_15EA_pkt)) {
+    if (len != sizeof(bb_guild_full_data_15EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
@@ -2360,7 +2360,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_unk_0CEA(c, pkt);
 
     case BB_GUILD_INVITE:
-        return handle_bb_guild_unk_0DEA(c, pkt);
+        return handle_bb_guild_invite_0DEA(c, pkt);
 
     case BB_GUILD_UNK_0EEA:
         return handle_bb_guild_unk_0EEA(c, pkt);
@@ -2384,7 +2384,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_member_tittle(c, pkt);
 
     case BB_GUILD_FULL_DATA:
-        return handle_bb_guild_unk_15EA(c, pkt);
+        return handle_bb_guild_full_data_15EA(c, pkt);
 
     case BB_GUILD_UNK_16EA:
         return handle_bb_guild_unk_16EA(c, pkt);
