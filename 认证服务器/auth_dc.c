@@ -178,7 +178,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
     }
 
     /* Make sure the guildcard isn't online already. */
-    banned = is_gc_online(gc);
+    banned = db_check_gc_online(gc);
 
     if(banned == -1) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -269,7 +269,7 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
     }
 
     /* Make sure the guildcard isn't online already. */
-    banned = is_gc_online(gc);
+    banned = db_check_gc_online(gc);
 
     if(banned == -1) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -443,7 +443,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
     }
 
     /* Make sure the guildcard isn't online already. */
-    banned = is_gc_online(gc);
+    banned = db_check_gc_online(gc);
 
     if(banned == -1) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -604,7 +604,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         }
 
         /* Make sure the guildcard isn't online already. */
-        banned = is_gc_online(gc);
+        banned = db_check_gc_online(gc);
 
         if(banned == -1) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_ERROR);
@@ -779,7 +779,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
         }
 
         /* Make sure the guildcard isn't online already. */
-        banned = is_gc_online(gc);
+        banned = db_check_gc_online(gc);
 
         if(banned == -1) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
@@ -1010,7 +1010,7 @@ static int handle_xbhlcheck(login_client_t *c, xb_hlcheck_pkt *pkt) {
         }
 
         /* Make sure the guildcard isn't online already. */
-        banned = is_gc_online(gc);
+        banned = db_check_gc_online(gc);
 
         if(banned == -1) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
@@ -1164,7 +1164,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
         }
 
         /* Make sure the guildcard isn't online already. */
-        banned = is_gc_online(gc);
+        banned = db_check_gc_online(gc);
 
         if(banned == -1) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);

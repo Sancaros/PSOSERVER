@@ -49,8 +49,11 @@
 
 /* 通用查询 */
 
+/* 检测玩家是否在线 */
+int db_check_gc_online(uint32_t gc);
+
 /* 获取角色所在舰船ID */
-uint16_t db_get_char_ship_id(uint32_t gc);
+int db_get_char_ship_id(uint32_t gc);
 
 /* 更新角色安全数据至数据库 */
 int db_updata_char_security(uint32_t play_time, uint32_t gc, uint8_t slot);

@@ -20,10 +20,44 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
-uint16_t db_get_char_ship_id(uint32_t gc) {
+/* 检测玩家是否在线 */
+int db_check_gc_online(uint32_t gc) {
+    char query[256];
     void* result;
     char** row;
-    uint16_t ship_id;
+
+    /* Fill in the query. */
+    sprintf(query, "SELECT guildcard FROM %s WHERE guildcard='%u'", 
+        SERVER_CLIENTS_ONLINE, (unsigned int)gc);
+
+    /* If we can't query the database, fail. */
+    if (psocn_db_real_query(&conn, query)) {
+        return -1;
+    }
+
+    /* Grab the results. */
+    result = psocn_db_result_store(&conn);
+    if (!result) {
+        return -1;
+    }
+
+    row = psocn_db_result_fetch(result);
+    if (!row) {
+        psocn_db_result_free(result);
+        return 0;
+    }
+
+    /* If there is a result, then the user is already online. */
+    psocn_db_result_free(result);
+
+    return 1;
+}
+
+/* 获取玩家所在舰船ID */
+int db_get_char_ship_id(uint32_t gc) {
+    void* result;
+    char** row;
+    int ship_id;
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -50,7 +84,7 @@ uint16_t db_get_char_ship_id(uint32_t gc) {
 
     /* Grab the data from the result */
     errno = 0;
-    ship_id = (uint16_t)strtoul(row[0], NULL, 0);
+    ship_id = atoi(row[0]);/* (uint16_t)strtoul(row[0], NULL, 0);*/
     psocn_db_result_free(result);
 
     if (errno) {

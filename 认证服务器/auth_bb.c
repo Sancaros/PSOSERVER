@@ -182,7 +182,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //c->preferred_lobby_id = (uint32_t)strtoul(row[12], NULL, 0);
     psocn_db_result_free(result);
 
-    logged = is_gc_online(c->guildcard);
+    logged = db_check_gc_online(c->guildcard);
 
     /* Make sure some simple checks pass first... */
     if (logged) {

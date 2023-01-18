@@ -253,9 +253,6 @@ int is_gc_banned(uint32_t gc, time_t* until, char* reason);
 
 int send_ban_msg(login_client_t* c, time_t until, const char* reason);
 
-/* Check if a user is already online. */
-int is_gc_online(uint32_t gc);
-
 int keycheck(char serial[8], char ak[8]);
 
 login_client_t* create_connection(int sock, int type, struct sockaddr* ip,

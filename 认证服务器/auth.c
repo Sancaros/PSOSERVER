@@ -193,38 +193,6 @@ int send_ban_msg(login_client_t* c, time_t until, const char* reason) {
     return send_large_msg(c, string);
 }
 
-/* Check if a user is already online. */
-int is_gc_online(uint32_t gc) {
-    char query[256];
-    void* result;
-    char** row;
-
-    /* Fill in the query. */
-    sprintf(query, "SELECT guildcard FROM %s WHERE guildcard='%u'", SERVER_CLIENTS_ONLINE,
-        (unsigned int)gc);
-
-    /* If we can't query the database, fail. */
-    if (psocn_db_real_query(&conn, query)) {
-        return -1;
-    }
-
-    /* Grab the results. */
-    result = psocn_db_result_store(&conn);
-    if (!result) {
-        return -1;
-    }
-
-    row = psocn_db_result_fetch(result);
-    if (!row) {
-        psocn_db_result_free(result);
-        return 0;
-    }
-
-    /* If there is a result, then the user is already online. */
-    psocn_db_result_free(result);
-    return 1;
-}
-
 int keycheck(char serial[8], char ak[8]) {
     uint64_t akv;
     int i;
