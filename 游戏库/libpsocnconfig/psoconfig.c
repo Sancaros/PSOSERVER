@@ -1103,7 +1103,7 @@ int psocn_web_server_getfile(void* HostName, int32_t port, char* file, const cha
         }
         else
         {
-            ERR_LOG("_getcwd 获取文件路径失败, 文件保存失败.");
+            ERR_LOG("获取文件路径失败, 文件保存失败.");
             return -1;
         }
 

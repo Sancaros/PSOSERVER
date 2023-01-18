@@ -454,10 +454,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 
         c->auth = 1;
 
-        sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastchar_slot = '%d' where guildcard = '%u'",
-            AUTH_DATA_ACCOUNT, c->islogged, c->sec_data.slot, c->guildcard);
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", c->guildcard, psocn_db_error(&conn));
+        if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, NULL)) {
             return -4;
         }
 
@@ -880,18 +877,14 @@ err:
 
 /* 0x00E7 231*/
 static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
-    char query[256];
-    char mysqlerr[1024];
+    //char query[256];
+    //char mysqlerr[1024];
     
     print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     printf("刷新玩家在线数据... ");
 
-    // 更新玩家登出信息
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d' where guildcard = '%u'", AUTH_DATA_ACCOUNT, c->islogged, c->guildcard);
-    if (psocn_db_real_query(&conn, query)) {
-        snprintf(mysqlerr, sizeof(mysqlerr), "刷新玩家在线数据信息错误:\n %s \n", psocn_db_error(&conn));
-        SQLERR_LOG("刷新玩家在线数据错误信息: %s", mysqlerr);
+    if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, (char*)pkt->data.character.name)) {
         return -1;
     }
 

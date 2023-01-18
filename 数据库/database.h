@@ -21,7 +21,7 @@
 #include "psoconfig.h"
 #include <mysql.h>
 
-/* TODO 添加 mariadb 支持 */
+/* NOTE: 数据写入必须为UTF8字符串 */
 
 #pragma comment(lib , "libmariadb.lib")
 #pragma comment(lib , "mariadbclient.lib")

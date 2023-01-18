@@ -210,20 +210,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     /* TODO 这里要完成一个服务器版本的限制功能 从数据库或者网络获取正确的客户端版本*/
     //char* PSO_CLIENT_VER_STRING = "CNBBVER0.00.01";
 
-    //// Make sure the version string is correct.
+    //// 检测登陆版本客户端是否正确.
     //if (strcmp(PSO_CLIENT_VER_STRING, c->bbversion_string)) {
     //    send_bb_security(c, 0, LOGIN_93BB_BAD_VERSION, 0, NULL, 0);
     //    return -2;
-    //}
-
-    //c->islogged = 1;
-
-    //sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d' WHERE guildcard = '%u'",
-    //    AUTH_DATA_ACCOUNT, c->islogged, c->guildcard);
-    //if (psocn_db_real_query(&conn, query)) {
-    //    SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
-    //    send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
-    //    return -4;
     //}
 
     bool is_old_format;

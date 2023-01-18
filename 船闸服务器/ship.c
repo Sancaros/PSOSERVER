@@ -2687,7 +2687,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
     static char query[16384];
-    char char_name[64];
+    //char char_name[64];
 
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
@@ -2724,17 +2724,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    istrncpy16_raw(ic_utf16_to_utf8, char_name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
-
-    uint8_t char_blob[4098] = { 0 };
-
-    psocn_db_escape_str(&conn, (char*)&char_blob[0], (char*)&char_data->character.name[0], sizeof(char_data->character.name));
-
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastchar_blob = '%s', lastchar_name = '%s' WHERE guildcard = '%" PRIu32 "'",
-        AUTH_DATA_ACCOUNT, 0, (char*)&char_blob[0], char_name, gc);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("更新GC %" PRIu32 " 槽位 %" PRIu8 " 数据错误:\n %s", gc, slot, psocn_db_error(&conn));
+    if (db_update_gc_login_state(gc, 0, -1, (char*)char_data->character.name)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;
@@ -3109,10 +3099,8 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
             CLIENT_PRIV_LOCAL_ROOT | CLIENT_PRIV_GLOBAL_ROOT);
     }
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d' where guildcard = '%u'",
-        AUTH_DATA_ACCOUNT, islogged, gc);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
+
+    if (db_update_gc_login_state(gc, islogged, -1, NULL)) {
         return -4;
     }
 
@@ -3123,7 +3111,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     return send_usrloginreply(c, gc, block, 1, priv);
 }
 
-/* 处理 ban request coming from a ship. */
+/* 处理来自舰船的封禁数据. */
 static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     uint32_t req, target, until;
     char query[1024];

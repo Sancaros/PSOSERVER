@@ -53,6 +53,49 @@ int db_check_gc_online(uint32_t gc) {
     return 1;
 }
 
+int db_update_gc_login_state(uint32_t gc, 
+    uint32_t islogged, uint32_t char_slot, char* char_name) {
+    char query[512];
+    char lastchar_name[64];
+    uint8_t lastchar_blob[4098] = { 0 };
+
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d'"
+        " where guildcard = '%u'",
+        AUTH_DATA_ACCOUNT, islogged, gc);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", gc, psocn_db_error(&conn));
+        return 1;
+    }
+
+    if (char_slot != -1) {
+        sprintf_s(query, _countof(query), "UPDATE %s SET lastchar_slot = '%d'"
+            " where guildcard = '%u'",
+            AUTH_DATA_ACCOUNT, char_slot, gc);
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", gc, psocn_db_error(&conn));
+            return 2;
+        }
+    }
+
+    if (char_name != NULL) {
+        istrncpy16_raw(ic_utf16_to_utf8, lastchar_name, char_name, 64, BB_CHARACTER_NAME_LENGTH);
+
+        psocn_db_escape_str(&conn, (char*)&lastchar_blob[0], char_name, BB_CHARACTER_NAME_LENGTH * 2);
+
+        sprintf_s(query, _countof(query), "UPDATE %s SET lastchar_blob = '%s', lastchar_name = '%s'"
+            " WHERE guildcard = '%" PRIu32 "'",
+            AUTH_DATA_ACCOUNT, (char*)&lastchar_blob[0], lastchar_name,
+            gc);
+
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", gc, psocn_db_error(&conn));
+            return 3;
+        }
+    }
+
+    return 0;
+}
+
 /* 获取玩家所在舰船ID */
 int db_get_char_ship_id(uint32_t gc) {
     void* result;

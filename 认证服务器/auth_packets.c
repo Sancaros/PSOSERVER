@@ -3645,7 +3645,7 @@ int send_crc_check(login_client_t *c, uint32_t start, uint32_t count) {
 }
 
 int send_disconnect(login_client_t* c, uint32_t flags) {
-    char query[512];
+    //char query[512];
     char ipstr[INET6_ADDRSTRLEN];
 
     my_ntop(&c->ip_addr, ipstr);
@@ -3655,10 +3655,7 @@ int send_disconnect(login_client_t* c, uint32_t flags) {
     if (flags) {
         c->islogged = 0;
 
-        sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastchar_slot = '%d' where guildcard = '%u'",
-            AUTH_DATA_ACCOUNT, c->islogged, c->sec_data.slot, c->guildcard);
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", c->guildcard, psocn_db_error(&conn));
+        if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, NULL)) {
             return -4;
         }
     }
