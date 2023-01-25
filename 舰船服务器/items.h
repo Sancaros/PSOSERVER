@@ -2209,7 +2209,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
 int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it);
 
-/* Blue Burst bank management */
+/* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);
 int item_deposit_to_bank(ship_client_t *c, bitem_t *it);
 int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
