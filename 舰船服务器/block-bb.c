@@ -1008,7 +1008,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         "bb_process_done_burst");*/
 
         /* Sanity check... Is the client in a game lobby? */
-    if (!l || l->type == LOBBY_TYPE_DEFAULT) {
+    if (!l || l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 

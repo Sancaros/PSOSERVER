@@ -98,7 +98,7 @@ static int handle_bb_cmd_check_lobby_size(ship_client_t* c, bb_subcmd_pkt_t* pkt
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅 %s 指令!",
             c->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
@@ -371,9 +371,9 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     iitem_t iitem_data;
     uint32_t ic[3];
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中拾取了物品!",
             c->guildcard);
         return -1;
@@ -528,7 +528,7 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, lobby_t* l, su
       /*[2022年08月23日 00:55 : 07 : 571] 错误(402) : GC 42004063 发送损坏的数据指令 0x60!数据大小 06
         (00000000)   20 00 62 00 00 00 00 00  60 06 00 00 01 05 72 00.b.....`.....r.
         (00000010)   60 EA 60 43 4B 07 A1 43  0B 00 00 00 01 E7 E7 1E    `.`CK..C........*/
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -585,7 +585,7 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, lobby_t* l, s
         ( 00000010 )   5F 1C DA 43 57 02 C8 C3  04 00 01 00 01 EB E7 1E    _..CW...........
         ( 00000020 )   02 00 80 3F FF 00 00 00  00 00 00 00 01 00 00 00    ...?............
         */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -622,7 +622,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     lobby_t* l = c->cur_lobby;
     int rv = -1;
 
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return rv;
@@ -841,7 +841,7 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
 static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
     lobby_t* l = c->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -979,7 +979,7 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -1080,7 +1080,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
     if (l->version == CLIENT_VERSION_BB) {
 
-        if (l->type == LOBBY_TYPE_DEFAULT) {
+        if (l->type == LOBBY_TYPE_LOBBY) {
             ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
                 c->guildcard);
             return -1;
@@ -1143,9 +1143,9 @@ static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
         sizeof(bitem_t);
     block_t* b = c->cur_block;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅打开了银行!",
             c->guildcard);
         return -1;
@@ -1184,9 +1184,9 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     bitem_t bitem;
     uint32_t ic[3];
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " did bank action in lobby!",
             c->guildcard);
         return -1;
@@ -1398,7 +1398,7 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, bb_subcmd_pkt_t* pk
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间内指令!",
             c->guildcard);
         return -1;
@@ -1573,7 +1573,7 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅开启了机关!",
             c->guildcard);
         rv = -1;
@@ -1688,7 +1688,7 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅攻击了实例!",
             c->guildcard);
         return -1;
@@ -1749,7 +1749,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅用法术攻击实例!",
             c->guildcard);
         return -1;
@@ -1867,7 +1867,7 @@ static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅攻击了箱子!",
             c->guildcard);
         return -1;
@@ -1910,9 +1910,9 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
     uint32_t bp, exp;
     game_enemy_t* en;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中获取经验!",
             c->guildcard);
         return -1;
@@ -1962,9 +1962,9 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
 static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发任务指令!",
             c->guildcard);
         return -1;
@@ -1988,9 +1988,9 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     game_enemy_t* en;
     uint32_t flags;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅攻击了怪物!",
             c->guildcard);
         return -1;
@@ -2146,9 +2146,9 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t item_id = pkt->item_id, mag_id = pkt->mag_id;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
             c->guildcard);
         return -1;
@@ -2196,9 +2196,9 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t inv, i, item_id = 0, found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 };
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅更换装备!",
             c->guildcard);
         return -1;
@@ -2392,9 +2392,9 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t inv, i, isframe = 0;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅卸除装备!",
             c->guildcard);
         return -1;
@@ -2454,7 +2454,7 @@ static int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
 
     /* We can't get these in default lobbies without someone messing with
        something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅使用物品!",
             c->guildcard);
         return -1;
@@ -2494,9 +2494,9 @@ send_pkt:
 static int handle_bb_medic(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " used medical center in lobby!",
             c->guildcard);
         return -1;
@@ -2525,7 +2525,7 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -2549,9 +2549,9 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     int item_used[30] = { 0 };
     int mode_item_used[30] = { 0 };
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅整理了物品!",
             c->guildcard);
         return -1;
@@ -2660,9 +2660,9 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
 static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 尝试在大厅使用传送门!",
             c->guildcard);
         return -1;
@@ -2699,9 +2699,9 @@ static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_pkt_t* pkt) {
 static int handle_bb_spawn_npc(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅生成了NPC!",
             c->guildcard);
         return -1;
@@ -2729,8 +2729,8 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     //    return;
     //}
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
     if (!l || l->type != LOBBY_TYPE_GAME) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
             c->guildcard);
@@ -2801,7 +2801,7 @@ static int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中杀掉了怪物!",
             c->guildcard);
         return -1;
@@ -2839,7 +2839,7 @@ static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
    that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中杀掉了怪物!",
             c->guildcard);
         return -1;
@@ -2979,7 +2979,7 @@ static int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt)
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令! 0x%02X",
             c->guildcard, pkt->type);
         return -1;
@@ -3000,7 +3000,7 @@ static int handle_bb_use_tech(ship_client_t* c, subcmd_bb_use_tech_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中释放了法术!",
             c->guildcard);
         return -1;
@@ -3031,7 +3031,7 @@ static int handle_bb_shop_inv(ship_client_t* c, subcmd_bb_shop_inv_t* pkt) {
  
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -3046,7 +3046,7 @@ static int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             c->guildcard);
         return -1;
@@ -3067,7 +3067,7 @@ static int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令! 0x%02X",
             c->guildcard, pkt->type);
         return -1;
@@ -3088,7 +3088,7 @@ static int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中释放了法术!",
             c->guildcard);
         return -1;
@@ -3107,9 +3107,9 @@ static int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
 static int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 
@@ -3177,7 +3177,7 @@ static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
 //( 00000000 )   14 00 60 00 00 00 00 00  52 03 01 00 08 00 00 00    ..`.....R.......
 //( 00000010 )   A2 EB FF FF                                         ....
     /* We don't care about these in lobbies. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
     }
@@ -3198,9 +3198,9 @@ static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
 static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " hit object in lobby!",
             c->guildcard);
         return -1;
@@ -3271,9 +3271,9 @@ static int handle_bb_set_area(ship_client_t* c, subcmd_bb_set_area_t* pkt) {
 static int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发普通攻击指令!",
             c->guildcard);
         return -1;
@@ -3332,9 +3332,9 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     int found = -1, isframe = 0;
     uint32_t i, inv;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 尝试在大厅中掉落物品!",
             c->guildcard);
         return -1;
@@ -3424,9 +3424,9 @@ static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
     int found = -1;
     uint32_t i, meseta, amt;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
             c->guildcard);
         return -1;
@@ -3497,9 +3497,9 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     iitem_t item_data;
     iitem_t* it;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中掉落堆叠物品!",
             c->guildcard);
         return -1;
@@ -3606,7 +3606,7 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC交谈!",
             c->guildcard);
         return -1;
@@ -3631,7 +3631,7 @@ static int handle_bb_done_npc(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC完成交谈!",
             c->guildcard);
         return -1;
@@ -3650,7 +3650,7 @@ static int handle_bb_level_up(ship_client_t* c, subcmd_bb_level_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             c->guildcard);
         return -1;
@@ -3704,7 +3704,7 @@ static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_chair_dir_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_DEFAULT) {
+    if (l->type != LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
             c->guildcard);
         return -1;
@@ -3882,7 +3882,7 @@ static int handle_bb_trade_done(ship_client_t* c, subcmd_bb_trade_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             c->guildcard);
         return -1;
@@ -3906,7 +3906,7 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             c->guildcard);
         return -1;
@@ -3962,7 +3962,7 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_DEFAULT) {
+    if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             c->guildcard);
         return -1;
@@ -4094,7 +4094,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
-    case SUBCMD0x60_TELEPORT_2:
+    case SUBCMD_DRAGON_ACT:
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
@@ -4464,7 +4464,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD_FINISH_LOAD:
-        if (l->type == LOBBY_TYPE_DEFAULT) {
+        if (l->type == LOBBY_TYPE_LOBBY) {
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i] && l->clients[i] != c &&
                     subcmd_send_pos(c, l->clients[i])) {

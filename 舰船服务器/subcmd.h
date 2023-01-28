@@ -1196,6 +1196,85 @@ typedef struct subcmd_bb_chair_dir {
     uint8_t unk2[2];
 } PACKED subcmd_bb_chair_dir_t;
 
+/* Packet used by the Dragon boss to deal with its actions. */
+typedef struct subcmd_dragon_act {
+    dc_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t size;
+    uint16_t enemy_id;
+    uint32_t unk[2];
+    bitfloat_t x;
+    bitfloat_t z;
+} PACKED subcmd_dragon_act_t;
+
+/* Packet used by the Gol Dragon boss to deal with its actions. */
+typedef struct subcmd_gol_dragon_act {
+    dc_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t size;
+    uint16_t enemy_id;
+    uint32_t unk[2];
+    bitfloat_t x;
+    bitfloat_t z;
+    uint32_t unk2;
+} PACKED subcmd_gol_dragon_act_t;
+
+/* Packet used to communicate current state of players in-game while a new
+   player is bursting. */
+typedef struct subcmd_burst_pldata {
+    dc_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t unused1;
+    uint16_t unused2;
+    uint32_t size_minus_4;  /* ??? */
+    uint32_t unk1[2];
+    float x;
+    float y;
+    float z;
+    uint8_t unk2[0x54];
+    uint32_t tag;
+    uint32_t guildcard;
+    uint8_t unk3[0x44];
+    uint8_t techs[20];
+    char name[16];
+    uint32_t c_unk1[2];
+    uint32_t name_color;
+    uint8_t model;
+    uint8_t c_unused[15];
+    uint32_t name_color_checksum;
+    uint8_t section;
+    uint8_t ch_class;
+    uint8_t v2flags;
+    uint8_t version;
+    uint32_t v1flags;
+    uint16_t costume;
+    uint16_t skin;
+    uint16_t face;
+    uint16_t head;
+    uint16_t hair;
+    uint16_t hair_r;
+    uint16_t hair_g;
+    uint16_t hair_b;
+    float prop_x;
+    float prop_y;
+    uint16_t atp;
+    uint16_t mst;
+    uint16_t evp;
+    uint16_t hp;
+    uint16_t dfp;
+    uint16_t ata;
+    uint16_t lck;
+    uint16_t c_unk2;
+    uint32_t c_unk3[2];
+    uint32_t level;
+    uint32_t exp;
+    uint32_t meseta;
+    inventory_t inv;
+    uint32_t zero;          /* Unused? */
+    /* Xbox has a little bit more at the end than other versions... Probably
+       safe to just ignore it. */
+} PACKED subcmd_burst_pldata_t;
+
 #ifndef _WIN32
 #else
 #pragma pack()
@@ -1254,7 +1333,7 @@ typedef struct subcmd_bb_chair_dir {
 #define SUBCMD0x60_ACTION_VOL_OPT      0x15
 #define SUBCMD0x60_ACTION_VOL_OPT2     0x16
 #define SUBCMD_TELEPORT     0x17 //SUBCMD0x60_TELEPORT_1
-#define SUBCMD0x60_TELEPORT_2   0x18
+#define SUBCMD_DRAGON_ACT   0x18    /* Dragon special actions */
 #define SUBCMD0x60_ACTION_DARK_FALZ    0x19
 #define SUBCMD0x60_UNKNOW_1C    0x1C
 #define SUBCMD_SET_AREA     0x1F
@@ -1390,7 +1469,7 @@ typedef struct subcmd_bb_chair_dir {
 #define SUBCMD0x60_UNKNOW_9D    0x9D
 #define SUBCMD0x60_UNKNOW_9E    0x9E
 #define SUBCMD0x60_UNKNOW_9F    0x9F
-#define SUBCMD0x60_UNKNOW_A8    0xA8 // Gol Dragon actions
+#define SUBCMD_GDRAGON_ACT    0xA8    /* Gol Dragon special actions */
 #define SUBCMD0x60_UNKNOW_A9    0xA9 // Barba Ray actions
 #define SUBCMD0x60_UNKNOW_AA    0xAA // Episode 2 boss actions
 #define SUBCMD_LOBBY_CHAIR  0xAB // Create lobby chair
@@ -1447,7 +1526,7 @@ typedef struct subcmd_bb_chair_dir {
 #define SUBCMD_BURST1       0x6D //SUBCMD0x62_BURST1
 #define SUBCMD_BURST4       0x6E //SUBCMD0x62_BURST4
 #define SUBCMD_BURST5       0x6F //SUBCMD0x62_BURST5
-#define SUBCMD_BURST7       0x70 //SUBCMD0x62_BURST7
+#define SUBCMD_BURST_PLDATA       0x70 //SUBCMD0x62_BURST7 /* Was SUBCMD_BURST7 */
 #define SUBCMD_BURST6       0x71 //SUBCMD0x62_BURST6
 
 /* The commands OK to send during bursting (0x60) */

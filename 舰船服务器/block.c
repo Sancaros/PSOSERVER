@@ -972,7 +972,7 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
             menu = LE32(ext->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_DEFAULT) {
+                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1089,7 +1089,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
             menu = LE32(extd->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_DEFAULT) {
+                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1104,7 +1104,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
             menu = LE32(extp->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_DEFAULT) {
+                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1214,7 +1214,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
             menu = LE32(ext->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_DEFAULT) {
+                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -2140,7 +2140,7 @@ static int dc_process_done_burst(ship_client_t* c) {
     int rv;
 
     /* Sanity check... Is the client in a game lobby? */
-    if (!l || l->type == LOBBY_TYPE_DEFAULT) {
+    if (!l || l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 

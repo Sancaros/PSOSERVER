@@ -999,7 +999,7 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
                 ERR_LOG("无法为游戏 objects 分配内存空间: %s",
                       strerror(errno));
                 free_safe(obj);
-                fclose(fp);
+                //fclose(fp);
                 return 9;
             }
 
@@ -1219,7 +1219,7 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
                 ERR_LOG("无法为 game objects 分配内存: %s",
                       strerror(errno));
                 free_safe(obj);
-                fclose(fp);
+                //fclose(fp);
                 return 9;
             }
 

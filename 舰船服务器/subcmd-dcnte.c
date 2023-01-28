@@ -102,7 +102,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case 0x1F:
-            if(l->type == LOBBY_TYPE_DEFAULT) {
+            if(l->type == LOBBY_TYPE_LOBBY) {
                 for(i = 0; i < l->max_clients; ++i) {
                     if(l->clients[i] && l->clients[i] != c &&
                        subcmd_send_pos(c, l->clients[i])) {

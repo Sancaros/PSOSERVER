@@ -1830,7 +1830,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt, 0, sizeof(dcnte_lobby_join_pkt));
 
     /* Fill in the basics. */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LOBBY_ADD_PLAYER_TYPE : GAME_ADD_PLAYER_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0444);
@@ -1867,7 +1867,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
 
         /* Only do this on lobby lobbies or if somehow we get here in a v1
            lobby... */
-        if(l->type == LOBBY_TYPE_DEFAULT || l->version == CLIENT_VERSION_DCV1) {
+        if(l->type == LOBBY_TYPE_LOBBY || l->version == CLIENT_VERSION_DCV1) {
             if(ch_class == HUcaseal)
                 ch_class = HUcast;  /* HUcaseal -> HUcast */
             else if(ch_class == FOmar)
@@ -1911,16 +1911,16 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt, 0, sizeof(dc_lobby_join_pkt));
 
     /* Fill in the basics. */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LOBBY_ADD_PLAYER_TYPE : GAME_ADD_PLAYER_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x044C);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
     pkt->one = 1;
-    pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
+    pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         pkt->block_num = LE16(l->block->b);
     }
     else {
@@ -1958,7 +1958,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
 
         /* Only do this on lobby lobbies or if somehow we get here in a v1
            lobby... */
-        if(l->type == LOBBY_TYPE_DEFAULT || l->version == CLIENT_VERSION_DCV1) {
+        if(l->type == LOBBY_TYPE_LOBBY || l->version == CLIENT_VERSION_DCV1) {
             if(ch_class == HUcaseal)
                 ch_class = HUcast;  /* HUcaseal -> HUcast */
             else if(ch_class == FOmar)
@@ -1996,16 +1996,16 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt, 0, sizeof(pc_lobby_join_pkt));
 
     /* Fill in the basics. */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LOBBY_ADD_PLAYER_TYPE : GAME_ADD_PLAYER_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x045C);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
     pkt->one = 1;
-    pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
+    pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         pkt->block_num = LE16(l->block->b);
     }
     else {
@@ -2046,7 +2046,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
 
         /* Only do this on lobby lobbies or if somehow we get here in a v1
            lobby... */
-        if(l->type == LOBBY_TYPE_DEFAULT || l->version == CLIENT_VERSION_DCV1) {
+        if(l->type == LOBBY_TYPE_LOBBY || l->version == CLIENT_VERSION_DCV1) {
             if(ch_class == HUcaseal)
                 ch_class = HUcast;  /* HUcaseal -> HUcast */
             else if(ch_class == FOmar)
@@ -2082,16 +2082,16 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt, 0, sizeof(xb_lobby_join_pkt));
 
     /* Fill in the basics. */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LOBBY_ADD_PLAYER_TYPE : GAME_ADD_PLAYER_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0490);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
     pkt->one = 1;
-    pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
+    pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         pkt->block_num = LE16(l->block->b);
     }
     else {
@@ -2157,15 +2157,15 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt, 0, sizeof(bb_lobby_join_pkt));
 
     /* Fill in the basics. */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LE16(LOBBY_ADD_PLAYER_TYPE) : LE16(GAME_ADD_PLAYER_TYPE);
     pkt->hdr.flags = LE32(1);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
     pkt->disable_udp = 1;
-    pkt->lobby_num = (l->type == LOBBY_TYPE_DEFAULT) ? l->lobby_id - 1 : 0xFF;
+    pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         pkt->block_num = l->block->b;
     }
     else {
@@ -2203,7 +2203,7 @@ int send_lobby_add_player(lobby_t *l, ship_client_t *c) {
     int i;
 
     /* Send the C-Rank of this new character. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         send_c_rank_update(c, l);
     }
 
@@ -2257,13 +2257,13 @@ static int send_dc_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
-        pkt->hdr.dc.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+        pkt->hdr.dc.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
             LOBBY_LEAVE_TYPE : GAME_LEAVE_TYPE;
         pkt->hdr.dc.flags = client_id;
         pkt->hdr.dc.pkt_len = LE16(DC_LOBBY_LEAVE_LENGTH);
     }
     else {
-        pkt->hdr.pc.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+        pkt->hdr.pc.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
             LOBBY_LEAVE_TYPE : GAME_LEAVE_TYPE;
         pkt->hdr.pc.flags = client_id;
         pkt->hdr.pc.pkt_len = LE16(DC_LOBBY_LEAVE_LENGTH);
@@ -2287,7 +2287,7 @@ static int send_bb_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
     }
 
     /* Fill in the header */
-    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_DEFAULT) ?
+    pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LE16(LOBBY_LEAVE_TYPE) : LE16(GAME_LEAVE_TYPE);
     pkt->hdr.flags = LE32(client_id);
     pkt->hdr.pkt_len = LE16(BB_LOBBY_LEAVE_LENGTH);
@@ -2902,7 +2902,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(pkt->location, "%s, ,%s", lobby_name, ship->cfg->name);
     }
     else {
@@ -2966,7 +2966,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, ,%s", lobby_name, ship->cfg->name);
         istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
     }
@@ -3031,7 +3031,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, , %s", lobby_name, ship->cfg->name);
     }
     else {
@@ -3147,7 +3147,7 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(pkt->location, "%s, ,%s", lobby_name, ship->cfg->name);
     }
     else {
@@ -3212,7 +3212,7 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, ,%s", lobby_name, ship->cfg->name);
         istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
     }
@@ -3279,7 +3279,7 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
         sprintf(lobby_name, "BLOCK%02d-C%d", b->b, s->lobby_id - 15);
     }
 
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, , %s", lobby_name, ship->cfg->name);
     }
     else {
@@ -11102,7 +11102,7 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
     int i;
 
     /* Don't send these to default lobbies, ever */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return 0;
     }
 
@@ -12160,8 +12160,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         bb_guild_lobby_setting_pkt* pkt_LS = (bb_guild_lobby_setting_pkt*)sendbuf;
 
-        if (l->type == LOBBY_TYPE_DEFAULT) {
-            DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+        if (l->type == LOBBY_TYPE_LOBBY) {
+            DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
         }
 
         for (i = 0; i < l->max_clients; ++i) {
@@ -12169,7 +12169,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 c2 = l->clients[i];
                 pthread_mutex_lock(&c2->mutex);
 
-                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
                 switch (c2->version) {
 
                 case CLIENT_VERSION_GC:
@@ -12208,7 +12208,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
                         memcpy(&pkt_LS->entries[entries].guild_flag, &c2->bb_guild->guild_data.guild_flag[0], 0x800);
 
-                        DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+                        DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
                         break;
                     }
 
@@ -12221,7 +12221,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 ++entries;
                 size += 0x864;
 next:
-                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
                 pthread_mutex_unlock(&c2->mutex);
             }
         }
@@ -12230,7 +12230,7 @@ next:
         pkt_LS->hdr.pkt_type = cmd_code;
         pkt_LS->hdr.flags = LE32(entries);
 
-        DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_DEFAULT");
+        DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
         return crypt_send(c, size, sendbuf);
     }
 

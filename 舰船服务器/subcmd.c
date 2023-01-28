@@ -833,9 +833,9 @@ static int handle_quest_itemreq(ship_client_t *c, subcmd_itemreq_t *req, ship_cl
 static int handle_levelup(ship_client_t *c, subcmd_levelup_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 
@@ -862,10 +862,11 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
     iitem_t item;
     uint32_t v;
     int i;
+    subcmd_take_item_t tr;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT)
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
     /* Buggy PSO version is buggy... */
@@ -944,11 +945,10 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
     l->highest_item[c->client_id] = (uint16_t)LE32(pkt->item_id);
+    v = LE32(pkt->data_l[0]);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
-
-    v = LE32(pkt->data_l[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
     if(item_is_stackable(v)) {
@@ -966,63 +966,89 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
            sizeof(uint32_t) * 5);
 
 send_pkt:
-    return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t *)pkt, 0);
+    /* If the item isn't a mag, or the client isn't Xbox or GC, then just
+       send the packet away now. */
+    if ((v & 0xff) != ITEM_TYPE_MAG ||
+        (c->version != CLIENT_VERSION_XBOX && c->version != CLIENT_VERSION_GC)) {
+        return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t*)pkt, 0);
+    }
+    else {
+        /* If we have a mag and the user is on GC or Xbox, we have to swap the
+           last dword when sending to the other of those two versions to make
+           things work correctly in cross-play teams. */
+        memcpy(&tr, pkt, sizeof(subcmd_take_item_t));
+        tr.data2_l = SWAP32(tr.data2_l);
+
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i] && l->clients[i] != c) {
+                if (l->clients[i]->version == c->version) {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
+                }
+                else {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&tr);
+                }
+            }
+        }
+
+        return 0;
+    }
 }
 
-static int handle_itemdrop(ship_client_t *c, subcmd_itemgen_t *pkt) {
-    lobby_t *l = c->cur_lobby;
+static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
+    lobby_t* l = c->cur_lobby;
     iitem_t item;
     uint32_t v;
     int i;
-    ship_client_t *c2;
-    const char *name;
+    ship_client_t* c2;
+    const char* name;
     subcmd_destroy_item_t dp;
+    subcmd_itemgen_t tr;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. We accept two different sizes here
        0x0B for v2 and later, and 0x0A for v1. */
-    if(pkt->size != 0x0B && pkt->size != 0x0A) {
+    if (pkt->size != 0x0B && pkt->size != 0x0A) {
         return -1;
     }
 
     /* If we're in legit mode, we need to check the item. */
-    if((l->flags & LOBBY_FLAG_LEGIT_MODE) && l->limits_list) {
-        switch(c->version) {
-            case CLIENT_VERSION_DCV1:
-                v = ITEM_VERSION_V1;
-                break;
+    if ((l->flags & LOBBY_FLAG_LEGIT_MODE) && l->limits_list) {
+        switch (c->version) {
+        case CLIENT_VERSION_DCV1:
+            v = ITEM_VERSION_V1;
+            break;
 
-            case CLIENT_VERSION_DCV2:
-            case CLIENT_VERSION_PC:
-                v = ITEM_VERSION_V2;
-                break;
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            v = ITEM_VERSION_V2;
+            break;
 
-            case CLIENT_VERSION_GC:
-            case CLIENT_VERSION_XBOX:
-                v = ITEM_VERSION_GC;
-                break;
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_GC;
+            break;
 
-            default:
-                return -1;
+        default:
+            return -1;
         }
 
         /* Fill in the item structure so we can check it. */
         memcpy(&item.data.data_l[0], &pkt->item.data_l[0], 5 * sizeof(uint32_t));
 
-        if(!psocn_limits_check_item(l->limits_list, &item, v)) {
+        if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             /* The item failed the check, deal with it. */
             DBG_LOG("Potentially non-legit item dropped in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(pkt->item.data_l[0]),
-                  LE32(pkt->item.data_l[1]), LE32(pkt->item.data_l[2]), LE32(pkt->item2));
+                "%08x %08x %08x %08x", LE32(pkt->item.data_l[0]),
+                LE32(pkt->item.data_l[1]), LE32(pkt->item.data_l[2]), LE32(pkt->item2));
 
             /* Grab the item name, if we can find it. */
-            name = iitem_get_name((iitem_t *)&item, v);
+            name = iitem_get_name((iitem_t*)&item, v);
 
             /* Fill in the destroy item packet. */
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
@@ -1034,27 +1060,27 @@ static int handle_itemdrop(ship_client_t *c, subcmd_itemgen_t *pkt) {
 
             /* Send out a warning message, followed by the drop, followed by a
                packet deleting the drop from the game (to prevent any desync) */
-            for(i = 0; i < l->max_clients; ++i) {
-                if((c2 = l->clients[i])) {
-                    if(name) {
+            for (i = 0; i < l->max_clients; ++i) {
+                if ((c2 = l->clients[i])) {
+                    if (name) {
                         send_txt(c2, "%s: %s",
-                                 __(c2, "\tE\tC7Potentially hacked drop\n"
-                                    "detected."), name);
+                            __(c2, "\tE\tC7Potentially hacked drop\n"
+                                "detected."), name);
                     }
                     else {
                         send_txt(c2, "%s",
-                                 __(c2, "\tE\tC7Potentially hacked drop\n"
-                                    "detected."));
+                            __(c2, "\tE\tC7Potentially hacked drop\n"
+                                "detected."));
                     }
 
                     /* Send out the drop item packet. This doesn't go to the
                        person who originated the drop (the team leader). */
-                    if(c != c2) {
-                        send_pkt_dc(c2, (dc_pkt_hdr_t *)pkt);
+                    if (c != c2) {
+                        send_pkt_dc(c2, (dc_pkt_hdr_t*)pkt);
                     }
 
                     /* Send out the destroy drop packet. */
-                    send_pkt_dc(c2, (dc_pkt_hdr_t *)&dp);
+                    send_pkt_dc(c2, (dc_pkt_hdr_t*)&dp);
                 }
             }
 
@@ -1063,17 +1089,43 @@ static int handle_itemdrop(ship_client_t *c, subcmd_itemgen_t *pkt) {
         }
     }
 
-    /* If we get here, either the game is not in legit mode, or the item is
-       actually legit, so just forward the packet on. */
-    return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t *)pkt, 0);
+    /* If we end up here, then the item is legit... */
+    v = LE32(pkt->item.data_l[0]) & 0xff;
+
+    /* If the item isn't a mag, or the client isn't Xbox or GC, then just
+       send the packet away now. */
+    if ((v & 0xff) != ITEM_TYPE_MAG ||
+        (c->version != CLIENT_VERSION_XBOX && c->version != CLIENT_VERSION_GC)) {
+        return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t*)pkt, 0);
+    }
+    else {
+        /* If we have a mag and the user is on GC or Xbox, we have to swap the
+           last dword when sending to the other of those two versions to make
+           things work correctly in cross-play teams. */
+        memcpy(&tr, pkt, sizeof(subcmd_itemgen_t));
+        tr.item.data2_l = SWAP32(tr.item.data2_l);
+
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i] && l->clients[i] != c) {
+                if (l->clients[i]->version == c->version) {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
+                }
+                else {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&tr);
+                }
+            }
+        }
+
+        return 0;
+    }
 }
 
 static int handle_take_damage(ship_client_t *c, subcmd_take_damage_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 
@@ -1091,9 +1143,9 @@ static int handle_take_damage(ship_client_t *c, subcmd_take_damage_t *pkt) {
 static int handle_used_tech(ship_client_t *c, subcmd_used_tech_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅使用法术!",
               c->guildcard);
         return -1;
@@ -1208,9 +1260,9 @@ static int handle_delete_inv(ship_client_t *c, subcmd_destroy_item_t *pkt) {
     int num;
     uint32_t i, item_id;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT)
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
     /* Sanity check... Make sure the size of the subcommand and the client id
@@ -1257,9 +1309,9 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
     uint32_t ic;
     int i;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT)
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
     /* Sanity check... Make sure the size of the subcommand and the client id
@@ -1299,9 +1351,9 @@ static int handle_use_item(ship_client_t *c, subcmd_use_item_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int num;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " used item in lobby!",
               c->guildcard);
         return -1;
@@ -1535,9 +1587,9 @@ static int handle_mhit(ship_client_t *c, subcmd_mhit_pkt_t *pkt) {
     game_enemy_t *en;
     uint32_t flags;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅攻击了怪物!",
               c->guildcard);
         return -1;
@@ -1754,7 +1806,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " hit object in lobby!",
               c->guildcard);
         return -1;
@@ -1810,7 +1862,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " hit object in lobby!",
               c->guildcard);
         return -1;
@@ -1923,7 +1975,7 @@ static int handle_objhit(ship_client_t *c, subcmd_bhit_pkt_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅攻击了箱子!",
               c->guildcard);
         return -1;
@@ -1947,9 +1999,9 @@ static int handle_objhit(ship_client_t *c, subcmd_bhit_pkt_t *pkt) {
 static int handle_spawn_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("Attempt by GC %" PRIu32 " to spawn NPC in lobby!",
               c->guildcard);
         return -1;
@@ -1973,9 +2025,9 @@ static int handle_spawn_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
 static int handle_create_pipe(ship_client_t *c, subcmd_pipe_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
-    /* We can't get these in default lobbies without someone messing with
-       something that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("Attempt by GC %" PRIu32 " to spawn pipe in lobby!",
               c->guildcard);
         return -1;
@@ -2148,7 +2200,7 @@ static int handle_menu_req(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We don't care about these in lobbies. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
     }
 
@@ -2169,7 +2221,7 @@ static int handle_drop_item(ship_client_t *c, subcmd_drop_item_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " dropped item in lobby!",
               c->guildcard);
         return -1;
@@ -2207,7 +2259,7 @@ static int handle_drop_stack(ship_client_t *c, subcmd_drop_stack_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " dropped stack in lobby!",
               c->guildcard);
         return -1;
@@ -2235,7 +2287,7 @@ static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " talked to NPC in lobby!",
               c->guildcard);
         return -1;
@@ -2260,7 +2312,7 @@ static int handle_done_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " finished NPC talk in lobby!",
               c->guildcard);
         return -1;
@@ -2279,7 +2331,7 @@ static int handle_pick_up(ship_client_t *c, ship_client_t *d, subcmd_pick_up_t *
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " picked up item in lobby!",
               c->guildcard);
         return -1;
@@ -2305,6 +2357,109 @@ static int handle_pick_up(ship_client_t *c, ship_client_t *d, subcmd_pick_up_t *
     return send_pkt_dc(d, (dc_pkt_hdr_t *)pkt);
 }
 
+int handle_burst_pldata(ship_client_t* c, ship_client_t* d,
+    subcmd_burst_pldata_t* pkt) {
+    int i;
+    iitem_t* item;
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* Scan the inventory and fix any mags before sending it along. */
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* If the item is a mag, then we have to swap the last dword of the
+                data. Otherwise colors and stats get messed up. */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+
+    return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+}
+
+int handle_dragon_act(ship_client_t* c, subcmd_dragon_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int v = c->version, i;
+    subcmd_dragon_act_t tr;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " reported Dragon action in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if (v != CLIENT_VERSION_XBOX && v != CLIENT_VERSION_GC)
+        return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
+
+    /* Make a version to send to the other version if the client is on GC or
+       Xbox. */
+    memcpy(&tr, pkt, sizeof(subcmd_dragon_act_t));
+    tr.x.b = SWAP32(tr.x.b);
+    tr.z.b = SWAP32(tr.z.b);
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            if (l->clients[i]->version == v) {
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
+            }
+            else {
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&tr);
+            }
+        }
+    }
+
+    return 0;
+}
+
+int handle_gol_dragon_act(ship_client_t* c, subcmd_gol_dragon_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int v = c->version, i;
+    subcmd_gol_dragon_act_t tr;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " reported Gol Dragon action in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if (v != CLIENT_VERSION_XBOX && v != CLIENT_VERSION_GC)
+        return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
+
+    /* Make a version to send to the other version if the client is on GC or
+       Xbox. */
+    memcpy(&tr, pkt, sizeof(subcmd_gol_dragon_act_t));
+    tr.x.b = SWAP32(tr.x.b);
+    tr.z.b = SWAP32(tr.z.b);
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            if (l->clients[i]->version == v) {
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
+            }
+            else {
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&tr);
+            }
+        }
+    }
+
+    return 0;
+}
+
 /* 处理DC 0x62/0x6D 数据包. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
@@ -2312,7 +2467,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
     uint8_t type = pkt->type;
     int rv = -1;
 
-    /* Ignore these if the client isn't in a lobby. */
+    /* Ignore these if the client isn't in a lobby or team. */
     if(!l)
         return 0;
 
@@ -2342,8 +2497,11 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
 
             case SUBCMD_BURST5:
             case SUBCMD_BURST6:
-            case SUBCMD_BURST7:
                 rv |= send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
+                break;
+
+            case SUBCMD_BURST_PLDATA:
+                rv = handle_burst_pldata(c, dest, (subcmd_burst_pldata_t*)pkt);
                 break;
 
             default:
@@ -2603,6 +2761,14 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_done_npc(c, (subcmd_pkt_t *)pkt);
             break;
 
+        case SUBCMD_DRAGON_ACT:
+            rv = handle_dragon_act(c, (subcmd_dragon_act_t*)pkt);
+            break;
+
+        case SUBCMD_GDRAGON_ACT:
+            rv = handle_gol_dragon_act(c, (subcmd_gol_dragon_act_t*)pkt);
+            break;
+
         default:
 #ifdef LOG_UNKNOWN_SUBS
             DBG_LOG("Unknown 0x60: 0x%02X", type);
@@ -2612,7 +2778,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD_FINISH_LOAD:
-            if(l->type == LOBBY_TYPE_DEFAULT) {
+            if(l->type == LOBBY_TYPE_LOBBY) {
                 for(i = 0; i < l->max_clients; ++i) {
                     if(l->clients[i] && l->clients[i] != c &&
                        subcmd_send_pos(c, l->clients[i])) {
@@ -2647,10 +2813,9 @@ int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int rv;
 
-    /* Ignore these if the client isn't in a lobby. */
-    if(!l) {
+    /* Ignore these if the client isn't in a lobby or team. */
+    if(!l)
         return 0;
-    }
 
     pthread_mutex_lock(&l->mutex);
 

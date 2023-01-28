@@ -152,7 +152,7 @@ static int handle_min_level(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
 
     /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -197,7 +197,7 @@ static int handle_max_level(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
 
     /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -266,7 +266,7 @@ static int handle_save(ship_client_t *c, const char *params) {
     }
 
     /* Make sure that the requester is in a lobby, not a team */
-    if(l->type != LOBBY_TYPE_DEFAULT) {
+    if(l->type != LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
@@ -310,7 +310,7 @@ static int handle_restore(ship_client_t *c, const char *params) {
     }
 
     /* Make sure that the requester is in a lobby, not a team */
-    if(l->type != LOBBY_TYPE_DEFAULT) {
+    if(l->type != LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
@@ -507,7 +507,7 @@ static int handle_passwd(ship_client_t *c, const char *params) {
     int len = strlen(params), i;
 
     /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -545,7 +545,7 @@ static int handle_lname(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
 
     /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type == LOBBY_TYPE_DEFAULT) {
+    if(l->type == LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -763,7 +763,7 @@ static int handle_legit(ship_client_t *c, const char *params) {
     int j, irv;
 
     /* Make sure the requester is in a lobby, not a team. */
-    if(l->type != LOBBY_TYPE_DEFAULT)
+    if(l->type != LOBBY_TYPE_LOBBY)
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
 
     /* Figure out what version they're on. */
@@ -2403,7 +2403,7 @@ static int handle_override(ship_client_t *c, const char *params) {
     }
 
     /* Make sure that the requester is in a lobby, not a team */
-    if(l->type != LOBBY_TYPE_DEFAULT) {
+    if(l->type != LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
@@ -2583,7 +2583,7 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
     }
 
     /* Make sure that the requester is in a lobby, not a team */
-    if(l->type != LOBBY_TYPE_DEFAULT) {
+    if(l->type != LOBBY_TYPE_LOBBY) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
@@ -2827,7 +2827,7 @@ static int handle_trackinv(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
 
     /* Make sure that the requester is in a plain old lobby. */
-    if(l->type != LOBBY_TYPE_DEFAULT)
+    if(l->type != LOBBY_TYPE_LOBBY)
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
 
     /* Set the flag... */
@@ -2874,7 +2874,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
 
     /* Make sure that the requester is in a lobby, not a team */
-    if(l->type != LOBBY_TYPE_DEFAULT)
+    if(l->type != LOBBY_TYPE_LOBBY)
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
 
     /* Figure out the level requested */
@@ -3040,7 +3040,7 @@ static int handle_noevent(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7游戏版本不支持."));
 
     /* Make sure that the requester is in a lobby, not a game */
-    if(c->cur_lobby->type != LOBBY_TYPE_DEFAULT)
+    if(c->cur_lobby->type != LOBBY_TYPE_LOBBY)
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
 
     return send_simple(c, LOBBY_EVENT_TYPE, LOBBY_EVENT_NONE);
