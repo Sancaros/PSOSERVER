@@ -23,7 +23,7 @@
 
 #include <f_logs.h>
 #include <f_checksum.h>
-#include <packetlist.h>
+#include <pso_cmd_code.h>
 
 #include <pso_character.h>
 

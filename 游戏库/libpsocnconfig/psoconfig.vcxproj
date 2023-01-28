@@ -166,7 +166,6 @@
     <ClCompile Include="Software_Defines.c" />
     <ClCompile Include="utsname.c" />
     <ClCompile Include="Strptime_win.c" />
-    <ClCompile Include="cmd_name.c" />
     <ClCompile Include="f_iconv.c" />
     <ClCompile Include="psoconfig_server.c" />
   </ItemGroup>

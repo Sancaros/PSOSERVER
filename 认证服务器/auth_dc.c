@@ -30,7 +30,7 @@
 #include <md5.h>
 #include <items.h>
 
-#include <packetlist.h>
+#include <pso_cmd_code.h>
 
 #include "auth.h"
 #include <pso_player.h>
@@ -41,7 +41,7 @@ mini18n_t langs[CLIENT_LANG_ALL];
 #endif
 
 extern psocn_dbconn_t conn;
-extern psocn_quest_list_t qlist[CLIENT_VERSION_COUNT][CLIENT_LANG_ALL];
+extern psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 extern psocn_limits_t *limits;
 extern volatile sig_atomic_t shutting_down;
 static uint32_t next_pcnte_gc = 500;
@@ -95,7 +95,7 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
         memcpy(c->access_key, pkt->access_key, 16);
     }
 
-    c->type = CLIENT_VERSION_DCNTE;
+    c->type = CLIENT_AUTH_DCNTE;
     c->ext_version = CLIENT_EXTVER_DC | CLIENT_EXTVER_DCNTE;
 
     /* We should check to see if the client exists here, and get it to send us
@@ -511,7 +511,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         return -1;
     }
 
-    if(c->type != CLIENT_VERSION_PC && keycheck(pkt->serial, pkt->access_key)) {
+    if(c->type != CLIENT_AUTH_PC && keycheck(pkt->serial, pkt->access_key)) {
         send_large_msg(c, __(c, "\tECannot connect to server.\n"
                        "Please check your settings."));
         return -1;
@@ -525,7 +525,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         psocn_db_escape_str(&conn, serial, pkt->serial, 8);
         psocn_db_escape_str(&conn, access, pkt->access_key, 8);
 
-        if(c->type != CLIENT_VERSION_PC) {
+        if(c->type != CLIENT_AUTH_PC) {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
                 "(dc_id='%s' OR dc_id IS NULL) AND serial_number='%s' AND "
                 "access_key='%s'"
@@ -554,7 +554,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             gc = (uint32_t)strtoul(row[0], NULL, 0);
             psocn_db_result_free(result);
         }
-        else if(c->type == CLIENT_VERSION_PC) {
+        else if(c->type == CLIENT_AUTH_PC) {
             /* If we're here, then that means either the PSOPC user is not
                registered or they've put their information in wrong. Disconnect
                them so that they can fix that problem
@@ -671,68 +671,68 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
        to want to connect on wonky ports... */
     switch(pkt->version) {
         case 0x30: /* Episode 1 & 2 (Japanese, v1.02) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 | CLIENT_EXTVER_GC_REG_JP;
             break;
 
         case 0x31: /* Episode 1 & 2 (US 1.0/1.01) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 | CLIENT_EXTVER_GC_REG_US;
             break;
 
         case 0x32: /* Episode 1 & 2 (Europe, 50hz) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 |
                 CLIENT_EXTVER_GC_REG_PAL50;
             break;
 
         case 0x33: /* Episode 1 & 2 (Europe, 60hz) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 |
                 CLIENT_EXTVER_GC_REG_PAL60;
             break;
 
         case 0x34: /* Episode 1 & 2 (Japan, v1.03) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 | CLIENT_EXTVER_GC_REG_JP;
             break;
 
         case 0x36: /* Episode 1 & 2 Plus (US) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12PLUS |
                 CLIENT_EXTVER_GC_REG_US;
             break;
 
         case 0x35:
         case 0x39: /* Episode 1 & 2 Plus (Japan) */
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12PLUS |
                 CLIENT_EXTVER_GC_REG_JP;
             break;
 
         case 0x40: /* Episode 3 (trial?) */
-            c->type = CLIENT_VERSION_EP3;
+            c->type = CLIENT_AUTH_EP3;
             c->ext_version |= CLIENT_EXTVER_GC_EP3 | CLIENT_EXTVER_GC_REG_JP;
             break;
 
         case 0x41: /* Episode 3 (US) */
-            c->type = CLIENT_VERSION_EP3;
+            c->type = CLIENT_AUTH_EP3;
             c->ext_version |= CLIENT_EXTVER_GC_EP3 | CLIENT_EXTVER_GC_REG_US;
             break;
 
         case 0x42: /* Episode 3 (Japanese) */
-            c->type = CLIENT_VERSION_EP3;
+            c->type = CLIENT_AUTH_EP3;
             c->ext_version |= CLIENT_EXTVER_GC_EP3 | CLIENT_EXTVER_GC_REG_JP;
             break;
 
         case 0x43: /* Episode 3 (Europe) */
-            c->type = CLIENT_VERSION_EP3;
+            c->type = CLIENT_AUTH_EP3;
             c->ext_version |= CLIENT_EXTVER_GC_EP3 | CLIENT_EXTVER_GC_REG_PAL60;
             break;
 
         default:
             AUTH_LOG("Î´Öª°æ±¾´úÂë: %02x", pkt->version);
-            c->type = CLIENT_VERSION_GC;
+            c->type = CLIENT_AUTH_GC;
     }
 
     /* Save the raw version code in the extended version field too... */
@@ -950,7 +950,7 @@ static int handle_gclogine(login_client_t *c, gc_login_9e_pkt *pkt) {
            they receive a packet 0xB2. Note that this means it is probably
            impossible to do runtime patches for PSO Episode I&II Plus. */
         v = c->ext_version & CLIENT_EXTVER_GC_EP_MASK;
-        if(c->type == CLIENT_VERSION_GC && v != CLIENT_EXTVER_GC_EP12PLUS)
+        if(c->type == CLIENT_AUTH_GC && v != CLIENT_EXTVER_GC_EP12PLUS)
             send_gc_version_detect(c);
 
         c->guildcard = gc;
@@ -1222,7 +1222,7 @@ static int handle_logind(login_client_t *c, dcv2_login_9d_pkt *pkt) {
        about it anymore... */
     c->language_code = pkt->language_code;
 
-    if(c->type != CLIENT_VERSION_PC && pkt->version != 0x30 &&
+    if(c->type != CLIENT_AUTH_PC && pkt->version != 0x30 &&
        keycheck(pkt->serial, pkt->access_key)) {
            send_large_msg(c, __(c, "\tECannot connect to server.\n"
                           "Please check your settings."));
@@ -1231,9 +1231,9 @@ static int handle_logind(login_client_t *c, dcv2_login_9d_pkt *pkt) {
 
     /* The Gamecube Episode I & II trial looks like it's a Dreamcast client up
        until this point. */
-    if(c->type == CLIENT_VERSION_DC && pkt->version == 0x30)
+    if(c->type == CLIENT_AUTH_DC && pkt->version == 0x30)
         c->ext_version = CLIENT_EXTVER_DC | CLIENT_EXTVER_GC_TRIAL;
-    else if(c->type == CLIENT_VERSION_DC)
+    else if(c->type == CLIENT_AUTH_DC)
         send_dc_version_detect(c);
 
     return send_dc_security(c, c->guildcard, NULL, 0);
@@ -1248,9 +1248,9 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
     const patchset_t *p;
 
     /* Don't go out of bounds... */
-    if(c->type == CLIENT_VERSION_XBOX)
-        l = &qlist[CLIENT_VERSION_XBOX][c->language_code];
-    else if(c->type < CLIENT_VERSION_DCNTE)
+    if(c->type == CLIENT_AUTH_XBOX)
+        l = &qlist[CLIENT_AUTH_XBOX][c->language_code];
+    else if(c->type < CLIENT_AUTH_DCNTE)
          l = &qlist[c->type][c->language_code];
 
     switch(menu_id & 0xFF) {
@@ -1295,7 +1295,7 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
                 if ((int)item_id < l->cats[0].quest_count) {
                     rv = send_quest(c, l->cats[0].quests[item_id]);
 
-                    if (c->type == CLIENT_VERSION_PC) {
+                    if (c->type == CLIENT_AUTH_PC) {
                         rv |= send_initial_menu(c);
                     }
 
@@ -1366,7 +1366,7 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
             if(item_id == ITEM_ID_LAST) {
                 return send_initial_menu(c);
             }
-            else if(c->type == CLIENT_VERSION_DC) {
+            else if(c->type == CLIENT_AUTH_DC) {
                 p = patch_find(patches_v2, c->det_version, item_id);
                 if(p) {
                     send_single_patch_dc(c, p);
@@ -1375,7 +1375,7 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
                     return -1;
                 }
             }
-            else if(c->type == CLIENT_VERSION_GC) {
+            else if(c->type == CLIENT_AUTH_GC) {
                 p = patch_find(patches_gc, c->det_version, item_id);
                 if(p) {
                     send_single_patch_gc(c, p);
@@ -1429,16 +1429,16 @@ static int handle_char_data(login_client_t *c, dc_char_data_pkt *pkt) {
     }
 
     switch(c->type) {
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
             v = ITEM_VERSION_V2;
             break;
 
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_GC:
             v = ITEM_VERSION_GC;
             break;
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             v = ITEM_VERSION_XBOX;
             break;
 
@@ -1475,7 +1475,7 @@ static int handle_info_req(login_client_t *c, dc_select_pkt *pkt) {
     const char *desc;
 
     /* Don't go out of bounds... */
-    if(c->type < CLIENT_VERSION_DCNTE)
+    if(c->type < CLIENT_AUTH_DCNTE)
          l = &qlist[c->type][c->language_code];
 
     switch(menu_id & 0xFF) {
@@ -1542,9 +1542,9 @@ static int handle_info_req(login_client_t *c, dc_select_pkt *pkt) {
             if(item_id == ITEM_ID_LAST)
                 return 0;
 
-            if(c->type == CLIENT_VERSION_DC)
+            if(c->type == CLIENT_AUTH_DC)
                 desc = patch_get_desc(patches_v2, item_id, c->language_code);
-            else if(c->type == CLIENT_VERSION_GC)
+            else if(c->type == CLIENT_AUTH_GC)
                 desc = patch_get_desc(patches_gc, item_id, c->language_code);
             else
                 return 0;
@@ -1564,8 +1564,8 @@ int handle_patch_return(login_client_t *c, patch_return_pkt *pkt) {
 
     /* See if it's one corresponding to our version check... */
     switch(c->type) {
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_GC:
             if(pkt->hdr.dc.flags != 0xff)
                 return 0;
 
@@ -1573,7 +1573,7 @@ int handle_patch_return(login_client_t *c, patch_return_pkt *pkt) {
             c->det_version = ver;
             break;
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             if(pkt->hdr.pc.flags != 0xfe)
                 return 0;
 
@@ -1590,9 +1590,9 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
     uint16_t len;
     int tmp;
 
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         type = dc->pkt_type;
         len = LE16(dc->pkt_len);
     }
@@ -1646,7 +1646,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
 
         case SHIP_LIST_REQ_TYPE:
             /* XXXX: We'll fall through the bottom of this... */
-            if(c->type == CLIENT_VERSION_EP3) {
+            if(c->type == CLIENT_AUTH_EP3) {
                 if(send_ep3_rank_update(c)) {
                     return -1;
                 }
@@ -1687,21 +1687,21 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
 
         case GC_VERIFY_LICENSE_TYPE:
             /* XXXX: Why in the world do they duplicate so much data here? */
-            if(c->type != CLIENT_VERSION_XBOX)
+            if(c->type != CLIENT_AUTH_XBOX)
                 return handle_gchlcheck(c, (gc_hlcheck_pkt *)pkt);
             else
                 return handle_xbhlcheck(c, (xb_hlcheck_pkt *)pkt);
 
         case LOGIN_9C_TYPE:
             /* XXXX: Yep... check things here too. */
-            if(c->type != CLIENT_VERSION_XBOX)
+            if(c->type != CLIENT_AUTH_XBOX)
                 return handle_gcloginc(c, (gc_login_9c_pkt *)pkt);
             else
                 return handle_xbloginc(c, (xb_login_9c_pkt *)pkt);
 
         case LOGIN_9E_TYPE:
             /* XXXX: One final check, and give them their guildcard. */
-            if(c->type != CLIENT_VERSION_XBOX)
+            if(c->type != CLIENT_AUTH_XBOX)
                 return handle_gclogine(c, (gc_login_9e_pkt *)pkt);
             else
                 return handle_xblogine(c, (xb_login_9e_pkt *)pkt);
@@ -1749,7 +1749,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
             return handle_patch_return(c, (patch_return_pkt *)pkt);
 
         default:
-            UNK_CPD(type, pkt);
+            UNK_CPD(type, c->version, pkt);
             //print_payload((unsigned char *)pkt, len);
             return -3;
     }

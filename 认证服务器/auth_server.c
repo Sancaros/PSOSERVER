@@ -152,7 +152,7 @@ psocn_limits_t *limits = NULL;
 patch_list_t *patches_v2 = NULL;
 patch_list_t *patches_gc = NULL;
 
-psocn_quest_list_t qlist[CLIENT_VERSION_COUNT][CLIENT_LANG_ALL];
+psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 volatile sig_atomic_t shutting_down = 0;
 
 static const char *config_file = NULL;
@@ -187,7 +187,7 @@ static void parse_command_line(int argc, char *argv[]) {
 
     for(i = 1; i < argc; ++i) {
         if(!strcmp(argv[i], "--version")) {
-            load_program_info(AUTH_SERVER_NAME, AUTH_SERVER_VERSION);
+            load_program_info(server_name[AUTH_SERVER].name, AUTH_SERVER_VERSION);
             exit(EXIT_SUCCESS);
         }
         else if(!strcmp(argv[i], "--verbose")) {
@@ -288,7 +288,7 @@ void read_quests() {
     AUTH_LOG("读取任务...");
 
     if (cfg->quests_dir && cfg->quests_dir[0]) {
-        for (i = 0; i < CLIENT_VERSION_COUNT; ++i) {
+        for (i = 0; i < CLIENT_AUTH_VERSION_COUNT; ++i) {
             if (client_type[i]->ver_name[0] == 0)
                 continue;
 
@@ -660,7 +660,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dcports[j][1]);
 
-                    if(!create_connection(asock, CLIENT_VERSION_DC, addr_p, len,
+                    if(!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
                                           dcports[j][1])) {
                         closesocket(asock);
                     }
@@ -683,7 +683,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pcports[j][1]);
 
-                    if(!create_connection(asock, CLIENT_VERSION_PC, addr_p, len,
+                    if(!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
                                           pcports[j][1])) {
                         closesocket(asock);
                     }
@@ -706,7 +706,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gcports[j][1]);
 
-                    if(!create_connection(asock, CLIENT_VERSION_GC, addr_p, len,
+                    if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
                                           gcports[j][1])) {
                         closesocket(asock);
                     }
@@ -729,7 +729,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3ports[j][1]);
 
-                    if(!create_connection(asock, CLIENT_VERSION_EP3, addr_p,
+                    if(!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
                                           len, ep3ports[j][1])) {
                         closesocket(asock);
                     }
@@ -751,11 +751,11 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
 
                     my_ntop(&addr, ipstr);
                     if(j & 1) {
-                        type = CLIENT_VERSION_BB_CHARACTER;
+                        type = CLIENT_AUTH_BB_CHARACTER;
                         auth = 1;
                     }
                     else {
-                        type = CLIENT_VERSION_BB_LOGIN;
+                        type = CLIENT_AUTH_BB_LOGIN;
                         auth = 0;
                     }
 
@@ -791,7 +791,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xbports[j][1]);
 
-                    if(!create_connection(asock, CLIENT_VERSION_XBOX, addr_p,
+                    if(!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
                                           len, xbports[j][1])) {
                         closesocket(asock);
                     }
@@ -906,25 +906,25 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
 
                 switch (i->version) {
-                case CLIENT_VERSION_BB_LOGIN:
+                case CLIENT_AUTH_BB_LOGIN:
                     --client_count_bb_login;
                     break;
-                case CLIENT_VERSION_BB_CHARACTER:
+                case CLIENT_AUTH_BB_CHARACTER:
                     --client_count_bb_char;
                     break;
-                case CLIENT_VERSION_DC:
+                case CLIENT_AUTH_DC:
                     --client_count_dc;
                     break;
-                case CLIENT_VERSION_PC:
+                case CLIENT_AUTH_PC:
                     --client_count_pc;
                     break;
-                case CLIENT_VERSION_GC:
+                case CLIENT_AUTH_GC:
                     --client_count_gc;
                     break;
-                case CLIENT_VERSION_EP3:
+                case CLIENT_AUTH_EP3:
                     --client_count_ep3;
                     break;
-                case CLIENT_VERSION_XBOX:
+                case CLIENT_AUTH_XBOX:
                     --client_count_xbox;
                     break;
                 }
@@ -1064,7 +1064,7 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        AUTH_LOG("%s启动完成.", AUTH_SERVER_NAME);
+        AUTH_LOG("%s启动完成.", server_name[AUTH_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -1181,9 +1181,9 @@ int __cdecl main(int argc, char** argv) {
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
 
-    log_server_name_num = 1;
+    server_name_num = AUTH_SERVER;
 
-    load_program_info(AUTH_SERVER_NAME, AUTH_SERVER_VERSION);
+    load_program_info(server_name[AUTH_SERVER].name, AUTH_SERVER_VERSION);
 
     parse_command_line(argc, argv);
 
@@ -1355,7 +1355,7 @@ restart:
 
     psocn_db_close(&conn);
 
-    for(i = 0; i < CLIENT_VERSION_COUNT; ++i) {
+    for(i = 0; i < CLIENT_AUTH_VERSION_COUNT; ++i) {
         for(j = 0; j < CLIENT_LANG_ALL; ++j) {
             psocn_quests_destroy(&qlist[i][j]);
         }

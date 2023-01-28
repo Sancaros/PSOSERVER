@@ -26,7 +26,7 @@
 #include <f_logs.h>
 #include <database.h>
 
-#include <packetlist.h>
+#include <pso_cmd_code.h>
 #include <pso_version.h>
 
 #include "auth.h"
@@ -296,7 +296,7 @@ int process_bblogin_packet(login_client_t *c, void *pkt) {
             return handle_bb_login(c, (bb_login_93_pkt *)pkt);
 
         default:
-            UNK_CPD(type, pkt);
+            UNK_CPD(type, c->version, pkt);
             return -1;
     }
 }

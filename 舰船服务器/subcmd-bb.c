@@ -129,7 +129,7 @@ static int handle_bb_cmd_check_game_size(ship_client_t* c, bb_subcmd_pkt_t* pkt)
         return -1;
     }
 
-    //UNK_CPD(pkt->type, (uint8_t*)pkt);
+    //UNK_CSPD(pkt->type, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
@@ -146,7 +146,7 @@ static int handle_bb_cmd_check_client_id(ship_client_t* c, bb_subcmd_pkt_t* pkt)
         return -1;
     }
 
-    //UNK_CPD(pkt->type, (uint8_t*)pkt);
+    //UNK_CSPD(pkt->type, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
@@ -1412,8 +1412,6 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, bb_subcmd_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
-#define BB_LOG_UNKNOWN_SUBS
-
 /* 处理BB 0x62/0x6D 数据包. */
 int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -1531,7 +1529,7 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD0x62_CH_GRAVE_DATA:
-        UNK_CPD(type, pkt);
+        UNK_CSPD(type, c->version, pkt);
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
@@ -1546,14 +1544,14 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     case SUBCMD0x62_QUEST_ONEPERSON_SET_ITEM:
     case SUBCMD0x62_QUEST_ONEPERSON_SET_BP:
     case SUBCMD0x62_GANBLING:
-        UNK_CPD(type, pkt);
+        UNK_CSPD(type, c->version, pkt);
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
-        UNK_CPD(type, pkt);
+        UNK_CSPD(type, c->version, pkt);
         //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
         /* Forward the packet unchanged to the destination. */
@@ -4022,7 +4020,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
             break;
 
         case SUBCMD_CMODE_GRAVE:
-            UNK_CPD(type, (uint8_t*)pkt);
+            UNK_CSPD(type, c->version, (uint8_t*)pkt);
             rv = handle_bb_cmode_grave(c, pkt);
             break;
 
@@ -4151,7 +4149,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD_TAKE_ITEM:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4165,7 +4163,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
     case SUBCMD0x60_UNKNOW_2E:
     case SUBCMD0x60_UNKNOW_2F:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4182,37 +4180,37 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD0x60_UNKNOW_33:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_34:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_35:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_36:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_37:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_38:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_UNKNOW_39:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4226,7 +4224,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
     case SUBCMD0x60_UNKNOW_3C:
     case SUBCMD0x60_UNKNOW_3D:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4236,7 +4234,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD0x60_UNKNOW_41:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4322,12 +4320,12 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD0x60_STEAL_EXP:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_CHARGE_ACT:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4336,12 +4334,12 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         break;
 
     case SUBCMD0x60_EX_ITEM_TEAM:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD0x60_BATTLEMODE:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4392,14 +4390,14 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
         /*挑战模式 触发*/
     case SUBCMD0x60_UNKNOW_7D:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         //rv = handle_bb_cmd_check_game_size(c, pkt, 0x06);
         break;
 
         /*挑战模式 触发*/
     case SUBCMD0x60_UNKNOW_8A:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         //rv = handle_bb_cmd_check_game_size(c, pkt, 0x02);
         break;
@@ -4410,7 +4408,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
         /*挑战模式 触发*/
     case SUBCMD0x60_UNKNOW_93:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         //rv = handle_bb_cmd_check_game_size(c, pkt, 0x03);
         break;
@@ -4421,17 +4419,17 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
     case SUBCMD_WARP_55:
         rv = handle_bb_map_warp_55(c, (subcmd_bb_map_warp_t*)pkt);
-        //UNK_CPD(type, (uint8_t*)pkt);
+        //UNK_CSPD(type, (uint8_t*)pkt);
         //sent = 0;
         break;
 
     case SUBCMD_LOBBY_ACTION:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
     case SUBCMD_GOGO_BALL:
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         break;
 
@@ -4455,10 +4453,15 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
+    case SUBCMD0x60_UNKNOW_88:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        break;
+
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x60 指令: 0x%02X", type);
-        UNK_CPD(type, pkt);
+        UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
         sent = 0;
         break;

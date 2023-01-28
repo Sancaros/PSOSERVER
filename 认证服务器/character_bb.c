@@ -66,12 +66,12 @@ static bb_level_table_t bb_char_stats;
 static dress_flag_t dress_flags[MAX_DRESS_FLAGS];
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
-static int handle_ignored_pkt(const char* cmd, void* pkt, int codeline) {
+static int handle_ignored_pkt(login_client_t* c, const char* cmd, void* pkt, int codeline) {
     bb_pkt_hdr_t* bb = (bb_pkt_hdr_t*)pkt;
     uint16_t type = LE16(bb->pkt_type);
 
     //DBG_LOG("忽略的BB数据包指令 0x%04X", type);
-    UDONE_CPD(type, pkt);
+    UDONE_CPD(type, c->version, pkt);
     //print_payload(pkt, LE16(bb->pkt_len));
 
     return 0;
@@ -250,7 +250,7 @@ static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
         }
 
     default:
-        UNK_CPD(menu_id & 0xFF, (uint8_t*)pkt);
+        UNK_CPD(menu_id & 0xFF, c->version, (uint8_t*)pkt);
         return send_disconnect(c, c->auth);
     }
 }
@@ -1080,7 +1080,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
             /* 0x001D 29*/
         case PING_TYPE:
-            return handle_ignored_pkt(c_cmd_name(type, 0), pkt, __LINE__);
+            return handle_ignored_pkt(c, c_cmd_name(type, 0), pkt, __LINE__);
 
             /* 0x0093 147*/
         case LOGIN_93_TYPE:
@@ -1111,7 +1111,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
             /* 0x00E7 231*/
         case BB_FULL_CHARACTER_TYPE:
-            UDONE_CPD(type,pkt);
+            UDONE_CPD(type, c->version, pkt);
             /* Ignore these... they're meaningless and very broken when they
                manage to get sent to the login server... */
             return handle_full_char(c, (bb_full_char_pkt *)pkt);
@@ -1143,7 +1143,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
             ///////////////
 
         default:
-            UNK_CPD(type, pkt);
+            UNK_CPD(type, c->version, pkt);
             //print_payload(pkt, LE16(bb->pkt_len));
             return -1;
     }

@@ -2554,7 +2554,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_unk_1DEA(c, pkt);
 
     default:
-        UDONE_CPD(type, pkt);
+        UDONE_CPD(type, 0, pkt);
         break;
     }
 

@@ -129,7 +129,7 @@ static void parse_command_line(int argc, char *argv[]) {
 
     for(i = 1; i < argc; ++i) {
         if(!strcmp(argv[i], "--version")) {
-            load_program_info(SHIPS_SERVER_NAME, SHIPS_SERVER_VERSION);
+            load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
             exit(0);
         }
         else if(!strcmp(argv[i], "--verbose")) {
@@ -900,7 +900,7 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        SHIPS_LOG("%s启动完成.", SGATE_SERVER_NAME);
+        SHIPS_LOG("%s启动完成.", server_name[SHIPS_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -1251,9 +1251,9 @@ int __cdecl main(int argc, char** argv) {
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
 
-    log_server_name_num = 2;
+    server_name_num = SHIPS_SERVER;
 
-    load_program_info(SHIPS_SERVER_NAME, SHIPS_SERVER_VERSION);
+    load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
 
     /* Parse the command line... */
     parse_command_line(argc, argv);

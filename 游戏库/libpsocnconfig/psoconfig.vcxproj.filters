@@ -69,9 +69,6 @@
     <ClCompile Include="Strptime_win.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="cmd_name.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="f_iconv.c">
       <Filter>源文件</Filter>
     </ClCompile>

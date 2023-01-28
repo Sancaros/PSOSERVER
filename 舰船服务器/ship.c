@@ -1892,7 +1892,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case GAME_COMMAND0_TYPE:
         /* Ignore these, since taking screenshots on PSOPC generates them
            for some reason. */
-        UDONE_CPD(type,pkt);
+        UDONE_CPD(type, c->version, pkt);
         return 0;
 
         /* 0x0093 147*/
@@ -1902,11 +1902,11 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x00E7 231*/
     case BB_FULL_CHARACTER_TYPE:
         // Client sending character data... 客户端离线发送角色数据
-        UDONE_CPD(type,pkt);
+        UDONE_CPD(type, c->version, pkt);
         return 0;
 
     default:
-        UNK_CPD(type, pkt);
+        UNK_CPD(type, c->version, pkt);
         if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
             len)) {
             ERR_LOG("未知数据包!");

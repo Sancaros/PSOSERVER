@@ -29,12 +29,24 @@
 #define STR(s)     #s 
 #define VERSION(a,b,c)  STR(a)"."STR(b)"."STR(c)" - "__DATE__" - "__TIME__
 
-#define PATCH_SERVER_NAME "补丁服务器"
-#define AUTH_SERVER_NAME  "认证服务器"
-#define SHIPS_SERVER_NAME "舰船服务器"
-#define SGATE_SERVER_NAME "船闸服务器"
+#define PATCH_SERVER 0x00
+#define AUTH_SERVER  0x01
+#define SHIPS_SERVER 0x02
+#define SGATE_SERVER 0x03
 
-uint32_t log_server_name_num;
+typedef struct server_map {
+	uint32_t serv_num;
+	const char* name;
+} server_map_st;
+
+static server_map_st server_name[] = {
+	{ PATCH_SERVER, "补丁服务器" },
+	{ AUTH_SERVER, "认证服务器" },
+	{ SHIPS_SERVER, "舰船服务器" },
+	{ SGATE_SERVER, "船闸服务器" },
+};
+
+uint32_t server_name_num;
 
 #define PATCH_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)
 #define AUTH_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)

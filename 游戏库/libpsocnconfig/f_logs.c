@@ -443,26 +443,26 @@ void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 	}
 	strcpy(logfile, logdir);
 	strcat(logfile, "\\");
-	strcat(logfile, log_server_name[log_server_name_num]);
+	strcat(logfile, server_name[server_name_num].name);
 	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num]);
+	strcat(logfile, log_header[files_num].name);
 	strcat(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
 		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num], codeline, mes);
-		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 	}
 	else
 	{
 		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_server_name[log_server_name_num], log_header[files_num], codeline, mes))
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[files_num].name, codeline, mes))
 		{
 			color(files_num);
 			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num], codeline, mes);
-			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
 		if (console_log_hide_or_show)
 		{
@@ -470,7 +470,7 @@ void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num], codeline, mes);
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
 			}
 		}
 		color(16);
@@ -507,28 +507,28 @@ void err_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 	strcpy(logfile, logdir);
 	strcat(logfile, "\\");
-	strcat(logfile, log_server_name[log_server_name_num]);
+	strcat(logfile, server_name[server_name_num].name);
 	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num]);
+	strcat(logfile, log_header[files_num].name);
 	strcat(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
 		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num],
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
 			func, codeline, mes);
-		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 	}
 	else
 	{
 		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_server_name[log_server_name_num], log_header[files_num], func, codeline, mes))
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[files_num].name, func, codeline, mes))
 		{
 			color(4);
 			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num],
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
 				func, codeline, mes);
-			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
 		if (console_log_hide_or_show)
 		{
@@ -536,8 +536,8 @@ void err_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 			{
 				color(4);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/,
-					log_header[files_num], func, codeline, mes);
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds,
+					log_header[files_num].name, func, codeline, mes);
 			}
 		}
 		color(16);
@@ -574,28 +574,28 @@ void dbg_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 	strcpy(logfile, logdir);
 	strcat(logfile, "\\");
-	strcat(logfile, log_server_name[log_server_name_num]);
+	strcat(logfile, server_name[server_name_num].name);
 	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num]);
+	strcat(logfile, log_header[files_num].name);
 	strcat(logfile, ".log");
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);
 		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num],
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
 			func, codeline, mes);
-		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 	}
 	else
 	{
 		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_server_name[log_server_name_num], log_header[files_num], func, codeline, mes))
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[files_num].name, func, codeline, mes))
 		{
 			color(4);
 			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[files_num],
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name,
 				func, codeline, mes);
-			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num]);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
 		if (console_log_hide_or_show)
 		{
@@ -603,8 +603,8 @@ void dbg_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 			{
 				color(files_num);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%s %04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/,
-					log_header[files_num], func, codeline, mes);
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds,
+					log_header[files_num].name, func, codeline, mes);
 			}
 		}
 		color(16);
@@ -647,18 +647,18 @@ void Logs_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	if (err) {
 		color(4);
 		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNDONE_PACKET_LOG], codeline, mes);
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNDONE_PACKET_LOG].name, codeline, mes);
 		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, files_name);
 	}
 	else
 	{
 		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_server_name[log_server_name_num], log_header[UNDONE_PACKET_LOG], codeline, mes))
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[UNDONE_PACKET_LOG].name, codeline, mes))
 		{
 			color(UNDONE_PACKET_LOG);
 			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNDONE_PACKET_LOG], codeline, mes);
-			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNDONE_PACKET_LOG]);
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNDONE_PACKET_LOG].name, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNDONE_PACKET_LOG].name);
 		}
 		if (console_log_hide_or_show)
 		{
@@ -666,7 +666,7 @@ void Logs_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 			{
 				color(UNDONE_PACKET_LOG);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNDONE_PACKET_LOG], codeline, mes);
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNDONE_PACKET_LOG].name, codeline, mes);
 			}
 		}
 		color(16);
@@ -709,18 +709,18 @@ void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	if (err) {
 		color(4);
 		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNKNOW_PACKET_LOG], codeline, mes);
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
 		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, files_name);
 	}
 	else
 	{
 		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_server_name[log_server_name_num], log_header[UNKNOW_PACKET_LOG], codeline, mes))
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[UNKNOW_PACKET_LOG].name, codeline, mes))
 		{
 			color(UNKNOW_PACKET_LOG);
 			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
-				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNKNOW_PACKET_LOG], codeline, mes);
-			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNKNOW_PACKET_LOG]);
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNKNOW_PACKET_LOG].name);
 		}
 		if (console_log_hide_or_show)
 		{
@@ -728,7 +728,7 @@ void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 			{
 				color(UNKNOW_PACKET_LOG);
 				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds/*, log_server_name[log_server_name_num]*/, log_header[UNKNOW_PACKET_LOG], codeline, mes);
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
 			}
 		}
 		color(16);

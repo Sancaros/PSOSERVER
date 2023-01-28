@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include <psoconfig.h>
-#include <packetlist.h>
+#include <pso_cmd_code.h>
 
 #ifdef PACKED
 #undef PACKED

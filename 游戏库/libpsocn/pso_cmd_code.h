@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 静态库
+    梦幻之星中国 服务器指令集
     版权 (C) 2022 Sancaros
 
     This program is free software: you can redistribute it and/or modify

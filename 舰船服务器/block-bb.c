@@ -310,7 +310,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     }
 
     default:
-        UNK_CPD(pkt->hdr.pkt_type, (uint8_t)pkt);
+        UNK_CPD(pkt->hdr.pkt_type, c->version, (uint8_t)pkt);
         return -1;
     }
 }
@@ -1015,7 +1015,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     if (c->version == CLIENT_VERSION_BB) {
         flag = LE16(pkt->bb.pkt_type);
 
-        DBG_LOG("flag = 0x%04X", flag);
+        DBG_LOG("bb_process_done_burst flag = 0x%04X / 0x%04X", flag, pkt->bb.pkt_type);
 
     }
 
@@ -1283,7 +1283,7 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    //UNK_CPD(type,pkt);
+    //UNK_CPD(type, c->version, pkt);
 
     /* 转换房间 名称/密码 为 UTF-8格式 */
     istrncpy16_raw(ic_utf16_to_gbk, name, pkt->name, 64, 16);
@@ -2284,7 +2284,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_1DEA(c, (bb_guild_unk_1DEA_pkt*)pkt);
 
     default:
-        UDONE_CPD(type,pkt);
+        UDONE_CPD(type, c->version, pkt);
         break;
     }
     return 0;
@@ -2403,7 +2403,7 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
         return process_bb_challenge_06DF(c, (bb_challenge_06df_pkt*)pkt);
 
     default:
-        UDONE_CPD(type, pkt);
+        UDONE_CPD(type, c->version, pkt);
         break;
     }
     return 0;
@@ -2504,7 +2504,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x016F 367*/
     case DONE_BURSTING_TYPE01:
-        print_payload((unsigned char*)pkt, len);
+        UDONE_CPD(type, c->version, (uint8_t*)pkt);
         return 0;
 
         /* 0x0081 129*/
@@ -2698,7 +2698,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
     default:
         DBG_LOG("BB未知数据! 指令 0x%04X", type);
-        UNK_CPD(type, (uint8_t*)pkt);
+        UNK_CPD(type, c->version, (uint8_t*)pkt);
         //if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
         //    len)) {
         //    DBG_LOG("BB未知数据! 指令 0x%04X", type);

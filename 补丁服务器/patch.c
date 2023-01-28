@@ -458,7 +458,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
     //char* patch_welcom_msg = 0;
     //PATCH_LOG("补丁处理数据指令 0x%04X %s", type, c_cmd_name(type, 0));
 
-    //UNK_CPD(type, (uint8_t*)pkt);
+    //UNK_CPD(type, c->version, (uint8_t*)pkt);
 
     switch (type) {
     case PATCH_WELCOME_TYPE:
@@ -526,7 +526,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
         break;
 
     default:
-        UNK_CPD(type, pkt);
+        UNK_CPD(type, c->version, pkt);
         return -3;
     }
 
@@ -539,7 +539,7 @@ int process_data_packet(patch_client_t* c, void* pkt) {
     uint16_t type = LE16(data->pkt_type);
     uint16_t len = LE16(data->pkt_len);
 
-    //UNK_CPD(type, (uint8_t*)pkt);
+    //UNK_CPD(type, c->version, (uint8_t*)pkt);
     //PATCH_LOG("process_data_packet %d", type);
 
     switch (type) {

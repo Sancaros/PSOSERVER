@@ -157,7 +157,7 @@ static void parse_command_line(int argc, char *argv[]) {
 
     for(i = 1; i < argc; ++i) {
         if(!strcmp(argv[i], "--version")) {
-            load_program_info(PATCH_SERVER_NAME, PATCH_SERVER_VERSION);
+            load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
             exit(EXIT_SUCCESS);
         }
         else if(!strcmp(argv[i], "--verbose")) {
@@ -819,7 +819,7 @@ void HookupHandler() {
     }
     else {
         PATCH_LOG(
-            "%s启动完成.", PATCH_SERVER_NAME);
+            "%s启动完成.", server_name[PATCH_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -928,9 +928,9 @@ int __cdecl main(int argc, char** argv) {
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
 
-    log_server_name_num = 0;
+    server_name_num = PATCH_SERVER;
 
-    load_program_info(PATCH_SERVER_NAME, PATCH_SERVER_VERSION);
+    load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
 
     /* 读取命令行并读取设置. */
     parse_command_line(argc, argv);

@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pso_cmd.h"
+#include "Software_Defines.h"
+
 #define PRINT_IP_FORMAT "%u.%u.%u.%u"
 #define PRINT_HIP(x)\
        ((x >> 0) & 0xFF),\
@@ -59,8 +62,10 @@
 #define DBG_LOG(...) dbg_Logs(filename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
 #define FILE_LOG(...) Logs(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__)
 #define HOST_LOG(...) Logs(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__)
-#define UNK_CPD(CODE,DATA) unk_cpd(c_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define UDONE_CPD(CODE,DATA) udone_cpd(c_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UNK_CPD(CODE,VERSION,DATA) unk_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define DC_LOG(...) Logs(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
@@ -84,43 +89,6 @@
                             filename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
                             free((EXP)); \
                         }
-
-uint32_t log_server_name_num;
-
-static const char* log_server_name[] = {
-	"补丁服务器",
-	"认证服务器",
-	"舰船服务器",
-	"船闸服务器"
-};
-
-static const char* log_header[] = {
-	"补丁",
-	"认证",
-	"舰船",
-	"舰仓",
-	"错误",
-	"大厅",
-	"船闸",
-	"登陆",
-	"物品",
-	"数据",
-	"任务",
-	"管理",
-	"调试",
-	"文件",
-	"网络",
-	"截获",
-	"缺失",
-	"未启用",
-	"断连",
-	"截断",
-	"测试",
-	"怪物",
-	"设置",
-	"脚本",
-	" "
-};
 
 enum Log_files_Num {
 	PATCH_LOG, //补丁
@@ -149,6 +117,40 @@ enum Log_files_Num {
 	SCRIPT_LOG,
 	LOG,
 	LOG_FILES_MAX,
+};
+
+typedef struct log_map {
+	uint32_t num;
+	const char* name;
+} log_map_st;
+
+static log_map_st log_header[] = {
+	{ PATCH_LOG, "补丁" },
+	{ AUTH_LOG, "认证" }, //登陆
+	{ SHIPS_LOG, "舰船" }, //舰船
+	{ BLOCK_LOG, "舰仓" }, //舰船
+	{ ERR_LOG, "错误" }, //登陆 舰船
+	{ LOBBY_LOG, "大厅" }, //舰船
+	{ SGATE_LOG, "船闸" }, //舰船
+	{ LOGIN_LOG, "登陆" }, //登陆 舰船
+	{ ITEM_LOG, "物品" }, //舰船
+	{ MYSQLERR_LOG, "数据" }, //登陆
+	{ QUESTERR_LOG, "任务" }, //舰船
+	{ GM_LOG, "管理" }, //舰船
+	{ DEBUG_LOG, "调试" }, //补丁 登陆 舰船
+	{ FILE_LOG, "文件" }, //补丁 登陆 舰船
+	{ HOST_LOG, "网络" }, //补丁 登陆 舰船
+	{ UNKNOW_PACKET_LOG, "截获" }, //登陆 舰船
+	{ UNDONE_PACKET_LOG, "缺失" }, //登陆 舰船
+	{ UNUSED, "未启用" }, //登陆 舰船
+	{ DC_LOG, "断连" }, //登陆 舰船
+	{ DONT_SEND_LOG, "截断" }, //舰船
+	{ TEST_LOG, "测试" }, //补丁 登陆 舰船
+	{ MONSTERID_ERR_LOG, "怪物" }, //舰船
+	{ CONFIG_LOG, "设置" }, //舰船
+	{ SCRIPT_LOG, "脚本" },
+	{ LOG, "日志" },
+	{ LOG_FILES_MAX, "未知日志错误" },
 };
 
 /////////////////////////////////////////

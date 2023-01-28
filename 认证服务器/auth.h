@@ -163,16 +163,16 @@ typedef struct login_client {
 #define IS_GLOBAL_ROOT(c)   (!!((c)->priv & CLIENT_PRIV_GLOBAL_ROOT))
 
 /* Values for the type of the login_client_t */
-#define CLIENT_VERSION_DC              0
-#define CLIENT_VERSION_PC              1
-#define CLIENT_VERSION_GC              2
-#define CLIENT_VERSION_EP3             3
-#define CLIENT_VERSION_BB_LOGIN        4
-#define CLIENT_VERSION_BB_CHARACTER    5
-#define CLIENT_VERSION_DCNTE           6
-#define CLIENT_VERSION_XBOX            7
+#define CLIENT_AUTH_DC              0
+#define CLIENT_AUTH_PC              1
+#define CLIENT_AUTH_GC              2
+#define CLIENT_AUTH_EP3             3
+#define CLIENT_AUTH_BB_LOGIN        4
+#define CLIENT_AUTH_BB_CHARACTER    5
+#define CLIENT_AUTH_DCNTE           6
+#define CLIENT_AUTH_XBOX            7
 
-#define CLIENT_VERSION_COUNT           8
+#define CLIENT_AUTH_VERSION_COUNT           8
 
 /* 扩展版本代码位字段值 */
 #define CLIENT_EXTVER_DC            (1 << 0)
@@ -204,15 +204,15 @@ typedef struct login_client {
 #define CLIENT_EXTVER_GC_REG_MASK   (3 << 6)
 #define CLIENT_EXTVER_GC_VER_MASK   (0xFF << 8)
 
-static client_type_t client_type[CLIENT_VERSION_COUNT][3] = {
-    {CLIENT_VERSION_DC,           "dc", 4},
-    {CLIENT_VERSION_PC,           "pc", 4},
-    {CLIENT_VERSION_GC,           "gc", 4},
-    {CLIENT_VERSION_EP3,          "e3", 4},
-    {CLIENT_VERSION_BB_LOGIN,     "",   8},
-    {CLIENT_VERSION_BB_CHARACTER, "",   8},
-    {CLIENT_VERSION_DCNTE,        "",   4},
-    {CLIENT_VERSION_XBOX,         "xb", 4},
+static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT][3] = {
+    {CLIENT_AUTH_DC,           "dc", 4},
+    {CLIENT_AUTH_PC,           "pc", 4},
+    {CLIENT_AUTH_GC,           "gc", 4},
+    {CLIENT_AUTH_EP3,          "e3", 4},
+    {CLIENT_AUTH_BB_LOGIN,     "",   8},
+    {CLIENT_AUTH_BB_CHARACTER, "",   8},
+    {CLIENT_AUTH_DCNTE,        "",   4},
+    {CLIENT_AUTH_XBOX,         "xb", 4},
 };
 
 /* Language codes. */

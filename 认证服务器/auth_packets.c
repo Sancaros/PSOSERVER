@@ -33,7 +33,7 @@
 #include <database.h>
 #include <quest.h>
 
-#include <packetlist.h>
+#include <pso_cmd_code.h>
 #include <pso_menu.h>
 
 #include "auth_packets.h"
@@ -41,7 +41,7 @@
 
 extern psocn_dbconn_t conn;
 extern psocn_config_t *cfg;
-extern psocn_quest_list_t qlist[CLIENT_VERSION_COUNT][CLIENT_LANG_ALL];
+extern psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
 uint8_t sendbuf[65536];
@@ -130,9 +130,9 @@ int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect) {
     memset(pkt, 0, sizeof(dc_welcome_pkt));
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_len = LE16(DC_WELCOME_LENGTH);
         pkt->hdr.dc.pkt_type = LOGIN_WELCOME_TYPE;
     }
@@ -213,9 +213,9 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     //    in += 2;
     //}
 
-    if (c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-        c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-        c->type == CLIENT_VERSION_XBOX) {
+    if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+        c->type == CLIENT_AUTH_XBOX) {
         if (fmt[1] != 'J') {
             ic = ic_gbk_to_8859;
         }
@@ -258,9 +258,9 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     }
 
     /* Fill in the header */
-    if (c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-        c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-        c->type == CLIENT_VERSION_XBOX) {
+    if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+        c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = (uint8_t)type;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(size);
@@ -348,16 +348,16 @@ int send_large_msg(login_client_t *c/*, const char msg[]*/, const char* fmt, ...
 
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_large_msg_dc(c, MSG_BOX_TYPE, fmt, args);
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_msg_bb(c, MSG_BOX_TYPE, fmt, args);
     }
 
@@ -375,9 +375,9 @@ int send_dc_security(login_client_t *c, uint32_t gc, const void *data,
     memset(pkt, 0, sizeof(dc_security_pkt));
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = SECURITY_TYPE;
         pkt->hdr.dc.pkt_len = LE16((0x0C + data_len));
     }
@@ -460,9 +460,9 @@ static int send_redirect_dc(login_client_t *c, in_addr_t ip, uint16_t port) {
     memset(pkt, 0, DC_REDIRECT_LENGTH);
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = REDIRECT_TYPE;
         pkt->hdr.dc.pkt_len = LE16(DC_REDIRECT_LENGTH);
     }
@@ -482,16 +482,16 @@ static int send_redirect_dc(login_client_t *c, in_addr_t ip, uint16_t port) {
 int send_redirect(login_client_t *c, in_addr_t ip, uint16_t port) {
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_redirect_dc(c, ip, port);
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_redirect_bb(c, ip, port);
     }
 
@@ -508,9 +508,9 @@ static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
     memset(pkt, 0, DC_REDIRECT6_LENGTH);
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = REDIRECT_TYPE;
         pkt->hdr.dc.pkt_len = LE16(DC_REDIRECT6_LENGTH);
         pkt->hdr.dc.flags = 6;
@@ -532,12 +532,12 @@ static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
 int send_redirect6(login_client_t *c, const uint8_t ip[16], uint16_t port) {
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_redirect6_dc(c, ip, port);
     }
 
@@ -593,9 +593,9 @@ static int send_timestamp_dc(login_client_t *c) {
 	memset(pkt, 0, DC_TIMESTAMP_LENGTH);
 
 	/* Fill in the header */
-	if (c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-		c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-		c->type == CLIENT_VERSION_XBOX) {
+	if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+		c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+		c->type == CLIENT_AUTH_XBOX) {
 		pkt->hdr.dc.pkt_type = TIMESTAMP_TYPE;
 		pkt->hdr.dc.pkt_len = LE16(DC_TIMESTAMP_LENGTH);
 	}
@@ -654,15 +654,15 @@ static int send_timestamp_bb(login_client_t *c) {
 int send_timestamp(login_client_t *c) {
     /* Call the appropriate function */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_timestamp_dc(c);
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_timestamp_bb(c);
     }
 
@@ -800,20 +800,20 @@ static int send_initial_menu_bb(login_client_t* c) {
 int send_initial_menu(login_client_t *c) {
     /* Call the appropriate function */
     switch(c->type) {
-        case CLIENT_VERSION_DC:
+        case CLIENT_AUTH_DC:
             return send_initial_menu_dc(c);
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_initial_menu_pc(c);
 
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
             return send_initial_menu_gc(c);
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             return send_initial_menu_xbox(c);
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_initial_menu_bb(c);
     }
 
@@ -864,16 +864,16 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     ++num_ships;
 
     /* Figure out what ships we might exclude by flags */
-    if(c->type == CLIENT_VERSION_GC) {
+    if(c->type == CLIENT_AUTH_GC) {
         flags = 0x80;
     }
-    else if(c->type == CLIENT_VERSION_EP3) {
+    else if(c->type == CLIENT_AUTH_EP3) {
         flags = 0x100;
     }
-    else if(c->type == CLIENT_VERSION_DCNTE) {
+    else if(c->type == CLIENT_AUTH_DCNTE) {
         flags = 0x400;
     }
-    else if(c->type == CLIENT_VERSION_XBOX) {
+    else if(c->type == CLIENT_AUTH_XBOX) {
         flags = 0x800;
     }
     else {
@@ -1424,17 +1424,17 @@ int send_ship_list(login_client_t *c, uint16_t menu_code) {
     /* Call the appropriate function */
 
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_ship_list_dc(c, menu_code);
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_ship_list_pc(c, menu_code);
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_ship_list_bb(c, menu_code);
     }
 
@@ -1473,9 +1473,9 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
         in += 2;
     }
 
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         if(tm[1] == 'J') {
             ic = ic_gbk_to_sjis;
             //ic = iconv_open(SJIS, GBK);
@@ -1514,9 +1514,9 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
     len += 0x0C;
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = (uint8_t)type;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(len);
@@ -1597,16 +1597,16 @@ int send_info_reply(login_client_t *c, const char* fmt, ...) {
 
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             rv = send_info_reply_dc(c, INFO_REPLY_TYPE, fmt, args);
             break;
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             rv = send_info_reply_bb(c, INFO_REPLY_TYPE, fmt, args);
             break;
     }
@@ -1625,8 +1625,8 @@ int send_scroll_msg(login_client_t *c, const char* fmt, ...) {
 
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             rv = send_info_reply_bb(c, BB_SCROLL_MSG_TYPE, fmt, args);
             break;
     }
@@ -1664,14 +1664,14 @@ static int send_simple_pc(login_client_t *c, int type, int flags) {
 int send_simple(login_client_t *c, int type, int flags) {
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_simple_dc(c, type, flags);
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_simple_pc(c, type, flags);
     }
 
@@ -1936,17 +1936,17 @@ static int send_xbox_quest_list(login_client_t *c,
 int send_quest_list(login_client_t *c, psocn_quest_category_t *l) {
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_DC:
+        case CLIENT_AUTH_DC:
             return send_dc_quest_list(c, l, c->version);
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_pc_quest_list(c, l);
 
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
             return send_gc_quest_list(c, l);
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             return send_xbox_quest_list(c, l);
     }
 
@@ -2032,7 +2032,7 @@ int send_ep3_card_update(login_client_t *c) {
     uint16_t pkt_len;
 
     /* Make sure we're actually dealing with Episode 3 */
-    if(c->type != CLIENT_VERSION_EP3) {
+    if(c->type != CLIENT_AUTH_EP3) {
         return -1;
     }
 
@@ -2384,17 +2384,17 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
 int send_info_list(login_client_t *c) {
     /* Call the appropriate function */
     switch(c->type) {
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_GC:
             return send_gc_info_list(c, PSOCN_INFO_GC);
 
-        case CLIENT_VERSION_EP3:
+        case CLIENT_AUTH_EP3:
             return send_gc_info_list(c, PSOCN_INFO_EP3);
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             return send_gc_info_list(c, PSOCN_INFO_XBOX);
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_bb_info_list(c, PSOCN_INFO_BB);
     }
 
@@ -2481,13 +2481,13 @@ int send_message_box(login_client_t *c, const char *fmt, ...) {
 
     /* Call the appropriate function. */
     switch(c->type) {
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             rv = send_gc_message_box(c, fmt, args);
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             rv = send_bb_message_box(c, fmt, args);
     }
 
@@ -2588,16 +2588,16 @@ int send_info_file(login_client_t* c, uint32_t entry) {
     /* Call the appropriate function. */
     switch (c->type) {
 
-    case CLIENT_VERSION_DC:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_DCNTE:
-    case CLIENT_VERSION_XBOX:
+    case CLIENT_AUTH_DC:
+    case CLIENT_AUTH_PC:
+    case CLIENT_AUTH_GC:
+    case CLIENT_AUTH_EP3:
+    case CLIENT_AUTH_DCNTE:
+    case CLIENT_AUTH_XBOX:
         rv = send_dc_info_file(c, entry);
 
-    case CLIENT_VERSION_BB_LOGIN:
-    case CLIENT_VERSION_BB_CHARACTER:
+    case CLIENT_AUTH_BB_LOGIN:
+    case CLIENT_AUTH_BB_CHARACTER:
         rv = send_bb_info_file(c, entry);
     }
 
@@ -2638,9 +2638,9 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     }
 
     /* Set up to convert between encodings */
-    if (c->version == CLIENT_VERSION_DC || c->version == CLIENT_VERSION_PC ||
-        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
-        c->version == CLIENT_VERSION_XBOX) {
+    if (c->version == CLIENT_AUTH_DC || c->version == CLIENT_AUTH_PC ||
+        c->version == CLIENT_AUTH_GC || c->version == CLIENT_AUTH_EP3 ||
+        c->version == CLIENT_AUTH_XBOX) {
         if (tm[1] != 'J') {
             ic = ic_gbk_to_8859;
             //ic = ic_utf8_to_8859;
@@ -2674,9 +2674,9 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     /* Fill in the length */
     len += 0x0C;
 
-    if (c->version == CLIENT_VERSION_DC || c->version == CLIENT_VERSION_PC ||
-        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
-        c->version == CLIENT_VERSION_XBOX) {
+    if (c->version == CLIENT_AUTH_DC || c->version == CLIENT_AUTH_PC ||
+        c->version == CLIENT_AUTH_GC || c->version == CLIENT_AUTH_EP3 ||
+        c->version == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = (uint8_t)type;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(len);
@@ -2755,16 +2755,16 @@ int send_msg_1(login_client_t*c, const char *fmt, ...) {
 
     /* Call the appropriate function. */
     switch(c->version) {
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             rv = send_dc_message(c, MSG1_TYPE, fmt, args);
             break;
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             rv = send_bb_message(c, MSG1_TYPE, fmt, args);
             break;
     }
@@ -2783,16 +2783,16 @@ int send_info(login_client_t* c, const char* fmt, ...) {
 
     /* Call the appropriate function. */
     switch (c->version) {
-    case CLIENT_VERSION_DC:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
+    case CLIENT_AUTH_DC:
+    case CLIENT_AUTH_PC:
+    case CLIENT_AUTH_GC:
+    case CLIENT_AUTH_EP3:
+    case CLIENT_AUTH_XBOX:
         rv = send_dc_message(c, INFO_REPLY_TYPE, fmt, args);
         break;
 
-    case CLIENT_VERSION_BB_LOGIN:
-    case CLIENT_VERSION_BB_CHARACTER:
+    case CLIENT_AUTH_BB_LOGIN:
+    case CLIENT_AUTH_BB_CHARACTER:
         rv = send_bb_message(c, INFO_REPLY_TYPE, fmt, args);
         break;
     }
@@ -2811,16 +2811,16 @@ int send_msg_scroll(login_client_t* c, const char* fmt, ...) {
 
     /* Call the appropriate function. */
     switch (c->version) {
-    case CLIENT_VERSION_DC:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
+    case CLIENT_AUTH_DC:
+    case CLIENT_AUTH_PC:
+    case CLIENT_AUTH_GC:
+    case CLIENT_AUTH_EP3:
+    case CLIENT_AUTH_XBOX:
         rv = send_dc_message(c, BB_SCROLL_MSG_TYPE, fmt, args);
         break;
 
-    case CLIENT_VERSION_BB_LOGIN:
-    case CLIENT_VERSION_BB_CHARACTER:
+    case CLIENT_AUTH_BB_LOGIN:
+    case CLIENT_AUTH_BB_CHARACTER:
         rv = send_bb_message(c, BB_SCROLL_MSG_TYPE, fmt, args);
         break;
     }
@@ -3005,24 +3005,24 @@ static int send_gm_menu_bb(login_client_t* c) {
 int send_gm_menu(login_client_t *c) {
     /* Make sure the user is actually a GM... */
     if (!IS_GLOBAL_GM(c)) {
-        if (c->type == CLIENT_VERSION_BB_LOGIN || c->type == CLIENT_VERSION_BB_CHARACTER)
+        if (c->type == CLIENT_AUTH_BB_LOGIN || c->type == CLIENT_AUTH_BB_CHARACTER)
             send_msg_1(c, "%s", __(c, "\tE\tC4您没有权限这样做!"));
         return send_initial_menu(c);
     }
 
     /* Call the appropriate function */
     switch(c->type) {
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             return send_gm_menu_dc(c);
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_gm_menu_pc(c);
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             return send_gm_menu_bb(c);
     }
 
@@ -3039,20 +3039,20 @@ int send_motd(login_client_t *c) {
     psocn_info_file_t* f = { 0 };
 
     switch(c->type) {
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_GC:
             ver = PSOCN_INFO_GC;
             break;
 
-        case CLIENT_VERSION_EP3:
+        case CLIENT_AUTH_EP3:
             ver = PSOCN_INFO_EP3;
             break;
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             ver = PSOCN_INFO_XBOX;
             break;
 
-        case CLIENT_VERSION_BB_LOGIN:
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_LOGIN:
+        case CLIENT_AUTH_BB_CHARACTER:
             ver = PSOCN_INFO_BB;
             break;
 
@@ -3112,9 +3112,9 @@ int send_quest_description(login_client_t *c, psocn_quest_t *q) {
     if(!q->long_desc || q->long_desc[0] == '\0')
         return 0;
 
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         if(c->language_code == CLIENT_LANG_JAPANESE)
             ic = iconv_open(SJIS, GBK);
         else
@@ -3146,9 +3146,9 @@ int send_quest_description(login_client_t *c, psocn_quest_t *q) {
     }
 
     /* Fill in the header */
-    if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_GC ||
-       c->type == CLIENT_VERSION_EP3 || c->type == CLIENT_VERSION_DCNTE ||
-       c->type == CLIENT_VERSION_XBOX) {
+    if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
+       c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
+       c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = DL_QUEST_INFO_TYPE;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(size);
@@ -3541,9 +3541,9 @@ static int send_patch_menu_dcgc(login_client_t *c) {
     len += 0x1C;
 
     /* Which list are we reading from? */
-    if(c->type == CLIENT_VERSION_DC)
+    if(c->type == CLIENT_AUTH_DC)
         pl = patches_v2;
-    else if(c->type == CLIENT_VERSION_GC)
+    else if(c->type == CLIENT_AUTH_GC)
         pl = patches_gc;
     else
         return -1;
@@ -3586,9 +3586,9 @@ int send_patch_menu(login_client_t *c) {
     uint32_t v;
 
     switch(c->type) {
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_GC:
             v = c->ext_version & CLIENT_EXTVER_GC_EP_MASK;
-            if (c->type == CLIENT_VERSION_GC && v != CLIENT_EXTVER_GC_EP12PLUS &&
+            if (c->type == CLIENT_AUTH_GC && v != CLIENT_EXTVER_GC_EP12PLUS &&
                 patches_gc) {
                 /* Make sure we don't send this to Episode I & II Plus. */
                 if (v == CLIENT_EXTVER_GC_EP12PLUS)
@@ -3599,7 +3599,7 @@ int send_patch_menu(login_client_t *c) {
 
             return send_initial_menu(c);
 
-        case CLIENT_VERSION_DC:
+        case CLIENT_AUTH_DC:
             /* Make sure we don't send this to V1 or NTE */
             v = c->ext_version & CLIENT_EXTVER_DC_VER_MASK;
             if (v != CLIENT_EXTVER_DCV1 && v != CLIENT_EXTVER_GC_TRIAL &&
@@ -3637,7 +3637,7 @@ static int send_crc_check_pc(login_client_t *c, uint32_t st, uint32_t count) {
 
 int send_crc_check(login_client_t *c, uint32_t start, uint32_t count) {
     switch(c->type) {
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             return send_crc_check_pc(c, start, count);
     }
 

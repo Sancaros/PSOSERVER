@@ -257,7 +257,7 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
     }
 
     switch(type) {
-        case CLIENT_VERSION_DCNTE:
+        case CLIENT_AUTH_DCNTE:
             /* Generate the encryption keys for the client and server. */
             rv->client_key = client_seed_dc = genrand_int32();
             rv->server_key = server_seed_dc = genrand_int32();
@@ -271,12 +271,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
             }
 
 
-            rv->version = CLIENT_VERSION_DCNTE;
+            rv->version = CLIENT_AUTH_DCNTE;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_DC:
+        case CLIENT_AUTH_DC:
             /* Generate the encryption keys for the client and server. */
             rv->client_key = client_seed_dc = genrand_int32();
             rv->server_key = server_seed_dc = genrand_int32();
@@ -289,12 +289,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_DC;
+            rv->version = CLIENT_AUTH_DC;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_PC:
+        case CLIENT_AUTH_PC:
             /* Generate the encryption keys for the client and server. */
             rv->client_key = client_seed_dc = genrand_int32();
             rv->server_key = server_seed_dc = genrand_int32();
@@ -307,12 +307,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_PC;
+            rv->version = CLIENT_AUTH_PC;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_GC:
+        case CLIENT_AUTH_GC:
             /* Send a selective redirect packet to get any PSOPC users to
                connect to the right port. We can safely do the rest here either
                way, because PSOPC users should disconnect immediately on getting
@@ -337,12 +337,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_GC;
+            rv->version = CLIENT_AUTH_GC;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_EP3:
+        case CLIENT_AUTH_EP3:
             /* Generate the encryption keys for the client and server. */
             rv->client_key = client_seed_dc = genrand_int32();
             rv->server_key = server_seed_dc = genrand_int32();
@@ -357,12 +357,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_EP3;
+            rv->version = CLIENT_AUTH_EP3;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_XBOX:
             /* Generate the encryption keys for the client and server. */
             rv->client_key = client_seed_dc = genrand_int32();
             rv->server_key = server_seed_dc = genrand_int32();
@@ -377,12 +377,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_XBOX;
+            rv->version = CLIENT_AUTH_XBOX;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_BB_LOGIN:
+        case CLIENT_AUTH_BB_LOGIN:
             /* Generate the encryption keys for the client and server. */
             for (i = 0; i < 48; i += 4) {
                 client_seed_dc = genrand_int32();
@@ -408,12 +408,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_BB_LOGIN;
+            rv->version = CLIENT_AUTH_BB_LOGIN;
             rv->auth = 1;
 
             break;
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             /* Generate the encryption keys for the client and server. */
             for(i = 0; i < 48; i += 4) {
                 client_seed_dc = genrand_int32();
@@ -439,7 +439,7 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                 goto err;
             }
 
-            rv->version = CLIENT_VERSION_BB_CHARACTER;
+            rv->version = CLIENT_AUTH_BB_CHARACTER;
             rv->auth = 1;
 
             break;
@@ -539,7 +539,7 @@ int read_from_client(login_client_t *c) {
     if(!pkt_sz) {
         /* If the client says its DC, make sure it actually is, since it could
            be a PSOGC client using the EU version. */
-        if((c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_DCNTE) &&
+        if((c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_DCNTE) &&
            !c->got_first) {
             dc = tmp_hdr.dc;
             CRYPT_CryptData(&c->client_cipher, &dc, 4, 0);
@@ -565,7 +565,7 @@ int read_from_client(login_client_t *c) {
             /* If we end up in here, its pretty much gotta be a Gamecube client,
                or someone messing with us. */
             else {
-                c->type = CLIENT_VERSION_GC;
+                c->type = CLIENT_AUTH_GC;
                 CRYPT_CreateKeys(&c->client_cipher, &c->client_key,
                                  CRYPT_GAMECUBE);
                 CRYPT_CreateKeys(&c->server_cipher, &c->server_key,
@@ -578,20 +578,20 @@ int read_from_client(login_client_t *c) {
         }
 
         switch(c->type) {
-            case CLIENT_VERSION_DCNTE:
-            case CLIENT_VERSION_DC:
-            case CLIENT_VERSION_GC:
-            case CLIENT_VERSION_EP3:
-            case CLIENT_VERSION_XBOX:
+            case CLIENT_AUTH_DCNTE:
+            case CLIENT_AUTH_DC:
+            case CLIENT_AUTH_GC:
+            case CLIENT_AUTH_EP3:
+            case CLIENT_AUTH_XBOX:
                 pkt_sz = LE16(tmp_hdr.dc.pkt_len);
                 break;
 
-            case CLIENT_VERSION_PC:
+            case CLIENT_AUTH_PC:
                 pkt_sz = LE16(tmp_hdr.pc.pkt_len);
                 break;
 
-            case CLIENT_VERSION_BB_LOGIN:
-            case CLIENT_VERSION_BB_CHARACTER:
+            case CLIENT_AUTH_BB_LOGIN:
+            case CLIENT_AUTH_BB_CHARACTER:
                 pkt_sz = LE16(tmp_hdr.bb.pkt_len);
                 break;
         }
@@ -611,7 +611,7 @@ int read_from_client(login_client_t *c) {
            the other versions would do (but thankfully, they don't appear to do
            any of that broken behavior, at least not that I've seen). The DC
            NTE also has the same bug as JPv1, as expected. */
-        if(c->type == CLIENT_VERSION_DC || c->type == CLIENT_VERSION_DCNTE)
+        if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_DCNTE)
             c->pkt_sz = pkt_sz;
         else
             c->pkt_sz = sz;
@@ -647,20 +647,20 @@ int read_from_client(login_client_t *c) {
 process:
     /* Pass it onto the correct handler. */
     switch(c->type) {
-        case CLIENT_VERSION_DCNTE:
-        case CLIENT_VERSION_DC:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
+        case CLIENT_AUTH_DCNTE:
+        case CLIENT_AUTH_DC:
+        case CLIENT_AUTH_PC:
+        case CLIENT_AUTH_GC:
+        case CLIENT_AUTH_EP3:
+        case CLIENT_AUTH_XBOX:
             rv = process_dclogin_packet(c, c->recvbuf);
             break;
 
-        case CLIENT_VERSION_BB_LOGIN:
+        case CLIENT_AUTH_BB_LOGIN:
             rv = process_bblogin_packet(c, c->recvbuf);
             break;
 
-        case CLIENT_VERSION_BB_CHARACTER:
+        case CLIENT_AUTH_BB_CHARACTER:
             rv = process_bbcharacter_packet(c, c->recvbuf);
             break;
 
@@ -701,11 +701,11 @@ int ship_transfer(login_client_t* c, uint32_t shipid) {
         return -3;
 
     /* Grab the data from the row */
-    if (c->type < CLIENT_VERSION_BB_CHARACTER)
+    if (c->type < CLIENT_AUTH_BB_CHARACTER)
         port = (uint16_t)strtoul(row[1], NULL, 0) + c->type;
-    else if (c->type == CLIENT_VERSION_DCNTE)
+    else if (c->type == CLIENT_AUTH_DCNTE)
         port = (uint16_t)strtoul(row[1], NULL, 0);
-    else if (c->type == CLIENT_VERSION_XBOX)
+    else if (c->type == CLIENT_AUTH_XBOX)
         port = (uint16_t)strtoul(row[1], NULL, 0) + 5;
     else
         port = (uint16_t)strtoul(row[1], NULL, 0) + 4;

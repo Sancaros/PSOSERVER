@@ -2246,6 +2246,6 @@ typedef struct patch_return {
 #undef PACKED
 
 /* Parameters for the various packets. */
-#include "packetlist.h"
+#include <pso_cmd_code.h>
 #endif /* !PACKETS_H_HAVE_PACKETS */
 #endif /* !PACKETS_H_HEADERS_ONLY */

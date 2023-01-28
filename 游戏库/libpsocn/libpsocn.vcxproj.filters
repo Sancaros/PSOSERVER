@@ -10,7 +10,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="packetlist.h">
+    <ClInclude Include="pso_cmd_code.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="packets.h">
@@ -40,6 +40,15 @@
     <ClInclude Include="pso_character.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_subcmd_code.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_sgcmd_code.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_cmd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -49,6 +58,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_version.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_cmd.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

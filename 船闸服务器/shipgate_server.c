@@ -125,7 +125,7 @@ const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
 /* Print information about this program to stdout. */
 static void print_program_info() {
-    printf("%s version %s\n", SGATE_SERVER_NAME, SGATE_SERVER_VERSION);
+    printf("%s version %s\n", server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
     printf("Copyright (C) 2022 Sancaros\n\n");
     printf("This program is free software: you can redistribute it and/or\n"
            "modify it under the terms of the GNU Affero General Public\n"
@@ -166,7 +166,7 @@ static void parse_command_line(int argc, char* argv[]) {
 
     for (i = 1; i < argc; ++i) {
         if (!strcmp(argv[i], "--version")) {
-            load_program_info(SGATE_SERVER_NAME, SGATE_SERVER_VERSION);
+            load_program_info(server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
             exit(EXIT_SUCCESS);
         }
         else if (!strcmp(argv[i], "--verbose")) {
@@ -842,7 +842,7 @@ void HookupHandler() {
     }
     else {
         SGATE_LOG(
-            "%s启动完成.", SGATE_SERVER_NAME);
+            "%s启动完成.", server_name[SGATE_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -998,9 +998,9 @@ int __cdecl main(int argc, char** argv) {
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
 
-    log_server_name_num = 3;
+    server_name_num = SGATE_SERVER;
 
-    load_program_info(SGATE_SERVER_NAME, SGATE_SERVER_VERSION);
+    load_program_info(server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
 
     /* Parse the command line and read our configuration. */
     parse_command_line(argc, argv);
