@@ -3982,6 +3982,8 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
 
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(c, l);
+
+        DBG_LOG("这里缺总督府任务识别");
     }
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);

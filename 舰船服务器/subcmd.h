@@ -1315,7 +1315,7 @@ typedef struct subcmd_bb_chair_dir {
 #define SUBCMD0x60_MENU_REQ    0x52    /*SUBCMD_TALK_SHOP Talking to someone at a shop */
 #define SUBCMD0x60_UNKNOW_53    0x53
 #define SUBCMD0x60_UNKNOW_54    0x54
-#define SUBCMD_WARP_55      0x55    /* Something with the principal's warp? */
+#define SUBCMD_WARP_55      0x55    /* 传送至总督府触发 */
 #define SUBCMD0x60_UNKNOW_56    0x56
 #define SUBCMD0x60_UNKNOW_57    0x57
 #define SUBCMD_LOBBY_ACTION 0x58
