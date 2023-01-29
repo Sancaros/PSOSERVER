@@ -25,7 +25,7 @@
 #define SUBCMD0x62_BURST1    0x6D
 #define SUBCMD0x62_BURST4    0x6E
 #define SUBCMD0x62_BURST5    0x6F
-#define SUBCMD0x62_BURST7    0x70
+#define SUBCMD0x62_BURST_PLDATA    0x70
 #define SUBCMD0x62_BURST6    0x71
 #define SUBCMD_BITEMREQ     0xA2    /*SUBCMD0x62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
 #define SUBCMD0x62_TRADE     0xA6    /* BB/GC - Player Trade function */
@@ -60,18 +60,18 @@
 #define SUBCMD_HIT_OBJ      0x0B
 #define SUBCMD_CONDITION_ADD       0x0C // Add condition (poison/slow/etc.)
 #define SUBCMD_CONDITION_REMOVE    0x0D // Remove condition (poison/slow/etc.)
-#define SUBCMD0x60_ACTION_DRAGON       0x12
+#define SUBCMD_DRAGON_ACT   0x12
 #define SUBCMD0x60_ACTION_DE_ROl_LE    0x13
 #define SUBCMD0x60_UNKNOW_14           0x14
 #define SUBCMD0x60_ACTION_VOL_OPT      0x15
 #define SUBCMD0x60_ACTION_VOL_OPT2     0x16
 #define SUBCMD_TELEPORT     0x17 //SUBCMD0x60_TELEPORT_1
-#define SUBCMD_DRAGON_ACT   0x18    /* Dragon special actions */
+#define SUBCMD0x60_UNKNOW_18   0x18    /* Dragon special actions */
 #define SUBCMD0x60_ACTION_DARK_FALZ    0x19
 #define SUBCMD0x60_UNKNOW_1C    0x1C
 #define SUBCMD_SET_AREA     0x1F
 #define SUBCMD0x60_SET_AREA_20  0x20    /* Seems to match 0x1F */
-#define SUBCMD_SET_AREA_21  0x21    /* Seems to match 0x1F */
+#define SUBCMD_SET_AREA_21  0x21    /* Seems to match 0x1F */  // Inter-level warp
 #define SUBCMD_LOAD_22      0x22    /* Set player visibility Related to 0x21 and 0x23... */
 #define SUBCMD_FINISH_LOAD  0x23    /* Finished loading to a map, maybe? */
 #define SUBCMD_SET_POS_24   0x24    /* Used when starting a quest. */
@@ -137,9 +137,9 @@
 #define SUBCMD0x60_UNKNOW_5C    0x5C
 #define SUBCMD_DROP_STACK   0x5D
 #define SUBCMD_BUY          0x5E
-#define SUBCMD_ITEMDROP     0x5F
-#define SUBCMD0x60_UNKNOW_60    0x60
-#define SUBCMD0x60_LEVELUP    0x61
+#define SUBCMD_BOX_ENEMY_ITEM_DROP     0x5F // Drop item from box/enemy
+#define SUBCMD_ENEMY_ITEM_DROP_REQ    0x60 // Request for item drop (handled by the server on BB)
+#define SUBCMD_FEED_MAG     0x61
 #define SUBCMD0x60_UNKNOW_62    0x62
 #define SUBCMD_DESTROY_ITEM 0x63    /* Sent when game inventory is full */
 #define SUBCMD0x60_UNKNOW_64    0x64
@@ -254,13 +254,13 @@
 
 /* The commands OK to send during bursting (0x62/0x6D). These are named for the
    order in which they're sent, hence why the names are out of order... */
-#define SUBCMD_BURST2       0x6B //SUBCMD0x62_BURST2
-#define SUBCMD_BURST3       0x6C //SUBCMD0x62_BURST3
-#define SUBCMD_BURST1       0x6D //SUBCMD0x62_BURST1
-#define SUBCMD_BURST4       0x6E //SUBCMD0x62_BURST4
-#define SUBCMD_BURST5       0x6F //SUBCMD0x62_BURST5
-#define SUBCMD_BURST_PLDATA       0x70 //SUBCMD0x62_BURST7 /* Was SUBCMD_BURST7 */
-#define SUBCMD_BURST6       0x71 //SUBCMD0x62_BURST6
+//#define SUBCMD_BURST2       0x6B //SUBCMD0x62_BURST2
+//#define SUBCMD_BURST3       0x6C //SUBCMD0x62_BURST3
+//#define SUBCMD_BURST1       0x6D //SUBCMD0x62_BURST1
+//#define SUBCMD_BURST4       0x6E //SUBCMD0x62_BURST4
+//#define SUBCMD_BURST5       0x6F //SUBCMD0x62_BURST5
+//#define SUBCMD_BURST_PLDATA       0x70 //SUBCMD0x62_BURST7 /* Was SUBCMD_BURST7 */
+//#define SUBCMD_BURST6       0x71 //SUBCMD0x62_BURST6
 
    /* The commands OK to send during bursting (0x60) */
    /* 0x3B */

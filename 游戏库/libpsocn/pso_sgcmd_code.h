@@ -133,17 +133,7 @@
 #define FW_FLAG_PREFER_IPV6     0x00000001  /* Prefer IPv6 on reply */
 #define FW_FLAG_IS_PSOPC        0x00000002  /* Client is on PSOPC */
 
-/* Possible values for versions in packets that need them. This list should be
-   kept in-sync with those in clients.h from ship_server. */
-#define CLIENT_VERSION_DCV1     0
-#define CLIENT_VERSION_DCV2     1
-#define CLIENT_VERSION_PC       2
-#define CLIENT_VERSION_GC       3
-#define CLIENT_VERSION_EP3      4
-#define CLIENT_VERSION_BB       5
-#define CLIENT_VERSION_XBOX     6
-
-   /* Potentially ORed with any version codes, if needed/appropriate. */
+/* Potentially ORed with any version codes, if needed/appropriate. */
 #define CLIENT_QUESTING         0x20
 #define CLIENT_CHALLENGE_MODE   0x40
 #define CLIENT_BATTLE_MODE      0x80

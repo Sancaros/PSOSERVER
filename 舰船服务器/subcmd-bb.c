@@ -194,9 +194,9 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         dc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         dc.hdr.flags = (uint8_t)d->client_id;
         dc.hdr.pkt_len = LE16(0x0088);
-        dc.type = SUBCMD_GUILDCARD;
-        dc.size = 0x21;
-        dc.unused = 0;
+        dc.shdr.type = SUBCMD_GUILDCARD;
+        dc.shdr.size = 0x21;
+        dc.shdr.unused = 0x0000;
         dc.tag = LE32(0x00010000);
         dc.guildcard = LE32(s->guildcard);
         dc.unused2 = 0;
@@ -229,9 +229,9 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         pc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         pc.hdr.flags = (uint8_t)d->client_id;
         pc.hdr.pkt_len = LE16(0x00F8);
-        pc.type = SUBCMD_GUILDCARD;
-        pc.size = 0x3D;
-        pc.unused = 0;
+        pc.shdr.type = SUBCMD_GUILDCARD;
+        pc.shdr.size = 0x3D;
+        pc.shdr.unused = 0x0000;
         pc.tag = LE32(0x00010000);
         pc.guildcard = LE32(s->guildcard);
         pc.padding = 0;
@@ -275,9 +275,9 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         gc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         gc.hdr.flags = (uint8_t)d->client_id;
         gc.hdr.pkt_len = LE16(0x0098);
-        gc.type = SUBCMD_GUILDCARD;
-        gc.size = 0x25;
-        gc.unused = 0;
+        gc.shdr.type = SUBCMD_GUILDCARD;
+        gc.shdr.size = 0x25;
+        gc.shdr.unused = 0x0000;
         gc.tag = LE32(0x00010000);
         gc.guildcard = LE32(s->guildcard);
         gc.padding = 0;
@@ -323,9 +323,9 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         xb.hdr.pkt_type = GAME_COMMAND2_TYPE;
         xb.hdr.flags = (uint8_t)d->client_id;
         xb.hdr.pkt_len = LE16(0x0234);
-        xb.type = SUBCMD_GUILDCARD;
-        xb.size = 0x8C;
-        xb.unk = LE16(0xFB0D);
+        xb.shdr.type = SUBCMD_GUILDCARD;
+        xb.shdr.size = 0x8C;
+        xb.shdr.unused = LE16(0xFB0D);
         xb.tag = LE32(0x00010000);
         xb.guildcard = LE32(s->guildcard);
         xb.xbl_userid = LE64(s->guildcard);
@@ -346,8 +346,9 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
         bb.hdr.flags = LE32(d->client_id);
-        bb.type = SUBCMD_GUILDCARD;
-        bb.size = 0x43;
+        bb.shdr.type = SUBCMD_GUILDCARD;
+        bb.shdr.size = 0x43;
+        bb.shdr.unused = 0x0000;
         bb.guildcard = LE32(s->guildcard);
         memcpy(bb.name, s->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
         memcpy(bb.guild_name, s->bb_opts->guild_name, 32);
@@ -450,26 +451,26 @@ static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
-    gen.type = SUBCMD_ITEMDROP;
-    gen.size = 0x0B;
-    gen.params = 0;
-    gen.area = req->area;
-    gen.what = 0x02;
-    gen.req = req->req;
-    gen.x = req->x;
-    gen.y = req->y;
-    gen.unk1 = LE32(0x00000010);
+    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.data.shdr.size = 0x0B;
+    gen.data.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = 0x02;
+    gen.data.request_id = req->req;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE32(0x00000010);
 
-    gen.item.data_l[0] = LE32(c->next_item[0]);
-    gen.item.data_l[1] = LE32(c->next_item[1]);
-    gen.item.data_l[2] = LE32(c->next_item[2]);
-    gen.item.data2_l = LE32(c->next_item[3]);
+    gen.data.item.data_l[0] = LE32(c->next_item[0]);
+    gen.data.item.data_l[1] = LE32(c->next_item[1]);
+    gen.data.item.data_l[2] = LE32(c->next_item[2]);
+    gen.data.item.data2_l = LE32(c->next_item[3]);
     /*gen.item2[0] = LE32(c->next_item[3]);
     gen.item2[1] = LE32(0x00000002);*/
 
     /* Obviously not "right", but it works though, so we'll go with it. */
 
-    gen.item.item_id = LE32((r | 0x06010100));
+    gen.data.item.item_id = LE32((r | 0x06010100));
 
     /* Send the packet to every client in the lobby. */
     for (i = 0; i < l->max_clients; ++i) {
@@ -534,9 +535,9 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, lobby_t* l, su
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->size != 0x06) {
+    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
-            c->guildcard, pkt->type, pkt->size);
+            c->guildcard, pkt->shdr.type, pkt->shdr.size);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
@@ -1412,6 +1413,37 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, bb_subcmd_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
+int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_burst_pldata_t* pkt) {
+    int i;
+    iitem_t* item;
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* Scan the inventory and fix any mags before sending it along. */
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* If the item is a mag, then we have to swap the last dword of the
+                data. Otherwise colors and stats get messed up. */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
+
 /* 处理BB 0x62/0x6D 数据包. */
 int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -1455,8 +1487,11 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
         case SUBCMD0x62_BURST5://6F
         case SUBCMD0x62_BURST6://71
-        case SUBCMD0x62_BURST7://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            break;
+
+        case SUBCMD0x62_BURST_PLDATA://70
+            rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
             break;
 
         default:
@@ -1577,40 +1612,26 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
         rv = -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->size != 0x03) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->data.shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            c->guildcard, pkt->type);
+            c->guildcard, pkt->data.shdr.type);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
     subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 
-    if (pkt->enabled && pkt->switch_id  != 0xFFFF) {
-        //TODO 作弊开关 开启所有机关
-        //if (/*(l->flags | CHEATE) && */c->switch_assist && 
-        //    (c->last_switch_enabled_command.type == 0x05)) {
-
-        //    subcmd_send_lobby_bb(l, c, &c->last_switch_enabled_command, 
-        //        sizeof(c->last_switch_enabled_command));
-
-        //    //forward_subcommand(l, c, command, flag, &c->last_switch_enabled_command,
-        //        //sizeof(c->last_switch_enabled_command));
-        //    //send_command_t(c, command, flag, c->last_switch_enabled_command);
-        //}
+    if (pkt->data.flags && pkt->data.shdr.object_id != 0xFFFF) {
+        if ((l->flags & LOBBY_TYPE_CHEATS_ENABLED) && c->options.switch_assist &&
+            (c->last_switch_enabled_command.shdr.type == 0x05)) {
+            DBG_LOG("[Switch assist] Replaying previous enable command");
+            subcmd_bb_switch_changed_pkt_t* gem = pkt;
+            gem->data = c->last_switch_enabled_command;
+            subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)gem, 0);
+        }
+        c->last_switch_enabled_command = pkt->data;
     }
 
-    //if (cmd.enabled && cmd.switch_id != 0xFFFF) {
-    //    if ((l->flags & Lobby::Flag::CHEATS_ENABLED) && c->switch_assist &&
-    //        (c->last_switch_enabled_command.subcommand == 0x05)) {
-    //        c->log.info("[Switch assist] Replaying previous enable command");
-    //        forward_subcommand(l, c, command, flag, &c->last_switch_enabled_command,
-    //            sizeof(c->last_switch_enabled_command));
-    //        send_command_t(c, command, flag, c->last_switch_enabled_command);
-    //    }
-    //    c->last_switch_enabled_command = cmd;
-    //}
-    //return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
     return rv;
 }
 
@@ -1900,6 +1921,78 @@ static int handle_bb_symbol_chat(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     }
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 1);
+}
+
+int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int v = c->version, i;
+    subcmd_bb_dragon_act_t tr;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " reported Dragon action in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if (v != CLIENT_VERSION_XBOX && v != CLIENT_VERSION_GC)
+        return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
+
+    /* Make a version to send to the other version if the client is on GC or
+       Xbox. */
+    memcpy(&tr, pkt, sizeof(subcmd_bb_dragon_act_t));
+    tr.x.b = SWAP32(tr.x.b);
+    tr.z.b = SWAP32(tr.z.b);
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            if (l->clients[i]->version == v) {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+            }
+            else {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&tr);
+            }
+        }
+    }
+
+    return 0;
+}
+
+int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int v = c->version, i;
+    subcmd_bb_gol_dragon_act_t tr;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " reported Gol Dragon action in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if (v != CLIENT_VERSION_XBOX && v != CLIENT_VERSION_GC)
+        return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
+
+    /* Make a version to send to the other version if the client is on GC or
+       Xbox. */
+    memcpy(&tr, pkt, sizeof(subcmd_bb_gol_dragon_act_t));
+    tr.x.b = SWAP32(tr.x.b);
+    tr.z.b = SWAP32(tr.z.b);
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            if (l->clients[i]->version == v) {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+            }
+            else {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&tr);
+            }
+        }
+    }
+
+    return 0;
 }
 
 static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
@@ -2722,6 +2815,7 @@ static int handle_bb_spawn_npc(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
 static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    uint16_t flag;
 
     //if (!l->is_game()) {
     //    return;
@@ -2749,47 +2843,27 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     //forward_subcommand(l, c, command, flag, data);
 
 
-    //flag = *(uint16_t*)&client->decrypt_buf_code[0x0C];
-    if (pkt->q1flag < 1024)
-        c->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (pkt->q1flag >> 3)] |= 1 << (7 - (pkt->q1flag & 0x07));
-        //client->Full_Char.quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
+    DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令!",
+        c->guildcard);
 
-    //bool should_send_boss_drop_req = false;
-    //if (pkt[2].dword == l->difficulty) {
-    //    if ((l->episode == 1) && (c->cur_area == 0x0E)) {
-    //        // On Normal, Dark Falz does not have a third phase, so send the drop
-    //        // request after the end of the second phase. On all other difficulty
-    //        // levels, send it after the third phase.
-    //        if (((l->difficulty == 0) && (p[1].dword == 0x00000035)) ||
-    //            ((l->difficulty != 0) && (p[1].dword == 0x00000037))) {
-    //            should_send_boss_drop_req = true;
-    //        }
-    //    }
-    //    else if ((l->episode == 2) && (p[1].dword == 0x00000057) && (c->cur_area == 0x0D)) {
-    //        should_send_boss_drop_req = true;
-    //    }
-    //}
+    flag = pkt->flag;
+    if (flag < 0x400)
+        c->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
 
-    //if (should_send_boss_drop_req) {
-    //    auto c = l->clients.at(l->leader_id);
-    //    if (c) {
-    //        G_EnemyDropItemRequest_6x60 req = {
-    //          0x60,
-    //          0x06,
-    //          0x1090,
-    //          static_cast<uint8_t>(c->area),
-    //          static_cast<uint8_t>((l->episode == 2) ? 0x4E : 0x2F),
-    //          0x0B4F,
-    //          (l->episode == 2) ? -9999.0f : 10160.58984375f,
-    //          0.0f,
-    //          0xE0AEDC0100000002,
-    //        };
-    //        send_command_t(c, 0x62, l->leader_id, req);
-    //    }
-    //}
-
-    /*DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令! flag = %02X q1flag = %02X",
-        c->guildcard, pkt->flag, pkt->q1flag);*/
+    bool should_send_boss_drop_req = false;
+    if (pkt->difficulty == l->difficulty) {
+        if ((l->episode == 1) && (c->cur_area == 0x0E)) {
+            // 在正常情况下，黑暗佛没有第三阶段，所以在第二阶段结束后发送掉落请求
+            // 其他困难模式则在第三阶段结束后发送
+            if (((l->difficulty == 0) && (flag == 0x00000035)) ||
+                ((l->difficulty != 0) && (flag == 0x00000037))) {
+                should_send_boss_drop_req = true;
+            }
+        }
+        else if ((l->episode == 2) && (flag == 0x00000057) && (c->cur_area == 0x0D)) {
+            should_send_boss_drop_req = true;
+        }
+    }
 
     return 0;
 }
@@ -4068,8 +4142,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_cmd_check_size(c, pkt, 0x03);
         break;
 
-    case SUBCMD0x60_ACTION_DRAGON:// Dragon actions
-        rv = handle_bb_cmd_check_game_size(c, pkt);
+    case SUBCMD_DRAGON_ACT:// Dragon actions
+        rv = handle_bb_dragon_act(c, (subcmd_bb_dragon_act_t*)pkt);
         break;
 
     case SUBCMD0x60_ACTION_DE_ROl_LE:// De Rol Le actions
@@ -4092,7 +4166,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
-    case SUBCMD_DRAGON_ACT:
+    case SUBCMD0x60_UNKNOW_18:
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
@@ -4433,6 +4507,10 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         sent = 0;
         break;
 
+    case SUBCMD_GDRAGON_ACT:
+        rv = handle_bb_gol_dragon_act(c, (subcmd_bb_gol_dragon_act_t*)pkt);
+        break;
+
     case SUBCMD_LOBBY_CHAIR:
         rv = handle_bb_chair_dir(c, (subcmd_bb_chair_dir_t*)pkt);
         break;
@@ -4449,7 +4527,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_trade_done(c, (subcmd_bb_trade_t*)pkt);
         break;
 
-    case SUBCMD0x60_LEVELUP:
+    case SUBCMD_FEED_MAG:
         rv = handle_bb_cmd_check_game_size(c, pkt);
         break;
 
@@ -4498,22 +4576,60 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.type = SUBCMD_ITEMDROP;
-    gen.size = 0x0B;
-    gen.params = 0;
-    gen.area = req->area;
-    gen.what = req->pt_index;   /* Probably not right... but whatever. */
-    gen.req = req->req;
-    gen.x = req->x;
-    gen.y = req->y;
-    gen.unk1 = LE32(tmp);       /* ??? */
+    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.data.shdr.size = 0x0B;
+    gen.data.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
+    gen.data.request_id = req->req;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.item.data_l[0] = LE32(item->data.data_l[0]);
-    gen.item.data_l[1] = LE32(item->data.data_l[1]);
-    gen.item.data_l[2] = LE32(item->data.data_l[2]);
-    gen.item.data2_l = LE32(item->data.data2_l);
+    gen.data.item.data_l[0] = LE32(item->data.data_l[0]);
+    gen.data.item.data_l[1] = LE32(item->data.data_l[1]);
+    gen.data.item.data_l[2] = LE32(item->data.data_l[2]);
+    gen.data.item.data2_l = LE32(item->data.data2_l);
 
-    gen.item.item_id = LE32(item->data.item_id);
+    gen.data.item.item_id = LE32(item->data.item_id);
+
+    /* Send the packet to every client in the lobby. */
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]) {
+            send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&gen);
+        }
+    }
+
+    return 0;
+}
+
+
+int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
+    const iitem_t* item) {
+    subcmd_bb_itemgen_t gen;
+    int i;
+    uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
+
+    /* Fill in the packet we'll send out. */
+    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.flags = 0;
+    gen.hdr.pkt_len = LE16(0x0030);
+    gen.data.shdr.type = SUBCMD_ENEMY_ITEM_DROP_REQ;
+    gen.data.shdr.size = 0x06;
+    gen.data.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
+    gen.data.request_id = req->req;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE32(tmp);       /* ??? */
+
+    gen.data.item.data_l[0] = LE32(item->data.data_l[0]);
+    gen.data.item.data_l[1] = LE32(item->data.data_l[1]);
+    gen.data.item.data_l[2] = LE32(item->data.data_l[2]);
+    gen.data.item.data2_l = LE32(item->data.data2_l);
+
+    gen.data.item.item_id = LE32(item->data.item_id);
 
     /* Send the packet to every client in the lobby. */
     for (i = 0; i < l->max_clients; ++i) {

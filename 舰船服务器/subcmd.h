@@ -53,22 +53,17 @@ typedef struct bb_subcmd_pkt {
     uint8_t data[0];
 } PACKED bb_subcmd_pkt_t;
 
+/* 0x05
+注意: data.shdr.object_id 值为 0xFFFF 时 表示房间的怪物均被击败 */
 typedef struct subcmd_bb_switch_changed {
     bb_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t switch_id;
-    uint8_t unk1[6];
-    uint8_t area;
-    uint8_t enabled;
+    bb_switch_changed_t data;
 } PACKED subcmd_bb_switch_changed_pkt_t;
 
 /* Guild card send packet (Dreamcast). */
 typedef struct subcmd_dc_gcsend {
     dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint32_t tag;
     uint32_t guildcard;
     char name[24];
@@ -84,9 +79,7 @@ typedef struct subcmd_dc_gcsend {
 /* Guild card send packet (PC). */
 typedef struct subcmd_pc_gcsend {
     dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint32_t tag;
     uint32_t guildcard;
     uint16_t name[24];
@@ -101,9 +94,7 @@ typedef struct subcmd_pc_gcsend {
 /* Guild card send packet (Gamecube). */
 typedef struct subcmd_gc_gcsend {
     dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint32_t tag;
     uint32_t guildcard;
     char name[24];
@@ -118,9 +109,7 @@ typedef struct subcmd_gc_gcsend {
 /* Guild card send packet (Xbox). */
 typedef struct subcmd_xb_gcsend {
     dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unk;                       /* 0x0D 0xFB */
+    unused_hdr_t shdr;                       /* unused = 0x0D 0xFB */
     uint32_t tag;
     uint32_t guildcard;
     uint64_t xbl_userid;
@@ -135,9 +124,7 @@ typedef struct subcmd_xb_gcsend {
 /* Guild card send packet (Blue Burst) */
 typedef struct subcmd_bb_gc_send {
     bb_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint32_t guildcard;
     uint16_t name[0x18];
     uint16_t guild_name[0x10];
@@ -151,28 +138,24 @@ typedef struct subcmd_bb_gc_send {
 /* Request drop from enemy (DC/PC/GC) or box (DC/PC) */
 typedef struct subcmd_itemreq {
     dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint8_t area;
     uint8_t pt_index;
     uint16_t req;
     float x;
-    float y;
+    float z;
     uint32_t unk2[2];
 } PACKED subcmd_itemreq_t;
 
 /* Request drop from enemy (Blue Burst) */
 typedef struct subcmd_bb_itemreq {
     bb_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t unused;
+    unused_hdr_t shdr;
     uint8_t area;
     uint8_t pt_index;
     uint16_t req;
     float x;
-    float y;
+    float z;
     uint32_t unk2[2];
 } PACKED subcmd_bb_itemreq_t;
 
@@ -186,7 +169,7 @@ typedef struct subcmd_bitemreq {
     uint8_t pt_index;                   /* Always 0x30 */
     uint16_t req;
     float x;
-    float y;
+    float z;
     uint32_t unk2[2];
     uint16_t unk3;
     uint16_t params2;                      /* 0x80 0x3F? */
@@ -203,45 +186,33 @@ typedef struct subcmd_bb_bitemreq {
     uint8_t pt_index;                   /* Always 0x30 */
     uint16_t req;
     float x;
-    float y;
+    float z;
     uint32_t unk2[2];
     uint16_t unk3;
     uint16_t params2;                      /* 0x80 0x3F? */
     uint32_t unused[3];                 /* All zeroes? */
 } PACKED subcmd_bb_bitemreq_t;
 
-typedef struct subcmd_itemgen {
-    dc_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t params;
+typedef struct subcmd_item_drop {
+    unused_hdr_t shdr;
     uint8_t area;
-    uint8_t what;
-    uint16_t req;
+    uint8_t from_enemy;
+    uint16_t request_id; // < 0x0B50 if from_enemy != 0; otherwise < 0x0BA0
     float x;
-    float y;
+    float z;
     uint32_t unk1;
     item_t item;
-    //uint32_t item[3];
-    //uint32_t item_id;
     uint32_t item2;
+} PACKED subcmd_item_drop_t;
+
+typedef struct subcmd_itemgen {
+    dc_pkt_hdr_t hdr;
+    subcmd_item_drop_t data;
 } PACKED subcmd_itemgen_t;
 
 typedef struct subcmd_bb_itemgen {
     bb_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint16_t params;
-    uint8_t area;
-    uint8_t what;
-    uint16_t req;
-    float x;
-    float y;
-    uint32_t unk1;
-    item_t item;
-    //uint32_t item[3];
-    //uint32_t item_id;
-    //uint32_t item2;
+    subcmd_item_drop_t data;
 } PACKED subcmd_bb_itemgen_t;
 
 typedef struct subcmd_levelup {
@@ -482,20 +453,16 @@ typedef struct subcmd_set_area {
     dc_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
-    uint8_t area;
-    uint8_t unused2[3];
+    uint16_t client_id;
+    uint32_t area;
 } PACKED subcmd_set_area_t;
 
 typedef struct subcmd_bb_set_area {
     bb_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
-    uint8_t area;
-    uint8_t unused2[3];
+    uint16_t client_id;
+    uint32_t area;
 } PACKED subcmd_bb_set_area_t;
 
 /* Packets used to set a user's position */
@@ -503,9 +470,8 @@ typedef struct subcmd_set_pos {
     dc_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
-    uint32_t unk;
+    uint16_t client_id;
+    uint32_t area;
     float w;
     float x;
     float y;
@@ -516,9 +482,8 @@ typedef struct subcmd_bb_set_pos {
     bb_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
-    uint32_t unk;
+    uint16_t client_id;
+    uint32_t area;
     float w;
     float x;
     float y;
@@ -530,8 +495,7 @@ typedef struct subcmd_move {
     dc_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
+    uint16_t client_id;
     float x;
     float z;
     uint32_t unused2;   /* Not present in 0x42 */
@@ -539,9 +503,9 @@ typedef struct subcmd_move {
 
 typedef struct subcmd_bb_move {
     bb_pkt_hdr_t hdr;
+    uint8_t type;
     uint8_t size;
-    uint8_t client_id;
-    uint8_t unused;
+    uint16_t client_id;
     float x;
     float z;
     uint32_t unused2;   /* Not present in 0x42 */
@@ -634,11 +598,11 @@ typedef struct subcmd_bb_set_flag {
     bb_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
-    uint8_t unk1[0x02];
-    uint8_t flag;
-    uint8_t unused;
-    uint8_t q1flag;
-    uint8_t unk2[0x05];
+    uint16_t params;
+    uint16_t flag;
+    uint16_t unknown_a1;
+    uint16_t difficulty;
+    uint16_t unused;
 } PACKED subcmd_bb_set_flag_t;
 
 typedef struct subcmd_bb_killed_monster {
@@ -1276,6 +1240,85 @@ typedef struct subcmd_burst_pldata {
     /* Xbox has a little bit more at the end than other versions... Probably
        safe to just ignore it. */
 } PACKED subcmd_burst_pldata_t;
+
+/* Packet used by the Dragon boss to deal with its actions. */
+typedef struct subcmd_bb_dragon_act {
+    bb_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t size;
+    uint16_t enemy_id;
+    uint32_t unk[2];
+    bitfloat_t x;
+    bitfloat_t z;
+} PACKED subcmd_bb_dragon_act_t;
+
+/* Packet used by the Gol Dragon boss to deal with its actions. */
+typedef struct subcmd_bb_gol_dragon_act {
+    bb_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t size;
+    uint16_t enemy_id;
+    uint32_t unk[2];
+    bitfloat_t x;
+    bitfloat_t z;
+    uint32_t unk2;
+} PACKED subcmd_bb_gol_dragon_act_t;
+
+/* Packet used to communicate current state of players in-game while a new
+   player is bursting. */
+typedef struct subcmd_bb_burst_pldata {
+    bb_pkt_hdr_t hdr;
+    uint8_t type;
+    uint8_t unused1;
+    uint16_t unused2;
+    uint32_t size_minus_4;  /* ??? */
+    uint32_t unk1[2];
+    float x;
+    float y;
+    float z;
+    uint8_t unk2[0x54];
+    uint32_t tag;
+    uint32_t guildcard;
+    uint8_t unk3[0x44];
+    uint8_t techs[20];
+    char name[16];
+    uint32_t c_unk1[2];
+    uint32_t name_color;
+    uint8_t model;
+    uint8_t c_unused[15];
+    uint32_t name_color_checksum;
+    uint8_t section;
+    uint8_t ch_class;
+    uint8_t v2flags;
+    uint8_t version;
+    uint32_t v1flags;
+    uint16_t costume;
+    uint16_t skin;
+    uint16_t face;
+    uint16_t head;
+    uint16_t hair;
+    uint16_t hair_r;
+    uint16_t hair_g;
+    uint16_t hair_b;
+    float prop_x;
+    float prop_y;
+    uint16_t atp;
+    uint16_t mst;
+    uint16_t evp;
+    uint16_t hp;
+    uint16_t dfp;
+    uint16_t ata;
+    uint16_t lck;
+    uint16_t c_unk2;
+    uint32_t c_unk3[2];
+    uint32_t level;
+    uint32_t exp;
+    uint32_t meseta;
+    inventory_t inv;
+    uint32_t zero;          /* Unused? */
+    /* Xbox has a little bit more at the end than other versions... Probably
+       safe to just ignore it. */
+} PACKED subcmd_bb_burst_pldata_t;
 
 #ifndef _WIN32
 #else

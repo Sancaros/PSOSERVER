@@ -92,6 +92,27 @@ typedef struct client_type {
     int hdr_size;
 } client_type_t;
 
+typedef struct client_options {
+    // Options used on both game and proxy server
+    bool switch_assist;
+    bool infinite_hp;
+    bool infinite_tp;
+    bool prefer_high_lobby_client_id;
+    int16_t override_section_id;
+    int16_t override_lobby_event;
+    int16_t override_lobby_number;
+    int64_t override_random_seed;
+
+    // Options used only on proxy server
+    bool save_files;
+    bool enable_chat_commands;
+    bool enable_chat_filter;
+    bool suppress_remote_login;
+    bool zero_remote_guild_card;
+    bool ep3_infinite_meseta;
+    int64_t function_call_return_value; // -1 = don't block function calls
+} client_options_t;
+
 /* Ship server client structure. */
 struct ship_client {
     TAILQ_ENTRY(ship_client) qentry;
@@ -157,9 +178,10 @@ struct ship_client {
 
     //uint8_t infinite_hp; // cheats enabled
     //uint8_t infinite_tp; // cheats enabled
-    uint8_t switch_assist; // cheats enabled
+    //uint8_t switch_assist; // cheats enabled
     //subcmd_bb_switch_changed_pkt_t last_switch_enabled_command;
     //uint8_t can_chat;
+    client_options_t options;
 
     uint8_t equip_flags;
     iitem_t iitems[30];
@@ -200,6 +222,8 @@ struct ship_client {
     psocn_bb_db_guild_t *bb_guild;
 
     client_game_data_t game_data;
+
+    bb_switch_changed_t last_switch_enabled_command;
 
     int script_ref;
     uint64_t aoe_timer;
@@ -322,13 +346,13 @@ extern pthread_key_t sendbuf_key;
 #define TECHNIQUE_MEGID             18
 
 static client_type_t client_type[CLIENT_VERSION_ALL][3] = {
-    {CLIENT_VERSION_DCV1,        "v1", 4},
-    {CLIENT_VERSION_DCV2,        "v2", 4},
-    {CLIENT_VERSION_PC,          "pc", 4},
-    {CLIENT_VERSION_GC,          "gc", 4},
-    {CLIENT_VERSION_EP3,         "e3", 4},
-    {CLIENT_VERSION_BB,          "bb", 8},
-    {CLIENT_VERSION_XBOX,        "xb", 4},
+    {CLIENT_VERSION_DCV1, "v1", 4},
+    {CLIENT_VERSION_DCV2, "v2", 4},
+    {CLIENT_VERSION_PC,   "pc", 4},
+    {CLIENT_VERSION_GC,   "gc", 4},
+    {CLIENT_VERSION_EP3,  "e3", 4},
+    {CLIENT_VERSION_BB,   "bb", 8},
+    {CLIENT_VERSION_XBOX, "xb", 4},
 };
 
 /* Language codes. */

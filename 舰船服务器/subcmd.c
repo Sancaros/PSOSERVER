@@ -65,9 +65,9 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             gc.hdr.pkt_type = pkt->hdr.pkt_type;
             gc.hdr.flags = pkt->hdr.flags;
             gc.hdr.pkt_len = LE16(0x0098);
-            gc.type = pkt->type;
-            gc.size = 0x25;
-            gc.unused = 0;
+            gc.shdr.type = pkt->shdr.type;
+            gc.shdr.size = 0x25;
+            gc.shdr.unused = 0x0000;
             gc.tag = pkt->tag;
             gc.guildcard = pkt->guildcard;
             gc.padding = 0;
@@ -94,9 +94,9 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             xb.hdr.pkt_type = pkt->hdr.pkt_type;
             xb.hdr.flags = pkt->hdr.flags;
             xb.hdr.pkt_len = LE16(0x0234);
-            xb.type = pkt->type;
-            xb.size = 0x8C;
-            xb.unk = LE16(0xFB0D);
+            xb.shdr.type = pkt->shdr.type;
+            xb.shdr.size = 0x8C;
+            xb.shdr.unused = LE16(0xFB0D);
             xb.tag = pkt->tag;
             xb.guildcard = pkt->guildcard;
             xb.xbl_userid = LE64(guildcard);
@@ -151,9 +151,9 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             pc.hdr.pkt_type = pkt->hdr.pkt_type;
             pc.hdr.flags = pkt->hdr.flags;
             pc.hdr.pkt_len = LE16(0x00F8);
-            pc.type = pkt->type;
-            pc.size = 0x3D;
-            pc.unused = 0;
+            pc.shdr.type = pkt->shdr.type;
+            pc.shdr.size = 0x3D;
+            pc.shdr.unused = 0x0000;
             pc.tag = pkt->tag;
             pc.guildcard = pkt->guildcard;
             pc.padding = 0;
@@ -200,8 +200,9 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.type = SUBCMD_GUILDCARD;
-            bb.size = 0x43;
+            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.size = 0x43;
+            bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
             bb.one = 1;
             bb.language = pkt->language;
@@ -265,9 +266,9 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             dc.hdr.pkt_type = pkt->hdr.pkt_type;
             dc.hdr.flags = pkt->hdr.flags;
             dc.hdr.pkt_len = LE16(0x0088);
-            dc.type = pkt->type;
-            dc.size = 0x21;
-            dc.unused = 0;
+            dc.shdr.type = pkt->shdr.type;
+            dc.shdr.size = 0x21;
+            dc.shdr.unused = 0x0000;
             dc.tag = pkt->tag;
             dc.guildcard = pkt->guildcard;
             dc.unused2 = 0;
@@ -314,9 +315,9 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             gc.hdr.pkt_type = pkt->hdr.pkt_type;
             gc.hdr.flags = pkt->hdr.flags;
             gc.hdr.pkt_len = LE16(0x0098);
-            gc.type = pkt->type;
-            gc.size = 0x25;
-            gc.unused = 0;
+            gc.shdr.type = pkt->shdr.type;
+            gc.shdr.size = 0x25;
+            gc.shdr.unused = 0x0000;
             gc.tag = pkt->tag;
             gc.guildcard = pkt->guildcard;
             gc.padding = 0;
@@ -362,9 +363,9 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             xb.hdr.pkt_type = pkt->hdr.pkt_type;
             xb.hdr.flags = pkt->hdr.flags;
             xb.hdr.pkt_len = LE16(0x0234);
-            xb.type = pkt->type;
-            xb.size = 0x8C;
-            xb.unk = LE16(0xFB0D);
+            xb.shdr.type = pkt->shdr.type;
+            xb.shdr.size = 0x8C;
+            xb.shdr.unused = LE16(0xFB0D);
             xb.tag = pkt->tag;
             xb.guildcard = pkt->guildcard;
             xb.xbl_userid = LE64(guildcard);
@@ -385,8 +386,9 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.type = SUBCMD_GUILDCARD;
-            bb.size = 0x43;
+            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.size = 0x43;
+            bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
             bb.name[0] = LE16('\t');
             bb.name[1] = LE16('E');
@@ -431,9 +433,9 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             dc.hdr.pkt_type = pkt->hdr.pkt_type;
             dc.hdr.flags = pkt->hdr.flags;
             dc.hdr.pkt_len = LE16(0x0088);
-            dc.type = pkt->type;
-            dc.size = 0x21;
-            dc.unused = 0;
+            dc.shdr.type = pkt->shdr.type;
+            dc.shdr.size = 0x21;
+            dc.shdr.unused = 0x0000;
             dc.tag = pkt->tag;
             dc.guildcard = pkt->guildcard;
             dc.unused2 = 0;
@@ -461,9 +463,9 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             xb.hdr.pkt_type = pkt->hdr.pkt_type;
             xb.hdr.flags = pkt->hdr.flags;
             xb.hdr.pkt_len = LE16(0x0234);
-            xb.type = pkt->type;
-            xb.size = 0x8C;
-            xb.unk = LE16(0xFB0D);
+            xb.shdr.type = pkt->shdr.type;
+            xb.shdr.size = 0x8C;
+            xb.shdr.unused = LE16(0xFB0D);
             xb.tag = pkt->tag;
             xb.guildcard = pkt->guildcard;
             xb.xbl_userid = LE64(guildcard);
@@ -513,9 +515,9 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             pc.hdr.pkt_type = pkt->hdr.pkt_type;
             pc.hdr.flags = pkt->hdr.flags;
             pc.hdr.pkt_len = LE16(0x00F8);
-            pc.type = pkt->type;
-            pc.size = 0x3D;
-            pc.unused = 0;
+            pc.shdr.type = pkt->shdr.type;
+            pc.shdr.size = 0x3D;
+            pc.shdr.unused = 0x0000;
             pc.tag = pkt->tag;
             pc.guildcard = pkt->guildcard;
             pc.padding = 0;
@@ -562,8 +564,9 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.type = SUBCMD_GUILDCARD;
-            bb.size = 0x43;
+            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.size = 0x43;
+            bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
             bb.one = 1;
             bb.language = pkt->language;
@@ -603,9 +606,9 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             dc.hdr.pkt_type = pkt->hdr.pkt_type;
             dc.hdr.flags = pkt->hdr.flags;
             dc.hdr.pkt_len = LE16(0x0088);
-            dc.type = pkt->type;
-            dc.size = 0x21;
-            dc.unused = 0;
+            dc.shdr.type = pkt->shdr.type;
+            dc.shdr.size = 0x21;
+            dc.shdr.unused = 0x0000;
             dc.tag = pkt->tag;
             dc.guildcard = pkt->guildcard;
             dc.unused2 = 0;
@@ -633,9 +636,9 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             gc.hdr.pkt_type = pkt->hdr.pkt_type;
             gc.hdr.flags = pkt->hdr.flags;
             gc.hdr.pkt_len = LE16(0x0098);
-            gc.type = pkt->type;
-            gc.size = 0x25;
-            gc.unused = 0;
+            gc.shdr.type = pkt->shdr.type;
+            gc.shdr.size = 0x25;
+            gc.shdr.unused = 0x0000;
             gc.tag = pkt->tag;
             gc.guildcard = pkt->guildcard;
             gc.padding = 0;
@@ -689,9 +692,9 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             pc.hdr.pkt_type = pkt->hdr.pkt_type;
             pc.hdr.flags = pkt->hdr.flags;
             pc.hdr.pkt_len = LE16(0x00F8);
-            pc.type = pkt->type;
-            pc.size = 0x3D;
-            pc.unused = 0;
+            pc.shdr.type = pkt->shdr.type;
+            pc.shdr.size = 0x3D;
+            pc.shdr.unused = 0x0000;
             pc.tag = pkt->tag;
             pc.guildcard = pkt->guildcard;
             pc.padding = 0;
@@ -738,8 +741,9 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.type = SUBCMD_GUILDCARD;
-            bb.size = 0x43;
+            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.size = 0x43;
+            bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
             bb.one = 1;
             bb.language = pkt->language;
@@ -763,24 +767,24 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
-    gen.type = SUBCMD_ITEMDROP;
-    gen.size = 0x0B;
-    gen.params = 0;
-    gen.area = req->area;
-    gen.what = 0x02;
-    gen.req = req->req;
-    gen.x = req->x;
-    gen.y = req->y;
-    gen.unk1 = LE32(0x00000010);
+    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.data.shdr.size = 0x0B;
+    gen.data.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = 0x02;
+    gen.data.request_id = req->req;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE16(0x00000010);
 
-    gen.item.data_l[0] = LE32(c->next_item[0]);
-    gen.item.data_l[1] = LE32(c->next_item[1]);
-    gen.item.data_l[2] = LE32(c->next_item[2]);
-    gen.item.data2_l = LE32(c->next_item[3]);
-    gen.item2 = LE32(0x00000002);
+    gen.data.item.data_l[0] = LE32(c->next_item[0]);
+    gen.data.item.data_l[1] = LE32(c->next_item[1]);
+    gen.data.item.data_l[2] = LE32(c->next_item[2]);
+    gen.data.item.data2_l = LE32(c->next_item[3]);
+    gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
-    gen.item.item_id = LE32((r | 0x06010100));
+    gen.data.item.item_id = LE32((r | 0x06010100));
 
     /* Send the packet to every client in the lobby. */
     for(i = 0; i < l->max_clients; ++i) {
@@ -1013,7 +1017,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. We accept two different sizes here
        0x0B for v2 and later, and 0x0A for v1. */
-    if (pkt->size != 0x0B && pkt->size != 0x0A) {
+    if (pkt->data.shdr.size != 0x0B && pkt->data.shdr.size != 0x0A) {
         return -1;
     }
 
@@ -1039,13 +1043,14 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.data_l[0], &pkt->item.data_l[0], 5 * sizeof(uint32_t));
+        memcpy(&item.data.data_l[0], &pkt->data.item.data_l[0], 5 * sizeof(uint32_t));
 
         if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             /* The item failed the check, deal with it. */
             DBG_LOG("Potentially non-legit item dropped in legit mode:\n"
-                "%08x %08x %08x %08x", LE32(pkt->item.data_l[0]),
-                LE32(pkt->item.data_l[1]), LE32(pkt->item.data_l[2]), LE32(pkt->item2));
+                "%08x %08x %08x %08x %08x", LE32(pkt->data.item.data_l[0]),
+                LE32(pkt->data.item.data_l[1]), LE32(pkt->data.item.data_l[2]),
+                LE32(pkt->data.item.data2_l), LE32(pkt->data.item2));
 
             /* Grab the item name, if we can find it. */
             name = iitem_get_name((iitem_t*)&item, v);
@@ -1056,7 +1061,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
             dp.hdr.pkt_len = LE16(0x0010);
             dp.type = SUBCMD_DESTROY_ITEM;
             dp.size = 0x03;
-            dp.item_id = pkt->item.item_id;
+            dp.item_id = pkt->data.item.item_id;
 
             /* Send out a warning message, followed by the drop, followed by a
                packet deleting the drop from the game (to prevent any desync) */
@@ -1090,7 +1095,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
     }
 
     /* If we end up here, then the item is legit... */
-    v = LE32(pkt->item.data_l[0]) & 0xff;
+    v = LE32(pkt->data.item.data_l[0]) & 0xff;
 
     /* If the item isn't a mag, or the client isn't Xbox or GC, then just
        send the packet away now. */
@@ -1103,7 +1108,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
         memcpy(&tr, pkt, sizeof(subcmd_itemgen_t));
-        tr.item.data2_l = SWAP32(tr.item.data2_l);
+        tr.data.item.data2_l = SWAP32(tr.data.item.data2_l);
 
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != c) {
@@ -2487,20 +2492,20 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
         rv = 0;
 
         switch(type) {
-            case SUBCMD_BURST1:
-            case SUBCMD_BURST2:
-            case SUBCMD_BURST3:
-            case SUBCMD_BURST4:
+            case SUBCMD0x62_BURST1:
+            case SUBCMD0x62_BURST2:
+            case SUBCMD0x62_BURST3:
+            case SUBCMD0x62_BURST4:
                 if(l->flags & LOBBY_FLAG_QUESTING)
                     rv = lobby_enqueue_burst(l, c, (dc_pkt_hdr_t *)pkt);
                 /* Fall through... */
 
-            case SUBCMD_BURST5:
-            case SUBCMD_BURST6:
+            case SUBCMD0x62_BURST5:
+            case SUBCMD0x62_BURST6:
                 rv |= send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
                 break;
 
-            case SUBCMD_BURST_PLDATA:
+            case SUBCMD0x62_BURST_PLDATA:
                 rv = handle_burst_pldata(c, dest, (subcmd_burst_pldata_t*)pkt);
                 break;
 
@@ -2649,7 +2654,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_take_damage(c, (subcmd_take_damage_t *)pkt);
             break;
 
-        case SUBCMD_ITEMDROP:
+        case SUBCMD_BOX_ENEMY_ITEM_DROP:
             rv = handle_itemdrop(c, (subcmd_itemgen_t *)pkt);
             break;
 
@@ -2838,23 +2843,23 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.type = SUBCMD_ITEMDROP;
-    gen.size = 0x0B;
-    gen.params = 0;
-    gen.area = req->area;
-    gen.what = req->pt_index;   /* Probably not right... but whatever. */
-    gen.req = req->req;
-    gen.x = req->x;
-    gen.y = req->y;
-    gen.unk1 = LE32(tmp);       /* ??? */
+    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.data.shdr.size = 0x0B;
+    gen.data.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
+    gen.data.request_id = req->req;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.item.data_l[0] = LE32(item[0]);
-    gen.item.data_l[1] = LE32(item[1]);
-    gen.item.data_l[2] = LE32(item[2]);
-    gen.item.data2_l = LE32(item[3]);
-    gen.item2 = LE32(0x00000002);
+    gen.data.item.data_l[0] = LE32(item[0]);
+    gen.data.item.data_l[1] = LE32(item[1]);
+    gen.data.item.data_l[2] = LE32(item[2]);
+    gen.data.item.data2_l = LE32(item[3]);
+    gen.data.item2 = LE32(0x00000002);
 
-    gen.item.item_id = LE32(l->next_game_item_id);
+    gen.data.item.item_id = LE32(l->next_game_item_id);
     ++l->next_game_item_id;
 
     /* Send the packet to every client in the lobby. */
@@ -2902,11 +2907,9 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
         bb.type = 0x20;
         bb.size = 6;
         bb.client_id = src->client_id;
-        bb.unused = 0;
         dc.size = 6;
         dc.client_id = src->client_id;
-        bb.unused = 0;
-        bb.unk = LE32(0x0000000F);          /* Area */
+        bb.area = LE32(0x0000000F);         /* Area */
         bb.w = src->x;                      /* X */
         bb.x = 0;                           /* Y */
         bb.y = src->z;                      /* Z */
@@ -2927,8 +2930,7 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
 
         dc.size = 6;
         dc.client_id = src->client_id;
-        dc.unused = 0;
-        dc.unk = LE32(0x0000000F);          /* Area */
+        dc.area = LE32(0x0000000F);         /* Area */
         dc.w = src->x;                      /* X */
         dc.x = 0;                           /* Y */
         dc.y = src->z;                      /* Z */
