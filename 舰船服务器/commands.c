@@ -627,7 +627,7 @@ static int handle_clinfo(ship_client_t *c, const char *params) {
     /* Fill in the client's info. */
     my_ntop(&cl->ip_addr, ip);
     return send_txt(c, "\tE\tC7名称: %s\nIP: %s\nGC: %u\n%s Lv.%d",
-                    cl->pl->v1.character.disp.dress_data.guildcard_name, ip, cl->guildcard,
+                    cl->pl->v1.character.disp.dress_data.guildcard_string, ip, cl->guildcard,
                     pso_class[cl->pl->v1.character.disp.dress_data.ch_class].cn_name, cl->pl->v1.character.disp.level + 1);
 }
 
@@ -1445,7 +1445,7 @@ static void dumpinv_internal(ship_client_t *c) {
     int v = c->version;
 
     if(v != CLIENT_VERSION_BB) {
-        SHIPS_LOG("背包数据转储 %s (%d)", c->pl->v1.character.disp.dress_data.guildcard_name,
+        SHIPS_LOG("背包数据转储 %s (%d)", c->pl->v1.character.disp.dress_data.guildcard_string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
@@ -1702,7 +1702,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
         for(i = 0; i < l->max_clients; i += 2) {
             if((c2 = l->clients[i])) {
                 len += snprintf(str + len, 511 - len, "%d: %s (%" PRIu32 ")   ",
-                                i, c2->pl->v1.character.disp.dress_data.guildcard_name, c2->guildcard);
+                                i, c2->pl->v1.character.disp.dress_data.guildcard_string, c2->guildcard);
             }
             else {
                 len += snprintf(str + len, 511 - len, "%d: None   ", i);
@@ -1711,7 +1711,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
             if((i + 1) < l->max_clients) {
                 if((c2 = l->clients[i + 1])) {
                     len += snprintf(str + len, 511 - len, "%d: %s (%" PRIu32
-                                    ")\n", i + 1, c2->pl->v1.character.disp.dress_data.guildcard_name,
+                                    ")\n", i + 1, c2->pl->v1.character.disp.dress_data.guildcard_string,
                                     c2->guildcard);
                 }
                 else {
@@ -1724,7 +1724,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
         for(i = 0; i < l->max_clients; i += 2) {
             if((c2 = l->clients[i])) {
                 len += snprintf(str + len, 511 - len, "%d: %s   ", i,
-                                c2->pl->v1.character.disp.dress_data.guildcard_name);
+                                c2->pl->v1.character.disp.dress_data.guildcard_string);
             }
             else {
                 len += snprintf(str + len, 511 - len, "%d: None   ", i);
@@ -1733,7 +1733,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
             if((i + 1) < l->max_clients) {
                 if((c2 = l->clients[i + 1])) {
                     len += snprintf(str + len, 511 - len, "%d: %s\n", i + 1,
-                                    c2->pl->v1.character.disp.dress_data.guildcard_name);
+                                    c2->pl->v1.character.disp.dress_data.guildcard_string);
                 }
                 else {
                     len += snprintf(str + len, 511 - len, "%d: None\n", i + 1);
@@ -1956,7 +1956,7 @@ static int handle_ignore(ship_client_t *c, const char *params) {
             c->ignore_list[i] = cl->guildcard;
             pthread_mutex_unlock(&l->mutex);
             return send_txt(c, "%s %s\n%s %d", __(c, "\tE\tC7Ignoring"),
-                            cl->pl->v1.character.disp.dress_data.guildcard_name, __(c, "Entry"), i);
+                            cl->pl->v1.character.disp.dress_data.guildcard_string, __(c, "Entry"), i);
         }
     }
 
@@ -2594,7 +2594,7 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
 
     /* Send the request to the shipgate. */
     if(shipgate_send_cbkup_req(&ship->sg, c->guildcard, c->cur_block->b,
-                               c->pl->v1.character.disp.dress_data.guildcard_name)) {
+                               c->pl->v1.character.disp.dress_data.guildcard_string)) {
         /* Send a message saying we couldn't request */
         return send_txt(c, "%s",
                         __(c, "\tE\tC7Couldn't request character data."));

@@ -104,7 +104,7 @@ static void* block_thd(void* d) {
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
-                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.disp.dress_data.guildcard_name,
+                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.disp.dress_data.guildcard_string,
                         it->guildcard);
                 }
 
@@ -356,7 +356,7 @@ static void* block_thd(void* d) {
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl) {
-                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.disp.dress_data.guildcard_name,
+                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.disp.dress_data.guildcard_string,
                         it->guildcard);
                 }
                 else {
@@ -853,7 +853,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
         if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->cur_block->b,
-            c->pl->v1.character.disp.dress_data.guildcard_name, &c->pl->v1, 1052)) {
+            c->pl->v1.character.disp.dress_data.guildcard_string, &c->pl->v1, 1052)) {
             /* XXXX: Should probably notify them... */
             return rv;
         }
@@ -1318,7 +1318,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     pthread_mutex_lock(&c->mutex);
 
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->v1.character.disp.dress_data.guildcard_name[0]) {
+    if (c->pl->v1.character.disp.dress_data.guildcard_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -1437,7 +1437,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
             /* Notify the shipgate */
             shipgate_send_block_login(&ship->sg, 1, c->guildcard,
-                c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_name);
+                c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_string);
 
             if (c->cur_lobby)
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
@@ -3074,7 +3074,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return process_ep3_command(c, pkt);
 
     case EP3_SERVER_DATA_TYPE:
-        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.disp.dress_data.guildcard_name,
+        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.disp.dress_data.guildcard_string,
             c->guildcard);
         print_payload((unsigned char*)pkt, len);
         return 0;
@@ -3090,7 +3090,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
     case QUEST_STATS_TYPE:
         ERR_LOG("已从接收到任务统计数据包 %s (%d)",
-            c->pl->v1.character.disp.dress_data.guildcard_name, c->guildcard);
+            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard);
         print_payload((unsigned char*)pkt, len);
         return 0;
 

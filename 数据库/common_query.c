@@ -601,14 +601,11 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-int db_updata_bb_char_create_code(uint32_t code, 
-    uint8_t codeb1, uint8_t codeb2, uint8_t codeb3, uint8_t codeb4,
+int db_updata_bb_char_create_code(uint32_t code,
     uint32_t gc, uint8_t slot) {
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%d', "
-        "create_code1 = '%d', create_code2 = '%d', create_code3 = '%d', create_code4 = '%d' "
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%d' "
         "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         CHARACTER_DATA_DRESS_DATA, code,
-        codeb1, codeb2, codeb3, codeb4,
         gc, slot);
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新角色更衣室数据表 %s (GC %" PRIu32 ", "
@@ -630,7 +627,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(myquery, "INSERT INTO %s "
             "(guildcard, slot, "
-            "guildcard_name, "//4
+            "guildcard_string, "//4
             "dress_unk1, dress_unk2, name_color_b, name_color_g, name_color_r, "//5
             "name_color_transparency, model, dress_unk3, create_code, name_color_checksum, section, "//5
             "ch_class, v2flags, version, v1flags, costume, "//5
@@ -645,7 +642,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "'%d', '%d', '%d', '%f', '%f')",//5
             CHARACTER_DATA_DRESS_DATA, 
             gc, slot, 
-            dress_data.guildcard_name, 
+            dress_data.guildcard_string, 
             dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
             dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
             dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
@@ -688,7 +685,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
         sprintf(myquery, "UPDATE %s SET "
             "guildcard =  '%" PRIu32 "', slot = '%" PRIu8 "', "
-            "guildcard_name = '%s', dress_unk1 = '%d', dress_unk2 = '%d', "
+            "guildcard_string = '%s', dress_unk1 = '%d', dress_unk2 = '%d', "
             "name_color_b = '%d', name_color_g = '%d', name_color_r = '%d', name_color_transparency = '%d', "
             "model = '%d', dress_unk3 = '%s', create_code = '%d', name_color_checksum = '%d', section = '%d', "
             "ch_class = '%d', v2flags = '%d', version = '%d', v1flags = '%d', "
@@ -697,7 +694,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "prop_x = '%f', prop_y = '%f' "
             "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'", 
             CHARACTER_DATA_DRESS_DATA, gc, slot,  
-            dress_data.guildcard_name, dress_data.dress_unk1, dress_data.dress_unk2, 
+            dress_data.guildcard_string, dress_data.dress_unk1, dress_data.dress_unk2, 
             dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r, dress_data.name_color_transparency, 
             dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
             dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, 
@@ -735,7 +732,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
             sprintf(myquery, "INSERT INTO %s "
                 "(guildcard, slot, "
-                "guildcard_name, "//4
+                "guildcard_string, "//4
                 "dress_unk1, dress_unk2, name_color_b, name_color_g, name_color_r, "//5
                 "name_color_transparency, model, dress_unk3, create_code, name_color_checksum, section, "//5
                 "ch_class, v2flags, version, v1flags, costume, "//5
@@ -750,7 +747,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
                 "'%d', '%d', '%d', '%f', '%f')",//5
                 CHARACTER_DATA_DRESS_DATA,
                 gc, slot, 
-                dress_data.guildcard_name,
+                dress_data.guildcard_string,
                 dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
                 dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
                 dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
@@ -811,7 +808,7 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
 
     if (row) {
         int i = 2;
-        memcpy(&dress_data.guildcard_name, row[i], sizeof(dress_data.guildcard_name));
+        memcpy(&dress_data.guildcard_string, row[i], sizeof(dress_data.guildcard_string));
         i++;
         dress_data.dress_unk1 = (uint32_t)strtoul(row[i], NULL, 0);
         i++;

@@ -2364,7 +2364,7 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
     --area;
 
     /* Make sure the enemy's id is sane... */
-    mid = LE16(req->req);
+    mid = LE16(req->request_id);
     if(mid > l->map_enemies->count) {
 #ifdef DEBUG
         ITEM_LOG("GC %" PRIu32 " requested v2 drop for invalid "
@@ -2624,7 +2624,7 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     ent = &v2_ptdata[l->difficulty][section];
 
     /* Grab the object ID and make sure its sane, then grab the object itself */
-    obj_id = LE16(req->req);
+    obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
         ITEM_LOG("Guildard %u requested drop from invalid box",
               c->guildcard);
@@ -2972,7 +2972,7 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
     --darea;
 
     /* Make sure the enemy's id is sane... */
-    mid = LE16(req->req);
+    mid = LE16(req->request_id);
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS) {
@@ -3255,7 +3255,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     ent = &gc_ptdata[l->episode - 1][l->difficulty][section];
 
     /* Grab the object ID and make sure its sane, then grab the object itself */
-    obj_id = LE16(req->req);
+    obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
         ITEM_LOG("Guildard %u requested drop from invalid box",
               c->guildcard);
@@ -3728,7 +3728,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     --area;
 
     /* Make sure the enemy's id is sane... */
-    mid = LE16(req->req);
+    mid = LE16(req->request_id);
     if(mid > l->map_enemies->count) {
         ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", c->guildcard, mid,
               l->map_enemies->count, l->qid);
@@ -3946,7 +3946,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
         return -1;
 
     /* Grab the object ID and make sure its sane, then grab the object itself */
-    obj_id = LE16(req->req);
+    obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
         ITEM_LOG("Guildard %u requested drop from invalid box",
               c->guildcard);

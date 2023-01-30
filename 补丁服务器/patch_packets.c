@@ -145,41 +145,6 @@ int send_message(patch_client_t *c, uint16_t *msg, uint16_t size) {
         sendbuf[PACKET_HEADER_LENGTH + size] = 0x00;
         sendbuf[PACKET_HEADER_LENGTH + size + 1] = 0x00;
     }
-    //uint16_t command;
-    //switch (c->version) {
-    //case GameVersion::PATCH:
-    //    command = 0x13;
-    //    break;
-    //case GameVersion::DC:
-    //case GameVersion::PC:
-    //    command = 0x1A;
-    //    break;
-    //case GameVersion::GC:
-    //case GameVersion::XB:
-    //case GameVersion::BB:
-    //    command = 0xD5;
-    //    break;
-    //default:
-    //    throw logic_error("invalid game version");
-    //}
-    /* Fill in the header, and copy the message. */
-    //switch (c->version) {
-    //    case CLIENT_TYPE_PC_PATCH:
-    //    case CLIENT_TYPE_BB_PATCH:
-    //        pkt->pkt_type = LE16(PATCH_MESSAGE_TYPE);
-    //        break;
-    //    //case GameVersion::DC:
-    //    case CLIENT_TYPE_PC_DATA:
-    //        pkt->pkt_type = LE16(MSG_BOX_TYPE);
-    //        break;
-    //    //case GameVersion::GC:
-    //    //case GameVersion::XB:
-    //    case CLIENT_TYPE_BB_DATA:
-    //        pkt->pkt_type = LE16(GC_MSG_BOX_TYPE);
-    //        break;
-
-    //}
-
 
     pkt->pkt_type = LE16(PATCH_MESSAGE_TYPE);
     pkt->pkt_len = LE16(s);

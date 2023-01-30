@@ -81,31 +81,6 @@ typedef struct bb_player_hdr {
     uint32_t unk2;
 } PACKED bb_player_hdr_t;
 
-// subcmd指令集通用数据头.
-typedef struct client_id_hdr {
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t client_id; // <= 12
-} PACKED client_id_hdr_t;
-
-typedef struct enemy_id_hdr {
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t enemy_id; // 范围 [0x1000, 0x4000)
-} PACKED enemy_id_hdr_t;
-
-typedef struct object_id_hdr {
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t object_id; // >= 0x4000, != 0xFFFF
-} PACKED object_id_hdr_t;
-
-typedef struct unused_hdr {
-    uint8_t type; //subcmd 指令
-    uint8_t size;
-    uint16_t unused;
-} PACKED unused_hdr_t;
-
 /* Alias some stuff from its "pso_character.h" versions to what was in
    here before... */
 
@@ -156,7 +131,9 @@ typedef struct bb_player {
 } PACKED bb_player_t;
 
 typedef struct bb_switch_changed {
-    object_id_hdr_t shdr;
+    uint8_t type; //subcmd 指令
+    uint8_t size;
+    uint16_t object_id; // >= 0x4000, != 0xFFFF
     uint8_t unk1[2];
     uint16_t unk2;
     uint8_t unk3[2];

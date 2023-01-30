@@ -1580,7 +1580,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             pl = l->clients[i]->pl;
 
             len += snprintf(msg + len, 511 - len, "%s µÈ¼¶ L%d\n  %s    \n  ÓïÑÔ: %s\n",
-                            pl->v1.character.disp.dress_data.guildcard_name, pl->v1.character.disp.level + 1,
+                            pl->v1.character.disp.dress_data.guildcard_string, pl->v1.character.disp.level + 1,
                             pso_class[pl->v1.character.disp.dress_data.ch_class].cn_name,
                             mini_language_codes_cn[pl->v1.inv.language]);
         }
@@ -2182,7 +2182,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
                     l->q_flags |= LOBBY_QFLAG_SYNC_REGS;
 
                     l->num_syncregs = q->num_sync;
-                    if(!(l->syncregs = (uint8_t *)malloc(q->num_sync))) {
+                    if(!(l->syncregs = (uint16_t *)malloc(q->num_sync))) {
                         ERR_LOG("Error allocating syncregs!");
                         l->q_flags &= ~(LOBBY_QFLAG_JOIN |
                             LOBBY_QFLAG_SYNC_REGS);

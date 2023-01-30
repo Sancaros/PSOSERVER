@@ -759,7 +759,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
 
 static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     subcmd_itemgen_t gen;
-    int r = LE16(req->req);
+    int r = LE16(req->request_id);
     int i;
     lobby_t *l = c->cur_lobby;
 
@@ -772,7 +772,7 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.data.shdr.unused = 0x0000;
     gen.data.area = req->area;
     gen.data.from_enemy = 0x02;
-    gen.data.request_id = req->req;
+    gen.data.request_id = req->request_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
     gen.data.unk1 = LE16(0x00000010);
@@ -800,7 +800,7 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
 }
 
 static int handle_quest_itemreq(ship_client_t *c, subcmd_itemreq_t *req, ship_client_t *dest) {
-    uint32_t mid = LE16(req->req);
+    uint32_t mid = LE16(req->request_id);
     uint32_t pti = req->pt_index;
     lobby_t *l = c->cur_lobby;
     uint32_t qdrop = 0xFFFFFFFF;
@@ -845,7 +845,7 @@ static int handle_levelup(ship_client_t *c, subcmd_levelup_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if(pkt->size != 0x05 || pkt->client_id != c->client_id) {
+    if(pkt->shdr.size != 0x05 || pkt->shdr.client_id != c->client_id) {
         return -1;
     }
 
@@ -874,19 +874,19 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         return -1;
 
     /* Buggy PSO version is buggy... */
-    if(c->version == CLIENT_VERSION_DCV1 && pkt->size == 0x06)
-        pkt->size = 0x07;
+    if(c->version == CLIENT_VERSION_DCV1 && pkt->shdr.size == 0x06)
+        pkt->shdr.size = 0x07;
 
     /* Sanity check... Make sure the size of the subcommand is valid, and
        disconnect the client if it isn't. */
-    if(pkt->size != 0x07)
+    if(pkt->shdr.size != 0x07)
         return -1;
 
     /* If we have multiple clients in the team, make sure that the client id in
        the packet matches the user sending the packet.
        Note: We don't do this in single player teams because NPCs do weird
        things if you change their equipment in quests. */
-    if(l->num_clients != 1 && pkt->client_id != c->client_id)
+    if(l->num_clients != 1 && pkt->shdr.client_id != c->client_id)
         return -1;
 
     /* Outside of quests, we shouldn't be able to get these unless the shopping
@@ -898,10 +898,10 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
 
     /* Run the bank action script, if any. */
     if(script_execute(ScriptActionBankAction, c, SCRIPT_ARG_PTR, c,
-                      SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data_l[0],
-                      SCRIPT_ARG_UINT32, pkt->data_l[1], SCRIPT_ARG_UINT32,
-                      pkt->data_l[2], SCRIPT_ARG_UINT32, pkt->data2_l,
-                      SCRIPT_ARG_UINT32, pkt->item_id, SCRIPT_ARG_END) < 0) {
+                      SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.data_l[0],
+                      SCRIPT_ARG_UINT32, pkt->data.data_l[1], SCRIPT_ARG_UINT32,
+                      pkt->data.data_l[2], SCRIPT_ARG_UINT32, pkt->data.data2_l,
+                      SCRIPT_ARG_UINT32, pkt->data.item_id, SCRIPT_ARG_END) < 0) {
         return -1;
     }
 
@@ -927,13 +927,13 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.data_l[0], &pkt->data_l[0], sizeof(uint32_t) * 5);
+        memcpy(&item.data.data_l[0], &pkt->data.data_l[0], sizeof(uint32_t) * 5);
 
         if(!psocn_limits_check_item(l->limits_list, &item, v)) {
             DBG_LOG("Potentially non-legit item in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(pkt->data_l[0]),
-                  LE32(pkt->data_l[1]), LE32(pkt->data_l[2]),
-                  LE32(pkt->data2_l));
+                  "%08x %08x %08x %08x", LE32(pkt->data.data_l[0]),
+                  LE32(pkt->data.data_l[1]), LE32(pkt->data.data_l[2]),
+                  LE32(pkt->data.data2_l));
 
             /* The item failed the check, so kick the user. */
             send_msg_box(c, "%s\n\n%s\n%s",
@@ -948,8 +948,8 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
     /* If we get here, either the game is not in legit mode, or the item is
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
-    l->highest_item[c->client_id] = (uint16_t)LE32(pkt->item_id);
-    v = LE32(pkt->data_l[0]);
+    l->highest_item[c->client_id] = (uint16_t)LE32(pkt->data.item_id);
+    v = LE32(pkt->data.data_l[0]);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -959,14 +959,14 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data.data_l[0] == pkt->data_l[0]) {
-                c->iitems[i].data.data_l[1] += pkt->data_l[1];
+            if(c->iitems[i].data.data_l[0] == pkt->data.data_l[0]) {
+                c->iitems[i].data.data_l[1] += pkt->data.data_l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count++].data.data_l[0], &pkt->data_l[0],
+    memcpy(&c->iitems[c->item_count++].data.data_l[0], &pkt->data.data_l[0],
            sizeof(uint32_t) * 5);
 
 send_pkt:
@@ -981,7 +981,7 @@ send_pkt:
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
         memcpy(&tr, pkt, sizeof(subcmd_take_item_t));
-        tr.data2_l = SWAP32(tr.data2_l);
+        tr.data.data2_l = SWAP32(tr.data.data2_l);
 
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != c) {
@@ -1059,8 +1059,8 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
             dp.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dp.hdr.pkt_len = LE16(0x0010);
-            dp.type = SUBCMD_DESTROY_ITEM;
-            dp.size = 0x03;
+            dp.shdr.type = SUBCMD_DESTROY_ITEM;
+            dp.shdr.size = 0x03;
             dp.item_id = pkt->data.item.item_id;
 
             /* Send out a warning message, followed by the drop, followed by a
@@ -1130,7 +1130,7 @@ static int handle_take_damage(ship_client_t *c, subcmd_take_damage_t *pkt) {
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if(l->type == LOBBY_TYPE_LOBBY) {
+    if(l->type == LOBBY_TYPE_LOBBY || pkt->shdr.client_id != c->client_id) {
         return -1;
     }
 
@@ -1205,7 +1205,7 @@ static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
     }
 
     /* Save the new area and move along */
-    if(c->client_id == pkt->client_id) {
+    if(c->client_id == pkt->shdr.client_id) {
         script_execute(ScriptActionChangeArea, c, SCRIPT_ARG_PTR, c,
                        SCRIPT_ARG_INT, (int)pkt->area, SCRIPT_ARG_INT,
                        c->cur_area, SCRIPT_ARG_END);
@@ -1217,6 +1217,9 @@ static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
         }
 
         c->cur_area = pkt->area;
+        c->x = pkt->x;
+        c->y = pkt->y;
+        c->z = pkt->z;
 
         if((l->flags & LOBBY_FLAG_QUESTING))
             update_qpos(c, l);
@@ -1225,11 +1228,33 @@ static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
+static int handle_inter_level_warp(ship_client_t* c, subcmd_inter_level_warp_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the area is valid */
+    if (pkt->area > 17) {
+        return -1;
+    }
+
+    /* Save the new area and move along */
+    if (c->client_id == pkt->shdr.client_id) {
+        script_execute(ScriptActionChangeArea, c, SCRIPT_ARG_PTR, c,
+            SCRIPT_ARG_INT, (int)pkt->area, SCRIPT_ARG_INT,
+            c->cur_area, SCRIPT_ARG_END);
+        c->cur_area = pkt->area;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(c, l);
+    }
+
+    return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int handle_set_pos(ship_client_t *c, subcmd_set_pos_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->client_id) {
+    if(c->client_id == pkt->shdr.client_id) {
         c->w = pkt->w;
         c->x = pkt->x;
         c->y = pkt->y;
@@ -1245,11 +1270,11 @@ static int handle_set_pos(ship_client_t *c, subcmd_set_pos_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-static int handle_move(ship_client_t *c, subcmd_move_t *pkt) {
+static int handle_move(ship_client_t *c, subcmd_move_t*pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->client_id) {
+    if(c->client_id == pkt->shdr.client_id) {
         c->x = pkt->x;
         c->z = pkt->z;
 
@@ -1272,7 +1297,7 @@ static int handle_delete_inv(ship_client_t *c, subcmd_destroy_item_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if(pkt->size != 0x03)
+    if(pkt->shdr.size != 0x03)
         return -1;
 
     /* Ignore meseta */
@@ -1366,7 +1391,7 @@ static int handle_use_item(ship_client_t *c, subcmd_use_item_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if(pkt->size != 0x02)
+    if(pkt->shdr.size != 0x02)
         return -1;
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
@@ -1412,7 +1437,7 @@ static int handle_word_select(ship_client_t *c, subcmd_word_select_t *pkt) {
     return 0;
 }
 
-static int handle_symbol_chat(ship_client_t *c, subcmd_pkt_t *pkt) {
+static int handle_symbol_chat(ship_client_t *c, subcmd_symbol_chat_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Don't send the message if they have the protection flag on. */
@@ -1602,7 +1627,7 @@ static int handle_mhit(ship_client_t *c, subcmd_mhit_pkt_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(pkt->hdr.pkt_len != LE16(0x0010) || pkt->size != 0x03) {
+    if(pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
               c->guildcard);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
@@ -1610,8 +1635,8 @@ static int handle_mhit(ship_client_t *c, subcmd_mhit_pkt_t *pkt) {
     }
 
     /* Grab relevant information from the packet */
-    mid = LE16(pkt->enemy_id);
-    mid2 = LE16(pkt->enemy_id2);
+    mid2 = LE16(pkt->shdr.enemy_id);
+    mid = LE16(pkt->enemy_id2);
     dmg = LE16(pkt->damage);
     flags = LE32(pkt->flags);
 
@@ -1819,7 +1844,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->size << 2)) || pkt->size < 0x02) {
+    if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
               c->guildcard);
         print_payload((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
@@ -1832,7 +1857,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
         return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 
     /* Handle each thing that was hit */
-    for(i = 0; i < pkt->size - 2; ++i) {
+    for(i = 0; i < pkt->shdr.size - 2; ++i) {
         handle_objhit_common(c, l, LE16(pkt->objects[i].obj_id));
     }
 
@@ -1875,7 +1900,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->size << 2)) || pkt->size < 0x02) {
+    if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
               c->guildcard);
         print_payload((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
@@ -1915,7 +1940,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
         case TECHNIQUE_FOIE:
         case TECHNIQUE_ZONDE:
         case TECHNIQUE_GRANTS:
-            if(pkt->size == 3)
+            if(pkt->shdr.size == 3)
                 handle_objhit_common(c, l, LE16(pkt->objects[0].obj_id));
             break;
 
@@ -1996,7 +2021,7 @@ static int handle_objhit(ship_client_t *c, subcmd_bhit_pkt_t *pkt) {
         return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 
     /* Handle the object marked as hit, if appropriate. */
-    handle_objhit_common(c, l, LE16(pkt->box_id2));
+    handle_objhit_common(c, l, LE16(pkt->shdr.object_id));
 
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
@@ -2056,7 +2081,7 @@ static int handle_create_pipe(ship_client_t *c, subcmd_pipe_pkt_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-static inline int reg_sync_index(lobby_t *l, uint8_t regnum) {
+static inline int reg_sync_index(lobby_t *l, uint16_t regnum) {
     int i;
 
     if(!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
@@ -2080,13 +2105,13 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
     /* Run the register sync script, if one is set. If the script returns
        non-zero, then assume that it has adequately handled the sync. */
     if((script_execute(ScriptActionQuestSyncRegister, c, SCRIPT_ARG_PTR, c,
-                        SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, pkt->reg_num,
+                        SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, pkt->register_number,
                         SCRIPT_ARG_UINT32, val, SCRIPT_ARG_END))) {
         done = 1;
     }
 
     /* Does this quest use global flags? If so, then deal with them... */
-    if((l->q_flags & LOBBY_QFLAG_SHORT) && pkt->reg_num == l->q_shortflag_reg &&
+    if((l->q_flags & LOBBY_QFLAG_SHORT) && pkt->register_number == l->q_shortflag_reg &&
        !done) {
         /* Check the control bits for sensibility... */
         ctl = (val >> 29) & 0x07;
@@ -2094,13 +2119,13 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
         /* Make sure the error or response bits aren't set. */
         if((ctl & 0x06)) {
             DBG_LOG("Quest set flag register with illegal ctl!\n");
-            send_sync_register(c, pkt->reg_num, 0x8000FFFE);
+            send_sync_register(c, pkt->register_number, 0x8000FFFE);
         }
         /* Make sure we don't have anything with any reserved ctl bits set
            (unless a script has already handled the sync). */
         else if((val & 0x17000000)) {
             DBG_LOG("Quest set flag register with reserved ctl!\n");
-            send_sync_register(c, pkt->reg_num, 0x8000FFFE);
+            send_sync_register(c, pkt->register_number, 0x8000FFFE);
         }
         else if((val & 0x08000000)) {
             /* Delete the flag... */
@@ -2118,7 +2143,7 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
 
     /* Does this quest use server data calls? If so, deal with it... */
     if((l->q_flags & LOBBY_QFLAG_DATA) && !done) {
-        if(pkt->reg_num == l->q_data_reg) {
+        if(pkt->register_number == l->q_data_reg) {
             if(c->q_stack_top < CLIENT_MAX_QSTACK) {
                 if(!(c->flags & CLIENT_FLAG_QSTACK_LOCK)) {
                     c->q_stack[c->q_stack_top++] = val;
@@ -2130,7 +2155,7 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
                         ctl = quest_function_dispatch(c, l);
 
                         if(ctl != QUEST_FUNC_RET_NOT_YET) {
-                            send_sync_register(c, pkt->reg_num, ctl);
+                            send_sync_register(c, pkt->register_number, ctl);
                             c->q_stack_top = 0;
                         }
                     }
@@ -2138,19 +2163,19 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
                 else {
                     /* The stack is locked, ignore the write and report the
                        error. */
-                    send_sync_register(c, pkt->reg_num,
+                    send_sync_register(c, pkt->register_number,
                                        QUEST_FUNC_RET_STACK_LOCKED);
                 }
             }
             else if(c->q_stack_top == CLIENT_MAX_QSTACK) {
                 /* Eat the stack push and report an error. */
-                send_sync_register(c, pkt->reg_num,
+                send_sync_register(c, pkt->register_number,
                                    QUEST_FUNC_RET_STACK_OVERFLOW);
             }
 
             done = 1;
         }
-        else if(pkt->reg_num == l->q_ctl_reg) {
+        else if(pkt->register_number == l->q_ctl_reg) {
             /* For now, the only reason we'll have one of these is to reset the
                stack. There might be other reasons later, but this will do, for
                the time being... */
@@ -2160,7 +2185,7 @@ static int handle_sync_reg(ship_client_t *c, subcmd_sync_reg_t *pkt) {
     }
 
     /* Does this register have to be synced? */
-    if((idx = reg_sync_index(l, pkt->reg_num)) != -1) {
+    if((idx = reg_sync_index(l, pkt->register_number)) != -1) {
         l->regvals[idx] = val;
     }
 
@@ -2241,7 +2266,7 @@ static int handle_drop_item(ship_client_t *c, subcmd_drop_item_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(pkt->size != 0x06)
+    if(pkt->shdr.size != 0x06)
         return -1;
 
     /* Are we on Pioneer 2? If so, record the item they just dropped. */
@@ -2300,7 +2325,7 @@ static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(pkt->size != 0x05)
+    if(pkt->shdr.size != 0x05)
         return -1;
 
     /* Clear the list of dropped items. */
@@ -2312,7 +2337,7 @@ static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-static int handle_done_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
+static int handle_done_talk_npc(ship_client_t *c, subcmd_end_talk_to_npc_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2325,7 +2350,7 @@ static int handle_done_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(pkt->size != 0x01)
+    if(pkt->shdr.size != 0x01)
         return -1;
 
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
@@ -2659,8 +2684,11 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD_SET_AREA:
-        case SUBCMD_SET_AREA_21:
-            rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
+            rv = handle_set_area(c, (subcmd_set_area_t*)pkt);
+            break;
+
+        case SUBCMD_INTER_LEVEL_WARP:
+            rv = handle_inter_level_warp(c, (subcmd_inter_level_warp_t*)pkt);
             break;
 
         case SUBCMD_SET_POS_3E:
@@ -2690,7 +2718,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD_SYMBOL_CHAT:
-            rv = handle_symbol_chat(c, pkt);
+            rv = handle_symbol_chat(c, (subcmd_symbol_chat_t *)pkt);
             break;
 
         case SUBCMD_CMODE_GRAVE:
@@ -2764,7 +2792,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD_DONE_NPC:
-            rv = handle_done_npc(c, (subcmd_pkt_t *)pkt);
+            rv = handle_done_talk_npc(c, (subcmd_end_talk_to_npc_t*)pkt);
             break;
 
         case SUBCMD_DRAGON_ACT:
@@ -2848,7 +2876,7 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.data.shdr.unused = 0x0000;
     gen.data.area = req->area;
     gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
-    gen.data.request_id = req->req;
+    gen.data.request_id = req->request_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
@@ -2904,11 +2932,11 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
         bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
         bb.hdr.flags = 0;
         bb.hdr.pkt_len = LE16(0x0020);
-        bb.type = 0x20;
-        bb.size = 6;
-        bb.client_id = src->client_id;
-        dc.size = 6;
-        dc.client_id = src->client_id;
+        bb.shdr.type = 0x20;
+        bb.shdr.size = 6;
+        bb.shdr.client_id = src->client_id;
+        dc.shdr.size = 6;
+        dc.shdr.client_id = src->client_id;
         bb.area = LE32(0x0000000F);         /* Area */
         bb.w = src->x;                      /* X */
         bb.x = 0;                           /* Y */
@@ -2924,12 +2952,12 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
 
         if(dst->version == CLIENT_VERSION_DCV1 &&
            (dst->flags & CLIENT_FLAG_IS_NTE))
-            dc.type = 0x1C;
+            dc.shdr.type = 0x1C;
         else
-            dc.type = 0x20;
+            dc.shdr.type = 0x20;
 
-        dc.size = 6;
-        dc.client_id = src->client_id;
+        dc.shdr.size = 6;
+        dc.shdr.client_id = src->client_id;
         dc.area = LE32(0x0000000F);         /* Area */
         dc.w = src->x;                      /* X */
         dc.x = 0;                           /* Y */

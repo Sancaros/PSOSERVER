@@ -375,9 +375,9 @@ void client_destroy_connection(ship_client_t *c,
 #endif
 
     /* If the user was on a block, notify the shipgate */
-    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.disp.dress_data.guildcard_name[0]) {
+    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.disp.dress_data.guildcard_string[0]) {
         shipgate_send_block_login(&ship->sg, 0, c->guildcard,
-                                  c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_name);
+                                  c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_string);
     }
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
         uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
@@ -972,7 +972,7 @@ static int check_char_v1(ship_client_t *c, player_t *pl) {
     if(f1.b != f2.b)
         return -22;
 
-    if(memcmp(c->pl->v1.character.disp.dress_data.guildcard_name, pl->v1.character.disp.dress_data.guildcard_name, 16))
+    if(memcmp(c->pl->v1.character.disp.dress_data.guildcard_string, pl->v1.character.disp.dress_data.guildcard_string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
@@ -1453,7 +1453,7 @@ static int client_name_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
 
         if(c->pl)
-            lua_pushstring(l, c->pl->v1.character.disp.dress_data.guildcard_name);
+            lua_pushstring(l, c->pl->v1.character.disp.dress_data.guildcard_string);
         else
             lua_pushnil(l);
     }

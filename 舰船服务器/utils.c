@@ -230,7 +230,7 @@ int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.disp.dress_data.guildcard_name, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -282,7 +282,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.disp.dress_data.guildcard_name, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -652,6 +652,47 @@ const char *skip_lang_code(const char *input) {
     return input;
 }
 
+static void convert_gc_to_dcpc(ship_client_t* s, void* buf) {
+    v1_player_t* d = (v1_player_t*)buf;
+    uint16_t costume;
+    uint8_t ch_class;
+
+    /* Copy everything over first... */
+    memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
+
+    /* Normalize the character class and costumes to the set known by v1/v2. */
+    costume = LE16(s->pl->v1.character.disp.dress_data.costume) % 9;
+    d->character.disp.dress_data.costume = LE16(costume);
+    costume = LE16(s->pl->v1.character.disp.dress_data.skin) % 9;
+    d->character.disp.dress_data.skin = LE16(costume);
+    costume = LE16(s->pl->v1.character.disp.dress_data.hair);
+    ch_class = s->pl->v1.character.disp.dress_data.ch_class;
+
+    /* Map v3 classes over to the closest thing we can. Note: these all
+       (unfortunately) change the gender of the character... */
+    if (ch_class == HUcaseal)
+        ch_class = HUcast;  /* HUcaseal -> HUcast */
+    else if (ch_class == FOmar)
+        ch_class = FOmarl;  /* FOmar -> FOmarl */
+    else if (ch_class == RAmarl)
+        ch_class = RAmar;   /* RAmarl -> RAmar */
+
+    /* Some classes we have to check the hairstyle on... */
+    if ((ch_class == HUmar || ch_class == RAmar || ch_class == FOnewm) &&
+        costume > 6)
+        costume = 0;
+
+    d->character.disp.dress_data.hair = LE16(costume);
+    d->character.disp.dress_data.ch_class = ch_class;
+
+    /* TODO: Apply any inventory fixups if we ever attempt cross-play. */
+}
+
+static void convert_xb_to_dcpc(ship_client_t* c, void* buf) {
+    /* TODO: This will have to be adjusted if we ever attempt cross-play. */
+    convert_gc_to_dcpc(c, buf);
+}
+
 static void convert_gcxb_to_xbgc(ship_client_t* s, void* buf) {
     int i;
     v1_player_t* d = (v1_player_t*)buf;
@@ -700,7 +741,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.level = sp->character.disp.level;
     c->disp.exp = sp->character.disp.exp;
     c->disp.meseta = sp->character.disp.meseta;
-    strcpy(c->disp.dress_data.guildcard_name, "         0");
+    strcpy(c->disp.dress_data.guildcard_string, "         0");
     c->disp.dress_data.dress_unk1 = sp->character.disp.dress_data.dress_unk1;
     c->disp.dress_data.dress_unk2 = sp->character.disp.dress_data.dress_unk2;
     c->disp.dress_data.name_color_b = sp->character.disp.dress_data.name_color_b;
@@ -734,7 +775,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name[1] = LE16('J');
 
     for(i = 2; i < BB_CHARACTER_NAME_LENGTH; ++i) {
-        c->name[i] = LE16(sp->character.disp.dress_data.guildcard_name[i - 2]);
+        c->name[i] = LE16(sp->character.disp.dress_data.guildcard_string[i - 2]);
     }
 }
 
@@ -766,7 +807,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.level = sp->disp.level;
     c->character.disp.exp = sp->disp.exp;
     c->character.disp.meseta = sp->disp.meseta;
-    strcpy(c->character.disp.dress_data.guildcard_name, "---");
+    strcpy(c->character.disp.dress_data.guildcard_string, "---");
     c->character.disp.dress_data.dress_unk1 = sp->disp.dress_data.dress_unk1;
     c->character.disp.dress_data.dress_unk2 = sp->disp.dress_data.dress_unk2;
     c->character.disp.dress_data.name_color_b = sp->disp.dress_data.name_color_b;
@@ -796,38 +837,120 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(c->character.techniques, sp->techniques, 0x14);
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_name, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_string, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);
 }
 
-void make_disp_data(ship_client_t *s, ship_client_t *d, void *buf) {
-    uint8_t *bp = (uint8_t *)buf;
+void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {
     int vs = s->version, vd = d->version;
+    uint8_t* bp = (uint8_t*)buf;
 
-    if (vs == vd) {
-        /* Both are the same version... Are they Blue Burst or not? */
-        if (vs != CLIENT_VERSION_BB) {
-            /* Neither are Blue Burst -- trivial */
+    switch (vs) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+        switch (vd) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+        case CLIENT_VERSION_XBOX:
+            /* As long as the destination isn't a BB player, just copy
+               the data over as-is. Technically if we ever allowed
+               cross-play, we would need to deal with the differences in
+               Mags on Gamecube and Xbox here, at least. */
             memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
+            break;
+
+        case CLIENT_VERSION_BB:
+            /* Going to Blue Burst, so, convert. */
+            convert_dcpcgc_to_bb(s, (uint8_t*)buf);
+            break;
         }
-        else {
-            /* Both are Blue Burst -- easy */
+
+        break;
+
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+        switch (vd) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            /* We're going to an earlier version. Apply a few fixups for
+               things like missing costumes and character classes. */
+            convert_gc_to_dcpc(s, buf);
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+            /* We're dealing with the "same" version, so just copy. */
+            memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            /* Apply Mag fixups... */
+            convert_gcxb_to_xbgc(s, buf);
+            break;
+
+        case CLIENT_VERSION_BB:
+            /* Going to Blue Burst, so, convert. */
+            convert_dcpcgc_to_bb(s, (uint8_t*)buf);
+            break;
+        }
+
+        break;
+
+    case CLIENT_VERSION_XBOX:
+        switch (vd) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            /* We're going to an earlier version. Apply a few fixups for
+               things like missing costumes and character classes. */
+            convert_xb_to_dcpc(s, buf);
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+            /* Apply Mag fixups... */
+            convert_gcxb_to_xbgc(s, buf);
+            break;
+
+        case CLIENT_VERSION_XBOX:
+            /* We're dealing with the "same" version, so just copy. */
+            memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
+            break;
+
+        case CLIENT_VERSION_BB:
+            /* Going to Blue Burst, so, convert. */
+            convert_dcpcgc_to_bb(s, (uint8_t*)buf);
+            break;
+        }
+
+        break;
+
+    case CLIENT_VERSION_BB:
+        switch (vd) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+        case CLIENT_VERSION_XBOX:
+            /* We're going from Blue Burst to an earlier version... */
+            convert_bb_to_dcpcgc(s, bp);
+            break;
+
+        case CLIENT_VERSION_BB:
+            /* Both clients are Blue Burst -- Copy the data over. */
             memcpy(bp, &s->pl->bb.inv, sizeof(inventory_t));
             bp += sizeof(inventory_t);
-            memcpy(bp, &s->pl->bb.character, sizeof(psocn_bb_char_t));
+            memcpy(bp, &s->pl->bb.character,
+                sizeof(psocn_bb_char_t));
+            break;
         }
-    }
-    else if ((vs == CLIENT_VERSION_XBOX && vd == CLIENT_VERSION_GC) ||
-        (vs == CLIENT_VERSION_GC && vd == CLIENT_VERSION_XBOX)) {
-        /* One is on Xbox, the other is on GC. Apply inventory fixes. */
-        convert_gcxb_to_xbgc(s, buf);
-    }
-    else if(s->version != CLIENT_VERSION_BB) {
-        /* The data we're copying is from an earlier version to Blue Burst */
-        convert_dcpcgc_to_bb(s, bp);
-    }
-    else if(d->version != CLIENT_VERSION_BB) {
-        /* The data we're copying is from Blue Burst to an earlier version */
-        convert_bb_to_dcpcgc(s, bp);
+
+        break;
     }
 }
 

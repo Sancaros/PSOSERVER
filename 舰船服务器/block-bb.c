@@ -183,7 +183,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
         if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->cur_block->b,
-            c->pl->v1.character.disp.dress_data.guildcard_name, &c->pl->v1, 1052)) {
+            c->pl->v1.character.disp.dress_data.guildcard_string, &c->pl->v1, 1052)) {
             /* XXXX: Should probably notify them... */
             return rv;
         }

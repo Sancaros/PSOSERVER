@@ -172,7 +172,7 @@ struct lobby {
     uint8_t q_ctl_reg;
 
     int num_syncregs;
-    uint8_t *syncregs;
+    uint16_t *syncregs; //大改动 同步注册ID
     uint32_t *regvals;
 
     uint8_t qpos_regs[LOBBY_MAX_IN_TEAM][LOBBY_MAX_IN_TEAM];

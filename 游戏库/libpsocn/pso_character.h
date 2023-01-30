@@ -64,26 +64,6 @@ typedef struct psocn_iitem { // c bytes
     uint16_t tech;
     uint32_t flags;
     item_t data;
-    /*union data
-    {
-        item_t data;
-        struct item
-        {
-            union {
-                uint8_t data_b[12];
-                uint16_t data_w[6];
-                uint32_t data_l[3];
-            };
-
-            uint32_t item_id;
-
-            union {
-                uint8_t data2_b[4];
-                uint16_t data2_w[2];
-                uint32_t data2_l;
-            };
-        };
-    };*/
 } PACKED iitem_t;
 
 typedef struct psocn_inventory {
@@ -130,7 +110,7 @@ typedef struct psocn_stats {
 } PACKED psocn_stats_t;
 
 typedef struct psocn_dress_data {
-    char guildcard_name[16];
+    char guildcard_string[16];            /* GC号的文本形态 */
     //uint32_t unk3[2];                   /* 命名与其他角色结构一致 */
     uint32_t dress_unk1;
     uint32_t dress_unk2;
@@ -140,22 +120,8 @@ typedef struct psocn_dress_data {
     uint8_t name_color_transparency;
     //皮肤模型
     uint8_t model;
-    union unuse_data
-    {
-        uint8_t unused[15];
-        struct unuse_temp {
-            uint8_t dress_unk3[11];
-            struct temp_use
-            {
-                union hasvaule
-                {
-                    uint8_t create_codeb[4];
-                    uint16_t create_codel[2];
-                    uint32_t create_code; //在创建角色时 这个数值有变化 分为机器人(590220180)和人类(590220660)两种
-                };
-            };
-        };
-    };
+    uint8_t dress_unk3[11];
+    uint32_t create_code;
     uint32_t name_color_checksum;
     uint8_t section;
     uint8_t ch_class;
@@ -194,43 +160,6 @@ typedef struct psocn_bb_mini_char {
     uint8_t hw_info[0x08]; // 0x7C - 0x83
     uint32_t play_time;
 } PACKED psocn_bb_mini_char_t;
-
-typedef struct sylverant_bb_char {
-    psocn_stats_t stats;
-    //uint16_t unk1;
-    uint8_t opt_flag[10];
-    uint32_t level;
-    uint32_t exp;
-    uint32_t meseta;
-    char guildcard_str[16];
-    uint32_t dress_unk1;
-    uint32_t dress_unk2;
-    uint32_t name_color;
-    uint8_t model;
-    uint8_t unused[11];
-    uint32_t play_time;                 /* Placed here, like newserv */
-    uint32_t name_color_checksum;
-    uint8_t section;
-    uint8_t ch_class;
-    uint8_t v2flags;
-    uint8_t version;
-    uint32_t v1flags;
-    uint16_t costume;
-    uint16_t skin;
-    uint16_t face;
-    uint16_t head;
-    uint16_t hair;
-    uint16_t hair_r;
-    uint16_t hair_g;
-    uint16_t hair_b;
-    float prop_x;
-    float prop_y;
-    uint16_t name[16];
-    uint8_t config[0xE8];
-    uint8_t techniques[0x14];
-} PACKED sylverant_bb_char_t;
-
-static int char_bb_size1 = sizeof(sylverant_bb_char_t);
 
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 typedef struct psocn_bb_char {

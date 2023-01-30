@@ -35,8 +35,12 @@ static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
         return -1;
 
     /* Save the new area and move along */
-    if(c->client_id == pkt->client_id)
+    if (c->client_id == pkt->shdr.client_id) {
         c->cur_area = pkt->area;
+        c->x = pkt->x;
+        c->y = pkt->y;
+        c->z = pkt->z;
+    }
 
     return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t *)pkt, 0);
 }
@@ -45,7 +49,7 @@ static int handle_set_pos(ship_client_t *c, subcmd_set_pos_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->client_id) {
+    if(c->client_id == pkt->shdr.client_id) {
         c->w = pkt->w;
         c->x = pkt->x;
         c->y = pkt->y;
@@ -59,7 +63,7 @@ static int handle_move(ship_client_t *c, subcmd_move_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->client_id) {
+    if(c->client_id == pkt->shdr.client_id) {
         c->x = pkt->x;
         c->z = pkt->z;
     }
@@ -130,7 +134,7 @@ int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt) {
     int rv;
 
     switch(pkt->type) {
-        case SUBCMD_SET_AREA_21:
+        case SUBCMD_INTER_LEVEL_WARP:
             newtype = SUBCMD_DCNTE_SET_AREA;
             break;
 
@@ -181,7 +185,7 @@ int subcmd_translate_bb_to_nte(ship_client_t *c, bb_subcmd_pkt_t *pkt) {
     int rv;
 
     switch(pkt->type) {
-        case SUBCMD_SET_AREA_21:
+        case SUBCMD_INTER_LEVEL_WARP:
             newtype = SUBCMD_DCNTE_SET_AREA;
             break;
 
@@ -233,7 +237,7 @@ int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt) {
 
     switch(pkt->type) {
         case SUBCMD_DCNTE_SET_AREA:
-            newtype = SUBCMD_SET_AREA_21;
+            newtype = SUBCMD_INTER_LEVEL_WARP;
             break;
 
         case SUBCMD_DCNTE_FINISH_LOAD:

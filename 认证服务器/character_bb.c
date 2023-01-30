@@ -693,7 +693,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 /* 0x00E5 229*/
 static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
     uint32_t create_code, flags = c->flags;
-    uint8_t create_codeb[4];
     psocn_bb_db_char_t *char_data;
     uint8_t cl = pkt->data.dress_data.ch_class;
 
@@ -752,10 +751,6 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
         create_code = char_data->character.disp.dress_data.create_code;
 
-        for (int i = 0; i < 4;i++) {
-            create_codeb[i] = char_data->character.disp.dress_data.create_codeb[i];
-        }
-
         char_data->character.play_time = 0;
 
         if (db_backup_bb_char_data(c->guildcard, pkt->slot))
@@ -794,8 +789,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        if (db_updata_bb_char_create_code(create_code, 
-            create_codeb[0], create_codeb[1], create_codeb[2], create_codeb[3],
+        if (db_updata_bb_char_create_code(create_code,
             c->guildcard, pkt->slot)) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);

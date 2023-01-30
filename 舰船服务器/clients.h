@@ -176,11 +176,6 @@ struct ship_client {
     uint8_t q_lang;
     uint8_t autoreply_on;
 
-    //uint8_t infinite_hp; // cheats enabled
-    //uint8_t infinite_tp; // cheats enabled
-    //uint8_t switch_assist; // cheats enabled
-    //subcmd_bb_switch_changed_pkt_t last_switch_enabled_command;
-    //uint8_t can_chat;
     client_options_t options;
 
     uint8_t equip_flags;
@@ -224,6 +219,7 @@ struct ship_client {
     client_game_data_t game_data;
 
     bb_switch_changed_t last_switch_enabled_command;
+    bool can_chat; //控制玩家是否可以说话的开关
 
     int script_ref;
     uint64_t aoe_timer;

@@ -131,7 +131,6 @@ uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot);
 
 /* 注意 一定要确保更衣室数据存在 才可以使用此函数 */
 int db_updata_bb_char_create_code(uint32_t code,
-    uint8_t codeb1, uint8_t codeb2, uint8_t codeb3, uint8_t codeb4,
     uint32_t gc, uint8_t slot);
 
 uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);

@@ -54,12 +54,31 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 /* Subcommand types we might care about (0x60/0x6C). */
+// 0x00: Invalid subcommand
+// 0x01: Invalid subcommand
+
+// 0x02: Unknown
+// This subcommand is completely ignored (at least, by PSO GC).
+
+// 0x03: Unknown (same handler as 02)
+// This subcommand is completely ignored (at least, by PSO GC).
+
+// 0x04: Unknown
+
 #define SUBCMD0x60_SWITCH_CHANGED    0x05 // 触发机关开启
 #define SUBCMD_SYMBOL_CHAT  0x07
+
+// 0x08: Invalid subcommand
+// 0x09: Unknown
+
 #define SUBCMD_HIT_MONSTER  0x0A
 #define SUBCMD_HIT_OBJ      0x0B
 #define SUBCMD_CONDITION_ADD       0x0C // Add condition (poison/slow/etc.)
 #define SUBCMD_CONDITION_REMOVE    0x0D // Remove condition (poison/slow/etc.)
+
+// 6x0E: Unknown
+// 6x0F: Invalid subcommand
+
 #define SUBCMD_DRAGON_ACT   0x12
 #define SUBCMD0x60_ACTION_DE_ROl_LE    0x13
 #define SUBCMD0x60_UNKNOW_14           0x14
@@ -68,10 +87,18 @@
 #define SUBCMD_TELEPORT     0x17 //SUBCMD0x60_TELEPORT_1
 #define SUBCMD0x60_UNKNOW_18   0x18    /* Dragon special actions */
 #define SUBCMD0x60_ACTION_DARK_FALZ    0x19
+
+// 6x1A: Invalid subcommand
+
+#define SUBCMD0x60_UNKNOW_1B    0x1B
 #define SUBCMD0x60_UNKNOW_1C    0x1C
+
+// 6x1D: Invalid subcommand
+// 6x1E: Invalid subcommand
+
 #define SUBCMD_SET_AREA     0x1F
-#define SUBCMD0x60_SET_AREA_20  0x20    /* Seems to match 0x1F */
-#define SUBCMD_SET_AREA_21  0x21    /* Seems to match 0x1F */  // Inter-level warp
+#define SUBCMD_SET_AREA_20  0x20    /* Seems to match 0x1F */
+#define SUBCMD_INTER_LEVEL_WARP  0x21   // Inter-level warp
 #define SUBCMD_LOAD_22      0x22    /* Set player visibility Related to 0x21 and 0x23... */
 #define SUBCMD_FINISH_LOAD  0x23    /* Finished loading to a map, maybe? */
 #define SUBCMD_SET_POS_24   0x24    /* Used when starting a quest. */
@@ -81,7 +108,7 @@
 #define SUBCMD0x60_FEED_MAG     0x28
 #define SUBCMD_DELETE_ITEM  0x29    /* Selling, deposit in bank, etc */
 #define SUBCMD_DROP_ITEM    0x2A    /* Drop full stack or non-stack item */
-#define SUBCMD_TAKE_ITEM    0x2B
+#define SUBCMD_TAKE_ITEM    0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
 #define SUBCMD_TALK_NPC     0x2C    /* Maybe this is talking to an NPC? */
 #define SUBCMD_TALK_NPC_SIZE 0x01
 #define SUBCMD_DONE_NPC     0x2D    /*SUBCMD_DONE_NPC Shows up when you're done with an NPC */
@@ -93,6 +120,8 @@
 #define SUBCMD0x60_UNKNOW_MEDIC_32    0x32
 #define SUBCMD0x60_UNKNOW_33    0x33
 #define SUBCMD0x60_UNKNOW_34    0x34
+
+// 6x35: Invalid subcommand
 #define SUBCMD0x60_UNKNOW_35    0x35
 #define SUBCMD0x60_UNKNOW_36    0x36
 #define SUBCMD0x60_UNKNOW_37    0x37
@@ -101,12 +130,20 @@
 #define SUBCMD0x60_UNKNOW_3A    0x3A
 #define SUBCMD_LOAD_3B      0x3B    /* Something with loading to a map... */
 #define SUBCMD_LOAD_3B_SIZE 0x01
+
+// 6x3C: Invalid subcommand
 #define SUBCMD0x60_UNKNOW_3C    0x3C
+// 6x3D: Invalid subcommand
 #define SUBCMD0x60_UNKNOW_3D    0x3D
+
 #define SUBCMD_SET_POS_3E   0x3E
 #define SUBCMD_SET_POS_3F   0x3F
 #define SUBCMD_MOVE_SLOW    0x40
+
+// 6x41: Unknown
+// This subcommand is completely ignored (at least, by PSO GC).
 #define SUBCMD0x60_UNKNOW_41    0x41
+
 #define SUBCMD_MOVE_FAST    0x42
 #define SUBCMD0x60_ATTACK1    0x43
 #define SUBCMD0x60_ATTACK2    0x44
