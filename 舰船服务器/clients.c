@@ -759,7 +759,7 @@ void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
     }
 }
 
-static void give_stats(ship_client_t *c, bb_level_entry_t *ent) {
+static void give_stats(ship_client_t *c, psocn_lvl_stats_t *ent) {
     uint16_t tmp;
 
     tmp = LE16(c->bb_pl->character.disp.stats.atp) + ent->atp;
@@ -787,7 +787,7 @@ static void give_stats(ship_client_t *c, bb_level_entry_t *ent) {
 /* Give a Blue Burst client some experience. */
 int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
     uint32_t exp_total;
-    bb_level_entry_t *ent;
+    psocn_lvl_stats_t *ent;
     int need_lvlup = 0;
     int cl;
     uint32_t level;
@@ -834,7 +834,7 @@ int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
 /* Give a Blue Burst client some free level ups. */
 int client_give_level(ship_client_t *c, uint32_t level_req) {
     uint32_t exp_total;
-    bb_level_entry_t *ent;
+    psocn_lvl_stats_t *ent;
     int cl;
     uint32_t exp_gained;
 
@@ -866,7 +866,7 @@ int client_give_level(ship_client_t *c, uint32_t level_req) {
     return 0;
 }
 
-static void give_stats_v2(ship_client_t *c, level_entry_t *ent) {
+static void give_stats_v2(ship_client_t *c, psocn_lvl_stats_t *ent) {
     uint16_t tmp;
 
     tmp = LE16(c->pl->v1.character.disp.stats.atp) + ent->atp;
@@ -892,7 +892,7 @@ static void give_stats_v2(ship_client_t *c, level_entry_t *ent) {
 
 /* Give a PSOv2 client some free level ups. */
 int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
-    level_entry_t *ent;
+    psocn_lvl_stats_t *ent;
     int cl, i;
 
     if(c->version != CLIENT_VERSION_DCV2 && c->version != CLIENT_VERSION_PC)

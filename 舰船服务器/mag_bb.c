@@ -749,9 +749,9 @@ void mag_bb_check_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t E
 }
 
 //Î¹ÑøÂê¹Å
-int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid)
-{
+int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid) {
 	lobby_t* l = c->cur_lobby;
+
 	if (!l || l->type != LOBBY_TYPE_GAME)
 		return -1;
 

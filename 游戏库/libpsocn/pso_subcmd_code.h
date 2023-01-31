@@ -71,21 +71,21 @@
 // 0x08: Invalid subcommand
 // 0x09: Unknown
 
-#define SUBCMD_HIT_MONSTER  0x0A
-#define SUBCMD_HIT_OBJ      0x0B
+#define SUBCMD_HIT_MONSTER         0x0A
+#define SUBCMD_HIT_OBJ             0x0B
 #define SUBCMD_CONDITION_ADD       0x0C // Add condition (poison/slow/etc.)
 #define SUBCMD_CONDITION_REMOVE    0x0D // Remove condition (poison/slow/etc.)
 
 // 6x0E: Unknown
 // 6x0F: Invalid subcommand
 
-#define SUBCMD_DRAGON_ACT   0x12
+#define SUBCMD_DRAGON_ACT              0x12
 #define SUBCMD0x60_ACTION_DE_ROl_LE    0x13
 #define SUBCMD0x60_UNKNOW_14           0x14
 #define SUBCMD0x60_ACTION_VOL_OPT      0x15
 #define SUBCMD0x60_ACTION_VOL_OPT2     0x16
-#define SUBCMD_TELEPORT     0x17 //SUBCMD0x60_TELEPORT_1
-#define SUBCMD0x60_UNKNOW_18   0x18    /* Dragon special actions */
+#define SUBCMD_TELEPORT                0x17 //SUBCMD0x60_TELEPORT_1
+#define SUBCMD0x60_UNKNOW_18           0x18    /* Dragon special actions */
 #define SUBCMD0x60_ACTION_DARK_FALZ    0x19
 
 // 6x1A: Invalid subcommand
@@ -96,26 +96,26 @@
 // 6x1D: Invalid subcommand
 // 6x1E: Invalid subcommand
 
-#define SUBCMD_SET_AREA     0x1F
-#define SUBCMD_SET_AREA_20  0x20    /* Seems to match 0x1F */
-#define SUBCMD_INTER_LEVEL_WARP  0x21   // Inter-level warp
-#define SUBCMD_LOAD_22      0x22    /* Set player visibility Related to 0x21 and 0x23... */
-#define SUBCMD_FINISH_LOAD  0x23    /* Finished loading to a map, maybe? */
-#define SUBCMD_SET_POS_24   0x24    /* Used when starting a quest. */
-#define SUBCMD_EQUIP        0x25
-#define SUBCMD_REMOVE_EQUIP 0x26
-#define SUBCMD_USE_ITEM     0x27
-#define SUBCMD0x60_FEED_MAG     0x28
-#define SUBCMD_DELETE_ITEM  0x29    /* Selling, deposit in bank, etc */
-#define SUBCMD_DROP_ITEM    0x2A    /* Drop full stack or non-stack item */
-#define SUBCMD_TAKE_ITEM    0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
-#define SUBCMD_TALK_NPC     0x2C    /* Maybe this is talking to an NPC? */
+#define SUBCMD_SET_AREA         0x1F
+#define SUBCMD_SET_AREA_20      0x20    /* Seems to match 0x1F */
+#define SUBCMD_INTER_LEVEL_WARP 0x21   // Inter-level warp
+#define SUBCMD_LOAD_22          0x22    /* Set player visibility Related to 0x21 and 0x23... */
+#define SUBCMD_FINISH_LOAD      0x23    /* Finished loading to a map, maybe? */
+#define SUBCMD_SET_POS_24       0x24    /* Used when starting a quest. */
+#define SUBCMD_EQUIP            0x25
+#define SUBCMD_REMOVE_EQUIP     0x26
+#define SUBCMD_USE_ITEM         0x27
+#define SUBCMD_FEED_MAG         0x28
+#define SUBCMD_DELETE_ITEM      0x29    /* Selling, deposit in bank, etc */
+#define SUBCMD_DROP_ITEM        0x2A    /* Drop full stack or non-stack item */
+#define SUBCMD_TAKE_ITEM        0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
+#define SUBCMD_TALK_NPC         0x2C    /* Maybe this is talking to an NPC? */
 #define SUBCMD_TALK_NPC_SIZE 0x01
-#define SUBCMD_DONE_NPC     0x2D    /*SUBCMD_DONE_NPC Shows up when you're done with an NPC */
+#define SUBCMD_DONE_NPC         0x2D    /*SUBCMD_DONE_NPC Shows up when you're done with an NPC */
 #define SUBCMD_DONE_NPC_SIZE 0x05
 #define SUBCMD0x60_UNKNOW_2E    0x2E
 #define SUBCMD0x60_UNKNOW_2F    0x2F
-#define SUBCMD_LEVELUP      0x30
+#define SUBCMD_LEVEL_UP         0x30
 #define SUBCMD0x60_UNKNOW_MEDIC_31    0x31
 #define SUBCMD0x60_UNKNOW_MEDIC_32    0x32
 #define SUBCMD0x60_UNKNOW_33    0x33
@@ -178,19 +178,19 @@
 #define SUBCMD0x60_UNKNOW_5B    0x5B
 
 #define SUBCMD0x60_UNKNOW_5C    0x5C
-#define SUBCMD_DROP_STACK   0x5D
-#define SUBCMD_BUY          0x5E
+#define SUBCMD_DROP_STACK       0x5D
+#define SUBCMD_BUY              0x5E
 #define SUBCMD_BOX_ENEMY_ITEM_DROP     0x5F // Drop item from box/enemy
 #define SUBCMD_ENEMY_ITEM_DROP_REQ    0x60 // Request for item drop (handled by the server on BB)
-#define SUBCMD_FEED_MAG     0x61
+#define SUBCMD_LEVEL_UP_REQ     0x61
 #define SUBCMD0x60_UNKNOW_62    0x62
-#define SUBCMD_DESTROY_ITEM 0x63    /* Sent when game inventory is full */
+#define SUBCMD_DESTROY_ITEM     0x63    /* Sent when game inventory is full */
 #define SUBCMD0x60_UNKNOW_64    0x64
 #define SUBCMD0x60_UNKNOW_65    0x65
 #define SUBCMD0x60_UNKNOW_66    0x66
 #define SUBCMD0x60_CREATE_ENEMY_SET    0x67 // Create enemy set
-#define SUBCMD_CREATE_PIPE  0x68
-#define SUBCMD_SPAWN_NPC    0x69
+#define SUBCMD_CREATE_PIPE      0x68
+#define SUBCMD_SPAWN_NPC        0x69
 #define SUBCMD0x60_UNKNOW_6A    0x6A
 #define SUBCMD0x60_UNKNOW_6B    0x6B
 #define SUBCMD0x60_UNKNOW_6C    0x6C
@@ -232,7 +232,7 @@
 #define SUBCMD0x60_UNKNOW_90    0x90
 #define SUBCMD0x60_UNKNOW_91    0x91
 #define SUBCMD0x60_UNKNOW_92    0x92
-#define SUBCMD0x60_UNKNOW_93    0x93
+#define SUBCMD_TIMED_SWITCH_ACTIVATED    0x93
 #define SUBCMD_WARP             0x94
 #define SUBCMD0x60_UNKNOW_95    0x95
 #define SUBCMD0x60_UNKNOW_96    0x96
@@ -283,7 +283,9 @@
 #define SUBCMD0x60_SRANK_ATTR   0xD8
 #define SUBCMD0x60_EX_ITEM_MK   0xD9
 #define SUBCMD0x60_PD_COMPARE   0xDA
+#define SUBCMD0x60_UNKNOW_DB    0xDB
 #define SUBCMD0x60_UNKNOW_DC    0xDC
+#define SUBCMD_SET_EXP_RATE     0xDD
 #define SUBCMD0x60_UNKNOW_DE    0xDE
 #define SUBCMD0x60_GALLON_PLAN  0xE1
 

@@ -54,30 +54,6 @@ typedef int ssize_t;
 #pragma pack(push, 1) 
 #endif
 
-/* Level-up information table from PlyLevelTbl.prs */
-typedef struct bb_level_table {
-    struct {
-        uint16_t atp;
-        uint16_t mst;
-        uint16_t evp;
-        uint16_t hp;
-        uint16_t dfp;
-        uint16_t ata;
-        uint16_t lck;
-    } start_stats[12];
-    uint32_t unk[12];
-    struct {//64+32
-        uint8_t atp;
-        uint8_t mst;
-        uint8_t evp;
-        uint8_t hp;
-        uint8_t dfp;
-        uint8_t ata;
-        uint8_t unk[2];
-        uint32_t exp;
-    } levels[12][200];
-} PACKED bb_level_table_t;
-
 #ifndef _WIN32
 #else
 #pragma pack()

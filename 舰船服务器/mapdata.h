@@ -22,6 +22,7 @@
 
 #include <psoconfig.h>
 #include <pso_cmd_code.h>
+#include <pso_character.h>
 
 #ifdef PACKED
 #undef PACKED
@@ -55,43 +56,6 @@ typedef struct bb_battle_param {
     uint32_t exp;           // 经验值
     uint32_t diff;          // 怪物的魔法值
 } PACKED bb_battle_param_t;
-
-/* A single entry in the level table. */
-typedef struct level_entry {
-    uint8_t atp;
-    uint8_t mst;
-    uint8_t evp;
-    uint8_t hp;
-    uint8_t dfp;
-    uint8_t ata;
-    uint8_t lck;
-    uint8_t tp;
-    uint32_t exp;
-} PACKED level_entry_t;
-
-typedef level_entry_t bb_level_entry_t;
-
-typedef struct bb_start_stats {
-    uint16_t atp;
-    uint16_t mst;
-    uint16_t evp;
-    uint16_t hp;
-    uint16_t dfp;
-    uint16_t ata;
-    uint16_t lck;
-} PACKED bb_start_stats_t;
-
-/* Level-up information table from PlyLevelTbl.prs */
-typedef struct bb_level_table {
-    bb_start_stats_t start_stats[MAX_PLAYER_CLASS_BB];
-    uint32_t unk[MAX_PLAYER_CLASS_BB];
-    level_entry_t levels[MAX_PLAYER_CLASS_BB][MAX_PLAYER_LEVEL];
-} PACKED bb_level_table_t;
-
-/* PSOv2 level-up information table from PlayerTable.prs */
-typedef struct v2_level_table {
-    level_entry_t levels[MAX_PLAYER_CLASS_DC][MAX_PLAYER_LEVEL];
-} PACKED v2_level_table_t;
 
 /* Enemy data in the map files. This the same as the ENEMY_ENTRY struct from
    newserv. */

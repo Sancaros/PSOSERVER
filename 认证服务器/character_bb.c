@@ -694,7 +694,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
     uint32_t create_code, flags = c->flags;
     psocn_bb_db_char_t *char_data;
-    uint8_t cl = pkt->data.dress_data.ch_class;
+    uint8_t ch_class = pkt->data.dress_data.ch_class;
 
     //DBG_LOG("handle_update_char 标签 %d", flags);
 
@@ -733,10 +733,10 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
 
         /* 复制一份缓冲默认角色数据 根据选取的角色职业定义 */
-        memcpy(char_data, &default_chars[cl], sizeof(psocn_bb_db_char_t));
+        memcpy(char_data, &default_chars[ch_class], sizeof(psocn_bb_db_char_t));
 
         /* 复制初始角色数值 */
-        memcpy(&char_data->character.disp.stats, &bb_char_stats.start_stats[cl], sizeof(psocn_stats_t));
+        memcpy(&char_data->character.disp.stats, &bb_char_stats.start_stats[ch_class], sizeof(psocn_pl_stats_t));
 
         /* TODO 加载设置文件 定义角色初始美赛塔*/
         char_data->character.disp.meseta = 100000;

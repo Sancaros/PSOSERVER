@@ -2690,7 +2690,7 @@ static int handle_level(ship_client_t *c, const char *params) {
 
             if(errno != 0) {
                 /* Send a message saying invalid amount */
-                return send_txt(c, "%s", __(c, "\tE\tC7Invalid level."));
+                return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
             }
 
             amt -= 1;
@@ -2701,7 +2701,7 @@ static int handle_level(ship_client_t *c, const char *params) {
 
         /* If the level is too high, let them know. */
         if(amt > 199) {
-            return send_txt(c, "%s", __(c, "\tE\tC7Invalid level."));
+            return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
         }
 
         return client_give_level(c, amt);
@@ -2720,7 +2720,7 @@ static int handle_level(ship_client_t *c, const char *params) {
 
             if(errno != 0) {
                 /* Send a message saying invalid amount */
-                return send_txt(c, "%s", __(c, "\tE\tC7Invalid level."));
+                return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
             }
 
             amt -= 1;
@@ -2731,7 +2731,7 @@ static int handle_level(ship_client_t *c, const char *params) {
 
         /* If the level is too high, let them know. */
         if(amt > 199) {
-            return send_txt(c, "%s", __(c, "\tE\tC7Invalid level."));
+            return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
         }
 
         return client_give_level_v2(c, amt);

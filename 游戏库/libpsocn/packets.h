@@ -969,14 +969,20 @@ typedef struct simple_mail {
 /* The packet sent by clients to create a game */
 typedef struct dcnte_game_create {
     dc_pkt_hdr_t hdr;
-    uint32_t unused[2];
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
     char name[16];
     char password[16];
 } PACKED dcnte_game_create_pkt;
 
 typedef struct dc_game_create {
     dc_pkt_hdr_t hdr;
-    uint32_t unused[2];
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
     char name[16];
     char password[16];
     uint8_t difficulty;
@@ -987,7 +993,10 @@ typedef struct dc_game_create {
 
 typedef struct pc_game_create {
     pc_pkt_hdr_t hdr;
-    uint32_t unused[2];
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
     uint16_t name[16];
     uint16_t password[16];
     uint8_t difficulty;
@@ -998,7 +1007,10 @@ typedef struct pc_game_create {
 
 typedef struct gc_game_create {
     dc_pkt_hdr_t hdr;
-    uint32_t unused[2];
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
     char name[16];
     char password[16];
     uint8_t difficulty;
@@ -1009,13 +1021,21 @@ typedef struct gc_game_create {
 
 typedef struct bb_game_create {
     bb_pkt_hdr_t hdr;
-    uint32_t unused[2];
-    uint16_t name[16];
-    uint16_t password[16];
-    uint8_t difficulty;
-    uint8_t battle;
-    uint8_t challenge;
-    uint8_t episode;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t name[0x10];
+    uint16_t password[0x10];
+    uint8_t difficulty;  // 0-3 (always 0 on Episode 3)
+    uint8_t battle;      // 0 or 1 (always 0 on Episode 3)
+  // Note: Episode 3 uses the challenge mode flag for view battle permissions.
+  // 0 = view battle allowed; 1 = not allowed
+    uint8_t challenge;   // 0 or 1
+  // Note: According to the Sylverant wiki, in v2-land, the episode field has a
+  // different meaning: if set to 0, the game can be joined by v1 and v2
+  // players; if set to 1, it's v2-only.
+    uint8_t episode;     // 1-4 on V3+ (3 on Episode 3); unused on DC/PC
     uint8_t single_player;
     uint8_t padding[3];
 } PACKED bb_game_create_pkt;

@@ -767,9 +767,9 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
-    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
-    gen.data.shdr.size = 0x0B;
-    gen.data.shdr.unused = 0x0000;
+    gen.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.size = 0x0B;
+    gen.shdr.unused = 0x0000;
     gen.data.area = req->area;
     gen.data.from_enemy = 0x02;
     gen.data.request_id = req->request_id;
@@ -834,7 +834,7 @@ static int handle_quest_itemreq(ship_client_t *c, subcmd_itemreq_t *req, ship_cl
     return send_pkt_dc(dest, (dc_pkt_hdr_t *)req);
 }
 
-static int handle_levelup(ship_client_t *c, subcmd_levelup_t *pkt) {
+static int handle_level_up(ship_client_t *c, subcmd_level_up_t*pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We can't get these in a lobbies without someone messing with something
@@ -1017,7 +1017,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. We accept two different sizes here
        0x0B for v2 and later, and 0x0A for v1. */
-    if (pkt->data.shdr.size != 0x0B && pkt->data.shdr.size != 0x0A) {
+    if (pkt->shdr.size != 0x0B && pkt->shdr.size != 0x0A) {
         return -1;
     }
 
@@ -2666,8 +2666,8 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_take_item(c, (subcmd_take_item_t *)pkt);
             break;
 
-        case SUBCMD_LEVELUP:
-            rv = handle_levelup(c, (subcmd_levelup_t *)pkt);
+        case SUBCMD_LEVEL_UP:
+            rv = handle_level_up(c, (subcmd_level_up_t*)pkt);
             break;
 
         case SUBCMD_USED_TECH:
@@ -2871,9 +2871,9 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.data.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
-    gen.data.shdr.size = 0x0B;
-    gen.data.shdr.unused = 0x0000;
+    gen.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.size = 0x0B;
+    gen.shdr.unused = 0x0000;
     gen.data.area = req->area;
     gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
     gen.data.request_id = req->request_id;

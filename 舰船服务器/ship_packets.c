@@ -4897,9 +4897,8 @@ int send_bb_game_type_sel(ship_client_t* c) {
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
     /* Verify we got the sendbuf. */
-    if (!sendbuf) {
+    if (!sendbuf)
         return -1;
-    }
 
     /* 初始化数据包 */
     memset(pkt, 0, len);

@@ -125,6 +125,8 @@ struct lobby {
     uint8_t challenge;
     uint8_t oneperson;
 
+    uint32_t expboost;
+
     uint8_t v2;
     uint8_t section;
     uint8_t event;

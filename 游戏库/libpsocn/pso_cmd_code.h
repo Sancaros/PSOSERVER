@@ -302,13 +302,6 @@
 #define DC_PATCH_HEADER_LENGTH          0x0014
 #define DC_PATCH_FOOTER_LENGTH          0x0018
 
-#define MAX_PLAYER_LEVEL                200
-#define MAX_PLAYER_ITEMS                200
-#define MAX_PLAYER_INV_ITEMS            30
-#define MAX_PLAYER_CLASS_DC             9
-#define MAX_PLAYER_CLASS_BB             12
-#define MAX_TRADE_ITEMS                 200
-
 /* Responses to login packets... */
 /* DC ÍøÂç²âÊÔ°æÊý¾Ý°ü - Responses to Packet 0x88. */
 #define LOGIN_88_NEW_USER                   0

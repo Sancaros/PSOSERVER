@@ -78,12 +78,18 @@ typedef struct client_trade_item {
 
 typedef struct client_game_data {
     uint32_t serial_number;
+
     client_trade_item_t *pending_item_trade;
+
     uint8_t bb_game_state;
     size_t bb_player_index;
+
     iitem_t identify_result;
+
     bool should_save;
     sitem_t shop_items[0x14];
+
+    uint32_t expboost;
 } client_game_data_t;
 
 typedef struct client_type {

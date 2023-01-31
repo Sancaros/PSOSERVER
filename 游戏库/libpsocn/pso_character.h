@@ -25,6 +25,13 @@
 #define BB_CHARACTER_NAME_LENGTH 0x000C
 #define PC_CHARACTER_NAME_LENGTH 0x0010
 
+#define MAX_PLAYER_LEVEL                200
+#define MAX_PLAYER_ITEMS                200
+#define MAX_PLAYER_INV_ITEMS            30
+#define MAX_PLAYER_CLASS_DC             9
+#define MAX_PLAYER_CLASS_BB             12
+#define MAX_TRADE_ITEMS                 200
+
 #ifdef PACKED
 #undef PACKED
 #endif
@@ -99,7 +106,7 @@ typedef struct psocn_bank {
     bitem_t items[200];
 } PACKED psocn_bank_t;
 
-typedef struct psocn_stats {
+typedef struct psocn_pl_stats {
     uint16_t atp;
     uint16_t mst;
     uint16_t evp;
@@ -107,7 +114,31 @@ typedef struct psocn_stats {
     uint16_t dfp;
     uint16_t ata;
     uint16_t lck;
-} PACKED psocn_stats_t;
+} PACKED psocn_pl_stats_t;
+
+typedef struct psocn_lvl_stats {
+    uint8_t atp;
+    uint8_t mst;
+    uint8_t evp;
+    uint8_t hp;
+    uint8_t dfp;
+    uint8_t ata;
+    uint8_t lck;
+    uint8_t tp;
+    uint32_t exp;
+} PACKED psocn_lvl_stats_t;
+
+/* Level-up information table from PlyLevelTbl.prs */
+typedef struct bb_level_table {
+    psocn_pl_stats_t start_stats[MAX_PLAYER_CLASS_BB];
+    uint32_t unk[MAX_PLAYER_CLASS_BB];
+    psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_BB][MAX_PLAYER_LEVEL];
+} PACKED bb_level_table_t;
+
+/* PSOv2 level-up information table from PlayerTable.prs */
+typedef struct v2_level_table {
+    psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_DC][MAX_PLAYER_LEVEL];
+} PACKED v2_level_table_t;
 
 typedef struct psocn_dress_data {
     char guildcard_string[16];            /* GC号的文本形态 */
@@ -143,7 +174,7 @@ typedef struct psocn_dress_data {
 
 /* 角色信息数据结构 */
 typedef struct psocn_disp_char {
-    psocn_stats_t stats;
+    psocn_pl_stats_t stats;
     uint8_t opt_flag[10];
     uint32_t level;
     uint32_t exp;

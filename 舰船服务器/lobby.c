@@ -1742,8 +1742,6 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
     int rv = 0;
     int j;
 
-    //ERR_LOG("lobby_handle_done_burst");
-
     /* Go through each packet and handle it */
     while ((i = STAILQ_FIRST(&l->pkt_queue))) {
         STAILQ_REMOVE_HEAD(&l->pkt_queue, qentry);
