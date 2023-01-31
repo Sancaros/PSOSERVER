@@ -37,24 +37,17 @@
 
 /* 商店物品结构 */
 typedef struct shop_item {
-	union sitem_u
+	union sitem_data {
+		uint8_t data_b[12];
+		uint16_t data_w[6];//宽字节
+		uint32_t data_l[3];
+	};
+	uint32_t sitem_id;              /* Set to 0xFFFFFFFF */
+	union cost
 	{
-		item_t data;
-		struct sitem
-		{
-			union sitem_data {
-				uint8_t data1b[12];
-				uint16_t data1w[6];//宽字节
-				uint32_t data1l[3];
-			};
-			uint32_t sitem_id;              /* Set to 0xFFFFFFFF */
-			union cost
-			{
-				uint8_t costb[4];
-				uint16_t costw[2];
-				uint32_t costl;
-			};
-		};
+		uint8_t costb[4];
+		uint16_t costw[2];
+		uint32_t costl;
 	};
 } PACKED sitem_t;
 

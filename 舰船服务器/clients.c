@@ -785,7 +785,7 @@ static void give_stats(ship_client_t *c, bb_level_entry_t *ent) {
 }
 
 /* Give a Blue Burst client some experience. */
-int client_give_exp(ship_client_t *c, uint32_t exp) {
+int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
     uint32_t exp_total;
     bb_level_entry_t *ent;
     int need_lvlup = 0;
@@ -801,13 +801,13 @@ int client_give_exp(ship_client_t *c, uint32_t exp) {
 
     /* Add in the experience to their total so far. */
     exp_total = LE32(c->bb_pl->character.disp.exp);
-    exp_total += exp;
+    exp_total += exp_amount;
     c->bb_pl->character.disp.exp = LE32(exp_total);
     cl = c->bb_pl->character.disp.dress_data.ch_class;
     level = LE32(c->bb_pl->character.disp.level);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(c, exp))
+    if(subcmd_send_bb_exp(c, exp_amount))
         return -1;
 
     /* See if they got any level ups. */
@@ -1601,19 +1601,18 @@ static int client_dropItem_lua(lua_State *l) {
         p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
         p2.hdr.flags = 0;
-        p2.type = SUBCMD_DROP_STACK;
-        p2.size = 0x0A;
-        p2.client_id = c->client_id;
-        p2.unused = 0;
+        p2.shdr.type = SUBCMD_DROP_STACK;
+        p2.shdr.size = 0x0A;
+        p2.shdr.client_id = c->client_id;
         p2.area = LE16(c->cur_area);
         p2.unk = LE16(0);
         p2.x = c->x;
         p2.z = c->z;
-        p2.item[0] = LE32(item[0]);
-        p2.item[1] = LE32(item[1]);
-        p2.item[2] = LE32(item[2]);
-        p2.item_id = LE32(lb->next_game_item_id);
-        p2.item2 = LE32(item[3]);
+        p2.data.data_l[0] = LE32(item[0]);
+        p2.data.data_l[1] = LE32(item[1]);
+        p2.data.data_l[2] = LE32(item[2]);
+        p2.data.item_id = LE32(lb->next_game_item_id);
+        p2.data.data2_l = LE32(item[3]);
         p2.two = LE32(0x00000002);
         ++lb->next_game_item_id;
 

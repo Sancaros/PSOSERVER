@@ -3874,32 +3874,32 @@ const char *iitem_get_name(iitem_t *item, int version) {
 }
 
 const char* sitem_get_name(sitem_t* item, int version) {
-    uint32_t code = item->data1b[0] | (item->data1b[1] << 8) |
-        (item->data1b[2] << 16);
+    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
+        (item->data_b[2] << 16);
 
     /* Make sure we take care of any v2 item codes */
-    switch (item->data1b[0]) {
+    switch (item->data_b[0]) {
     case ITEM_TYPE_WEAPON:  /* Weapon */
-        if (item->data1b[5]) {
-            code = (item->data1b[5] << 8);
+        if (item->data_b[5]) {
+            code = (item->data_b[5] << 8);
         }
         break;
 
     case ITEM_TYPE_GUARD:  /* Guard */
-        if (item->data1b[1] != 0x03 && item->data1b[3]) {
-            code = code | (item->data1b[3] << 16);
+        if (item->data_b[1] != 0x03 && item->data_b[3]) {
+            code = code | (item->data_b[3] << 16);
         }
         break;
 
     case ITEM_TYPE_MAG:  /* Mag */
-        if (item->data1b[1] == 0x00 && item->data1b[2] >= 0xC9) {
-            code = 0x02 | (((item->data1b[2] - 0xC9) + 0x2C) << 8);
+        if (item->data_b[1] == 0x00 && item->data_b[2] >= 0xC9) {
+            code = 0x02 | (((item->data_b[2] - 0xC9) + 0x2C) << 8);
         }
         break;
 
     case ITEM_TYPE_TOOL: /* Tool */
-        if (code == 0x060D03 && item->data1b[3]) {
-            code = 0x000E03 | ((item->data1b[3] - 1) << 16);
+        if (code == 0x060D03 && item->data_b[3]) {
+            code = 0x000E03 | ((item->data_b[3] - 1) << 16);
         }
         break;
 

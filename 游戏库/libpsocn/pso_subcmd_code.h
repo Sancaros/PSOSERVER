@@ -16,10 +16,10 @@
 */
 
 /* Subcommand types we care about (0x62/0x6D). */
-#define SUBCMD_GUILDCARD    0x06
-#define SUBCMD_PICK_UP      0x5A    /* Sent to leader when picking up item */
-#define SUBCMD_ITEMREQ      0x60    //SUBCMD0x62_MONSTER_DROP_ITEMREQ
-#define SUBCMD0x62_UNKNOW_6A    0x6A
+#define SUBCMD_GUILDCARD     0x06
+#define SUBCMD_PICK_UP       0x5A    /* Sent to leader when picking up item */
+#define SUBCMD_ITEMREQ       0x60    //SUBCMD0x62_MONSTER_DROP_ITEMREQ
+#define SUBCMD0x62_UNKNOW_6A 0x6A
 #define SUBCMD0x62_BURST2    0x6B
 #define SUBCMD0x62_BURST3    0x6C
 #define SUBCMD0x62_BURST1    0x6D
@@ -27,7 +27,7 @@
 #define SUBCMD0x62_BURST5    0x6F
 #define SUBCMD0x62_BURST_PLDATA    0x70
 #define SUBCMD0x62_BURST6    0x71
-#define SUBCMD_BITEMREQ     0xA2    /*SUBCMD0x62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
+#define SUBCMD_BITEMREQ      0xA2    /*SUBCMD0x62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
 #define SUBCMD0x62_TRADE     0xA6    /* BB/GC - Player Trade function */
 #define SUBCMD0x62_UNKNOW_A8 0xA8 // Gol Dragon actions
 #define SUBCMD0x62_UNKNOW_A9 0xA9 // Barba Ray actions
@@ -35,10 +35,10 @@
 #define SUBCMD0x62_CHARACTER_INFO                0xAE
 #define SUBCMD_SHOP_REQ      0xB5    /* Blue Burst - Request shop inventory */
 #define SUBCMD_SHOP_BUY      0xB7    /* Blue Burst - Buy an item from the shop */
-#define SUBCMD0x62_TEKKING                       0xB8    /* Blue Burst - Client is tekking a weapon */
-#define SUBCMD0x62_TEKKED                        0xBA    /* Blue Burst - Client is tekked a weapon */
-#define SUBCMD_OPEN_BANK    0xBB    /* Blue Burst - open the bank menu */
-#define SUBCMD_BANK_ACTION  0xBD    /* Blue Burst - do something at the bank */
+#define SUBCMD0x62_TEKKING   0xB8    /* Blue Burst - Client is tekking a weapon */
+#define SUBCMD0x62_TEKKED    0xBA    /* Blue Burst - Client is tekked a weapon */
+#define SUBCMD_OPEN_BANK     0xBB    /* Blue Burst - open the bank menu */
+#define SUBCMD_BANK_ACTION   0xBD    /* Blue Burst - do something at the bank */
 #define SUBCMD0x62_GUILD_INVITE1                 0xC1
 #define SUBCMD0x62_GUILD_INVITE2                 0xC2
 #define SUBCMD0x62_GUILD_MASTER_TRANS1           0xCD
@@ -160,7 +160,10 @@
 #define SUBCMD0x60_UNKNOW_4E    0x4E
 #define SUBCMD0x60_UNKNOW_4F    0x4F
 #define SUBCMD0x60_REQ_SWITCH   0x50
+
+// 6x51: Invalid subcommand
 #define SUBCMD0x60_UNKNOW_51    0x51
+
 #define SUBCMD0x60_MENU_REQ    0x52    /*SUBCMD_TALK_SHOP Talking to someone at a shop */
 #define SUBCMD0x60_UNKNOW_53    0x53
 #define SUBCMD0x60_UNKNOW_54    0x54
@@ -170,7 +173,10 @@
 #define SUBCMD_LOBBY_ACTION 0x58
 #define SUBCMD_DEL_MAP_ITEM 0x59    /* Sent by leader when item picked up */
 #define SUBCMD0x60_UNKNOW_5A    0x5A
+
+// 6x5B: Invalid subcommand
 #define SUBCMD0x60_UNKNOW_5B    0x5B
+
 #define SUBCMD0x60_UNKNOW_5C    0x5C
 #define SUBCMD_DROP_STACK   0x5D
 #define SUBCMD_BUY          0x5E
@@ -220,36 +226,37 @@
 #define SUBCMD0x60_UNKNOW_8A    0x8A
 #define SUBCMD0x60_UNKNOW_8B    0x8B
 #define SUBCMD0x60_UNKNOW_8C    0x8C
-#define SUBCMD0x60_USE_TECH     0x8D //释放法术 TODO 未完成法术有效性分析
+#define SUBCMD_SET_TECH_LEVEL_OVERRIDE    0x8D //释放法术 TODO 未完成法术有效性分析
 #define SUBCMD0x60_UNKNOW_8E    0x8E
 #define SUBCMD0x60_UNKNOW_8F    0x8F
 #define SUBCMD0x60_UNKNOW_90    0x90
 #define SUBCMD0x60_UNKNOW_91    0x91
 #define SUBCMD0x60_UNKNOW_92    0x92
 #define SUBCMD0x60_UNKNOW_93    0x93
-#define SUBCMD_WARP         0x94
+#define SUBCMD_WARP             0x94
 #define SUBCMD0x60_UNKNOW_95    0x95
 #define SUBCMD0x60_UNKNOW_96    0x96
 #define SUBCMD0x60_UNKNOW_97    0x97
 #define SUBCMD0x60_UNKNOW_98    0x98
 #define SUBCMD0x60_UNKNOW_99    0x99
-#define SUBCMD_CHANGE_STAT  0x9A
+#define SUBCMD_CHANGE_STAT      0x9A
 #define SUBCMD0x60_UNKNOW_9B    0x9B
 #define SUBCMD0x60_UNKNOW_9C    0x9C
 #define SUBCMD0x60_UNKNOW_9D    0x9D
 #define SUBCMD0x60_UNKNOW_9E    0x9E
-#define SUBCMD0x60_UNKNOW_9F    0x9F
-#define SUBCMD_GDRAGON_ACT    0xA8    /* Gol Dragon special actions */
+#define SUBCMD_GAL_GRYPHON_ACT  0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
+#define SUBCMD_GAL_GRYPHON_SACT 0xA0    /* Gal Gryphon special actions */
+#define SUBCMD_GDRAGON_ACT      0xA8    /* Gol Dragon special actions */
 #define SUBCMD0x60_UNKNOW_A9    0xA9 // Barba Ray actions
 #define SUBCMD0x60_UNKNOW_AA    0xAA // Episode 2 boss actions
-#define SUBCMD_LOBBY_CHAIR  0xAB // Create lobby chair
+#define SUBCMD_LOBBY_CHAIR      0xAB // Create lobby chair
 #define SUBCMD0x60_UNKNOW_AC    0xAC
 #define SUBCMD0x60_UNKNOW_AD    0xAD // Olga Flow phase 2 subordinate boss actions
 #define SUBCMD0x60_UNKNOW_AE    0xAE
-#define SUBCMD_CHAIR_DIR    0xAF // 旋转椅子朝向
-#define SUBCMD_CHAIR_MOVE   0xB0 // 移动椅子
+#define SUBCMD_CHAIR_DIR        0xAF // 旋转椅子朝向
+#define SUBCMD_CHAIR_MOVE       0xB0 // 移动椅子
 #define SUBCMD0x60_UNKNOW_B5    0xB5 // BB shop request process_subcommand_open_shop_bb_or_unknown_ep3
-#define SUBCMD_SHOP_INV     0xB6    /* Blue Burst - shop inventory */
+#define SUBCMD_SHOP_INV         0xB6    /* Blue Burst - shop inventory */
 #define SUBCMD0x60_UNKNOW_B7    0xB7 // process_subcommand_buy_shop_item_bb
 #define SUBCMD0x60_UNKNOW_B8    0xB8 // process_subcommand_identify_item_bb
 #define SUBCMD0x60_UNKNOW_B9    0xB9 // process_subcommand_unimplemented

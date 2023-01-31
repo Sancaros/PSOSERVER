@@ -47,9 +47,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.client_id = pkt->client_id;
     pc.client_id_gc = 0;
     pc.num_words = pkt->num_words;
-    pc.unused1 = 0;
     pc.ws_type = pkt->ws_type;
-    pc.unused2 = 0;
 
     gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
@@ -59,9 +57,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.client_id = 0;
     gc.client_id_gc = pkt->client_id;
     gc.num_words = pkt->num_words;
-    gc.unused1 = 0;
     gc.ws_type = pkt->ws_type;
-    gc.unused2 = 0;
 
     xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
@@ -71,21 +67,16 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.client_id = pkt->client_id;
     xb.client_id_gc = 0;
     xb.num_words = pkt->num_words;
-    xb.unused1 = 0;
     xb.ws_type = pkt->ws_type;
-    xb.unused2 = 0;
 
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.type = SUBCMD_WORD_SELECT;
-    bb.size = 0x08;
-    bb.client_id = pkt->client_id;
-    bb.client_id_gc = 0;
+    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.size = 0x08;
+    bb.shdr.client_id = pkt->client_id;
     bb.num_words = pkt->num_words;
-    bb.unused1 = 0;
     bb.ws_type = pkt->ws_type;
-    bb.unused2 = 0;
 
     /* No versions other than PSODC sport the lovely LIST ALL menu. Oh well, I
        guess I can't go around saying "HELL HELL HELL" to everyone. */
@@ -217,9 +208,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.client_id = pkt->client_id;
     dc.client_id_gc = 0;
     dc.num_words = pkt->num_words;
-    dc.unused1 = 0;
     dc.ws_type = pkt->ws_type;
-    dc.unused2 = 0;
 
     gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
@@ -229,9 +218,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.client_id = 0;
     gc.client_id_gc = pkt->client_id;
     gc.num_words = pkt->num_words;
-    gc.unused1 = 0;
     gc.ws_type = pkt->ws_type;
-    gc.unused2 = 0;
 
     xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
@@ -241,21 +228,16 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.client_id = pkt->client_id;
     xb.client_id_gc = 0;
     xb.num_words = pkt->num_words;
-    xb.unused1 = 0;
     xb.ws_type = pkt->ws_type;
-    xb.unused2 = 0;
 
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.type = SUBCMD_WORD_SELECT;
-    bb.size = 0x08;
-    bb.client_id = pkt->client_id;
-    bb.client_id_gc = 0;
+    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.size = 0x08;
+    bb.shdr.client_id = pkt->client_id;
     bb.num_words = pkt->num_words;
-    bb.unused1 = 0;
     bb.ws_type = pkt->ws_type;
-    bb.unused2 = 0;
 
     for(i = 0; i < 8; ++i) {
         pcw = LE16(pkt->words[i]);
@@ -396,9 +378,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.client_id = client_id;
     pc.client_id_gc = 0;
     pc.num_words = pkt->num_words;
-    pc.unused1 = 0;
     pc.ws_type = pkt->ws_type;
-    pc.unused2 = 0;
 
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
@@ -408,21 +388,16 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.client_id = client_id;
     dc.client_id_gc = 0;
     dc.num_words = pkt->num_words;
-    dc.unused1 = 0;
     dc.ws_type = pkt->ws_type;
-    dc.unused2 = 0;
 
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.type = SUBCMD_WORD_SELECT;
-    bb.size = 0x08;
-    bb.client_id = client_id;
-    bb.client_id_gc = 0;
+    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.size = 0x08;
+    bb.shdr.client_id = client_id;
     bb.num_words = pkt->num_words;
-    bb.unused1 = 0;
     bb.ws_type = pkt->ws_type;
-    bb.unused2 = 0;
 
     for(i = 0; i < 8; ++i) {
         gcw = LE16(pkt->words[i]);

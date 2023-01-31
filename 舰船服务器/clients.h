@@ -419,7 +419,7 @@ void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
                            const char *ship, uint32_t block, const char *nick);
 
 /* Give a Blue Burst client some experience. */
-int client_give_exp(ship_client_t *c, uint32_t exp);
+int client_give_exp(ship_client_t *c, uint32_t exp_amount);
 
 /* Give a Blue Burst client some free level ups. */
 int client_give_level(ship_client_t *c, uint32_t level_req);

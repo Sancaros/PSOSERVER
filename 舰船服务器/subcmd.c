@@ -1346,30 +1346,30 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if(pkt->size != 0x06 || pkt->client_id != c->client_id)
+    if(pkt->shdr.size != 0x06 || pkt->shdr.client_id != c->client_id)
         return -1;
 
     /* Make a note of the item ID, and add to the inventory */
-    l->highest_item[c->client_id] = LE32(pkt->item_id);
+    l->highest_item[c->client_id] = LE32(pkt->data.sitem_id);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    ic = LE32(pkt->item[0]);
+    ic = LE32(pkt->data.data_l[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
     if(item_is_stackable(ic)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data.data_l[0] == pkt->item[0]) {
-                c->iitems[i].data.data_l[1] += pkt->item[1];
+            if(c->iitems[i].data.data_l[0] == pkt->data.data_l[0]) {
+                c->iitems[i].data.data_l[1] += pkt->data.data_l[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count].data.data_l[0], &pkt->item[0],
+    memcpy(&c->iitems[c->item_count].data.data_l[0], &pkt->data.data_l[0],
            sizeof(uint32_t) * 4);
     c->iitems[c->item_count++].data.data2_l = 0;
 
@@ -1472,10 +1472,10 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             pc.hdr.pkt_len = LE16(0x00E4);
 
-            pc.type = SUBCMD_CMODE_GRAVE;
-            pc.size = 0x38;
-            pc.unused1 = dc.unused1;
-            pc.client_id = dc.client_id;
+            pc.shdr.type = SUBCMD_CMODE_GRAVE;
+            pc.shdr.size = 0x38;
+            pc.shdr.client_id = dc.shdr.client_id;
+            pc.client_id2 = dc.client_id2;
             //pc.unk0 = dc.unk0;
             //pc.unk1 = dc.unk1;
 
@@ -1529,10 +1529,10 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dc.hdr.pkt_len = LE16(0x00AC);
 
-            dc.type = SUBCMD_CMODE_GRAVE;
-            dc.size = 0x2A;
-            dc.unused1 = pc.unused1;
-            dc.client_id = pc.client_id;
+            dc.shdr.type = SUBCMD_CMODE_GRAVE;
+            dc.shdr.size = 0x2A;
+            dc.shdr.client_id = pc.shdr.client_id;
+            dc.client_id2 = pc.client_id2;
             //dc.unk0 = pc.unk0;
             //dc.unk1 = pc.unk1;
 
@@ -2067,13 +2067,13 @@ static int handle_create_pipe(ship_client_t *c, subcmd_pipe_pkt_t *pkt) {
        always matches the created pipe, but sets the area to 0. We could keep
        track of all of the pipe data, but that's probably overkill. For now,
        blindly accept any pipes where the area is 0. */
-    if(pkt->area_id != 0) {
+    if(pkt->area != 0) {
         /* Make sure the user is sending a pipe from the area he or she is
            currently in. */
-        if(pkt->area_id != c->cur_area) {
+        if(pkt->area != c->cur_area) {
             ERR_LOG("Attempt by GC %" PRIu32 " to spawn pipe to area "
                 "he/she is not in (in: %d, pipe: %d).", c->guildcard,
-                c->cur_area, (int)pkt->area_id);
+                c->cur_area, (int)pkt->area);
             return -1;
         }
     }
@@ -2298,7 +2298,7 @@ static int handle_drop_stack(ship_client_t *c, subcmd_drop_stack_t *pkt) {
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. Note that v1 is missing the stupid
        extra "two" field from the packet. */
-    if(pkt->size != 0x0A && pkt->size != 0x09)
+    if(pkt->shdr.size != 0x0A && pkt->shdr.size != 0x09)
         return -1;
 
     /* If a shop menu is open, someone is probably doing something nefarious.
@@ -2369,7 +2369,7 @@ static int handle_pick_up(ship_client_t *c, ship_client_t *d, subcmd_pick_up_t *
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(pkt->size != 0x03)
+    if(pkt->shdr.size != 0x03)
         return -1;
 
     if(c->cur_area != pkt->area) {

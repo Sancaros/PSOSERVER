@@ -1347,19 +1347,18 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
     p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
     p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
     p2.hdr.flags = 0;
-    p2.type = SUBCMD_DROP_STACK;
-    p2.size = 0x0A;
-    p2.client_id = c->client_id;
-    p2.unused = 0;
+    p2.shdr.type = SUBCMD_DROP_STACK;
+    p2.shdr.size = 0x0A;
+    p2.shdr.client_id = c->client_id;
     p2.area = LE16(c->cur_area);
     p2.unk = LE16(0);
     p2.x = c->x;
     p2.z = c->z;
-    p2.item[0] = LE32(c->next_item[0]);
-    p2.item[1] = LE32(c->next_item[1]);
-    p2.item[2] = LE32(c->next_item[2]);
-    p2.item_id = LE32((l->next_game_item_id - 1));
-    p2.item2 = LE32(c->next_item[3]);
+    p2.data.data_l[0] = LE32(c->next_item[0]);
+    p2.data.data_l[1] = LE32(c->next_item[1]);
+    p2.data.data_l[2] = LE32(c->next_item[2]);
+    p2.data.item_id = LE32((l->next_game_item_id - 1));
+    p2.data.data2_l = LE32(c->next_item[3]);
     p2.two = LE32(0x00000002);
 
     /* Clear the set item */
@@ -1419,10 +1418,9 @@ static int handle_teleport(ship_client_t *c, const char *params) {
         p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
         p2.hdr.flags = 0;
-        p2.type = SUBCMD_TELEPORT;
-        p2.size = 5;
-        p2.client_id = c->client_id;
-        p2.unused = 0;
+        p2.shdr.type = SUBCMD_TELEPORT;
+        p2.shdr.size = 5;
+        p2.shdr.client_id = c->client_id;
         p2.x = c2->x;
         p2.y = c2->y;
         p2.z = c2->z;
@@ -3105,10 +3103,9 @@ static int handle_t(ship_client_t *c, const char *params) {
     p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
     p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
     p2.hdr.flags = 0;
-    p2.type = SUBCMD_TELEPORT;
-    p2.size = 5;
-    p2.client_id = c->client_id;
-    p2.unused = 0;
+    p2.shdr.type = SUBCMD_TELEPORT;
+    p2.shdr.size = 5;
+    p2.shdr.client_id = c->client_id;
     p2.x = x;
     p2.y = y;
     p2.z = z;

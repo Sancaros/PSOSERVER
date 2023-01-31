@@ -72,21 +72,21 @@ typedef union {
 #pragma pack(push, 1) 
 #endif
 
-/* DC V3 GC XBOX客户端数据头 */
+/* DC V3 GC XBOX客户端数据头 4字节 */
 typedef struct dc_pkt_hdr {
     uint8_t pkt_type;
     uint8_t flags;
     uint16_t pkt_len;
 } PACKED dc_pkt_hdr_t;
 
-/* PC 客户端数据头 */
+/* PC 客户端数据头 4字节 */
 typedef struct pc_pkt_hdr {
     uint16_t pkt_len;
     uint8_t pkt_type;
     uint8_t flags;
 } PACKED pc_pkt_hdr_t;
 
-/* BB 客户端数据头 */
+/* BB 客户端数据头 8字节 */
 typedef struct bb_pkt_hdr {
     uint16_t pkt_len;
     uint16_t pkt_type;
