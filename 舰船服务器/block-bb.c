@@ -2499,7 +2499,10 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0040 64*/
     case GUILD_SEARCH_TYPE:
-        return bb_process_guild_search(c, (bb_guild_search_pkt*)pkt);
+        if (time_check(c->cmd_cooldown[type], 1))
+            return bb_process_guild_search(c, (bb_guild_search_pkt*)pkt);
+        else
+            return 0;
 
         /* 0x0044 68*/
     case QUEST_FILE_TYPE:

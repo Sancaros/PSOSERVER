@@ -586,6 +586,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
         FD_ZERO(&exceptfds);
         timeout.tv_sec = 9001;
         timeout.tv_usec = 0;
+
+        /* Ping pong?! */
+        srv_time = time(NULL);
+
         nfds = 0;
         client_count = 0;
 

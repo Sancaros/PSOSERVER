@@ -68,7 +68,7 @@ static void* block_thd(void* d) {
     char nm[64];
     int sock;
     ssize_t sent;
-    time_t now;
+    //time_t now;
     int numsocks = 1;
     int select_result = 0;
 
@@ -89,7 +89,6 @@ static void* block_thd(void* d) {
         FD_ZERO(&exceptfds);
         timeout.tv_sec = 15;
         timeout.tv_usec = 0;
-        now = time(NULL);
 
         /* Ping pong?! */
         srv_time = time(NULL);
@@ -100,7 +99,7 @@ static void* block_thd(void* d) {
         TAILQ_FOREACH(it, b->clients, qentry) {
             /* If we haven't heard from a client in a minute and a half, it is
                probably dead. Disconnect it. */
-            if (now > it->last_message + 90) {
+            if (srv_time > it->last_message + 90) {
                 if (it->bb_pl) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
                         &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
@@ -120,20 +119,20 @@ static void* block_thd(void* d) {
             }
             /* Otherwise, if we haven't heard from them in half of a minute,
                ping them. */
-            else if (now > it->last_message + 30 && now > it->last_sent + 10) {
+            else if (srv_time > it->last_message + 30 && srv_time > it->last_sent + 10) {
                 if (send_simple(it, PING_TYPE, 0)) {
                     it->flags |= CLIENT_FLAG_DISCONNECTED;
                     timeout.tv_sec = 0;
                     continue;
                 }
 
-                it->last_sent = now;
+                it->last_sent = srv_time;
             }
 
             /* Check if their timeout expired to login after getting a
                protection message. */
             if ((it->flags & CLIENT_FLAG_GC_PROTECT) &&
-                it->join_time + 60 < now) {
+                it->join_time + 60 < srv_time) {
                 it->flags |= CLIENT_FLAG_DISCONNECTED;
                 timeout.tv_sec = 0;
                 continue;

@@ -272,8 +272,6 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 }
 
 int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
-    //char query[256];
-    time_t servertime = time(NULL);
 
     memset(myquery, 0, sizeof(myquery));
 

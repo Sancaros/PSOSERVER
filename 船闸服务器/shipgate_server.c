@@ -520,7 +520,6 @@ void run_server(int tsock, int tsock6) {
     fd_set readfds, writefds, exceptfds;
     ship_t *i, *tmp;
     ssize_t sent;
-    time_t now;
     char ipstr[INET6_ADDRSTRLEN];
 
     for(;;) {
@@ -531,7 +530,9 @@ void run_server(int tsock, int tsock6) {
         nfds = 0;
         timeout.tv_sec = 30;
         timeout.tv_usec = 0;
-        now = time(NULL);
+
+        /* Ping pong?! */
+        srv_time = time(NULL);
 
         if (shutting_down) {
             SGATE_LOG("收到关闭信号");
@@ -545,16 +546,16 @@ void run_server(int tsock, int tsock6) {
 
             /* If we haven't heard from a ship in 2 minutes, its dead.
                Disconnect it. */
-            if(now > i->last_message + 120 && i->last_ping &&
-               now > i->last_ping + 60) {
+            if(srv_time > i->last_message + 120 && i->last_ping &&
+                srv_time > i->last_ping + 60) {
                 destroy_connection(i);
                 i = tmp;
                 continue;
             }
             /* Otherwise, if we haven't heard from it in a minute, ping it. */
-            else if(now > i->last_message + 60 && now > i->last_ping + 10) {
+            else if(srv_time > i->last_message + 60 && srv_time > i->last_ping + 10) {
                 send_ping(i, 0);
-                i->last_ping = now;
+                i->last_ping = srv_time;
             }
 
             FD_SET(i->sock, &readfds);

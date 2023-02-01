@@ -534,6 +534,9 @@ static void run_server(int sockets[NUM_PORTS]) {
 
         timeout.tv_usec = 0;
 
+        /* Ping pong?! */
+        srv_time = time(NULL);
+
         /* Fill the sockets into the fd_set so we can use select below. */
         TAILQ_FOREACH(i, &clients, qentry) {
             FD_SET(i->sock, &readfds);
