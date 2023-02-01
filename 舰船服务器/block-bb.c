@@ -1002,19 +1002,19 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv;
-    uint16_t flag;
+    //uint16_t flag;
 
         /* Sanity check... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
 
-    if (c->version == CLIENT_VERSION_BB) {
-        flag = LE16(pkt->bb.pkt_type);
+    //if (c->version == CLIENT_VERSION_BB) {
+    //    flag = LE16(pkt->bb.pkt_type);
 
-        DBG_LOG("bb_process_done_burst flag = 0x%04X / 0x%04X", flag, pkt->bb.pkt_type);
+    //    DBG_LOG("bb_process_done_burst flag = 0x%04X / 0x%04X", flag, pkt->bb.pkt_type);
 
-    }
+    //}
 
     /* Lock the lobby, clear its bursting flag, send the resume game packet to
        the rest of the lobby, and continue on. */
@@ -1038,6 +1038,22 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     }
 
     pthread_mutex_unlock(&l->mutex);
+
+    return rv;
+}
+
+/* Process a client's done bursting signal. */
+static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int rv = 0;
+    //uint16_t flag;
+
+        /* Sanity check... Is the client in a game lobby? */
+    if (!l || l->type == LOBBY_TYPE_LOBBY)
+        return -1;
+
+    if (pkt->bb.pkt_type != DONE_BURSTING_TYPE01)
+        rv = -1;
 
     return rv;
 }
@@ -2445,11 +2461,17 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0006 6*/
     case CHAT_TYPE:
-        return bb_process_chat(c, (bb_chat_pkt*)pkt);
+        if(time_check(c->cmd_cooldown[type], 1))
+            return bb_process_chat(c, (bb_chat_pkt*)pkt);
+        else
+            return 0;
 
         /* 0x0008 8*/
     case GAME_LIST_TYPE:
-        return send_game_list(c, c->cur_block);
+        if (time_check(c->cmd_cooldown[type], 1))
+            return send_game_list(c, c->cur_block);
+        else
+            return 0;
 
         /* 0x0009 9*/
     case INFO_REQUEST_TYPE:
@@ -2509,8 +2531,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x016F 367*/
     case DONE_BURSTING_TYPE01:
-        UDONE_CPD(type, c->version, (uint8_t*)pkt);
-        return 0;
+        //( 00000000 )   08 00 6F 01 00 00 00 00
+        return bb_process_done_quest_burst(c, (bb_done_quest_burst_pkt*)pkt);
 
         /* 0x0081 129*/
     case SIMPLE_MAIL_TYPE:

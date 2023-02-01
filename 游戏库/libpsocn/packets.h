@@ -1535,6 +1535,7 @@ typedef struct bb_lobby_leave {
 // This command is sent when a player is done loading and other players can then
 // join the game. On BB, this command is sent as 016F if a quest is in progress
 // and the game should not be joined by anyone else.
+// 006F
 typedef struct bb_done_burst {
     union {
         dc_pkt_hdr_t dc;
@@ -1544,6 +1545,15 @@ typedef struct bb_done_burst {
     uint8_t data[];
 } PACKED bb_done_burst_pkt;
 
+// 016F
+typedef struct bb_done_quest_burst {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+        bb_pkt_hdr_t bb;
+    };
+    uint8_t data[];
+} PACKED bb_done_quest_burst_pkt;
 
 // 70: Invalid command
 // 71: Invalid command

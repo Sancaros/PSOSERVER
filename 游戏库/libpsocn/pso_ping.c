@@ -19,6 +19,7 @@
 #include <Winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <malloc.h>
 #include <string.h>
 #pragma comment(lib , "Ws2_32.lib")
@@ -40,13 +41,13 @@
  */
 typedef struct
 {
-    byte h_len_ver; //IP版本号
-    byte tos; // 服务类型
+    uint8_t h_len_ver; //IP版本号
+    uint8_t tos; // 服务类型
     unsigned short total_len; //IP包总长度
     unsigned short ident; // 标识
     unsigned short frag_and_flags; //标志位
-    byte ttl; //生存时间
-    byte proto; //协议
+    uint8_t ttl; //生存时间
+    uint8_t proto; //协议
     unsigned short cksum; //IP首部校验和
     unsigned long sourceIP; //源IP地址
     unsigned long destIP; //目的IP地址
@@ -57,8 +58,8 @@ typedef struct
  */
 typedef struct _ICMP_HEADER
 {
-    byte type; //类型-----8
-    byte code; //代码-----8
+    uint8_t type; //类型-----8
+    uint8_t code; //代码-----8
     unsigned short cksum; //校验和------16
     unsigned short id; //标识符-------16
     unsigned short seq; //序列号------16
@@ -69,7 +70,7 @@ typedef struct
 {
     int usSeqNo; //记录序列号
     DWORD dwRoundTripTime; //记录当前时间
-    byte ttl; //生存时间
+    uint8_t ttl; //生存时间
     struct in_addr dwIPaddr; //源IP地址
 } DECODE_RESULT;
 
@@ -98,7 +99,7 @@ unsigned short GenerateChecksum(unsigned short* pBuf, int iSize)
 /*
  *对ping应答信息进行解析
  */
-boolean DecodeIcmpResponse_Ping(char* pBuf, int iPacketSize, DECODE_RESULT* stDecodeResult)
+int DecodeIcmpResponse_Ping(char* pBuf, int iPacketSize, DECODE_RESULT* stDecodeResult)
 {
     IP_HEADER* pIpHrd = (IP_HEADER*)pBuf;
     int iIphedLen = 20;

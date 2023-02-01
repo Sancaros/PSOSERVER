@@ -91,6 +91,9 @@ static void* block_thd(void* d) {
         timeout.tv_usec = 0;
         now = time(NULL);
 
+        /* Ping pong?! */
+        srv_time = time(NULL);
+
         /* Fill the sockets into the fd_sets so we can use select below. */
         pthread_rwlock_rdlock(&b->lock);
 

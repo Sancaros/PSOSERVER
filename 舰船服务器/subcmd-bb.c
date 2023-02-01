@@ -28,6 +28,7 @@
 #include <items.h>
 
 #include "subcmd.h"
+#include "subcmd_size_table.h"
 #include "shopdata.h"
 #include "pmtdata.h"
 #include "clients.h"
@@ -44,6 +45,100 @@
                    ((x >>  8) & 0xFF00) | \
                    ((x & 0xFF00) <<  8) | \
                    ((x & 0x00FF) << 24))
+
+int subcmd_bb_60size_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
+    uint8_t type = pkt->type;
+    lobby_t* l = c->cur_lobby;
+    int sent = 0;
+    uint16_t size = pkt->hdr.pkt_len;
+    uint16_t sizecheck = pkt->size;
+
+    sizecheck *= 4;
+    sizecheck += 8;
+
+    if (!l)
+        return -1;
+
+    if (size != sizecheck)
+    {
+        DBG_LOG("客户端发送 0x60 指令数据包 大小不一致 sizecheck != size.");
+        DBG_LOG("指令: 0x%02X | 大小: %04X | Sizecheck: %04X", pkt->type,
+            size, sizecheck);
+        pkt->size = ((size / 4) - 2);
+    }
+
+    if (l->type == LOBBY_TYPE_LOBBY)
+    {
+        type *= 2;
+
+        if (type == SUBCMD_GUILDCARD)
+            sizecheck = sizeof(subcmd_bb_gcsend_t);
+        else
+            sizecheck = size_ct[type + 1] + 4;
+
+        if ((size != sizecheck) && (sizecheck > 4))
+            sent = 1;
+
+        if (sizecheck == 4) // No size check packet encountered while in Lobby_Room mode...
+        {
+            DBG_LOG("没有0x60指令 0x%02X 的大小检测信息", type);
+            sent = 1;
+        }
+    }
+    else
+    {
+        if (dont_send_60[(type * 2) + 1] == 1)
+        {
+            sent = 1;
+            UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        }
+    }
+
+    if ((pkt->data[1] != c->client_id) &&
+        (size_ct[(type * 2) + 1] != 0x00) &&
+        (type != 0x07) &&
+        (type != 0x79)) {
+        sent = 1;
+    }
+
+    if ((type == 0x07) &&
+        (pkt->data[1] != c->client_id)) {
+        sent = 1;
+    }
+
+    if (type == 0x72)
+        sent = 1;
+
+    return sent;
+}
+
+int subcmd_bb_626Dsize_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
+    uint8_t type = pkt->type;
+    lobby_t* l = c->cur_lobby;
+    int sent = 0;
+    uint16_t size = pkt->hdr.pkt_len;
+    uint16_t sizecheck = pkt->size;
+
+    if (!l)
+        return -1;
+
+    sizecheck = *(uint16_t*)&pkt->data[1];
+    sizecheck += 8;
+
+    if (size != sizecheck)
+    {
+        DBG_LOG("客户端发送 0x6D 指令数据包 大小不一致 sizecheck != size.");
+        DBG_LOG("指令: 0x%02X | 大小: %04X | Sizecheck: %04X", pkt->type,
+            size, sizecheck);
+
+        sent = 1;
+    }
+
+    if (type >= 0x04)
+        sent = 1;
+
+    return sent;
+}
 
 int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, bb_subcmd_pkt_t* pkt, int igcheck) {
     int i;
@@ -1407,6 +1502,56 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, bb_subcmd_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
+
+typedef struct G_Unknown_6x70 {
+    dc_pkt_hdr_t hdr;               /* 0000 0 */
+    client_id_hdr_t shdr;           /* 0008 8 */
+    // Offsets in this struct are relative to the overall command header
+    uint32_t size_minus_4;          /* 000C 12 ? 0x0000040C*/
+    // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
+    // they could be the player's current (x, y, z) coords
+    uint32_t lobby_num;             /* 0010 16  0x00000001*/
+    uint32_t unused2;               /* 0014 20  0x01000000*/
+
+    float x;                        /* 0018 24 - 43 */
+    float y;
+    float z;
+
+    uint32_t unknown_a2[2];         /* 0018 24 - 43 */
+
+    uint16_t unknown_a3[4];         /* 002C */
+    uint32_t unknown_a4[3][5];      /* 0034 */
+    uint32_t unknown_a5;            /* 0070 */
+
+    uint32_t player_tag;            /* 0074 */
+    uint32_t guild_card_number;     /* 0078 */
+
+    uint32_t unknown_a6[2];         /* 007C */
+    struct {                        /* 0084 */
+        uint16_t unknown_a1[2];
+        uint32_t unknown_a2[6];
+    } unknown_a7;
+    uint32_t unknown_a8;            /* 00A0 */
+    uint8_t unknown_a9[0x14];       /* 00A4 */
+    uint32_t unknown_a10;           /* 00B8 */
+    uint32_t unknown_a11;           /* 00BC */
+
+
+    uint8_t technique_levels[0x14]; /* 00C0 */ // Last byte is uninitialized
+
+    psocn_dress_data_t dress_data;  /* 00D4 */
+    psocn_pl_stats_t stats;         /* 0124 */
+    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint32_t level;                 /* 013C  316 - 319 size 4 */
+    uint32_t exp;                   /* 0140  320 - 323 size 4 */
+    uint32_t meseta;                /* 0144  324 - 327 size 4 */
+    inventory_t inv;                /* 0148  328 - 1171 size 844 */
+    uint32_t unknown_a15;           /* 0494 1172 - 1176 size 4 */
+} G_Unknown_6x70_t;
+
+static int char_bb_size22322 = sizeof(G_Unknown_6x70_t);
+
+
 int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     int i;
@@ -1416,8 +1561,7 @@ int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
-            "lobby!\n", c->guildcard);
+        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", c->guildcard);
         return -1;
     }
 
@@ -1426,6 +1570,12 @@ int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
         (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
         /* Scan the inventory and fix any mags before sending it along. */
+
+
+
+
+
+
         for (i = 0; i < pkt->inv.item_count; ++i) {
             item = &pkt->inv.iitems[i];
 
@@ -1466,6 +1616,8 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
     }
+
+    subcmd_bb_626Dsize_check(c, pkt);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -4257,26 +4409,30 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0, sent = 1, i;
 
-    if (type != SUBCMD_MOVE_FAST && type != SUBCMD_MOVE_SLOW) {
-        switch (l->type) {
+    //if (type != SUBCMD_MOVE_FAST && type != SUBCMD_MOVE_SLOW) {
+    //    switch (l->type) {
 
-        case LOBBY_TYPE_LOBBY:
-            DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
+    //    case LOBBY_TYPE_LOBBY:
+    //        DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
 
-        case LOBBY_TYPE_GAME:
-            if (l->flags & LOBBY_FLAG_QUESTING) {
-                DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            }
-            else
-                DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
+    //    case LOBBY_TYPE_GAME:
+    //        if (l->flags & LOBBY_FLAG_QUESTING) {
+    //            DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        }
+    //        else
+    //            DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
 
-        default:
-            DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
-        }
-    }
+    //    default:
+    //        DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
+    //    }
+    //}
+
+    //DBG_LOG("60指令: 0x%02X sent = %d", type, subcmd_bb_60size_check(c, pkt));
+
+    sent = subcmd_bb_60size_check(c, pkt);
 
     //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 

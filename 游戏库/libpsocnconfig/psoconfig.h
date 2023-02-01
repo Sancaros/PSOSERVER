@@ -22,9 +22,9 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "queue.h"
-#include <pso_cmd_code.h>
-#include <pso_subcmd_code.h>
-#include <pso_sgcmd_code.h>
+#include "pso_cmd_code.h"
+#include "pso_subcmd_code.h"
+#include "pso_sgcmd_code.h"
 
 //#define SIZEOF_VOID_P 4
 #define SOCKET_ERR(err, s) if(err==-1){perror(s);closesocket(err);return(-1);}

@@ -1298,6 +1298,34 @@ struct G_Unknown_6x6F {
 // TODO: Some missing fields should be easy to find in the future (e.g. when the
 // sending player doesn't have 0 meseta, for example)
 // Packet used to communicate current state of players in-game while a new player is bursting. 
+
+typedef struct subcmd_burst_pldata_old {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t size_minus_4;  /* ??? */
+    uint32_t unk1[2];
+    float x;
+    float y;
+    float z;
+    uint8_t unk2[0x54];
+    uint32_t tag;
+    uint32_t guildcard;
+    uint8_t unk3[0x44];
+    uint8_t techs[20];
+    psocn_dress_data_t dress_data;  /* 00D4 */
+    psocn_pl_stats_t stats;         /* 0124 */
+    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint32_t level;
+    uint32_t exp;
+    uint32_t meseta;
+    inventory_t inv;
+    uint32_t zero;          /* Unused? */
+    /* Xbox has a little bit more at the end than other versions... Probably
+       safe to just ignore it. */
+} PACKED subcmd_burst_pldata_old_t;
+
+static int char_bb_size2221233 = sizeof(subcmd_burst_pldata_old_t);
+
 typedef struct subcmd_burst_pldata {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1307,19 +1335,32 @@ typedef struct subcmd_burst_pldata {
     float x;
     float y;
     float z;
+
     uint8_t unk2[0x54];
-    uint32_t tag;
-    uint32_t guildcard;
-    uint8_t unk3[0x44];
-    uint8_t techniques[20];
-    psocn_dress_data_t dress_data;
-    psocn_pl_stats_t stats;
-    uint8_t opt_flag[10];
-    uint32_t level;
-    uint32_t exp;
-    uint32_t meseta;
-    inventory_t inv;
-    uint32_t zero;          /* Unused? */
+
+    uint32_t player_tag;            /* 0074 */
+    uint32_t guildcard;             /* 0078 */
+    
+    uint32_t unknown_a6[2];         /* 007C */
+    struct {                        /* 0084 */
+        uint16_t unknown_a1[2];
+        uint32_t unknown_a2[6];
+    } unknown_a7;
+    uint32_t unknown_a8;            /* 00A0 */
+    uint8_t unknown_a9[0x14];       /* 00A4 */
+    uint32_t unknown_a10;           /* 00B8 */
+    uint32_t unknown_a11;           /* 00BC */
+
+    uint8_t technique_levels[0x14]; /* 00C0 */ // Last byte is uninitialized
+
+    psocn_dress_data_t dress_data;  /* 00D4 */
+    psocn_pl_stats_t stats;         /* 0124 */
+    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint32_t level;                 /* 013C  316 - 319 size 4 */
+    uint32_t exp;                   /* 0140  320 - 323 size 4 */
+    uint32_t meseta;                /* 0144  324 - 327 size 4 */
+    inventory_t inv;                /* 0148  328 - 1171 size 844 */
+    uint32_t unknown_a15;           /* 0494 1172 - 1176 size 4 */
     /* Xbox has a little bit more at the end than other versions... Probably
        safe to just ignore it. */
 } PACKED subcmd_burst_pldata_t;
@@ -1334,22 +1375,29 @@ static int char_bb_size2223 = sizeof(subcmd_burst_pldata_t);
 // Packet used to communicate current state of players in-game while a new player is bursting. 
 // size = 0x04C8 DC 1176 1224 - 1176 = 48 1242 - 1224 = 18
 typedef struct subcmd_bb_burst_pldata {
-    bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
+    bb_pkt_hdr_t hdr;               /* 0000 8 */
+    client_id_hdr_t shdr;           /* 0008 4 */
+    // Offsets in this struct are relative to the overall command header
+    uint32_t size_minus_4;          /* 000C 4 ? 0x0000040C*/
+    // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
+    // they could be the player's current (x, y, z) coords
+    uint32_t lobby_num;             /* 0010 4  0x00000001*/
+    uint32_t unused2;               /* 0014 4  0x01000000*/
 
-    uint32_t size_minus_4;  /* ??? 0x0000040C*/
-    uint32_t lobby_num;  /*   0x00000001*/
-    uint32_t unused2;  /* ??? 0x01000000*/
-    float x;
+    float x;                        /* 0018 24 - 43 */
     float y;
     float z;
+
     uint8_t unk2[0x90];
     uint32_t unk3;
     uint32_t unk4[4];
 
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
+
     uint8_t unk5[50];
+
+
     uint8_t techniques[20];
     psocn_dress_data_t dress_data;
     psocn_pl_stats_t stats;
@@ -1364,48 +1412,6 @@ typedef struct subcmd_bb_burst_pldata {
 } PACKED subcmd_bb_burst_pldata_t;
 
 static int char_bb_size222 = sizeof(subcmd_bb_burst_pldata_t);
-
-typedef struct G_Unknown_6x70 {
-    bb_pkt_hdr_t hdr;               /* 0000 0 */
-    client_id_hdr_t shdr;           /* 0008 8 */
-    // Offsets in this struct are relative to the overall command header
-    uint32_t size_minus_4;          /* 000C 12 ? 0x0000040C*/
-    // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
-    // they could be the player's current (x, y, z) coords
-    uint32_t lobby_num;             /* 0010 16  0x00000001*/
-    uint32_t unused2;               /* 0014 20  0x01000000*/
-    uint32_t unknown_a2[5];         /* 0018 24 - 43 */
-
-    uint16_t unknown_a3[4];         /* 002C */
-    uint32_t unknown_a4[3][5];      /* 0034 */
-    uint32_t unknown_a5;            /* 0070 */
-
-    uint32_t player_tag;            /* 0074 */
-    uint32_t guild_card_number;     /* 0078 */
-    uint32_t unknown_a6[2];         /* 007C */
-    struct {                        /* 0084 */
-        uint16_t unknown_a1[2];
-        uint32_t unknown_a2[6];
-    } PACKED unknown_a7;
-    uint32_t unknown_a8;            /* 00A0 */
-    uint8_t unknown_a9[0x14];       /* 00A4 */
-    uint32_t unknown_a10;           /* 00B8 */
-    uint32_t unknown_a11;           /* 00BC */
-    uint8_t technique_levels[0x14]; /* 00C0 */ // Last byte is uninitialized
-
-    psocn_dress_data_t dress_data;  /* 00D4 */
-
-    psocn_pl_stats_t stats;            /* 0124 */
-    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
-    uint32_t level;                 /* 013C  316 - 319 size 4 */
-    uint32_t exp;                   /* 0140  320 - 323 size 4 */
-    uint32_t meseta;                /* 0144  324 - 327 size 4 */
-
-    inventory_t inv;                /* 0148  328 - 1171 size 844 */
-    uint32_t unknown_a15;           /* 0494 1172 - 1176 size 4 */
-} PACKED G_Unknown_6x70_t;
-
-static int char_bb_size22322 = sizeof(G_Unknown_6x70_t);
 
 // 0x71: Unknown (used while loading into game)
 struct G_Unknown_6x71 {

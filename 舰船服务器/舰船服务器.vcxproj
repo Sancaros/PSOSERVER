@@ -79,6 +79,7 @@
     <ClInclude Include="shopdata.h" />
     <ClInclude Include="mag_bb.h" />
     <ClInclude Include="word_select-bb.h" />
+    <ClInclude Include="subcmd_size_table.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico" />
