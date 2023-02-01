@@ -2324,6 +2324,7 @@ typedef struct bb_login_9e {
 // because the following command (AB) is definitely not valid on that version.
 
 struct C_UpdateQuestStatistics_V3_BB_AA {
+    bb_pkt_hdr_t hdr;
     uint16_t quest_internal_id;
     uint16_t unused;
     uint16_t request_token;
@@ -2336,8 +2337,8 @@ struct C_UpdateQuestStatistics_V3_BB_AA {
 
 // AB (S->C): Confirm update quest statistics (V3/BB)
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
-
 struct S_ConfirmUpdateQuestStatistics_V3_BB_AB {
+    bb_pkt_hdr_t hdr;
     uint16_t unknown_a1; // 0
     uint16_t unknown_a2; // Probably actually unused
     uint16_t request_token; // Should match token sent in AA command

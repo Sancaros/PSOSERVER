@@ -4318,11 +4318,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     }
 
     switch (type) {
-    case SUBCMD0x60_SWITCH_CHANGED:
+    case SUBCMD_SWITCH_CHANGED:
         rv = handle_bb_switch_changed(c, (subcmd_bb_switch_changed_pkt_t*)pkt);
-        //rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x03);
-        //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-        //sent = 0;
         break;
 
     case SUBCMD_SYMBOL_CHAT:

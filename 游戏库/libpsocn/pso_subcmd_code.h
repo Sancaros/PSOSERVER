@@ -65,8 +65,8 @@
 
 // 0x04: Unknown
 
-#define SUBCMD0x60_SWITCH_CHANGED    0x05 // 触发机关开启
-#define SUBCMD_SYMBOL_CHAT  0x07
+#define SUBCMD_SWITCH_CHANGED      0x05 // 触发机关开启
+#define SUBCMD_SYMBOL_CHAT         0x07
 
 // 0x08: Invalid subcommand
 // 0x09: Unknown
