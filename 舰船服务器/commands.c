@@ -2468,9 +2468,9 @@ static int handle_search(ship_client_t *c, const char *params) {
         bb.hdr.pkt_len = LE16(0x14);
         bb.hdr.pkt_type = LE16(GUILD_SEARCH_TYPE);
         bb.hdr.flags = 0;
-        bb.tag = LE32(0x00010000);
-        bb.gc_search = LE32(c->guildcard);
-        bb.gc_target = LE32(gc);
+        bb.player_tag = LE32(0x00010000);
+        bb.searcher_gc = LE32(c->guildcard);
+        bb.target_gc = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&bb);
     }
@@ -2478,9 +2478,9 @@ static int handle_search(ship_client_t *c, const char *params) {
         dc.hdr.pc.pkt_len = LE16(0x10);
         dc.hdr.pc.pkt_type = GUILD_SEARCH_TYPE;
         dc.hdr.pc.flags = 0;
-        dc.tag = LE32(0x00010000);
-        dc.gc_search = LE32(c->guildcard);
-        dc.gc_target = LE32(gc);
+        dc.player_tag = LE32(0x00010000);
+        dc.searcher_gc = LE32(c->guildcard);
+        dc.target_gc = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&dc);
     }
@@ -2488,9 +2488,9 @@ static int handle_search(ship_client_t *c, const char *params) {
         dc.hdr.dc.pkt_len = LE16(0x10);
         dc.hdr.dc.pkt_type = GUILD_SEARCH_TYPE;
         dc.hdr.dc.flags = 0;
-        dc.tag = LE32(0x00010000);
-        dc.gc_search = LE32(c->guildcard);
-        dc.gc_target = LE32(gc);
+        dc.player_tag = LE32(0x00010000);
+        dc.searcher_gc = LE32(c->guildcard);
+        dc.target_gc = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&dc);
     }

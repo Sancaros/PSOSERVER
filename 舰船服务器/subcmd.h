@@ -1419,11 +1419,12 @@ struct G_Unknown_6x72 {
     unused_hdr_t shdr;
 } PACKED;
 
-// 0x73: Unknown
-struct G_Unknown_6x73 {
+// 0x73: warp packet 舰船传送数据包
+typedef struct subcmd_bb_warp_ship {
     bb_pkt_hdr_t hdr;
-    unused_hdr_t shdr;
-} PACKED;
+    client_id_hdr_t shdr;
+    uint32_t area;
+} PACKED subcmd_bb_warp_ship_t;
 
 // 0x74: Word select
 // Packet used for word select

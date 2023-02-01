@@ -948,8 +948,8 @@ static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
 }
 
 static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t flags) {
-    uint32_t guildcard = LE32(pkt->gc_target);
-    uint32_t searcher = LE32(pkt->gc_search);
+    uint32_t guildcard = LE32(pkt->target_gc);
+    uint32_t searcher = LE32(pkt->searcher_gc);
     char query[512];
     void* result;
     char** row;
@@ -1052,9 +1052,9 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         reply6.hdr.pkt_type = GUILD_REPLY_TYPE;
         reply6.hdr.pkt_len = LE16(DC_GUILD_REPLY6_LENGTH);
         reply6.hdr.flags = 6;
-        reply6.tag = LE32(0x00010000);
-        reply6.gc_search = pkt->gc_search;
-        reply6.gc_target = pkt->gc_target;
+        reply6.player_tag = LE32(0x00010000);
+        reply6.searcher_gc = pkt->searcher_gc;
+        reply6.target_gc = pkt->target_gc;
         parse_ipv6(ip6_hi, ip6_lo, reply6.ip);
         reply6.port = LE16((port + block * 6));
 
@@ -1104,9 +1104,9 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         /* Fill it in */
         reply.hdr.pkt_type = GUILD_REPLY_TYPE;
         reply.hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
-        reply.tag = LE32(0x00010000);
-        reply.gc_search = pkt->gc_search;
-        reply.gc_target = pkt->gc_target;
+        reply.player_tag = LE32(0x00010000);
+        reply.searcher_gc = pkt->searcher_gc;
+        reply.target_gc = pkt->target_gc;
         reply.ip = htonl(ip);
         reply.port = LE16((port + block * 6));
 
@@ -1159,7 +1159,7 @@ out:
 
 static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_search_pkt* p = (bb_guild_search_pkt*)pkt->pkt;
-    uint32_t guildcard = LE32(p->gc_target);
+    uint32_t guildcard = LE32(p->target_gc);
     uint32_t gc_sender = ntohl(pkt->guildcard);
     uint32_t b_sender = ntohl(pkt->block);
     char query[512];
@@ -1263,9 +1263,9 @@ static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     /* Fill it in */
     reply.hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
     reply.hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
-    reply.tag = LE32(0x00010000);
-    reply.gc_search = p->gc_search;
-    reply.gc_target = p->gc_target;
+    reply.player_tag = LE32(0x00010000);
+    reply.searcher_gc = p->searcher_gc;
+    reply.target_gc = p->target_gc;
     reply.ip = htonl(ip);
     reply.port = LE16((port + block * 6 + 4));
     reply.menu_id = LE32(0xFFFFFFFF);

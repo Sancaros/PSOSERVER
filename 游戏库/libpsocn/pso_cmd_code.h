@@ -42,11 +42,11 @@
 */
 
 /* 游戏房间指令定义 */
-#define GAME_TYPE_NORMAL           0x00
-#define GAME_TYPE_EPISODE_1        0x01
-#define GAME_TYPE_EPISODE_2        0x02
-#define GAME_TYPE_EPISODE_4        0x03
-#define GAME_TYPE_EP3_EPISODE      0x03
+#define GAME_TYPE_NORMAL                             0x00
+#define GAME_TYPE_EPISODE_1                          0x01
+#define GAME_TYPE_EPISODE_2                          0x02
+#define GAME_TYPE_EP3_EPISODE                        0x03
+#define GAME_TYPE_EPISODE_4                          0x03
 
 #define GAME_TYPE_MODE_NORMAL                        0x00
 #define GAME_TYPE_MODE_BATTLE_BATTLERULE_1           0x01
@@ -59,10 +59,10 @@
 #define GAME_TYPE_MODE_BATTLE                        0x03
 #define GAME_TYPE_MODE_ONEPERSON                     0x04
 
-#define GAME_TYPE_DIFFICULTY_NORMARL           0x00
-#define GAME_TYPE_DIFFICULTY_HARD              0x01
-#define GAME_TYPE_DIFFICULTY_VERY_HARD         0x02
-#define GAME_TYPE_DIFFICULTY_ULTIMATE          0x03
+#define GAME_TYPE_DIFFICULTY_NORMARL                 0x00
+#define GAME_TYPE_DIFFICULTY_HARD                    0x01
+#define GAME_TYPE_DIFFICULTY_VERY_HARD               0x02
+#define GAME_TYPE_DIFFICULTY_ULTIMATE                0x03
 
 /* Parameters for the various packets. */
 #define MSG1_TYPE                       0x0001 //右下角弹窗信息数据包

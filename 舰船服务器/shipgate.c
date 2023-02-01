@@ -341,7 +341,7 @@ static int handle_dc_greply(shipgate_conn_t* conn, dc_guild_reply_pkt* pkt) {
     ship_t* s = conn->ship;
     block_t* b;
     ship_client_t* c;
-    uint32_t dest = LE32(pkt->gc_search);
+    uint32_t dest = LE32(pkt->searcher_gc);
     int done = 0, rv = 0;
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
@@ -385,7 +385,7 @@ static int handle_bb_greply(shipgate_conn_t* conn, bb_guild_reply_pkt* pkt,
     uint32_t block) {
     block_t* b;
     ship_client_t* c;
-    uint32_t dest = LE32(pkt->gc_search);
+    uint32_t dest = LE32(pkt->searcher_gc);
 
     /* Make sure the block given is sane */
     if((int)block > ship->cfg->blocks || !ship->blocks[block - 1]) {

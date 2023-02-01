@@ -174,8 +174,8 @@ int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
     memcpy(pkt->after_message, anti_copyright, 188);
 
     /* Fill in the encryption vectors */
-    memcpy(pkt->svect, svect, 48);
-    memcpy(pkt->cvect, cvect, 48);
+    memcpy(pkt->server_key, svect, 48);
+    memcpy(pkt->client_key, cvect, 48);
 
     /* 将数据包发送出去 */
     return send_raw(c, BB_WELCOME_LENGTH);
@@ -419,7 +419,7 @@ int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
 
     /* Fill in the information */
     pkt->err_code = LE32(err);
-    pkt->tag = LE32(0x00010000);
+    pkt->player_tag = LE32(0x00010000);
     pkt->guildcard = LE32(gc);
     pkt->guild_id = LE32(guild_id);
     pkt->caps = LE32(0x00000102);   /* ??? - newserv sets it this way */

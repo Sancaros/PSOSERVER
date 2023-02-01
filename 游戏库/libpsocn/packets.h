@@ -72,6 +72,44 @@ typedef union {
 #pragma pack(push, 1) 
 #endif
 
+// Text escape codes
+
+// Most text fields allow the use of various escape codes to change decoding,
+// change color, or create symbols. These escape codes are always preceded by a
+// tab character (0x09, or '\t'). For brevity, we generally refer to them with $
+// instead in newserv, since the server substitutes most usage of $ in player-
+// provided text with \t. The escape codes are:
+// - Language codes
+// - - $E: Set text interpretation to English
+// - - $J: Set text interpretation to Japanese
+// - Color codes
+// - - $C0: Black (000000)
+// - - $C1: Blue (0000FF)
+// - - $C2: Green (00FF00)
+// - - $C3: Cyan (00FFFF)
+// - - $C4: Red (FF0000)
+// - - $C5: Magenta (FF00FF)
+// - - $C6: Yellow (FFFF00)
+// - - $C7: White (FFFFFF)
+// - - $C8: Pink (FF8080)
+// - - $C9: Violet (8080FF)
+// - - $CG: Orange pulse (FFE000 + darkenings thereof)
+// - - $Ca: Orange (F5A052; Episode 3 only)
+// - Special character codes (Ep3 only)
+// - - $B: Dash + small bullet
+// - - $D: Large bullet
+// - - $F: Female symbol
+// - - $I: Infinity
+// - - $M: Male symbol
+// - - $O: Open circle
+// - - $R: Solid circle
+// - - $S: Star-like ability symbol
+// - - $X: Cross
+// - - $d: Down arrow
+// - - $l: Left arrow
+// - - $r: Right arrow
+// - - $u: Up arrow
+
 /* DC V3 GC XBOX客户端数据头 4字节 */
 typedef struct dc_pkt_hdr {
     uint8_t pkt_type;
@@ -101,6 +139,59 @@ typedef union pkt_header {
     pc_pkt_hdr_t pc;
     bb_pkt_hdr_t bb;
 } pkt_header_t;
+
+// Patch server commands
+
+// The patch protocol is identical between PSO PC and PSO BB (the only versions
+// on which it is used).
+
+// A patch server session generally goes like this:
+// Server: 02 (unencrypted)
+// (all the following commands encrypted with PSO V2 encryption, even on BB)
+// Client: 02
+// Server: 04
+// Client: 04
+// If client's login information is wrong and server chooses to reject it:
+//   Server: 15
+//   Server disconnects
+// Otherwise:
+//   Server: 13 (if desired)
+//   Server: 0B
+//   Server: 09 (with directory name ".")
+//   For each directory to be checked:
+//     Server: 09
+//     Server: (commands to check subdirectories - more 09/0A/0C)
+//     For each file in the directory:
+//       Server: 0C
+//     Server: 0A
+//   Server: 0D
+//   For each 0C sent by the server earlier:
+//     Client: 0F
+//   Client: 10
+//   If there are any files to be updated:
+//     Server: 11
+//     For each directory containing files to be updated:
+//       Server: 09
+//       Server: (commands to update subdirectories)
+//       For each file to be updated in this directory:
+//         Server: 06
+//         Server: 07 (possibly multiple 07s if the file is large)
+//         Server: 08
+//       Server: 0A
+//   Server: 12
+//   Server disconnects
+
+// 00: Invalid command
+// 01: Invalid command
+
+// 02 (S->C): Start encryption
+// Client will respond with an 02 command.
+// All commands after this command will be encrypted with PSO V2 encryption.
+// If this command is sent during an encrypted session, the client will not
+// reject it; it will simply re-initialize its encryption state and respond with
+// an 02 as normal.
+// The copyright field in the below structure must contain the following text:
+// "Patch Server. Copyright SonicTeam, LTD. 2001"
 
 /* The packet sent to inform clients of their security data */
 typedef struct dc_security {
@@ -139,10 +230,36 @@ typedef struct bb_client_config {
     uint8_t unused[0x06];
 } PACKED bb_client_config_pkt;
 
+// 04 (S->C): Set guild card number and update client config ("security data")
+// header.flag specifies an error code; the format described below is only used
+// if this code is 0 (no error). Otherwise, the command has no arguments.
+// Error codes (on GC):
+//   01 = Line is busy (103)
+//   02 = Already logged in (104)
+//   03 = Incorrect password (106)
+//   04 = Account suspended (107)
+//   05 = Server down for maintenance (108)
+//   06 = Incorrect password (127)
+//   Any other nonzero value = Generic failure (101)
+// The client config field in this command is ignored by pre-V3 clients as well
+// as Episodes 1&2 Trial Edition. All other V3 clients save it as opaque data to
+// be returned in a 9E or 9F command later. newserv sends the client config
+// anyway to clients that ignore it.
+// The client will respond with a 96 command, but only the first time it
+// receives this command - for later 04 commands, the client will still update
+// its client config but will not respond. Changing the security data at any
+// time seems ok, but changing the guild card number of a client after it's
+// initially set can confuse the client, and (on pre-V3 clients) possibly
+// corrupt the character data. For this reason, newserv tries pretty hard to
+// hide the remote guild card number when clients connect to the proxy server.
+// BB clients have multiple client configs; this command sets the client config
+// that is returned by the 9E and 9F commands, but does not affect the client
+// config set by the E6 command (and returned in the 93 command). In most cases,
+// E6 should be used for BB clients instead of 04.
 typedef struct bb_security {
     bb_pkt_hdr_t hdr;
     uint32_t err_code;
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint32_t guild_id;
     union {
@@ -178,6 +295,35 @@ typedef struct bb_security {
 #pragma pack(push, 1) 
 #endif
 
+// Game server commands
+
+// 00: Invalid command
+
+// 01 (S->C): Lobby message box
+// A small message box appears in lower-right corner, and the player must press
+// a key to continue. The maximum length of the message is 0x200 bytes.
+// This format is shared by multiple commands; for all of them except 06 (S->C),
+// the guild_card_number field is unused and should be 0.
+
+// 02 (S->C): Start encryption (except on BB)
+// This command should be used for non-initial sessions (after the client has
+// already selected a ship, for example). Command 17 should be used instead for
+// the first connection.
+// All commands after this command will be encrypted with PSO V2 encryption on
+// DC, PC, and GC Episodes 1&2 Trial Edition, or PSO V3 encryption on other V3
+// versions.
+// DCv1 clients will respond with an (encrypted) 93 command.
+// DCv2 and PC clients will respond with an (encrypted) 9A or 9D command.
+// V3 clients will respond with an (encrypted) 9A or 9E command, except for GC
+// Episodes 1&2 Trial Edition, which behaves like PC.
+// The copyright field in the below structure must contain the following text:
+// "DreamCast Lobby Server. Copyright SEGA Enterprises. 1999"
+// (The above text is required on all versions that use this command, including
+// those versions that don't run on the DreamCast.)
+
+// 03 (C->S): Legacy login (non-BB)
+// TODO: Check if this command exists on DC v1/v2.
+
 /* The welcome packet for setting up encryption keys */
 typedef struct dc_welcome {
     union {
@@ -191,30 +337,212 @@ typedef struct dc_welcome {
     char after_message[0xC0];
 } PACKED dc_welcome_pkt;
 
+// 03 (S->C): Legacy password check result (non-BB)
+// header.flag specifies if the password was correct. If header.flag is 0, the
+// password saved to the memory card (if any) is deleted and the client is
+// disconnected. If header.flag is nonzero, the client responds with an 04
+// command. Curiously, it looks like even DCv1 doesn't use this command in its
+// standard login sequence, so this may be a relic from very early development.
+// No other arguments
+
+// 03 (S->C): Start encryption (BB)
+// Client will respond with an (encrypted) 93 command.
+// All commands after this command will be encrypted with PSO BB encryption.
+// The copyright field in the below structure must contain the following text:
+// "Phantasy Star Online Blue Burst Game Server. Copyright 1999-2004 SONICTEAM."
 typedef struct bb_welcome {
     bb_pkt_hdr_t hdr;
     char copyright[0x60];
-    uint8_t svect[0x30];
-    uint8_t cvect[0x30];
+    uint8_t server_key[0x30];
+    uint8_t client_key[0x30];
     // As in 02, this field is not part of SEGA's implementation.
     char after_message[0xC0];
 } PACKED bb_welcome_pkt;
 
+// 05: Disconnect
+// No arguments
+// Sending this command to a client will cause it to disconnect. There's no
+// advantage to doing this over simply closing the TCP connection. Clients will
+// send this command to the server when they are about to disconnect, but the
+// server does not need to close the connection when it receives this command
+// (and in some cases, the client will send multiple 05 commands before actually
+// disconnecting).
 typedef struct bb_burst {
     bb_pkt_hdr_t hdr;
     uint32_t menu_id;
     uint32_t item_id;
 } PACKED bb_burst_pkt;
 
-typedef struct bb_done_burst {
+// 06: Chat
+// Server->client format is same as 01 command. The maximum size of the message
+// is 0x200 bytes.
+// When sent by the client, the text field includes only the message. When sent
+// by the server, the text field includes the origin player's name, followed by
+// a tab character, followed by the message.
+// During Episode 3 battles, the first byte of an inbound 06 command's message
+// is interpreted differently. It should be treated as a bit field, with the low
+// 4 bits intended as masks for who can see the message. If the low bit (1) is
+// set, for example, then the chat message displays as " (whisper)" on player
+// 0's screen regardless of the message contents. The next bit (2) hides the
+// message from player 1, etc. The high 4 bits of this byte appear not to be
+// used, but are often nonzero and set to the value 4. We call this byte
+// private_flags in the places where newserv uses it.
+// Client->server format is very similar; we include a zero-length array in this
+// struct to make parsing easier.
+/* The packet sent from/to clients for sending a normal chat */
+typedef struct dc_chat {
     union {
         dc_pkt_hdr_t dc;
         pc_pkt_hdr_t pc;
-        bb_pkt_hdr_t bb;
-    };
-    uint8_t data[];
-} PACKED bb_done_burst_pkt;
+    } hdr;
+    uint32_t padding;
+    uint32_t guildcard;
+    char msg[0];
+} PACKED dc_chat_pkt;
 
+// 06: Chat
+// Server->client format is same as 01 command. The maximum size of the message
+// is 0x200 bytes.
+// When sent by the client, the text field includes only the message. When sent
+// by the server, the text field includes the origin player's name, followed by
+// a tab character, followed by the message.
+// During Episode 3 battles, the first byte of an inbound 06 command's message
+// is interpreted differently. It should be treated as a bit field, with the low
+// 4 bits intended as masks for who can see the message. If the low bit (1) is
+// set, for example, then the chat message displays as " (whisper)" on player
+// 0's screen regardless of the message contents. The next bit (2) hides the
+// message from player 1, etc. The high 4 bits of this byte appear not to be
+// used, but are often nonzero and set to the value 4. We call this byte
+// private_flags in the places where newserv uses it.
+// Client->server format is very similar; we include a zero-length array in this
+// struct to make parsing easier.
+typedef struct bb_chat {
+    bb_pkt_hdr_t hdr;
+    uint32_t padding;
+    uint32_t guildcard;
+    uint16_t msg[];
+} PACKED bb_chat_pkt;
+
+// 07 (S->C): Ship select menu
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client. The text of
+// the first entry becomes the ship name when the client joins a lobby.
+/* The ship list packet sent to tell clients what ships are up */
+typedef struct dc_ship_list {
+    dc_pkt_hdr_t hdr;           /* The flags field says how many entries */
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint16_t flags;
+        char name[0x12];
+    } entries[0];
+} PACKED dc_ship_list_pkt;
+
+// 07 (S->C): Ship select menu
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client. The text of
+// the first entry becomes the ship name when the client joins a lobby.
+typedef struct pc_ship_list {
+    pc_pkt_hdr_t hdr;           /* The flags field says how many entries */
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint16_t flags;
+        uint16_t name[0x11];
+    } entries[0];
+} PACKED pc_ship_list_pkt;
+
+// 07 (S->C): Ship select menu
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client. The text of
+// the first entry becomes the ship name when the client joins a lobby.
+typedef struct bb_ship_list {
+    bb_pkt_hdr_t hdr;           /* The flags field says how many entries */
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint16_t flags;         // Should be 0x0F04 this value, apparently
+        uint16_t name[0x11];
+    } entries[0];
+} PACKED bb_ship_list_pkt;
+
+// 08 (C->S): Request game list
+// No arguments
+// 08 (S->C): Game list
+// Client responds with 09 and 10 commands (or nothing if the player cancels).
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client.
+/* The packet sent to clients to give them the game select list */
+typedef struct dc_game_list {
+    dc_pkt_hdr_t hdr;
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint8_t difficulty;
+        uint8_t players;
+        char name[16];
+        uint8_t padding;
+        uint8_t flags;
+    } entries[0];
+} PACKED dc_game_list_pkt;
+
+// 08 (C->S): Request game list
+// No arguments
+// 08 (S->C): Game list
+// Client responds with 09 and 10 commands (or nothing if the player cancels).
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client.
+/* The packet sent to clients to give them the game select list */
+typedef struct pc_game_list {
+    pc_pkt_hdr_t hdr;
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint8_t difficulty;
+        uint8_t players;
+        uint16_t name[16];
+        uint8_t v2;
+        uint8_t flags;
+    } entries[0];
+} PACKED pc_game_list_pkt;
+
+// 08 (C->S): Request game list
+// No arguments
+// 08 (S->C): Game list
+// Client responds with 09 and 10 commands (or nothing if the player cancels).
+// Command is a list of these; header.flag is the entry count. The first entry
+// is not included in the count and does not appear on the client.
+/* The packet sent to clients to give them the game select list */
+typedef struct bb_game_list {
+    bb_pkt_hdr_t hdr;
+    struct {
+        uint32_t menu_id;
+        uint32_t item_id;
+        // difficulty_tag is 0x0A on Episode 3; on all other versions, it's
+        // difficulty + 0x22 (so 0x25 means Ultimate, for example)
+        uint8_t difficulty;
+        uint8_t players;
+        uint16_t name[16];
+        // The episode field is used differently by different versions:
+        // - On DCv1, PC, and GC Episode 3, the value is ignored.
+        // - On DCv2, 1 means v1 players can't join the game, and 0 means they can.
+        // - On GC Ep1&2, 0x40 means Episode 1, and 0x41 means Episode 2.
+        // - On BB, 0x40/0x41 mean Episodes 1/2 as on GC, and 0x43 means Episode 4.
+        uint8_t episode;
+        // Flags:
+        // 02 = Locked (lock icon appears in menu; player is prompted for password if
+        //      they choose this game)
+        // 04 = In battle (Episode 3; a sword icon appears in menu)
+        // 04 = Disabled (BB; used for solo games)
+        // 10 = Is battle mode
+        // 20 = Is challenge mode
+        uint8_t flags;
+    } entries[0];
+} PACKED bb_game_list_pkt;
+
+// 09 (C->S): Menu item info request
+// Server will respond with an 11 command, or an A3 or A5 if the specified menu
+// is the quest menu.
 /* The menu selection packet that the client sends to us */
 typedef struct dc_select {
     union {
@@ -225,11 +553,484 @@ typedef struct dc_select {
     uint32_t item_id;
 } PACKED dc_select_pkt;
 
+// 09 (C->S): Menu item info request
+// Server will respond with an 11 command, or an A3 or A5 if the specified menu
+// is the quest menu.
 typedef struct bb_select {
     bb_pkt_hdr_t hdr;
     uint32_t menu_id;
     uint32_t item_id;
 } PACKED bb_select_pkt;
+
+// 0B: Invalid command
+
+// 0C: Create game (DCv1)
+// Same format as C1, but fields not supported by v1 (e.g. episode, v2 mode) are
+// unused.
+/* The packet sent by clients to create a game */
+typedef struct dcnte_game_create {
+    dc_pkt_hdr_t hdr;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    char name[16];
+    char password[16];
+} PACKED dcnte_game_create_pkt;
+
+typedef struct dc_game_create {
+    dc_pkt_hdr_t hdr;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    char name[16];
+    char password[16];
+    uint8_t difficulty;
+    uint8_t battle;
+    uint8_t challenge;
+    uint8_t version;                    /* Set to 1 for v2 games, 0 otherwise */
+} PACKED dc_game_create_pkt;
+
+typedef struct pc_game_create {
+    pc_pkt_hdr_t hdr;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t name[16];
+    uint16_t password[16];
+    uint8_t difficulty;
+    uint8_t battle;
+    uint8_t challenge;
+    uint8_t padding;
+} PACKED pc_game_create_pkt;
+
+typedef struct gc_game_create {
+    dc_pkt_hdr_t hdr;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    char name[16];
+    char password[16];
+    uint8_t difficulty;
+    uint8_t battle;
+    uint8_t challenge;
+    uint8_t episode;
+} PACKED gc_game_create_pkt;
+
+typedef struct bb_game_create {
+    bb_pkt_hdr_t hdr;
+    // menu_id and item_id are only used for the E7 (create spectator team) form
+    // of this command
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t name[0x10];
+    uint16_t password[0x10];
+    uint8_t difficulty;  // 0-3 (always 0 on Episode 3)
+    uint8_t battle;      // 0 or 1 (always 0 on Episode 3)
+    // Note: Episode 3 uses the challenge mode flag for view battle permissions.
+    // 0 = view battle allowed; 1 = not allowed
+    uint8_t challenge;   // 0 or 1
+    // Note: According to the Sylverant wiki, in v2-land, the episode field has a
+    // different meaning: if set to 0, the game can be joined by v1 and v2
+    // players; if set to 1, it's v2-only.
+    uint8_t episode;     // 1-4 on V3+ (3 on Episode 3); unused on DC/PC
+    uint8_t single_player;
+    uint8_t padding[3];
+} PACKED bb_game_create_pkt;
+
+// 0D: Invalid command
+
+// 0E (S->C): Unknown; possibly legacy join game (PC/V3)
+// There is a failure mode in the command handlers on PC and V3 that causes the
+// thread receiving the command to loop infinitely doing nothing, effectively
+// softlocking the game.
+// TODO: Check if this command exists on DC v1/v2.
+struct S_Unknown_PC_0E {
+    pc_pkt_hdr_t hdr;
+    uint8_t unknown_a1[0x08];
+    uint8_t unknown_a2[4][0x18];
+    uint8_t unknown_a3[0x18];
+} PACKED;
+
+//struct S_Unknown_GC_0E {
+//    PlayerLobbyDataDCGC lobby_data[4]; // This type is a guess
+//    struct UnknownA0 {
+//        parray<uint8_t, 2> unknown_a1;
+//        le_uint16_t unknown_a2 = 0;
+//        le_uint32_t unknown_a3 = 0;
+//    } __packed__;
+//    parray<UnknownA0, 8> unknown_a0;
+//    le_uint32_t unknown_a1 = 0;
+//    parray<uint8_t, 0x20> unknown_a2;
+//    parray<uint8_t, 4> unknown_a3;
+//} __packed__;
+//
+//struct S_Unknown_XB_0E {
+//    parray<uint8_t, 0xE8> unknown_a1;
+//} __packed__;
+
+// 0F: Invalid command
+
+// 10 (C->S): Menu selection
+// header.flag contains two flags: 02 specifies if a password is present, and 01
+// specifies... something else. These two bits directly correspond to the two
+// lowest bits in the flags field of the game menu: 02 specifies that the game
+// is locked, but the function of 01 is unknown.
+// Annoyingly, the no-arguments form of the command can have any flag value, so
+// it doesn't suffice to check the flag value to know which format is being
+// used!
+//
+//struct C_MenuSelection_10_Flag00 {
+//    le_uint32_t menu_id = 0;
+//    le_uint32_t item_id = 0;
+//} __packed__;
+//
+//template <typename CharT>
+//struct C_MenuSelection_10_Flag01 {
+//    C_MenuSelection_10_Flag00 basic_cmd;
+//    ptext<CharT, 0x10> unknown_a1;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag01 : C_MenuSelection_10_Flag01<char> { } __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag01 : C_MenuSelection_10_Flag01<char16_t> { } __packed__;
+//
+//template <typename CharT>
+//struct C_MenuSelection_10_Flag02 {
+//    C_MenuSelection_10_Flag00 basic_cmd;
+//    ptext<CharT, 0x10> password;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag02 : C_MenuSelection_10_Flag02<char> { } __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag02 : C_MenuSelection_10_Flag02<char16_t> { } __packed__;
+//
+//template <typename CharT>
+//struct C_MenuSelection_10_Flag03 {
+//    C_MenuSelection_10_Flag00 basic_cmd;
+//    ptext<CharT, 0x10> unknown_a1;
+//    ptext<CharT, 0x10> password;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag03 : C_MenuSelection_10_Flag03<char> { } __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag03 : C_MenuSelection_10_Flag03<char16_t> { } __packed__;
+
+// 11 (S->C): Ship info
+// Same format as 01 command.
+
+// 12 (S->C): Valid but ignored (PC/V3/BB)
+// TODO: Check if this command exists on DC v1/v2.
+
+// 13 (S->C): Write online quest file
+// Used for downloading online quests. For download quests (to be saved to the
+// memory card), use A7 instead.
+// All chunks except the last must have 0x400 data bytes. When downloading an
+// online quest, the .bin and .dat chunks may be interleaved (although newserv
+// currently sends them sequentially).
+
+// header.flag = file chunk index (start offset / 0x400)
+//struct S_WriteFile_13_A7 {
+//    ptext<char, 0x10> filename;
+//    parray<uint8_t, 0x400> data;
+//    le_uint32_t data_size = 0;
+//} __packed__;
+
+// 13 (C->S): Confirm file write (V3/BB)
+// Client sends this in response to each 13 sent by the server. It appears these
+// are only sent by V3 and BB - PSO DC and PC do not send these.
+
+// header.flag = file chunk index (same as in the 13/A7 sent by the server)
+//struct C_WriteFileConfirmation_V3_BB_13_A7 {
+//    ptext<char, 0x10> filename;
+//} __packed__;
+
+
+// 14 (S->C): Valid but ignored (PC/V3/BB)
+// TODO: Check if this command exists on DC v1/v2.
+
+// 15: Invalid command
+
+// 16 (S->C): Valid but ignored (PC/V3/BB)
+// TODO: Check if this command exists on DC v1/v2.
+
+// 17 (S->C): Start encryption at login server (except on BB)
+// Same format and usage as 02 command, but a different copyright string:
+// "DreamCast Port Map. Copyright SEGA Enterprises. 1999"
+// Unlike the 02 command, V3 clients will respond with a DB command when they
+// receive a 17 command in any online session, with the exception of Episodes
+// 1&2 trial edition (which responds with a 9A). DCv1 will respond with a 90.
+// Other non-V3 clients will respond with a 9A or 9D.
+
+// 18 (S->C): License verification result (PC/V3)
+// Behaves exactly the same as 9A (S->C). No arguments except header.flag.
+// TODO: Check if this command exists on DC v1/v2.
+
+// 19 (S->C): Reconnect to different address
+// Client will disconnect, and reconnect to the given address/port. Encryption
+// will be disabled on the new connection; the server should send an appropriate
+// command to enable it when the client connects.
+// Note: PSO XB seems to ignore the address field, which makes sense given its
+// networking architecture.
+
+//struct S_Reconnect_19 : S_Reconnect<le_uint16_t> { } __packed__;
+
+// Because PSO PC and some versions of PSO DC/GC use the same port but different
+// protocols, we use a specially-crafted 19 command to send them to two
+// different ports depending on the client version. I first saw this technique
+// used by Schthack; I don't know if it was his original creation.
+//struct S_ReconnectSplit_19 {
+//    be_uint32_t pc_address = 0;
+//    le_uint16_t pc_port = 0;
+//    parray<uint8_t, 0x0F> unused1;
+//    uint8_t gc_command = 0x19;
+//    uint8_t gc_flag = 0;
+//    le_uint16_t gc_size = 0x97;
+//    be_uint32_t gc_address = 0;
+//    le_uint16_t gc_port = 0;
+//    parray<uint8_t, 0xB0 - 0x23> unused2;
+//} __packed__;
+
+// 1A (S->C): Large message box
+// On V3, client will sometimes respond with a D6 command (see D6 for more
+// information).
+// Contents are plain text (char on DC/V3, char16_t on PC/BB). There must be at
+// least one null character ('\0') before the end of the command data.
+// There is a bug in V3 (and possibly all versions) where if this command is
+// sent after the client has joined a lobby, the chat log window contents will
+// appear in the message box, prepended to the message text from the command.
+// The maximum length of the message is 0x400 bytes. This is the only difference
+// between this command and the D5 command.
+
+// 1B (S->C): Valid but ignored (PC/V3)
+// TODO: Check if this command exists on DC v1/v2.
+
+// 1C (S->C): Valid but ignored (PC/V3)
+// TODO: Check if this command exists on DC v1/v2.
+
+// 1D: Ping
+// No arguments
+// When sent to the client, the client will respond with a 1D command. Data sent
+// by the server is ignored; the client always sends a 1D command with no data.
+
+// 1E: Invalid command
+
+// 1F (C->S): Request information menu
+// No arguments
+// This command is used in PSO DC and PC. It exists in V3 as well but is
+// apparently unused.
+
+// 1F (S->C): Information menu
+// Same format and usage as 07 command, except:
+// - The menu title will say "Information" instead of "Ship Select".
+// - There is no way to request details before selecting a menu item (the client
+//   will not send 09 commands).
+// - The player can press a button (B on GC, for example) to close the menu
+//   without selecting anything, unlike the ship select menu. The client does
+//   not send anything when this happens.
+
+// 20: Invalid command
+
+// 21: GameGuard control (old versions of BB)
+// Format unknown
+
+// 22: GameGuard check (BB)
+
+// Command 0022 is a 16-byte challenge (sent in the data field) using the
+// following structure.
+
+//struct SC_GameCardCheck_BB_0022 {
+//    parray<le_uint32_t, 4> data;
+//} __packed__;
+
+// Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
+// This version of the command has no other arguments.
+
+// 23 (S->C): Unknown (BB)
+// header.flag is used, but the command has no other arguments.
+
+// 24 (S->C): Unknown (BB)
+//struct S_Unknown_BB_24 {
+//    le_uint16_t unknown_a1 = 0;
+//    le_uint16_t unknown_a2 = 0;
+//    parray<le_uint32_t, 8> values;
+//} __packed__;
+
+// 25 (S->C): Unknown (BB)
+//struct S_Unknown_BB_25 {
+//    bb_pkt_hdr_t hdr;
+//    le_uint16_t unknown_a1 = 0;
+//    uint8_t offset1 = 0;
+//    uint8_t value1 = 0;
+//    uint8_t offset2 = 0;
+//    uint8_t value2 = 0;
+//    le_uint16_t unused = 0;
+//} __packed__;
+
+// 26: Invalid command
+// 27: Invalid command
+// 28: Invalid command
+// 29: Invalid command
+// 2A: Invalid command
+// 2B: Invalid command
+// 2C: Invalid command
+// 2D: Invalid command
+// 2E: Invalid command
+// 2F: Invalid command
+// 30: Invalid command
+// 31: Invalid command
+// 32: Invalid command
+// 33: Invalid command
+// 34: Invalid command
+// 35: Invalid command
+// 36: Invalid command
+// 37: Invalid command
+// 38: Invalid command
+// 39: Invalid command
+// 3A: Invalid command
+// 3B: Invalid command
+// 3C: Invalid command
+// 3D: Invalid command
+// 3E: Invalid command
+// 3F: Invalid command
+
+// 40 (C->S): Guild card search
+// The server should respond with a 41 command if the target is online. If the
+// target is not online, the server doesn't respond at all.
+/* The packet sent to search for a player */
+typedef struct dc_guild_search {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+} PACKED dc_guild_search_pkt;
+
+// 40 (C->S): Guild card search
+// The server should respond with a 41 command if the target is online. If the
+// target is not online, the server doesn't respond at all.
+typedef struct bb_guild_search {
+    bb_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+} PACKED bb_guild_search_pkt;
+
+// 41 (S->C): Guild card search result
+/* The packet sent to reply to a guild card search */
+typedef struct dc_guild_reply {
+    dc_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint32_t ip;
+    uint16_t port;
+    uint16_t padding2;
+    char location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    char padding3[0x3C];
+    char name[0x20];
+} PACKED dc_guild_reply_pkt;
+
+typedef struct pc_guild_reply {
+    pc_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint32_t ip;
+    uint16_t port;
+    uint16_t padding2;
+    uint16_t location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint8_t padding3[0x3C];
+    uint16_t name[0x20];
+} PACKED pc_guild_reply_pkt;
+
+typedef struct bb_guild_reply {
+    bb_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint32_t padding2;
+    uint32_t ip;
+    uint16_t port;
+    uint16_t padding3;
+    uint16_t location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint8_t padding4[0x3C];
+    uint16_t name[0x20];
+} PACKED bb_guild_reply_pkt;
+
+/* IPv6 versions of the above two packets */
+typedef struct dc_guild_reply6 {
+    dc_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint8_t ip[16];
+    uint16_t port;
+    uint16_t padding2;
+    char location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    char padding3[0x3C];
+    char name[0x20];
+} PACKED dc_guild_reply6_pkt;
+
+typedef struct pc_guild_reply6 {
+    pc_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint8_t ip[16];
+    uint16_t port;
+    uint16_t padding2;
+    uint16_t location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint8_t padding3[0x3C];
+    uint16_t name[0x20];
+} PACKED pc_guild_reply6_pkt;
+
+typedef struct bb_guild_reply6 {
+    bb_pkt_hdr_t hdr;
+    uint32_t player_tag;
+    uint32_t searcher_gc;
+    uint32_t target_gc;
+    uint32_t padding1;
+    uint32_t padding2;
+    uint8_t ip[16];
+    uint16_t port;
+    uint16_t padding3;
+    uint16_t location[0x44];
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint8_t padding4[0x3C];
+    uint16_t name[0x20];
+} PACKED bb_guild_reply6_pkt;
+
+//// 42: Invalid command
+//// 43: Invalid command
+
+
+
+
+
+typedef struct bb_done_burst {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+        bb_pkt_hdr_t bb;
+    };
+    uint8_t data[];
+} PACKED bb_done_burst_pkt;
 
 /* Various login packets */
 typedef struct dc_login_90 {
@@ -569,7 +1370,18 @@ typedef struct bb_redirect6 {
     uint8_t padding[2];
 } PACKED bb_redirect6_pkt;
 
+// B1 (C->S): Request server time
+// No arguments
+// Server will respond with a B1 command.
 /* The packet sent as a timestamp */
+// B1 (S->C): Server time
+// Contents is a string like "%Y:%m:%d: %H:%M:%S.000" (the space is not a typo).
+// For example: 2022:03:30: 15:36:42.000
+// It seems the client ignores the date part and the milliseconds part; only the
+// hour, minute, and second fields are actually used.
+// This command can be sent even if it's not requested by the client (with B1).
+// For example, some servers send this command every time a client joins a game.
+// Client will respond with a 99 command.
 typedef struct dc_timestamp {
     union {
         dc_pkt_hdr_t dc;
@@ -578,6 +1390,17 @@ typedef struct dc_timestamp {
     char timestamp[28];
 } PACKED dc_timestamp_pkt;
 
+// B1 (C->S): Request server time
+// No arguments
+// Server will respond with a B1 command.
+// B1 (S->C): Server time
+// Contents is a string like "%Y:%m:%d: %H:%M:%S.000" (the space is not a typo).
+// For example: 2022:03:30: 15:36:42.000
+// It seems the client ignores the date part and the milliseconds part; only the
+// hour, minute, and second fields are actually used.
+// This command can be sent even if it's not requested by the client (with B1).
+// For example, some servers send this command every time a client joins a game.
+// Client will respond with a 99 command.
 typedef struct bb_timestamp {
     bb_pkt_hdr_t hdr;
     char timestamp[28];
@@ -765,142 +1588,6 @@ typedef struct bb_lobby_leave {
     uint16_t padding;
 } PACKED bb_lobby_leave_pkt;
 
-/* The packet sent from/to clients for sending a normal chat */
-typedef struct dc_chat {
-    union {
-        dc_pkt_hdr_t dc;
-        pc_pkt_hdr_t pc;
-    } hdr;
-    uint32_t padding;
-    uint32_t guildcard;
-    char msg[0];
-} PACKED dc_chat_pkt;
-
-typedef struct bb_chat {
-    bb_pkt_hdr_t hdr;
-    uint32_t padding;
-    uint32_t guildcard;
-    uint16_t msg[];
-} PACKED bb_chat_pkt;
-
-/* The packet sent to search for a player */
-typedef struct dc_guild_search {
-    union {
-        dc_pkt_hdr_t dc;
-        pc_pkt_hdr_t pc;
-    } hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-} PACKED dc_guild_search_pkt;
-
-typedef struct bb_guild_search {
-    bb_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-} PACKED bb_guild_search_pkt;
-
-/* The packet sent to reply to a guild card search */
-typedef struct dc_guild_reply {
-    dc_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint32_t ip;
-    uint16_t port;
-    uint16_t padding2;
-    char location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    char padding3[0x3C];
-    char name[0x20];
-} PACKED dc_guild_reply_pkt;
-
-typedef struct pc_guild_reply {
-    pc_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint32_t ip;
-    uint16_t port;
-    uint16_t padding2;
-    uint16_t location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint8_t padding3[0x3C];
-    uint16_t name[0x20];
-} PACKED pc_guild_reply_pkt;
-
-typedef struct bb_guild_reply {
-    bb_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint32_t padding2;
-    uint32_t ip;
-    uint16_t port;
-    uint16_t padding3;
-    uint16_t location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint8_t padding4[0x3C];
-    uint16_t name[0x20];
-} PACKED bb_guild_reply_pkt;
-
-/* IPv6 versions of the above two packets */
-typedef struct dc_guild_reply6 {
-    dc_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint8_t ip[16];
-    uint16_t port;
-    uint16_t padding2;
-    char location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    char padding3[0x3C];
-    char name[0x20];
-} PACKED dc_guild_reply6_pkt;
-
-typedef struct pc_guild_reply6 {
-    pc_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint8_t ip[16];
-    uint16_t port;
-    uint16_t padding2;
-    uint16_t location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint8_t padding3[0x3C];
-    uint16_t name[0x20];
-} PACKED pc_guild_reply6_pkt;
-
-typedef struct bb_guild_reply6 {
-    bb_pkt_hdr_t hdr;
-    uint32_t tag;
-    uint32_t gc_search;
-    uint32_t gc_target;
-    uint32_t padding1;
-    uint32_t padding2;
-    uint8_t ip[16];
-    uint16_t port;
-    uint16_t padding3;
-    uint16_t location[0x44];
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint8_t padding4[0x3C];
-    uint16_t name[0x20];
-} PACKED bb_guild_reply6_pkt;
-
 /* The packet sent to send/deliver simple mail */
 typedef struct dc_simple_mail {
     dc_pkt_hdr_t hdr;
@@ -965,80 +1652,6 @@ typedef struct simple_mail {
         bb_mail_data_pkt bbmaildata;
     };
 } PACKED simple_mail_pkt;
-
-/* The packet sent by clients to create a game */
-typedef struct dcnte_game_create {
-    dc_pkt_hdr_t hdr;
-    // menu_id and item_id are only used for the E7 (create spectator team) form
-    // of this command
-    uint32_t menu_id;
-    uint32_t item_id;
-    char name[16];
-    char password[16];
-} PACKED dcnte_game_create_pkt;
-
-typedef struct dc_game_create {
-    dc_pkt_hdr_t hdr;
-    // menu_id and item_id are only used for the E7 (create spectator team) form
-    // of this command
-    uint32_t menu_id;
-    uint32_t item_id;
-    char name[16];
-    char password[16];
-    uint8_t difficulty;
-    uint8_t battle;
-    uint8_t challenge;
-    uint8_t version;                    /* Set to 1 for v2 games, 0 otherwise */
-} PACKED dc_game_create_pkt;
-
-typedef struct pc_game_create {
-    pc_pkt_hdr_t hdr;
-    // menu_id and item_id are only used for the E7 (create spectator team) form
-    // of this command
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint16_t name[16];
-    uint16_t password[16];
-    uint8_t difficulty;
-    uint8_t battle;
-    uint8_t challenge;
-    uint8_t padding;
-} PACKED pc_game_create_pkt;
-
-typedef struct gc_game_create {
-    dc_pkt_hdr_t hdr;
-    // menu_id and item_id are only used for the E7 (create spectator team) form
-    // of this command
-    uint32_t menu_id;
-    uint32_t item_id;
-    char name[16];
-    char password[16];
-    uint8_t difficulty;
-    uint8_t battle;
-    uint8_t challenge;
-    uint8_t episode;
-} PACKED gc_game_create_pkt;
-
-typedef struct bb_game_create {
-    bb_pkt_hdr_t hdr;
-    // menu_id and item_id are only used for the E7 (create spectator team) form
-    // of this command
-    uint32_t menu_id;
-    uint32_t item_id;
-    uint16_t name[0x10];
-    uint16_t password[0x10];
-    uint8_t difficulty;  // 0-3 (always 0 on Episode 3)
-    uint8_t battle;      // 0 or 1 (always 0 on Episode 3)
-  // Note: Episode 3 uses the challenge mode flag for view battle permissions.
-  // 0 = view battle allowed; 1 = not allowed
-    uint8_t challenge;   // 0 or 1
-  // Note: According to the Sylverant wiki, in v2-land, the episode field has a
-  // different meaning: if set to 0, the game can be joined by v1 and v2
-  // players; if set to 1, it's v2-only.
-    uint8_t episode;     // 1-4 on V3+ (3 on Episode 3); unused on DC/PC
-    uint8_t single_player;
-    uint8_t padding[3];
-} PACKED bb_game_create_pkt;
 
 #ifdef PLAYER_H
 
@@ -1158,46 +1771,6 @@ typedef struct bb_game_join {
 } PACKED bb_game_join_pkt;
 
 #endif
-
-/* The packet sent to clients to give them the game select list */
-typedef struct dc_game_list {
-    dc_pkt_hdr_t hdr;
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint8_t difficulty;
-        uint8_t players;
-        char name[16];
-        uint8_t padding;
-        uint8_t flags;
-    } entries[0];
-} PACKED dc_game_list_pkt;
-
-typedef struct pc_game_list {
-    pc_pkt_hdr_t hdr;
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint8_t difficulty;
-        uint8_t players;
-        uint16_t name[16];
-        uint8_t v2;
-        uint8_t flags;
-    } entries[0];
-} PACKED pc_game_list_pkt;
-
-typedef struct bb_game_list {
-    bb_pkt_hdr_t hdr;
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint8_t difficulty;
-        uint8_t players;
-        uint16_t name[16];
-        uint8_t episode;
-        uint8_t flags;
-    } entries[0];
-} PACKED bb_game_list_pkt;
 
 /* The packet sent to display a large message to the user */
 typedef struct dc_msg_box {
@@ -1341,37 +1914,6 @@ typedef struct bb_arrow_list {
         uint32_t arrow;
     } entries[0];
 } PACKED bb_arrow_list_pkt;
-
-/* The ship list packet sent to tell clients what ships are up */
-typedef struct dc_ship_list {
-    dc_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        char name[0x12];
-    } entries[0];
-} PACKED dc_ship_list_pkt;
-
-typedef struct pc_ship_list {
-    pc_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        uint16_t name[0x11];
-    } entries[0];
-} PACKED pc_ship_list_pkt;
-
-typedef struct bb_ship_list {
-    bb_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        uint16_t name[0x11];
-    } entries[0];
-} PACKED bb_ship_list_pkt;
 
 /* The choice search options packet sent to tell clients what they can actually
    search on */

@@ -343,8 +343,8 @@ int send_bb_welcome(ship_client_t *c, const uint8_t svect[48],
     memcpy(pkt->after_message, anti_copyright, 188);
 
     /* Fill in the encryption vectors */
-    memcpy(pkt->svect, svect, 0x30);
-    memcpy(pkt->cvect, cvect, 0x30);
+    memcpy(pkt->server_key, svect, 0x30);
+    memcpy(pkt->client_key, cvect, 0x30);
 
     if(c->logfile) {
         fprint_packet(c->logfile, sendbuf, BB_WELCOME_LENGTH, 0);
@@ -419,7 +419,7 @@ int send_bb_security(ship_client_t *c, uint32_t gc, uint32_t err,
 
     /* Fill in the information */
     pkt->err_code = LE32(err);
-    pkt->tag = LE32(0x00010000);
+    pkt->player_tag = LE32(0x00010000);
     pkt->guildcard = LE32(gc);
     pkt->guild_id = LE32(guild_id);
     pkt->caps = LE32(0x00000102);   /* ??? - newserv sets it this way */
@@ -2688,9 +2688,9 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
     /* Fill in the simple stuff */
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2761,9 +2761,9 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
     /* Fill in the simple stuff */
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(b->pc_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2826,9 +2826,9 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
     /* Fill in the simple stuff */
     pkt->hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
     pkt->hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(b->bb_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2933,9 +2933,9 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(DC_GUILD_REPLY6_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2947,7 +2947,7 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
                        &s->bb_pl->character.name[2], 0x20, 16);
     }
     else {
-        strcpy(pkt->name, s->pl->v1.guildcard_string);
+        strcpy(pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string);
     }
 
     /* Fill in the location string. The lobby name is UTF-8 and everything
@@ -3007,9 +3007,9 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY6_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(b->pc_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -3043,7 +3043,7 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
         memcpy(pkt->name, &s->bb_pl->character.name[2], 28);
     }
     else {
-        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.guildcard_string, 0x40);
+        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string, 0x40);
     }
 
 
@@ -3074,9 +3074,9 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
     pkt->hdr.pkt_len = LE16(BB_GUILD_REPLY6_LENGTH);
     pkt->hdr.flags = LE32(6);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = LE32(c->guildcard);
-    pkt->gc_target = LE32(s->guildcard);
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = LE32(c->guildcard);
+    pkt->target_gc = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(b->bb_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -3107,7 +3107,7 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
     else {
         pkt->name[0] = LE16('\t');
         pkt->name[1] = LE16('E');
-        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.guildcard_string, 0x3C);
+        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.character.disp.dress_data.guildcard_string, 0x3C);
     }
 
     /* Send it away */
@@ -3193,9 +3193,9 @@ static int send_pc_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *dc) {
     /* Fill in the simple stuff */
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = dc->gc_search;
-    pkt->gc_target = dc->gc_target;
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = dc->searcher_gc;
+    pkt->target_gc = dc->target_gc;
     pkt->ip = dc->ip;
     pkt->port = LE16(port);
     pkt->menu_id = dc->menu_id;
@@ -3290,9 +3290,9 @@ static int send_pc_guild_reply6_sg(ship_client_t *c, dc_guild_reply6_pkt *dc) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY6_LENGTH);
-    pkt->tag = LE32(0x00010000);
-    pkt->gc_search = dc->gc_search;
-    pkt->gc_target = dc->gc_target;
+    pkt->player_tag = LE32(0x00010000);
+    pkt->searcher_gc = dc->searcher_gc;
+    pkt->target_gc = dc->target_gc;
     memcpy(pkt->ip, dc->ip, 16);
     pkt->port = LE16(port);
     pkt->menu_id = dc->menu_id;
@@ -9092,9 +9092,9 @@ static int fill_one_choice6_entry(uint8_t *sendbuf, int version,
 
             /* All the text needs to be converted with iconv to UTF-16LE... */
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].name,
-                     it->pl->v1.guildcard_string, 0x20);
+                     it->pl->v1.character.disp.dress_data.guildcard_string, 0x20);
 
-            sprintf(tmp, "%s Lvl %d\n", classes_cn[it->pl->v1.ch_class],
+            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name,
                     it->pl->v1.character.disp.level + 1);
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
@@ -9131,9 +9131,9 @@ static int fill_one_choice6_entry(uint8_t *sendbuf, int version,
 
             /* Everything here is ISO-8859-1 already... so no need to
                iconv anything in here */
-            strcpy(pkt->entries[entry].name, it->pl->v1.guildcard_string);
+            strcpy(pkt->entries[entry].name, it->pl->v1.character.disp.dress_data.guildcard_string);
             sprintf(pkt->entries[entry].cl_lvl, "%s Lvl %d\n",
-                    classes_cn[it->pl->v1.ch_class], it->pl->v1.character.disp.level + 1);
+                pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
 
             /* iconv the lobby name */
             if(it->cur_lobby->name[0] == '\t' &&

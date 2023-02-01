@@ -1657,7 +1657,7 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
 static int dc_process_guild_search(ship_client_t* c, dc_guild_search_pkt* pkt) {
     uint32_t i;
     ship_client_t* it;
-    uint32_t gc = LE32(pkt->gc_target);
+    uint32_t gc = LE32(pkt->target_gc);
     int done = 0, rv = -1;
     uint32_t flags = 0;
 

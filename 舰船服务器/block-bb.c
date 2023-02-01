@@ -781,7 +781,7 @@ static int bb_process_ping(ship_client_t* c) {
 static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
     uint32_t i;
     ship_client_t* it;
-    uint32_t gc = LE32(pkt->gc_target);
+    uint32_t gc = LE32(pkt->target_gc);
     int done = 0, rv = -1;
     uint32_t flags = 0;
 
