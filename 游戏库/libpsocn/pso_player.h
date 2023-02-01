@@ -34,7 +34,7 @@
 
 /* The header attached before the player data when sending to a lobby client. */
 typedef struct dc_player_hdr {
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint32_t ip_addr;
     uint32_t client_id;
@@ -42,7 +42,7 @@ typedef struct dc_player_hdr {
 } PACKED dc_player_hdr_t;
 
 typedef struct pc_player_hdr {
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint32_t ip_addr;
     uint32_t client_id;
@@ -61,7 +61,7 @@ typedef struct xbox_ip {
 } PACKED xbox_ip_t;
 
 typedef struct xbox_player_hdr {
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     xbox_ip_t xbox_ip;
     uint32_t d1;
@@ -72,7 +72,7 @@ typedef struct xbox_player_hdr {
 } PACKED xbox_player_hdr_t;
 
 typedef struct bb_player_hdr {
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint32_t ip_address; // Guess - the official builds didn't use this, but all other versions have it
     uint8_t unk1[0x10];

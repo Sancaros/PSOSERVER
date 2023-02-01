@@ -398,11 +398,11 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     return create_res;
 }
 
-int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t target_gc) 
+int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target) 
 {
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
         "guild_id = '%d',guild_priv_level = '0' WHERE guildcard='%u'",
-        AUTH_DATA_ACCOUNT, guild_id, target_gc);
+        AUTH_DATA_ACCOUNT, guild_id, gc_target);
     if (!psocn_db_real_query(&conn, myquery))
     {
         return 0;

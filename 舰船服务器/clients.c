@@ -208,7 +208,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->sock = sock;
     rv->version = version;
     rv->cur_block = block;
-    rv->arrow = 1;
+    rv->arrow_color = 1;
     rv->last_message = rv->login_time = time(NULL);
     rv->hdr_size = 4;
 

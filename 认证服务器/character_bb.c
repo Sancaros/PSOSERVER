@@ -489,15 +489,15 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 
 /* 0x03DC 988*/
 static int handle_guild_chunk(login_client_t* c, bb_guildcard_req_pkt* pkt) {
-    uint32_t chunk, cont;
+    uint32_t chunk_index, cont;
 
-    chunk = LE32(pkt->chunk);
+    chunk_index = LE32(pkt->chunk_index);
     cont = LE32(pkt->cont);
 
     /* Send data as long as the client is still looking for it. */
     if (cont) {
         /* Send the chunk */
-        return send_bb_guild_chunk(c, chunk);
+        return send_bb_guild_chunk(c, chunk_index);
     }
 
     return 0;
@@ -1280,7 +1280,7 @@ int load_param_data(void) {
         param_chunks[i]->hdr.pkt_type = LE16(BB_PARAM_CHUNK_TYPE);
         param_chunks[i]->hdr.pkt_len = LE16(len);
         param_chunks[i]->hdr.flags = 0;
-        param_chunks[i]->chunk = LE32(i);
+        param_chunks[i]->chunk_index = LE32(i);
         memcpy(param_chunks[i]->data, rawbuf + (i * 0x6800), len - 0x0C);
     }
 

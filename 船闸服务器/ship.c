@@ -98,11 +98,11 @@ static ship_t* find_ship(uint16_t id) {
 }
 
 /* 完成数据包设置,发送至DC舰船... */
-static int send_dc_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
+static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(target_gc);
+    ship_id = db_get_char_ship_id(gc_target);
 
     //DBG_LOG("%d", ship_id);
 
@@ -119,17 +119,17 @@ static int send_dc_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
         return 0;
     }
     else {
-        ERR_LOG("未找到 %u 玩家所在舰船.", target_gc);
+        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
         return 1;
     }
 }
 
 /* 完成数据包设置,发送至PC舰船... */
-static int send_pc_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
+static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(target_gc);
+    ship_id = db_get_char_ship_id(gc_target);
 
     //DBG_LOG("%d", ship_id);
 
@@ -146,17 +146,17 @@ static int send_pc_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
         return 0;
     }
     else {
-        ERR_LOG("未找到 %u 玩家所在舰船.", target_gc);
+        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
         return 1;
     }
 }
 
 /* 完成数据包设置,发送至BB舰船... */
-static int send_bb_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
+static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(target_gc);
+    ship_id = db_get_char_ship_id(gc_target);
 
     //DBG_LOG("%d", ship_id);
 
@@ -173,7 +173,7 @@ static int send_bb_pkt_to_ship(ship_t* c, uint32_t target_gc, uint8_t* pkt) {
         return 0;
     }
     else{
-        ERR_LOG("未找到 %u 玩家所在舰船.", target_gc);
+        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
         return 1;
     }
 }
@@ -948,8 +948,8 @@ static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
 }
 
 static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t flags) {
-    uint32_t guildcard = LE32(pkt->target_gc);
-    uint32_t searcher = LE32(pkt->searcher_gc);
+    uint32_t guildcard = LE32(pkt->gc_target);
+    uint32_t searcher = LE32(pkt->gc_searcher);
     char query[512];
     void* result;
     char** row;
@@ -1053,8 +1053,8 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         reply6.hdr.pkt_len = LE16(DC_GUILD_REPLY6_LENGTH);
         reply6.hdr.flags = 6;
         reply6.player_tag = LE32(0x00010000);
-        reply6.searcher_gc = pkt->searcher_gc;
-        reply6.target_gc = pkt->target_gc;
+        reply6.gc_searcher = pkt->gc_searcher;
+        reply6.gc_target = pkt->gc_target;
         parse_ipv6(ip6_hi, ip6_lo, reply6.ip);
         reply6.port = LE16((port + block * 6));
 
@@ -1105,8 +1105,8 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         reply.hdr.pkt_type = GUILD_REPLY_TYPE;
         reply.hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
         reply.player_tag = LE32(0x00010000);
-        reply.searcher_gc = pkt->searcher_gc;
-        reply.target_gc = pkt->target_gc;
+        reply.gc_searcher = pkt->gc_searcher;
+        reply.gc_target = pkt->gc_target;
         reply.ip = htonl(ip);
         reply.port = LE16((port + block * 6));
 
@@ -1159,7 +1159,7 @@ out:
 
 static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_search_pkt* p = (bb_guild_search_pkt*)pkt->pkt;
-    uint32_t guildcard = LE32(p->target_gc);
+    uint32_t guildcard = LE32(p->gc_target);
     uint32_t gc_sender = ntohl(pkt->guildcard);
     uint32_t b_sender = ntohl(pkt->block);
     char query[512];
@@ -1264,8 +1264,8 @@ static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     reply.hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
     reply.hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
     reply.player_tag = LE32(0x00010000);
-    reply.searcher_gc = p->searcher_gc;
-    reply.target_gc = p->target_gc;
+    reply.gc_searcher = p->gc_searcher;
+    reply.gc_target = p->gc_target;
     reply.ip = htonl(ip);
     reply.port = LE16((port + block * 6 + 4));
     reply.menu_id = LE32(0xFFFFFFFF);
@@ -1670,7 +1670,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    int res = 0, guild_id = 0, target_gc = 0;
+    int res = 0, guild_id = 0, gc_target = 0;
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1681,7 +1681,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    res = db_update_bb_guild_member_add(guild_id, target_gc);
+    res = db_update_bb_guild_member_add(guild_id, gc_target);
 
     print_payload((uint8_t*)g_data, len);
 

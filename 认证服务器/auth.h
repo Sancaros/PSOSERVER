@@ -125,7 +125,7 @@ typedef struct login_client {
     int hdr_read;
 
     /* Only used for the Dreamcast Network Trial Edition */
-    char serial[16];
+    char serial_number[16];
     char access_key[16];
 } login_client_t;
 

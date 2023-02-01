@@ -381,7 +381,7 @@ static int handle_arrow(ship_client_t *c, const char *params) {
 
     /* Set the arrow color and send the packet to the lobby. */
     i = atoi(params);
-    c->arrow = i;
+    c->arrow_color = i;
 
     send_txt(c, "%s", __(c, "\tE\tC7Arrow set."));
 
@@ -492,13 +492,13 @@ static int handle_event(ship_client_t *c, const char *params) {
     event = atoi(params);
 
     if(event < 0 || event > 14) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid event code."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效节日事件."));
     }
 
     ship->lobby_event = event;
     update_lobby_event();
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Event set."));
+    return send_txt(c, "%s", __(c, "\tE\tC7节日事件设置成功."));
 }
 
 /* 用法: /passwd newpass */
@@ -2469,8 +2469,8 @@ static int handle_search(ship_client_t *c, const char *params) {
         bb.hdr.pkt_type = LE16(GUILD_SEARCH_TYPE);
         bb.hdr.flags = 0;
         bb.player_tag = LE32(0x00010000);
-        bb.searcher_gc = LE32(c->guildcard);
-        bb.target_gc = LE32(gc);
+        bb.gc_searcher = LE32(c->guildcard);
+        bb.gc_target = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&bb);
     }
@@ -2479,8 +2479,8 @@ static int handle_search(ship_client_t *c, const char *params) {
         dc.hdr.pc.pkt_type = GUILD_SEARCH_TYPE;
         dc.hdr.pc.flags = 0;
         dc.player_tag = LE32(0x00010000);
-        dc.searcher_gc = LE32(c->guildcard);
-        dc.target_gc = LE32(gc);
+        dc.gc_searcher = LE32(c->guildcard);
+        dc.gc_target = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&dc);
     }
@@ -2489,8 +2489,8 @@ static int handle_search(ship_client_t *c, const char *params) {
         dc.hdr.dc.pkt_type = GUILD_SEARCH_TYPE;
         dc.hdr.dc.flags = 0;
         dc.player_tag = LE32(0x00010000);
-        dc.searcher_gc = LE32(c->guildcard);
-        dc.target_gc = LE32(gc);
+        dc.gc_searcher = LE32(c->guildcard);
+        dc.gc_target = LE32(gc);
 
         return block_process_pkt(c, (uint8_t *)&dc);
     }

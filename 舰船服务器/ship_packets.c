@@ -1203,7 +1203,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
             pkt->client_id = (uint8_t)i;
 
         /* Copy the player's data into the packet. */
-        pkt->entries[pls].hdr.tag = LE32(0x00010000);
+        pkt->entries[pls].hdr.player_tag = LE32(0x00010000);
         pkt->entries[pls].hdr.guildcard = LE32(l->clients[i]->guildcard);
         pkt->entries[pls].hdr.ip_addr = 0xFFFFFFFF;
         pkt->entries[pls].hdr.client_id = LE32(i);
@@ -1259,7 +1259,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LOBBY_JOIN_TYPE;
     pkt->leader_id = l->leader_id;
-    pkt->one = 0;
+    pkt->disable_udp = 0;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = LE16(l->block->b);
     pkt->event = LE16(event);
@@ -1276,7 +1276,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
         }
 
         /* Copy the player's data into the packet. */
-        pkt->entries[pls].hdr.tag = LE32(0x00010000);
+        pkt->entries[pls].hdr.player_tag = LE32(0x00010000);
         pkt->entries[pls].hdr.guildcard = LE32(l->clients[i]->guildcard);
         pkt->entries[pls].hdr.ip_addr = 0xFFFFFFFF;
         pkt->entries[pls].hdr.client_id = LE32(i);
@@ -1321,7 +1321,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LOBBY_JOIN_TYPE;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = LE16(l->block->b);
 
@@ -1336,7 +1336,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
         }
 
         /* Copy the player's data into the packet. */
-        pkt->entries[pls].hdr.tag = LE32(0x00010000);
+        pkt->entries[pls].hdr.player_tag = LE32(0x00010000);
         pkt->entries[pls].hdr.guildcard = LE32(l->clients[i]->guildcard);
         pkt->entries[pls].hdr.ip_addr = 0xFFFFFFFF;
         pkt->entries[pls].hdr.client_id = LE32(i);
@@ -1386,7 +1386,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LOBBY_JOIN_TYPE;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = LE16(l->block->b);
     pkt->event = LE16(event);
@@ -1407,7 +1407,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
         cl = l->clients[i];
 
         /* Copy the player's data into the packet. */
-        pkt->entries[pls].hdr.tag = LE32(0x00010000);
+        pkt->entries[pls].hdr.player_tag = LE32(0x00010000);
         pkt->entries[pls].hdr.guildcard = LE32(cl->guildcard);
 
         if(cl->version == CLIENT_VERSION_XBOX) {
@@ -1494,7 +1494,7 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
 
         /* Copy the player's data into the packet. */
         memset(&pkt->entries[pls].hdr, 0, sizeof(bb_player_hdr_t));
-        pkt->entries[pls].hdr.tag = LE32(0x00010000);
+        pkt->entries[pls].hdr.player_tag = LE32(0x00010000);
         pkt->entries[pls].hdr.guildcard = LE32(l->clients[i]->guildcard);
         pkt->entries[pls].hdr.client_id = LE32(i);
 
@@ -1747,7 +1747,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->leader_id = l->leader_id;
 
     /* Copy the player's data into the packet. */
-    pkt->entries[0].hdr.tag = LE32(0x00010000);
+    pkt->entries[0].hdr.player_tag = LE32(0x00010000);
     pkt->entries[0].hdr.guildcard = LE32(nc->guildcard);
     pkt->entries[0].hdr.ip_addr = 0xFFFFFFFF;
     pkt->entries[0].hdr.client_id = LE32(nc->client_id);
@@ -1793,7 +1793,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.pkt_len = LE16(0x044C);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_LOBBY) {
@@ -1805,7 +1805,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
     }
 
     /* Copy the player's data into the packet. */
-    pkt->entries[0].hdr.tag = LE32(0x00010000);
+    pkt->entries[0].hdr.player_tag = LE32(0x00010000);
     pkt->entries[0].hdr.guildcard = LE32(nc->guildcard);
     pkt->entries[0].hdr.ip_addr = 0xFFFFFFFF;
     pkt->entries[0].hdr.client_id = LE32(nc->client_id);
@@ -1845,7 +1845,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.pkt_len = LE16(0x045C);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_LOBBY) {
@@ -1857,7 +1857,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     }
 
     /* Copy the player's data into the packet. */
-    pkt->entries[0].hdr.tag = LE32(0x00010000);
+    pkt->entries[0].hdr.player_tag = LE32(0x00010000);
     pkt->entries[0].hdr.guildcard = LE32(nc->guildcard);
     pkt->entries[0].hdr.ip_addr = 0xFFFFFFFF;
     pkt->entries[0].hdr.client_id = LE32(nc->client_id);
@@ -1901,7 +1901,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->hdr.pkt_len = LE16(0x0490);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_LOBBY) {
@@ -1916,7 +1916,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     memset(pkt->unk, 0x01, 0x18);
 
     /* Copy the player's data into the packet. */
-    pkt->entries[0].hdr.tag = LE32(0x00010000);
+    pkt->entries[0].hdr.player_tag = LE32(0x00010000);
     pkt->entries[0].hdr.guildcard = LE32(nc->guildcard);
 
     if(nc->version == CLIENT_VERSION_XBOX) {
@@ -1987,7 +1987,7 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* Copy the player's data into the packet. */
     memset(&pkt->entries[0].hdr, 0, sizeof(bb_player_hdr_t));
-    pkt->entries[0].hdr.tag = LE32(0x00010000);
+    pkt->entries[0].hdr.player_tag = LE32(0x00010000);
     pkt->entries[0].hdr.guildcard = LE32(nc->guildcard);
     pkt->entries[0].hdr.client_id = LE32(nc->client_id);
 
@@ -2083,7 +2083,7 @@ static int send_dc_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
 
     pkt->client_id = client_id;
     pkt->leader_id = l->leader_id;
-    pkt->padding = LE16(0x0001);    /* ????: Not padding, apparently? */
+    pkt->disable_udp = 1;
 
     /* Send it away */
     return crypt_send(c, DC_LOBBY_LEAVE_LENGTH, sendbuf);
@@ -2106,7 +2106,7 @@ static int send_bb_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
 
     pkt->client_id = client_id;
     pkt->leader_id = l->leader_id;
-    pkt->padding = 0;
+    pkt->disable_udp = 1; /* 2023.2.1 需确认是否正确*/
 
     /* Send it away */
     return crypt_send(c, BB_LOBBY_LEAVE_LENGTH, sendbuf);
@@ -2689,8 +2689,8 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2762,8 +2762,8 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(b->pc_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2827,8 +2827,8 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
     pkt->hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     pkt->ip = ship_ip4;
     pkt->port = LE16(b->bb_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -2934,8 +2934,8 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(DC_GUILD_REPLY6_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -3008,8 +3008,8 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY6_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(b->pc_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -3075,8 +3075,8 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
     pkt->hdr.pkt_len = LE16(BB_GUILD_REPLY6_LENGTH);
     pkt->hdr.flags = LE32(6);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = LE32(c->guildcard);
-    pkt->target_gc = LE32(s->guildcard);
+    pkt->gc_searcher = LE32(c->guildcard);
+    pkt->gc_target = LE32(s->guildcard);
     memcpy(pkt->ip, ship_ip6, 16);
     pkt->port = LE16(b->bb_port);
     pkt->menu_id = LE32(MENU_ID_LOBBY);
@@ -3194,8 +3194,8 @@ static int send_pc_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *dc) {
     pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = dc->searcher_gc;
-    pkt->target_gc = dc->target_gc;
+    pkt->gc_searcher = dc->gc_searcher;
+    pkt->gc_target = dc->gc_target;
     pkt->ip = dc->ip;
     pkt->port = LE16(port);
     pkt->menu_id = dc->menu_id;
@@ -3291,8 +3291,8 @@ static int send_pc_guild_reply6_sg(ship_client_t *c, dc_guild_reply6_pkt *dc) {
     pkt->hdr.flags = 6;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY6_LENGTH);
     pkt->player_tag = LE32(0x00010000);
-    pkt->searcher_gc = dc->searcher_gc;
-    pkt->target_gc = dc->target_gc;
+    pkt->gc_searcher = dc->gc_searcher;
+    pkt->gc_target = dc->gc_target;
     memcpy(pkt->ip, dc->ip, 16);
     pkt->port = LE16(port);
     pkt->menu_id = dc->menu_id;
@@ -3685,7 +3685,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(sizeof(dcnte_game_join_pkt));
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
 
     /* Fill in the variations array. */
     for(i = 0; i < 0x20; ++i)
@@ -3694,7 +3694,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].ip_addr = 0xFFFFFFFF;
             pkt->players[i].client_id = LE32(i);
@@ -3736,7 +3736,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(DC_GAME_JOIN_LENGTH);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = l->difficulty;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -3752,7 +3752,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].ip_addr = 0xFFFFFFFF;
             pkt->players[i].client_id = LE32(i);
@@ -3794,7 +3794,7 @@ static int send_pc_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(sizeof(pc_game_join_pkt));
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = l->difficulty;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -3810,7 +3810,7 @@ static int send_pc_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].ip_addr = 0xFFFFFFFF;
             pkt->players[i].client_id = LE32(i);
@@ -3855,7 +3855,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(GC_GAME_JOIN_LENGTH);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = l->difficulty;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -3873,7 +3873,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].ip_addr = 0xFFFFFFFF;
             pkt->players[i].client_id = LE32(i);
@@ -3916,7 +3916,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(sizeof(xb_game_join_pkt));
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = l->difficulty;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -3936,7 +3936,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
             cl = (ship_client_t *)l->clients[i];
 
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(cl->guildcard);
 
             if(cl->version == CLIENT_VERSION_XBOX) {
@@ -3997,7 +3997,7 @@ static int send_ep3_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(EP3_GAME_JOIN_LENGTH);
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = 0;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -4013,7 +4013,7 @@ static int send_ep3_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].ip_addr = 0xFFFFFFFF;
             pkt->players[i].client_id = LE32(i);
@@ -4054,7 +4054,7 @@ static int send_bb_game_join(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_len = LE16(sizeof(bb_game_join_pkt));
     pkt->client_id = c->client_id;
     pkt->leader_id = l->leader_id;
-    pkt->one = 1;
+    pkt->disable_udp = 1;
     pkt->difficulty = l->difficulty;
     pkt->battle = l->battle;
     pkt->event = l->event;
@@ -4074,7 +4074,7 @@ static int send_bb_game_join(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < 4; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->players[i].tag = LE32(0x00010000);
+            pkt->players[i].player_tag = LE32(0x00010000);
             pkt->players[i].guildcard = LE32(l->clients[i]->guildcard);
             pkt->players[i].client_id = LE32(i);
 
@@ -8155,9 +8155,9 @@ static int send_dc_lobby_arrows(lobby_t *l, ship_client_t *c) {
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->entries[clients].tag = LE32(0x00010000);
+            pkt->entries[clients].player_tag = LE32(0x00010000);
             pkt->entries[clients].guildcard = LE32(l->clients[i]->guildcard);
-            pkt->entries[clients].arrow = LE32(l->clients[i]->arrow);
+            pkt->entries[clients].arrow_color = LE32(l->clients[i]->arrow_color);
 
             ++clients;
             len += 0x0C;
@@ -8200,9 +8200,9 @@ static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c) {
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i]) {
             /* Copy the player's data into the packet. */
-            pkt->entries[clients].tag = LE32(0x00010000);
+            pkt->entries[clients].player_tag = LE32(0x00010000);
             pkt->entries[clients].guildcard = LE32(l->clients[i]->guildcard);
-            pkt->entries[clients].arrow = LE32(l->clients[i]->arrow);
+            pkt->entries[clients].arrow_color = LE32(l->clients[i]->arrow_color);
 
             ++clients;
             len += 0x0C;
@@ -9519,7 +9519,7 @@ static int send_pc_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     pkt->pc.pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->pcmaildata.gc_dest = p->dcmaildata.gc_dest;
 
@@ -9573,7 +9573,7 @@ static int send_dc_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     pkt->dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->dcmaildata.gc_dest = p->pcmaildata.gc_dest;
 
@@ -9623,7 +9623,7 @@ static int send_pc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     pkt->pc.pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->pcmaildata.gc_dest = p->bbmaildata.gc_dest;
 
@@ -9655,7 +9655,7 @@ static int send_dc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     pkt->dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->dcmaildata.gc_dest = p->bbmaildata.gc_dest;
 
@@ -9707,7 +9707,7 @@ static int send_bb_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->bbmaildata.gc_dest = p->dcmaildata.gc_dest;
 
@@ -9770,7 +9770,7 @@ static int send_bb_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->bbmaildata.gc_dest = p->pcmaildata.gc_dest;
 
@@ -9816,7 +9816,7 @@ static int send_bb_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
     /* Copy everything that doesn't need to be converted. */
-    pkt->tag = p->tag;
+    pkt->player_tag = p->player_tag;
     pkt->gc_sender = p->gc_sender;
     pkt->bbmaildata.gc_dest = p->bbmaildata.gc_dest;
 
@@ -9911,7 +9911,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
             memset(&p, 0, sizeof(simple_mail_pkt));
             dc->pkt_type = SIMPLE_MAIL_TYPE;
             dc->pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
-            p.tag = LE32(0x00010000);
+            p.player_tag = LE32(0x00010000);
             p.gc_sender = LE32(s->guildcard);
             p.pcmaildata.gc_dest = LE32(d->guildcard);
 
@@ -9939,7 +9939,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
             memset(&p, 0, sizeof(simple_mail_pkt));
             p.dc.pkt_type = SIMPLE_MAIL_TYPE;
             p.dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
-            p.tag = LE32(0x00010000);
+            p.player_tag = LE32(0x00010000);
             p.gc_sender = LE32(s->guildcard);
             p.dcmaildata.gc_dest = LE32(d->guildcard);
 
@@ -9960,7 +9960,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
             memset(&p, 0, sizeof(simple_mail_pkt));
             p.bb.pkt_type = LE16(SIMPLE_MAIL_TYPE);
             p.bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
-            p.tag = LE32(0x00010000);
+            p.player_tag = LE32(0x00010000);
             p.gc_sender = LE32(s->guildcard);
             p.bbmaildata.gc_dest = LE32(d->guildcard);
 

@@ -856,7 +856,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
         l->clients[1] = c;
         c->cur_lobby = l;
         c->client_id = 1;
-        c->arrow = 0;
+        c->arrow_color = 0;
         c->join_time = time(NULL);
         ++l->num_clients;
 
@@ -877,7 +877,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
             l->clients[i] = c;
             c->cur_lobby = l;
             c->client_id = i;
-            c->arrow = 0;
+            c->arrow_color = 0;
             c->join_time = time(NULL);
             ++l->num_clients;
 

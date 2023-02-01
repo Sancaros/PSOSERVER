@@ -613,7 +613,7 @@ int send_simple_mail(ship_t* c, uint32_t gc, uint32_t block, uint32_t sender,
     memset(&pkt, 0, sizeof(simple_mail_pkt));
     pkt.dc.pkt_type = SIMPLE_MAIL_TYPE;
     pkt.dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
-    pkt.tag = LE32(0x00010000);
+    pkt.player_tag = LE32(0x00010000);
     pkt.gc_sender = LE32(sender);
 
     /* Thank you GCC for this completely unnecessary warning that means I have

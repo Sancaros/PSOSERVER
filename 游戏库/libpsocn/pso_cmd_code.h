@@ -127,7 +127,9 @@
 #define CHECKSUM_REPLY_TYPE             0x0097
 #define LEAVE_GAME_PL_DATA_TYPE         0x0098
 #define SHIP_LIST_REQ_TYPE              0x0099
+#define EP3_UPDATE_REQ_TYPE             0x0099
 #define LOGIN_9A_TYPE                   0x009A
+#define LOGIN_9B_TYPE                   0x009B
 #define LOGIN_9C_TYPE                   0x009C
 #define LOGIN_9D_TYPE                   0x009D
 #define LOGIN_9E_TYPE                   0x009E
@@ -161,6 +163,7 @@
 #define GAME_COMMAND_C9_TYPE            0x00C9
 #define EP3_SERVER_DATA_TYPE            0x00CA
 #define GAME_COMMAND_CB_TYPE            0x00CB
+#define CLIENT_UNKNOW_CC                0x00CC
 #define TRADE_0_TYPE                    0x00D0
 #define TRADE_1_TYPE                    0x00D1
 #define TRADE_2_TYPE                    0x00D2
@@ -174,12 +177,15 @@
 #define INFOBOARD_WRITE_TYPE            0x00D9
 #define LOBBY_EVENT_TYPE                0x00DA  //大厅事件改变数据包
 #define GC_VERIFY_LICENSE_TYPE          0x00DB
+//////////////////////////////////////////////////
 #define EP3_MENU_CHANGE_TYPE            0x00DC
 #define BB_GUILDCARD_HEADER_TYPE        0x01DC
 #define BB_GUILDCARD_CHUNK_TYPE         0x02DC
 #define BB_GUILDCARD_CHUNK_REQ_TYPE     0x03DC
+//////////////////////////////////////////////////
 #define BB_SEND_QUEST_STATE             0x00DD
 #define BB_RARE_MONSTER_LIST            0x00DE
+//////////////////////////////////////////////////
 #define BB_CHALLENGE_DF                 0x00DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_01DF               0x01DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_02DF               0x02DF  //来自1.0 BB服务端 挑战模式数据
@@ -187,7 +193,10 @@
 #define BB_CHALLENGE_04DF               0x04DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_05DF               0x05DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_06DF               0x06DF  //来自1.0 BB服务端 挑战模式数据
+#define BB_CHALLENGE_07DF               0x07DF  //来自1.0 BB服务端 挑战模式数据
+//////////////////////////////////////////////////
 #define BB_OPTION_REQUEST_TYPE          0x00E0
+#define CLIENT_UNKNOW_E1                0x00E1  // E1 (S->C): Game information (Episode 3)
 #define BB_OPTION_CONFIG_TYPE           0x00E2
 #define BB_CHARACTER_SELECT_TYPE        0x00E3
 #define BB_CHARACTER_ACK_TYPE           0x00E4
@@ -228,7 +237,7 @@
 #define BB_GUILD_UNK_12EA               0x12EA
 #define BB_GUILD_LOBBY_SETTING          0x13EA
 #define BB_GUILD_MEMBER_TITLE           0x14EA
-#define BB_GUILD_FULL_DATA               0x15EA
+#define BB_GUILD_FULL_DATA              0x15EA
 #define BB_GUILD_UNK_16EA               0x16EA
 #define BB_GUILD_UNK_17EA               0x17EA
 #define BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO          0x18EA
@@ -237,14 +246,19 @@
 #define BB_GUILD_UNK_1BEA               0x1BEA
 #define BB_GUILD_RANKING_LIST           0x1CEA
 #define BB_GUILD_UNK_1DEA               0x1DEA
+#define BB_GUILD_UNK_1EEA               0x1EEA
+#define BB_GUILD_UNK_1FEA               0x1FEA
+#define BB_GUILD_UNK_20EA               0x20EA
 //////////////////////////////////////////////////
 #define BB_PARAM_SEND_TYPE              0x00EB  //来自1.0 BB服务端 单指令 以下都是组合指令
 #define BB_PARAM_HEADER_TYPE            0x01EB
 #define BB_PARAM_CHUNK_TYPE             0x02EB
 #define BB_PARAM_CHUNK_REQ_TYPE         0x03EB
 #define BB_PARAM_HEADER_REQ_TYPE        0x04EB
+//////////////////////////////////////////////////
 #define EP3_GAME_CREATE_TYPE            0x00EC
 #define BB_SETFLAG_TYPE                 0x00EC
+//////////////////////////////////////////////////
 #define BB_UPDATE_OPTION                0x00ED  //来自1.0 BB服务端 单指令 以下都是组合指令
 #define BB_UPDATE_OPTION_FLAGS          0x01ED
 #define BB_UPDATE_SYMBOL_CHAT           0x02ED
@@ -253,8 +267,10 @@
 #define BB_UPDATE_PAD_CONFIG            0x05ED
 #define BB_UPDATE_TECH_MENU             0x06ED
 #define BB_UPDATE_CONFIG                0x07ED
-#define BB_UPDATE_CONFIG_MODE           0x08ED  //来自1.0 BB服务端
+#define BB_UPDATE_C_MODE_CONFIG         0x08ED  //来自1.0 BB服务端
+//////////////////////////////////////////////////
 #define BB_SCROLL_MSG_TYPE              0x00EE  //顶部公告数据包
+#define CLIENT_UNKNOW_F0                0x00F0
 
 //////////////////////////////////////////////////数据包长度
 #define DC_WELCOME_LENGTH               0x004C

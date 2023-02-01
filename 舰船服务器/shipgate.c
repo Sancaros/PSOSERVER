@@ -341,7 +341,7 @@ static int handle_dc_greply(shipgate_conn_t* conn, dc_guild_reply_pkt* pkt) {
     ship_t* s = conn->ship;
     block_t* b;
     ship_client_t* c;
-    uint32_t dest = LE32(pkt->searcher_gc);
+    uint32_t dest = LE32(pkt->gc_searcher);
     int done = 0, rv = 0;
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
@@ -385,7 +385,7 @@ static int handle_bb_greply(shipgate_conn_t* conn, bb_guild_reply_pkt* pkt,
     uint32_t block) {
     block_t* b;
     ship_client_t* c;
-    uint32_t dest = LE32(pkt->searcher_gc);
+    uint32_t dest = LE32(pkt->gc_searcher);
 
     /* Make sure the block given is sane */
     if((int)block > ship->cfg->blocks || !ship->blocks[block - 1]) {
@@ -428,7 +428,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         memset(&p, 0, sizeof(simple_mail_pkt));
         dc->pkt_type = SIMPLE_MAIL_TYPE;
         dc->pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
-        p.tag = LE32(0x00010000);
+        p.player_tag = LE32(0x00010000);
         p.gc_sender = LE32(s->guildcard);
         p.pcmaildata.gc_dest = LE32(dest);
 
@@ -456,7 +456,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         memset(&p, 0, sizeof(simple_mail_pkt));
         p.dc.pkt_type = SIMPLE_MAIL_TYPE;
         p.dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
-        p.tag = LE32(0x00010000);
+        p.player_tag = LE32(0x00010000);
         p.gc_sender = LE32(s->guildcard);
         p.dcmaildata.gc_dest = LE32(dest);
 
@@ -477,7 +477,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         memset(&p, 0, sizeof(simple_mail_pkt));
         p.bb.pkt_type = LE16(SIMPLE_MAIL_TYPE);
         p.bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
-        p.tag = LE32(0x00010000);
+        p.player_tag = LE32(0x00010000);
         p.gc_sender = LE32(s->guildcard);
         p.bbmaildata.gc_dest = LE32(dest);
 

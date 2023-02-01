@@ -67,7 +67,7 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
     }
 
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial, 16);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
     psocn_db_escape_str(&conn, access, pkt->access_key, 16);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
@@ -91,7 +91,7 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
     }
     else {
         psocn_db_result_free(result);
-        memcpy(c->serial, pkt->serial, 16);
+        memcpy(c->serial_number, pkt->serial_number, 16);
         memcpy(c->access_key, pkt->access_key, 16);
     }
 
@@ -113,7 +113,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
 
     /* Escape all the important strings. */
     psocn_db_escape_str(&conn, dc_id, pkt->dc_id, 8);
-    psocn_db_escape_str(&conn, serial, c->serial, 16);
+    psocn_db_escape_str(&conn, serial, c->serial_number, 16);
     psocn_db_escape_str(&conn, access, c->access_key, 16);
     
     sprintf(query, "SELECT guildcard FROM %s WHERE "
@@ -325,15 +325,15 @@ static int handle_login0(login_client_t *c, dc_login_90_pkt *pkt) {
         return -1;
     }
 
-    if(keycheck(pkt->serial, pkt->access_key)) {
+    if(keycheck(pkt->serial_number, pkt->access_key)) {
         send_large_msg(c, __(c, "\tECannot connect to server.\n"
                        "Please check your settings."));
         return -1;
     }
 
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial, 8);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 8);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
+    psocn_db_escape_str(&conn, access, pkt->access_key, 16);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
@@ -372,7 +372,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     c->language_code = pkt->language_code;
 
-    if(keycheck(pkt->serial, pkt->access_key)) {
+    if(keycheck(pkt->serial_number, pkt->access_key)) {
         send_large_msg(c, __(c, "\tECannot connect to server.\n"
                        "Please check your settings."));
         return -1;
@@ -380,8 +380,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     /* Escape all the important strings. */
     psocn_db_escape_str(&conn, dc_id, pkt->dc_id, 8);
-    psocn_db_escape_str(&conn, serial, pkt->serial, 8);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 8);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
+    psocn_db_escape_str(&conn, access, pkt->access_key, 16);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE (dc_id='%s' "
         "OR dc_id IS NULL) AND serial_number='%s' AND access_key='%s'"
@@ -483,7 +483,7 @@ static int is_pctrial(dcv2_login_9a_pkt *pkt) {
     int i = 0;
 
     for(i = 0; i < 8; ++i) {
-        if(pkt->serial[i] || pkt->access_key[i])
+        if(pkt->serial_number[i] || pkt->access_key[i])
             return 0;
     }
 
@@ -511,7 +511,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         return -1;
     }
 
-    if(c->type != CLIENT_AUTH_PC && keycheck(pkt->serial, pkt->access_key)) {
+    if(c->type != CLIENT_AUTH_PC && keycheck(pkt->serial_number, pkt->access_key)) {
         send_large_msg(c, __(c, "\tECannot connect to server.\n"
                        "Please check your settings."));
         return -1;
@@ -522,8 +522,8 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
     if(!is_pctrial(pkt)) {
         /* Escape all the important strings. */
         psocn_db_escape_str(&conn, dc_id, pkt->dc_id, 8);
-        psocn_db_escape_str(&conn, serial, pkt->serial, 8);
-        psocn_db_escape_str(&conn, access, pkt->access_key, 8);
+        psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
+        psocn_db_escape_str(&conn, access, pkt->access_key, 16);
 
         if(c->type != CLIENT_AUTH_PC) {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
@@ -1222,8 +1222,8 @@ static int handle_logind(login_client_t *c, dcv2_login_9d_pkt *pkt) {
        about it anymore... */
     c->language_code = pkt->language_code;
 
-    if(c->type != CLIENT_AUTH_PC && pkt->version != 0x30 &&
-       keycheck(pkt->serial, pkt->access_key)) {
+    if(c->type != CLIENT_AUTH_PC && pkt->sub_version != 0x00000030 &&
+       keycheck(pkt->serial_number, pkt->access_key)) {
            send_large_msg(c, __(c, "\tECannot connect to server.\n"
                           "Please check your settings."));
            return -1;
@@ -1231,7 +1231,7 @@ static int handle_logind(login_client_t *c, dcv2_login_9d_pkt *pkt) {
 
     /* The Gamecube Episode I & II trial looks like it's a Dreamcast client up
        until this point. */
-    if(c->type == CLIENT_AUTH_DC && pkt->version == 0x30)
+    if(c->type == CLIENT_AUTH_DC && pkt->sub_version == 0x00000030)
         c->ext_version = CLIENT_EXTVER_DC | CLIENT_EXTVER_GC_TRIAL;
     else if(c->type == CLIENT_AUTH_DC)
         send_dc_version_detect(c);
@@ -1644,7 +1644,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
             /* XXXX: Actually, I've got nothing here. */
             return send_timestamp(c);
 
-        case SHIP_LIST_REQ_TYPE:
+        case EP3_UPDATE_REQ_TYPE:
             /* XXXX: We'll fall through the bottom of this... */
             if(c->type == CLIENT_AUTH_EP3) {
                 if(send_ep3_rank_update(c)) {

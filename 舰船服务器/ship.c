@@ -1078,7 +1078,8 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
         return 0;
     }
 
-    c->language_code = CLIENT_LANG_JAPANESE;
+    //c->language_code = CLIENT_LANG_JAPANESE;
+    c->language_code = pkt->language;
     c->flags |= CLIENT_FLAG_IS_NTE;
     c->guildcard = LE32(pkt->guildcard);
 
@@ -1151,7 +1152,7 @@ static int is_pctrial(dcv2_login_9d_pkt* pkt) {
     int i = 0;
 
     for (i = 0; i < 8; ++i) {
-        if (pkt->serial[i] || pkt->access_key[i])
+        if (pkt->serial_number[i] || pkt->access_key[i])
             return 0;
     }
 

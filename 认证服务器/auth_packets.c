@@ -2140,9 +2140,9 @@ int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
 }
 
 /* Send a Blue Burst guildcard chunk packet. */
-int send_bb_guild_chunk(login_client_t *c, uint32_t chunk) {
+int send_bb_guild_chunk(login_client_t *c, uint32_t chunk_index) {
     bb_guildcard_chunk_pkt *pkt = (bb_guildcard_chunk_pkt *)sendbuf;
-    uint32_t offset = (chunk * 0x6800);
+    uint32_t offset = (chunk_index * 0x6800);
     uint16_t size = sizeof(bb_guildcard_data_t) - offset;
     uint8_t *ptr = ((uint8_t *)c->gc_data) + offset;
 
@@ -2162,7 +2162,7 @@ int send_bb_guild_chunk(login_client_t *c, uint32_t chunk) {
     /* Fill it in */
     pkt->hdr.pkt_len = LE16((size + 0x10));
     pkt->hdr.pkt_type = LE16(BB_GUILDCARD_CHUNK_TYPE);
-    pkt->chunk = LE32(chunk);
+    pkt->chunk_index = LE32(chunk_index);
     memcpy(pkt->data, ptr, size);
 
     /* Send it away */

@@ -221,7 +221,7 @@ static cmd_map_st c_cmd_names[] = {
     { BB_UPDATE_PAD_CONFIG, "BB_UPDATE_PAD_CONFIG", "客户端至服务器指令" },
     { BB_UPDATE_TECH_MENU, "BB_UPDATE_TECH_MENU", "客户端至服务器指令" },
     { BB_UPDATE_CONFIG, "BB_UPDATE_CONFIG", "客户端至服务器指令" },
-    { BB_UPDATE_CONFIG_MODE, "BB_UPDATE_CONFIG_MODE", "来自1.0 BB服务端" },
+    { BB_UPDATE_C_MODE_CONFIG, "BB_UPDATE_C_MODE_CONFIG", "来自1.0 BB服务端" },
     { BB_SCROLL_MSG_TYPE, "BB_SCROLL_MSG_TYPE", "顶部公告数据包" },
     { DC_WELCOME_LENGTH, "DC_WELCOME_LENGTH", "客户端至服务器指令" },
     { BB_WELCOME_LENGTH, "BB_WELCOME_LENGTH", "客户端至服务器指令" },

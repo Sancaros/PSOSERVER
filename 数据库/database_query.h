@@ -142,7 +142,7 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
 
 /* 公会新增BB角色 */
-int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t target_gc);
+int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target);
 
 /* 更新BB角色公会标志 */
 int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc);

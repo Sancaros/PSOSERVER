@@ -893,8 +893,10 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
 
     /* Save what we care about in here. */
     c->guildcard = LE32(pkt->guildcard);
-    c->language_code = CLIENT_LANG_JAPANESE;
-    c->q_lang = CLIENT_LANG_JAPANESE;
+    //c->language_code = CLIENT_LANG_JAPANESE;
+    //c->q_lang = CLIENT_LANG_JAPANESE;
+    c->language_code = pkt->language;
+    c->q_lang = pkt->language;
     c->flags |= CLIENT_FLAG_IS_NTE;
 
     /* See if this person is a GM. */
@@ -1004,7 +1006,7 @@ static int is_pctrial(dcv2_login_9d_pkt* pkt) {
     int i = 0;
 
     for (i = 0; i < 8; ++i) {
-        if (pkt->serial[i] || pkt->access_key[i])
+        if (pkt->serial_number[i] || pkt->access_key[i])
             return 0;
     }
 
@@ -1657,7 +1659,7 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
 static int dc_process_guild_search(ship_client_t* c, dc_guild_search_pkt* pkt) {
     uint32_t i;
     ship_client_t* it;
-    uint32_t gc = LE32(pkt->target_gc);
+    uint32_t gc = LE32(pkt->gc_target);
     int done = 0, rv = -1;
     uint32_t flags = 0;
 
@@ -2583,7 +2585,7 @@ static int dc_process_info_req(ship_client_t* c, dc_select_pkt* pkt) {
 
 /* Process a client's arrow update request. */
 static int dc_process_arrow(ship_client_t* c, uint8_t flag) {
-    c->arrow = flag;
+    c->arrow_color = flag;
     return send_lobby_arrows(c->cur_lobby);
 }
 
@@ -3089,7 +3091,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return ep3_process_game_create(c, (ep3_game_create_pkt*)pkt);
 
     case QUEST_STATS_TYPE:
-        ERR_LOG("已从接收到任务统计数据包 %s (%d)",
+        ERR_LOG("已从接收到任务情况数据包 %s (%d)",
             c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard);
         print_payload((unsigned char*)pkt, len);
         return 0;
