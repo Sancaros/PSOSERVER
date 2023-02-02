@@ -5224,6 +5224,14 @@ int subcmd_send_bb_level(ship_client_t* c) {
     int i;
     uint16_t base, mag;
 
+    /* Fill in the packet. */
+    pkt.hdr.pkt_len = LE16(0x001C);
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_LEVEL_UP;
+    pkt.shdr.size = 0x05;
+    pkt.shdr.client_id = c->client_id;
+
     /* Fill in the base statistics. These are all in little-endian already. */
     pkt.atp = c->bb_pl->character.disp.stats.atp;
     pkt.mst = c->bb_pl->character.disp.stats.mst;
@@ -5257,21 +5265,13 @@ int subcmd_send_bb_level(ship_client_t* c) {
         }
     }
 
-    /* Fill in the packet. */
-    pkt.hdr.pkt_len = LE16(0x001C);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    pkt.hdr.flags = 0;
-    pkt.shdr.type = SUBCMD60_LEVEL_UP;
-    pkt.shdr.size = 0x05;
-    pkt.shdr.client_id = c->client_id;
-
     return subcmd_send_lobby_bb(c->cur_lobby, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* It is assumed that all parameters are already in little-endian order. */
 static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item) {
-    subcmd_bb_drop_stack_t drop;
+    subcmd_bb_drop_stack_t drop = { 0 };
 
     /* Fill in the packet... */
     drop.hdr.pkt_len = LE16(0x002C);
@@ -5294,7 +5294,7 @@ static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
 }
 
 static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client) {
-    subcmd_bb_create_item_t new_item;
+    subcmd_bb_create_item_t new_item = { 0 };
 
     /* Fill in the packet. */
     new_item.hdr.pkt_len = LE16(0x0024);
@@ -5316,7 +5316,7 @@ static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_cl
 
 static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id) {
-    subcmd_bb_destroy_map_item_t d;
+    subcmd_bb_destroy_map_item_t d = { 0 };
 
     /* Fill in the packet. */
     d.hdr.pkt_len = LE16(0x0014);
@@ -5334,7 +5334,7 @@ static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
 
 static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt) {
-    subcmd_bb_destroy_item_t d;
+    subcmd_bb_destroy_item_t d = { 0 };
 
     /* Fill in the packet. */
     d.hdr.pkt_len = LE16(0x0014);
