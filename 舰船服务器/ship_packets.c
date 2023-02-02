@@ -12119,3 +12119,35 @@ next:
 
     return 0;
 }
+
+int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
+    dc_confirm_update_quest_statistics_pkt pkt;
+
+    memset(&pkt, 0, sizeof(dc_confirm_update_quest_statistics_pkt));
+
+    pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
+    pkt.hdr.flags = 0x00;
+    pkt.hdr.pkt_len = LE16(0x000C);
+    pkt.unknown_a1 = LE16(0x0000);
+    pkt.unknown_a2 = LE16(0x0000);
+    pkt.request_token = LE16(request_token);
+    pkt.unknown_a3 = LE16(0xBFFF);
+
+    return send_pkt_dc(c, (dc_pkt_hdr_t*)&pkt);
+}
+
+int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
+    bb_confirm_update_quest_statistics_pkt pkt;
+
+    memset(&pkt, 0, sizeof(bb_confirm_update_quest_statistics_pkt));
+
+    pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
+    pkt.hdr.flags = LE16(0x0000);
+    pkt.hdr.pkt_len = LE16(0x000C);
+    pkt.unknown_a1 = LE16(0x0000);
+    pkt.unknown_a2 = LE16(0x0000);
+    pkt.request_token = LE16(request_token);
+    pkt.unknown_a3 = LE16(0xBFFF);
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}

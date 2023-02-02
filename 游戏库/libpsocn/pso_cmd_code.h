@@ -143,6 +143,7 @@
 #define DL_QUEST_CHUNK_TYPE             0x00A7
 #define QUEST_END_LIST_TYPE             0x00A9
 #define QUEST_STATS_TYPE                0x00AA
+#define QUEST_CONFIRM_STATS_TYPE        0x00AB
 #define QUEST_LOAD_DONE_TYPE            0x00AC
 #define TEXT_MSG_TYPE                   0x00B0  //边栏信息窗数据包
 #define TIMESTAMP_TYPE                  0x00B1  //当前时间戳

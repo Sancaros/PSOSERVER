@@ -2332,28 +2332,46 @@ typedef struct bb_login_9e {
 // The server should respond with an AB command.
 // This command is likely never sent by PSO GC Episodes 1&2 Trial Edition,
 // because the following command (AB) is definitely not valid on that version.
-
-struct C_UpdateQuestStatistics_V3_BB_AA {
-    bb_pkt_hdr_t hdr;
-    uint16_t quest_internal_id;
-    uint16_t unused;
+/* Gamecube quest statistics packet (from Maximum Attack 2). */
+typedef struct dc_update_quest_stats {
+    dc_pkt_hdr_t hdr;
+    uint32_t quest_internal_id;
     uint16_t request_token;
     uint16_t unknown_a1;
     uint32_t unknown_a2;
     uint32_t kill_count;
     uint32_t time_taken; // in seconds
     uint32_t unknown_a3[5];
-} PACKED;
+} PACKED dc_update_quest_stats_pkt;
+
+typedef struct bb_update_quest_stats {
+    bb_pkt_hdr_t hdr;
+    uint32_t quest_internal_id;
+    uint16_t request_token;
+    uint16_t unknown_a1;
+    uint32_t unknown_a2;
+    uint32_t kill_count;
+    uint32_t time_taken; // in seconds
+    uint32_t unknown_a3[5];
+} PACKED bb_update_quest_stats_pkt;
 
 // AB (S->C): Confirm update quest statistics (V3/BB)
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
-struct S_ConfirmUpdateQuestStatistics_V3_BB_AB {
+typedef struct dc_confirm_update_quest_statistics {
+    dc_pkt_hdr_t hdr;
+    uint16_t unknown_a1; // 0
+    uint16_t unknown_a2; // Probably actually unused
+    uint16_t request_token; // Should match token sent in AA command
+    uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
+} PACKED dc_confirm_update_quest_statistics_pkt;
+
+typedef struct bb_confirm_update_quest_statistics {
     bb_pkt_hdr_t hdr;
     uint16_t unknown_a1; // 0
     uint16_t unknown_a2; // Probably actually unused
     uint16_t request_token; // Should match token sent in AA command
     uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
-} PACKED;
+} PACKED bb_confirm_update_quest_statistics_pkt;
 
 // AC: Quest barrier (V3/BB)
 // No arguments; header.flag must be 0 (or else the client disconnects)
@@ -2478,16 +2496,20 @@ typedef struct bb_timestamp {
 
 // B3 (C->S): Execute code and/or checksum memory result
 // Not used on versions that don't support the B2 command (see above).
-
-//struct C_ExecuteCodeResult_B3 {
-//    // On DC, return_value has the value in r0 when the function returns.
-//    // On PC, return_value is always 0.
-//    // On GC, return_value has the value in r3 when the function returns.
-//    // On XB and BB, return_value has the value in eax when the function returns.
-//    // If code_size was 0 in the B2 command, return_value is always 0.
-//    uint32_t return_value;
-//    uint32_t checksum; // 0 if no checksum was computed
-//} PACKED;
+// Patch return packet.
+typedef struct patch_return {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    // On DC, return_value has the value in r0 when the function returns.
+    // On PC, return_value is always 0.
+    // On GC, return_value has the value in r3 when the function returns.
+    // On XB and BB, return_value has the value in eax when the function returns.
+    // If code_size was 0 in the B2 command, return_value is always 0.
+    uint32_t return_value;
+    uint32_t checksum;
+} PACKED patch_return_pkt;
 
 // B4: Invalid command
 // B5: Invalid command
@@ -4464,12 +4486,6 @@ typedef struct ep3_game_create {
     uint8_t episode;
 } PACKED ep3_game_create_pkt;
 
-/* Gamecube quest statistics packet (from Maximum Attack 2). */
-typedef struct gc_quest_stats {
-    dc_pkt_hdr_t hdr;
-    uint32_t stats[10];
-} PACKED gc_quest_stats_pkt;
-
 /* Patch packet (thanks KuromoriYu for a lot of this information!)
     The code_begin value is big endian on PSOGC, and little endian on PSODC */
 typedef struct patch_send {
@@ -4495,16 +4511,6 @@ typedef struct patch_send_footer {
     uint16_t offset_entry;  /* Set to 0 */
     uint16_t offsets[];     /* Offsets to pointers to relocate within code */
 } PACKED patch_send_footer;
-
-/* Patch return packet. */
-typedef struct patch_return {
-    union {
-        dc_pkt_hdr_t dc;
-        pc_pkt_hdr_t pc;
-    } hdr;
-    uint32_t retval;
-    uint32_t crc;
-} PACKED patch_return_pkt;
 
 #ifndef _WIN32
 #else

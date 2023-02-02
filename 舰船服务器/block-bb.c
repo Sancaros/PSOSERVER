@@ -1289,6 +1289,30 @@ static int process_bb_qlist_end(ship_client_t* c) {
     return 0;
 }
 
+/* Process a 0xAA packet. This command is used in Maximum Attack 2 */
+static int process_bb_update_quest_stats(ship_client_t* c,
+    bb_update_quest_stats_pkt* pkt) {
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = c->cur_lobby;
+
+    print_payload((unsigned char*)pkt, len);
+
+    if (!l || l->type != LOBBY_FLAG_QUESTING)
+        return -1;
+
+    if (c->flags & 0x00002000)
+        ERR_LOG("trial edition client sent update quest stats command.");
+
+    DBG_LOG("process_dc_update_quest_stats qid %d  quest_internal_id %d", l->qid, pkt->quest_internal_id);
+
+    if (l->qid != pkt->quest_internal_id) {
+        ERR_LOG("l->qid != pkt->quest_internal_id.");
+        return -1;
+    }
+
+    return send_bb_confirm_update_quest_statistics(c, pkt->request_token);
+}
+
 static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     lobby_t* l;
     uint8_t event = ship->game_event;
@@ -2573,6 +2597,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x00A9 169*/
     case QUEST_END_LIST_TYPE:
         return process_bb_qlist_end(c);
+
+    case QUEST_STATS_TYPE:
+        return process_bb_update_quest_stats(c, (bb_update_quest_stats_pkt*)pkt);
 
         /* 0x00AC 172*/
     case QUEST_LOAD_DONE_TYPE:

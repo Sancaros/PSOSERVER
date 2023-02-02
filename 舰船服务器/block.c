@@ -2625,6 +2625,30 @@ static int process_infoboard(ship_client_t* c, gc_write_info_pkt* pkt) {
     return 0;
 }
 
+/* Process a 0xAA packet. This command is used in Maximum Attack 2 */
+static int process_dc_update_quest_stats(ship_client_t* c,
+    dc_update_quest_stats_pkt* pkt) {
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t *l = c->cur_lobby;
+
+    print_payload((unsigned char*)pkt, len);
+
+    if (!l || l->type != LOBBY_FLAG_QUESTING)
+        return -1;
+
+    if (c->flags & 0x00002000)
+        ERR_LOG("trial edition client sent update quest stats command.");
+
+    DBG_LOG("process_dc_update_quest_stats qid %d  quest_internal_id %d", l->qid, pkt->quest_internal_id);
+
+    if (l->qid != pkt->quest_internal_id) {
+        ERR_LOG("l->qid != pkt->quest_internal_id.");
+        return -1;
+    }
+
+    return send_dc_confirm_update_quest_statistics(c, pkt->request_token);
+}
+
 /* Process a 0xBA packet. */
 static int process_ep3_command(ship_client_t* c, const uint8_t* pkt) {
     dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt;
@@ -3093,10 +3117,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return ep3_process_game_create(c, (ep3_game_create_pkt*)pkt);
 
     case QUEST_STATS_TYPE:
-        ERR_LOG("已从接收到任务情况数据包 %s (%d)",
-            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard);
-        print_payload((unsigned char*)pkt, len);
-        return 0;
+        return process_dc_update_quest_stats(c, (dc_update_quest_stats_pkt *)pkt);
 
     default:
         if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,

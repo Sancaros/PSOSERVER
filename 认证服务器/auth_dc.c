@@ -1569,7 +1569,7 @@ int handle_patch_return(login_client_t *c, patch_return_pkt *pkt) {
             if(pkt->hdr.dc.flags != 0xff)
                 return 0;
 
-            ver = LE32(pkt->retval);
+            ver = LE32(pkt->return_value);
             c->det_version = ver;
             break;
 
