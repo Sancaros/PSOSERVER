@@ -1,6 +1,6 @@
 /*
     梦幻之星中国 数据库操作 头文件
-    版权 (C) 2022 Sancaros
+    版权 (C) 2022, 2023 Sancaros
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License version 3

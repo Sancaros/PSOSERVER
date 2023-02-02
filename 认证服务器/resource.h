@@ -1,6 +1,6 @@
 /*
     梦幻之星中国 认证服务器
-    版权 (C) 2022 Sancaros
+    版权 (C) 2022, 2023 Sancaros
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License version 3
