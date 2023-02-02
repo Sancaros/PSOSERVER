@@ -259,7 +259,7 @@ static cmd_map_st c_cmd_names[] = {
     { BB_SIMPLE_MAIL_LENGTH, "BB_SIMPLE_MAIL_LENGTH", "客户端至服务器指令" },
     { BB_OPTION_CONFIG_LENGTH, "BB_OPTION_CONFIG_LENGTH", "客户端至服务器指令" },
     { BB_FULL_CHARACTER_LENGTH, "BB_FULL_CHARACTER_LENGTH", "客户端至服务器指令" },
-    { BB_FULL_CHARACTER_LENGTH, "BB_FULL_CHARACTER_LENGTH", "客户端至服务器指令" },
+    { BB_FULL_CHARACTER_DATA_LENGTH, "BB_FULL_CHARACTER_DATA_LENGTH", "客户端至服务器指令" },
     { DC_PATCH_HEADER_LENGTH, "DC_PATCH_HEADER_LENGTH", "客户端至服务器指令" },
     { DC_PATCH_FOOTER_LENGTH, "DC_PATCH_FOOTER_LENGTH", "客户端至服务器指令" },
     { NO_SUCH_CMD, "NO_SUCH_CMD", "指令不存在" }

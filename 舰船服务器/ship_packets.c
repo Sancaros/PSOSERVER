@@ -10877,7 +10877,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(d, len, (uint8_t*)pkt);
+    return crypt_send(d, len, sendbuf);
 }
 
 static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
@@ -10922,7 +10922,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     pkt->hdr.flags = 0;
 
     /* 将数据包发送出去 */
-    return crypt_send(d, len, (uint8_t*)pkt);
+    return crypt_send(d, len, sendbuf);
 }
 
 int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
@@ -11019,25 +11019,29 @@ int send_bb_full_char(ship_client_t *c) {
     }
 
     /* Clear it out first */
-    memset(pkt, 0, BB_FULL_CHARACTER_LENGTH);
+    memset(pkt, 0, BB_FULL_CHARACTER_DATA_LENGTH);
 
     /* Fill in the header */
-    pkt->hdr.pkt_len = LE16(BB_FULL_CHARACTER_LENGTH);
+    pkt->hdr.pkt_len = LE16(BB_FULL_CHARACTER_DATA_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_FULL_CHARACTER_TYPE);
     pkt->hdr.flags = 0;
 
     /* Fill in all the parts of it... */
     memcpy(&pkt->data.inv, &c->bb_pl->inv, sizeof(inventory_t));
-    memcpy(&pkt->data.character, &c->bb_pl->character,
-           sizeof(psocn_bb_char_t));
+    memcpy(&pkt->data.character, &c->bb_pl->character, sizeof(psocn_bb_char_t));
+    ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.option_flags = c->bb_opts->option_flags;
+    ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, sizeof(c->bb_pl->quest_data1));
+    ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
     memcpy(pkt->data.gc_data.name, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
     memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
     memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-    pkt->data.gc_data.present = pkt->data.gc_data.language = 1;
+    pkt->data.gc_data.present = 1;
+    pkt->data.gc_data.language = c->language_code;
     pkt->data.gc_data.ch_class = c->bb_pl->character.disp.dress_data.ch_class;
+    ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(c->bb_opts->symbol_chats));
     memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));
     memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(c->bb_pl->autoreply));
@@ -11046,11 +11050,12 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(c->bb_pl->tech_menu));
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
+    ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(&pkt->data.guild_data, &c->bb_guild->guild_data, sizeof(bb_guild_t));
 
     /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */
-    return crypt_send(c, BB_FULL_CHARACTER_LENGTH, sendbuf);
+    return crypt_send(c, BB_FULL_CHARACTER_DATA_LENGTH, sendbuf);
 }
 
 /* Send a GM Menu to a client. */

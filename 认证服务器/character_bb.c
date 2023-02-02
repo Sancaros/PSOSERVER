@@ -545,7 +545,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
     //unsigned long *len, sz;
     int rv = 0;
     psocn_bb_db_char_t *char_data;
-    psocn_bb_mini_char_t mc;
+    psocn_bb_mini_char_t mc = { 0 };
     //uLong sz2;
     char* raw_data;
     uint32_t data_length, data_size;

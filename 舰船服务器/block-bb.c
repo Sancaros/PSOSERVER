@@ -1545,7 +1545,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     if (c->version != CLIENT_VERSION_BB)
         return -1;
 
-    if (!c->bb_pl || len > BB_FULL_CHARACTER_LENGTH) {
+    if (!c->bb_pl || len > BB_FULL_CHARACTER_DATA_LENGTH) {
         return -1;
     }
 
