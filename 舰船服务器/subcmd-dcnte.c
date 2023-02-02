@@ -281,7 +281,7 @@ int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt) {
 }
 
 int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                            int igcheck) {
+                            int ignore_check) {
     int i;
 
     /* Send the packet to every connected client. */
@@ -289,7 +289,7 @@ int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
         if(l->clients[i] && l->clients[i] != c) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet. */
-            if(igcheck && client_has_ignored(l->clients[i], c->guildcard)) {
+            if(ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
                 continue;
             }
 

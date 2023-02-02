@@ -243,6 +243,7 @@ typedef struct subcmd_bb_symbol_chat {
 
 // 0x09: Unknown 未知
 typedef struct subcmd_unknown_09 {
+    dc_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unused;
@@ -388,12 +389,24 @@ typedef struct subcmd_teleport {
     float w;
 } PACKED subcmd_teleport_t;
 
-// 0x18: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x18 {
+// 0x17: teleport to a specified position (指令生效范围; 仅限游戏; 不支持 Episode 3)
+// Packet used to teleport to a specified position
+typedef struct subcmd_bb_teleport {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unknown_a2[4];
-} PACKED subcmd_bb_Unknown_6x18_t;
+    float x;
+    float y;
+    float z;
+    float w;
+} PACKED subcmd_bb_teleport_t;
+
+// 0x18: Dragon special actions (指令生效范围; 仅限游戏; 不支持 Episode 3)
+typedef struct subcmd_bb_dragon_special_act {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t unknown_a1;
+    uint32_t unknown_a2;
+} PACKED subcmd_bb_dragon_special_act_t;
 
 // 0x19: Dark Falz boss actions (不支持 Episode 3)
 typedef struct subcmd_bb_DarkFalzActions_6x19 {
@@ -2640,11 +2653,11 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
 
 /* Send a broadcast subcommand to the whole lobby. */
 int subcmd_send_lobby_dc(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                         int igcheck);
+                         int ignore_check);
 int subcmd_send_lobby_bb(lobby_t *l, ship_client_t *c, subcmd_bb_pkt_t *pkt,
-                         int igcheck);
+                         int ignore_check);
 int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                            int igcheck);
+                            int ignore_check);
 
 /* Stuff dealing with the Dreamcast Network Trial edition */
 int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt);

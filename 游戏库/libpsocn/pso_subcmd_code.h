@@ -71,17 +71,22 @@
 
 // 0x02: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
+#define SUBCMD60_UNKNOW_02                     0x02
 
 // 0x03: Unknown (same handler as 02)
 // This subcommand is completely ignored (at least, by PSO GC).
+#define SUBCMD60_UNKNOW_03                     0x03
 
 // 0x04: Unknown
+#define SUBCMD60_UNKNOW_04                     0x04
 
 #define SUBCMD60_SWITCH_CHANGED                0x05 // 触发机关开启
 #define SUBCMD60_SYMBOL_CHAT                   0x07
 
 // 0x08: Invalid subcommand
+
 // 0x09: Unknown
+#define SUBCMD60_UNKNOW_09                     0x09
 
 #define SUBCMD60_HIT_MONSTER                   0x0A
 #define SUBCMD60_HIT_OBJ                       0x0B
@@ -89,6 +94,8 @@
 #define SUBCMD60_CONDITION_REMOVE              0x0D // Remove condition (poison/slow/etc.)
 
 // 6x0E: Unknown
+#define SUBCMD60_UNKNOW_0E                     0x0E
+
 // 6x0F: Invalid subcommand
 
 #define SUBCMD60_DRAGON_ACT                    0x12
@@ -96,7 +103,7 @@
 #define SUBCMD60_UNKNOW_14                     0x14
 #define SUBCMD60_ACTION_VOL_OPT                0x15
 #define SUBCMD60_ACTION_VOL_OPT2               0x16
-#define SUBCMD60_TELEPORT                      0x17 //SUBCMD60_TELEPORT_1
+#define SUBCMD60_TELEPORT                      0x17    //SUBCMD60_TELEPORT_1
 #define SUBCMD60_UNKNOW_18                     0x18    /* Dragon special actions */
 #define SUBCMD60_ACTION_DARK_FALZ              0x19
 

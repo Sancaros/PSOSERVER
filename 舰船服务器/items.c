@@ -3978,7 +3978,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 }
 
 int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
-    int i;
+    int i, rv = 1;
 
     /* Make sure there's space first. */
     if(inv_count >= MAX_PLAYER_INV_ITEMS) {
@@ -3990,7 +3990,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
     /* Look for the item in question. If it exists, we're in trouble! */
     for(i = 0; i < inv_count; ++i) {
         if(inv[i].data.item_id == it->data.item_id) {
-            return -1;
+            rv = -1;
         }
     }
 
@@ -4001,7 +4001,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
         for(i = 0; i < inv_count; ++i) {
             if(inv[i].data.data_l[0] == it->data.data_l[0]) {
                 inv[i].data.data_b[5] += it->data.data_b[5];
-                return 0;
+                rv = 1;
             }
         }
     }
@@ -4011,7 +4011,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
 
     DBG_LOG("新增背包后 %d", inv_count);
 
-    return 1;
+    return rv;
 }
 
 void cleanup_bb_bank(ship_client_t *c) {

@@ -161,7 +161,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return sent;
 }
 
-int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int igcheck) {
+int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int ignore_check) {
     int i;
 
     /* Send the packet to every connected client. */
@@ -170,7 +170,7 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet
                如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
-            if (igcheck && client_has_ignored(l->clients[i], c->guildcard)) {
+            if (ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
                 continue;
             }
 
@@ -236,7 +236,7 @@ static int handle_bb_cmd_check_game_size(ship_client_t* c, subcmd_bb_pkt_t* pkt)
         return -1;
     }
 
-    //UNK_CSPD(pkt->type, (uint8_t*)pkt);
+    UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2254,7 +2254,7 @@ static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* 
 
 static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint16_t mid, mid2, dmg;
+    uint16_t enemy_id2, enemy_id, dmg;
     game_enemy_t* en;
     uint32_t flags;
 
@@ -2276,8 +2276,8 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     }
 
     /* Make sure the enemy is in range. */
-    mid2 = LE16(pkt->shdr.enemy_id);
-    mid = LE16(pkt->enemy_id2);
+    enemy_id = LE16(pkt->shdr.enemy_id);
+    enemy_id2 = LE16(pkt->enemy_id2);
     dmg = LE16(pkt->damage);
     flags = LE32(pkt->flags);
 
@@ -2289,20 +2289,20 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     /* Bail out now if we don't have any enemy data on the team. */
     if (!l->map_enemies || l->challenge || l->battle) {
         script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_END);
+            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
 
         if (flags & 0x00000800)
             script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_END);
+                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
 
-        return send_lobby_mhit(l, c, mid, mid2, dmg, flags);
+        return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
     }
 
-    if (mid > l->map_enemies->count) {
+    if (enemy_id2 > l->map_enemies->count) {
 #ifdef DEBUG
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!"
-            "章节: %d, 层级: %d, 地图: (%d, %d)", c->guildcard, mid,
+            "章节: %d, 层级: %d, 地图: (%d, %d)", c->guildcard, enemy_id2,
             l->map_enemies->count, l->episode, c->cur_area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
 
@@ -2312,7 +2312,7 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
 
         if (l->logfp) {
             fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: %d)!\n"
-                "章节: %d, 层级: %d, 地图: (%d, %d)\n", c->guildcard, mid,
+                "章节: %d, 层级: %d, 地图: (%d, %d)\n", c->guildcard, enemy_id2,
                 l->map_enemies->count, l->episode, c->cur_area,
                 l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
 
@@ -2322,19 +2322,19 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
         }
 
         script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_END);
+            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
 
         if (flags & 0x00000800)
             script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_END);
+                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
 
         /* If server-side drops aren't on, then just send it on and hope for the
            best. We've probably got a bug somewhere on our end anyway... */
         if (!(l->flags & LOBBY_FLAG_SERVER_DROPS))
-            return send_lobby_mhit(l, c, mid, mid2, dmg, flags);
+            return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
 
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
-            "%d)!", c->guildcard, mid, l->map_enemies->count);
+            "%d)!", c->guildcard, enemy_id2, l->map_enemies->count);
         return -1;
     }
 
@@ -2342,22 +2342,22 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     /* XXXX: There are some issues still with Episode 2, so only spit this out
        for now on Episode 1. */
 #ifdef DEBUG
-    if (c->cur_area != l->map_enemies->enemies[mid].area && l->episode == 1 &&
+    if (c->cur_area != l->map_enemies->enemies[enemy_id2].area && l->episode == 1 &&
         !(l->flags & LOBBY_FLAG_QUESTING)) {
         ERR_LOG("GC %" PRIu32 " 在无效区域攻击了怪物 "
             "(%d -- 地图怪物数量: %d)!\n 章节: %d, 区域: %d, 敌人数据区域: %d "
-            "地图: (%d, %d)", c->guildcard, mid, l->map_enemies->count,
-            l->episode, c->cur_area, l->map_enemies->enemies[mid].area,
+            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->count,
+            l->episode, c->cur_area, l->map_enemies->enemies[enemy_id2].area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
     }
 #endif
 
-    if (l->logfp && c->cur_area != l->map_enemies->enemies[mid].area &&
+    if (l->logfp && c->cur_area != l->map_enemies->enemies[enemy_id2].area &&
         !(l->flags & LOBBY_FLAG_QUESTING)) {
         fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 在无效区域攻击了怪物 "
             "(%d -- 地图怪物数量: %d)!\n 章节: %d, 区域: %d, 敌人数据区域: %d "
-            "地图: (%d, %d)", c->guildcard, mid, l->map_enemies->count,
-            l->episode, c->cur_area, l->map_enemies->enemies[mid].area,
+            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->count,
+            l->episode, c->cur_area, l->map_enemies->enemies[enemy_id2].area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
     }
 
@@ -2376,13 +2376,13 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     }
 
     /* Save the hit, assuming the enemy isn't already dead. */
-    en = &l->map_enemies->enemies[mid];
+    en = &l->map_enemies->enemies[enemy_id2];
     if (!(en->clients_hit & 0x80)) {
         en->clients_hit |= (1 << c->client_id);
         en->last_client = c->client_id;
 
         script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_UINT32, en->bp_entry,
+            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32, en->bp_entry,
             SCRIPT_ARG_UINT8, en->rt_index, SCRIPT_ARG_UINT8,
             en->clients_hit, SCRIPT_ARG_END);
 
@@ -2392,7 +2392,7 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
             en->clients_hit |= 0x80;
 
             script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, mid, SCRIPT_ARG_UINT32,
+                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32,
                 en->bp_entry, SCRIPT_ARG_UINT8, en->rt_index,
                 SCRIPT_ARG_UINT8, en->clients_hit, SCRIPT_ARG_END);
 
@@ -2401,7 +2401,7 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
         }
     }
 
-    return send_lobby_mhit(l, c, mid, mid2, dmg, flags);
+    return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
 }
 
 static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
@@ -3628,7 +3628,18 @@ static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pk
         return -1;
     }
 
-    DBG_LOG("GC %" PRIu32 " unknown_a1:%d X轴:%f Y轴:%f Z轴:%f", c->guildcard, pkt->unknown_a1, pkt->x, pkt->y, pkt->z);
+    /* Save the new position and move along */
+    if (c->client_id == pkt->shdr.client_id) {
+        c->x = pkt->x;
+        c->y = pkt->y;
+        c->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_bb_qpos(c, l);
+
+        DBG_LOG("GC %" PRIu32 " %d %d %d X轴:%f Y轴:%f Z轴:%f", c->guildcard, 
+            c->client_id, pkt->shdr.client_id, pkt->unknown_a1, pkt->x, pkt->y, pkt->z);
+    }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
