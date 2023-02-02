@@ -1071,8 +1071,6 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = c->cur_lobby;
     sitem_t *shopi;
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
@@ -2249,7 +2247,7 @@ static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* 
         return -1;
     }
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2442,7 +2440,8 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
 //( 00000000 )   14 00 60 00 00 00 00 00  28 03 00 00 02 00 01 00    ..`.....(.......
 //( 00000010 )   03 00 01 00                                         ....
 //[2022年08月29日 17:41:49:485] 调试(1875): GC 42004064 使用物品ID 3 喂养玛古 ID 2!
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
     DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
         c->guildcard, item_id, mag_id);
 
@@ -3289,7 +3288,7 @@ static int handle_bb_Unknown_6x88(ship_client_t* c, subcmd_bb_Unknown_6x88_t* pk
         //return -1;
     }
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3312,7 +3311,7 @@ static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pk
         //return -1;
     }
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3334,6 +3333,8 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
     }
+
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3994,8 +3995,10 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 
 static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    uint16_t type = LE16(pkt->hdr.pkt_type);
 
-//( 00000000 )   14 00 60 00 00 00 00 00  2F 03 FF FF 00 00 00 00 ..`...../.
+//( 00000000 )   14 00 60 00 00 00 00 00  2F 03 00 00 00 00 00 00 ..`...../.......
+//( 00000010 )   96 03 00 00                                     ?..
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -4013,6 +4016,8 @@ static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pk
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
+
+    UDONE_CSPD(type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4391,7 +4396,7 @@ static int handle_bb_Unknown_6x53(ship_client_t* c, subcmd_bb_Unknown_6x53_t* pk
         //return -1;
     }
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
