@@ -2376,10 +2376,14 @@ typedef struct subcmd_bb_create_item {
 } PACKED subcmd_bb_create_item_t;
 
 // 0xBF: Change lobby music (Episode 3; not Trial Edition)
-struct G_ChangeLobbyMusic_GC_Ep3_6xBF {
+typedef struct subcmd_change_lobby_music_GC_Ep3 {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
     unused_hdr_t shdr;
     uint32_t song_number; // Must be < 0x34
-} PACKED;
+} PACKED subcmd_change_lobby_music_GC_Ep3_t;
 
 // 0xBF: Give EXP (BB) (server->client only)
 // Packet sent to clients to give them experience. (Blue Burst)

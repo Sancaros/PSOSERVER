@@ -2865,7 +2865,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
     uint32_t song;
     lobby_t *l = c->cur_lobby;
     uint8_t rawpkt[12] = { 0 };
-    subcmd_pkt_t *pkt = (subcmd_pkt_t *)rawpkt;
+    subcmd_change_lobby_music_GC_Ep3_t *pkt = (subcmd_change_lobby_music_GC_Ep3_t *)rawpkt;
 
     /* Make sure the requester is a local GM, at least. */
     if(!LOCAL_GM(c))
@@ -2877,24 +2877,25 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
 
     /* Figure out the level requested */
     if(!params || !strlen(params))
-        return send_txt(c, "%s", __(c, "\tE\tC7Must specify song."));
+        return send_txt(c, "%s", __(c, "\tE\tC7请指定歌曲名称."));
 
     errno = 0;
     song = (uint32_t)strtoul(params, NULL, 10);
 
     if(errno != 0)
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid song."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效歌曲名称."));
 
     /* Prepare the packet. */
     pkt->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
-    pkt->hdr.dc.flags = 0;
+    pkt->hdr.dc.flags = 0x00;
     pkt->hdr.dc.pkt_len = LE16(0x000C);
-    pkt->type = SUBCMD60_JUKEBOX;
-    pkt->size = 2;
-    pkt->data[2] = (uint8_t)song;
+    pkt->shdr.type = SUBCMD60_JUKEBOX;
+    pkt->shdr.size = 0x02;
+    pkt->shdr.unused = 0x0000;
+    pkt->song_number = song;
 
     /* Send it. */
-    subcmd_send_lobby_dc(l, NULL, pkt, 0);
+    subcmd_send_lobby_dc(l, NULL, (subcmd_pkt_t *)pkt, 0);
     return 0;
 }
 
