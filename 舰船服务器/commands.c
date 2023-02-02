@@ -581,10 +581,10 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.shdr.type = SUBCMD_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
-    gcpkt.tag = LE32(0x00010000);
+    gcpkt.player_tag = LE32(0x00010000);
     gcpkt.guildcard = LE32(BUG_REPORT_GC);
     gcpkt.unused2 = 0;
-    gcpkt.one = 1;
+    gcpkt.disable_udp = 1;
     gcpkt.language = CLIENT_LANG_ENGLISH;
     gcpkt.section = 0;
     gcpkt.char_class = 8;
@@ -1172,7 +1172,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
 
     /* Make sure a name was given */
     if(!name || name[0] != ' ' || name[1] == '\0') {
-        return send_txt(c, "%s", __(c, "\tE\tC7No name given."));
+        return send_txt(c, "%s", __(c, "\tE\tC7未获取到玩家名称."));
     }
 
     /* Forge the guildcard send */
@@ -1182,13 +1182,13 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.shdr.type = SUBCMD_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
-    gcpkt.tag = LE32(0x00010000);
+    gcpkt.player_tag = LE32(0x00010000);
     gcpkt.guildcard = LE32(gc);
     strncpy(gcpkt.name, name + 1, 16);
     gcpkt.name[15] = 0;
     memset(gcpkt.text, 0, 88);
     gcpkt.unused2 = 0;
-    gcpkt.one = 1;
+    gcpkt.disable_udp = 1;
     gcpkt.language = CLIENT_LANG_ENGLISH;
     gcpkt.section = 0;
     gcpkt.char_class = 8;

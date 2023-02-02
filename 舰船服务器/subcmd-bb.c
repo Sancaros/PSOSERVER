@@ -258,13 +258,13 @@ static int handle_bb_cmd_check_client_id(ship_client_t* c, bb_subcmd_pkt_t* pkt)
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
+static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
     size_t in, out;
     char* inptr;
     char* outptr;
 
         /* This differs based on the destination client's version. */
-    switch (d->version) {
+    switch (dest->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
     {
@@ -276,17 +276,17 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         memset(&dc.name, '-', 16);
         in = 48;
         out = 24;
-        inptr = (char*)&s->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name[2];
         outptr = dc.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
         /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
         in = 176;
         out = 88;
-        inptr = (char*)s->bb_pl->guildcard_desc;
+        inptr = (char*)src->bb_pl->guildcard_desc;
         outptr = dc.text;
 
-        if (s->bb_pl->guildcard_desc[1] == LE16('J')) {
+        if (src->bb_pl->guildcard_desc[1] == LE16('J')) {
             iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
         }
         else {
@@ -295,21 +295,21 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
 
         /* Copy the rest over. */
         dc.hdr.pkt_type = GAME_COMMAND2_TYPE;
-        dc.hdr.flags = (uint8_t)d->client_id;
+        dc.hdr.flags = (uint8_t)dest->client_id;
         dc.hdr.pkt_len = LE16(0x0088);
         dc.shdr.type = SUBCMD_GUILDCARD;
         dc.shdr.size = 0x21;
         dc.shdr.unused = 0x0000;
-        dc.tag = LE32(0x00010000);
-        dc.guildcard = LE32(s->guildcard);
+        dc.player_tag = LE32(0x00010000);
+        dc.guildcard = LE32(src->guildcard);
         dc.unused2 = 0;
-        dc.one = 1;
-        dc.language = s->language_code;
-        dc.section = s->pl->bb.character.disp.dress_data.section;
-        dc.char_class = s->pl->bb.character.disp.dress_data.ch_class;
+        dc.disable_udp = 1;
+        dc.language = src->language_code;
+        dc.section = src->pl->bb.character.disp.dress_data.section;
+        dc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
     }
 
     case CLIENT_VERSION_PC:
@@ -318,32 +318,32 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
 
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
            support them. */
-        if ((d->flags & CLIENT_FLAG_IS_NTE))
-            return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
+        if ((dest->flags & CLIENT_FLAG_IS_NTE))
+            return send_txt(src, "%s", __(src, "\tE\tC7Cannot send Guild\n"
                 "Card to that user."));
 
         memset(&pc, 0, sizeof(pc));
 
         /* First the name and text... */
-        memcpy(pc.name, &s->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
-        memcpy(pc.text, s->bb_pl->guildcard_desc, 176);
+        memcpy(pc.name, &src->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+        memcpy(pc.text, src->bb_pl->guildcard_desc, 176);
 
         /* Copy the rest over. */
         pc.hdr.pkt_type = GAME_COMMAND2_TYPE;
-        pc.hdr.flags = (uint8_t)d->client_id;
+        pc.hdr.flags = (uint8_t)dest->client_id;
         pc.hdr.pkt_len = LE16(0x00F8);
         pc.shdr.type = SUBCMD_GUILDCARD;
         pc.shdr.size = 0x3D;
         pc.shdr.unused = 0x0000;
-        pc.tag = LE32(0x00010000);
-        pc.guildcard = LE32(s->guildcard);
+        pc.player_tag = LE32(0x00010000);
+        pc.guildcard = LE32(src->guildcard);
         pc.padding = 0;
-        pc.one = 1;
-        pc.language = s->language_code;
-        pc.section = s->pl->bb.character.disp.dress_data.section;
-        pc.char_class = s->pl->bb.character.disp.dress_data.ch_class;
+        pc.disable_udp = 1;
+        pc.language = src->language_code;
+        pc.section = src->pl->bb.character.disp.dress_data.section;
+        pc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
 
     case CLIENT_VERSION_GC:
@@ -357,17 +357,17 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         memset(&gc.name, '-', 16);
         in = 48;
         out = BB_CHARACTER_NAME_LENGTH * 2;
-        inptr = (char*)&s->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name[2];
         outptr = gc.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
         /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
         in = 176;
         out = 88;
-        inptr = (char*)s->bb_pl->guildcard_desc;
+        inptr = (char*)src->bb_pl->guildcard_desc;
         outptr = gc.text;
 
-        if (s->bb_pl->guildcard_desc[1] == LE16('J')) {
+        if (src->bb_pl->guildcard_desc[1] == LE16('J')) {
             iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
         }
         else {
@@ -376,20 +376,20 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
 
         /* Copy the rest over. */
         gc.hdr.pkt_type = GAME_COMMAND2_TYPE;
-        gc.hdr.flags = (uint8_t)d->client_id;
+        gc.hdr.flags = (uint8_t)dest->client_id;
         gc.hdr.pkt_len = LE16(0x0098);
         gc.shdr.type = SUBCMD_GUILDCARD;
         gc.shdr.size = 0x25;
         gc.shdr.unused = 0x0000;
-        gc.tag = LE32(0x00010000);
-        gc.guildcard = LE32(s->guildcard);
+        gc.player_tag = LE32(0x00010000);
+        gc.guildcard = LE32(src->guildcard);
         gc.padding = 0;
-        gc.one = 1;
-        gc.language = s->language_code;
-        gc.section = s->pl->bb.character.disp.dress_data.section;
-        gc.char_class = s->pl->bb.character.disp.dress_data.ch_class;
+        gc.disable_udp = 1;
+        gc.language = src->language_code;
+        gc.section = src->pl->bb.character.disp.dress_data.section;
+        gc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
 
     case CLIENT_VERSION_XBOX:
@@ -405,17 +405,17 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         memset(&xb.name, '-', 16);
         in = 48;
         out = BB_CHARACTER_NAME_LENGTH * 2;
-        inptr = (char*)&s->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name[2];
         outptr = xb.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
         /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
         in = 176;
         out = 512;
-        inptr = (char*)s->bb_pl->guildcard_desc;
+        inptr = (char*)src->bb_pl->guildcard_desc;
         outptr = xb.text;
 
-        if (s->bb_pl->guildcard_desc[1] == LE16('J')) {
+        if (src->bb_pl->guildcard_desc[1] == LE16('J')) {
             iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
         }
         else {
@@ -424,20 +424,20 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
 
         /* Copy the rest over. */
         xb.hdr.pkt_type = GAME_COMMAND2_TYPE;
-        xb.hdr.flags = (uint8_t)d->client_id;
+        xb.hdr.flags = (uint8_t)dest->client_id;
         xb.hdr.pkt_len = LE16(0x0234);
         xb.shdr.type = SUBCMD_GUILDCARD;
         xb.shdr.size = 0x8C;
         xb.shdr.unused = LE16(0xFB0D);
-        xb.tag = LE32(0x00010000);
-        xb.guildcard = LE32(s->guildcard);
-        xb.xbl_userid = LE64(s->guildcard);
-        xb.one = 1;
-        xb.language = s->language_code;
-        xb.section = s->pl->bb.character.disp.dress_data.section;
-        xb.char_class = s->pl->bb.character.disp.dress_data.ch_class;
+        xb.player_tag = LE32(0x00010000);
+        xb.guildcard = LE32(src->guildcard);
+        xb.xbl_userid = LE64(src->guildcard);
+        xb.disable_udp = 1;
+        xb.language = src->language_code;
+        xb.section = src->pl->bb.character.disp.dress_data.section;
+        xb.char_class = src->pl->bb.character.disp.dress_data.ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
 
     case CLIENT_VERSION_BB:
@@ -448,20 +448,20 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
         memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
-        bb.hdr.flags = LE32(d->client_id);
+        bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
-        bb.guildcard = LE32(s->guildcard);
-        memcpy(bb.name, s->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
-        memcpy(bb.guild_name, s->bb_opts->guild_name, 32);
-        memcpy(bb.text, s->bb_pl->guildcard_desc, 176);
-        bb.one = 1;
-        bb.language = s->language_code;
-        bb.section = s->pl->bb.character.disp.dress_data.section;
-        bb.char_class = s->pl->bb.character.disp.dress_data.ch_class;
+        bb.guildcard = LE32(src->guildcard);
+        memcpy(bb.name, src->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(bb.guild_name, src->bb_opts->guild_name, 32);
+        memcpy(bb.text, src->bb_pl->guildcard_desc, 176);
+        bb.disable_udp = 1;
+        bb.language = src->language_code;
+        bb.section = src->pl->bb.character.disp.dress_data.section;
+        bb.char_class = src->pl->bb.character.disp.dress_data.ch_class;
 
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     }
 

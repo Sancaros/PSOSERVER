@@ -116,12 +116,12 @@ typedef struct subcmd_bb_switch_changed {
 typedef struct subcmd_dc_gcsend {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     char name[24];
     char text[88];
     uint8_t unused2;
-    uint8_t one;
+    uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t char_class;
@@ -133,12 +133,12 @@ typedef struct subcmd_dc_gcsend {
 typedef struct subcmd_pc_gcsend {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint16_t name[24];
     uint16_t text[88];
     uint32_t padding;
-    uint8_t one;
+    uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t char_class;
@@ -149,12 +149,12 @@ typedef struct subcmd_pc_gcsend {
 typedef struct subcmd_gc_gcsend {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     char name[24];
     char text[104];
     uint32_t padding;
-    uint8_t one;
+    uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t char_class;
@@ -165,12 +165,12 @@ typedef struct subcmd_gc_gcsend {
 typedef struct subcmd_xb_gcsend {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;                       /* unused = 0x0D 0xFB */
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     uint64_t xbl_userid;
     char name[24];
     char text[512];                     /* Why so long? */
-    uint8_t one;
+    uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t char_class;
@@ -185,7 +185,7 @@ typedef struct subcmd_bb_gc_send {
     uint16_t name[0x18];
     uint16_t guild_name[0x10];
     uint16_t text[0x58];
-    uint8_t one;
+    uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t char_class;
