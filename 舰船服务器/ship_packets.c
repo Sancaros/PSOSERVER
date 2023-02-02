@@ -2168,8 +2168,8 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Fill in the packet... */
+    pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     if(msg[0] == '\t' && msg[1] == 'E')
         ic = ic_gbk_to_8859;
@@ -2268,8 +2268,8 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Fill in the basics */
+    pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     /* Fill in the message */
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
@@ -2340,8 +2340,8 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Fill in the basics */
+    pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     /* Fill in the message */
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
@@ -2379,8 +2379,6 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->hdr.pkt_type = LE16(CHAT_TYPE);
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16((uint16_t)len);
-
-    print_payload(sendbuf, len);
 
     /* Send it away */
     return crypt_send(c, len, sendbuf);
@@ -2465,8 +2463,8 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Fill in the basics */
+    pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     /* Convert the name string first. */
     in = strlen16_raw(&s->pl->bb.character.name[2]) * 2;
@@ -2535,8 +2533,8 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Fill in the packet */
+    pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     strcpy16_raw(pkt->msg, &s->pl->bb.character.name[2]);
     strcat16_raw(pkt->msg, tmp);
@@ -2571,8 +2569,8 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Fill in the packet */
+    pkt->client_id = LE32(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
-    pkt->padding = LE32(0x00010000);
 
     strcpy16_raw(pkt->msg, s->pl->bb.character.name);
     strcat16_raw(pkt->msg, tmp);

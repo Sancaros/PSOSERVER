@@ -225,6 +225,7 @@ struct ship_client {
     client_game_data_t game_data;
 
     time_t cmd_cooldown[256];
+    time_t subcmd_cooldown[256];
     time_t guild_cooldown[32];
 
     bb_switch_changed_t last_switch_enabled_command;

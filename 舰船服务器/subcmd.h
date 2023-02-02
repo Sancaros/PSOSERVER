@@ -1719,11 +1719,11 @@ typedef struct subcmd_bb_player_died {
 } PACKED subcmd_bb_player_died_t;
 
 // 0x8A: Unknown (不支持 Episode 3)
-struct G_Unknown_6x8A {
+typedef struct subcmd_bb_Unknown_6x8A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1; // Must be < 0x11
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x8A_t;
 
 // 0x8B: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).

@@ -1775,21 +1775,6 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //ship_id = db_get_char_ship_id(sender);
-
-    //if (ship_id < 0)
-    //    return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!?");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
     return 0;
 }
 

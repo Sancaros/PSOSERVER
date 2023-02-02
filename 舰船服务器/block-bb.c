@@ -2468,10 +2468,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0008 8*/
     case GAME_LIST_TYPE:
-        if (time_check(c->cmd_cooldown[type], 1))
-            return send_game_list(c, c->cur_block);
-        else
-            return 0;
+        return send_game_list(c, c->cur_block);
 
         /* 0x0009 9*/
     case INFO_REQUEST_TYPE:

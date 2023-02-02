@@ -122,7 +122,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     if (!l)
         return -1;
 
-    sizecheck = *(uint16_t*)&pkt->data[1];
+    sizecheck *= 4;
     sizecheck += 8;
 
     if (size != sizecheck)
@@ -1918,6 +1918,9 @@ static void handle_bb_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) 
 
 static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    uint16_t pkt_size = pkt->hdr.pkt_len;
+    uint8_t size = pkt->shdr.size;
+    uint32_t hit_count = pkt->hit_count;
     uint8_t i;
 
     /* We can't get these in lobbies without someone messing with something that
@@ -1935,9 +1938,9 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据!",
-            c->guildcard);
+    if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
+            c->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
@@ -1948,9 +1951,8 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
         return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 
     /* Handle each thing that was hit */
-    for (i = 0; i < pkt->shdr.size - 2; ++i) {
+    for (i = 0; i < pkt->shdr.size - 2; ++i)
         handle_bb_objhit_common(c, l, LE16(pkt->objects[i].obj_id));
-    }
 
     /* We're not doing any more interesting parsing with this one for now, so
        just send it along. */
@@ -2126,14 +2128,12 @@ static int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt)
     lobby_t* l = c->cur_lobby;
 
     /* Don't send the message if they have the protection flag on. */
-    if (c->flags & CLIENT_FLAG_GC_PROTECT) {
+    if (c->flags & CLIENT_FLAG_GC_PROTECT)
         return send_txt(c, __(c, "\tE\tC7您必须登录后才可以进行操作."));
-    }
 
     /* Don't send chats for a STFUed client. */
-    if ((c->flags & CLIENT_FLAG_STFU)) {
+    if ((c->flags & CLIENT_FLAG_STFU))
         return 0;
-    }
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 1);
 }
@@ -3306,6 +3306,27 @@ static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     //return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
+static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            c->guildcard);
+        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        //return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
+}
+
 static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_set_technique_level_override_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
@@ -3319,6 +3340,27 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
+            c->guildcard);
+        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        //return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_switch_activated_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
@@ -4478,8 +4520,11 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_switch_changed(c, (subcmd_bb_switch_changed_pkt_t*)pkt);
         break;
 
-    case SUBCMD_SYMBOL_CHAT:
-        rv = handle_bb_symbol_chat(c, (subcmd_bb_symbol_chat_t*)pkt);
+    case SUBCMD_SYMBOL_CHAT: //间隔1秒可以正常发送
+        if (time_check(c->subcmd_cooldown[type], 1))
+            rv = handle_bb_symbol_chat(c, (subcmd_bb_symbol_chat_t*)pkt);
+        else
+            sent = 1;
         break;
 
     case SUBCMD_HIT_MONSTER:
@@ -4828,9 +4873,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
         /*挑战模式 触发*/
     case SUBCMD0x60_UNKNOW_8A:
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        sent = 0;
-        //rv = handle_bb_cmd_check_game_size(c, pkt, 0x02);
+        rv = handle_bb_Unknown_6x8A(c, (subcmd_bb_Unknown_6x8A_t*)pkt);
         break;
 
     case SUBCMD_SET_TECH_LEVEL_OVERRIDE:
@@ -4839,9 +4882,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
         /*挑战模式 触发*/
     case SUBCMD_TIMED_SWITCH_ACTIVATED:
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        sent = 0;
-        //rv = handle_bb_cmd_check_game_size(c, pkt, 0x03);
+        rv = handle_bb_timed_switch_activated(c, (subcmd_bb_timed_switch_activated_t*)pkt);
         break;
 
     case SUBCMD_SHOP_INV:

@@ -395,7 +395,7 @@ typedef struct dc_chat {
         dc_pkt_hdr_t dc;
         pc_pkt_hdr_t pc;
     } hdr;
-    uint32_t padding;
+    uint32_t client_id;
     uint32_t guildcard;
     char msg[0];
 } PACKED dc_chat_pkt;
@@ -418,7 +418,7 @@ typedef struct dc_chat {
 // struct to make parsing easier.
 typedef struct bb_chat {
     bb_pkt_hdr_t hdr;
-    uint32_t padding;
+    uint32_t client_id;
     uint32_t guildcard;
     uint16_t msg[];
 } PACKED bb_chat_pkt;
@@ -3781,11 +3781,16 @@ typedef struct bb_guild_unk_06EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_06EA_pkt;
-
+//[2023年02月02日 08:30 : 07 : 656] 调试(block - bb.c 2174) : 舰仓：BB 公会功能指令 0x07EA BB_GUILD_CHAT - 0x07EA (长度52)
+//[2023年02月02日 08:30 : 07 : 747] 调试(shipgate.c 0661) : G->S 指令0x07EA 42004063 0
+//(00000000)   34 00 EA 07 00 00 00 00  5F EE 80 02 41 53 27 59    4......._...AS'Y
+//(00000010)   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//(00000020)   00 00 00 00 00 00 00 00  09 00 42 00 31 00 32 00    .........B.1.2.
+//(00000030)   33 00 00 00                                         3...
 // 07EA (C->S): Team chat
 typedef struct bb_guild_member_chat {
-    bb_pkt_hdr_t hdr;
-    uint32_t guild_id;                     // 02BC
+    bb_pkt_hdr_t hdr;                      /* 0x0000 8 */
+    uint32_t guild_id;                     /* 0x0008 4 */
     uint8_t chat[];
 } PACKED bb_guild_member_chat_pkt;
 

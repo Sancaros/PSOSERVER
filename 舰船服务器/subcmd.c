@@ -1844,7 +1844,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
 
     /* Sanity check... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
+    if(LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
               c->guildcard);
         print_payload((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
