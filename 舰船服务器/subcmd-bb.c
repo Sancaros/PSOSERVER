@@ -326,7 +326,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
 
         /* First the name and text... */
         memcpy(pc.name, &src->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
-        memcpy(pc.text, src->bb_pl->guildcard_desc, 176);
+        memcpy(pc.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
 
         /* Copy the rest over. */
         pc.hdr.pkt_type = GAME_COMMAND2_TYPE;
@@ -454,8 +454,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         bb.shdr.unused = 0x0000;
         bb.guildcard = LE32(src->guildcard);
         memcpy(bb.name, src->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
-        memcpy(bb.guild_name, src->bb_opts->guild_name, 32);
-        memcpy(bb.text, src->bb_pl->guildcard_desc, 176);
+        memcpy(bb.guild_name, src->bb_opts->guild_name, sizeof(src->bb_opts->guild_name));
+        memcpy(bb.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
         bb.disable_udp = 1;
         bb.language = src->language_code;
         bb.section = src->pl->bb.character.disp.dress_data.section;
