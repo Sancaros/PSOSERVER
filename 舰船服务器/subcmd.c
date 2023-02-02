@@ -381,7 +381,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
         {
             subcmd_bb_gcsend_t bb;
 
-            /* Fill in the packet... */
+            /* 填充数据并准备发送.. */
             memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
@@ -758,12 +758,12 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
 }
 
 static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
-    subcmd_itemgen_t gen;
+    subcmd_itemgen_t gen = { 0 };
     int r = LE16(req->request_id);
     int i;
     lobby_t *l = c->cur_lobby;
 
-    /* Fill in the packet we'll send out. */
+    /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
@@ -863,7 +863,7 @@ static int handle_level_up(ship_client_t *c, subcmd_level_up_t*pkt) {
 
 static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
     lobby_t *l = c->cur_lobby;
-    iitem_t item;
+    iitem_t item = { 0 };
     uint32_t v;
     int i;
     subcmd_take_item_t tr;
@@ -1000,7 +1000,7 @@ send_pkt:
 
 static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    iitem_t item;
+    iitem_t item = { 0 };
     uint32_t v;
     int i;
     ship_client_t* c2;
@@ -2863,11 +2863,11 @@ int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
 
 int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
                            const uint32_t item[4]) {
-    subcmd_itemgen_t gen;
+    subcmd_itemgen_t gen = { 0 };
     int i;
     uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
 
-    /* Fill in the packet we'll send out. */
+    /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
@@ -2925,8 +2925,8 @@ int subcmd_send_lobby_dc(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
 }
 
 int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
-    subcmd_set_pos_t dc;
-    subcmd_bb_set_pos_t bb;
+    subcmd_set_pos_t dc = { 0 };
+    subcmd_bb_set_pos_t bb = { 0 };
 
     if(dst->version == CLIENT_VERSION_BB) {
         bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);

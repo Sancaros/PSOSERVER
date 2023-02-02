@@ -363,7 +363,7 @@ static int v3_c_size = sizeof(psocn_v3_c_rank_data_t);
 
 // V3 GC Êý¾Ý TODO 144
 typedef struct psocn_v3_guild_card {
-    uint32_t tag;
+    uint32_t player_tag;
     uint32_t guildcard;
     char name[0x0018];
     char guildcard_desc[0x006C];

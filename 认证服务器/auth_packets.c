@@ -1040,7 +1040,7 @@ out:
 static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
     pc_ship_list_pkt* pkt = (pc_ship_list_pkt*)sendbuf;
     char no_ship_msg[] = "Œ¥’“µΩΩ¢¥¨";
-    char query[256], tmp[18], tmp2[3];
+    char query[256] = { 0 }, tmp[18] = { 0 }, tmp2[3] = { 0 };
     uint32_t num_ships = 0;
     void* result;
     char** row;
@@ -1231,7 +1231,7 @@ out:
 static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
     bb_ship_list_pkt *pkt = (bb_ship_list_pkt *)sendbuf;
     char no_ship_msg[] = "Œ¥’“µΩΩ¢¥¨";
-    char query[256], tmp[18], tmp2[3];
+    char query[256] = { 0 }, tmp[18] = { 0 }, tmp2[3] = { 0 };
     uint32_t num_ships = 0;
     void *result;
     char **row;

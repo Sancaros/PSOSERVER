@@ -3082,7 +3082,7 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     pkt->hdr.pkt_type = htons(SHDR_TYPE_LOGIN6);
     pkt->hdr.flags = htons(SHDR_RESPONSE);
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt->proto_ver = htonl(ship->cfg->shipgate_proto_ver);//htonl(SHIPGATE_PROTO_VER);
     pkt->flags = htonl(ship->cfg->shipgate_flags);
     strncpy((char*)pkt->name, ship->cfg->name, 11);
@@ -3121,7 +3121,7 @@ int shipgate_send_cnt(shipgate_conn_t* c, uint16_t clients, uint16_t games) {
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt->clients = htons(clients);
     pkt->games = htons(games);
     pkt->ship_id = 0;                   /* Ignored on ship->gate packets. */
@@ -3871,7 +3871,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
     if (pkt_len & 0x07)
         pkt_len = (pkt_len + 8) & 0xFFF8;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, pkt_len);
     pkt->hdr.pkt_len = htons(pkt_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SDATA);
@@ -3903,7 +3903,7 @@ int shipgate_send_qflag(shipgate_conn_t* c, ship_client_t* sc, int set,
     if (!sendbuf)
         return -1;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, sizeof(shipgate_qflag_pkt));
     pkt->hdr.pkt_len = htons(sizeof(shipgate_qflag_pkt));
     if (set)

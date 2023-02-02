@@ -414,7 +414,7 @@ int load_shop_data()
 
 	fclose(fp);
 
-	shop_checksum = calculate_checksum(&shops[0], 7000 * sizeof(shop_data_t));
+	shop_checksum = psocn_crc32(&shops[0], 7000 * sizeof(shop_data_t));
 
 	if (file_log_console_show) {
 		CONFIG_LOG("读取 Blue Burst 商店数据2 %s", shop_files[1]);

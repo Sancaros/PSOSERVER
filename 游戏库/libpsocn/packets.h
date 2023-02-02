@@ -3656,6 +3656,11 @@ typedef struct bb_checksum {
 // sending an 03E8 command. If needs_update is zero, the client will skip
 // downloading the guild card file and send a 04EB command (requesting the
 // stream file) instead.
+// Blue Burst packet to acknowledge the client's checksum.
+typedef struct bb_checksum_ack {
+    bb_pkt_hdr_t hdr;
+    uint32_t ack;
+} PACKED bb_checksum_ack_pkt;
 
 struct S_GuildCardChecksumResponse_BB_02E8 {
     bb_pkt_hdr_t hdr;
@@ -4481,11 +4486,6 @@ typedef struct bb_char_select {
     uint32_t reason;
 } PACKED bb_char_select_pkt;
 
-/* Blue Burst packet to acknowledge the client's checksum. */
-typedef struct bb_checksum_ack {
-    bb_pkt_hdr_t hdr;
-    uint32_t ack;
-} PACKED bb_checksum_ack_pkt;
 
 /* Blue Burst packet for adding a Guildcard to the user's list */
 typedef struct bb_guildcard_add {

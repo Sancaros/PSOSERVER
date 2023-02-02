@@ -2167,7 +2167,7 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Clear the packet header */
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
 
@@ -3331,7 +3331,7 @@ static int send_dcnte_txt(ship_client_t *c, const char *fmt, va_list args) {
     dc_chat_pkt *pkt = (dc_chat_pkt *)sendbuf;
     int len;
     iconv_t ic;
-    char tm[512];
+    char tm[512] = { 0 };
     size_t in, out;
     size_t i;
     char *inptr;
@@ -8341,7 +8341,7 @@ static int send_ship_list_dc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     int len = 0x20, entries = 0, j;
     miniship_t *i;
-    char tmp[18], tmp2[3];
+    char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
     /* Verify we got the sendbuf. */
     if(!sendbuf)
@@ -8480,7 +8480,7 @@ static int send_ship_list_pc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     pc_ship_list_pkt *pkt = (pc_ship_list_pkt *)sendbuf;
     int len = 0x30, entries = 0, j;
     miniship_t *i;
-    char tmp[18], tmp2[3];
+    char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
     /* Verify we got the sendbuf. */
     if(!sendbuf)
@@ -8610,7 +8610,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     bb_ship_list_pkt *pkt = (bb_ship_list_pkt *)sendbuf;
     int len = 0x34, entries = 0, j;
     miniship_t *i;
-    char tmp[18], tmp2[3];
+    char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
     /* Verify we got the sendbuf. */
     if(!sendbuf)
@@ -9902,7 +9902,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
     switch(s->version) {
         case CLIENT_VERSION_PC:
         {
-            simple_mail_pkt p;
+            simple_mail_pkt p = { 0 };
             dc_pkt_hdr_t *dc = (dc_pkt_hdr_t *)&p;
 
             /* Build the packet up */
@@ -9930,7 +9930,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
         {
-            simple_mail_pkt p;
+            simple_mail_pkt p = { 0 };
             dc_pkt_hdr_t *dc = (dc_pkt_hdr_t *)&p;
 
             /* Build the packet up */
@@ -11296,7 +11296,7 @@ static int send_bb_end_burst(ship_client_t *c) {
     if(!sendbuf)
         return -1;
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt->hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt->hdr.pkt_len = LE16(0x000C);
     pkt->hdr.flags = 0;
@@ -11624,7 +11624,7 @@ int send_lobby_sync_register(lobby_t *l, uint8_t n, uint32_t v) {
 }
 
 int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
-    char string[1024];
+    char string[1024] = { 0 };
     //struct tm cooked;
     size_t len = 0;
     SYSTEMTIME rawtime;

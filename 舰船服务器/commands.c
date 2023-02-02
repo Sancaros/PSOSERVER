@@ -390,7 +390,7 @@ static int handle_arrow(ship_client_t *c, const char *params) {
 
 /* Usage /login username password */
 static int handle_login(ship_client_t *c, const char *params) {
-    char username[32], password[32];
+    char username[32] = { 0 }, password[32] = { 0 };
     int len = 0;
     const char *ch = params;
 
@@ -572,7 +572,7 @@ static int handle_lname(ship_client_t *c, const char *params) {
 
 /* 用法: /bug */
 static int handle_bug(ship_client_t *c, const char *params) {
-    subcmd_dc_gcsend_t gcpkt;
+    subcmd_dc_gcsend_t gcpkt = { 0 };
 
     /* Forge a guildcard send packet. */
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
@@ -1154,7 +1154,7 @@ static int handle_v1only(ship_client_t *c, const char *params) {
 static int handle_forgegc(ship_client_t *c, const char *params) {
     uint32_t gc;
     char *name = NULL;
-    subcmd_dc_gcsend_t gcpkt;
+    subcmd_dc_gcsend_t gcpkt = { 0 };
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
@@ -1309,7 +1309,7 @@ static int handle_smite(ship_client_t *c, const char *params) {
 static int handle_makeitem(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
     iitem_t *iitem;
-    subcmd_drop_stack_t p2;
+    subcmd_drop_stack_t p2 = { 0 };
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
@@ -1377,7 +1377,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
     int client;
     lobby_t *l = c->cur_lobby;
     ship_client_t *c2;
-    subcmd_teleport_t p2;
+    subcmd_teleport_t p2 = { 0 };
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
@@ -1633,7 +1633,7 @@ static int handle_allowgc(ship_client_t *c, const char *params) {
 static int handle_ws(ship_client_t *c, const char *params) {
     uint32_t ws[4] = { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
     int count;
-    uint8_t tmp[0x24];
+    uint8_t tmp[0x24] = { 0 };
     subcmd_pkt_t *p = (subcmd_pkt_t *)tmp;
 
     /* Make sure the requester is a GM. */
@@ -1681,7 +1681,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
 
 /* 用法: /ll */
 static int handle_ll(ship_client_t *c, const char *params) {
-    char str[512];
+    char str[512] = { 0 };
     lobby_t *l = c->cur_lobby;
     int i;
     ship_client_t *c2;
@@ -1750,7 +1750,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
 /* Usage /npc number,client_id,follow_id */
 static int handle_npc(ship_client_t *c, const char *params) {
     int count, npcnum, client_id, follow;
-    uint8_t tmp[0x10];
+    uint8_t tmp[0x10] = { 0 };
     subcmd_pkt_t *p = (subcmd_pkt_t *)tmp;
     lobby_t *l = c->cur_lobby;
 
@@ -2446,8 +2446,8 @@ static int handle_restart(ship_client_t *c, const char *params) {
 /* 用法: /search guildcard */
 static int handle_search(ship_client_t *c, const char *params) {
     uint32_t gc;
-    dc_guild_search_pkt dc;
-    bb_guild_search_pkt bb;
+    dc_guild_search_pkt dc = { 0 };
+    bb_guild_search_pkt bb = { 0 };
 
     /* Don't allow this if they have the protection flag on. */
     if(c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -2549,7 +2549,7 @@ static int handle_maps(ship_client_t *c, const char *params) {
 
 /* 用法: /showmaps */
 static int handle_showmaps(ship_client_t *c, const char *params) {
-    char string[33];
+    char string[33] = { 0 };
     int i;
     lobby_t *l= c->cur_lobby;
 
@@ -2901,7 +2901,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
 
 /* 用法: /tlogin username token */
 static int handle_tlogin(ship_client_t *c, const char *params) {
-    char username[32], token[32];
+    char username[32] = { 0 }, token[32] = { 0 };
     int len = 0;
     const char *ch = params;
 
@@ -3070,7 +3070,7 @@ static int handle_showpos(ship_client_t *c, const char *params) {
 static int handle_t(ship_client_t *c, const char *params) {
     char *str, *tok = { 0 }, *xs, *ys, *zs;
     float x, y, z;
-    subcmd_teleport_t p2;
+    subcmd_teleport_t p2 = { 0 };
     lobby_t *l = c->cur_lobby;
 
     if(!LOCAL_GM(c))
@@ -3337,7 +3337,7 @@ static int handle_eteamlog(ship_client_t *c, const char *params) {
 
 /* 用法: /ib days ip reason */
 static int handle_ib(ship_client_t *c, const char *params) {
-    struct sockaddr_storage addr, netmask;
+    struct sockaddr_storage addr = { 0 }, netmask = { 0 };
     struct sockaddr_in *ip = (struct sockaddr_in *)&addr;
     struct sockaddr_in *nm = (struct sockaddr_in *)&netmask;
     block_t *b;
@@ -3423,7 +3423,7 @@ static int handle_ib(ship_client_t *c, const char *params) {
 
 /* 用法: /xblink username token */
 static int handle_xblink(ship_client_t *c, const char *params) {
-    char username[32], token[32];
+    char username[32] = { 0 }, token[32] = { 0 };
     int len = 0;
     const char *ch = params;
 
@@ -3591,7 +3591,7 @@ static command_t cmds[] = {
 
 static int command_call(ship_client_t *c, const char *txt, size_t len) {
     command_t *i = &cmds[0];
-    char cmd[10], params[512] = { 0 };
+    char cmd[10] = { 0 }, params[512] = { 0 };
     const char *ch = txt + 3;           /* Skip the language code and '/'. */
     int clen = 0;
 

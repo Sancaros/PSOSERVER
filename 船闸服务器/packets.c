@@ -806,7 +806,7 @@ int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
     if (pkt_len & 0x07)
         pkt_len = (pkt_len + 8) & 0xFFF8;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, pkt_len);
     pkt->hdr.pkt_len = htons(pkt_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SDATA);
@@ -829,7 +829,7 @@ int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
     if (c->proto_ver < 17)
         return 0;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, sizeof(shipgate_qflag_pkt));
     pkt->hdr.pkt_len = htons(sizeof(shipgate_qflag_pkt));
     pkt->hdr.pkt_type = htons(type);
@@ -853,7 +853,7 @@ int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
     if (c->proto_ver < 19)
         return 0;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, sizeof(shipgate_shipctl_pkt));
     pkt->hdr.pkt_len = htons(sizeof(shipgate_shipctl_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SHIP_CTL);
@@ -873,7 +873,7 @@ int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
     if (c->proto_ver < 19)
         return 0;
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     memset(pkt, 0, sizeof(shipgate_sctl_shutdown_pkt));
     pkt->hdr.pkt_len = htons(sizeof(shipgate_sctl_shutdown_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SHIP_CTL);

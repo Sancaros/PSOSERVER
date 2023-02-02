@@ -92,7 +92,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                                         struct sockaddr *ip, socklen_t size) {
     ship_client_t *rv = (ship_client_t *)malloc(sizeof(ship_client_t));
     uint32_t client_seed_dc, server_seed_dc;
-    uint8_t client_seed_bb[48], server_seed_bb[48];
+    uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
     int i;
     pthread_mutexattr_t attr;
     struct mt19937_state *rng;
@@ -922,7 +922,7 @@ int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
 }
 
 static int check_char_v1(ship_client_t *c, player_t *pl) {
-    bitfloat_t f1, f2;
+    bitfloat_t f1 = { 0 }, f2 = { 0 };
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
@@ -1015,7 +1015,7 @@ static int check_char_xbox(ship_client_t *c, player_t *pl) {
 }
 
 static int check_char_bb(ship_client_t* c, player_t* pl) {
-    bitfloat_t f1, f2;
+    bitfloat_t f1 = { 0 }, f2 = { 0 };
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
@@ -1485,7 +1485,7 @@ static int client_level_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
 
         if(c->pl)
-            lua_pushinteger(l, c->pl->v1.character.disp.level + 1);
+            lua_pushinteger(l, (lua_Integer)(c->pl->v1.character.disp.level + 1));
         else
             lua_pushinteger(l, -1);
     }
@@ -1563,7 +1563,7 @@ static int client_dropItem_lua(lua_State *l) {
     ship_client_t *c;
     lobby_t *lb;
     uint32_t item[4] = { 0, 0, 0, 0 };
-    subcmd_drop_stack_t p2;
+    subcmd_drop_stack_t p2 = { 0 };
 
     /* We need at least the client itself and the first dword of the item */
     if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
@@ -1804,7 +1804,7 @@ static int client_legitCheck_lua(lua_State *l) {
 static int client_legitCheckItem_lua(lua_State *l) {
     ship_client_t *c;
     lua_Integer ic1, ic2, ic3, ic4, v;
-    iitem_t item;
+    iitem_t item = { 0 };
     int rv;
 
     if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&

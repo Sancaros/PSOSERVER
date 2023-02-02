@@ -444,7 +444,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
     {
         subcmd_bb_gcsend_t bb;
 
-        /* Fill in the packet... */
+        /* 填充数据并准备发送.. */
         memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
@@ -545,12 +545,12 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
 }
 
 static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
-    subcmd_bb_itemgen_t gen;
+    subcmd_bb_itemgen_t gen = { 0 };
     int r = LE16(req->request_id);
     int i;
     lobby_t* l = c->cur_lobby;
 
-    /* Fill in the packet we'll send out. */
+    /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
@@ -1281,7 +1281,7 @@ static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
     /* Clean up the user's bank first... */
     cleanup_bb_bank(c);
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt->hdr.pkt_len = LE16(size);
     pkt->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
     pkt->hdr.flags = 0;
@@ -1300,9 +1300,9 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     uint32_t item_id;
     uint32_t amt, bank, inv, i;
     int found = -1, stack, isframe = 0;
-    iitem_t iitem;
-    bitem_t bitem;
-    uint32_t ic[3];
+    iitem_t iitem = { 0 };
+    bitem_t bitem = { 0 };
+    uint32_t ic[3] = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2868,8 +2868,8 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
 
 static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    inventory_t inv;
-    inventory_t mode_inv;
+    inventory_t inv = { 0 };
+    inventory_t mode_inv = { 0 };
     int i, j, found = 0;
     int item_used[30] = { 0 };
     int mode_item_used[30] = { 0 };
@@ -4104,7 +4104,7 @@ static int handle_bb_level_up(ship_client_t* c, subcmd_bb_level_up_t* pkt) {
 }
 
 static int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
-    subcmd_word_select_t gc;
+    subcmd_word_select_t gc = { 0 };
 
     /* Don't send the message if they have the protection flag on. */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -5088,11 +5088,11 @@ int subcmd_bb_handle_bcast_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
 int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
     const iitem_t* item) {
-    subcmd_bb_itemgen_t gen;
+    subcmd_bb_itemgen_t gen = { 0 };
     int i;
     uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
 
-    /* Fill in the packet we'll send out. */
+    /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
@@ -5125,17 +5125,18 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
 
 int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
     const iitem_t* item) {
-    subcmd_bb_itemgen_t gen;
+    subcmd_bb_itemgen_t gen = { 0 };
     int i;
     uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
 
-    /* Fill in the packet we'll send out. */
+    /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
     gen.shdr.type = SUBCMD60_ENEMY_ITEM_DROP_REQ;
     gen.shdr.size = 0x06;
     gen.shdr.unused = 0x0000;
+
     gen.data.area = req->area;
     gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
     gen.data.request_id = req->request_id;
@@ -5163,7 +5164,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     subcmd_bb_exp_t pkt = { 0 };
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(0x0010);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
@@ -5197,7 +5198,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     if (exp_r <= 1)
         exp_r = 1;
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(0x000C);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0x00000000;
@@ -5224,7 +5225,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
     int i;
     uint16_t base, mag;
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(0x001C);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
@@ -5232,7 +5233,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
     pkt.shdr.size = 0x05;
     pkt.shdr.client_id = c->client_id;
 
-    /* Fill in the base statistics. These are all in little-endian already. */
+    /* 填充人物基础数据. 均为 little-endian 字符串. */
     pkt.atp = c->bb_pl->character.disp.stats.atp;
     pkt.mst = c->bb_pl->character.disp.stats.mst;
     pkt.evp = c->bb_pl->character.disp.stats.evp;
@@ -5241,7 +5242,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
     pkt.ata = c->bb_pl->character.disp.stats.ata;
     pkt.level = c->bb_pl->character.disp.level;
 
-    /* Add in the mag's bonus. */
+    /* 增加MAG的升级奖励. */
     for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
         if ((c->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
             c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) {
@@ -5273,7 +5274,7 @@ static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item) {
     subcmd_bb_drop_stack_t drop = { 0 };
 
-    /* Fill in the packet... */
+    /* 填充数据并准备发送.. */
     drop.hdr.pkt_len = LE16(0x002C);
     drop.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     drop.hdr.flags = 0;
@@ -5296,7 +5297,7 @@ static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
 static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client) {
     subcmd_bb_create_item_t new_item = { 0 };
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     new_item.hdr.pkt_len = LE16(0x0024);
     new_item.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     new_item.hdr.flags = 0;
@@ -5318,7 +5319,7 @@ static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id) {
     subcmd_bb_destroy_map_item_t d = { 0 };
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     d.hdr.pkt_len = LE16(0x0014);
     d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     d.hdr.flags = 0;
@@ -5336,7 +5337,7 @@ static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt) {
     subcmd_bb_destroy_item_t d = { 0 };
 
-    /* Fill in the packet. */
+    /* 填充数据并准备发送 */
     d.hdr.pkt_len = LE16(0x0014);
     d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     d.hdr.flags = 0;
