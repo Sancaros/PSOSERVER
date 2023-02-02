@@ -1167,7 +1167,7 @@ typedef struct subcmd_bb_itemreq {
     uint32_t unk2[2];
 } PACKED subcmd_bb_itemreq_t;
 
-// 0x61: Feed MAG
+// 0x61: levelup_req
 //[2023年02月01日 00:24 : 12 : 940] 调试(subcmd - bb.c 4279) : BB处理任务 GC 42004064 60指令 : 0x61
 //(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 21 00    ..`.....a.....!.
 //(00000010)   02 00 00 00                                         ....

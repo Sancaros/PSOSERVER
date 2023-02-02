@@ -53,6 +53,27 @@ int subcmd_bb_60size_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
+    //if (type != SUBCMD_MOVE_FAST && type != SUBCMD_MOVE_SLOW) {
+    //    switch (l->type) {
+
+    //    case LOBBY_TYPE_LOBBY:
+    //        DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
+
+    //    case LOBBY_TYPE_GAME:
+    //        if (l->flags & LOBBY_FLAG_QUESTING) {
+    //            DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        }
+    //        else
+    //            DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
+
+    //    default:
+    //        DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
+    //    }
+    //}
+
     sizecheck *= 4;
     sizecheck += 8;
 
@@ -114,13 +135,13 @@ int subcmd_bb_60size_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
 
 int subcmd_bb_626Dsize_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     uint8_t type = pkt->type;
-    lobby_t* l = c->cur_lobby;
     int sent = 0;
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
-    if (!l)
-        return -1;
+    //DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
+
+    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
     sizecheck *= 4;
     sizecheck += 8;
@@ -1597,10 +1618,6 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     uint8_t type = pkt->type;
     int rv = -1;
     uint32_t dnum = LE32(pkt->hdr.flags);
-
-    //DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
-
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
     /* Ignore these if the client isn't in a lobby. */
     if (!l)
@@ -4401,14 +4418,14 @@ static int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt
         return -1;
     }
 
-    //if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
-    //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-    //        c->guildcard, pkt->shdr.type);
-    //    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-    //    return -1;
-    //}
+    if (pkt->hdr.pkt_len != LE16(0x0014)) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
 
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
@@ -4451,32 +4468,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0, sent = 1, i;
 
-    //if (type != SUBCMD_MOVE_FAST && type != SUBCMD_MOVE_SLOW) {
-    //    switch (l->type) {
-
-    //    case LOBBY_TYPE_LOBBY:
-    //        DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
-
-    //    case LOBBY_TYPE_GAME:
-    //        if (l->flags & LOBBY_FLAG_QUESTING) {
-    //            DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        }
-    //        else
-    //            DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
-
-    //    default:
-    //        DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
-    //    }
-    //}
-
-    //DBG_LOG("60指令: 0x%02X sent = %d", type, subcmd_bb_60size_check(c, pkt));
-
     sent = subcmd_bb_60size_check(c, pkt);
-
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
     /* Ignore these if the client isn't in a lobby. */
     if (!l)
