@@ -2952,48 +2952,6 @@ typedef struct bb_autoreply_set {
 //    // which effectively erases the uninitialized data.
 //    parray<ItemData, 0x20> items;
 //} PACKED;
-//[2022年08月24日 10:24 : 40 : 052] 调试(2111) : 舰仓：BB处理数据 指令 0x00D0 TRADE_0_TYPE 长度 652 字节 标志 0 GC 42004063
-//(00000000)   8C 02 D0 00 00 00 00 00  00 00 01 00 00 06 00 00    ................
-//(00000010)   00 00 00 00 00 00 00 00  00 00 21 00 00 00 00 00    ..........!.....
-//(00000020)   00 00 00 00 00 00 00 00  00 00 9E 42 00 00 00 00    ...........B....
-//(00000030)   00 00 00 00 00 00 00 00  00 00 20 44 00 00 F0 43    ..........D...C
-//(00000040)   24 7D 2B 04 00 00 00 00  52 0E E2 60 3C 77 80 06    $} + .....R..`<w..
-//(00000050)   10 C6 8E 23 00 00 E6 43  00 00 9E 42 00 00 00 00    ...#...C...B....
-//(00000060)   00 00 E6 43 01 00 00 00  00 00 00 00 9C D7 41 7B    ...C..........A{
-//(00000070)   FB CE 09 00 20 B1 7A 06  F0 04 E2 60 6A 05 E2 60    ..   ..z....`j..`
-//(00000080)   40 BF AC 00 00 FE 7A 06  71 3D 0A 3F E1 7A 54 3F    @.....z.q = . ? .zT ?
-//(00000090)   98 C0 8D 06 00 60 FE 7F  F0 C1 AF 07 00 00 7C 42    .....`........ | B
-//(000000A0)   00 00 A2 42 00 00 7C 42  50 A2 23 04 00 00 00 00    ...B.. | BP.#.....
-//(000000B0)   00 4D 8F 79 68 FA E8 03  96 1F E3 60 00 A8 EC 00.M.yh......`....
-//(000000C0)   5C FA E8 03 20 1F E3 60  20 B1 7A 06 00 00 80 3F    \... ..`.z.... ?
-//(000000D0)   29 42 A4 46 8F 01 80 BF  80 FA E8 03 BA 04 E2 60    )B.F...........`
-//(000000E0)   40 BF AC 00 24 7D 2B 04  70 03 E2 60 38 FF E8 03    @...$ } + .p..`8...
-//(000000F0)   C4 FA E8 03 25 03 E2 60  20 7D 2B 04 03 00 00 00    .... % ..` } + .....
-//(00000100)   40 BF AC 00 9C 30 B7 32  00 00 80 3F 00 10 A4 46    @....0.2... ? ...F
-//(00000110)   38 FF E8 03 24 7D 2B 04  00 00 00 00 74 07 00 00    8...$} + .....t...
-//(00000120)   24 7D 2B 04 94 FA E8 03  D8 FC E8 03 28 28 E4 60    $} + .........((.`
-//(00000130)   FF FF FF FF 21 5C 18 00  D6 0B 00 00 6C 73 35 4B    ....!\......ls5K
-//(00000140)   BE EB 12 00 0C FB E8 03  92 59 02 00 21 E4 3B 02    .........Y..!.; .
-//(00000150)   20 FB E8 03 01 00 00 00  0C FB E8 03 3C 00 00 00     ........... < ...
-//(00000160)   A3 B7 D8 01 86 EE 8E B7  00 00 00 00 21 E4 3B 02    ............!.; .
-//(00000170)   20 FB E8 03 07 00 00 00  A5 01 00 00 54 FB E8 03     ...........T...
-//(00000180)   C6 CD B2 77 B0 FB E8 03  F4 FB E8 03 18 FC E8 03    ...w............
-//(00000190)   E6 07 08 00 18 00 0A 00  18 00 27 00 C9 01 03 00    ..........'.....
-//(000001A0)   86 EE 8E B7 A3 B7 D8 01  00 00 00 00 00 00 00 00    ................
-//(000001B0)   00 00 00 00 BC FF FF FF  00 C0 DC F1 00 00 00 00    ................
-//(000001C0)   00 00 00 00 94 FB E8 03  B7 FA 43 76 89 AB B2 77    ..........Cv...w
-//(000001D0)   7C FB E8 03 7C FB E8 03  4B 43 43 76 0B 00 00 00 | ... | ...KCCv....
-//(000001E0)   78 FB E8 03 70 4B F7 10  A8 13 0E 03 AC FB E8 03    x...pK..........
-//(000001F0)   EF C5 85 00 C8 6B 71 00  55 79 71 00 40 BF F6 21    .....kq.Uyq.@..!
-//(00000200)   3C 00 00 00 D8 FB E8 03  C0 FB E8 03 38 FF E8 03 < ...........8...
-//(00000210)   B7 A2 85 00 B4 FB E8 03  F0 7F A6 01 C4 FB E8 03    ................
-//(00000220)   C6 B4 85 00 09 00 00 00  AC C5 F4 21 C0 C4 F4 21    .... ......!...!
-//(00000230)   E7 8B 05 63 00 00 00 00  F4 B4 85 00 01 00 00 00    ...c............
-//(00000240)   A2 AD 83 00 D8 FB E8 03  27 00 00 00 18 00 00 00    ........'.......
-//(00000250)   0A 00 00 00 18 00 00 00  09 00 00 00 7A 00 00 00    ........     ...z...
-//(00000260)   A0 BE F6 21 40 BF F6 21  40 BF F6 21 A0 BE F6 21    ...!@..!@..!...!
-//(00000270)   38 71 71 00 A0 BE F6 21  90 FB E8 03 D8 FC E8 03    8qq....!........
-//(00000280)   5A 09 8F 00 FF FF FF FF  00 00 00 00                Z    ..........
 typedef struct bb_trade_D0_D3 { // D0 when sent by client, D3 when sent by server
     bb_pkt_hdr_t hdr;
     //uint8_t type;
@@ -3478,11 +3436,12 @@ typedef struct bb_opt_config {
 //} PACKED;
 
 // E3 (C->S): Player preview request (BB) BB_CHARACTER_SELECT_TYPE
-typedef struct bb_player_preview_request {
+// Blue Burst packet used to select a character.
+typedef struct bb_char_select {
     bb_pkt_hdr_t hdr;
-    uint32_t player_index;
-    uint32_t unused;
-} PACKED bb_player_preview_request_t;
+    uint32_t slot;
+    uint32_t reason;
+} PACKED bb_char_select_pkt;
 
 // E4: CARD lobby battle table state (Episode 3)
 // When client sends an E4, server should respond with another E4 (but these
@@ -3674,16 +3633,12 @@ typedef struct bb_checksum_ack {
 // Format is GuildCardBB (see Player.hh)
 typedef bb_guildcard_pkt bb_guildcard_add_pkt;
 
-typedef bb_guildcard_pkt bb_blacklist_add_pkt;
-
 // 05E8 (C->S): Delete guild card
 // Blue Burst packet for deleting a Guildcard
 typedef struct bb_guildcard_del {
     bb_pkt_hdr_t hdr;
     uint32_t guildcard;
 } PACKED bb_guildcard_del_pkt;
-
-typedef bb_guildcard_del_pkt bb_blacklist_del_pkt;
 
 // 06E8 (C->S): Update (overwrite) guild card
 // Note: This command is also sent when the player writes a comment on their own
@@ -3694,23 +3649,33 @@ typedef bb_guildcard_pkt bb_guildcard_set_txt_pkt;
 
 // 07E8 (C->S): Add blocked user
 // Format is GuildCardBB (see Player.hh)
+typedef bb_guildcard_pkt bb_blacklist_add_pkt;
 
 // 08E8 (C->S): Delete blocked user
 // Same format as 05E8.
+typedef bb_guildcard_del_pkt bb_blacklist_del_pkt;
 
 // 09E8 (C->S): Write comment
-struct C_WriteGuildCardComment_BB_09E8 {
+// Blue Burst packet for setting a comment on a Guildcard
+typedef struct bb_guildcard_comment {
     bb_pkt_hdr_t hdr;
-    uint32_t guild_card_number;
-    uint16_t comment[0x58];
-} PACKED;
+    uint32_t guildcard;
+    uint16_t text[88];
+} PACKED bb_guildcard_comment_pkt;
 
 // 0AE8 (C->S): Set guild card position in list
-struct C_MoveGuildCard_BB_0AE8 {
+// Blue Burst packet for sorting Guildcards
+typedef struct bb_guildcard_sort {
     bb_pkt_hdr_t hdr;
-    uint32_t guild_card_number;
-    uint32_t position;
-} PACKED;
+    uint32_t guildcard1;
+    uint32_t guildcard2;
+} PACKED bb_guildcard_sort_pkt;
+
+//struct C_MoveGuildCard_BB_0AE8 {
+//    bb_pkt_hdr_t hdr;
+//    uint32_t guild_card_number;
+//    uint32_t position;
+//} PACKED;
 
 // E9 (S->C): Remove player from spectator team (Episode 3)
 // Same format as 66/69 commands. Like 69 (and unlike 66), the disable_udp field
@@ -3763,6 +3728,7 @@ typedef struct bb_guild_create {
     uint32_t guildcard;
 } PACKED bb_guild_create_pkt;
 
+// 02EA (S->C): UNKNOW
 typedef struct bb_guild_unk_02EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
@@ -3775,6 +3741,7 @@ typedef struct bb_guild_member_add {
     uint8_t data[];
 } PACKED bb_guild_member_add_pkt;
 
+// 04EA (S->C): UNKNOW
 typedef struct bb_guild_unk_04EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
@@ -3788,10 +3755,12 @@ typedef struct bb_guild_member_remove {
     uint8_t data[];
 } PACKED bb_guild_member_remove_pkt;
 
+// 06EA (S->C): UNKNOW
 typedef struct bb_guild_unk_06EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_06EA_pkt;
+
 //[2023年02月02日 08:30 : 07 : 656] 调试(block - bb.c 2174) : 舰仓：BB 公会功能指令 0x07EA BB_GUILD_CHAT - 0x07EA (长度52)
 //[2023年02月02日 08:30 : 07 : 747] 调试(shipgate.c 0661) : G->S 指令0x07EA 42004063 0
 //(00000000)   34 00 EA 07 00 00 00 00  5F EE 80 02 41 53 27 59    4......._...AS'Y
@@ -3819,21 +3788,25 @@ typedef struct bb_guild_member_setting {
     //uint8_t data[];
 } PACKED bb_guild_member_setting_pkt;
 
+// 09EA (S->C): UNKNOW
 typedef struct bb_guild_unk_09EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_09EA_pkt;
 
+// 0AEA (S->C): UNKNOW
 typedef struct bb_guild_unk_0AEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_0AEA_pkt;
 
+// 0BEA (S->C): UNKNOW
 typedef struct bb_guild_unk_0BEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_0BEA_pkt;
 
+// 0CEA (S->C): UNKNOW
 typedef struct bb_guild_unk_0CEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
@@ -3935,11 +3908,13 @@ typedef struct bb_guild_unk_15EA {
     uint32_t guild_rewards[2];
 } PACKED bb_guild_full_data_15EA_pkt;
 
+// 16EA (S->C): UNKNOW
 typedef struct bb_guild_unk_16EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_16EA_pkt;
 
+// 17EA (S->C): UNKNOW
 typedef struct bb_guild_unk_17EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
@@ -3986,6 +3961,7 @@ typedef struct bb_guild_rank_list {
     uint8_t data[];
 } PACKED bb_guild_rank_list_pkt;
 
+// 1DEA (S->C): UNKNOW
 typedef struct bb_guild_unk_1DEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
@@ -4000,6 +3976,9 @@ typedef struct bb_guild_unk_1EEA {
 
 // 20EA (C->S): Unknown
 // header.flag is used, but no other arguments
+typedef struct bb_guild_unk_20EA {
+    bb_pkt_hdr_t hdr;
+} PACKED bb_guild_unk_20EA_pkt;
 
 // EB (S->C): Add player to spectator team (Episode 3)
 // Same format and usage as 65 and 68 commands, but sent to spectators in a
@@ -4484,27 +4463,6 @@ typedef struct ep3_game_create {
     uint8_t view_battle;
     uint8_t episode;
 } PACKED ep3_game_create_pkt;
-
-/* Blue Burst packet used to select a character. */
-typedef struct bb_char_select {
-    bb_pkt_hdr_t hdr;
-    uint32_t slot;
-    uint32_t reason;
-} PACKED bb_char_select_pkt;
-
-/* Blue Burst packet for sorting Guildcards */
-typedef struct bb_guildcard_sort {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard1;
-    uint32_t guildcard2;
-} PACKED bb_guildcard_sort_pkt;
-
-/* Blue Burst packet for setting a comment on a Guildcard */
-typedef struct bb_guildcard_comment {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard;
-    uint16_t text[88];
-} PACKED bb_guildcard_comment_pkt;
 
 /* Gamecube quest statistics packet (from Maximum Attack 2). */
 typedef struct gc_quest_stats {

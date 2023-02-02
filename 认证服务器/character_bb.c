@@ -921,8 +921,24 @@ static int handle_setflag(login_client_t* c, bb_setflag_pkt* pkt) {
 
 /* 0x01E8 488*/
 static int handle_checksum(login_client_t *c, bb_checksum_pkt *pkt) {
+    uint32_t ack_checksum = 1;
+
+    if (!c->gc_data) {
+        c->gc_data = (bb_guildcard_data_t*)malloc(sizeof(bb_guildcard_data_t));
+
+        if (!c->gc_data) {
+            ERR_LOG("无法分配GC数据的内存空间");
+            ERR_LOG("%s", strerror(errno));
+            return -1;
+        }
+    }
+
+    ack_checksum = psocn_crc32((uint8_t*)c->gc_data, sizeof(bb_guildcard_data_t));
+
+    //DBG_LOG("ack_checksum = %d %d", ack_checksum, pkt->checksum);
+
     /* XXXX: Do something with this some time... */
-    return send_bb_checksum_ack(c, 1);
+    return send_bb_checksum_ack(c, ack_checksum);
 }
 
 /* 0x03E8 1000*/
