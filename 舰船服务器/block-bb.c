@@ -1652,7 +1652,7 @@ static int bb_set_guild_text(ship_client_t* c, bb_guildcard_set_txt_pkt* pkt) {
         return -1;
     }
 
-    memcpy(c->bb_pl->guildcard_desc, pkt->text, sizeof(bb_guildcard_set_txt_pkt));
+    memcpy(c->bb_pl->guildcard_desc, pkt->gc_data.guildcard_desc, sizeof(bb_guildcard_set_txt_pkt));
     return 0;
 }
 

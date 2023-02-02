@@ -587,7 +587,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.disable_udp = 1;
     gcpkt.language = CLIENT_LANG_ENGLISH;
     gcpkt.section = 0;
-    gcpkt.char_class = 8;
+    gcpkt.ch_class = 8;
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
     sprintf(gcpkt.name, __(c, "Report Bug"));
     sprintf(gcpkt.text, __(c, "Send a Simple Mail to this guildcard to report "
@@ -1191,7 +1191,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.disable_udp = 1;
     gcpkt.language = CLIENT_LANG_ENGLISH;
     gcpkt.section = 0;
-    gcpkt.char_class = 8;
+    gcpkt.ch_class = 8;
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
 
     /* Send the packet */

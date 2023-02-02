@@ -306,7 +306,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         dc.disable_udp = 1;
         dc.language = src->language_code;
         dc.section = src->pl->bb.character.disp.dress_data.section;
-        dc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
+        dc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
@@ -341,7 +341,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         pc.disable_udp = 1;
         pc.language = src->language_code;
         pc.section = src->pl->bb.character.disp.dress_data.section;
-        pc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
+        pc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
@@ -387,7 +387,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         gc.disable_udp = 1;
         gc.language = src->language_code;
         gc.section = src->pl->bb.character.disp.dress_data.section;
-        gc.char_class = src->pl->bb.character.disp.dress_data.ch_class;
+        gc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
@@ -435,7 +435,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         xb.disable_udp = 1;
         xb.language = src->language_code;
         xb.section = src->pl->bb.character.disp.dress_data.section;
-        xb.char_class = src->pl->bb.character.disp.dress_data.ch_class;
+        xb.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
@@ -459,7 +459,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         bb.disable_udp = 1;
         bb.language = src->language_code;
         bb.section = src->pl->bb.character.disp.dress_data.section;
-        bb.char_class = src->pl->bb.character.disp.dress_data.ch_class;
+        bb.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
 
         return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }

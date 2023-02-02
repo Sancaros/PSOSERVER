@@ -74,7 +74,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             gc.disable_udp = 1;
             gc.language = pkt->language;
             gc.section = pkt->section;
-            gc.char_class = pkt->char_class;
+            gc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&gc);
         }
@@ -103,7 +103,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             xb.disable_udp = 1;
             xb.language = pkt->language;
             xb.section = pkt->section;
-            xb.char_class = pkt->char_class;
+            xb.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&xb);
         }
@@ -160,7 +160,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             pc.disable_udp = 1;
             pc.language = pkt->language;
             pc.section = pkt->section;
-            pc.char_class = pkt->char_class;
+            pc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&pc);
         }
@@ -207,7 +207,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             bb.disable_udp = 1;
             bb.language = pkt->language;
             bb.section = pkt->section;
-            bb.char_class = pkt->char_class;
+            bb.ch_class = pkt->ch_class;
 
             return send_pkt_bb(d, (bb_pkt_hdr_t *)&bb);
         }
@@ -275,7 +275,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             dc.disable_udp = 1;
             dc.language = pkt->language;
             dc.section = pkt->section;
-            dc.char_class = pkt->char_class;
+            dc.ch_class = pkt->ch_class;
             dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&dc);
@@ -324,7 +324,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             gc.disable_udp = 1;
             gc.language = pkt->language;
             gc.section = pkt->section;
-            gc.char_class = pkt->char_class;
+            gc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&gc);
         }
@@ -372,7 +372,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             xb.disable_udp = 1;
             xb.language = pkt->language;
             xb.section = pkt->section;
-            xb.char_class = pkt->char_class;
+            xb.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&xb);
         }
@@ -397,7 +397,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             bb.disable_udp = 1;
             bb.language = pkt->language;
             bb.section = pkt->section;
-            bb.char_class = pkt->char_class;
+            bb.ch_class = pkt->ch_class;
 
             return send_pkt_bb(d, (bb_pkt_hdr_t *)&bb);
         }
@@ -442,7 +442,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             dc.disable_udp = 1;
             dc.language = pkt->language;
             dc.section = pkt->section;
-            dc.char_class = pkt->char_class;
+            dc.ch_class = pkt->ch_class;
             dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&dc);
@@ -472,7 +472,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             xb.disable_udp = 1;
             xb.language = pkt->language;
             xb.section = pkt->section;
-            xb.char_class = pkt->char_class;
+            xb.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&xb);
         }
@@ -524,7 +524,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             pc.disable_udp = 1;
             pc.language = pkt->language;
             pc.section = pkt->section;
-            pc.char_class = pkt->char_class;
+            pc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&pc);
         }
@@ -571,7 +571,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             bb.disable_udp = 1;
             bb.language = pkt->language;
             bb.section = pkt->section;
-            bb.char_class = pkt->char_class;
+            bb.ch_class = pkt->ch_class;
 
             return send_pkt_bb(d, (bb_pkt_hdr_t *)&bb);
         }
@@ -615,7 +615,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             dc.disable_udp = 1;
             dc.language = pkt->language;
             dc.section = pkt->section;
-            dc.char_class = pkt->char_class;
+            dc.ch_class = pkt->ch_class;
             dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&dc);
@@ -645,7 +645,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             gc.disable_udp = 1;
             gc.language = pkt->language;
             gc.section = pkt->section;
-            gc.char_class = pkt->char_class;
+            gc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&gc);
         }
@@ -701,7 +701,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             pc.disable_udp = 1;
             pc.language = pkt->language;
             pc.section = pkt->section;
-            pc.char_class = pkt->char_class;
+            pc.ch_class = pkt->ch_class;
 
             return send_pkt_dc(d, (dc_pkt_hdr_t *)&pc);
         }
@@ -748,7 +748,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             bb.disable_udp = 1;
             bb.language = pkt->language;
             bb.section = pkt->section;
-            bb.char_class = pkt->char_class;
+            bb.ch_class = pkt->ch_class;
 
             return send_pkt_bb(d, (bb_pkt_hdr_t *)&bb);
         }

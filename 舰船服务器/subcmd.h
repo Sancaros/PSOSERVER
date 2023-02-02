@@ -124,7 +124,7 @@ typedef struct subcmd_dc_gcsend {
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
-    uint8_t char_class;
+    uint8_t ch_class;
     uint8_t padding[3];
 } PACKED subcmd_dc_gcsend_t;
 
@@ -141,7 +141,7 @@ typedef struct subcmd_pc_gcsend {
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
-    uint8_t char_class;
+    uint8_t ch_class;
 } PACKED subcmd_pc_gcsend_t;
 
 // 0x06: Send guild card
@@ -157,7 +157,7 @@ typedef struct subcmd_gc_gcsend {
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
-    uint8_t char_class;
+    uint8_t ch_class;
 } PACKED subcmd_gc_gcsend_t;
 
 // 0x06: Send guild card
@@ -173,7 +173,7 @@ typedef struct subcmd_xb_gcsend {
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
-    uint8_t char_class;
+    uint8_t ch_class;
 } PACKED subcmd_xb_gcsend_t;
 
 // 0x06: Send guild card
@@ -188,7 +188,7 @@ typedef struct subcmd_bb_gc_send {
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
-    uint8_t char_class;
+    uint8_t ch_class;
 } PACKED subcmd_bb_gcsend_t;
 
 // 0x07: Symbol chat

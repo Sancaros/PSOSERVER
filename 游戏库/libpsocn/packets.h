@@ -3640,6 +3640,10 @@ typedef struct bb_full_char {
 //} PACKED;
 
 // E8 (C->S): Guild card commands (BB)
+typedef struct bb_guildcard {
+    bb_pkt_hdr_t hdr;
+    psocn_bb_guild_card_t gc_data;
+} PACKED bb_guildcard_pkt;
 
 // 01E8 (C->S): Check guild card file checksum
 // This struct is for documentation purposes only; newserv ignores the contents
@@ -3662,29 +3666,31 @@ typedef struct bb_checksum_ack {
     uint32_t ack;
 } PACKED bb_checksum_ack_pkt;
 
-struct S_GuildCardChecksumResponse_BB_02E8 {
-    bb_pkt_hdr_t hdr;
-    uint32_t needs_update;
-    uint32_t unused;
-} PACKED;
-
 // 03E8 (C->S): Request guild card file
 // No arguments
 // Server should send the guild card file data using DC commands.
 
 // 04E8 (C->S): Add guild card
 // Format is GuildCardBB (see Player.hh)
+typedef bb_guildcard_pkt bb_guildcard_add_pkt;
+
+typedef bb_guildcard_pkt bb_blacklist_add_pkt;
 
 // 05E8 (C->S): Delete guild card
-struct C_DeleteGuildCard_BB_05E8_08E8 {
+// Blue Burst packet for deleting a Guildcard
+typedef struct bb_guildcard_del {
     bb_pkt_hdr_t hdr;
-    uint32_t guild_card_number;
-} PACKED;
+    uint32_t guildcard;
+} PACKED bb_guildcard_del_pkt;
+
+typedef bb_guildcard_del_pkt bb_blacklist_del_pkt;
 
 // 06E8 (C->S): Update (overwrite) guild card
 // Note: This command is also sent when the player writes a comment on their own
 // guild card.
 // Format is GuildCardBB (see Player.hh)
+// Blue Burst packet for adding a Guildcard to the user's list
+typedef bb_guildcard_pkt bb_guildcard_set_txt_pkt;
 
 // 07E8 (C->S): Add blocked user
 // Format is GuildCardBB (see Player.hh)
@@ -4485,31 +4491,6 @@ typedef struct bb_char_select {
     uint32_t slot;
     uint32_t reason;
 } PACKED bb_char_select_pkt;
-
-
-/* Blue Burst packet for adding a Guildcard to the user's list */
-typedef struct bb_guildcard_add {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard;
-    uint16_t name[24];
-    uint16_t guild_name[16];
-    uint16_t text[88];
-    uint8_t one;
-    uint8_t language;
-    uint8_t section;
-    uint8_t char_class;
-} PACKED bb_guildcard_add_pkt;
-
-typedef bb_guildcard_add_pkt bb_blacklist_add_pkt;
-typedef bb_guildcard_add_pkt bb_guildcard_set_txt_pkt;
-
-/* Blue Burst packet for deleting a Guildcard */
-typedef struct bb_guildcard_del {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard;
-} PACKED bb_guildcard_del_pkt;
-
-typedef bb_guildcard_del_pkt bb_blacklist_del_pkt;
 
 /* Blue Burst packet for sorting Guildcards */
 typedef struct bb_guildcard_sort {

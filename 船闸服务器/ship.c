@@ -1329,7 +1329,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guildcard_add_pkt* gc = (bb_guildcard_add_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    uint32_t fr_gc = LE32(gc->guildcard);
+    uint32_t fr_gc = LE32(gc->gc_data.guildcard);
     char query[1024];
     char name[97];
     char guild_name[65];
@@ -1341,9 +1341,9 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Escape all the strings first */
-    psocn_db_escape_str(&conn, name, (char*)gc->name, 48);
-    psocn_db_escape_str(&conn, guild_name, (char*)gc->guild_name, 32);
-    psocn_db_escape_str(&conn, text, (char*)gc->text, 176);
+    psocn_db_escape_str(&conn, name, (char*)gc->gc_data.name, 48);
+    psocn_db_escape_str(&conn, guild_name, (char*)gc->gc_data.guild_name, 32);
+    psocn_db_escape_str(&conn, text, (char*)gc->gc_data.guildcard_desc, 176);
 
     /* Add the entry in the db... */
     sprintf(query, "INSERT INTO %s (guildcard, friend_gc, "
@@ -1352,8 +1352,8 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         PRIu8 "', '%" PRIu8 "') ON DUPLICATE KEY UPDATE "
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
         "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_BLUEBURST_GUILDCARDS, sender,
-        fr_gc, name, guild_name, text, gc->language, gc->section,
-        gc->char_class);
+        fr_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
+        gc->gc_data.ch_class);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法新增GC好友 (%" PRIu32 ": %" PRIu32
@@ -1435,7 +1435,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_blacklist_add_pkt* gc = (bb_blacklist_add_pkt*)pkt->pkt;
     uint16_t len = LE16(gc->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    uint32_t bl_gc = LE32(gc->guildcard);
+    uint32_t bl_gc = LE32(gc->gc_data.guildcard);
     char query[1024];
     char name[97];
     char guild_name[65];
@@ -1447,9 +1447,9 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Escape all the strings first */
-    psocn_db_escape_str(&conn, name, (char*)gc->name, 48);
-    psocn_db_escape_str(&conn, guild_name, (char*)gc->guild_name, 32);
-    psocn_db_escape_str(&conn, text, (char*)gc->text, 176);
+    psocn_db_escape_str(&conn, name, (char*)gc->gc_data.name, 48);
+    psocn_db_escape_str(&conn, guild_name, (char*)gc->gc_data.guild_name, 32);
+    psocn_db_escape_str(&conn, text, (char*)gc->gc_data.guildcard_desc, 176);
 
     /* Add the entry in the db... */
     sprintf(query, "INSERT INTO %s (guildcard, blocked_gc, "
@@ -1458,8 +1458,8 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         PRIu8 "', '%" PRIu8 "') ON DUPLICATE KEY UPDATE "
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
         "section_id=VALUES(section_id), class=VALUES(class)", CHARACTER_DATA_BLACKLIST, sender,
-        bl_gc, name, guild_name, text, gc->language, gc->section,
-        gc->char_class);
+        bl_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
+        gc->gc_data.ch_class);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法新增黑名单实例 (%" PRIu32 ": %" PRIu32
