@@ -754,9 +754,8 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
                below, since it will end up being an infinite loop if its not
                sane... */
             if(ent->weapon_upgfloor[i] <= 0) {
-                ITEM_LOG("Invalid v2 weapon upgrade floor value for "
-                      "floor %d, weapon type %d. Please check your ItemPT.afs "
-                      "file for validity!", area, i);
+                ITEM_LOG("无效 v2 weapon upgrade floor value for "
+                      "层级 %d, 武器类型 %d. 请检查您的 ItemPT.afs 文件是否有效!", area, i);
                 return -1;
             }
 
@@ -772,8 +771,7 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
 
     /* Sanity check... This shouldn't happen! */
     if(!j) {
-        ITEM_LOG("No v2 weapon to generate on floor %d, please check "
-              "your ItemPT.afs file for validity!", area);
+        ITEM_LOG("在层级 %d 无法生成 v2 版本的 武器. 请检查您的 ItemPT.afs 文件是否有效!", area);
         return -1;
     }
 
@@ -813,7 +811,7 @@ already_picked:
     /* Sanity check... */
     if(i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
-              "number %d. Please check your ItemPT.afs for validity!",
+              "number %d. 请检查您的 ItemPT.afs 文件是否有效!",
               area, warea);
         return -1;
     }
@@ -921,8 +919,8 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
                sane... */
             if(ent->weapon_upgfloor[i] <= 0) {
                 ITEM_LOG("Invalid v3 weapon upgrade floor value for "
-                      "floor %d, weapon type %d. Please check your ItemPT.gsl "
-                      "file (%s) for validity!", area, i, bb ? "BB" : "GC");
+                      "floor %d, weapon type %d. 请检查您的 ItemPT.gsl "
+                      "file (%s) 是否有效!", area, i, bb ? "BB" : "GC");
                 return -1;
             }
 
@@ -939,7 +937,7 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     /* Sanity check... This shouldn't happen! */
     if(!j) {
         ITEM_LOG("No v3 weapon to generate on floor %d, please check "
-              "your ItemPT.gsl file (%s) for validity!", area,
+              "your ItemPT.gsl 文件 (%s) 是否有效!", area,
               bb ? "BB" : "GC");
         return -1;
     }
@@ -980,7 +978,7 @@ already_picked:
     /* Sanity check... */
     if(i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
-              "number %d. Please check your ItemPT.gsl (%s) for validity!",
+              "number %d. 请检查您的 ItemPT.gsl (%s) 是否有效!",
               area, warea, bb ? "BB" : "GC");
         return -1;
     }
@@ -1091,8 +1089,8 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
                sane... */
             if (ent->weapon_upgfloor[i] <= 0) {
                 ITEM_LOG("无效 BB 武器 upgrade floor value for "
-                    "floor %d, weapon type %d. Please check your ItemPT.gsl "
-                    "file (%s) for validity!", area, i, bb ? "BB" : "GC");
+                    "floor %d, weapon type %d. 请检查您的 ItemPT.gsl "
+                    "file (%s) 是否有效!", area, i, bb ? "BB" : "GC");
                 return -1;
             }
 
@@ -1164,7 +1162,7 @@ already_picked:
     /* Sanity check... */
     if (i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
-            "number %d. Please check your ItemPT.gsl (%s) for validity!",
+            "number %d. 请检查您的 ItemPT.gsl (%s) 是否有效!",
             area, warea, bb ? "BB" : "GC");
         return -1;
     }
@@ -1294,8 +1292,7 @@ static int generate_armor_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
 
         /* Sanity check... */
         if(armor == -1) {
-            ITEM_LOG("Couldn't find a v2 armor to generate. Please "
-                  "check your ItemPT.afs file for validity!");
+            ITEM_LOG("无法生成 v2 版本的 装甲. 请检查您的 ItemPT.afs 文件是否有效!");
             return -1;
         }
 
@@ -1341,14 +1338,13 @@ static int generate_armor_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     /* Look up the item in the ItemPMT data so we can see what boosts we might
        apply... */
     if(pmt_lookup_guard_v2(item[0], &guard)) {
-        ITEM_LOG("ItemPMT.prs file for v2 seems to be missing an armor "
-              "type item (code %08x).", item[0]);
+        ITEM_LOG("ItemPMT.prs 文件版本 v2 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
         return -2;
     }
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_armor_v2: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_armor_v2: DFP 范围: %d, EVP 范围: %d",
               guard.dfp_range, guard.evp_range);
 #endif
 
@@ -1407,9 +1403,8 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
 
         /* Sanity check... */
         if(armor == -1) {
-            ITEM_LOG("Couldn't find a %s armor to generate. Please "
-                  "check your ItemPT.gsl file for validity!",
-                  bb ? "BB" : "GC");
+            ITEM_LOG("无法生成 %s 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!",
+                bb ? "BB" : "GC");
             return -1;
         }
 
@@ -1455,8 +1450,7 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
        apply... */
     if(!bb) {
         if(pmt_lookup_guard_gc(item[0], &gcg)) {
-            ITEM_LOG("ItemPMT.prs file for GC seems to be missing an "
-                  "armor type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 GameCube 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1465,8 +1459,7 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     }
     else {
         if(pmt_lookup_guard_bb(item[0], &bbg)) {
-            ITEM_LOG("ItemPMT.prs file for BB seems to be missing an "
-                  "armor type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1476,7 +1469,7 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_amor_v3: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_amor_v3: DFP 范围: %d, EVP 范围: %d",
               dfp, evp);
 #endif
 
@@ -1535,8 +1528,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
         /* Sanity check... */
         if (armor == -1) {
-            ITEM_LOG("Couldn't find a %s armor to generate. Please "
-                "check your ItemPT.gsl file for validity!",
+            ITEM_LOG("无法生成 %s 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!",
                 bb ? "BB" : "GC");
             return -1;
         }
@@ -1583,8 +1575,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
        apply... */
     if (!bb) {
         if (pmt_lookup_guard_gc(item[0], &gcg)) {
-            ITEM_LOG("ItemPMT.prs file for GC seems to be missing an "
-                "armor type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1593,8 +1584,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     }
     else {
         if (pmt_lookup_guard_bb(item[0], &bbg)) {
-            ITEM_LOG("ItemPMT.prs file for BB seems to be missing an "
-                "armor type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1604,7 +1594,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 #ifdef DEBUG
     if (l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_amor_v3: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_amor_v3: DFP 范围: %d, EVP 范围: %d",
             dfp, evp);
 #endif
 
@@ -1662,8 +1652,7 @@ static int generate_shield_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
 
         /* Sanity check... */
         if(armor == -1) {
-            ITEM_LOG("Couldn't find a v2 shield to generate. Please "
-                  "check your ItemPT.afs file for validity!");
+            ITEM_LOG("无法生成 v2 版本的 护盾. 请检查您的 ItemPT.afs 文件是否有效!");
             return -1;
         }
 
@@ -1687,14 +1676,13 @@ static int generate_shield_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     /* Look up the item in the ItemPMT data so we can see what boosts we might
        apply... */
     if(pmt_lookup_guard_v2(item[0], &guard)) {
-        ITEM_LOG("ItemPMT.prs file for v2 seems to be missing a shield "
-              "type item (code %08x).", item[0]);
+        ITEM_LOG("ItemPMT.prs 文件版本 v2 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X).", item[0]);
         return -2;
     }
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_shield_v2: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_shield_v2: DFP 范围: %d, EVP 范围: %d",
               guard.dfp_range, guard.evp_range);
 #endif
 
@@ -1753,7 +1741,7 @@ static int generate_shield_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
         /* Sanity check... */
         if(armor == -1) {
             ITEM_LOG("Couldn't find a %s shield to generate. Please "
-                  "check your ItemPT.gsl file for validity!",
+                  "check your ItemPT.gsl 文件 是否有效!",
                   bb ? "BB" : "GC");
             return -1;
         }
@@ -1779,8 +1767,7 @@ static int generate_shield_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
        apply... */
     if(!bb) {
         if(pmt_lookup_guard_gc(item[0], &gcg)) {
-            ITEM_LOG("ItemPMT.prs file for GC seems to be missing a "
-                  "shield type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1789,8 +1776,7 @@ static int generate_shield_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     }
     else {
         if(pmt_lookup_guard_bb(item[0], &bbg)) {
-            ITEM_LOG("ItemPMT.prs file for BB seems to be missing a "
-                  "shield type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1800,7 +1786,7 @@ static int generate_shield_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_shield_v3: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_shield_v3: DFP 范围: %d, EVP 范围: %d",
               dfp, evp);
 #endif
 
@@ -1859,7 +1845,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
         /* Sanity check... */
         if (armor == -1) {
             ITEM_LOG("Couldn't find a %s shield to generate. Please "
-                "check your ItemPT.gsl file for validity!",
+                "check your ItemPT.gsl 文件 是否有效!",
                 bb ? "BB" : "GC");
             return -1;
         }
@@ -1885,8 +1871,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
        apply... */
     if (!bb) {
         if (pmt_lookup_guard_gc(item[0], &gcg)) {
-            ITEM_LOG("ItemPMT.prs file for GC seems to be missing a "
-                "shield type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1895,8 +1880,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     }
     else {
         if (pmt_lookup_guard_bb(item[0], &bbg)) {
-            ITEM_LOG("ItemPMT.prs file for BB seems to be missing a "
-                "shield type item (code %08x).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 
@@ -1906,7 +1890,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 #ifdef DEBUG
     if (l->flags & LOBBY_FLAG_DBG_SDROPS)
-        ITEM_LOG("generate_shield_v3: DFP Range: %d, EVP Range: %d",
+        ITEM_LOG("generate_shield_v3: DFP 范围: %d, EVP 范围: %d",
             dfp, evp);
 #endif
 
@@ -2049,7 +2033,7 @@ static int generate_tool_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     /* Neither of these should happen, but just in case... */
     if(item[0] == Item_Photon_Drop || item[0] == Item_NoSuchItem) {
         ITEM_LOG("生成无效 v2 tool! Please check your "
-              "ItemPT.afs file for validity!");
+              "ItemPT.afs 文件 是否有效!");
         return -1;
     }
 
@@ -2075,7 +2059,7 @@ static int generate_tool_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
         if(generate_tech(ent->tech_frequency, ent->tech_levels, area,
                          item, rng, l)) {
             ITEM_LOG("生成无效 technique! Please check "
-                  "your ItemPT.afs file for validity!");
+                  "your ItemPT.afs 文件 是否有效!");
             return -1;
         }
     }
@@ -2090,7 +2074,7 @@ static int generate_tool_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     /* This shouldn't happen happen, but just in case... */
     if(item[0] == Item_NoSuchItem) {
         ITEM_LOG("生成无效 v3 tool! Please check your "
-              "ItemPT.gsl file for validity!");
+              "ItemPT.gsl 文件 是否有效!");
         return -1;
     }
 
@@ -2116,7 +2100,7 @@ static int generate_tool_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
         if(generate_tech(ent->tech_frequency, ent->tech_levels, area,
                          item, rng, l)) {
             ITEM_LOG("生成无效 technique! Please check "
-                  "your ItemPT.gsl file for validity!");
+                  "your ItemPT.gsl 文件 是否有效!");
             return -1;
         }
     }
@@ -2131,7 +2115,7 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     /* This shouldn't happen happen, but just in case... */
     if (item[0] == Item_NoSuchItem) {
         ITEM_LOG("生成无效 v3 tool! Please check your "
-            "ItemPT.gsl file for validity!");
+            "ItemPT.gsl 文件 是否有效!");
         return -1;
     }
 
@@ -2157,7 +2141,7 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
         if (generate_tech(ent->tech_frequency, ent->tech_levels, area,
             item, rng, l)) {
             ITEM_LOG("生成无效 technique! Please check "
-                "your ItemPT.gsl file for validity!");
+                "your ItemPT.gsl 文件 是否有效!");
             return -1;
         }
     }
@@ -2233,8 +2217,8 @@ static int check_and_send(ship_client_t *c, lobby_t *l, uint32_t item[4],
         if(!psocn_limits_check_item(l->limits_list, &iitem, v)) {
             section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
             ITEM_LOG("发现不合法服务器掉落\n"
-                  "%08x %08x %08x %08x\n"
-                  "游戏房间信息: 难度: %d, 角色颜色ID: %d, 房间标签: %08x\n"
+                  "%08X %08X %08X %08X\n"
+                  "游戏房间信息: 难度: %d, 角色颜色ID: %d, 房间标签: %08X\n"
                   "版本: %d, 房间层数: %d (%d %d)", item[0], item[1], item[2],
                   item[3], l->difficulty, section, l->flags, l->version, area,
                   l->maps[(area << 1)], l->maps[(area << 1) + 1]);
@@ -2557,7 +2541,7 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
                 case -1:
                     /* This shouldn't happen, but if it does, don't drop
                        anything at all. */
-                    LOGV(l, "Designated drop type set to invalid value.\n");
+                    LOGV(l, "指定的掉落类型为无效值.\n");
                     return 0;
 
                 default:
@@ -2626,7 +2610,7 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     /* Grab the object ID and make sure its sane, then grab the object itself */
     obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
-        ITEM_LOG("Guildard %u requested drop from invalid box",
+        ITEM_LOG("GC %u requested drop from invalid box",
               c->guildcard);
         return -1;
     }
@@ -2781,10 +2765,10 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                     default:
 #ifdef DEBUG
                         ITEM_LOG("V2 ItemRT generated an invalid item: "
-                              "%08x", item[0]);
+                              "%08X", item[0]);
 #endif
                         LOG(l, "V2 ItemRT generated an invalid box item: "
-                            "%08x\n", item[0]);
+                            "%08X\n", item[0]);
                         return 0;
                 }
 
@@ -2808,11 +2792,11 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
             default:
 #ifdef DEBUG
-                ITEM_LOG("V2 ItemRT generated an invalid item: %08x",
+                ITEM_LOG("V2 ItemRT generated an invalid item: %08X",
                       item[0]);
 #endif
 
-                LOG(l, "V2 ItemRT generated an invalid box item: %08x\n",
+                LOG(l, "V2 ItemRT generated an invalid box item: %08X\n",
                     item[0]);
                 return 0;
         }
@@ -3048,7 +3032,7 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
     if(do_rare && (item[0] = rt_generate_gc_rare(c, l, req->pt_index, 0))) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-            ITEM_LOG("Rare roll succeeded, generating %08x", item[0]);
+            ITEM_LOG("Rare roll succeeded, generating %08X", item[0]);
 #endif
 
         switch(item[0] & 0xFF) {
@@ -3081,12 +3065,12 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
                     default:
 #ifdef DEBUG
                         ITEM_LOG("GC ItemRT generated an invalid item: "
-                              "%08x", item[0]);
+                              "%08X", item[0]);
 #endif
 
                         if(l->logfp) {
                             fdebug(l->logfp, DBG_WARN, "GC ItemRT generated an "
-                                   "invalid item: %08x\n", item[0]);
+                                   "invalid item: %08X\n", item[0]);
                         }
 
                         return 0;
@@ -3111,13 +3095,13 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
 
             default:
 #ifdef DEBUG
-                ITEM_LOG("ItemRT generated an invalid item: %08x",
+                ITEM_LOG("ItemRT generated an invalid item: %08X",
                       item[0]);
 #endif
 
                 if(l->logfp) {
                     fdebug(l->logfp, DBG_WARN, "GC ItemRT generated an invalid "
-                           "item: %08x\n", item[0]);
+                           "item: %08X\n", item[0]);
                 }
 
                 return 0;
@@ -3434,7 +3418,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     if(do_rare && (item[0] = rt_generate_gc_rare(c, l, -1, area + 1))) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
-            ITEM_LOG("Rare roll succeeded, generating %08x", item[0]);
+            ITEM_LOG("Rare roll succeeded, generating %08X", item[0]);
 #endif
 
         switch(item[0] & 0xFF) {
@@ -3467,12 +3451,12 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                     default:
 #ifdef DEBUG
                         ITEM_LOG("GC ItemRT generated an invalid item: "
-                              "%08x", item[0]);
+                              "%08X", item[0]);
 #endif
 
                         if(l->logfp) {
                             fdebug(l->logfp, DBG_WARN, "GC ItemRT generated an "
-                                   "invalid item: %08x\n", item[0]);
+                                   "invalid item: %08X\n", item[0]);
                         }
 
                         return 0;
@@ -3498,13 +3482,13 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
             default:
 #ifdef DEBUG
-                ITEM_LOG("ItemRT generated an invalid item: %08x",
+                ITEM_LOG("ItemRT generated an invalid item: %08X",
                       item[0]);
 #endif
 
                 if(l->logfp) {
                     fdebug(l->logfp, DBG_WARN, "GC ItemRT generated an invalid "
-                           "item: %08x\n", item[0]);
+                           "item: %08X\n", item[0]);
                 }
 
                 return 0;
@@ -3790,7 +3774,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                         break;
 
                     default:
-                        ITEM_LOG("ItemRT 生成无效物品: %08x", item[0]);
+                        ITEM_LOG("ItemRT 生成无效物品: %08X", item[0]);
                         return 0;
                 }
                 break;
@@ -3812,7 +3796,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                 break;
 
             default:
-                ITEM_LOG("ItemRT 生成无效物品: %08x", item[0]);
+                ITEM_LOG("ItemRT 生成无效物品: %08X", item[0]);
                 return 0;
         }
 
@@ -4151,7 +4135,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
                     default:
                         ITEM_LOG("ItemRT generated an invalid item: "
-                              "%08x", item[0]);
+                              "%08X", item[0]);
                         return 0;
                 }
 
@@ -4174,7 +4158,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 break;
 
             default:
-                ITEM_LOG("ItemRT generated an invalid item: %08x",
+                ITEM_LOG("ItemRT generated an invalid item: %08X",
                       item[0]);
                 return 0;
         }

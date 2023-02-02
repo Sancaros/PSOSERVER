@@ -263,10 +263,6 @@ static int handle_bb_gcsend(ship_client_t* s, ship_client_t* d) {
     char* inptr;
     char* outptr;
 
-    /*ERR_LOG(
-        "handle_bb_gcsend %d °æ±¾Ê¶±ð = %d",
-        d->sock, d->version);*/
-
         /* This differs based on the destination client's version. */
     switch (d->version) {
     case CLIENT_VERSION_DCV1:
