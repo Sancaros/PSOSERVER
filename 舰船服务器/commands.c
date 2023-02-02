@@ -1395,17 +1395,17 @@ static int handle_teleport(ship_client_t *c, const char *params) {
 
     if(errno) {
         /* Send a message saying invalid client ID */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效客户端 ID."));
     }
 
     if(client > l->max_clients) {
         /* Client ID too large, give up */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效客户端 ID."));
     }
 
     if(!(c2 = l->clients[client])) {
         /* Client doesn't exist */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效客户端 ID."));
     }
 
     /* See if we need to warp first */
@@ -3097,7 +3097,7 @@ static int handle_t(ship_client_t *c, const char *params) {
 
     /* Did they all parse ok? */
     if(errno)
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid coordinate."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效方位角."));
 
     /* Hopefully they know what they're doing... Send the packet. */
     p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
