@@ -16,29 +16,30 @@
 */
 
 /* Subcommand types we care about (0x62/0x6D). */
-#define SUBCMD_GUILDCARD     0x06
-#define SUBCMD_PICK_UP       0x5A    /* Sent to leader when picking up item */
-#define SUBCMD_ITEMREQ       0x60    //SUBCMD0x62_MONSTER_DROP_ITEMREQ
-#define SUBCMD0x62_UNKNOW_6A 0x6A
-#define SUBCMD0x62_BURST2    0x6B
-#define SUBCMD0x62_BURST3    0x6C
-#define SUBCMD0x62_BURST1    0x6D
-#define SUBCMD0x62_BURST4    0x6E
-#define SUBCMD0x62_BURST5    0x6F
-#define SUBCMD0x62_BURST_PLDATA    0x70
-#define SUBCMD0x62_BURST6    0x71
-#define SUBCMD_BITEMREQ      0xA2    /*SUBCMD0x62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
-#define SUBCMD0x62_TRADE     0xA6    /* BB/GC - Player Trade function */
-#define SUBCMD0x62_UNKNOW_A8 0xA8 // Gol Dragon actions
-#define SUBCMD0x62_UNKNOW_A9 0xA9 // Barba Ray actions
-#define SUBCMD0x62_UNKNOW_AA 0xAA // Episode 2 boss actions
+#define SUBCMD0x62_GUILDCARD                     0x06
+#define SUBCMD0x62_PICK_UP                       0x5A    /* Sent to leader when picking up item */
+#define SUBCMD0x62_ITEMREQ                       0x60    //SUBCMD0x62_MONSTER_DROP_ITEMREQ
+#define SUBCMD0x62_UNKNOW_6A                     0x6A
+#define SUBCMD0x62_BURST2                        0x6B
+#define SUBCMD0x62_BURST3                        0x6C
+#define SUBCMD0x62_BURST1                        0x6D
+#define SUBCMD0x62_BURST4                        0x6E
+#define SUBCMD0x62_BURST5                        0x6F
+#define SUBCMD0x62_BURST_PLDATA                  0x70
+#define SUBCMD0x62_BURST6                        0x71
+#define SUBCMD0x62_BITEMREQ                      0xA2    /*SUBCMD0x62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
+#define SUBCMD0x62_TRADE                         0xA6    /* BB/GC - Player Trade function */
+#define SUBCMD0x62_UNKNOW_A8                     0xA8 // Gol Dragon actions
+#define SUBCMD0x62_UNKNOW_A9                     0xA9 // Barba Ray actions
+#define SUBCMD0x62_UNKNOW_AA                     0xAA // Episode 2 boss actions
 #define SUBCMD0x62_CHARACTER_INFO                0xAE
-#define SUBCMD_SHOP_REQ      0xB5    /* Blue Burst - Request shop inventory */
-#define SUBCMD_SHOP_BUY      0xB7    /* Blue Burst - Buy an item from the shop */
-#define SUBCMD0x62_TEKKING   0xB8    /* Blue Burst - Client is tekking a weapon */
-#define SUBCMD0x62_TEKKED    0xBA    /* Blue Burst - Client is tekked a weapon */
-#define SUBCMD_OPEN_BANK     0xBB    /* Blue Burst - open the bank menu */
-#define SUBCMD_BANK_ACTION   0xBD    /* Blue Burst - do something at the bank */
+#define SUBCMD0x62_SHOP_REQ                      0xB5    /* Blue Burst - Request shop inventory */
+#define SUBCMD0x62_SHOP_BUY                      0xB7    /* Blue Burst - Buy an item from the shop */
+#define SUBCMD0x62_TEKKING                       0xB8    /* Blue Burst - Client is tekking a weapon */
+#define SUBCMD0x62_TEKKED_RESULT                 0xB9    /* Blue Burst - Client is tekked a weapon and get the result */
+#define SUBCMD0x62_TEKKED                        0xBA    /* Blue Burst - Client is tekked a weapon */
+#define SUBCMD0x62_OPEN_BANK                     0xBB    /* Blue Burst - open the bank menu */
+#define SUBCMD0x62_BANK_ACTION                   0xBD    /* Blue Burst - do something at the bank */
 #define SUBCMD0x62_GUILD_INVITE1                 0xC1
 #define SUBCMD0x62_GUILD_INVITE2                 0xC2
 #define SUBCMD0x62_GUILD_MASTER_TRANS1           0xCD

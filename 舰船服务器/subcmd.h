@@ -2236,11 +2236,11 @@ typedef struct subcmd_bb_tekk_item {
 // 0xB9: Unknown (Episode 3 Trial Edition)
 
 // 0xB9: BB provisional tekker result
-struct G_IdentifyResult_BB_6xB9 {
+typedef struct subcmd_bb_tekk_identify_result {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t item;
-} PACKED;
+} PACKED subcmd_bb_tekk_identify_result_t;
 
 // 0xBA: Unknown (Episode 3)
 struct G_Unknown_GC_Ep3_6xBA {

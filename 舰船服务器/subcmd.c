@@ -200,7 +200,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.type = SUBCMD0x62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -386,7 +386,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.type = SUBCMD0x62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -564,7 +564,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.type = SUBCMD0x62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -741,7 +741,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD_GUILDCARD;
+            bb.shdr.type = SUBCMD0x62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -2544,7 +2544,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
     }
 
     switch(type) {
-        case SUBCMD_GUILDCARD:
+        case SUBCMD0x62_GUILDCARD:
             /* Make sure the recipient is not ignoring the sender... */
             if(client_has_ignored(dest, c->guildcard)) {
                 rv = 0;
@@ -2572,8 +2572,8 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
             }
             break;
 
-        case SUBCMD_ITEMREQ:
-        case SUBCMD_BITEMREQ:
+        case SUBCMD0x62_ITEMREQ:
+        case SUBCMD0x62_BITEMREQ:
             /* There's only three ways we pay attention to this one: First, if
                the lobby is not in legit mode and a GM has used /item. Second,
                if the lobby has a drop function (for server-side drops). Third,
@@ -2597,7 +2597,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
             }
             break;
 
-        case SUBCMD_PICK_UP:
+        case SUBCMD0x62_PICK_UP:
             rv = handle_pick_up(c, dest, (subcmd_pick_up_t *)pkt);
             break;
 

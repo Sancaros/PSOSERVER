@@ -3980,12 +3980,12 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
     int i;
 
-    DBG_LOG("新增背包前 %d", inv_count);
-
     /* Make sure there's space first. */
-    if(inv_count == 30) {
+    if(inv_count >= MAX_PLAYER_INV_ITEMS) {
         return -1;
     }
+
+    DBG_LOG("新增背包前 %d", inv_count);
 
     /* Look for the item in question. If it exists, we're in trouble! */
     for(i = 0; i < inv_count; ++i) {

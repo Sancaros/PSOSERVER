@@ -578,7 +578,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x88);
-    gcpkt.shdr.type = SUBCMD_GUILDCARD;
+    gcpkt.shdr.type = SUBCMD0x62_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
     gcpkt.player_tag = LE32(0x00010000);
@@ -1179,7 +1179,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x0088);
-    gcpkt.shdr.type = SUBCMD_GUILDCARD;
+    gcpkt.shdr.type = SUBCMD0x62_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
     gcpkt.player_tag = LE32(0x00010000);

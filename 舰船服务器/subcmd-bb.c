@@ -92,7 +92,7 @@ int subcmd_bb_60size_check(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     {
         type *= 2;
 
-        if (type == SUBCMD_GUILDCARD)
+        if (type == SUBCMD0x62_GUILDCARD)
             sizecheck = sizeof(subcmd_bb_gcsend_t);
         else
             sizecheck = size_ct[type + 1] + 4;
@@ -297,7 +297,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         dc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         dc.hdr.flags = (uint8_t)dest->client_id;
         dc.hdr.pkt_len = LE16(0x0088);
-        dc.shdr.type = SUBCMD_GUILDCARD;
+        dc.shdr.type = SUBCMD0x62_GUILDCARD;
         dc.shdr.size = 0x21;
         dc.shdr.unused = 0x0000;
         dc.player_tag = LE32(0x00010000);
@@ -332,7 +332,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         pc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         pc.hdr.flags = (uint8_t)dest->client_id;
         pc.hdr.pkt_len = LE16(0x00F8);
-        pc.shdr.type = SUBCMD_GUILDCARD;
+        pc.shdr.type = SUBCMD0x62_GUILDCARD;
         pc.shdr.size = 0x3D;
         pc.shdr.unused = 0x0000;
         pc.player_tag = LE32(0x00010000);
@@ -378,7 +378,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         gc.hdr.pkt_type = GAME_COMMAND2_TYPE;
         gc.hdr.flags = (uint8_t)dest->client_id;
         gc.hdr.pkt_len = LE16(0x0098);
-        gc.shdr.type = SUBCMD_GUILDCARD;
+        gc.shdr.type = SUBCMD0x62_GUILDCARD;
         gc.shdr.size = 0x25;
         gc.shdr.unused = 0x0000;
         gc.player_tag = LE32(0x00010000);
@@ -426,7 +426,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         xb.hdr.pkt_type = GAME_COMMAND2_TYPE;
         xb.hdr.flags = (uint8_t)dest->client_id;
         xb.hdr.pkt_len = LE16(0x0234);
-        xb.shdr.type = SUBCMD_GUILDCARD;
+        xb.shdr.type = SUBCMD0x62_GUILDCARD;
         xb.shdr.size = 0x8C;
         xb.shdr.unused = LE16(0xFB0D);
         xb.player_tag = LE32(0x00010000);
@@ -449,7 +449,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
-        bb.shdr.type = SUBCMD_GUILDCARD;
+        bb.shdr.type = SUBCMD0x62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
         bb.guildcard = LE32(src->guildcard);
@@ -1180,11 +1180,27 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (bb_subcmd_pkt_t*)pkt, 0);
 }
 
+int get_inv_item_id(inventory_t inv, uint32_t item_id) {
+    int i = 0;
+
+    for (i = 0; i < inv.item_count; ++i) {
+        if (inv.iitems[i].data.item_id == item_id) {
+            break;
+        }
+    }
+
+    return i;
+}
+
 static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
-
+    subcmd_bb_tekk_identify_result_t* i_res = { 0 };
+    uint32_t inv_item_id = 0;
 
     if (l->version == CLIENT_VERSION_BB) {
+
+        if (c->bb_pl->character.disp.meseta < 100)
+            return 0;
 
         if (l->type == LOBBY_TYPE_LOBBY) {
             ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1194,50 +1210,47 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
         //( 00000000 )   10 00 62 00 00 00 00 00  B8 02 FF FF 0E 00 01 00    ..b.............
 
-        if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02/* || pkt->client_id != c->client_id*/) {
+        if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
                 c->guildcard);
             print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
             return -1;
         }
-        
-        /*if (!(l->flags & Lobby::Flag::ITEM_TRACKING_ENABLED)) {
-            throw logic_error("item tracking not enabled in BB game");
-        }*/
+
+        inv_item_id = get_inv_item_id(c->bb_pl->inv, pkt->item_id);
+
+        DBG_LOG("%04X %04X", inv_item_id, pkt->item_id);
+
+        if (c->bb_pl->inv.iitems[inv_item_id].data.data_l[0] != 0x00) {
+            ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
+                c->guildcard);
+            return 0;
+        }
+
+        c->game_data.identify_result = c->bb_pl->inv.iitems[inv_item_id];
+        c->game_data.identify_result.data.data_b[4] &= 0x7F;
 
         if (!c->game_data.identify_result.data.item_id) {
             ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
                 c->guildcard);
+            return 0;
         }
+
         if (c->game_data.identify_result.data.item_id != pkt->item_id) {
-            ERR_LOG("GC %" PRIu32 " accepted item ID does not match previous identify request!",
+            ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
                 c->guildcard);
+            return 0;
         }
 
-        //item_add_to_inv(&c->bb_pl->inv, c->bb_pl->inv.item_count, &c->game_data.identify_result);
-        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-        //c->game_data.player()->add_item(c->game_data.identify_result);
-        //subcmd_send_create_inventory_item(l, c, c->game_data.identify_result.data);
-        //c->game_data.identify_result.clear();
-        clear_iitem(&c->game_data.identify_result);
+        c->bb_pl->character.disp.meseta -= 100;
+
+        i_res->hdr.pkt_type = 1;
 
     }
-    else {
+    else
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-        //forward_subcommand(l, c, command, flag, data);
-    }
 
-
-
-
-
-
-
-
-
-    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)i_res);
 }
 
 static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
@@ -1665,7 +1678,7 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     }
 
     switch (type) {
-    case SUBCMD_GUILDCARD:
+    case SUBCMD0x62_GUILDCARD:
         /* Make sure the recipient is not ignoring the sender... */
         if (client_has_ignored(dest, c->guildcard)) {
             rv = 0;
@@ -1675,15 +1688,15 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_gcsend(c, dest);
         break;
 
-    case SUBCMD_PICK_UP:
+    case SUBCMD0x62_PICK_UP:
         rv = handle_bb_pick_up(c, (subcmd_bb_pick_up_t*)pkt);
         break;
 
-    case SUBCMD_ITEMREQ:
+    case SUBCMD0x62_ITEMREQ:
         rv = handle_bb_item_req(c, dest, l, (subcmd_bb_itemreq_t*)pkt);
         break;
 
-    case SUBCMD_BITEMREQ:
+    case SUBCMD0x62_BITEMREQ:
         rv = handle_bb_bitem_req(c, dest, l, (subcmd_bb_bitemreq_t*)pkt);
         break;
 
@@ -1700,11 +1713,11 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
-    case SUBCMD_SHOP_REQ:
+    case SUBCMD0x62_SHOP_REQ:
         rv = handle_bb_shop_req(c, (subcmd_bb_shop_req_t*)pkt);
         break;
 
-    case SUBCMD_SHOP_BUY:
+    case SUBCMD0x62_SHOP_BUY:
         rv = handle_bb_shop_buy(c, (subcmd_bb_shop_buy_t*)pkt);
         break;
 
@@ -1716,11 +1729,11 @@ int subcmd_bb_handle_one(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
         break;
 
-    case SUBCMD_OPEN_BANK:
+    case SUBCMD0x62_OPEN_BANK:
         rv = handle_bb_bank(c, (subcmd_bb_bank_open_t*)pkt);
         break;
 
-    case SUBCMD_BANK_ACTION:
+    case SUBCMD0x62_BANK_ACTION:
         rv = handle_bb_bank_action(c, (subcmd_bb_bank_act_t*)pkt);
         break;
 
@@ -1781,7 +1794,7 @@ int subcmd_bb_handle_one_orignal(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
     }
 
     switch (type) {
-    case SUBCMD_GUILDCARD:
+    case SUBCMD0x62_GUILDCARD:
         /* Make sure the recipient is not ignoring the sender... */
         if (client_has_ignored(dest, c->guildcard)) {
             rv = 0;
@@ -1791,24 +1804,24 @@ int subcmd_bb_handle_one_orignal(ship_client_t* c, bb_subcmd_pkt_t* pkt) {
         rv = handle_bb_gcsend(c, dest);
         break;
 
-    case SUBCMD_PICK_UP:
+    case SUBCMD0x62_PICK_UP:
         rv = handle_bb_pick_up(c, (subcmd_bb_pick_up_t*)pkt);
         break;
 
-    case SUBCMD_SHOP_REQ:
+    case SUBCMD0x62_SHOP_REQ:
         rv = handle_bb_shop_req(c, (subcmd_bb_shop_req_t*)pkt);
         break;
 
-    case SUBCMD_OPEN_BANK:
+    case SUBCMD0x62_OPEN_BANK:
         rv = handle_bb_bank(c, (subcmd_bb_bank_open_t*)pkt);
         break;
 
-    case SUBCMD_BANK_ACTION:
+    case SUBCMD0x62_BANK_ACTION:
         rv = handle_bb_bank_action(c, (subcmd_bb_bank_act_t*)pkt);
         break;
 
-    case SUBCMD_ITEMREQ:
-    case SUBCMD_BITEMREQ:
+    case SUBCMD0x62_ITEMREQ:
+    case SUBCMD0x62_BITEMREQ:
         /* Unlike earlier versions, we have to handle this here... */
         rv = l->dropfunc(c, l, pkt);
         break;
@@ -2416,10 +2429,9 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
             switch (c->cur_area) {
             case 5:     /* Cave 3 */
             case 12:    /* De Rol Le */
-                ERR_LOG("GC %" PRIu32 " hit enemy in area "
-                    "impossible to\nreach in a single-player team (%d)\n"
-                    "Team Flags: %08" PRIx32 "",
-                    c->guildcard, c->cur_area, l->flags);
+                ERR_LOG("GC %" PRIu32 " 在无法接近的区域内击中敌人 单人模式 (区域 %d X:%f Y:%f) "
+                    "房间 Flags: %08" PRIx32 "",
+                    c->guildcard, c->cur_area, c->x, c->z, l->flags);
                 break;
             }
         }
