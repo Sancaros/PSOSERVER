@@ -200,7 +200,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD0x62_GUILDCARD;
+            bb.shdr.type = SUBCMD62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -386,7 +386,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD0x62_GUILDCARD;
+            bb.shdr.type = SUBCMD62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -564,7 +564,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD0x62_GUILDCARD;
+            bb.shdr.type = SUBCMD62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -741,7 +741,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             bb.hdr.pkt_len = LE16(0x0114);
             bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
             bb.hdr.flags = LE32(d->client_id);
-            bb.shdr.type = SUBCMD0x62_GUILDCARD;
+            bb.shdr.type = SUBCMD62_GUILDCARD;
             bb.shdr.size = 0x43;
             bb.shdr.unused = 0x0000;
             bb.guildcard = pkt->guildcard;
@@ -767,7 +767,7 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
-    gen.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
     gen.data.area = req->area;
@@ -1059,7 +1059,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
             dp.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dp.hdr.pkt_len = LE16(0x0010);
-            dp.shdr.type = SUBCMD_DESTROY_ITEM;
+            dp.shdr.type = SUBCMD60_DESTROY_ITEM;
             dp.shdr.size = 0x03;
             dp.item_id = pkt->data.item.item_id;
 
@@ -1142,7 +1142,7 @@ static int handle_take_damage(ship_client_t *c, subcmd_take_damage_t *pkt) {
 
     /* This aught to do it... */
     subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
-    return send_lobby_mod_stat(l, c, SUBCMD_STAT_HPUP, 2000);
+    return send_lobby_mod_stat(l, c, SUBCMD60_STAT_HPUP, 2000);
 }
 
 static int handle_used_tech(ship_client_t *c, subcmd_used_tech_t *pkt) {
@@ -1164,7 +1164,7 @@ static int handle_used_tech(ship_client_t *c, subcmd_used_tech_t *pkt) {
 
     /* This aught to do it... */
     subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
-    return send_lobby_mod_stat(l, c, SUBCMD_STAT_TPUP, 255);
+    return send_lobby_mod_stat(l, c, SUBCMD60_STAT_TPUP, 255);
 }
 
 static void update_qpos(ship_client_t *c, lobby_t *l) {
@@ -1472,7 +1472,7 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             pc.hdr.pkt_len = LE16(0x00E4);
 
-            pc.shdr.type = SUBCMD_CMODE_GRAVE;
+            pc.shdr.type = SUBCMD60_CMODE_GRAVE;
             pc.shdr.size = 0x38;
             pc.shdr.client_id = dc.shdr.client_id;
             pc.client_id2 = dc.client_id2;
@@ -1529,7 +1529,7 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dc.hdr.pkt_len = LE16(0x00AC);
 
-            dc.shdr.type = SUBCMD_CMODE_GRAVE;
+            dc.shdr.type = SUBCMD60_CMODE_GRAVE;
             dc.shdr.size = 0x2A;
             dc.shdr.client_id = pc.shdr.client_id;
             dc.client_id2 = pc.client_id2;
@@ -2517,20 +2517,20 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
         rv = 0;
 
         switch(type) {
-            case SUBCMD0x62_BURST1:
-            case SUBCMD0x62_BURST2:
-            case SUBCMD0x62_BURST3:
-            case SUBCMD0x62_BURST4:
+            case SUBCMD62_BURST1:
+            case SUBCMD62_BURST2:
+            case SUBCMD62_BURST3:
+            case SUBCMD62_BURST4:
                 if(l->flags & LOBBY_FLAG_QUESTING)
                     rv = lobby_enqueue_burst(l, c, (dc_pkt_hdr_t *)pkt);
                 /* Fall through... */
 
-            case SUBCMD0x62_BURST5:
-            case SUBCMD0x62_BURST6:
+            case SUBCMD62_BURST5:
+            case SUBCMD62_BURST6:
                 rv |= send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
                 break;
 
-            case SUBCMD0x62_BURST_PLDATA:
+            case SUBCMD62_BURST_PLDATA:
                 rv = handle_burst_pldata(c, dest, (subcmd_burst_pldata_t*)pkt);
                 break;
 
@@ -2544,7 +2544,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
     }
 
     switch(type) {
-        case SUBCMD0x62_GUILDCARD:
+        case SUBCMD62_GUILDCARD:
             /* Make sure the recipient is not ignoring the sender... */
             if(client_has_ignored(dest, c->guildcard)) {
                 rv = 0;
@@ -2572,8 +2572,8 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
             }
             break;
 
-        case SUBCMD0x62_ITEMREQ:
-        case SUBCMD0x62_BITEMREQ:
+        case SUBCMD62_ITEMREQ:
+        case SUBCMD62_BITEMREQ:
             /* There's only three ways we pay attention to this one: First, if
                the lobby is not in legit mode and a GM has used /item. Second,
                if the lobby has a drop function (for server-side drops). Third,
@@ -2597,7 +2597,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
             }
             break;
 
-        case SUBCMD0x62_PICK_UP:
+        case SUBCMD62_PICK_UP:
             rv = handle_pick_up(c, dest, (subcmd_pick_up_t *)pkt);
             break;
 
@@ -2635,20 +2635,20 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     /* If there's a burst going on in the lobby, delay most packets */
     if(l->flags & LOBBY_FLAG_BURSTING) {
         switch(type) {
-            case SUBCMD_LOAD_3B:
-            case SUBCMD_BURST_DONE:
+            case SUBCMD60_LOAD_3B:
+            case SUBCMD60_BURST_DONE:
                 rv = subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
                 break;
 
-            case SUBCMD_SET_AREA:
+            case SUBCMD60_SET_AREA:
                 rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
                 break;
 
-            case SUBCMD_SET_POS_3F:
+            case SUBCMD60_SET_POS_3F:
                 rv = handle_set_pos(c, (subcmd_set_pos_t *)pkt);
                 break;
 
-            case SUBCMD_CMODE_GRAVE:
+            case SUBCMD60_CMODE_GRAVE:
                 rv = handle_cmode_grave(c, pkt);
                 break;
 
@@ -2662,74 +2662,74 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     }
 
     switch(type) {
-        case SUBCMD_TAKE_ITEM:
+        case SUBCMD60_TAKE_ITEM:
             rv = handle_take_item(c, (subcmd_take_item_t *)pkt);
             break;
 
-        case SUBCMD_LEVEL_UP:
+        case SUBCMD60_LEVEL_UP:
             rv = handle_level_up(c, (subcmd_level_up_t*)pkt);
             break;
 
-        case SUBCMD_USED_TECH:
+        case SUBCMD60_USED_TECH:
             rv = handle_used_tech(c, (subcmd_used_tech_t *)pkt);
             break;
 
-        case SUBCMD_TAKE_DAMAGE1:
-        case SUBCMD_TAKE_DAMAGE2:
+        case SUBCMD60_TAKE_DAMAGE1:
+        case SUBCMD60_TAKE_DAMAGE2:
             rv = handle_take_damage(c, (subcmd_take_damage_t *)pkt);
             break;
 
-        case SUBCMD_BOX_ENEMY_ITEM_DROP:
+        case SUBCMD60_BOX_ENEMY_ITEM_DROP:
             rv = handle_itemdrop(c, (subcmd_itemgen_t *)pkt);
             break;
 
-        case SUBCMD_SET_AREA:
+        case SUBCMD60_SET_AREA:
             rv = handle_set_area(c, (subcmd_set_area_t*)pkt);
             break;
 
-        case SUBCMD_INTER_LEVEL_WARP:
+        case SUBCMD60_INTER_LEVEL_WARP:
             rv = handle_inter_level_warp(c, (subcmd_inter_level_warp_t*)pkt);
             break;
 
-        case SUBCMD_SET_POS_3E:
-        case SUBCMD_SET_POS_3F:
+        case SUBCMD60_SET_POS_3E:
+        case SUBCMD60_SET_POS_3F:
             rv = handle_set_pos(c, (subcmd_set_pos_t *)pkt);
             break;
 
-        case SUBCMD_MOVE_SLOW:
-        case SUBCMD_MOVE_FAST:
+        case SUBCMD60_MOVE_SLOW:
+        case SUBCMD60_MOVE_FAST:
             rv = handle_move(c, (subcmd_move_t *)pkt);
             break;
 
-        case SUBCMD_DELETE_ITEM:
+        case SUBCMD60_DELETE_ITEM:
             rv = handle_delete_inv(c, (subcmd_destroy_item_t *)pkt);
             break;
 
-        case SUBCMD_BUY:
+        case SUBCMD60_BUY:
             rv = handle_buy(c, (subcmd_buy_t *)pkt);
             break;
 
-        case SUBCMD_USE_ITEM:
+        case SUBCMD60_USE_ITEM:
             rv = handle_use_item(c, (subcmd_use_item_t *)pkt);
             break;
 
-        case SUBCMD_WORD_SELECT:
+        case SUBCMD60_WORD_SELECT:
             rv = handle_word_select(c, (subcmd_word_select_t *)pkt);
             break;
 
-        case SUBCMD_SYMBOL_CHAT:
+        case SUBCMD60_SYMBOL_CHAT:
             rv = handle_symbol_chat(c, (subcmd_symbol_chat_t *)pkt);
             break;
 
-        case SUBCMD_CMODE_GRAVE:
+        case SUBCMD60_CMODE_GRAVE:
             rv = handle_cmode_grave(c, pkt);
             break;
 
-        case SUBCMD_HIT_MONSTER:
+        case SUBCMD60_HIT_MONSTER:
             rv = handle_mhit(c, (subcmd_mhit_pkt_t *)pkt);
             break;
 
-        case SUBCMD_OBJHIT_PHYS:
+        case SUBCMD60_OBJHIT_PHYS:
             /* Don't even try to deal with these in battle or challenge mode. */
             if(l->challenge || l->battle) {
                 sent = 0;
@@ -2739,7 +2739,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_objhit_phys(c, (subcmd_objhit_phys_t *)pkt);
             break;
 
-        case SUBCMD_OBJHIT_TECH:
+        case SUBCMD60_OBJHIT_TECH:
             /* Don't even try to deal with these in battle or challenge mode. */
             if(l->challenge || l->battle) {
                 sent = 0;
@@ -2749,7 +2749,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_objhit_tech(c, (subcmd_objhit_tech_t *)pkt);
             break;
 
-        case SUBCMD_HIT_OBJ:
+        case SUBCMD60_HIT_OBJ:
             /* Don't even try to deal with these in battle or challenge mode. */
             if(l->challenge || l->battle) {
                 sent = 0;
@@ -2759,47 +2759,47 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_objhit(c, (subcmd_bhit_pkt_t *)pkt);
             break;
 
-        case SUBCMD_SPAWN_NPC:
+        case SUBCMD60_SPAWN_NPC:
             rv = handle_spawn_npc(c, pkt);
             break;
 
-        case SUBCMD_CREATE_PIPE:
+        case SUBCMD60_CREATE_PIPE:
             rv = handle_create_pipe(c, (subcmd_pipe_pkt_t *)pkt);
             break;
 
-        case SUBCMD_SYNC_REG:
+        case SUBCMD60_SYNC_REG:
             rv = handle_sync_reg(c, (subcmd_sync_reg_t *)pkt);
             break;
 
-        case SUBCMD_SET_POS_24:
+        case SUBCMD60_SET_POS_24:
             rv = handle_set_pos24(c, pkt);
             break;
 
-        case SUBCMD0x60_MENU_REQ:
+        case SUBCMD60_MENU_REQ:
             rv = handle_menu_req(c, pkt);
             break;
 
-        case SUBCMD_DROP_ITEM:
+        case SUBCMD60_DROP_ITEM:
             rv = handle_drop_item(c, (subcmd_drop_item_t *)pkt);
             break;
 
-        case SUBCMD_DROP_STACK:
+        case SUBCMD60_DROP_STACK:
             rv = handle_drop_stack(c, (subcmd_drop_stack_t *)pkt);
             break;
 
-        case SUBCMD_TALK_NPC:
+        case SUBCMD60_TALK_NPC:
             rv = handle_talk_npc(c, (subcmd_talk_npc_t *)pkt);
             break;
 
-        case SUBCMD_DONE_NPC:
+        case SUBCMD60_DONE_NPC:
             rv = handle_done_talk_npc(c, (subcmd_end_talk_to_npc_t*)pkt);
             break;
 
-        case SUBCMD_DRAGON_ACT:
+        case SUBCMD60_DRAGON_ACT:
             rv = handle_dragon_act(c, (subcmd_dragon_act_t*)pkt);
             break;
 
-        case SUBCMD_GDRAGON_ACT:
+        case SUBCMD60_GDRAGON_ACT:
             rv = handle_gol_dragon_act(c, (subcmd_gol_dragon_act_t*)pkt);
             break;
 
@@ -2812,7 +2812,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             sent = 0;
             break;
 
-        case SUBCMD_FINISH_LOAD:
+        case SUBCMD60_FINISH_LOAD:
             if(l->type == LOBBY_TYPE_LOBBY) {
                 for(i = 0; i < l->max_clients; ++i) {
                     if(l->clients[i] && l->clients[i] != c &&
@@ -2823,14 +2823,14 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
                 }
             }
 
-        case SUBCMD_LOAD_22:
-        case SUBCMD_LOAD_3B:
-        case SUBCMD_WARP_55:
-        case SUBCMD_LOBBY_ACTION:
-        case SUBCMD_GOGO_BALL:
-        case SUBCMD_LOBBY_CHAIR:
-        case SUBCMD_CHAIR_DIR:
-        case SUBCMD_CHAIR_MOVE:
+        case SUBCMD60_LOAD_22:
+        case SUBCMD60_LOAD_3B:
+        case SUBCMD60_WARP_55:
+        case SUBCMD60_LOBBY_ACTION:
+        case SUBCMD60_GOGO_BALL:
+        case SUBCMD60_LOBBY_CHAIR:
+        case SUBCMD60_CHAIR_DIR:
+        case SUBCMD60_CHAIR_MOVE:
             sent = 0;
             break;
     }
@@ -2871,7 +2871,7 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.shdr.type = SUBCMD_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
     gen.data.area = req->area;

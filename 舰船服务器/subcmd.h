@@ -15,8 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SUBCMD_H
-#define SUBCMD_H
+#ifndef SUBCMD60_H
+#define SUBCMD60_H
 
 #include <pso_character.h>
 
@@ -48,14 +48,14 @@ typedef struct subcmd_pkt {
 
 static int char_dc_hdrsize2 = sizeof(subcmd_pkt_t);
 
-typedef struct bb_subcmd_pkt {
+typedef struct subcmd_bb_pkt {
     bb_pkt_hdr_t hdr;
     uint8_t type;
     uint8_t size;
     uint8_t data[0];
-} PACKED bb_subcmd_pkt_t;
+} PACKED subcmd_bb_pkt_t;
 
-static int char_bb_hdrsize2 = sizeof(bb_subcmd_pkt_t);
+static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
 
 // subcmd指令集通用数据头.
 
@@ -264,7 +264,7 @@ typedef struct subcmd_mhit {
 typedef struct subcmd_bb_mhit {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
-    // Note: enemy_id (in header) is in the range [0x1000, 0x4000)
+    // Note: enemy_id (in sub header) is in the range [0x1000, 0x4000)
     uint16_t enemy_id2;
     uint16_t damage;
     uint32_t flags;
@@ -292,14 +292,16 @@ typedef struct subcmd_bb_bhit {
 
 // 0x0C: Add condition (poison/slow/etc.)
 // 0x0D: Remove condition (poison/slow/etc.)
-struct subcmd_add_or_remove_condition_6x0C_6x0D {
+typedef struct subcmd_bb_add_or_remove_condition {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t unknown_a1; // Probably condition type
+    uint32_t condition_type; // Probably condition type
     uint32_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_add_or_remove_condition_t;
 
 // 0x0E: Unknown 未知
 typedef struct subcmd_unknown_0E {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
 } PACKED subcmd_unknown_0E_t;
 
@@ -310,7 +312,8 @@ typedef struct subcmd_unknown_0E {
 // Same format as 0x10
 // 0x14: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 // Same format as 0x10
-struct subcmd_unknown_6x10_6x11_6x12_6x14 {
+struct subcmd_bb_unknown_6x10_6x11_6x12_6x14 {
+    bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a2;
     uint16_t unknown_a3;
@@ -1030,7 +1033,7 @@ struct G_Unknown_6x57 {
     client_id_hdr_t shdr;
 } PACKED;
 
-// 0x58: CTRL+W 触发 SUBCMD_LOBBY_ACTION (指令生效范围; 仅限游戏)
+// 0x58: CTRL+W 触发 SUBCMD60_LOBBY_ACTION (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_lobby_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1413,17 +1416,17 @@ typedef struct subcmd_bb_burst_pldata {
 
 static int char_bb_size222 = sizeof(subcmd_bb_burst_pldata_t);
 
-// 0x71: Unknown (used while loading into game)
-struct G_Unknown_6x71 {
+// 0x71: loading_burst (used while loading into game) SUBCMD62_BURST6
+typedef struct subcmd_bb_loading_burst {
     bb_pkt_hdr_t hdr;
-    unused_hdr_t shdr;
-} PACKED;
+    params_hdr_t shdr;
+} PACKED subcmd_bb_loading_burst_t;
 
-// 0x72: Unknown (used while loading into game)
-struct G_Unknown_6x72 {
+// 0x72: end_burst (used while loading into game) SUBCMD60_BURST_DONE
+typedef struct subcmd_bb_end_burst {
     bb_pkt_hdr_t hdr;
-    unused_hdr_t shdr;
-} PACKED;
+    params_hdr_t shdr;
+} PACKED subcmd_bb_end_burst_t;
 
 // 0x73: warp packet 舰船传送数据包
 typedef struct subcmd_bb_warp_ship {
@@ -1550,7 +1553,7 @@ struct G_Unknown_6x7B {
 } PACKED;
 
 // 0x7C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-// SUBCMD_CMODE_GRAVE
+// SUBCMD60_CMODE_GRAVE
 struct G_Unknown_6x7C {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1826,19 +1829,37 @@ struct G_Unknown_6x97 {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x9A: Update player stat (不支持 Episode 3)
-struct G_UpdatePlayerStat_6x9A {
-    bb_pkt_hdr_t hdr;
+typedef struct subcmd_update_player_stat {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
-    // Values for what:
+    // Values for stat:
     // 0 = subtract HP
     // 1 = subtract TP
     // 2 = subtract Meseta
     // 3 = add HP
     // 4 = add TP
-    uint8_t what;
+    uint8_t stat;
     uint8_t amount;
-} PACKED;
+} PACKED subcmd_update_player_stat_t;
+
+// 0x9A: Update player stat (不支持 Episode 3)
+typedef struct subcmd_bb_update_player_stat {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t client_id2;
+    // Values for stat:
+    // 0 = subtract HP
+    // 1 = subtract TP
+    // 2 = subtract Meseta
+    // 3 = add HP
+    // 4 = add TP
+    uint8_t stat;
+    uint8_t amount;
+} PACKED subcmd_bb_update_player_stat_t;
 
 // 0x9B: Unknown
 struct G_Unknown_6x9B {
@@ -2536,13 +2557,13 @@ static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
 
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_bb_handle_one(ship_client_t *c, bb_subcmd_pkt_t *pkt);
-int subcmd_bb_handle_one_orignal(ship_client_t* c, bb_subcmd_pkt_t* pkt);
+int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+int subcmd_bb_handle_one_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 
 /* Handle a 0x60 packet. */
 int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_bb_handle_bcast(ship_client_t *c, bb_subcmd_pkt_t *pkt);
-int subcmd_bb_handle_bcast_orignal(ship_client_t* c, bb_subcmd_pkt_t* pkt);
+int subcmd_bb_handle_bcast(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+int subcmd_bb_handle_bcast_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 /* Handle an 0xC9/0xCB packet from Episode 3. */
@@ -2562,7 +2583,7 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
 /* Send a broadcast subcommand to the whole lobby. */
 int subcmd_send_lobby_dc(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
                          int igcheck);
-int subcmd_send_lobby_bb(lobby_t *l, ship_client_t *c, bb_subcmd_pkt_t *pkt,
+int subcmd_send_lobby_bb(lobby_t *l, ship_client_t *c, subcmd_bb_pkt_t *pkt,
                          int igcheck);
 int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
                             int igcheck);
@@ -2570,6 +2591,6 @@ int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
 /* Stuff dealing with the Dreamcast Network Trial edition */
 int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_translate_bb_to_nte(ship_client_t *c, bb_subcmd_pkt_t *pkt);
+int subcmd_translate_bb_to_nte(ship_client_t *c, subcmd_bb_pkt_t *pkt);
 
-#endif /* !SUBCMD_H */
+#endif /* !SUBCMD60_H */

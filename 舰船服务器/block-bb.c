@@ -2511,7 +2511,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0060 96*/
     case GAME_COMMAND0_TYPE:
-        return subcmd_bb_handle_bcast(c, (bb_subcmd_pkt_t*)pkt);
+        return subcmd_bb_handle_bcast(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x0061 97*/
     case CHAR_DATA_TYPE:
@@ -2519,11 +2519,11 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0062 98*/
     case GAME_COMMAND2_TYPE:
-        return subcmd_bb_handle_one(c, (bb_subcmd_pkt_t*)pkt);
+        return subcmd_bb_handle_one(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x006D 109*/
     case GAME_COMMANDD_TYPE:
-        return subcmd_bb_handle_one(c, (bb_subcmd_pkt_t*)pkt);
+        return subcmd_bb_handle_one(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x006F 111*/
     case DONE_BURSTING_TYPE:

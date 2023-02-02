@@ -1751,14 +1751,14 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
         if (rv == 0) {
             switch (i->pkt->pkt_type) {
             case GAME_COMMAND0_TYPE:
-                if (subcmd_bb_handle_bcast(i->src, (bb_subcmd_pkt_t*)i->pkt)) {
+                if (subcmd_bb_handle_bcast(i->src, (subcmd_bb_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
                 break;
 
             case GAME_COMMAND2_TYPE:
             case GAME_COMMANDD_TYPE:
-                if (subcmd_bb_handle_one(i->src, (bb_subcmd_pkt_t*)i->pkt)) {
+                if (subcmd_bb_handle_one(i->src, (subcmd_bb_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
                 break;

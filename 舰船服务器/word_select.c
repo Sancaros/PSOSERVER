@@ -42,7 +42,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pc.hdr.flags = pkt->hdr.flags;
     pc.hdr.pkt_len = LE16(0x0024);
-    pc.type = SUBCMD_WORD_SELECT;
+    pc.type = SUBCMD60_WORD_SELECT;
     pc.size = 0x08;
     pc.client_id = pkt->client_id;
     pc.client_id_gc = 0;
@@ -52,7 +52,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
     gc.hdr.pkt_len = LE16(0x0024);
-    gc.type = SUBCMD_WORD_SELECT;
+    gc.type = SUBCMD60_WORD_SELECT;
     gc.size = 0x08;
     gc.client_id = 0;
     gc.client_id_gc = pkt->client_id;
@@ -62,7 +62,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
     xb.hdr.pkt_len = LE16(0x0024);
-    xb.type = SUBCMD_WORD_SELECT;
+    xb.type = SUBCMD60_WORD_SELECT;
     xb.size = 0x08;
     xb.client_id = pkt->client_id;
     xb.client_id_gc = 0;
@@ -72,7 +72,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = pkt->client_id;
     bb.num_words = pkt->num_words;
@@ -203,7 +203,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
     dc.hdr.pkt_len = LE16(0x0024);
-    dc.type = SUBCMD_WORD_SELECT;
+    dc.type = SUBCMD60_WORD_SELECT;
     dc.size = 0x08;
     dc.client_id = pkt->client_id;
     dc.client_id_gc = 0;
@@ -213,7 +213,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
     gc.hdr.pkt_len = LE16(0x0024);
-    gc.type = SUBCMD_WORD_SELECT;
+    gc.type = SUBCMD60_WORD_SELECT;
     gc.size = 0x08;
     gc.client_id = 0;
     gc.client_id_gc = pkt->client_id;
@@ -223,7 +223,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
     xb.hdr.pkt_len = LE16(0x0024);
-    xb.type = SUBCMD_WORD_SELECT;
+    xb.type = SUBCMD60_WORD_SELECT;
     xb.size = 0x08;
     xb.client_id = pkt->client_id;
     xb.client_id_gc = 0;
@@ -233,7 +233,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = pkt->client_id;
     bb.num_words = pkt->num_words;
@@ -373,7 +373,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pc.hdr.flags = pkt->hdr.flags;
     pc.hdr.pkt_len = LE16(0x0024);
-    pc.type = SUBCMD_WORD_SELECT;
+    pc.type = SUBCMD60_WORD_SELECT;
     pc.size = 0x08;
     pc.client_id = client_id;
     pc.client_id_gc = 0;
@@ -383,7 +383,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
     dc.hdr.pkt_len = LE16(0x0024);
-    dc.type = SUBCMD_WORD_SELECT;
+    dc.type = SUBCMD60_WORD_SELECT;
     dc.size = 0x08;
     dc.client_id = client_id;
     dc.client_id_gc = 0;
@@ -393,7 +393,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
-    bb.shdr.type = SUBCMD_WORD_SELECT;
+    bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = client_id;
     bb.num_words = pkt->num_words;

@@ -1601,7 +1601,7 @@ static int client_dropItem_lua(lua_State *l) {
         p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
         p2.hdr.flags = 0;
-        p2.shdr.type = SUBCMD_DROP_STACK;
+        p2.shdr.type = SUBCMD60_DROP_STACK;
         p2.shdr.size = 0x0A;
         p2.shdr.client_id = c->client_id;
         p2.area = LE16(c->cur_area);

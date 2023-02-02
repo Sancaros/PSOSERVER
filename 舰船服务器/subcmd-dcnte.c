@@ -84,16 +84,16 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     pthread_mutex_lock(&l->mutex);
 
     switch(type) {
-        case SUBCMD_DCNTE_SET_AREA:
+        case SUBCMD60_DCNTE_SET_AREA:
             rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
             break;
 
-        case SUBCMD_DCNTE_SET_POS:
+        case SUBCMD60_DCNTE_SET_POS:
             rv = handle_set_pos(c, (subcmd_set_pos_t *)pkt);
             break;
 
-        case SUBCMD_DCNTE_MOVE_SLOW:
-        case SUBCMD_DCNTE_MOVE_FAST:
+        case SUBCMD60_DCNTE_MOVE_SLOW:
+        case SUBCMD60_DCNTE_MOVE_FAST:
             rv = handle_move(c, (subcmd_move_t *)pkt);
             break;
 
@@ -134,28 +134,28 @@ int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt) {
     int rv;
 
     switch(pkt->type) {
-        case SUBCMD_INTER_LEVEL_WARP:
-            newtype = SUBCMD_DCNTE_SET_AREA;
+        case SUBCMD60_INTER_LEVEL_WARP:
+            newtype = SUBCMD60_DCNTE_SET_AREA;
             break;
 
-        case SUBCMD_FINISH_LOAD:
-            newtype = SUBCMD_DCNTE_FINISH_LOAD;
+        case SUBCMD60_FINISH_LOAD:
+            newtype = SUBCMD60_DCNTE_FINISH_LOAD;
             break;
 
-        case SUBCMD_SET_POS_3F:
-            newtype = SUBCMD_DCNTE_SET_POS;
+        case SUBCMD60_SET_POS_3F:
+            newtype = SUBCMD60_DCNTE_SET_POS;
             break;
 
-        case SUBCMD_MOVE_SLOW:
-            newtype = SUBCMD_DCNTE_MOVE_SLOW;
+        case SUBCMD60_MOVE_SLOW:
+            newtype = SUBCMD60_DCNTE_MOVE_SLOW;
             break;
 
-        case SUBCMD_MOVE_FAST:
-            newtype = SUBCMD_DCNTE_MOVE_FAST;
+        case SUBCMD60_MOVE_FAST:
+            newtype = SUBCMD60_DCNTE_MOVE_FAST;
             break;
 
-        case SUBCMD0x60_MENU_REQ:
-            newtype = SUBCMD_DCNTE_TALK_SHOP;
+        case SUBCMD60_MENU_REQ:
+            newtype = SUBCMD60_DCNTE_TALK_SHOP;
             break;
 
         default:
@@ -178,35 +178,35 @@ int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt) {
     return rv;
 }
 
-int subcmd_translate_bb_to_nte(ship_client_t *c, bb_subcmd_pkt_t *pkt) {
+int subcmd_translate_bb_to_nte(ship_client_t *c, subcmd_bb_pkt_t *pkt) {
     uint8_t *sendbuf;
     uint8_t newtype = 0xFF;
     uint16_t len = LE16(pkt->hdr.pkt_len);
     int rv;
 
     switch(pkt->type) {
-        case SUBCMD_INTER_LEVEL_WARP:
-            newtype = SUBCMD_DCNTE_SET_AREA;
+        case SUBCMD60_INTER_LEVEL_WARP:
+            newtype = SUBCMD60_DCNTE_SET_AREA;
             break;
 
-        case SUBCMD_FINISH_LOAD:
-            newtype = SUBCMD_DCNTE_FINISH_LOAD;
+        case SUBCMD60_FINISH_LOAD:
+            newtype = SUBCMD60_DCNTE_FINISH_LOAD;
             break;
 
-        case SUBCMD_SET_POS_3F:
-            newtype = SUBCMD_DCNTE_SET_POS;
+        case SUBCMD60_SET_POS_3F:
+            newtype = SUBCMD60_DCNTE_SET_POS;
             break;
 
-        case SUBCMD_MOVE_SLOW:
-            newtype = SUBCMD_DCNTE_MOVE_SLOW;
+        case SUBCMD60_MOVE_SLOW:
+            newtype = SUBCMD60_DCNTE_MOVE_SLOW;
             break;
 
-        case SUBCMD_MOVE_FAST:
-            newtype = SUBCMD_DCNTE_MOVE_FAST;
+        case SUBCMD60_MOVE_FAST:
+            newtype = SUBCMD60_DCNTE_MOVE_FAST;
             break;
 
-        case SUBCMD0x60_MENU_REQ:
-            newtype = SUBCMD_DCNTE_TALK_SHOP;
+        case SUBCMD60_MENU_REQ:
+            newtype = SUBCMD60_DCNTE_TALK_SHOP;
             break;
 
         default:
@@ -221,7 +221,7 @@ int subcmd_translate_bb_to_nte(ship_client_t *c, bb_subcmd_pkt_t *pkt) {
         return -1;
 
     memcpy(sendbuf, pkt, len);
-    pkt = (bb_subcmd_pkt_t *)sendbuf;
+    pkt = (subcmd_bb_pkt_t *)sendbuf;
     pkt->type = newtype;
 
     rv = send_pkt_bb(c, (bb_pkt_hdr_t *)sendbuf);
@@ -236,28 +236,28 @@ int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt) {
     int rv;
 
     switch(pkt->type) {
-        case SUBCMD_DCNTE_SET_AREA:
-            newtype = SUBCMD_INTER_LEVEL_WARP;
+        case SUBCMD60_DCNTE_SET_AREA:
+            newtype = SUBCMD60_INTER_LEVEL_WARP;
             break;
 
-        case SUBCMD_DCNTE_FINISH_LOAD:
-            newtype = SUBCMD_FINISH_LOAD;
+        case SUBCMD60_DCNTE_FINISH_LOAD:
+            newtype = SUBCMD60_FINISH_LOAD;
             break;
 
-        case SUBCMD_DCNTE_SET_POS:
-            newtype = SUBCMD_SET_POS_3F;
+        case SUBCMD60_DCNTE_SET_POS:
+            newtype = SUBCMD60_SET_POS_3F;
             break;
 
-        case SUBCMD_DCNTE_MOVE_SLOW:
-            newtype = SUBCMD_MOVE_SLOW;
+        case SUBCMD60_DCNTE_MOVE_SLOW:
+            newtype = SUBCMD60_MOVE_SLOW;
             break;
 
-        case SUBCMD_DCNTE_MOVE_FAST:
-            newtype = SUBCMD_MOVE_FAST;
+        case SUBCMD60_DCNTE_MOVE_FAST:
+            newtype = SUBCMD60_MOVE_FAST;
             break;
 
-        case SUBCMD_DCNTE_TALK_SHOP:
-            newtype = SUBCMD0x60_MENU_REQ;
+        case SUBCMD60_DCNTE_TALK_SHOP:
+            newtype = SUBCMD60_MENU_REQ;
             break;
 
         default:

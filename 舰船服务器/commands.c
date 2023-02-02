@@ -578,7 +578,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x88);
-    gcpkt.shdr.type = SUBCMD0x62_GUILDCARD;
+    gcpkt.shdr.type = SUBCMD62_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
     gcpkt.player_tag = LE32(0x00010000);
@@ -1179,7 +1179,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x0088);
-    gcpkt.shdr.type = SUBCMD0x62_GUILDCARD;
+    gcpkt.shdr.type = SUBCMD62_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
     gcpkt.player_tag = LE32(0x00010000);
@@ -1284,12 +1284,12 @@ static int handle_smite(ship_client_t *c, const char *params) {
     count = 0;
 
     if(hp) {
-        send_lobby_mod_stat(l, cl, SUBCMD_STAT_HPDOWN, hp);
+        send_lobby_mod_stat(l, cl, SUBCMD60_STAT_HPDOWN, hp);
         ++count;
     }
 
     if(tp) {
-        send_lobby_mod_stat(l, cl, SUBCMD_STAT_TPDOWN, tp);
+        send_lobby_mod_stat(l, cl, SUBCMD60_STAT_TPDOWN, tp);
         ++count;
     }
 
@@ -1347,7 +1347,7 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
     p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
     p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
     p2.hdr.flags = 0;
-    p2.shdr.type = SUBCMD_DROP_STACK;
+    p2.shdr.type = SUBCMD60_DROP_STACK;
     p2.shdr.size = 0x0A;
     p2.shdr.client_id = c->client_id;
     p2.area = LE16(c->cur_area);
@@ -1418,7 +1418,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
         p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
         p2.hdr.flags = 0;
-        p2.shdr.type = SUBCMD_TELEPORT;
+        p2.shdr.type = SUBCMD60_TELEPORT;
         p2.shdr.size = 5;
         p2.shdr.client_id = c->client_id;
         p2.x = c2->x;
@@ -1653,7 +1653,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
     memset(&tmp[0x0C], 0xFF, 0x10);
     p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
     p->hdr.dc.pkt_len = LE16(0x24);
-    p->type = SUBCMD_WORD_SELECT;
+    p->type = SUBCMD60_WORD_SELECT;
     p->size = 0x08;
 
     if(c->version != CLIENT_VERSION_GC) {
@@ -1843,7 +1843,7 @@ static int handle_npc(ship_client_t *c, const char *params) {
     memset(p, 0, 0x10);
     p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
     p->hdr.dc.pkt_len = LE16(0x0010);
-    p->type = SUBCMD_SPAWN_NPC;
+    p->type = SUBCMD60_SPAWN_NPC;
     p->size = 0x03;
 
     tmp[6] = 0x01;
@@ -2889,7 +2889,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
     pkt->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
     pkt->hdr.dc.flags = 0;
     pkt->hdr.dc.pkt_len = LE16(0x000C);
-    pkt->type = SUBCMD_JUKEBOX;
+    pkt->type = SUBCMD60_JUKEBOX;
     pkt->size = 2;
     pkt->data[2] = (uint8_t)song;
 
@@ -3103,7 +3103,7 @@ static int handle_t(ship_client_t *c, const char *params) {
     p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
     p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
     p2.hdr.flags = 0;
-    p2.shdr.type = SUBCMD_TELEPORT;
+    p2.shdr.type = SUBCMD60_TELEPORT;
     p2.shdr.size = 5;
     p2.shdr.client_id = c->client_id;
     p2.x = x;

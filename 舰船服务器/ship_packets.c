@@ -8769,7 +8769,7 @@ static int send_dc_warp(ship_client_t *c, uint8_t area) {
     pkt->pkt_len = LE16(0x000C);
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[4] = SUBCMD_WARP;
+    sendbuf[4] = SUBCMD60_WARP;
     sendbuf[5] = 0x02;
     sendbuf[6] = c->client_id;
     sendbuf[7] = 0x00;
@@ -8795,7 +8795,7 @@ static int send_pc_warp(ship_client_t *c, uint8_t area) {
     pkt->pkt_len = LE16(0x000C);
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[4] = SUBCMD_WARP;
+    sendbuf[4] = SUBCMD60_WARP;
     sendbuf[5] = 0x02;
     sendbuf[6] = c->client_id;
     sendbuf[7] = 0x00;
@@ -8821,7 +8821,7 @@ static int send_bb_warp(ship_client_t *c, uint8_t area) {
     pkt->pkt_len = LE16(0x0010);
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[8] = SUBCMD_WARP;
+    sendbuf[8] = SUBCMD60_WARP;
     sendbuf[9] = 0x02;
     sendbuf[10] = c->client_id;
     sendbuf[11] = 0x00;
@@ -10831,8 +10831,9 @@ int send_c_rank_update(ship_client_t *c, lobby_t *l) {
 static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
-    subcmd_pkt_t *pkt = (subcmd_pkt_t *)sendbuf;
-    int len = 4;
+    //subcmd_pkt_t *pkt = (subcmd_pkt_t *)sendbuf;
+    subcmd_update_player_stat_t *pkt = (subcmd_update_player_stat_t *)sendbuf;
+    int len = 0;
 
     /* Verify we got the sendbuf. */
     if(!sendbuf) {
@@ -10841,14 +10842,23 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
-        sendbuf[len++] = SUBCMD_CHANGE_STAT;
-        sendbuf[len++] = 2;
-        sendbuf[len++] = s->client_id;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = stat;
-        sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
+        pkt->shdr.type = SUBCMD60_CHANGE_STAT;
+        pkt->shdr.size = 0x02;
+        pkt->shdr.client_id = s->client_id;
+        pkt->client_id2 = 0x0000;
+        pkt->stat = stat;
+        pkt->amount = (amt > 0xFF) ? 0xFF : amt;
+
+        len += sizeof(subcmd_update_player_stat_t);
+
+        //sendbuf[len++] = SUBCMD60_CHANGE_STAT;
+        //sendbuf[len++] = 2;
+        //sendbuf[len++] = s->client_id;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = stat;
+        //sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
         amt -= 0xFF;
     }
 
@@ -10867,14 +10877,15 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(d, len, sendbuf);
+    return crypt_send(d, len, (uint8_t*)pkt);
 }
 
 static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
-    bb_subcmd_pkt_t *pkt = (bb_subcmd_pkt_t *)sendbuf;
-    int len = 8;
+    //subcmd_bb_pkt_t *pkt = (subcmd_bb_pkt_t *)sendbuf;
+    subcmd_bb_update_player_stat_t *pkt = (subcmd_bb_update_player_stat_t *)sendbuf;
+    int len = 0;
 
     /* Verify we got the sendbuf. */
     if(!sendbuf) {
@@ -10883,16 +10894,27 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
-        sendbuf[len++] = SUBCMD_CHANGE_STAT;
-        sendbuf[len++] = 2;
-        sendbuf[len++] = s->client_id;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = 0;
-        sendbuf[len++] = stat;
-        sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
+        pkt->shdr.type = SUBCMD60_CHANGE_STAT;
+        pkt->shdr.size = 0x02;
+        pkt->shdr.client_id = s->client_id;
+        pkt->client_id2 = 0x0000;
+        pkt->stat = stat;
+        pkt->amount = (amt > 0xFF) ? 0xFF : amt;
+
+        len += sizeof(subcmd_bb_update_player_stat_t);
+
+        //sendbuf[len++] = SUBCMD60_CHANGE_STAT;
+        //sendbuf[len++] = 2;
+        //sendbuf[len++] = s->client_id;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = 0;
+        //sendbuf[len++] = stat;
+        //sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
         amt -= 0xFF;
     }
+
+    DBG_LOG("测试是否正常");
 
     /* Fill in the header */
     pkt->hdr.pkt_len = LE16(len);
@@ -10900,7 +10922,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     pkt->hdr.flags = 0;
 
     /* 将数据包发送出去 */
-    return crypt_send(d, len, sendbuf);
+    return crypt_send(d, len, (uint8_t*)pkt);
 }
 
 int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
@@ -10912,7 +10934,7 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
     }
 
     /* Make sure the request is sane */
-    if(stat < SUBCMD_STAT_HPDOWN || stat > SUBCMD_STAT_TPUP || amt < 1 ||
+    if(stat < SUBCMD60_STAT_HPDOWN || stat > SUBCMD60_STAT_TPUP || amt < 1 ||
        amt > 2040) {
         return 0;
     }
@@ -11268,7 +11290,7 @@ int send_gm_menu(ship_client_t *c, uint32_t menu_id) {
 
 static int send_bb_end_burst(ship_client_t *c) {
     uint8_t *sendbuf = get_sendbuf();
-    bb_subcmd_pkt_t *pkt = (bb_subcmd_pkt_t *)sendbuf;
+    subcmd_bb_end_burst_t *pkt = (subcmd_bb_end_burst_t *)sendbuf;
 
     /* Make sure we got the sendbuf */
     if(!sendbuf)
@@ -11278,10 +11300,11 @@ static int send_bb_end_burst(ship_client_t *c) {
     pkt->hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt->hdr.pkt_len = LE16(0x000C);
     pkt->hdr.flags = 0;
-    pkt->type = SUBCMD_BURST_DONE;
-    pkt->size = 0x03;
-    pkt->data[0] = 0x18;
-    pkt->data[1] = 0x08;
+    pkt->shdr.type = SUBCMD60_BURST_DONE;
+    pkt->shdr.size = 0x03;
+    pkt->shdr.params = 0x0818;
+    //pkt->data[0] = 0x18;
+    //pkt->data[1] = 0x08;
 
     return crypt_send(c, 0x000C, sendbuf);
 }
@@ -11508,7 +11531,7 @@ static int send_dc_sync_register(ship_client_t *c, uint16_t reg_num, uint32_t va
         pkt2->hdr.dc.pkt_len = LE16(sizeof(subcmd_sync_reg_t));
     }
 
-    pkt->shdr.type = SUBCMD_SYNC_REG;
+    pkt->shdr.type = SUBCMD60_SYNC_REG;
     pkt->shdr.size = 3;
     pkt->register_number = reg_num;
     pkt->value = LE32(value);
@@ -11520,7 +11543,7 @@ static int send_dc_sync_register(ship_client_t *c, uint16_t reg_num, uint32_t va
 static int send_bb_sync_register(ship_client_t* c, uint16_t reg_num, uint32_t value) {
     uint8_t* sendbuf = get_sendbuf();
     subcmd_bb_sync_reg_t* pkt = (subcmd_bb_sync_reg_t*)sendbuf;
-    bb_subcmd_pkt_t* pkt2 = (bb_subcmd_pkt_t*)sendbuf;
+    subcmd_bb_pkt_t* pkt2 = (subcmd_bb_pkt_t*)sendbuf;
 
     if (!sendbuf)
         return -1;
@@ -11533,7 +11556,7 @@ static int send_bb_sync_register(ship_client_t* c, uint16_t reg_num, uint32_t va
     pkt2->hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt2->hdr.pkt_len = LE16(sizeof(subcmd_bb_sync_reg_t));
 
-    pkt->shdr.type = SUBCMD_SYNC_REG;
+    pkt->shdr.type = SUBCMD60_SYNC_REG;
     pkt->shdr.size = 3;
     pkt->register_number = reg_num;
     pkt->value = LE32(value);
@@ -11653,7 +11676,7 @@ int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {
     //send_command_t(c, 0xD3, 0x00, pkt);
     pkt->hdr.pkt_type = TRADE_3_TYPE;
     pkt->hdr.flags = 0x00;
-    //pkt->type = SUBCMD0x62_TRADE;
+    //pkt->type = SUBCMD62_TRADE;
     //pkt->size = 0x04;
     rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
     return rv;
@@ -11772,7 +11795,7 @@ static int send_mhit(ship_client_t* c, uint16_t enemy_id, uint16_t enemy_id2,
     memset(&pkt, 0, sizeof(subcmd_mhit_pkt_t));
     pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt.hdr.pkt_len = LE16(0x0010);
-    pkt.shdr.type = SUBCMD_HIT_MONSTER;
+    pkt.shdr.type = SUBCMD60_HIT_MONSTER;
     pkt.shdr.size = 0x03;
     pkt.shdr.enemy_id = LE16(enemy_id2);
     pkt.enemy_id2 = LE16(enemy_id);
@@ -11789,7 +11812,7 @@ static int send_mhit_gc(ship_client_t* c, uint16_t enemy_id, uint16_t enemy_id2,
     memset(&pkt, 0, sizeof(subcmd_mhit_pkt_t));
     pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt.hdr.pkt_len = LE16(0x0010);
-    pkt.shdr.type = SUBCMD_HIT_MONSTER;
+    pkt.shdr.type = SUBCMD60_HIT_MONSTER;
     pkt.shdr.size = 0x03;
     pkt.shdr.enemy_id = LE16(enemy_id2);
     pkt.enemy_id2 = LE16(enemy_id);
@@ -11806,7 +11829,7 @@ static int send_mhit_bb(ship_client_t* c, uint16_t enemy_id, uint16_t enemy_id2,
     memset(&pkt, 0, sizeof(subcmd_bb_mhit_pkt_t));
     pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt.hdr.pkt_len = LE16(0x0010);
-    pkt.shdr.type = SUBCMD_HIT_MONSTER;
+    pkt.shdr.type = SUBCMD60_HIT_MONSTER;
     pkt.shdr.size = 0x03;
     pkt.shdr.enemy_id = LE16(enemy_id2);
     pkt.enemy_id2 = LE16(enemy_id);
