@@ -2369,9 +2369,6 @@ typedef struct subcmd_bb_create_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t item;
-    //uint32_t item[3];
-    //uint32_t item_id;
-    //uint32_t item2;
     uint32_t unused2;
 } PACKED subcmd_bb_create_item_t;
 

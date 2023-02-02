@@ -5161,7 +5161,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
 }
 
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
-    subcmd_bb_exp_t pkt;
+    subcmd_bb_exp_t pkt = { 0 };
 
     /* Fill in the packet. */
     pkt.hdr.pkt_len = LE16(0x0010);
@@ -5212,26 +5212,17 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
 
         DBG_LOG("房间经验倍率为 %d 倍", l->expboost);
     }
-    else {
+    else
         ERR_LOG("GC %" PRIu32 " 设置房间经验 %d 倍失败!",
             c->guildcard, exp_r);
-    }
 
     return rv;
 }
 
 int subcmd_send_bb_level(ship_client_t* c) {
-    subcmd_bb_level_up_t pkt;
+    subcmd_bb_level_up_t pkt = { 0 };
     int i;
     uint16_t base, mag;
-
-    /* Fill in the packet. */
-    pkt.hdr.pkt_len = LE16(0x001C);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    pkt.hdr.flags = 0;
-    pkt.shdr.type = SUBCMD60_LEVEL_UP;
-    pkt.shdr.size = 0x05;
-    pkt.shdr.client_id = c->client_id;
 
     /* Fill in the base statistics. These are all in little-endian already. */
     pkt.atp = c->bb_pl->character.disp.stats.atp;
@@ -5265,6 +5256,14 @@ int subcmd_send_bb_level(ship_client_t* c) {
             break;
         }
     }
+
+    /* Fill in the packet. */
+    pkt.hdr.pkt_len = LE16(0x001C);
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_LEVEL_UP;
+    pkt.shdr.size = 0x05;
+    pkt.shdr.client_id = c->client_id;
 
     return subcmd_send_lobby_bb(c->cur_lobby, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
