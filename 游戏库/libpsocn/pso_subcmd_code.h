@@ -124,7 +124,7 @@
 #define SUBCMD60_TALK_NPC                      0x2C    /* Maybe this is talking to an NPC? */
 #define SUBCMD60_DONE_NPC                      0x2D    /*SUBCMD60_DONE_NPC Shows up when you're done with an NPC */
 #define SUBCMD60_UNKNOW_2E                     0x2E
-#define SUBCMD60_UNKNOW_2F                     0x2F
+#define SUBCMD60_HIT_BY_ENEMY                  0x2F
 #define SUBCMD60_LEVEL_UP                      0x30
 #define SUBCMD60_UNKNOW_MEDIC_31               0x31
 #define SUBCMD60_UNKNOW_MEDIC_32               0x32

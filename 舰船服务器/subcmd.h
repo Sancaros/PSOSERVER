@@ -353,27 +353,29 @@ typedef struct subcmd_bb_dragon_act {
 } PACKED subcmd_bb_dragon_act_t;
 
 // 0x13: De Rol Le boss actions (不支持 Episode 3)
-struct subcmd_DeRolLeBossActions_6x13 {
+typedef struct subcmd_bb_DeRolLeBossActions_6x13 {
     enemy_id_hdr_t shdr;
     uint16_t unknown_a2;
     uint16_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_DeRolLeBossActions_6x13_t;
 
 // 0x15: Vol Opt boss actions (不支持 Episode 3)
-struct subcmd_VolOptBossActions_6x15 {
+typedef struct subcmd_bb_VolOptBossActions_6x15 {
+    bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a2;
     uint16_t unknown_a3;
     uint16_t unknown_a4;
     uint16_t unknown_a5;
-} PACKED;
+} PACKED subcmd_bb_VolOptBossActions_6x15_t;
 
 // 0x16: Vol Opt boss actions (不支持 Episode 3)
-struct G_VolOptBossActions_6x16 {
+typedef struct subcmd_bb_VolOptBossActions_6x16 {
+    bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint8_t unknown_a2[6];
     uint16_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_VolOptBossActions_6x16_t;
 
 // 0x17: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 // Packet used to teleport to a specified position
@@ -387,35 +389,40 @@ typedef struct subcmd_teleport {
 } PACKED subcmd_teleport_t;
 
 // 0x18: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x18 {
+typedef struct subcmd_bb_Unknown_6x18 {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a2[4];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x18_t;
 
 // 0x19: Dark Falz boss actions (不支持 Episode 3)
-struct G_DarkFalzActions_6x19 {
+typedef struct subcmd_bb_DarkFalzActions_6x19 {
+    bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a2;
     uint16_t unknown_a3;
     uint32_t unknown_a4;
     uint32_t unused;
-} PACKED;
+} PACKED subcmd_bb_DarkFalzActions_6x19_t;
 
 // 0x1B: Unknown (不支持 Episode 3)
-struct G_Unknown_6x1B {
+typedef struct subcmd_bb_Unknown_6x1B {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x1B_t;
 
 // 0x1C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x1C {
+typedef struct subcmd_bb_Unknown_6x1C {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x1C_t;
 
 // 0x1F: Unknown (指令生效范围; 大厅和游戏)
-struct G_Unknown_6x1F {
+typedef struct subcmd_bb_Unknown_6x1F {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t area;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x1F_t;
 
 // 0x20: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
@@ -732,24 +739,24 @@ typedef struct subcmd_bb_photon_blast {
 } PACKED subcmd_bb_photon_blast_t;
 
 // 0x38: Unknown
-struct G_Unknown_6x38 {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_Unknown_6x38 {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unused;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x38_t;
 
 // 0x39: Photon blast ready
-typedef struct subcmd_photon_blast_ready {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_photon_blast_ready {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_photon_blast_ready_t;
+} PACKED subcmd_bb_photon_blast_ready_t;
 
 // 0x3A: Unknown (指令生效范围; 仅限游戏)
-struct G_Unknown_6x3A {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_Unknown_6x3A {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x3A_t;
 
 // 0x3A: Unknown (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_cmd_3a {
@@ -758,10 +765,10 @@ typedef struct subcmd_bb_cmd_3a {
 } PACKED subcmd_bb_cmd_3a_t;
 
 // 0x3B: Unknown (指令生效范围; 大厅和游戏)
-struct G_Unknown_6x3B {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_Unknown_6x3B {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x3B_t;
 
 // 0x3E: Stop moving
 // 0x3F: Set position
@@ -909,8 +916,8 @@ typedef struct subcmd_bb_used_tech {
 } PACKED subcmd_bb_used_tech_t;
 
 // 0x49: Subtract PB energy
-struct G_SubtractPBEnergy_6x49 {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_SubtractPBEnergy_6x49 {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint8_t unknown_a1;
     uint8_t unknown_a2;
@@ -921,13 +928,13 @@ struct G_SubtractPBEnergy_6x49 {
         uint16_t unknown_a1;
         uint16_t unknown_a2;
     } entries[];
-} PACKED;
+} PACKED subcmd_bb_SubtractPBEnergy_6x49_t;
 
 // 0x4A: Fully shield attack
-struct G_ShieldAttack_6x4A {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_ShieldAttack_6x4A {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_ShieldAttack_6x4A_t;
 
 // 0x4B: Hit by enemy
 // Packet used when a client takes damage.
@@ -968,10 +975,10 @@ typedef struct subcmd_bb_cmd_4e {
 } PACKED subcmd_bb_cmd_4e_t;
 
 // 0x4F: Unknown (指令生效范围; 大厅和游戏)
-struct G_Unknown_6x4F {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_Unknown_6x4F {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x4F_t;
 
 // 0x50: Unknown (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_switch_req {
@@ -996,10 +1003,10 @@ typedef struct subcmd_bb_menu_req {
 } PACKED subcmd_bb_menu_req_t;
 
 // 0x53: Unknown (指令生效范围; 仅限游戏)
-struct G_Unknown_6x53 {
+typedef struct subcmd_bb_Unknown_6x53 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x53_t;
 
 // 0x54: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -1018,20 +1025,20 @@ typedef struct subcmd_bb_map_warp {
 } PACKED subcmd_bb_map_warp_t;
 
 // 0x56: Unknown (指令生效范围; 大厅和游戏)
-struct G_Unknown_6x56 {
+typedef struct subcmd_bb_Unknown_6x56 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1;
     float x;
     float y;
     float z;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x56_t;
 
 // 0x57: Unknown (指令生效范围; 大厅和游戏)
-struct G_Unknown_6x57 {
+typedef struct subcmd_bb_Unknown_6x57 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x57_t;
 
 // 0x58: CTRL+W 触发 SUBCMD60_LOBBY_ACTION (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_lobby_act {
@@ -1051,13 +1058,13 @@ typedef struct subcmd_bb_destroy_map_item {
 } PACKED subcmd_bb_destroy_map_item_t;
 
 // 0x5A: Request to pick up item
-struct G_PickUpItemRequest_6x5A {
+typedef struct subcmd_bb_PickUpItemRequest_6x5A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t item_id;
     uint16_t area;
     uint16_t unused;
-} PACKED;
+} PACKED subcmd_bb_PickUpItemRequest_6x5A_t;
 
 // 0x5A: Request to pick up item
 typedef struct subcmd_pick_up {
@@ -1078,12 +1085,12 @@ typedef struct subcmd_bb_pick_up {
 } PACKED subcmd_bb_pick_up_t;
 
 // 0x5C: Unknown
-struct G_Unknown_6x5C {
+typedef struct subcmd_bb_Unknown_6x5C {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1;
     uint32_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x5C_t;
 
 // 0x5D: Drop meseta or stacked item
 // Packet used when dropping part of a stack of items
@@ -1195,12 +1202,12 @@ typedef struct subcmd_bb_levelup_req {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x63: Destroy item on the ground (used when too many items have been dropped)
-struct G_DestroyGroundItem_6x63 {
+typedef struct subcmd_bb_DestroyGroundItem_6x63 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t item_id;
     uint32_t area;
-} PACKED;
+} PACKED subcmd_bb_DestroyGroundItem_6x63_t;
 
 // 0x64: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -1209,14 +1216,14 @@ struct G_DestroyGroundItem_6x63 {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x66: Use star atomizer
-struct G_UseStarAtomizer_6x66 {
+typedef struct subcmd_bb_UseStarAtomizer_6x66 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t target_client_ids[4];
-} PACKED;
+} PACKED subcmd_bb_UseStarAtomizer_6x66_t;
 
 // 0x67: Create enemy set
-struct G_CreateEnemySet_6x67 {
+typedef struct subcmd_bb_CreateEnemySet_6x67 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     // unused1 could be area; the client checks this againset a global but the
@@ -1224,7 +1231,7 @@ struct G_CreateEnemySet_6x67 {
     uint32_t unused1;
     uint32_t unknown_a1;
     uint32_t unused2;
-} PACKED;
+} PACKED subcmd_bb_CreateEnemySet_6x67_t;
 
 // 0x68: Telepipe/Ryuker
 // Packet sent to create a pipe. Most of this, I haven't bothered looking too much at...
@@ -1256,29 +1263,29 @@ typedef struct subcmd_bb_pipe_pkt {
 } PACKED subcmd_bb_pipe_pkt_t;
 
 // 0x69: Unknown (指令生效范围; 仅限游戏)
-struct G_Unknown_6x69 {
+typedef struct subcmd_bb_Unknown_6x69 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t client_id2;
     uint16_t unknown_a1;
     uint16_t what; // 0-3; logic is very different for each value
     uint16_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x69_t;
 
 
 // 0x6A: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x6A {
+typedef struct subcmd_bb_Unknown_6x6A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unused;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x6A_t;
 
 // 0x6B: Sync enemy state (used while loading into game; same header format as 6E)
 // 0x6C: Sync object state (used while loading into game; same header format as 6E)
 // 0x6D: Sync item state (used while loading into game; same header format as 6E)
 // 0x6E: Sync flag state (used while loading into game)
-struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
+typedef struct subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t size;
@@ -1286,14 +1293,14 @@ struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     uint32_t decompressed_size;
     uint32_t compressed_size; // Must be <= subcommand_size - 0x10
     // BC0-compressed data follows here (use bc0_decompress from Compression.hh)
-} PACKED;
+} PACKED subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E_t;
 
 // 0x6F: Unknown (used while loading into game) 8 + 4 + 512
-struct G_Unknown_6x6F {
+typedef struct subcmd_bb_Unknown_6x6F {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1[0x200];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x6F_t;
 
 // 0x70: Sync player disp data and inventory (used while loading into game)
 // Annoyingly, they didn't use the same format as the 65/67/68 commands here,
@@ -1416,6 +1423,55 @@ typedef struct subcmd_bb_burst_pldata {
 
 static int char_bb_size222 = sizeof(subcmd_bb_burst_pldata_t);
 
+typedef struct G_Unknown_6x70 {
+    dc_pkt_hdr_t hdr;               /* 0000 0 */
+    client_id_hdr_t shdr;           /* 0008 8 */
+    // Offsets in this struct are relative to the overall command header
+    uint32_t size_minus_4;          /* 000C 12 ? 0x0000040C*/
+    // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
+    // they could be the player's current (x, y, z) coords
+    uint32_t lobby_num;             /* 0010 16  0x00000001*/
+    uint32_t unused2;               /* 0014 20  0x01000000*/
+
+    float x;                        /* 0018 24 - 43 */
+    float y;
+    float z;
+
+    uint32_t unknown_a2[2];         /* 0018 24 - 43 */
+
+    uint16_t unknown_a3[4];         /* 002C */
+    uint32_t unknown_a4[3][5];      /* 0034 */
+    uint32_t unknown_a5;            /* 0070 */
+
+    uint32_t player_tag;            /* 0074 */
+    uint32_t guild_card_number;     /* 0078 */
+
+    uint32_t unknown_a6[2];         /* 007C */
+    struct {                        /* 0084 */
+        uint16_t unknown_a1[2];
+        uint32_t unknown_a2[6];
+    } unknown_a7;
+    uint32_t unknown_a8;            /* 00A0 */
+    uint8_t unknown_a9[0x14];       /* 00A4 */
+    uint32_t unknown_a10;           /* 00B8 */
+    uint32_t unknown_a11;           /* 00BC */
+
+
+    uint8_t technique_levels[0x14]; /* 00C0 */ // Last byte is uninitialized
+
+    psocn_dress_data_t dress_data;  /* 00D4 */
+    psocn_pl_stats_t stats;         /* 0124 */
+    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint32_t level;                 /* 013C  316 - 319 size 4 */
+    uint32_t exp;                   /* 0140  320 - 323 size 4 */
+    uint32_t meseta;                /* 0144  324 - 327 size 4 */
+    inventory_t inv;                /* 0148  328 - 1171 size 844 */
+    uint32_t unknown_a15;           /* 0494 1172 - 1176 size 4 */
+} G_Unknown_6x70_t;
+
+static int char_bb_size22322 = sizeof(G_Unknown_6x70_t);
+
+
 // 0x71: loading_burst (used while loading into game) SUBCMD62_BURST6
 typedef struct subcmd_bb_loading_burst {
     bb_pkt_hdr_t hdr;
@@ -1510,13 +1566,13 @@ typedef struct subcmd_bb_sync_reg {
 } PACKED subcmd_bb_sync_reg_t;
 
 // 0x78: Unknown
-struct G_Unknown_6x78 {
+typedef struct subcmd_bb_Unknown_6x78 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t client_id; // Must be < 12
     uint16_t unused1;
     uint32_t unused2;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x78_t;
 
 // 0x79: Lobby 14/15 gogo ball (soccer game)
 //(00000000)   20 00 60 00 00 00 00 00  79 06 00 00 00 00 00 00  .`.....y.......
@@ -1541,21 +1597,21 @@ typedef struct subcmd_bb_gogo_ball {
 } PACKED subcmd_bb_gogo_ball_t;
 
 // 0x7A: Unknown
-struct G_Unknown_6x7A {
+typedef struct subcmd_bb_Unknown_6x7A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x7A_t;
 
 // 0x7B: Unknown
-struct G_Unknown_6x7B {
+typedef struct subcmd_bb_Unknown_6x7B {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x7B_t;
 
 // 0x7C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 // SUBCMD60_CMODE_GRAVE
-struct G_Unknown_6x7C {
-    dc_pkt_hdr_t hdr;
+typedef struct subcmd_bb_Unknown_6x7C {
+    bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
     uint8_t unknown_a1[2];
@@ -1575,7 +1631,7 @@ struct G_Unknown_6x7C {
         uint32_t unknown_a1;
         uint32_t unknown_a2;
     } PACKED entries[3];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x7C_t;
 
 /* Packet used for grave data in C-Mode (Dreamcast) */
 typedef struct subcmd_dc_grave {
@@ -1626,92 +1682,92 @@ typedef struct subcmd_bb_grave {
 static int sdasd = sizeof(subcmd_bb_grave_t);
 
 // 0x7D: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x7D {
+typedef struct subcmd_bb_Unknown_6x7D {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1; // Must be < 7; used in jump table
     uint8_t unused[3];
     uint32_t unknown_a2[4];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x7D_t;
 
 // 0x7E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x7F: Unknown (不支持 Episode 3)
-struct G_Unknown_6x7F {
+typedef struct subcmd_bb_Unknown_6x7F {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1[0x20];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x7F_t;
 
 // 0x80: Trigger trap (不支持 Episode 3)
-struct G_TriggerTrap_6x80 {
+typedef struct subcmd_bb_TriggerTrap_6x80 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_TriggerTrap_6x80_t;
 
 // 0x81: Unknown
-struct G_Unknown_6x81 {
+typedef struct subcmd_bb_Unknown_6x81 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x81_t;
 
 // 0x82: Unknown
-struct G_Unknown_6x82 {
+typedef struct subcmd_bb_Unknown_6x82 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x82_t;
 
 // 0x83: Place trap
-struct G_PlaceTrap_6x83 {
+typedef struct subcmd_bb_PlaceTrap_6x83 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_PlaceTrap_6x83_t;
 
 // 0x84: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x84 {
+typedef struct subcmd_bb_Unknown_6x84 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1[6];
     uint16_t unknown_a2;
     uint16_t unknown_a3;
     uint16_t unused;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x84_t;
 
 // 0x85: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x85 {
+typedef struct subcmd_bb_Unknown_6x85 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t unknown_a1; // Command is ignored unless this is 0
     uint16_t unknown_a2[7]; // Only the first 3 appear to be used
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x85_t;
 
 // 0x86: Hit destructible object (不支持 Episode 3)
-struct G_HitDestructibleObject_6x86 {
+typedef struct subcmd_bb_HitDestructibleObject_6x86 {
     bb_pkt_hdr_t hdr;
     object_id_hdr_t shdr;
     uint32_t unknown_a1;
     uint32_t unknown_a2;
     uint16_t unknown_a3;
     uint16_t unknown_a4;
-} PACKED;
+} PACKED subcmd_bb_HitDestructibleObject_6x86_t;
 
 // 0x87: Unknown
-struct G_Unknown_6x87 {
+typedef struct subcmd_bb_Unknown_6x87 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     float unknown_a1;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x87_t;
 
 // 0x88: Unknown (指令生效范围; 仅限游戏)
-struct G_Unknown_6x88 {
+typedef struct subcmd_bb_Unknown_6x88 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x88_t;
 
 // 0x89: subcmd_bb_player_died (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_player_died {
@@ -1747,22 +1803,22 @@ typedef struct subcmd_bb_set_technique_level_override {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x8F: Unknown (不支持 Episode 3)
-struct G_Unknown_6x8F {
+typedef struct subcmd_bb_Unknown_6x8F {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
     uint16_t unknown_a1;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x8F_t;
 
 // 0x90: Unknown (不支持 Episode 3)
-struct G_Unknown_6x90 {
+typedef struct subcmd_bb_Unknown_6x90 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x90_t;
 
 // 0x91: Unknown (指令生效范围; 仅限游戏)
-struct G_Unknown_6x91 {
+typedef struct subcmd_bb_Unknown_6x91 {
     bb_pkt_hdr_t hdr;
     object_id_hdr_t shdr;
     uint32_t unknown_a1;
@@ -1771,15 +1827,15 @@ struct G_Unknown_6x91 {
     uint16_t unknown_a4;
     uint16_t unknown_a5;
     uint8_t unknown_a6[2];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x91_t;
 
 // 0x92: Unknown (不支持 Episode 3)
-struct G_Unknown_6x92 {
+typedef struct subcmd_bb_Unknown_6x92 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t unknown_a1;
     float unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x92_t;
 
 // 0x93: Timed switch activated (不支持 Episode 3)
 typedef struct subcmd_bb_timed_switch_activated {
@@ -1800,27 +1856,27 @@ typedef struct subcmd_bb_inter_level_map_warp {
 } PACKED subcmd_bb_inter_level_map_warp_t;
 
 // 0x95: Unknown (不支持 Episode 3)
-struct G_Unknown_6x95 {
+typedef struct subcmd_bb_Unknown_6x95 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t client_id;
     uint32_t unknown_a1;
     uint32_t unknown_a2;
     uint32_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x95_t;
 
 // 0x96: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x97: Unknown (不支持 Episode 3)
-struct G_Unknown_6x97 {
+typedef struct subcmd_bb_Unknown_6x97 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t unused1;
     uint32_t unknown_a1; // Must be 0 or 1
     uint32_t unused2;
     uint32_t unused3;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x97_t;
 
 // 0x98: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -1862,41 +1918,41 @@ typedef struct subcmd_bb_update_player_stat {
 } PACKED subcmd_bb_update_player_stat_t;
 
 // 0x9B: Unknown
-struct G_Unknown_6x9B {
+typedef struct subcmd_bb_Unknown_6x9B {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1;
     uint8_t unused[3];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x9B_t;
 
 // 0x9C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-struct G_Unknown_6x9C {
+typedef struct subcmd_bb_Unknown_6x9C {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint32_t unknown_a1;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x9C_t;
 
 // 0x9D: Unknown (不支持 Episode 3)
-struct G_Unknown_6x9D {
+typedef struct subcmd_bb_Unknown_6x9D {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t client_id2;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6x9D_t;
 
 // 0x9E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x9F: Gal Gryphon actions (不支持 PC or Episode 3)
-struct G_GalGryphonActions_6x9F {
+typedef struct subcmd_bb_GalGryphonActions_6x9F {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint32_t unknown_a1;
     float x;
     float z;
-} PACKED;
+} PACKED subcmd_bb_GalGryphonActions_6x9F_t;
 
 // 0xA0: Gal Gryphon actions (不支持 PC or Episode 3)
-struct G_GalGryphonActions_6xA0 {
+typedef struct subcmd_bb_GalGryphonActions_6xA0 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     float x;
@@ -1906,16 +1962,16 @@ struct G_GalGryphonActions_6xA0 {
     uint16_t unknown_a2;
     uint16_t unknown_a3;
     uint32_t unknown_a4[4];
-} PACKED;
+} PACKED subcmd_bb_GalGryphonActions_6xA0_t;
 
 // 0xA1: Unknown (不支持 PC)
-struct G_Unknown_6xA1 {
+typedef struct subcmd_bb_Unknown_6xA1 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_Unknown_6xA1_t;
 
 // 0xA2: Request for item drop from box (不支持 PC; handled by server on BB)
-struct G_BoxItemDropRequest_6xA2 {
+typedef struct subcmd_bb_BoxItemDropRequest_6xA2 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t area;
@@ -1930,7 +1986,7 @@ struct G_BoxItemDropRequest_6xA2 {
     uint32_t unknown_a6;
     uint32_t unknown_a7;
     uint32_t unknown_a8;
-} PACKED;
+} PACKED subcmd_bb_BoxItemDropRequest_6xA2_t;
 
 // 0xA2: Request for item drop from box (不支持 PC; handled by server on BB)
 // Request drop from box (GC)
@@ -1965,32 +2021,32 @@ typedef struct subcmd_bb_bitemreq {
 } PACKED subcmd_bb_bitemreq_t;
 
 // 0xA3: Episode 2 boss actions (不支持 PC or Episode 3)
-struct G_Episode2BossActions_6xA3 {
+typedef struct subcmd_bb_Episode2BossActions_6xA3 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint8_t unknown_a1;
     uint8_t unknown_a2;
     uint8_t unknown_a3[2];
-} PACKED;
+} PACKED subcmd_bb_Episode2BossActions_6xA3_t;
 
 // 0xA4: Olga Flow phase 1 actions (不支持 PC or Episode 3)
-struct G_OlgaFlowPhase1Actions_6xA4 {
+typedef struct subcmd_bb_OlgaFlowPhase1Actions_6xA4 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint8_t what;
     uint8_t unknown_a3[3];
-} PACKED;
+} PACKED subcmd_bb_OlgaFlowPhase1Actions_6xA4_t;
 
 // 0xA5: Olga Flow phase 2 actions (不支持 PC or Episode 3)
-struct G_OlgaFlowPhase2Actions_6xA5 {
+typedef struct subcmd_bb_OlgaFlowPhase2Actions_6xA5 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint8_t what;
     uint8_t unknown_a3[3];
-} PACKED;
+} PACKED subcmd_bb_OlgaFlowPhase2Actions_6xA5_t;
 
 // 0xA6: Modify trade proposal (不支持 PC)
-struct G_ModifyTradeProposal_6xA6 {
+typedef struct subcmd_bb_ModifyTradeProposal_6xA6 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint8_t unknown_a1; // Must be < 8
@@ -1998,7 +2054,7 @@ struct G_ModifyTradeProposal_6xA6 {
     uint8_t unknown_a3[2];
     uint32_t unknown_a4;
     uint32_t unknown_a5;
-} PACKED;
+} PACKED subcmd_bb_ModifyTradeProposal_6xA6_t;
 
 typedef struct subcmd_bb_trade_menu {
     uint16_t menu_pos;
@@ -2027,13 +2083,13 @@ typedef struct subcmd_bb_trade {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0xA8: Gol Dragon actions (不支持 PC or Episode 3)
-struct G_GolDragonActions_6xA8 {
+typedef struct subcmd_bb_GolDragonActions_6xA8 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
     uint32_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_GolDragonActions_6xA8_t;
 
 // 0xA8: Gol Dragon actions (不支持 PC or Episode 3)
 // Packet used by the Gol Dragon boss to deal with its actions.
@@ -2058,29 +2114,29 @@ typedef struct subcmd_bb_gol_dragon_act {
 } PACKED subcmd_bb_gol_dragon_act_t;
 
 // 0xA9: Barba Ray actions (不支持 PC or Episode 3)
-struct G_BarbaRayActions_6xA9 {
+typedef struct subcmd_bb_BarbaRayActions_6xA9 {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_BarbaRayActions_6xA9_t;
 
 // 0xAA: Episode 2 boss actions (不支持 PC or Episode 3)
-struct G_Episode2BossActions_6xAA {
+typedef struct subcmd_bb_Episode2BossActions_6xAA {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
     uint32_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_Episode2BossActions_6xAA_t;
 
 // 0xAB: Create lobby chair (不支持 PC)
-struct G_CreateLobbyChair_6xAB {
+typedef struct subcmd_bb_CreateLobbyChair_6xAB {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED;
+} PACKED subcmd_bb_CreateLobbyChair_6xAB_t;
 
 // 0xAB: Create lobby chair (不支持 PC)
 typedef struct subcmd_bb_chair_dir {
@@ -2091,46 +2147,46 @@ typedef struct subcmd_bb_chair_dir {
 } PACKED subcmd_bb_chair_dir_t;
 
 // 0xAC: Unknown (不支持 PC)
-struct G_Unknown_6xAC {
+typedef struct subcmd_bb_Unknown_6xAC {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t num_items;
     uint32_t item_ids[0x1E];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6xAC_t;
 
 // 0xAD: Unknown (不支持 PC, Episode 3, or GC Trial Edition)
-struct G_Unknown_6xAD {
+typedef struct subcmd_bb_Unknown_6xAD {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     // The first byte in this array seems to have a special meaning
     uint8_t unknown_a1[0x40];
-} PACKED;
+} PACKED subcmd_bb_Unknown_6xAD_t;
 
 // 0xAE: Set lobby chair state (sent by existing clients at join time)
 // This subcommand is 不支持 DC, PC, or GC Trial Edition.
-struct G_SetLobbyChairState_6xAE {
+typedef struct subcmd_bb_SetLobbyChairState_6xAE {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
     uint32_t unknown_a3;
     uint32_t unknown_a4;
-} PACKED;
+} PACKED subcmd_bb_SetLobbyChairState_6xAE_t;
 
 // 0xAF: Turn lobby chair (不支持 PC or GC Trial Edition)
-struct G_TurnLobbyChair_6xAF {
+typedef struct subcmd_bb_TurnLobbyChair_6xAF {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t angle; // In range [0x0000, 0xFFFF]
-} PACKED;
+} PACKED subcmd_bb_TurnLobbyChair_6xAF_t;
 
 // 0xB0: Move lobby chair (不支持 PC or GC Trial Edition)
 
-struct G_MoveLobbyChair_6xB0 {
+typedef struct subcmd_bb_MoveLobbyChair_6xB0 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1;
-} PACKED;
+} PACKED subcmd_bb_MoveLobbyChair_6xB0_t;
 
 // 0xB1: Unknown (不支持 PC or GC Trial Edition)
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -2139,20 +2195,21 @@ struct G_MoveLobbyChair_6xB0 {
 // TODO: It appears this command is sent when the snapshot file is written on
 // PSO GC. Verify this.
 
-struct G_Unknown_6xB2 {
+typedef struct subcmd_bb_Unknown_6xB2 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t area;
     uint8_t unused;
     uint16_t client_id;
     uint32_t unknown_a3; // PSO GC puts 0x00051720 here
-} PACKED;
+} PACKED subcmd_bb_Unknown_6xB2_t;
 
 // 0xB3: Unknown (XBOX)
 // 0xB3: CARD battle server data request (Episode 3)
 // These commands have multiple subcommands; see the Episode 3 subsubcommand
 // table after this table. The common format is:
-struct G_CardBattleCommandHeader {
+typedef struct subcmd_EP3_CardBattleCommandHeader {
+    dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t subsubcommand; // See 0xBx subcommand table (after this table)
     uint8_t sender_client_id;
@@ -2161,9 +2218,9 @@ struct G_CardBattleCommandHeader {
     // set_mask_for_ep3_game_command in SendCommands.cc.
     uint8_t mask_key;
     uint8_t unused2;
-} PACKED;
+} PACKED subcmd_EP3_CardBattleCommandHeader_t;
 
-struct G_CardServerDataCommandHeader {
+typedef struct subcmd_EP3_CardServerDataCommandHeader {
     unused_hdr_t shdr;
     uint8_t subsubcommand; // See 0xBx subcommand table (after this table)
     uint8_t sender_client_id;
@@ -2176,7 +2233,7 @@ struct G_CardServerDataCommandHeader {
     //be_uint32_t context_token;
     uint32_t sequence_num;
     uint32_t context_token;
-} PACKED;
+} PACKED subcmd_EP3_CardServerDataCommandHeader_t;
 
 // 0xB4: Unknown (XBOX)
 // 0xB4: CARD battle server response (Episode 3) - see 0xB3 (above)
@@ -2195,14 +2252,14 @@ typedef struct subcmd_bb_shop_req {
 // there are only two subsubcommands, so we list them inline here.
 // These subcommands can be rather large, so they should be sent with the 6C
 // command instead of the 60 command.
-typedef struct G_MapSubsubcommand_GC_Ep3_6xB6 {
+typedef struct subcmd_gc_MapSubsubcommand_GC_Ep3_6xB6 {
     unused_hdr_t shdr;
     uint32_t size;
     uint8_t subsubcommand; // 0x40 or 0x41
     uint8_t unused[3];
 } PACKED G_MapSubsubcommand_GC_Ep3_6xB6_t;
 
-typedef struct G_MapList_GC_Ep3_6xB6x40 {
+typedef struct subcmd_gc_MapList_GC_Ep3_6xB6x40 {
     G_MapSubsubcommand_GC_Ep3_6xB6_t header;
     uint16_t compressed_data_size;
     uint16_t unused;
@@ -2211,14 +2268,14 @@ typedef struct G_MapList_GC_Ep3_6xB6x40 {
     // and Episode3::DataIndex::get_compressed_map_list for details on the format.
 } PACKED G_MapList_GC_Ep3_6xB6x40_t;
 
-struct G_MapData_GC_Ep3_6xB6x41 {
+typedef struct subcmd_gc_MapData_GC_Ep3_6xB6x41 {
     G_MapSubsubcommand_GC_Ep3_6xB6_t header;
     uint32_t map_number;
     uint16_t compressed_data_size;
     uint16_t unused;
     // PRS-compressed map data follows here (which decompresses to an
     // Episode3::MapDefinition).
-} PACKED;
+} PACKED subcmd_gc_MapData_GC_Ep3_6xB6x41_t;
 
 // 0xB6: BB shop contents (server->client only)
 // Packet used for telling a client a shop's inventory. (Blue Burst)
@@ -2264,31 +2321,31 @@ typedef struct subcmd_bb_tekk_identify_result {
 } PACKED subcmd_bb_tekk_identify_result_t;
 
 // 0xBA: Unknown (Episode 3)
-struct G_Unknown_GC_Ep3_6xBA {
+typedef struct subcmd_Unknown_GC_Ep3_6xBA {
     client_id_hdr_t shdr;
     uint16_t unknown_a1; // Low byte must be < 9
     uint16_t unknown_a2;
     uint32_t unknown_a3;
     uint32_t unknown_a4;
-} PACKED;
+} PACKED subcmd_Unknown_GC_Ep3_6xBA_t;
 
 // 0xBA: BB accept tekker result (handled by the server)
-struct G_AcceptItemIdentification_BB_6xBA {
+typedef struct subcmd_bb_AcceptItemIdentification_BB_6xBA {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t item_id;
-} PACKED;
+} PACKED subcmd_bb_AcceptItemIdentification_BB_6xBA_t;
 
 // 0xBB: Sync card trade state (Episode 3)
 // TODO: Certain invalid values for slot/args in this command can crash the
 // client (what is properly bounds-checked). Find out the actual limits for
 // slot/args and make newserv enforce them.
-struct G_SyncCardTradeState_GC_Ep3_6xBB {
+typedef struct subcmd_SyncCardTradeState_GC_Ep3_6xBB {
     client_id_hdr_t shdr;
     uint16_t what; // Must be < 5; this indexes into a jump table
     uint16_t slot;
     uint32_t args[4];
-} PACKED;
+} PACKED subcmd_SyncCardTradeState_GC_Ep3_6xBB_t;
 
 // 0xBB: BB bank request (handled by the server)
 // Packet sent by clients to open the bank menu. (Blue Burst)
@@ -2304,13 +2361,13 @@ typedef struct subcmd_bb_bank_open {
 // globally-allocated array, but nothing ever reads from this array.
 // Curiously, this command is smaller than 0x400 bytes, but uses the extended
 // subcommand format anyway (and uses the 6D command rather than 62).
-struct G_CardCounts_GC_Ep3_6xBC {
+typedef struct subcmd_CardCounts_GC_Ep3_6xBC {
     unused_hdr_t shdr;
     uint32_t size;
     uint8_t unknown_a1[0x2F1];
     // The client sends uninitialized data in this field
     uint8_t unused[3];
-} PACKED;
+} PACKED subcmd_CardCounts_GC_Ep3_6xBC_t;
 
 // 0xBC: BB bank contents (server->client only)
 // Packet sent to clients to tell them what's in their bank. (Blue Burst)
@@ -2328,7 +2385,7 @@ typedef struct subcmd_bb_bank_inv {
 // 0xBD: Word select during battle (Episode 3; not Trial Edition)
 // Note: This structure does not have a normal header - the client ID field is
 // big-endian!
-struct G_WordSelectDuringBattle_GC_Ep3_6xBD {
+typedef struct subcmd_WordSelectDuringBattle_GC_Ep3_6xBD {
     client_id_hdr_t header;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
@@ -2339,7 +2396,7 @@ struct G_WordSelectDuringBattle_GC_Ep3_6xBD {
     // message when sent during an Episode 3 battle.
     uint8_t private_flags;
     uint8_t unused[3];
-} PACKED;
+} PACKED subcmd_WordSelectDuringBattle_GC_Ep3_6xBD_t;
 
 // 0xBD: BB bank action (take/deposit meseta/item) (handled by the server)
 // Packet sent by clients to do something at the bank. (Blue Burst)
@@ -2355,12 +2412,12 @@ typedef struct subcmd_bb_bank_act {
 
 // 0xBE: Sound chat (Episode 3; not Trial Edition)
 // This appears to be the only subcommand ever sent with the CB command.
-struct G_SoundChat_GC_Ep3_6xBE {
+typedef struct subcmd_SoundChat_GC_Ep3_6xBE {
     unused_hdr_t shdr;
     uint32_t sound_id; // Must be < 0x27
     //be_uint32_t unused;
     uint32_t unused;
-} PACKED;
+} PACKED subcmd_SoundChat_GC_Ep3_6xBE_t;
 
 // 0xBE: BB create inventory item (server->client only)
 // Packet sent to clients to let them know that an item got picked up off of
