@@ -104,8 +104,6 @@ static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
 
     ship_id = db_get_char_ship_id(gc_target);
 
-    //DBG_LOG("%d", ship_id);
-
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
         s = find_ship(ship_id);
@@ -115,7 +113,7 @@ static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
+        forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
         return 0;
     }
     else {
@@ -131,8 +129,6 @@ static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
 
     ship_id = db_get_char_ship_id(gc_target);
 
-    //DBG_LOG("%d", ship_id);
-
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
         s = find_ship(ship_id);
@@ -142,7 +138,7 @@ static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
+        forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
         return 0;
     }
     else {
@@ -158,8 +154,6 @@ static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
 
     ship_id = db_get_char_ship_id(gc_target);
 
-    //DBG_LOG("%d", ship_id);
-
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
         s = find_ship(ship_id);
@@ -169,7 +163,7 @@ static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
+        forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
         return 0;
     }
     else{
@@ -846,8 +840,6 @@ static int save_mail(uint32_t gc, uint32_t from, void* pkt, int version) {
 static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->dcmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     /* See if the client being sent the mail has blocked the user sending it */
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
@@ -858,29 +850,11 @@ static int handle_dc_mail(ship_t* c, simple_mail_pkt* pkt) {
     }
 
     return 0;
-
-    //ship_id = db_get_char_ship_id(guildcard);
-
-    //if (ship_id < 0)
-    //    return save_mail(guildcard, sender, pkt, VERSION_DC);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
-    //return 0;
 }
 
 static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->pcmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     /* See if the client being sent the mail has blocked the user sending it */
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
@@ -891,29 +865,11 @@ static int handle_pc_mail(ship_t* c, simple_mail_pkt* pkt) {
     }
 
     return 0;
-
-    //ship_id = db_get_char_ship_id(guildcard);
-
-    //if (ship_id < 0)
-    //    return save_mail(guildcard, sender, pkt, VERSION_PC);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!?");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
-    //return 0;
 }
 
 static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
     uint32_t guildcard = LE32(pkt->bbmaildata.gc_dest);
     uint32_t sender = LE32(pkt->gc_sender);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     /* See if the client being sent the mail has blocked the user sending it */
     if (check_user_blocklist(sender, guildcard, BLOCKLIST_MAIL))
@@ -925,26 +881,6 @@ static int handle_bb_mail(ship_t* c, simple_mail_pkt* pkt) {
     }
 
     return 0;
-
-
-
-
-
-    //ship_id = db_get_char_ship_id(guildcard);
-
-    //if (ship_id < 0)
-    //    return save_mail(guildcard, sender, pkt, VERSION_BB);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!?");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, 0, 0);
-    //return 0;
 }
 
 static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t flags) {
@@ -1552,8 +1488,6 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    //uint16_t ship_id;
-    //ship_t* s;
     char guild_name[24];
     uint32_t create_res;
     bb_guild_data_pkt* guild;
@@ -1577,8 +1511,6 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     istrncpy16_raw(ic_utf16_to_gbk, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
-
-    //DBG_LOG("%s %d %d", guild_name, g_data->guildcard, sender);
 
     create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard);
 
@@ -1607,22 +1539,6 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
             return 0;
         }
 
-        //ship_id = db_get_char_ship_id(sender);
-
-        //if (ship_id < 0) {
-        //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-        //        ERR_BAD_ERROR, (uint8_t*)guild, len);
-        //    return 0;
-        //}
-
-        ///* If we've got this far, we should have the ship we need to send to */
-        //s = find_ship(ship_id);
-        //if (!s) {
-        //    ERR_LOG("无效舰船?!?!?");
-        //    return 0;
-        //}
-
-        //forward_bb(s, (bb_pkt_hdr_t*)guild, c->key_idx, 0, 0);
         //DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
         free_safe(guild);
         break;
@@ -1715,7 +1631,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    if (len != sizeof(bb_guild_member_remove_pkt) + 0x0004) {
+    if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
@@ -1755,8 +1671,6 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     //if (len != sizeof(bb_guild_member_chat_pkt)) {
     //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1767,7 +1681,7 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
     //    return 0;
     //}
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -1784,9 +1698,6 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    //uint16_t ship_id;
-    //ship_t* s;
-
     int32_t num_mates;
     int32_t ch = 0, size = 0, len2 = 0x30, len3 = BB_CHARACTER_NAME_LENGTH * 2;
     uint32_t guildcard, privlevel, guild_id;
@@ -1844,23 +1755,6 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
             g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
             g_data->hdr.pkt_len = LE16(size);
             g_data->hdr.flags = ch - 1;
-
-            //ship_id = db_get_char_ship_id(sender);
-
-            //if (ship_id < 0) {
-            //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-            //    return 0;
-            //}
-
-            ///* If we've got this far, we should have the ship we need to send to */
-            //s = find_ship(ship_id);
-            //if (!s) {
-            //    ERR_LOG("无效舰船?!?!?");
-            //    return 0;
-            //}
-
-            //forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
 
             print_payload((uint8_t*)g_data, size);
 
@@ -2049,23 +1943,6 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
         guild->hdr.pkt_type = g_data->hdr.pkt_type;
         guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
         guild->hdr.flags = g_data->hdr.flags;
-
-        //ship_id = db_get_char_ship_id(sender);
-
-        //if (ship_id < 0) {
-        //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-        //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-        //    return 0;
-        //}
-
-        ///* If we've got this far, we should have the ship we need to send to */
-        //s = find_ship(ship_id);
-        //if (!s) {
-        //    ERR_LOG("无效舰船?!?!?");
-        //    return 0;
-        //}
-
-        //forward_bb(s, (bb_pkt_hdr_t*)guild, c->key_idx, 0, 0);
 
         if (send_bb_pkt_to_ship(c, sender, (uint8_t*)guild)) {
             send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2272,8 +2149,6 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     /*if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2290,22 +2165,6 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
         return 0;
     }
 
-    //ship_id = db_get_char_ship_id(sender);
-
-    //if (ship_id < 0)
-    //    return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!?");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
-
     print_payload((uint8_t*)g_data, len);
 
     return 0;
@@ -2317,8 +2176,6 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    //uint16_t ship_id;
-    //ship_t* s;
 
     if (len != sizeof(bb_guild_privilege_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2337,21 +2194,6 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //ship_id = db_get_char_ship_id(sender);
-
-    //if (ship_id < 0)
-    //    return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-
-    ///* If we've got this far, we should have the ship we need to send to */
-    //s = find_ship(ship_id);
-    //if (!s) {
-    //    ERR_LOG("无效舰船?!?!?");
-    //    return 0;
-    //}
-
-    ///* 完成数据包设置,发送至舰船... */
-    //forward_bb(s, (bb_pkt_hdr_t*)g_data, c->key_idx, 0, 0);
     return 0;
 }
 

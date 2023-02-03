@@ -3743,6 +3743,11 @@ typedef struct bb_guild_data {
     psocn_bb_db_guild_t guild;
 } PACKED bb_guild_data_pkt;
 
+typedef struct bb_guild_rv_data {
+    bb_pkt_hdr_t hdr;
+    uint8_t guild[0];
+} PACKED bb_guild_rv_data_pkt;
+
 // 01EA (C->S): Create team
 typedef struct bb_guild_create {
     bb_pkt_hdr_t hdr;
@@ -3791,8 +3796,11 @@ typedef struct bb_guild_unk_06EA {
 //(00000030)   33 00 00 00                                         3...
 // 07EA (C->S): Team chat
 typedef struct bb_guild_member_chat {
-    bb_pkt_hdr_t hdr;                      /* 0x0000 8 */
-    uint32_t guild_id;                     /* 0x0008 4 */
+    bb_pkt_hdr_t hdr;                                            /* 0x0000 8 */
+    //uint32_t guild_id;                                         /* 0x0008 4 */
+    uint16_t name[BB_CHARACTER_NAME_LENGTH];                     /* 0x000C 24 */
+    uint32_t guildcard;
+    uint32_t guild_id;
     uint8_t chat[];
 } PACKED bb_guild_member_chat_pkt;
 
