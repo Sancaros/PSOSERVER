@@ -517,8 +517,9 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
                 break;
             }
 #endif
-            DBG_LOG("%s %d", srvcfg->host4, srvcfg->server_ip);
-            get_ips_by_domain(srvcfg->host4);
+            /* TODO 未完成动态域名解析 */
+            //DBG_LOG("%s %d", srvcfg->host4, srvcfg->server_ip);
+            //get_ips_by_domain(srvcfg->host4);
             if (send_redirect(c, srvcfg->server_ip, htons(BB_DATA_PORT))) {
                 return -2;
             }

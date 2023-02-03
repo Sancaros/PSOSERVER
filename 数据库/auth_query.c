@@ -156,7 +156,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
             return guild; 
         }
 
-        DBG_LOG("%d %d %d", gc, guild_id, guild_priv_level);
+        //DBG_LOG("%d %d %d", gc, guild_id, guild_priv_level);
 
         if (guild_id != -1) {
 

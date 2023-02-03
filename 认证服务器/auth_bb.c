@@ -217,24 +217,18 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //}
 
     bool is_old_format;
-    if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - 8) {
+    if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - sizeof(pkt->hdr)) {
         is_old_format = true;
-        DBG_LOG("低版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
+        //DBG_LOG("低版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
     }
     else if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt)) {
         is_old_format = false;
-        DBG_LOG("高版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
+        //DBG_LOG("高版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
     }
     else {
-        DBG_LOG("未知版本客户端登录 %d %d %d", pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
+        DBG_LOG("未知版本客户端登录 %d %d %d", pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - sizeof(pkt->hdr), sizeof(bb_login_93_pkt));
         return -1;
     }
-
-    //if (!is_old_format) {
-    //    memset(&hwinfo[0], 0, 2);
-    //    psocn_db_escape_str(&conn, (char*)&hwinfo[0], (char*)&pkt->var.new_clients.hwinfo[0], sizeof(pkt->var.new_clients.hwinfo));
-    //    memcpy(&c->login_hwinfo[0], &hwinfo[0], sizeof(hwinfo));
-    //}
 
     /* Set up the security data (everything else is already 0'ed). */
     c->sec_data.cfg.magic = CLIENT_CONFIG_MAGIC; //这个直接覆盖了版本信息 magic就是版本信息

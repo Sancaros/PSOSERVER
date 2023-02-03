@@ -1538,7 +1538,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //DBG_LOG("unk2 %d", pkt->data.unk2);
     //DBG_LOG("unk3 %s", pkt->data.unk3);
     //DBG_LOG("unk4 %s", pkt->data.unk4);
-    DBG_LOG("unk1 %s", pkt->data.unk1);
+    //DBG_LOG("unk1 %s", pkt->data.unk1);
 
     //print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guild_card_t));
 
