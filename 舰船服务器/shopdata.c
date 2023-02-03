@@ -248,7 +248,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
             break;
         case 0x03://插件
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
-            *(short*)item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
+            item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
             break;
         }
         break;
