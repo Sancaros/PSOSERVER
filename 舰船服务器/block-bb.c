@@ -2223,16 +2223,12 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_02EA(c, (bb_guild_unk_02EA_pkt*)pkt);
 
     case BB_GUILD_MEMBER_ADD:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_add(c, (bb_guild_member_add_pkt*)pkt);
 
     case BB_GUILD_UNK_04EA:
         return process_bb_guild_unk_04EA(c, (bb_guild_unk_04EA_pkt*)pkt);
 
     case BB_GUILD_MEMBER_REMOVE:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_remove(c, (bb_guild_member_remove_pkt*)pkt);
 
     case BB_GUILD_UNK_06EA:
@@ -2242,8 +2238,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_member_chat(c, (bb_guild_member_chat_pkt*)pkt);
 
     case BB_GUILD_MEMBER_SETTING:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_setting(c, (bb_guild_member_setting_pkt*)pkt);
 
     case BB_GUILD_UNK_09EA:
@@ -2259,8 +2253,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_0CEA(c, (bb_guild_unk_0CEA_pkt*)pkt);
 
     case BB_GUILD_INVITE:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_invite_0DEA(c, (bb_guild_invite_0DEA_pkt*)pkt);
 
     case BB_GUILD_UNK_0EEA:
@@ -2273,8 +2265,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_dissolve(c, (bb_guild_dissolve_pkt*)pkt);
 
     case BB_GUILD_MEMBER_PROMOTE:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_member_promote(c, (bb_guild_member_promote_pkt*)pkt);
 
     case BB_GUILD_UNK_12EA:
@@ -2306,13 +2296,9 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_17EA(c, (bb_guild_unk_17EA_pkt*)pkt);
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_buy_privilege_and_point_info(c, (bb_guild_buy_privilege_and_point_info_pkt*)pkt);
 
     case BB_GUILD_PRIVILEGE_LIST:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_privilege_list(c, (bb_guild_privilege_list_pkt*)pkt);
 
     case BB_GUILD_UNK_1AEA:
@@ -2322,8 +2308,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_1BEA(c, (bb_guild_unk_1BEA_pkt*)pkt);
 
     case BB_GUILD_RANKING_LIST:
-        send_msg_box(c, "%s\n\n%s", __(c, "\tE\tC4公会功能未支持!"),
-            __(c, "\tC7请等待完成."));
         return process_bb_guild_rank_list(c, (bb_guild_rank_list_pkt*)pkt);
 
     case BB_GUILD_UNK_1DEA:
@@ -2488,6 +2472,19 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
     //UDONE_CPD(type,pkt);
 
+    /* 整合为综合指令集 */
+    switch (type & 0x00FF) {
+        /* 0x00DF 挑战模式 */
+    case BB_CHALLENGE_DF:
+        return bb_process_challenge(c, pkt);
+
+        /* 0x00EA 公会功能 */
+    case BB_GUILD_COMMAND:
+        return bb_process_guild(c, pkt);
+
+    default:
+        break;
+    }
 
     switch (type) {
         /* 0x0005 5*/
@@ -2724,47 +2721,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x06E8 1768*/
     case BB_SET_GUILDCARD_TEXT_TYPE:
         return bb_set_guild_text(c, (bb_guildcard_set_txt_pkt*)pkt);
-
-        /* 0x00DF 挑战模式 */
-    case BB_CHALLENGE_01DF:
-    case BB_CHALLENGE_02DF:
-    case BB_CHALLENGE_03DF:
-    case BB_CHALLENGE_04DF:
-    case BB_CHALLENGE_05DF:
-    case BB_CHALLENGE_06DF:
-        return bb_process_challenge(c, pkt);
-
-        /* 0x00EA 公会功能 */
-    case BB_GUILD_CREATE:
-    case BB_GUILD_UNK_02EA:
-    case BB_GUILD_MEMBER_ADD:
-    case BB_GUILD_UNK_04EA:
-    case BB_GUILD_MEMBER_REMOVE:
-    case BB_GUILD_UNK_06EA:
-    case BB_GUILD_CHAT:
-    case BB_GUILD_MEMBER_SETTING:
-    case BB_GUILD_UNK_09EA:
-    case BB_GUILD_UNK_0AEA:
-    case BB_GUILD_UNK_0BEA:
-    case BB_GUILD_UNK_0CEA:
-    case BB_GUILD_INVITE:
-    case BB_GUILD_UNK_0EEA:
-    case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE:
-    case BB_GUILD_MEMBER_PROMOTE:
-    case BB_GUILD_UNK_12EA:
-    case BB_GUILD_LOBBY_SETTING:
-    case BB_GUILD_MEMBER_TITLE:
-    case BB_GUILD_FULL_DATA:
-    case BB_GUILD_UNK_16EA:
-    case BB_GUILD_UNK_17EA:
-    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-    case BB_GUILD_PRIVILEGE_LIST:
-    case BB_GUILD_UNK_1AEA:
-    case BB_GUILD_UNK_1BEA:
-    case BB_GUILD_RANKING_LIST:
-    case BB_GUILD_UNK_1DEA:
-        return bb_process_guild(c, pkt);
 
     default:
         DBG_LOG("BB未知数据! 指令 0x%04X", type);

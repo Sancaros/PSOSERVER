@@ -889,6 +889,20 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     uint16_t len = LE16(bb->pkt_len);
     uint32_t block = ntohl(pkt->block);
 
+    /* 整合为综合指令集 */
+    switch (type & 0x00FF) {
+        /* 0x00DF 挑战模式 */
+    //case BB_CHALLENGE_DF:
+    //    return handle_bb_challenge(conn, pkt);
+
+        /* 0x00EA 公会功能 */
+    case BB_GUILD_COMMAND:
+        return handle_bb_guild(conn, pkt);
+
+    default:
+        break;
+    }
+
     switch (type) {
     case SIMPLE_MAIL_TYPE:
         return handle_bb_mail(conn, (simple_mail_pkt*)bb);
@@ -896,44 +910,11 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case GUILD_REPLY_TYPE:
         return handle_bb_greply(conn, (bb_guild_reply_pkt*)bb, block);
 
-        /* 0x00EA 公会功能 */
-    case BB_GUILD_CREATE:
-    case BB_GUILD_UNK_02EA:
-    case BB_GUILD_MEMBER_ADD:
-    case BB_GUILD_UNK_04EA:
-    case BB_GUILD_MEMBER_REMOVE:
-    case BB_GUILD_UNK_06EA:
-    case BB_GUILD_CHAT:
-    case BB_GUILD_MEMBER_SETTING:
-    case BB_GUILD_UNK_09EA:
-    case BB_GUILD_UNK_0AEA:
-    case BB_GUILD_UNK_0BEA:
-    case BB_GUILD_UNK_0CEA:
-    case BB_GUILD_INVITE:
-    case BB_GUILD_UNK_0EEA:
-    case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE:
-    case BB_GUILD_MEMBER_PROMOTE:
-    case BB_GUILD_UNK_12EA:
-    case BB_GUILD_LOBBY_SETTING:
-    case BB_GUILD_MEMBER_TITLE:
-    case BB_GUILD_FULL_DATA:
-    case BB_GUILD_UNK_16EA:
-    case BB_GUILD_UNK_17EA:
-    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-    case BB_GUILD_PRIVILEGE_LIST:
-    case BB_GUILD_UNK_1AEA:
-    case BB_GUILD_UNK_1BEA:
-    case BB_GUILD_RANKING_LIST:
-    case BB_GUILD_UNK_1DEA:
-        return handle_bb_guild(conn, pkt);
-
     default:
         /* Warn the ship that sent the packet, then drop it
          警告发送包裹的船，然后丢弃它
         */
         print_payload((uint8_t*)bb, len);
-        //UNK_SPD(type, (uint8_t*)bb);
         return 0;
     }
 

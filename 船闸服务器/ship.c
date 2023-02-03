@@ -2598,6 +2598,20 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     //DBG_LOG("舰船：BB处理数据 指令= 0x%04X %s 长度 = %d 字节", type, c_cmd_name(type, 0), len);
 
+    /* 整合为综合指令集 */
+    switch (type & 0x00FF) {
+        /* 0x00DF 挑战模式 */
+    //case BB_CHALLENGE_DF:
+    //    return handle_bb_challenge(c, pkt);
+
+        /* 0x00EA 公会功能 */
+    case BB_GUILD_COMMAND:
+        return handle_bb_guild(c, pkt);
+
+    default:
+        break;
+    }
+
     switch (type) {
     case BB_ADD_GUILDCARD_TYPE:
         return handle_bb_gcadd(c, pkt);
@@ -2622,38 +2636,6 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     case BB_SET_GUILDCARD_COMMENT_TYPE:
         return handle_bb_set_comment(c, pkt);
-
-        /* 0x00EA 公会功能 */
-    case BB_GUILD_CREATE:
-    case BB_GUILD_UNK_02EA:
-    case BB_GUILD_MEMBER_ADD:
-    case BB_GUILD_UNK_04EA:
-    case BB_GUILD_MEMBER_REMOVE:
-    case BB_GUILD_UNK_06EA:
-    case BB_GUILD_CHAT:
-    case BB_GUILD_MEMBER_SETTING:
-    case BB_GUILD_UNK_09EA:
-    case BB_GUILD_UNK_0AEA:
-    case BB_GUILD_UNK_0BEA:
-    case BB_GUILD_UNK_0CEA:
-    case BB_GUILD_INVITE:
-    case BB_GUILD_UNK_0EEA:
-    case BB_GUILD_MEMBER_FLAG_SETTING:
-    case BB_GUILD_DISSOLVE:
-    case BB_GUILD_MEMBER_PROMOTE:
-    case BB_GUILD_UNK_12EA:
-    case BB_GUILD_LOBBY_SETTING:
-    case BB_GUILD_MEMBER_TITLE:
-    case BB_GUILD_FULL_DATA:
-    case BB_GUILD_UNK_16EA:
-    case BB_GUILD_UNK_17EA:
-    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-    case BB_GUILD_PRIVILEGE_LIST:
-    case BB_GUILD_UNK_1AEA:
-    case BB_GUILD_UNK_1BEA:
-    case BB_GUILD_RANKING_LIST:
-    case BB_GUILD_UNK_1DEA:
-        return handle_bb_guild(c, pkt);
 
     default:
         /* Warn the ship that sent the packet, then drop it
