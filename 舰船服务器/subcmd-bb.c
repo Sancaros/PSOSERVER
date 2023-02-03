@@ -46,66 +46,6 @@
                    ((x & 0xFF00) <<  8) | \
                    ((x & 0x00FF) << 24))
 
-//从客户端移除美赛塔
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
-    uint32_t stack_count;
-    uint32_t tmp;
-    iitem_t tmp_meseta = { 0 };
-    iitem_t* meseta = { 0 };
-    lobby_t* l = c->cur_lobby;
-
-    if (!l)
-        return -1;
-
-    stack_count = c->bb_pl->character.disp.meseta;
-    if (stack_count < count)
-    {
-        c->bb_pl->character.disp.meseta = 0;
-        count = stack_count;
-    }
-    else {
-        c->bb_pl->character.disp.meseta -= count;
-    }
-
-    if (drop) {
-
-        tmp_meseta.data.data_l[0] = LE32(Item_Meseta);
-        tmp_meseta.data.data_l[1] = tmp_meseta.data.data_l[2] = 0;
-        tmp_meseta.data.item_id = LE32((++l->highest_item[c->client_id]));
-        tmp_meseta.data.data2_l = count;
-
-        /* We have the item... Add it to the lobby's inventory. */
-        if (!(meseta = lobby_add_item2_locked(l, &tmp_meseta))) {
-            /* *Gulp* The lobby is probably toast... At least make sure this user is
-               still (mostly) safe... */
-            ERR_LOG("无法将物品添加至游戏房间!\n");
-            return -1;
-        }
-
-        /* Remove the meseta from the character data */
-        tmp = LE32(c->bb_pl->character.disp.meseta);
-
-        if (count > tmp) {
-            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
-                c->guildcard);
-            return -1;
-        }
-
-        c->bb_pl->character.disp.meseta = LE32(tmp - count);
-        c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
-
-        /* Now we have two packets to send on. First, send the one telling everyone
-           that there's an item dropped. Then, send the one removing the item from
-           the client's inventory. The first must go to everybody, the second to
-           everybody except the person who sent this packet in the first place. */
-
-        if (subcmd_send_drop_stack(c, c->drop_area, c->x, c->z, meseta))
-            return -1;
-    }
-
-    return 0;
-}
-
 int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
@@ -952,7 +892,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
 }
 
 // 向玩家发送货物清单
-int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
+static int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
     block_t* b = c->cur_block;
     subcmd_bb_shop_inv_t* shop = { 0 };
     int rv = 0;
@@ -1145,18 +1085,6 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     free_safe(ii);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-}
-
-int get_inv_item_id(inventory_t inv, uint32_t item_id) {
-    int i = 0;
-
-    for (i = 0; i < inv.item_count; ++i) {
-        if (inv.iitems[i].data.item_id == item_id) {
-            break;
-        }
-    }
-
-    return i;
 }
 
 static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
@@ -1731,74 +1659,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return rv;
 }
 
-int subcmd_bb_handle_one_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
-    ship_client_t* dest;
-    uint8_t type = pkt->type;
-    int rv = -1;
-    uint32_t dnum = LE32(pkt->hdr.flags);
-
-    /* Ignore these if the client isn't in a lobby or team. */
-    if (!l)
-        return 0;
-
-    pthread_mutex_lock(&l->mutex);
-
-    /* Find the destination. */
-    dest = l->clients[dnum];
-
-    /* The destination is now offline, don't bother sending it. */
-    if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
-
-    switch (type) {
-    case SUBCMD62_GUILDCARD:
-        /* Make sure the recipient is not ignoring the sender... */
-        if (client_has_ignored(dest, c->guildcard)) {
-            rv = 0;
-            break;
-        }
-
-        rv = handle_bb_gcsend(c, dest);
-        break;
-
-    case SUBCMD62_PICK_UP:
-        rv = handle_bb_pick_up(c, (subcmd_bb_pick_up_t*)pkt);
-        break;
-
-    case SUBCMD62_SHOP_REQ:
-        rv = handle_bb_shop_req(c, (subcmd_bb_shop_req_t*)pkt);
-        break;
-
-    case SUBCMD62_OPEN_BANK:
-        rv = handle_bb_bank(c, (subcmd_bb_bank_open_t*)pkt);
-        break;
-
-    case SUBCMD62_BANK_ACTION:
-        rv = handle_bb_bank_action(c, (subcmd_bb_bank_act_t*)pkt);
-        break;
-
-    case SUBCMD62_ITEMREQ:
-    case SUBCMD62_BITEMREQ:
-        /* Unlike earlier versions, we have to handle this here... */
-        rv = l->dropfunc(c, l, pkt);
-        break;
-
-    default:
-#ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-#endif /* BB_LOG_UNKNOWN_SUBS */
-        /* Forward the packet unchanged to the destination. */
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-    }
-
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* pkt) {
@@ -2124,7 +1984,7 @@ static int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
+static int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_dragon_act_t tr;
@@ -2160,7 +2020,7 @@ int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     return 0;
 }
 
-int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t* pkt) {
+static int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_gol_dragon_act_t tr;
@@ -2754,13 +2614,6 @@ static int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
     if (!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    ///* Remove the item from the user's inventory */
-    //num = item_remove_from_inv(c->iitems, c->item_count, pkt->item_id, 1);
-    //if (num < 0)
-    //    ERR_LOG("无法从背包移除物品!");
-    //else
-    //    c->item_count -= num;
-
     /* Remove the item from the user's inventory. */
     if ((num = item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
         pkt->item_id, 1)) < 1) {
@@ -3128,20 +2981,6 @@ static int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
-    int i;
-
-    if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
-        return -1;
-
-    for (i = 0; i < l->num_syncregs; ++i) {
-        if (regnum == l->syncregs[i])
-            return i;
-    }
-
-    return -1;
-}
-
 static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t val = LE32(pkt->value);
@@ -3351,7 +3190,7 @@ static int handle_bb_Unknown_6x88(ship_client_t* c, subcmd_bb_Unknown_6x88_t* pk
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-        //return -1;
+        return -1;
     }
 
     UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
@@ -4080,7 +3919,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
        that there's an item dropped. Then, send the one removing the item from
        the client's inventory. The first must go to everybody, the second to
        everybody except the person who sent this packet in the first place. */
-    subcmd_send_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
+    subcmd_send_bb_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
 
     /* Done. Send the packet on to the lobby. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -4441,12 +4280,11 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
 
             if ((pkt->sell_num > 1) && (c->bb_pl->inv.iitems[i].data.data_b[0] != 0x03)) {
                 DBG_LOG("handle_bb_sell_item %d 0x%02X", pkt->sell_num, c->bb_pl->inv.iitems[i].data.data_b[0]);
-                break;
+                return -1;
             }
             else
             {
                 uint32_t shop_price = get_bb_shop_price(&c->bb_pl->inv.iitems[i]) * pkt->sell_num;
-                //Delete_Item_From_Client(itemid, count, 0, client);
 
                 /* Remove the item from the user's inventory. */
                 if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
@@ -5072,133 +4910,95 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return rv;
 }
 
-int subcmd_bb_handle_bcast_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
-    uint8_t type = pkt->type;
-    lobby_t* l = c->cur_lobby;
-    int rv, sent = 1, i;
-
-    /* Ignore these if the client isn't in a lobby or team. */
-    if (!l)
-        return 0;
-
-    pthread_mutex_lock(&l->mutex);
-
-    switch (type) {
-    case SUBCMD60_SYMBOL_CHAT:
-        rv = handle_bb_symbol_chat(c, (subcmd_bb_symbol_chat_t*)pkt);
-        break;
-
-    case SUBCMD60_HIT_MONSTER:
-        rv = handle_bb_mhit(c, (subcmd_bb_mhit_pkt_t*)pkt);
-        break;
-
-    case SUBCMD60_SET_AREA:
-    case SUBCMD60_INTER_LEVEL_WARP:
-        rv = handle_bb_set_area(c, (subcmd_bb_set_area_t*)pkt);
-        break;
-
-    case SUBCMD60_EQUIP:
-        rv = handle_bb_equip(c, (subcmd_bb_equip_t*)pkt);
-        break;
-
-    case SUBCMD60_REMOVE_EQUIP:
-        rv = handle_bb_unequip(c, (subcmd_bb_equip_t*)pkt);
-        break;
-
-    case SUBCMD60_DROP_ITEM:
-        rv = handle_bb_drop_item(c, (subcmd_bb_drop_item_t*)pkt);
-        break;
-
-    case SUBCMD60_SET_POS_3E:
-    case SUBCMD60_SET_POS_3F:
-        rv = handle_bb_set_pos(c, (subcmd_bb_set_pos_t*)pkt);
-        break;
-
-    case SUBCMD60_MOVE_SLOW:
-    case SUBCMD60_MOVE_FAST:
-        rv = handle_bb_move(c, (subcmd_bb_move_t*)pkt);
-        break;
-
-    case SUBCMD60_DELETE_ITEM:
-        rv = handle_bb_destroy_item(c, (subcmd_bb_destroy_item_t*)pkt);
-        break;
-
-    case SUBCMD60_WORD_SELECT:
-        rv = handle_bb_word_select(c, (subcmd_bb_word_select_t*)pkt);
-        break;
-
-    case SUBCMD60_DROP_POS:
-        rv = handle_bb_drop_pos(c, (subcmd_bb_drop_pos_t*)pkt);
-        break;
-
-    case SUBCMD60_SORT_INV:
-        rv = handle_bb_sort_inv(c, (subcmd_bb_sort_inv_t*)pkt);
-        break;
-
-    case SUBCMD60_MEDIC:
-        rv = handle_bb_medic(c, (subcmd_bb_pkt_t*)pkt);
-        break;
-
-    case SUBCMD60_REQ_EXP:
-        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_pkt_t*)pkt);
-        break;
-
-    case SUBCMD60_USED_TECH:
-        rv = handle_bb_used_tech(c, (subcmd_bb_used_tech_t*)pkt);
-        break;
-
-    case SUBCMD60_TAKE_DAMAGE1:
-    case SUBCMD60_TAKE_DAMAGE2:
-        rv = handle_bb_take_damage(c, (subcmd_bb_take_damage_t*)pkt);
-        break;
-
-    case SUBCMD60_SPAWN_NPC:
-        rv = handle_bb_spawn_npc(c, pkt);
-        break;
-
-    default:
-#ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x60 指令: 0x%02X", type);
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-        sent = 0;
-        break;
-
-    case SUBCMD60_FINISH_LOAD:
-        if (l->type == LOBBY_TYPE_LOBBY) {
-            for (i = 0; i < l->max_clients; ++i) {
-                if (l->clients[i] && l->clients[i] != c &&
-                    subcmd_send_pos(c, l->clients[i])) {
-                    rv = -1;
-                    break;
-                }
-            }
-        }
-
-    case SUBCMD60_LOAD_22:
-    case SUBCMD60_TALK_NPC:
-    case SUBCMD60_DONE_NPC:
-    case SUBCMD60_LOAD_3B:
-    case SUBCMD60_MENU_REQ:
-    case SUBCMD60_WARP_55:
-    case SUBCMD60_LOBBY_ACTION:
-    case SUBCMD60_GOGO_BALL:
-    case SUBCMD60_LOBBY_CHAIR:
-    case SUBCMD60_CHAIR_DIR:
-    case SUBCMD60_CHAIR_MOVE:
-        sent = 0;
-    }
-
-    /* Broadcast anything we don't care to check anything about. */
-    if (!sent)
-        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 // subcmd 直接发送指令至客户端
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
+    int i;
+
+    if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
+        return -1;
+
+    for (i = 0; i < l->num_syncregs; ++i) {
+        if (regnum == l->syncregs[i])
+            return i;
+    }
+
+    return -1;
+}
+
+static int get_inv_item_id(inventory_t inv, uint32_t item_id) {
+    int i = 0;
+
+    for (i = 0; i < inv.item_count; ++i) {
+        if (inv.iitems[i].data.item_id == item_id) {
+            break;
+        }
+    }
+
+    return i;
+}
+
+//从客户端移除美赛塔
+int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
+    uint32_t stack_count;
+    uint32_t tmp;
+    iitem_t tmp_meseta = { 0 };
+    iitem_t* meseta = { 0 };
+    lobby_t* l = c->cur_lobby;
+
+    if (!l)
+        return -1;
+
+    stack_count = c->bb_pl->character.disp.meseta;
+    if (stack_count < count)
+    {
+        c->bb_pl->character.disp.meseta = 0;
+        count = stack_count;
+    }
+    else {
+        c->bb_pl->character.disp.meseta -= count;
+    }
+
+    if (drop) {
+
+        tmp_meseta.data.data_l[0] = LE32(Item_Meseta);
+        tmp_meseta.data.data_l[1] = tmp_meseta.data.data_l[2] = 0;
+        tmp_meseta.data.item_id = LE32((++l->highest_item[c->client_id]));
+        tmp_meseta.data.data2_l = count;
+
+        /* We have the item... Add it to the lobby's inventory. */
+        if (!(meseta = lobby_add_item2_locked(l, &tmp_meseta))) {
+            /* *Gulp* The lobby is probably toast... At least make sure this user is
+               still (mostly) safe... */
+            ERR_LOG("无法将物品添加至游戏房间!\n");
+            return -1;
+        }
+
+        /* Remove the meseta from the character data */
+        tmp = LE32(c->bb_pl->character.disp.meseta);
+
+        if (count > tmp) {
+            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
+                c->guildcard);
+            return -1;
+        }
+
+        c->bb_pl->character.disp.meseta = LE32(tmp - count);
+        c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
+
+        /* Now we have two packets to send on. First, send the one telling everyone
+           that there's an item dropped. Then, send the one removing the item from
+           the client's inventory. The first must go to everybody, the second to
+           everybody except the person who sent this packet in the first place. */
+
+        if (subcmd_send_bb_drop_stack(c, c->drop_area, c->x, c->z, meseta))
+            return -1;
+    }
+
+    return 0;
+}
 
 int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
     const iitem_t* item) {
@@ -5384,7 +5184,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
 }
 
 /* It is assumed that all parameters are already in little-endian order. */
-static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
+static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_drop_stack_t drop = { 0 };

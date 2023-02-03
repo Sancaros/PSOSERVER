@@ -1773,7 +1773,7 @@ typedef struct subcmd_bb_Unknown_6x87 {
     float unknown_a1;
 } PACKED subcmd_bb_Unknown_6x87_t;
 
-// 0x88: Unknown (指令生效范围; 仅限游戏)
+// 0x88: Unknown (指令生效范围; 仅限游戏) 在任务中 回到先驱者2号触发
 //(00000000)   0C 00 60 00 00 00 00 00  88 01 00 00
 typedef struct subcmd_bb_Unknown_6x88 {
     bb_pkt_hdr_t hdr;
@@ -2617,23 +2617,32 @@ typedef struct subcmd_bb_set_exp_rate {
 #undef PACKED
 
 /* Forward declarations */
-static int subcmd_send_drop_stack(ship_client_t* c, uint32_t area, float x,
+int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
+int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);
+int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount);
+int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
+int subcmd_send_bb_level(ship_client_t* c);
+int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
+    const iitem_t* item);
+
 static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client);
 static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id);
 static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt);
 
+static inline int reg_sync_index(lobby_t* l, uint16_t regnum);
+static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum);
+static int get_inv_item_id(inventory_t inv, uint32_t item_id);
+
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
-int subcmd_bb_handle_one_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 
 /* Handle a 0x60 packet. */
 int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_bcast(ship_client_t *c, subcmd_bb_pkt_t *pkt);
-int subcmd_bb_handle_bcast_orignal(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 /* Handle an 0xC9/0xCB packet from Episode 3. */
@@ -2641,12 +2650,6 @@ int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
                            const uint32_t item[4]);
-int subcmd_send_bb_lobby_item(lobby_t *l, subcmd_bb_itemreq_t *req,
-                              const iitem_t *item);
-
-int subcmd_send_bb_exp(ship_client_t *c, uint32_t exp_amount);
-int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
-int subcmd_send_bb_level(ship_client_t *c);
 
 int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
 
