@@ -224,7 +224,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
         size_t num_percentages = 0;
         for (size_t x = 0; (x < 5) && (num_percentages < 3); x++) {
             if ((mt19937_genrand_int32(随机因子) % 4) == 1) {
-                item.data_b[(num_percentages * 2) + 6] = x;
+                item.data_b[(num_percentages * 2) + 6] = (uint8_t)x;
                 item.data_b[(num_percentages * 2) + 7] = mt19937_genrand_int32(随机因子) % (max_percentages[难度] + 1);
                 num_percentages++;
             }
@@ -243,8 +243,8 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
             break;
         case 0x02://护盾
             item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
-            *(short*)item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
-            *(short*)item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
             break;
         case 0x03://插件
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
