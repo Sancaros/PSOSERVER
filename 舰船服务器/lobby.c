@@ -1932,82 +1932,82 @@ int lobby_enqueue_pkt_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
 int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
     return lobby_enqueue_pkt_ex_bb(l, c, p, 1);
 }
-
-/* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
-   before calling this. Returns NULL if there is no space in the lobby's
-   inventory for the new item. */
-iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]) {
-    lobby_item_t *item;
-
-    /* Sanity check... */
-    if(l->version != CLIENT_VERSION_BB)
-        return NULL;
-
-    if(!(item = (lobby_item_t *)malloc(sizeof(lobby_item_t))))
-        return NULL;
-
-    memset(item, 0, sizeof(lobby_item_t));
-
-    /* Copy the item data in. */
-    item->d.data.item_id = LE32(l->next_game_item_id);
-    item->d.data.data_l[0] = LE32(item_data[0]);
-    item->d.data.data_l[1] = LE32(item_data[1]);
-    item->d.data.data_l[2] = LE32(item_data[2]);
-    item->d.data.data2_l = LE32(item_data[3]);
-
-    /* Increment the item ID, add it to the queue, and return the new item */
-    ++l->next_game_item_id;
-    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->d;
-}
-
-iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *it) {
-    lobby_item_t *item;
-
-    /* Sanity check... */
-    if(l->version != CLIENT_VERSION_BB)
-        return NULL;
-
-    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
-
-    if(!item)
-        return NULL;
-
-    memset(item, 0, sizeof(lobby_item_t));
-
-    /* Copy the item data in. */
-    memcpy(&item->d, it, sizeof(iitem_t));
-
-    /* Add it to the queue, and return the new item */
-    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->d;
-}
-
-int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv) {
-    lobby_item_t *i, *tmp;
-
-    if(l->version != CLIENT_VERSION_BB)
-        return -1;
-
-    memset(rv, 0, sizeof(iitem_t));
-    rv->data.data_l[0] = LE32(Item_NoSuchItem);
-
-    i = TAILQ_FIRST(&l->item_queue);
-    while(i) {
-        tmp = TAILQ_NEXT(i, qentry);
-
-        if(i->d.data.item_id == item_id) {
-            memcpy(rv, &i->d, sizeof(iitem_t));
-            TAILQ_REMOVE(&l->item_queue, i, qentry);
-            free_safe(i);
-            return 0;
-        }
-
-        i = tmp;
-    }
-
-    return 1;
-}
+//
+///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
+//   before calling this. Returns NULL if there is no space in the lobby's
+//   inventory for the new item. */
+//iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]) {
+//    lobby_item_t *item;
+//
+//    /* Sanity check... */
+//    if(l->version != CLIENT_VERSION_BB)
+//        return NULL;
+//
+//    if(!(item = (lobby_item_t *)malloc(sizeof(lobby_item_t))))
+//        return NULL;
+//
+//    memset(item, 0, sizeof(lobby_item_t));
+//
+//    /* Copy the item data in. */
+//    item->d.data.item_id = LE32(l->next_game_item_id);
+//    item->d.data.data_l[0] = LE32(item_data[0]);
+//    item->d.data.data_l[1] = LE32(item_data[1]);
+//    item->d.data.data_l[2] = LE32(item_data[2]);
+//    item->d.data.data2_l = LE32(item_data[3]);
+//
+//    /* Increment the item ID, add it to the queue, and return the new item */
+//    ++l->next_game_item_id;
+//    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
+//    return &item->d;
+//}
+//
+//iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *it) {
+//    lobby_item_t *item;
+//
+//    /* Sanity check... */
+//    if(l->version != CLIENT_VERSION_BB)
+//        return NULL;
+//
+//    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
+//
+//    if(!item)
+//        return NULL;
+//
+//    memset(item, 0, sizeof(lobby_item_t));
+//
+//    /* Copy the item data in. */
+//    memcpy(&item->d, it, sizeof(iitem_t));
+//
+//    /* Add it to the queue, and return the new item */
+//    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
+//    return &item->d;
+//}
+//
+//int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv) {
+//    lobby_item_t *i, *tmp;
+//
+//    if(l->version != CLIENT_VERSION_BB)
+//        return -1;
+//
+//    memset(rv, 0, sizeof(iitem_t));
+//    rv->data.data_l[0] = LE32(Item_NoSuchItem);
+//
+//    i = TAILQ_FIRST(&l->item_queue);
+//    while(i) {
+//        tmp = TAILQ_NEXT(i, qentry);
+//
+//        if(i->d.data.item_id == item_id) {
+//            memcpy(rv, &i->d, sizeof(iitem_t));
+//            TAILQ_REMOVE(&l->item_queue, i, qentry);
+//            free_safe(i);
+//            return 0;
+//        }
+//
+//        i = tmp;
+//    }
+//
+//    return 1;
+//}
 
 void lobby_send_kill_counts(lobby_t *l) {
     int i;

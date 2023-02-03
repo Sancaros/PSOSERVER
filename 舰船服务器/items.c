@@ -3832,89 +3832,8 @@ const char* item_get_name(item_t* item, int version) {
         return item_get_name_by_code((item_code_t)code, version);
 }
 
-const char *iitem_get_name(iitem_t *item, int version) {
-    uint32_t code = item->data.data_b[0] | (item->data.data_b[1] << 8) |
-        (item->data.data_b[2] << 16);
-
-    /* Make sure we take care of any v2 item codes */
-    switch (item->data.data_b[0]) {
-    case ITEM_TYPE_WEAPON:  /* Weapon */
-        if (item->data.data_b[5]) {
-            code = (item->data.data_b[5] << 8);
-        }
-        break;
-
-    case ITEM_TYPE_GUARD:  /* Guard */
-        if (item->data.data_b[1] != 0x03 && item->data.data_b[3]) {
-            code = code | (item->data.data_b[3] << 16);
-        }
-        break;
-
-    case ITEM_TYPE_MAG:  /* Mag */
-        if (item->data.data_b[1] == 0x00 && item->data.data_b[2] >= 0xC9) {
-            code = 0x02 | (((item->data.data_b[2] - 0xC9) + 0x2C) << 8);
-        }
-        break;
-
-    case ITEM_TYPE_TOOL: /* Tool */
-        if (code == 0x060D03 && item->data.data_b[3]) {
-            code = 0x000E03 | ((item->data.data_b[3] - 1) << 16);
-        }
-        break;
-
-    default:
-        ERR_LOG("未找到物品类型");
-        break;
-    }
-
-    if (version == CLIENT_VERSION_BB)
-        return bbitem_get_name_by_code((bbitem_code_t)code, version);
-    else
-        return item_get_name_by_code((item_code_t)code, version);
-}
-
-const char* sitem_get_name(sitem_t* item, int version) {
-    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
-        (item->data_b[2] << 16);
-
-    /* Make sure we take care of any v2 item codes */
-    switch (item->data_b[0]) {
-    case ITEM_TYPE_WEAPON:  /* Weapon */
-        if (item->data_b[5]) {
-            code = (item->data_b[5] << 8);
-        }
-        break;
-
-    case ITEM_TYPE_GUARD:  /* Guard */
-        if (item->data_b[1] != 0x03 && item->data_b[3]) {
-            code = code | (item->data_b[3] << 16);
-        }
-        break;
-
-    case ITEM_TYPE_MAG:  /* Mag */
-        if (item->data_b[1] == 0x00 && item->data_b[2] >= 0xC9) {
-            code = 0x02 | (((item->data_b[2] - 0xC9) + 0x2C) << 8);
-        }
-        break;
-
-    case ITEM_TYPE_TOOL: /* Tool */
-        if (code == 0x060D03 && item->data_b[3]) {
-            code = 0x000E03 | ((item->data_b[3] - 1) << 16);
-        }
-        break;
-
-    default:
-        ERR_LOG("未找到物品类型");
-        break;
-    }
-
-    if (version == CLIENT_VERSION_BB)
-        return bbitem_get_name_by_code((bbitem_code_t)code, version);
-    else
-        return item_get_name_by_code((item_code_t)code, version);
-}
-
-void item_print_data(ship_client_t* c, item_t* item) {
+/* 打印物品数据 */
+void print_item_data(ship_client_t* c, item_t* item) {
     ITEM_LOG("物品数据: %s (ID %d) %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
         item_get_name(item, c->version), item->item_id, 
         item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
@@ -3923,6 +3842,39 @@ void item_print_data(ship_client_t* c, item_t* item) {
         item->data2_b[0], item->data2_b[1], item->data2_b[2], item->data2_b[3]);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/* 修复玩家背包数据 */
+void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
+    uint32_t id;
+    int i;
+
+    if (c->version == CLIENT_VERSION_BB) {
+        /* Fix up the inventory for their new lobby */
+        id = 0x00010000 | (c->client_id << 21) |
+            (l->highest_item[c->client_id]);
+
+        for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
+            c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
+        }
+
+        --id;
+        l->highest_item[c->client_id] = id;
+    }
+    else {
+        /* Fix up the inventory for their new lobby */
+        id = 0x00010000 | (c->client_id << 21) |
+            (l->highest_item[c->client_id]);
+
+        for (i = 0; i < c->item_count; ++i, ++id) {
+            c->iitems[i].data.item_id = LE32(id);
+        }
+
+        --id;
+        l->highest_item[c->client_id] = id;
+    }
+}
+
+/* 初始化物品数据 */
 void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
@@ -3931,6 +3883,7 @@ void clear_item(item_t* item) {
     item->data2_l = 0;
 }
 
+/* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem) {
     iitem->present = 0x0000;
     iitem->tech = 0x0000;
@@ -3942,6 +3895,81 @@ void clear_iitem(iitem_t* iitem) {
     iitem->data.data2_l = 0;
 }
 
+/* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
+如果大厅的库存中没有新物品的空间,则返回NULL. */
+iitem_t* lobby_add_item_locked(lobby_t* l, uint32_t item_data[4]) {
+    lobby_item_t* item;
+
+    /* Sanity check... */
+    if (l->version != CLIENT_VERSION_BB)
+        return NULL;
+
+    if (!(item = (lobby_item_t*)malloc(sizeof(lobby_item_t))))
+        return NULL;
+
+    memset(item, 0, sizeof(lobby_item_t));
+
+    /* Copy the item data in. */
+    item->d.data.item_id = LE32(l->next_game_item_id);
+    item->d.data.data_l[0] = LE32(item_data[0]);
+    item->d.data.data_l[1] = LE32(item_data[1]);
+    item->d.data.data_l[2] = LE32(item_data[2]);
+    item->d.data.data2_l = LE32(item_data[3]);
+
+    /* Increment the item ID, add it to the queue, and return the new item */
+    ++l->next_game_item_id;
+    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
+    return &item->d;
+}
+
+iitem_t* lobby_add_item2_locked(lobby_t* l, iitem_t* it) {
+    lobby_item_t* item;
+
+    /* Sanity check... */
+    if (l->version != CLIENT_VERSION_BB)
+        return NULL;
+
+    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
+
+    if (!item)
+        return NULL;
+
+    memset(item, 0, sizeof(lobby_item_t));
+
+    /* Copy the item data in. */
+    memcpy(&item->d, it, sizeof(iitem_t));
+
+    /* Add it to the queue, and return the new item */
+    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
+    return &item->d;
+}
+
+int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
+    lobby_item_t* i, * tmp;
+
+    if (l->version != CLIENT_VERSION_BB)
+        return -1;
+
+    memset(rv, 0, sizeof(iitem_t));
+    rv->data.data_l[0] = LE32(Item_NoSuchItem);
+
+    i = TAILQ_FIRST(&l->item_queue);
+    while (i) {
+        tmp = TAILQ_NEXT(i, qentry);
+
+        if (i->d.data.item_id == item_id) {
+            memcpy(rv, &i->d, sizeof(iitem_t));
+            TAILQ_REMOVE(&l->item_queue, i, qentry);
+            free_safe(i);
+            return 0;
+        }
+
+        i = tmp;
+    }
+
+    return 1;
+}
+
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     if (client_id < l->max_clients) {
@@ -3950,7 +3978,7 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     return l->next_game_item_id++;
 }
 
-/* 物品操作 */
+/* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt) {
     int i;
@@ -3986,6 +4014,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
     return 1;
 }
 
+/* 新增背包物品操作 */
 int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
     int i, rv = 1;
 
@@ -4023,6 +4052,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
     return rv;
 }
 
+/* 背包物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
     uint32_t count = LE32(c->bb_pl->bank.item_count), i;
@@ -4118,7 +4148,7 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
     return 1;
 }
 
-/* 物品检测 */
+/* 堆叠物品检测 */
 int item_is_stackable(uint32_t code) {
     if((code & 0x000000FF) == 0x03) {
         code = (code >> 8) & 0xFF;

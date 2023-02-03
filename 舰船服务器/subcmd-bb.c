@@ -1540,7 +1540,7 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     DBG_LOG("¹ºÂòÎïÆ·");
     memcpy(shopi, &c->game_data.shop_items[pkt->shop_item_index], sizeof(sitem_t));
 
-    item_print_data(c, (item_t*)shopi);
+    print_item_data(c, (item_t*)shopi);
 
 
     //if ((pkt->item_id > 1) && (shopi->data_b[0] != 0x03)) {

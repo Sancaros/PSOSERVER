@@ -47,6 +47,7 @@
 #include "scripts.h"
 #include "admin.h"
 #include "smutdata.h"
+#include "items.h"
 
 extern int enable_ipv6;
 extern uint32_t ship_ip4;
@@ -728,8 +729,6 @@ lobby_t* block_get_lobby(block_t* b, uint32_t lobby_id) {
 
 static int join_game(ship_client_t* c, lobby_t* l) {
     int rv;
-    int i;
-    uint32_t id;
 
     /* Make sure they don't have the protection flag on */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -825,37 +824,22 @@ static int join_game(ship_client_t* c, lobby_t* l) {
                 release(c->limits);
         }
 
-        if (c->version == CLIENT_VERSION_BB) {
-            /* Fix up the inventory for their new lobby */
-            id = 0x00010000 | (c->client_id << 21) |
-                (l->highest_item[c->client_id]);
-
-            for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
-                c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
-            }
-
-            --id;
-            l->highest_item[c->client_id] = id;
-        }
-        else {
-            /* Fix up the inventory for their new lobby */
-            id = 0x00010000 | (c->client_id << 21) |
-                (l->highest_item[c->client_id]);
-
-            for (i = 0; i < c->item_count; ++i, ++id) {
-                c->iitems[i].data.item_id = LE32(id);
-            }
-
-            --id;
-            l->highest_item[c->client_id] = id;
-        }
+        fix_up_pl_iitem(l, c);
     }
+
+    sg_char_bkup_pkt info = { 0 };
+
+    info.guildcard = c->guildcard;
+    info.slot = c->sec_data.slot;
+    info.block = c->cur_block->b;
+    info.c_version = c->version;
+
+    strncpy((char*)info.name, c->pl->v1.character.disp.dress_data.guildcard_string, sizeof(info.name));
 
     /* Try to backup their character data */
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->cur_block->b,
-            c->pl->v1.character.disp.dress_data.guildcard_string, &c->pl->v1, 1052)) {
+        if (shipgate_send_cbkup(&ship->sg, &info, &c->pl->v1, 1052)) {
             /* XXXX: Should probably notify them... */
             return rv;
         }

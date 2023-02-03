@@ -2193,21 +2193,37 @@ typedef struct bbitem_map_s {
     const char* name;
 } bbitem_map_t;
 
+/* 物品名称代码. 英文. */
 const char *item_get_name_by_code(item_code_t code, int version);
+/* 物品名称代码. 中文 */
 const char* bbitem_get_name_by_code(bbitem_code_t code, int version);
+/* 获取物品名称 */
 const char *item_get_name(item_t* item, int version);
-const char *iitem_get_name(iitem_t *item, int version);
-const char *sitem_get_name(sitem_t* item, int version);
-void item_print_data(ship_client_t* c, item_t* item);
+/* 打印物品数据 */
+void print_item_data(ship_client_t* c, item_t* item);
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/* 修复玩家背包数据 */
+void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
+/* 初始化物品数据 */
 void clear_item(item_t* item);
+/* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem);
+
+/* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
+如果大厅的库存中没有新物品的空间,则返回NULL. */
+iitem_t* lobby_add_item_locked(lobby_t* l, uint32_t item_data[4]);
+iitem_t* lobby_add_item2_locked(lobby_t* l, iitem_t* item);
+
+int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
 
+/* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
+/* 新增背包物品操作 */
 int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it);
 
 /* 蓝色脉冲银行管理 */
@@ -2216,6 +2232,7 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it);
 int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
                         bitem_t *rv);
 
+/* 堆叠物品检测 */
 int item_is_stackable(uint32_t code);
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 

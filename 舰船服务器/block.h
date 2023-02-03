@@ -51,7 +51,9 @@ struct block {
     struct client_queue *clients;
     int num_clients;
 
+    /* ½¢²ÖID */
     int b;
+
     int run;
     int dcsock[2];
     int pcsock[2];

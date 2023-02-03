@@ -48,6 +48,7 @@
 #include "scripts.h"
 #include "admin.h"
 #include "smutdata.h"
+#include "items.h"
 
 extern int enable_ipv6;
 extern uint32_t ship_ip4;
@@ -56,8 +57,6 @@ extern uint8_t ship_ip6[16];
 /* Process a chat packet from a Blue Burst client. */
 static int bb_join_game(ship_client_t* c, lobby_t* l) {
     int rv;
-    int i;
-    uint32_t id;
 
     /* Make sure they don't have the protection flag on */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -153,41 +152,26 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
                 release(c->limits);
         }
 
-        if (c->version == CLIENT_VERSION_BB) {
-            /* Fix up the inventory for their new lobby */
-            id = 0x00010000 | (c->client_id << 21) |
-                (l->highest_item[c->client_id]);
-
-            for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
-                c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
-            }
-
-            --id;
-            l->highest_item[c->client_id] = id;
-        }
-        else {
-            /* Fix up the inventory for their new lobby */
-            id = 0x00010000 | (c->client_id << 21) |
-                (l->highest_item[c->client_id]);
-
-            for (i = 0; i < c->item_count; ++i, ++id) {
-                c->iitems[i].data.item_id = LE32(id);
-            }
-
-            --id;
-            l->highest_item[c->client_id] = id;
-        }
+        fix_up_pl_iitem(l, c);
     }
+
+    sg_char_bkup_pkt info = { 0 };
+
+    info.guildcard = c->guildcard;
+    info.slot = c->sec_data.slot;
+    info.block = c->cur_block->b;
+    info.c_version = c->version;
+
+    strncpy((char*)info.name, c->pl->bb.character.disp.dress_data.guildcard_string, sizeof(info.name));
 
     /* Try to backup their character data */
-    if (c->version != CLIENT_VERSION_BB &&
-        (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->cur_block->b,
-            c->pl->v1.character.disp.dress_data.guildcard_string, &c->pl->v1, 1052)) {
-            /* XXXX: Should probably notify them... */
+    //if (c->version != CLIENT_VERSION_BB &&
+        //(c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
+        if (shipgate_send_cbkup(&ship->sg, &info, &c->bb_pl, sizeof(psocn_bb_db_char_t))) {
+            DBG_LOG("备份临时数据 版本 %d", c->version);
             return rv;
         }
-    }
+    //}
 
     return rv;
 }
@@ -202,7 +186,7 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     if (!l)
         return -1;
 
-    /* Fill in escapes for the color chat stuff */
+    /* 填充彩色聊天内容的转义符 */
     if (c->cc_char) {
         for (i = 0; i < len; i += 2) {
             /* Only accept it if it has a C right after, since that means we
@@ -1816,6 +1800,15 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
+void add_color_tag(uint16_t* text) {
+    while (*text != 0x0000)
+    {
+        if ((*text == 0x0009) || (*text == 0x000A))
+            *text = 0x0020;
+        text++;
+    }
+}
+
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
@@ -1826,25 +1819,19 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
     //    //return -1;
     //}
     if (c->bb_guild->guild_data.guild_id != 0) {
-        uint16_t* n;
+        //uint16_t* n;
         if (len > 0x2B) {
-            n = (uint16_t*)&pkt->chat;
-            while (*n != 0x0000)
-            {
-                if ((*n == 0x0009) || (*n == 0x000A))
-                    *n = 0x0020;
-                n++;
-            }
+            //n = (uint16_t*)&pkt->chat;
+            //while (*n != 0x0000)
+            //{
+            //    if ((*n == 0x0009) || (*n == 0x000A))
+            //        *n = 0x0020;
+            //    n++;
+            //}
+            add_color_tag((uint16_t*)&pkt->chat);
 
             pkt->guildcard = c->guildcard;
             pkt->guild_id = c->bb_guild->guild_data.guild_id;
-
-            /* Add any padding needed */
-            while (len & 0x07) {
-                pkt->chat[len++] = 0;
-            }
-
-            pkt->hdr.pkt_len = len;
 
             return shipgate_fw_bb(&ship->sg, pkt, 0, c);
         }

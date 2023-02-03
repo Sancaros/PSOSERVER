@@ -2554,10 +2554,12 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     unsigned long *len;
     int sz, rv;
     uLong sz2, csz;
+    int slot = pkt->info.slot ,version = ntohl(pkt->info.c_version);
+    int dbversion = 0, dbslot = 0;
 
     /* Build the query asking for the data. */
     psocn_db_escape_str(&conn, name2, name, strlen(name));
-    sprintf(query, "SELECT data, size FROM %s WHERE "
+    sprintf(query, "SELECT data, size, version, slot FROM %s WHERE "
             "guildcard='%u' AND name='%s'", CHARACTER_DATA_BACKUP, gc, name2);
 
     if(psocn_db_real_query(&conn, query)) {
@@ -2565,7 +2567,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
         return 0;
     }
 
@@ -2575,7 +2577,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
         return 0;
     }
 
@@ -2585,7 +2587,32 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_CREQ_NO_DATA, (uint8_t *)&pkt->guildcard, 8);
+                   ERR_CREQ_NO_DATA, (uint8_t *)&pkt->info.guildcard, 8);
+        return 0;
+    }
+
+    dbversion = atoi(row[2]);
+    dbslot = atoi(row[3]);
+
+    if (dbversion != version) {
+        psocn_db_result_free(result);
+        send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
+        //SQLERR_LOG("角色备份数据版本不匹配 (%u: %s) 数据版本 %d 请求版本 %d", gc, name, dbversion, version);
+
+        //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
+        //    ERR_CREQ_NO_DATA, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
+
+    if (dbslot != slot) {
+        psocn_db_result_free(result);
+        send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
+        //SQLERR_LOG("角色备份数据不存在 (%u: %s) 数据槽位 %d 请求槽位 %d", gc, name, dbslot, slot);
+
+        //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
+        //    ERR_CREQ_NO_DATA, (uint8_t*)&pkt->guildcard, 8);
         return 0;
     }
 
@@ -2596,7 +2623,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
         return 0;
     }
 
@@ -2614,7 +2641,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
             return 0;
         }
 
@@ -2624,7 +2651,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
             return 0;
         }
 
@@ -2638,7 +2665,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
             return 0;
         }
 
@@ -2657,16 +2684,20 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
 
 static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
     static char query[16384];
-    uint32_t gc, block;
+    uint32_t gc, block, version;
+    int slot;
     uint16_t len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_bkup_pkt);
     char name[32], name2[65];
     Bytef* cmp_buf;
     uLong cmp_sz;
     int compressed = ~Z_OK;
 
-    gc = ntohl(pkt->guildcard);
-    block = ntohl(pkt->block);
-    strncpy(name, (const char*)pkt->name, 32);
+    slot = pkt->info.slot;
+    gc = ntohl(pkt->info.guildcard);
+    block = ntohl(pkt->info.block);
+    version = ntohl(pkt->info.c_version);
+
+    strncpy(name, (const char*)pkt->info.name, 32);
     name[31] = 0;
 
     /* Is this a restore request or are we saving the character data? */
@@ -2694,14 +2725,14 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 
     /* Build up the store query for it. */
     if (compressed == Z_OK && cmp_sz < len) {
-        sprintf(query, "INSERT INTO %s(guildcard, size, name, "
-            "data) VALUES ('%u', '%u', '%s', '", CHARACTER_DATA_BACKUP, gc, (unsigned)len, name2);
+        sprintf(query, "INSERT INTO %s(guildcard, version, slot, size, name, "
+            "data) VALUES ('%u', '%u', '%u', '%u', '%s', '", CHARACTER_DATA_BACKUP, gc, version, slot, (unsigned)len, name2);
         psocn_db_escape_str(&conn, query + strlen(query), (char*)cmp_buf,
             cmp_sz);
     }
     else {
-        sprintf(query, "INSERT INTO %s(guildcard, name, data) "
-            "VALUES ('%u', '%s', '", CHARACTER_DATA_BACKUP, gc, name2);
+        sprintf(query, "INSERT INTO %s(guildcard, version, slot, name, data) "
+            "VALUES ('%u', '%u', '%u', '%s', '", CHARACTER_DATA_BACKUP, gc, version, slot, name2);
         psocn_db_escape_str(&conn, query + strlen(query), (char*)pkt->data,
             len);
     }
@@ -2714,13 +2745,13 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
         return 0;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->guildcard, 8);
+        (uint8_t*)&pkt->info.guildcard, 8);
 }
 
 /* 处理舰船角色数据请求. */

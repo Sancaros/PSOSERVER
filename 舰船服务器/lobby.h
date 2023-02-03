@@ -350,12 +350,12 @@ int lobby_enqueue_burst(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p);
 int lobby_enqueue_pkt_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p);
 int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p);
 
-/* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
-   before calling this. Returns NULL on any problems... */
-iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]);
-iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *item);
-
-int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv);
+///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
+//   before calling this. Returns NULL on any problems... */
+//iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]);
+//iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *item);
+//
+//int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv);
 
 /* Send the kill counts for all clients in the lobby that have kill tracking
    enabled. */

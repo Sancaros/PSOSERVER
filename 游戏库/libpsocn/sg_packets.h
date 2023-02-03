@@ -221,13 +221,24 @@ typedef struct shipgate_char_data {
     uint8_t data[];
 } PACKED shipgate_char_data_pkt;
 
+typedef struct sg_char_bkup {
+    uint32_t guildcard;
+    uint8_t slot;
+    uint32_t block;
+    uint32_t c_version;
+    uint8_t name[32];
+} PACKED sg_char_bkup_pkt;
+
 /* A packet sent from clients to save their character backup or to request that
    the gate send it back to them. */
 typedef struct shipgate_char_bkup {
     shipgate_hdr_t hdr;
-    uint32_t guildcard;
-    uint32_t block;
-    uint8_t name[32];
+    sg_char_bkup_pkt info;
+    //uint32_t guildcard;
+    //uint8_t slot;
+    //uint32_t block;
+    //uint32_t c_version;
+    //uint8_t name[32];
     uint8_t data[];
 } PACKED shipgate_char_bkup_pkt;
 

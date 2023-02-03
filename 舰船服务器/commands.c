@@ -1450,7 +1450,7 @@ static void dumpinv_internal(ship_client_t *c) {
             SHIPS_LOG("%d (%08x): %08x %08x %08x %08x: %s", i,
                    LE32(c->iitems[i].data.item_id), LE32(c->iitems[i].data.data_l[0]),
                    LE32(c->iitems[i].data.data_l[1]), LE32(c->iitems[i].data.data_l[2]),
-                   LE32(c->iitems[i].data.data2_l), iitem_get_name(&c->iitems[i], v));
+                   LE32(c->iitems[i].data.data2_l), item_get_name(&c->iitems[i].data, v));
         }
     }
     else {
@@ -1465,7 +1465,7 @@ static void dumpinv_internal(ship_client_t *c) {
                   LE32(c->bb_pl->inv.iitems[i].data.data_l[1]),
                   LE32(c->bb_pl->inv.iitems[i].data.data_l[2]),
                   LE32(c->bb_pl->inv.iitems[i].data.data2_l),
-                iitem_get_name(&c->bb_pl->inv.iitems[i], v));
+                item_get_name(&c->bb_pl->inv.iitems[i].data, v));
             SHIPS_LOG("\tFlags: %08x %04x %04x",
                   LE32(c->bb_pl->inv.iitems[i].flags),
                   LE16(c->bb_pl->inv.iitems[i].present),
@@ -1494,17 +1494,17 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
 
         if(l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
             pthread_mutex_unlock(&l->mutex);
-            return send_txt(c, "%s", __(c, "\tE\tC7Invalid request."));
+            return send_txt(c, "%s", __(c, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        SHIPS_LOG("Inventory dump for lobby %s (%" PRIu32 ")", l->name,
+        SHIPS_LOG("大厅背包Dump %s (%" PRIu32 ")", l->name,
               l->lobby_id);
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
                   LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
                   LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
-                  LE32(j->d.data.data2_l), iitem_get_name(&j->d, l->version));
+                  LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -2585,18 +2585,34 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
+    sg_char_bkup_pkt info = { 0 };
+
+    info.guildcard = c->guildcard;
+    info.slot = c->sec_data.slot;
+    info.block = c->cur_block->b;
+    info.c_version = c->version;
+
     /* Not valid for Blue Burst clients */
     if(c->version == CLIENT_VERSION_BB) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
-    }
+        //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+        /* Send the request to the shipgate. */
+        strncpy((char*)info.name, c->pl->bb.character.disp.dress_data.guildcard_string, sizeof(info.name));
 
-    /* Send the request to the shipgate. */
-    if(shipgate_send_cbkup_req(&ship->sg, c->guildcard, c->cur_block->b,
-                               c->pl->v1.character.disp.dress_data.guildcard_string)) {
-        /* Send a message saying we couldn't request */
-        return send_txt(c, "%s",
-                        __(c, "\tE\tC7Couldn't request character data."));
-    }
+        if (shipgate_send_cbkup_req(&ship->sg, &info)) {
+            /* Send a message saying we couldn't request */
+            return send_txt(c, "%s",
+                __(c, "\tE\tC7无法请求恢复角色备用数据."));
+        }
+    }else
+        strncpy((char*)info.name, c->pl->v1.character.disp.dress_data.guildcard_string, sizeof(info.name));
+
+        /* Send the request to the shipgate. */
+        if (shipgate_send_cbkup_req(&ship->sg, &info)) {
+            /* Send a message saying we couldn't request */
+            return send_txt(c, "%s",
+                __(c, "\tE\tC7无法请求恢复角色备用数据."));
+        }
+
 
     return 0;
 }

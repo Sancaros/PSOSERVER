@@ -3736,8 +3736,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 //}
 
 /* Send the shipgate a character data backup request. */
-int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint32_t block,
-    const char* name, const void* cdata, int len) {
+int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* info, const void* cdata, int len) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
@@ -3753,10 +3752,12 @@ int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     pkt->hdr.flags = 0;
 
     /* Fill in the body. */
-    pkt->guildcard = htonl(gc);
-    pkt->block = htonl(block);
-    strncpy((char*)pkt->name, name, 32);
-    pkt->name[31] = 0;
+    pkt->info.guildcard = htonl(info->guildcard);
+    pkt->info.slot = info->slot;
+    pkt->info.block = htonl(info->block);
+    pkt->info.c_version = htonl(info->c_version);
+    strncpy((char*)pkt->info.name, info->name, sizeof(pkt->info.name));
+    pkt->info.name[31] = 0;
     memcpy(pkt->data, cdata, len);
 
     /* Send it away. */
@@ -3764,8 +3765,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint32_t block,
 }
 
 /* Send the shipgate a request for character backup data. */
-int shipgate_send_cbkup_req(shipgate_conn_t* c, uint32_t gc, uint32_t block,
-    const char* name) {
+int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* info) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
@@ -3779,10 +3779,14 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CBKUP);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
-    pkt->guildcard = htonl(gc);
-    pkt->block = htonl(block);
-    strncpy((char*)pkt->name, name, 32);
-    pkt->name[31] = 0;
+
+    /* Fill in the body. */
+    pkt->info.guildcard = htonl(info->guildcard);
+    pkt->info.slot = info->slot;
+    pkt->info.block = htonl(info->block);
+    pkt->info.c_version = htonl(info->c_version);
+    strncpy((char*)pkt->info.name, info->name, sizeof(pkt->info.name));
+    pkt->info.name[31] = 0;
 
     /* Send it away. */
     return send_crypt(c, sizeof(shipgate_char_bkup_pkt), sendbuf);
