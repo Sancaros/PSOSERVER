@@ -354,4 +354,4 @@ enum mag_type {
 	Mag_0507
 };
 
-extern int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid);
+extern int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id);

@@ -2632,10 +2632,6 @@ static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
 static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt);
 
-static inline int reg_sync_index(lobby_t* l, uint16_t regnum);
-static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum);
-static int get_inv_item_id(inventory_t inv, uint32_t item_id);
-
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);

@@ -749,7 +749,7 @@ void mag_bb_check_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t E
 }
 
 //喂养玛古
-int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid) {
+int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	lobby_t* l = c->cur_lobby;
 
 	if (!l || l->type != LOBBY_TYPE_GAME)
@@ -758,94 +758,114 @@ int mag_bb_feed(ship_client_t* c, uint32_t itemid, uint32_t magid) {
 	if (l->challenge || l->battle)
 		return -2;
 
-	int32_t found_mag = -1;
-	int32_t found_item = -1;
-	uint32_t ch, ch2, mt_index;
+	uint32_t i, mt_index;
 	int32_t EvolutionClass = 0;
-	mag_t* mag;
+	mag_t* mag = { 0 };
+	item_t* feed_item = { 0 };
 	uint16_t* ft;
 	int16_t mIQ, mDefense, mPower, mDex, mMind;
 
-	for (ch = 0; ch < c->pl->bb.inv.item_count; ch++)
-	{
-		if (c->pl->bb.inv.iitems[ch].data.item_id == magid)
-		{
-			// Found mag
-			if ((c->pl->bb.inv.iitems[ch].data.data_b[0] == 0x02) &&
-				(c->pl->bb.inv.iitems[ch].data.data_b[1] <= Mag_Agastya))
-			{
-				found_mag = ch;
-				mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data.data_b[0];
-				for (ch2 = 0; ch2 < c->pl->bb.inv.item_count; ch2++)
-				{
-					if (c->pl->bb.inv.iitems[ch2].data.item_id == itemid)
-					{
-						// Found item to feed
-						if ((c->pl->bb.inv.iitems[ch2].data.data_b[0] == 0x03) &&
-							(c->pl->bb.inv.iitems[ch2].data.data_b[1] < 0x07) &&
-							(c->pl->bb.inv.iitems[ch2].data.data_b[1] != 0x02) &&
-							(c->pl->bb.inv.iitems[ch2].data.data_b[5] > 0x00))
-						{
-							found_item = ch2;
-							switch (c->pl->bb.inv.iitems[ch2].data.data_b[1])
-							{
-							case 0x00:
-								mt_index = c->pl->bb.inv.iitems[ch2].data.data_b[2];
-								break;
-							case 0x01:
-								mt_index = 3 + c->pl->bb.inv.iitems[ch2].data.data_b[2];
-								break;
-							case 0x03:
-							case 0x04:
-							case 0x05:
-								mt_index = 5 + c->pl->bb.inv.iitems[ch2].data.data_b[1];
-								break;
-							case 0x06:
-								mt_index = 6 + c->pl->bb.inv.iitems[ch2].data.data_b[2];
-								break;
-							}
-						}
-						break;
-					}
+	if (item_id != 0xFFFFFFFF) {
+		if (c->mode > 0) {
+			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
+				if (c->pl->bb.inv.iitems[i].data.item_id == item_id) {
+					feed_item = &c->pl->bb.inv.iitems[i].data;
+					break;
 				}
 			}
-			break;
+
+			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
+				if ((c->pl->bb.inv.iitems[i].data.item_id == mag_id) &&
+					(c->pl->bb.inv.iitems[i].data.data_b[0] == 0x02) &&
+					(c->pl->bb.inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
+					mag = (mag_t*)&c->pl->bb.inv.iitems[i].data;
+					break;
+				}
+			}
+			DBG_LOG("mode feed");
 		}
-	}
+		else {
+			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+				if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
+					feed_item = &c->bb_pl->inv.iitems[i].data;
+					break;
+				}
+			}
 
-	//send_msg_box(c, "找到需要喂养的玛古或者需要喂养的物品. %d %d", found_mag, found_item);
+			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+				if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
+					(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
+					(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
+					mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
+					break;
+				}
+			}
+		}
 
-	//代码缺失 Sancaros 修复挑战模式喂养玛古的报错断线
-	if ((found_mag == -1) || (found_item == -1))
-	{
-		send_msg_box(c, "无法找到需要喂养的玛古或者需要喂养的物品.");
-		return -3;
-	}
-	else
-	{
+		/* If the item isn't found, then punt the user from the ship. */
+		if (!feed_item) {
+			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID.",
+				c->guildcard);
+			//return -2;
+		}
+
+		if (!mag) {
+			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID.",
+				c->guildcard);
+			//return -3;
+		}
+
+		if ((feed_item->data_b[0] == 0x03) &&
+			(feed_item->data_b[1] < 0x07) &&
+			(feed_item->data_b[1] != 0x02) &&
+			(feed_item->data_b[5] > 0x00))
+		{
+			switch (feed_item->data_b[1])
+			{
+			case 0x00:
+				mt_index = feed_item->data_b[2];
+				break;
+			case 0x01:
+				mt_index = 3 + feed_item->data_b[2];
+				break;
+			case 0x03:
+			case 0x04:
+			case 0x05:
+				mt_index = 5 + feed_item->data_b[1];
+				break;
+			case 0x06:
+				mt_index = 6 + feed_item->data_b[2];
+				break;
+			}
+		}
+
 		/* Remove the item from the user's inventory. */
 		if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
-			itemid, 0xFFFFFFFF) < 1) {
+			item_id, 0xFFFFFFFF) < 1) {
 			ERR_LOG("无法从玩家背包中移除物品!");
 			return -4;
 		}
 
 		--c->bb_pl->inv.item_count;
-
-		//Delete_Item_From_Client(itemid, 1, 0, c);
+		c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
 		// Rescan to update Mag pointer (if changed due to clean up) 重新扫描以更新磁指针（如果由于清理而更改） 
-		for (ch = 0; ch < c->pl->bb.inv.item_count; ch++)
-		{
-			if (c->pl->bb.inv.iitems[ch].data.item_id == magid)
-			{
-				// Found mag (again) 再次搜寻玛古
-				if ((c->pl->bb.inv.iitems[ch].data.data_b[0] == 0x02) &&
-					(c->pl->bb.inv.iitems[ch].data.data_b[1] <= Mag_Agastya))
-				{
-					found_mag = ch;
-
-					mag = (mag_t*)&c->pl->bb.inv.iitems[ch].data.data_b[0];
+		if (c->mode > 0) {
+			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
+				if ((c->pl->bb.inv.iitems[i].data.item_id == mag_id) &&
+					(c->pl->bb.inv.iitems[i].data.data_b[0] == 0x02) &&
+					(c->pl->bb.inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
+					mag = (mag_t*)&c->pl->bb.inv.iitems[i].data;
+					break;
+				}
+			}
+		}
+		else {
+			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+				if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
+					(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
+					(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
+					mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
 					break;
 				}
 			}
