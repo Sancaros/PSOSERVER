@@ -24,6 +24,7 @@
 
 #include <encryption.h>
 #include <psoconfig.h>
+#include <mtwist.h>
 
 /* Define as a signed type of the same size as size_t. */
 #ifdef _WIN64
@@ -121,6 +122,10 @@ typedef struct patch_client {
     int sending_data;
     int cur_chunk;
     int cur_pos;
+
+    /* Random number generator state */
+    struct mt19937_state rng;
+
 } patch_client_t;
 
 TAILQ_HEAD(client_queue, patch_client);

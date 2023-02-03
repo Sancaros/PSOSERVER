@@ -67,7 +67,7 @@ typedef struct item_data { // 0x14 bytes
 } PACKED item_t;
 
 typedef struct psocn_iitem { // c bytes  
-    uint16_t equipped;
+    uint16_t present;
     uint16_t tech;
     uint32_t flags;
     item_t data;

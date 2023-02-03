@@ -3914,6 +3914,15 @@ const char* sitem_get_name(sitem_t* item, int version) {
         return item_get_name_by_code((item_code_t)code, version);
 }
 
+void item_print_data(ship_client_t* c, item_t* item) {
+    ITEM_LOG("物品数据: %s (ID %d) %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+        item_get_name(item, c->version), item->item_id, 
+        item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
+        item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
+        item->data_b[8], item->data_b[9], item->data_b[10], item->data_b[11],
+        item->data2_b[0], item->data2_b[1], item->data2_b[2], item->data2_b[3]);
+}
+
 void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
@@ -3923,7 +3932,7 @@ void clear_item(item_t* item) {
 }
 
 void clear_iitem(iitem_t* iitem) {
-    iitem->equipped = 0x0000;
+    iitem->present = 0x0000;
     iitem->tech = 0x0000;
     iitem->flags = 0x00000000;
     iitem->data.data_l[0] = 0;

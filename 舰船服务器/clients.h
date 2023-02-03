@@ -90,6 +90,7 @@ typedef struct client_game_data {
     sitem_t shop_items[0x14];
 
     uint32_t expboost;
+    uint32_t death;
 } client_game_data_t;
 
 typedef struct client_type {

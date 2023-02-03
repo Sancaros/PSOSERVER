@@ -2198,6 +2198,7 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version);
 const char *item_get_name(item_t* item, int version);
 const char *iitem_get_name(iitem_t *item, int version);
 const char *sitem_get_name(sitem_t* item, int version);
+void item_print_data(ship_client_t* c, item_t* item);
 
 void clear_item(item_t* item);
 void clear_iitem(iitem_t* iitem);

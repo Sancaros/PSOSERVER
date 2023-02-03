@@ -1468,7 +1468,7 @@ static void dumpinv_internal(ship_client_t *c) {
                 iitem_get_name(&c->bb_pl->inv.iitems[i], v));
             SHIPS_LOG("\tFlags: %08x %04x %04x",
                   LE32(c->bb_pl->inv.iitems[i].flags),
-                  LE16(c->bb_pl->inv.iitems[i].equipped),
+                  LE16(c->bb_pl->inv.iitems[i].present),
                   LE16(c->bb_pl->inv.iitems[i].tech));
         }
     }

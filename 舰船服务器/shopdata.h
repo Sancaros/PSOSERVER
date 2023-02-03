@@ -77,7 +77,7 @@ typedef struct shop_data {
 uint32_t get_bb_shop_price(iitem_t* ci);
 
 /* 生成商店物品 */
-sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型);
+sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子);
 
 
 

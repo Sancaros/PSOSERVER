@@ -195,16 +195,19 @@ uint32_t get_bb_shop_price(iitem_t* ci)
     return (uint32_t)price;
 }
 
-sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
+sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
     static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
     static const uint8_t max_tech_level[4] = { 8, 15, 23, 30 };
     static const uint8_t max_anti_level[4] = { 2,  4,  6,  7 };
 
+    /* 读取随机32位种子. */
+    init_genrand((uint32_t)time(NULL));
+
     sitem_t item = { 0 };
     item.data_b[0] = 物品类型;
     while (item.data_b[0] == 2) {
-        item.data_b[0] = rand() % 3;
+        item.data_b[0] = mt19937_genrand_int32(随机因子) % 3;
     }
     //[2022年09月07日 05:24:17:531] 物品(1177): 纯物品字节数据为: 扫射机枪 00080106, 07000000, 00000000, 00000000
     //[2022年09月07日 05:24:17:543] 物品(1177): 纯物品字节数据为: 光剑     00010009, 0A00030E, 040A0000, 00000000
@@ -233,22 +236,22 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
         /* 检索物品类型 */
     switch (item.data_b[0]) {
     case 0x00: { // 武器
-        item.data_b[1] = (rand() % 12) + 1;
+        item.data_b[1] = (mt19937_genrand_int32(随机因子) % 12) + 1;
         if (item.data_b[1] > 0x09) {
             item.data_b[2] = 难度;
         }
         else {
-            item.data_b[2] = (rand() & 1) + 难度;
+            item.data_b[2] = (mt19937_genrand_int32(随机因子) & 1) + 难度;
         }
 
-        item.data_b[3] = rand() % 11;
-        item.data_b[4] = rand() % 11;
+        item.data_b[3] = mt19937_genrand_int32(随机因子) % 11;
+        item.data_b[4] = mt19937_genrand_int32(随机因子) % 11;
 
         int num_percentages = 0;
         for (uint8_t x = 0; (x < 5) && (num_percentages < 3); x++) {
-            if ((rand() % 4) == 1) {
+            if ((mt19937_genrand_int32(随机因子) % 4) == 1) {
                 item.data_b[(num_percentages * 2) + 6] = x;
-                item.data_b[(num_percentages * 2) + 7] = rand() % (max_percentages[难度] + 1);
+                item.data_b[(num_percentages * 2) + 7] = mt19937_genrand_int32(随机因子) % (max_percentages[难度] + 1);
                 num_percentages++;
             }
         }
@@ -282,21 +285,21 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
     case 0x01: // 装甲
         item.data_b[1] = 0;
         while (item.data_b[1] == 0) {
-            item.data_b[1] = rand() & 3;
+            item.data_b[1] = mt19937_genrand_int32(随机因子) & 3;
         }
         switch (item.data_b[1]) {
         case 0x01://护甲
-            item.data_b[2] = (rand() % 6) + (难度 * 6);
-            item.data_b[5] = rand() % 5;
+            item.data_b[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 6);
+            item.data_b[5] = mt19937_genrand_int32(随机因子) % 5;
             break;
         case 0x02://护盾
-            item.costb[2] = (rand() % 6) + (难度 * 5);//TODO 价格加个控制
-            item.data_b[6] = (rand() % 9) - 4;
-            item.data_b[9] = (rand() % 9) - 4;
+            item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
+            item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
             break;
         case 0x03://插件
-            item.costb[2] = rand() % 0x3B;
-            item.data_b[7] = (rand() % 5) - 4;
+            item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
+            item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
             break;
         }
         break;
@@ -324,7 +327,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
         //( 000000C0 )   00 00 00 00 00 00 00 00  00 00                      ..........
         //( 00000000 )   10 00 62 00 00 00 00 00  B5 02 FF FF 01 00 00 00    ..b.............
     case 0x03: // 药品工具
-        item.data_b[1] = rand() % 12;
+        item.data_b[1] = mt19937_genrand_int32(随机因子) % 12;
         switch (item.data_b[1]) {
         case 0x00:
         case 0x01:
@@ -332,10 +335,10 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
                 item.data_b[2] = 0;
             }
             else if (难度 == 1) {
-                item.data_b[2] = rand() % 2;
+                item.data_b[2] = mt19937_genrand_int32(随机因子) % 2;
             }
             else if (难度 == 2) {
-                item.data_b[2] = (rand() % 2) + 1;
+                item.data_b[2] = (mt19937_genrand_int32(随机因子) % 2) + 1;
             }
             else if (难度 == 3) {
                 item.data_b[2] = 2;
@@ -343,31 +346,31 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
             break;
 
         case 0x06:
-            item.data_b[2] = rand() % 2;
+            item.data_b[2] = mt19937_genrand_int32(随机因子) % 2;
             break;
 
         case 0x0A:
-            item.data_b[2] = rand() % 3;
+            item.data_b[2] = mt19937_genrand_int32(随机因子) % 3;
             break;
 
         case 0x0B:
-            item.data_b[2] = rand() % 7;
+            item.data_b[2] = mt19937_genrand_int32(随机因子) % 7;
             break;
         }
 
         switch (item.data_b[1]) {
         case 0x02:
-            item.data_b[4] = rand() % 19;
+            item.data_b[4] = mt19937_genrand_int32(随机因子) % 19;
             switch (item.data_b[4]) {
             case 14:
             case 17:
                 item.data_b[2] = 0; // reverser & ryuker always level 1 
                 break;
             case 16:
-                item.data_b[2] = rand() % max_anti_level[难度];
+                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_anti_level[难度];
                 break;
             default:
-                item.data_b[2] = rand() % max_tech_level[难度];
+                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_tech_level[难度];
             }
             break;
         case 0x00:
@@ -379,7 +382,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型) {
         case 0x07:
         case 0x08:
         case 0x10:
-            item.data_b[5] = rand() % (max_quantity[难度] + 1);
+            item.data_b[5] = mt19937_genrand_int32(随机因子) % (max_quantity[难度] + 1);
             break;
         }
     }

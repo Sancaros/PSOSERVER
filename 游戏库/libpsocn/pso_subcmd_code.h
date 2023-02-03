@@ -98,9 +98,11 @@
 
 // 6x0F: Invalid subcommand
 
+#define SUBCMD60_UNKNOW_10                     0x10
+#define SUBCMD60_UNKNOW_11                     0x11
 #define SUBCMD60_DRAGON_ACT                    0x12
 #define SUBCMD60_ACTION_DE_ROl_LE              0x13
-#define SUBCMD60_UNKNOW_14                     0x14
+#define SUBCMD60_ACTION_DE_ROl_LE2             0x14
 #define SUBCMD60_ACTION_VOL_OPT                0x15
 #define SUBCMD60_ACTION_VOL_OPT2               0x16
 #define SUBCMD60_TELEPORT                      0x17    //SUBCMD60_TELEPORT_1
@@ -165,7 +167,6 @@
 #define SUBCMD60_ATTACK1                       0x43
 #define SUBCMD60_ATTACK2                       0x44
 #define SUBCMD60_ATTACK3                       0x45
-#define SUBCMD60_ATTACK_SIZE                   0x10
 #define SUBCMD60_OBJHIT_PHYS                   0x46
 #define SUBCMD60_OBJHIT_TECH                   0x47
 #define SUBCMD60_USED_TECH                     0x48

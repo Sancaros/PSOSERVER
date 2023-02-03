@@ -59,9 +59,14 @@ patch_client_t* create_connection(int sock, int type,
         rv->is_ipv6 = 1;
     }
 
+    /* Initialize the random number generator. The seed value is the current
+       UNIX time, xored with the port (so that each block will use a different
+       seed even though they'll probably get the same timestamp). */
+    mt19937_init(&rv->rng, (uint32_t)(time(NULL) ^ sock));
+
     /* Generate the encryption keys for the client and server. */
-    cvect = (uint32_t)genrand_int32();
-    svect = (uint32_t)genrand_int32();
+    cvect = mt19937_genrand_int32(&rv->rng);
+    svect = mt19937_genrand_int32(&rv->rng);
 
     CRYPT_CreateKeys(&rv->client_cipher, &cvect, CRYPT_PC);
     CRYPT_CreateKeys(&rv->server_cipher, &svect, CRYPT_PC);

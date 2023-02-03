@@ -342,8 +342,6 @@ typedef struct subcmd_dragon_act {
 // Same format as 0x10
 // 0x12: Dragon boss actions (不支持 Episode 3)
 // Same format as 0x10
-// 0x14: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-// Same format as 0x10
 // Packet used by the Dragon boss to deal with its actions.
 typedef struct subcmd_bb_dragon_act {
     bb_pkt_hdr_t hdr;
@@ -354,11 +352,24 @@ typedef struct subcmd_bb_dragon_act {
 } PACKED subcmd_bb_dragon_act_t;
 
 // 0x13: De Rol Le boss actions (不支持 Episode 3)
-typedef struct subcmd_bb_DeRolLeBossActions_6x13 {
+//(00000000)   10 00 60 00 00 00 00 00  13 02 34 11 0C 00 06 00
+typedef struct subcmd_bb_DeRolLeBoss_act {
+    bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
-    uint16_t unknown_a2;
-    uint16_t unknown_a3;
-} PACKED subcmd_bb_DeRolLeBossActions_6x13_t;
+    uint16_t unknown_a2;              /* 有点像攻击类型 */
+    uint16_t unknown_a3;              /* 按顺序 从 1 一直数下去 */
+} PACKED subcmd_bb_DeRolLeBoss_act;
+
+// 0x14: De Rol Le boss special actions (指令生效范围; 仅限游戏; 不支持 Episode 3)
+//  (00000000)   14 00 60 00 00 00 00 00  14 03 34 11 14 00 08 00 ..`.......4.....
+//  (00000010)   00 00 00 00                                     ....
+typedef struct subcmd_bb_DeRolLeBoss_sact {
+    bb_pkt_hdr_t hdr;
+    enemy_id_hdr_t shdr;
+    uint16_t unknown_a2;              /* 有点像攻击类型 */
+    uint16_t unknown_a3;              /* 按顺序 从 1 一直数下去 与 0x13 重叠*/
+    uint32_t unused;
+} PACKED subcmd_bb_DeRolLeBoss_sact;
 
 // 0x15: Vol Opt boss actions (不支持 Episode 3)
 typedef struct subcmd_bb_VolOptBossActions_6x15 {
@@ -477,10 +488,10 @@ typedef struct subcmd_bb_inter_level_warp {
 
 // 0x22: Set player invisible
 // 0x23: Set player visible
-typedef struct subcmd_set_player_visibility_6x22_6x23 {
+typedef struct subcmd_bb_set_player_visibility_6x22_6x23 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_set_player_visibility_6x22_6x23_t;
+} PACKED subcmd_bb_set_player_visibility_6x22_6x23_t;
 
 // 0x24: subcmd_bb_set_pos_0x24 (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_set_pos_0x24 {
@@ -584,9 +595,6 @@ typedef struct subcmd_take_item {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t data;
-    //uint32_t data_l[3];
-    //uint32_t item_id;
-    //uint32_t data2_l;
     uint32_t unk; //DC版本不存在
 } PACKED subcmd_take_item_t;
 
@@ -1037,7 +1045,7 @@ typedef struct subcmd_bb_map_warp {
     float z2;
 } PACKED subcmd_bb_map_warp_t;
 
-// 0x56: Unknown (指令生效范围; 大厅和游戏)
+// 0x56: 生成座椅时触发 (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_Unknown_6x56 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1138,6 +1146,14 @@ typedef struct subcmd_buy {
     sitem_t data;
 } PACKED subcmd_buy_t;
 
+// 0x5E: change_chair
+// 旋转椅子或改变椅子方向触发
+typedef struct subcmd_bb_change_chair {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_change_chair_t;
+
 // 0x5F: Drop item from box/enemy
 typedef struct subcmd_item_drop {
     uint8_t area;
@@ -1187,22 +1203,12 @@ typedef struct subcmd_bb_itemreq {
     uint16_t request_id;
     float x;
     float z;
-    uint32_t unk2[2];
+    uint16_t unk1;
+    uint16_t unk2;
+    uint32_t unk3;
 } PACKED subcmd_bb_itemreq_t;
 
 // 0x61: levelup_req
-//[2023年02月01日 00:24 : 12 : 940] 调试(subcmd - bb.c 4279) : BB处理任务 GC 42004064 60指令 : 0x61
-//(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 21 00    ..`.....a.....!.
-//(00000010)   02 00 00 00                                         ....
-//[2023年02月01日 00:25 : 43 : 303] 调试(subcmd - bb.c 4279) : BB处理任务 GC 42004064 60指令 : 0x61
-//(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 21 00    ..`.....a.....!.
-//(00000010)   02 00 00 00                                         ....
-//(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
-//(00000010)   02 00 00 00                                         ....
-//(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
-//(00000010)   02 00 00 00                                         ....
-//(00000000)   14 00 60 00 00 00 00 00  61 03 85 00 02 00 01 00    ..`.....a.......
-//(00000010)   02 00 00 00                                         ....
 typedef struct subcmd_bb_levelup_req {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr; /* 0x00 0x85 0x03 0x61*/
@@ -1287,6 +1293,8 @@ typedef struct subcmd_bb_Unknown_6x69 {
 
 
 // 0x6A: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
+//(00000000)   10 00 60 00 00 00 00 00  6A 02 38 40 02 00 66 00
+//(00000000)   10 00 60 00 00 00 00 00  6A 02 1F 40 02 00 66 00
 typedef struct subcmd_bb_Unknown_6x6A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1588,17 +1596,6 @@ typedef struct subcmd_bb_Unknown_6x78 {
 } PACKED subcmd_bb_Unknown_6x78_t;
 
 // 0x79: Lobby 14/15 gogo ball (soccer game)
-//(00000000)   20 00 60 00 00 00 00 00  79 06 00 00 00 00 00 00  .`.....y.......
-//(00000010)   52 3B 00 00 00 00 00 00  00 00 00 00 00 59 66 00 R; ...........Yf.
-
-//( 00000000 )   20 00 60 00 00 00 00 00  79 06 66 68 B6 04 00 00  .`.....y.fh?..
-//( 00000010 )   74 EA FF FF 00 00 00 00  00 00 00 00 00 59 66 00 t?
-//
-//( 00000000 )   20 00 60 00 00 00 00 00  79 06 66 68 4C 05 00 00  .`.....y.fhL...
-//( 00000010 )   78 97 FF FF 7A 02 76 C2  C1 7E D2 42 00 59 66 00 x?
-//
-//( 00000000 )   20 00 60 00 00 00 00 00  79 06 66 68 A6 05 00 00  .`.....y.fh?..
-//( 00000010 )   FB BC FF FF 5E CC FF C2  C7 16 41 40 00 59 66 00 
 typedef struct subcmd_bb_gogo_ball {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr; // unused 0x0000 踢了 0x6866
@@ -1777,6 +1774,7 @@ typedef struct subcmd_bb_Unknown_6x87 {
 } PACKED subcmd_bb_Unknown_6x87_t;
 
 // 0x88: Unknown (指令生效范围; 仅限游戏)
+//(00000000)   0C 00 60 00 00 00 00 00  88 01 00 00
 typedef struct subcmd_bb_Unknown_6x88 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -2335,6 +2333,7 @@ typedef struct subcmd_bb_tekk_identify_result {
 
 // 0xBA: Unknown (Episode 3)
 typedef struct subcmd_Unknown_GC_Ep3_6xBA {
+    dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1; // Low byte must be < 9
     uint16_t unknown_a2;

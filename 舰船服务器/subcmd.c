@@ -1280,6 +1280,8 @@ static int handle_move(ship_client_t *c, subcmd_move_t*pkt) {
 
         if((l->flags & LOBBY_FLAG_QUESTING))
             update_qpos(c, l);
+
+        c->game_data.death = 0;
     }
 
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
@@ -2932,11 +2934,9 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
         bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
         bb.hdr.flags = 0;
         bb.hdr.pkt_len = LE16(0x0020);
-        bb.shdr.type = 0x20;
+        bb.shdr.type = SUBCMD60_SET_AREA_20;
         bb.shdr.size = 6;
         bb.shdr.client_id = src->client_id;
-        dc.shdr.size = 6;
-        dc.shdr.client_id = src->client_id;
         bb.area = LE32(0x0000000F);         /* Area */
         bb.w = src->x;                      /* X */
         bb.x = 0;                           /* Y */
@@ -2952,9 +2952,9 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
 
         if(dst->version == CLIENT_VERSION_DCV1 &&
            (dst->flags & CLIENT_FLAG_IS_NTE))
-            dc.shdr.type = 0x1C;
+            dc.shdr.type = SUBCMD60_UNKNOW_1C;
         else
-            dc.shdr.type = 0x20;
+            dc.shdr.type = SUBCMD60_SET_AREA_20;
 
         dc.shdr.size = 6;
         dc.shdr.client_id = src->client_id;

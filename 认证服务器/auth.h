@@ -24,6 +24,7 @@
 #include <psoconfig.h>
 #include <encryption.h>
 #include <database.h>
+#include <mtwist.h>
 
 #include <pso_player.h>
 
@@ -127,6 +128,10 @@ typedef struct login_client {
     /* Only used for the Dreamcast Network Trial Edition */
     char serial_number[16];
     char access_key[16];
+
+    /* Random number generator state */
+    struct mt19937_state rng;
+
 } login_client_t;
 
 /* Privilege levels */
