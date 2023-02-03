@@ -2616,22 +2616,6 @@ typedef struct subcmd_bb_set_exp_rate {
 
 #undef PACKED
 
-/* Forward declarations */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
-int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
-    float z, iitem_t* item);
-int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount);
-int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
-int subcmd_send_bb_level(ship_client_t* c);
-int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item);
-
-static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client);
-static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
-    uint32_t item_id);
-static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
-    uint8_t amt);
-
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
@@ -2646,6 +2630,12 @@ int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
                            const uint32_t item[4]);
+int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
+    const iitem_t* item);
+
+int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp);
+int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
+int subcmd_send_bb_level(ship_client_t* c);
 
 int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
 

@@ -41,6 +41,17 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
+/* Forward declarations */
+int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
+int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
+    float z, iitem_t* item);
+
+static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client);
+static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
+    uint32_t item_id);
+static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
+    uint8_t amt);
+
 #define SWAP32(x) (((x >> 24) & 0x00FF) | \
                    ((x >>  8) & 0xFF00) | \
                    ((x & 0xFF00) <<  8) | \
@@ -319,7 +330,7 @@ int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     pkt.shdr.client_id = c->client_id;
     pkt.exp_amount = LE32(exp_amount);
 
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
@@ -355,7 +366,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     pkt.shdr.size = 0x03;
     pkt.shdr.params = LE16(exp_r);
 
-    rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
+    rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 
     if (!rv) {
         l->expboost = LE32(exp_r);
@@ -2174,7 +2185,7 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
         return -1;
     }
 
-    subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 
     if (pkt->data.flags && pkt->data.object_id != 0xFFFF) {
         if ((l->flags & LOBBY_TYPE_CHEATS_ENABLED) && c->options.switch_assist &&
@@ -2182,7 +2193,7 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
             DBG_LOG("[机关助手] 重复启动上一个命令");
             subcmd_bb_switch_changed_pkt_t* gem = pkt;
             gem->data = c->last_switch_enabled_command;
-            subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)gem, 0);
+            rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)gem, 0);
         }
         c->last_switch_enabled_command = pkt->data;
     }
