@@ -857,7 +857,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 " 错误码 %d", ship->cfg->name, c->cur_block->b,
                 c->guildcard, i);
             if (c->cur_lobby) {
-                ERR_LOG("        大厅: %s (类型: %d,%d,%d,%d)",
+                ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
                     c->cur_lobby->name, c->cur_lobby->difficulty,
                     c->cur_lobby->battle, c->cur_lobby->challenge,
                     c->cur_lobby->v2);
