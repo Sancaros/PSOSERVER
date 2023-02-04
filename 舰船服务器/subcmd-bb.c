@@ -1645,11 +1645,59 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
         i_res.item = c->game_data.identify_result.data;
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)&i_res);
-
     }
     else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
+}
+
+static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identification_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    block_t* b = c->cur_block;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (!c->game_data.identify_result.data.item_id) {
+        ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备!",
+            c->guildcard);
+        return -1;
+    }
+
+    uint32_t ch2, ch;
+
+    for (ch = 0; ch < 4; ch++) {
+        if (/*(l->slot_use[ch]) && (*/l->clients[ch]/*)*/) {
+            for (ch2 = 0; ch2 < l->clients[ch]->bb_pl->inv.item_count; ch2++)
+                if (l->clients[ch]->bb_pl->inv.iitems[ch2].data.item_id == c->game_data.identify_result.data.item_id) {
+                    //Message_Box(L"", L"Item duplication attempt!", client, BigMes_Pkt1A, NULL, 94);
+                    return -1;
+                }
+        }
+    }
+
+    for (ch = 0; ch < l->item_count; l++) {
+        uint32_t itemNum = l->item_list[ch];
+        if (l->item_id_to_lobby_item[itemNum].inv_item.data.item_id == c->game_data.identify_result.data.item_id) {
+            // Added to the game's inventory by the client...
+            // Delete it and avoid duping...
+            //被客户端添加到游戏目录中。。。
+            //删除它并避免复制。。
+            memset(&l->item_id_to_lobby_item[itemNum], 0, sizeof(fitem_t));
+            l->item_list[ch] = EMPTY_STRING;
+            break;
+        }
+    }
+
+    clear_lobby_item(l);
+    subcmd_send_bb_create_item(c, c->game_data.identify_result.data, 1);
+    //Add_To_Inventory(&client->tekked, 1, 1, client);
+    memset(&c->game_data.identify_result, 0, sizeof(iitem_t));
+
+    return 0;
 }
 
 static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
@@ -1809,11 +1857,11 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             }
 
             bitem.flags = LE16(1);
-            bitem.data_l[0] = iitem.data.data_l[0];
-            bitem.data_l[1] = iitem.data.data_l[1];
-            bitem.data_l[2] = iitem.data.data_l[2];
-            bitem.item_id = iitem.data.item_id;
-            bitem.data2_l = iitem.data.data2_l;
+            bitem.data.data_l[0] = iitem.data.data_l[0];
+            bitem.data.data_l[1] = iitem.data.data_l[1];
+            bitem.data.data_l[2] = iitem.data.data_l[2];
+            bitem.data.item_id = iitem.data.item_id;
+            bitem.data.data2_l = iitem.data.data2_l;
 
             /* Unequip any units, if the item was equipped and a frame. */
             if (isframe) {
@@ -1881,11 +1929,11 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             iitem.present = LE16(0x0001);
             iitem.tech = LE16(0x0000);
             iitem.flags = 0;
-            ic[0] = iitem.data.data_l[0] = bitem.data_l[0];
-            ic[1] = iitem.data.data_l[1] = bitem.data_l[1];
-            ic[2] = iitem.data.data_l[2] = bitem.data_l[2];
+            ic[0] = iitem.data.data_l[0] = bitem.data.data_l[0];
+            ic[1] = iitem.data.data_l[1] = bitem.data.data_l[1];
+            ic[2] = iitem.data.data_l[2] = bitem.data.data_l[2];
             iitem.data.item_id = LE32(l->item_next_lobby_id);
-            iitem.data.data2_l = bitem.data2_l;
+            iitem.data.data2_l = bitem.data.data2_l;
             ++l->item_next_lobby_id;
 
             /* Time to add it to the inventory... */
@@ -2072,7 +2120,8 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD62_TEKKED:
-        rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+        rv = handle_bb_item_tekked(c, (subcmd_bb_accept_item_identification_t*)pkt);
+        //rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
         break;
 
     case SUBCMD62_OPEN_BANK:

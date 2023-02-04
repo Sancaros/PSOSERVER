@@ -82,20 +82,7 @@ typedef struct psocn_inventory {
 } PACKED inventory_t;
 
 typedef struct psocn_bitem { // 0x18 bytes
-    union {
-        uint8_t data_b[12];
-        uint16_t data_w[6];
-        uint32_t data_l[3];
-    };
-
-    uint32_t item_id;
-
-    union {
-        uint8_t data2_b[4];
-        uint16_t data2_w[2];
-        uint32_t data2_l;
-    };
-
+    item_t data;
     uint16_t amount;
     uint16_t flags;
 } PACKED bitem_t;

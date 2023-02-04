@@ -2342,11 +2342,11 @@ typedef struct subcmd_Unknown_GC_Ep3_6xBA {
 } PACKED subcmd_Unknown_GC_Ep3_6xBA_t;
 
 // 0xBA: BB accept tekker result (handled by the server)
-typedef struct subcmd_bb_AcceptItemIdentification_BB_6xBA {
+typedef struct subcmd_bb_accept_item_identification {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t item_id;
-} PACKED subcmd_bb_AcceptItemIdentification_BB_6xBA_t;
+} PACKED subcmd_bb_accept_item_identification_t;
 
 // 0xBB: Sync card trade state (Episode 3)
 // TODO: Certain invalid values for slot/args in this command can crash the

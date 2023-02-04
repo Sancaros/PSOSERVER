@@ -143,9 +143,10 @@ struct lobby {
     uint32_t maps[0x20];
     uint32_t bbmaps[128]; // ·¿¼äµØÍ¼
 
-    uint32_t item_count;
     uint32_t item_player_id[12];
     uint32_t item_next_lobby_id;
+
+    uint32_t item_count;
     uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
     fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
 

@@ -4130,14 +4130,14 @@ void cleanup_bb_bank(ship_client_t *c) {
     uint32_t count = LE32(c->bb_pl->bank.item_count), i;
 
     for(i = 0; i < count; ++i) {
-        c->bb_pl->bank.items[i].item_id = LE32(item_id);
+        c->bb_pl->bank.items[i].data.item_id = LE32(item_id);
         ++item_id;
     }
 
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_ITEMS; ++i) {
         memset(&c->bb_pl->bank.items[i], 0, sizeof(bitem_t));
-        c->bb_pl->bank.items[i].item_id = EMPTY_STRING;
+        c->bb_pl->bank.items[i].data.item_id = EMPTY_STRING;
     }
 }
 
@@ -4152,11 +4152,11 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it) {
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(it->data_l[0]))) {
+    if(item_is_stackable(LE32(it->data.data_l[0]))) {
         /* Look for anything that matches this item in the inventory. */
         for(i = 0; i < count; ++i) {
-            if(c->bb_pl->bank.items[i].data_l[0] == it->data_l[0]) {
-                amount = c->bb_pl->bank.items[i].data_b[5] += it->data_b[5];
+            if(c->bb_pl->bank.items[i].data.data_l[0] == it->data.data_l[0]) {
+                amount = c->bb_pl->bank.items[i].data.data_b[5] += it->data.data_b[5];
                 c->bb_pl->bank.items[i].amount = LE16(amount);
                 return 0;
             }
@@ -4178,7 +4178,7 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 
     /* Look for the item in question */
     for(i = 0; i < count; ++i) {
-        if(c->bb_pl->bank.items[i].item_id == item_id) {
+        if(c->bb_pl->bank.items[i].data.item_id == item_id) {
             break;
         }
     }
@@ -4194,18 +4194,18 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(it->data_l[0]))) {
-        if(amt < it->data_b[5]) {
-            it->data_b[5] -= amt;
-            it->amount = LE16(it->data_b[5]);
+    if(item_is_stackable(LE32(it->data.data_l[0]))) {
+        if(amt < it->data.data_b[5]) {
+            it->data.data_b[5] -= amt;
+            it->amount = LE16(it->data.data_b[5]);
 
             /* Fix the amount on the returned value, and return. */
-            rv->data_b[5] = amt;
+            rv->data.data_b[5] = amt;
             rv->amount = LE16(amt);
 
             return 0;
         }
-        else if(amt > it->data_b[5]) {
+        else if(amt > it->data.data_b[5]) {
             return -1;
         }
     }
