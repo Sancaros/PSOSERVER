@@ -2585,25 +2585,28 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无法在游戏房间中使用."));
     }
 
+    c->game_info.guildcard = c->guildcard;
+    c->game_info.slot = c->sec_data.slot;
+    c->game_info.block = c->cur_block->b;
+    c->game_info.c_version = c->version;
+
     /* Not valid for Blue Burst clients */
     if(c->version == CLIENT_VERSION_BB) {
         //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
         /* Send the request to the shipgate. */
-        if (shipgate_send_cbkup_req(&ship->sg, c->guildcard, c->sec_data.slot, c->cur_block->b,
-            c->version, c->pl->bb.character.disp.dress_data.guildcard_string)) {
-            /* Send a message saying we couldn't request */
-            return send_txt(c, "%s",
-                __(c, "\tE\tC7无法请求恢复BB角色备用数据."));
-        }
+        strncpy((char*)c->game_info.name, c->pl->bb.character.disp.dress_data.guildcard_string, sizeof(c->game_info.name));
+        c->game_info.name[31] = 0;
+
     }
     else {
-        /* Send the request to the shipgate. */
-        if (shipgate_send_cbkup_req(&ship->sg, c->guildcard, c->sec_data.slot, c->cur_block->b,
-            c->version, c->pl->v1.character.disp.dress_data.guildcard_string)) {
-            /* Send a message saying we couldn't request */
-            return send_txt(c, "%s",
-                __(c, "\tE\tC7无法请求恢复BB角色备用数据."));
-        }
+        strncpy((char*)c->game_info.name, c->pl->v1.character.disp.dress_data.guildcard_string, sizeof(c->game_info.name));
+        c->game_info.name[31] = 0;
+    }
+
+    if (shipgate_send_cbkup_req(&ship->sg, &c->game_info)) {
+        /* Send a message saying we couldn't request */
+        return send_txt(c, "%s",
+            __(c, "\tE\tC7无法请求恢复角色备用数据."));
     }
 
     return send_txt(c, "%s",

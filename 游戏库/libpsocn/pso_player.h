@@ -84,12 +84,13 @@ typedef struct bb_player_hdr {
 /* Alias some stuff from its "pso_character.h" versions to what was in
    here before... */
 
-/* Player data structures */
+/* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v1_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
 } PACKED v1_player_t;
 
+/* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v2_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
@@ -97,6 +98,7 @@ typedef struct v2_player {
     uint32_t unk4[6];
 } PACKED v2_player_t;
 
+/* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct pc_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
@@ -107,6 +109,7 @@ typedef struct pc_player {
     uint16_t autoreply[];               /* Always at least 4 bytes! */
 } PACKED pc_player_t;
 
+/* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v3_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;

@@ -155,11 +155,18 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
         fix_up_pl_iitem(l, c);
     }
 
+    c->game_info.guildcard = c->guildcard;
+    c->game_info.slot = c->sec_data.slot;
+    c->game_info.block = c->cur_block->b;
+    c->game_info.c_version = c->version;
+
+    strncpy((char*)c->game_info.name, c->pl->bb.character.disp.dress_data.guildcard_string, sizeof(c->game_info.name));
+    c->game_info.name[31] = 0;
+
     /* Try to backup their character data */
     //if (c->version != CLIENT_VERSION_BB &&
         //(c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->sec_data.slot, c->cur_block->b, 
-            c->version, c->pl->bb.character.disp.dress_data.guildcard_string, &c->pl->bb, sizeof(psocn_bb_db_char_t))) {
+        if (shipgate_send_cbkup(&ship->sg, &c->game_info, &c->pl->bb, sizeof(psocn_bb_db_char_t))) {
             DBG_LOG("备份临时数据 版本 %d", c->version);
             return rv;
         }

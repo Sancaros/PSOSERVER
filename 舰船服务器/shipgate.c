@@ -3736,8 +3736,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 //}
 
 /* Send the shipgate a character data backup request. */
-int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint8_t slot, uint32_t block,
-    uint32_t version, const char* name, const void* cdata, int len) {
+int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const void* cdata, int len) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
@@ -3753,12 +3752,12 @@ int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint8_t slot, uint32_t 
     pkt->hdr.flags = 0;
 
     /* Fill in the body. */
-    pkt->guildcard = htonl(gc);
-    pkt->slot = slot;
-    pkt->block = htonl(block);
-    pkt->c_version = htonl(version);
-    strncpy((char*)pkt->name, name, sizeof(pkt->name));
-    pkt->name[31] = 0;
+    pkt->game_info.guildcard = htonl(game_info->guildcard);
+    pkt->game_info.slot = game_info->slot;
+    pkt->game_info.block = htonl(game_info->block);
+    pkt->game_info.c_version = htonl(game_info->c_version);
+    strncpy((char*)pkt->game_info.name, game_info->name, sizeof(pkt->game_info.name));
+    pkt->game_info.name[31] = 0;
     memcpy(pkt->data, cdata, len);
 
     /* Send it away. */
@@ -3766,8 +3765,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, uint32_t gc, uint8_t slot, uint32_t 
 }
 
 /* Send the shipgate a request for character backup data. */
-int shipgate_send_cbkup_req(shipgate_conn_t* c, uint32_t gc, uint8_t slot, uint32_t block,
-    uint32_t version, const char* name) {
+int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* game_info) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
@@ -3783,12 +3781,12 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, uint32_t gc, uint8_t slot, uint3
     pkt->hdr.flags = 0;
 
     /* Fill in the body. */
-    pkt->guildcard = htonl(gc);
-    pkt->slot = slot;
-    pkt->block = htonl(block);
-    pkt->c_version = htonl(version);
-    strncpy((char*)pkt->name, name, sizeof(pkt->name));
-    pkt->name[31] = 0;
+    pkt->game_info.guildcard = htonl(game_info->guildcard);
+    pkt->game_info.slot = game_info->slot;
+    pkt->game_info.block = htonl(game_info->block);
+    pkt->game_info.c_version = htonl(game_info->c_version);
+    strncpy((char*)pkt->game_info.name, game_info->name, sizeof(pkt->game_info.name));
+    pkt->game_info.name[31] = 0;
 
     /* Send it away. */
     return send_crypt(c, sizeof(shipgate_char_bkup_pkt), sendbuf);
