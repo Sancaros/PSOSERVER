@@ -206,8 +206,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 guild.guild_data.guild_rank = 0x00000000; // ?? 应该是排行榜未完成的参数了
 
                 /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
-                guild.guild_data.guild_rewards[0] = EMPTY_STRING; //和更衣室有关
-                guild.guild_data.guild_rewards[1] = EMPTY_STRING;
+                guild.guild_data.guild_rewards[0] = 0xFFFFFFFF; //和更衣室有关
+                guild.guild_data.guild_rewards[1] = 0xFFFFFFFF;
 
                 sprintf(myquery, "INSERT INTO %s (guildcard, guild_id, guild_priv_level, "
                     "guild_rank, guild_rewards1, guild_rewards2, "

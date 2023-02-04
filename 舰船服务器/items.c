@@ -3906,7 +3906,7 @@ void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = 0x00000000;
+    item->item_id = 0xFFFFFFFF;
     item->data2_l = 0;
 }
 

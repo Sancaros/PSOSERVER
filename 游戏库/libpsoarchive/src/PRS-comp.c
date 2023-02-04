@@ -1,7 +1,7 @@
 /*
     This file is part of libpsoarchive.
 
-    ∞Ê»® (C) 2014, 2015, 2017 Sancaros
+    Copyright (C) 2014, 2015, 2017 Lawrence Sebald
 
     This library is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as
