@@ -41,6 +41,10 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
+// 当客户端发送游戏命令时, 调用此文件中的函数
+// 指令集
+// (60, 62, 6C, 6D, C9, CB).
+
 /* Forward declarations */
 int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
 int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,

@@ -27,6 +27,10 @@
 #include "ship_packets.h"
 #include "utils.h"
 
+// 当客户端发送游戏命令时, 调用此文件中的函数
+// 指令集
+// (60, 62, 6C, 6D, C9, CB).
+
 static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
     lobby_t *l = c->cur_lobby;
 

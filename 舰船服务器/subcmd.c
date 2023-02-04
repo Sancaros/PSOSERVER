@@ -37,6 +37,10 @@
 #include "shipgate.h"
 #include "quest_functions.h"
 
+// 当客户端发送游戏命令时, 调用此文件中的函数
+// 指令集
+// (60, 62, 6C, 6D, C9, CB).
+
 /* Handle a GC send packet. */
 int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt) {
 
