@@ -455,9 +455,9 @@ static int handle_item(ship_client_t *c, const char *params) {
     c->new_item.data2_l = item[3];
 
     return send_txt(c, "%s %s %s",
-        __(c, "\tE\tC7物品"),
+        __(c, "\tE\tC8物品"),
         item_get_name(&c->new_item, c->version),
-        __(c, "\tE\tC7next_item 设置成功."));
+        __(c, "\tE\tC6new_item 设置成功."));
 }
 
 /* 用法 /item4 item4 */
@@ -1339,7 +1339,7 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
 
         if(!iitem) {
             pthread_mutex_unlock(&l->mutex);
-            return send_txt(c, "%s", __(c, "\tE\tC7No space for new item."));
+            return send_txt(c, "%s", __(c, "\tE\tC7新物品空间不足."));
         }
     }
     else {

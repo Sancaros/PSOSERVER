@@ -2481,7 +2481,7 @@ static int lobby_clients_lua(lua_State *l) {
             else
                 lua_pushnil(l);
 
-            lua_rawseti(l, -2, i + 1);
+            lua_rawseti(l, -2, (lua_Integer)(i + 1));
         }
     }
     else {

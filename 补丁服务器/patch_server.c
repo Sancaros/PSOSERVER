@@ -326,7 +326,7 @@ static psocn_srvconfig_t* load_srv_config(void) {
 static int read_from_client(patch_client_t* c) {
     ssize_t sz;
     int pkt_sz = c->pkt_sz, pkt_cur = c->pkt_cur, rv = 0;
-    pkt_header_t tmp_hdr;
+    pkt_header_t tmp_hdr = { 0 };
 
     if (!c->recvbuf) {
         /* Read in a new header... */
@@ -487,10 +487,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 /* Connection handling loop... */
 static void run_server(int sockets[NUM_PORTS]) {
-    fd_set readfds, writefds, exceptfds;
-    struct timeval timeout;
+    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
+    struct timeval timeout = { 0 };
     socklen_t len;
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     int nfds, sock, j;
@@ -880,7 +880,7 @@ void UnhookHandler() {
 
 int __cdecl main(int argc, char** argv) {
     int i;
-    int sockets[NUM_PORTS];
+    int sockets[NUM_PORTS] = { 0 };
     WSADATA winsock_data;
     //patch_config_t* cfg;
 

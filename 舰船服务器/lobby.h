@@ -109,15 +109,6 @@ struct lobby {
     uint32_t type;
     uint32_t flags;
 
-    uint32_t item_count;
-    uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
-    fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
-
-    uint32_t item_player_id[12];
-    //uint32_t item_next_id[12];
-    uint32_t item_next_lobby_id;
-    iitem_t item_next_drop;
-
     int max_clients;
     int num_clients;
     int version;
@@ -151,6 +142,12 @@ struct lobby {
     char passwd[65];
     uint32_t maps[0x20];
     uint32_t bbmaps[128]; // ·¿¼äµØÍ¼
+
+    uint32_t item_count;
+    uint32_t item_player_id[12];
+    uint32_t item_next_lobby_id;
+    uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
+    fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
 
     ship_client_t *clients[LOBBY_MAX_CLIENTS];
 

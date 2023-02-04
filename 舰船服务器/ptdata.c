@@ -1129,7 +1129,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 //[2022年09月07日 13:04:24:334] 物品(3814): GC 42004063 请求章节 1 难度 0 区域 1 ptID 10 emptID 0 随机 0 掉落
 //[2022年09月07日 13:04:24:347] 调试(ptdata.c 1123): 循环 2 < 3 最终掉率 -8 -21 (掉率随机值 -21 物品掉率 13 物品类型 9  物品24位 00000A00 初始掉率 39)
 //[2022年09月07日 13:04:24:361] 调试(ptdata.c 1131): 循环 2 < 3 最终掉率 -8 -34 (掉率随机值 -34 物品掉率 13 物品类型 9  物品24位 00000A00 初始掉率 39)
-            DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
+            //DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
 
             /* Save off the grind pattern to use... */
             warea = gptrn[i];
@@ -1137,7 +1137,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
         }
     }
     //[2022年09月07日 12:51:56:073] 调试(ptdata.c 1131): 3 < 3 (-23-13-00000000-39)
-    DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
+    //DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
 
     /* Sanity check... Once again, this shouldn't happen! */
     if (!item[0]) {
@@ -2178,7 +2178,7 @@ static int generate_meseta(int min, int max, uint32_t item[4],
 static int check_and_send(ship_client_t *c, lobby_t *l, uint32_t item[4],
                           int area, subcmd_itemreq_t *req, int csr) {
     uint32_t v;
-    iitem_t iitem;
+    iitem_t iitem = { 0 };
     int section;
     uint8_t stars = 0;
 
@@ -2279,11 +2279,15 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
             return 0;
     }
 
-    pthread_mutex_lock(&c->mutex);
     c->new_item.data_l[0] = item[0];
     c->new_item.data_l[1] = item[1];
     c->new_item.data_l[2] = item[2];
+    c->new_item.item_id = generate_item_id(l, c->client_id);
     c->new_item.data2_l = item[3];
+
+    print_item_data(c, &c->new_item);
+
+    pthread_mutex_lock(&c->mutex);
     it = lobby_add_new_item_locked(l, &c->new_item);
     rv = subcmd_send_bb_lobby_item(l, req, it);
     pthread_mutex_unlock(&c->mutex);
@@ -2298,7 +2302,7 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
     int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
     pt_v2_entry_t *ent;
     uint32_t rnd;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     int area, rarea, do_rare = 1;
     struct mt19937_state *rng = &c->cur_block->rng;
     uint16_t mid;
@@ -2594,7 +2598,7 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     map_object_t *obj;
     uint32_t rnd, t1, t2;
     int area, do_rare = 1;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     float f1, f2;
     struct mt19937_state *rng = &c->cur_block->rng;
     int csr = 0;
@@ -2871,7 +2875,7 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
     int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
     pt_v3_entry_t *ent;
     uint32_t rnd;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     int area, darea, do_rare = 1;
     struct mt19937_state *rng = &c->cur_block->rng;
     uint16_t mid;
@@ -3226,7 +3230,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     map_object_t *obj;
     uint32_t rnd, t1, t2;
     int area, darea, do_rare = 1;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     float f1, f2;
     struct mt19937_state *rng = &c->cur_block->rng;
     int csr = 0;
@@ -3573,7 +3577,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     int section = l->clients[l->leader_id]->pl->bb.character.disp.dress_data.section;
     pt_bb_entry_t*ent;
     uint32_t rnd;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     int area, do_rare = 1;
     struct mt19937_state *rng = &c->cur_block->rng;
     uint16_t mid;
@@ -3895,7 +3899,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     map_object_t *obj;
     uint32_t rnd, t1, t2;
     int area, do_rare = 1;
-    uint32_t item[4];
+    uint32_t item[4] = { 0 };
     float f1, f2;
     struct mt19937_state *rng = &c->cur_block->rng;
     int csr = 0;

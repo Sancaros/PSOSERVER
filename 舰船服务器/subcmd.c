@@ -784,12 +784,11 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
     gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
     gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
-    c->new_item.item_id = LE32((r | 0x06010100));
     gen.data.item.data2_l = LE32(c->new_item.data2_l);
     gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
-    gen.data.item.item_id = c->new_item.item_id;
+    gen.data.item.item_id = LE32((r | 0x06010100));
 
     /* Send the packet to every client in the lobby. */
     for(i = 0; i < l->max_clients; ++i) {

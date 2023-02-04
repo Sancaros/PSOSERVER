@@ -111,7 +111,7 @@ static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to
         return -1;
 
     /* 填充数据并准备发送 */
-    new_item.hdr.pkt_len = LE16(0x0024);
+    new_item.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
     new_item.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     new_item.hdr.flags = 0;
     new_item.shdr.type = SUBCMD60_CREATE_ITEM;
@@ -229,6 +229,82 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
     }
 
     return 0;
+}
+
+static int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
+    subcmd_bb_itemgen_t gen = { 0 };
+    int r = LE16(req->request_id);
+    lobby_t* l = c->cur_lobby;
+
+    /* 填充数据并准备发送. */
+    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.flags = 0;
+    gen.hdr.pkt_len = LE16(0x30);
+    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.size = 0x0B;
+    gen.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = 0x02;
+    gen.data.request_id = req->request_id;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE32(0x00000010);
+
+    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
+    gen.data.item.data2_l = LE32(c->new_item.data2_l);
+    gen.data.item2 = LE32(0x00000002);
+
+    /* Obviously not "right", but it works though, so we'll go with it. */
+    gen.data.item.item_id = LE32((r | 0x06010100));
+
+    /* Send the packet to every client in the lobby. */
+    subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
+
+    /* Clear this out. */
+    clear_item(&c->new_item);
+
+    return 0;
+}
+
+static int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest) {
+    uint32_t mid = LE16(req->request_id);
+    uint32_t pti = req->pt_index;
+    lobby_t* l = c->cur_lobby;
+    uint32_t qdrop = 0xFFFFFFFF;
+
+    if (pti != 0x30 && l->mids)
+        qdrop = quest_search_enemy_list(mid, l->mids, l->num_mids, 0);
+    if (qdrop == 0xFFFFFFFF && l->mtypes)
+        qdrop = quest_search_enemy_list(pti, l->mtypes, l->num_mtypes, 0);
+
+    /* If we found something, the version matters here. Basically, we only care
+       about the none option on DC/PC, as rares do not drop in quests. On GC,
+       we have to block drops on all options other than free, since we have no
+       control over the drop once we send it to the leader.
+       如果我们发现了什么，版本在这里很重要。基本上，我们只关心DC/PC上的“无”选项，
+       因为稀有物种不会放弃任务。在GC上，我们必须阻止除免费外的所有选项上的丢弃，
+       因为一旦我们将丢弃发送给领导者，我们就无法控制丢弃。*/
+    if (qdrop != PSOCN_QUEST_ENDROP_FREE && qdrop != 0xFFFFFFFF) {
+        switch (l->version) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+        case CLIENT_VERSION_BB:
+            if (qdrop == PSOCN_QUEST_ENDROP_NONE)
+                return 0;
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            return 0;
+        }
+    }
+
+    /* If we haven't handled it, we're not supposed to, so send it on to the
+       leader. */
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)req);
 }
 
 int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
@@ -579,26 +655,26 @@ int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
-    //if (type != SUBCMD60_MOVE_FAST && type != SUBCMD60_MOVE_SLOW) {
-    //    switch (l->type) {
+    if (type != SUBCMD60_MOVE_FAST && type != SUBCMD60_MOVE_SLOW) {
+        switch (l->type) {
 
-    //    case LOBBY_TYPE_LOBBY:
-    //        DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
+        case LOBBY_TYPE_LOBBY:
+            DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+            break;
 
-    //    case LOBBY_TYPE_GAME:
-    //        if (l->flags & LOBBY_FLAG_QUESTING) {
-    //            DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        }
-    //        else
-    //            DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
+        case LOBBY_TYPE_GAME:
+            if (l->flags & LOBBY_FLAG_QUESTING) {
+                DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+            }
+            else
+                DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+            break;
 
-    //    default:
-    //        DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-    //        break;
-    //    }
-    //}
+        default:
+            DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+            break;
+        }
+    }
 
     sizecheck *= 4;
     sizecheck += 8;
@@ -665,7 +741,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
-    //DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
+    DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
 
     //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
@@ -1023,6 +1099,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
 
     /* Try to remove the item from the lobby... */
     found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
+
     if (found < 0) {
         return -1;
     }
@@ -1072,93 +1149,10 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
 
-static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
-    subcmd_bb_itemgen_t gen = { 0 };
-    int r = LE16(req->request_id);
-    int i;
+static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, subcmd_bb_itemreq_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    int rv = 0;
 
-    /* 填充数据并准备发送. */
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    gen.hdr.flags = 0;
-    gen.hdr.pkt_len = LE16(0x30);
-    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
-    gen.shdr.size = 0x0B;
-    gen.shdr.unused = 0x0000;
-    gen.data.area = req->area;
-    gen.data.from_enemy = 0x02;
-    gen.data.request_id = req->request_id;
-    gen.data.x = req->x;
-    gen.data.z = req->z;
-    gen.data.unk1 = LE32(0x00000010);
-
-    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
-    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
-    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
-    c->new_item.item_id = LE32((r | 0x06010100));
-    gen.data.item.data2_l = LE32(c->new_item.data2_l);
-    gen.data.item2 = LE32(0x00000002);
-
-    /* Obviously not "right", but it works though, so we'll go with it. */
-    gen.data.item.item_id = c->new_item.item_id;
-
-    /* Send the packet to every client in the lobby. */
-    for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i]) {
-            send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&gen);
-        }
-    }
-
-    /* Clear this out. */
-    clear_item(&c->new_item);
-
-    return 0;
-}
-
-static int handle_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest) {
-    uint32_t mid = LE16(req->request_id);
-    uint32_t pti = req->pt_index;
-    lobby_t* l = c->cur_lobby;
-    uint32_t qdrop = 0xFFFFFFFF;
-
-    if (pti != 0x30 && l->mids)
-        qdrop = quest_search_enemy_list(mid, l->mids, l->num_mids, 0);
-    if (qdrop == 0xFFFFFFFF && l->mtypes)
-        qdrop = quest_search_enemy_list(pti, l->mtypes, l->num_mtypes, 0);
-
-    /* If we found something, the version matters here. Basically, we only care
-       about the none option on DC/PC, as rares do not drop in quests. On GC,
-       we have to block drops on all options other than free, since we have no
-       control over the drop once we send it to the leader.
-       如果我们发现了什么，版本在这里很重要。基本上，我们只关心DC/PC上的“无”选项，
-       因为稀有物种不会放弃任务。在GC上，我们必须阻止除免费外的所有选项上的丢弃，
-       因为一旦我们将丢弃发送给领导者，我们就无法控制丢弃。*/
-    if (qdrop != PSOCN_QUEST_ENDROP_FREE && qdrop != 0xFFFFFFFF) {
-        switch (l->version) {
-        case CLIENT_VERSION_DCV1:
-        case CLIENT_VERSION_DCV2:
-        case CLIENT_VERSION_PC:
-        case CLIENT_VERSION_BB:
-            if (qdrop == PSOCN_QUEST_ENDROP_NONE)
-                return 0;
-            break;
-
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
-            return 0;
-        }
-    }
-
-    /* If we haven't handled it, we're not supposed to, so send it on to the
-       leader. */
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)req);
-}
-
-static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, lobby_t* l, subcmd_bb_itemreq_t* pkt) {
-    //lobby_t* l = c->cur_lobby;
-      /*[2022年08月23日 00:55 : 07 : 571] 错误(402) : GC 42004063 发送损坏的数据指令 0x60!数据大小 06
-        (00000000)   20 00 62 00 00 00 00 00  60 06 00 00 01 05 72 00.b.....`.....r.
-        (00000010)   60 EA 60 43 4B 07 A1 43  0B 00 00 00 01 E7 E7 1E    `.`CK..C........*/
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
@@ -1171,51 +1165,27 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, lobby_t* l, su
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
-
+    
     if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        return handle_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
+        rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
-        return l->dropfunc(c, l, pkt);
+        rv = l->dropfunc(c, l, pkt);
     }
     else if ((l->num_mtypes || l->num_mids) &&
         (l->flags & LOBBY_FLAG_QUESTING)) {
-        return handle_bb_quest_itemreq(c, (subcmd_bb_itemreq_t*)pkt, d);
+        rv = subcmd_send_bb_quest_itemreq(c, (subcmd_bb_itemreq_t*)pkt, d);
     }
-    else {
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-    }
+    else
+        rv = send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 
-    //DBG_LOG("%s", c_cmd_name(pkt->hdr.pkt_type, 0));
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-    //return l->dropfunc(c, l, pkt);
-    return -1;
+    return rv;
 }
 
-static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, lobby_t* l, subcmd_bb_bitemreq_t* pkt) {
-    //lobby_t* l = c->cur_lobby;
-      /*[2022年08月23日 00:54 : 27 : 942] 调试(836) : BB处理 GC 42004063 62 / 6D指令 : 0xA2
-        ( 00000000 )   30 00 62 00 00 00 00 00  A2 0A 80 3F 01 30 80 00    0.b........ ? .0..
-        ( 00000010 )   29 56 EA 43 61 E8 CF 43  10 00 01 00 01 E5 E7 1E    )V.Ca..C........
-        ( 00000020 )   00 00 80 3F 00 00 00 00  00 00 00 00 00 00 00 00    ... ? ............
+static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, subcmd_bb_bitemreq_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int rv = 0;
 
-        [2022年08月23日 00:54 : 30 : 647] 调试(836) : BB处理 GC 42004063 62 / 6D指令 : 0xA2
-        ( 00000000 )   30 00 62 00 00 00 00 00  A2 0A 80 3F 01 30 7F 00    0.b........ ? .0..
-        ( 00000010 )   29 56 E1 43 61 68 D2 43  10 00 01 00 01 E4 E7 1E    )V.Cah.C........
-        ( 00000020 )   00 00 80 3F 00 00 00 00  00 00 00 00 00 00 00 00    ... ? ............
-
-        [2022年08月23日 01:03:14:944] 调试(845): BB处理 GC 42004063 62/6D指令: 0xA2
-        生成 盾 shield
-        ( 00000000 )   30 00 62 00 00 00 00 00  A2 0A 80 3F 01 30 36 00    0.b........?.06.
-        ( 00000010 )   76 48 E2 43 85 52 C1 C3  04 00 01 00 01 71 E7 1E    vH.C.R.......q..
-        ( 00000020 )   02 00 80 3F FF 00 00 00  00 00 00 00 01 00 00 00    ...?............
-
-        [2022年08月23日 01:03:11:011] 调试(845): BB处理 GC 42004063 62/6D指令: 0xA2
-        生成 铠甲 armor
-        ( 00000000 )   30 00 62 00 00 00 00 00  A2 0A 80 3F 01 30 37 00    0.b........?.07.
-        ( 00000010 )   5F 1C DA 43 57 02 C8 C3  04 00 01 00 01 EB E7 1E    _..CW...........
-        ( 00000020 )   02 00 80 3F FF 00 00 00  00 00 00 00 01 00 00 00    ...?............
-        */
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
             c->guildcard);
@@ -1230,23 +1200,19 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, lobby_t* l, s
     }
 
     if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        return handle_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
+        rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
-        return l->dropfunc(c, l, pkt);
+        rv = l->dropfunc(c, l, pkt);
     }
     else if ((l->num_mtypes || l->num_mids) &&
         (l->flags & LOBBY_FLAG_QUESTING)) {
-        return handle_bb_quest_itemreq(c, (subcmd_bb_itemreq_t*)pkt, d);
+        rv = subcmd_send_bb_quest_itemreq(c, (subcmd_bb_itemreq_t*)pkt, d);
     }
-    else {
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-    }
+    else
+        rv = send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 
-    //DBG_LOG("%s", c_cmd_name(pkt->hdr.pkt_type, 0));
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-    //return l->dropfunc(c, l, pkt);
-    return -1;
+    return rv;
 }
 
 static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t* pkt) {
@@ -2066,11 +2032,11 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD62_ITEMREQ:
-        rv = handle_bb_item_req(c, dest, l, (subcmd_bb_itemreq_t*)pkt);
+        rv = handle_bb_item_req(c, dest, (subcmd_bb_itemreq_t*)pkt);
         break;
 
     case SUBCMD62_BITEMREQ:
-        rv = handle_bb_bitem_req(c, dest, l, (subcmd_bb_bitemreq_t*)pkt);
+        rv = handle_bb_bitem_req(c, dest, (subcmd_bb_bitemreq_t*)pkt);
         break;
 
     case SUBCMD62_TRADE:
@@ -4401,7 +4367,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
         }
 
         c->bb_pl->inv.item_count -= found;
-        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+        //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
     }
     else {
         /* Remove the meseta from the character data */
@@ -4418,10 +4384,9 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
         c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
     }
 
-    /* Now we have two packets to send on. First, send the one telling everyone
-       that there's an item dropped. Then, send the one removing the item from
-       the client's inventory. The first must go to everybody, the second to
-       everybody except the person who sent this packet in the first place. */
+    /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
+    然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
+    第二个必须发给除了最初发送这个包裹的人以外的所有人. */
     subcmd_send_bb_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
 
     /* 数据包完成, 发送至游戏房间. */

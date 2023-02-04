@@ -3821,6 +3821,9 @@ const char* item_get_name(item_t* item, int version) {
         }
         break;
 
+    case ITEM_TYPE_MESETA: /* 美赛塔 */
+        break;
+
     default:
         ERR_LOG("未找到物品类型");
         break;
@@ -3834,8 +3837,8 @@ const char* item_get_name(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_item_data(ship_client_t* c, item_t* item) {
-    ITEM_LOG("物品数据: %s (ID %d) %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-        item_get_name(item, c->version), item->item_id, 
+    ITEM_LOG("物品数据: %s (ID %d / %08X) %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+        item_get_name(item, c->version), item->item_id, item->item_id,
         item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
         item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
         item->data_b[8], item->data_b[9], item->data_b[10], item->data_b[11],
@@ -3843,46 +3846,6 @@ void print_item_data(ship_client_t* c, item_t* item) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//释放房间物品内存
-uint32_t free_lobby_item(lobby_t* l) {
-    uint32_t ch, ch2, oldest_item;
-
-    ch2 = oldest_item = EMPTY_STRING;
-
-    // 如果物品ID在当前索引为0,则直接返回
-    if ((l->item_count < MAX_LOBBY_SAVED_ITEMS) && (l->item_id_to_lobby_item[l->item_count].inv_item.data.item_id == 0))
-        return l->item_count;
-
-    // 扫描gameItem数组中是否有可用的物品槽 
-    for (ch = 0; ch < MAX_LOBBY_SAVED_ITEMS; ch++) {
-        if (l->item_id_to_lobby_item[ch].inv_item.data.item_id == 0) {
-            ch2 = ch;
-            break;
-        }
-    }
-
-    if (ch2 != EMPTY_STRING)
-        return ch2;
-
-    // 库存内存不足！是时候删除游戏中最旧的掉落物品了
-    for (ch = 0; ch < MAX_LOBBY_SAVED_ITEMS; ch++) {
-        if ((l->item_id_to_lobby_item[ch].inv_item.data.item_id < oldest_item) && 
-            (l->item_id_to_lobby_item[ch].inv_item.data.item_id >= 0x810000)) {
-            ch2 = ch;
-            oldest_item = l->item_id_to_lobby_item[ch].inv_item.data.item_id;
-        }
-    }
-
-    if (ch2 != EMPTY_STRING) {
-        l->item_id_to_lobby_item[ch2].inv_item.data.item_id = 0; // Item deleted. 物品删除
-        return ch2;
-    }
-
-    ERR_LOG("请注意:房间背包故障!!!!");
-
-    return 0;
-}
 
 /* 初始化房间物品列表数据 */
 void clear_lobby_item(lobby_t* l) {
@@ -3943,7 +3906,7 @@ void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = EMPTY_STRING;
+    item->item_id = 0x00000000;
     item->data2_l = 0;
 }
 
@@ -4038,11 +4001,52 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     return 1;
 }
 
+//释放房间物品库存内存,并在房间物品空余库存中生成新的物品存储位置
+uint32_t free_lobby_item(lobby_t* l) {
+    uint32_t i, rv, old_item_id;
+
+    rv = old_item_id = EMPTY_STRING;
+
+    // 如果物品ID在当前索引为0,则直接返回
+    if ((l->item_count < MAX_LOBBY_SAVED_ITEMS) && (l->item_id_to_lobby_item[l->item_count].inv_item.data.item_id == 0))
+        return l->item_count;
+
+    // 扫描gameItem数组中是否有可用的物品槽 
+    for (i = 0; i < MAX_LOBBY_SAVED_ITEMS; i++) {
+        if (l->item_id_to_lobby_item[i].inv_item.data.item_id == 0) {
+            rv = i;
+            break;
+        }
+    }
+
+    if (rv != EMPTY_STRING)
+        return rv;
+
+    // 库存内存不足！是时候删除游戏中最旧的掉落物品了
+    for (i = 0; i < MAX_LOBBY_SAVED_ITEMS; i++) {
+        if ((l->item_id_to_lobby_item[i].inv_item.data.item_id < old_item_id) &&
+            (l->item_id_to_lobby_item[i].inv_item.data.item_id >= 0x810000)) {
+            rv = i;
+            old_item_id = l->item_id_to_lobby_item[i].inv_item.data.item_id;
+        }
+    }
+
+    if (rv != EMPTY_STRING) {
+        l->item_id_to_lobby_item[rv].inv_item.data.item_id = 0; // Item deleted. 物品删除
+        return rv;
+    }
+
+    ERR_LOG("请注意:房间背包故障!!!!");
+
+    return 0;
+}
+
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     if (client_id < l->max_clients) {
         return l->item_player_id[client_id]++;
     }
+
     return l->item_next_lobby_id++;
 }
 
@@ -4091,7 +4095,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
         return -1;
     }
 
-    DBG_LOG("新增背包前 %d", inv_count);
+    //DBG_LOG("新增背包前 %d", inv_count);
 
     /* Look for the item in question. If it exists, we're in trouble! */
     for(i = 0; i < inv_count; ++i) {
@@ -4115,7 +4119,7 @@ int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
     /* Copy the new item in at the end. */
     inv[inv_count++] = *it;
 
-    DBG_LOG("新增背包后 %d", inv_count);
+    //DBG_LOG("新增背包后 %d", inv_count);
 
     return rv;
 }
