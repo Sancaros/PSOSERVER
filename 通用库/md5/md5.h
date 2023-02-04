@@ -1,7 +1,7 @@
 /**
  * \file md5.h
  *
- *  Copyright (C) 2006-2009, Paul Bakker <polarssl_maintainer at polarssl.org>
+ *  ∞Ê»® (C) 2006-2009, Paul Bakker <polarssl_maintainer at polarssl.org>
  *  All rights reserved.
  *
  *  Joined copyright on original XySSL code with: Christophe Devine

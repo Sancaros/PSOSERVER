@@ -1635,10 +1635,10 @@ static int client_dropItem_lua(lua_State *l) {
         p2.data.data_l[0] = LE32(item[0]);
         p2.data.data_l[1] = LE32(item[1]);
         p2.data.data_l[2] = LE32(item[2]);
-        p2.data.item_id = LE32(lb->next_game_item_id);
+        p2.data.item_id = LE32(lb->item_next_lobby_id);
         p2.data.data2_l = LE32(item[3]);
         p2.two = LE32(0x00000002);
-        ++lb->next_game_item_id;
+        ++lb->item_next_lobby_id;
 
         lobby_send_pkt_dc(lb, NULL, (dc_pkt_hdr_t *)&p2, 0);
         lua_pushinteger(l, 0);

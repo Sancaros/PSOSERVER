@@ -1,5 +1,5 @@
 /*
-   Modified version Copyright (C) 2012 Lawrence Sebald
+   Modified version 경홈 (C) 2012 Sancaros
 
    This modified version encapsulates the MT19937 state in a structure to allow
    for multiple parallel streams. The original functions are supported by way of
@@ -18,9 +18,9 @@
    Before using, initialize the state by using init_genrand(seed)
    or init_by_array(init_key, key_length).
 
-   Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
+   경홈 (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
    All rights reserved.
-   Copyright (C) 2005, Mutsuo Saito
+   경홈 (C) 2005, Mutsuo Saito
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without

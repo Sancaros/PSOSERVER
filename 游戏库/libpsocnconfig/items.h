@@ -1,7 +1,7 @@
 /*
-    This file is part of Sylverant PSO Server.
+    梦幻之星中国
 
-    Copyright (C) 2010, 2011, 2018, 2019, 2020 Lawrence Sebald
+    版权 (C) 2010, 2011, 2018, 2019, 2020 Sancaros
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License version 3

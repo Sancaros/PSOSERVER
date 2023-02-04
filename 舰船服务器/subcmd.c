@@ -781,14 +781,15 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     gen.data.z = req->z;
     gen.data.unk1 = LE16(0x00000010);
 
-    gen.data.item.data_l[0] = LE32(c->next_item[0]);
-    gen.data.item.data_l[1] = LE32(c->next_item[1]);
-    gen.data.item.data_l[2] = LE32(c->next_item[2]);
-    gen.data.item.data2_l = LE32(c->next_item[3]);
+    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
+    c->new_item.item_id = LE32((r | 0x06010100));
+    gen.data.item.data2_l = LE32(c->new_item.data2_l);
     gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
-    gen.data.item.item_id = LE32((r | 0x06010100));
+    gen.data.item.item_id = c->new_item.item_id;
 
     /* Send the packet to every client in the lobby. */
     for(i = 0; i < l->max_clients; ++i) {
@@ -798,7 +799,7 @@ static int handle_gm_itemreq(ship_client_t *c, subcmd_itemreq_t *req) {
     }
 
     /* Clear this out. */
-    c->next_item[0] = c->next_item[1] = c->next_item[2] = c->next_item[3] = 0;
+    clear_item(&c->new_item);
 
     return 0;
 }
@@ -952,7 +953,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
     /* If we get here, either the game is not in legit mode, or the item is
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
-    l->highest_item[c->client_id] = (uint16_t)LE32(pkt->data.item_id);
+    l->item_player_id[c->client_id] = (uint16_t)LE32(pkt->data.item_id);
     v = LE32(pkt->data.data_l[0]);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
@@ -1356,7 +1357,7 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
         return -1;
 
     /* Make a note of the item ID, and add to the inventory */
-    l->highest_item[c->client_id] = LE32(pkt->data.sitem_id);
+    l->item_player_id[c->client_id] = LE32(pkt->data.sitem_id);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -2588,7 +2589,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
                首先，如果大厅不处于合法模式， 并且GM使用了/item。
                第二，如果大厅具有投递功能（用于服务器端投递）。
                第三，如果有一个任务正在进行修改的下降. */
-            if(c->next_item[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+            if(c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
                 rv = handle_gm_itemreq(c, (subcmd_itemreq_t *)pkt);
             }
             else if(l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
@@ -2893,8 +2894,8 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.data.item.data2_l = LE32(item[3]);
     gen.data.item2 = LE32(0x00000002);
 
-    gen.data.item.item_id = LE32(l->next_game_item_id);
-    ++l->next_game_item_id;
+    gen.data.item.item_id = LE32(l->item_next_lobby_id);
+    ++l->item_next_lobby_id;
 
     /* Send the packet to every client in the lobby. */
     for(i = 0; i < l->max_clients; ++i) {

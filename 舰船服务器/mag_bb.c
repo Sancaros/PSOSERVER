@@ -765,7 +765,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	uint16_t* ft;
 	int16_t mIQ, mDefense, mPower, mDex, mMind;
 
-	if (item_id != 0xFFFFFFFF) {
+	if (item_id != EMPTY_STRING) {
 		if (c->mode > 0) {
 			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
 				if (c->pl->bb.inv.iitems[i].data.item_id == item_id) {
@@ -841,7 +841,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 
 		/* Remove the item from the user's inventory. */
 		if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
-			item_id, 0xFFFFFFFF) < 1) {
+			item_id, EMPTY_STRING) < 1) {
 			ERR_LOG("无法从玩家背包中移除物品!");
 			return -4;
 		}

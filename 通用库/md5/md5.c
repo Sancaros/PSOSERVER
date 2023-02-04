@@ -1,7 +1,7 @@
 /*
  *  RFC 1321 compliant MD5 implementation
  *
- *  Copyright (C) 2006-2009, Paul Bakker <polarssl_maintainer at polarssl.org>
+ *  ∞Ê»® (C) 2006-2009, Paul Bakker <polarssl_maintainer at polarssl.org>
  *  All rights reserved.
  *
  *  Joined copyright on original XySSL code with: Christophe Devine

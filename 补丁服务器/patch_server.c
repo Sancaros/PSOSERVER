@@ -18,7 +18,7 @@
 /*  To give credit where credit is due... This program is based in large part
     upon information obtained by reading the source of Tethealla Patch Server
     (Sylverant started as a port of Tethealla to *nix). Tethealla Patch Server
-    is Copyright (C) 2008 Terry Chatman Jr. and is also released under the
+    is 版权 (C) 2008 Terry Chatman Jr. and is also released under the
     GPLv3. This code however isn't directly started from that code, I wrote
     梦幻之星中国 补丁服务器 based on what I learned from reading the code, not
     from the code itself (I documented it (and studied PSOBB's responses to
@@ -120,7 +120,7 @@ static void rehash_files();
 /* Print information about this program to stdout. */
 static void print_program_info() {
     printf("%s version %s\n", PATCH_SERVER_VERSION, PATCH_SERVER_VERSION);
-    printf("Copyright (C) 2022 Sancaros\n\n");
+    printf("版权 (C) 2022 Sancaros\n\n");
     printf("This program is free software: you can redistribute it and/or\n"
         "modify it under the terms of the GNU Affero General Public\n"
         "License version 3 as published by the Free Software Foundation.\n\n"

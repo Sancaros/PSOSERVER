@@ -317,9 +317,9 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->block = block;
 
     if(version == CLIENT_VERSION_BB)
-        l->next_game_item_id = 0x00810000;
+        l->item_next_lobby_id = 0x00810000;
     else
-        l->next_game_item_id = 0xF0000000;
+        l->item_next_lobby_id = 0xF0000000;
 
     l->leader_id = 1;
     l->difficulty = difficulty;
@@ -1936,7 +1936,7 @@ int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
 ///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
 //   before calling this. Returns NULL if there is no space in the lobby's
 //   inventory for the new item. */
-//iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]) {
+//iitem_t *lobby_add_new_item_locked(lobby_t *l, uint32_t item_data[4]) {
 //    lobby_item_t *item;
 //
 //    /* Sanity check... */
@@ -1949,19 +1949,19 @@ int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
 //    memset(item, 0, sizeof(lobby_item_t));
 //
 //    /* Copy the item data in. */
-//    item->d.data.item_id = LE32(l->next_game_item_id);
+//    item->d.data.item_id = LE32(l->item_next_lobby_id);
 //    item->d.data.data_l[0] = LE32(item_data[0]);
 //    item->d.data.data_l[1] = LE32(item_data[1]);
 //    item->d.data.data_l[2] = LE32(item_data[2]);
 //    item->d.data.data2_l = LE32(item_data[3]);
 //
 //    /* Increment the item ID, add it to the queue, and return the new item */
-//    ++l->next_game_item_id;
+//    ++l->item_next_lobby_id;
 //    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
 //    return &item->d;
 //}
 //
-//iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *it) {
+//iitem_t *lobby_add_item_locked(lobby_t *l, iitem_t *it) {
 //    lobby_item_t *item;
 //
 //    /* Sanity check... */

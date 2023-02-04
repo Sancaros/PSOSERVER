@@ -1,7 +1,7 @@
 /*
-    This file is part of Sylverant PSO Server.
+    梦幻之星中国
 
-    Copyright (C) 2010, 2011, 2014, 2015, 2016, 2018, 2019, 2020 Lawrence Sebald
+    版权 (C) 2010, 2011, 2014, 2015, 2016, 2018, 2019, 2020 Sancaros
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License version 3
@@ -972,7 +972,7 @@ int psocn_read_limits(const char *f, psocn_limits_t **l) {
 
     /* Set the default behavior for photon blasts/colors */
     rv->default_cpb = rv->default_rpb = rv->default_lpb = 0xFF;
-    rv->default_colors = 0xFFFFFFFF;
+    rv->default_colors = EMPTY_STRING;
     rv->def_min_percent_v1 = INT_MIN;
     rv->def_max_percent_v1 = INT_MAX;
     rv->def_min_hit_v1 = INT_MIN;

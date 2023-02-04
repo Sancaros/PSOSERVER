@@ -157,9 +157,9 @@ struct ship_client {
     uint32_t arrow_color;
     uint32_t blocklist_size;
     uint32_t option_flags;
-    //uint32_t play_time;
 
-    uint32_t next_item[4];
+    //uint32_t next_item[4];
+    item_t new_item;
     uint32_t ignore_list[CLIENT_IGNORE_LIST_SIZE];
     uint32_t blacklist[CLIENT_BLACKLIST_SIZE];
 

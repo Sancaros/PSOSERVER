@@ -2280,7 +2280,11 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
     }
 
     pthread_mutex_lock(&c->mutex);
-    it = lobby_add_item_locked(l, item);
+    c->new_item.data_l[0] = item[0];
+    c->new_item.data_l[1] = item[1];
+    c->new_item.data_l[2] = item[2];
+    c->new_item.data2_l = item[3];
+    it = lobby_add_new_item_locked(l, &c->new_item);
     rv = subcmd_send_bb_lobby_item(l, req, it);
     pthread_mutex_unlock(&c->mutex);
 

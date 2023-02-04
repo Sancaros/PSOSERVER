@@ -369,16 +369,16 @@ typedef struct pmt_mag_bb {
 static pmt_weapon_v2_t** weapons = NULL;
 static uint32_t* num_weapons = NULL;
 static uint32_t num_weapon_types = 0;
-static uint32_t weapon_lowest = 0xFFFFFFFF;
+static uint32_t weapon_lowest = EMPTY_STRING;
 
 static pmt_guard_v2_t** guards = NULL;
 static uint32_t* num_guards = NULL;
 static uint32_t num_guard_types = 0;
-static uint32_t guard_lowest = 0xFFFFFFFF;
+static uint32_t guard_lowest = EMPTY_STRING;
 
 static pmt_unit_v2_t* units = NULL;
 static uint32_t num_units = 0;
-static uint32_t unit_lowest = 0xFFFFFFFF;
+static uint32_t unit_lowest = EMPTY_STRING;
 
 static uint8_t* star_table = NULL;
 static uint32_t star_max = 0;
@@ -392,16 +392,16 @@ static uint8_t unit_max_stars = 0;
 static pmt_weapon_gc_t** weapons_gc = NULL;
 static uint32_t* num_weapons_gc = NULL;
 static uint32_t num_weapon_types_gc = 0;
-static uint32_t weapon_lowest_gc = 0xFFFFFFFF;
+static uint32_t weapon_lowest_gc = EMPTY_STRING;
 
 static pmt_guard_gc_t** guards_gc = NULL;
 static uint32_t* num_guards_gc = NULL;
 static uint32_t num_guard_types_gc = 0;
-static uint32_t guard_lowest_gc = 0xFFFFFFFF;
+static uint32_t guard_lowest_gc = EMPTY_STRING;
 
 static pmt_unit_gc_t* units_gc = NULL;
 static uint32_t num_units_gc = 0;
-static uint32_t unit_lowest_gc = 0xFFFFFFFF;
+static uint32_t unit_lowest_gc = EMPTY_STRING;
 
 static uint8_t* star_table_gc = NULL;
 static uint32_t star_max_gc = 0;

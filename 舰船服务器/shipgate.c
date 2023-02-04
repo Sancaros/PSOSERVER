@@ -1147,7 +1147,7 @@ static int handle_creq(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
 
                         /* Clear the item ids from the inventory. */
                         for(i = 0; i < 30; ++i) {
-                            c->bb_pl->inv.iitems[i].data.item_id = 0xFFFFFFFF;
+                            c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
                         }
                     }
                     done = 1;

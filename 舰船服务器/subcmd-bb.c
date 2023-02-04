@@ -45,26 +45,7 @@
 // 指令集
 // (60, 62, 6C, 6D, C9, CB).
 
-/* Forward declarations */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
-int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
-    float z, iitem_t* item);
-
-static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client);
-static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
-    uint32_t item_id);
-static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
-    uint8_t amt);
-
-#define SWAP32(x) (((x >> 24) & 0x00FF) | \
-                   ((x >>  8) & 0xFF00) | \
-                   ((x & 0xFF00) <<  8) | \
-                   ((x & 0x00FF) << 24))
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
 // subcmd 直接发送指令至客户端
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
     int i;
 
@@ -122,7 +103,7 @@ static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&drop, 0);
 }
 
-static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_client) {
+static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to_client) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t new_item = { 0 };
 
@@ -147,7 +128,7 @@ static int subcmd_send_create_item(ship_client_t* c, item_t item, int send_to_cl
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&new_item, 0);
 }
 
-static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
+static int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_map_item_t d = { 0 };
@@ -171,7 +152,7 @@ static int subcmd_send_destroy_map_item(ship_client_t* c, uint16_t area,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&d, 0);
 }
 
-static int subcmd_send_destroy_item(ship_client_t* c, uint32_t item_id,
+static int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t d = { 0 };
@@ -216,16 +197,14 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
     }
 
     if (drop) {
-
         tmp_meseta.data.data_l[0] = LE32(Item_Meseta);
         tmp_meseta.data.data_l[1] = tmp_meseta.data.data_l[2] = 0;
-        tmp_meseta.data.item_id = LE32((++l->highest_item[c->client_id]));
+        tmp_meseta.data.item_id = LE32((++l->item_player_id[c->client_id]));
         tmp_meseta.data.data2_l = count;
 
-        /* We have the item... Add it to the lobby's inventory. */
-        if (!(meseta = lobby_add_item2_locked(l, &tmp_meseta))) {
-            /* *Gulp* The lobby is probably toast... At least make sure this user is
-               still (mostly) safe... */
+        /* 当获得物品... 将其新增入房间物品背包. */
+        if (!(meseta = lobby_add_item_locked(l, &tmp_meseta))) {
+            /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!\n");
             return -1;
         }
@@ -242,11 +221,9 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         c->bb_pl->character.disp.meseta = LE32(tmp - count);
         c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
 
-        /* Now we have two packets to send on. First, send the one telling everyone
-           that there's an item dropped. Then, send the one removing the item from
-           the client's inventory. The first must go to everybody, the second to
-           everybody except the person who sent this packet in the first place. */
-
+        /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
+        然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
+        第二个必须发给除了最初发送这个包裹的人以外的所有人. */
         if (subcmd_send_bb_drop_stack(c, c->drop_area, c->x, c->z, meseta))
             return -1;
     }
@@ -1090,9 +1067,9 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     /* Let everybody know that the client picked it up, and remove it from the
        view. */
     //memcpy(ic, iitem_data.data.data_l, 3 * sizeof(uint32_t));
-    subcmd_send_create_item(c, /*ic, */iitem_data.data/*, iitem_data.data2_l*/, 1);
+    subcmd_send_bb_create_item(c, /*ic, */iitem_data.data/*, iitem_data.data2_l*/, 1);
 
-    return subcmd_send_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
+    return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
 
 static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
@@ -1115,16 +1092,15 @@ static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     gen.data.z = req->z;
     gen.data.unk1 = LE32(0x00000010);
 
-    gen.data.item.data_l[0] = LE32(c->next_item[0]);
-    gen.data.item.data_l[1] = LE32(c->next_item[1]);
-    gen.data.item.data_l[2] = LE32(c->next_item[2]);
-    gen.data.item.data2_l = LE32(c->next_item[3]);
-    /*gen.item2[0] = LE32(c->next_item[3]);
-    gen.item2[1] = LE32(0x00000002);*/
+    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
+    c->new_item.item_id = LE32((r | 0x06010100));
+    gen.data.item.data2_l = LE32(c->new_item.data2_l);
+    gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
-
-    gen.data.item.item_id = LE32((r | 0x06010100));
+    gen.data.item.item_id = c->new_item.item_id;
 
     /* Send the packet to every client in the lobby. */
     for (i = 0; i < l->max_clients; ++i) {
@@ -1134,7 +1110,7 @@ static int handle_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     }
 
     /* Clear this out. */
-    c->next_item[0] = c->next_item[1] = c->next_item[2] = c->next_item[3] = 0;
+    clear_item(&c->new_item);
 
     return 0;
 }
@@ -1196,7 +1172,7 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, lobby_t* l, su
         return -1;
     }
 
-    if (c->next_item[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+    if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return handle_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
@@ -1253,7 +1229,7 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, lobby_t* l, s
         return -1;
     }
 
-    if (c->next_item[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+    if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return handle_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
@@ -1573,12 +1549,12 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
             //DBG_LOG("购买物品");
 
-            //subcmd_send_create_item(c, /*ic, */ii->data/*, iitem_data.data2_l*/, 1);
+            //subcmd_send_bb_create_item(c, /*ic, */ii->data/*, iitem_data.data2_l*/, 1);
             //DBG_LOG("购买物品");
             // Update player item ID
-            l->next_item_id[c->client_id] = pkt->new_inv_item_id;
+            l->item_player_id[c->client_id] = pkt->new_inv_item_id;
             //DBG_LOG("购买物品");
-            ii->data.item_id = l->next_item_id[c->client_id]++;
+            ii->data.item_id = l->item_player_id[c->client_id]++;
 
             //DBG_LOG("购买物品");
             item_add_to_inv(c->bb_pl->inv.iitems,
@@ -1881,7 +1857,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 return -1;
             }
 
-            return subcmd_send_destroy_item(c, iitem.data.item_id,
+            return subcmd_send_bb_destroy_item(c, iitem.data.item_id,
                 pkt->item_amount);
         }
 
@@ -1932,9 +1908,9 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             ic[0] = iitem.data.data_l[0] = bitem.data_l[0];
             ic[1] = iitem.data.data_l[1] = bitem.data_l[1];
             ic[2] = iitem.data.data_l[2] = bitem.data_l[2];
-            iitem.data.item_id = LE32(l->next_game_item_id);
+            iitem.data.item_id = LE32(l->item_next_lobby_id);
             iitem.data.data2_l = bitem.data2_l;
-            ++l->next_game_item_id;
+            ++l->item_next_lobby_id;
 
             /* Time to add it to the inventory... */
             found = item_add_to_inv(c->bb_pl->inv.iitems,
@@ -1948,7 +1924,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             c->bb_pl->inv.item_count += found;
 
             /* Let everyone know about it. */
-            return subcmd_send_create_item(c, /*ic, */iitem.data/*, iitem.data2_l*/,
+            return subcmd_send_bb_create_item(c, /*ic, */iitem.data/*, iitem.data2_l*/,
                 1);
         }
 
@@ -3746,7 +3722,27 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
         //return -1;
     }
 
-    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
+    //[2021年12月20日 01:19] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
+    //                                       火球术 1级
+    //	[2021年12月20日 01:19] 截获(13176) :
+    //                                 08 09 0A 0B 0C              
+    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 00 00 00 00 ..`..... ? ......
+
+    //[2021年12月20日 01:26] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
+    //                                       闪电术 20级
+    //	[2021年12月20日 01:26] 截获(13176) :
+    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 05 00 00 00 ..`..... ? ......
+
+    //[2021年12月20日 01:23] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
+    //                                       火球术 30级
+    //	[2021年12月20日 01:23] 截获(13176) :
+    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 0F 00 00 00 ..`..... ? ......
+    // 
+    // 分析得出 0x0A 是房间玩家槽位 0x0C 是技能等级
+
+    /*uint8_t tmp_level = pkt->level_upgrade;
+
+    pkt->level_upgrade = tmp_level+100;*/
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4147,7 +4143,7 @@ static int handle_bb_take_item(ship_client_t* c, subcmd_bb_take_item_t* pkt) {
 
     UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
 
-    /* Done. Send the packet on to the lobby. */
+    /* 数据包完成, 发送至游戏房间. */
     return 0;
 }
 
@@ -4183,7 +4179,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
     /* TODO 完成挑战模式的物品掉落 */
     if (l->challenge) {
-        /* Done. Send the packet on to the lobby. */
+        /* 数据包完成, 发送至游戏房间. */
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -4229,7 +4225,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中*/
-    if (!lobby_add_item2_locked(l, &c->bb_pl->inv.iitems[found])) {
+    if (!lobby_add_item_locked(l, &c->bb_pl->inv.iitems[found])) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("Couldn't add item to lobby inventory!\n");
@@ -4246,7 +4242,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     --c->bb_pl->inv.item_count;
     c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
-    /* Done. Send the packet on to the lobby. */
+    /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -4317,7 +4313,7 @@ static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
     c->drop_item = pkt->item_id;
     c->drop_amt = pkt->amount;
 
-    /* Done. Send the packet on to the lobby. */
+    /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -4348,7 +4344,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 
     /* TODO 完成挑战模式的物品掉落 */
     if (l->challenge) {
-        /* Done. Send the packet on to the lobby. */
+        /* 数据包完成, 发送至游戏房间. */
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -4369,13 +4365,13 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 
         /* Grab the item from the client's inventory and set up the split */
         item_data = c->iitems[found];
-        item_data.data.item_id = LE32((++l->highest_item[c->client_id]));
+        item_data.data.item_id = LE32((++l->item_player_id[c->client_id]));
         item_data.data.data_b[5] = (uint8_t)(LE32(pkt->amount));
     }
     else {
         item_data.data.data_l[0] = LE32(Item_Meseta);
         item_data.data.data_l[1] = item_data.data.data_l[2] = 0;
-        item_data.data.item_id = LE32((++l->highest_item[c->client_id]));
+        item_data.data.item_id = LE32((++l->item_player_id[c->client_id]));
         item_data.data.data2_l = pkt->amount;
     }
 
@@ -4387,7 +4383,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     /* We have the item... Add it to the lobby's inventory. */
-    if (!(it = lobby_add_item2_locked(l, &item_data))) {
+    if (!(it = lobby_add_item_locked(l, &item_data))) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品添加至游戏房间!\n");
@@ -4428,7 +4424,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
        everybody except the person who sent this packet in the first place. */
     subcmd_send_bb_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
 
-    /* Done. Send the packet on to the lobby. */
+    /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

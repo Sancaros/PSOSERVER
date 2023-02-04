@@ -37,6 +37,8 @@
 #define LOBBY_MAX_CLIENTS   12
 #define LOBBY_MAX_IN_TEAM   4
 
+#define LOBBY_MAX_SAVED_ITEMS      3000
+
 /* Forward declaration. */
 struct ship_client;
 struct block;
@@ -106,12 +108,15 @@ struct lobby {
     uint32_t lobby_id;
     uint32_t type;
     uint32_t flags;
-    uint32_t next_item_id[12];
-    //uint32_t item_id;
-    uint32_t next_game_item_id;
-    iitem_t next_drop_item;
-    fitem_t item_id_to_floor_item;
-    //std::unordered_map<uint32_t, FloorItem> item_id_to_floor_item;
+
+    uint32_t item_count;
+    uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
+    fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
+
+    uint32_t item_player_id[12];
+    //uint32_t item_next_id[12];
+    uint32_t item_next_lobby_id;
+    iitem_t item_next_drop;
 
     int max_clients;
     int num_clients;
@@ -146,7 +151,6 @@ struct lobby {
     char passwd[65];
     uint32_t maps[0x20];
     uint32_t bbmaps[128]; // ·¿¼äµØÍ¼
-    uint32_t highest_item[4];
 
     ship_client_t *clients[LOBBY_MAX_CLIENTS];
 
@@ -352,8 +356,8 @@ int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p);
 
 ///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
 //   before calling this. Returns NULL on any problems... */
-//iitem_t *lobby_add_item_locked(lobby_t *l, uint32_t item_data[4]);
-//iitem_t *lobby_add_item2_locked(lobby_t *l, iitem_t *item);
+//iitem_t *lobby_add_new_item_locked(lobby_t *l, uint32_t item_data[4]);
+//iitem_t *lobby_add_item_locked(lobby_t *l, iitem_t *item);
 //
 //int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv);
 

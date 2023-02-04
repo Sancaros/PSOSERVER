@@ -50,6 +50,8 @@
 #define filename(x) strrchr(x,'\\')?strrchr(x,'\\')+1:x
 #endif
 
+#define EMPTY_STRING 0xFFFFFFFF
+
 #define m_fun(args) fun(filename(__FILE__),__LINE__, args)
 
 #define PRINT_LINE(FP,MSG)    fprintf(FP,"%s:%d %s\n",filename(__FILE__),__LINE__,MSG)

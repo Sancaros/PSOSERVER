@@ -1351,9 +1351,9 @@ void pmt_cleanup(void) {
     num_units = 0;
     num_units_gc = 0;
     num_units_bb = 0;
-    weapon_lowest = guard_lowest = unit_lowest = 0xFFFFFFFF;
-    weapon_lowest_gc = guard_lowest_gc = unit_lowest_gc = 0xFFFFFFFF;
-    weapon_lowest_bb = guard_lowest_bb = unit_lowest_bb = 0xFFFFFFFF;
+    weapon_lowest = guard_lowest = unit_lowest = EMPTY_STRING;
+    weapon_lowest_gc = guard_lowest_gc = unit_lowest_gc = EMPTY_STRING;
+    weapon_lowest_bb = guard_lowest_bb = unit_lowest_bb = EMPTY_STRING;
     star_max = 0;
     star_max_gc = 0;
     star_max_bb = 0;

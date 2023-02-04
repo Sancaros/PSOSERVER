@@ -1,5 +1,5 @@
 // Reversed from the original PPC ASM by Fuzziqer Software, 2004 
-// Modified by Lawrence Sebald (2009) to run properly when compiled for a 64-bit
+// Modified by Sancaros (2009) to run properly when compiled for a 64-bit
 // machine and (2011) to run properly on a big endian machine.
 
 #include <stdio.h>

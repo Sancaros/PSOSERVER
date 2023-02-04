@@ -360,7 +360,7 @@ static int handle_bstat(ship_client_t *c, const char *params) {
                     __(c, "Users"), games, __(c, "Teams"));
 }
 
-/* Usage /bcast message */
+/* 用法 /bcast message */
 static int handle_bcast(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
@@ -370,7 +370,7 @@ static int handle_bcast(ship_client_t *c, const char *params) {
     return broadcast_message(c, params, 1);
 }
 
-/* Usage /arrow color_number */
+/* 用法 /arrow color_number */
 static int handle_arrow(ship_client_t *c, const char *params) {
     int i;
 
@@ -388,7 +388,7 @@ static int handle_arrow(ship_client_t *c, const char *params) {
     return send_lobby_arrows(c->cur_lobby);
 }
 
-/* Usage /login username password */
+/* 用法 /login username password */
 static int handle_login(ship_client_t *c, const char *params) {
     char username[32] = { 0 }, password[32] = { 0 };
     int len = 0;
@@ -428,7 +428,7 @@ static int handle_login(ship_client_t *c, const char *params) {
                                   username, password, 0, 0);
 }
 
-/* Usage /item item1,item2,item3,item4 */
+/* 用法 /item item1,item2,item3,item4 */
 static int handle_item(ship_client_t *c, const char *params) {
     uint32_t item[4] = { 0, 0, 0, 0 };
     int count;
@@ -446,18 +446,21 @@ static int handle_item(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
     }
 
-    c->next_item[0] = item[0];
-    c->next_item[1] = item[1];
-    c->next_item[2] = item[2];
-    c->next_item[3] = item[3];
+    //       物品ID 打磨 特殊  物品特殊属性     未知
+    // /item 000100 00  ,17 00 1234,123456 78,00000000,
+
+    c->new_item.data_l[0] = item[0];
+    c->new_item.data_l[1] = item[1];
+    c->new_item.data_l[2] = item[2];
+    c->new_item.data2_l = item[3];
 
     return send_txt(c, "%s %s %s",
         __(c, "\tE\tC7物品"),
-        item_get_name((item_t*)c->next_item, c->version), 
+        item_get_name(&c->new_item, c->version),
         __(c, "\tE\tC7next_item 设置成功."));
 }
 
-/* Usage /item4 item4 */
+/* 用法 /item4 item4 */
 static int handle_item4(ship_client_t *c, const char *params) {
     uint32_t item;
     int count;
@@ -474,7 +477,7 @@ static int handle_item4(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
     }
 
-    c->next_item[3] = item;
+    c->new_item.data2_l = item;
 
     return send_txt(c, "%s", __(c, "\tE\tC7next_item 设置成功."));
 }
@@ -600,7 +603,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     return handle_dc_gcsend(NULL, c, &gcpkt);
 }
 
-/* Usage /clinfo client_id */
+/* 用法 /clinfo client_id */
 static int handle_clinfo(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
     int id, count;
@@ -736,10 +739,10 @@ static int handle_gban_p(ship_client_t *c, const char *params) {
 
     /* Set the ban (0xFFFFFFFF = forever (or close enough for now)). */
     if(strlen(reason) > 1) {
-        return global_ban(c, gc, 0xFFFFFFFF, reason + 1);
+        return global_ban(c, gc, EMPTY_STRING, reason + 1);
     }
     else {
-        return global_ban(c, gc, 0xFFFFFFFF, NULL);
+        return global_ban(c, gc, EMPTY_STRING, NULL);
     }
 }
 
@@ -1325,14 +1328,14 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
     }
 
     /* Make sure there's something set with /item */
-    if(!c->next_item[0]) {
+    if(!c->new_item.data_l[0]) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7Need to set an item first."));
+        return send_txt(c, "%s", __(c, "\tE\tC7请先输入物品的ID."));
     }
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if(l->version == CLIENT_VERSION_BB) {
-        iitem = lobby_add_item_locked(l, c->next_item);
+        iitem = lobby_add_new_item_locked(l, &c->new_item);
 
         if(!iitem) {
             pthread_mutex_unlock(&l->mutex);
@@ -1340,7 +1343,7 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
         }
     }
     else {
-        ++l->next_game_item_id;
+        ++l->item_next_lobby_id;
     }
 
     /* Generate the packet to drop the item */
@@ -1354,18 +1357,15 @@ static int handle_makeitem(ship_client_t *c, const char *params) {
     p2.unk = LE16(0);
     p2.x = c->x;
     p2.z = c->z;
-    p2.data.data_l[0] = LE32(c->next_item[0]);
-    p2.data.data_l[1] = LE32(c->next_item[1]);
-    p2.data.data_l[2] = LE32(c->next_item[2]);
-    p2.data.item_id = LE32((l->next_game_item_id - 1));
-    p2.data.data2_l = LE32(c->next_item[3]);
+    p2.data.data_l[0] = LE32(c->new_item.data_l[0]);
+    p2.data.data_l[1] = LE32(c->new_item.data_l[1]);
+    p2.data.data_l[2] = LE32(c->new_item.data_l[2]);
+    p2.data.item_id = LE32((l->item_next_lobby_id - 1));
+    p2.data.data2_l = LE32(c->new_item.data2_l);
     p2.two = LE32(0x00000002);
 
     /* Clear the set item */
-    c->next_item[0] = 0;
-    c->next_item[1] = 0;
-    c->next_item[2] = 0;
-    c->next_item[3] = 0;
+    clear_item(&c->new_item);
 
     /* Send the packet to everyone in the lobby */
     pthread_mutex_unlock(&l->mutex);
@@ -1629,7 +1629,7 @@ static int handle_allowgc(ship_client_t *c, const char *params) {
     return send_txt(c, "%s", __(c, "\tE\tC7Gamecube allowed."));
 }
 
-/* Usage /ws item1,item2,item3,item4 */
+/* 用法 /ws item1,item2,item3,item4 */
 static int handle_ws(ship_client_t *c, const char *params) {
     uint32_t ws[4] = { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF };
     int count;
@@ -1747,7 +1747,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
     return send_msg_box(c, "%s", str);
 }
 
-/* Usage /npc number,client_id,follow_id */
+/* 用法 /npc number,client_id,follow_id */
 static int handle_npc(ship_client_t *c, const char *params) {
     int count, npcnum, client_id, follow;
     uint8_t tmp[0x10] = { 0 };
@@ -2615,7 +2615,7 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
     return 0;
 }
 
-/* Usage /enablebk */
+/* 用法 /enablebk */
 static int handle_enablebk(ship_client_t *c, const char *params) {
     uint8_t enable = 1;
 
@@ -2632,7 +2632,7 @@ static int handle_enablebk(ship_client_t *c, const char *params) {
     return send_txt(c, "%s", __(c, "\tE\tC7Character backups enabled."));
 }
 
-/* Usage /disablebk */
+/* 用法 /disablebk */
 static int handle_disablebk(ship_client_t *c, const char *params) {
     uint8_t enable = 0;
 
@@ -2848,7 +2848,7 @@ static int handle_trackinv(ship_client_t *c, const char *params) {
     return send_txt(c, "%s", __(c, "\tE\tC7Flag set."));
 }
 
-/* Usage /trackkill [off] */
+/* 用法 /trackkill [off] */
 static int handle_trackkill(ship_client_t *c, const char *params) {
     uint8_t enable = 1;
 
@@ -3213,7 +3213,7 @@ static int handle_quest(ship_client_t *c, const char *params) {
     return rv;
 }
 
-/* Usage /autolegit [off] */
+/* 用法 /autolegit [off] */
 static int handle_autolegit(ship_client_t *c, const char *params) {
     uint8_t enable = 1;
     psocn_limits_t *limits;
@@ -3391,7 +3391,7 @@ static int handle_ib(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7Invalid IP address."));
     }
 
-    nm->sin_addr.s_addr = 0xFFFFFFFF;
+    nm->sin_addr.s_addr = EMPTY_STRING;
     addr.ss_family = netmask.ss_family = PF_INET;
 
     /* Set the ban in the list (86,400s = 1 day) */

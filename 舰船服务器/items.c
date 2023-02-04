@@ -3843,6 +3843,70 @@ void print_item_data(ship_client_t* c, item_t* item) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//释放房间物品内存
+uint32_t free_lobby_item(lobby_t* l) {
+    uint32_t ch, ch2, oldest_item;
+
+    ch2 = oldest_item = EMPTY_STRING;
+
+    // 如果物品ID在当前索引为0,则直接返回
+    if ((l->item_count < MAX_LOBBY_SAVED_ITEMS) && (l->item_id_to_lobby_item[l->item_count].inv_item.data.item_id == 0))
+        return l->item_count;
+
+    // 扫描gameItem数组中是否有可用的物品槽 
+    for (ch = 0; ch < MAX_LOBBY_SAVED_ITEMS; ch++) {
+        if (l->item_id_to_lobby_item[ch].inv_item.data.item_id == 0) {
+            ch2 = ch;
+            break;
+        }
+    }
+
+    if (ch2 != EMPTY_STRING)
+        return ch2;
+
+    // 库存内存不足！是时候删除游戏中最旧的掉落物品了
+    for (ch = 0; ch < MAX_LOBBY_SAVED_ITEMS; ch++) {
+        if ((l->item_id_to_lobby_item[ch].inv_item.data.item_id < oldest_item) && 
+            (l->item_id_to_lobby_item[ch].inv_item.data.item_id >= 0x810000)) {
+            ch2 = ch;
+            oldest_item = l->item_id_to_lobby_item[ch].inv_item.data.item_id;
+        }
+    }
+
+    if (ch2 != EMPTY_STRING) {
+        l->item_id_to_lobby_item[ch2].inv_item.data.item_id = 0; // Item deleted. 物品删除
+        return ch2;
+    }
+
+    ERR_LOG("请注意:房间背包故障!!!!");
+
+    return 0;
+}
+
+/* 初始化房间物品列表数据 */
+void clear_lobby_item(lobby_t* l) {
+    uint32_t ch = 0, item_count = 0;
+    size_t len;
+
+    while (ch < l->item_count) {
+        // Combs the entire game inventory for items in use
+        if (l->item_list[ch] != EMPTY_STRING) {
+            if (ch > item_count)
+                l->item_list[item_count] = l->item_list[ch];
+            item_count++;
+        }
+        ch++;
+    }
+
+    len = (MAX_LOBBY_SAVED_ITEMS - item_count) * 4;
+
+    if (item_count < MAX_LOBBY_SAVED_ITEMS)
+        memset(&l->item_list[item_count], 0xFF, len);
+
+    l->item_count = item_count;
+}
+
 /* 修复玩家背包数据 */
 void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     uint32_t id;
@@ -3851,26 +3915,26 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     if (c->version == CLIENT_VERSION_BB) {
         /* Fix up the inventory for their new lobby */
         id = 0x00010000 | (c->client_id << 21) |
-            (l->highest_item[c->client_id]);
+            (l->item_player_id[c->client_id]);
 
         for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
             c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
         }
 
         --id;
-        l->highest_item[c->client_id] = id;
+        l->item_player_id[c->client_id] = id;
     }
     else {
         /* Fix up the inventory for their new lobby */
         id = 0x00010000 | (c->client_id << 21) |
-            (l->highest_item[c->client_id]);
+            (l->item_player_id[c->client_id]);
 
         for (i = 0; i < c->item_count; ++i, ++id) {
             c->iitems[i].data.item_id = LE32(id);
         }
 
         --id;
-        l->highest_item[c->client_id] = id;
+        l->item_player_id[c->client_id] = id;
     }
 }
 
@@ -3879,7 +3943,7 @@ void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = 0xFFFFFFFF;
+    item->item_id = EMPTY_STRING;
     item->data2_l = 0;
 }
 
@@ -3888,16 +3952,20 @@ void clear_iitem(iitem_t* iitem) {
     iitem->present = 0x0000;
     iitem->tech = 0x0000;
     iitem->flags = 0x00000000;
-    iitem->data.data_l[0] = 0;
-    iitem->data.data_l[1] = 0;
-    iitem->data.data_l[2] = 0;
-    iitem->data.item_id = 0xFFFFFFFF;
-    iitem->data.data2_l = 0;
+    clear_item(&iitem->data);
+}
+
+/* 初始化房间物品数据 */
+void clear_fitem(fitem_t* fitem) {
+    clear_iitem(&fitem->inv_item);
+    fitem->x = 0x00000000;
+    fitem->z = 0x00000000;
+    fitem->area = 0;
 }
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_item_locked(lobby_t* l, uint32_t item_data[4]) {
+iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     lobby_item_t* item;
 
     /* Sanity check... */
@@ -3910,19 +3978,19 @@ iitem_t* lobby_add_item_locked(lobby_t* l, uint32_t item_data[4]) {
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    item->d.data.item_id = LE32(l->next_game_item_id);
-    item->d.data.data_l[0] = LE32(item_data[0]);
-    item->d.data.data_l[1] = LE32(item_data[1]);
-    item->d.data.data_l[2] = LE32(item_data[2]);
-    item->d.data.data2_l = LE32(item_data[3]);
+    item->d.data.data_l[0] = LE32(new_item->data_l[0]);
+    item->d.data.data_l[1] = LE32(new_item->data_l[1]);
+    item->d.data.data_l[2] = LE32(new_item->data_l[2]);
+    item->d.data.item_id = LE32(l->item_next_lobby_id);
+    item->d.data.data2_l = LE32(new_item->data2_l);
 
     /* Increment the item ID, add it to the queue, and return the new item */
-    ++l->next_game_item_id;
+    ++l->item_next_lobby_id;
     TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
     return &item->d;
 }
 
-iitem_t* lobby_add_item2_locked(lobby_t* l, iitem_t* it) {
+iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* it) {
     lobby_item_t* item;
 
     /* Sanity check... */
@@ -3973,9 +4041,9 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     if (client_id < l->max_clients) {
-        return l->next_item_id[client_id]++;
+        return l->item_player_id[client_id]++;
     }
-    return l->next_game_item_id++;
+    return l->item_next_lobby_id++;
 }
 
 /* 移除背包物品操作 */
@@ -3998,7 +4066,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(inv[i].data.data_l[0])) && amt != 0xFFFFFFFF) {
+    if(item_is_stackable(LE32(inv[i].data.data_l[0])) && amt != EMPTY_STRING) {
         tmp = inv[i].data.data_b[5];
 
         if(amt < tmp) {
@@ -4065,7 +4133,7 @@ void cleanup_bb_bank(ship_client_t *c) {
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_ITEMS; ++i) {
         memset(&c->bb_pl->bank.items[i], 0, sizeof(bitem_t));
-        c->bb_pl->bank.items[i].item_id = 0xFFFFFFFF;
+        c->bb_pl->bank.items[i].item_id = EMPTY_STRING;
     }
 }
 

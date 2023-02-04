@@ -37,6 +37,8 @@
 #define EQUIP_FLAGS_FEMALE   0x00000080   // Bit 8 女人
 #define EQUIP_FLAGS_MAX      0x00000008
 
+#define MAX_LOBBY_SAVED_ITEMS      3000
+
 /* 物品代码清单. */
 typedef enum item_code_e {
     Item_Saber                        = 0x000100,
@@ -2203,17 +2205,23 @@ const char *item_get_name(item_t* item, int version);
 void print_item_data(ship_client_t* c, item_t* item);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
+//释放房间物品内存
+uint32_t free_lobby_item(lobby_t* l);
+/* 初始化房间物品列表数据 */
+void clear_lobby_item(lobby_t* l);
 /* 修复玩家背包数据 */
 void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
 /* 初始化物品数据 */
 void clear_item(item_t* item);
 /* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem);
+/* 初始化房间物品数据 */
+void clear_fitem(fitem_t* fitem);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_item_locked(lobby_t* l, uint32_t item_data[4]);
-iitem_t* lobby_add_item2_locked(lobby_t* l, iitem_t* item);
+iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item);
+iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
 
 int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
