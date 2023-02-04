@@ -2554,7 +2554,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     unsigned long *len;
     int sz, rv;
     uLong sz2, csz;
-    int slot = pkt->info.slot ,version = ntohl(pkt->info.c_version);
+    int slot = pkt->slot ,version = ntohl(pkt->c_version);
     int dbversion = 0, dbslot = 0;
 
     /* Build the query asking for the data. */
@@ -2567,7 +2567,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
         return 0;
     }
 
@@ -2577,7 +2577,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
         return 0;
     }
 
@@ -2587,7 +2587,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_CREQ_NO_DATA, (uint8_t *)&pkt->info.guildcard, 8);
+                   ERR_CREQ_NO_DATA, (uint8_t *)&pkt->guildcard, 8);
         return 0;
     }
 
@@ -2597,7 +2597,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     if (dbversion != version) {
         psocn_db_result_free(result);
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         //SQLERR_LOG("角色备份数据版本不匹配 (%u: %s) 数据版本 %d 请求版本 %d", gc, name, dbversion, version);
 
         //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2608,7 +2608,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     if (dbslot != slot) {
         psocn_db_result_free(result);
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         //SQLERR_LOG("角色备份数据不存在 (%u: %s) 数据槽位 %d 请求槽位 %d", gc, name, dbslot, slot);
 
         //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2623,7 +2623,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
         return 0;
     }
 
@@ -2641,7 +2641,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
             return 0;
         }
 
@@ -2651,7 +2651,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
             return 0;
         }
 
@@ -2665,7 +2665,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->info.guildcard, 8);
+                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
             return 0;
         }
 
@@ -2692,12 +2692,12 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
     uLong cmp_sz;
     int compressed = ~Z_OK;
 
-    slot = pkt->info.slot;
-    gc = ntohl(pkt->info.guildcard);
-    block = ntohl(pkt->info.block);
-    version = ntohl(pkt->info.c_version);
+    slot = pkt->slot;
+    gc = ntohl(pkt->guildcard);
+    block = ntohl(pkt->block);
+    version = ntohl(pkt->c_version);
 
-    strncpy(name, (const char*)pkt->info.name, 32);
+    strncpy(name, (const char*)pkt->name, 32);
     name[31] = 0;
 
     /* Is this a restore request or are we saving the character data? */
@@ -2745,13 +2745,13 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->info.guildcard, 8);
+        (uint8_t*)&pkt->guildcard, 8);
 }
 
 /* 处理舰船角色数据请求. */

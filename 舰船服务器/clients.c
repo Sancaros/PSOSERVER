@@ -151,6 +151,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             if(!rv->bb_pl) {
                 perror("malloc");
                 free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -158,13 +159,30 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
             memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
 
+            //rv->game_info =
+            //    (sg_char_bkup_pkt*)malloc(sizeof(sg_char_bkup_pkt));
+
+            //if (!rv->game_info) {
+            //    perror("malloc");
+            //    free_safe(rv->pl);
+            //    free_safe(rv->enemy_kills);
+            //    free_safe(rv->bb_pl);
+            //    free_safe(rv);
+            //    closesocket(sock);
+            //    return NULL;
+            //}
+
+            //memset(rv->game_info, 0, sizeof(sg_char_bkup_pkt));
+
             rv->bb_opts =
                 (psocn_bb_db_opts_t *)malloc(sizeof(psocn_bb_db_opts_t));
 
             if(!rv->bb_opts) {
                 perror("malloc");
-                free_safe(rv->bb_pl);
                 free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->bb_pl);
+                //free_safe(rv->game_info);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -177,8 +195,10 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
             if (!rv->bb_guild) {
                 perror("malloc");
-                free_safe(rv->bb_pl);
                 free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->bb_pl);
+                //free_safe(rv->game_info);
                 free_safe(rv->bb_opts);
                 free_safe(rv);
                 closesocket(sock);
@@ -430,6 +450,10 @@ void client_destroy_connection(ship_client_t *c,
     if(c->pl) {
         free_safe(c->pl);
     }
+
+    //if (c->game_info) {
+    //    free_safe(c->game_info);
+    //}
 
     if(c->bb_pl) {
         free_safe(c->bb_pl);

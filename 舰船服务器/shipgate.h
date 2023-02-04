@@ -181,10 +181,12 @@ int shipgate_send_bb_opts(shipgate_conn_t *c, ship_client_t *cl);
 //int shipgate_send_bb_guild(shipgate_conn_t* c, ship_client_t* cl);
 
 /* Send the shipgate a character data backup request. */
-int shipgate_send_cbkup(shipgate_conn_t *c, sg_char_bkup_pkt* info, const void *cdata, int len);
+int shipgate_send_cbkup(shipgate_conn_t *c, uint32_t gc, uint8_t slot, uint32_t block,
+    uint32_t version, const char *name, const void *cdata, int len);
 
 /* Send the shipgate a request for character backup data. */
-int shipgate_send_cbkup_req(shipgate_conn_t *c, sg_char_bkup_pkt* info);
+int shipgate_send_cbkup_req(shipgate_conn_t *c, uint32_t gc, uint8_t slot, uint32_t block,
+    uint32_t version, const char *name);
 
 /* Send a monster kill count update */
 int shipgate_send_mkill(shipgate_conn_t *c, uint32_t gc, uint32_t block,

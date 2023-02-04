@@ -78,15 +78,10 @@ typedef struct client_trade_item {
 
 typedef struct client_game_data {
     uint32_t serial_number;
+    bool should_save;
 
     client_trade_item_t *pending_item_trade;
-
-    uint8_t bb_game_state;
-    size_t bb_player_index;
-
     iitem_t identify_result;
-
-    bool should_save;
     sitem_t shop_items[0x14];
 
     uint32_t expboost;
@@ -219,6 +214,7 @@ struct ship_client {
     bb_client_config_pkt sec_data;
     psocn_bb_db_char_t *bb_pl;
     psocn_bb_db_opts_t *bb_opts;
+    //sg_char_bkup_pkt game_info;
 
     int32_t guild_accept;
     psocn_bb_db_guild_t *bb_guild;

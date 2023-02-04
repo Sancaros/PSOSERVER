@@ -827,19 +827,11 @@ static int join_game(ship_client_t* c, lobby_t* l) {
         fix_up_pl_iitem(l, c);
     }
 
-    sg_char_bkup_pkt info = { 0 };
-
-    info.guildcard = c->guildcard;
-    info.slot = c->sec_data.slot;
-    info.block = c->cur_block->b;
-    info.c_version = c->version;
-
-    strncpy((char*)info.name, c->pl->v1.character.disp.dress_data.guildcard_string, sizeof(info.name));
-
     /* Try to backup their character data */
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, &info, &c->pl->v1, 1052)) {
+        if (shipgate_send_cbkup(&ship->sg, c->guildcard, c->sec_data.slot, c->cur_block->b, 
+            c->version, c->pl->v1.character.disp.dress_data.guildcard_string, &c->pl->v1, 1052)) {
             /* XXXX: Should probably notify them... */
             return rv;
         }
