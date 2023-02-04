@@ -44,6 +44,16 @@
 // 当客户端发送游戏命令时, 调用此文件中的函数
 // 指令集
 // (60, 62, 6C, 6D, C9, CB).
+/* Forward declarations */
+static int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
+static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
+    float z, iitem_t* item);
+
+static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to_client);
+static int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
+    uint32_t item_id);
+static int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
+    uint8_t amt);
 
 // subcmd 直接发送指令至客户端
 static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
@@ -176,7 +186,7 @@ static int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
 }
 
 //从客户端移除美赛塔
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
+static int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
     uint32_t stack_count;
     uint32_t tmp;
     iitem_t tmp_meseta = { 0 };
