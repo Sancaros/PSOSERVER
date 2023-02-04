@@ -2542,7 +2542,6 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
 
             default:
                 rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t *)pkt);
-                break;
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -2615,7 +2614,6 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
 #endif /* LOG_UNKNOWN_SUBS */
             /* Forward the packet unchanged to the destination. */
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
-            break;
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -2660,7 +2658,6 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
 
             default:
                 rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t *)pkt);
-                break;
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -2838,7 +2835,6 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
         case SUBCMD60_CHAIR_DIR:
         case SUBCMD60_CHAIR_MOVE:
             sent = 0;
-            break;
     }
 
     /* Broadcast anything we don't care to check anything about. */

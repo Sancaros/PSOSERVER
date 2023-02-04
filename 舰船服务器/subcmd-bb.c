@@ -1931,7 +1931,7 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
+static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     int i;
     iitem_t* item;
@@ -1944,15 +1944,11 @@ int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         return -1;
     }
 
-    printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
+    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
 
     if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
         (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
         /* Scan the inventory and fix any mags before sending it along. */
-
-
-
-
 
 
         for (i = 0; i < pkt->inv.item_count; ++i) {
@@ -2013,13 +2009,12 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         case SUBCMD62_BURST_PLDATA://70
-            print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+            //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
             rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
             break;
 
         default:
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
-            break;
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -2042,11 +2037,13 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD62_ITEMREQ:
-        rv = handle_bb_item_req(c, dest, (subcmd_bb_itemreq_t*)pkt);
+        rv = l->dropfunc(c, l, pkt);
+        //rv = handle_bb_item_req(c, dest, (subcmd_bb_itemreq_t*)pkt);
         break;
 
     case SUBCMD62_BITEMREQ:
-        rv = handle_bb_bitem_req(c, dest, (subcmd_bb_bitemreq_t*)pkt);
+        rv = l->dropfunc(c, l, pkt);
+        //rv = handle_bb_bitem_req(c, dest, (subcmd_bb_bitemreq_t*)pkt);
         break;
 
     case SUBCMD62_TRADE:
@@ -2091,6 +2088,14 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
+    default:
+#ifdef BB_LOG_UNKNOWN_SUBS
+        DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
+        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+#endif /* BB_LOG_UNKNOWN_SUBS */
+        /* Forward the packet unchanged to the destination. */
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
     case SUBCMD62_GUILD_INVITE1:
     case SUBCMD62_GUILD_INVITE2:
     case SUBCMD62_GUILD_MASTER_TRANS1:
@@ -2102,18 +2107,9 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_QUEST_ONEPERSON_SET_ITEM:
     case SUBCMD62_QUEST_ONEPERSON_SET_BP:
     case SUBCMD62_GANBLING:
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
-    default:
-#ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
+        //UNK_CSPD(type, c->version, pkt);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-#endif /* BB_LOG_UNKNOWN_SUBS */
-        /* Forward the packet unchanged to the destination. */
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -4935,7 +4931,6 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         default:
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
-            break;
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -5387,3 +5382,5 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     pthread_mutex_unlock(&l->mutex);
     return rv;
 }
+
+
