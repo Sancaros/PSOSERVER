@@ -449,12 +449,12 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(0x000C);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    pkt.hdr.flags = 0x00000000;
+    pkt.hdr.flags = 0;
     pkt.shdr.type = SUBCMD60_SET_EXP_RATE;
     pkt.shdr.size = 0x03;
     pkt.shdr.params = LE16(exp_r);
 
-    rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
+    rv = send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 
     if (!rv) {
         l->expboost = LE32(exp_r);
@@ -779,6 +779,10 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
     size_t in, out;
     char* inptr;
     char* outptr;
+
+    /* Make sure the recipient is not ignoring the sender... */
+    if (client_has_ignored(dest, src->guildcard))
+        return 0;
 
         /* This differs based on the destination client's version. */
     switch (dest->version) {
@@ -1474,8 +1478,6 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
             return -1;
         }
 
-        //( 00000000 )   10 00 62 00 00 00 00 00  B8 02 FF FF 0E 00 01 00    ..b.............
-
         if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
                 c->guildcard);
@@ -1961,14 +1963,13 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         case SUBCMD62_BURST5://6F
         case SUBCMD62_BURST6://71
-        case SUBCMD62_BURST_PLDATA://70
+        //case SUBCMD62_BURST_PLDATA://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
 
-        //case SUBCMD62_BURST_PLDATA://70
-        //    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-        //    rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
-        //    break;
+        case SUBCMD62_BURST_PLDATA://70
+            rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
+            break;
 
         default:
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
@@ -1980,12 +1981,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
     case SUBCMD62_GUILDCARD:
-        /* Make sure the recipient is not ignoring the sender... */
-        if (client_has_ignored(dest, c->guildcard)) {
-            rv = 0;
-            break;
-        }
-
         rv = handle_bb_gcsend(c, dest);
         break;
 
@@ -2076,6 +2071,16 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_CH_GRAVE_DATA:
         UNK_CSPD(type, c->version, pkt);
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        break;
+
+    case SUBCMD60_SRANK_ATTR:
+        UNK_CSPD(type, c->version, pkt);
+        rv = 0;
+        break;
+
+    case SUBCMD60_EX_ITEM_MK:
+        UNK_CSPD(type, c->version, pkt);
+        rv = 0;
         break;
 
     default:
@@ -2750,21 +2755,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
-//[2022年08月29日 17:41:23:408] 调试(3222): BB处理 GC 42004064 60指令: 0x3E
-//[2022年08月29日 17:41:29:975] 调试(3222): BB处理 GC 42004064 60指令: 0x28
-//( 00000000 )   14 00 60 00 00 00 00 00  28 03 00 00 02 00 01 00    ..`.....(.......
-//( 00000010 )   03 00 01 00                                         ....
-//[2022年08月29日 17:41:30:010] 调试(1875): GC 42004064 使用物品ID 3 喂养玛古 ID 2!
-//[2022年08月29日 17:41:30:018] 调试(3222): BB处理 GC 42004064 60指令: 0x61
-//[2022年08月29日 17:41:45:642] 调试(3222): BB处理 GC 42004064 60指令: 0x28
-//( 00000000 )   14 00 60 00 00 00 00 00  28 03 00 00 02 00 01 00    ..`.....(.......
-//( 00000010 )   03 00 01 00                                         ....
-//[2022年08月29日 17:41:45:677] 调试(1875): GC 42004064 使用物品ID 3 喂养玛古 ID 2!
-//[2022年08月29日 17:41:45:687] 调试(3222): BB处理 GC 42004064 60指令: 0x61
-//[2022年08月29日 17:41:49:449] 调试(3222): BB处理 GC 42004064 60指令: 0x28
-//( 00000000 )   14 00 60 00 00 00 00 00  28 03 00 00 02 00 01 00    ..`.....(.......
-//( 00000010 )   03 00 01 00                                         ....
-//[2022年08月29日 17:41:49:485] 调试(1875): GC 42004064 使用物品ID 3 喂养玛古 ID 2!
+
     DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
         c->guildcard, item_id, mag_id);
 
@@ -3462,34 +3453,6 @@ static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
         return -1;
     }
 
-//[2022年09月04日 15:41:22:305] 舰船服务器 截获(3734): subcmd-bb.c 3734 行 CLIENT_UNKNOW_77 指令 0x0060 未处理. (数据如下)
-//
-//[2022年09月04日 15:41:22:316] 舰船服务器 截获(3734): 
-//( 00000000 )   14 00 60 00 00 00 00 00  77 03 71 00 A4 00 6B 00 ..`.....w.q.?k.
-//( 00000010 )   01 00 00 00                                     ....
-//
-//
-//[2022年09月04日 20:25:18:747] 舰船服务器 截获(3734): subcmd-bb.c 3734 行 CLIENT_UNKNOW_77 指令 0x0060 未处理. (数据如下)
-//
-//[2022年09月04日 20:25:18:758] 舰船服务器 截获(3734): 
-//( 00000000 )   14 00 60 00 00 00 00 00  77 03 00 00 00 00 6B 00 ..`.....w.....k.
-//( 00000010 )   01 00 00 00                                     ....
-//
-//
-//[2022年09月05日 04:04:11:108] 舰船服务器 截获(3732): subcmd-bb.c 3732 行 CLIENT_UNKNOW_77 指令 0x0060 未处理. (数据如下)
-//
-//[2022年09月05日 04:04:11:126] 舰船服务器 截获(3732): 
-//( 00000000 )   14 00 60 00 00 00 00 00  77 03 00 00 00 00 6B 00 ..`.....w.....k.
-//( 00000010 )   01 00 00 00                                     ....
-//
-//
-//[2022年09月05日 22:06:42:522] 舰船服务器 截获(3968): subcmd-bb.c 3968 行 CLIENT_UNKNOW_77 指令 0x0060 未处理. (数据如下)
-//
-//[2022年09月05日 22:06:42:534] 舰船服务器 截获(3968): 
-//( 00000000 )   14 00 60 00 00 00 00 00  77 03 00 00 83 00 6B 00 ..`.....w...?k.
-//( 00000010 )   00 00 00 00                                     ....
-//
-
     /* XXXX: Probably should do some checking here... */
     /* Run the register sync script, if one is set. If the script returns
        non-zero, then assume that it has adequately handled the sync. */
@@ -3699,24 +3662,6 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
         //return -1;
     }
 
-    //[2021年12月20日 01:19] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
-    //                                       火球术 1级
-    //	[2021年12月20日 01:19] 截获(13176) :
-    //                                 08 09 0A 0B 0C              
-    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 00 00 00 00 ..`..... ? ......
-
-    //[2021年12月20日 01:26] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
-    //                                       闪电术 20级
-    //	[2021年12月20日 01:26] 截获(13176) :
-    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 05 00 00 00 ..`..... ? ......
-
-    //[2021年12月20日 01:23] 截获(13176) : 指令 0x"8d" 未被游戏进行接收处理. (数据如下)
-    //                                       火球术 30级
-    //	[2021年12月20日 01:23] 截获(13176) :
-    //	(0000) 10 00 60 00 00 00 00 00 8D 02 01 00 0F 00 00 00 ..`..... ? ......
-    // 
-    // 分析得出 0x0A 是房间玩家槽位 0x0C 是技能等级
-
     /*uint8_t tmp_level = pkt->level_upgrade;
 
     pkt->level_upgrade = tmp_level+100;*/
@@ -3861,55 +3806,6 @@ static int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt)
 static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    //大厅服务台请求
-//[2022年08月29日 16:46:29:312] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 00 00 00 00    ..`.....R.......
-//( 00000010 )   00 80 FF FF                                         ....
-//[2022年08月29日 16:46:32:113] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 00 00 00 00    ..`.....R.......
-//( 00000010 )   00 80 FF FF                                         ....
-//[2022年08月29日 16:46:32:149] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x3F
-//[2022年08月29日 16:46:32:812] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 00 00 00 00    ..`.....R.......
-//( 00000010 )   00 80 FF FF                                         ....
-//[2022年08月29日 16:46:33:646] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 00 00 00 00    ..`.....R.......
-//( 00000010 )   00 80 FF FF                                         ....
-//[2022年08月29日 16:46:33:681] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x3F
-//[2022年08月29日 16:46:34:179] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 00 00 00 00    ..`.....R.......
-//( 00000010 )   00 80 FF FF                                         ....
-    //与防具店对话
-//[2022年08月29日 16:48:04:617] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   6B DE FF FF                                         k...
-    //与工具店对话
-//[2022年08月29日 16:49:05:719] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   97 EC FF FF                                         ....
-    //与武器店对话
-//[2022年08月29日 16:50:28:523] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   E5 F2 FF FF                                         ....
-    //与鉴定对话
-//[2022年08月29日 16:53:14:688] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   6B 31 00 00                                         k1..
-    //与银行对话
-//[2022年08月29日 16:54:07:590] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   97 D9 FF FF                                         ....
-    //与医院对话
-//[2022年08月29日 16:55:16:526] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   29 7D 00 00                                         )}..
-//[2022年08月29日 16:56:17:062] 调试(subcmd-bb.c 3171): BB处理 GC 42004063 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 00 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   29 A4 FF FF                                         )...
-    //2号人物 任务版对话
-//[2022年08月29日 17:22:48:363] 调试(subcmd-bb.c 3171): BB处理 GC 42004064 60指令: 0x52
-//( 00000000 )   14 00 60 00 00 00 00 00  52 03 01 00 08 00 00 00    ..`.....R.......
-//( 00000010 )   A2 EB FF FF                                         ....
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
         //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
@@ -4407,9 +4303,6 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t type = LE16(pkt->hdr.pkt_type);
-
-//( 00000000 )   14 00 60 00 00 00 00 00  2F 03 00 00 00 00 00 00 ..`...../.......
-//( 00000010 )   96 03 00 00                                     ?..
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -5462,7 +5355,7 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
-    int rv, sent = 1, i;
+    int rv = 0, sent = 1, i;
 
     /* Ignore these if the client isn't in a lobby or team. */
     if (!l)
@@ -5584,5 +5477,6 @@ int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
     pthread_mutex_unlock(&l->mutex);
+
     return rv;
 }

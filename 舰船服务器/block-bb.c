@@ -925,8 +925,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     }
 
     /* If the client isn't in a lobby already, then add them to the first
-       available default lobby
-        如果客户机不在大厅中，则将其添加到第一个可用的默认大厅中. */
+       available default lobby 如果客户机不在大厅中，则将其添加到第一个可用的默认大厅中. */
     if (!c->cur_lobby) {
         if (lobby_add_to_any(c, c->lobby_req)) {
             pthread_mutex_unlock(&c->mutex);
@@ -2502,8 +2501,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
     //print_payload((unsigned char*)pkt, len);
 
-    //UDONE_CPD(type,pkt);
-
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {
         /* 0x00DF 挑战模式 */
@@ -2602,7 +2599,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x016F 367*/
     case DONE_BURSTING_TYPE01:
-        //( 00000000 )   08 00 6F 01 00 00 00 00
         return bb_process_done_quest_burst(c, (bb_done_quest_burst_pkt*)pkt);
 
         /* 0x0081 129*/

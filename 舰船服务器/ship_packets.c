@@ -1646,10 +1646,6 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
     uint8_t *sendbuf = get_sendbuf();
     int len = (int)LE16(pkt->pkt_len);
 
-    //DBG_LOG("发送BB数据至客户端 ：版本 = %d GC = %u", c->version, c->guildcard);
-
-    //print_payload((unsigned char*)pkt, len);
-
     /* Verify we got the sendbuf. */
     if(!sendbuf) {
         return -1;

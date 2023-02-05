@@ -101,8 +101,6 @@
 #define GAME_COMMANDC_TYPE              0x006C
 #define GAME_COMMANDD_TYPE              0x006D  //创建房间指令
 #define DONE_BURSTING_TYPE              0x006F
-//[2022年09月03日 08:59:54:819] 调试(block-bb.c 2195): 舰仓：BB处理数据 指令 0x016F 未找到相关指令名称 长度 8 字节 标志 0 GC 42004063
-//( 00000000 )   08 00 6F 01 00 00 00 00                             ..o.....
 #define DONE_BURSTING_TYPE01            0x016F
 #define CLIENT_UNKNOW_77                0x0077  //来自1.0 BB服务端
 #define CLIENT_UNKNOW_81                0x0080  //来自1.0 BB服务端
@@ -176,10 +174,12 @@
 #define GC_GBA_FILE_REQ_TYPE            0x00D7
 #define INFOBOARD_TYPE                  0x00D8
 #define INFOBOARD_WRITE_TYPE            0x00D9
-#define LOBBY_EVENT_TYPE                0x00DA  //大厅事件改变数据包
+#define LOBBY_EVENT_TYPE                0x00DA   //大厅事件改变数据包
 #define GC_VERIFY_LICENSE_TYPE          0x00DB
 //////////////////////////////////////////////////
 #define EP3_MENU_CHANGE_TYPE            0x00DC
+//////////////////////////////////////////////////
+#define BB_GUILDCARD_TYPE               0x00DC  /* 用于认证服务器 */
 #define BB_GUILDCARD_HEADER_TYPE        0x01DC
 #define BB_GUILDCARD_CHUNK_TYPE         0x02DC
 #define BB_GUILDCARD_CHUNK_REQ_TYPE     0x03DC
@@ -196,7 +196,7 @@
 #define BB_CHALLENGE_06DF               0x06DF  //来自1.0 BB服务端 挑战模式数据
 #define BB_CHALLENGE_07DF               0x07DF  //来自1.0 BB服务端 挑战模式数据
 //////////////////////////////////////////////////
-#define BB_OPTION_REQUEST_TYPE          0x00E0
+#define BB_OPTION_REQUEST_TYPE          0x00E0  /* 用于认证服务器 */
 #define CLIENT_UNKNOW_E1                0x00E1  // E1 (S->C): Game information (Episode 3)
 #define BB_OPTION_CONFIG_TYPE           0x00E2
 #define BB_CHARACTER_SELECT_TYPE        0x00E3

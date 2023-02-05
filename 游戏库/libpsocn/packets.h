@@ -3306,7 +3306,6 @@ typedef struct bb_challenge_07df {
 //} PACKED;
 
 // E0 (C->S): Request team and key config (BB)
-//(00000000)   08 00 E0 00 00 00 00 00                             ........
 // Blue Burst packet that requests option data.
 typedef struct bb_option_req {
     bb_pkt_hdr_t hdr;
@@ -3729,15 +3728,6 @@ typedef struct bb_guild_pkt {
 
 //////////////////////////////////////////////////////////////////////////
 /* Blue Burst 公会创建数据 */
-//               0x0020 + 8(数据头)     /0x0009 0x0042/  guild_name
-//( 00000000 )   28 00 EA 01 00 00 00 00  09 00 42 00 31 00 32 00    (.......     .B.1.2. //16
-// 
-//( 00000010 )   33 00 00 00 64 01 00 00  C0 54 25 23 3C 9F 81 00    3...d....T%#<...     //32
-//                          /
-//( 00000020 )   78 E3 31 20 C4 9C 98 00                             x.1 ....             //40
-//( 00000000 )   28 00 EA 01 00 00 00 00  09 00 42 00 33 00 33 00    (.......     .B.3.3.
-//( 00000010 )   33 00 33 00 33 00 33 00  33 00 33 00 33 00 33 00    3.3.3.3.3.3.3.3.
-//( 00000020 )   33 00 33 00 00 00 98 00                             3.3.....
 typedef struct bb_guild_data {
     bb_pkt_hdr_t hdr;
     psocn_bb_db_guild_t guild;
@@ -3788,12 +3778,6 @@ typedef struct bb_guild_unk_06EA {
     uint8_t data[];
 } PACKED bb_guild_unk_06EA_pkt;
 
-//[2023年02月02日 08:30 : 07 : 656] 调试(block - bb.c 2174) : 舰仓：BB 公会功能指令 0x07EA BB_GUILD_CHAT - 0x07EA (长度52)
-//[2023年02月02日 08:30 : 07 : 747] 调试(shipgate.c 0661) : G->S 指令0x07EA 42004063 0
-//(00000000)   34 00 EA 07 00 00 00 00  5F EE 80 02 41 53 27 59    4......._...AS'Y
-//(00000010)   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//(00000020)   00 00 00 00 00 00 00 00  09 00 42 00 31 00 32 00    .........B.1.2.
-//(00000030)   33 00 00 00                                         3...
 // 07EA (C->S): Team chat
 typedef struct bb_guild_member_chat {
     bb_pkt_hdr_t hdr;                                            /* 0x0000 8 */

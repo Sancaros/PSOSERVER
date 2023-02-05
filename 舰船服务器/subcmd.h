@@ -60,35 +60,35 @@ static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
 
 // subcmd指令集通用数据头.
 
-// 含客户端ID的副指令结构
+// 含客户端ID的副指令结构 4字节
 typedef struct client_id_hdr {
     uint8_t type; //subcmd 指令
     uint8_t size;
     uint16_t client_id; // <= 12
 } PACKED client_id_hdr_t;
 
-// 含怪物ID的副指令结构
+// 含怪物ID的副指令结构 4字节
 typedef struct enemy_id_hdr {
     uint8_t type; //subcmd 指令
     uint8_t size;
     uint16_t enemy_id; // 范围 [0x1000, 0x4000)
 } PACKED enemy_id_hdr_t;
 
-// 含对象ID的副指令结构
+// 含对象ID的副指令结构 4字节
 typedef struct object_id_hdr {
     uint8_t type; //subcmd 指令
     uint8_t size;
     uint16_t object_id; // >= 0x4000, != 0xFFFF
 } PACKED object_id_hdr_t;
 
-// 含参数的副指令结构
+// 含参数的副指令结构 4字节
 typedef struct params_hdr {
     uint8_t type; //subcmd 指令
     uint8_t size;
     uint16_t params;
 } PACKED params_hdr_t;
 
-// 普通无参数的副指令结构
+// 普通无参数的副指令结构 4字节
 typedef struct unused_hdr {
     uint8_t type; //subcmd 指令
     uint8_t size;
@@ -362,8 +362,6 @@ typedef struct subcmd_bb_DeRolLeBoss_act {
 } PACKED subcmd_bb_DeRolLeBoss_act;
 
 // 0x14: De Rol Le boss special actions (指令生效范围; 仅限游戏; 不支持 Episode 3)
-//  (00000000)   14 00 60 00 00 00 00 00  14 03 34 11 14 00 08 00 ..`.......4.....
-//  (00000010)   00 00 00 00                                     ....
 typedef struct subcmd_bb_DeRolLeBoss_sact {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
@@ -2543,11 +2541,42 @@ typedef struct subcmd_bb_req_exp {
 
 // 0xC9: Invalid subcommand
 // 0xCA: Invalid subcommand
+
 // 0xCB: Unknown
+typedef struct subcmd_bb_UNKNOW_0xCB {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xCB_t;
+
 // 0xCC: Unknown
+typedef struct subcmd_bb_UNKNOW_0xCC {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xCC_t;
+
 // 0xCD: Unknown
+typedef struct subcmd_bb_UNKNOW_0xCD {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xCD_t;
+
 // 0xCE: Unknown
+typedef struct subcmd_bb_UNKNOW_0xCE {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xCE_t;
+
 // 0xCF: Unknown (指令生效范围; 仅限游戏; handled by the server on BB)
+typedef struct subcmd_bb_UNKNOW_0xCF {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xCF_t;
+
 // 0xD0: Invalid subcommand
 // 0xD1: Invalid subcommand
 
@@ -2561,14 +2590,34 @@ typedef struct subcmd_bb_gallon_area {
 
 // 0xD3: Invalid subcommand
 // 0xD4: Unknown
+typedef struct subcmd_bb_UNKNOW_0xD4 {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xD4_t;
+
 // 0xD5: Invalid subcommand
 // 0xD6: Invalid subcommand
 // 0xD7: Invalid subcommand
 // 0xD8: Invalid subcommand
 // 0xD9: Invalid subcommand
 // 0xDA: Invalid subcommand
-// 0xDB: Unknown
+
+// 0xDB: Unknown 24字节
+typedef struct subcmd_bb_UNKNOW_0xDB {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint32_t item_id;
+    uint32_t amount;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xDB_t;
+
 // 0xDC: Unknown
+typedef struct subcmd_bb_UNKNOW_0xDC {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xDC_t;
 
 // 0xDD: Unknown
 typedef struct subcmd_bb_set_exp_rate {

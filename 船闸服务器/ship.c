@@ -1875,7 +1875,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    uint32_t gcn, teamid;
+    uint32_t gcn = 0, teamid = 0;
 
     //teamid = *(uint32_t*)&ship->rcv_pkt[0x06];
     //gcn = *(uint32_t*)&ship->rcv_pkt[0x0A];
@@ -3916,7 +3916,7 @@ static int handle_frlist_req(ship_t* c, shipgate_friend_list_req* pkt) {
     char query[256];
     void* result;
     char** row;
-    friendlist_data_t entries[5];
+    friendlist_data_t entries[5] = { 0 };
     int i;
 
     /* Parse out what we need */
@@ -4732,7 +4732,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
 static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
     uint16_t len, uint16_t flags) {
-    uint8_t tmp[6], esc[43];
+    uint8_t tmp[6] = { 0 }, esc[43] = { 0 };
     char query[1024];
     uint8_t* esc2;
     (void)flags;
