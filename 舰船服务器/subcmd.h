@@ -2605,7 +2605,14 @@ typedef struct subcmd_bb_UNKNOW_0xD4 {
 } PACKED subcmd_bb_UNKNOW_0xD4_t;
 
 // 0xD5: Invalid subcommand
-// 0xD6: Invalid subcommand
+
+// 0xD6: warp item subcommand
+typedef struct subcmd_bb_warp_item {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_warp_item_t;
+
 // 0xD7: Invalid subcommand
 // 0xD8: Invalid subcommand
 // 0xD9: Invalid subcommand

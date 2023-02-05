@@ -49,7 +49,7 @@ static int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32
 static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);
 
-static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to_client);
+static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端);
 static int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id);
 static int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
@@ -113,7 +113,7 @@ static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&drop, 0);
 }
 
-static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to_client) {
+static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t new_item = { 0 };
 
@@ -132,7 +132,7 @@ static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int send_to
     new_item.item = item;
     new_item.unused2 = 0;
 
-    if (send_to_client)
+    if (发送给其他客户端)
         return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&new_item, 0);
     else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&new_item, 0);
@@ -1900,6 +1900,47 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
 
+static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t wrap_id;
+    iitem_t backup_item;
+    int i;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    memset(&backup_item, 0, sizeof(iitem_t));
+    wrap_id = *(uint32_t*)&pkt->data[0x0C];
+
+    for (i = 0; i < c->bb_pl->inv.item_count; i++) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == wrap_id) {
+            memcpy(&backup_item, &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
+            break;
+        }
+    }
+
+    if (backup_item.data.item_id) {
+        subcmd_send_bb_destroy_item(c, backup_item.data.item_id, 1);
+
+        if (backup_item.data.data_b[0] == 0x02)
+            backup_item.data.data2_b[2] |= 0x40; // Wrap a mag
+        else
+            backup_item.data.data_b[4] |= 0x40; // Wrap other
+
+        subcmd_send_bb_create_item(c, backup_item.data, 1);
+    }
+    else {
+        ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
+            c->guildcard, wrap_id);
+        return -1;
+    }
+
+    return 0;
+}
+
 /* 处理BB 0x62/0x6D 数据包. */
 int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -2066,6 +2107,12 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
+    case SUBCMD62_WARP_ITEM:
+        rv = handle_bb_warp_item(dest, (subcmd_bb_warp_item_t*)pkt);
+        //UNK_CSPD(type, c->version, pkt);
+        //rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        break;
+
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
@@ -2077,7 +2124,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_QUEST_ITEM_UNKNOW1:
     case SUBCMD62_QUEST_ITEM_RECEIVE:
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
-    case SUBCMD62_WARP_ITEM:
     case SUBCMD62_QUEST_ONEPERSON_SET_ITEM:
     case SUBCMD62_GANBLING:
         //UNK_CSPD(type, c->version, pkt);
