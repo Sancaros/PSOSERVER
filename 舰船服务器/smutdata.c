@@ -91,7 +91,7 @@ int smutdata_read(const char *fn) {
     entries1 = LE32_AT_OFFSET(ucbuf, 4);
     entries2 = LE32_AT_OFFSET(ucbuf, 8);
 
-    /* Sanity check before we go any farther... */
+    /* 合理性检查 before we go any farther... */
     if(((entries1 + entries2 + 3) << 2) > (uint32_t)ucsz) {
         SHIPS_LOG("读取 Smutdata 标头,文件太短!");
         free_safe(ucbuf);
@@ -271,7 +271,7 @@ int smutdata_check_string(const char *str, int which) {
     if(!smutdata_west)
         return 0;
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(!(which & SMUTDATA_BOTH))
         return 0;
 
@@ -420,7 +420,7 @@ char *smutdata_censor_string(const char *str, int which) {
     tmp = str;
     len = mbsrtowcs(real_wstr, &tmp, len + 1, &state);
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(!smutdata_west)
         goto out;
 

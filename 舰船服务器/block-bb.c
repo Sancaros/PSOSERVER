@@ -68,6 +68,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
 
     /* See if they can change lobbies... */
     rv = lobby_change_lobby(c, l);
+
     if (rv == LOBBY_FLAG_ERROR_GAME_V1_CLASS) {
         /* HUcaseal, FOmar, or RAmarl trying to join a v1 game */
         send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
@@ -164,14 +165,14 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     strncpy((char*)c->game_info.name, c->pl->bb.character.disp.dress_data.guildcard_string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
-    /* Try to backup their character data */
-    //if (c->version != CLIENT_VERSION_BB &&
-        //(c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
+    /* 备份临时数据 TODO BB版本未完成 */
+    if (c->version != CLIENT_VERSION_BB &&
+        (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
         if (shipgate_send_cbkup(&ship->sg, &c->game_info, &c->pl->bb, sizeof(psocn_bb_db_char_t))) {
             DBG_LOG("备份临时数据 版本 %d", c->version);
             return rv;
         }
-    //}
+    }
 
     return rv;
 }
@@ -182,7 +183,7 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     size_t i;
     char* u8msg, * cmsg;
 
-    /* Sanity check... this shouldn't happen. */
+    /* 合理性检查... this shouldn't happen. */
     if (!l)
         return -1;
 
@@ -988,7 +989,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     int rv;
     //uint16_t flag;
 
-        /* Sanity check... Is the client in a game lobby? */
+        /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }
@@ -1032,7 +1033,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     int rv = 0;
     //uint16_t flag;
 
-        /* Sanity check... Is the client in a game lobby? */
+        /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
@@ -1734,7 +1735,8 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
     ship_client_t* target_c = { 0 };
-    //uint32_t gcn, ch;
+    uint32_t  i = 0, target_gc = pkt->target_guildcard;
+    int done = 0, rv = -1;
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1742,34 +1744,84 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
         return -1;
     }
 
-    if ((c->bb_guild->guild_data.guild_priv_level == 0x30) && (c->bb_guild->guild_data.guild_id != 0)) {
-
-        shipgate_fw_bb(&ship->sg, pkt, 0, c);
-        memset(&target_c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
-
-        //for (ch = 0;ch < ) {
-
-        //}
-
-
-
-
-
-        lobby_t* l = target_c->cur_lobby;
-
-
-        send_bb_guild_cmd(target_c, BB_GUILD_FULL_DATA);
-
+    if (c->bb_guild->guild_data.guild_id != -1) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //pkt->guild_id = c->bb_guild->guild_data.guild_id;
-        send_bb_guild_cmd(target_c, BB_GUILD_UNK_12EA);
-        send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
-        send_bb_guild_cmd(target_c, BB_GUILD_UNK_04EA);
+        return 0;
     }
 
-    print_payload((uint8_t*)pkt, len);
+    if (c->bb_guild->guild_data.guild_priv_level < 0x30) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return 0;
+    }
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    /* Search the local ship first. */
+    for (i = 0; i < ship->cfg->blocks && !done; ++i) {
+        if (!ship->blocks[i] || !ship->blocks[i]->run) {
+            continue;
+        }
+
+        pthread_rwlock_rdlock(&ship->blocks[i]->lock);
+
+        /* Look through all clients on that block. */
+        TAILQ_FOREACH(target_c, ship->blocks[i]->clients, qentry) {
+            /* Check if this is the target and the target has player
+               data. */
+            if (target_c->guildcard == target_gc && target_c->pl && target_c->guild_accept == 1) {
+                pthread_mutex_lock(&target_c->mutex);
+
+                target_c->guild_accept = 0;
+
+                shipgate_fw_bb(&ship->sg, pkt, 0, target_c);
+
+                memset(&target_c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
+
+                target_c->bb_guild->guild_data.guildcard = c->bb_guild->guild_data.guildcard;
+                target_c->bb_guild->guild_data.guild_id = c->bb_guild->guild_data.guild_id;
+                memcpy(&target_c->bb_guild->guild_data.guild_info, &c->bb_guild->guild_data.guild_info[0], sizeof(target_c->bb_guild->guild_data.guild_info));
+                target_c->bb_guild->guild_data.guild_priv_level = 0;
+
+                /* 赋予名称颜色代码 */
+                target_c->bb_guild->guild_data.guild_name[0] = 0x0009;
+                target_c->bb_guild->guild_data.guild_name[1] = 0x0045;
+                memcpy(&target_c->bb_guild->guild_data.guild_name, &c->bb_guild->guild_data.guild_name[0], sizeof(target_c->bb_guild->guild_data.guild_name));
+
+                /* TODO 公会等级未实现 */
+                target_c->bb_guild->guild_data.guild_rank = c->bb_guild->guild_data.guild_rank;
+
+                memcpy(&target_c->bb_guild->guild_data.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(target_c->bb_guild->guild_data.guild_flag));
+                target_c->bb_guild->guild_data.guild_rewards[0] = c->bb_guild->guild_data.guild_rewards[0];
+                target_c->bb_guild->guild_data.guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
+
+                rv = send_bb_guild_cmd(target_c, BB_GUILD_FULL_DATA);
+                rv = send_bb_guild_cmd(target_c, BB_GUILD_UNK_12EA);
+                rv = send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
+                rv = send_bb_guild_cmd(target_c, BB_GUILD_UNK_04EA);
+
+                pthread_mutex_unlock(&target_c->mutex);
+                done = 1;
+                break;
+            }
+            else if (target_c->guildcard == target_gc) {
+                /* If they're on but don't have data, we're not going to
+                   find them anywhere else, return success. */
+                rv = 0;
+                done = 1;
+                break;
+            }
+        }
+
+        pthread_rwlock_unlock(&ship->blocks[i]->lock);
+    }
+
+    if (!done) {
+        /* If we get here, we didn't find it locally. Send to the shipgate to
+           continue searching. */
+        return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    }
+
+    return 0;
 }
 
 static int process_bb_guild_unk_04EA(ship_client_t* c, bb_guild_unk_04EA_pkt* pkt) {
@@ -2538,6 +2590,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0062 98*/
     case GAME_COMMAND2_TYPE:
+        /* 0x006C 108*/
+    case GAME_COMMANDC_TYPE:
         /* 0x006D 109*/
     case GAME_COMMANDD_TYPE:
         return subcmd_bb_handle_one(c, (subcmd_bb_pkt_t*)pkt);

@@ -750,7 +750,7 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
                 wranks[j] = 0;
             }
 
-            /* Sanity check... Make sure this is sane before we go to the loop
+            /* 合理性检查... Make sure this is sane before we go to the loop
                below, since it will end up being an infinite loop if its not
                sane... */
             if(ent->weapon_upgfloor[i] <= 0) {
@@ -769,7 +769,7 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
         }
     }
 
-    /* Sanity check... This shouldn't happen! */
+    /* 合理性检查... This shouldn't happen! */
     if(!j) {
         ITEM_LOG("在层级 %d 无法生成 v2 版本的 武器. 请检查您的 ItemPT.afs 文件是否有效!", area);
         return -1;
@@ -788,7 +788,7 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
         }
     }
 
-    /* Sanity check... Once again, this shouldn't happen! */
+    /* 合理性检查... Once again, this shouldn't happen! */
     if(!item[0]) {
         ITEM_LOG("生成无效 v2 武器. 请通知程序员处理!");
         return -1;
@@ -808,7 +808,7 @@ already_picked:
         }
     }
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
               "number %d. 请检查您的 ItemPT.afs 文件是否有效!",
@@ -914,7 +914,7 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
                 wranks[j] = 0;
             }
 
-            /* Sanity check... Make sure this is sane before we go to the loop
+            /* 合理性检查... Make sure this is sane before we go to the loop
                below, since it will end up being an infinite loop if its not
                sane... */
             if(ent->weapon_upgfloor[i] <= 0) {
@@ -934,7 +934,7 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
         }
     }
 
-    /* Sanity check... This shouldn't happen! */
+    /* 合理性检查... This shouldn't happen! */
     if(!j) {
         ITEM_LOG("No v3 weapon to generate on floor %d, please check "
               "your ItemPT.gsl 文件 (%s) 是否有效!", area,
@@ -955,7 +955,7 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
         }
     }
 
-    /* Sanity check... Once again, this shouldn't happen! */
+    /* 合理性检查... Once again, this shouldn't happen! */
     if(!item[0]) {
         ITEM_LOG("生成无效 v3 武器. 请通知程序员处理!");
         return -1;
@@ -975,7 +975,7 @@ already_picked:
         }
     }
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
               "number %d. 请检查您的 ItemPT.gsl (%s) 是否有效!",
@@ -1084,7 +1084,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
                 wranks[j] = 0;
             }
 
-            /* Sanity check... Make sure this is sane before we go to the loop
+            /* 合理性检查... Make sure this is sane before we go to the loop
                below, since it will end up being an infinite loop if its not
                sane... */
             if (ent->weapon_upgfloor[i] <= 0) {
@@ -1104,7 +1104,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
         }
     }
 
-    /* Sanity check... This shouldn't happen! */
+    /* 合理性检查... This shouldn't happen! */
     if (!j) {
         ITEM_LOG("层级 %d 未生成 BB 武器物品, 请检查 ItemPT.gsl 文件 (%s) 有效性!", area,
             bb ? "BB" : "GC");
@@ -1139,7 +1139,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     //[2022年09月07日 12:51:56:073] 调试(ptdata.c 1131): 3 < 3 (-23-13-00000000-39)
     //DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
 
-    /* Sanity check... Once again, this shouldn't happen! */
+    /* 合理性检查... Once again, this shouldn't happen! */
     if (!item[0]) {
         ITEM_LOG("生成无效 BB 武器. 请通知程序员处理!");
         return -1;
@@ -1159,7 +1159,7 @@ already_picked:
         }
     }
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if (i >= 9) {
         ITEM_LOG("Invalid power pattern for floor %d, pattern "
             "number %d. 请检查您的 ItemPT.gsl (%s) 是否有效!",
@@ -1290,7 +1290,7 @@ static int generate_armor_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(armor == -1) {
             ITEM_LOG("无法生成 v2 版本的 装甲. 请检查您的 ItemPT.afs 文件是否有效!");
             return -1;
@@ -1401,7 +1401,7 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(armor == -1) {
             ITEM_LOG("无法生成 %s 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!",
                 bb ? "BB" : "GC");
@@ -1526,7 +1526,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if (armor == -1) {
             ITEM_LOG("无法生成 %s 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!",
                 bb ? "BB" : "GC");
@@ -1650,7 +1650,7 @@ static int generate_shield_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(armor == -1) {
             ITEM_LOG("无法生成 v2 版本的 护盾. 请检查您的 ItemPT.afs 文件是否有效!");
             return -1;
@@ -1738,7 +1738,7 @@ static int generate_shield_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(armor == -1) {
             ITEM_LOG("Couldn't find a %s shield to generate. Please "
                   "check your ItemPT.gsl 文件 是否有效!",
@@ -1842,7 +1842,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
             }
         }
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if (armor == -1) {
             ITEM_LOG("Couldn't find a %s shield to generate. Please "
                 "check your ItemPT.gsl 文件 是否有效!",

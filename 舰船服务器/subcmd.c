@@ -847,7 +847,7 @@ static int handle_level_up(ship_client_t *c, subcmd_level_up_t*pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand and the client id
+    /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x05 || pkt->shdr.client_id != c->client_id) {
         return -1;
@@ -881,7 +881,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
     if(c->version == CLIENT_VERSION_DCV1 && pkt->shdr.size == 0x06)
         pkt->shdr.size = 0x07;
 
-    /* Sanity check... Make sure the size of the subcommand is valid, and
+    /* 合理性检查... Make sure the size of the subcommand is valid, and
        disconnect the client if it isn't. */
     if(pkt->shdr.size != 0x07)
         return -1;
@@ -1018,7 +1018,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. We accept two different sizes here
        0x0B for v2 and later, and 0x0A for v1. */
     if (pkt->shdr.size != 0x0B && pkt->shdr.size != 0x0A) {
@@ -1301,7 +1301,7 @@ static int handle_delete_inv(ship_client_t *c, subcmd_destroy_item_t *pkt) {
     if(l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
-    /* Sanity check... Make sure the size of the subcommand and the client id
+    /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x03)
         return -1;
@@ -1350,7 +1350,7 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
     if(l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
-    /* Sanity check... Make sure the size of the subcommand and the client id
+    /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x06 || pkt->shdr.client_id != c->client_id)
         return -1;
@@ -1395,7 +1395,7 @@ static int handle_use_item(ship_client_t *c, subcmd_use_item_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand and the client id
+    /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x02)
         return -1;
@@ -1631,7 +1631,7 @@ static int handle_mhit(ship_client_t *c, subcmd_mhit_pkt_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
@@ -1848,7 +1848,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
@@ -1904,7 +1904,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
@@ -1913,7 +1913,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Does the character have that level of technique? */
+    /* 合理性检查... Does the character have that level of technique? */
     tech_level = c->pl->v1.character.techniques[pkt->tech];
     if(tech_level == 0xFF) {
         /* This might happen if the user learns a new tech in a team. Until we
@@ -2213,7 +2213,7 @@ static int handle_set_pos24(ship_client_t *c, subcmd_pkt_t *pkt) {
        by v1 players with other players' client IDs at the beginning of a
        quest. */
     if(c->version == CLIENT_VERSION_DCV1) {
-        /* Sanity check... */
+        /* 合理性检查... */
         if(pkt->hdr.dc.pkt_len != LE16(0x0018) || pkt->size != 0x05) {
             ERR_LOG("Client %" PRIu32 " sent invalid setpos24!",
                   c->guildcard);
@@ -2270,7 +2270,7 @@ static int handle_drop_item(ship_client_t *c, subcmd_drop_item_t *pkt) {
               c->guildcard);
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x06)
         return -1;
@@ -2301,7 +2301,7 @@ static int handle_drop_stack(ship_client_t *c, subcmd_drop_stack_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. Note that v1 is missing the stupid
        extra "two" field from the packet. */
     if(pkt->shdr.size != 0x0A && pkt->shdr.size != 0x09)
@@ -2329,7 +2329,7 @@ static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x05)
         return -1;
@@ -2354,7 +2354,7 @@ static int handle_done_talk_npc(ship_client_t *c, subcmd_end_talk_to_npc_t *pkt)
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x01)
         return -1;
@@ -2373,7 +2373,7 @@ static int handle_pick_up(ship_client_t *c, ship_client_t *d, subcmd_pick_up_t *
         return -1;
     }
 
-    /* Sanity check... Make sure the size of the subcommand matches with what we
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if(pkt->shdr.size != 0x03)
         return -1;
@@ -2931,17 +2931,18 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
     subcmd_bb_set_pos_t bb = { 0 };
 
     if(dst->version == CLIENT_VERSION_BB) {
+        bb.hdr.pkt_len = LE16(0x0020);
         bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
         bb.hdr.flags = 0;
-        bb.hdr.pkt_len = LE16(0x0020);
         bb.shdr.type = SUBCMD60_SET_AREA_20;
-        bb.shdr.size = 6;
+        bb.shdr.size = 0x06;
         bb.shdr.client_id = src->client_id;
-        bb.area = LE32(0x0000000F);         /* Area */
-        bb.w = src->x;                      /* X */
-        bb.x = 0;                           /* Y */
-        bb.y = src->z;                      /* Z */
-        bb.z = 0;                           /* Facing, perhaps? */
+
+        bb.area = LE32(0x0000000F);            /* Area */
+        bb.w = src->x;                         /* X */
+        bb.x = 0.0f;                           /* Y */
+        bb.y = src->z;                         /* Z */
+        bb.z = 0.0f;                           /* Facing, perhaps? */
 
         return send_pkt_bb(dst, (bb_pkt_hdr_t *)&bb);
     }
@@ -2956,13 +2957,14 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
         else
             dc.shdr.type = SUBCMD60_SET_AREA_20;
 
-        dc.shdr.size = 6;
+        dc.shdr.size = 0x06;
         dc.shdr.client_id = src->client_id;
-        dc.area = LE32(0x0000000F);         /* Area */
-        dc.w = src->x;                      /* X */
-        dc.x = 0;                           /* Y */
-        dc.y = src->z;                      /* Z */
-        dc.z = 0;                           /* Facing, perhaps? */
+
+        dc.area = LE32(0x0000000F);            /* Area */
+        dc.w = src->x;                         /* X */
+        dc.x = 0.0f;                           /* Y */
+        dc.y = src->z;                         /* Z */
+        dc.z = 0.0f;                           /* Facing, perhaps? */
 
         return send_pkt_dc(dst, (dc_pkt_hdr_t*)&dc);
     }

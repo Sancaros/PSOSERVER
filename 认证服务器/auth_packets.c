@@ -2146,7 +2146,7 @@ int send_bb_guild_chunk(login_client_t *c, uint32_t chunk_index) {
     uint16_t size = sizeof(bb_guildcard_data_t) - offset;
     uint8_t *ptr = ((uint8_t *)c->gc_data) + offset;
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(offset > sizeof(bb_guildcard_data_t)) {
         return -1;
     }

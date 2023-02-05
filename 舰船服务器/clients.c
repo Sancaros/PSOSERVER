@@ -1913,7 +1913,7 @@ static int client_distance_lua(lua_State *l) {
         if(c->cur_area != c2->cur_area)
             goto err;
 
-        /* Calculate euclidian distance. */
+        /* ¼ÆËãÅ·ÊÏ¾àÀë. */
         x = c->x - c2->x;
         y = c->y - c2->y;
         z = c->z - c2->z;

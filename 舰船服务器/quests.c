@@ -316,7 +316,7 @@ static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
         clen = LE32(ck->length);
         cptr = strrchr(fn, '.');
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(clen > 1024 || !cptr) {
             QERR_LOG("损坏的任务数据!");
             return -1;
@@ -368,7 +368,7 @@ static int copy_pc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
         clen = LE32(ck->length);
         cptr = strrchr(fn, '.');
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(clen > 1024 || !cptr) {
             QERR_LOG("损坏的任务数据!");
             return -1;
@@ -420,7 +420,7 @@ static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
         clen = LE32(ck->length);
         cptr = strrchr(fn, '.');
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if(clen > 1024 || !cptr) {
             QERR_LOG("损坏的任务数据!");
             return -1;

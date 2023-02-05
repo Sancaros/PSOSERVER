@@ -150,7 +150,8 @@ struct lobby {
     uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
     fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
 
-    ship_client_t *clients[LOBBY_MAX_CLIENTS];
+    ship_client_t *clients[LOBBY_MAX_CLIENTS]; // 角色数据所在位置 与 clients_slot 可以合并为加入房间的双重认证
+    int clients_slot[LOBBY_MAX_CLIENTS]; // 记录角色所处格子 检测角色是否真实存在 角色在进入游戏后占用该格子
 
     struct lobby_pkt_queue pkt_queue;
     struct lobby_item_queue item_queue;

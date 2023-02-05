@@ -1114,7 +1114,7 @@ int quest_flag_reply(ship_client_t *c, uint32_t reason, uint32_t value) {
     lobby_t *l;
     uint8_t regnum;
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if(!(c->flags & CLIENT_FLAG_QSTACK_LOCK))
         return -1;
 

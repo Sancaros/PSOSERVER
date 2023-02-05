@@ -5038,7 +5038,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return handle_tlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
 
     case SHDR_TYPE_SCHUNK:
-        /* Sanity check... */
+        /* 合理性检查... */
         if (!(flags & SHDR_RESPONSE)) {
             ERR_LOG("舰船发送了脚本块?");
             return -1;

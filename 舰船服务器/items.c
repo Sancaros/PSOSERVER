@@ -3919,8 +3919,8 @@ void clear_iitem(iitem_t* iitem) {
 /* 初始化房间物品数据 */
 void clear_fitem(fitem_t* fitem) {
     clear_iitem(&fitem->inv_item);
-    fitem->x = 0x00000000;
-    fitem->z = 0x00000000;
+    fitem->x = 0.0f;
+    fitem->z = 0.0f;
     fitem->area = 0;
 }
 
@@ -3929,7 +3929,7 @@ void clear_fitem(fitem_t* fitem) {
 iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     lobby_item_t* item;
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
@@ -3954,7 +3954,7 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
 iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* it) {
     lobby_item_t* item;
 
-    /* Sanity check... */
+    /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 

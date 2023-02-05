@@ -151,7 +151,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
 
     /* See if the client enabled server-side drops. */
     if(c->flags & CLIENT_FLAG_SERVER_DROPS) {
-        /* Sanity check... */
+        /* 合理性检查... */
         switch(c->version) {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
@@ -833,10 +833,11 @@ static int td(ship_client_t *c, lobby_t *l, void *req) {
     return 0;
 }
 
+/* 将客户端新增至房间中 */
 static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
     int i;
 
-    /* Sanity check: Do we have space? */
+    /* 合理性检查: Do we have space? */
     if(l->num_clients >= l->max_clients)
         return -1;
 
@@ -854,6 +855,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
     if(!l->clients[1] && l->version < CLIENT_VERSION_GC &&
        l->type == LOBBY_TYPE_GAME) {
         l->clients[1] = c;
+        l->clients_slot[1] = 1;
         c->cur_lobby = l;
         c->client_id = 1;
         c->arrow_color = 0;
@@ -875,6 +877,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i] == NULL) {
             l->clients[i] = c;
+            l->clients_slot[i] = 1;
             c->cur_lobby = l;
             c->client_id = i;
             c->arrow_color = 0;
@@ -962,13 +965,12 @@ static int lobby_elect_leader_locked(lobby_t *l) {
     return earliest_i;
 }
 
-/* Remove a client from a lobby, returns 0 if the lobby should stay, -1 on
-   failure. */
+/* 将客户端从房间中移除, 返回值 0 表示房间应该保留, -1 移除失败. */
 static int lobby_remove_client_locked(ship_client_t *c, int client_id,
                                       lobby_t *l) {
     int new_leader;
 
-    /* Sanity check... Was the client where it said it was? */
+    /* 合理性检查... Was the client where it said it was? */
     if(l->clients[client_id] != c) {
         return -1;
     }
@@ -996,6 +998,7 @@ static int lobby_remove_client_locked(ship_client_t *c, int client_id,
 
     /* Remove the client from our list, and we're done. */
     l->clients[client_id] = NULL;
+    l->clients_slot[client_id] = 0;
     --l->num_clients;
 
     /* Make sure the maximum challenge level available hasn't changed... */
@@ -1826,7 +1829,7 @@ static int lobby_enqueue_pkt_ex(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p,
 
     pthread_mutex_lock(&l->mutex);
 
-    /* Sanity checks... */
+    /* 合理性检查... */
     if(!(l->flags & LOBBY_FLAG_BURSTING)) {
         rv = -1;
         goto out;
@@ -1884,7 +1887,7 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
 
     pthread_mutex_lock(&l->mutex);
 
-    /* Sanity checks... */
+    /* 合理性检查... */
     if (!(l->flags & LOBBY_FLAG_BURSTING)) {
         rv = -1;
         goto out;
@@ -1896,7 +1899,7 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
         goto out;
     }
 
-    /* Allocate space */
+    /* 申请临时内存空间 */
     pkt = (lobby_pkt_t*)malloc(sizeof(lobby_pkt_t));
     if (!pkt) {
         rv = -3;
@@ -1932,82 +1935,6 @@ int lobby_enqueue_pkt_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
 int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p) {
     return lobby_enqueue_pkt_ex_bb(l, c, p, 1);
 }
-//
-///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
-//   before calling this. Returns NULL if there is no space in the lobby's
-//   inventory for the new item. */
-//iitem_t *lobby_add_new_item_locked(lobby_t *l, uint32_t item_data[4]) {
-//    lobby_item_t *item;
-//
-//    /* Sanity check... */
-//    if(l->version != CLIENT_VERSION_BB)
-//        return NULL;
-//
-//    if(!(item = (lobby_item_t *)malloc(sizeof(lobby_item_t))))
-//        return NULL;
-//
-//    memset(item, 0, sizeof(lobby_item_t));
-//
-//    /* Copy the item data in. */
-//    item->d.data.item_id = LE32(l->item_next_lobby_id);
-//    item->d.data.data_l[0] = LE32(item_data[0]);
-//    item->d.data.data_l[1] = LE32(item_data[1]);
-//    item->d.data.data_l[2] = LE32(item_data[2]);
-//    item->d.data.data2_l = LE32(item_data[3]);
-//
-//    /* Increment the item ID, add it to the queue, and return the new item */
-//    ++l->item_next_lobby_id;
-//    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-//    return &item->d;
-//}
-//
-//iitem_t *lobby_add_item_locked(lobby_t *l, iitem_t *it) {
-//    lobby_item_t *item;
-//
-//    /* Sanity check... */
-//    if(l->version != CLIENT_VERSION_BB)
-//        return NULL;
-//
-//    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
-//
-//    if(!item)
-//        return NULL;
-//
-//    memset(item, 0, sizeof(lobby_item_t));
-//
-//    /* Copy the item data in. */
-//    memcpy(&item->d, it, sizeof(iitem_t));
-//
-//    /* Add it to the queue, and return the new item */
-//    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-//    return &item->d;
-//}
-//
-//int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv) {
-//    lobby_item_t *i, *tmp;
-//
-//    if(l->version != CLIENT_VERSION_BB)
-//        return -1;
-//
-//    memset(rv, 0, sizeof(iitem_t));
-//    rv->data.data_l[0] = LE32(Item_NoSuchItem);
-//
-//    i = TAILQ_FIRST(&l->item_queue);
-//    while(i) {
-//        tmp = TAILQ_NEXT(i, qentry);
-//
-//        if(i->d.data.item_id == item_id) {
-//            memcpy(rv, &i->d, sizeof(iitem_t));
-//            TAILQ_REMOVE(&l->item_queue, i, qentry);
-//            free_safe(i);
-//            return 0;
-//        }
-//
-//        i = tmp;
-//    }
-//
-//    return 1;
-//}
 
 void lobby_send_kill_counts(lobby_t *l) {
     int i;

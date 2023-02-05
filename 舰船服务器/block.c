@@ -1528,7 +1528,7 @@ static int dc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
     char* u8msg, * cmsg;
     size_t len;
 
-    /* Sanity check... this shouldn't happen. */
+    /* 合理性检查... this shouldn't happen. */
     if (!l)
         return -1;
 
@@ -1590,7 +1590,7 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
     size_t i;
     char* u8msg, * cmsg;
 
-    /* Sanity check... this shouldn't happen. */
+    /* 合理性检查... this shouldn't happen. */
     if (!l)
         return -1;
 
@@ -2126,7 +2126,7 @@ static int dc_process_done_burst(ship_client_t* c) {
     lobby_t* l = c->cur_lobby;
     int rv;
 
-    /* Sanity check... Is the client in a game lobby? */
+    /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
         return -1;
     }

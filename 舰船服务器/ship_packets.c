@@ -5627,7 +5627,7 @@ static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
             return -1;
     }
 
-    /* Sanity check. */
+    /* 合理性检查. */
     if(!qlist->cats)
         return -1;
 
@@ -5834,7 +5834,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
             return -1;
     }
 
-    /* Sanity check. */
+    /* 合理性检查. */
     if(!qlist->cats)
         return -1;
 
@@ -6025,7 +6025,7 @@ static int send_gc_quest_list(ship_client_t *c, int cn, int lang) {
             return -1;
     }
 
-    /* Sanity check. */
+    /* 合理性检查. */
     if(!qlist->cats)
         return -1;
 
@@ -6249,7 +6249,7 @@ static int send_xbox_quest_list(ship_client_t *c, int cn, int lang) {
             return -1;
     }
 
-    /* Sanity check. */
+    /* 合理性检查. */
     if(!qlist->cats)
         return -1;
 
@@ -6461,7 +6461,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             return -1;
     }
 
-    /* Sanity check. */
+    /* 合理性检查. */
     if(!qlist->cats)
         return -1;
 

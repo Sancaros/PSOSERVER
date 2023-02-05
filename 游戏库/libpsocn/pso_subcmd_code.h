@@ -214,7 +214,7 @@
 #define SUBCMD60_UNKNOW_6C                     0x6C
 #define SUBCMD60_UNKNOW_6D                     0x6D
 #define SUBCMD60_UNKNOW_6E                     0x6E
-#define SUBCMD60_UNKNOW_6F                     0x6F
+#define SUBCMD60_QUEST_DATA1                   0x6F
 #define SUBCMD60_UNKNOW_70                     0x70
 #define SUBCMD60_UNKNOW_71                     0x71
 #define SUBCMD60_BURST_DONE                    0x72
@@ -282,7 +282,7 @@
 #define SUBCMD60_CHAIR_DIR                     0xAF // 旋转椅子朝向
 #define SUBCMD60_CHAIR_MOVE                    0xB0 // 移动椅子
 #define SUBCMD60_UNKNOW_B5                     0xB5 // BB shop request process_subcommand_open_shop_bb_or_unknown_ep3
-#define SUBCMD60_SHOP_INV                      0xB6    /* Blue Burst - shop inventory */
+#define SUBCMD60_SHOP_INV                      0xB6 /* Blue Burst - shop inventory */
 #define SUBCMD60_UNKNOW_B7                     0xB7 // process_subcommand_buy_shop_item_bb
 #define SUBCMD60_UNKNOW_B8                     0xB8 // process_subcommand_identify_item_bb
 #define SUBCMD60_UNKNOW_B9                     0xB9 // process_subcommand_unimplemented

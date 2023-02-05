@@ -214,6 +214,7 @@ struct ship_client {
     sg_char_bkup_pkt game_info;
 
     int32_t guild_accept;
+    int guild_master_exfer;
     psocn_bb_db_guild_t *bb_guild;
 
     client_game_data_t game_data;

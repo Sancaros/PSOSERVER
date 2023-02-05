@@ -151,7 +151,7 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
         rv->files[i].offset = offset * 2048;
         rv->files[i].size = size;
 
-        /* Sanity check... */
+        /* 合理性检查... */
         if (rv->files[i].offset + rv->files[i].size > len) {
             erv = PSOARCHIVE_ERANGE;
             goto ret_files;

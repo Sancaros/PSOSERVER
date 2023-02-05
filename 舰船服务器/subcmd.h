@@ -49,10 +49,11 @@ typedef struct subcmd_pkt {
 static int char_dc_hdrsize2 = sizeof(subcmd_pkt_t);
 
 typedef struct subcmd_bb_pkt {
-    bb_pkt_hdr_t hdr;
-    uint8_t type;
-    uint8_t size;
-    uint8_t data[0];
+    bb_pkt_hdr_t hdr;             /* 0x00 - 0x07 8 */
+    uint8_t type;                 /* 0x08 - 0x08 1 */
+    uint8_t size;                 /* 0x09 - 0x09 1 */
+    /* 数据头 + 数据信息 占用了 10 个字节 */
+    uint8_t data[0];              /* 0x0A -  */
 } PACKED subcmd_bb_pkt_t;
 
 static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
@@ -497,7 +498,8 @@ typedef struct subcmd_bb_set_player_visibility_6x22_6x23 {
 typedef struct subcmd_bb_set_pos_0x24 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t unknown_a1;
+    uint16_t unk1;
+    uint16_t unused;
     float x;
     float y;
     float z;
@@ -1316,12 +1318,12 @@ typedef struct subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     // BC0-compressed data follows here (use bc0_decompress from Compression.hh)
 } PACKED subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E_t;
 
-// 0x6F: Unknown (used while loading into game) 8 + 4 + 512
-typedef struct subcmd_bb_Unknown_6x6F {
+// 0x6F: subcmd_bb_send_quest_data1 (used while loading into game) 8 + 4 + 512 + 4
+typedef struct subcmd_bb_send_quest_data1 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint8_t unknown_a1[0x200];
-} PACKED subcmd_bb_Unknown_6x6F_t;
+    uint8_t quest_data1[0x0208];
+} PACKED subcmd_bb_send_quest_data1_t;
 
 // 0x70: Sync player disp data and inventory (used while loading into game)
 // Annoyingly, they didn't use the same format as the 65/67/68 commands here,

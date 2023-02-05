@@ -2168,7 +2168,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
     }
     else {
         /* Chunk packet */
-        /* Sanity check the packet. */
+        /* 合理性检查 the packet. */
         if (psocn_crc32(pkt->chunk, len) != crc) {
             /* XXXX */
             SHIPS_LOG("船闸服务器发送了带有错误校验的脚本");
@@ -2218,7 +2218,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 static int handle_sset(shipgate_conn_t* c, shipgate_sset_pkt* pkt) {
     script_action_t action;
 
-    /* Sanity check the packet. */
+    /* 合理性检查 the packet. */
     if (pkt->action >= ScriptActionCount) {
         SHIPS_LOG("船闸服务器设置了无效事件的脚本 %" PRIu32
             "", pkt->action);
@@ -2305,7 +2305,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
             pthread_mutex_lock(&i->mutex);
             l = i->cur_lobby;
 
-            /* Sanity check... Make sure the user hasn't been booted from the
+            /* 合理性检查... Make sure the user hasn't been booted from the
                lobby somehow. */
             if (!l) {
                 pthread_mutex_unlock(&i->mutex);
@@ -2315,7 +2315,7 @@ static int handle_qflag(shipgate_conn_t* c, shipgate_qflag_pkt* pkt) {
             /* Is this in response to a direct flag set or from a quest
                function call? */
             if (!(i->flags & CLIENT_FLAG_QSTACK_LOCK)) {
-                /* Sanity check... If we got this far, we should not have a long
+                /* 合理性检查... If we got this far, we should not have a long
                    flag. */
                 if ((ctl & 0x80000000)) {
                     /* Drop the sync, because it either wasn't requested or
@@ -2383,7 +2383,7 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
             pthread_mutex_lock(&i->mutex);
             l = i->cur_lobby;
 
-            /* Sanity check... Make sure the user hasn't been booted from the
+            /* 合理性检查... Make sure the user hasn't been booted from the
                lobby somehow. */
             if (!l) {
                 pthread_mutex_unlock(&i->mutex);
@@ -2393,7 +2393,7 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
             /* Is this in response to a direct flag set or from a quest
                function call? */
             if (!(i->flags & CLIENT_FLAG_QSTACK_LOCK)) {
-                /* Sanity check... If we got this far, we should not have a long
+                /* 合理性检查... If we got this far, we should not have a long
                    flag. */
                 if ((flag_id & 0x80000000)) {
                     /* Drop the sync, because it either wasn't requested or
@@ -2630,7 +2630,7 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
     block = ntohl(pkt->block);
     count = ntohl(pkt->count);
 
-    /* Sanity check */
+    /* 合理性检查 */
     if (len < sizeof(shipgate_user_blocklist_pkt) + 8 * count)
         return -1;
 
