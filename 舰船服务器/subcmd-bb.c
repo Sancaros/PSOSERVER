@@ -2586,6 +2586,7 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
 
 static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    uint32_t quest_offset = *(uint32_t*)&pkt->pos[0];
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2602,9 +2603,17 @@ static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* 
         return -1;
     }
 
-    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
+    if (quest_offset >= 23) {
+        UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
+        return 0;
+    }
 
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    quest_offset *= 4;
+
+    *(uint32_t*)&c->bb_pl->quest_data2[quest_offset] = *(uint32_t*)&pkt->pos[0];
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+
 }
 
 static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
@@ -3340,7 +3349,7 @@ int quest_flag_check_ep1_solo(uint8_t* flag_data, uint32_t difficulty) {
 }
 
 /* TODO 挑战任务的完成度检测 */
-int quest_flag_check_CH(uint8_t* flag_data, uint32_t difficulty) {
+int quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
     int i;
     uint32_t quest_flag;
 
@@ -3379,7 +3388,6 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
-
 
     DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令!",
         c->guildcard);
