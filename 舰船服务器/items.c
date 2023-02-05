@@ -3837,8 +3837,9 @@ const char* item_get_name(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_item_data(ship_client_t* c, item_t* item) {
-    ITEM_LOG("物品数据: %s (ID %d / %08X) %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-        item_get_name(item, c->version), item->item_id, item->item_id,
+    ITEM_LOG("物品信息: %s (ID %d / %08X)",
+        item_get_name(item, c->version), item->item_id, item->item_id);
+    ITEM_LOG("物品数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
         item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
         item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
         item->data_b[8], item->data_b[9], item->data_b[10], item->data_b[11],
