@@ -1671,9 +1671,11 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
 
     for (ch = 0; ch < 4; ch++) {
         if (/*(l->slot_use[ch]) && (*/l->clients[ch]/*)*/) {
-            for (ch2 = 0; ch2 < l->clients[ch]->bb_pl->inv.item_count; ch2++)
-                if (l->clients[ch]->bb_pl->inv.iitems[ch2].data.item_id == c->game_data.identify_result.data.item_id) {
+            for (ch2 = 0; ch2 < l->clients[ch]->pl->bb.inv.item_count; ch2++)
+                if (l->clients[ch]->pl->bb.inv.iitems[ch2].data.item_id == c->game_data.identify_result.data.item_id) {
                     //Message_Box(L"", L"Item duplication attempt!", client, BigMes_Pkt1A, NULL, 94);
+                    ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
+                        c->guildcard);
                     return -1;
                 }
         }

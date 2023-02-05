@@ -33,6 +33,7 @@
 #include <mtwist.h>
 #include <psomemory.h>
 #include <pso_menu.h>
+#include <pso_text.h>
 //#include <pso_version.h>
 
 #include "block.h"
@@ -888,12 +889,12 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     }
 
     if (pkt->data.bb.autoreply[0]) {
-        /* Copy in the autoreply */
+        /* 复制自动回复数据 */
         client_set_autoreply(c, pkt->data.bb.autoreply,
             len - 4 - sizeof(bb_player_t));
     }
 
-    /* Copy out the player data, and set up pointers. */
+    /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     c->infoboard = (char*)c->pl->bb.infoboard;
     c->c_rank = c->pl->bb.c_rank.c_rank.all;
@@ -903,7 +904,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     memcpy(c->iitems, c->pl->bb.inv.iitems, sizeof(iitem_t) * 30);
     c->item_count = (int)c->pl->bb.inv.item_count;
 
-    /* Renumber the inventory data so we know what's going on later */
+    /* 重新对库存数据进行编号, 以便后期进行数据交换 */
     for (i = 0; i < c->item_count; ++i) {
         v = 0x00210000 | i;
         c->iitems[i].data.item_id = LE32(v);
@@ -1495,17 +1496,32 @@ static int bb_process_trade_error(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
 }
 
 static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len) - 8;
+    uint16_t len = LE16(pkt->hdr.pkt_len) - sizeof(bb_pkt_hdr_t);
+    uint16_t type = LE16(pkt->hdr.pkt_type);
 
     if (!c->infoboard || len > 0x158) {
+        ERR_LOG("GC %" PRIu32 " 尝试设置的信息板数据超出限制!",
+            c->guildcard);
         return -1;
     }
 
+    ERR_LOG("GC %" PRIu32 " 尝试设置的信息板数据超出限制!",
+        c->guildcard);
+
+    /* TODO 增加颜色识别后失败 有乱码 应该是没有获取到字符串正确的指针 */
+    //if (add_color_tag(&pkt->msg[0])) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)pkt, len);
+    //    return -1;
+    //}
+
     /* BB has this in two places for now... */
     memcpy(c->infoboard, pkt->msg, len);
+    /* 剩余数据设置为0 以免出现乱码 */
     memset(c->infoboard + len, 0, 0x158 - len);
 
     memcpy(c->bb_pl->infoboard, pkt->msg, len);
+    /* 剩余数据设置为0 以免出现乱码 */
     memset(((uint8_t*)c->bb_pl->infoboard) + len, 0, 0x158 - len);
 
     return 0;
@@ -1799,57 +1815,32 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-void add_color_tag(uint16_t* text) {
-    while (*text != 0x0000)
-    {
-        if ((*text == 0x0009) || (*text == 0x000A))
-            *text = 0x0020;
-        text++;
-    }
-}
-
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    //if (len != (sizeof(bb_guild_member_chat_pkt))) {
-    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-    //    print_payload((uint8_t*)pkt, len);
-    //    //return -1;
-    //}
-    if (c->bb_guild->guild_data.guild_id != 0) {
-        //uint16_t* n;
-        if (len > 0x2B) {
-            //n = (uint16_t*)&pkt->chat;
-            //while (*n != 0x0000)
-            //{
-            //    if ((*n == 0x0009) || (*n == 0x000A))
-            //        *n = 0x0020;
-            //    n++;
-            //}
-            add_color_tag((uint16_t*)&pkt->chat);
-
-            pkt->guildcard = c->guildcard;
-            pkt->guild_id = c->bb_guild->guild_data.guild_id;
-
-            return shipgate_fw_bb(&ship->sg, pkt, 0, c);
-        }
+    if (c->bb_guild->guild_data.guild_id == 0) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return -1;
     }
-    //uint32_t size;
 
-    //ship->encrypt_buf_code[0x00] = 0x09;
-    //ship->encrypt_buf_code[0x01] = 0x04;
-    //*(uint32_t*)&ship->encrypt_buf_code[0x02] = teamid;
-    //while (chatsize % 8)
-    //    ship->encrypt_buf_code[6 + (chatsize++)] = 0x00;
-    //*text = chatsize;
-    //memcpy(&ship->encrypt_buf_code[0x06], text, chatsize);
-    //size = chatsize + 6;
-    //Compress_Ship_Packet_Data(SHIP_SERVER, ship, &ship->encrypt_buf_code[0x00], size);
+    if (len <= 0x2B) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return 0;
+    }
 
-    print_payload((uint8_t*)pkt, len);
+    if (add_color_tag((uint16_t*)&pkt->chat)) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return 0;
+    }
 
-    return 0;
+    pkt->guildcard = c->guildcard;
+    pkt->guild_id = c->bb_guild->guild_data.guild_id;
+
+    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_setting_pkt* pkt) {

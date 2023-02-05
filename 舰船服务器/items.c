@@ -3876,9 +3876,8 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     int i;
 
     if (c->version == CLIENT_VERSION_BB) {
-        /* Fix up the inventory for their new lobby */
-        id = 0x00010000 | (c->client_id << 21) |
-            (l->item_player_id[c->client_id]);
+        /* 在新房间中修正玩家背包ID */
+        id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
 
         for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
             c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
@@ -3889,8 +3888,7 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     }
     else {
         /* Fix up the inventory for their new lobby */
-        id = 0x00010000 | (c->client_id << 21) |
-            (l->item_player_id[c->client_id]);
+        id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
 
         for (i = 0; i < c->item_count; ++i, ++id) {
             c->iitems[i].data.item_id = LE32(id);

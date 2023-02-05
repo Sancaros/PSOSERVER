@@ -158,11 +158,8 @@ struct ship_client {
     uint32_t blocklist_size;
     uint32_t option_flags;
 
-    //uint32_t next_item[4];
-    item_t new_item;
     uint32_t ignore_list[CLIENT_IGNORE_LIST_SIZE];
     uint32_t blacklist[CLIENT_BLACKLIST_SIZE];
-
     client_blocklist_t *blocklist;
 
     uint32_t last_info_req;
@@ -181,11 +178,11 @@ struct ship_client {
     client_options_t options;
 
     uint8_t equip_flags;
+    //uint32_t next_item[4];
+    item_t new_item;
     iitem_t iitems[30];
 
     int isvip;
-    uint32_t doneshop[3];
-    uint32_t donetrade[3];
 
     block_t *cur_block;
     lobby_t *cur_lobby;

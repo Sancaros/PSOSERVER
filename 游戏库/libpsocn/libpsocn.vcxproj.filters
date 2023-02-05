@@ -52,6 +52,9 @@
     <ClInclude Include="pso_timer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_text.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -67,6 +70,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_timer.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_text.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

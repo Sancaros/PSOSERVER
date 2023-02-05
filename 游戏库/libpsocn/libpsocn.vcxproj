@@ -33,6 +33,7 @@
     <ClInclude Include="pso_sgcmd_code.h" />
     <ClInclude Include="pso_cmd.h" />
     <ClInclude Include="pso_timer.h" />
+    <ClInclude Include="pso_text.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c" />
@@ -40,6 +41,7 @@
     <ClCompile Include="pso_version.c" />
     <ClCompile Include="pso_cmd.c" />
     <ClCompile Include="pso_timer.c" />
+    <ClCompile Include="pso_text.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
