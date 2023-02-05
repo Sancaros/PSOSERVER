@@ -1875,6 +1875,22 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    uint32_t gcn, teamid;
+
+    //teamid = *(uint32_t*)&ship->rcv_pkt[0x06];
+    //gcn = *(uint32_t*)&ship->rcv_pkt[0x0A];
+    //sprintf_s(myQuery, _countof(myQuery), "UPDATE %s SET teamid='%u', privlevel='0' WHERE guildcard='%u'", LOGIN_DATA_ACCOUNT, teamid, gcn);
+    //mysql_query(myData, &myQuery[0]);
+    //ship->send_pkt[0x00] = 0x09;
+    //ship->send_pkt[0x01] = 0x07;
+    //ship->send_pkt[0x02] = 0x01;
+
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
     print_payload((uint8_t*)g_data, len);
 
     return 0;
@@ -2619,9 +2635,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     /* Grab the length of the character data */
     if(!(len = psocn_db_result_lengths(result))) {
         psocn_db_result_free(result);
-        SQLERR_LOG("无法获取角色备份数据的长度");
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-
+        SQLERR_LOG("无法获取角色备份数据的长度 %s", psocn_db_error(&conn));
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
                    ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
         return 0;

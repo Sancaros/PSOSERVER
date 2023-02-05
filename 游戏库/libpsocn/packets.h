@@ -3846,6 +3846,8 @@ typedef struct bb_guild_unk_0CEA {
 // No arguments
 typedef struct bb_guild_invite_0DEA {
     bb_pkt_hdr_t hdr;
+    uint32_t guild_id;
+    uint32_t guildcard;
     uint8_t data[];
 } PACKED bb_guild_invite_0DEA_pkt;
 

@@ -1961,13 +1961,14 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         case SUBCMD62_BURST5://6F
         case SUBCMD62_BURST6://71
+        case SUBCMD62_BURST_PLDATA://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
 
-        case SUBCMD62_BURST_PLDATA://70
-            //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
-            rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
-            break;
+        //case SUBCMD62_BURST_PLDATA://70
+        //    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        //    rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
+        //    break;
 
         default:
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);

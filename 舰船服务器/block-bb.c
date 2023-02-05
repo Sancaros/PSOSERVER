@@ -1983,7 +1983,7 @@ static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_p
 
     print_payload((uint8_t*)pkt, len);
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
 }
 
 static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_unk_0EEA_pkt* pkt) {
