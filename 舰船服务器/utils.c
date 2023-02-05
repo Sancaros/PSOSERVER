@@ -749,7 +749,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.dress_data.name_color_r = sp->character.disp.dress_data.name_color_r;
     c->disp.dress_data.name_color_transparency = sp->character.disp.dress_data.name_color_transparency;
     c->disp.dress_data.model = sp->character.disp.dress_data.model;
-    memcpy(c->disp.dress_data.dress_unk3, sp->character.disp.dress_data.dress_unk3, 11);
+    memcpy(c->disp.dress_data.dress_unk3, sp->character.disp.dress_data.dress_unk3, sizeof(sp->character.disp.dress_data.dress_unk3));
     c->disp.dress_data.create_code = sp->character.disp.dress_data.create_code;
     c->disp.dress_data.name_color_checksum = sp->character.disp.dress_data.name_color_checksum;
     c->disp.dress_data.section = sp->character.disp.dress_data.section;
@@ -767,8 +767,8 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.dress_data.hair_b = sp->character.disp.dress_data.hair_b;
     c->disp.dress_data.prop_x = sp->character.disp.dress_data.prop_x;
     c->disp.dress_data.prop_y = sp->character.disp.dress_data.prop_y;
-    memcpy(c->config, sp->character.config, 0x48);
-    memcpy(c->techniques, sp->character.techniques, 0x14);
+    memcpy(c->config, sp->character.config, sizeof(sp->character.config));
+    memcpy(c->techniques, sp->character.techniques, sizeof(sp->character.techniques));
 
     /* Copy the name over */
     c->name[0] = LE16('\t');
@@ -815,7 +815,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.dress_data.name_color_r = sp->disp.dress_data.name_color_r;
     c->character.disp.dress_data.name_color_transparency = sp->disp.dress_data.name_color_transparency;
     c->character.disp.dress_data.model = sp->disp.dress_data.model;
-    memcpy(c->character.disp.dress_data.dress_unk3, sp->disp.dress_data.dress_unk3, 11);
+    memcpy(c->character.disp.dress_data.dress_unk3, sp->disp.dress_data.dress_unk3, sizeof(sp->disp.dress_data.dress_unk3));
     c->character.disp.dress_data.create_code = sp->disp.dress_data.create_code;
     c->character.disp.dress_data.name_color_checksum = sp->disp.dress_data.name_color_checksum;
     c->character.disp.dress_data.section = sp->disp.dress_data.section;
@@ -833,8 +833,8 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.dress_data.hair_b = sp->disp.dress_data.hair_b;
     c->character.disp.dress_data.prop_x = sp->disp.dress_data.prop_x;
     c->character.disp.dress_data.prop_y = sp->disp.dress_data.prop_y;
-    memcpy(c->character.config, sp->config, 0x48);
-    memcpy(c->character.techniques, sp->techniques, 0x14);
+    memcpy(c->character.config, sp->config, sizeof(c->character.config));
+    memcpy(c->character.techniques, sp->techniques, sizeof(sp->techniques));
 
     /* Copy the name over */
     istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_string, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);

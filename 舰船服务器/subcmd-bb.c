@@ -2055,6 +2055,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         case SUBCMD62_BURST_PLDATA://70
+            print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
             rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
             break;
 

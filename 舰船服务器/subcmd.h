@@ -1409,35 +1409,35 @@ typedef struct subcmd_bb_burst_pldata {
     bb_pkt_hdr_t hdr;               /* 0000 8 */
     client_id_hdr_t shdr;           /* 0008 4 */
     // Offsets in this struct are relative to the overall command header
-    uint32_t size_minus_4;          /* 000C 4 ? 0x0000040C*/
+    uint32_t size_minus_4;          /* 000C 4  0x000004C0*/
     // [1] and [3] in this array (and maybe [2] also) appear to be le_floats;
     // they could be the player's current (x, y, z) coords
     uint32_t lobby_num;             /* 0010 4  0x00000001*/
     uint32_t unused2;               /* 0014 4  0x01000000*/
-
     float x;                        /* 0018 24 - 43 */
-    float y;
+    float y;                        /* 001C 44 - 43 */
     float z;
-
-    uint8_t unk2[0x90];
+    uint32_t unk1;
+    uint32_t unk2;
     uint32_t unk3;
-    uint32_t unk4[4];
-
+    uint32_t unk4;
+    uint32_t unk5;
+    uint8_t unk6[64];
     uint32_t player_tag;
     uint32_t guildcard;
-
-    uint8_t unk5[50];
-
-
+    uint8_t unk7[64];
+    uint32_t unk8;
     uint8_t techniques[20];
     psocn_dress_data_t dress_data;
+    uint16_t name[0x0C];
+    uint8_t hw_info[0x08];
     psocn_pl_stats_t stats;
     uint8_t opt_flag[10];
     uint32_t level;
     uint32_t exp;
     uint32_t meseta;
-    inventory_t inv;
-    uint32_t zero;          /* Unused? */
+    inventory_t inv;                /* 0170 44 - 43 */
+    uint32_t unused[4];               /* Unused? */
     /* Xbox has a little bit more at the end than other versions... Probably
        safe to just ignore it. */
 } PACKED subcmd_bb_burst_pldata_t;

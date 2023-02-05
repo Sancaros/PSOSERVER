@@ -2195,7 +2195,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     c->disp.dress_data.name_color_transparency = mc->dress_data.name_color_transparency;
     c->disp.dress_data.model = mc->dress_data.model;
 
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 10; ++i) {
         c->disp.dress_data.dress_unk3[i] = mc->dress_data.dress_unk3[i];
     }
 

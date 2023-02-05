@@ -138,8 +138,8 @@ typedef struct psocn_dress_data {
     uint8_t name_color_transparency;
 
     //Æ¤·ôÄ£ĞÍ
-    uint8_t model;
-    uint8_t dress_unk3[11];
+    uint16_t model;
+    uint8_t dress_unk3[10];
     uint32_t create_code;
     uint32_t name_color_checksum;
 
