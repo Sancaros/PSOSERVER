@@ -1443,13 +1443,15 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
         questing = l->flags & LOBBY_FLAG_QUESTING;
         drops = l->flags & LOBBY_FLAG_SERVER_DROPS;
 
-        len = snprintf(msg, 511, " %s: %d:%02d:%02d\n"   /* Game time */
-                      " %s: %s\n"                        /* Legit/normal mode */
-                      " %s: %d-%d\n"                     /* Levels allowed */
-                      " %s: %s\n"                        /* Drop mode */
-                      " %s:\n",                          /* Versions allowed */
+        len = snprintf(msg, 511, " %s: %d:%02d:%02d\n"   /* 游戏时间 */
+                      " %s: %s\n"                        /* 限制/正常 模式 */
+                      " %s: %d 倍\n"                        /* 经验倍率 */
+                      " %s: %d-%d\n"                     /* 允许等级 */
+                      " %s: %s\n"                        /* 掉落模式 */
+                      " %s:",                          /* 允许加入的客户端版本 */
                       __(c, "\tE游戏时间"), h, m, s,
                       __(c, "读取模式"), legit ? __(c, "限制") : __(c, "正常"),
+                      __(c, "经验倍率"), l->exp_mult,
                       __(c, "等级限制"), l->min_level, l->max_level,
                       __(c, "掉落模式"), drops ? __(c, "服务器") : __(c, "客户端"),
                       __(c, "允许版本"));
@@ -1463,7 +1465,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
         else if(l->version == CLIENT_VERSION_GC) {
             /* Easy one here, GC games can only have GC chars */
             strncat(msg, " GameCube", 511 - len);
-            len += 3;
+            len += 9;
         }
         else if(l->version == CLIENT_VERSION_EP3) {
             /* Also easy, since Episode 3 games are completely different */
@@ -1492,11 +1494,11 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             else {
                 if(!(l->flags & LOBBY_FLAG_PCONLY)) {
                     strncat(msg, " PC V1", 511 - len);
-                    len += 3;
+                    len += 6;
 
                     if(!(l->flags & LOBBY_FLAG_V1ONLY)) {
                         strncat(msg, " PC V2", 511 - len);
-                        len += 3;
+                        len += 6;
                     }
                 }
                 if(!(l->flags & LOBBY_FLAG_DCONLY) &&
@@ -1512,11 +1514,11 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
                !(l->flags & LOBBY_FLAG_V1ONLY) &&
                !(l->flags & LOBBY_FLAG_NTE)) {
                 strncat(msg, " GameCube", 511 - len);
-                len += 3;
+                len += 9;
             }
         }
 
-        len += snprintf(msg + len, 511 - len, "\n %s: ",
+        len += snprintf(msg + len, 511 - len, "\n %s:",
             __(c, "房间状态"));
 
         if(questing) {
@@ -1542,7 +1544,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
 
             /* We definitely should have it now... */
             if(quest) {
-                len += snprintf(msg + len, 511 - len, "\n %s: %s",
+                len += snprintf(msg + len, 511 - len, " %s: %s",
                                 __(c, "任务"), quest->name);
                 /* Make sure the language code is set to Japanese if we've got
                    a Japanese quest name. */
@@ -1550,12 +1552,12 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
                     msg[1] = 'J';
             }
             else {
-                len += snprintf(msg + len, 511 - len, "\n %s",
+                len += snprintf(msg + len, 511 - len, " %s",
                                 __(c, "任务中"));
             }
         }
         else {
-            len += snprintf(msg + len, 511 - len, "\n %s",
+            len += snprintf(msg + len, 511 - len, " %s",
                             __(c, "自由探索"));
         }
 
