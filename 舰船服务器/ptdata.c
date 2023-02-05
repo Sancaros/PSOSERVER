@@ -1117,27 +1117,12 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
         ratio = rnd -= ent->weapon_ratio[wtypes[i]];
         if (ratio > wchance) {
             item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
-//[2022年09月07日 13:04:03:113] 调试(ptdata.c 1123): 循环 0 < 3 最终掉率 -11 -24 (掉率随机值 -24 物品掉率 13 物品类型 0 物品24位 00000100 初始掉率 39)
-//[2022年09月07日 13:04:03:128] 调试(ptdata.c 1131): 循环 0 < 3 最终掉率 -11 -37 (掉率随机值 -37 物品掉率 13 物品类型 0 物品24位 00000100 初始掉率 39)
-//[2022年09月07日 13:04:07:700] 物品(3814): GC 42004063 请求章节 1 难度 0 区域 1 ptID 10 emptID 0 随机 0 掉落
-//[2022年09月07日 13:04:07:712] 调试(ptdata.c 1123): 循环 1 < 3 最终掉率 -7 -20 (掉率随机值 -20 物品掉率 13 物品类型 5  物品24位 00000600 初始掉率 39)
-//[2022年09月07日 13:04:07:726] 调试(ptdata.c 1131): 循环 1 < 3 最终掉率 -7 -33 (掉率随机值 -33 物品掉率 13 物品类型 5  物品24位 00000600 初始掉率 39)
-//[2022年09月07日 13:04:17:830] 物品(3814): GC 42004063 请求章节 1 难度 0 区域 1 ptID 9 emptID 0 随机 2 掉落
-//[2022年09月07日 13:04:21:398] 物品(3814): GC 42004063 请求章节 1 难度 0 区域 1 ptID 10 emptID 0 随机 0 掉落
-//[2022年09月07日 13:04:21:411] 调试(ptdata.c 1123): 循环 2 < 3 最终掉率 -11 -24 (掉率随机值 -24 物品掉率 13 物品类型 9 物品24位 00000A00 初始掉率 39)
-//[2022年09月07日 13:04:21:427] 调试(ptdata.c 1131): 循环 2 < 3 最终掉率 -11 -37 (掉率随机值 -37 物品掉率 13 物品类型 9 物品24位 00000A00 初始掉率 39)
-//[2022年09月07日 13:04:24:334] 物品(3814): GC 42004063 请求章节 1 难度 0 区域 1 ptID 10 emptID 0 随机 0 掉落
-//[2022年09月07日 13:04:24:347] 调试(ptdata.c 1123): 循环 2 < 3 最终掉率 -8 -21 (掉率随机值 -21 物品掉率 13 物品类型 9  物品24位 00000A00 初始掉率 39)
-//[2022年09月07日 13:04:24:361] 调试(ptdata.c 1131): 循环 2 < 3 最终掉率 -8 -34 (掉率随机值 -34 物品掉率 13 物品类型 9  物品24位 00000A00 初始掉率 39)
-            //DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
 
             /* Save off the grind pattern to use... */
             warea = gptrn[i];
             break;
         }
     }
-    //[2022年09月07日 12:51:56:073] 调试(ptdata.c 1131): 3 < 3 (-23-13-00000000-39)
-    //DBG_LOG("循环 %d < %d 最终掉率 %d %d (掉率随机值 %d 物品掉率 %d 物品类型 %d 物品24位 %08X 初始掉率 %d)", i, j, ratio, rnd -= ent->weapon_ratio[wtypes[i]], rnd, ent->weapon_ratio[wtypes[i]], wtypes[i], item[0], wchance);
 
     /* 合理性检查... Once again, this shouldn't happen! */
     if (!item[0]) {
@@ -3814,7 +3799,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     /* Figure out what type to drop... */
     rnd = mt19937_genrand_int32(rng) % 3;
 
-    ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
+    ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
 
     switch(rnd) {
         case 0:
@@ -3931,7 +3916,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
     ent = &bb_ptdata[game_type][l->difficulty][section];
 
-    ITEM_LOG("GC %u 请求章节 %d 难度 %d 掉落", c->guildcard, l->episode, l->difficulty);
+    ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
     /* Make sure this is actually a box drop... */
     if(req->pt_index != 0x30)

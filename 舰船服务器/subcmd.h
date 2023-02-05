@@ -2642,6 +2642,12 @@ typedef struct subcmd_bb_set_exp_rate {
 
 // 0xDE: Invalid subcommand
 // 0xDF: Invalid subcommand
+typedef struct subcmd_bb_quest_oneperson_set_ex_pc {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_quest_oneperson_set_ex_pc_t;
+
 // 0xE0: Invalid subcommand
 // 0xE1: Invalid subcommand
 // 0xE2: Invalid subcommand

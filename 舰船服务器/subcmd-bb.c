@@ -1728,7 +1728,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 pkt->item_id, pkt->item_amount);
 
             if (found < 0 || found > 1) {
-                ERR_LOG("Error removing item from inventory for "
+                ERR_LOG("GC %u Error removing item from inventory for "
                     "banking!", c->guildcard);
                 return -1;
             }
@@ -1938,7 +1938,7 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
         }
 
         if (found < 0 || found > 1) {
-            ERR_LOG("Error removing item from inventory for "
+            ERR_LOG("GC %u Error removing item from inventory for "
                 "banking!", c->guildcard);
             return -1;
         }
@@ -1967,6 +1967,43 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
         ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
             c->guildcard, wrap_id);
         return -1;
+    }
+
+    return 0;
+}
+
+static int handle_bb_quest_oneperson_set_ex_pc(ship_client_t* c, subcmd_bb_quest_oneperson_set_ex_pc_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t iitem_count, found;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
+        iitem_t tmp_iitem;
+        iitem_count = c->bb_pl->inv.item_count;
+
+        memset(&tmp_iitem, 0, sizeof(iitem_t));
+        tmp_iitem.data.data_b[0] = 0x03;
+        tmp_iitem.data.data_b[1] = 0x10;
+        tmp_iitem.data.data_b[2] = 0x02;
+        
+        found = item_remove_from_inv(c->bb_pl->inv.iitems, iitem_count, 0, 1);
+
+        if (found < 0 || found > 1) {
+            ERR_LOG("GC %u Error handle_bb_quest_oneperson_set_ex_pc!", c->guildcard);
+            return -1;
+        }
+
+        c->bb_pl->inv.item_count = (iitem_count -= found);
+
+        if (!found) {
+            l->drops_disabled = 1;
+            return -1;
+        }
     }
 
     return 0;
@@ -2094,7 +2131,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         if (size == 0x64)
             rv = 0;
 
-        if (type == 0xC2)//判断是公会邀请
+        if (type == SUBCMD62_GUILD_INVITE2)//判断是公会邀请
         {
             uint32_t gcn;
 
@@ -2105,7 +2142,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
                 c->guild_accept = 1;
         }
 
-        if (type == 0xCD)//判断是会长转让功能
+        if (type == SUBCMD62_GUILD_MASTER_TRANS1)//判断是会长转让功能
         {
             if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
                 rv = 1;
@@ -2140,9 +2177,13 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case SUBCMD62_WARP_ITEM:
         rv = handle_bb_warp_item(dest, (subcmd_bb_warp_item_t*)pkt);
-        //UNK_CSPD(type, c->version, pkt);
-        //rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
+
+
+    case SUBCMD62_QUEST_ONEPERSON_SET_EX_PC:
+        rv = handle_bb_quest_oneperson_set_ex_pc(dest, (subcmd_bb_quest_oneperson_set_ex_pc_t*)pkt);
+        break;
+
 
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
@@ -2155,7 +2196,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_QUEST_ITEM_UNKNOW1:
     case SUBCMD62_QUEST_ITEM_RECEIVE:
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
-    case SUBCMD62_QUEST_ONEPERSON_SET_ITEM:
     case SUBCMD62_GANBLING:
         //UNK_CSPD(type, c->version, pkt);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));

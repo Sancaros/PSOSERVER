@@ -60,7 +60,7 @@
 #define SUBCMD62_BATTLE_CHAR_LEVEL_FIX         0xD0
 #define SUBCMD62_CH_GRAVE_DATA                 0xD1
 #define SUBCMD62_WARP_ITEM                     0xD6
-#define SUBCMD62_QUEST_ONEPERSON_SET_ITEM      0xDF
+#define SUBCMD62_QUEST_ONEPERSON_SET_EX_PC     0xDF
 #define SUBCMD62_QUEST_ONEPERSON_SET_BP        0xE0
 #define SUBCMD62_GANBLING                      0xE2
 

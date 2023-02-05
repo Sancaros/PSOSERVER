@@ -2616,7 +2616,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
 
     print_payload((unsigned char*)pkt, len);
 
-    if (!l || l->type != LOBBY_FLAG_QUESTING)
+    if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
 
     if (c->flags & 0x00002000)
