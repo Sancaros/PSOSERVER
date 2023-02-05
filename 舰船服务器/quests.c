@@ -189,8 +189,8 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
 
     /* Read the file in. */
     if(!(fp = fopen(fn, "rb"))) {
-        QERR_LOG("无法打开任务文件 \"%s\"", fn);
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法打开任务文件 \"%s\": %s", fn,
+              strerror(errno));
         return NULL;
     }
 
@@ -199,15 +199,14 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
     fseek(fp, 0, SEEK_SET);
 
     if(!(buf = (uint8_t *)malloc(sz))) {
-        QERR_LOG("无法分配内存去读取 dat");
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法分配内存去读取 dat : %s",
+              strerror(errno));
         fclose(fp);
         return NULL;
     }
 
     if(fread(buf, 1, sz, fp) != sz) {
-        QERR_LOG("无法读取 dat");
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法读取 dat\n错误信息: %s", strerror(errno));
         free_safe(buf);
         fclose(fp);
         return NULL;
@@ -457,8 +456,8 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
 
     /* Read the file in. */
     if(!(fp = fopen(fn, "rb"))) {
-        QERR_LOG("无法打开任务文件 \"%s\"", fn);
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法打开任务文件 \"%s\": %s", fn,
+              strerror(errno));
         return NULL;
     }
 
@@ -474,15 +473,14 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
     }
 
     if(!(buf = (uint8_t *)malloc(sz))) {
-        QERR_LOG("无法分配内存去读取 qst");
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法分配内存去读取 qst: %s",
+              strerror(errno));
         fclose(fp);
         return NULL;
     }
 
     if(fread(buf, 1, sz, fp) != sz) {
-        QERR_LOG("无法读取 qst");
-        QERR_LOG("错误信息: %s", strerror(errno));
+        QERR_LOG("无法读取 qst: %s", strerror(errno));
         free_safe(buf);
         fclose(fp);
         return NULL;
