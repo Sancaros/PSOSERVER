@@ -972,6 +972,10 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("shipgate_send_lobby_chg ´íÎó");
         }
 
+        //print_payload((uint8_t*)&c->bb_pl->quest_data1[0], sizeof(c->bb_pl->quest_data1));
+
+        send_bb_quest_data1(c, c->bb_pl->quest_data1);
+
         /* Send a ping so we know when they're done loading in. This is useful
            for sending the MOTD as well as enforcing always-legit mode. */
         send_simple(c, PING_TYPE, 0);

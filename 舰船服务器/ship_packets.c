@@ -12126,9 +12126,12 @@ int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
 
     memset(&pkt, 0, sizeof(dc_confirm_update_quest_statistics_pkt));
 
+    /* 填充数据头并准备发送 */
     pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
     pkt.hdr.flags = 0x00;
     pkt.hdr.pkt_len = LE16(0x000C);
+
+    /* 填充剩余数据 */
     pkt.unknown_a1 = LE16(0x0000);
     pkt.unknown_a2 = LE16(0x0000);
     pkt.request_token = LE16(request_token);
@@ -12142,13 +12145,41 @@ int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
 
     memset(&pkt, 0, sizeof(bb_confirm_update_quest_statistics_pkt));
 
+    /* 填充数据头并准备发送 */
     pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
     pkt.hdr.flags = LE16(0x0000);
     pkt.hdr.pkt_len = LE16(0x000C);
+
+    /* 填充剩余数据 */
     pkt.unknown_a1 = LE16(0x0000);
     pkt.unknown_a2 = LE16(0x0000);
     pkt.request_token = LE16(request_token);
     pkt.unknown_a3 = LE16(0xBFFF);
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
+int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
+    subcmd_bb_send_quest_data1_t new_quest_data1;
+
+    memset(&new_quest_data1, 0, sizeof(subcmd_bb_send_quest_data1_t));
+
+    /* 填充数据头并准备发送 */
+    new_quest_data1.hdr.pkt_len = LE16(0x0210);
+    new_quest_data1.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    new_quest_data1.hdr.flags = 0;
+
+    /* 填充子数据头并准备发送 */
+    new_quest_data1.shdr.type = SUBCMD60_QUEST_DATA1;
+    new_quest_data1.shdr.size = 0x84;
+    new_quest_data1.shdr.unused = 0x0000;
+
+    /* 填充剩余数据 */
+    memcpy(&new_quest_data1.quest_data1[0], quest_data1, sizeof(new_quest_data1.quest_data1));
+
+    //DBG_LOG("send_bb_quest_data1 GC %u", c->guildcard);
+
+    //print_payload((uint8_t*)&new_quest_data1, new_quest_data1.hdr.pkt_len);
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&new_quest_data1);
 }

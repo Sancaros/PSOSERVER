@@ -56,31 +56,6 @@ static int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt);
 
 // subcmd 直接发送指令至客户端
-static int subcmd_send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
-    lobby_t* l = c->cur_lobby;
-    subcmd_bb_send_quest_data1_t new_quest_data1 = { 0 };
-
-    if (!l)
-        return -1;
-
-    /* 填充数据并准备发送 */
-    new_quest_data1.hdr.pkt_len = LE16(0x0210);
-    new_quest_data1.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    new_quest_data1.hdr.flags = 0;
-    new_quest_data1.shdr.type = SUBCMD60_QUEST_DATA1;
-    new_quest_data1.shdr.size = 0x84;
-    new_quest_data1.shdr.unused = 0x0000;
-
-    /* 填充剩余数据 */
-    memcpy(&new_quest_data1.quest_data1[0], quest_data1, sizeof(new_quest_data1.quest_data1));
-
-    DBG_LOG("subcmd_send_bb_quest_data1 GC %u", c->guildcard);
-
-    //print_payload((uint8_t*)&new_quest_data1, new_quest_data1.hdr.pkt_len);
-
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&new_quest_data1);
-}
-
 static inline int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
     int i;
 
@@ -1965,7 +1940,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             /* Fall through... */
 
         case SUBCMD62_BURST5://6F
-            subcmd_send_bb_quest_data1(dest, (uint8_t*)c->bb_pl->quest_data1);
         case SUBCMD62_BURST6://71
         //case SUBCMD62_BURST_PLDATA://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
