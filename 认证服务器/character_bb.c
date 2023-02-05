@@ -1184,7 +1184,7 @@ int load_param_data(void) {
         if (i < 2) {
             sprintf_s(dir, sizeof(dir), "System\\BlueBurst\\item\\");
         }
-        else if (i > 8) {
+        else if (i > 7) {
             sprintf_s(dir, sizeof(dir), "System\\Player\\leveltbl\\");
         }
         else {

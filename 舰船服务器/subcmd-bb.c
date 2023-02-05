@@ -218,14 +218,13 @@ static int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32
         return -1;
 
     stack_count = c->bb_pl->character.disp.meseta;
-    if (stack_count < count)
-    {
+
+    if (stack_count < count) {
         c->bb_pl->character.disp.meseta = 0;
         count = stack_count;
     }
-    else {
+    else
         c->bb_pl->character.disp.meseta -= count;
-    }
 
     if (drop) {
         tmp_meseta.data.data_l[0] = LE32(Item_Meseta);
@@ -457,9 +456,9 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     rv = send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 
     if (!rv) {
-        l->expboost = LE32(exp_r);
+        l->exp_mult = LE32(exp_r);
 
-        DBG_LOG("房间经验倍率为 %d 倍", l->expboost);
+        DBG_LOG("房间经验倍率为 %d 倍", l->exp_mult);
     }
     else
         ERR_LOG("GC %" PRIu32 " 设置房间经验 %d 倍失败!",
@@ -2504,6 +2503,37 @@ static int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t
     return 0;
 }
 
+static int handle_bb_charge_act(ship_client_t* c, subcmd_bb_charge_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int32_t meseta = *(int32_t*)pkt->mst;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中获取经验!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (meseta > 0)
+    {
+        if (c->bb_pl->character.disp.meseta >= (uint32_t)meseta)
+            subcmd_send_bb_delete_meseta(c, meseta, 0);
+        else
+            subcmd_send_bb_delete_meseta(c, c->bb_pl->character.disp.meseta, 0);
+    }
+    else
+    {
+        meseta = -meseta;
+        c->bb_pl->character.disp.meseta += (uint32_t)meseta;
+        if (c->bb_pl->character.disp.meseta > 999999)
+            c->bb_pl->character.disp.meseta = 999999;
+    }
+
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+/* 从怪物获取的经验倍率未进行调整 */
 static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t mid;
@@ -2529,6 +2559,10 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
 
     /* Make sure the enemy is in range. */
     mid = LE16(pkt->enemy_id2);
+    //DBG_LOG("怪物编号原值 %02X %02X", mid, pkt->enemy_id2);
+    mid &= 0xFFF;
+    //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
+
     if (mid > l->map_enemies->count) {
         ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
             "敌人数量: %d)!", c->guildcard, mid, l->map_enemies->count);
@@ -2551,6 +2585,14 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
     /* Give the client their experience! */
     bp = en->bp_entry;
     exp_amount = l->bb_params[bp].exp + 100000;
+
+    //DBG_LOG("经验原值 %d bp %d", exp_amount, bp);
+
+    if ((c->game_data.expboost) && (l->exp_mult > 0))
+        exp_amount = l->bb_params[bp].exp * l->exp_mult;
+
+    if (!exp_amount)
+        ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);
 
     if (!pkt->last_hitter) {
         exp_amount = (exp_amount * 80) / 100;
@@ -5123,9 +5165,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         sent = 0;
         break;
 
-    case SUBCMD60_CHARGE_ACT:
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        sent = 0;
+    case SUBCMD60_CHARGE_ACT: // Charge action 充能动作
+        rv = handle_bb_charge_act(c, (subcmd_bb_charge_act_t *)pkt);
         break;
 
     case SUBCMD60_REQ_EXP:

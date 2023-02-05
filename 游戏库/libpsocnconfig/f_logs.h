@@ -16,6 +16,7 @@
 */
 
 #pragma once
+#pragma warning (disable:4819)
 
 #include <stdio.h>
 #include <stdint.h>

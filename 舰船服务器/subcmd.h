@@ -2497,7 +2497,15 @@ typedef struct subcmd_bb_sort_inv {
 // 0xC5: Medical center used
 
 // 0xC6: Invalid subcommand
-// 0xC7: Invalid subcommand
+
+// 0xC7: SUBCMD60_CHARGE_ACT (handled by the server on BB)
+typedef struct subcmd_bb_charge_act {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint32_t mst;
+    uint8_t data[0];
+} PACKED subcmd_bb_charge_act_t;
+
 
 // 0xC8: Enemy killed (handled by the server on BB)
 // Packet sent by clients to say that they killed a monster. Unfortunately, this

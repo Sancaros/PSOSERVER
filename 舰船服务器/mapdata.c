@@ -69,7 +69,7 @@ const battle_param_checksum_t Battle_Param_Checksum[][3] = {
     {3, 332, 0x2e836fd8}
 };
 
-#define NUM_BPEntry 7
+#define NUM_BPEntry 6
 
 typedef struct battle_param_entry_files {
     char* file;
@@ -83,7 +83,7 @@ typedef struct battle_param_entry_files {
 
 const battle_param_entry_files_t battle_params_emtry_files[NUM_BPEntry][5] = {
     {"BattleParamEntry_on.dat"    , 0, 0, 0, 374, 0xB8A2D950},
-    {"BattleParamEntry_on2.dat"   , 0, 0, 0, 374, 0xB8A2D950},
+    //{"BattleParamEntry_on2.dat"   , 0, 0, 0, 374, 0xB8A2D950},
     {"BattleParamEntry_lab_on.dat", 0, 1, 0, 374, 0x4D4059CF},
     {"BattleParamEntry_ep4_on.dat", 0, 2, 0, 332, 0x42BF9716},
     {"BattleParamEntry.dat"       , 1, 0, 0, 374, 0x8FEF1FFE},
@@ -896,7 +896,7 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             }
 
             /* Allocate memory and read in the file. */
-            if(!(en = (map_enemy_t *)malloc(sz))) {
+            if(!(en = (map_enemy_t*)malloc(sz))) {
                 ERR_LOG("分配地图怪物内存错误: %s", strerror(errno));
                 fclose(fp);
                 return 7;
@@ -981,13 +981,11 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
                 return 7;
             }
 
-            if (obj != 0) {
-                if (fread(obj, 1, sz, fp) != (size_t)sz) {
-                    ERR_LOG("无法读取文件 %s", fn);
-                    free_safe(obj);
-                    fclose(fp);
-                    return 8;
-                }
+            if (fread(obj, 1, sz, fp) != (size_t)sz) {
+                ERR_LOG("无法读取文件 %s", fn);
+                free_safe(obj);
+                fclose(fp);
+                return 8;
             }
 
             /* We're done with the file, so close it */
@@ -1308,15 +1306,15 @@ int bb_read_params(psocn_ship_t *cfg) {
     CONFIG_LOG("读取 Blue Burst 战斗参数数据...");
 
     int i = 0, j= 0, k = 0;
-    for (i; i < 6;i++) {
+    for (i; i < NUM_BPEntry;i++) {
         //strcpy(&buf[i][0], path);
-        //strcat(&buf[i][0], BattleParamEntry_files[i]);
-        //printf("%s  %d %d\n", &buf[i][0], j, k);
+        //strcat(&buf[i][0], battle_params_emtry_files[i][0].file);
+        printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
         rv += read_bb_param_file(battle_params[j][k], path,
             battle_params_emtry_files[i][0].file/*,
             battle_params_emtry_files[i][0].check_sum.entry_num,
             battle_params_emtry_files[i][0].check_sum.sum*/);
-        if (j < 1 && i > 2)
+        if (j < 1 && i >= 2)
             j++;
         if (k < 2)
             k++;

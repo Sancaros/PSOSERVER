@@ -137,19 +137,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
     }
 #endif
 
-    if(l->version == CLIENT_VERSION_BB) {
-        l->dropfunc = pt_generate_bb_drop;
-        l->flags |= LOBBY_FLAG_SERVER_DROPS;
-        return;
-    }
-
-    if(rs == 0x9C350DD4) {
-        l->dropfunc = td;
-        l->flags |= LOBBY_FLAG_SERVER_DROPS;
-        return;
-    }
-
-    /* See if the client enabled server-side drops. */
+    /* 检查客户端是否开启服务器掉落模式. */
     if(c->flags & CLIENT_FLAG_SERVER_DROPS) {
         /* 合理性检查... */
         switch(c->version) {
@@ -183,6 +171,18 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
             case CLIENT_VERSION_EP3:
                 return;
         }
+    }
+
+    if (l->version == CLIENT_VERSION_BB) {
+        l->dropfunc = pt_generate_bb_drop;
+        l->flags |= LOBBY_FLAG_SERVER_DROPS;
+        return;
+    }
+
+    if (rs == 0x9C350DD4) {
+        l->dropfunc = td;
+        l->flags |= LOBBY_FLAG_SERVER_DROPS;
+        return;
     }
 }
 

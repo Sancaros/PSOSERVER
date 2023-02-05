@@ -4153,46 +4153,6 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     return rv;
 }
-//
-//static int handle_bbguild_req(ship_t* c, shipgate_bb_guild_req_pkt* pkt) {
-//    uint32_t gc, block;
-//    psocn_bb_db_guild_t guild;
-//    int rv = 0;
-//
-//    /* Parse out the guildcard */
-//    gc = ntohl(pkt->guildcard);
-//    block = ntohl(pkt->block);
-//
-//    memset(&guild, 0, sizeof(psocn_bb_db_guild_t));
-//
-//    guild = db_get_bb_char_guild(gc);
-//
-//    rv = send_bb_guild(c, gc, block, &guild);
-//
-//    if (rv) {
-//        rv = send_error(c, SHDR_TYPE_BBGUILD, SHDR_FAILURE, ERR_BAD_ERROR,
-//            (uint8_t*)&pkt->guildcard, 8);
-//    }
-//
-//    return rv;
-//}
-//
-//static int handle_bbguild(ship_t* c, shipgate_bb_guild_pkt* pkt) {
-//    uint32_t gc;
-//    int rv = 0;
-//
-//    /* Parse out the guildcard */
-//    gc = ntohl(pkt->guildcard);
-//
-//    rv = db_update_bb_char_guild(pkt->guild, gc);
-//
-//    if (rv) {
-//        rv = send_error(c, SHDR_TYPE_BBGUILD, SHDR_FAILURE, ERR_BAD_ERROR,
-//            (uint8_t*)&pkt->guildcard, 8);
-//    }
-//
-//    return rv;
-//}
 
 static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
     char query[256];

@@ -104,6 +104,7 @@ struct PSOEnemy {
     uint8_t last_hit;
     uint32_t experience;
     uint32_t rt_index;
+    const char* type_name;
 };
 
 /* Enemy data as used in the game. */

@@ -84,7 +84,7 @@ typedef struct client_game_data {
     iitem_t identify_result;
     sitem_t shop_items[0x14];
 
-    uint32_t expboost;
+    uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;
 } client_game_data_t;
 

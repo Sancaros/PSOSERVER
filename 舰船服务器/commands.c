@@ -2780,29 +2780,27 @@ static int handle_sdrops(ship_client_t *c, const char *params) {
             break;
 
         case CLIENT_VERSION_EP3:
-            return send_txt(c, "%s", __(c, "\tE\tC7Not valid on Episode 3."));
+            return send_txt(c, "%s", __(c, "\tE\tC7不支持 Episode 3 版本."));
 
         case CLIENT_VERSION_BB:
             /* XXXX: GM-only until they're fixed... */
-            //if (!pt_bb_enabled() || !map_have_bb_maps() || !pmt_bb_enabled() ||
-            //    !rt_bb_enabled() || !LOCAL_GM(c))
-            //    return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
-            //        "suported on this ship for\n"
-            //        "this client version."));
+            if (!pt_bb_enabled() || !map_have_bb_maps() || !pmt_bb_enabled() ||
+                !rt_bb_enabled() || !LOCAL_GM(c))
+                return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
+                    "suported on this ship for\n"
+                    "this client version."));
             /* 对 Blue Burst 无效(BB采用网络服务器掉落) */
-            return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+            //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
     }
 
     /* See if we're turning the flag off. */
     if(!strcmp(params, "off")) {
         c->flags &= ~CLIENT_FLAG_SERVER_DROPS;
-        return send_txt(c, "%s", __(c, "\tE\tC7Server drops off\n"
-                                    "for any new teams."));
+        return send_txt(c, "%s", __(c, "\tE\tC7服务器掉落模式关闭."));
     }
 
     c->flags |= CLIENT_FLAG_SERVER_DROPS;
-    return send_txt(c, "%s", __(c, "\tE\tC7Server drops on\n"
-                                "for any new teams."));
+    return send_txt(c, "%s", __(c, "\tE\tC7新房间开启服务器掉落模式."));
 }
 
 /* 用法: /gcprotect [off] */
