@@ -3655,9 +3655,8 @@ int send_disconnect(login_client_t* c, uint32_t flags) {
     if (flags) {
         c->islogged = 0;
 
-        if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, NULL)) {
+        if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, NULL))
             return -4;
-        }
     }
 
     return 0;

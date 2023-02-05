@@ -3120,7 +3120,7 @@ static int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
     if (!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    /* Remove the item from the user's inventory. */
+    /* 从玩家的背包中移除该物品. */
     if ((num = item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
         pkt->item_id, 1)) < 1) {
         ERR_LOG("无法从玩家背包中移除物品!");
@@ -4255,7 +4255,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
         return -1;
     }
 
-    /* Remove the item from the user's inventory. */
+    /* 从玩家的背包中移除该物品. */
     if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
         pkt->item_id, 0xFFFFFFFF) < 1) {
         ERR_LOG("无法从玩家背包中移除物品!");
@@ -4372,7 +4372,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     if (pkt->item_id != 0xFFFFFFFF) {
-        /* Look for the item in the user's inventory. */
+        /* 查找用户库存中的物品. */
         for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
             if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
                 found = i;
@@ -4380,13 +4380,13 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
             }
         }
 
-        /* If the item isn't found, then punt the user from the ship. */
+        /* 如果找不到该物品，则将用户从船上推下. */
         if (found == -1) {
             ERR_LOG("GC %" PRIu32 " 掉落无效的堆叠物品!", c->guildcard);
             return -1;
         }
 
-        /* Grab the item from the client's inventory and set up the split */
+        /* 从客户端结构的库存中获取物品并设置拆分 */
         item_data = c->iitems[found];
         item_data.data.item_id = LE32((++l->item_player_id[c->client_id]));
         item_data.data.data_b[5] = (uint8_t)(LE32(pkt->amount));
@@ -4414,7 +4414,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     if (pkt->item_id != 0xFFFFFFFF) {
-        /* Remove the item from the user's inventory. */
+        /* 从玩家的背包中移除该物品. */
         found = item_remove_from_inv(c->bb_pl->inv.iitems,
             c->bb_pl->inv.item_count, pkt->item_id,
             LE32(pkt->amount));
@@ -4811,7 +4811,7 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
             {
                 uint32_t shop_price = get_bb_shop_price(&c->bb_pl->inv.iitems[i]) * pkt->sell_num;
 
-                /* Remove the item from the user's inventory. */
+                /* 从玩家的背包中移除该物品. */
                 if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
                     pkt->item_id, 0xFFFFFFFF) < 1) {
                     ERR_LOG("无法从玩家背包中移除物品!");
@@ -4830,8 +4830,8 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
             return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
         }
     }
+
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    //return -1;
 }
 
 static int handle_bb_Unknown_6x53(ship_client_t* c, subcmd_bb_Unknown_6x53_t* pkt) {
