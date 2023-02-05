@@ -2581,7 +2581,6 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
        indeed dead. */
     en->clients_hit = (en->clients_hit & (~(1 << c->client_id))) | 0x80;
 
-    // TODO 这里的经验倍率还未调整
     /* Give the client their experience! */
     bp = en->bp_entry;
     exp_amount = l->bb_params[bp].exp + 100000;
@@ -2594,6 +2593,7 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
     if (!exp_amount)
         ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);
 
+    // TODO 新增房间共享经验 分别向其余3个玩家发送数值不等的经验值
     if (!pkt->last_hitter) {
         exp_amount = (exp_amount * 80) / 100;
     }
@@ -4852,7 +4852,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         switch (type) {
         case SUBCMD60_LOAD_3B:
         case SUBCMD60_BURST_DONE:
-            subcmd_send_bb_set_exp_rate(c, 5);
+            /* TODO 将这个函数融合进房间函数中 */
+            subcmd_send_bb_set_exp_rate(c, 100000);
             rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
             break;
 
