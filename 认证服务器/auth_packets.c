@@ -129,7 +129,7 @@ int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect) {
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(dc_welcome_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -163,7 +163,7 @@ int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(bb_welcome_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(BB_WELCOME_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_WELCOME_TYPE);
 
@@ -257,7 +257,7 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
         sendbuf[size++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
         c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
         c->type == CLIENT_AUTH_XBOX) {
@@ -331,7 +331,7 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
         sendbuf[size++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(type);
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16(size);
@@ -374,7 +374,7 @@ int send_dc_security(login_client_t *c, uint32_t gc, const void *data,
     /* Wipe the packet */
     memset(pkt, 0, sizeof(dc_security_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -413,7 +413,7 @@ int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
     /* Wipe the packet */
     memset(pkt, 0, sizeof(bb_security_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(BB_SECURITY_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_SECURITY_TYPE);
 
@@ -441,7 +441,7 @@ static int send_redirect_bb(login_client_t *c, in_addr_t ip, uint16_t port) {
     /* Wipe the packet */
     memset(pkt, 0, BB_REDIRECT_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(REDIRECT_TYPE);
     pkt->hdr.pkt_len = LE16(BB_REDIRECT_LENGTH);
 
@@ -459,7 +459,7 @@ static int send_redirect_dc(login_client_t *c, in_addr_t ip, uint16_t port) {
     /* Wipe the packet */
     memset(pkt, 0, DC_REDIRECT_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -507,7 +507,7 @@ static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
     /* Wipe the packet */
     memset(pkt, 0, DC_REDIRECT6_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -592,7 +592,7 @@ static int send_timestamp_dc(login_client_t *c) {
 	/* Wipe the packet */
 	memset(pkt, 0, DC_TIMESTAMP_LENGTH);
 
-	/* Fill in the header */
+	/* 填充数据头 */
 	if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
 		c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
 		c->type == CLIENT_AUTH_XBOX) {
@@ -630,7 +630,7 @@ static int send_timestamp_bb(login_client_t *c) {
     /* Wipe the packet */
     memset(pkt, 0, BB_TIMESTAMP_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(TIMESTAMP_TYPE);
     pkt->hdr.pkt_len = LE16(BB_TIMESTAMP_LENGTH);
 
@@ -1513,7 +1513,7 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
     /* Fill in the length */
     len += 0x0C;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -1580,7 +1580,7 @@ static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
         sendbuf[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(type);
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16(len);
@@ -1640,7 +1640,7 @@ int send_scroll_msg(login_client_t *c, const char* fmt, ...) {
 static int send_simple_dc(login_client_t *c, int type, int flags) {
     dc_pkt_hdr_t *pkt = (dc_pkt_hdr_t *)sendbuf;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_type = (uint8_t)type;
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
@@ -1652,7 +1652,7 @@ static int send_simple_dc(login_client_t *c, int type, int flags) {
 static int send_simple_pc(login_client_t *c, int type, int flags) {
     pc_pkt_hdr_t *pkt = (pc_pkt_hdr_t *)sendbuf;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_type = (uint8_t)type;
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
@@ -1705,7 +1705,7 @@ static int send_dc_quest_list(login_client_t *c,
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = DL_QUEST_LIST_TYPE;
 
     for(i = 0; i < l->quest_count; ++i) {
@@ -1767,7 +1767,7 @@ static int send_pc_quest_list(login_client_t *c,
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = DL_QUEST_LIST_TYPE;
 
     for(i = 0; i < l->quest_count; ++i) {
@@ -1831,7 +1831,7 @@ static int send_gc_quest_list(login_client_t *c,
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = DL_QUEST_LIST_TYPE;
 
     for(i = 0; i < l->quest_count; ++i) {
@@ -1895,7 +1895,7 @@ static int send_xbox_quest_list(login_client_t *c,
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = DL_QUEST_LIST_TYPE;
 
     for(i = 0; i < l->quest_count; ++i) {
@@ -2074,7 +2074,7 @@ int send_bb_option_reply(login_client_t *c, bb_key_config_t keys, bb_guild_t gui
     /* Clear it out first */
     memset(pkt, 0, sizeof(bb_opt_config_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(sizeof(bb_opt_config_pkt));
     pkt->hdr.pkt_type = LE16(BB_OPTION_CONFIG_TYPE);
 
@@ -2227,7 +2227,7 @@ int send_bb_char_preview(login_client_t *c, const psocn_bb_mini_char_t *mc,
                          uint8_t slot) {
     bb_char_preview_pkt *pkt = (bb_char_preview_pkt *)sendbuf;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(BB_CHARACTER_UPDATE_TYPE);
     pkt->hdr.pkt_len = LE16(sizeof(bb_char_preview_pkt));
     pkt->hdr.flags = 0;
@@ -2426,7 +2426,7 @@ static int send_gc_message_box(login_client_t *c, const char *fmt,
         pkt->msg[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     len += 0x04;
 
     pkt->hdr.dc.pkt_type = GC_MSG_BOX_TYPE;
@@ -2462,7 +2462,7 @@ static int send_bb_message_box(login_client_t* c, const char* fmt,
         pkt->msg[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     len += 0x04;
 
     pkt->hdr.pkt_type = MSG_BOX_TYPE;
@@ -3145,7 +3145,7 @@ int send_quest_description(login_client_t *c, psocn_quest_t *q) {
         sendbuf[size++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
        c->type == CLIENT_AUTH_XBOX) {
@@ -3194,7 +3194,7 @@ int send_dc_version_detect(login_client_t *c) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0xff;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3228,7 +3228,7 @@ static int send_gc_real_version_detect(login_client_t *c) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0xff;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3262,7 +3262,7 @@ static int send_gc_patch_cache_invalidate(login_client_t *c) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0xfe;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3342,7 +3342,7 @@ int send_single_patch_dc(login_client_t *c, const patchset_t *p) {
         ftr->offset_entry = 0;
         ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-        /* Fill in the header. */
+        /* 填充数据头. */
         pkt->hdr.dc.pkt_type = PATCH_TYPE;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(size);
@@ -3399,7 +3399,7 @@ static int send_single_patch_gc_inval(login_client_t *c, const patchset_t *p) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3436,7 +3436,7 @@ static int send_single_patch_gc_inval(login_client_t *c, const patchset_t *p) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3490,7 +3490,7 @@ static int send_single_patch_gc_noinv(login_client_t *c, const patchset_t *p) {
     ftr->offset_entry = 0;
     ftr->offsets[0] = 0;                /* Padding... Not actually used. */
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.dc.pkt_type = PATCH_TYPE;
     pkt->hdr.dc.flags = 0;
     pkt->hdr.dc.pkt_len = LE16(size);
@@ -3626,7 +3626,7 @@ static int send_crc_check_pc(login_client_t *c, uint32_t st, uint32_t count) {
     pkt->crc_length = LE32(count);
     pkt->code_begin = 0;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pc.pkt_type = PATCH_TYPE;
     pkt->hdr.pc.flags = 0xFE;
     pkt->hdr.pc.pkt_len = LE16(DC_PATCH_HEADER_LENGTH);

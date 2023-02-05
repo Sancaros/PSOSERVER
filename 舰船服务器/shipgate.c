@@ -117,7 +117,7 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
         return -1;
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->pkt_len = htons(sizeof(shipgate_hdr_t));
     pkt->pkt_type = htons(SHDR_TYPE_PING);
     pkt->version = pkt->reserved = 0;
@@ -3007,7 +3007,7 @@ int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
     if (!sendbuf)
         return -1;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_char_data_pkt) + len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CDATA);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3032,7 +3032,7 @@ int shipgate_send_creq(shipgate_conn_t* c, uint32_t gc, uint32_t slot) {
     if (!sendbuf)
         return -1;
 
-    /* Fill in the header and the body. */
+    /* 填充数据头 and the body. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_char_req_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CREQ);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3056,7 +3056,7 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     /* Clear the packet first */
     memset(pkt, 0, sizeof(shipgate_login6_reply_pkt));
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_login6_reply_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_LOGIN6);
     pkt->hdr.flags = htons(SHDR_RESPONSE);
@@ -3094,7 +3094,7 @@ int shipgate_send_cnt(shipgate_conn_t* c, uint16_t clients, uint16_t games) {
     if (!sendbuf)
         return -1;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_cnt_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_COUNT);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3486,7 +3486,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
             pthread_rwlock_unlock(&b->lock);
 
             if (count) {
-                /* Fill in the header */
+                /* 填充数据头 */
                 pkt->hdr.pkt_len = htons(size);
                 pkt->hdr.pkt_type = htons(SHDR_TYPE_BCLIENTS);
                 pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3745,7 +3745,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const v
         return -1;
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_char_bkup_pkt) + len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CBKUP);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3774,7 +3774,7 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* game_info) {
         return -1;
     }
 
-    /* Fill in the header and the body. */
+    /* 填充数据头 and the body. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_char_bkup_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CBKUP);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3803,7 +3803,7 @@ int shipgate_send_mkill(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     if (!sendbuf)
         return -1;
 
-    /* Fill in the header and the body. */
+    /* 填充数据头 and the body. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_mkill_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_MKILL);
     pkt->hdr.version = 1;

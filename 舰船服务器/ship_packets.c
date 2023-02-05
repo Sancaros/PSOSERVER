@@ -288,7 +288,7 @@ int send_dc_welcome(ship_client_t *c, uint32_t svect, uint32_t cvect) {
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(dc_welcome_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -332,7 +332,7 @@ int send_bb_welcome(ship_client_t *c, const uint8_t svect[48],
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(bb_welcome_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(BB_WELCOME_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_WELCOME_TYPE);
 
@@ -368,7 +368,7 @@ int send_dc_security(ship_client_t *c, uint32_t gc, uint8_t *data,
     /* Wipe the packet */
     memset(pkt, 0, sizeof(dc_security_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -413,7 +413,7 @@ int send_bb_security(ship_client_t *c, uint32_t gc, uint32_t err,
     /* Wipe the packet */
     memset(pkt, 0, sizeof(bb_security_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(BB_SECURITY_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_SECURITY_TYPE);
 
@@ -445,7 +445,7 @@ static int send_dc_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     /* Wipe the packet */
     memset(pkt, 0, DC_REDIRECT_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -477,7 +477,7 @@ static int send_bb_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     /* Wipe the packet */
     memset(pkt, 0, BB_REDIRECT_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(REDIRECT_TYPE);
     pkt->hdr.pkt_len = LE16(BB_REDIRECT_LENGTH);
 
@@ -522,7 +522,7 @@ static int send_redirect6_dc(ship_client_t *c, const uint8_t ip[16],
     /* Wipe the packet */
     memset(pkt, 0, DC_REDIRECT6_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -557,7 +557,7 @@ static int send_redirect6_bb(ship_client_t *c, const uint8_t ip[16],
     /* Wipe the packet */
     memset(pkt, 0, BB_REDIRECT6_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(REDIRECT_TYPE);
     pkt->hdr.pkt_len = LE16(BB_REDIRECT6_LENGTH);
     pkt->hdr.flags = LE32(6);
@@ -606,7 +606,7 @@ static int send_dc_timestamp(ship_client_t *c) {
     /* Wipe the packet */
     memset(pkt, 0, DC_TIMESTAMP_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -707,7 +707,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
         len += len2;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries - 1;
@@ -773,7 +773,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
         len += len2;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries - 1;
@@ -839,7 +839,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
         len += len2;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = LE32(entries - 1);
@@ -915,7 +915,7 @@ static int send_dc_info_reply(ship_client_t *c, const char *msg) {
         sendbuf[out++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -963,7 +963,7 @@ static int send_bb_info_reply(ship_client_t *c, const char *msg) {
         sendbuf[out++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(INFO_REPLY_TYPE);
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16((uint16_t)out);
@@ -1000,7 +1000,7 @@ static int send_dc_simple(ship_client_t *c, int type, int flags) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_type = (uint8_t)type;
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
@@ -1018,7 +1018,7 @@ static int send_pc_simple(ship_client_t *c, int type, int flags) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_type = (uint8_t)type;
     pkt->flags = (uint8_t)flags;
     pkt->pkt_len = LE16(4);
@@ -1036,7 +1036,7 @@ static int send_bb_simple(ship_client_t *c, int type, int flags) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_type = LE16(((uint16_t)type));
     pkt->flags = LE32(((uint32_t)flags));
     pkt->pkt_len = LE16(8);
@@ -1078,7 +1078,7 @@ static int send_dc_lobby_list(ship_client_t *c) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1) {
         pkt->hdr.dc.pkt_type = LOBBY_LIST_TYPE;
         pkt->hdr.dc.flags = 0x0A;                               /* 10 lobbies */
@@ -1137,7 +1137,7 @@ static int send_bb_lobby_list(ship_client_t *c) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(LOBBY_LIST_TYPE);
     pkt->hdr.flags = LE32(0x0F);
     pkt->hdr.pkt_len = LE16(BB_LOBBY_LIST_LENGTH);
@@ -2061,7 +2061,7 @@ static int send_dc_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
        c->version == CLIENT_VERSION_XBOX) {
@@ -2094,7 +2094,7 @@ static int send_bb_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
         return -1;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = (l->type == LOBBY_TYPE_LOBBY) ?
         LE16(LOBBY_LEAVE_TYPE) : LE16(GAME_LEAVE_TYPE);
     pkt->hdr.flags = LE32(client_id);
@@ -2371,7 +2371,7 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
         sendbuf[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(CHAT_TYPE);
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16((uint16_t)len);
@@ -2542,7 +2542,7 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
         sendbuf[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pc.pkt_len = LE16((uint16_t)len);
     pkt->hdr.pc.pkt_type = CHAT_TYPE;
     pkt->hdr.pc.flags = 0;
@@ -2578,7 +2578,7 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
         sendbuf[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16((uint16_t)len);
     pkt->hdr.pkt_type = LE16(CHAT_TYPE);
     pkt->hdr.flags = 0;
@@ -4137,7 +4137,7 @@ static int send_dc_game_list(ship_client_t *c, block_t *b) {
     /* Clear out the packet and the first entry */
     memset(pkt, 0, 0x20);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_LIST_TYPE;
 
     /* Fill in the first entry */
@@ -4252,7 +4252,7 @@ static int send_pc_game_list(ship_client_t *c, block_t *b) {
     /* Clear out the packet and the first entry */
     memset(pkt, 0, 0x30);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_LIST_TYPE;
 
     /* Fill in the first entry */
@@ -4355,7 +4355,7 @@ static int send_gc_game_list(ship_client_t *c, block_t *b) {
     /* Clear out the packet and the first entry */
     memset(pkt, 0, 0x20);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_LIST_TYPE;
 
     /* Fill in the first entry */
@@ -4454,7 +4454,7 @@ static int send_ep3_game_list(ship_client_t *c, block_t *b) {
     /* Clear out the packet and the first entry */
     memset(pkt, 0, 0x20);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_LIST_TYPE;
 
     /* Fill in the first entry */
@@ -4527,7 +4527,7 @@ static int send_bb_game_list(ship_client_t *c, block_t *b) {
     /* Clear out the packet and the first entry */
     memset(pkt, 0, 0x34);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_LIST_TYPE;
 
     /* Fill in the first entry */
@@ -5013,7 +5013,7 @@ static int send_dc_message_box(ship_client_t *c, const char *fmt,
         pkt->msg[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     len += 0x04;
 
     if(c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
@@ -5102,7 +5102,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
         pkt->msg[len++] = 0;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     len += 0x04;
 
     if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
@@ -5198,7 +5198,7 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(i = 0; i < qlist->cat_count; ++i) {
@@ -5313,7 +5313,7 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(i = 0; i < qlist->cat_count; ++i) {
@@ -5395,7 +5395,7 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
     /* Clear out the header */
     memset(pkt, 0, 0x04);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(i = 0; i < qlist->cat_count; ++i) {
@@ -5500,7 +5500,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
     if (l->oneperson)
         type = PSOCN_QUEST_ONEPERSON;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
 
     for(i = 0; i < qlist->cat_count; ++i) {
@@ -5640,7 +5640,7 @@ static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
     if(l->challenge)
         max = l->max_chal & 0x0F;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(k = 0; k < 2; ++k) {
@@ -5847,7 +5847,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
     if(l->challenge)
         max = l->max_chal & 0x0F;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(k = 0; k < 2; ++k) {
@@ -6040,7 +6040,7 @@ static int send_gc_quest_list(ship_client_t *c, int cn, int lang) {
         max2 = (l->max_chal >> 4) & 0x0F;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(k = 0; k < 2; ++k) {
@@ -6264,7 +6264,7 @@ static int send_xbox_quest_list(ship_client_t *c, int cn, int lang) {
         max2 = (l->max_chal >> 4) & 0x0F;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = QUEST_LIST_TYPE;
 
     for(k = 0; k < 2; ++k) {
@@ -6473,7 +6473,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
         max2 = (l->max_chal >> 4) & 0x0F;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
 
     for(k = 0; k < 3; ++k) {
@@ -6899,7 +6899,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -6929,7 +6929,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7067,7 +7067,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7097,7 +7097,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7236,7 +7236,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.pc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.pc.flags = (uint8_t)chunknum;
             chunk->hdr.pc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7266,7 +7266,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.pc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.pc.flags = (uint8_t)chunknum;
             chunk->hdr.pc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7410,7 +7410,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7440,7 +7440,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(dc_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.dc.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.dc.flags = (uint8_t)chunknum;
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
@@ -7584,7 +7584,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(bb_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.flags = (uint8_t)chunknum;
             chunk->hdr.pkt_len = LE16(BB_QUEST_CHUNK_LENGTH);
@@ -7614,7 +7614,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             /* Clear the packet */
             memset(chunk, 0, sizeof(bb_quest_chunk_pkt));
 
-            /* Fill in the header */
+            /* 填充数据头 */
             chunk->hdr.pkt_type = QUEST_CHUNK_TYPE;
             chunk->hdr.flags = (uint8_t)chunknum;
             chunk->hdr.pkt_len = LE16(BB_QUEST_CHUNK_LENGTH);
@@ -9257,7 +9257,7 @@ static int send_dc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
         memset(&pkt->entries[entries], 0, 0xE0);
         len += 0xE0;
 
-        /* Fill in the header. */
+        /* 填充数据头. */
         pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
         pkt->hdr.pkt_len = LE16(len);
         pkt->hdr.flags = entries | 0x80;
@@ -9269,7 +9269,7 @@ static int send_dc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     memset(&pkt->entries[entries], 0, 0xD4);
     len += 0xD4;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries;
@@ -9312,7 +9312,7 @@ static int send_pc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     memset(&pkt->entries[entries], 0, 0x154);
     len += 0x154;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries;
@@ -9348,7 +9348,7 @@ static int send_gc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
         memset(&pkt->entries[entries], 0, 0xE0);
         len += 0xE0;
 
-        /* Fill in the header. */
+        /* 填充数据头. */
         pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
         pkt->hdr.pkt_len = LE16(len);
         pkt->hdr.flags = entries | 0x80;
@@ -9360,7 +9360,7 @@ static int send_gc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     memset(&pkt->entries[entries], 0, 0xD4);
     len += 0xD4;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries;
@@ -9392,7 +9392,7 @@ static int send_ep3_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
         memset(&pkt->entries[entries], 0, 0xE0);
         len += 0xE0;
 
-        /* Fill in the header. */
+        /* 填充数据头. */
         pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
         pkt->hdr.pkt_len = LE16(len);
         pkt->hdr.flags = entries | 0x80;
@@ -9404,7 +9404,7 @@ static int send_ep3_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     memset(&pkt->entries[entries], 0, 0xD4);
     len += 0xD4;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = CHOICE_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = entries;
@@ -9507,7 +9507,7 @@ static int send_pc_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, PC_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->pc.pkt_type = SIMPLE_MAIL_TYPE;
     pkt->pc.flags = 0;
     pkt->pc.pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
@@ -9561,7 +9561,7 @@ static int send_dc_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, DC_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->dc.pkt_type = SIMPLE_MAIL_TYPE;
     pkt->dc.flags = 0;
     pkt->dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
@@ -9611,7 +9611,7 @@ static int send_pc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, PC_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->pc.pkt_type = SIMPLE_MAIL_TYPE;
     pkt->pc.flags = 0;
     pkt->pc.pkt_len = LE16(PC_SIMPLE_MAIL_LENGTH);
@@ -9643,7 +9643,7 @@ static int send_dc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, DC_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->dc.pkt_type = SIMPLE_MAIL_TYPE;
     pkt->dc.flags = 0;
     pkt->dc.pkt_len = LE16(DC_SIMPLE_MAIL_LENGTH);
@@ -9696,7 +9696,7 @@ static int send_bb_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, BB_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->bb.pkt_type = LE16(SIMPLE_MAIL_TYPE);
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
@@ -9759,7 +9759,7 @@ static int send_bb_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, BB_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->bb.pkt_type = LE16(SIMPLE_MAIL_TYPE);
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
@@ -9805,7 +9805,7 @@ static int send_bb_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     /* Scrub the buffer. */
     memset(pkt, 0, BB_SIMPLE_MAIL_LENGTH);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->bb.pkt_type = LE16(SIMPLE_MAIL_TYPE);
     pkt->bb.pkt_len = LE16(BB_SIMPLE_MAIL_LENGTH);
 
@@ -10048,7 +10048,7 @@ next:
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = INFOBOARD_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
@@ -10137,7 +10137,7 @@ next:
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = LE16(INFOBOARD_TYPE);
     pkt->hdr.flags = LE32(entries);
     pkt->hdr.pkt_len = LE16(size);
@@ -10576,7 +10576,7 @@ static int send_gc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
@@ -10610,7 +10610,7 @@ static int send_dc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
@@ -10644,7 +10644,7 @@ static int send_pc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
@@ -10678,7 +10678,7 @@ static int send_bb_lobby_c_rank(ship_client_t* c, lobby_t* l) {
         }
     }
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
@@ -10720,7 +10720,7 @@ static int send_gc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     /* Copy the data. */
     copy_c_rank_gc(pkt, 0, s);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0120);
@@ -10740,7 +10740,7 @@ static int send_dc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     /* Copy the data. */
     copy_c_rank_dc(pkt, 0, s);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0xC0);
@@ -10760,7 +10760,7 @@ static int send_pc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     /* Copy the data. */
     copy_c_rank_pc(pkt, 0, s);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0xF8);
@@ -10780,7 +10780,7 @@ static int send_bb_c_rank_update(ship_client_t* d, ship_client_t* s) {
     /* Copy the data. */
     copy_c_rank_bb(pkt, 0, s);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_type = C_RANK_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0160);
@@ -10858,7 +10858,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
         amt -= 0xFF;
     }
 
-    /* Fill in the header */
+    /* 填充数据头 */
     if(d->version == CLIENT_VERSION_DCV1 || d->version == CLIENT_VERSION_DCV2 ||
        d->version == CLIENT_VERSION_GC || d->version == CLIENT_VERSION_EP3 ||
        d->version == CLIENT_VERSION_XBOX) {
@@ -10912,7 +10912,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
 
     DBG_LOG("测试是否正常");
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt->hdr.flags = 0;
@@ -11017,7 +11017,7 @@ int send_bb_full_char(ship_client_t *c) {
     /* Clear it out first */
     memset(pkt, 0, BB_FULL_CHARACTER_DATA_LENGTH);
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(BB_FULL_CHARACTER_DATA_LENGTH);
     pkt->hdr.pkt_type = LE16(BB_FULL_CHARACTER_TYPE);
     pkt->hdr.flags = 0;

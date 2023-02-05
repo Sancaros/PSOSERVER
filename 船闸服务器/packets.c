@@ -206,7 +206,7 @@ int send_welcome(ship_t* c) {
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_login_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_login_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_LOGIN);
     pkt->hdr.flags = 0;
@@ -239,7 +239,7 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_ship_status6_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_ship_status6_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SSTATUS);
     pkt->hdr.flags = 0;
@@ -268,7 +268,7 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
 int send_ping(ship_t* c, int reply) {
     shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->pkt_len = htons(sizeof(shipgate_hdr_t));
     pkt->pkt_type = htons(SHDR_TYPE_PING);
     pkt->reserved = 0;
@@ -288,7 +288,7 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     uint32_t block) {
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_char_data_pkt) + sz);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CREQ);
     pkt->hdr.flags = htons(SHDR_RESPONSE);
@@ -662,7 +662,7 @@ int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
         return -1;
     }
     else {
-        /* Fill in the header and such */
+        /* 填充数据头 and such */
         memset(pkt, 0, sizeof(shipgate_schunk_pkt));
         pkt->hdr.pkt_len = htons(file_len + sizeof(shipgate_schunk_pkt));
         pkt->hdr.pkt_type = htons(SHDR_TYPE_SCHUNK);

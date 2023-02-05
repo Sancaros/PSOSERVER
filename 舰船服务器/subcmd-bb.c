@@ -74,6 +74,10 @@ static int subcmd_send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
     /* Ìî³äÊ£ÓàÊý¾Ý */
     memcpy(&new_quest_data1.quest_data1[0], quest_data1, sizeof(new_quest_data1.quest_data1));
 
+    DBG_LOG("subcmd_send_bb_quest_data1 GC %u", c->guildcard);
+
+    //print_payload((uint8_t*)&new_quest_data1, new_quest_data1.hdr.pkt_len);
+
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&new_quest_data1);
 }
 
@@ -1961,6 +1965,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             /* Fall through... */
 
         case SUBCMD62_BURST5://6F
+            subcmd_send_bb_quest_data1(dest, (uint8_t*)c->bb_pl->quest_data1);
         case SUBCMD62_BURST6://71
         //case SUBCMD62_BURST_PLDATA://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
@@ -2074,12 +2079,17 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case SUBCMD60_SRANK_ATTR:
         UNK_CSPD(type, c->version, pkt);
-        rv = 0;
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
     case SUBCMD60_EX_ITEM_MK:
         UNK_CSPD(type, c->version, pkt);
-        rv = 0;
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        break;
+
+    case SUBCMD62_QUEST_ONEPERSON_SET_BP:
+        UNK_CSPD(type, c->version, pkt);
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
     default:
@@ -2095,7 +2105,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
     case SUBCMD62_WARP_ITEM:
     case SUBCMD62_QUEST_ONEPERSON_SET_ITEM:
-    case SUBCMD62_QUEST_ONEPERSON_SET_BP:
     case SUBCMD62_GANBLING:
         //UNK_CSPD(type, c->version, pkt);
         print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));

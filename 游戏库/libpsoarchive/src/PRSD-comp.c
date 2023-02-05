@@ -74,7 +74,7 @@ int pso_prsd_archive(const uint8_t* src, uint8_t** dst, size_t src_len,
     pso_prsd_crypt_init(&ccxt, key);
     pso_prsd_crypt(&ccxt, db + 8, dl - 8, endian);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     if (endian == PSO_PRSD_LITTLE_ENDIAN) {
         db[0] = (uint8_t)src_len;
         db[1] = (uint8_t)(src_len >> 8);
@@ -136,7 +136,7 @@ int pso_prsd_compress(const uint8_t* src, uint8_t** dst, size_t src_len,
     pso_prsd_crypt_init(&ccxt, key);
     pso_prsd_crypt(&ccxt, db2 + 8, rv, endian);
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     if (endian == PSO_PRSD_LITTLE_ENDIAN) {
         db2[0] = (uint8_t)src_len;
         db2[1] = (uint8_t)(src_len >> 8);

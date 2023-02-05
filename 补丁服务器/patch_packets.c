@@ -99,7 +99,7 @@ static int crypt_send(patch_client_t* c, int len) {
 int send_simple(patch_client_t *c, uint16_t type) {
     pkt_header_t *pkt = (pkt_header_t *)sendbuf;
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->pkt_len = LE16(PACKET_HEADER_LENGTH);
     pkt->pkt_type = LE16(type);
 
@@ -117,7 +117,7 @@ int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect) {
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(patch_welcome_pkt));
 
-    /* Fill in the header */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(PATCH_WELCOME_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_WELCOME_TYPE);
 
@@ -165,7 +165,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
     /* Wipe the packet */
     memset(pkt, 0, PATCH_REDIRECT_LENGTH);
 
-    /* Fill in the header, and copy the IP/Port. */
+    /* 填充数据头, and copy the IP/Port. */
     pkt->hdr.pkt_len = LE16(PATCH_REDIRECT_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_REDIRECT_TYPE);
     pkt->data_ip = ip;
@@ -186,7 +186,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
 int send_redirect6(patch_client_t *c, const uint8_t ip[16], uint16_t port) {
     patch_redirect6_pkt *pkt = (patch_redirect6_pkt *)sendbuf;
 
-    /* Fill in the header, and copy the IP/Port. */
+    /* 填充数据头, and copy the IP/Port. */
     pkt->hdr.pkt_len = LE16(PATCH_REDIRECT6_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_REDIRECT6_TYPE);
     memcpy(pkt->data_ip, ip, 16);
@@ -211,7 +211,7 @@ int send_chdir(patch_client_t *c, const char dir[]) {
         return -1;
     }
 
-    /* Fill in the header, and copy the directory name. */
+    /* 填充数据头, and copy the directory name. */
     memset(pkt, 0, PATCH_SET_DIRECTORY_LENGTH);
     pkt->hdr.pkt_len = LE16(PATCH_SET_DIRECTORY_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_SET_DIRECTORY);
@@ -233,7 +233,7 @@ int send_file_info(patch_client_t *c, uint32_t idx, const char fn[]) {
         return -1;
     }
 
-    /* Fill in the header, and copy the file name */
+    /* 填充数据头, and copy the file name */
     memset(pkt, 0, PATCH_FILE_INFO_LENGTH);
     pkt->hdr.pkt_len = LE16(PATCH_FILE_INFO_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_FILE_INFO);
@@ -251,7 +251,7 @@ int send_file_info(patch_client_t *c, uint32_t idx, const char fn[]) {
 int send_send_info(patch_client_t *c, uint32_t size, uint32_t files) {
     patch_send_info_pkt *pkt = (patch_send_info_pkt *)sendbuf;
 
-    /* Fill in the header and copy the data. */
+    /* 填充数据头 and copy the data. */
     pkt->hdr.pkt_len = LE16(PATCH_SEND_INFO_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_SEND_INFO);
     pkt->total_length = LE32(size);
@@ -273,7 +273,7 @@ int send_file_send(patch_client_t *c, uint32_t size, const char fn[]) {
         return -1;
     }
 
-    /* Fill in the header and information. */
+    /* 填充数据头 and information. */
     memset(pkt, 0, PATCH_FILE_SEND_LENGTH);
     pkt->hdr.pkt_len = LE16(PATCH_FILE_SEND_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_FILE_SEND);
@@ -360,7 +360,7 @@ int send_file_chunk(patch_client_t *c, const char fn[], const char dir[]) {
 int send_file_done(patch_client_t *c) {
     patch_file_done_pkt *pkt = (patch_file_done_pkt *)sendbuf;
 
-    /* Fill in the header. */
+    /* 填充数据头. */
     pkt->hdr.pkt_len = LE16(PATCH_FILE_DONE_LENGTH);
     pkt->hdr.pkt_type = LE16(PATCH_FILE_DONE);
     pkt->padding = 0;
