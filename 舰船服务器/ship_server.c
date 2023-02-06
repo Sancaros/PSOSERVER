@@ -1150,23 +1150,7 @@ int read_param_file(psocn_ship_t* cfg) {
             if (rv = rt_read_bb(cfg->bb_rtdata_file)) {
                 ERR_LOG("无法读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
             }
-
-            //char* dir = "System\\ItemRT\\bb\\ItemRTep2.gsl";
-
-            //CONFIG_LOG("读取 Blue Burst ItemRT_EP2 文件: %s", dir);
-            //if (rv = rt_read_bb_ep2(dir)) {
-            //    ERR_LOG("无法读取 Blue Burst ItemRT_EP2 文件: %s", dir);
-            //}
-
-            //dir = "System\\ItemRT\\bb\\ItemRTep2.gsl";
-
-            //CONFIG_LOG("读取 Blue Burst ItemRT_EP2 文件: %s", dir);
-            //if (rv = rt_read_bb_ep2(dir)) {
-            //    ERR_LOG("无法读取 Blue Burst ItemRT_EP2 文件: %s", dir);
-            //}
         }
-
-        //rv = load_shop_data();
 
         //printf("###########################\n");
         //if (file_log_console_show) {

@@ -25,6 +25,9 @@
 /* We need LE32 down below... so get it from packets.h */
 #define PACKETS_H_HEADERS_ONLY
 #include "packets.h"
+#include "pmtdata.h"
+#include "ptdata.h"
+#include "rtdata.h"
 
 /* 物品名称总清单. 来自 PSOPC. */
 static item_map_t item_list[] = {
@@ -3179,7 +3182,7 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_SAMURAI_ARMOR, "SAMURAI ARMOR" },
     { BBItem_STEALTH_SUIT, "STEALTH SUIT" },
     { BBItem_UNK_ARMOR, "UNK ARMOR" },
-    { BBItem_Barrier_0, "Barrier" },
+    { BBItem_Barrier_0, "盾" },
     { BBItem_Shield, "Shield" },
     { BBItem_Core_Shield, "Core Shield" },
     { BBItem_Giga_Shield, "Giga Shield" },
@@ -3233,10 +3236,10 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_BLUE_RING_33, "蓝色手镯_33" },
     { BBItem_Barrier_34, "盾" },
     { BBItem_SECURE_FEET, "千里足" },
-    { BBItem_Barrier_36, "Barrier" },
-    { BBItem_Barrier_37, "Barrier" },
-    { BBItem_Barrier_38, "Barrier" },
-    { BBItem_Barrier_39, "Barrier" },
+    { BBItem_Barrier_36, "盾" },
+    { BBItem_Barrier_37, "盾" },
+    { BBItem_Barrier_38, "盾" },
+    { BBItem_Barrier_39, "盾" },
     { BBItem_RESTA_MERGE, "圣泉增幅盾" },
     { BBItem_ANTI_MERGE, "状态增幅盾" },
     { BBItem_SHIFTA_MERGE, "强攻增幅盾" },
@@ -4053,11 +4056,9 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
 int item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
     int i = 0;
 
-    for (i = 0; i < inv.item_count; ++i) {
-        if (inv.iitems[i].data.item_id == item_id) {
+    for (i = 0; i < inv.item_count; ++i)
+        if (inv.iitems[i].data.item_id == item_id)
             break;
-        }
-    }
 
     return i;
 }
@@ -4262,6 +4263,177 @@ int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签)
         }
     }
     return eqOK;
+}
+
+/* 物品检测装备标签 */
+int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
+    pmt_weapon_bb_t tmp_wp = { 0 };
+    pmt_guard_bb_t tmp_guard = { 0 };
+    uint32_t found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
+    size_t i = 0;
+
+    i = item_get_inv_item_slot(c->bb_pl->inv, item_id);
+
+    DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
+
+    print_item_data(c, &c->bb_pl->inv.iitems[i].data);
+
+    if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
+        found_item = 1;
+        inv_count = c->bb_pl->inv.item_count;
+
+        switch (c->bb_pl->inv.iitems[i].data.data_b[0])
+        {
+        case ITEM_TYPE_WEAPON:
+            if (pmt_lookup_weapon_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_wp)) {
+                ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                    c->guildcard);
+                return -1;
+            }
+
+            if (item_check_equip(tmp_wp.equip_flag, c->equip_flags)) {
+                ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
+                    c->guildcard);
+                return -2;
+            }
+            else {
+                // 解除角色上任何其他武器的装备。（防止堆叠） 
+                for (j = 0; j < inv_count; j++)
+                    if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_WEAPON) &&
+                        (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
+
+                        c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
+                        DBG_LOG("卸载武器");
+                    }
+                DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
+            }
+            break;
+
+        case ITEM_TYPE_GUARD:
+            if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
+                ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                    c->guildcard);
+                return -3;
+            }
+
+            if (c->bb_pl->character.disp.level < tmp_guard.level_req) {
+                ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
+                    c->guildcard);
+                return -4;
+            }
+
+            switch (c->bb_pl->inv.iitems[i].data.data_b[1]) {
+            case ITEM_SUBTYPE_FRAME:
+                if (item_check_equip(tmp_guard.equip_flag, c->equip_flags)) {
+                    ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
+                        c->guildcard);
+                    return -5;
+                }
+                else {
+                    DBG_LOG("装甲识别");
+                    // 移除其他装甲和插槽
+                    for (j = 0; j < inv_count; ++j)
+                    {
+                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                            (c->bb_pl->inv.iitems[j].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
+                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
+                        {
+                            DBG_LOG("卸载装甲");
+                            c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
+                            c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
+                        }
+                    }
+                    break;
+                }
+                break;
+
+            case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
+                if (item_check_equip(tmp_guard.equip_flag, c->equip_flags)) {
+                    ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
+                        c->guildcard);
+                    return -5;
+                }else {
+                    DBG_LOG("护盾识别");
+                    // Remove any other barrier
+                    for (j = 0; j < inv_count; ++j) {
+                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                            (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_BARRIER) &&
+                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
+                        {
+                            DBG_LOG("卸载护盾");
+                            c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
+                            c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
+                        }
+                    }
+                }
+                break;
+
+            case ITEM_SUBTYPE_UNIT:// Assign unit a slot
+                DBG_LOG("插槽识别");
+                for (j = 0; j < 4; j++)
+                    slot[j] = 0;
+
+                for (j = 0; j < inv_count; j++) {
+                    // Another loop ;(
+                    if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                        (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_UNIT)) {
+                        DBG_LOG("插槽 %d 识别", j);
+                        if ((c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)) &&
+                            (c->bb_pl->inv.iitems[j].data.data_b[4] < 0x04)) {
+
+                            slot[c->bb_pl->inv.iitems[j].data.data_b[4]] = 1;
+                            DBG_LOG("插槽 %d 卸载", j);
+                        }
+                    }
+                }
+
+                for (j = 0; j < 4; j++) {
+                    if (slot[j] == 0) {
+                        found_slot = j + 1;
+                        break;
+                    }
+                }
+
+                if (found_slot && (c->mode > 0)) {
+                    found_slot--;
+                    c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
+                }
+                else {
+                    if (found_slot) {
+                        found_slot--;
+                        c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
+                    }
+                    else {//缺失 TODO
+                        c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
+                        ERR_LOG("GC %" PRIu32 " 装备了作弊的插槽物品数据!",
+                            c->guildcard);
+                        return -1;
+                    }
+                }
+                break;
+            }
+            break;
+
+        case ITEM_TYPE_MAG:
+            DBG_LOG("玛古识别");
+            // Remove equipped mag
+            for (j = 0; j < c->bb_pl->inv.item_count; j++)
+                if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_MAG) &&
+                    (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
+
+                    c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
+                    DBG_LOG("卸载玛古");
+                }
+            break;
+        }
+
+        //DBG_LOG("完成卸载, 但是未识别成功");
+
+        /* XXXX: Should really make sure we can equip it first... */
+        c->bb_pl->inv.iitems[i].flags |= LE32(0x00000008);
+    }
+
+    return found_item;
 }
 
 /* 给客户端标记可穿戴职业装备的标签 */

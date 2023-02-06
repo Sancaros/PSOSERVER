@@ -2245,7 +2245,9 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 
 /* 堆叠物品检测 */
 int item_is_stackable(uint32_t code);
+/* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
+int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c);
 

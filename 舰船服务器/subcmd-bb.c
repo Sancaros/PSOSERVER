@@ -2977,7 +2977,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
 
 static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint32_t inv, item_id = 0, found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 };
+    uint32_t /*inv, */item_id = pkt->item_id, found_item = 0/*, found_slot = 0, j = 0, slot[4] = { 0 }*/;
     int i = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2998,177 +2998,13 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
         return -1;
     }
 
-    //DBG_LOG("物品数量 %d %d", c->bb_pl->inv.item_count, c->pl->bb.inv.item_count);
-    /* Find the item and equip it. */
-    inv = c->bb_pl->inv.item_count;
-    item_id = pkt->item_id;
-
-    i = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_id);
-
-    DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
-
-    print_item_data(c, &c->bb_pl->inv.iitems[i].data);
-
-    if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
-        found_item = 1;
-
-        switch (c->bb_pl->inv.iitems[i].data.data_b[0])
-        {
-        case ITEM_TYPE_WEAPON:
-            DBG_LOG("武器识别");
-            //if (item_check_equip(
-            //    pmt_weapon_bb[c->bb_pl->inv.iitems[i].data.data_b[1]][c->bb_pl->inv.iitems[i].data.data_b[2]]->equip_flag,
-            //    c->equip_flags)) {
-            //    ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
-            //        c->guildcard);
-            //    send_msg1(c, "装备了不属于该职业的物品数据.");
-            //    //return -1;
-            //}
-            //else 
-            {
-                // De-equip any other weapon on character. (Prevent stacking) 解除角色上任何其他武器的装备。（防止堆叠） 
-                for (j = 0; j < inv; j++)
-                    if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_WEAPON) &&
-                        (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
-
-                        c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                        DBG_LOG("卸载武器");
-                    }
-            }
-            break;
-        case ITEM_TYPE_GUARD:
-            switch (c->bb_pl->inv.iitems[i].data.data_b[1])
-            {
-            case ITEM_SUBTYPE_FRAME:
-                DBG_LOG("装甲识别");
-                /*if ((item_check_equip(pmt_armor_bb[c->bb_pl->inv.iitems[i].data.data_b[2]]->equip_flag, c->equip_flags)) ||
-                    (c->bb_pl->character.disp.level < pmt_armor_bb[c->bb_pl->inv.iitems[i].data.data_b[2]]->level_req))
-                {
-                    ERR_LOG("GC %" PRIu32 " 装备了作弊物品数据!",
-                        c->guildcard);
-                    send_msg1(c, "\"作弊装备\" 是不允许的.");
-                    return -1;
-                }
-                else */{
-                    // Remove any other armor and equipped slot items.移除其他装甲和插槽
-                    for (j = 0; j < inv; ++j)
-                    {
-                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
-                            (c->bb_pl->inv.iitems[j].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
-                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
-                        {
-                            DBG_LOG("卸载装甲");
-                            c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                            c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
-                        }
-                    }
-                    break;
-                }
-                break;
-
-            case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
-                DBG_LOG("护盾识别");
-                //if ((item_check_equip(pmt_shield_bb[c->bb_pl->inv.iitems[i].data.data_b[2]]->equip_flag & c->equip_flags, c->equip_flags)) ||
-                //    (c->bb_pl->character.disp.level < pmt_shield_bb[c->bb_pl->inv.iitems[i].data.data_b[2]]->level_req))
-                //{
-                //    ERR_LOG("GC %" PRIu32 " 装备了作弊物品数据!",
-                //        c->guildcard);
-                //    send_msg1(c, "\"作弊装备\" 是不允许的.");
-                //    //return -1;
-                //}
-                //else 
-                {
-                    // Remove any other barrier
-                    for (j = 0; j < inv; ++j) {
-                        if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
-                            (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_BARRIER) &&
-                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
-                        {
-                            DBG_LOG("卸载护盾");
-                            c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                            c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
-                        }
-                    }
-                }
-                break;
-
-            case ITEM_SUBTYPE_UNIT:// Assign unit a slot
-                DBG_LOG("插槽识别");
-                for (j = 0; j < 4; j++)
-                    slot[j] = 0;
-
-                for (j = 0; j < inv; j++) {
-                    // Another loop ;(
-                    if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
-                        (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_UNIT)) {
-                        DBG_LOG("插槽 %d 识别", j);
-                        if ((c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)) &&
-                            (c->bb_pl->inv.iitems[j].data.data_b[4] < 0x04)) {
-
-                            slot[c->bb_pl->inv.iitems[j].data.data_b[4]] = 1;
-                            DBG_LOG("插槽 %d 卸载", j);
-                        }
-                    }
-                }
-
-                for (j = 0; j < 4; j++) {
-                    if (slot[j] == 0) {
-                        found_slot = j + 1;
-                        break;
-                    }
-                }
-
-                if (found_slot && (c->mode > 0)) {
-                    found_slot--;
-                    c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
-                    //DBG_LOG("111111111111111");
-                    //client->Full_Char.inventory[i].item.item_data1[4] = (uint8_t)(found_slot);
-                }
-                else {
-                    if (found_slot) {
-                        found_slot--;
-                        c->bb_pl->inv.iitems[j].data.data_b[4] = (uint8_t)(found_slot);
-                        //DBG_LOG("111111111111111");
-                    }
-                    else
-                    {//缺失 Sancaros
-
-                        //DBG_LOG("111111111111111");
-                        c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                        ERR_LOG("GC %" PRIu32 " 装备了作弊物品数据!",
-                            c->guildcard);
-                        send_msg1(c, "\"装甲没有插槽\" 是不允许的.");
-                        return -1;
-                    }
-                }
-                break;
-            }
-            break;
-
-        case ITEM_TYPE_MAG:
-            DBG_LOG("玛古识别");
-            // Remove equipped mag
-            for (j = 0; j < inv; j++)
-                if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_MAG) &&
-                    (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
-
-                    c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                    DBG_LOG("卸载玛古");
-                }
-            break;
-        }
-
-        //DBG_LOG("完成卸载, 但是未识别成功");
-
-        /* XXXX: Should really make sure we can equip it first... */
-        c->bb_pl->inv.iitems[i].flags |= LE32(0x00000008);
-    }
+    found_item = item_check_equip_flags(c, item_id);
 
     /* 是否存在物品背包中? */
     if (!found_item) {
         ERR_LOG("GC %" PRIu32 " 装备了未存在的物品数据!",
             c->guildcard);
-        //return -1;
+        return -1;
     }
 
     /* Done, let everyone else know. */
@@ -3323,7 +3159,7 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
 static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
     inventory_t sorted = { 0 };
-    size_t x;
+    size_t x, j = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -3347,6 +3183,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
+            j++;
             size_t index = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
@@ -3358,8 +3195,8 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     sorted.language = c->bb_pl->inv.language;
 
     /* Make sure we got everything... */
-    if (x != sorted.item_count) {
-        ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, x, sorted.item_count);
+    if (j != sorted.item_count) {
+        ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, j, sorted.item_count);
         return -1;
     }
 

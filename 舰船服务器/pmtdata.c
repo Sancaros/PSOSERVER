@@ -1656,7 +1656,7 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
 }
 
 int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
-    uint8_t parts[3];
+    uint8_t parts[3] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -1688,7 +1688,7 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
 }
 
 int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
-    uint8_t parts[3];
+    uint8_t parts[3] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -1725,7 +1725,7 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
 }
 
 int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
-    uint8_t parts[3];
+    uint8_t parts[3] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -1752,7 +1752,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
 }
 
 uint8_t pmt_lookup_stars_bb(uint32_t code) {
-    uint8_t parts[3];
+    uint8_t parts[3] = { 0 };
     pmt_weapon_bb_t weap;
     pmt_guard_bb_t guard;
     pmt_unit_bb_t unit;

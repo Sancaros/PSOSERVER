@@ -66,6 +66,8 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
         return LOBBY_FLAG_ERROR_ADD_CLIENT;
     }
 
+    item_class_tag_equip_flag(c);
+
     /* See if they can change lobbies... */
     rv = lobby_change_lobby(c, l);
 
@@ -1509,16 +1511,6 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
         return -1;
     }
 
-    ERR_LOG("GC %" PRIu32 " 尝试设置的信息板数据超出限制!",
-        c->guildcard);
-
-    /* TODO 增加颜色识别后失败 有乱码 应该是没有获取到字符串正确的指针 */
-    //if (add_color_tag(&pkt->msg[0])) {
-    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-    //    print_payload((uint8_t*)pkt, len);
-    //    return -1;
-    //}
-
     /* BB has this in two places for now... */
     memcpy(c->infoboard, pkt->msg, len);
     /* 剩余数据设置为0 以免出现乱码 */
@@ -1558,15 +1550,22 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         return -1;
     }
 
+    ///* BB has this in two places for now... */
+    //memcpy(c->bb_pl->quest_data1, pkt->data.quest_data1, sizeof(c->bb_pl->quest_data1));
+    //memcpy(c->bb_pl->guildcard_desc, pkt->data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+    //memcpy(c->bb_pl->autoreply, pkt->data.autoreply, sizeof(c->bb_pl->autoreply));
+    //memcpy(c->bb_pl->infoboard, pkt->data.infoboard, sizeof(c->bb_pl->infoboard));
+    //memcpy(c->bb_pl->challenge_data, pkt->data.challenge_data, sizeof(c->bb_pl->challenge_data));
+    //memcpy(c->bb_pl->tech_menu, pkt->data.tech_menu, sizeof(c->bb_pl->tech_menu));
+    //memcpy(c->bb_pl->quest_data2, pkt->data.quest_data2, sizeof(c->bb_pl->quest_data2));
+
+    //memcpy(&c->bb_guild->guild_data, &pkt->data.guild_data, sizeof(bb_guild_t));
+
     /* BB has this in two places for now... */
-    memcpy(&c->bb_pl->inv, &pkt->data.inv, sizeof(inventory_t));
-
-    memcpy(&c->bb_pl->character, &pkt->data.character, sizeof(psocn_bb_char_t));
-
+    memcpy(&c->bb_pl->inv, &pkt->data.inv, sizeof(inventory_t));//
+    memcpy(&c->bb_pl->character, &pkt->data.character, sizeof(psocn_bb_char_t));//
     memcpy(c->bb_pl->quest_data1, pkt->data.quest_data1, sizeof(c->bb_pl->quest_data1));
-
-    memcpy(&c->bb_pl->bank, &pkt->data.bank, sizeof(psocn_bank_t));
-
+    memcpy(&c->bb_pl->bank, &pkt->data.bank, sizeof(psocn_bank_t));//
     memcpy(c->bb_pl->guildcard_desc, pkt->data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
     memcpy(c->bb_pl->autoreply, pkt->data.autoreply, sizeof(c->bb_pl->autoreply));
     memcpy(c->bb_pl->infoboard, pkt->data.infoboard, sizeof(c->bb_pl->infoboard));
@@ -1577,13 +1576,9 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     memcpy(&c->bb_guild->guild_data, &pkt->data.guild_data, sizeof(bb_guild_t));
 
     memcpy(&c->bb_opts->key_cfg, &pkt->data.key_cfg, sizeof(bb_key_config_t));
-
     c->bb_opts->option_flags = pkt->data.option_flags;
-
     memcpy(c->bb_opts->shortcuts, &pkt->data.shortcuts, 0x0A40);
-
     memcpy(c->bb_opts->symbol_chats, &pkt->data.symbol_chats, 0x04E0);
-
     memcpy(c->bb_opts->guild_name, &pkt->data.gc_data2.guild_name, sizeof(pkt->data.gc_data2.guild_name));
 
     return 0;

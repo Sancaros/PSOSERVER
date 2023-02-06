@@ -2012,42 +2012,6 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
     pthread_rwlock_unlock(&b->lock);
     return 0;
 }
-//
-//static int handle_bbguild(shipgate_conn_t* c, shipgate_bb_guild_pkt* pkt) {
-//    ship_t* s = c->ship;
-//    block_t* b;
-//    ship_client_t* i;
-//    uint32_t gc = ntohl(pkt->guildcard), block = ntohl(pkt->block);
-//
-//    /* Check the block number first. */
-//    if (block > s->cfg->blocks) {
-//        return 0;
-//    }
-//
-//    b = s->blocks[block - 1];
-//    //pthread_rwlock_rdlock(&b->lock);
-//
-//    /* Find the requested client. */
-//    TAILQ_FOREACH(i, b->clients, qentry) {
-//        if (i->guildcard == gc) {
-//            //pthread_mutex_lock(&i->mutex);
-//
-//            /* 复制角色选项数据 */
-//            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
-//
-//            ///* Move the user on now that we have everything... */
-//            //send_lobby_list(i);
-//            //send_bb_full_char(i);
-//            //send_simple(i, CHAR_DATA_REQUEST_TYPE, 0);
-//
-//            //pthread_mutex_unlock(&i->mutex);
-//            break;
-//        }
-//    }
-//
-//    //pthread_rwlock_unlock(&b->lock);
-//    return 0;
-//}
 
 static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
     ship_t* s = c->ship;

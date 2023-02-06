@@ -41,16 +41,6 @@ uint32_t get_bb_shop_price(iitem_t* ci)
 
     price = 10;
 
-    //可以检索商店物品的数据
-    //ITEM_LOG("纯物品字节数据为:\r\n%02X%02X%02X%02X\r\n%02X%02X%02X%02X\r\n%02X%02X%02X%02X\r\n%02X%02X%02X%02X",
-    /*ci->data_b[0], ci->data_b[1], ci->data_b[2], ci->data_b[3],
-    ci->data_b[4], ci->data_b[5], ci->data_b[6], ci->data_b[7],
-    ci->data_b[8], ci->data_b[9], ci->data_b[10], ci->data_b[11],
-    ci->data2_b[0], ci->data2_b[1], ci->data2_b[2], ci->data2_b[3]);*/
-    /*纯物品字节数据为:
-00060000
-00000000
-00000000*/
     switch (ci->data.data_b[0])
     {
     case 0x00: // Weapons 武器

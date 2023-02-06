@@ -11026,8 +11026,6 @@ int send_bb_full_char(ship_client_t *c) {
     /* Fill in all the parts of it... */
     memcpy(&pkt->data.inv, &c->bb_pl->inv, sizeof(inventory_t));
     memcpy(&pkt->data.character, &c->bb_pl->character, sizeof(psocn_bb_char_t));
-    item_class_tag_equip_flag(c);
-    DBG_LOG("equip_flag %02X", c->equip_flags);
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.option_flags = c->bb_opts->option_flags;
     ///////////////////////////////////////////////////////////////////////////////////////
