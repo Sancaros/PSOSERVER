@@ -217,9 +217,10 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
 sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
     static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
-    static const uint8_t max_tech_level[4] = { 8, 15, 23, 30 };
-    static const uint8_t max_anti_level[4] = { 2,  4,  6,  7 };
+    static const uint8_t max_tech_lvl[4] = { 8, 15, 23, 30 };
+    static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
     sitem_t item = { 0 };
+    uint32_t tmp_value = 0;
     item.data_b[0] = 物品类型;
 
     while (item.data_b[0] == ITEM_TYPE_MAG) {
@@ -251,29 +252,6 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
 
         break;
 
-        //       物品ID 打磨 特殊  物品特殊属性     未知
-        // item       00 01 00 00  ,17 00 12 34,12 34 56 78,00 00 00 00,
-        //          武器       装甲        护盾           MAG         
-        //item 00 
-        //     01 
-        //     00 
-        //     00  
-        //     ,
-        //     17 
-        //     00 
-        //     12 
-        //     34
-        //     ,
-        //     12 
-        //     34 
-        //     56 
-        //     78
-        //     ,
-        //     00 
-        //     00 
-        //     00 
-        //     00,
-
     case ITEM_TYPE_GUARD: // 装甲
         item.data_b[1] = 0;
 
@@ -287,14 +265,27 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
             break;
 
         case ITEM_SUBTYPE_BARRIER://护盾
+            tmp_value = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            if (tmp_value < 0)
+                item.data_b[6] -= tmp_value;
+            else
+                item.data_b[6] -= tmp_value;
+            tmp_value = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            if (tmp_value < 0)
+                item.data_b[9] -= tmp_value;
+            else
+                item.data_b[9] -= tmp_value;
             item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
-            //item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
-            //item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
             break;
 
         case ITEM_SUBTYPE_UNIT://插件
+            tmp_value = (mt19937_genrand_int32(随机因子) % 5) - 4;
+            if (tmp_value < 0)
+                item.data_b[7] -= tmp_value;
+            else
+                item.data_b[7] -= tmp_value;
+
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
-            //item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
             break;
         }
         break;
@@ -347,10 +338,10 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
                 item.data_b[2] = 0; // reverser & ryuker always level 1 
                 break;
             case 16:
-                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_anti_level[难度];
+                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
                 break;
             default:
-                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_tech_level[难度];
+                item.data_b[2] = mt19937_genrand_int32(随机因子) % max_tech_lvl[难度];
                 break;
             }
             break;
