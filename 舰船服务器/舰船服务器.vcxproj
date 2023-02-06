@@ -46,7 +46,7 @@
     <ClCompile Include="word_select.c" />
     <ClCompile Include="subcmd-bb.c" />
     <ClCompile Include="block-bb.c" />
-    <ClCompile Include="shopdata.c" />
+    <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />
   </ItemGroup>
   <ItemGroup>
@@ -76,7 +76,7 @@
     <ClInclude Include="word_select-gc.h" />
     <ClInclude Include="word_select-pc.h" />
     <ClInclude Include="word_select.h" />
-    <ClInclude Include="shopdata.h" />
+    <ClInclude Include="shop.h" />
     <ClInclude Include="mag_bb.h" />
     <ClInclude Include="word_select-bb.h" />
     <ClInclude Include="subcmd_size_table.h" />

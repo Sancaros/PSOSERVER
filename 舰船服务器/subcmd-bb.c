@@ -29,7 +29,7 @@
 
 #include "subcmd.h"
 #include "subcmd_size_table.h"
-#include "shopdata.h"
+#include "shop.h"
 #include "pmtdata.h"
 #include "clients.h"
 #include "ship_packets.h"

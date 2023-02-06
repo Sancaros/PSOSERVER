@@ -96,7 +96,7 @@
     <ClCompile Include="block-bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="shopdata.c">
+    <ClCompile Include="shop.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="mag_bb.c">
@@ -182,7 +182,7 @@
     <ClInclude Include="utils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="shopdata.h">
+    <ClInclude Include="shop.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="mag_bb.h">

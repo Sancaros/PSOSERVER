@@ -58,7 +58,7 @@
 #include "ptdata.h"
 #include "pmtdata.h"
 #include "rtdata.h"
-#include "shopdata.h"
+#include "shop.h"
 #include "admin.h"
 #include "smutdata.h"
 

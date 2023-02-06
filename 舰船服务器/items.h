@@ -22,7 +22,7 @@
 
 #include <pso_player.h>
 #include "clients.h"
-#include "shopdata.h"
+#include "shop.h"
 
 // item_equip_flags 职业装备标志 用于识别不同种族
 #define EQUIP_FLAGS_NONE     1

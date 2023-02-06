@@ -40,7 +40,7 @@
 #include "ship.h"
 #include "block.h"
 #include <pso_player.h>
-#include "shopdata.h"
+#include "shop.h"
 
 /* Pull in the packet header types. */
 #define PACKETS_H_HEADERS_ONLY

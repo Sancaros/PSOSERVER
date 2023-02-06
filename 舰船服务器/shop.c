@@ -27,7 +27,7 @@
 
 #include <pso_character.h>
 
-#include "shopdata.h"
+#include "shop.h"
 #include "pmtdata.h"
 
 //获取商店价格

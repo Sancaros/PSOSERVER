@@ -31,7 +31,7 @@
 #include "ship_packets.h"
 #include "utils.h"
 #include "items.h"
-#include "shopdata.h"
+#include "shop.h"
 #include "word_select.h"
 #include "scripts.h"
 #include "shipgate.h"
