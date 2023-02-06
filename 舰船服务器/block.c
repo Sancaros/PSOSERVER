@@ -59,11 +59,11 @@ static void* block_thd(void* d) {
     block_t* b = (block_t*)d;
     ship_t* s = b->ship;
     int nfds, i;
-    struct timeval timeout;
-    fd_set readfds, writefds, exceptfds;
+    struct timeval timeout = { 0 };
+    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     ship_client_t* it, * tmp;
     socklen_t len;
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     char nm[64];
@@ -1882,7 +1882,7 @@ static int dcnte_process_game_create(ship_client_t* c,
     dcnte_game_create_pkt* pkt) {
     lobby_t* l;
     uint8_t event = ship->game_event;
-    char name[32], tmp[19];
+    char name[32] = { 0 }, tmp[19] = { 0 };
 
     /* Convert the team name to UTF-8 */
     tmp[0] = '\t';

@@ -421,7 +421,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
     switch (s->version) {
     case CLIENT_VERSION_PC:
     {
-        simple_mail_pkt p;
+        simple_mail_pkt p = { 0 };
         dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)&p;
 
         /* Build the packet up */
@@ -449,7 +449,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
     {
-        simple_mail_pkt p;
+        simple_mail_pkt p = { 0 };
         dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)&p;
 
         /* Build the packet up */
@@ -1726,7 +1726,7 @@ static int handle_frlist(shipgate_conn_t* c, shipgate_friend_list_pkt* pkt) {
     uint32_t gc = ntohl(pkt->requester), gc2;
     uint32_t block = ntohl(pkt->block), bl2, ship;
     int j, total;
-    char msg[1024];
+    char msg[1024] = { 0 };
     miniship_t* ms;
     size_t len = 0;
 

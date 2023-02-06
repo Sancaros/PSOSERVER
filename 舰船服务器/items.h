@@ -27,15 +27,15 @@
 // item_equip_flags 职业装备标志 用于识别不同种族
 #define EQUIP_FLAGS_NONE     1
 #define EQUIP_FLAGS_OK       0
-#define EQUIP_FLAGS_HUNTER   0x00000001   // Bit 1 猎人
-#define EQUIP_FLAGS_RANGER   0x00000002   // Bit 2 枪手
-#define EQUIP_FLAGS_FORCE    0x00000004   // Bit 3 法师
-#define EQUIP_FLAGS_HUMAN    0x00000008   // Bit 4 人类
-#define EQUIP_FLAGS_DROID    0x00000010   // Bit 5 机器人
-#define EQUIP_FLAGS_NEWMAN   0x00000020   // Bit 6 新人类
-#define EQUIP_FLAGS_MALE     0x00000040   // Bit 7 男人
-#define EQUIP_FLAGS_FEMALE   0x00000080   // Bit 8 女人
-#define EQUIP_FLAGS_MAX      0x00000008
+#define EQUIP_FLAGS_HUNTER   0x01   // Bit 1 猎人
+#define EQUIP_FLAGS_RANGER   0x02   // Bit 2 枪手
+#define EQUIP_FLAGS_FORCE    0x04   // Bit 3 法师
+#define EQUIP_FLAGS_HUMAN    0x08   // Bit 4 人类
+#define EQUIP_FLAGS_DROID    0x10   // Bit 5 机器人
+#define EQUIP_FLAGS_NEWMAN   0x20   // Bit 6 新人类
+#define EQUIP_FLAGS_MALE     0x40   // Bit 7 男人
+#define EQUIP_FLAGS_FEMALE   0x80   // Bit 8 女人
+#define EQUIP_FLAGS_MAX      8
 
 #define MAX_LOBBY_SAVED_ITEMS      3000
 
@@ -2228,6 +2228,9 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
 
+/* 获取背包中目标物品所在槽位 */
+int item_get_inv_item_slot(inventory_t inv, uint32_t item_id);
+
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
@@ -2243,5 +2246,7 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 /* 堆叠物品检测 */
 int item_is_stackable(uint32_t code);
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
+/* 给客户端标记可穿戴职业装备的标签 */
+int item_class_tag_equip_flag(ship_client_t* c);
 
 #endif /* !ITEMS_H */

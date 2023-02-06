@@ -4049,6 +4049,19 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     return l->item_next_lobby_id++;
 }
 
+/* 获取背包中目标物品所在槽位 */
+int item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
+    int i = 0;
+
+    for (i = 0; i < inv.item_count; ++i) {
+        if (inv.iitems[i].data.item_id == item_id) {
+            break;
+        }
+    }
+
+    return i;
+}
+
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt) {
@@ -4251,3 +4264,85 @@ int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签)
     return eqOK;
 }
 
+/* 给客户端标记可穿戴职业装备的标签 */
+int item_class_tag_equip_flag(ship_client_t* c) {
+    uint8_t c_class = c->bb_pl->character.disp.dress_data.ch_class;
+
+    c->equip_flags = 0;
+
+    switch (c_class)
+    {
+    case CLASS_HUMAR:
+        c->equip_flags |= EQUIP_FLAGS_HUNTER;
+        c->equip_flags |= EQUIP_FLAGS_HUMAN;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+
+    case CLASS_HUNEWEARL:
+        c->equip_flags |= EQUIP_FLAGS_HUNTER;
+        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+
+    case CLASS_HUCAST:
+        c->equip_flags |= EQUIP_FLAGS_HUNTER;
+        c->equip_flags |= EQUIP_FLAGS_DROID;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+
+    case CLASS_HUCASEAL:
+        c->equip_flags |= EQUIP_FLAGS_HUNTER;
+        c->equip_flags |= EQUIP_FLAGS_DROID;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+
+    case CLASS_RAMAR:
+        c->equip_flags |= EQUIP_FLAGS_RANGER;
+        c->equip_flags |= EQUIP_FLAGS_HUMAN;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+
+    case CLASS_RACAST:
+        c->equip_flags |= EQUIP_FLAGS_RANGER;
+        c->equip_flags |= EQUIP_FLAGS_DROID;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+
+    case CLASS_RACASEAL:
+        c->equip_flags |= EQUIP_FLAGS_RANGER;
+        c->equip_flags |= EQUIP_FLAGS_DROID;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+    case CLASS_RAMARL:
+        c->equip_flags |= EQUIP_FLAGS_RANGER;
+        c->equip_flags |= EQUIP_FLAGS_HUMAN;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+
+    case CLASS_FONEWM:
+        c->equip_flags |= EQUIP_FLAGS_FORCE;
+        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+
+    case CLASS_FONEWEARL:
+        c->equip_flags |= EQUIP_FLAGS_FORCE;
+        c->equip_flags |= EQUIP_FLAGS_NEWMAN;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+
+    case CLASS_FOMARL:
+        c->equip_flags |= EQUIP_FLAGS_FORCE;
+        c->equip_flags |= EQUIP_FLAGS_HUMAN;
+        c->equip_flags |= EQUIP_FLAGS_FEMALE;
+        break;
+
+    case CLASS_FOMAR:
+        c->equip_flags |= EQUIP_FLAGS_FORCE;
+        c->equip_flags |= EQUIP_FLAGS_HUMAN;
+        c->equip_flags |= EQUIP_FLAGS_MALE;
+        break;
+    }
+
+    return 0;
+}
