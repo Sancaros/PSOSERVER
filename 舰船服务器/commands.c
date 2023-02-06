@@ -168,7 +168,7 @@ static int handle_min_level(ship_client_t *c, const char *params) {
 
     if(errno || lvl > MAX_PLAYER_LEVEL || lvl < 1) {
         /* Send a message saying invalid level */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid level value."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
     }
 
     /* Make sure the requested level is greater than or equal to the value for
@@ -213,7 +213,7 @@ static int handle_max_level(ship_client_t *c, const char *params) {
 
     if(errno || lvl > MAX_PLAYER_LEVEL || lvl < 1) {
         /* Send a message saying invalid level */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid level value."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效等级."));
     }
 
     /* Make sure the requested level is greater than or equal to the value for
@@ -234,6 +234,11 @@ static int handle_refresh(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
+
+    /* Not valid for Blue Burst clients */
+    if (c->version == CLIENT_VERSION_BB) {
+        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
     }
 
     if(!strcmp(params, "quests")) {
@@ -325,7 +330,7 @@ static int handle_restore(ship_client_t *c, const char *params) {
 
     if(errno || slot > 4 || slot < 1) {
         /* Send a message saying invalid slot */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid slot value."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效槽位."));
     }
 
     /* Adjust so we don't go into the Blue Burst character data */
@@ -335,7 +340,7 @@ static int handle_restore(ship_client_t *c, const char *params) {
     if(shipgate_send_creq(&ship->sg, c->guildcard, slot)) {
         /* Send a message saying we couldn't request */
         return send_txt(c, "%s",
-                        __(c, "\tE\tC7Couldn't request character data."));
+                        __(c, "\tE\tC7无法获取角色数据."));
     }
 
     return 0;
@@ -356,8 +361,8 @@ static int handle_bstat(ship_client_t *c, const char *params) {
     pthread_rwlock_unlock(&b->lock);
 
     /* Fill in the string. */
-    return send_txt(c, "\tE\tC7BLOCK%02d:\n%d %s\n%d %s", b->b, players,
-                    __(c, "Users"), games, __(c, "Teams"));
+    return send_txt(c, "\tE\tC7舰仓%02d:\n%d %s\n%d %s", b->b, players,
+                    __(c, "玩家"), games, __(c, "房间"));
 }
 
 /* 用法 /bcast message */
@@ -383,7 +388,7 @@ static int handle_arrow(ship_client_t *c, const char *params) {
     i = atoi(params);
     c->arrow_color = i;
 
-    send_txt(c, "%s", __(c, "\tE\tC7Arrow set."));
+    send_txt(c, "%s", __(c, "\tE\tC7箭头标记颜色已改变."));
 
     return send_lobby_arrows(c->cur_lobby);
 }
@@ -560,7 +565,7 @@ static int handle_lname(ship_client_t *c, const char *params) {
 
     /* Check the length of the provided lobby name. */
     if(strlen(params) > 16) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Lobby name too long."));
+        return send_txt(c, "%s", __(c, "\tE\tC7房间名称过长,请重新设置."));
     }
 
     pthread_mutex_lock(&l->mutex);
@@ -570,7 +575,7 @@ static int handle_lname(ship_client_t *c, const char *params) {
 
     pthread_mutex_unlock(&l->mutex);
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Lobby name set."));
+    return send_txt(c, "%s\n%s", __(c, "\tE\tC7已设置房间新名称:"), l->name);
 }
 
 /* 用法: /bug */
@@ -619,7 +624,7 @@ static int handle_clinfo(ship_client_t *c, const char *params) {
     count = sscanf(params, "%d", &id);
 
     if(count == EOF || count == 0 || id >= l->max_clients || id < 0) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
     }
 
     /* Make sure there is such a client. */

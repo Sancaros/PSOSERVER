@@ -787,6 +787,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         dc.shdr.type = SUBCMD62_GUILDCARD;
         dc.shdr.size = 0x21;
         dc.shdr.unused = 0x0000;
+
         dc.player_tag = LE32(0x00010000);
         dc.guildcard = LE32(src->guildcard);
         dc.unused2 = 0;
@@ -822,6 +823,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         pc.shdr.type = SUBCMD62_GUILDCARD;
         pc.shdr.size = 0x3D;
         pc.shdr.unused = 0x0000;
+
         pc.player_tag = LE32(0x00010000);
         pc.guildcard = LE32(src->guildcard);
         pc.padding = 0;
@@ -868,6 +870,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         gc.shdr.type = SUBCMD62_GUILDCARD;
         gc.shdr.size = 0x25;
         gc.shdr.unused = 0x0000;
+
         gc.player_tag = LE32(0x00010000);
         gc.guildcard = LE32(src->guildcard);
         gc.padding = 0;
@@ -916,6 +919,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         xb.shdr.type = SUBCMD62_GUILDCARD;
         xb.shdr.size = 0x8C;
         xb.shdr.unused = LE16(0xFB0D);
+
         xb.player_tag = LE32(0x00010000);
         xb.guildcard = LE32(src->guildcard);
         xb.xbl_userid = LE64(src->guildcard);
@@ -939,6 +943,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
+
         bb.guildcard = LE32(src->guildcard);
         memcpy(bb.name, src->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
         memcpy(bb.guild_name, src->bb_opts->guild_name, sizeof(src->bb_opts->guild_name));
@@ -1895,8 +1900,10 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
                     rv = -1;
 
                 if (rv) {
-                    ERR_LOG("GC %u 不该有 魔法! 标签值 %02X 错误码 %d", c->guildcard, c->equip_flags, rv);
+                    ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 %d", c->guildcard, 
+                        pkt->techniques[i], max_tech_level[i].tech_name, max_tech_level[i].max_lvl[ch_class]);
                     c->bb_pl->character.techniques[i] = 0x00; // 忘掉该玩家不该拥有的技能
+                    rv = 0;
                 }
             }
         }
@@ -1941,10 +1948,10 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         // Could check inventory here 查看背包
         pkt->inv.item_count = c->bb_pl->inv.item_count;
 
-        for (i = 0; i < 30; i++)
+        for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
             memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
 
-        for (i = 0; i < 4; i++)
+        for (i = 0; i < sizeof(uint32_t); i++)
             memset(&pkt->unused[i], 0, sizeof(uint32_t));
 
         pkt->shdr.size = pkt->hdr.pkt_len / 4;
