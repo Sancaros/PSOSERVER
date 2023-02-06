@@ -4310,20 +4310,20 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
             break;
 
         case ITEM_TYPE_GUARD:
-            if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
-                ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
-                    c->guildcard);
-                return -3;
-            }
-
-            if (c->bb_pl->character.disp.level < tmp_guard.level_req) {
-                ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
-                    c->guildcard);
-                return -4;
-            }
-
             switch (c->bb_pl->inv.iitems[i].data.data_b[1]) {
             case ITEM_SUBTYPE_FRAME:
+                if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
+                    ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                        c->guildcard);
+                    return -3;
+                }
+
+                if (c->bb_pl->character.disp.level < tmp_guard.level_req) {
+                    ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
+                        c->guildcard);
+                    return -4;
+                }
+
                 if (item_check_equip(tmp_guard.equip_flag, c->equip_flags)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
                         c->guildcard);
@@ -4348,6 +4348,18 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                 break;
 
             case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
+                if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
+                    ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                        c->guildcard);
+                    return -3;
+                }
+
+                if (c->bb_pl->character.disp.level < tmp_guard.level_req) {
+                    ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
+                        c->guildcard);
+                    return -4;
+                }
+
                 if (item_check_equip(tmp_guard.equip_flag, c->equip_flags)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
                         c->guildcard);
