@@ -23,6 +23,7 @@
 #include <mtwist.h>
 
 #include "lobby.h"
+#include "max_tech_level.h"
 
 #ifdef PACKED
 #undef PACKED
@@ -634,29 +635,21 @@ Hope you find the above info useful.
 
 /* 各种物品的参数表定义 */
 const static char* ItemPMT_Files[] = {
-    "System\\ItemPmt\\bb\\Pmt_data\\Armor.ini",
-    "System\\ItemPmt\\bb\\Pmt_data\\Shield.ini",
     "System\\ItemPmt\\bb\\Pmt_data\\Tech.ini",
-    "System\\ItemPmt\\bb\\Pmt_data\\Weapon.ini",
 };
 
 enum ItemPMT_Files_Num {
-    ARMOR = 0,
-    SHIELD,
     TECH,
-    WEAPON,
 };
 
-static pmt_weapon_bb_t pmt_weapon_bb[256][256][256]; //ok
-static pmt_guard_bb_t pmt_armor_bb[256][256]; //ok
-static pmt_guard_bb_t pmt_shield_bb[256][256]; //ok
-static pmt_unit_bb_t pmt_unit_bb[256][256];
-static pmt_mag_bb_t pmt_mag_bb[256][256];
-static pmt_tool_bb_t pmt_tool_bb[256][256];
+static pmt_mag_bb_t* pmt_mag_bb;
+static pmt_tool_bb_t* pmt_tool_bb;
+
 //19 个科技类别 12个 职业 未完成结构数据读取
-#define BB_MAX_TECH_LEVEL 19
-#define BB_MAX_CLASS      12
-static char max_tech_level[BB_MAX_TECH_LEVEL][BB_MAX_CLASS];
+//#define BB_MAX_TECH_LEVEL 19
+//#define BB_MAX_CLASS      12
+//
+//static char max_tech_level[BB_MAX_TECH_LEVEL][BB_MAX_CLASS];
 
 static pmt_weapon_bb_t** weapons_bb/* = NULL*/;
 static uint32_t* num_weapons_bb/* = NULL*/;

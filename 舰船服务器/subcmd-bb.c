@@ -1858,9 +1858,10 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pk
 
 static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
-    int i, rv = 0;
-    iitem_t* item;
     lobby_t* l = c->cur_lobby;
+    uint8_t ch_class = c->bb_pl->character.disp.dress_data.ch_class;
+    iitem_t* item;
+    int i, rv = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1885,28 +1886,28 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         }
     }
     else {
-
-        pkt->shdr.size = pkt->hdr.pkt_len / 4;
-
         pkt->guildcard = c->guildcard;
 
         // Check techniques...检查魔法,如果是机器人就不该有魔法
         if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
-            for (i = 0; i < 19; i++) {
-                if (pkt->techniques[i] > max_tech_level[i][c->bb_pl->character.disp.dress_data.ch_class]) {
-                    (char)c->bb_pl->character.techniques[i] = -1; // Unlearn broken technique.忘掉损坏的技能
+            for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+                if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
                     rv = -1;
+
+                if (rv) {
+                    ERR_LOG("GC %u 不该有 魔法! 标签值 %02X 错误码 %d", c->guildcard, c->equip_flags, rv);
+                    c->bb_pl->character.techniques[i] = 0x00; // 忘掉该玩家不该拥有的技能
                 }
             }
-
-            if (rv)
-                ERR_LOG("GC %u 是机器人就不该有魔法! 标签值 %02X 错误码 %d", c->guildcard, c->equip_flags, rv);
         }
 
-        memcpy(&pkt->techniques[0], &c->bb_pl->character.techniques, sizeof(c->bb_pl->character.techniques));
+        for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+            // 学会所有技能 TODO 增加作弊开关
+            //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
+            pkt->techniques[i] = c->bb_pl->character.techniques[i];
+        }
 
-        // Could check character structure here 可以查看角色结构
-        //memcpy(&pkt->dress_data, &c->bb_pl->character.disp.dress_data, sizeof(psocn_dress_data_t));
+        // 检测玩家角色结构
         pkt->dress_data = c->bb_pl->character.disp.dress_data;
 
         memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
@@ -1921,20 +1922,20 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         }
 
         /* 检测人物基础数值 */
-        pkt->stats.atp = c->pl->bb.character.disp.stats.atp;
-        pkt->stats.mst = c->pl->bb.character.disp.stats.mst;
-        pkt->stats.evp = c->pl->bb.character.disp.stats.evp;
-        pkt->stats.hp = c->pl->bb.character.disp.stats.hp;
-        pkt->stats.dfp = c->pl->bb.character.disp.stats.dfp;
-        pkt->stats.ata = c->pl->bb.character.disp.stats.ata;
-        pkt->stats.lck = c->pl->bb.character.disp.stats.lck;
+        pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
+        pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
+        pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
+        pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
+        pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
+        pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
+        pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
 
         for (i = 0; i < 10; i++)
             pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
 
-        pkt->level = c->pl->bb.character.disp.level;
-        pkt->exp = c->pl->bb.character.disp.exp;
-        pkt->meseta = c->pl->bb.character.disp.meseta;
+        pkt->level = c->bb_pl->character.disp.level;
+        pkt->exp = c->bb_pl->character.disp.exp;
+        pkt->meseta = c->bb_pl->character.disp.meseta;
 
 
         // Could check inventory here 查看背包
@@ -1945,9 +1946,11 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
 
         for (i = 0; i < 4; i++)
             memset(&pkt->unused[i], 0, sizeof(uint32_t));
+
+        pkt->shdr.size = pkt->hdr.pkt_len / 4;
     }
 
-    printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
+    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
 
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
