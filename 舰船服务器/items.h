@@ -2195,6 +2195,73 @@ typedef struct bbitem_map_s {
     const char* name;
 } bbitem_map_t;
 
+// BB 物品参数结构
+typedef struct bb_item_wp {
+    union data_l {
+        uint32_t data_l[3];//32位数值
+        struct data_w {
+            uint16_t data_w[6];//宽字节
+        };
+        struct data_b {
+            //物品类型
+            uint8_t type;
+            //子类型
+            uint8_t subtype;
+            //用于物品类索引
+            uint8_t index;
+            //打磨 最大值貌似是 35
+            uint8_t polish;
+
+            //special 0x00 - 0x28 / untekked 0x80 / presen 0x40 
+            //增加标签 则不同标签值相加
+            uint8_t flags;
+            //presen color type 0x00 - 0x0C 
+            uint8_t subflags;
+            // 属性1 属性1百分比
+            // none native a beast machine dark hitt 0x00 - 0x05
+            // 0x00 0x01   0x02    0x03    0x04 0x05
+            uint8_t attrb1;
+            uint8_t attrb1_add;
+
+            // 属性2 属性2百分比
+            // none native a beast machine dark hitt 0x00 - 0x05
+            // 0x00 0x01   0x02    0x03    0x04 0x05
+            uint8_t attrb2;
+            uint8_t attrb2_add;
+            // 属性3 属性3百分比
+            // none native a beast machine dark hitt 0x00 - 0x05
+            // 0x00 0x01   0x02    0x03    0x04 0x05
+            uint8_t attrb3;
+            uint8_t attrb3_add;
+        };
+    };
+
+    uint32_t item_id;              /* Set to 0xFFFFFFFF */
+
+    union data2_l {
+        uint32_t amt;
+        struct data2_w {
+            uint16_t data2_w[2];
+        };
+        struct data2_b {
+            uint8_t data2_b[4];
+        };
+    };
+} bb_item_wp_t;
+
+static int sadd213213213as = sizeof(bb_item_wp_t);
+
+// BB 美赛塔物品参数结构
+typedef struct bb_item_mst {
+    uint8_t type; //aways 0x04
+    uint8_t unused1;
+    uint8_t unused2;
+    uint8_t unused3;
+    uint32_t unused4;
+    uint32_t unused5;
+    uint32_t amt; //mst amount
+} bb_item_mst_t;
+
 /* 物品名称代码. 英文. */
 const char *item_get_name_by_code(item_code_t code, int version);
 /* 物品名称代码. 中文 */

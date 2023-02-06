@@ -1900,7 +1900,7 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
             }
 
             if (rv)
-                ERR_LOG("GC %u 是机器人就不该有魔法! 标签值 %02X 错误码 %d", c->equip_flags, c->guildcard, rv);
+                ERR_LOG("GC %u 是机器人就不该有魔法! 标签值 %02X 错误码 %d", c->guildcard, c->equip_flags, rv);
         }
 
         memcpy(&pkt->techniques[0], &c->bb_pl->character.techniques, sizeof(c->bb_pl->character.techniques));

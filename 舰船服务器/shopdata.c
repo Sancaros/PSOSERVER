@@ -31,8 +31,9 @@
 #include "pmtdata.h"
 
 //获取商店价格
-uint32_t get_bb_shop_price(iitem_t* ci)
-{
+uint32_t get_bb_shop_price(iitem_t* ci) {
+    pmt_weapon_bb_t tmp_wp = { 0 };
+    pmt_guard_bb_t tmp_guard = { 0 };
     uint32_t compare_item, ch;
     int32_t percent_add, price;
     uint8_t variation;
@@ -41,147 +42,175 @@ uint32_t get_bb_shop_price(iitem_t* ci)
 
     price = 10;
 
-    switch (ci->data.data_b[0])
-    {
-    case 0x00: // Weapons 武器
+    switch (ci->data.data_b[0]) {
+    case ITEM_TYPE_WEAPON: // Weapons 武器
         if (ci->data.data_b[4] & 0x80)
             price = 1; // Untekked = 1 meseta 取消选中 = 1美赛塔
-        else
-        {
-            if ((ci->data.data_b[1] < 0x0D) && (ci->data.data_b[2] < 0x05))
-            {
+        else {
+            if ((ci->data.data_b[1] < 0x0D) && (ci->data.data_b[2] < 0x05)) {
                 if ((ci->data.data_b[1] > 0x09) && (ci->data.data_b[2] > 0x03)) // Canes, Rods, Wands become rare faster  拐杖、棍棒、魔杖越来越稀少 
                     break;
-                price = pmt_weapon_bb[ci->data.data_b[1]][ci->data.data_b[2]]->atp_max + ci->data.data_b[3];
+
+                if (pmt_lookup_weapon_bb(ci->data.data_l[0], &tmp_wp)) {
+                    ERR_LOG("从PMT未获取到准确的数据!");
+                    return -1;
+                }
+
+                price = tmp_wp.atp_max + ci->data.data_b[3];
                 price *= price;
                 price_calc = (float)price;
-                switch (ci->data.data_b[1])
-                {
+                switch (ci->data.data_b[1]) {
                 case 0x01:
-                    price_calc /= 5.0;
+                    price_calc /= 5.0f;
                     break;
+
                 case 0x02:
-                    price_calc /= 4.0;
+                    price_calc /= 4.0f;
                     break;
+
                 case 0x03:
                 case 0x04:
-                    price_calc *= 2.0;
-                    price_calc /= 3.0;
+                    price_calc *= 2.0f;
+                    price_calc /= 3.0f;
                     break;
+
                 case 0x05:
-                    price_calc *= 4.0;
-                    price_calc /= 5.0;
+                    price_calc *= 4.0f;
+                    price_calc /= 5.0f;
                     break;
+
                 case 0x06:
-                    price_calc *= 10.0;
-                    price_calc /= 21.0;
+                    price_calc *= 10.0f;
+                    price_calc /= 21.0f;
                     break;
+
                 case 0x07:
-                    price_calc /= 3.0;
+                    price_calc /= 3.0f;
                     break;
+
                 case 0x08:
-                    price_calc *= 25.0;
+                    price_calc *= 25.0f;
                     break;
+
                 case 0x09:
-                    price_calc *= 10.0;
-                    price_calc /= 9.0;
+                    price_calc *= 10.0f;
+                    price_calc /= 9.0f;
                     break;
+
                 case 0x0A:
-                    price_calc /= 2.0;
+                    price_calc /= 2.0f;
                     break;
+
                 case 0x0B:
-                    price_calc *= 2.0;
-                    price_calc /= 5.0;
+                    price_calc *= 2.0f;
+                    price_calc /= 5.0f;
                     break;
+
                 case 0x0C:
-                    price_calc *= 4.0;
-                    price_calc /= 3.0;
+                    price_calc *= 4.0f;
+                    price_calc /= 3.0f;
                     break;
                 }
 
                 percent_add = 0;
+
                 if (ci->data.data_b[6])
                     percent_add += (char)ci->data.data_b[7];
+
                 if (ci->data.data_b[8])
                     percent_add += (char)ci->data.data_b[9];
+
                 if (ci->data.data_b[10])
                     percent_add += (char)ci->data.data_b[11];
 
-                if (percent_add != 0)
-                {
+                if (percent_add != 0) {
                     percent_calc = price_calc;
-                    percent_calc /= 300.0;
+                    percent_calc /= 300.0f;
                     percent_calc *= percent_add;
                     price_calc += percent_calc;
                 }
-                price_calc /= 8.0;
+
+                price_calc /= 8.0f;
                 price = (int32_t)(price_calc);
                 price += attrib[ci->data.data_b[4]];
             }
         }
         break;
-    case 0x01:
-        switch (ci->data.data_b[1])
-        {
-        case 0x01: // Armor 装备
-            if (ci->data.data_b[2] < 0x18)
-            {
+
+    case ITEM_TYPE_GUARD:
+        switch (ci->data.data_b[1]) {
+        case ITEM_SUBTYPE_FRAME: // Armor 装备
+            if (ci->data.data_b[2] < 0x18) {
+                if (pmt_lookup_guard_bb(ci->data.data_l[0], &tmp_guard)) {
+                    ERR_LOG("从PMT未获取到准确的数据!");
+                    return -3;
+                }
+
                 // Calculate the amount to boost because of slots...
                 if (ci->data.data_b[5] > 4)
                     price = armor_prices[(ci->data.data_b[2] * 5) + 4];
                 else
                     price = armor_prices[(ci->data.data_b[2] * 5) + ci->data.data_b[5]];
+
                 price -= armor_prices[(ci->data.data_b[2] * 5)];
-                if (ci->data.data_b[6] > pmt_armor_bb[ci->data.data_b[2]]->dfp_range)
+
+                if (ci->data.data_b[6] > tmp_guard.dfp_range)
                     variation = 0;
                 else
                     variation = ci->data.data_b[6];
-                if (ci->data.data_b[8] <= pmt_armor_bb[ci->data.data_b[2]]->dfp_range)
+
+                if (ci->data.data_b[8] <= tmp_guard.dfp_range)
                     variation += ci->data.data_b[8];
+
                 price += equip_prices[1][1][ci->data.data_b[2]][variation];
             }
             break;
-        case 0x02: // Shield 盾牌
-            if (ci->data.data_b[2] < 0x15)
-            {
-                if (ci->data.data_b[6] > pmt_shield_bb[ci->data.data_b[2]]->dfp_range)
+        case ITEM_SUBTYPE_BARRIER: // Shield 盾牌
+            if (ci->data.data_b[2] < 0x15) {
+                if (pmt_lookup_guard_bb(ci->data.data_l[0], &tmp_guard)) {
+                    ERR_LOG("从PMT未获取到准确的数据!");
+                    return -3;
+                }
+
+                if (ci->data.data_b[6] > tmp_guard.dfp_range)
                     variation = 0;
                 else
                     variation = ci->data.data_b[6];
-                if (ci->data.data_b[8] <= pmt_shield_bb[ci->data.data_b[2]]->evp_range)
+
+                if (ci->data.data_b[8] <= tmp_guard.evp_range)
                     variation += ci->data.data_b[8];
+
                 price = equip_prices[1][2][ci->data.data_b[2]][variation];
             }
             break;
-        case 0x03: // Units 插槽
+        case ITEM_SUBTYPE_UNIT: // Units 插槽
             if (ci->data.data_b[2] < 0x40)
                 price = unit_prices[ci->data.data_b[2]];
             break;
         }
         break;
-    case 0x03:
+
+    case ITEM_TYPE_TOOL:
         // Tool 工具
-        if (ci->data.data_b[1] == 0x02) // Technique 魔法科技
-        {
+        if (ci->data.data_b[1] == 0x02) { // Technique 魔法科技
             if (ci->data.data_b[4] < 0x13)
                 price = ((int32_t)(ci->data.data_b[2] + 1) * tech_prices[ci->data.data_b[4]]) / 100L;
         }
-        else
-        {
+        else {
             compare_item = 0;
             memcpy(&compare_item, &ci->data.data_b[0], 3);
             for (ch = 0; ch < (sizeof(tool_prices) / 4); ch += 2)
-                if (compare_item == tool_prices[ch])
-                {
+                if (compare_item == tool_prices[ch]) {
                     price = tool_prices[ch + 1];
                     break;
                 }
         }
         break;
     }
+
     if (price < 0)
         price = 0;
-    //ITEM_LOG("最终价格 = %u", price);
+
     return (uint32_t)price;
 }
 
@@ -193,20 +222,20 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
     sitem_t item = { 0 };
     item.data_b[0] = 物品类型;
 
-    while (item.data_b[0] == 2) {
+    while (item.data_b[0] == ITEM_TYPE_MAG) {
         item.data_b[0] = mt19937_genrand_int32(随机因子) % 3;
     }
 
     /* 检索物品类型 */
     switch (item.data_b[0]) {
-    case 0x00: { // 武器
+    case ITEM_TYPE_WEAPON: // 武器
         item.data_b[1] = (mt19937_genrand_int32(随机因子) % 12) + 1;
+
         if (item.data_b[1] > 0x09) {
             item.data_b[2] = 难度;
         }
-        else {
+        else
             item.data_b[2] = (mt19937_genrand_int32(随机因子) & 1) + 难度;
-        }
 
         item.data_b[3] = mt19937_genrand_int32(随机因子) % 11;
         item.data_b[4] = mt19937_genrand_int32(随机因子) % 11;
@@ -219,30 +248,58 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
                 num_percentages++;
             }
         }
+
         break;
-    }
-    case 0x01: // 装甲
+
+        //       物品ID 打磨 特殊  物品特殊属性     未知
+        // item       00 01 00 00  ,17 00 12 34,12 34 56 78,00 00 00 00,
+        //          武器       装甲        护盾           MAG         
+        //item 00 
+        //     01 
+        //     00 
+        //     00  
+        //     ,
+        //     17 
+        //     00 
+        //     12 
+        //     34
+        //     ,
+        //     12 
+        //     34 
+        //     56 
+        //     78
+        //     ,
+        //     00 
+        //     00 
+        //     00 
+        //     00,
+
+    case ITEM_TYPE_GUARD: // 装甲
         item.data_b[1] = 0;
-        while (item.data_b[1] == 0) {
+
+        while (item.data_b[1] == 0)
             item.data_b[1] = mt19937_genrand_int32(随机因子) & 3;
-        }
+
         switch (item.data_b[1]) {
-        case 0x01://护甲
+        case ITEM_SUBTYPE_FRAME://护甲
             item.data_b[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 6);
             item.data_b[5] = mt19937_genrand_int32(随机因子) % 5;
             break;
-        case 0x02://护盾
+
+        case ITEM_SUBTYPE_BARRIER://护盾
             item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
-            item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
-            item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            //item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            //item.data_b[9] = (mt19937_genrand_int32(随机因子) % 9) - 4;
             break;
-        case 0x03://插件
+
+        case ITEM_SUBTYPE_UNIT://插件
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
-            item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
+            //item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4;
             break;
         }
         break;
-    case 0x03: // 药品工具
+
+    case ITEM_TYPE_TOOL: // 药品工具
         item.data_b[1] = mt19937_genrand_int32(随机因子) % 12;
         switch (item.data_b[1]) {
         case 0x00:

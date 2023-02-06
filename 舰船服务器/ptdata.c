@@ -3831,8 +3831,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
 
                 case BOX_TYPE_UNIT:
                     /* Drop a unit */
-                    if(pmt_random_unit_bb(ent->unit_level[area], item, rng,
-                                          l)) {
+                    if(pmt_random_unit_bb(ent->unit_level[area], item, rng, l)) {
                         return 0;
                     }
 
