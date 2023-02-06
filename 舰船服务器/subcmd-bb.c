@@ -3322,11 +3322,8 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
 
 static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    inventory_t inv = { 0 };
-    inventory_t mode_inv = { 0 };
-    int i, j, found = 0;
-    int item_used[30] = { 0 };
-    int mode_item_used[30] = { 0 };
+    inventory_t sorted = { 0 };
+    size_t x;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -3345,92 +3342,29 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
         return -1;
     }
 
-    /* Copy over the beginning of the inventory... */
-    inv.item_count = c->bb_pl->inv.item_count;
-    inv.hpmats_used = c->bb_pl->inv.hpmats_used;
-    inv.tpmats_used = c->bb_pl->inv.tpmats_used;
-    inv.language = c->bb_pl->inv.language;
-
-    mode_inv.item_count = c->pl->bb.inv.item_count;
-    mode_inv.hpmats_used = c->pl->bb.inv.hpmats_used;
-    mode_inv.tpmats_used = c->pl->bb.inv.tpmats_used;
-    mode_inv.language = c->pl->bb.inv.language;
-    
-    /* Copy over each item as its in the sorted list. */
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
-        /* Have we reached the end of the list? */
-        if (pkt->item_ids[i] == 0xFFFFFFFF){
-            inv.iitems[i].data.item_id = 0xFFFFFFFF;
-            break;
+    for (x = 0; x < 30; x++) {
+        if (pkt->item_ids[x] == 0xFFFFFFFF) {
+            sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
-
-        /* Look for the item in question. */
-        for (j = 0; j < inv.item_count; ++j) {
-            if (c->bb_pl->inv.iitems[j].data.item_id == pkt->item_ids[i]) {
-                /* Make sure they haven't used this one yet. */
-                if (item_used[j]) {
-                    ERR_LOG("GC %" PRIu32 " 在背包整理中列出了两次同样的物品!", c->guildcard);
-                    return -1;
-                }
-
-                /* Copy the item and set it as used in the list. */
-                memcpy(&inv.iitems[i], &c->bb_pl->inv.iitems[j], sizeof(iitem_t));
-                item_used[j] = 1;
-                break;
-            }
+        else {
+            size_t index = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
+            sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
-
-        //ERR_LOG("GC %" PRIu32 " 整理了未知的物品! 数据背包 %d 当前背包 %d",
-        //    c->guildcard, j, inv.item_count);
-
-        /* Look for the item in question. */
-        for (j = 0; j < mode_inv.item_count; ++j) {
-            if (c->pl->bb.inv.iitems[j].data.item_id == pkt->item_ids[i]) {
-                /* Make sure they haven't used this one yet. */
-                if (mode_item_used[j]) {
-                    ERR_LOG("GC %" PRIu32 " 在背包整理中列出了两次同样的物品!", c->guildcard);
-                    return -1;
-                }
-
-                /* Copy the item and set it as used in the list. */
-                memcpy(&mode_inv.iitems[i], &c->pl->bb.inv.iitems[j], sizeof(iitem_t));
-                mode_item_used[j] = 1;
-                break;
-            }
-        }
-
-        //ERR_LOG("GC %" PRIu32 " 整理了未知的物品! 数据背包 %d 当前背包 %d",
-        //    c->guildcard, j, mode_inv.item_count);
-
-        /* Make sure the item got sorted in right. */
-        if (j > inv.item_count) {
-            ERR_LOG("GC %" PRIu32 " 整理了未知的物品! 数据背包 %d 当前背包 %d",
-                c->guildcard, j, inv.item_count);
-            return -1;
-        }
-        found++;
     }
 
-    if (!i) {
-        ERR_LOG("GC %" PRIu32 " 未找到需要整理的物品! %d %d", c->guildcard, i, c->bb_pl->inv.item_count);
+    sorted.item_count = c->bb_pl->inv.item_count;
+    sorted.hpmats_used = c->bb_pl->inv.hpmats_used;
+    sorted.tpmats_used = c->bb_pl->inv.tpmats_used;
+    sorted.language = c->bb_pl->inv.language;
+
+    /* Make sure we got everything... */
+    if (x != sorted.item_count) {
+        ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, x, sorted.item_count);
         return -1;
     }
 
-    //DBG_LOG("found %d (%d %d) i = %d", found, c->bb_pl->inv.item_count, c->pl->bb.inv.item_count, i);
-
-    /* Make sure we got everything... */
-    if (i != c->pl->bb.inv.item_count) {
-        ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d %d", c->guildcard, i, c->bb_pl->inv.item_count);
-        mode_inv.item_count = i;
-        inv.item_count = i;
-        //return -1;
-    }
-
-    /* We're good, so copy the inventory into the client's data. */
-    memcpy(&c->bb_pl->inv, &inv, sizeof(inventory_t));
-    memcpy(&c->pl->bb.inv, &mode_inv, sizeof(inventory_t));
-
-    //DBG_LOG("found %d (%d %d) i = %d", found, c->bb_pl->inv.item_count, c->pl->bb.inv.item_count, i);
+    c->bb_pl->inv = sorted;
+    c->pl->bb.inv = sorted;
 
     /* Nobody else really needs to care about this one... */
     return 0;

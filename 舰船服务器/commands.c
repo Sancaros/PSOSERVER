@@ -1520,7 +1520,7 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
         client = (int)strtoul(params, NULL, 10);
 
         if(errno) {
-            return send_txt(c, "%s", __(c, "\tE\tC7Invalid Target."));
+            return send_txt(c, "%s", __(c, "\tE\tC7无效目标."));
         }
 
         /* See if we have a client ID or a guild card number... */
@@ -1529,7 +1529,7 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
 
             if(client >= 4 && l->type == LOBBY_TYPE_GAME) {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
             }
 
             if(l->clients[client]) {
@@ -1537,7 +1537,7 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
             }
             else {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7Invalid Client ID."));
+                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
             }
 
             pthread_mutex_unlock(&l->mutex);
@@ -1547,15 +1547,14 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
             ship_client_t *target = block_find_client(c->cur_block, client);
 
             if(!target) {
-                return send_txt(c, "%s", __(c, "\tE\tC7Requested user not\n"
-                                               "found."));
+                return send_txt(c, "%s", __(c, "\tE\tC7未找到请求的玩家."));
             }
 
             dumpinv_internal(target);
         }
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Dumped inventory to log file."));
+    return send_txt(c, "%s", __(c, "\tE\tC7已转储的背包数据到日志文件."));
 }
 
 /* 用法: /showdcpc [off] */

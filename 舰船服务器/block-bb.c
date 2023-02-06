@@ -1503,7 +1503,7 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len) - sizeof(bb_pkt_hdr_t);
     uint16_t type = LE16(pkt->hdr.pkt_type);
 
-    if (!c->infoboard || len > 0x158) {
+    if (!c->infoboard || len > sizeof(c->bb_pl->infoboard)) {
         ERR_LOG("GC %" PRIu32 " 尝试设置的信息板数据超出限制!",
             c->guildcard);
         return -1;
@@ -1522,11 +1522,11 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
     /* BB has this in two places for now... */
     memcpy(c->infoboard, pkt->msg, len);
     /* 剩余数据设置为0 以免出现乱码 */
-    memset(c->infoboard + len, 0, 0x158 - len);
+    memset(c->infoboard + len, 0, sizeof(c->bb_pl->infoboard) - len);
 
     memcpy(c->bb_pl->infoboard, pkt->msg, len);
     /* 剩余数据设置为0 以免出现乱码 */
-    memset(((uint8_t*)c->bb_pl->infoboard) + len, 0, 0x158 - len);
+    memset(((uint8_t*)c->bb_pl->infoboard) + len, 0, sizeof(c->bb_pl->infoboard) - len);
 
     return 0;
 }
