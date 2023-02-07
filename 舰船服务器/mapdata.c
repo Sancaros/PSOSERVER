@@ -1309,7 +1309,7 @@ int bb_read_params(psocn_ship_t *cfg) {
     for (i; i < NUM_BPEntry;i++) {
         //strcpy(&buf[i][0], path);
         //strcat(&buf[i][0], battle_params_emtry_files[i][0].file);
-        printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
+        //printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
         rv += read_bb_param_file(battle_params[j][k], path,
             battle_params_emtry_files[i][0].file/*,
             battle_params_emtry_files[i][0].check_sum.entry_num,
