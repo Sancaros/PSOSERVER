@@ -375,7 +375,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     //}
 
     sprintf(query, "SELECT idx FROM %s WHERE idx='%d'"
-        , SERVER_SHIPS_DATA, 1);
+        , SERVER_SHIPS, 1);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法查询舰船密钥数据库");
@@ -523,7 +523,7 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
 
     /* Attempt to grab the key for this ship. */
     sprintf(query, "SELECT main_menu, ship_number FROM %s WHERE "
-        "idx='%u'", SERVER_SHIPS_DATA, c->key_idx);
+        "idx='%u'", SERVER_SHIPS, c->key_idx);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法查询舰船密钥数据库");
