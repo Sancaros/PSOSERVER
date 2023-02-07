@@ -30,7 +30,7 @@ uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot) {
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT data, size FROM %s WHERE guildcard='%u' "
-        "AND slot='%u'", CHARACTER_DATA, gc, slot);
+        "AND slot='%u'", CHARACTER, gc, slot);
 
     /*SQLERR_LOG("gc %d = %d  slot %d = %d"
         , gc, pkt->guildcard, slot, pkt->slot);*/
@@ -78,7 +78,7 @@ uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot) {
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT size FROM %s WHERE guildcard='%u' "
-        "AND slot='%u'", CHARACTER_DATA, gc, slot);
+        "AND slot='%u'", CHARACTER, gc, slot);
 
     /*SQLERR_LOG("gc %d = %d  slot %d = %d"
         , gc, pkt->guildcard, slot, pkt->slot);*/
@@ -118,7 +118,7 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot) {
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT play_time FROM %s WHERE guildcard='%u' "
-        "AND slot='%u'", CHARACTER_DATA, gc, slot);
+        "AND slot='%u'", CHARACTER, gc, slot);
 
     /*SQLERR_LOG("gc %d = %d  slot %d = %d"
         , gc, pkt->guildcard, slot, pkt->slot);*/
@@ -157,7 +157,7 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT data FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_DATA, gc, slot);
+        "AND slot = '%u'", CHARACTER, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
@@ -276,7 +276,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(query, "INSERT INTO %s(guildcard, slot, name, class_name, version, data) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_DATA_CHALLENGE, gc, slot
+            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_CHALLENGE, gc, slot
         , name, class_name, char_data->character.disp.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
@@ -286,26 +286,26 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_DATA_CHALLENGE, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             return 0;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
         sprintf(query, "DELETE FROM %s WHERE guildcard="
-            "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DATA_CHALLENGE, gc,
+            "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_CHALLENGE, gc,
             slot);
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DATA_CHALLENGE, gc, slot,
+                PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -1;
         }
 
         sprintf(query, "INSERT INTO %s(guildcard, slot, name, class_name, version, data) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_DATA_CHALLENGE, gc, slot
+            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_CHALLENGE, gc, slot
             , name, class_name, char_data->character.disp.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
@@ -315,7 +315,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_DATA_CHALLENGE, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             return 0;
         }
@@ -381,7 +381,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
         {
             guild_id = (uint32_t)psocn_db_insert_id(&conn);
             sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '%u', guild_priv_level = '%u' "
-                "WHERE guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, guild_id, 0x40, gc);
+                "WHERE guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, guild_id, 0x40, gc);
             if (psocn_db_real_query(&conn, myquery))
                 create_res = 1;
             else
@@ -402,7 +402,7 @@ int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target)
 {
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
         "guild_id = '%d',guild_priv_level = '0' WHERE guildcard='%u'",
-        AUTH_DATA_ACCOUNT, guild_id, gc_target);
+        AUTH_ACCOUNT, guild_id, gc_target);
     if (!psocn_db_real_query(&conn, myquery))
     {
         return 0;
@@ -434,7 +434,7 @@ int db_dissolve_bb_guild(uint32_t gc) {
         res = 1;
     }
 
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_DATA_ACCOUNT, gc);
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_ACCOUNT, gc);
     if (psocn_db_real_query(&conn, myquery))
     {
         res = 2;

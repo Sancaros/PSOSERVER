@@ -197,12 +197,12 @@ int main(int argc, char* argv[])
 	pw_ok = 0;
 	while (!pw_ok)
 	{
-		printf("数据表名称: %s \n", AUTH_DATA_ACCOUNT);
+		printf("数据表名称: %s \n", AUTH_ACCOUNT);
 		printf("新的账户名称: ");
 		scanf_s("%254s", inputstr, _countof(inputstr));
 		if (strlen(inputstr) < 17)
 		{
-			sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s WHERE username='%s'", AUTH_DATA_ACCOUNT, inputstr);
+			sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s WHERE username='%s'", AUTH_ACCOUNT, inputstr);
 			// Check to see if that account already exists.
 			//printf ("Executing MySQL query: %s\n", myQuery );
 			if (!mysql_query(DBconn, &myQuery[0]))
@@ -267,7 +267,7 @@ int main(int argc, char* argv[])
 		scanf_s("%254s", inputstr, _countof(inputstr));
 		memcpy(&email[0], &inputstr[0], strlen(inputstr) + 1);
 		// Check to see if the e-mail address has already been registered to an account.
-		sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s WHERE email='%s'", AUTH_DATA_ACCOUNT, email);
+		sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s WHERE email='%s'", AUTH_ACCOUNT, email);
 		//printf ("Executing MySQL query: %s\n", myQuery );
 		if (!mysql_query(DBconn, &myQuery[0]))
 		{
@@ -300,7 +300,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	// Check to see if any accounts already registered in the database at all.
-	sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s", AUTH_DATA_ACCOUNT);
+	sprintf_s(myQuery, _countof(myQuery), "SELECT * from %s", AUTH_ACCOUNT);
 	//printf ("Executing MySQL query: %s\n", myQuery );
 	// Check to see if the e-mail address has already been registered to an account.
 	if (!mysql_query(DBconn, &myQuery[0]))
@@ -337,11 +337,11 @@ int main(int argc, char* argv[])
 		/* First account created is always GM. */
 		guildcard_number = 00000001;
 
-		sprintf_s(myQuery, _countof(myQuery), "INSERT into %s (username,password,email,regtime,guildcard,isgm,isactive) VALUES ('%s','%s','%s','%u','%u','1','1')", AUTH_DATA_ACCOUNT, username, md5password, email, reg_seconds, guildcard_number);
+		sprintf_s(myQuery, _countof(myQuery), "INSERT into %s (username,password,email,regtime,guildcard,isgm,isactive) VALUES ('%s','%s','%s','%u','%u','1','1')", AUTH_ACCOUNT, username, md5password, email, reg_seconds, guildcard_number);
 	}
 	else
 	{
-		sprintf_s(myQuery, _countof(myQuery), "INSERT into %s (username,password,email,regtime,isactive) VALUES ('%s','%s','%s','%u','1')", AUTH_DATA_ACCOUNT, username, md5password, email, reg_seconds);
+		sprintf_s(myQuery, _countof(myQuery), "INSERT into %s (username,password,email,regtime,isactive) VALUES ('%s','%s','%s','%u','1')", AUTH_ACCOUNT, username, md5password, email, reg_seconds);
 	}
 	// Insert into table.
 	//printf ("Executing MySQL query: %s\n", myQuery );

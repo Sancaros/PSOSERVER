@@ -115,7 +115,7 @@ int is_ip_banned(login_client_t* c, time_t* until, char* reason) {
     /* Fill in the query. */
     sprintf(query, "SELECT enddate, reason FROM %s NATURAL JOIN %s "
         "WHERE addr = '%u' AND enddate >= UNIX_TIMESTAMP() "
-        "AND startdate <= UNIX_TIMESTAMP()", AUTH_DATA_BANS_IP, AUTH_DATA_BANS,
+        "AND startdate <= UNIX_TIMESTAMP()", AUTH_BANS_IP, AUTH_BANS,
         (unsigned int)ntohl(addr->sin_addr.s_addr));
 
     /* If we can't query the database, fail. */
@@ -148,7 +148,7 @@ int is_gc_banned(uint32_t gc, time_t* until, char* reason) {
     sprintf(query, "SELECT enddate, reason FROM %s "
         "NATURAL JOIN %s WHERE guildcard = '%u' AND "
         "enddate >= UNIX_TIMESTAMP() AND "
-        "startdate <= UNIX_TIMESTAMP()", AUTH_DATA_BANS_GC, AUTH_DATA_BANS, (unsigned int)gc);
+        "startdate <= UNIX_TIMESTAMP()", AUTH_BANS_GC, AUTH_BANS, (unsigned int)gc);
 
     /* If we can't query the database, fail. */
     if (psocn_db_real_query(&conn, query)) {

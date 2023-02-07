@@ -314,10 +314,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         "%s INNER JOIN %s ON "
         "%s.account_id = %s.account_id WHERE "
         "%s.username='%s'"
-        , AUTH_DATA_ACCOUNT
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
         , CLIENTS_BLUEBURST, tmp
     );
 
@@ -443,7 +443,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
 
     sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', lastbbversion = '%u', lastip = '%s', last_login_time = '%s'"
-        "WHERE username = '%s'", AUTH_DATA_ACCOUNT, c->menu_id, c->preferred_lobby_id, c->bbversion, ipstr, timestamp, pkt->username);
+        "WHERE username = '%s'", AUTH_ACCOUNT, c->menu_id, c->preferred_lobby_id, c->bbversion, ipstr, timestamp, pkt->username);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
         return -4;
@@ -463,7 +463,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         sprintf_s(query, _countof(query), "UPDATE %s SET "
             "menu_id = '%d', preferred_lobby_id = '%d', thirtytwo = '%p', isgm = '%d', security_data = '%s', slot = '%d' "
             "WHERE guildcard = '%u'", 
-            AUTH_DATA_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard, c->sec_data.slot);
+            AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard, c->sec_data.slot);
         if (psocn_db_real_query(&conn, query))
         {
             SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
@@ -559,7 +559,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 
     ///* 查询数据库并获取数据 */
     //sprintf(query, "SELECT data, size FROM %s WHERE guildcard='%"
-    //        PRIu32 "' AND slot='%"PRIu8"'", CHARACTER_DATA, c->guildcard, pkt->slot);
+    //        PRIu32 "' AND slot='%"PRIu8"'", CHARACTER, c->guildcard, pkt->slot);
 
     //if(psocn_db_real_query(&conn, query)) {
     //    return -2;
@@ -642,15 +642,15 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             
             if (db_updata_char_play_time(mc.play_time, c->guildcard, pkt->slot))
             {
-                ERR_LOG("无法更新角色 %s 游戏时间数据!", CHARACTER_DATA);
+                ERR_LOG("无法更新角色 %s 游戏时间数据!", CHARACTER);
                 return -3;
             }
 
             sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
-                PRIu32 "'", AUTH_DATA_SECURITY, pkt->slot, c->guildcard);
+                PRIu32 "'", AUTH_SECURITY, pkt->slot, c->guildcard);
             if (psocn_db_real_query(&conn, myquery))
             {
-                SQLERR_LOG("无法更新角色 %s 数据!", AUTH_DATA_SECURITY);
+                SQLERR_LOG("无法更新角色 %s 数据!", AUTH_SECURITY);
                 //handle_todc(__LINE__, c);
             }
             free(char_data);
@@ -674,7 +674,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 
         if (db_update_char_auth_msg(ipstr, c->guildcard, c->sec_data.slot))
         {
-            ERR_LOG("无法更新角色 %s 认证数据!", CHARACTER_DATA);
+            ERR_LOG("无法更新角色 %s 认证数据!", CHARACTER);
             rv = -4;
         }
 
@@ -829,7 +829,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
         if (db_compress_char_data(char_data, sizeof(psocn_bb_db_char_t), c->guildcard, pkt->slot)) {
             SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):%s", CHARACTER_DATA, c->guildcard, pkt->slot,
+                "槽位 %" PRIu8 "):%s", CHARACTER, c->guildcard, pkt->slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             goto err;
@@ -1008,7 +1008,7 @@ static int handle_guild_request(login_client_t *c) {
     /* Query the DB for the user's blacklist data */
     sprintf(query, "SELECT blocked_gc, name, guild_name, text, language, "
             "section_id, class FROM %s WHERE guildcard='%"
-            PRIu32 "' ORDER BY blocked_gc ASC", CHARACTER_DATA_BLACKLIST, c->guildcard);
+            PRIu32 "' ORDER BY blocked_gc ASC", CHARACTER_BLACKLIST, c->guildcard);
 
     if(psocn_db_real_query(&conn, query)) {
         /* Should send an error message to the user */

@@ -133,7 +133,7 @@ main( int argc, char * argv[] )
 		exit(1);
 		}
 		slot = atoi ( inputstr );
-		sprintf (&myQuery[0], "SELECT * from %s WHERE guildcard='%u' AND slot='%u'", CHARACTER_DATA, gc_num, slot );
+		sprintf (&myQuery[0], "SELECT * from %s WHERE guildcard='%u' AND slot='%u'", CHARACTER, gc_num, slot );
 		// Check to see if that character exists.
 		//printf ("Executing MySQL query: %s\n", myQuery );
 		if ( ! mysql_query ( DBconn, &myQuery[0] ) )

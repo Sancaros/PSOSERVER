@@ -140,7 +140,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
 
     /* 查询数据表 */
     sprintf(myquery, "SELECT guild_id, guild_priv_level FROM %s WHERE "
-        "guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, gc);
+        "guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, gc);
 
     if (!psocn_db_real_query(&conn, myquery)) {
 
@@ -259,7 +259,7 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
     memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET ip = '%s', last_login_time = '%s'"
-        "WHERE guildcard = '%" PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DATA, ipstr, timestamp, gc, slot);
+        "WHERE guildcard = '%" PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER, ipstr, timestamp, gc, slot);
     if (psocn_db_real_query(&conn, myquery))
     {
         SQLERR_LOG("无法更新角色登录数据 (GC %" PRIu32 ", 槽位 %"
@@ -276,7 +276,7 @@ int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "UPDATE %s SET dressflag = '%" PRIu32 "' WHERE "
-        "guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, flags, gc);
+        "guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, flags, gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
         /* Should send an error message to the user */

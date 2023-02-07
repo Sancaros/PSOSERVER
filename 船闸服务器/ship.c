@@ -1393,7 +1393,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         PRIu32 "', '%" PRIu32 "', '%s', '%s', '%s', '%" PRIu8 "', '%"
         PRIu8 "', '%" PRIu8 "') ON DUPLICATE KEY UPDATE "
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
-        "section_id=VALUES(section_id), class=VALUES(class)", CHARACTER_DATA_BLACKLIST, sender,
+        "section_id=VALUES(section_id), class=VALUES(class)", CHARACTER_BLACKLIST, sender,
         bl_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
         gc->gc_data.ch_class);
 
@@ -1425,7 +1425,7 @@ static int handle_bb_blacklistdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     /* Build the query and run it */
     sprintf(query, "DELETE FROM %s WHERE guildcard='%" PRIu32
-        "' AND blocked_gc='%" PRIu32 "'", CHARACTER_DATA_BLACKLIST, sender, bl_gc);
+        "' AND blocked_gc='%" PRIu32 "'", CHARACTER_BLACKLIST, sender, bl_gc);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法删除黑名单实例 (%" PRIu32 ": %"
@@ -1714,7 +1714,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     sprintf_s(myquery, _countof(myquery), "SELECT guild_id "
-        "FROM %s WHERE guildcard = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, sender);
+        "FROM %s WHERE guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, sender);
 
     if (!psocn_db_real_query(&conn, myquery)) {
         result = psocn_db_result_store(&conn);
@@ -1723,7 +1723,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         psocn_db_result_free(result);
 
         sprintf_s(myquery, _countof(myquery), "SELECT guildcard, guild_priv_level, lastchar_blob "
-            "FROM %s WHERE guild_id = '%" PRIu32 "'", AUTH_DATA_ACCOUNT, guild_id);
+            "FROM %s WHERE guild_id = '%" PRIu32 "'", AUTH_ACCOUNT, guild_id);
 
         if (!psocn_db_real_query(&conn, myquery))
         {
@@ -2533,7 +2533,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_compress_char_data(char_data, data_len, gc, slot)) {
         ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 ")", CHARACTER_DATA, gc, slot);
+            "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
@@ -2576,7 +2576,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     /* Build the query asking for the data. */
     psocn_db_escape_str(&conn, name2, name, strlen(name));
     sprintf(query, "SELECT data, size, version, slot FROM %s WHERE "
-            "guildcard='%u' AND name='%s'", CHARACTER_DATA_BACKUP, gc, name2);
+            "guildcard='%u' AND name='%s'", CHARACTER_BACKUP, gc, name2);
 
     if(psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法获取角色备份数据 (%u: %s)", gc, name);
@@ -2740,13 +2740,13 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
     /* Build up the store query for it. */
     if (compressed == Z_OK && cmp_sz < len) {
         sprintf(query, "INSERT INTO %s(guildcard, version, slot, size, name, "
-            "data) VALUES ('%u', '%u', '%u', '%u', '%s', '", CHARACTER_DATA_BACKUP, gc, version, slot, (unsigned)len, name2);
+            "data) VALUES ('%u', '%u', '%u', '%u', '%s', '", CHARACTER_BACKUP, gc, version, slot, (unsigned)len, name2);
         psocn_db_escape_str(&conn, query + strlen(query), (char*)cmp_buf,
             cmp_sz);
     }
     else {
         sprintf(query, "INSERT INTO %s(guildcard, version, slot, name, data) "
-            "VALUES ('%u', '%u', '%u', '%s', '", CHARACTER_DATA_BACKUP, gc, version, slot, name2);
+            "VALUES ('%u', '%u', '%u', '%s', '", CHARACTER_BACKUP, gc, version, slot, name2);
         psocn_db_escape_str(&conn, query + strlen(query), (char*)pkt->data,
             len);
     }
@@ -2872,7 +2872,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     sprintf(query, "SELECT password, regtime, privlevel, islogged FROM %s "
         "NATURAL JOIN %s WHERE guildcard='%u' AND username='%s'"
         , CLIENTS_GUILDCARDS
-        , AUTH_DATA_ACCOUNT, gc, esc);
+        , AUTH_ACCOUNT, gc, esc);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("登录失败 - 查询 %s 数据表失败 (玩家: %s, gc: %u)", CLIENTS_GUILDCARDS,
@@ -2982,7 +2982,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     sprintf(query, "SELECT account_id, privlevel FROM %s NATURAL JOIN "
         "%s WHERE guildcard='%u' AND privlevel>'2'"
         , CLIENTS_GUILDCARDS
-        , AUTH_DATA_ACCOUNT, req);
+        , AUTH_ACCOUNT, req);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法从 %s 获取到数据 (%u)", CLIENTS_GUILDCARDS, req);
@@ -3017,7 +3017,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     /* Make sure the user isn't trying to ban someone with a higher privilege
        level than them... */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_DATA_ACCOUNT, target);
+        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_ACCOUNT, target);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法从 %s 获取到数据 (%u)", CLIENTS_GUILDCARDS, target);
@@ -3054,13 +3054,13 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
 
     /* Build up the ban insert query. */
     sprintf(query, "INSERT INTO %s(enddate, setby, reason) VALUES "
-        "('%u', '%u', '", AUTH_DATA_BANS, until, account_id);
+        "('%u', '%u', '", AUTH_BANS, until, account_id);
     psocn_db_escape_str(&conn, query + strlen(query), (char*)pkt->message,
         strlen(pkt->message));
     strcat(query, "')");
 
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法向 %s 插入封禁数据", AUTH_DATA_BANS);
+        SQLERR_LOG("无法向 %s 插入封禁数据", AUTH_BANS);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
@@ -3071,12 +3071,12 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     switch (type) {
     case SHDR_TYPE_GCBAN:
         sprintf(query, "INSERT INTO %s(ban_id, guildcard) "
-            "VALUES(LAST_INSERT_ID(), '%lu')", AUTH_DATA_BANS_GC, ntohl(pkt->target));
+            "VALUES(LAST_INSERT_ID(), '%lu')", AUTH_BANS_GC, ntohl(pkt->target));
         break;
 
     case SHDR_TYPE_IPBAN:
         sprintf(query, "INSERT INTO %s(ban_id, addr) VALUES("
-            "LAST_INSERT_ID(), '%lu')", AUTH_DATA_BANS_IP, ntohl(pkt->target));
+            "LAST_INSERT_ID(), '%lu')", AUTH_BANS_IP, ntohl(pkt->target));
         break;
 
     default:
@@ -3179,9 +3179,9 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CHARACTER_DATA_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_DATA_FRIENDLIST
-        , CHARACTER_DATA_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , CHARACTER_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3524,9 +3524,9 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CHARACTER_DATA_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_DATA_FRIENDLIST
-        , CHARACTER_DATA_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , CHARACTER_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3594,7 +3594,7 @@ static int handle_friendlist_add(ship_t* c, shipgate_friend_add_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "INSERT INTO %s(owner, friend, nickname) "
-        "VALUES('%u', '%u', '%s')", CHARACTER_DATA_FRIENDLIST, ugc, fgc, nickname);
+        "VALUES('%u', '%u', '%s')", CHARACTER_FRIENDLIST, ugc, fgc, nickname);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3623,7 +3623,7 @@ static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "DELETE FROM %s WHERE owner='%u' AND friend='%u'"
-        , CHARACTER_DATA_FRIENDLIST, ugc, fgc);
+        , CHARACTER_FRIENDLIST, ugc, fgc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3806,7 +3806,7 @@ static int handle_kick(ship_t* c, shipgate_kick_pkt* pkt) {
     /* Make sure the requester is a GM */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
         "WHERE privlevel>'1' AND guildcard='%u'"
-        , AUTH_DATA_ACCOUNT, CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT, CLIENTS_GUILDCARDS
         , gcr);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3841,7 +3841,7 @@ static int handle_kick(ship_t* c, shipgate_kick_pkt* pkt) {
     /* Make sure the user isn't trying to kick someone with a higher privilege
        level than them... */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_DATA_ACCOUNT
+        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_ACCOUNT
         , gc);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3937,8 +3937,8 @@ static int handle_frlist_req(ship_t* c, shipgate_friend_list_req* pkt) {
         "LEFT OUTER JOIN %s ON %s.friend = "
         "%s.guildcard WHERE owner='%u' ORDER BY friend "
         "LIMIT 5 OFFSET %u"
-        , CHARACTER_DATA_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_DATA_FRIENDLIST
+        , CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
         , SERVER_CLIENTS_ONLINE
         , gcr, start);
     if (psocn_db_real_query(&conn, query)) {
@@ -4017,7 +4017,7 @@ static int handle_globalmsg(ship_t* c, shipgate_global_msg_pkt* pkt) {
     /* Make sure the requester is a GM */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
         "WHERE privlevel>'1' AND guildcard='%u'"
-        , AUTH_DATA_ACCOUNT, CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT, CLIENTS_GUILDCARDS
         , gcr);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -4327,7 +4327,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
 
     /* Clear old requests from the table. */
     sprintf(query, "DELETE FROM %s WHERE req_time + INTERVAL 10 "
-        "MINUTE < NOW()", AUTH_DATA_LOGIN_TOKENS);
+        "MINUTE < NOW()", AUTH_LOGIN_TOKENS);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Couldn't clear old tokens!");
@@ -4361,16 +4361,16 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         sprintf(query, "SELECT privlevel, account_id FROM %s NATURAL "
                 "JOIN %s NATURAL JOIN %s WHERE "
                 "guildcard='%u' AND username='%s' AND token='%s'"
-				, AUTH_DATA_ACCOUNT
-				, CLIENTS_GUILDCARDS, AUTH_DATA_LOGIN_TOKENS, gc
+				, AUTH_ACCOUNT
+				, CLIENTS_GUILDCARDS, AUTH_LOGIN_TOKENS, gc
 				, esc, esc2);
     }
     else {
         sprintf(query, "SELECT privlevel, %s.account_id FROM "
                 "%s NATURAL JOIN %s, %s NATURAL "
                 "JOIN %s WHERE username='%s' AND token='%s' AND "
-                "guildcard='%u' AND %s.account_id is NULL", AUTH_DATA_ACCOUNT
-            , AUTH_DATA_ACCOUNT, AUTH_DATA_LOGIN_TOKENS, CLIENTS_GUILDCARDS
+                "guildcard='%u' AND %s.account_id is NULL", AUTH_ACCOUNT
+            , AUTH_ACCOUNT, AUTH_LOGIN_TOKENS, CLIENTS_GUILDCARDS
             , CLIENTS_XBOX, esc, esc2
             , gc, CLIENTS_GUILDCARDS);
     }
@@ -4449,7 +4449,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
 	
     /* Delete the request. */
     sprintf(query, "DELETE FROM %s WHERE account_id='%u'"
-        , AUTH_DATA_LOGIN_TOKENS, account_id);
+        , AUTH_LOGIN_TOKENS, account_id);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Couldn't clear spent token!");

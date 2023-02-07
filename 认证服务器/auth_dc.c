@@ -192,7 +192,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_DATA_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -283,7 +283,7 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_DATA_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -457,7 +457,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_DATA_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -617,7 +617,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         /* Check if the user is a GM or not. */
         sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN "
             "%s WHERE guildcard='%u'"
-            , AUTH_DATA_ACCOUNT
+            , AUTH_ACCOUNT
             , CLIENTS_GUILDCARDS, gc);
 
         if(psocn_db_real_query(&conn, query)) {
@@ -809,7 +809,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
 
         sprintf(query, "SELECT privlevel FROM %s WHERE "
             "account_id='%u'"
-            , AUTH_DATA_ACCOUNT
+            , AUTH_ACCOUNT
             , account);
 
         /* If we can't query the DB, fail. */
@@ -877,7 +877,7 @@ static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
         psocn_db_result_free(result);
 
         sprintf(query, "SELECT password, regtime FROM %s WHERE "
-            "account_id='%u'", AUTH_DATA_ACCOUNT, account);
+            "account_id='%u'", AUTH_ACCOUNT, account);
 
         /* If we can't query the DB, fail. */
         if(psocn_db_real_query(&conn, query)) {
@@ -1127,7 +1127,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard, privlevel FROM %s NATURAL JOIN "
             "%s NATURAL LEFT OUTER JOIN %s WHERE "
-            "xbl_userid='%s'", CLIENTS_XBOX, CLIENTS_GUILDCARDS, AUTH_DATA_ACCOUNT, xbluid);
+            "xbl_userid='%s'", CLIENTS_XBOX, CLIENTS_GUILDCARDS, AUTH_ACCOUNT, xbluid);
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {

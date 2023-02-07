@@ -481,9 +481,9 @@ static void open_db() {
         exit(EXIT_FAILURE);
     }
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", AUTH_DATA_ACCOUNT);
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", AUTH_ACCOUNT);
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_DATA_ACCOUNT);
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
         exit(EXIT_FAILURE);
     }
 
@@ -495,9 +495,9 @@ static void open_db() {
         exit(EXIT_FAILURE);
     }
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER_DATA);
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER);
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER_DATA);
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
         exit(EXIT_FAILURE);
     }
 

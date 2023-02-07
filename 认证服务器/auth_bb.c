@@ -96,10 +96,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         "%s INNER JOIN %s ON "
         "%s.account_id = %s.account_id WHERE "
         "%s.username='%s'"
-        , AUTH_DATA_ACCOUNT
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_DATA_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
+        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
         , CLIENTS_BLUEBURST, tmp);
 
     /* Query the database for the user... */
@@ -249,12 +249,12 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         c->preferred_lobby_id = pkt->preferred_lobby_id;
     }
 
-    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username='%s'", AUTH_DATA_SECURITY, tmp);
+    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username='%s'", AUTH_SECURITY, tmp);
     /* Query the database for the user... */
     if (psocn_db_real_query(&conn, query)) {
         sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, menu_id, preferred_lobby_id, thirtytwo, isgm, security_data) "
             "VALUES ('%u', '%d', '%d', '%p', '%d', '%s')",
-            AUTH_DATA_SECURITY, c->guildcard, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);
+            AUTH_SECURITY, c->guildcard, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);
         if (psocn_db_real_query(&conn, query))
         {
             SQLERR_LOG("新增GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
@@ -264,7 +264,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     }
     else {
         sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', thirtytwo = '%p', isgm = '%d', security_data = '%s'"
-            "WHERE guildcard = '%u'", AUTH_DATA_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard);
+            "WHERE guildcard = '%u'", AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard);
         if (psocn_db_real_query(&conn, query))
         {
             SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
