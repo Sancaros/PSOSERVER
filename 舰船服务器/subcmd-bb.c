@@ -80,12 +80,12 @@ static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
         return -1;
 
     /* 填充数据并准备发送.. */
-    drop.hdr.pkt_len = LE16(0x002C);
+    drop.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
     drop.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     drop.hdr.flags = 0;
     drop.shdr.type = SUBCMD60_DROP_STACK;
     drop.shdr.size = 0x09;
-    drop.shdr.client_id = c->client_id;
+    drop.shdr.client_id = c->client_id; 
 
     /* 填充剩余数据 */
     drop.area = area;

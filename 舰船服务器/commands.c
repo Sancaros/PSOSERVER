@@ -403,7 +403,7 @@ static int handle_login(ship_client_t *c, const char *params) {
     if(!*params) {
         return send_txt(c, "%s", __(c, "\tE\tC7请输入:\n"
                                     "/login 用户名 密码\n"
-                                    "完成登录验证."));
+                                    "完成GM登录验证."));
     }
 
     /* Copy over the username/password. */
@@ -443,21 +443,40 @@ static int handle_item(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
     }
 
-    /* Copy over the item data. */
-    count = sscanf(params, "%x,%x,%x,%x", item + 0, item + 1, item + 2,
-                   item + 3);
+    switch (c->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        /* Copy over the item data. */
+        count = sscanf(params, "%x,%x,%x,%x", &item[0], &item[1], &item[2],
+            &item[3]);
+        break;
+
+    case CLIENT_VERSION_BB:
+        /* Copy over the item data. */
+        count = sscanf(params, "%x,%x,%x,%x", &item[0], &item[1], &item[2],
+            &item[3]);
+        break;
+
+    default:
+        return send_txt(c, "%s", __(c, "\tE\tC7您当前的客户端版本不支持该指令."));
+    }
 
     if(count == EOF || count == 0) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
     }
 
-    //       物品ID 打磨 特殊  物品特殊属性     未知
-    // /item 000100 00  ,17 00 1234,123456 78,00000000,
+    clear_item(&c->new_item);
 
-    c->new_item.data_l[0] = item[0];
-    c->new_item.data_l[1] = item[1];
-    c->new_item.data_l[2] = item[2];
-    c->new_item.data2_l = item[3];
+    c->new_item.data_l[0] = LE32(item[0]);
+    c->new_item.data_l[1] = LE32(item[1]);
+    c->new_item.data_l[2] = LE32(item[2]);
+    c->new_item.data2_l = LE32(item[3]);
+
+    print_item_data(c, &c->new_item);
 
     return send_txt(c, "%s %s %s",
         __(c, "\tE\tC8物品"),
@@ -482,9 +501,103 @@ static int handle_item4(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
     }
 
-    c->new_item.data2_l = item;
+    c->new_item.data2_l = LE32(item);
 
     return send_txt(c, "%s", __(c, "\tE\tC7next_item 设置成功."));
+}
+
+/* 用法: /makeitem */
+static int handle_makeitem(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+    iitem_t* iitem;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Make sure there's something set with /item */
+    if (!c->new_item.data_l[0]) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_txt(c, "%s\n%s", __(c, "\tE\tC7请先输入物品的ID."), 
+            __(c, "\tE\tC7/item code1,code2,code3,code4."));
+    }
+
+    /* If we're on Blue Burst, add the item to the lobby's inventory first. */
+    if (l->version == CLIENT_VERSION_BB) {
+        iitem = lobby_add_new_item_locked(l, &c->new_item);
+
+        if (!iitem) {
+            pthread_mutex_unlock(&l->mutex);
+            return send_txt(c, "%s", __(c, "\tE\tC7新物品空间不足."));
+        }
+    }
+    else {
+        ++l->item_next_lobby_id;
+    }
+
+    /* Generate the packet to drop the item */
+    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = c->client_id;
+
+
+    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.flags = 0;
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x09;
+    bb.shdr.client_id = c->client_id;
+
+    dc.area = LE16(c->cur_area);
+    bb.area = LE32(c->cur_area);
+    bb.x = dc.x = c->x;
+    bb.z = dc.z = c->z;
+    bb.data = dc.data = c->new_item;
+    bb.data.item_id = dc.data.item_id = LE32((l->item_next_lobby_id - 1));
+    bb.two = dc.two = LE32(0x00000002);
+
+    //bb.data.data_l[0] = dc.data.data_l[0] = LE32(c->new_item.data_l[0]);
+    //dc.data.data_l[1] = LE32(c->new_item.data_l[1]);
+    //dc.data.data_l[2] = LE32(c->new_item.data_l[2]);
+    //dc.data.item_id = LE32((l->item_next_lobby_id - 1));
+    //dc.data.data2_l = LE32(c->new_item.data2_l);
+    //dc.two = LE32(0x00000002);
+
+    /* Clear the set item */
+    clear_item(&c->new_item);
+
+    /* Send the packet to everyone in the lobby */
+    pthread_mutex_unlock(&l->mutex);
+
+    switch (c->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
+
+    case CLIENT_VERSION_BB:
+        return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
+
+    default:
+        return 0;
+    }
 }
 
 /* 用法: /event number */
@@ -1313,70 +1426,6 @@ static int handle_smite(ship_client_t *c, const char *params) {
     }
 }
 
-/* 用法: /makeitem */
-static int handle_makeitem(ship_client_t *c, const char *params) {
-    lobby_t *l = c->cur_lobby;
-    iitem_t *iitem;
-    subcmd_drop_stack_t p2 = { 0 };
-
-    /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
-    }
-
-    pthread_mutex_lock(&l->mutex);
-
-    /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
-    }
-
-    /* Make sure there's something set with /item */
-    if(!c->new_item.data_l[0]) {
-        pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7请先输入物品的ID."));
-    }
-
-    /* If we're on Blue Burst, add the item to the lobby's inventory first. */
-    if(l->version == CLIENT_VERSION_BB) {
-        iitem = lobby_add_new_item_locked(l, &c->new_item);
-
-        if(!iitem) {
-            pthread_mutex_unlock(&l->mutex);
-            return send_txt(c, "%s", __(c, "\tE\tC7新物品空间不足."));
-        }
-    }
-    else {
-        ++l->item_next_lobby_id;
-    }
-
-    /* Generate the packet to drop the item */
-    p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
-    p2.hdr.flags = 0;
-    p2.shdr.type = SUBCMD60_DROP_STACK;
-    p2.shdr.size = 0x0A;
-    p2.shdr.client_id = c->client_id;
-    p2.area = LE16(c->cur_area);
-    p2.unk = LE16(0);
-    p2.x = c->x;
-    p2.z = c->z;
-    p2.data.data_l[0] = LE32(c->new_item.data_l[0]);
-    p2.data.data_l[1] = LE32(c->new_item.data_l[1]);
-    p2.data.data_l[2] = LE32(c->new_item.data_l[2]);
-    p2.data.item_id = LE32((l->item_next_lobby_id - 1));
-    p2.data.data2_l = LE32(c->new_item.data2_l);
-    p2.two = LE32(0x00000002);
-
-    /* Clear the set item */
-    clear_item(&c->new_item);
-
-    /* Send the packet to everyone in the lobby */
-    pthread_mutex_unlock(&l->mutex);
-    return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t *)&p2, 0);
-}
-
 /* 用法: /teleport client */
 static int handle_teleport(ship_client_t *c, const char *params) {
     int client;
@@ -2040,7 +2089,7 @@ static int handle_ban_d(ship_client_t *c, const char *params) {
 
     /* Set the ban in the list (86,400s = 7 days) */
     if(ban_guildcard(ship, time(NULL) + 86400, c->guildcard, gc, reason + 1)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Error setting ban."));
+        return send_txt(c, "%s", __(c, "\tE\tC7设置封禁发生错误."));
     }
 
     /* Look for the requested user and kick them if they're on the ship. */
@@ -2053,16 +2102,14 @@ static int handle_ban_d(ship_client_t *c, const char *params) {
                 if(i->guildcard == gc) {
                     if(strlen(reason) > 1) {
                         send_msg_box(i, "%s\n%s %s\n%s\n%s",
-                                         __(i, "\tEYou have been banned from "
-                                            "this ship."), __(i, "Ban Length:"),
-                                         __(i, "1 day"), __(i, "Reason:"),
+                                         __(i, "\tE您已被GM封禁并逐出舰船."), __(i, "封禁时长:"),
+                                         __(i, "1 天"), __(i, "封禁理由:"),
                                          reason + 1);
                     }
                     else {
                         send_msg_box(i, "%s\n%s %s",
-                                         __(i, "\tEYou have been banned from "
-                                            "this ship."), __(i, "Ban Length:"),
-                                         __(i, "1 day"));
+                                         __(i, "\tE您已被GM封禁并逐出舰船."), __(i, "封禁时长:"),
+                                         __(i, "1 天"));
                     }
 
                     i->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -2073,7 +2120,7 @@ static int handle_ban_d(ship_client_t *c, const char *params) {
         }
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Successfully set ban."));
+    return send_txt(c, "%s", __(c, "\tE\tC7已成功封禁该玩家."));
 }
 
 /* 用法: /ban:w guildcard reason */

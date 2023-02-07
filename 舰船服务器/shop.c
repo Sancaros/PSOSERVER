@@ -269,21 +269,23 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
             if (tmp_value < 0)
                 item.data_b[6] -= tmp_value;
             else
-                item.data_b[6] -= tmp_value;
+                item.data_b[6] = tmp_value;
+
             tmp_value = (mt19937_genrand_int32(随机因子) % 9) - 4;
             if (tmp_value < 0)
                 item.data_b[9] -= tmp_value;
             else
-                item.data_b[9] -= tmp_value;
+                item.data_b[9] = tmp_value;
+
             item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
             break;
 
         case ITEM_SUBTYPE_UNIT://插件
             tmp_value = (mt19937_genrand_int32(随机因子) % 5) - 4;
             if (tmp_value < 0)
-                item.data_b[7] -= tmp_value;
+                item.data_w[3] -= (uint16_t)tmp_value;
             else
-                item.data_b[7] -= tmp_value;
+                item.data_w[3] = (uint16_t)tmp_value;
 
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
             break;
