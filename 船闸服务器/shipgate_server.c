@@ -490,7 +490,7 @@ static void open_db() {
     sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     SGATE_LOG("初始化临时玩家数据表"/*, SERVER_CLIENTS_TRANSIENT*/);
@@ -498,11 +498,11 @@ static void open_db() {
     sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_TRANSIENT);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_TRANSIENT);
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 
     if (read_events_table()) {
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }
 }
 
