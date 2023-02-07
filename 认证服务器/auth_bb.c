@@ -57,12 +57,13 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     char tmp[32];
     void *result;
     char **row;
+    bool confirm = false;
     //uint8_t hash[32];
     uint32_t ch;
     int8_t security_sixtyfour_binary[18] = { 0 };
     //int64_t security_sixtyfour_check;
     uint32_t hwinfo[2] = { 0 };
-    uint32_t /*guild_id = 0, priv, guildcard,*/ isbanded, isactive, islogged;
+    uint32_t /*guild_id = 0, priv, guildcard,*/ isbanded, isactive;
     //uint16_t clientver;
     uint8_t MDBuffer[0x30] = { 0 };
     int8_t password[0x30] = { 0 };
@@ -72,6 +73,19 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     int logged = 0;
 
     //print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
+
+    if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - sizeof(pkt->hdr)) {
+        confirm = true;
+        //DBG_LOG("低版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
+    }
+    else if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt)) {
+        confirm = false;
+        //DBG_LOG("高版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
+    }
+    else {
+        DBG_LOG("未知版本客户端登录 %d %d %d", pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - sizeof(pkt->hdr), sizeof(bb_login_93_pkt));
+        return -1;
+    }
 
     c->bbversion = pkt->version;
 
@@ -130,8 +144,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         psocn_db_result_free(result);
         return -4;
     }
-
-    islogged = atoi(row[2]);
 
     /* Make sure some simple checks pass first... */
     if (db_check_gc_online((uint32_t)strtoul(row[6], NULL, 0))) {
@@ -192,17 +204,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //c->preferred_lobby_id = (uint32_t)strtoul(row[12], NULL, 0);
     psocn_db_result_free(result);
 
-    //logged = db_check_gc_online(c->guildcard);
-
-    ///* Make sure some simple checks pass first... */
-    //if (logged) {
-    //    /* User is banned by account. */
-    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-    //    return -4;
-    //}
-    //else
-    //    db_update_gc_login_state(c->guildcard, 0, -1, NULL);
-
     if(errno) {
         ERR_LOG("handle_bb_L_login errno = %d  %d %d %d", errno, c->guild_id, c->priv, c->guildcard);
         send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
@@ -228,20 +229,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //    return -2;
     //}
 
-    bool is_old_format;
-    if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - sizeof(pkt->hdr)) {
-        is_old_format = true;
-        //DBG_LOG("低版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
-    }
-    else if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt)) {
-        is_old_format = false;
-        //DBG_LOG("高版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
-    }
-    else {
-        DBG_LOG("未知版本客户端登录 %d %d %d", pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - sizeof(pkt->hdr), sizeof(bb_login_93_pkt));
-        return -1;
-    }
-
     /* Set up the security data (everything else is already 0'ed). */
     c->sec_data.cfg.magic = CLIENT_CONFIG_MAGIC; //这个直接覆盖了版本信息 magic就是版本信息
 
@@ -252,6 +239,11 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username='%s'", AUTH_SECURITY, tmp);
     /* Query the database for the user... */
     if (psocn_db_real_query(&conn, query)) {
+        confirm = false;
+    }else
+        confirm = true;
+
+    if(!confirm){
         sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, menu_id, preferred_lobby_id, thirtytwo, isgm, security_data) "
             "VALUES ('%u', '%d', '%d', '%p', '%d', '%s')",
             AUTH_SECURITY, c->guildcard, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);

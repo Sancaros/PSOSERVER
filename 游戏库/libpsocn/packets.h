@@ -3382,15 +3382,15 @@ typedef struct bb_option_req {
 //    parray<Entry, 0x20> entries;
 //} PACKED;
 
-// E2 (S->C): Team and key config (BB)
-// See KeyAndTeamConfigBB in Player.hh for format
 #ifdef PSOCN_CHARACTERS_H
 
+// E2 (S->C): Team and key config (BB)
+// See KeyAndTeamConfigBB in Player.hh for format
 /* Blue Burst option configuration packet */
 typedef struct bb_opt_config {
     bb_pkt_hdr_t hdr;
     uint8_t unk1[0x000C];                         //276 - 264 = 12
-    psocn_bb_guild_card_t gc_data2;               //264大小
+    psocn_bb_guildcard_t gc_data2;               //264大小
     bb_key_config_t key_cfg;
     bb_guild_t guild_data;
 } PACKED bb_opt_config_pkt;
@@ -3622,7 +3622,7 @@ typedef struct bb_full_char {
 // E8 (C->S): Guild card commands (BB)
 typedef struct bb_guildcard {
     bb_pkt_hdr_t hdr;
-    psocn_bb_guild_card_t gc_data;
+    psocn_bb_guildcard_t gc_data;
 } PACKED bb_guildcard_pkt;
 
 // 01E8 (C->S): Check guild card file checksum

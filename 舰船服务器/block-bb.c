@@ -1535,7 +1535,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //DBG_LOG("unk4 %s", pkt->data.unk4);
     //DBG_LOG("unk1 %s", pkt->data.unk1);
 
-    //print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guild_card_t));
+    //print_payload((unsigned char*)&pkt->data.gc_data2, sizeof(psocn_bb_guildcard_t));
 
     if (c->version != CLIENT_VERSION_BB)
         return -1;

@@ -365,7 +365,7 @@ typedef struct psocn_v3_guild_card {
 } PACKED psocn_v3_guild_card_t;
 
 // BB GC 数据 TODO 264 + 120 = 384
-typedef struct psocn_bb_guild_card {
+typedef struct psocn_bb_guildcard {
     uint32_t guildcard;
     uint16_t name[0x0018]; //24 * 2 = 48
     uint16_t guild_name[0x0010]; // 32
@@ -374,9 +374,9 @@ typedef struct psocn_bb_guild_card {
     uint8_t language;
     uint8_t section;
     uint8_t ch_class;
-} PACKED psocn_bb_guild_card_t;
+} PACKED psocn_bb_guildcard_t;
 
-static int bb_c_gcsize = sizeof(psocn_bb_guild_card_t);
+static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
@@ -390,7 +390,7 @@ typedef struct psocn_bb_full_char {
 
     psocn_bank_t bank;                            // 玩家银行数据表
 
-    psocn_bb_guild_card_t gc_data;                // 玩家GC数据表部分
+    psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分
 
     uint32_t unk2;                                // not saved
 
@@ -411,10 +411,10 @@ typedef struct psocn_bb_full_char {
 
     //uint8_t unk_gc[0x114];
     uint8_t unk1[0x000C];                         // 276 - 264 = 12
-    psocn_bb_guild_card_t gc_data2;               // 264大小
+    psocn_bb_guildcard_t gc_data2;                // 264大小
 
-    bb_key_config_t key_cfg;                // 选项数据表
-    bb_guild_t guild_data;                  // GUILD数据表
+    bb_key_config_t key_cfg;                      // 选项数据表
+    bb_guild_t guild_data;                        // GUILD数据表
 } PACKED psocn_bb_full_char_t;
 
 static int bb_c_fullsize = sizeof(psocn_bb_full_char_t);
@@ -435,7 +435,7 @@ typedef struct psocn_bb_db_char {
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
-    psocn_bb_guild_card_t data;
+    psocn_bb_guildcard_t data;
     uint16_t comment[0x58];
     uint32_t padding;
 } PACKED psocn_bb_guild_card_entry_t;
@@ -444,7 +444,7 @@ typedef struct psocn_bb_guild_card_entry {
 // 276 + 120 = 396 - 264 = 132     384 + 276 = 660 - 264 = 396
 typedef struct bb_guildcard_data {
     uint8_t unk1[0x000C];//276 - 264 = 12
-    psocn_bb_guild_card_t black_list[0x001E]; //30个 264大小/个
+    psocn_bb_guildcard_t black_list[0x001E]; //30个 264大小/个
     uint32_t black_gc_list[0x001E];//120
     psocn_bb_guild_card_entry_t entries[0x0069]; //105个 444大小/个
     //uint8_t unk3[0x01BC];
