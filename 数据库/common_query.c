@@ -653,12 +653,12 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     }
 
     sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DRESS_DATA, gc,
+        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DRESS, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法清理旧玩家 %s 人物数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -695,11 +695,11 @@ int db_updata_bb_char_create_code(uint32_t code,
     uint32_t gc, uint8_t slot) {
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%d' "
         "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
-        CHARACTER_DRESS_DATA, code,
+        CHARACTER_DRESS, code,
         gc, slot);
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新角色更衣室数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+            "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
             psocn_db_error(&conn));
         return -1;
     }
@@ -730,7 +730,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "'%d', '%d', '%d', '%d', '%d', "//5
             "'%d', '%d', '%d', '%d', "//4
             "'%d', '%d', '%d', '%f', '%f')",//5
-            CHARACTER_DRESS_DATA, 
+            CHARACTER_DRESS, 
             gc, slot, 
             dress_data.guildcard_string, 
             dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
@@ -744,7 +744,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
         if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -6;
@@ -755,7 +755,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
     //        "costume = '%d', "
     //        "hair = '%d', hair_r = '%d', hair_g = '%d', hair_b = '%d' "
     //        "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
-    //        CHARACTER_DRESS_DATA,
+    //        CHARACTER_DRESS,
     //        dress_data.costume, 
     //        dress_data.hair, dress_data.hair_r, dress_data.hair_g, dress_data.hair_b,
     //        gc, slot
@@ -765,7 +765,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
     //    if (psocn_db_real_query(&conn, myquery)) {
     //        SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-    //            "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+    //            "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
     //            psocn_db_error(&conn));
     //        /* XXXX: 未完成给客户端发送一个错误信息 */
     //        return -6;
@@ -783,7 +783,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "hair = '%d', hair_r = '%d', hair_g = '%d', hair_b = '%d', "
             "prop_x = '%f', prop_y = '%f' "
             "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'", 
-            CHARACTER_DRESS_DATA, gc, slot,  
+            CHARACTER_DRESS, gc, slot,  
             dress_data.guildcard_string, dress_data.dress_unk1, dress_data.dress_unk2, 
             dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r, dress_data.name_color_transparency, 
             dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
@@ -798,7 +798,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
         if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -6;
@@ -807,12 +807,12 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             //DBG_LOG("更新角色更衣室数据");
 
             sprintf(myquery, "DELETE FROM %s WHERE guildcard="
-                "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DRESS_DATA, gc,
+                "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DRESS, gc,
                 slot);
 
             if (psocn_db_real_query(&conn, myquery)) {
                 SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
                     psocn_db_error(&conn));
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 return -1;
@@ -835,7 +835,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
                 "'%d', '%d', '%d', '%d', '%d', "//5
                 "'%d', '%d', '%d', '%d', "//4
                 "'%d', '%d', '%d', '%f', '%f')",//5
-                CHARACTER_DRESS_DATA,
+                CHARACTER_DRESS,
                 gc, slot, 
                 dress_data.guildcard_string,
                 dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
@@ -847,7 +847,7 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
 
             if (psocn_db_real_query(&conn, myquery)) {
                 SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                    "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS_DATA, gc, slot,
+                    "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
                     psocn_db_error(&conn));
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 return -6;
@@ -871,7 +871,7 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
 
     /* 查询数据库并获取数据 */
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%"
-        PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DRESS_DATA, gc, slot);
+        PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER_DRESS, gc, slot);
 
     /* 获取旧玩家数据... */
     if (psocn_db_real_query(&conn, myquery)) {
