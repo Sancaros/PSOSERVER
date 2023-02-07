@@ -42,7 +42,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 //#define AUTH_GUILD "auth_guild"
 //#define AUTH_QUESTITEM "auth_questitem"
 
-#define CHARACTER "character"
+#define CHARACTER "character_"
 //#define CHARACTER_KEY "character_key"
 #define CHARACTER_BACKUP "character_backup"
 #define CHARACTER_BANK "character_bank"
