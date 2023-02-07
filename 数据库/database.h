@@ -136,6 +136,7 @@ extern int psocn_db_real_query(psocn_dbconn_t* conn, const char* str);
 
 extern void* psocn_db_result_store(psocn_dbconn_t* conn);
 extern void psocn_db_result_free(void* result);
+extern void psocn_db_next_result_free(psocn_dbconn_t* conn, void* result);
 
 extern long long int psocn_db_result_rows(void* result);
 extern unsigned int psocn_db_result_fields(psocn_dbconn_t* conn);

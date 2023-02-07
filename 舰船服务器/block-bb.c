@@ -33,7 +33,6 @@
 #include <mtwist.h>
 #include <psomemory.h>
 #include <pso_menu.h>
-#include <pso_text.h>
 //#include <pso_version.h>
 
 #include "block.h"

@@ -435,7 +435,7 @@ static int handle_login(ship_client_t *c, const char *params) {
 
 /* 用法 /item item1,item2,item3,item4 */
 static int handle_item(ship_client_t *c, const char *params) {
-    uint32_t item[4] = { 0, 0, 0, 0 };
+    uint32_t item[4] = {0, 0, 0, 0};
     int count;
 
     /* Make sure the requester is a GM. */
@@ -443,27 +443,9 @@ static int handle_item(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
     }
 
-    switch (c->version) {
-    case CLIENT_VERSION_DCV1:
-    case CLIENT_VERSION_DCV2:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
-        /* Copy over the item data. */
-        count = sscanf(params, "%x,%x,%x,%x", &item[0], &item[1], &item[2],
-            &item[3]);
-        break;
-
-    case CLIENT_VERSION_BB:
-        /* Copy over the item data. */
-        count = sscanf(params, "%x,%x,%x,%x", &item[0], &item[1], &item[2],
-            &item[3]);
-        break;
-
-    default:
-        return send_txt(c, "%s", __(c, "\tE\tC7您当前的客户端版本不支持该指令."));
-    }
+    /* Copy over the item data. */
+    count = sscanf(params, "%X,%X,%X,%X", &item[0], &item[1], &item[2],
+        &item[3]);
 
     if(count == EOF || count == 0) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
@@ -471,17 +453,18 @@ static int handle_item(ship_client_t *c, const char *params) {
 
     clear_item(&c->new_item);
 
-    c->new_item.data_l[0] = LE32(item[0]);
-    c->new_item.data_l[1] = LE32(item[1]);
-    c->new_item.data_l[2] = LE32(item[2]);
-    c->new_item.data2_l = LE32(item[3]);
+    /* Copy over the item data. */
+    c->new_item.data_l[0] = SWAP32(item[0]);
+    c->new_item.data_l[1] = SWAP32(item[1]);
+    c->new_item.data_l[2] = SWAP32(item[2]);
+    c->new_item.data2_l = SWAP32(item[3]);
 
     print_item_data(c, &c->new_item);
 
     return send_txt(c, "%s %s %s",
-        __(c, "\tE\tC8物品"),
+        __(c, "\tE\tC8物品:"),
         item_get_name(&c->new_item, c->version),
-        __(c, "\tE\tC6new_item 设置成功."));
+        __(c, "\tE\tC6 new_item 设置成功."));
 }
 
 /* 用法 /item4 item4 */
@@ -495,7 +478,7 @@ static int handle_item4(ship_client_t *c, const char *params) {
     }
 
     /* Copy over the item data. */
-    count = sscanf(params, "%x", &item);
+    count = sscanf(params, "%X", &item);
 
     if(count == EOF || count == 0) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
@@ -569,13 +552,6 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     bb.data = dc.data = c->new_item;
     bb.data.item_id = dc.data.item_id = LE32((l->item_next_lobby_id - 1));
     bb.two = dc.two = LE32(0x00000002);
-
-    //bb.data.data_l[0] = dc.data.data_l[0] = LE32(c->new_item.data_l[0]);
-    //dc.data.data_l[1] = LE32(c->new_item.data_l[1]);
-    //dc.data.data_l[2] = LE32(c->new_item.data_l[2]);
-    //dc.data.item_id = LE32((l->item_next_lobby_id - 1));
-    //dc.data.data2_l = LE32(c->new_item.data2_l);
-    //dc.two = LE32(0x00000002);
 
     /* Clear the set item */
     clear_item(&c->new_item);
@@ -1695,7 +1671,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
     }
 
     /* Copy over the item data. */
-    count = sscanf(params, "%x,%x,%x,%x", ws + 0, ws + 1, ws + 2, ws + 3);
+    count = sscanf(params, "%X,%X,%X,%X", ws + 0, ws + 1, ws + 2, ws + 3);
 
     if(count == EOF || count == 0) {
         return send_txt(c, "%s", __(c, "\tE\tC7Invalid WS code."));

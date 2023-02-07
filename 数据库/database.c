@@ -148,6 +148,13 @@ void psocn_db_result_free(void* result) {
     mysql_free_result((MYSQL_RES*)result);
 }
 
+void psocn_db_next_result_free(psocn_dbconn_t* conn, void* result) {
+    while (!mysql_next_result((MYSQL*)conn->conndata)) {
+        result = psocn_db_result_store(conn);
+        psocn_db_result_free(result);
+    }
+}
+
 long long int psocn_db_result_rows(void* result) {
     if (!result) {
         return -42;

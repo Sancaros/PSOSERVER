@@ -15,15 +15,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PSO_HAVE_TEXT
-#define PSO_HAVE_TEXT
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
 int add_color_tag(uint16_t* text);
-
-
-#endif /* !PSO_HAVE_TEXT */
+uint8_t hexToByte(char* hs);

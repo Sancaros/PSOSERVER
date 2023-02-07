@@ -15,7 +15,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef PSO_HAVE_TEXT
+#define PSO_HAVE_TEXT
+
 #include "pso_text.h"
+
+uint8_t hexToByte(char* hs)
+{
+    uint32_t b;
+
+    if (hs[0] < 58) b = (hs[0] - 48); else b = (hs[0] - 55);
+    b *= 16;
+    if (hs[1] < 58) b += (hs[1] - 48); else b += (hs[1] - 55);
+    return (uint8_t)b;
+}
 
 int add_color_tag(uint16_t* text) {
     if (!text)
@@ -30,3 +43,5 @@ int add_color_tag(uint16_t* text) {
 
     return 0;
 }
+
+#endif /* !PSO_HAVE_TEXT */

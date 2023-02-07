@@ -568,28 +568,18 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         if(raw_data) {
             data_length = db_get_char_data_length(c->guildcard, pkt->slot);
             data_size = db_get_char_data_size(c->guildcard, pkt->slot);
-            ///* Grab the length of the character data */
-            //if(!(len = psocn_db_result_lengths(result))) {
-            //    SQLERR_LOG("无法获取角色数据长度");
-            //    SQLERR_LOG("%s", psocn_db_error(&conn));
-            //    psocn_db_result_free(result);
-            //    return -1;
-            //}
 
-            //sz = len[0];
             char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
 
             if(!char_data) {
                 ERR_LOG("无法分配角色数据内存空间");
                 ERR_LOG("%s", strerror(errno));
-                //psocn_db_result_free(result);
                 return -2;
             }
 
             if(data_size) {
                 if(data_size != sizeof(psocn_bb_db_char_t)) {
                     ERR_LOG("无效角色数据长度!");
-                    //psocn_db_result_free(result);
                     free(char_data);
                     return -2;
                 }
@@ -599,7 +589,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 if(uncompress((Bytef *)char_data, &data_size, (Bytef *)raw_data,
                               (uLong)data_length) != Z_OK) {
                     ERR_LOG("无法解压角色数据流");
-                    //psocn_db_result_free(result);
                     free(char_data);
                     return -3;
                 }
@@ -607,7 +596,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             else {
                 if(data_length != sizeof(psocn_bb_db_char_t)) {
                     ERR_LOG("无效(未知)角色数据,长度不一致!");
-                    //psocn_db_result_free(result);
                     free(char_data);
                     return -2;
                 }
@@ -626,8 +614,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
             mc.exp = char_data->character.disp.exp;
             mc.play_time = char_data->character.play_time;
             mc.dress_data.create_code = 0;
-            //DBG_LOG("%d", mc.dress_data.create_code);
-            //mc.dress_data.unused[11] = mc.dress_data.unused[12] = mc.dress_data.unused[13] = mc.dress_data.unused[14] = 0;
             
             if (db_updata_char_play_time(mc.play_time, c->guildcard, pkt->slot))
             {
@@ -635,13 +621,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 return -3;
             }
 
-            sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
-                PRIu32 "'", AUTH_SECURITY, pkt->slot, c->guildcard);
-            if (psocn_db_real_query(&conn, myquery))
-            {
-                SQLERR_LOG("无法更新角色 %s 数据!", AUTH_SECURITY);
-                //handle_todc(__LINE__, c);
-            }
             free(char_data);
 
             rv = send_bb_char_preview(c, &mc, pkt->slot);
@@ -673,6 +652,14 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         }
         else {
             rv = send_bb_char_ack(c, pkt->slot, BB_CHAR_ACK_SELECT);
+        }
+
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
+            PRIu32 "'", AUTH_SECURITY, pkt->slot, c->guildcard);
+        if (psocn_db_real_query(&conn, myquery))
+        {
+            SQLERR_LOG("无法更新角色 %s 数据!", AUTH_SECURITY);
+            //handle_todc(__LINE__, c);
         }
     }
 

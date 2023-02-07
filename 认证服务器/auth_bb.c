@@ -57,13 +57,12 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     char tmp[32];
     void *result;
     char **row;
-    bool confirm = false;
     //uint8_t hash[32];
     uint32_t ch;
     int8_t security_sixtyfour_binary[18] = { 0 };
     //int64_t security_sixtyfour_check;
     uint32_t hwinfo[2] = { 0 };
-    uint32_t /*guild_id = 0, priv, guildcard,*/ isbanded, isactive;
+    uint32_t /*guild_id = 0, priv, guildcard,*/ isbanded, isactive, islogged;
     //uint16_t clientver;
     uint8_t MDBuffer[0x30] = { 0 };
     int8_t password[0x30] = { 0 };
@@ -74,12 +73,13 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 
     //print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
 
+    bool is_old_format;
     if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - sizeof(pkt->hdr)) {
-        confirm = true;
+        is_old_format = true;
         //DBG_LOG("低版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
     }
     else if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt)) {
-        confirm = false;
+        is_old_format = false;
         //DBG_LOG("高版本客户端登录 %d %d %d %d", is_old_format, pkt->hdr.pkt_len, sizeof(bb_login_93_pkt) - 8, sizeof(bb_login_93_pkt));
     }
     else {
@@ -145,6 +145,8 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -4;
     }
 
+    islogged = atoi(row[2]);
+
     /* Make sure some simple checks pass first... */
     if (db_check_gc_online((uint32_t)strtoul(row[6], NULL, 0))) {
         /* 玩家已在线. */
@@ -202,7 +204,8 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //c->menu_id = (uint32_t)strtoul(row[11], NULL, 0);
     c->menu_id = pkt->menu_id;
     //c->preferred_lobby_id = (uint32_t)strtoul(row[12], NULL, 0);
-    psocn_db_result_free(result);
+
+    psocn_db_next_result_free(&conn, result);
 
     if(errno) {
         ERR_LOG("handle_bb_L_login errno = %d  %d %d %d", errno, c->guild_id, c->priv, c->guildcard);
@@ -236,19 +239,17 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         c->preferred_lobby_id = pkt->preferred_lobby_id;
     }
 
-    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username='%s'", AUTH_SECURITY, tmp);
-    /* Query the database for the user... */
-    if (psocn_db_real_query(&conn, query)) {
-        confirm = false;
-    }else
-        confirm = true;
+    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username = '%s'", AUTH_SECURITY, tmp);
+    psocn_db_real_query(&conn, query);
+    result = psocn_db_result_store(&conn);
+    row = psocn_db_result_fetch(result);
 
-    if(!confirm){
-        sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, menu_id, preferred_lobby_id, thirtytwo, isgm, security_data) "
-            "VALUES ('%u', '%d', '%d', '%p', '%d', '%s')",
-            AUTH_SECURITY, c->guildcard, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);
-        if (psocn_db_real_query(&conn, query))
-        {
+    /* Query the database for the user... */
+    if (!row) {
+        sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, username, menu_id, preferred_lobby_id, thirtytwo, isgm, security_data) "
+            "VALUES ('%u', '%s', '%d', '%d', '%p', '%d', '%s')",
+            AUTH_SECURITY, c->guildcard, tmp, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);
+        if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("新增GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
             send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
             return -1;
@@ -256,14 +257,15 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     }
     else {
         sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', thirtytwo = '%p', isgm = '%d', security_data = '%s'"
-            "WHERE guildcard = '%u'", AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard);
-        if (psocn_db_real_query(&conn, query))
-        {
+            "WHERE username = '%s'", AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, tmp);
+        if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
             send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
             return -1;
         }
     }
+
+    psocn_db_next_result_free(&conn, result);
 
     /* Send the security data packet */
     if(send_bb_security(c, c->guildcard, LOGIN_93BB_OK, c->guild_id, &c->sec_data,

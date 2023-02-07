@@ -2487,7 +2487,7 @@ static int handle_sctl_ver(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     rep->flags |= GIT_DIRTY ? 2 : 0;
 #endif
     conv_shaid(rep->commithash, GIT_SHAID);
-    rep->committime = BE64(GIT_TIMESTAMP);
+    rep->committime = SWAP64(GIT_TIMESTAMP);
     memcpy(rep->remoteref, remote_ref, reflen);
 #else
 
