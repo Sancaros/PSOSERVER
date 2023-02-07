@@ -1276,6 +1276,8 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
     lobby_t* l = c->cur_lobby;
     block_t* b = c->cur_block;
     sitem_t item_data = { 0 };
+    uint32_t shop_type = LE32(req->shop_type);
+    uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1283,69 +1285,33 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
         return -1;
     }
 
-    uint32_t shop_type = LE32(req->shop_type);
+    for (uint8_t i = 0; i < num_items; ++i) {
+        memset(&c->game_data.shop_items[i], 0, sizeof(sitem_t));
 
-    //print_payload((unsigned char*)req, LE16(req->hdr.pkt_len));
+        switch (shop_type) {
+        case BB_SHOPTYPE_TOOL:// 工具商店
+            item_data = create_bb_shop_item(l->difficulty, 3, &b->rng);
+            break;
 
-    if (c->version == CLIENT_VERSION_BB) {
-        uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
+        case BB_SHOPTYPE_WEAPON:// 武器商店
+            item_data = create_bb_shop_item(l->difficulty, 0, &b->rng);
+            break;
 
-        //printf("%d \n", num_items);
+        case BB_SHOPTYPE_ARMOR:// 装甲商店
+            item_data = create_bb_shop_item(l->difficulty, 1, &b->rng);
+            break;
 
-        for (uint8_t i = 0; i < num_items; ++i) {
-            memset(&c->game_data.shop_items[i], 0, sizeof(sitem_t));
-
-            switch (shop_type) {
-            case 0:// 工具商店
-                item_data = create_bb_shop_item(l->difficulty, 3, &b->rng);
-                break;
-            case 1:// 武器商店
-                item_data = create_bb_shop_item(l->difficulty, 0, &b->rng);
-                break;
-            case 2:// 装甲商店
-                item_data = create_bb_shop_item(l->difficulty, 1, &b->rng);
-                break;
-
-            default:
-                ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
-                return -1;
-                break;
-            }
-
-            item_data.sitem_id = generate_item_id(l, c->client_id);
-
-            memcpy(&c->game_data.shop_items[i], &item_data, sizeof(sitem_t));
+        default:
+            ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
+            return -1;
         }
 
-        return subcmd_bb_send_shop(c, shop_type, num_items);
-    }
-    else {
-        subcmd_bb_shop_inv_t shop;
-        int i;
-        block_t* b = c->cur_block;
+        item_data.sitem_id = generate_item_id(l, c->client_id);
 
-        memset(&shop, 0, sizeof(shop));
-
-        shop.hdr.pkt_len = LE16(0x00EC);
-        shop.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-        shop.hdr.flags = 0;
-        shop.shdr.type = SUBCMD60_SHOP_INV;
-        shop.shdr.size = 0x3B;
-        shop.shdr.params = 0x037F;
-
-        shop.shop_type = req->shop_type;
-        shop.num_items = 0x0B;
-
-        for (i = 0; i < 0x0B; ++i) {
-            shop.items[i].data_l[0] = LE32((0x03 | (i << 8)));
-            shop.items[i].sitem_id = 0xFFFFFFFF;
-            shop.items[i].costl = LE32((mt19937_genrand_int32(&b->rng) % 255));
-        }
-
-        return send_pkt_bb(c, (bb_pkt_hdr_t*)&shop);
+        memcpy(&c->game_data.shop_items[i], &item_data, sizeof(sitem_t));
     }
 
-    return 0;
+    return subcmd_bb_send_shop(c, shop_type, num_items);
 }
 
 static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {

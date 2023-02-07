@@ -24,6 +24,10 @@
 #include "packets.h"
 #undef PACKETS_H_HEADERS_ONLY
 
+#define BB_SHOPTYPE_TOOL           0
+#define BB_SHOPTYPE_WEAPON         1
+#define BB_SHOPTYPE_ARMOR          2
+
 #ifdef PACKED
 #undef PACKED
 #endif

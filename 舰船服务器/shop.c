@@ -283,9 +283,9 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
         case ITEM_SUBTYPE_UNIT://插件
             tmp_value = (mt19937_genrand_int32(随机因子) % 5) - 4;
             if (tmp_value < 0)
-                item.data_w[3] -= (uint16_t)tmp_value;
+                item.data_b[7] -= tmp_value;
             else
-                item.data_w[3] = (uint16_t)tmp_value;
+                item.data_b[7] = tmp_value;
 
             item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
             break;
@@ -295,49 +295,47 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
     case ITEM_TYPE_TOOL: // 药品工具
         item.data_b[1] = mt19937_genrand_int32(随机因子) % 12;
         switch (item.data_b[1]) {
-        case 0x00:
-        case 0x01:
-
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
             switch (难度) {
-            case 0:
+            case GAME_TYPE_NORMAL:
                 item.data_b[2] = 0;
                 break;
 
-            case 1:
+            case GAME_TYPE_EPISODE_1:
                 item.data_b[2] = mt19937_genrand_int32(随机因子) % 2;
                 break;
 
-            case 2:
+            case GAME_TYPE_EPISODE_2:
                 item.data_b[2] = (mt19937_genrand_int32(随机因子) % 2) + 1;
                 break;
 
-            case 3:
+            case GAME_TYPE_EPISODE_4:
                 item.data_b[2] = 2;
                 break;
             }
-
             break;
 
-        case 0x06:
+        case ITEM_SUBTYPE_ANTI:
             item.data_b[2] = mt19937_genrand_int32(随机因子) % 2;
             break;
 
-        case 0x0A:
+        case ITEM_SUBTYPE_GRINDER:
             item.data_b[2] = mt19937_genrand_int32(随机因子) % 3;
             break;
 
-        case 0x0B:
+        case ITEM_SUBTYPE_MATERIAL:
             item.data_b[2] = mt19937_genrand_int32(随机因子) % 7;
             break;
         }
 
         switch (item.data_b[1]) {
-        case 0x02:
+        case ITEM_SUBTYPE_DISK:
             item.data_b[4] = mt19937_genrand_int32(随机因子) % 19;
             switch (item.data_b[4]) {
             case 14:
             case 17:
-                item.data_b[2] = 0; // reverser & ryuker always level 1 
+                item.data_b[2] = 0; // reverser & ryuker always level 1 这两个法术永远是1级
                 break;
             case 16:
                 item.data_b[2] = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
@@ -347,15 +345,15 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
                 break;
             }
             break;
-        case 0x00:
-        case 0x01:
-        case 0x03:
-        case 0x04:
-        case 0x05:
-        case 0x06:
-        case 0x07:
-        case 0x08:
-        case 0x10:
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+        case ITEM_SUBTYPE_SOL_ATOMIZER:
+        case ITEM_SUBTYPE_MOON_ATOMIZER:
+        case ITEM_SUBTYPE_STAR_ATOMIZER:
+        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_TELEPIPE:
+        case ITEM_SUBTYPE_TRAP_VISION:
+        case ITEM_SUBTYPE_PHOTON:
             item.data_b[5] = mt19937_genrand_int32(随机因子) % (max_quantity[难度] + 1);
             break;
         }

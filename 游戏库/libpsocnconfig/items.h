@@ -27,18 +27,32 @@
 /* Item buckets. Each item gets put into one of these buckets when in the list,
    in order to make searching the list slightly easier. These are all based on
    the least significant byte of the item code. */
-#define ITEM_TYPE_WEAPON        0x00
-#define ITEM_TYPE_GUARD         0x01
-#define ITEM_TYPE_MAG           0x02
-#define ITEM_TYPE_TOOL          0x03
-#define ITEM_TYPE_MESETA        0x04
+#define ITEM_TYPE_WEAPON                0x00
+#define ITEM_TYPE_GUARD                 0x01
+#define ITEM_TYPE_MAG                   0x02
+#define ITEM_TYPE_TOOL                  0x03
+#define ITEM_TYPE_MESETA                0x04
 
 /* ITEM_TYPE_GUARD items are actually slightly more specialized, and fall into
    three subtypes of their own. These are the second least significant byte in
    the item code. */
-#define ITEM_SUBTYPE_FRAME      0x01
-#define ITEM_SUBTYPE_BARRIER    0x02
-#define ITEM_SUBTYPE_UNIT       0x03
+#define ITEM_SUBTYPE_FRAME              0x01
+#define ITEM_SUBTYPE_BARRIER            0x02
+#define ITEM_SUBTYPE_UNIT               0x03
+
+/* ITEM_TYPE_TOOL subtype*/
+#define ITEM_SUBTYPE_MATE               0x00
+#define ITEM_SUBTYPE_FLUID              0x01
+#define ITEM_SUBTYPE_DISK               0x02
+#define ITEM_SUBTYPE_SOL_ATOMIZER       0x03
+#define ITEM_SUBTYPE_MOON_ATOMIZER      0x04
+#define ITEM_SUBTYPE_STAR_ATOMIZER      0x05
+#define ITEM_SUBTYPE_ANTI               0x06
+#define ITEM_SUBTYPE_TELEPIPE           0x07
+#define ITEM_SUBTYPE_TRAP_VISION        0x08
+#define ITEM_SUBTYPE_GRINDER            0x0A
+#define ITEM_SUBTYPE_MATERIAL           0x0B
+#define ITEM_SUBTYPE_PHOTON             0x10
 
 /* Default behaviors for the item lists. ITEM_DEFAULT_ALLOW means to accept any
    things NOT in the list read in by default, whereas ITEM_DEFAULT_REJECT causes
