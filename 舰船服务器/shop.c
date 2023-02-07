@@ -232,7 +232,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
     case ITEM_TYPE_WEAPON: // 武器
         item.data_b[1] = (mt19937_genrand_int32(随机因子) % 12) + 1;
 
-        if (item.data_b[1] > 0x09) {
+        if (item.data_b[1] > 9) {
             item.data_b[2] = 难度;
         }
         else
@@ -264,30 +264,34 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
             item.data_b[5] = mt19937_genrand_int32(随机因子) % 5;
             break;
 
-        case ITEM_SUBTYPE_BARRIER://护盾
-            tmp_value = (mt19937_genrand_int32(随机因子) % 9) - 4;
-            if (tmp_value < 0)
-                item.data_b[6] -= tmp_value;
-            else
-                item.data_b[6] = tmp_value;
+        case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
+            item.data_b[2] = (mt19937_genrand_int32(随机因子) % 5) + (难度 * 5);//TODO 价格加个控制
 
-            tmp_value = (mt19937_genrand_int32(随机因子) % 9) - 4;
-            if (tmp_value < 0)
-                item.data_b[9] -= tmp_value;
-            else
-                item.data_b[9] = tmp_value;
+            item.data_b[6] = (mt19937_genrand_int32(随机因子) % 9) - 4;
+            //if (tmp_value < 0)
+            //    item.data_b[6] -= tmp_value;
+            //else
+            //    item.data_b[6] = tmp_value;
 
-            item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
+            item.data_b[8] = mt19937_genrand_int32(随机因子) % 5;
+            //if (tmp_value < 0)
+            //    item.data_b[8] -= tmp_value;
+            //else
+            //    item.data_b[8] = tmp_value;
+
+            //item.costb[2] = (mt19937_genrand_int32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
             break;
 
         case ITEM_SUBTYPE_UNIT://插件
-            tmp_value = (mt19937_genrand_int32(随机因子) % 5) - 4;
-            if (tmp_value < 0)
-                item.data_b[7] -= tmp_value;
-            else
-                item.data_b[7] = tmp_value;
+            item.data_b[2] = (mt19937_genrand_int32(随机因子) % 2) + 4;
 
-            item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
+            item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4 + (难度 * 5);
+            //if (tmp_value < 0)
+            //    item.data_b[7] -= tmp_value;
+            //else
+            //    item.data_b[7] = tmp_value;
+
+            //item.costb[2] = mt19937_genrand_int32(随机因子) % 0x3B;
             break;
         }
         break;

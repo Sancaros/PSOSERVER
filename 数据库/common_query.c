@@ -32,6 +32,43 @@ int db_check_gc_online(uint32_t gc) {
 
     /* If we can't query the database, fail. */
     if (psocn_db_real_query(&conn, query)) {
+        return 0;
+    }
+
+    /* Grab the results. */
+    result = psocn_db_result_store(&conn);
+    if (!result) {
+        return 0;
+    }
+
+    row = psocn_db_result_fetch(result);
+    if (!row) {
+        psocn_db_result_free(result);
+        return 0;
+    }
+
+    /* If there is a result, then the user is already online. */
+    psocn_db_result_free(result);
+
+    return 1;
+}
+
+/* TODO */
+uint32_t db_remove_account_login_state_from_ship(uint16_t key_idx) {
+    char query[256];
+    void* result;
+    char** row;
+    uint32_t gc = -1;
+    int i = 0;
+
+    printf("%d", i);
+
+    /* Fill in the query. */
+    sprintf(query, "SELECT guildcard FROM %s WHERE ship_id='%hu'",
+        SERVER_SHIPS_ONLINE, key_idx);
+
+    /* If we can't query the database, fail. */
+    if (psocn_db_real_query(&conn, query)) {
         return -1;
     }
 
@@ -47,12 +84,65 @@ int db_check_gc_online(uint32_t gc) {
         return 0;
     }
 
-    /* If there is a result, then the user is already online. */
-    psocn_db_result_free(result);
+    while (!row) {
+        i++;
+    }
 
-    return 1;
+    printf("%d", i);
+
+    gc = (uint32_t)strtoul(row[0], NULL, 0);
+
+    return gc;
 }
 
+int db_remove_gc_char_login_state(uint32_t gc) {
+    char query[512];
+
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' "
+        "WHERE guildcard = '%u' AND islogged = '1'",
+        CHARACTER_DATA, gc);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER_DATA);
+        return 1;
+    }
+
+    return 0;
+}
+
+int db_update_gc_char_login_state(uint32_t gc, uint8_t char_slot,
+    uint32_t islogged, uint32_t block_num) {
+    char query[512];
+
+    if (!(char_slot < 0)) {
+        sprintf_s(query, _countof(query), "UPDATE %s SET "
+            "islogged = '%d' "
+            "WHERE guildcard = '%u' AND slot = '%u'", 
+            CHARACTER_DATA,
+            islogged, 
+            gc, char_slot);
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
+            return 1;
+        }
+    }
+
+    if (block_num > 0) {
+        sprintf_s(query, _countof(query), "UPDATE %s SET "
+            "lastblock = '%d' "
+            "WHERE guildcard = '%u' AND slot = '%u'",
+            CHARACTER_DATA,
+            block_num,
+            gc, char_slot);
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/**/
 int db_update_gc_login_state(uint32_t gc, 
     uint32_t islogged, uint32_t char_slot, char* char_name) {
     char query[512];
@@ -67,7 +157,7 @@ int db_update_gc_login_state(uint32_t gc,
         return 1;
     }
 
-    if (char_slot != -1) {
+    if (!(char_slot < 0)) {
         sprintf_s(query, _countof(query), "UPDATE %s SET lastchar_slot = '%d'"
             " where guildcard = '%u'",
             AUTH_DATA_ACCOUNT, char_slot, gc);

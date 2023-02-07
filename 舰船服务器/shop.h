@@ -15,6 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <mtwist.h>
 #ifndef SHOPDATA_H
 #define SHOPDATA_H
 
@@ -54,6 +55,17 @@ typedef struct shop_item {
 		uint32_t costl;
 	};
 } PACKED sitem_t;
+
+/* 商店物品参数 */
+typedef struct shop_item_params {
+	struct mt19937_state* 随机因子;
+	uint8_t 难度;
+	uint8_t 玩家等级;
+	uint8_t 物品类型;
+	uint8_t 保留1;
+	uint8_t 保留2;
+	uint8_t 保留3;
+} PACKED shop_item_params_t;
 
 /* 商店结构 */
 typedef struct shop_data {

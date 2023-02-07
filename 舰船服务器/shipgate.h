@@ -140,9 +140,9 @@ int shipgate_send_friend_add(shipgate_conn_t *c, uint32_t user,
                              uint32_t friend_gc, const char *nick);
 
 /* Send a block login/logout */
-int shipgate_send_block_login(shipgate_conn_t *c, int on, uint32_t user,
+int shipgate_send_block_login(shipgate_conn_t *c, int on, uint32_t gc,
                               uint32_t block, const char *name);
-int shipgate_send_block_login_bb(shipgate_conn_t *c, int on, uint32_t user,
+int shipgate_send_block_login_bb(shipgate_conn_t *c, int on, uint32_t gc, uint8_t slot,
                                  uint32_t block, const uint16_t *name);
 
 /* Send a lobby change packet */

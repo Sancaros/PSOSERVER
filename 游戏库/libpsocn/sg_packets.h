@@ -281,6 +281,7 @@ typedef struct shipgate_ban_req {
 typedef struct shipgate_block_login {
     shipgate_hdr_t hdr;
     uint32_t guildcard;
+    uint32_t slot;
     uint32_t blocknum;
     char ch_name[32];
     uint8_t version;

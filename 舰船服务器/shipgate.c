@@ -3300,7 +3300,7 @@ int shipgate_send_friend_add(shipgate_conn_t* c, uint32_t user,
 }
 
 /* Send a block login/logout */
-int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t user,
+int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t gc,
     uint32_t block, const char* name) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_block_login_pkt* pkt = (shipgate_block_login_pkt*)sendbuf;
@@ -3319,7 +3319,7 @@ int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t user,
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
 
-    pkt->guildcard = htonl(user);
+    pkt->guildcard = htonl(gc);
     pkt->blocknum = htonl(block);
     strncpy(pkt->ch_name, name, 31);
 
@@ -3327,7 +3327,7 @@ int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t user,
     return send_crypt(c, sizeof(shipgate_block_login_pkt), sendbuf);
 }
 
-int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t user,
+int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t gc, uint8_t slot,
     uint32_t block, const uint16_t* name) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_block_login_pkt* pkt = (shipgate_block_login_pkt*)sendbuf;
@@ -3346,7 +3346,8 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t user,
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
 
-    pkt->guildcard = htonl(user);
+    pkt->guildcard = htonl(gc);
+    pkt->slot = slot;
     pkt->blocknum = htonl(block);
     memcpy(pkt->ch_name, name, 32);
 

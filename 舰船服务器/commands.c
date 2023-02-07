@@ -1016,7 +1016,7 @@ static int handle_shutdown(ship_client_t *c, const char *params) {
 
     if(errno != 0) {
         /* Send a message saying invalid time */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid time."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效时间."));
     }
 
     /* Give everyone at least a minute */
@@ -1334,14 +1334,14 @@ static int handle_invuln(ship_client_t *c, const char *params) {
         c->flags &= ~CLIENT_FLAG_INVULNERABLE;
         pthread_mutex_unlock(&c->mutex);
 
-        return send_txt(c, "%s", __(c, "\tE\tC7Invulnerability off."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无敌 关闭."));
     }
 
     /* Set the flag since we're turning it on. */
     c->flags |= CLIENT_FLAG_INVULNERABLE;
 
     pthread_mutex_unlock(&c->mutex);
-    return send_txt(c, "%s", __(c, "\tE\tC7Invulnerability on."));
+    return send_txt(c, "%s", __(c, "\tE\tC7无敌 开启."));
 }
 
 /* 用法: /inftp [off] */
@@ -1359,14 +1359,14 @@ static int handle_inftp(ship_client_t *c, const char *params) {
         c->flags &= ~CLIENT_FLAG_INFINITE_TP;
         pthread_mutex_unlock(&c->mutex);
 
-        return send_txt(c, "%s", __(c, "\tE\tC7Infinite TP off."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无限 TP 关闭."));
     }
 
     /* Set the flag since we're turning it on. */
     c->flags |= CLIENT_FLAG_INFINITE_TP;
 
     pthread_mutex_unlock(&c->mutex);
-    return send_txt(c, "%s", __(c, "\tE\tC7Infinite TP on."));
+    return send_txt(c, "%s", __(c, "\tE\tC7无限 TP 开启."));
 }
 
 /* 用法: /smite clientid hp tp */
@@ -1390,7 +1390,7 @@ static int handle_smite(ship_client_t *c, const char *params) {
 
     if(count == EOF || count < 3 || id >= l->max_clients || id < 0 || hp < 0 ||
        tp < 0 || hp > 2040 || tp > 2040) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid Parameter."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效参数.\n/smite clientid hp tp"));
     }
 
     pthread_mutex_lock(&l->mutex);
@@ -1398,7 +1398,7 @@ static int handle_smite(ship_client_t *c, const char *params) {
     /* Make sure there is such a client. */
     if(!(cl = l->clients[id])) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7No such client."));
+        return send_txt(c, "%s", __(c, "\tE\tC7未找到该客户端ID."));
     }
 
     /* Smite the client */
@@ -1501,7 +1501,7 @@ static void dumpinv_internal(ship_client_t *c) {
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
-            SHIPS_LOG("%d (%08x): %08x %08x %08x %08x: %s", i,
+            SHIPS_LOG("槽位 %d (%08X): %08X %08X %08X %08X: %s", i,
                    LE32(c->iitems[i].data.item_id), LE32(c->iitems[i].data.data_l[0]),
                    LE32(c->iitems[i].data.data_l[1]), LE32(c->iitems[i].data.data_l[2]),
                    LE32(c->iitems[i].data.data2_l), item_get_name(&c->iitems[i].data, v));
@@ -1513,14 +1513,14 @@ static void dumpinv_internal(ship_client_t *c) {
         SHIPS_LOG("背包数据转储 %s (%d)", name, c->guildcard);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            SHIPS_LOG("%d (%08x): %08x %08x %08x %08x: %s", i,
+            SHIPS_LOG("槽位 %d (%08x): %08X %08X %08X %08X: %s", i,
                   LE32(c->bb_pl->inv.iitems[i].data.item_id),
                   LE32(c->bb_pl->inv.iitems[i].data.data_l[0]),
                   LE32(c->bb_pl->inv.iitems[i].data.data_l[1]),
                   LE32(c->bb_pl->inv.iitems[i].data.data_l[2]),
                   LE32(c->bb_pl->inv.iitems[i].data.data2_l),
                 item_get_name(&c->bb_pl->inv.iitems[i].data, v));
-            SHIPS_LOG("\tFlags: %08x %04x %04x",
+            SHIPS_LOG("\t标签: %08X %04X %04X",
                   LE32(c->bb_pl->inv.iitems[i].flags),
                   LE16(c->bb_pl->inv.iitems[i].present),
                   LE16(c->bb_pl->inv.iitems[i].tech));
@@ -3566,6 +3566,7 @@ static command_t cmds[] = {
     { "login"    , handle_login     },
     { "item"     , handle_item      },
     { "item4"    , handle_item4     },
+    { "makeitem" , handle_makeitem  },
     { "event"    , handle_event     },
     { "passwd"   , handle_passwd    },
     { "lname"    , handle_lname     },
@@ -3591,7 +3592,6 @@ static command_t cmds[] = {
     { "invuln"   , handle_invuln    },
     { "inftp"    , handle_inftp     },
     { "smite"    , handle_smite     },
-    { "makeitem" , handle_makeitem  },
     { "teleport" , handle_teleport  },
     { "dumpinv"  , handle_dumpinv   },
     { "showdcpc" , handle_showdcpc  },

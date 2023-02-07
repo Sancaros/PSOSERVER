@@ -955,7 +955,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             bbname[BB_CHARACTER_NAME_LENGTH] = 0;
 
             /* Notify the shipgate */
-            shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard,
+            shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard, c->sec_data.slot,
                 c->cur_block->b, bbname);
 
             if (c->cur_lobby)

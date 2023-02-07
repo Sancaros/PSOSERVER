@@ -134,10 +134,20 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     islogged = atoi(row[2]);
 
     /* Make sure some simple checks pass first... */
-    if (islogged) {
+    if (db_check_gc_online((uint32_t)strtoul(row[6], NULL, 0))) {
         /* 玩家已在线. */
         //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
         send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+        psocn_db_result_free(result);
+        return -4;
+    }
+    else
+        db_update_gc_login_state((uint32_t)strtoul(row[6], NULL, 0), 0, -1, NULL);
+
+    if (db_remove_gc_char_login_state((uint32_t)strtoul(row[6], NULL, 0))) {
+        /* 玩家已在线. */
+        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
+        send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
         psocn_db_result_free(result);
         return -4;
     }
@@ -182,14 +192,16 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //c->preferred_lobby_id = (uint32_t)strtoul(row[12], NULL, 0);
     psocn_db_result_free(result);
 
-    logged = db_check_gc_online(c->guildcard);
+    //logged = db_check_gc_online(c->guildcard);
 
-    /* Make sure some simple checks pass first... */
-    if (logged) {
-        /* User is banned by account. */
-        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-        return -4;
-    }
+    ///* Make sure some simple checks pass first... */
+    //if (logged) {
+    //    /* User is banned by account. */
+    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+    //    return -4;
+    //}
+    //else
+    //    db_update_gc_login_state(c->guildcard, 0, -1, NULL);
 
     if(errno) {
         ERR_LOG("handle_bb_L_login errno = %d  %d %d %d", errno, c->guild_id, c->priv, c->guildcard);

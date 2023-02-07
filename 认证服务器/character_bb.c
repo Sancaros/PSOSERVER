@@ -249,6 +249,10 @@ static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
             return send_disconnect(c, c->auth);
         }
 
+    case MENU_ID_NO_SHIP:
+        ERR_LOG("GC %u 未找到舰船", c->guildcard);
+        return send_disconnect(c, c->auth);
+
     default:
         UNK_CPD(menu_id & 0xFF, c->version, (uint8_t*)pkt);
         return send_disconnect(c, c->auth);
@@ -349,13 +353,32 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     islogged = atoi(row[2]);
 
     /* Make sure some simple checks pass first... */
-    if (islogged) {
-        /* User is banned by account. */
+    if (db_check_gc_online((uint32_t)strtoul(row[2], NULL, 0))) {
+        /* 玩家已在线. */
+        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
         send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-        //send_large_msg(c, "该账户已登录.\n\n请等候120秒后再次尝试登录.");
         psocn_db_result_free(result);
         return -4;
     }
+    else
+        db_update_gc_login_state((uint32_t)strtoul(row[6], NULL, 0), 0, -1, NULL);
+
+    if (db_remove_gc_char_login_state((uint32_t)strtoul(row[6], NULL, 0))) {
+        /* 玩家已在线. */
+        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
+        send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
+        psocn_db_result_free(result);
+        return -4;
+    }
+
+    ///* Make sure some simple checks pass first... */
+    //if (islogged) {
+    //    /* User is banned by account. */
+    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+    //    //send_large_msg(c, "该账户已登录.\n\n请等候120秒后再次尝试登录.");
+    //    psocn_db_result_free(result);
+    //    return -4;
+    //}
 
     isactive = atoi(row[3]);
 
@@ -396,14 +419,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     c->preferred_lobby_id = pkt->preferred_lobby_id;
     psocn_db_result_free(result);
 
-    //DBG_LOG("bb_login");
-
     if(errno) {
         send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
         return -2;
     }
-
-    //DBG_LOG("bb_login");
 
     /* Copy in the security data */
     memcpy(&c->sec_data, &pkt->var.new_clients.cfg, sizeof(bb_client_config_pkt));
@@ -413,15 +432,11 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -8;
     }
 
-    //DBG_LOG("bb_login");
-
     /* Send the security data packet */
     if(send_bb_security(c, c->guildcard, LOGIN_93BB_OK, c->guild_id,
                         &c->sec_data, sizeof(bb_client_config_pkt))) {
         return -7;
     }
-
-    //DBG_LOG("bb_login");
 
     sprintf(timestamp, "%u-%02u-%02u %02u:%02u:%02u",
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,

@@ -3102,6 +3102,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     char name[64];
     char tmp[128];
     uint32_t gc, bl, gc2, bl2, opt, acc = 0;
+    uint8_t slot;
     uint16_t ship_id;
     ship_t* c2;
     void* result;
@@ -3140,6 +3141,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
 
     /* Parse out some stuff we'll use */
     gc = ntohl(pkt->guildcard);
+    slot = pkt->slot;
     bl = ntohl(pkt->blocknum);
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
@@ -3165,11 +3167,10 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     if (gc >= 500 && gc < 600)
         return 0;
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastblock = '%d' WHERE guildcard = '%u'",
-        CHARACTER_DATA, 1, bl, gc);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
-        return 0;
+    if (db_update_gc_char_login_state(gc, slot, 1, bl)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
     }
 
     /* Find anyone that has the user in their friendlist so we can send a
@@ -3449,6 +3450,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
     char name[32];
     uint32_t gc, bl, gc2, bl2;
     uint16_t ship_id;
+    uint8_t slot;
     ship_t* c2;
     void* result;
     char** row;
@@ -3481,6 +3483,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
 
     /* Parse out some stuff we'll use */
     gc = ntohl(pkt->guildcard);
+    slot = pkt->slot;
     bl = ntohl(pkt->blocknum);
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
@@ -3503,11 +3506,16 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
         return 0;
     }
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d', lastblock = '%d' WHERE guildcard = '%u'",
-        CHARACTER_DATA, 0, bl, gc);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
-        return 0;
+    if (db_update_gc_char_login_state(gc, slot, 0, bl)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+    }
+
+    if (db_remove_gc_char_login_state(gc)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
     }
 
     /* Find anyone that has the user in their friendlist so we can send a

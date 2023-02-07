@@ -58,6 +58,7 @@ typedef struct pso_menu {
 #define MENU_ID_GAME_TYPE       0x00000006
 #define MENU_ID_GM              0x00000007
 #define MENU_ID_GAME_DROP       0x00000008
+#define MENU_ID_NO_SHIP         0x000000EF
 #define MENU_ID_INFODESK        0x000000FF
 #define MENU_ID_DATABASE        0x00040000
 #define MENU_ID_LAST_SHIP       0xDEADBEEF
