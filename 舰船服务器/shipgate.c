@@ -2659,7 +2659,7 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
         }
     }
 
-    CONFIG_LOG("获取 Blue Burst 玩家 %d 职业 %d 个法术数据", j, i);
+    CONFIG_LOG("获取 Blue Burst 玩家 %d 职业 %d 个法术最大等级数据", j, i);
 
 #ifdef DEBUG
     DBG_LOG("刷新BB职业最大法术数据");
