@@ -738,7 +738,6 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法备份已删除的玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             goto err;
-            //return -2;
         }
 
         if (db_delete_bb_char_data(c->guildcard, pkt->slot)) {
@@ -1308,8 +1307,6 @@ int load_bb_char_data(void) {
     int i;
     char file[64];
     psocn_bb_db_char_t* cur = { 0 };
-    //uint8_t* buf;
-    //int decsize;
 
     const char* path = "System\\Player\\character";
 
@@ -1375,16 +1372,6 @@ int load_bb_char_data(void) {
     fclose(fp);
 
     /* 加载角色等级初始数据 */
-
-    ///* Read in the file and decompress it. */
-    //if ((decsize = pso_prs_decompress_file("System\\player\\leveltbl\\PlyLevelTbl.prs", &buf)) < 0) {
-    //    ERR_LOG("无法读取 Blue Burst 等级数据表: %s",
-    //        strerror(-decsize));
-    //    return -2;
-    //}
-
-    //memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
-
     if (read_player_level_table_bb(&bb_char_stats)) {
         ERR_LOG("无法读取 Blue Burst 等级数据表");
         return -2;
@@ -1392,9 +1379,6 @@ int load_bb_char_data(void) {
 
     /* Read the stats table */
     AUTH_LOG("读取等级数据表,共 %d 字节.", sizeof(bb_char_stats));
-
-    /* Clean up... */
-    //free(buf);
 
     return 0;
 }
