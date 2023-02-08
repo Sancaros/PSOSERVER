@@ -28,6 +28,7 @@
 #include <items.h>
 
 #include "subcmd.h"
+#include "subcmd_send.h"
 #include "subcmd_size_table.h"
 #include "shop.h"
 #include "pmtdata.h"
@@ -49,6 +50,7 @@ static int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32
 static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);
 
+static int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area);
 static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端);
 static int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id);
@@ -101,29 +103,52 @@ static int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&drop, 0);
 }
 
-static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
+static int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area) {
     lobby_t* l = c->cur_lobby;
-    subcmd_bb_create_item_t new_item = { 0 };
+    subcmd_bb_destroy_map_item_t pkt = { 0 };
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    new_item.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
-    new_item.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    new_item.hdr.flags = 0;
-    new_item.shdr.type = SUBCMD60_CREATE_ITEM;
-    new_item.shdr.size = 0x07;
-    new_item.shdr.client_id = c->client_id;
+    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_destroy_map_item_t));
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_DEL_MAP_ITEM;
+    pkt.shdr.size = 0x03;
+    pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
-    new_item.item = item;
-    new_item.unused2 = 0;
+    pkt.client_id2 = c->client_id;
+    pkt.item_id = item_id;
+    pkt.area = area;
+
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
+}
+
+static int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
+    lobby_t* l = c->cur_lobby;
+    subcmd_bb_create_item_t pkt = { 0 };
+
+    if (!l)
+        return -1;
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_CREATE_ITEM;
+    pkt.shdr.size = 0x07;
+    pkt.shdr.client_id = c->client_id;
+
+    /* 填充剩余数据 */
+    pkt.item = item;
+    pkt.unused2 = 0;
 
     if (发送给其他客户端)
-        return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&new_item, 0);
+        return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
     else
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&new_item, 0);
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 static int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
@@ -963,9 +988,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
 static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found;
-    uint32_t item, tmp;
     iitem_t iitem_data;
-    //uint32_t ic[3];
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -981,58 +1004,25 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误的拾取数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
     /* Try to remove the item from the lobby... */
     found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
 
-    if (found < 0) {
+    if (found < 0)
         return -1;
-    }
-    else if (found > 0) {
+    else if (found > 0)
         /* Assume someone else already picked it up, and just ignore it... */
         return 0;
-    }
-    else {
-        item = LE32(iitem_data.data.data_l[0]);
 
-        /* Is it meseta, or an item? */
-        if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data.data2_l) + LE32(c->bb_pl->character.disp.meseta);
+    if (add_item(c, iitem_data))
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+            c->guildcard);
 
-            /* Cap at 999,999 meseta. */
-            if (tmp > 999999)
-                tmp = 999999;
-
-            c->bb_pl->character.disp.meseta = LE32(tmp);
-            c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
-        }
-        else {
-            iitem_data.flags = 0;
-            iitem_data.present = LE16(1);
-            iitem_data.tech = 0;
-
-            /* 将物品新增至背包. */
-            found = item_add_to_inv(c->bb_pl->inv.iitems,
-                c->bb_pl->inv.item_count, &iitem_data);
-
-            if (found == -1) {
-                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-                    c->guildcard);
-                //return -1;
-            }
-
-            c->bb_pl->inv.item_count += found;
-            memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(iitem_t));
-        }
-    }
-
-    /* Let everybody know that the client picked it up, and remove it from the
-       view. */
-    //memcpy(ic, iitem_data.data.data_l, 3 * sizeof(uint32_t));
-    subcmd_send_bb_create_item(c, /*ic, */iitem_data.data/*, iitem_data.data2_l*/, 1);
+    /* 给房间中客户端发包,消除这个物品. */
+    subcmd_send_bb_pick_item(c, iitem_data.data.item_id, pkt->area);
 
     return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
@@ -3134,8 +3124,8 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
 
 static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    inventory_t sorted = { 0 };
-    size_t x, j = 0;
+    inventory_t sorted = {0};
+    size_t x = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -3154,12 +3144,11 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
         return -1;
     }
 
-    for (x = 0; x < 30; x++) {
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            j++;
             size_t index = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
@@ -3170,11 +3159,11 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     sorted.tpmats_used = c->bb_pl->inv.tpmats_used;
     sorted.language = c->bb_pl->inv.language;
 
-    /* Make sure we got everything... */
-    if (j != sorted.item_count) {
-        ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, j, sorted.item_count);
-        return -1;
-    }
+    ///* Make sure we got everything... */
+    //if (j != sorted.item_count) {
+    //    ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, j, sorted.item_count);
+    //    return -1;
+    //}
 
     c->bb_pl->inv = sorted;
     c->pl->bb.inv = sorted;

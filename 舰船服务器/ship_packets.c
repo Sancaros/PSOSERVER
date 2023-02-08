@@ -1042,8 +1042,6 @@ static int send_bb_simple(ship_client_t *c, int type, int flags) {
     pkt->flags = LE32(((uint32_t)flags));
     pkt->pkt_len = LE16(8);
 
-    /*ERR_LOG("send_bb_simple %d = %d %d = %d %d = 8", pkt->pkt_type, type, pkt->flags, flags, pkt->pkt_len);*/
-
     /* 将数据包发送出去 */
     return crypt_send(c, 8, sendbuf);
 }

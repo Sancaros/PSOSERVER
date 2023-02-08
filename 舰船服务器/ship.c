@@ -239,6 +239,8 @@ static void* ship_thd(void* d) {
                     continue;
                 }
 
+                /* 这里写玩家每分钟备份的函数 TODO*/
+
                 it->last_sent = now;
             }
 

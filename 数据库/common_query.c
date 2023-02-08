@@ -593,9 +593,9 @@ psocn_bb_db_char_t *db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
     }
 
     if (!(row = psocn_db_result_fetch(result))) {
-        SQLERR_LOG("无法获取玩家数据 (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", gc, slot,
-            psocn_db_error(&conn));
+        //SQLERR_LOG("无法获取玩家数据 (GC %" PRIu32 ", "
+        //    "槽位 %" PRIu8 "):\n%s", gc, slot,
+        //    psocn_db_error(&conn));
         psocn_db_result_free(result);
 
         goto err;

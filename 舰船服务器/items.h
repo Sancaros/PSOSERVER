@@ -2295,8 +2295,12 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 /* 生成物品ID */
 uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
 
+// TODO: Eliminate duplication between this function and the parallel function
+// in PlayerBank
+int add_item(ship_client_t* c, iitem_t iitem);
+
 /* 获取背包中目标物品所在槽位 */
-int item_get_inv_item_slot(inventory_t inv, uint32_t item_id);
+size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id);
 
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,

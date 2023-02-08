@@ -3821,6 +3821,9 @@ const char* item_get_name(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_item_data(ship_client_t* c, item_t* item) {
+    if (c == NULL)
+        c->version = 5;
+
     ITEM_LOG("物品信息: %s (ID %d / %08X)",
         item_get_name(item, c->version), item->item_id, item->item_id);
     ITEM_LOG("物品数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -4033,15 +4036,117 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
     return l->item_next_lobby_id++;
 }
 
+uint32_t primary_identifier(item_t* i) {
+    // The game treats any item starting with 04 as Meseta, and ignores the rest
+    // of data1 (the value is in data2)
+    switch (i->data_b[0])
+    {
+    case ITEM_TYPE_MESETA:
+        return 0x00040000;
+
+    case ITEM_TYPE_MAG:
+        return 0x00020000 | (i->data_b[1] << 8); // Mag
+
+    case ITEM_TYPE_TOOL:
+        if(i->data_b[1] == ITEM_SUBTYPE_DISK)
+            return 0x00030200; // Tech disk (data1[2] is level, so omit it)
+
+    default:
+        return (i->data_b[0] << 16) | (i->data_b[1] << 8) | i->data_b[2];
+    }
+}
+
+size_t stack_size_for_item(item_t item) {
+    if (item.data_b[0] == ITEM_TYPE_MESETA)
+        return 999999;
+
+    if (item.data_b[0] == ITEM_TYPE_TOOL)
+        if ((item.data_b[1] < 9) && (item.data_b[1] != ITEM_SUBTYPE_DISK))
+            return 10;
+        else if (item.data_b[1] == ITEM_SUBTYPE_PHOTON)
+            return 99;
+
+    return 1;
+}
+
+// TODO: Eliminate duplication between this function and the parallel function
+// in PlayerBank
+int add_item(ship_client_t* c, iitem_t iitem) {
+    uint32_t pid = primary_identifier(&iitem.data);
+
+    // Annoyingly, meseta is in the disp data, not in the inventory struct. If the
+    // item is meseta, we have to modify disp instead.
+    if (pid == 0x00040000) {
+        c->bb_pl->character.disp.meseta += iitem.data.data2_l;
+        if (c->bb_pl->character.disp.meseta > 999999) {
+            c->bb_pl->character.disp.meseta = 999999;
+        }
+        return 0;
+    }
+
+    // 处理堆叠物品
+    size_t combine_max = stack_size_for_item(iitem.data);
+    if (combine_max > 1) {
+        // Get the item index if there's already a stack of the same item in the
+        // player's inventory
+        size_t y;
+        for (y = 0; y < c->bb_pl->inv.item_count; y++) {
+            if (primary_identifier(&c->bb_pl->inv.iitems[y].data)
+                == primary_identifier(&iitem.data)) {
+                break;
+            }
+        }
+
+        // If we found an existing stack, add it to the total and return
+        if (y < c->bb_pl->inv.item_count) {
+            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem.data.data_b[5];
+            if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
+                c->bb_pl->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
+            }
+            return 0;
+        }
+    }
+
+    // If we get here, then it's not meseta and not a combine item, so it needs to
+    // go into an empty inventory slot
+    if (c->bb_pl->inv.item_count >= 30) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+            c->guildcard);
+        return -1;
+    }
+    c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = iitem;
+    c->bb_pl->inv.item_count++;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /* 获取背包中目标物品所在槽位 */
-int item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
-    int i = 0;
+size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
+    size_t x;
 
-    for (i = 0; i < inv.item_count; ++i)
-        if (inv.iitems[i].data.item_id == item_id)
-            break;
+    for (x = 0; x < inv.item_count; x++) {
+        if (inv.iitems[x].data.item_id == item_id) {
+            return x;
+        }
+    }
 
-    return i;
+    ERR_LOG("未从背包中找到该物品, 该玩家背包情况如下:");
+
+    for (x = 0; x < inv.item_count; x++)
+        print_item_data(NULL, &inv.iitems[x].data);
+
+    return -1;
 }
 
 /* 移除背包物品操作 */

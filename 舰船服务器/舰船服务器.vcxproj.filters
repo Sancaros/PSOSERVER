@@ -194,6 +194,9 @@
     <ClInclude Include="subcmd_size_table.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="subcmd_send.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

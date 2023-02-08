@@ -538,8 +538,8 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
     psocn_bb_db_char_t *char_data;
     psocn_bb_mini_char_t mc = { 0 };
     //uLong sz2;
-    char* raw_data;
-    uint32_t data_length, data_size;
+    //char* raw_data;
+    //uint32_t data_length, data_size;
 
     /* Make sure the slot is sane */
     if(pkt->slot > 3) {
@@ -561,11 +561,14 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
     //row = psocn_db_result_fetch(result);
 
     /* Grab the data from the result */
-    raw_data = db_get_char_raw_data(c->guildcard, pkt->slot, 0);
+    //raw_data = db_get_char_raw_data(c->guildcard, pkt->slot, 0);
 
     if(pkt->reason == 0) {
+        char_data = db_get_uncompress_char_data(c->guildcard, pkt->slot);
+
         /* The client wants the preview data for character select... */
-        if(raw_data) {
+        if(char_data != NULL) {
+            /*
             data_length = db_get_char_data_length(c->guildcard, pkt->slot);
             data_size = db_get_char_data_size(c->guildcard, pkt->slot);
 
@@ -584,8 +587,6 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                     return -2;
                 }
 
-                //sz2 = sizeof(psocn_bb_db_char_t);
-
                 if(uncompress((Bytef *)char_data, &data_size, (Bytef *)raw_data,
                               (uLong)data_length) != Z_OK) {
                     ERR_LOG("无法解压角色数据流");
@@ -601,14 +602,12 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 }
 
                 memcpy(char_data, raw_data, sizeof(psocn_bb_db_char_t));
-            }
+            }*/
 
             /* 已获得角色数据... 将其从检索的行中复制出来. */
             mc.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
 
-            for (int i = 0; i < BB_CHARACTER_NAME_LENGTH; ++i) {
-                mc.name[i] = char_data->character.name[i];
-            }
+            memcpy(&mc.name[0], &char_data->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
 
             mc.level = char_data->character.disp.level;
             mc.exp = char_data->character.disp.exp;
