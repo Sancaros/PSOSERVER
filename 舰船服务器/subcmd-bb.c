@@ -5150,7 +5150,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
         /*挑战模式 触发*/
-    case SUBCMD60_UNKNOW_8A:
+    case SUBCMD60_UNKNOW_CH_8A:
         rv = handle_bb_Unknown_6x8A(c, (subcmd_bb_Unknown_6x8A_t*)pkt);
         break;
 

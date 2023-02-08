@@ -1788,11 +1788,12 @@ typedef struct subcmd_bb_player_died {
     uint16_t unused;
 } PACKED subcmd_bb_player_died_t;
 
-// 0x8A: Unknown (不支持 Episode 3)
+// 0x8A: 挑战模式进入后触发 里面有客户端的ID (不支持 Episode 3)
 typedef struct subcmd_bb_Unknown_6x8A {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t unknown_a1; // Must be < 0x11
+    uint8_t data[0];
 } PACKED subcmd_bb_Unknown_6x8A_t;
 
 // 0x8B: Unknown (不支持 Episode 3)

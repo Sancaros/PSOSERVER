@@ -241,7 +241,7 @@
 #define SUBCMD60_UNKNOW_87                     0x87
 #define SUBCMD60_UNKNOW_88                     0x88
 #define SUBCMD60_UNKNOW_89                     0x89
-#define SUBCMD60_UNKNOW_8A                     0x8A
+#define SUBCMD60_UNKNOW_CH_8A                  0x8A
 #define SUBCMD60_UNKNOW_8B                     0x8B
 #define SUBCMD60_UNKNOW_8C                     0x8C
 #define SUBCMD60_SET_TECH_LEVEL_OVERRIDE       0x8D //释放法术 TODO 未完成法术有效性分析
