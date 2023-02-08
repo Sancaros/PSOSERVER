@@ -148,4 +148,7 @@ int send_user_blocklist(ship_t *c);
 int send_user_error(ship_t *c, uint16_t pkt_type, uint32_t err_code,
                     uint32_t gc, uint32_t block, const char *message);
 
+/* 发送BB职业最大法术数据至舰船 */
+int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data);
+
 #endif /* !SHIPGATE_H */

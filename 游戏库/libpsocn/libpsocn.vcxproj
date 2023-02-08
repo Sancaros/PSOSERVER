@@ -34,6 +34,7 @@
     <ClInclude Include="pso_cmd.h" />
     <ClInclude Include="pso_timer.h" />
     <ClInclude Include="pso_text.h" />
+    <ClInclude Include="max_tech_level.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c" />

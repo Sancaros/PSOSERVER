@@ -645,12 +645,6 @@ enum ItemPMT_Files_Num {
 static pmt_mag_bb_t* pmt_mag_bb;
 static pmt_tool_bb_t* pmt_tool_bb;
 
-//19 个科技类别 12个 职业 未完成结构数据读取
-//#define BB_MAX_TECH_LEVEL 19
-//#define BB_MAX_CLASS      12
-//
-//static char max_tech_level[BB_MAX_TECH_LEVEL][BB_MAX_CLASS];
-
 static pmt_weapon_bb_t** weapons_bb/* = NULL*/;
 static uint32_t* num_weapons_bb/* = NULL*/;
 static uint32_t num_weapon_types_bb/* = 0*/;

@@ -973,3 +973,25 @@ int send_user_error(ship_t* c, uint16_t pkt_type, uint32_t err_code,
 
     return send_crypt(c, len);
 }
+
+int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
+    shipgate_max_tech_lvl_bb_pkt* pkt = (shipgate_max_tech_lvl_bb_pkt*)sendbuf;
+    uint16_t len = sizeof(shipgate_max_tech_lvl_bb_pkt);
+
+    /* Make sure we don't try to send to a ship that won't know what to do with
+       the packet. */
+    if (c->proto_ver < 19)
+        return 0;
+
+    /* Swap that which we need to do */
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBMAXTECH);
+    pkt->hdr.pkt_len = htons(len);
+    pkt->hdr.flags = SHDR_RESPONSE;
+
+    memcpy(pkt->data, data, sizeof(pkt->data));
+
+    //DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
+
+    /* Send it away */
+    return send_crypt(c, len);
+}

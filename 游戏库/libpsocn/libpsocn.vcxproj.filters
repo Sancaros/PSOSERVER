@@ -55,6 +55,9 @@
     <ClInclude Include="pso_text.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="max_tech_level.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

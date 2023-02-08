@@ -23,6 +23,7 @@
 #include <inttypes.h>
 
 #include "pso_character.h"
+#include "max_tech_level.h"
 
 #ifndef _WIN32 
 #define PACKED __attribute__((packed))
@@ -588,6 +589,12 @@ typedef struct shipgate_ubl_add {
     uint8_t blocked_class;
     uint8_t reserved[7];
 } PACKED shipgate_ubl_add_pkt;
+
+/* 用于传输玩家职业最大法术数据表 */
+typedef struct shipgate_max_tech_lvl_bb {
+    shipgate_hdr_t hdr;
+    bb_max_tech_level_t data[BB_MAX_TECH_LEVEL];
+} PACKED shipgate_max_tech_lvl_bb_pkt;
 
 #ifndef _WIN32
 #else

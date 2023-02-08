@@ -45,6 +45,7 @@
 #include "ship_packets.h"
 #include "scripts.h"
 #include "quest_functions.h"
+#include "max_tech_level.h"
 
 /* TLS stuff -- from ship_server.c */
 extern gnutls_anon_client_credentials_t anoncred;
@@ -2638,6 +2639,28 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
     return 0;
 }
 
+static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl_bb_pkt* pkt) {
+
+    if (!pkt->data) {
+        ERR_LOG("舰船获取职业最大法术数据失败, 请检查函数错误");
+        return -1;
+    }
+
+    memcpy(max_tech_level, pkt->data, sizeof(max_tech_level));
+
+#ifdef DEBUG
+    int i, j;
+    DBG_LOG("刷新BB职业最大法术数据");
+    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        for (j = 0; j < BB_MAX_CLASS; j++) {
+            DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, max_tech_level[i].tech_name, j, max_tech_level[i].max_lvl[j]);
+        }
+    }
+#endif // DEBUG
+
+    return 0;
+}
+
 static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
@@ -2782,8 +2805,8 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_BBOPTS:
             return handle_bbopts(conn, (shipgate_bb_opts_pkt*)pkt);
 
-        //case SHDR_TYPE_BBGUILD:
-        //    return handle_bbguild(conn, (shipgate_bb_guild_pkt*)pkt);
+        case SHDR_TYPE_BBMAXTECH:
+            return handle_max_tech_level_bb(conn, (shipgate_max_tech_lvl_bb_pkt*)pkt);
 
         case SHDR_TYPE_CBKUP:
             if (!(flags & SHDR_RESPONSE)) {

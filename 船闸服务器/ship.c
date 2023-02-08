@@ -396,8 +396,8 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
     /* Send the client the welcome packet, or die trying. */
     if (send_welcome(rv)) {
-        ERR_LOG("send_welcome *** 警告: %d",
-            rv);
+        ERR_LOG("*** 警告: %d 舰船离线",
+            rv->key_idx);
         goto err_cert;
     }
 
@@ -4923,6 +4923,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     uint16_t length = ntohs(pkt->pkt_len);
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
+    int rv;
 
     //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
     //print_payload((unsigned char*)pkt, length);
@@ -4937,7 +4938,11 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
             return -1;
         }
 
-        return handle_shipgate_login6t(c, p);
+        rv = handle_shipgate_login6t(c, p);
+
+        rv = send_player_max_tech_level_table_bb(c);
+
+        return rv;
     }
 
     case SHDR_TYPE_COUNT:
@@ -5264,22 +5269,79 @@ int load_guild_default_flag(char* file) {
     return 0;
 }
 
-#define BB_MAX_TECH_LEVEL 19
-#define BB_MAX_CLASS      12
+static void free_max_tech_level_table_bb() {
+    //uint32_t i;
 
-typedef struct bb_max_tech {
-    const char* tech_name;
-    unsigned char max_lvl[BB_MAX_CLASS];
-} bb_max_tech_t;
+    //for (i = 0; i < event_count; ++i) {
+    //    free_safe(events[i].monsters);
+    //}
 
-static int read_player_max_tech_level_table_bb(bb_max_tech_t *bb_max_tech_level) {
+    //free_safe(events);
+}
+
+int send_player_max_tech_level_table_bb(ship_t* c) {
+    bb_max_tech_level_t*bb_max_tech_level = { 0 };
+    char query[256];
+    void* result;
+    char** row;
     int i, j;
+    long long row_count;
+
+    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * BB_MAX_TECH_LEVEL);
+
+    if (!bb_max_tech_level)
+        return 0;
 
     for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
         for (j = 0; j < BB_MAX_CLASS; j++) {
-            bb_max_tech_level[i].max_lvl[j] = 0x00;
+            sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
+                PLAYER_MAX_TECH_LEVEL_TABLE_BB, i);
+
+            if (psocn_db_real_query(&conn, query)) {
+                ERR_LOG("Couldn't fetch monsters from database!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+
+            if ((result = psocn_db_result_store(&conn)) == NULL) {
+                ERR_LOG("Could not store results of monster select!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+
+            /* Make sure we have something. */
+            row_count = psocn_db_result_rows(result);
+
+            if (row_count < 0) {
+                ERR_LOG("无法获取职业法术设置!");
+                psocn_db_result_free(result);
+                return -1;
+            }
+            else if (!row_count) {
+                ERR_LOG("职业法术设置数据库为空.");
+                psocn_db_result_free(result);
+                return 0;
+            }
+
+            row = psocn_db_result_fetch(result);
+            if (!row) {
+                ERR_LOG("无法获取到数组!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+            
+            memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
+            bb_max_tech_level[i].tech_name[11] = 0x00;
+            bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 0);
+            //DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
+
+            psocn_db_result_free(result);
         }
     }
+
+    send_max_tech_lvl_bb(c, bb_max_tech_level);
+
+    free_safe(bb_max_tech_level);
 
     return 0;
 }
