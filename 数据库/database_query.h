@@ -42,12 +42,18 @@
 #include <debug.h>
 #include <f_logs.h>
 #include <mtwist.h>
+#include "max_tech_level.h"
 
 #define PSOCN_DB_LOAD_CHAR              0x00000000
 #define PSOCN_DB_SAVE_CHAR              0x00000001
 #define PSOCN_DB_UPDATA_CHAR            0x00000002
 
 /* 通用查询 */
+/* 获取BB职业最大法术数据 */
+int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level);
+
+/* 获取BB职业等级数据 */
+int read_player_level_table_bb(bb_level_table_t* bb_char_stats);
 
 /* 检测玩家是否在线 */
 int db_check_gc_online(uint32_t gc);

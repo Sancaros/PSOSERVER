@@ -68,7 +68,14 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CLIENTS_PC "clients_pc"
 #define CLIENTS_XBOX "clients_xbox"
 
-#define PLAYER_LEVEL_TABLE_BB "player_levelup_table_bb"
+#define PLAYER_LEVEL_START_STATS_TABLE_BB "player_level_start_stats_table_bb"
+//全职业数据总表
+#define PLAYER_LEVEL_TABLE_BB "player_level_table_bb"
+//用于读取职业分表 player_level_table_bb_id id是索引 0-11
+#define PLAYER_LEVEL_TABLE_BB_ "player_level_table_bb_"
+
+
+
 #define PLAYER_MAX_TECH_LEVEL_TABLE_BB "player_max_tech_level_table_bb"
 
 #define QUEST_FLAGS_LONG "quest_flags_long"

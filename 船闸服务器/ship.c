@@ -41,6 +41,7 @@
 #include <mtwist.h>
 #include <md5.h>
 #include <pso_menu.h>
+#include <pso_character.h>
 
 #ifdef ENABLE_LUA
 #include <lua.h>
@@ -1031,7 +1032,7 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
             sprintf(reply6.location, "%s, ,%s", lobby_name, row[5]);
         }
 
-        /* Send it away */
+        /* 加密并发送 */
         forward_dreamcast(c, (dc_pkt_hdr_t*)&reply6, c->key_idx, 0, 0);
     }
     else {
@@ -1083,7 +1084,7 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
             sprintf(reply.location, "%s, ,%s", lobby_name, row[5]);
         }
 
-        /* Send it away */
+        /* 加密并发送 */
         forward_dreamcast(c, (dc_pkt_hdr_t*)&reply, c->key_idx, 0, 0);
     }
 
@@ -1250,7 +1251,7 @@ static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     outptr = (char*)reply.location;
     iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
 
-    /* Send it away */
+    /* 加密并发送 */
     forward_bb(c, (bb_pkt_hdr_t*)&reply, c->key_idx, gc_sender, b_sender);
 
 out:
@@ -4935,6 +4936,8 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
     /* TODO 从此处开始 增加各项数据从数据库获取后发送至舰船 */
     if (!rv) {
         send_player_max_tech_level_table_bb(c);
+
+        send_player_level_table_bb(c);
     }
 
     return rv;
@@ -5291,67 +5294,41 @@ static void free_max_tech_level_table_bb() {
 
 int send_player_max_tech_level_table_bb(ship_t* c) {
     bb_max_tech_level_t*bb_max_tech_level = { 0 };
-    char query[256];
-    void* result;
-    char** row;
-    int i, j;
-    long long row_count;
+    int i;
 
     bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * BB_MAX_TECH_LEVEL);
 
     if (!bb_max_tech_level)
         return 0;
 
-    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        for (j = 0; j < BB_MAX_CLASS; j++) {
-            sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
-                PLAYER_MAX_TECH_LEVEL_TABLE_BB, i);
-
-            if (psocn_db_real_query(&conn, query)) {
-                ERR_LOG("Couldn't fetch monsters from database!");
-                free_safe(bb_max_tech_level);
-                return -1;
-            }
-
-            if ((result = psocn_db_result_store(&conn)) == NULL) {
-                ERR_LOG("Could not store results of monster select!");
-                free_safe(bb_max_tech_level);
-                return -1;
-            }
-
-            /* Make sure we have something. */
-            row_count = psocn_db_result_rows(result);
-
-            if (row_count < 0) {
-                ERR_LOG("无法获取职业法术设置!");
-                psocn_db_result_free(result);
-                return -1;
-            }
-            else if (!row_count) {
-                ERR_LOG("职业法术设置数据库为空.");
-                psocn_db_result_free(result);
-                return 0;
-            }
-
-            row = psocn_db_result_fetch(result);
-            if (!row) {
-                ERR_LOG("无法获取到数组!");
-                free_safe(bb_max_tech_level);
-                return -1;
-            }
-            
-            memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
-            bb_max_tech_level[i].tech_name[11] = 0x00;
-            bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 0);
-            //DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
-
-            psocn_db_result_free(result);
-        }
+    if(read_player_max_tech_level_table_bb(bb_max_tech_level)) {
+        ERR_LOG("无法读取 Blue Burst 法术等级数据表");
+        return -2;
     }
 
-    send_max_tech_lvl_bb(c, bb_max_tech_level);
-
+    i = send_max_tech_lvl_bb(c, bb_max_tech_level);
     free_safe(bb_max_tech_level);
 
-    return 0;
+    return i;
+}
+
+int send_player_level_table_bb(ship_t* c) {
+    bb_level_table_t* bb_level_tb = { 0 };
+    int i;
+
+    bb_level_tb = (bb_level_table_t*)malloc(sizeof(bb_level_table_t));
+
+    if (!bb_level_tb)
+        return 0;
+
+    if (read_player_level_table_bb(bb_level_tb)) {
+        ERR_LOG("无法读取 Blue Burst 等级数据表");
+        return -2;
+    }
+
+    i = send_pl_lvl_data_bb(c, bb_level_tb);
+
+    free_safe(bb_level_tb);
+
+    return i;
 }

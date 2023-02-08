@@ -569,7 +569,7 @@ static int send_selective_redirect_ipv4(login_client_t *c) {
     hdr2->pkt_type = 0xB0;
     hdr2->pkt_len = LE16(0x0097);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_raw(c, 0xB0);
 }
 
@@ -1743,7 +1743,7 @@ static int send_dc_quest_list(login_client_t *c,
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -1801,7 +1801,7 @@ static int send_pc_quest_list(login_client_t *c,
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -1865,7 +1865,7 @@ static int send_gc_quest_list(login_client_t *c,
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -1929,7 +1929,7 @@ static int send_xbox_quest_list(login_client_t *c,
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -2063,7 +2063,7 @@ int send_ep3_card_update(login_client_t *c) {
     pkt->size = LE32(size);
     fread(pkt->data, 1, size, fp);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, pkt_len);
 }
 
@@ -2101,7 +2101,7 @@ int send_bb_char_ack(login_client_t *c, uint8_t slot, uint8_t code) {
     pkt->slot = slot;
     pkt->code = code;
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, sizeof(bb_char_ack_pkt));
 }
 
@@ -2117,7 +2117,7 @@ int send_bb_checksum_ack(login_client_t *c, uint32_t ack) {
     pkt->hdr.pkt_type = LE16(BB_CHECKSUM_ACK_TYPE);
     pkt->ack = LE32(ack);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, sizeof(bb_checksum_ack_pkt));
 }
 
@@ -2135,7 +2135,7 @@ int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
     pkt->len = LE16(sizeof(bb_guildcard_data_t));
     pkt->checksum = LE32(checksum);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, sizeof(bb_guildcard_hdr_pkt));
 }
 
@@ -2165,7 +2165,7 @@ int send_bb_guild_chunk(login_client_t *c, uint32_t chunk_index) {
     pkt->chunk_index = LE32(chunk_index);
     memcpy(pkt->data, ptr, size);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, size + 0x10);
 }
 
@@ -2176,7 +2176,7 @@ int send_bb_pkt(login_client_t *c, bb_pkt_hdr_t *hdr) {
     /* Copy it into our buffer */
     memcpy(sendbuf, hdr, len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -2433,7 +2433,7 @@ static int send_gc_message_box(login_client_t *c, const char *fmt,
     pkt->hdr.dc.flags = 0;
     pkt->hdr.dc.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -2469,7 +2469,7 @@ static int send_bb_message_box(login_client_t* c, const char* fmt,
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -2687,7 +2687,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
         pkt->hdr.pc.pkt_len = LE16(len);
     }
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 
@@ -2742,7 +2742,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     pkt->hdr.flags = 0;
     pkt->hdr.pkt_len = LE16(len);
 
-    /* Send it away */
+    /* 加密并发送 */
     return crypt_send(c, len);
 }
 

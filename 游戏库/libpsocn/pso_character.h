@@ -118,7 +118,7 @@ typedef struct psocn_lvl_stats {
 /* Level-up information table from PlyLevelTbl.prs */
 typedef struct bb_level_table {
     psocn_pl_stats_t start_stats[MAX_PLAYER_CLASS_BB];
-    uint32_t unk[MAX_PLAYER_CLASS_BB];
+    uint32_t start_stats_index[MAX_PLAYER_CLASS_BB]; /* 应该是的 暂时不知 但是和索引有关系吧 */
     psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_BB][MAX_PLAYER_LEVEL];
 } PACKED bb_level_table_t;
 
@@ -126,6 +126,10 @@ typedef struct bb_level_table {
 typedef struct v2_level_table {
     psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_DC][MAX_PLAYER_LEVEL];
 } PACKED v2_level_table_t;
+
+/* Player levelup data */
+extern bb_level_table_t bb_char_stats;
+extern v2_level_table_t v2_char_stats;
 
 typedef struct psocn_dress_data {
     char guildcard_string[16];            /* GC号的文本形态 */

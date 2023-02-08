@@ -162,10 +162,6 @@ struct lobby;
 typedef struct lobby lobby_t;
 #endif
 
-/* Player levelup data */
-extern bb_level_table_t bb_char_stats;
-extern v2_level_table_t v2_char_stats;
-
 int bb_read_params(psocn_ship_t* cfg);
 void bb_free_params(void);
 

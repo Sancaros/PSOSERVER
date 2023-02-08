@@ -128,8 +128,11 @@ int handle_pkt(ship_t *s);
 /* 加载初始公会默认标志数据 */
 int load_guild_default_flag(char* file);
 
-/* 加载BB 职业最大法术值 */
+/* 加载 BB 职业最大法术值 */
 int send_player_max_tech_level_table_bb(ship_t* c);
+
+/* 加载 BB 基础/等级数据 */
+int send_player_level_table_bb(ship_t* c);
 
 /* IDs for the ship_metadata table */
 #define SHIP_METADATA_VER_VERSION       1

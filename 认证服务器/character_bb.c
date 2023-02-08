@@ -1308,8 +1308,8 @@ int load_bb_char_data(void) {
     int i;
     char file[64];
     psocn_bb_db_char_t* cur = { 0 };
-    uint8_t* buf;
-    int decsize;
+    //uint8_t* buf;
+    //int decsize;
 
     const char* path = "System\\Player\\character";
 
@@ -1376,20 +1376,26 @@ int load_bb_char_data(void) {
 
     /* 加载角色等级初始数据 */
 
-    /* Read in the file and decompress it. */
-    if ((decsize = pso_prs_decompress_file("System\\player\\leveltbl\\PlyLevelTbl.prs", &buf)) < 0) {
-        ERR_LOG("无法读取 Blue Burst 等级数据表: %s",
-            strerror(-decsize));
+    ///* Read in the file and decompress it. */
+    //if ((decsize = pso_prs_decompress_file("System\\player\\leveltbl\\PlyLevelTbl.prs", &buf)) < 0) {
+    //    ERR_LOG("无法读取 Blue Burst 等级数据表: %s",
+    //        strerror(-decsize));
+    //    return -2;
+    //}
+
+    //memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
+
+    if (read_player_level_table_bb(&bb_char_stats)) {
+        ERR_LOG("无法读取 Blue Burst 等级数据表");
         return -2;
     }
-
-    memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
 
     /* Read the stats table */
     AUTH_LOG("读取等级数据表,共 %d 字节.", sizeof(bb_char_stats));
 
     /* Clean up... */
-    free(buf);
+    //free(buf);
 
     return 0;
 }
+

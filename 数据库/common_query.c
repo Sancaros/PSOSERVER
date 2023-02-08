@@ -20,6 +20,178 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
+/* */
+int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) {
+    char query[256];
+    void* result;
+    char** row;
+    int i, j;
+    long long row_count;
+
+    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+            sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
+                PLAYER_MAX_TECH_LEVEL_TABLE_BB, i);
+
+            if (psocn_db_real_query(&conn, query)) {
+                ERR_LOG("Couldn't fetch monsters from database!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+
+            if ((result = psocn_db_result_store(&conn)) == NULL) {
+                ERR_LOG("Could not store results of monster select!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+
+            /* Make sure we have something. */
+            row_count = psocn_db_result_rows(result);
+
+            if (row_count < 0) {
+                ERR_LOG("无法获取职业法术设置!");
+                psocn_db_result_free(result);
+                return -1;
+            }
+            else if (!row_count) {
+                ERR_LOG("职业法术设置数据库为空.");
+                psocn_db_result_free(result);
+                return 0;
+            }
+
+            row = psocn_db_result_fetch(result);
+            if (!row) {
+                ERR_LOG("无法获取到数组!");
+                free_safe(bb_max_tech_level);
+                return -1;
+            }
+
+            memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
+            bb_max_tech_level[i].tech_name[11] = 0x00;
+            bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 0);
+            //DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
+
+            psocn_db_result_free(result);
+        }
+    }
+
+    return 0;
+}
+
+/* */
+int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
+    char query[256];
+    void* result;
+    char** row;
+    int i, j;
+    long long row_count;
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
+            PLAYER_LEVEL_START_STATS_TABLE_BB, i);
+
+        if (psocn_db_real_query(&conn, query)) {
+            ERR_LOG("Couldn't fetch monsters from database!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        if ((result = psocn_db_result_store(&conn)) == NULL) {
+            ERR_LOG("Could not store results of monster select!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        /* Make sure we have something. */
+        row_count = psocn_db_result_rows(result);
+
+        if (row_count < 0) {
+            ERR_LOG("无法获取设置数据!");
+            psocn_db_result_free(result);
+            return -1;
+        }
+        else if (!row_count) {
+            ERR_LOG("设置数据库为空.");
+            psocn_db_result_free(result);
+            return 0;
+        }
+
+        row = psocn_db_result_fetch(result);
+        if (!row) {
+            ERR_LOG("无法获取到数组!");
+            free_safe(bb_char_stats);
+            return -1;
+        }
+
+        bb_char_stats->start_stats[i].atp = (uint16_t)strtoul(row[4], NULL, 0);
+        bb_char_stats->start_stats[i].mst = (uint16_t)strtoul(row[5], NULL, 0);
+        bb_char_stats->start_stats[i].evp = (uint16_t)strtoul(row[6], NULL, 0);
+        bb_char_stats->start_stats[i].hp = (uint16_t)strtoul(row[7], NULL, 0);
+        bb_char_stats->start_stats[i].dfp = (uint16_t)strtoul(row[8], NULL, 0);
+        bb_char_stats->start_stats[i].ata = (uint16_t)strtoul(row[9], NULL, 0);
+        bb_char_stats->start_stats[i].lck = (uint16_t)strtoul(row[10], NULL, 0);
+        bb_char_stats->start_stats_index[i] = (uint32_t)strtoul(row[3], NULL, 0);
+        //DBG_LOG("ATP数值 %d", bb_char_stats->start_stats[i].atp);
+
+        psocn_db_next_result_free(&conn, result);
+    }
+
+    for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+        for (i = 0; i < MAX_PLAYER_LEVEL; i++) {
+            sprintf(query, "SELECT * FROM %s%d WHERE level = '%" PRIu32 "'",
+                PLAYER_LEVEL_TABLE_BB_, pso_class[j].class_code, i);
+
+            if (psocn_db_real_query(&conn, query)) {
+                ERR_LOG("Couldn't fetch from database!");
+                free_safe(bb_char_stats);
+                return -1;
+            }
+
+            if ((result = psocn_db_result_store(&conn)) == NULL) {
+                ERR_LOG("Could not store results!");
+                free_safe(bb_char_stats);
+                return -1;
+            }
+
+            /* Make sure we have something. */
+            row_count = psocn_db_result_rows(result);
+
+            if (row_count < 0) {
+                ERR_LOG("无法获取设置数据!");
+                psocn_db_result_free(result);
+                return -1;
+            }
+            else if (!row_count) {
+                ERR_LOG("设置数据库为空.");
+                psocn_db_result_free(result);
+                return 0;
+            }
+
+            row = psocn_db_result_fetch(result);
+            if (!row) {
+                ERR_LOG("无法获取到数组!");
+                free_safe(bb_char_stats);
+                return -1;
+            }
+
+            bb_char_stats->levels[j][i].atp = (uint8_t)strtoul(row[3], NULL, 0);
+            bb_char_stats->levels[j][i].mst = (uint8_t)strtoul(row[4], NULL, 0);
+            bb_char_stats->levels[j][i].evp = (uint8_t)strtoul(row[5], NULL, 0);
+            bb_char_stats->levels[j][i].hp = (uint8_t)strtoul(row[6], NULL, 0);
+            bb_char_stats->levels[j][i].dfp = (uint8_t)strtoul(row[7], NULL, 0);
+            bb_char_stats->levels[j][i].ata = (uint8_t)strtoul(row[8], NULL, 0);
+            bb_char_stats->levels[j][i].lck = (uint8_t)strtoul(row[9], NULL, 0);
+            bb_char_stats->levels[j][i].tp = (uint8_t)strtoul(row[10], NULL, 0);
+            bb_char_stats->levels[j][i].exp = (uint32_t)strtoul(row[2], NULL, 0);
+
+            //DBG_LOG("职业 %d 等级 %d 经验数值 %d", j, i, bb_char_stats->levels[j][i].exp);
+
+            psocn_db_next_result_free(&conn, result);
+        }
+    }
+    return 0;
+}
+
 /* 检测玩家是否在线 */
 int db_check_gc_online(uint32_t gc) {
     char query[256];

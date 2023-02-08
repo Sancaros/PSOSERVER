@@ -343,13 +343,6 @@ static void load_patch_config() {
         }
     }
 
-    /* Read the Blue Burst param data */
-    if (load_param_data())
-        exit(EXIT_FAILURE);
-
-    if (load_bb_char_data())
-        exit(EXIT_FAILURE);
-
     /* Read patch lists. */
     if (cfg->patch_dir) {
         AUTH_LOG("实时补丁路径: %s", cfg->patch_dir);
@@ -394,6 +387,13 @@ static void load_patch_config() {
     }
 
     AUTH_LOG("数据库连接成功...");
+
+    /* Read the Blue Burst param data */
+    if (load_param_data())
+        exit(EXIT_FAILURE);
+
+    if (load_bb_char_data())
+        exit(EXIT_FAILURE);
 
     AUTH_LOG("初始化在线玩家数据表 ...");
 

@@ -56,6 +56,10 @@ extern int enable_ipv6;
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
+/* Player levelup data */
+bb_level_table_t bb_char_stats;
+v2_level_table_t v2_char_stats;
+
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
     int ret;
     LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
@@ -127,7 +131,7 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
         pkt->flags = htons(SHDR_RESPONSE);
     }
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_hdr_t), sendbuf);
 }
 
@@ -2644,30 +2648,100 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
     if (!pkt->data) {
-        ERR_LOG("舰船获取职业最大法术数据失败, 请检查函数错误");
+        ERR_LOG("舰船接收职业最大法术数据失败, 请检查函数错误");
         return -1;
     }
 
     memcpy(max_tech_level, pkt->data, sizeof(max_tech_level));
 
     for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        for (j = 0; j < BB_MAX_CLASS; j++) {
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
             if (max_tech_level[i].tech_name == NULL) {
-                ERR_LOG("舰船获取职业最大法术名称为空, 请检查函数错误");
+                ERR_LOG("舰船接收职业最大法术名称为空, 请检查函数错误");
                 return -1;
             }
         }
     }
 
-    CONFIG_LOG("获取 Blue Burst 玩家 %d 职业 %d 个法术最大等级数据", j, i);
+    CONFIG_LOG("接收 Blue Burst 玩家 %d 个职业 %d 个法术最大等级数据", j, i);
 
 #ifdef DEBUG
     DBG_LOG("刷新BB职业最大法术数据");
     for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        for (j = 0; j < BB_MAX_CLASS; j++) {
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
             DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, max_tech_level[i].tech_name, j, max_tech_level[i].max_lvl[j]);
         }
     }
+#endif // DEBUG
+
+    return 0;
+}
+
+static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* pkt) {
+    int i, j;
+
+    /* TODO 需增加加密传输认证,防止黑客行为 */
+    if (!&pkt->data) {
+        ERR_LOG("舰船接收职业等级数据失败, 请检查函数错误");
+        return -1;
+    }
+
+    bb_char_stats = pkt->data;
+    //memcpy(&bb_char_stats, &pkt->data, sizeof(bb_level_table_t));
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        if (bb_char_stats.start_stats_index[i] != i * 14) {
+            ERR_LOG("舰船接收职业等级索引错误, 请检查函数错误");
+            return -1;
+        }
+    }
+
+    for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+        for (i = 0; i < MAX_PLAYER_LEVEL; i++) {
+            //DBG_LOG("职业 %d 等级 %d ATP数值 %d", j, i, bb_char_stats.levels[j][i].atp);
+        }
+        CONFIG_LOG("接收 Blue Burst 职业 %s %d 等级数据", pso_class[j].cn_name, i);
+    }
+
+#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
+    /* Swap all the exp values */
+    for (j = 0; j < MAX_PLAYER_CLASS_BB; ++j) {
+        for (i = 0; i < MAX_PLAYER_LEVEL; ++i) {
+            bb_char_stats.levels[j][i].exp = LE32(bb_char_stats.levels[j][i].exp);
+        }
+    }
+#endif
+
+#ifdef DEBUG
+    //[2023年02月08日 13:45:14:010] 设置(1337): 读取 Blue Burst 升级数据表...
+//[2023年02月08日 13:52:48:814] 调试(mapdata.c 0235): start_stats_index 0
+//[2023年02月08日 13:52:48:823] 调试(mapdata.c 0235): start_stats_index 14
+//[2023年02月08日 13:52:48:833] 调试(mapdata.c 0235): start_stats_index 28
+//[2023年02月08日 13:52:48:842] 调试(mapdata.c 0235): start_stats_index 42
+//[2023年02月08日 13:52:48:851] 调试(mapdata.c 0235): start_stats_index 56
+//[2023年02月08日 13:52:48:860] 调试(mapdata.c 0235): start_stats_index 70
+//[2023年02月08日 13:52:48:870] 调试(mapdata.c 0235): start_stats_index 84
+//[2023年02月08日 13:52:48:879] 调试(mapdata.c 0235): start_stats_index 98
+//[2023年02月08日 13:52:48:887] 调试(mapdata.c 0235): start_stats_index 112
+//[2023年02月08日 13:52:48:896] 调试(mapdata.c 0235): start_stats_index 126
+//[2023年02月08日 13:52:48:905] 调试(mapdata.c 0235): start_stats_index 140
+//[2023年02月08日 13:52:48:915] 调试(mapdata.c 0235): start_stats_index 154
+//[2023年02月08日 13:45:14:023] 调试(mapdata.c 0224): unk 0
+//[2023年02月08日 13:45:14:030] 调试(mapdata.c 0224): unk E
+//[2023年02月08日 13:45:14:037] 调试(mapdata.c 0224): unk 1C
+//[2023年02月08日 13:45:14:044] 调试(mapdata.c 0224): unk 2A
+//[2023年02月08日 13:45:14:053] 调试(mapdata.c 0224): unk 38
+//[2023年02月08日 13:45:14:060] 调试(mapdata.c 0224): unk 46
+//[2023年02月08日 13:45:14:069] 调试(mapdata.c 0224): unk 54
+//[2023年02月08日 13:45:14:076] 调试(mapdata.c 0224): unk 62
+//[2023年02月08日 13:45:14:082] 调试(mapdata.c 0224): unk 70
+//[2023年02月08日 13:45:14:089] 调试(mapdata.c 0224): unk 7E
+//[2023年02月08日 13:45:14:098] 调试(mapdata.c 0224): unk 8C
+//[2023年02月08日 13:45:14:107] 调试(mapdata.c 0224): unk 9A
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        DBG_LOG("start_stats_index %d", bb_char_stats.start_stats_index[i]);
+    }
+
 #endif // DEBUG
 
     return 0;
@@ -2819,6 +2893,9 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         case SHDR_TYPE_BBMAXTECH:
             return handle_max_tech_level_bb(conn, (shipgate_max_tech_lvl_bb_pkt*)pkt);
+
+        case SHDR_TYPE_BBLVLDATA:
+            return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
 
         case SHDR_TYPE_CBKUP:
             if (!(flags & SHDR_RESPONSE)) {
@@ -3018,7 +3095,7 @@ int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
     pkt->block = htonl(block);
     memcpy(pkt->data, cdata, len);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_data_pkt) + len, sendbuf);
 }
 
@@ -3039,7 +3116,7 @@ int shipgate_send_creq(shipgate_conn_t* c, uint32_t gc, uint32_t slot) {
     pkt->guildcard = htonl(gc);
     pkt->slot = htonl(slot);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_req_pkt), sendbuf);
 }
 
@@ -3080,7 +3157,7 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     pkt->menu_code = htons(ship->cfg->menu_code);
     pkt->privileges = ntohl(ship->cfg->privileges);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_raw(c, sizeof(shipgate_login6_reply_pkt), sendbuf, 0);
 }
 
@@ -3104,7 +3181,7 @@ int shipgate_send_cnt(shipgate_conn_t* c, uint16_t clients, uint16_t games) {
     pkt->games = htons(games);
     pkt->ship_id = 0;                   /* Ignored on ship->gate packets. */
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, sizeof(shipgate_cnt_pkt), sendbuf);
 }
 
@@ -3760,7 +3837,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const v
     pkt->game_info.name[31] = 0;
     memcpy(pkt->data, cdata, len);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_bkup_pkt) + len, sendbuf);
 }
 
@@ -3788,7 +3865,7 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* game_info) {
     strncpy((char*)pkt->game_info.name, game_info->name, sizeof(pkt->game_info.name));
     pkt->game_info.name[31] = 0;
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_bkup_pkt), sendbuf);
 }
 
@@ -3829,7 +3906,7 @@ int shipgate_send_mkill(shipgate_conn_t* c, uint32_t gc, uint32_t block,
         pkt->counts[i] = ntohl(cl->enemy_kills[i]);
     }
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_mkill_pkt), sendbuf);
 }
 
@@ -3871,7 +3948,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
     pkt->version = sc->version;
     memcpy(pkt->data, data, len);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, pkt_len, sendbuf);
 }
 
@@ -3900,6 +3977,6 @@ int shipgate_send_qflag(shipgate_conn_t* c, ship_client_t* sc, int set,
     pkt->flag_id_hi = htons(fid >> 16);
     pkt->value = htonl(value);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_qflag_pkt), sendbuf);
 }

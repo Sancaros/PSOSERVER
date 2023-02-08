@@ -151,4 +151,7 @@ int send_user_error(ship_t *c, uint16_t pkt_type, uint32_t err_code,
 /* 发送BB职业最大法术数据至舰船 */
 int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data);
 
+/* 发送BB职业等级数据至舰船 */
+int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data);
+
 #endif /* !SHIPGATE_H */

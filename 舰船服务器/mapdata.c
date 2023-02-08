@@ -118,10 +118,6 @@ const battle_param_entry_files_t battle_params_emtry_files[NUM_BPEntry][5] = {
 // online/offline, episode, difficulty, entry_num
 static bb_battle_param_t battle_params[2][3][4][0x60];
 
-/* Player levelup data */
-bb_level_table_t bb_char_stats;
-v2_level_table_t v2_char_stats;
-
 /* Parsed enemy data. Organized similarly to the battle parameters, except that
    the last level is the actual areas themselves (and there's no difficulty
    level in there)
@@ -192,37 +188,71 @@ static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char *fn, co
     fclose(fp);
     return 0;
 }
-
-static int read_bb_level_data(const char *fn) {
-    uint8_t *buf;
-    int decsize;
-
-#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-    int i, j;
-#endif
-
-    /* Read in the file and decompress it. */
-    if((decsize = pso_prs_decompress_file(fn, &buf)) < 0) {
-        ERR_LOG("无法读取等级参数 %s: %s", fn, strerror(-decsize));
-        return -1;
-    }
-
-    memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
-
-#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-    /* Swap all the exp values */
-    for(j = 0; j < MAX_PLAYER_CLASS_BB; ++j) {
-        for(i = 0; i < MAX_PLAYER_LEVEL; ++i) {
-            bb_char_stats.levels[j][i].exp = LE32(bb_char_stats.levels[j][i].exp);
-        }
-    }
-#endif
-
-    /* Clean up... */
-    free_safe(buf);
-
-    return 0;
-}
+//
+//static int read_bb_level_data(const char *fn) {
+//    uint8_t *buf;
+//    int decsize;
+//    int i;
+//
+//#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
+//    int i, j;
+//#endif
+//
+//    /* Read in the file and decompress it. */
+//    if((decsize = pso_prs_decompress_file(fn, &buf)) < 0) {
+//        ERR_LOG("无法读取等级参数 %s: %s", fn, strerror(-decsize));
+//        return -1;
+//    }
+//
+//    memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
+//
+//#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
+//    /* Swap all the exp values */
+//    for(j = 0; j < MAX_PLAYER_CLASS_BB; ++j) {
+//        for(i = 0; i < MAX_PLAYER_LEVEL; ++i) {
+//            bb_char_stats.levels[j][i].exp = LE32(bb_char_stats.levels[j][i].exp);
+//        }
+//    }
+//#endif
+//
+//#ifdef DEBUG
+//    //[2023年02月08日 13:45:14:010] 设置(1337): 读取 Blue Burst 升级数据表...
+////[2023年02月08日 13:52:48:814] 调试(mapdata.c 0235): start_stats_index 0
+////[2023年02月08日 13:52:48:823] 调试(mapdata.c 0235): start_stats_index 14
+////[2023年02月08日 13:52:48:833] 调试(mapdata.c 0235): start_stats_index 28
+////[2023年02月08日 13:52:48:842] 调试(mapdata.c 0235): start_stats_index 42
+////[2023年02月08日 13:52:48:851] 调试(mapdata.c 0235): start_stats_index 56
+////[2023年02月08日 13:52:48:860] 调试(mapdata.c 0235): start_stats_index 70
+////[2023年02月08日 13:52:48:870] 调试(mapdata.c 0235): start_stats_index 84
+////[2023年02月08日 13:52:48:879] 调试(mapdata.c 0235): start_stats_index 98
+////[2023年02月08日 13:52:48:887] 调试(mapdata.c 0235): start_stats_index 112
+////[2023年02月08日 13:52:48:896] 调试(mapdata.c 0235): start_stats_index 126
+////[2023年02月08日 13:52:48:905] 调试(mapdata.c 0235): start_stats_index 140
+////[2023年02月08日 13:52:48:915] 调试(mapdata.c 0235): start_stats_index 154
+////[2023年02月08日 13:45:14:023] 调试(mapdata.c 0224): unk 0
+////[2023年02月08日 13:45:14:030] 调试(mapdata.c 0224): unk E
+////[2023年02月08日 13:45:14:037] 调试(mapdata.c 0224): unk 1C
+////[2023年02月08日 13:45:14:044] 调试(mapdata.c 0224): unk 2A
+////[2023年02月08日 13:45:14:053] 调试(mapdata.c 0224): unk 38
+////[2023年02月08日 13:45:14:060] 调试(mapdata.c 0224): unk 46
+////[2023年02月08日 13:45:14:069] 调试(mapdata.c 0224): unk 54
+////[2023年02月08日 13:45:14:076] 调试(mapdata.c 0224): unk 62
+////[2023年02月08日 13:45:14:082] 调试(mapdata.c 0224): unk 70
+////[2023年02月08日 13:45:14:089] 调试(mapdata.c 0224): unk 7E
+////[2023年02月08日 13:45:14:098] 调试(mapdata.c 0224): unk 8C
+////[2023年02月08日 13:45:14:107] 调试(mapdata.c 0224): unk 9A
+//    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+//        DBG_LOG("start_stats_index %d", bb_char_stats.start_stats_index[i]);
+//    }
+//
+//#endif // DEBUG
+//
+//
+//    /* Clean up... */
+//    free_safe(buf);
+//
+//    return 0;
+//}
 
 static int read_v2_level_data(const char *fn) {
     uint8_t *buf;
@@ -1323,8 +1353,8 @@ int bb_read_params(psocn_ship_t *cfg) {
     }
 
     /* Try to read the levelup data */
-    CONFIG_LOG("读取 Blue Burst 升级数据表...");
-    rv += read_bb_level_data("System\\Battle\\bb\\PlyLevelTbl.prs");
+    //CONFIG_LOG("读取 Blue Burst 升级数据表...");
+    //rv += read_bb_level_data("System\\Battle\\bb\\PlyLevelTbl.prs");
 
     /* Bail out early, if appropriate. */
     if(rv) {

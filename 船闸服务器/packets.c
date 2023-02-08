@@ -279,7 +279,7 @@ int send_ping(ship_t* c, int reply) {
     else
         pkt->flags = 0;
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_hdr_t));
 }
 
@@ -301,7 +301,7 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     pkt->block = htonl(block);
     memcpy(pkt->data, cdata, sz);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_data_pkt) + sz);
 }
 
@@ -546,7 +546,7 @@ int send_user_options(ship_t* c) {
     pkt->hdr.pkt_len = htons(len);
     pkt->count = htonl(pkt->count);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, len);
 }
 
@@ -679,7 +679,7 @@ int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
         }
 
         fclose(fp);
-        /* Send it away */
+        /* 加密并发送 */
         return send_crypt(c, file_len + sizeof(shipgate_schunk_pkt));
     }
 }
@@ -706,7 +706,7 @@ int send_script_check(ship_t* c, ship_script_t* scr) {
     if (scr->event)
         pkt->action = htonl(scr->event);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, sizeof(shipgate_schunk_pkt));
 }
 
@@ -756,7 +756,7 @@ int send_script(ship_t* c, ship_script_t* scr) {
         }
 
         fclose(fp);
-        /* Send it away */
+        /* 加密并发送 */
         return send_crypt(c, pkt_len);
     }
 
@@ -782,7 +782,7 @@ int send_sset(ship_t* c, uint32_t action, ship_script_t* scr) {
     if (scr)
         strncpy(pkt->filename, scr->remote_fn, 32);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, sizeof(shipgate_sset_pkt));
 }
 
@@ -816,7 +816,7 @@ int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
     pkt->block = htonl(block);
     memcpy(pkt->data, data, len);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, pkt_len);
 }
 
@@ -841,7 +841,7 @@ int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
     pkt->flag_id_hi = htons(fid >> 16);
     pkt->value = htonl(value);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_qflag_pkt));
 }
 
@@ -861,7 +861,7 @@ int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
     pkt->ctl = htonl(ctl);
     pkt->acc = htonl(acc);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_shipctl_pkt));
 }
 
@@ -886,7 +886,7 @@ int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
     pkt->acc = htonl(acc);
     pkt->when = htonl(when);
 
-    /* Send it away. */
+    /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_sctl_shutdown_pkt));
 }
 
@@ -939,7 +939,7 @@ int send_user_blocklist(ship_t* c) {
     pkt->hdr.pkt_len = htons(len);
     pkt->count = htonl(pkt->count);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, len);
 }
 
@@ -990,8 +990,33 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
 
     memcpy(pkt->data, data, sizeof(pkt->data));
 
+#ifdef DEBUG
+    DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
+
+#endif // DEBUG
+
+    /* 加密并发送 */
+    return send_crypt(c, len);
+}
+
+int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data) {
+    shipgate_pl_level_bb_pkt* pkt = (shipgate_pl_level_bb_pkt*)sendbuf;
+    uint16_t len = sizeof(shipgate_pl_level_bb_pkt);
+
+    /* Make sure we don't try to send to a ship that won't know what to do with
+       the packet. */
+    if (c->proto_ver < 19)
+        return 0;
+
+    /* Swap that which we need to do */
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBLVLDATA);
+    pkt->hdr.pkt_len = htons(len);
+    pkt->hdr.flags = SHDR_RESPONSE;
+
+    memcpy(&pkt->data, data, sizeof(pkt->data));
+
     //DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
 
-    /* Send it away */
+    /* 加密并发送 */
     return send_crypt(c, len);
 }
