@@ -68,7 +68,8 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CLIENTS_PC "clients_pc"
 #define CLIENTS_XBOX "clients_xbox"
 
-#define PLAYER_LEVEL_TABLE "player_levelup_table"
+#define PLAYER_LEVEL_TABLE_BB "player_levelup_table_bb"
+#define PLAYER_MAX_TECH_LEVEL_TABLE_BB "player_max_tech_level_table_bb"
 
 #define QUEST_FLAGS_LONG "quest_flags_long"
 #define QUEST_FLAGS_SHORT "quest_flags_short"
@@ -109,7 +110,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define SHIP_MONSTER_EVENTS "ship_monster_events"
 #define SHIP_MONSTER_EVENTS_DISQ "ship_monster_events_disq"
 
-typedef enum Mysql_Config {
+enum mysql_config {
     MYSQL_CONFIG_HOST = 0x00,
     MYSQL_CONFIG_USER,
     MYSQL_CONFIG_PASS,
@@ -119,7 +120,7 @@ typedef enum Mysql_Config {
     MYSQL_CONFIG_AUTO_RECONNECT,
     MYSQL_CONFIG_WAITTIMEOUT,
     MYSQL_CONFIG_MAX
-}MYSQL_CONFIG;
+};
 
 typedef struct psocn_dbconn {
     void* conndata;

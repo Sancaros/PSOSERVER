@@ -5272,12 +5272,14 @@ typedef struct bb_max_tech {
     unsigned char max_lvl[BB_MAX_CLASS];
 } bb_max_tech_t;
 
-static int load_player_level_table(bb_max_tech_t *max_tech_level) {
+static int read_player_max_tech_level_table_bb(bb_max_tech_t *bb_max_tech_level) {
     int i, j;
 
-    for (i = 0; i < 19; i++) {
-        for (j = 0; j < 12; j++) {
-
+    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        for (j = 0; j < BB_MAX_CLASS; j++) {
+            bb_max_tech_level[i].max_lvl[j] = 0x00;
         }
     }
+
+    return 0;
 }
