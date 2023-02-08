@@ -2640,7 +2640,9 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
 }
 
 static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl_bb_pkt* pkt) {
+    int i, j;
 
+    /* TODO 需增加加密传输认证,防止黑客行为 */
     if (!pkt->data) {
         ERR_LOG("舰船获取职业最大法术数据失败, 请检查函数错误");
         return -1;
@@ -2648,8 +2650,18 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
 
     memcpy(max_tech_level, pkt->data, sizeof(max_tech_level));
 
+    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        for (j = 0; j < BB_MAX_CLASS; j++) {
+            if (max_tech_level[i].tech_name == NULL) {
+                ERR_LOG("舰船获取职业最大法术名称为空, 请检查函数错误");
+                return -1;
+            }
+        }
+    }
+
+    CONFIG_LOG("获取 Blue Burst 玩家 %d 职业 %d 个法术数据", j, i);
+
 #ifdef DEBUG
-    int i, j;
     DBG_LOG("刷新BB职业最大法术数据");
     for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
         for (j = 0; j < BB_MAX_CLASS; j++) {
