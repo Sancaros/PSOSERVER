@@ -285,7 +285,7 @@ sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state
         case ITEM_SUBTYPE_UNIT://插件
             item.data_b[2] = (mt19937_genrand_int32(随机因子) % 2) + 4;
 
-            item.data_b[7] = (mt19937_genrand_int32(随机因子) % 5) - 4 + (难度 * 5);
+            item.data_b[6] = (mt19937_genrand_int32(随机因子) % 5) - 4 + (难度 * 5);
             //if (tmp_value < 0)
             //    item.data_b[7] -= tmp_value;
             //else

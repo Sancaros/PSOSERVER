@@ -4282,7 +4282,6 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                 for (j = 0; j < inv_count; j++)
                     if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_WEAPON) &&
                         (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
-
                         c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
                         DBG_LOG("卸载武器");
                     }
@@ -4313,12 +4312,10 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                 else {
                     DBG_LOG("装甲识别");
                     // 移除其他装甲和插槽
-                    for (j = 0; j < inv_count; ++j)
-                    {
+                    for (j = 0; j < inv_count; ++j) {
                         if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
                             (c->bb_pl->inv.iitems[j].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
-                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
-                        {
+                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
                             DBG_LOG("卸载装甲");
                             c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
                             c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
@@ -4351,8 +4348,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                     for (j = 0; j < inv_count; ++j) {
                         if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
                             (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_BARRIER) &&
-                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)))
-                        {
+                            (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
                             DBG_LOG("卸载护盾");
                             c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
                             c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;

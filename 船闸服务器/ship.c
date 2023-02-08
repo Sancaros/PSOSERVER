@@ -5263,3 +5263,21 @@ int load_guild_default_flag(char* file) {
 
     return 0;
 }
+
+#define BB_MAX_TECH_LEVEL 19
+#define BB_MAX_CLASS      12
+
+typedef struct bb_max_tech {
+    const char* tech_name;
+    unsigned char max_lvl[BB_MAX_CLASS];
+} bb_max_tech_t;
+
+static int load_player_level_table(bb_max_tech_t *max_tech_level) {
+    int i, j;
+
+    for (i = 0; i < 19; i++) {
+        for (j = 0; j < 12; j++) {
+
+        }
+    }
+}
