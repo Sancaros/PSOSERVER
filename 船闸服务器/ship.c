@@ -4918,32 +4918,42 @@ static int handle_ubl_add(ship_t* c, shipgate_ubl_add_pkt* pkt) {
     return send_user_error(c, SHDR_TYPE_UBL_ADD, ERR_NO_ERROR, gc, block, NULL);
 }
 
-/* Process one ship packet. */
-int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
+static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
+    shipgate_login6_reply_pkt* p = (shipgate_login6_reply_pkt*)pkt;
     uint16_t length = ntohs(pkt->pkt_len);
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
     int rv;
 
-    //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-    //print_payload((unsigned char*)pkt, length);
+    if (!(flags & SHDR_RESPONSE)) {
+        ERR_LOG("舰船发送了无效的登录响应");
+        return -1;
+    }
+
+    rv = handle_shipgate_login6t(c, p);
+
+    /* TODO 从此处开始 增加各项数据从数据库获取后发送至舰船 */
+    if (!rv) {
+        send_player_max_tech_level_table_bb(c);
+    }
+
+    return rv;
+}
+
+/* Process one ship packet. */
+int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
+    uint16_t length = ntohs(pkt->pkt_len);
+    uint16_t type = ntohs(pkt->pkt_type);
+    uint16_t flags = ntohs(pkt->flags);
+
+#ifdef DEBUG
+    DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+    print_payload((unsigned char*)pkt, length);
+#endif // DEBUG
 
     switch (type) {
     case SHDR_TYPE_LOGIN6:
-    {
-        shipgate_login6_reply_pkt* p = (shipgate_login6_reply_pkt*)pkt;
-
-        if (!(flags & SHDR_RESPONSE)) {
-            ERR_LOG("舰船发送了无效的登录响应");
-            return -1;
-        }
-
-        rv = handle_shipgate_login6t(c, p);
-
-        rv = send_player_max_tech_level_table_bb(c);
-
-        return rv;
-    }
+        return handle_ship_login6(c, pkt);
 
     case SHDR_TYPE_COUNT:
         return handle_count(c, (shipgate_cnt_pkt*)pkt);
