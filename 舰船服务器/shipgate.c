@@ -3461,7 +3461,7 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t gc, uint8_
     pkt->guildcard = htonl(gc);
     pkt->slot = slot;
     pkt->blocknum = htonl(block);
-    memcpy(pkt->ch_name, name, 32);
+    memcpy(pkt->ch_name, name, 31);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_block_login_pkt), sendbuf);
