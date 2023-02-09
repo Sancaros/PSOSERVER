@@ -38,7 +38,7 @@ typedef struct cmd_map {
 
 static cmd_map_st c_subcmd_names[] = {
     { SUBCMD62_GUILDCARD, "SUBCMD62_GUILDCARD", "SUBCMD62_GUILDCARD" },
-    { SUBCMD60_UNKNOW_88, "SUBCMD60_UNKNOW_88", "未知指令" },
+    { SUBCMD60_ARROW_CHANGE, "SUBCMD60_ARROW_CHANGE", "房间内玩家箭头改变" },
 };
 
 static cmd_map_st c_cmd_names[] = {

@@ -239,7 +239,7 @@
 #define SUBCMD60_UNKNOW_85                     0x85
 #define SUBCMD60_UNKNOW_86                     0x86
 #define SUBCMD60_UNKNOW_87                     0x87
-#define SUBCMD60_UNKNOW_88                     0x88
+#define SUBCMD60_ARROW_CHANGE                  0x88
 #define SUBCMD60_UNKNOW_89                     0x89
 #define SUBCMD60_UNKNOW_CH_8A                  0x8A
 #define SUBCMD60_UNKNOW_8B                     0x8B

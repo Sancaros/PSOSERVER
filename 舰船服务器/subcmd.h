@@ -1771,10 +1771,10 @@ typedef struct subcmd_bb_Unknown_6x87 {
 
 // 0x88: Unknown (指令生效范围; 仅限游戏) 在任务中 回到先驱者2号触发
 //(00000000)   0C 00 60 00 00 00 00 00  88 01 00 00
-typedef struct subcmd_bb_Unknown_6x88 {
+typedef struct subcmd_bb_arrow_change {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x88_t;
+} PACKED subcmd_bb_arrow_change_t;
 
 // 0x89: subcmd_bb_player_died (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_player_died {

@@ -2966,8 +2966,10 @@ static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_Unknown_6x88(ship_client_t* c, subcmd_bb_Unknown_6x88_t* pkt) {
+static int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = c->cur_lobby;
+
+    //( 00000000 )   0C 00 60 00 00 00 00 00  88 01 01 00
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -2984,9 +2986,9 @@ static int handle_bb_Unknown_6x88(ship_client_t* c, subcmd_bb_Unknown_6x88_t* pk
         return -1;
     }
 
-    //UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
-
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    c->arrow_color = pkt->shdr.client_id;
+    return send_lobby_arrows(l);
 }
 
 static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
@@ -4660,8 +4662,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_word_select(c, (subcmd_bb_word_select_t*)pkt);
         break;
 
-    case SUBCMD60_UNKNOW_88:
-        rv = handle_bb_Unknown_6x88(c, (subcmd_bb_Unknown_6x88_t*)pkt);
+    case SUBCMD60_ARROW_CHANGE:
+        rv = handle_bb_arrow_change(c, (subcmd_bb_arrow_change_t*)pkt);
         break;
 
     case SUBCMD60_UNKNOW_89:
@@ -5021,8 +5023,8 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
         /* 此函数正常载入 */
-    case SUBCMD60_UNKNOW_88:
-        rv = handle_bb_Unknown_6x88(c, (subcmd_bb_Unknown_6x88_t*)pkt);
+    case SUBCMD60_ARROW_CHANGE:
+        rv = handle_bb_arrow_change(c, (subcmd_bb_arrow_change_t*)pkt);
         break;
 
         /* 此函数正常载入 */
