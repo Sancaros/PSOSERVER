@@ -4364,10 +4364,10 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     size_t i = 0;
 
     i = item_get_inv_item_slot(c->bb_pl->inv, item_id);
-
+#ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
-
     print_item_data(c, &c->bb_pl->inv.iitems[i].data);
+#endif // DEBUG
 
     if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
         found_item = 1;
@@ -4393,9 +4393,9 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                     if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_WEAPON) &&
                         (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
                         c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                        DBG_LOG("卸载武器");
+                        //DBG_LOG("卸载武器");
                     }
-                DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
+                //DBG_LOG("武器识别 %02X", tmp_wp.equip_flag);
             }
             break;
 
@@ -4420,13 +4420,13 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                     return -5;
                 }
                 else {
-                    DBG_LOG("装甲识别");
+                    //DBG_LOG("装甲识别");
                     // 移除其他装甲和插槽
                     for (j = 0; j < inv_count; ++j) {
                         if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
                             (c->bb_pl->inv.iitems[j].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
                             (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
-                            DBG_LOG("卸载装甲");
+                            //DBG_LOG("卸载装甲");
                             c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
                             c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
                         }
@@ -4453,13 +4453,13 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                         c->guildcard);
                     return -5;
                 }else {
-                    DBG_LOG("护盾识别");
+                    //DBG_LOG("护盾识别");
                     // Remove any other barrier
                     for (j = 0; j < inv_count; ++j) {
                         if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
                             (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_BARRIER) &&
                             (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
-                            DBG_LOG("卸载护盾");
+                            //DBG_LOG("卸载护盾");
                             c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
                             c->bb_pl->inv.iitems[j].data.data_b[4] = 0x00;
                         }
@@ -4468,7 +4468,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                 break;
 
             case ITEM_SUBTYPE_UNIT:// Assign unit a slot
-                DBG_LOG("插槽识别");
+                //DBG_LOG("插槽识别");
                 for (j = 0; j < 4; j++)
                     slot[j] = 0;
 
@@ -4476,12 +4476,12 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                     // Another loop ;(
                     if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_GUARD) &&
                         (c->bb_pl->inv.iitems[j].data.data_b[1] == ITEM_SUBTYPE_UNIT)) {
-                        DBG_LOG("插槽 %d 识别", j);
+                        //DBG_LOG("插槽 %d 识别", j);
                         if ((c->bb_pl->inv.iitems[j].flags & LE32(0x00000008)) &&
                             (c->bb_pl->inv.iitems[j].data.data_b[4] < 0x04)) {
 
                             slot[c->bb_pl->inv.iitems[j].data.data_b[4]] = 1;
-                            DBG_LOG("插槽 %d 卸载", j);
+                            //DBG_LOG("插槽 %d 卸载", j);
                         }
                     }
                 }
@@ -4514,21 +4514,21 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
             break;
 
         case ITEM_TYPE_MAG:
-            DBG_LOG("玛古识别");
+            //DBG_LOG("玛古识别");
             // Remove equipped mag
             for (j = 0; j < c->bb_pl->inv.item_count; j++)
                 if ((c->bb_pl->inv.iitems[j].data.data_b[0] == ITEM_TYPE_MAG) &&
                     (c->bb_pl->inv.iitems[j].flags & LE32(0x00000008))) {
 
                     c->bb_pl->inv.iitems[j].flags &= LE32(0xFFFFFFF7);
-                    DBG_LOG("卸载玛古");
+                    //DBG_LOG("卸载玛古");
                 }
             break;
         }
 
         //DBG_LOG("完成卸载, 但是未识别成功");
 
-        /* XXXX: Should really make sure we can equip it first... */
+        /* TODO: Should really make sure we can equip it first... */
         c->bb_pl->inv.iitems[i].flags |= LE32(0x00000008);
     }
 

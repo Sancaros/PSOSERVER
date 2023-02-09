@@ -998,13 +998,6 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         return -1;
     }
 
-    //if (c->version == CLIENT_VERSION_BB) {
-    //    flag = LE16(pkt->bb.pkt_type);
-
-    //    DBG_LOG("bb_process_done_burst flag = 0x%04X / 0x%04X", flag, pkt->bb.pkt_type);
-
-    //}
-
     /* Lock the lobby, clear its bursting flag, send the resume game packet to
        the rest of the lobby, and continue on. */
     pthread_mutex_lock(&l->mutex);

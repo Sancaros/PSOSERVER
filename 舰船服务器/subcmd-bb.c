@@ -4494,19 +4494,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_LOAD_22://subcmd_set_player_visibility_6x22_6x23_t
-
-        DBG_LOG("SUBCMD60_LOAD_22 0x60 ЦёБо: 0x%02X", type);
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        if (l->type == LOBBY_TYPE_LOBBY) {
-            for (i = 0; i < l->max_clients; ++i) {
-                if (l->clients[i] && l->clients[i] != c &&
-                    subcmd_send_pos(c, l->clients[i])) {
-                    rv = -1;
-                    break;
-                }
-            }
-        }
-        //rv = handle_bb_load_22(c, pkt, 0x01);
+        rv = handle_bb_load_22(c, (subcmd_bb_set_player_visibility_6x22_6x23_t*)pkt);
         break;
 
     case SUBCMD60_SET_POS_24:
@@ -5284,10 +5272,7 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
         break;
 
-    //case SUBCMD60_LOAD_22:
-    //case SUBCMD60_LOAD_3B:
     case SUBCMD60_WARP_55:
-    //case SUBCMD60_LOBBY_ACTION:
     case SUBCMD60_GOGO_BALL:
     case SUBCMD60_LOBBY_CHAIR:
     case SUBCMD60_CHAIR_DIR:

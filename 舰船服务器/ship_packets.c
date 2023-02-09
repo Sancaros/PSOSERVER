@@ -7977,10 +7977,9 @@ int send_quest_one(lobby_t *l, ship_client_t *c, uint32_t qid, int lc) {
     }
 
     if(rv) {
-        send_msg_box(c, "Error reading quest file!\nPlease report "
-                         "this problem!\nInclude your guildcard\n"
-                         "number and the approximate\ntime in your "
-                         "error report.");
+        send_msg_box(c, "读取任务文件错误!\n请上报"
+                         "此错误!\n内容包含您的GC\n"
+                         "和大约发生错误\n的时间.");
         c->flags |= CLIENT_FLAG_DISCONNECTED;
     }
 
@@ -11286,6 +11285,27 @@ int send_gm_menu(ship_client_t *c, uint32_t menu_id) {
     }
 
     return -1;
+}
+
+static int send_bb_rare_monster_data(ship_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
+    subcmd_bb_end_burst_t* pkt = (subcmd_bb_end_burst_t*)sendbuf;
+
+    /* Make sure we got the sendbuf */
+    if (!sendbuf)
+        return -1;
+
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_type = LE16(0x00DE);
+    pkt->hdr.pkt_len = LE16(0x0028);
+    pkt->hdr.flags = 0;
+    pkt->shdr.type = SUBCMD60_BURST_DONE;
+    pkt->shdr.size = 0x03;
+    pkt->shdr.params = 0x0818;
+    //pkt->data[0] = 0x18;
+    //pkt->data[1] = 0x08;
+
+    return crypt_send(c, 0x000C, sendbuf);
 }
 
 static int send_bb_end_burst(ship_client_t *c) {
