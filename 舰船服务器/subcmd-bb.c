@@ -5005,6 +5005,11 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
 
+        /* 此函数正常载入 */
+    case SUBCMD60_USE_ITEM:
+        rv = handle_bb_use_item(c, (subcmd_bb_use_item_t*)pkt);
+        break;
+
         /* 未经测试 来自T端 2023.2.10 */
     case SUBCMD60_STEAL_EXP:
         rv = handle_bb_steal_exp(c, (subcmd_bb_steal_exp_t*)pkt);

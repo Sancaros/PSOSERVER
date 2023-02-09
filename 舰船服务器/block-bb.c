@@ -1017,6 +1017,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         rv = send_quest_one(l, c, l->qid, l->qlang);
         c->flags |= CLIENT_FLAG_WAIT_QPING;
         rv |= send_simple(c, PING_TYPE, 0);
+
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -1024,7 +1025,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     return rv;
 }
 
-/* Process a client's done bursting signal. */
+/* 处理客户端获得任务后. */
 static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
@@ -1034,8 +1035,16 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (!l || l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
-    if (pkt->bb.pkt_type != DONE_BURSTING_TYPE01)
-        rv = -1;
+    /* Lock the lobby, clear its bursting flag, send the resume game packet to
+       the rest of the lobby, and continue on. */
+    pthread_mutex_lock(&l->mutex);
+
+    send_bb_rare_monster_data(c);
+
+    if (l->version == CLIENT_VERSION_BB)
+        send_lobby_end_burst(l);
+
+    pthread_mutex_unlock(&l->mutex);
 
     return rv;
 }

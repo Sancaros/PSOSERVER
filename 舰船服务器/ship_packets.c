@@ -11287,25 +11287,25 @@ int send_gm_menu(ship_client_t *c, uint32_t menu_id) {
     return -1;
 }
 
-static int send_bb_rare_monster_data(ship_client_t* c) {
+int send_bb_rare_monster_data(ship_client_t* c) {
+    lobby_t* l = c->cur_lobby;
     uint8_t* sendbuf = get_sendbuf();
-    subcmd_bb_end_burst_t* pkt = (subcmd_bb_end_burst_t*)sendbuf;
+    bb_rare_monster_list_pkt* pkt = (bb_rare_monster_list_pkt*)sendbuf;
 
     /* Make sure we got the sendbuf */
     if (!sendbuf)
         return -1;
 
-    /* 填充数据并准备发送 */
-    pkt->hdr.pkt_type = LE16(0x00DE);
-    pkt->hdr.pkt_len = LE16(0x0028);
-    pkt->hdr.flags = 0;
-    pkt->shdr.type = SUBCMD60_BURST_DONE;
-    pkt->shdr.size = 0x03;
-    pkt->shdr.params = 0x0818;
-    //pkt->data[0] = 0x18;
-    //pkt->data[1] = 0x08;
+    uint16_t len = sizeof(bb_rare_monster_list_pkt);
 
-    return crypt_send(c, 0x000C, sendbuf);
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_type = LE16(BB_RARE_MONSTER_LIST);
+    pkt->hdr.pkt_len = LE16(len);
+    pkt->hdr.flags = 0;
+
+    memcpy(&pkt->enemy_ids[0], &l->map_enemies->enemies[0], sizeof(pkt->enemy_ids));
+
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_bb_end_burst(ship_client_t *c) {
@@ -11323,8 +11323,6 @@ static int send_bb_end_burst(ship_client_t *c) {
     pkt->shdr.type = SUBCMD60_BURST_DONE;
     pkt->shdr.size = 0x03;
     pkt->shdr.params = 0x0818;
-    //pkt->data[0] = 0x18;
-    //pkt->data[1] = 0x08;
 
     return crypt_send(c, 0x000C, sendbuf);
 }
