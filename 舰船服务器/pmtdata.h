@@ -96,8 +96,8 @@ typedef struct pmt_weapon_bb {
     uint16_t atp_req;
     uint16_t mst_req;
     uint16_t ata_req;
-    uint16_t mst_add;
-    uint8_t min_grind;
+    uint16_t mst;
+    //uint8_t min_grind;
     uint8_t max_grind;
     uint8_t photon_color;
     uint8_t special_type;
@@ -116,8 +116,9 @@ typedef struct pmt_weapon_bb {
     uint8_t unknown5;
     uint8_t tech_boost;
     uint8_t combo_type;
-    uint8_t star;
+    //uint8_t star;
 } PACKED pmt_weapon_bb_t;
+
 //
 ///* 武器参数结构 */
 //typedef struct PACKED weapon_pmt {
@@ -225,7 +226,7 @@ typedef struct pmt_guard_bb {
     uint8_t tech_boost;
     uint8_t unknown1;
     uint8_t unknown2;
-    uint8_t star;
+    //uint8_t star;
 } PACKED pmt_guard_bb_t;
 //
 //// 指针 @ 0x40 与盾牌一样 (两者结构相同...)
