@@ -2488,8 +2488,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     uint16_t len = LE16(hdr->pkt_len);
     uint32_t flags = LE32(hdr->flags);
 
-    //DBG_LOG("舰仓：BB处理数据 指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
-        //type, c_cmd_name(type, 0), len, flags, c->guildcard);
+    DBG_LOG("舰仓：BB处理数据 指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
+        type, c_cmd_name(type, 0), len, flags, c->guildcard);
 
     //print_payload((unsigned char*)pkt, len);
 
@@ -2603,6 +2603,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0089 137*/
     case LOBBY_ARROW_CHANGE_TYPE:
+        print_payload((unsigned char*)pkt, len);
         return bb_process_arrow(c, (uint8_t)flags);
 
         /* 0x008A 138*/

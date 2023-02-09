@@ -1047,73 +1047,76 @@ static int check_char_xbox(ship_client_t *c, player_t *pl) {
 
 static int check_char_bb(ship_client_t* c, player_t* pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
+    psocn_disp_char_t disp1 = c->pl->bb.character.disp;
+    psocn_disp_char_t disp2 = pl->bb.character.disp;
+
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if (c->bb_pl->character.disp.dress_data.model != pl->bb.character.disp.dress_data.model)
+    if (disp1.dress_data.model != disp2.dress_data.model)
         return -10;
 
-    if (c->bb_pl->character.disp.dress_data.section != pl->bb.character.disp.dress_data.section)
+    if (disp1.dress_data.section != disp2.dress_data.section)
         return -11;
 
-    if (c->bb_pl->character.disp.dress_data.ch_class != pl->bb.character.disp.dress_data.ch_class)
+    if (disp1.dress_data.ch_class != disp2.dress_data.ch_class)
         return -12;
 
-    if (c->bb_pl->character.disp.dress_data.costume != pl->bb.character.disp.dress_data.costume)
+    if (disp1.dress_data.costume != disp2.dress_data.costume)
         return -13;
 
-    if (c->bb_pl->character.disp.dress_data.skin != pl->bb.character.disp.dress_data.skin)
+    if (disp1.dress_data.skin != disp2.dress_data.skin)
         return -14;
 
-    if (c->bb_pl->character.disp.dress_data.face != pl->bb.character.disp.dress_data.face)
+    if (disp1.dress_data.face != disp2.dress_data.face)
         return -15;
 
-    if (c->bb_pl->character.disp.dress_data.head != pl->bb.character.disp.dress_data.head)
+    if (disp1.dress_data.head != disp2.dress_data.head)
         return -16;
 
-    if (c->bb_pl->character.disp.dress_data.hair != pl->bb.character.disp.dress_data.hair)
+    if (disp1.dress_data.hair != disp2.dress_data.hair)
         return -17;
 
-    if (c->bb_pl->character.disp.dress_data.hair_r != pl->bb.character.disp.dress_data.hair_r)
+    if (disp1.dress_data.hair_r != disp2.dress_data.hair_r)
         return -18;
 
-    if (c->bb_pl->character.disp.dress_data.hair_g != pl->bb.character.disp.dress_data.hair_g)
+    if (disp1.dress_data.hair_g != disp2.dress_data.hair_g)
         return -19;
 
-    if (c->bb_pl->character.disp.dress_data.hair_b != pl->bb.character.disp.dress_data.hair_b)
+    if (disp1.dress_data.hair_b != disp2.dress_data.hair_b)
         return -20;
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
        ordering or whatnot). */
-    f1.f = c->bb_pl->character.disp.dress_data.prop_x;
-    f2.f = pl->bb.character.disp.dress_data.prop_x;
+    f1.f = disp1.dress_data.prop_x;
+    f2.f = disp2.dress_data.prop_x;
     if (f1.b != f2.b)
         return -21;
 
-    f1.f = c->bb_pl->character.disp.dress_data.prop_y;
-    f2.f = pl->bb.character.disp.dress_data.prop_y;
+    f1.f = disp1.dress_data.prop_y;
+    f2.f = disp2.dress_data.prop_y;
     if (f1.b != f2.b)
         return -22;
 
-    if (memcmp(c->bb_pl->character.name, pl->bb.character.name, BB_CHARACTER_NAME_LENGTH))
+    if (memcmp(disp1.dress_data.guildcard_string, disp2.dress_data.guildcard_string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if (c->bb_pl->inv.hpmats_used > pl->bb.inv.hpmats_used)
+    if (c->pl->bb.inv.hpmats_used > pl->bb.inv.hpmats_used)
         return -24;
 
-    if (c->bb_pl->inv.tpmats_used > pl->bb.inv.tpmats_used)
+    if (c->pl->bb.inv.tpmats_used > pl->bb.inv.tpmats_used)
         return -25;
 
-    if (LE32(c->bb_pl->character.disp.exp) > LE32(pl->bb.character.disp.exp))
+    if (LE32(disp1.exp) > LE32(disp2.exp))
         return -26;
 
     /* Why is the level 32-bits?... */
-    if (LE32(c->bb_pl->character.disp.level) > LE32(pl->bb.character.disp.level))
+    if (LE32(disp1.level) > LE32(disp2.level))
         return -27;
 
     //if (c->bb_pl->inv.item_count != c->pl->bb.inv.item_count) {

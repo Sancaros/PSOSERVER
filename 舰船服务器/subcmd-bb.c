@@ -2969,8 +2969,6 @@ static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
 static int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
-    //( 00000000 )   0C 00 60 00 00 00 00 00  88 01 01 00
-
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2986,7 +2984,6 @@ static int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pk
         return -1;
     }
 
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
     c->arrow_color = pkt->shdr.client_id;
     return send_lobby_arrows(l);
 }

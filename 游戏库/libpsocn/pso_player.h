@@ -126,7 +126,7 @@ typedef struct bb_player {
     inventory_t inv;
     psocn_bb_char_t character;
     psocn_bb_c_rank_data_t c_rank;
-    uint32_t unk4[6];
+    uint8_t unk4[24];
     uint16_t infoboard[0x00AC];
     uint32_t blacklist[0x001E];
     uint32_t autoreply_enabled;
