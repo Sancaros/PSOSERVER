@@ -220,7 +220,7 @@ struct ship_client {
     int guild_master_exfer;
     psocn_bb_db_guild_t *bb_guild;
 
-    client_game_data_t game_data;
+    client_game_data_t *game_data;
 
     time_t cmd_cooldown[256];
     time_t subcmd_cooldown[256];

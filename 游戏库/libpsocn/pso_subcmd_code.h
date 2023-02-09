@@ -117,9 +117,9 @@
 // 6x1D: Invalid subcommand
 // 6x1E: Invalid subcommand
 
-#define SUBCMD60_SET_AREA                      0x1F
+#define SUBCMD60_SET_AREA_1F                   0x1F
 #define SUBCMD60_SET_AREA_20                   0x20    /* Seems to match 0x1F */
-#define SUBCMD60_INTER_LEVEL_WARP              0x21   // Inter-level warp
+#define SUBCMD60_INTER_LEVEL_WARP              0x21    // Inter-level warp
 #define SUBCMD60_LOAD_22                       0x22    /* Set player visibility Related to 0x21 and 0x23... */
 #define SUBCMD60_FINISH_LOAD                   0x23    /* Finished loading to a map, maybe? */
 #define SUBCMD60_SET_POS_24                    0x24    /* Used when starting a quest. */
@@ -131,7 +131,7 @@
 #define SUBCMD60_DROP_ITEM                     0x2A    /* Drop full stack or non-stack item */
 #define SUBCMD60_TAKE_ITEM                     0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
 #define SUBCMD60_TALK_NPC                      0x2C    /* Maybe this is talking to an NPC? */
-#define SUBCMD60_DONE_NPC                      0x2D    /*SUBCMD60_DONE_NPC Shows up when you're done with an NPC */
+#define SUBCMD60_DONE_NPC                      0x2D    /* SUBCMD60_DONE_NPC Shows up when you're done with an NPC */
 #define SUBCMD60_UNKNOW_2E                     0x2E
 #define SUBCMD60_HIT_BY_ENEMY                  0x2F
 #define SUBCMD60_LEVEL_UP                      0x30

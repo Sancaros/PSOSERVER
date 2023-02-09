@@ -4140,6 +4140,17 @@ size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
 
     ERR_LOG("未从背包中找到该物品");
 
+    ship_client_t* c = (ship_client_t*)malloc(sizeof(ship_client_t));
+
+    if (!c)
+        return -1;
+
+    c->version = 5;
+
+    print_item_data(c, &inv.iitems->data);
+
+    free_safe(c);
+
     return -1;
 }
 

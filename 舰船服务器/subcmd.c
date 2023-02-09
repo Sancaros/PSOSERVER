@@ -1285,7 +1285,7 @@ static int handle_move(ship_client_t *c, subcmd_move_t*pkt) {
         if((l->flags & LOBBY_FLAG_QUESTING))
             update_qpos(c, l);
 
-        c->game_data.death = 0;
+        c->game_data->death = 0;
     }
 
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
@@ -2644,7 +2644,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
                 rv = subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
                 break;
 
-            case SUBCMD60_SET_AREA:
+            case SUBCMD60_SET_AREA_1F:
                 rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
                 break;
 
@@ -2686,7 +2686,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_itemdrop(c, (subcmd_itemgen_t *)pkt);
             break;
 
-        case SUBCMD60_SET_AREA:
+        case SUBCMD60_SET_AREA_1F:
             rv = handle_set_area(c, (subcmd_set_area_t*)pkt);
             break;
 

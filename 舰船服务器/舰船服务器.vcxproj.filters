@@ -102,6 +102,9 @@
     <ClCompile Include="mag_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="subcmd_send.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">

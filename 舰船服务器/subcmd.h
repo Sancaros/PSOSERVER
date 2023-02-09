@@ -297,8 +297,8 @@ typedef struct subcmd_bb_bhit {
 typedef struct subcmd_bb_add_or_remove_condition {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t condition_type; // Probably condition type
-    uint32_t unknown_a2;
+    uint32_t condition_type; // Probably condition type 0x01000000 0x00000000
+    uint32_t unknown_a2;// 0x00000000
 } PACKED subcmd_bb_add_or_remove_condition_t;
 
 // 0x0E: Unknown 未知
@@ -440,12 +440,12 @@ typedef struct subcmd_bb_Unknown_6x1C {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_Unknown_6x1C_t;
 
-// 0x1F: Unknown (指令生效范围; 大厅和游戏)
-typedef struct subcmd_bb_Unknown_6x1F {
+// 0x1F: subcmd_bb_set_area_1F (指令生效范围; 大厅和游戏)
+typedef struct subcmd_bb_set_area_1F {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t area;
-} PACKED subcmd_bb_Unknown_6x1F_t;
+} PACKED subcmd_bb_set_area_1F_t;
 
 // 0x20: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
@@ -461,7 +461,7 @@ typedef struct subcmd_set_area {
 
 // 0x20: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
-typedef struct subcmd_bb_set_area {
+typedef struct subcmd_bb_set_area_20 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t area;
@@ -469,7 +469,7 @@ typedef struct subcmd_bb_set_area {
     float y;
     float z;
     uint32_t unknown_a1;
-} PACKED subcmd_bb_set_area_t;
+} PACKED subcmd_bb_set_area_20_t;
 
 // 0x21: Inter-level warp
 typedef struct subcmd_inter_level_warp {

@@ -243,7 +243,9 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     uint32_t *pid, id;
     int i;
 
+#ifdef DEBUG
     LOBBY_LOG("创建游戏房间 章节 %d 难度 %d", episode, difficulty);
+#endif // DEBUG
 
     /* If we don't have a lobby, bail. */
     if(!l) {

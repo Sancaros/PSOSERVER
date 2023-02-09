@@ -159,20 +159,20 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
             memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
 
-            //rv->game_info =
-            //    (sg_char_bkup_pkt*)malloc(sizeof(sg_char_bkup_pkt));
+            rv->game_data =
+                (client_game_data_t*)malloc(sizeof(client_game_data_t));
 
-            //if (!rv->game_info) {
-            //    perror("malloc");
-            //    free_safe(rv->pl);
-            //    free_safe(rv->enemy_kills);
-            //    free_safe(rv->bb_pl);
-            //    free_safe(rv);
-            //    closesocket(sock);
-            //    return NULL;
-            //}
+            if (!rv->game_data) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->bb_pl);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
 
-            //memset(rv->game_info, 0, sizeof(sg_char_bkup_pkt));
+            memset(rv->game_data, 0, sizeof(client_game_data_t));
 
             rv->bb_opts =
                 (psocn_bb_db_opts_t *)malloc(sizeof(psocn_bb_db_opts_t));
@@ -182,7 +182,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->bb_pl);
-                //free_safe(rv->game_info);
+                free_safe(rv->game_data);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -198,7 +198,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->bb_pl);
-                //free_safe(rv->game_info);
+                free_safe(rv->game_data);
                 free_safe(rv->bb_opts);
                 free_safe(rv);
                 closesocket(sock);
@@ -465,6 +465,10 @@ void client_destroy_connection(ship_client_t *c,
 
     if (c->bb_guild) {
         free_safe(c->bb_guild);
+    }
+
+    if (c->game_data) {
+        free_safe(c->game_data);
     }
 
     if(c->next_maps) {
