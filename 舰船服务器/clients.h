@@ -207,6 +207,9 @@ struct ship_client {
     time_t last_sent;
     time_t join_time;
     time_t login_time;
+    time_t save_time;
+
+    int need_save_data;
 
     bb_client_config_pkt sec_data;
     psocn_bb_db_char_t *bb_pl;

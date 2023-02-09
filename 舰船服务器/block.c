@@ -130,6 +130,11 @@ static void* block_thd(void* d) {
                 it->last_sent = srv_time;
             }
 
+            /* 默认间隔5秒存储一次数据 */
+            if ((it->save_time < srv_time) && (it->need_save_data)) {
+                client_send_bb_data(it);
+            }
+
             /* Check if their timeout expired to login after getting a
                protection message. */
             if ((it->flags & CLIENT_FLAG_GC_PROTECT) &&

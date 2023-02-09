@@ -5206,6 +5206,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_FINISH_LOAD:
+        c->need_save_data = 1;
+
         if (l->type == LOBBY_TYPE_LOBBY) {
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i] && l->clients[i] != c &&

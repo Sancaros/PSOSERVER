@@ -3821,9 +3821,6 @@ const char* item_get_name(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_item_data(ship_client_t* c, item_t* item) {
-    if (c == NULL)
-        c->version = 5;
-
     ITEM_LOG("物品信息: %s (ID %d / %08X)",
         item_get_name(item, c->version), item->item_id, item->item_id);
     ITEM_LOG("物品数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -4141,10 +4138,7 @@ size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
         }
     }
 
-    ERR_LOG("未从背包中找到该物品, 该玩家背包情况如下:");
-
-    for (x = 0; x < inv.item_count; x++)
-        print_item_data(NULL, &inv.iitems[x].data);
+    ERR_LOG("未从背包中找到该物品");
 
     return -1;
 }

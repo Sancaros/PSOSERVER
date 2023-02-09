@@ -481,15 +481,18 @@ void client_destroy_connection(ship_client_t *c,
 }
 
 void client_send_bb_data(ship_client_t* c) {
-    time_t now = time(NULL);
+    time_t now = c->save_time = time(NULL);
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB) {
         c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
-        shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+
+        DBG_LOG("每隔 5 秒保存GC %u 玩家 槽位 %d 数据", c->guildcard, c->sec_data.slot);
+        /*shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
             c->bb_pl, sizeof(psocn_bb_db_char_t),
             c->cur_block->b);
-        shipgate_send_bb_opts(&ship->sg, c);
+
+        shipgate_send_bb_opts(&ship->sg, c);*/
     }
 }
 

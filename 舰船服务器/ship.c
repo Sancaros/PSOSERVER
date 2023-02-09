@@ -226,6 +226,7 @@ static void* ship_thd(void* d) {
 
         /* Fill the sockets into the fd_sets so we can use select below. */
         TAILQ_FOREACH(it, s->clients, qentry) {
+
             /* If we haven't heard from a client in 2 minutes, its dead.
                Disconnect it. */
             if(now > it->last_message + 120) {
@@ -238,8 +239,6 @@ static void* ship_thd(void* d) {
                     it->flags |= CLIENT_FLAG_DISCONNECTED;
                     continue;
                 }
-
-                /* 这里写玩家每分钟备份的函数 TODO*/
 
                 it->last_sent = now;
             }

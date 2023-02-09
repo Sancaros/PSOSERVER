@@ -94,13 +94,13 @@ typedef struct psocn_bank {
 } PACKED psocn_bank_t;
 
 typedef struct psocn_pl_stats {
-    uint16_t atp;
-    uint16_t mst;
-    uint16_t evp;
-    uint16_t hp;
-    uint16_t dfp;
+    uint16_t atp;//力量
+    uint16_t mst;//精神力
+    uint16_t evp;//闪避力
+    uint16_t hp;//初始血量
+    uint16_t dfp;//防御力
     uint16_t ata;
-    uint16_t lck;
+    uint16_t lck;//运气
 } PACKED psocn_pl_stats_t;
 
 typedef struct psocn_lvl_stats {
