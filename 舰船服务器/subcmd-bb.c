@@ -54,7 +54,7 @@ static int handle_bb_cmd_check_size(ship_client_t* c, subcmd_bb_pkt_t* pkt, int 
     if (pkt->size != size) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! size %02X",
             c->guildcard, pkt->type, size);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -69,7 +69,7 @@ static int handle_bb_cmd_check_lobby_size(ship_client_t* c, subcmd_bb_pkt_t* pkt
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅 %s 指令!",
             c->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -78,7 +78,7 @@ static int handle_bb_cmd_check_lobby_size(ship_client_t* c, subcmd_bb_pkt_t* pkt
     if (pkt->size != size) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! size %02X",
             c->guildcard, pkt->type, size);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -93,7 +93,7 @@ static int handle_bb_cmd_check_game_size(ship_client_t* c, subcmd_bb_pkt_t* pkt)
     if (l->type != LOBBY_TYPE_GAME) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间内 %s 指令!",
             c->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -110,7 +110,7 @@ static int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt)
     if (pkt->data[2] != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间内 %s 指令!",
             c->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -395,7 +395,7 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, subcmd_bb_item
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
             c->guildcard, pkt->shdr.type, pkt->shdr.size);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
     
@@ -428,7 +428,7 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, subcmd_bb_bit
     if (pkt->hdr.pkt_len != LE16(0x0030) || pkt->shdr.size != 0x0A) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
             c->guildcard, pkt->shdr.type, pkt->shdr.size);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -461,7 +461,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     if (pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
             c->guildcard, pkt->shdr.type, pkt->shdr.size);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return rv;
     }
     send_simple(d, TRADE_5_TYPE, 0x01);
@@ -469,7 +469,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     send_simple(c, TRADE_5_TYPE, 0x01);
     send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC6交易功能存在故障，暂时关闭"));
 
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     //switch (pkt->menu.menu_id) {
     //case 0x0000:
@@ -579,7 +579,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     //    //             物品背包位置   
     //    //pkt->menu_id 06          00 21 00
     //    printf("未确认菜单 ID 0x%04X POS 0x%04X\n", pkt->menu.menu_id, pkt->menu.menu_pos);
-    //    print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    //    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
     //    break;
     //}
 
@@ -613,7 +613,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     //    rv = send_simple(d, TRADE_5_TYPE, 0);
     //}
 
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
     return rv;
 }
 
@@ -661,8 +661,7 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
 
 static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    sitem_t *shopi;
-    iitem_t* ii;
+    iitem_t ii;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -673,46 +672,26 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
-    }
-
-    shopi = (sitem_t*)malloc(sizeof(sitem_t));
-
-    if (!shopi) {
-        ERR_LOG("无法分配商店物品数据内存空间");
-        ERR_LOG("%s", strerror(errno));
-    }
-
-    ii = (iitem_t*)malloc(sizeof(iitem_t));
-
-    if (!ii) {
-        ERR_LOG("无法分配商店物品数据内存空间");
-        ERR_LOG("%s", strerror(errno));
     }
 
     DBG_LOG("购买物品");
 
-    shopi = &c->game_data->shop_items[pkt->shop_item_index];
+    memcpy(&ii.data.data_l[0], &c->game_data->shop_items[pkt->shop_item_index].data_l[0], sizeof(ii.data));
 
-    print_item_data(c, (item_t*)shopi);
-
-
-    ii->data.data_l[0] = shopi->data_l[0];
-    ii->data.data_l[1] = shopi->data_l[1];
-    ii->data.data_l[2] = shopi->data_l[2];
+    print_item_data(c, &ii.data);
 
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
-    ii->data.item_id = l->item_player_id[c->client_id]++;
+    ii.data.item_id = l->item_player_id[c->client_id]++;
 
-    ii->data.data2_l = shopi->costl;
+    //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
 
-    item_add_to_inv(c->bb_pl->inv.iitems,
-        c->bb_pl->inv.item_count, ii);
+    if (add_item(c, ii))
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+            c->guildcard);
 
-    subcmd_send_bb_delete_meseta(c, shopi->costl, 0);
-    free_safe(shopi);
-    free_safe(ii);
+    subcmd_send_bb_delete_meseta(c, ii.data.data2_l, 0);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -737,7 +716,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
         if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
                 c->guildcard);
-            print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+            print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
             return -2;
         }
 
@@ -937,7 +916,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " sent bad bank action!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1126,7 +1105,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             c->guildcard, pkt->action);
-        print_payload((unsigned char*)pkt, 0x18);
+        print_payload((uint8_t*)pkt, 0x18);
         return -1;
     }
 }
@@ -1150,7 +1129,7 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
+int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t ch_class = c->bb_pl->character.disp.dress_data.ch_class;
@@ -1179,76 +1158,76 @@ static int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         }
     }
     else {
-        pkt->guildcard = c->guildcard;
+        //pkt->guildcard = c->guildcard;
 
-        // Check techniques...检查魔法,如果是机器人就不该有魔法
-        if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
-            for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-                if (pkt->techniques[i] == 0xFF)
-                    pkt->techniques[i] = 0x00;
+        //// Check techniques...检查魔法,如果是机器人就不该有魔法
+        //if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
+        //    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        //        //if (pkt->techniques[i] == 0xFF)
+        //            //pkt->techniques[i] = 0x00;
 
-                if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
-                    rv = -1;
+        //        if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
+        //            rv = -1;
 
-                if (rv) {
-                    ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
-                        pkt->techniques[i], max_tech_level[i].tech_name, 
-                        max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
+        //        if (rv) {
+        //            ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
+        //                pkt->techniques[i], max_tech_level[i].tech_name, 
+        //                max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
 
-                    /* 规范化数据包的魔法等级 */
-                    pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
-                    rv = 0;
-                }
-            }
-        }
-
-        //for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        //    // 学会所有技能 TODO 增加作弊开关
-        //    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
-        //    pkt->techniques[i] = c->bb_pl->character.techniques[i];
+        //            /* 规范化数据包的魔法等级 */
+        //            //pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        //            rv = 0;
+        //        }
+        //    }
         //}
 
-        // 检测玩家角色结构
-        pkt->dress_data = c->bb_pl->character.disp.dress_data;
+        ////for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        ////    // 学会所有技能 TODO 增加作弊开关
+        ////    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        ////    pkt->techniques[i] = c->bb_pl->character.techniques[i];
+        ////}
 
-        memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
+        //// 检测玩家角色结构
+        //pkt->dress_data = c->bb_pl->character.disp.dress_data;
 
-        // Prevent crashing with NPC skins... 防止NPC皮肤崩溃
-        if (c->bb_pl->character.disp.dress_data.v2flags) {
-            pkt->dress_data.v2flags = 0x00;
-            pkt->dress_data.version = 0x00;
-            pkt->dress_data.v1flags = LE32(0x00000000);
-            pkt->dress_data.costume = LE16(0x0000);
-            pkt->dress_data.skin = LE16(0x0000);
-        }
+        //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
 
-        /* 检测人物基础数值 */
-        pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
-        pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
-        pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
-        pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
-        pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
-        pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
-        pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
+        //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
+        //if (c->bb_pl->character.disp.dress_data.v2flags) {
+        //    pkt->dress_data.v2flags = 0x00;
+        //    pkt->dress_data.version = 0x00;
+        //    pkt->dress_data.v1flags = LE32(0x00000000);
+        //    pkt->dress_data.costume = LE16(0x0000);
+        //    pkt->dress_data.skin = LE16(0x0000);
+        //}
 
-        for (i = 0; i < 10; i++)
-            pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
+        ///* 检测人物基础数值 */
+        //pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
+        //pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
+        //pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
+        //pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
+        //pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
+        //pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
+        //pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
 
-        pkt->level = c->bb_pl->character.disp.level;
-        pkt->exp = c->bb_pl->character.disp.exp;
-        pkt->meseta = c->bb_pl->character.disp.meseta;
+        //for (i = 0; i < 10; i++)
+        //    pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
+
+        //pkt->level = c->bb_pl->character.disp.level;
+        //pkt->exp = c->bb_pl->character.disp.exp;
+        //pkt->meseta = c->bb_pl->character.disp.meseta;
 
 
-        // Could check inventory here 查看背包
-        pkt->inv.item_count = c->bb_pl->inv.item_count;
+        //// Could check inventory here 查看背包
+        //pkt->inv.item_count = c->bb_pl->inv.item_count;
 
-        for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-            memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
+        //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        //    memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
 
-        for (i = 0; i < sizeof(uint32_t); i++)
-            memset(&pkt->unused[i], 0, sizeof(uint32_t));
+        //for (i = 0; i < sizeof(uint32_t); i++)
+        //    memset(&pkt->unused[i], 0, sizeof(uint32_t));
 
-        pkt->shdr.size = pkt->hdr.pkt_len / 4;
+        //pkt->shdr.size = pkt->hdr.pkt_len / 4;
     }
 
     //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
@@ -1391,35 +1370,37 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return 0;
     }
 
-    subcmd_bb_626Dsize_check(c, pkt);
+    //subcmd_bb_626Dsize_check(c, pkt);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
+        //DBG_LOG("LOBBY_FLAG_BURSTING 0x62 指令: 0x%02X", type);
 
         switch (type) {
-        case SUBCMD62_BURST1://6D
-        case SUBCMD62_BURST2://6B
-        case SUBCMD62_BURST3://6C
-        case SUBCMD62_BURST4://6E
+        case SUBCMD62_BURST1://6D //其他大厅跃迁进房时触发 1
+        case SUBCMD62_BURST2://6B //其他大厅跃迁进房时触发 2
+        case SUBCMD62_BURST3://6C //其他大厅跃迁进房时触发 3
+        case SUBCMD62_BURST4://6E //其他大厅跃迁进房时触发 4
             if (l->flags & LOBBY_FLAG_QUESTING)
                 rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
             /* Fall through... */
 
-        case SUBCMD62_BURST5://6F
-        case SUBCMD62_BURST6://71
-        //case SUBCMD62_BURST_PLDATA://70
+        case SUBCMD62_BURST5://6F //其他大厅跃迁进房时触发 5
+        case SUBCMD62_BURST6://71 //其他大厅跃迁进房时触发 6
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
 
-        case SUBCMD62_BURST_PLDATA://70
+        case SUBCMD62_BURST_PLDATA://70 //其他大厅跃迁进房时触发 7
             rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
             break;
 
         default:
+            DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
 
+        //DBG_LOG("LOBBY_FLAG_BURSTING DONE 0x62 指令: 0x%02X", type);
         pthread_mutex_unlock(&l->mutex);
         return rv;
     }
@@ -1546,17 +1527,13 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
-        /* Forward the packet unchanged to the destination. */
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 
     case SUBCMD62_QUEST_ITEM_UNKNOW1:
     case SUBCMD62_QUEST_ITEM_RECEIVE:
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
     case SUBCMD62_GANBLING:
-        //UNK_CSPD(type, c->version, pkt);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
     }
 
@@ -1581,10 +1558,57 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->data.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             c->guildcard, pkt->data.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
-
+//[2023年02月09日 22:51:33:981] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   04 00 05 03                                         ....
+//[2023年02月09日 22:51:34:017] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   04 00 05 03                                         ....
+//[2023年02月09日 22:51:34:054] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   05 00 05 01                                         ....
+//[2023年02月09日 22:51:34:089] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   06 00 05 01                                         ....
+//[2023年02月09日 22:51:34:124] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   07 00 05 01                                         ....
+//[2023年02月09日 22:51:34:157] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   08 00 05 01                                         ....
+//[2023年02月09日 22:51:34:194] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   09 00 05 01                                              ...
+//[2023年02月09日 22:51:34:228] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   05 00 05 01                                         ....
+//[2023年02月09日 22:51:34:262] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   06 00 05 01                                         ....
+//[2023年02月09日 22:51:34:315] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   07 00 05 01                                         ....
+//[2023年02月09日 22:51:34:354] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   08 00 05 01                                         ....
+//[2023年02月09日 22:51:34:390] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  05 03 FF FF 00 00 00 00    ..`.............
+//( 00000010 )   09 00 05 01                                              ...
     rv = subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 
     if (pkt->data.flags && pkt->data.object_id != 0xFFFF) {
@@ -1682,6 +1706,10 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
         return -1;
     }
 
+    /* Don't even try to deal with these in battle or challenge mode. */
+    if (l->challenge || l->battle)
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+
     if (pkt->hdr.pkt_len == LE16(0x0010)) {
         /* 对空气进行攻击 */
         return 0;
@@ -1692,7 +1720,7 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
     if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
             c->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1742,6 +1770,10 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
         return -1;
     }
 
+    /* Don't even try to deal with these in battle or challenge mode. */
+    if (l->challenge || l->battle)
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+
     if (pkt->hdr.pkt_len == LE16(0x0010)) {
         /* 对空气进行攻击 */
         return 0;
@@ -1752,7 +1784,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的法术攻击数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1860,6 +1892,10 @@ static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
         return -1;
     }
 
+    /* Don't even try to deal with these in battle or challenge mode. */
+    if (l->challenge || l->battle)
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+
     /* We only care about these if the AoE timer is set on the sender. */
     if (c->aoe_timer < now)
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1883,7 +1919,7 @@ static int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_conditi
     if (pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             c->guildcard, pkt->hdr.pkt_type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1904,7 +1940,7 @@ static int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-static int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
+int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_dragon_act_t tr;
@@ -1940,7 +1976,7 @@ static int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     return 0;
 }
 
-static int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t* pkt) {
+int handle_bb_gol_dragon_act(ship_client_t* c, subcmd_bb_gol_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_gol_dragon_act_t tr;
@@ -2026,7 +2062,7 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的经验获取数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2076,7 +2112,7 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
 
 static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint32_t quest_offset = *(uint32_t*)&pkt->pos[0];
+    uint32_t quest_offset = pkt->quest_offset;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2089,18 +2125,21 @@ static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
-
-    if (quest_offset >= 23) {
-        UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
-        return 0;
+//[2023年02月09日 21:50:51:617] 调试(subcmd-bb.c 4858): Unknown 0x60: 0xD2
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  D2 03 FF FF 05 00 00 00    ..`.............
+//( 00000010 )   F3 AD 00 00                                         ....
+//[2023年02月09日 21:50:51:653] 调试(subcmd-bb.c 4858): Unknown 0x60: 0xD2
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  D2 03 FF FF 05 00 00 00    ..`.............
+//( 00000010 )   9A D7 00 00                                         ....
+    if (quest_offset < 23) {
+        quest_offset *= 4;
+        *(uint32_t*)&c->bb_pl->quest_data2[quest_offset] = *(uint32_t*)&pkt->data[0];
     }
-
-    quest_offset *= 4;
-
-    *(uint32_t*)&c->bb_pl->quest_data2[quest_offset] = *(uint32_t*)&pkt->pos[0];
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
@@ -2125,7 +2164,7 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2276,7 +2315,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2286,7 +2325,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     if (mag_bb_feed(c, item_id, mag_id)) {
         ERR_LOG("GC %" PRIu32 " 喂养玛古发生错误!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2313,7 +2352,7 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误装备数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2348,7 +2387,7 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误卸除装备数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2442,7 +2481,7 @@ static int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         pkt->data[0] != c->client_id) {
         ERR_LOG("GC %" PRIu32 " sent bad medic message!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2451,6 +2490,27 @@ static int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     c->pl->bb.character.disp.meseta -= 10;
 
     /* Send it along to the rest of the lobby. */
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -2468,7 +2528,7 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2493,7 +2553,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0084) || pkt->shdr.size != 0x1F) {
         ERR_LOG("GC %" PRIu32 " 发送错误的整理物品数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2539,7 +2599,7 @@ static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0024) || pkt->shdr.size != 0x07) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2642,13 +2702,12 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
         return -1;
     }
 
-    //const auto* p = check_size_sc(data, sizeof(PSOSubcommand), 0xFFFF);
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2702,7 +2761,6 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     }
 
     rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    //forward_subcommand(l, c, command, flag, data);
 
     return rv;
 }
@@ -2721,11 +2779,25 @@ static int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的杀怪数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
+    int i;
+
+    if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
+        return -1;
+
+    for (i = 0; i < l->num_syncregs; ++i) {
+        if (regnum == l->syncregs[i])
+            return i;
+    }
+
+    return -1;
 }
 
 static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
@@ -2745,11 +2817,11 @@ static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的同步数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
-    /* XXXX: Probably should do some checking here... */
+    /* TODO: Probably should do some checking here... */
     /* Run the register sync script, if one is set. If the script returns
        non-zero, then assume that it has adequately handled the sync. */
     if ((script_execute(ScriptActionQuestSyncRegister, c, SCRIPT_ARG_PTR, c,
@@ -2833,7 +2905,7 @@ static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     }
 
     /* Does this register have to be synced? */
-    if ((idx = bb_reg_sync_index(l, pkt->register_number)) != -1) {
+    if ((idx = reg_sync_index_bb(l, pkt->register_number)) != -1) {
         l->regvals[idx] = val;
     }
 
@@ -2857,7 +2929,7 @@ static int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt)
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的死亡数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2878,7 +2950,7 @@ static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2908,11 +2980,11 @@ static int handle_bb_Unknown_6x88(ship_client_t* c, subcmd_bb_Unknown_6x88_t* pk
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
-    UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
+    //UDONE_CSPD(pkt->hdr.pkt_type, c->version, pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2931,7 +3003,7 @@ static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pk
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
     }
 
@@ -2954,7 +3026,7 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
     }
 
@@ -2979,7 +3051,7 @@ static int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_sw
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
     }
 
@@ -3017,7 +3089,7 @@ static int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3051,7 +3123,7 @@ static int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3068,14 +3140,36 @@ static int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
             c->guildcard);
         return -1;
     }
-
+    //(00000000)   10 00 60 00 00 00 00 00  50 02 00 00 A3 A6 00 00    ..`.....P.......
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中释放了法术!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || c->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    /* This aught to do it... */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -3104,7 +3198,7 @@ static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
 
     /* We don't care about these in lobbies. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -3245,7 +3339,7 @@ static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pk
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3258,7 +3352,7 @@ static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pk
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(c, l);
 
-        DBG_LOG("GC %u %d %d (%u %u) X轴:%f Y轴:%f Z轴:%f", c->guildcard, 
+        DBG_LOG("GC %u %d %d (0x%X 0x%X) X轴:%f Y轴:%f Z轴:%f", c->guildcard, 
             c->client_id, pkt->shdr.client_id, pkt->unk1, pkt->unused, pkt->x, pkt->y, pkt->z);
     }
 
@@ -3279,7 +3373,7 @@ static int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3372,7 +3466,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品掉落数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3464,7 +3558,7 @@ static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3537,7 +3631,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的堆叠物品掉落数据!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3644,7 +3738,7 @@ static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pk
     if (pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3713,7 +3807,7 @@ static int handle_bb_level_up(ship_client_t* c, subcmd_bb_level_up_t* pkt) {
     if (pkt->shdr.size != 0x05 || pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3765,7 +3859,7 @@ static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_chair_dir_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3945,7 +4039,7 @@ static int handle_bb_trade_done(ship_client_t* c, subcmd_bb_trade_t* pkt) {
     if (pkt->shdr.size != 0x08) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3969,7 +4063,7 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 || pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -4022,7 +4116,7 @@ static int handle_bb_Unknown_6x53(ship_client_t* c, subcmd_bb_Unknown_6x53_t* pk
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || c->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         //return -1;
     }
 
@@ -4045,7 +4139,7 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08 || pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -4077,11 +4171,11 @@ static int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt
     if (pkt->hdr.pkt_len != LE16(0x0014)) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4092,7 +4186,7 @@ static int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -4109,11 +4203,167 @@ static int handle_bb_gogo_ball(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
     // pkt->act_id 大厅动作的对应ID
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    pmt_weapon_bb_t tmp_wp = { 0 };
+    game_enemy_t* en;
+    subcmd_bb_steal_exp_t* pk = (subcmd_bb_steal_exp_t*)pkt;
+    uint32_t exp_percent = 0;
+    uint32_t exp_to_add;
+    uint8_t special = 0;
+    uint16_t mid;
+    uint32_t bp, exp_amount;
+    int i;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    mid = LE16(pk->shdr.enemy_id);
+    mid &= 0xFFF;
+
+    if (mid < 0xB50) {
+        for (i = 0; i < c->bb_pl->inv.item_count; i++) {
+            if ((c->bb_pl->inv.iitems[i].flags & 0x08) &&
+                (c->bb_pl->inv.iitems[i].data.data_b[0] == 0x00)) {
+                if ((c->bb_pl->inv.iitems[i].data.data_b[1] < 0x0A) &&
+                    (c->bb_pl->inv.iitems[i].data.data_b[2] < 0x05)) {
+                    special = (c->bb_pl->inv.iitems[i].data.data_b[4] & 0x1F);
+                }
+                else {
+                    if ((c->bb_pl->inv.iitems[i].data.data_b[1] < 0x0D) &&
+                        (c->bb_pl->inv.iitems[i].data.data_b[2] < 0x04))
+                        special = (c->bb_pl->inv.iitems[i].data.data_b[4] & 0x1F);
+                    else {
+                        if (pmt_lookup_weapon_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_wp)) {
+                            ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                                c->guildcard);
+                            return -1;
+                        }
+
+                        special = tmp_wp.special_type;
+                    }
+                }
+
+                switch (special) {
+                case 0x09:
+                    // Master's
+                    exp_percent = 8;
+                    break;
+
+                case 0x0A:
+                    // Lord's
+                    exp_percent = 10;
+                    break;
+
+                case 0x0B:
+                    // King's
+                    exp_percent = 12;
+                    if ((l->difficulty == 0x03) &&
+                        (c->equip_flags & EQUIP_FLAGS_DROID))
+                        exp_percent += 30;
+                    break;
+                }
+
+                break;
+            }
+        }
+
+        if (exp_percent) {
+            /* Make sure the enemy is in range. */
+            mid = LE16(pk->shdr.enemy_id);
+            //DBG_LOG("怪物编号原值 %02X %02X", mid, pkt->enemy_id2);
+            mid &= 0xFFF;
+            //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
+
+            if (mid > l->map_enemies->count) {
+                ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
+                    "敌人数量: %d)!", c->guildcard, mid, l->map_enemies->count);
+                return -1;
+            }
+
+            /* Make sure this client actually hit the enemy and that the client didn't
+               already claim their experience. */
+            en = &l->map_enemies->enemies[mid];
+
+            if (!(en->clients_hit & (1 << c->client_id))) {
+                return 0;
+            }
+
+            /* Set that the client already got their experience and that the monster is
+               indeed dead. */
+            en->clients_hit = (en->clients_hit & (~(1 << c->client_id))) | 0x80;
+
+            /* Give the client their experience! */
+            bp = en->bp_entry;
+
+            //新增经验倍率提升参数 exp_mult expboost 11.18
+            exp_amount = (l->bb_params[bp].exp * exp_percent) / 100L;
+
+            if (exp_amount > 80)  // Limit the amount of exp stolen to 80
+                exp_amount = 80;
+
+            if ((c->game_data->expboost) && (l->exp_mult > 0)) {
+                exp_to_add = exp_amount;
+                exp_amount = exp_to_add + (l->bb_params[bp].exp * l->exp_mult);
+            }
+
+            if (!exp_amount) {
+                ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);
+                return client_give_exp(c, 1);
+            }
+
+            return client_give_exp(c, exp_amount);
+        }
+    }
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    subcmd_send_bb_set_exp_rate(c, 3000);
+
+    c->need_save_data = 1;
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int i, rv;
+
+    if (pkt->shdr.client_id != c->client_id) {
+        DBG_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+    }
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i] && l->clients[i] != c &&
+                subcmd_send_pos(c, l->clients[i])) {
+                rv = -1;
+                break;
+            }
+        }
+    }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4124,13 +4374,13 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0, sent = 1, i;
 
-    subcmd_bb_60size_check(c, pkt);
-
     /* Ignore these if the client isn't in a lobby. */
     if (!l)
         return 0;
 
     pthread_mutex_lock(&l->mutex);
+
+    subcmd_bb_60size_check(c, pkt);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -4138,7 +4388,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_LOAD_3B:
         case SUBCMD60_BURST_DONE:
             /* TODO 将这个函数融合进房间函数中 */
-            subcmd_send_bb_set_exp_rate(c, 100000);
+            subcmd_send_bb_set_exp_rate(c, 3000);
             rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
             break;
 
@@ -4184,13 +4434,6 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_HIT_OBJ:
-        /* Don't even try to deal with these in battle or challenge mode
-        不要尝试在战斗或挑战模式中处理这些问题. */
-        if (l->challenge || l->battle) {
-            sent = 0;
-            break;
-        }
-
         rv = handle_bb_objhit(c, (subcmd_bb_bhit_pkt_t*)pkt);
         break;
 
@@ -4251,7 +4494,19 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_LOAD_22://subcmd_set_player_visibility_6x22_6x23_t
-        rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x01);
+
+        DBG_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", type);
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        if (l->type == LOBBY_TYPE_LOBBY) {
+            for (i = 0; i < l->max_clients; ++i) {
+                if (l->clients[i] && l->clients[i] != c &&
+                    subcmd_send_pos(c, l->clients[i])) {
+                    rv = -1;
+                    break;
+                }
+            }
+        }
+        //rv = handle_bb_load_22(c, pkt, 0x01);
         break;
 
     case SUBCMD60_SET_POS_24:
@@ -4386,22 +4641,10 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_OBJHIT_PHYS:
-        /* Don't even try to deal with these in battle or challenge mode. */
-        if (l->challenge || l->battle) {
-            sent = 0;
-            break;
-        }
-
         rv = handle_bb_objhit_phys(c, (subcmd_bb_objhit_phys_t*)pkt);
         break;
 
     case SUBCMD60_OBJHIT_TECH:
-        /* Don't even try to deal with these in battle or challenge mode. */
-        if (l->challenge || l->battle) {
-            sent = 0;
-            break;
-        }
-
         rv = handle_bb_objhit_tech(c, (subcmd_bb_objhit_tech_t*)pkt);
         break;
 
@@ -4409,7 +4652,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_used_tech(c, (subcmd_bb_used_tech_t*)pkt);
         break;
 
-    case SUBCMD60_TAKE_DAMAGE:
+    case SUBCMD60_DEFENSE_DAMAGE:
         rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x01);
         break;
 
@@ -4502,7 +4745,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_UNKNOW_6A:
-        rv = handle_bb_cmd_check_game_size(c, pkt);
+        rv = handle_bb_subcmd_6a(c, (subcmd_bb_Unknown_6x6A_t*)pkt);
         break;
 
     case SUBCMD60_SET_FLAG:
@@ -4596,8 +4839,6 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_FINISH_LOAD:
-        c->need_save_data = 1;
-
         if (l->type == LOBBY_TYPE_LOBBY) {
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i] && l->clients[i] != c &&
@@ -4626,6 +4867,8 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     int rv = -1;
     uint32_t dnum = LE32(pkt->hdr.flags);
 
+    subcmd_bb_626Dsize_check(c, pkt);
+
     /* Ignore these if the client isn't in a lobby or team. */
     if (!l)
         return 0;
@@ -4639,6 +4882,37 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!dest) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
+    }
+
+    /* If there's a burst going on in the lobby, delay most packets */
+    if (l->flags & LOBBY_FLAG_BURSTING) {
+        rv = 0;
+
+        switch (type) {
+        case SUBCMD62_BURST1://6D
+        case SUBCMD62_BURST2://6B
+        case SUBCMD62_BURST3://6C
+        case SUBCMD62_BURST4://6E
+            if (l->flags & LOBBY_FLAG_QUESTING)
+                rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
+            /* Fall through... */
+
+        case SUBCMD62_BURST5://6F
+        case SUBCMD62_BURST6://71
+            //case SUBCMD62_BURST_PLDATA://70
+            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            break;
+
+        case SUBCMD62_BURST_PLDATA://70
+            rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
+            break;
+
+        default:
+            rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
+        }
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
     }
 
     switch (type) {
@@ -4677,7 +4951,7 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x62 指令: 0x%02X", type);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
         /* Forward the packet unchanged to the destination. */
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
@@ -4688,163 +4962,317 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 }
 
 /* 原始 60 指令函数 */
-int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
-    int rv = 0, sent = 1, i;
+    int rv = 0, sent = 1, i = 0;
 
     /* Ignore these if the client isn't in a lobby or team. */
     if (!l)
         return 0;
 
-    subcmd_bb_60size_check(c, pkt);
-
     pthread_mutex_lock(&l->mutex);
+
+    subcmd_bb_60size_check(c, pkt);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
+        //DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+
         switch (type) {
-        case SUBCMD60_LOAD_3B:
-        case SUBCMD60_BURST_DONE:
-            /* TODO 将这个函数融合进房间函数中 */
-            subcmd_send_bb_set_exp_rate(c, 100000);
-            rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-            break;
-
-        case SUBCMD60_SET_AREA_1F:
-            rv = handle_bb_set_area_1F(c, (subcmd_bb_set_area_1F_t*)pkt);
-            break;
-
-        case SUBCMD60_SET_AREA_20:
-            rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
-            break;
-
-        case SUBCMD60_SET_POS_3F:
+        case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
             rv = handle_bb_set_pos(c, (subcmd_bb_set_pos_t*)pkt);
             break;
 
-        case SUBCMD60_CMODE_GRAVE:
-            UNK_CSPD(type, c->version, (uint8_t*)pkt);
-            rv = handle_bb_cmode_grave(c, pkt);
+        case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
+            rv = handle_bb_set_area_1F(c, (subcmd_bb_set_area_1F_t*)pkt);
             break;
 
+        case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
+        //case SUBCMD60_BURST_DONE:
+            /* TODO 将这个函数融合进房间函数中 */
+            rv = handle_bb_load_3b(c, (subcmd_bb_pkt_t*)pkt);
+            break;
+
+        //case SUBCMD60_SET_AREA_20:
+        //    rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
+        //    break;
+
+
+        //case SUBCMD60_CMODE_GRAVE:
+        //    UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        //    rv = handle_bb_cmode_grave(c, pkt);
+        //    break;
+
         default:
+            DBG_LOG("lobby_enqueue_pkt_bb 0x60 指令: 0x%02X", type);
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
+
+        //DBG_LOG("LOBBY_FLAG_BURSTING DONE 0x60 指令: 0x%02X", type);
 
         pthread_mutex_unlock(&l->mutex);
         return rv;
     }
 
     switch (type) {
-    case SUBCMD60_SYMBOL_CHAT://间隔1秒可以正常发送
-        if (time_check(c->subcmd_cooldown[type], 1))
-            rv = handle_bb_symbol_chat(c, (subcmd_bb_symbol_chat_t*)pkt);
-        else
-            sent = 1;
+
+        /* 未经测试 来自T端 2023.2.10 */
+    case SUBCMD60_STEAL_EXP:
+        rv = handle_bb_steal_exp(c, (subcmd_bb_steal_exp_t*)pkt);
         break;
 
-    case SUBCMD60_HIT_MONSTER:
-        rv = handle_bb_mhit(c, (subcmd_bb_mhit_pkt_t*)pkt);
+        /* 此函数正常载入 */
+    case SUBCMD60_LOBBY_ACTION:
+        rv = handle_bb_lobby_act(c, (subcmd_bb_lobby_act_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
+    case SUBCMD60_UNKNOW_88:
+        rv = handle_bb_Unknown_6x88(c, (subcmd_bb_Unknown_6x88_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_DRAGON_ACT:// Dragon actions
+        rv = handle_bb_dragon_act(c, (subcmd_bb_dragon_act_t*)pkt);
+        break;
+
+    case SUBCMD60_LOAD_3B:
+        rv = handle_bb_load_3b(c, (subcmd_bb_pkt_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_LOAD_22://subcmd_set_player_visibility_6x22_6x23_t
+        rv = handle_bb_load_22(c, (subcmd_bb_set_player_visibility_6x22_6x23_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_TALK_NPC:
+        rv = handle_bb_talk_npc(c, (subcmd_bb_talk_npc_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_DONE_NPC:
+        rv = handle_bb_done_talk_npc(c, (subcmd_bb_end_talk_to_npc_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_MENU_REQ:
+        rv = handle_bb_menu_req(c, (subcmd_bb_menu_req_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_LEVEL_UP_REQ:
+        rv = handle_bb_level_up_req(c, (subcmd_bb_levelup_req_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_REQ_SWITCH:
+        rv = handle_bb_switch_req(c, (subcmd_bb_switch_req_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SET_FLAG:
+        rv = handle_bb_set_flag(c, (subcmd_bb_set_flag_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_CREATE_PIPE:
+        rv = handle_bb_create_pipe(c, (subcmd_bb_pipe_pkt_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_UNKNOW_6A:
+        rv = handle_bb_subcmd_6a(c, (subcmd_bb_Unknown_6x6A_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_INTER_LEVEL_WARP:
+        rv = handle_bb_inter_level_warp(c, (subcmd_bb_inter_level_warp_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_UNKNOW_3A:
+        rv = handle_bb_cmd_3a(c, (subcmd_bb_cmd_3a_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
     case SUBCMD60_CONDITION_ADD:
         rv = handle_bb_condition(c, (subcmd_bb_add_or_remove_condition_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_CONDITION_REMOVE:
         rv = handle_bb_condition(c, (subcmd_bb_add_or_remove_condition_t*)pkt);
         break;
 
-    case SUBCMD60_SET_AREA_1F:
-        rv = handle_bb_set_area_1F(c, (subcmd_bb_set_area_1F_t*)pkt);
+        /* 此函数正常载入 */
+    case SUBCMD60_SYNC_REG:
+        rv = handle_bb_sync_reg(c, (subcmd_bb_sync_reg_t*)pkt);
         break;
 
-    case SUBCMD60_SET_AREA_20:
-        rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
+        /* 此函数正常载入 */
+    case SUBCMD60_OBJHIT_PHYS:
+        rv = handle_bb_objhit_phys(c, (subcmd_bb_objhit_phys_t*)pkt);
         break;
 
-    case SUBCMD60_INTER_LEVEL_WARP:
-        rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
+        /* 此函数正常载入 */
+    case SUBCMD60_SWITCH_CHANGED:
+        rv = handle_bb_switch_changed(c, (subcmd_bb_switch_changed_pkt_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
+    case SUBCMD60_ATTACK1:
+    case SUBCMD60_ATTACK2:
+    case SUBCMD60_ATTACK3:
+        rv = handle_bb_normal_attack(c, (subcmd_bb_natk_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_DEFENSE_DAMAGE:
+        rv = handle_bb_defense_damage(c, (subcmd_bb_defense_damage_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_KILL_MONSTER:
+        rv = handle_bb_killed_monster(c, (subcmd_bb_killed_monster_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_HIT_OBJ:
+        rv = handle_bb_objhit(c, (subcmd_bb_bhit_pkt_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_CREATE_ENEMY_SET:
+        rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x04);
+        break;
+
+        /* 此函数正常载入 */
     case SUBCMD60_SET_POS_24:
         rv = handle_bb_set_pos_0x24(c, (subcmd_bb_set_pos_0x24_t*)pkt);
         break;
 
+
+        /* 此函数正常载入 */
+    case SUBCMD60_GALLON_AREA:
+        rv = handle_bb_gallon_area(c, (subcmd_bb_gallon_area_pkt_t*)pkt);
+        break;
+
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SET_AREA_20:
+        rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SET_TECH_LEVEL_OVERRIDE:
+        rv = handle_bb_set_technique_level_override(c, (subcmd_bb_set_technique_level_override_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_OBJHIT_TECH:
+        rv = handle_bb_objhit_tech(c, (subcmd_bb_objhit_tech_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SYMBOL_CHAT:
+        rv = handle_bb_symbol_chat(c, (subcmd_bb_symbol_chat_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_HIT_MONSTER:
+        rv = handle_bb_mhit(c, (subcmd_bb_mhit_pkt_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SET_AREA_1F:
+        rv = handle_bb_set_area_1F(c, (subcmd_bb_set_area_1F_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
     case SUBCMD60_EQUIP:
         rv = handle_bb_equip(c, (subcmd_bb_equip_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_REMOVE_EQUIP:
         rv = handle_bb_unequip(c, (subcmd_bb_equip_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_DROP_ITEM:
         rv = handle_bb_drop_item(c, (subcmd_bb_drop_item_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_SET_POS_3E:
     case SUBCMD60_SET_POS_3F:
         rv = handle_bb_set_pos(c, (subcmd_bb_set_pos_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_MOVE_SLOW:
     case SUBCMD60_MOVE_FAST:
         rv = handle_bb_move(c, (subcmd_bb_move_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_DELETE_ITEM:
         rv = handle_bb_destroy_item(c, (subcmd_bb_destroy_item_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_WORD_SELECT:
         rv = handle_bb_word_select(c, (subcmd_bb_word_select_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_DROP_POS:
         rv = handle_bb_drop_pos(c, (subcmd_bb_drop_pos_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_SORT_INV:
         rv = handle_bb_sort_inv(c, (subcmd_bb_sort_inv_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_MEDIC:
         rv = handle_bb_medic(c, (subcmd_bb_pkt_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_REQ_EXP:
         rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_pkt_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_USED_TECH:
         rv = handle_bb_used_tech(c, (subcmd_bb_used_tech_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_TAKE_DAMAGE1:
     case SUBCMD60_TAKE_DAMAGE2:
         rv = handle_bb_take_damage(c, (subcmd_bb_take_damage_t*)pkt);
         break;
 
+        /* 此函数正常载入 */
     case SUBCMD60_SPAWN_NPC:
         rv = handle_bb_spawn_npc(c, pkt);
         break;
 
-    case SUBCMD60_SYNC_REG:
-        rv = handle_bb_sync_reg(c, (subcmd_bb_sync_reg_t*)pkt);
-        break;
-
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x60 指令: 0x%02X", type);
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        DBG_LOG("暂未完成 0x60: 0x%02X\n", type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
         sent = 0;
         break;
 
     case SUBCMD60_FINISH_LOAD:
-        if (l->type == LOBBY_TYPE_LOBBY) {
+        if (l->type != LOBBY_TYPE_GAME) {
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i] && l->clients[i] != c &&
                     subcmd_send_pos(c, l->clients[i])) {
@@ -4853,19 +5281,20 @@ int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
                 }
             }
         }
+        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+        break;
 
-    case SUBCMD60_LOAD_22:
-    case SUBCMD60_TALK_NPC:
-    case SUBCMD60_DONE_NPC:
-    case SUBCMD60_LOAD_3B:
-    case SUBCMD60_MENU_REQ:
+    //case SUBCMD60_LOAD_22:
+    //case SUBCMD60_LOAD_3B:
     case SUBCMD60_WARP_55:
-    case SUBCMD60_LOBBY_ACTION:
+    //case SUBCMD60_LOBBY_ACTION:
     case SUBCMD60_GOGO_BALL:
     case SUBCMD60_LOBBY_CHAIR:
     case SUBCMD60_CHAIR_DIR:
     case SUBCMD60_CHAIR_MOVE:
         sent = 0;
+        DBG_LOG("最终未触发并发走的 0x60: 0x%02X\n", type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
     }
 
     /* Broadcast anything we don't care to check anything about. */
@@ -4873,6 +5302,5 @@ int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
     pthread_mutex_unlock(&l->mutex);
-
     return rv;
 }

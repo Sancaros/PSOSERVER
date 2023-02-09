@@ -2937,6 +2937,8 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
         bb.shdr.type = SUBCMD60_SET_AREA_20;
         bb.shdr.size = 0x06;
         bb.shdr.client_id = src->client_id;
+        dc.shdr.size = 6;
+        dc.shdr.client_id = src->client_id;
 
         bb.area = LE32(0x0000000F);            /* Area */
         bb.w = src->x;                         /* X */

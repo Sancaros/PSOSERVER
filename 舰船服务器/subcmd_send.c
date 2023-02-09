@@ -48,20 +48,6 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int
     return 0;
 }
 
-int bb_reg_sync_index(lobby_t* l, uint16_t regnum) {
-    int i;
-
-    if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
-        return -1;
-
-    for (i = 0; i < l->num_syncregs; ++i) {
-        if (regnum == l->syncregs[i])
-            return i;
-    }
-
-    return -1;
-}
-
 /* It is assumed that all parameters are already in little-endian order. */
 int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item) {

@@ -200,6 +200,9 @@
     <ClInclude Include="subcmd_send.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="标头.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

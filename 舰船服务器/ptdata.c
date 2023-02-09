@@ -2270,7 +2270,7 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
     c->new_item.item_id = generate_item_id(l, c->client_id);
     c->new_item.data2_l = item[3];
 
-    print_item_data(c, &c->new_item);
+    //print_item_data(c, &c->new_item);
 
     pthread_mutex_lock(&c->mutex);
     it = lobby_add_new_item_locked(l, &c->new_item);
@@ -3799,7 +3799,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     /* Figure out what type to drop... */
     rnd = mt19937_genrand_int32(rng) % 3;
 
-    ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
+    //ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
 
     switch(rnd) {
         case 0:
@@ -3915,7 +3915,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
     ent = &bb_ptdata[game_type][l->difficulty][section];
 
-    ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
+    //ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
     /* Make sure this is actually a box drop... */
     if(req->pt_index != 0x30)
@@ -3924,7 +3924,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     /* Grab the object ID and make sure its sane, then grab the object itself */
     obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
-        ITEM_LOG("Guildard %u requested drop from invalid box",
+        ITEM_LOG("GC %u 请求的箱子掉落无效",
               c->guildcard);
         return -1;
     }

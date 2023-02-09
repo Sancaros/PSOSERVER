@@ -952,10 +952,10 @@ typedef struct subcmd_bb_SubtractPBEnergy_6x49 {
 } PACKED subcmd_bb_SubtractPBEnergy_6x49_t;
 
 // 0x4A: Fully shield attack
-typedef struct subcmd_bb_ShieldAttack_6x4A {
+typedef struct subcmd_bb_defense_damage {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_ShieldAttack_6x4A_t;
+} PACKED subcmd_bb_defense_damage_t;
 
 // 0x4B: Hit by enemy
 // Packet used when a client takes damage.
@@ -1005,10 +1005,7 @@ typedef struct subcmd_bb_Unknown_6x4F {
 typedef struct subcmd_bb_switch_req {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint8_t unk2;
-    float x;
-    float y;
-    uint8_t unk3[2];
+    uint32_t unk2;
 } PACKED subcmd_bb_switch_req_t;
 
 // 0x51: Invalid subcommand
@@ -1017,10 +1014,8 @@ typedef struct subcmd_bb_switch_req {
 typedef struct subcmd_bb_menu_req {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t menu_id;
-    uint16_t unk; //一直都是 00 00 难道和menu_id一起的？
-    uint16_t unk2;
-    uint16_t unk3;
+    uint32_t menu_id;
+    uint32_t item_id;
 } PACKED subcmd_bb_menu_req_t;
 
 // 0x53: Unknown (指令生效范围; 仅限游戏)
@@ -1295,9 +1290,10 @@ typedef struct subcmd_bb_Unknown_6x69 {
 // 0x6A: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 //(00000000)   10 00 60 00 00 00 00 00  6A 02 38 40 02 00 66 00
 //(00000000)   10 00 60 00 00 00 00 00  6A 02 1F 40 02 00 66 00
+//(00000000)   10 00 60 00 00 00 00 00  6A 02 1F 40 02 00 66 00    ..`.....j..@..f.
 typedef struct subcmd_bb_Unknown_6x6A {
     bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
+    params_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unused;
 } PACKED subcmd_bb_Unknown_6x6A_t;
@@ -2497,7 +2493,12 @@ typedef struct subcmd_bb_sort_inv {
 
 // 0xC5: Medical center used
 
-// 0xC6: Invalid subcommand
+// 0xC6: BB steal exp subcommand
+typedef struct subcmd_bb_steal_exp {
+    bb_pkt_hdr_t hdr;
+    enemy_id_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_steal_exp_t;
 
 // 0xC7: SUBCMD60_CHARGE_ACT (handled by the server on BB)
 typedef struct subcmd_bb_charge_act {
@@ -2593,8 +2594,8 @@ typedef struct subcmd_bb_UNKNOW_0xCF {
 typedef struct subcmd_bb_gallon_area {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint16_t area;                 /*05 00 */
-    uint8_t pos[4];
+    uint32_t quest_offset;
+    uint8_t data[0];
 } PACKED subcmd_bb_gallon_area_pkt_t;
 
 // 0xD3: Invalid subcommand
@@ -2697,7 +2698,7 @@ int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 /* Handle a 0x60 packet. */
 int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_bcast(ship_client_t *c, subcmd_bb_pkt_t *pkt);
-int subcmd_bb_handle_bcast2(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 /* Handle an 0xC9/0xCB packet from Episode 3. */

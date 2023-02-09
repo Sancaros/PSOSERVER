@@ -23,8 +23,6 @@
 #include "subcmd.h"
 #include "ship_packets.h"
 
-int bb_reg_sync_index(lobby_t* l, uint16_t regnum);
-
 /* 假设所有参数都已按小端序排列. */
 int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);

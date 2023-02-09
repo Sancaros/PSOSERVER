@@ -171,7 +171,7 @@
 #define SUBCMD60_OBJHIT_TECH                   0x47
 #define SUBCMD60_USED_TECH                     0x48
 #define SUBCMD60_UNKNOW_49                     0x49
-#define SUBCMD60_TAKE_DAMAGE                   0x4A //受到攻击并防御了
+#define SUBCMD60_DEFENSE_DAMAGE                0x4A //受到攻击并防御了
 #define SUBCMD60_TAKE_DAMAGE1                  0x4B
 #define SUBCMD60_TAKE_DAMAGE2                  0x4C
 #define SUBCMD60_DEATH_SYNC                    0x4D
