@@ -168,7 +168,7 @@
     <ClCompile>
       <PreprocessorDefinitions>ENABLE_LUA1;WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;HAVE_LIBMINI18N;VERBOSE_DEBUGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\regex\include;..\通用库\pthread;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\通用库\md5;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\regex\include;..\通用库\pthread\include;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\通用库\md5;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -179,18 +179,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\通用库\lua\Debug\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\regex\lib;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread\lib;..\通用库\pthread\lib\x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\Library;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>urlmon.lib;
-ws2_32.lib;
-wsock32.lib;
-netapi32.lib;libmariadb.lib;mariadbclient.lib;
-libiconv.lib;libz.lib;
-libxml2.lib;
-libevent.lib;
-libevent_core.lib
-;libevent_extras.lib;
-libevent_openssl.lib;pthread.lib;
-libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;
-md5.lib;gnutls.lib;regex.lib;lua5.4.4.lib;mini18n.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libmariadb.lib;mariadbclient.lib;libiconv.lib;libz.lib;libxml2.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthreadVC2.lib;libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;md5.lib;gnutls.lib;regex.lib;lua5.4.4.lib;mini18n.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 //#include "unistd.h"
 #include <wchar.h>
 
@@ -111,7 +112,7 @@ struct pidfh*
 	struct stat sb;
 	int error, /*len,*/ count;
 	FILE* fd;
-	struct timespec rqtp;
+	struct timespec_pt rqtp;
 
 	pfh = (struct pidfh*)malloc(sizeof(*pfh));
 	if (pfh == NULL)
