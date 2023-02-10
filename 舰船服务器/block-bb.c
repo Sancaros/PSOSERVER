@@ -53,6 +53,7 @@
 extern int enable_ipv6;
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
+extern time_t srv_time;
 
 /* Process a chat packet from a Blue Burst client. */
 static int bb_join_game(ship_client_t* c, lobby_t* l) {
@@ -2518,10 +2519,11 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0006 6*/
     case CHAT_TYPE:
-        if(time_check(c->cmd_cooldown[type], 1))
+        if(time_check(c->cmd_cooldown[type], 2))
             return bb_process_chat(c, (bb_chat_pkt*)pkt);
         else
-            return 0;
+            return send_txt(c, "%s",
+                __(c, "\tE\tC6说话太快了哟~."));
 
         /* 0x0008 8*/
     case GAME_LIST_TYPE:

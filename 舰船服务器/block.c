@@ -52,6 +52,7 @@
 extern int enable_ipv6;
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
+extern time_t srv_time;
 
 #pragma warning(push) 
 #pragma warning(disable:4716)

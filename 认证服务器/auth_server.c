@@ -151,6 +151,7 @@ psocn_dbconn_t conn;
 psocn_limits_t *limits = NULL;
 patch_list_t *patches_v2 = NULL;
 patch_list_t *patches_gc = NULL;
+extern time_t srv_time;
 
 psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 volatile sig_atomic_t shutting_down = 0;

@@ -103,6 +103,7 @@ struct client_queue clients = TAILQ_HEAD_INITIALIZER(clients);
 
 patch_config_t *cfg;
 psocn_srvconfig_t* srvcfg;
+extern time_t srv_time;
 
 static jmp_buf jmpbuf;
 static volatile sig_atomic_t rehash = 0;

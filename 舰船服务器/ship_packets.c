@@ -2313,23 +2313,23 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
                               const char *msg, const char *cmsg) {
     uint8_t *sendbuf = get_sendbuf();
     bb_chat_pkt *pkt = (bb_chat_pkt *)sendbuf;
-    char* tm = { 0 };
-    size_t in, out, len;
-    char *inptr;
-    char *outptr;
+    char *tm;
+    size_t in, /*out, */len = strlen(msg) + 32;
+    //char *inptr;
+    //char *outptr;
 
     /* Verify we got the sendbuf. */
     if(!sendbuf)
         return -1;
 
-    tm = (char*)malloc(4096);
+    tm = (char*)malloc(len);
 
     if (!tm) {
         ERR_LOG("无法分配内存");
         return -1;
     }
 
-    memset(tm, 0, 4096);
+    memset(tm, 0, len);
 
     /* Fill in the message */
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
@@ -2348,17 +2348,14 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     }
 
     /* Clear the packet header */
-    memset(pkt, 0, 4096);
+    memset(pkt, 0, len + sizeof(bb_chat_pkt));
 
     /* Fill in the basics */
     pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
-    out = 65520;
-    inptr = tm;
-    outptr = (char *)pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    istrncpy(ic_gbk_to_utf16, (char*)pkt->msg, tm, (len * 2) + 1);
 
     free_safe(tm);
 

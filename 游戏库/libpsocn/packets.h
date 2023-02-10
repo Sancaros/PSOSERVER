@@ -421,7 +421,7 @@ typedef struct bb_chat {
     bb_pkt_hdr_t hdr;
     uint32_t client_id;
     uint32_t guildcard;
-    uint16_t msg[0];
+    uint16_t msg[28];
 } PACKED bb_chat_pkt;
 
 // 07 (S->C): Ship select menu

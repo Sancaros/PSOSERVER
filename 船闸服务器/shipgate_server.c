@@ -120,6 +120,7 @@ static const char *runas_user = RUNAS_DEFAULT;
 
 extern ship_script_t *scripts;
 extern uint32_t script_count;
+extern time_t srv_time;
 
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 

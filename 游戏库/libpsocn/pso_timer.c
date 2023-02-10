@@ -15,16 +15,19 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <time.h>
+
 #include "pso_timer.h"
 #include "f_logs.h"
 
 int time_check(time_t c_time, uint32_t check_value) {
-	int v = 0;
+	int v;
 
-	if ((srv_time - c_time) >= check_value)
-	{
+	if ((srv_time - c_time) >= check_value) {
 		c_time = srv_time;
-		//DBG_LOG("c_time = %d", (uint32_t)c_time);
+#ifdef DEBUG
+		DBG_LOG("c_time = %d", (uint32_t)c_time);
+#endif // DEBUG
 		v = 1;
 	}
 
