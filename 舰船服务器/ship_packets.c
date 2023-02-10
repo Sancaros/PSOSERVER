@@ -2342,16 +2342,16 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->bb.character.disp.dress_data.guildcard_string, msg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.disp.dress_data.guildcard_string, msg) + 1;
     }
     else {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->bb.character.disp.dress_data.guildcard_string, cmsg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.disp.dress_data.guildcard_string, cmsg) + 1;
     }
 
     /* Convert the message to the appropriate encoding. */
