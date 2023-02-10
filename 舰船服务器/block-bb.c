@@ -1540,16 +1540,16 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         return -1;
     }
 
-    /* BB has this in two places for now... */
-    memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
-    memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-    memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
-    memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
-    memcpy(c->bb_pl->challenge_data, char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
-    memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
-    memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
+    ///* BB has this in two places for now... */
+    //memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
+    //memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+    //memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
+    //memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
+    //memcpy(c->bb_pl->challenge_data, char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
+    //memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
+    //memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
 
-    memcpy(&c->bb_guild->guild_data, &char_data.guild_data, sizeof(bb_guild_t));
+    //memcpy(&c->bb_guild->guild_data, &char_data.guild_data, sizeof(bb_guild_t));
 
     /* BB has this in two places for now... */
     memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));//
@@ -1887,12 +1887,6 @@ static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_set
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_member_setting_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        return -1;
-    }
-
     if (c->bb_guild->guild_data.guild_id != 0) {
         //print_payload((uint8_t*)pkt, len);
         return shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
@@ -1963,12 +1957,6 @@ static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_p
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_invite_0DEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        //return -1;
-    }
-
     print_payload((uint8_t*)pkt, len);
 
     return send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
@@ -1977,12 +1965,6 @@ static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_p
 static int process_bb_guild_unk_0EEA(ship_client_t* c, bb_guild_unk_0EEA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_guild_unk_0EEA_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        //return -1;
-    }
 
     print_payload((uint8_t*)pkt, len);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
@@ -2149,7 +2131,8 @@ static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_gu
     //}
 
     print_payload((uint8_t*)pkt, len);
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
+    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_list_pkt* pkt) {
@@ -2178,7 +2161,8 @@ static int process_bb_guild_unk_1AEA(ship_client_t* c, bb_guild_unk_1AEA_pkt* pk
     }
 
     print_payload((uint8_t*)pkt, len);
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return send_bb_guild_cmd(c, BB_GUILD_UNK_1AEA);
+    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unk_1BEA_pkt* pkt) {

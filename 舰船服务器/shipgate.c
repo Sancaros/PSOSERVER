@@ -653,10 +653,10 @@ static int handle_bb_mail(shipgate_conn_t* conn, simple_mail_pkt* pkt) {
 }
 
 static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
-    bb_guild_data_pkt* bb = (bb_guild_data_pkt*)pkt->pkt;
-    bb_guild_rv_data_pkt* bb2 = (bb_guild_rv_data_pkt*)pkt->pkt;
-    uint16_t type = LE16(bb->hdr.pkt_type);
-    uint16_t len = LE16(bb->hdr.pkt_len);
+    bb_guild_rv_data_pkt* g = (bb_guild_rv_data_pkt*)pkt->pkt;
+    psocn_bb_db_guild_t* guild = (psocn_bb_db_guild_t*)g->data;
+    uint16_t type = LE16(g->hdr.pkt_type);
+    uint16_t len = LE16(g->hdr.pkt_len);
     uint32_t i;
     ship_t* s = conn->ship;
     block_t* b;
@@ -666,7 +666,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
     DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
     //这是从船闸返回来的公会数据包
-    print_payload((uint8_t*)bb, len);
+    //print_payload((uint8_t*)bb, len);
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
         if (s->blocks[i]) {
@@ -683,7 +683,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     switch (type)
                     {
                     case BB_GUILD_CREATE:
-                        c->bb_guild->guild_data = bb->guild.guild_data;
+                        c->bb_guild->guild_data = guild->guild_data;
                         send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
                         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
@@ -692,64 +692,64 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_UNK_02EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_MEMBER_ADD:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_04EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_MEMBER_REMOVE:
                         send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_06EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_CHAT:
                         send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
                         //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        //print_payload((uint8_t*)bb, len);
+                        //print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_MEMBER_SETTING:
-                        DBG_LOG("guild_id = %d", ntohl(pkt->fw_flags));
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+
+                        print_payload((uint8_t*)g, len);
+
+                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
                     case BB_GUILD_UNK_09EA:
 
-                        DBG_LOG("guild_id = %d", ntohl(pkt->fw_flags));
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
+                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
                     case BB_GUILD_UNK_0AEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_0BEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_0CEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_INVITE:
@@ -758,11 +758,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_UNK_0EEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_MEMBER_FLAG_SETTING:
-                        c->bb_guild->guild_data = bb->guild.guild_data;
+                        c->bb_guild->guild_data = guild->guild_data;
                         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         break;
 
@@ -774,12 +774,12 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_MEMBER_PROMOTE:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_12EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_LOBBY_SETTING:
@@ -792,17 +792,17 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_FULL_DATA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_16EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_17EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
@@ -819,17 +819,17 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_UNK_1BEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_RANKING_LIST:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_UNK_1DEA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)bb, len);
+                        print_payload((uint8_t*)g, len);
                         break;
 
                     default:

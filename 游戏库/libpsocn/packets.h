@@ -3736,7 +3736,7 @@ typedef struct bb_guild_data {
 
 typedef struct bb_guild_rv_data {
     bb_pkt_hdr_t hdr;
-    uint8_t guild[0];
+    uint8_t data[0];
 } PACKED bb_guild_rv_data_pkt;
 
 // 01EA (C->S): Create team
@@ -3793,8 +3793,9 @@ typedef struct bb_guild_member_chat {
 // No arguments
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
+    uint32_t amount;                           // 数量
     struct {
-        uint32_t member_num;
+        uint32_t member_num;                   // 必须 1 起始
         uint32_t guild_priv_level;             // 会员等级     4
         uint32_t guildcard_client;
         uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
