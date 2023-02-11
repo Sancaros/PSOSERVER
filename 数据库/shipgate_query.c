@@ -418,9 +418,7 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc) {
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag='%s' WHERE guild_id='%u'",
         CLIENTS_BLUEBURST_GUILD, (char*)&FlagSlashes[0], gc);
     if (!psocn_db_real_query(&conn, myquery))
-    {
         return 0;
-    }
 
     return 1;
 }

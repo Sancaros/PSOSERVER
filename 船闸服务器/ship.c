@@ -1699,17 +1699,6 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    //if (len != sizeof(bb_guild_member_chat_pkt)) {
-    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-    //    print_payload((uint8_t*)g_data, len);
-
-    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-    //    return 0;
-    //}
-
-    //print_payload((uint8_t*)g_data, len);
-
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
@@ -2067,10 +2056,13 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 /* 处理 Blue Burst 公会 成员权限提升 */
 static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t guild_id = pkt->fw_flags;
     bb_guild_member_promote_pkt* g_data = (bb_guild_member_promote_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
-    uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t guild_priv_level = g_data->hdr.flags;
+    uint32_t target_gc = g_data->target_guildcard;
 
     if (len != sizeof(bb_guild_member_promote_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2081,7 +2073,23 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
+        "WHERE guildcard = '%u' AND guild_id = '%u'", AUTH_ACCOUNT, guild_priv_level, target_gc, guild_id);
+    psocn_db_real_query(&conn, myquery);
+
+    if (guild_priv_level == 0x40) {  // Master Transfer
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guildcard = '%u' WHERE guild_id = '%u'",
+            CLIENTS_BLUEBURST_GUILD, target_gc, sender);
+        psocn_db_real_query(&conn, myquery);
+    }
+
     print_payload((uint8_t*)g_data, len);
+
+    //if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //    return 0;
+    //}
 
     return 0;
 }
@@ -2354,10 +2362,6 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     DBG_LOG("舰闸：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
-    ///* Warn the ship that sent the packet, then drop it */
-    //send_error(c, SHDR_TYPE_PC, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
-    //    (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len));
-
     switch (type) {
     case BB_GUILD_CREATE:
         return handle_bb_guild_create(c, pkt);
@@ -2450,7 +2454,6 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         UDONE_CPD(type, 0, pkt);
         break;
     }
-
 
     return 0;
 }

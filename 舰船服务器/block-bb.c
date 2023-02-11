@@ -1901,7 +1901,7 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (c->bb_guild->guild_data.guild_id == 0) {
+    if (c->bb_guild->guild_data.guild_id <= 0) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         return -1;
@@ -1913,11 +1913,11 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
         return 0;
     }
 
-    if (add_color_tag((uint16_t*)&pkt->chat)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        return 0;
-    }
+    //if (add_color_tag((uint16_t*)&pkt->chat)) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)pkt, len);
+    //    return 0;
+    //}
 
     pkt->guildcard = c->guildcard;
     pkt->guild_id = c->bb_guild->guild_data.guild_id;
@@ -2060,6 +2060,15 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
 static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_promote_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    uint32_t guild_priv_level = pkt->hdr.flags;
+    uint32_t target_gc = pkt->target_guildcard;
+    uint32_t guild_id = c->bb_guild->guild_data.guild_id;
+    lobby_t* l = c->cur_lobby;
+    ship_client_t* c2 = { 0 };
+    int i;
+
+    if (!l)
+        return -1;
 
     if (len != sizeof(bb_guild_member_promote_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2067,9 +2076,38 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         //return -1;
     }
 
+    if (c->guildcard != target_gc) {
+        if (c->bb_guild->guild_data.guild_priv_level == 0x40) {
+            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+
+            if (guild_priv_level == 0x40) {
+                // Master Transfer 会长转让
+                shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+                c->bb_guild->guild_data.guild_priv_level = 0x30;
+                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            }
+
+            for (i = 0; i < l->max_clients; ++i) {
+                if (l->clients[i]->guildcard == target_gc) {
+                    c2 = l->clients[i];
+                    lobby_t* l = c2->cur_lobby;
+
+                    if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
+                        c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
+                        send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+                    }
+
+                    send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+                    send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
+                    break;
+                }
+            }
+        }
+    }
+
     print_payload((uint8_t*)pkt, len);
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return 0;
 }
 
 static int process_bb_guild_unk_12EA(ship_client_t* c, bb_guild_unk_12EA_pkt* pkt) {

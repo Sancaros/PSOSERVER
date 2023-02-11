@@ -3491,7 +3491,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     /* Clear the packet header */
-    memset(&tm, 0, sizeof(tm));
+    memset(tm, 0, sizeof(tm));
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Do the formatting */
@@ -12016,13 +12016,11 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_lobby_pkt(l, c, sendbuf, 0);
 
     case BB_GUILD_LOBBY_SETTING:
-    {
         uint32_t entries = 0, len = sizeof(bb_pkt_hdr_t);
 
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != c) {
                 c2 = l->clients[i];
-                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
 
                 *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guildcard;
                 len += 4;
@@ -12058,8 +12056,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_flag[0], 0x800);
                 len += 0x800;
                 entries++;
-
-                DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
             }
         }
 
@@ -12067,11 +12063,10 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = LE32(entries);
 
-        print_payload((uint8_t*)pkt, len);
+        //print_payload((uint8_t*)pkt, len);
 
-        DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
+        //DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-    }
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
 

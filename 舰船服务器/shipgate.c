@@ -654,31 +654,51 @@ static int handle_bb_mail(shipgate_conn_t* conn, simple_mail_pkt* pkt) {
 
 static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     bb_guild_rv_data_pkt* g = (bb_guild_rv_data_pkt*)pkt->pkt;
-    psocn_bb_db_guild_t* guild = (psocn_bb_db_guild_t*)g->data;
     uint16_t type = LE16(g->hdr.pkt_type);
     uint16_t len = LE16(g->hdr.pkt_len);
+    psocn_bb_db_guild_t* guild = (psocn_bb_db_guild_t*)g->data;
     uint32_t i;
     ship_t* s = conn->ship;
     block_t* b;
-    ship_client_t* c;
+    ship_client_t* c = { 0 };
+    ship_client_t* c2 = { 0 };
     int done = 0, rv = 0;
     uint32_t gc = ntohl(pkt->guildcard);
 
     DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
+
     //这是从船闸返回来的公会数据包
-    //print_payload((uint8_t*)bb, len);
 
     for (i = 0; i < s->cfg->blocks && !done; ++i) {
         if (s->blocks[i]) {
             b = s->blocks[i];
             pthread_rwlock_rdlock(&b->lock);
 
+            /* 2次搜索全部客户端 查找符合条件的 */
+            TAILQ_FOREACH(c2, b->clients, qentry) {
+                pthread_mutex_lock(&c2->mutex);
+
+                if (c2->guildcard != gc) {
+
+                    switch (type)
+                    {
+                    case BB_GUILD_CHAT:
+                        bb_guild_member_chat_pkt* chat_data = (bb_guild_member_chat_pkt*)pkt->pkt;
+
+                        if (c2->bb_guild->guild_data.guild_id == chat_data->guild_id)
+                            send_pkt_bb(c2, (bb_pkt_hdr_t*)g);
+
+                        break;
+                    }
+                }
+
+                pthread_mutex_unlock(&c2->mutex);
+            }
+
             TAILQ_FOREACH(c, b->clients, qentry) {
                 pthread_mutex_lock(&c->mutex);
 
                 if (c->guildcard == gc) {
-
-                    //DBG_LOG("G->S 指令0x%04X", type);
 
                     switch (type)
                     {
@@ -706,9 +726,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_REMOVE:
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)g, len);
+                        //print_payload((uint8_t*)g, len);
+                        //send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
                         break;
 
                     case BB_GUILD_UNK_06EA:
@@ -721,8 +741,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_CHAT:
                         send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                        //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        //print_payload((uint8_t*)g, len);
                         break;
 
                     case BB_GUILD_MEMBER_SETTING:
@@ -770,7 +788,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_DISSOLVE:
-                        memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
+                        memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
                         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
                         break;
