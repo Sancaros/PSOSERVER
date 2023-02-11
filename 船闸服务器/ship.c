@@ -2130,7 +2130,7 @@ static int handle_bb_guild_lobby_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2171,7 +2171,9 @@ static int handle_bb_guild_full_data_15EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //用作以后验证
+
+    //print_payload((uint8_t*)g_data, len);
 
     return 0;
 }

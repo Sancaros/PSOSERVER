@@ -687,7 +687,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                         if (c2->bb_guild->guild_data.guild_id == chat_data->guild_id)
                             send_pkt_bb(c2, (bb_pkt_hdr_t*)g);
+                        break;
 
+                    case BB_GUILD_MEMBER_FLAG_SETTING:
+                        memcpy(&c2->bb_guild->guild_data.guild_flag[0], &guild->guild_data.guild_flag[0], sizeof(guild->guild_data.guild_flag));
+                        send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
                         break;
                     }
                 }
@@ -744,10 +748,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_SETTING:
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-
-                        print_payload((uint8_t*)g, len);
-
                         send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
