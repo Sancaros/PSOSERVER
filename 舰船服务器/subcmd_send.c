@@ -537,26 +537,26 @@ int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
-    if (type != SUBCMD60_MOVE_FAST && type != SUBCMD60_MOVE_SLOW) {
-        switch (l->type) {
+    //if (type != SUBCMD60_MOVE_FAST && type != SUBCMD60_MOVE_SLOW) {
+    //    switch (l->type) {
 
-        case LOBBY_TYPE_LOBBY:
-            DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
+    //    case LOBBY_TYPE_LOBBY:
+    //        DBG_LOG("BB处理大厅 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
 
-        case LOBBY_TYPE_GAME:
-            if (l->flags & LOBBY_FLAG_QUESTING) {
-                DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            }
-            else
-                DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
+    //    case LOBBY_TYPE_GAME:
+    //        if (l->flags & LOBBY_FLAG_QUESTING) {
+    //            DBG_LOG("BB处理任务 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        }
+    //        else
+    //            DBG_LOG("BB处理普通游戏 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
 
-        default:
-            DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
-            break;
-        }
-    }
+    //    default:
+    //        DBG_LOG("BB处理通用 GC %" PRIu32 " 60指令: 0x%02X", c->guildcard, type);
+    //        break;
+    //    }
+    //}
 
     sizecheck *= 4;
     sizecheck += 8;
@@ -621,7 +621,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint16_t size = pkt->hdr.pkt_len;
     uint16_t sizecheck = pkt->size;
 
-    DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
+    //DBG_LOG("BB处理 GC %" PRIu32 " 62/6D指令: 0x%02X", c->guildcard, type);
 
     //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 

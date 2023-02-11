@@ -2023,7 +2023,10 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
     }
 
     if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
-        print_payload((uint8_t*)pkt, len);
+        //print_payload((uint8_t*)pkt, len);
+
+        pkt->hdr.flags = c->bb_guild->guild_data.guild_id;
+
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
 

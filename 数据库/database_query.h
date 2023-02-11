@@ -159,7 +159,7 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
 int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target);
 
 /* 更新BB角色公会标志 */
-int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc);
+int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id);
 
 /* 解散BB角色公会 */
 int db_dissolve_bb_guild(uint32_t gc);

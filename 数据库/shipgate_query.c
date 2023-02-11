@@ -411,12 +411,12 @@ int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target)
     return 1;
 }
 
-int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t gc) {
-    uint8_t FlagSlashes[4098] = { 0 };
+int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id) {
+    uint8_t flag_slashes[4098] = { 0 };
 
-    psocn_db_escape_str(&conn, &FlagSlashes[0], guild_flag, 0x800);
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag='%s' WHERE guild_id='%u'",
-        CLIENTS_BLUEBURST_GUILD, (char*)&FlagSlashes[0], gc);
+    psocn_db_escape_str(&conn, &flag_slashes[0], guild_flag, 0x800);
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag = '%s' WHERE guild_id = '%u'",
+        CLIENTS_BLUEBURST_GUILD, (char*)&flag_slashes[0], guild_id);
     if (!psocn_db_real_query(&conn, myquery))
         return 0;
 
