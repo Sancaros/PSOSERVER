@@ -11941,30 +11941,39 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_FULL_DATA:
-        bb_guild_full_data_15EA_pkt pkt_15;
-        memset(&pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
+        uint32_t guild_id = pkt->hdr.flags;
 
-        pkt_15.guildcard = c->guildcard;
-        pkt_15.guild_id = c->bb_guild->guild_data.guild_id;
-        memcpy(&pkt_15.guild_info, "gu_info", sizeof(pkt_15.guild_info));
-        pkt_15.guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i]->bb_guild->guild_data.guild_id = guild_id && l->clients[i] != 0) {
+                c2 = l->clients[i];
+                bb_guild_full_data_15EA_pkt pkt_15;
+                memset(&pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
 
-        memcpy(&pkt_15.guild_name, c->bb_guild->guild_data.guild_name, sizeof(pkt_15.guild_name));
+                pkt_15.guildcard = c2->guildcard;
+                pkt_15.guild_id = c2->bb_guild->guild_data.guild_id;
+                memcpy(&pkt_15.guild_info, "gu_info", sizeof(pkt_15.guild_info));
+                pkt_15.guild_priv_level = c2->bb_guild->guild_data.guild_priv_level;
 
-        pkt_15.guild_rank = c->bb_guild->guild_data.guild_rank;
+                memcpy(&pkt_15.guild_name, c2->bb_guild->guild_data.guild_name, sizeof(pkt_15.guild_name));
 
-        pkt_15.guildcard_client = c->guildcard;
-        pkt_15.client_id = c->client_id;
+                pkt_15.guild_rank = c2->bb_guild->guild_data.guild_rank;
 
-        memcpy(&pkt_15.char_name, &c->bb_pl->character.name[0], sizeof(pkt_15.char_name));
+                pkt_15.guildcard_client = c2->guildcard;
+                pkt_15.client_id = c2->client_id;
 
-        memcpy(&pkt_15.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15.guild_flag));
+                memcpy(&pkt_15.char_name, &c2->bb_pl->character.name[0], sizeof(pkt_15.char_name));
 
-        pkt_15.hdr.pkt_len = 0x0864;
-        pkt_15.hdr.pkt_type = cmd_code;
-        pkt_15.hdr.flags = 0x00000001;
+                memcpy(&pkt_15.guild_flag, &c2->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15.guild_flag));
 
-        return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 0);
+                pkt_15.hdr.pkt_len = 0x0864;
+                pkt_15.hdr.pkt_type = cmd_code;
+                pkt_15.hdr.flags = 0x00000001;
+
+                return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 0);
+            }
+        }
+
+        return 0;
 
     case BB_GUILD_DISSOLVE:
 

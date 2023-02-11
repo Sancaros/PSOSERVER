@@ -1829,6 +1829,11 @@ static int process_bb_guild_unk_04EA(ship_client_t* c, bb_guild_unk_04EA_pkt* pk
 static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remove_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = c->cur_lobby;
+    uint32_t guild_id = c->bb_guild->guild_data.guild_id;
+    uint32_t target_gc = pkt->target_guildcard;
+    int i;
+    ship_client_t* c2 = { 0 };
 
     if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1836,9 +1841,46 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
         //return -1;
     }
 
-    print_payload((uint8_t*)pkt, len);
+    if (guild_id <= 0) {
+        return send_msg_box(c, "%s",
+            __(c, "\tE您的公会权限不足."));
+    }
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    if (target_gc != c->guildcard)
+    {
+        if (c->bb_guild->guild_data.guild_priv_level == 0x40)
+        {
+            print_payload((uint8_t*)pkt, len);
+            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+            send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+
+            for (i = 0; i < l->max_clients; ++i) {
+                if (l->clients[i]->guildcard == target_gc) {
+                    c2 = l->clients[i];
+                    if (c2->bb_guild->guild_data.guild_priv_level < c->bb_guild->guild_data.guild_priv_level) {
+                        memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+                        send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+
+                        return send_msg_box(c, "%s",
+                            __(c, "\tE会员已移除."));
+                    }
+                    else
+                        return send_msg_box(c, "%s",
+                            __(c, "\tE您的公会权限不足."));
+                }
+            }
+        }
+        else
+            return send_msg_box(c, "%s",
+                __(c, "\tE您的公会权限不足."));
+    }
+    else {
+        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+        return send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
+    }
+
+    return 0;
 }
 
 static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {

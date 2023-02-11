@@ -713,11 +713,14 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_UNK_06EA:
                         DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
-                        print_payload((uint8_t*)g, len);
+                        //print_payload((uint8_t*)g, len);
+                        /*send_msg_box(c, "%s",
+                            __(c, "\tE»áÔ±ÒÑÒÆ³ý."));*/
+                        //send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
                     case BB_GUILD_CHAT:
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         //DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, gc);
                         //print_payload((uint8_t*)g, len);
                         break;

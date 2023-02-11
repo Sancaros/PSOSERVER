@@ -1631,6 +1631,8 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t target_gc = g_data->target_guildcard;
+    uint32_t guild_id = pkt->fw_flags;
 
     if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1641,9 +1643,33 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    if(!target_gc || guild_id < 1)
+        return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+
+
     print_payload((uint8_t*)g_data, len);
 
-    return 0;
+    DBG_LOG("公会ID %u 移除的目标 %u", guild_id, target_gc);
+
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' "
+        "WHERE guildcard = '%" PRIu32 "' AND guild_id = '%" PRIu32 "'", AUTH_ACCOUNT, target_gc, guild_id);
+
+    if (!psocn_db_real_query(&conn, myquery))
+    {
+        print_payload((uint8_t*)g_data, len);
+
+        g_data->hdr.pkt_len = LE16(len);
+        g_data->hdr.pkt_type = LE16(BB_GUILD_MEMBER_FLAG_SETTING);
+        g_data->hdr.flags = guild_id;
+
+        return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
+    }
+
+    Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "未能找到 %u 的公会成员信息", sender);
+
+    return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+        ERR_BAD_ERROR, (uint8_t*)g_data, len);
 }
 
 /* 处理 Blue Burst 公会  */
