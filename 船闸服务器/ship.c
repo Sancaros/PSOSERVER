@@ -1749,101 +1749,46 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     void* result;
     char** row;
 
-//[2023年02月10日 21:30] 错误(7919): 7919 行 公会功能 指令 0x"05" 未处理. (数据如下)
-//[2023年02月10日 21:30] 错误(7919):
-//(0000) 9E 00 00 00 09 05 23 01 00 00 51 EE 80 02 90 00 ?....#...Q顎.?
-//(0010) EA 09 00 00 00 00 03 00 00 00 01 00 00 00 00 00 ?..............
-//(0020) 00 00 4D EE 80 02 09 00 45 00 27 59 9B 52 FA 51 ..M顎...E.'Y汻鶴
-//(0030) 47 59 F9 8F 20 00 20 00 00 00 00 00 00 00 00 00 GY鶑 . .........
-//(0040) 00 00 00 00 00 00 02 00 00 00 00 00 00 00 4F EE ..............O?
-//(0050) 80 02 09 00 45 00 74 00 74 00 74 00 74 00 00 00 �...E.t.t.t.t...
-//(0060) 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................
-//(0070) 00 00 03 00 00 00 40 00 00 00 51 EE 80 02 09 00 ......@...Q顎...
-//(0080) 45 00 23 57 61 53 1B 6D AF 65 00 00 00 00 00 00 E.#WaS.m痚......
-//(0090) 00 00 00 00 00 00 00 00 00 00 00 00 00 00       ..............
-// 
-//(0000)  90 00 EA 09 00 00 00 00  03 00 00 00 01 00 00 00
-//(0010)  00 00 00 00 4D EE 80 02  09 00 45 00 27 59 9B 52
-//(0020)  FA 51 47 59 F9 8F 20 00  20 00 00 00 00 00 00 00
-//(0030)  00 00 00 00 00 00 00 00  02 00 00 00 00 00 00 00
-//(0040)  4F EE 80 02 09 00 45 00  74 00 74 00 74 00 74 00
-//(0050)  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-//(0060)  00 00 00 00 03 00 00 00  40 00 00 00 51 EE 80 02
-//(0070)  09 00 45 00 23 57 61 53  1B 6D AF 65 00 00 00 00
-//(0080)  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-//(0090)  
-//( 00000000 )   90 00 EA 09 00 00 00 00  03 00 00 00 01 00 00 00    ...  ............
-//( 00000010 )   40 00 00 00 5F EE 80 02  09 00 42 00 31 00 32 00    @..._...     .B.1.2.
-//( 00000020 )   33 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    3...............
-//( 00000030 )   01 00 00 00 01 00 00 00  02 00 00 00 00 00 00 00    ................
-//( 00000040 )   60 EE 80 02 09 00 42 00  31 00 31 00 31 00 31 00    `... .B.1.1.1.1.
-//( 00000050 )   31 00 31 00 31 00 31 00  31 00 31 00 01 00 00 00    1.1.1.1.1.1.....
-//( 00000060 )   01 00 00 00 03 00 00 00  00 00 00 00 61 EE 80 02    ............a...
-//( 00000070 )   09 00 42 00 33 00 32 00  31 00 33 00 32 00 31 00         .B.3.2.1.3.2.1.
-//( 00000080 )   00 00 00 00 00 00 00 00  01 00 00 00 01 00 00 00    ................
-//[2023年02月10日 20:07] 错误(7919): 7919 行 公会功能 指令 0x"05" 未处理. (数据如下)
-//[2023年02月10日 20:07] 错误(7919):
-//       size  type     flags    amount      member_num
-//(0000) 38 00 EA 09 00 00 00 00 01 00 00 00 01 00 00 00
-//       priv_level  guildcard   char_name 24
-//(0010) 40 00 00 00 51 EE 80 02 09 00 45 00 23 57 61 53
-//              
-//(0020) 1B 6D AF 65 00 00 00 00 00 00 00 00 00 00 00 00
-//       guild_rwrds guild_rwrds
-//(0030) 00 00 00 00 00 00 00 00
-// 
-//[2023年02月10日 21:00:19:611] 调试(ship.c 1754): 56 42004063 64 1
-//( 00000000 )   38 00 EA 09 00 00 00 00  01 00 00 00 01 00 00 00    8..  ............
-//( 00000010 )   40 00 00 00 5F EE 80 02  09 00 42 00 31 00 32 00    @..._...     .B.1.2.
-//( 00000020 )   33 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    3...............
-//( 00000030 )   01 00 00 00 01 00 00 00                             ........
-
-
     sprintf_s(myquery, _countof(myquery), "SELECT guildcard, guild_priv_level, lastchar_blob "
         "FROM %s WHERE guild_id = '%" PRIu32 "'", AUTH_ACCOUNT, guild_id);
 
-    if (!psocn_db_real_query(&conn, myquery))
-    {
-        result = psocn_db_result_store(&conn);
-        num_mates = (uint32_t)psocn_db_result_rows(result);
-
-        g_data->amount = num_mates;
-
-        for (i = 0; i < num_mates; i++)
-        {
-            row = psocn_db_result_fetch(result);
-            guildcard = atoi(row[0]);
-            privlevel = atoi(row[1]);
-
-            g_data->entries[i].member_num = i + 1;
-            g_data->entries[i].guild_priv_level = LE32(atoi(row[1]));
-            g_data->entries[i].guildcard_client = LE32(atoi(row[0]));
-            memcpy(&g_data->entries[i].char_name[0], row[2], len3);
-            g_data->entries[i].char_name[1] = 0x0045;
-            g_data->entries[i].guild_rewards[0] = 0;
-            g_data->entries[i].guild_rewards[1] = 0;
-
-            size += entries_size;
-            //DBG_LOG("%d %d %d %d", size, g_data->entries[i].guildcard_client, privlevel, num_mates);
-        }
-
-        psocn_db_result_free(result);
-
-        g_data->hdr.pkt_len = LE16((uint16_t)size);
-        g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
-        g_data->hdr.flags = 0x00000000;
-
-        //print_payload((uint8_t*)g_data, size);
-
-        return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
     }
 
+    result = psocn_db_result_store(&conn);
+    num_mates = (uint32_t)psocn_db_result_rows(result);
 
-    Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "未能找到 %u 的公会成员信息", sender);
+    g_data->amount = num_mates;
 
-    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-    return 0;
+    for (i = 0; i < num_mates; i++)
+    {
+        row = psocn_db_result_fetch(result);
+        guildcard = atoi(row[0]);
+        privlevel = atoi(row[1]);
+
+        g_data->entries[i].member_num = i + 1;
+        g_data->entries[i].guild_priv_level = LE32(atoi(row[1]));
+        g_data->entries[i].guildcard_client = LE32(atoi(row[0]));
+        memcpy(&g_data->entries[i].char_name[0], row[2], len3);
+        g_data->entries[i].char_name[1] = 0x0045;
+        g_data->entries[i].guild_rewards[0] = 0;
+        g_data->entries[i].guild_rewards[1] = 0;
+
+        size += entries_size;
+    }
+
+    psocn_db_result_free(result);
+
+    g_data->hdr.pkt_len = LE16((uint16_t)size);
+    g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
+    g_data->hdr.flags = 0x00000000;
+
+    return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
+
 }
 
 /* 处理 Blue Burst 公会  */
