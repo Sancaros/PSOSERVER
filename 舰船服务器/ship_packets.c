@@ -11941,11 +11941,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_0EEA:
-
-        pkt->hdr.pkt_len = LE16(0x0838);
-        pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
-
         *(uint32_t*)&pkt->data[0x00] = c->guildcard;
         *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_id;
         memcpy(&pkt->data[0x10], &c->bb_guild->guild_data.guild_name[0], 28);
@@ -11953,6 +11948,10 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt->data[0x2D] = 0x6C;
         memcpy(&pkt->data[0x2E], &c->bb_guild->guild_data.guild_flag[0], 0x800);
         pkt->data[0x82E] = 0xFF;
+
+        pkt->hdr.pkt_len = LE16(0x0838);
+        pkt->hdr.pkt_type = cmd_code;
+        pkt->hdr.flags = 0x00000000;
 
         /* ¼ÓÃÜ²¢·¢ËÍ */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
@@ -11985,7 +11984,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         {
             *(uint32_t*)&pkt->data[0x04] = c->guildcard;
             *(uint32_t*)&pkt->data[0x08] = c->bb_guild->guild_data.guild_id;
-            *(uint32_t*)pkt->data[0x14] = c->bb_guild->guild_data.guild_priv_level;
+            *(uint32_t*)&pkt->data[0x14] = c->bb_guild->guild_data.guild_priv_level;
             memcpy(&pkt->data[0x18], &c->bb_guild->guild_data.guild_name[0], 28);
             pkt->data[0x34] = 0x84;
             pkt->data[0x35] = 0x6C;
