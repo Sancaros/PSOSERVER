@@ -3795,8 +3795,6 @@ static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t
         return -1;
     }
 
-    print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
-
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

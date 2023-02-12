@@ -2075,46 +2075,53 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     if (len != sizeof(bb_guild_member_promote_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
-    if (c->guildcard != target_gc) {
-        if (c->bb_guild->guild_data.guild_priv_level == 0x40) {
-            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+    if (c->guildcard == target_gc) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return -1;
+    }
 
-            if (guild_priv_level == 0x40) {
-                // Master Transfer 会长转让
-                shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
-                c->bb_guild->guild_data.guild_priv_level = 0x30;
 
-                send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
-            }
+    if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)pkt, len);
+        return -1;
+    }
 
-            lobby_t* l2 = { 0 };
+    shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
 
-            for (i = 0; i < l->max_clients; ++i) {
-                if (l->clients[i]->guildcard == target_gc) {
-                    c2 = l->clients[i];
-                    lobby_t* l2 = c2->cur_lobby;
+    if (guild_priv_level == 0x40) {
+        //会长转让
+        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        c->bb_guild->guild_data.guild_priv_level = 0x30;
 
-                    break;
-                }
-            }
+        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+    }
 
-            if (!l2 || c2 == NULL)
-                return 0;
+    lobby_t* l2 = { 0 };
 
-            if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
-                c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
-                send_lobby_pkt(l2, NULL, build_guild_full_data_pkt(c2), 1);
-            }
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]->guildcard == target_gc) {
+            c2 = l->clients[i];
+            lobby_t* l2 = c2->cur_lobby;
 
-            send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
-            send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
+            break;
         }
     }
 
-    print_payload((uint8_t*)pkt, len);
+    if (!l2 || c2 == NULL)
+        return 0;
+
+    if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
+        c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
+        send_lobby_pkt(l2, NULL, build_guild_full_data_pkt(c2), 1);
+    }
+
+    send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+    send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
 
     return 0;
 }
@@ -2142,8 +2149,6 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
         print_payload((uint8_t*)pkt, len);
         return -1;
     }
-
-    //print_payload((uint8_t*)pkt, len);
 
     return send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
 }
