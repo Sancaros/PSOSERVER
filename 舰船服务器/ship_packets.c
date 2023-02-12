@@ -1688,6 +1688,9 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
         DBG_LOG("发送的客户端版本为 %d", c->version);
     }
 
+    if (!l)
+        return 0;
+
     for (i = 0; i < l->max_clients; ++i) {
         if (l->clients[i] != NULL) {
             pthread_mutex_lock(&l->clients[i]->mutex);
