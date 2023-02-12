@@ -11885,33 +11885,22 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     return 0;
 }
 
-
-// 12.13 构建公会初始化数据
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
-# pragma warning (disable:4819)
     uint8_t* sendbuf = get_sendbuf();
-    bb_guild_full_data_15EA_pkt* pkt_15 = (bb_guild_full_data_15EA_pkt*)sendbuf;
-
-    memset(pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
-
-    pkt_15->guildcard = c->guildcard;
-    pkt_15->guild_id = c->bb_guild->guild_data.guild_id;
-    memcpy(&pkt_15->guild_info, "gu_info", sizeof(pkt_15->guild_info));
-    pkt_15->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
-    memcpy(&pkt_15->guild_name, c->bb_guild->guild_data.guild_name, sizeof(pkt_15->guild_name));
-    pkt_15->guild_rank = c->bb_guild->guild_data.guild_rank;
-    pkt_15->guildcard_client = c->guildcard;
-    pkt_15->client_id = c->client_id;
-    memcpy(&pkt_15->char_name, &c->bb_pl->character.name[0], sizeof(pkt_15->char_name));
-    memcpy(&pkt_15->guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15->guild_flag));
-
-    pkt_15->hdr.pkt_len = LE16(0x0864);
-    pkt_15->hdr.pkt_type = BB_GUILD_FULL_DATA;
-    pkt_15->hdr.flags = LE32(0x00000001);
-
-    return (uint8_t*)pkt_15;
+# pragma warning (disable:4819)
+    sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
+    memset(&sendbuf[0x05], 0, 3);
+    *(unsigned*)&sendbuf[0x08] = c->guildcard;
+    *(unsigned*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
+    sendbuf[0x18] = (unsigned char)c->bb_guild->guild_data.guild_priv_level;
+    memcpy(&sendbuf[0x1C], &c->bb_guild->guild_data.guild_name[0], 28);
+    sprintf(&sendbuf[0x38], "\x84\x6C\x98");
+    *(unsigned*)&sendbuf[0x3C] = c->guildcard;
+    sendbuf[0x40] = c->client_id;
+    memcpy(&sendbuf[0x44], &c->bb_pl->character.name[0], 24);
+    memcpy(&sendbuf[0x64], &c->bb_guild->guild_data.guild_flag[0], 0x800);
+    return &sendbuf[0];
 }
-
 
 /* 用于 0x00EA BB公会 指令*/
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
@@ -11970,26 +11959,26 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 构建完整公会数据包 并发送*/
     case BB_GUILD_FULL_DATA:
-        bb_guild_full_data_15EA_pkt *pkt_15 = (bb_guild_full_data_15EA_pkt*)sendbuf;
+        //bb_guild_full_data_15EA_pkt *pkt_15 = (bb_guild_full_data_15EA_pkt*)sendbuf;
 
-        memset(pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
+        //memset(pkt_15, 0, sizeof(bb_guild_full_data_15EA_pkt));
 
-        pkt_15->guildcard = c->guildcard;
-        pkt_15->guild_id = c->bb_guild->guild_data.guild_id;
-        memcpy(&pkt_15->guild_info, "gu_info", sizeof(pkt_15->guild_info));
-        pkt_15->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
-        memcpy(&pkt_15->guild_name, c->bb_guild->guild_data.guild_name, sizeof(pkt_15->guild_name));
-        pkt_15->guild_rank = c->bb_guild->guild_data.guild_rank;
-        pkt_15->guildcard_client = c->guildcard;
-        pkt_15->client_id = c->client_id;
-        memcpy(&pkt_15->char_name, &c->bb_pl->character.name[0], sizeof(pkt_15->char_name));
-        memcpy(&pkt_15->guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15->guild_flag));
+        //pkt_15->guildcard = c->guildcard;
+        //pkt_15->guild_id = c->bb_guild->guild_data.guild_id;
+        //memcpy(&pkt_15->guild_info, "gu_info", sizeof(pkt_15->guild_info));
+        //pkt_15->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+        //memcpy(&pkt_15->guild_name, c->bb_guild->guild_data.guild_name, sizeof(pkt_15->guild_name));
+        //pkt_15->guild_rank = c->bb_guild->guild_data.guild_rank;
+        //pkt_15->guildcard_client = c->guildcard;
+        //pkt_15->client_id = c->client_id;
+        //memcpy(&pkt_15->char_name, &c->bb_pl->character.name[0], sizeof(pkt_15->char_name));
+        //memcpy(&pkt_15->guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt_15->guild_flag));
 
-        pkt_15->hdr.pkt_len = LE16(0x0864);
-        pkt_15->hdr.pkt_type = cmd_code;
-        pkt_15->hdr.flags = LE32(0x00000001);
+        //pkt_15->hdr.pkt_len = LE16(0x0864);
+        //pkt_15->hdr.pkt_type = cmd_code;
+        //pkt_15->hdr.flags = LE32(0x00000001);
 
-        return send_lobby_pkt(l, c, (uint8_t*)&pkt_15, 0);
+        return send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 0);
 
     case BB_GUILD_DISSOLVE:
 
