@@ -124,7 +124,7 @@ int send_pkt_dc(ship_client_t *c, const dc_pkt_hdr_t *pkt);
 int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt);
 
 /* 发送数据包至特定的大厅. */
-int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
+int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
     int check);
 
 /* Send a packet to all clients in the lobby when a new player joins. */

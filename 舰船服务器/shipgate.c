@@ -814,6 +814,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_PROMOTE:
+                        print_payload((uint8_t*)g, len);
                         if (c->guildcard == gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);

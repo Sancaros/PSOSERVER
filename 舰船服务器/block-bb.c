@@ -1042,7 +1042,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
         send_lobby_end_burst(l);
 
         TEST_LOG("build_guild_full_data_pkt");
-        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
+        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -2031,6 +2031,10 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
 static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = c->cur_lobby;
+
+    if (!l)
+        return 0;
 
     if (len != sizeof(bb_guild_dissolve_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2046,7 +2050,7 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
-        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
         send_msg_box(c, "%s", __(c, "\tE\tC4公会已成功解散!"));
     }
@@ -2083,27 +2087,30 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
                 shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
                 c->bb_guild->guild_data.guild_priv_level = 0x30;
 
-                send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+                send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
             }
+
+            lobby_t* l2 = { 0 };
 
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i]->guildcard == target_gc) {
                     c2 = l->clients[i];
                     lobby_t* l2 = c2->cur_lobby;
 
-                    if (!l2)
-                        break;
-
-                    if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
-                        c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
-                        send_lobby_pkt(l2, c2, build_guild_full_data_pkt(c2), 1);
-                    }
-
-                    send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
-                    send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
                     break;
                 }
             }
+
+            if (!l2 || c2 == NULL)
+                return 0;
+
+            if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
+                c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
+                send_lobby_pkt(l2, NULL, build_guild_full_data_pkt(c2), 1);
+            }
+
+            send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+            send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
         }
     }
 
@@ -2158,6 +2165,10 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
 static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_15EA_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = c->cur_lobby;
+
+    if (!l)
+        return 0;
 
     if (len != sizeof(bb_guild_full_data_15EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2167,7 +2178,7 @@ static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_
 
     print_payload((uint8_t*)pkt, len);
 
-    return send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+    return send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 0);
 }
 
 static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pkt) {
@@ -2573,8 +2584,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
 
-        TEST_LOG("build_guild_full_data_pkt");
-        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        send_lobby_pkt(c->cur_lobby, NULL, build_guild_full_data_pkt(c), 1);
         return 0;
 
         /* 0x0006 6*/

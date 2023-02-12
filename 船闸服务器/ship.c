@@ -2025,11 +2025,11 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     print_payload((uint8_t*)g_data, len);
 
-    //if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
-    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-    //    return 0;
-    //}
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
 
     return 0;
 }

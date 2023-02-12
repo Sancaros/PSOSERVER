@@ -1680,23 +1680,25 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
 }
 
 /* 发送数据包至特定的大厅. */
-int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
+int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
     int check) {
     int i;
-
-    if (check) {
-        DBG_LOG("发送的客户端版本为 %d", c->version);
-    }
+    ship_client_t* c2;
 
     if (!l)
         return 0;
 
     for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] != NULL) {
-            pthread_mutex_lock(&l->clients[i]->mutex);
+        if (l->clients[i] != NULL && l->clients_slot[i] && l->clients[i] != nosend) {
+            c2 = l->clients[i];
+            pthread_mutex_lock(&c2->mutex);
+
+            if (check) {
+                DBG_LOG("发送的客户端版本为 %d", c2->version);
+            }
 
             /* Call the appropriate function. */
-            switch (l->clients[i]->version) {
+            switch (c2->version) {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
             case CLIENT_VERSION_GC:
@@ -1704,16 +1706,16 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
             case CLIENT_VERSION_XBOX:
             case CLIENT_VERSION_PC:
                 /**/
-                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
+                send_pkt_dc(c2, (dc_pkt_hdr_t*)pkt);
                 break;
 
             case CLIENT_VERSION_BB:
                 /**/
-                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+                send_pkt_bb(c2, (bb_pkt_hdr_t*)pkt);
                 break;
             }
 
-            pthread_mutex_unlock(&l->clients[i]->mutex);
+            pthread_mutex_unlock(&c2->mutex);
         }
     }
 
@@ -10649,7 +10651,7 @@ static int send_bb_lobby_c_rank(ship_client_t* c, lobby_t* l) {
     int i;
     uint8_t* sendbuf = get_sendbuf();
     bb_c_rank_update_pkt* pkt = (bb_c_rank_update_pkt*)sendbuf;
-    int entries = 0, size = 4;
+    int entries = 0, size = sizeof(bb_pkt_hdr_t);
     ship_client_t* c2;
 
     /* Verify we got the sendbuf. */
