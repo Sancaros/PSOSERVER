@@ -11922,9 +11922,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     switch (cmd_code)
     {
-    case BB_GUILD_MEMBER_ADD:
-        return 0;
-
     case BB_GUILD_UNK_02EA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
@@ -11942,6 +11939,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_0EEA:
+        memset(&pkt->data[0x00], 0, 0x0830);
 
         *(uint32_t*)&pkt->data[0x00] = c->guildcard;
         *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_id;
@@ -11981,6 +11979,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_12EA:
+
+        memset(&pkt->data[0x00], 0, 0x38);
 
         if (c->bb_guild->guild_data.guild_id)
         {
@@ -12058,13 +12058,13 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
 
-        //0x08 - 0x13 ??
+        memset(&pkt->data[0x00], 0, 0x44);
+
         pkt->data[0x0C] = 0x01;
         pkt->data[0x10] = 0x01;
-
         *(uint32_t*)&pkt->data[0x14] = c->bb_guild->guild_data.guild_priv_level;
         *(uint32_t*)&pkt->data[0x18] = c->guildcard;
-        memcpy(&pkt->data[0x1C], &c->bb_pl->character.name[0], 24);
+        memcpy(&pkt->data[0x1C], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
         pkt->data[0x40] = 0x02;
 
         pkt->hdr.pkt_len = LE16(0x004C);
@@ -12075,6 +12075,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     case BB_GUILD_PRIVILEGE_LIST:
 
+        memset(&pkt->data[0x00], 0, 0x04);
+
         pkt->hdr.pkt_len = LE16(0x000C);
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = 0x00000000;
@@ -12082,6 +12084,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_1AEA:
+
+        memset(&pkt->data[0x00], 0, 0x04);
 
         pkt->hdr.pkt_len = LE16(0x000C);
         pkt->hdr.pkt_type = cmd_code;

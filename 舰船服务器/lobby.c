@@ -1087,8 +1087,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     /* Clear the override flag */
     c->flags &= ~CLIENT_FLAG_OVERRIDE_GAME;
 
-    /* If they're not in a lobby, add them to the first available default
-       lobby. */
+    /* 如果客户端不在房间中, 将他们新增至默认的可用的房间. */
     if(!l) {
         if(lobby_add_to_any(c, req)) {
             return -11;
@@ -1230,6 +1229,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         send_lobby_join(c, c->cur_lobby);
         c->lobby_id = c->cur_lobby->lobby_id;
         c->flags &= ~CLIENT_FLAG_SHOPPING;
+        TEST_LOG("build_guild_full_data_pkt");
         send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
     }
     else {
@@ -1242,7 +1242,8 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         c->flags &= ~CLIENT_FLAG_SHOPPING;
         memset(c->p2_drops, 0, sizeof(c->p2_drops));
         c->p2_drops_max = 0;
-        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        //TEST_LOG("build_guild_full_data_pkt");
+        //send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
     }
 
     /* ...and let his/her new lobby know that he/she has arrived. */

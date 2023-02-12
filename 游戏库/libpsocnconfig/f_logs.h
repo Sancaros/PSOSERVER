@@ -92,7 +92,7 @@
 #define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define DC_LOG(...) Logs(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
 #define DSENT_LOG(...) Logs(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__)
-#define TEST_LOG(...) Logs(__LINE__, test_log_console_show, TEST_LOG, __VA_ARGS__)
+#define TEST_LOG(...) dbg_Logs(filename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
 #define MERR_LOG(...) err_Logs(filename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
 #define CONFIG_LOG(...) Logs(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
 #define SCRIPT_LOG(...) Logs(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)

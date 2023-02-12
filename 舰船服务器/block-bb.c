@@ -1041,6 +1041,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
 
+        TEST_LOG("build_guild_full_data_pkt");
         send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
@@ -2088,11 +2089,14 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i]->guildcard == target_gc) {
                     c2 = l->clients[i];
-                    lobby_t* l = c2->cur_lobby;
+                    lobby_t* l2 = c2->cur_lobby;
+
+                    if (!l2)
+                        break;
 
                     if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
                         c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
-                        send_lobby_pkt(c2->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+                        send_lobby_pkt(l2, c2, build_guild_full_data_pkt(c2), 1);
                     }
 
                     send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
@@ -2198,12 +2202,6 @@ static int process_bb_guild_unk_17EA(ship_client_t* c, bb_guild_unk_17EA_pkt* pk
 static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_guild_buy_privilege_and_point_info_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    //if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
-    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-    //    print_payload((uint8_t*)pkt, len);
-    //    return -1;
-    //}
 
     print_payload((uint8_t*)pkt, len);
     return send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
@@ -2575,6 +2573,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
 
+        TEST_LOG("build_guild_full_data_pkt");
         send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         return 0;
 
