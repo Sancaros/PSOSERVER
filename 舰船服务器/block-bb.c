@@ -1860,6 +1860,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
                     if (c2->bb_guild->guild_data.guild_priv_level < c->bb_guild->guild_data.guild_priv_level) {
                         memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
                         send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+                        send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
 
                         return send_msg_box(c, "%s",
                             __(c, "\tE会员已移除."));
@@ -2019,14 +2020,11 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
     if (len != sizeof(bb_guild_member_flag_setting_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
-        //print_payload((uint8_t*)pkt, len);
-
         pkt->hdr.flags = c->bb_guild->guild_data.guild_id;
-
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
 

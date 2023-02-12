@@ -428,15 +428,11 @@ int db_dissolve_bb_guild(uint32_t gc) {
 
     sprintf_s(myquery, _countof(myquery), "DELETE from %s WHERE guild_id = '%u'", CLIENTS_BLUEBURST_GUILD, gc);
     if (psocn_db_real_query(&conn, myquery))
-    {
         res = 1;
-    }
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_ACCOUNT, gc);
     if (psocn_db_real_query(&conn, myquery))
-    {
         res = 2;
-    }
 
     return res;
 }

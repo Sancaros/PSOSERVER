@@ -1961,56 +1961,21 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
-        return 0;
+        return -1;
     }
 
-    DBG_LOG("guild_id %u", guild_id);
-
-    if (!db_update_bb_guild_flag(g_data->guild_flag, guild_id)) {
-        if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
-            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)g_data, len);
-            return 0;
-        }
+    if (db_update_bb_guild_flag(g_data->guild_flag, guild_id)) {
+        SQLERR_LOG("更新 BB %s 数据包 (%d) 失败!", c_cmd_name(type, 0), len);
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return -1;
     }
 
-    return 0;
-
-    //res = db_update_bb_guild_flag(g_data->guild_flag, sender);
-
-    //if (!res)
-    //{
-    //    guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
-
-    //    if (!guild) {
-    //        ERR_LOG("分配公会数据内存错误.");
-    //        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //            ERR_BAD_ERROR, (uint8_t*)g_data, len);
-    //        res = 1;
-    //        return 0;
-    //    }
-
-    //    guild->guild = db_get_bb_char_guild(sender);
-
-    //    memcpy(&guild->guild.guild_data.guild_flag, g_data->guild_flag, sizeof(g_data->guild_flag));
-
-    //    guild->hdr.pkt_type = g_data->hdr.pkt_type;
-    //    guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
-    //    guild->hdr.flags = g_data->hdr.flags;
-
-    //    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)guild)) {
-    //        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //            ERR_BAD_ERROR, (uint8_t*)guild, len);
-    //        return 0;
-    //    }
-
-    //    free_safe(guild);
-    //}
-    //else
-    //{
-    //    Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "Could not update team flag for team %u", sender);
-    //    return res;
-    //}
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return -1;
+    }
 
     return 0;
 }
