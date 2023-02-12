@@ -1041,7 +1041,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
 
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -1700,6 +1700,12 @@ static int process_bb_guild_create(ship_client_t* c, bb_guild_create_pkt* pkt) {
         return -1;
     }
 
+    if (c->bb_guild->guild_data.guild_id > 0) {
+        send_msg1(c, "%s\n%s", __(c, "\tE\tC4您已经在公会中了!"),
+            __(c, "\tC7请切换舰船刷新数据."));
+        return 0;
+    }
+
     pkt->guildcard = c->guildcard;
 
     //print_payload((uint8_t*)pkt, len);
@@ -1990,7 +1996,7 @@ static int process_bb_guild_invite_0DEA(ship_client_t* c, bb_guild_invite_0DEA_p
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    print_payload((uint8_t*)pkt, len);
+    //print_payload((uint8_t*)pkt, len);
 
     return send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
 }
@@ -2036,10 +2042,10 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
     if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
         print_payload((uint8_t*)pkt, len);
         //pkt->guild_id = c->bb_guild->guild_data.guild_id;
-        shipgate_fw_bb(&ship->sg, pkt, 0, c);
+        shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
         send_msg_box(c, "%s", __(c, "\tE\tC4公会已成功解散!"));
     }
@@ -2075,7 +2081,8 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
                 // Master Transfer 会长转让
                 shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
                 c->bb_guild->guild_data.guild_priv_level = 0x30;
-                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+
+                send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
             }
 
             for (i = 0; i < l->max_clients; ++i) {
@@ -2085,7 +2092,7 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
 
                     if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
                         c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
-                        send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+                        send_lobby_pkt(c2->cur_lobby, c, build_guild_full_data_pkt(c), 1);
                     }
 
                     send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
@@ -2122,13 +2129,12 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
     if (len != sizeof(bb_guild_lobby_setting_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
-    print_payload((uint8_t*)pkt, len);
+    //print_payload((uint8_t*)pkt, len);
 
-    send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
-    return 0;
+    return send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
 }
 
 static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_tittle_pkt* pkt) {
@@ -2157,9 +2163,7 @@ static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_
 
     print_payload((uint8_t*)pkt, len);
 
-    return send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-
-    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
 }
 
 static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pkt) {
@@ -2571,7 +2575,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
 
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         return 0;
 
         /* 0x0006 6*/

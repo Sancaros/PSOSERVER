@@ -1699,12 +1699,9 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* c, const uint8_t* pkt,
             case CLIENT_VERSION_GC:
             case CLIENT_VERSION_EP3:
             case CLIENT_VERSION_XBOX:
-                /**/
-                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
-                break;
-
             case CLIENT_VERSION_PC:
                 /**/
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
                 break;
 
             case CLIENT_VERSION_BB:
@@ -11888,10 +11885,6 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     uint8_t* sendbuf = get_sendbuf();
 # pragma warning (disable:4819)
-
-    //*(uint16_t*)&sendbuf[0x00] = LE16(0x0864);
-    //pkt->hdr.pkt_type = cmd_code;
-    //pkt->hdr.flags = LE32(num);
 
     sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
     memset(&sendbuf[0x05], 0, 3);

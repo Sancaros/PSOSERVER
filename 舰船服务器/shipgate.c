@@ -701,8 +701,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_MEMBER_ADD:
                         if (c->guildcard == gc) {
 
+                            c->bb_guild->guild_data = guild->guild_data;
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            print_payload((uint8_t*)g, len);
+                            //print_payload((uint8_t*)g, len);
                         }
                         break;
 
@@ -746,13 +749,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_UNK_09EA:
-                        if (c->guildcard == gc) {
-
-
-                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            print_payload((uint8_t*)g, len);
+                        if (c->guildcard == gc)
                             send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                        }
                         break;
 
                     case BB_GUILD_UNK_0AEA:
@@ -797,16 +795,17 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* 暂时完成了 但是要移除原有的新手flag标记 */
                     case BB_GUILD_MEMBER_FLAG_SETTING:
                             bb_guild_member_flag_setting_pkt* flag_pkt = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
-                            guild_id = flag_pkt->hdr.flags;
+                            guild_id = pkt->fw_flags;
 
-                            if (c->bb_guild->guild_data.guild_id == gc) {
+                            if (c->bb_guild->guild_data.guild_id == guild_id) {
+                                DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                                 memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c2->bb_guild->guild_data.guild_flag));
                                 send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             }
                         break;
 
                     case BB_GUILD_DISSOLVE:
-                        if (c->guildcard == gc) {
+                        if (c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
 
                             memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
@@ -846,7 +845,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                     case BB_GUILD_FULL_DATA:
                         if (c->guildcard == gc) {
-
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                             print_payload((uint8_t*)g, len);
                         }

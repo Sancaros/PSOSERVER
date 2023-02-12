@@ -1466,30 +1466,30 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_GUILD_INVITE2:
     case SUBCMD62_GUILD_MASTER_TRANS1:
     case SUBCMD62_GUILD_MASTER_TRANS2:
-        // guild invite for C1 & C2, Master Transfer for CD & CE.
+        // 公会邀请 C1 & C2, 会长转让 CD & CE.
         if (size == 0x64)
             rv = 0;
 
-        if (type == SUBCMD62_GUILD_INVITE2)//判断是公会邀请
+        switch (type)
         {
-            uint32_t gcn;
-
-            gcn = *(uint32_t*)&pkt->data[0x02];
+        case SUBCMD62_GUILD_INVITE2:
+            uint32_t gcn = *(uint32_t*)&pkt->data[0x02];
 
             if ((pkt->data[0x06] == 0x02) && //0x02 应该时接受公会邀请指令
                 (c->guildcard == gcn))
                 c->guild_accept = 1;
-        }
+            break;
 
-        if (type == SUBCMD62_GUILD_MASTER_TRANS1)//判断是会长转让功能
-        {
+        case SUBCMD62_GUILD_MASTER_TRANS1:
             if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
-                rv = 1;
+                rv = 0;
+                send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
+                    __(c, "\tC7您无权进行此操作."));
                 DBG_LOG("GC %u 公会权限不足", c->guildcard);
-                //Message_Box(L"", L"You aren't the master of your team.", client, BRMes_Pkt01, NULL, 133);
             }
             else
                 c->guild_master_exfer = 1;
+            break;
         }
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
@@ -3759,15 +3759,18 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if (pkt->shdr.size != 0x05)
+    if (pkt->shdr.size != 0x05) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
         return -1;
+    }
 
     /* Clear the list of dropped items. */
     if (pkt->unk == 0xFFFF && c->cur_area == 0) {
         memset(c->p2_drops, 0, sizeof(c->p2_drops));
         c->p2_drops_max = 0;
     }
-    print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3785,8 +3788,12 @@ static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if (pkt->shdr.size != 0x01)
+    if (pkt->shdr.size != 0x01) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
         return -1;
+    }
 
     print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
 

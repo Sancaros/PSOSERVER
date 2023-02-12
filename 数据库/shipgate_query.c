@@ -421,14 +421,16 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id) {
     return 1;
 }
 
-int db_dissolve_bb_guild(uint32_t gc) {
+int db_dissolve_bb_guild(uint32_t guild_id) {
     int res = 0;
 
-    sprintf_s(myquery, _countof(myquery), "DELETE from %s WHERE guild_id = '%u'", CLIENTS_BLUEBURST_GUILD, gc);
+    sprintf_s(myquery, _countof(myquery), "DELETE from %s "
+        "WHERE guild_id = '%u'", CLIENTS_BLUEBURST_GUILD, guild_id);
     if (psocn_db_real_query(&conn, myquery))
         res = 1;
 
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' WHERE guild_id='%u'", AUTH_ACCOUNT, gc);
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' "
+        "WHERE guild_id = '%u'", AUTH_ACCOUNT, guild_id);
     if (psocn_db_real_query(&conn, myquery))
         res = 2;
 

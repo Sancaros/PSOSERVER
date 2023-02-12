@@ -293,6 +293,9 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     uint16_t enemy_id, uint16_t enemy_id2,
     uint16_t damage, uint32_t flags);
 
+/* 用于构建完整公会数据 */
+uint8_t* build_guild_full_data_pkt(ship_client_t* c);
+
 /* 用于 0x00EA BB公会 指令*/
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code);
 

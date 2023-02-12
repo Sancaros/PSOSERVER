@@ -152,6 +152,8 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);
 /* 获取玩家角色数据项 */
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
+///////////////////////////////////////////////////////////
+
 /* 更新BB角色公会数据 */
 int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
 
@@ -162,7 +164,9 @@ int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target);
 int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id);
 
 /* 解散BB角色公会 */
-int db_dissolve_bb_guild(uint32_t gc);
+int db_dissolve_bb_guild(uint32_t guild_id);
+
+///////////////////////////////////////////////////////////
 
 /* 更新BB角色选项数据 */
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);

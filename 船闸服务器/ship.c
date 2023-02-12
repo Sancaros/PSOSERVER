@@ -1608,15 +1608,32 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    g_data->hdr.pkt_type = BB_GUILD_FULL_DATA;
+    //bb_guild_data_pkt *guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
 
-    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
-        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
-        return 0;
-    }
+    //if (!guild) {
+    //    ERR_LOG("分配公会数据内存错误.");
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //    return 0;
+    //}
 
-    print_payload((uint8_t*)g_data, len);
+    //memset(guild, 0, sizeof(bb_guild_data_pkt));
+
+    //guild->guild = db_get_bb_char_guild(gc_target);
+
+    //guild->hdr.pkt_type = g_data->hdr.pkt_type;
+    //guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
+    //guild->hdr.flags = g_data->hdr.flags;
+
+    //if (send_bb_pkt_to_ship(c, gc_target, (uint8_t*)guild)) {
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)guild, len);
+    //    return 0;
+    //}
+
+    //free_safe(guild);
+
+    DBG_LOG("新增GC %d 公会数据成功.", gc_target);
 
     return 0;
 }
@@ -1663,29 +1680,26 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
 
+    //print_payload((uint8_t*)g_data, len);
 
-    print_payload((uint8_t*)g_data, len);
-
-    DBG_LOG("公会ID %u 移除的目标 %u", guild_id, target_gc);
+    //DBG_LOG("公会ID %u 移除的目标 %u", guild_id, target_gc);
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '-1', guild_priv_level = '0' "
         "WHERE guildcard = '%" PRIu32 "' AND guild_id = '%" PRIu32 "'", AUTH_ACCOUNT, target_gc, guild_id);
 
-    if (!psocn_db_real_query(&conn, myquery))
-    {
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
+
         print_payload((uint8_t*)g_data, len);
-
-        g_data->hdr.pkt_len = LE16(len);
-        g_data->hdr.pkt_type = LE16(BB_GUILD_MEMBER_FLAG_SETTING);
-        g_data->hdr.flags = guild_id;
-
-        return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
+        return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
     }
 
-    Logs(__LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, "未能找到 %u 的公会成员信息", sender);
+    g_data->hdr.pkt_len = LE16(len);
+    g_data->hdr.pkt_type = LE16(BB_GUILD_MEMBER_FLAG_SETTING);
+    g_data->hdr.flags = guild_id;
 
-    return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
 }
 
 /* 处理 Blue Burst 公会  */
@@ -1810,7 +1824,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
             g_data->entries[i].guild_rewards[1] = 0;
 
             size += entries_size;
-            DBG_LOG("%d %d %d %d", size, g_data->entries[i].guildcard_client, privlevel, num_mates);
+            //DBG_LOG("%d %d %d %d", size, g_data->entries[i].guildcard_client, privlevel, num_mates);
         }
 
         psocn_db_result_free(result);
@@ -1819,7 +1833,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
         g_data->hdr.flags = 0x00000000;
 
-        print_payload((uint8_t*)g_data, size);
+        //print_payload((uint8_t*)g_data, size);
 
         return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
     }
@@ -1938,7 +1952,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -1987,6 +2001,8 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
         return -1;
     }
 
+    pkt->fw_flags = guild_id;
+
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
@@ -2002,6 +2018,7 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t guild_id = pkt->fw_flags;
     int res = 0;
 
     if (len != sizeof(bb_guild_dissolve_pkt)) {
@@ -2013,7 +2030,7 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    res = db_dissolve_bb_guild(sender);
+    res = db_dissolve_bb_guild(guild_id);
 
     if (res == 1) {
         ERR_LOG("GC %d 解散不存在的公会失败", sender);
@@ -2029,9 +2046,7 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //TEST_LOG("%d dsdasdsadsad", sender);
-    //print_payload((uint8_t*)g_data, len);
-    return res;
+    return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
 }
 
 /* 处理 Blue Burst 公会 成员权限提升 */
