@@ -1038,8 +1038,11 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
 
     send_bb_rare_monster_data(c);
 
-    if (l->version == CLIENT_VERSION_BB)
+    if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
+
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+    }
 
     pthread_mutex_unlock(&l->mutex);
 
@@ -1732,17 +1735,11 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
         return -1;
     }
 
-    if (c->bb_guild->guild_data.guild_id != -1) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
+    if (c->bb_guild->guild_data.guild_id <= 0)
         return 0;
-    }
 
-    if (c->bb_guild->guild_data.guild_priv_level < 0x30) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
+    if (c->bb_guild->guild_data.guild_priv_level < 0x30)
         return 0;
-    }
 
     /* Search the local ship first. */
     for (i = 0; i < ship->cfg->blocks && !done; ++i) {
@@ -1756,29 +1753,29 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
         TAILQ_FOREACH(c2, ship->blocks[i]->clients, qentry) {
             /* Check if this is the target and the target has player
                data. */
-            if (c2->guildcard == target_gc && c2->pl && c2->guild_accept == 1) {
+            if (c2->guildcard == target_gc && c2->bb_guild->guild_data.guild_id <= 0 && c2->guild_accept == 1) {
                 pthread_mutex_lock(&c2->mutex);
+
+                shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c2);
 
                 c2->guild_accept = 0;
 
-                shipgate_fw_bb(&ship->sg, pkt, 0, c2);
-
                 memset(&c2->bb_guild->guild_data, 0, sizeof(bb_guild_t));
 
-                c2->bb_guild->guild_data.guildcard = c->bb_guild->guild_data.guildcard;
+                c2->bb_guild->guild_data.guildcard = c2->bb_guild->guild_data.guildcard;
                 c2->bb_guild->guild_data.guild_id = c->bb_guild->guild_data.guild_id;
-                memcpy(&c2->bb_guild->guild_data.guild_info, &c->bb_guild->guild_data.guild_info[0], sizeof(c2->bb_guild->guild_data.guild_info));
+                memcpy(&c2->bb_guild->guild_data.guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(c->bb_guild->guild_data.guild_info));
                 c2->bb_guild->guild_data.guild_priv_level = 0;
 
                 /* 赋予名称颜色代码 */
+                memcpy(&c2->bb_guild->guild_data.guild_name, &c->bb_guild->guild_data.guild_name[0], sizeof(c->bb_guild->guild_data.guild_name));
                 c2->bb_guild->guild_data.guild_name[0] = 0x0009;
                 c2->bb_guild->guild_data.guild_name[1] = 0x0045;
-                memcpy(&c2->bb_guild->guild_data.guild_name, &c->bb_guild->guild_data.guild_name[0], sizeof(c2->bb_guild->guild_data.guild_name));
 
                 /* TODO 公会等级未实现 */
                 c2->bb_guild->guild_data.guild_rank = c->bb_guild->guild_data.guild_rank;
 
-                memcpy(&c2->bb_guild->guild_data.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(c2->bb_guild->guild_data.guild_flag));
+                memcpy(&c2->bb_guild->guild_data.guild_flag, &c->bb_guild->guild_data.guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
                 c2->bb_guild->guild_data.guild_rewards[0] = c->bb_guild->guild_data.guild_rewards[0];
                 c2->bb_guild->guild_data.guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
 
@@ -1792,8 +1789,10 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                 break;
             }
             else if (c2->guildcard == target_gc) {
-                /* If they're on but don't have data, we're not going to
-                   find them anywhere else, return success. */
+                /* 到这就没了, 获取对方已经属于某个公会. */
+                send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法邀请玩家!"),
+                    __(c, "\tC7对方已在公会中."));
+
                 rv = 0;
                 done = 1;
                 break;
@@ -1902,17 +1901,8 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (c->bb_guild->guild_data.guild_id <= 0) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        return -1;
-    }
-
-    if (len <= 0x2B) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
+    if (c->bb_guild->guild_data.guild_id <= 0 || len <= 0x2B)
         return 0;
-    }
 
     //if (add_color_tag((uint16_t*)&pkt->chat)) {
     //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2138,8 +2128,6 @@ static int process_bb_guild_lobby_setting(ship_client_t* c, bb_guild_lobby_setti
     print_payload((uint8_t*)pkt, len);
 
     send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
-
-    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     return 0;
 }
 
@@ -2582,6 +2570,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
+
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         return 0;
 
         /* 0x0006 6*/

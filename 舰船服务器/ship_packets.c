@@ -11888,14 +11888,19 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     uint8_t* sendbuf = get_sendbuf();
 # pragma warning (disable:4819)
+
+    //*(uint16_t*)&sendbuf[0x00] = LE16(0x0864);
+    //pkt->hdr.pkt_type = cmd_code;
+    //pkt->hdr.flags = LE32(num);
+
     sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
     memset(&sendbuf[0x05], 0, 3);
-    *(unsigned*)&sendbuf[0x08] = c->guildcard;
-    *(unsigned*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
-    sendbuf[0x18] = (unsigned char)c->bb_guild->guild_data.guild_priv_level;
+    *(uint32_t*)&sendbuf[0x08] = c->guildcard;
+    *(uint32_t*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
+    *(uint32_t*)&sendbuf[0x18] = c->bb_guild->guild_data.guild_priv_level;
     memcpy(&sendbuf[0x1C], &c->bb_guild->guild_data.guild_name[0], 28);
     sprintf(&sendbuf[0x38], "\x84\x6C\x98");
-    *(unsigned*)&sendbuf[0x3C] = c->guildcard;
+    *(uint32_t*)&sendbuf[0x3C] = c->guildcard;
     sendbuf[0x40] = c->client_id;
     memcpy(&sendbuf[0x44], &c->bb_pl->character.name[0], 24);
     memcpy(&sendbuf[0x64], &c->bb_guild->guild_data.guild_flag[0], 0x800);
@@ -11924,6 +11929,9 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     switch (cmd_code)
     {
+    case BB_GUILD_MEMBER_ADD:
+        return 0;
+
     case BB_GUILD_UNK_02EA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
@@ -11941,6 +11949,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_0EEA:
+
         *(uint32_t*)&pkt->data[0x00] = c->guildcard;
         *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_id;
         memcpy(&pkt->data[0x10], &c->bb_guild->guild_data.guild_name[0], 28);
@@ -11999,31 +12008,37 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_LOBBY_SETTING:
-        uint32_t entries = 0, len = sizeof(bb_pkt_hdr_t);
 
-        for (i = 0; i < l->max_clients; ++i) {
-            if (l->clients[i] && l->clients[i] != c) {
+        uint32_t num = 0, len = 0;
+
+        for (i = 0; i < l->max_clients; i++) {
+            if ((l->clients_slot[i]) && (l->clients[i])) {
                 c2 = l->clients[i];
 
                 *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guildcard;
                 len += 4;
                 *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_id;
                 len += 4;
-                memset(&pkt->data[len], 0, 8);
-                len += 8;
+                if (c2->bb_guild->guild_data.guild_id != 0) {
+                    memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_info[0], 8);
+                    len += 8;
+                }
+                else {
+                    memset(&pkt->data[len], 0, 8);
+                    len += 8;
+                }
                 pkt->data[len] = (uint8_t)c2->bb_guild->guild_data.guild_priv_level;
                 len += 4;
                 memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_name[0], 28);
                 len += 28;
-                if (c2->bb_guild->guild_data.guild_id != 0)
-                {
-                    pkt->data[len++] = 0x84;
+                if (c2->bb_guild->guild_data.guild_id != 0) {
+                    *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_rank;
+                    len += 4;
+                    /*pkt->data[len++] = 0x84;
                     pkt->data[len++] = 0x6C;
                     pkt->data[len++] = 0x98;
-                    pkt->data[len++] = 0x00;
-                }
-                else
-                {
+                    pkt->data[len++] = 0x00;*/
+                } else {
                     memset(&pkt->data[len], 0, 4);
                     len += 4;
                 }
@@ -12032,23 +12047,20 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 pkt->data[len++] = c2->client_id;
                 memset(&pkt->data[len], 0, 3);
                 len += 3;
-                memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_name[0], 24);
+                memcpy(&pkt->data[len], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
                 len += 24;
                 memset(&pkt->data[len], 0, 8);
                 len += 8;
                 memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_flag[0], 0x800);
                 len += 0x800;
-                entries++;
+                num++;
             }
         }
 
-        pkt->hdr.pkt_len = LE16(len);
+        pkt->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = LE32(entries);
+        pkt->hdr.flags = LE32(num);
 
-        //print_payload((uint8_t*)pkt, len);
-
-        //DBG_LOG("BB_GUILD_LOBBY_SETTING LOBBY_TYPE_LOBBY");
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:

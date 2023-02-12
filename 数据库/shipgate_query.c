@@ -404,9 +404,7 @@ int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target)
         "guild_id = '%d',guild_priv_level = '0' WHERE guildcard='%u'",
         AUTH_ACCOUNT, guild_id, gc_target);
     if (!psocn_db_real_query(&conn, myquery))
-    {
         return 0;
-    }
 
     return 1;
 }

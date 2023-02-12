@@ -3850,6 +3850,17 @@ typedef struct bb_guild_unk_0EEA {
     uint8_t unk3;
 } PACKED bb_guild_unk_0EEA_pkt;
 
+//不带函数头的数据包结构
+typedef struct bb_guild_0EEA {
+    uint32_t guildcard;                    // 02B8         4
+    uint32_t guild_id;                     // 02BC
+    uint8_t guild_info[8];                 // 公会信息     8
+    uint16_t guild_name[0x000E];           // 02CC
+    uint16_t unk_flag;
+    uint8_t guild_flag[0x0800];            // 公会图标
+    uint8_t panding;
+} PACKED bb_guild_0EEA_pkt;
+
 // 0FEA (C->S): Set team flag
 typedef struct bb_guild_member_flag_setting {
     bb_pkt_hdr_t hdr;

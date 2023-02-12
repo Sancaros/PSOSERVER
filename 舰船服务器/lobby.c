@@ -1230,6 +1230,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         send_lobby_join(c, c->cur_lobby);
         c->lobby_id = c->cur_lobby->lobby_id;
         c->flags &= ~CLIENT_FLAG_SHOPPING;
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
     }
     else {
         memset(c->enemy_kills, 0, sizeof(uint32_t) * 0x60);
@@ -1241,6 +1242,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         c->flags &= ~CLIENT_FLAG_SHOPPING;
         memset(c->p2_drops, 0, sizeof(c->p2_drops));
         c->p2_drops_max = 0;
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
     }
 
     /* ...and let his/her new lobby know that he/she has arrived. */

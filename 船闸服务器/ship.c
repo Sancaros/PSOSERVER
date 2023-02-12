@@ -1587,7 +1587,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    int res = 0, guild_id = 0, gc_target = 0;
+    uint32_t guild_id = pkt->fw_flags, gc_target = g_data->target_guildcard;
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1598,11 +1598,27 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    res = db_update_bb_guild_member_add(guild_id, gc_target);
+    if (db_update_bb_guild_member_add(guild_id, gc_target)) {
+
+        SQLERR_LOG("新增 BB %s 数据包 (%d) 失败", c_cmd_name(type, 0), len);
+        print_payload((uint8_t*)g_data, len);
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    g_data->hdr.pkt_type = BB_GUILD_FULL_DATA;
+
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
 
     print_payload((uint8_t*)g_data, len);
 
-    return res;
+    return 0;
 }
 
 /* 处理 Blue Burst 公会  */

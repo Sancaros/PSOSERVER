@@ -3751,11 +3751,11 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC交谈!",
-            c->guildcard);
-        return -1;
-    }
+    //if (l->type == LOBBY_TYPE_LOBBY) {
+    //    ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC交谈!",
+    //        c->guildcard);
+    //    return -1;
+    //}
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
@@ -3767,6 +3767,7 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
         memset(c->p2_drops, 0, sizeof(c->p2_drops));
         c->p2_drops_max = 0;
     }
+    print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3776,16 +3777,18 @@ static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC完成交谈!",
-            c->guildcard);
-        return -1;
-    }
+    //if (l->type == LOBBY_TYPE_LOBBY) {
+    //    ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC完成交谈!",
+    //        c->guildcard);
+    //    return -1;
+    //}
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if (pkt->shdr.size != 0x01)
         return -1;
+
+    print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
