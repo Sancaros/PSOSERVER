@@ -692,11 +692,14 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return bb_process_game_drop_set(c, menu_id, item_id);
 
     default:
-        printf("menu_id & 0xFF = %u", menu_id & 0xFF);
+        ERR_LOG("bb_process_menu menu_id & 0xFF = %u", menu_id & 0xFF);
         if (script_execute(ScriptActionUnknownMenu, c, SCRIPT_ARG_PTR, c,
             SCRIPT_ARG_UINT32, menu_id, SCRIPT_ARG_UINT32,
             item_id, SCRIPT_ARG_END) > 0)
             return 0;
+
+        return send_msg1(c, "%s",
+            __(c, "\tE\tC4菜单错误, 请联系管理员."));
     }
 
     return -1;
