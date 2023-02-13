@@ -16,6 +16,7 @@
 */
 
 #include "database.h"
+#include "database_query.h"
 #include "packets_bb.h"
 
 /* 数据库连接 */

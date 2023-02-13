@@ -1787,7 +1787,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                 c2->bb_guild->guild_data.guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
 
                 rv = send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-                rv = send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+                rv = send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
                 rv = send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
                 rv = send_bb_guild_cmd(c2, BB_GUILD_UNK_04EA);
 
@@ -1840,6 +1840,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
     uint32_t target_gc = pkt->target_guildcard;
     int i;
     ship_client_t* c2 = { 0 };
+    char guild_name[30] = { 0 };
 
     if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1849,45 +1850,54 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
     if (guild_id <= 0) {
         return send_msg_box(c, "%s",
-            __(c, "\tE您的公会权限不足."));
+            __(c, "\tE您不在任何一个公会中."));
     }
 
-    if (target_gc != c->guildcard)
-    {
-        if (c->bb_guild->guild_data.guild_priv_level == 0x40)
-        {
-            print_payload((uint8_t*)pkt, len);
-            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
-            send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+    if (target_gc != c->guildcard && c->bb_guild->guild_data.guild_priv_level == 0x40) {
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i]->guildcard == target_gc) {
+                c2 = l->clients[i];
 
-            for (i = 0; i < l->max_clients; ++i) {
-                if (l->clients[i]->guildcard == target_gc) {
-                    c2 = l->clients[i];
-                    if (c2->bb_guild->guild_data.guild_priv_level < c->bb_guild->guild_data.guild_priv_level) {
-                        memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-                        send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
-                        send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-
-                        return send_msg_box(c, "%s",
-                            __(c, "\tE会员已移除."));
-                    }
-                    else
-                        return send_msg_box(c, "%s",
-                            __(c, "\tE您的公会权限不足."));
-                }
+                break;
             }
+        }
+
+        if(!c2 || c2->bb_guild->guild_data.guild_id != guild_id)
+            return send_msg_box(c, "%s",
+                __(c, "\tE未找到该玩家."));
+
+        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+
+        if (c2->bb_guild->guild_data.guild_priv_level < c->bb_guild->guild_data.guild_priv_level) {
+            memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+            send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
+            send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+
+            istrncpy16_raw(ic_utf16_to_gbk, guild_name, &c->bb_guild->guild_data.guild_name[2], 30, 0x1C);
+
+            send_msg_box(c2, "%s%s%s",
+                __(c2, "\tE您已被 "),
+                guild_name,
+                __(c2, "\tE 公会开除."));
+            return send_msg_box(c, "%s",
+                __(c, "\tE会员已移除."));
         }
         else
             return send_msg_box(c, "%s",
                 __(c, "\tE您的公会权限不足."));
     }
-    else {
+
+    if(target_gc == c->guildcard) {
+        /* 操作数据库 */
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        /* 初始化对应GC的公会数据 */
         memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-        return send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
+        return send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
 
-    return 0;
+    return send_msg_box(c, "%s",
+        __(c, "\tE公会开除玩家发生错误,请联系管理员处理."));
 }
 
 static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
@@ -2051,7 +2061,7 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
         send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
-        send_bb_guild_cmd(c, BB_GUILD_UNK_12EA);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
         send_msg_box(c, "%s", __(c, "\tE\tC4公会已成功解散!"));
     }
 
@@ -2120,7 +2130,7 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         send_lobby_pkt(l2, NULL, build_guild_full_data_pkt(c2), 1);
     }
 
-    send_bb_guild_cmd(c2, BB_GUILD_UNK_12EA);
+    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
     send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
 
     return 0;
@@ -2276,13 +2286,15 @@ static int process_bb_guild_rank_list(ship_client_t* c, bb_guild_rank_list_pkt* 
     if (len != sizeof(bb_guild_rank_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     print_payload((uint8_t*)pkt, len);
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
-    //return 0;
+    if (c->bb_guild->guild_data.guild_id <= 0)
+        return 0;
+
+    return shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
 }
 
 static int process_bb_guild_unk_1DEA(ship_client_t* c, bb_guild_unk_1DEA_pkt* pkt) {
@@ -2360,7 +2372,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_MEMBER_PROMOTE:
         return process_bb_guild_member_promote(c, (bb_guild_member_promote_pkt*)pkt);
 
-    case BB_GUILD_UNK_12EA:
+    case BB_GUILD_INITIALIZATION_DATA:
         return process_bb_guild_unk_12EA(c, (bb_guild_unk_12EA_pkt*)pkt);
 
     case BB_GUILD_LOBBY_SETTING:
@@ -2369,16 +2381,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_MEMBER_TITLE:
         return process_bb_guild_member_tittle(c, (bb_guild_member_tittle_pkt*)pkt);
 
-        // PacketEA15
-        //   |----------code---------|                     GCID                  GUILD_ID
-        //   0     1      2     3    4     5     6     7     8     9    10    11    12    13    14    15    16
-        // 0x64, 0x08, 0xEA, 0x15, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-        //   17   18    19          24                28 <----------28------> 55    56    57    58    59    60
-        //                        GpLevel          GUILD_NAME                      |-----code----|          GC
-        // 0x00, 0x00, 0x00........0x00, 0x00,.......0x00....................0x00, 0x84, 0x6C, 0x98, 0x00, 0x00
-        //  61    62    63    64    65    66          68 <--24--> 91    92         100 <---------800------> 
-        //                  clientID                     char_name                          guild_flag
-        // 0x00, 0x00, 0x00, 0x00, 0x00, 0x00........0x00........0x00, 0x00........0x00....................0x00
     case BB_GUILD_FULL_DATA:
         return process_bb_guild_full_data_15EA(c, (bb_guild_full_data_15EA_pkt*)pkt);
 

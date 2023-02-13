@@ -3987,7 +3987,12 @@ typedef struct bb_guild_unk_1BEA {
 // No arguments
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    struct {//4+4+2+4+34 48
+        uint32_t menu_id;
+        uint32_t item_id;
+        uint16_t flags;         // Should be 0x0F04 this value, apparently
+        uint16_t name[0x11];
+    } entries[0];
 } PACKED bb_guild_rank_list_pkt;
 
 // 1DEA (S->C): UNKNOW

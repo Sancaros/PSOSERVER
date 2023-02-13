@@ -2270,6 +2270,14 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    TEST_LOG("guild_id = %u",pkt->fw_flags);
+
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
     print_payload((uint8_t*)g_data, len);
 
     return 0;
@@ -2356,7 +2364,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_MEMBER_PROMOTE:
         return handle_bb_guild_member_promote(c, pkt);
 
-    case BB_GUILD_UNK_12EA:
+    case BB_GUILD_INITIALIZATION_DATA:
         return handle_bb_guild_unk_12EA(c, pkt);
 
     case BB_GUILD_LOBBY_SETTING:
