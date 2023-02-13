@@ -1110,6 +1110,101 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     }
 }
 
+static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_guild_invite_t* pkt) {
+    uint16_t len = pkt->hdr.pkt_len;
+    uint8_t type = pkt->shdr.type;
+    uint32_t invite_cmd = pkt->trans_cmd;
+    uint32_t target_guildcard = pkt->traget_guildcard;
+
+    // 公会邀请 C1 & C2, 会长转让 CD & CE.
+//[2023年02月13日 21:13:20:264] 测试(subcmd-bb.c 1521): SUBCMD62_GUILD_INVITE1
+//( 00000000 )   64 00 62 00 00 00 00 00  C1 17 80 3F 01 00 00 00    d.b........?....
+//( 00000010 )   00 00 00 00 09 00 42 00  31 00 32 00 33 00 00 00    .... .B.1.2.3...
+//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
+//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000060 )   00 00 D9 01                                         ....
+//[2023年02月13日 21:13:25:223] 测试(subcmd-bb.c 1533): SUBCMD62_GUILD_INVITE2
+//( 00000000 )   64 00 62 00 01 00 00 00  C2 17 E9 6D 60 EE 80 02    d.b........m`...
+//( 00000010 )   02 00 00 00 09 00 42 00  31 00 00 00 00 00 00 00    .... .B.1.......
+//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
+//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000060 )   00 00 D9 01                                         ....                                 ...y
+    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
+            c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    TEST_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u", invite_cmd, c->guildcard, d->guildcard);
+
+    //0x02 应该时接受公会邀请指令
+    if ((invite_cmd == 0x02) && (c->guildcard == target_guildcard))
+        c->guild_accept = 1;
+
+    print_payload((uint8_t*)pkt, len);
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
+
+static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_guild_master_trans_t* pkt) {
+    uint16_t len = pkt->hdr.pkt_len;
+    uint8_t type = pkt->shdr.type;
+    uint32_t trans_cmd = pkt->trans_cmd;
+    uint32_t target_guildcard = pkt->traget_guildcard;
+
+    // 公会邀请 C1 & C2, 会长转让 CD & CE.                             ...y
+//[2023年02月13日 19:20:13:191] 测试(subcmd-bb.c 1495): SUBCMD62_GUILD_MASTER_TRANS1
+//( 00000000 )   64 00 62 00 00 00 00 00  CD 17 14 04 01 00 00 00    d.b.............
+//( 00000010 )   00 00 00 00 09 00 42 00  31 00 32 00 33 00 00 00    .... .B.1.2.3...
+//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
+//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000060 )   00 00 BB 79                                         ...y
+//[2023年02月13日 19:20:29:038] 测试(subcmd-bb.c 1501): SUBCMD62_GUILD_MASTER_TRANS2
+//( 00000000 )   64 00 62 00 01 00 00 00  CE 17 85 00 60 EE 80 02    d.b.........`...
+//( 00000010 )   01 00 00 00 09 00 42 00  31 00 00 00 00 00 00 00    .... .B.1.......
+//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
+//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000060 )   00 00 BB 79                                         ...y
+    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
+            c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS%d c %u d %u", trans_cmd, c->guildcard, d->guildcard);
+
+    switch (type) {
+    case SUBCMD62_GUILD_MASTER_TRANS1:
+
+        if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
+            ERR_LOG("GC %u 公会权限不足", c->guildcard);
+            return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
+                __(c, "\tC7您无权进行此操作."));
+        }
+
+        c->guild_master_exfer = trans_cmd;
+
+        print_payload((uint8_t*)pkt, len);
+        break;
+
+    default:
+        print_payload((uint8_t*)pkt, len);
+        break;
+    }
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
+
 static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pkt, int size) {
     lobby_t* l = c->cur_lobby;
 
@@ -1350,6 +1445,7 @@ static int handle_bb_quest_oneperson_set_ex_pc(ship_client_t* c, subcmd_bb_quest
 int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* dest;
+    uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->type;
     uint8_t size = pkt->size;
     int rv = -1;
@@ -1451,7 +1547,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case SUBCMD62_TEKKED:
         rv = handle_bb_item_tekked(c, (subcmd_bb_accept_item_identification_t*)pkt);
-        //rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
         break;
 
     case SUBCMD62_OPEN_BANK:
@@ -1464,34 +1559,12 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case SUBCMD62_GUILD_INVITE1:
     case SUBCMD62_GUILD_INVITE2:
+        rv = handle_bb_guild_invite(c, dest, (subcmd_bb_guild_invite_t*)pkt);
+        break;
+
     case SUBCMD62_GUILD_MASTER_TRANS1:
     case SUBCMD62_GUILD_MASTER_TRANS2:
-        // 公会邀请 C1 & C2, 会长转让 CD & CE.
-        if (size == 0x64)
-            rv = 0;
-
-        switch (type)
-        {
-        case SUBCMD62_GUILD_INVITE2:
-            uint32_t gcn = *(uint32_t*)&pkt->data[0x02];
-
-            if ((pkt->data[0x06] == 0x02) && //0x02 应该时接受公会邀请指令
-                (c->guildcard == gcn))
-                c->guild_accept = 1;
-            break;
-
-        case SUBCMD62_GUILD_MASTER_TRANS1:
-            if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
-                rv = 0;
-                send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
-                    __(c, "\tC7您无权进行此操作."));
-                DBG_LOG("GC %u 公会权限不足", c->guildcard);
-            }
-            else
-                c->guild_master_exfer = 1;
-            break;
-        }
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        rv = handle_bb_guild_trans(c, dest, (subcmd_bb_guild_master_trans_t*)pkt);
         break;
 
     case SUBCMD62_CH_GRAVE_DATA:

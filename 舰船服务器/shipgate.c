@@ -740,12 +740,16 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         }
                         break;
 
+                        /* OK */
                     case BB_GUILD_MEMBER_REMOVE:
-                        if (c->guildcard == gc) {
+                        bb_guild_member_remove_pkt* remove_pkt = (bb_guild_member_remove_pkt*)pkt->pkt;
 
-                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            //print_payload((uint8_t*)g, len);
-                            //send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+                        if (c->guildcard == remove_pkt->target_guildcard && 
+                            c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
+
+                            memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
 
@@ -757,18 +761,16 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         }
                         break;
 
+                        /* OK */
                     case BB_GUILD_CHAT:
-                        bb_guild_member_chat_pkt* chat_data = (bb_guild_member_chat_pkt*)pkt->pkt;
-
-                        if (c->bb_guild->guild_data.guild_id == chat_data->guild_id)
-                            send_pkt_bb(c, (bb_pkt_hdr_t*)chat_data);
+                        if (c->bb_guild->guild_data.guild_id == pkt->fw_flags)
+                            send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
+                        /* OK */
                     case BB_GUILD_MEMBER_SETTING:
-                        if (c->guildcard == gc) {
-
+                        if (c->guildcard == gc)
                             send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                        }
                         break;
 
                     case BB_GUILD_UNK_09EA:
@@ -837,11 +839,22 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_MEMBER_PROMOTE:
-                        print_payload((uint8_t*)g, len);
-                        if (c->guildcard == gc) {
+                        bb_guild_member_promote_pkt* promote_pkt = (bb_guild_member_promote_pkt*)pkt->pkt;
+
+                        if (c->guildcard == promote_pkt->target_guildcard) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            print_payload((uint8_t*)g, len);
+                            return send_msg_box(c, "%s",
+                                __(c, "\tE您的公会权限已被提升."));
+                        }
+
+                        print_payload((uint8_t*)g, len);
+
+                        if (c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            return send_msg_box(c, "%s",
+                                __(c, "\tE公会权限已被提升."));
                         }
                         break;
 

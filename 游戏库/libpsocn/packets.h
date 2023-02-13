@@ -3880,7 +3880,6 @@ typedef struct bb_guild_dissolve {
 typedef struct bb_guild_member_promote {
     bb_pkt_hdr_t hdr;
     uint32_t target_guildcard;
-    uint8_t data[];
 } PACKED bb_guild_member_promote_pkt;
 
 // 12EA (S->C): Unknown
@@ -3922,7 +3921,7 @@ typedef struct bb_guild_member_tittle {
 } PACKED bb_guild_member_tittle_pkt;
 
 // 15EA (S->C): Unknown
-typedef struct bb_guild_unk_15EA {
+typedef struct bb_guild_full_data {
     bb_pkt_hdr_t hdr;
     uint32_t guildcard;
     uint32_t guild_id;
@@ -3930,12 +3929,12 @@ typedef struct bb_guild_unk_15EA {
     uint32_t guild_priv_level;
     uint16_t guild_name[0x000E];
     uint32_t guild_rank;
-    uint32_t guildcard_client;
+    uint32_t target_guildcard;
     uint32_t client_id;
-    uint16_t char_name[12];
+    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
     uint8_t guild_flag[0x0800];
     uint32_t guild_rewards[2];
-} PACKED bb_guild_full_data_15EA_pkt;
+} PACKED bb_guild_full_data_pkt;
 
 // 16EA (S->C): UNKNOW
 typedef struct bb_guild_unk_16EA {

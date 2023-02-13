@@ -1917,9 +1917,12 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    uint32_t guild_id = c->bb_guild->guild_data.guild_id;
 
-    if (c->bb_guild->guild_data.guild_id <= 0 || len <= 0x2B)
-        return 0;
+    if (c->bb_guild->guild_data.guild_id <= 0) {
+        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
+            __(c, "\tC7您无权进行此操作."));
+    }
 
     //if (add_color_tag((uint16_t*)&pkt->chat)) {
     //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1930,7 +1933,7 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
     pkt->guildcard = c->guildcard;
     pkt->guild_id = c->bb_guild->guild_data.guild_id;
 
-    return shipgate_fw_bb(&ship->sg, pkt, 0, c);
+    return shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
 }
 
 static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_setting_pkt* pkt) {
@@ -2089,17 +2092,31 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     }
 
     if (c->guildcard == target_gc) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        ERR_LOG("错误 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        return -1;
+        return send_msg1(c, "%s",
+            __(c, "\tE您无法提升自己的权限了."));
     }
-
 
     if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        return -1;
+
+        return send_msg1(c, "%s",
+            __(c, "\tE您的权限不足."));
     }
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]->guildcard == target_gc) {
+            c2 = l->clients[i];
+
+            break;
+        }
+    }
+
+    if(c2 == NULL)
+        return send_msg1(c, "%s",
+            __(c, "\tE未找到需要提升的公会玩家."));
 
     shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
 
@@ -2107,31 +2124,21 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         //会长转让
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
         c->bb_guild->guild_data.guild_priv_level = 0x30;
+        //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
 
         send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
     }
 
-    lobby_t* l2 = { 0 };
-
-    for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i]->guildcard == target_gc) {
-            c2 = l->clients[i];
-            lobby_t* l2 = c2->cur_lobby;
-
-            break;
+    if (c2 != NULL) {
+        if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
+            c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
+            //send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+            send_lobby_pkt(c2->cur_lobby, NULL, build_guild_full_data_pkt(c2), 1);
         }
+
+        send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_MEMBER_PROMOTE);
     }
-
-    if (!l2 || c2 == NULL)
-        return 0;
-
-    if (c2->bb_guild->guild_data.guild_priv_level != guild_priv_level) {
-        c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
-        send_lobby_pkt(l2, NULL, build_guild_full_data_pkt(c2), 1);
-    }
-
-    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
-    send_bb_guild_cmd(c2, BB_GUILD_MEMBER_PROMOTE);
 
     return 0;
 }
@@ -2177,7 +2184,7 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_15EA_pkt* pkt) {
+static int process_bb_guild_full_data(ship_client_t* c, bb_guild_full_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
@@ -2185,7 +2192,7 @@ static int process_bb_guild_full_data_15EA(ship_client_t* c, bb_guild_full_data_
     if (!l)
         return 0;
 
-    if (len != sizeof(bb_guild_full_data_15EA_pkt)) {
+    if (len != sizeof(bb_guild_full_data_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         //return -1;
@@ -2382,7 +2389,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_member_tittle(c, (bb_guild_member_tittle_pkt*)pkt);
 
     case BB_GUILD_FULL_DATA:
-        return process_bb_guild_full_data_15EA(c, (bb_guild_full_data_15EA_pkt*)pkt);
+        return process_bb_guild_full_data(c, (bb_guild_full_data_pkt*)pkt);
 
     case BB_GUILD_UNK_16EA:
         return process_bb_guild_unk_16EA(c, (bb_guild_unk_16EA_pkt*)pkt);

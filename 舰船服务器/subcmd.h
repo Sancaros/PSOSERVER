@@ -2465,8 +2465,16 @@ typedef struct subcmd_bb_sell_item {
     uint32_t sell_num;
 } PACKED subcmd_bb_sell_item_t;
 
-// 0xC1: Unknown
-// 0xC2: Unknown
+// 0xC1: subcmd_bb_guild_invite1
+// 0xC2: subcmd_bb_guild_invite2
+typedef struct subcmd_bb_guild_invite {
+    bb_pkt_hdr_t hdr;//8 + 4 + 4 + 4 + 48 + 32 = 100
+    params_hdr_t shdr;
+    uint32_t traget_guildcard;
+    uint32_t trans_cmd;
+    uint16_t master_name[0x0018];
+    uint16_t guild_name[0x0010];
+} PACKED subcmd_bb_guild_invite_t;
 
 // 0xC3: Split stacked item (handled by the server on BB)
 // Note: This is not sent if an entire stack is dropped; in that case, a normal
@@ -2566,19 +2574,16 @@ typedef struct subcmd_bb_UNKNOW_0xCC {
     uint8_t data[0];
 } PACKED subcmd_bb_UNKNOW_0xCC_t;
 
-// 0xCD: Unknown
-typedef struct subcmd_bb_UNKNOW_0xCD {
-    bb_pkt_hdr_t hdr;
+// 0xCD: subcmd_bb_guild_master_trans1
+// 0xCE: subcmd_bb_guild_master_trans2
+typedef struct subcmd_bb_guild_master_trans {
+    bb_pkt_hdr_t hdr;//8 + 4 + 4 + 4 + 48 + 32 = 100
     params_hdr_t shdr;
-    uint8_t data[0];
-} PACKED subcmd_bb_UNKNOW_0xCD_t;
-
-// 0xCE: Unknown
-typedef struct subcmd_bb_UNKNOW_0xCE {
-    bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
-} PACKED subcmd_bb_UNKNOW_0xCE_t;
+    uint32_t traget_guildcard;
+    uint32_t trans_cmd;
+    uint16_t master_name[0x0018];
+    uint16_t guild_name[0x0010];
+} PACKED subcmd_bb_guild_master_trans_t;
 
 // 0xCF: Unknown (指令生效范围; 仅限游戏; handled by the server on BB)
 typedef struct subcmd_bb_UNKNOW_0xCF {

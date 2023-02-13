@@ -11888,21 +11888,47 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 }
 
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
-    uint8_t* sendbuf = get_sendbuf();
-# pragma warning (disable:4819)
+    uint8_t* sendbuf = get_sendbuf(); 
+    bb_guild_full_data_pkt* pkt = (bb_guild_full_data_pkt*)sendbuf;
+    int len = sizeof(bb_guild_full_data_pkt);
 
-    sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
-    memset(&sendbuf[0x05], 0, 3);
-    *(uint32_t*)&sendbuf[0x08] = c->guildcard;
-    *(uint32_t*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
-    *(uint32_t*)&sendbuf[0x18] = c->bb_guild->guild_data.guild_priv_level;
-    memcpy(&sendbuf[0x1C], &c->bb_guild->guild_data.guild_name[0], 28);
-    sprintf(&sendbuf[0x38], "\x84\x6C\x98");
-    *(uint32_t*)&sendbuf[0x3C] = c->guildcard;
-    sendbuf[0x40] = c->client_id;
-    memcpy(&sendbuf[0x44], &c->bb_pl->character.name[0], 24);
-    memcpy(&sendbuf[0x64], &c->bb_guild->guild_data.guild_flag[0], 0x800);
-    return &sendbuf[0];
+    memset(pkt, 0, len);
+
+    pkt->guildcard = c->bb_guild->guild_data.guildcard;
+    pkt->guild_id = c->bb_guild->guild_data.guild_id;
+    memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], 0x08);
+    pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+    memcpy(&pkt->guild_name[0], &c->bb_guild->guild_data.guild_name[0], 0x1C);
+    pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
+    pkt->target_guildcard = c->guildcard;
+    pkt->client_id = c->client_id;
+    memcpy(&pkt->guild_name[0], &c->pl->bb.character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+    memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], 0x800);
+    pkt->guild_rewards[0] = c->bb_guild->guild_data.guild_rewards[0];
+    pkt->guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
+
+
+    pkt->hdr.pkt_len = LE16(0x0864);
+    pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
+    pkt->hdr.flags = LE32(0x00000001);
+
+    return (uint8_t*)pkt;
+    
+//# pragma warning (disable:4819)
+//    sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
+//    memset(&sendbuf[0x05], 0, 3);
+//    *(uint32_t*)&sendbuf[0x08] = c->guildcard;
+//    *(uint32_t*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
+//    *(uint32_t*)&sendbuf[0x18] = c->bb_guild->guild_data.guild_priv_level;
+//    memcpy(&sendbuf[0x1C], &c->bb_guild->guild_data.guild_name[0], 28);
+//    sprintf(&sendbuf[0x38], "\x84\x6C\x98");
+//    *(uint32_t*)&sendbuf[0x3C] = c->guildcard;
+//    sendbuf[0x40] = c->client_id;
+//    memcpy(&sendbuf[0x44], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+//    memcpy(&sendbuf[0x64], &c->bb_guild->guild_data.guild_flag[0], 0x800);
+//    *(uint32_t*)&sendbuf[0x864] = 0;
+//
+//    return sendbuf;
 }
 
 /* 用于 0x00EA BB公会 指令*/
@@ -11923,7 +11949,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     /* Clear the packet */
     memset(pkt, 0, sizeof(bb_guild_pkt_pkt));
 
-    DBG_LOG("向客户端发送公会指令send_bb_guild 0x%04X", cmd_code);
+    DBG_LOG("向GC %u 发送公会指令 0x%04X", c->guildcard, cmd_code);
 
     switch (cmd_code)
     {
