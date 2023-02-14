@@ -3697,7 +3697,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中掉落堆叠物品!",
+        ERR_LOG("GC %" PRIu32 " 在大厅中掉落物品!",
             c->guildcard);
         return -1;
     }
@@ -3706,7 +3706,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
         pkt->shdr.client_id != c->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送了损坏的堆叠物品掉落数据!",
+        ERR_LOG("GC %" PRIu32 " 发送了损坏的物品掉落数据!",
             c->guildcard);
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
@@ -4438,6 +4438,7 @@ static int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6
     if (pkt->shdr.client_id != c->client_id) {
         DBG_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
     }
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -4449,6 +4450,64 @@ static int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6
             }
         }
     }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
+    int found = 0;
+
+    //[2023年02月14日 18:07:48:964] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
+    //
+    //( 00000000 )   14 00 60 00 00 00 00 00  CC 03 00 00 00 00 01 00    ..`.............
+    //( 00000010 )   01 00 00 00                                         ....
+    //[2023年02月14日 18:07:56:864] 调试(block-bb.c 2347): 舰仓：BB 公会功能指令 0x18EA BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO - 0x18EA (长度8)
+    //( 00000000 )   08 00 EA 18 00 00 00 00                             ........
+    //[2023年02月14日 18:07:56:890] 调试(ship_packets.c 11953): 向GC 42004063 发送公会指令 0x18EA
+    //[2023年02月14日 18:08:39:462] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
+    //
+    //( 00000000 )   14 00 60 00 00 00 00 00  CC 03 00 00 06 00 01 00    ..`.............
+    //( 00000010 )   01 00 00 00          
+//[2023年02月14日 18:16:59:989] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
+//
+//( 00000000 )   14 00 60 00 00 00 00 00  CC 03 01 00 00 00 81 00    ..`.............
+//( 00000010 )   01 00 00 00                                         ....
+
+    if (pkt->shdr.client_id != c->client_id || ex_amount == 0) {
+        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* TODO 完成挑战模式的物品掉落 */
+    if (l->challenge) {
+        send_msg1(c, "%s", __(c, "\t挑战模式不支持转换物品!"));
+        /* 数据包完成, 发送至游戏房间. */
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+
+    if (ex_item_id == EMPTY_STRING) {
+        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 从玩家的背包中移除该物品. */
+    found = item_remove_from_inv(c->bb_pl->inv.iitems,
+        c->bb_pl->inv.item_count, ex_item_id,
+        LE32(ex_amount));
+
+    if (found < 0) {
+        ERR_LOG("无法从玩家背包中移除物品!");
+        return -1;
+    }
+
+    send_msg1(c, "%s", __(c, "\t物品转换成功!"));
+
+    c->bb_pl->inv.item_count -= found;
+    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5092,6 +5151,10 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
 
+    case SUBCMD60_EX_ITEM_TEAM:
+        rv = handle_bb_guild_ex_item(c, (subcmd_bb_guild_ex_item_t*)pkt);
+        break;
+
         /* 此函数正常载入 */
     case SUBCMD60_USE_ITEM:
         rv = handle_bb_use_item(c, (subcmd_bb_use_item_t*)pkt);
@@ -5342,7 +5405,7 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD60_SPAWN_NPC:
         rv = handle_bb_spawn_npc(c, pkt);
         break;
-
+        
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("暂未完成 0x60: 0x%02X\n", type);

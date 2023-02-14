@@ -2567,12 +2567,13 @@ typedef struct subcmd_bb_UNKNOW_0xCB {
     uint8_t data[0];
 } PACKED subcmd_bb_UNKNOW_0xCB_t;
 
-// 0xCC: Unknown
-typedef struct subcmd_bb_UNKNOW_0xCC {
+// 0xCC: subcmd_bb_guild_ex_item
+typedef struct subcmd_bb_guild_ex_item {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
-} PACKED subcmd_bb_UNKNOW_0xCC_t;
+    client_id_hdr_t shdr;
+    uint32_t ex_item_id;
+    uint32_t ex_amount;
+} PACKED subcmd_bb_guild_ex_item_t;
 
 // 0xCD: subcmd_bb_guild_master_trans1
 // 0xCE: subcmd_bb_guild_master_trans2

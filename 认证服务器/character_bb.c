@@ -546,6 +546,8 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         return -1;
     }
 
+    DBG_LOG("reason %d", pkt->reason);
+
     ///* 查询数据库并获取数据 */
     //sprintf(query, "SELECT data, size FROM %s WHERE guildcard='%"
     //        PRIu32 "' AND slot='%"PRIu8"'", CHARACTER, c->guildcard, pkt->slot);
@@ -634,13 +636,12 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         /* The client is actually selecting the character to play with. Update
            the data on the client, then send the acknowledgement. */
         c->sec_data.slot = pkt->slot;
-        c->sec_data.sel_char = 1;
+        c->sec_data.sel_char = pkt->reason;
 
         char ipstr[INET6_ADDRSTRLEN];
         my_ntop(&c->ip_addr, ipstr);
 
-        if (db_update_char_auth_msg(ipstr, c->guildcard, c->sec_data.slot))
-        {
+        if (db_update_char_auth_msg(ipstr, c->guildcard, c->sec_data.slot)) {
             ERR_LOG("无法更新角色 %s 认证数据!", CHARACTER);
             rv = -4;
         }
@@ -655,8 +656,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
 
         sprintf_s(myquery, _countof(myquery), "UPDATE %s SET slot = '%"PRIu8"' WHERE guildcard = '%"
             PRIu32 "'", AUTH_SECURITY, pkt->slot, c->guildcard);
-        if (psocn_db_real_query(&conn, myquery))
-        {
+        if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法更新角色 %s 数据!", AUTH_SECURITY);
             //handle_todc(__LINE__, c);
         }
@@ -730,10 +730,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
         char_data->character.play_time = 0;
 
-        if (db_backup_bb_char_data(c->guildcard, pkt->slot))
-            /*AUTH_LOG("备份已删除的玩家数据 (GC %"
-                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-        else */ {
+        if (db_backup_bb_char_data(c->guildcard, pkt->slot)) {
             ERR_LOG("无法备份已删除的玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             goto err;

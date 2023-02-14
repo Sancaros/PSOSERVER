@@ -1040,7 +1040,7 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
 
     memset(&dress_data, 0, sizeof(psocn_dress_data_t));
 
-    memset(myquery, 0, sizeof(myquery));
+    memset(&myquery[0], 0, sizeof(myquery));
 
     /* 查询数据库并获取数据 */
     sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%"
@@ -1069,7 +1069,7 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot) {
         psocn_db_result_free(result);
     }
 
-    if (row) {
+    if (row != NULL) {
         int i = 2;
         memcpy(&dress_data.guildcard_string, row[i], sizeof(dress_data.guildcard_string));
         i++;

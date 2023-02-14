@@ -853,29 +853,29 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
        TODO: This should probably be more thorough and done as part of the
        client_check_character() function. */
     /* If they already had character data, then check if it's still sane. */
-    //if (c->pl->bb.character.name) {
-    //    i = client_check_character(c, &pkt->data, version);
-    //    if (i) {
-    //        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-    //            " 错误码 %d", ship->cfg->name, c->cur_block->b,
-    //            c->guildcard, i);
-    //        if (c->cur_lobby) {
-    //            ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
-    //                c->cur_lobby->name, c->cur_lobby->difficulty,
-    //                c->cur_lobby->battle, c->cur_lobby->challenge,
-    //                c->cur_lobby->v2);
-    //        }
-    //    }
-    //   /* else
-    //        ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
-    //            " 版本 = %d 未找到对应角色", ship->cfg->name, c->cur_block->b,
-    //            c->guildcard, c->version);*/
-    //}
-    //else {
-    //    ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
-    //        " 版本 = %d 未找到角色名", ship->cfg->name, c->cur_block->b,
-    //        c->guildcard, c->version);
-    //}
+    if (c->pl->bb.character.name) {
+        i = client_check_character(c, &pkt->data, version);
+        if (i) {
+            ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+                " 错误码 %d", ship->cfg->name, c->cur_block->b,
+                c->guildcard, i);
+            if (c->cur_lobby) {
+                ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
+                    c->cur_lobby->name, c->cur_lobby->difficulty,
+                    c->cur_lobby->battle, c->cur_lobby->challenge,
+                    c->cur_lobby->v2);
+            }
+        }
+       /* else
+            ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
+                " 版本 = %d 未找到对应角色", ship->cfg->name, c->cur_block->b,
+                c->guildcard, c->version);*/
+    }
+    else {
+        ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
+            " 版本 = %d 未找到角色名", ship->cfg->name, c->cur_block->b,
+            c->guildcard, c->version);
+    }
 
     v = LE32(pkt->data.bb.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
@@ -902,7 +902,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     c->c_rank = c->pl->bb.c_rank.c_rank.all;
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
-    /* Copy out the inventory data */
+    /* 将背包数据复制至玩家数据结构中 */
     memcpy(c->iitems, c->pl->bb.inv.iitems, sizeof(iitem_t) * 30);
     c->item_count = (int)c->pl->bb.inv.item_count;
 

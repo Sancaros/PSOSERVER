@@ -2516,6 +2516,14 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
+    if (db_update_char_dress_data(char_data->character.disp.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家外观数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
     if (db_compress_char_data(char_data, data_len, gc, slot)) {
         ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
@@ -2673,10 +2681,10 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
 
     psocn_db_result_free(result);
 
-    /* Send the data back to the ship. */
+    /* 将数据发回舰船. */
     rv = send_cdata(c, gc, (uint32_t)-1, data, sz, block);
 
-    /* Clean up and finish */
+    /* 清理内存并结束 */
     free_safe(data);
     return rv;
 }
@@ -2810,10 +2818,10 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
         memcpy(data, raw_data, data_length);
     }
 
-    /* Send the data back to the ship. */
+    /* 将数据发回舰船. */
     rv = send_cdata(c, gc, slot, data, sz, 0);
 
-    /* Clean up and finish */
+    /* 清理内存并结束 */
     free_safe(data);
     return rv;
 }

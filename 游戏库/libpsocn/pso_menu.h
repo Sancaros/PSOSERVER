@@ -167,4 +167,12 @@ static pso_menu_t pso_block_list_menu_last[][4] = {
 };
 
 
+static pso_menu_t pso_guild_rank_list_bb[][4] = {
+    {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_INITIAL, 0x0004},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_SHIP, 0x0004},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_INFO, 0x0004},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_GM, 0x0004},
+    {"暂未完成", MENU_ID_INITIAL, ITEM_ID_DISCONNECT, 0x0004}
+};
+
 #endif /* !PSO_MENU_HAVE_MENU */

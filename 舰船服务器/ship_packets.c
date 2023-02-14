@@ -11964,11 +11964,11 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         len = 0;
 
         /* Ìî³ä²Ëµ¥ÊµÀý */
-        for (i = 0; i < _countof(pso_initial_menu_auth_bb); ++i) {
-            menu->entries[i].menu_id = LE32(pso_initial_menu_auth_bb[i]->menu_id);
-            menu->entries[i].item_id = LE32(pso_initial_menu_auth_bb[i]->item_id);
-            menu->entries[i].flags = LE16(pso_initial_menu_auth_bb[i]->flag);
-            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_initial_menu_auth_bb[i]->desc, 0x20);
+        for (i = 0; i < _countof(pso_guild_rank_list_bb); ++i) {
+            menu->entries[i].menu_id = LE32(pso_guild_rank_list_bb[i]->menu_id);
+            menu->entries[i].item_id = LE32(pso_guild_rank_list_bb[i]->item_id);
+            menu->entries[i].flags = LE16(pso_guild_rank_list_bb[i]->flag);
+            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_guild_rank_list_bb[i]->desc, 0x20);
             len += 0x2C;
         }
 
