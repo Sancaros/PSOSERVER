@@ -4620,7 +4620,7 @@ static int send_dc_info_list(ship_client_t *c, ship_t *s, uint32_t v) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(dc_block_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -4692,7 +4692,7 @@ static int send_pc_info_list(ship_client_t *c, ship_t *s) {
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -4756,7 +4756,7 @@ static int send_bb_info_list(ship_client_t* c, ship_t* s) {
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -4856,7 +4856,7 @@ int send_pc_game_type_sel(ship_client_t *c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
@@ -4872,7 +4872,7 @@ int send_bb_game_create(ship_client_t* c) {
     int i = 0, len = 0x58, entries = 1;
     DBG_LOG("创建房间");
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = GAME_CREATE_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = 3;
@@ -4902,7 +4902,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
@@ -4933,7 +4933,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
@@ -11064,7 +11064,7 @@ static int send_dc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(dc_block_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11140,7 +11140,7 @@ static int send_pc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11206,7 +11206,7 @@ static int send_bb_gm_menu(ship_client_t *c, uint32_t menu_id) {
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11360,7 +11360,7 @@ static int send_dc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     /* Clear the base packet */
     memset(pkt, 0, 0x20);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11416,7 +11416,7 @@ static int send_pc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11468,7 +11468,7 @@ static int send_bb_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     /* Clear the base packet */
     memset(pkt, 0, 0x30);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LOBBY_INFO_TYPE;
 
     /* Fill in the ship name entry */
@@ -11938,6 +11938,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* c2;
     int i;
+    uint32_t len = 0;
 
     /* Make sure we got the sendbuf */
     if (!sendbuf)
@@ -11955,29 +11956,29 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     {
     case BB_GUILD_RANKING_LIST:
         bb_guild_rank_list_pkt* menu = (bb_guild_rank_list_pkt*)sendbuf;
-        uint32_t count = 0, menu_size = 0x100, menu_size2 = 0x1C, menu_size3 = 0x20;
+        len = 0x100;
 
         /* 初始化数据包 */
-        memset(pkt, 0, menu_size);
+        memset(pkt, 0, len);
+
+        len = 0;
 
         /* 填充菜单实例 */
-        for (count; count < _countof(pso_initial_menu_auth_bb); ++count) {
-            menu->entries[count].menu_id = LE32(pso_initial_menu_auth_bb[count]->menu_id);
-            menu->entries[count].item_id = LE32(pso_initial_menu_auth_bb[count]->item_id);
-            menu->entries[count].flags = LE16(pso_initial_menu_auth_bb[count]->flag);
-            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[count].name, pso_initial_menu_auth_bb[count]->desc, menu_size3);
-            menu_size += menu_size2;
+        for (i = 0; i < _countof(pso_initial_menu_auth_bb); ++i) {
+            menu->entries[i].menu_id = LE32(pso_initial_menu_auth_bb[i]->menu_id);
+            menu->entries[i].item_id = LE32(pso_initial_menu_auth_bb[i]->item_id);
+            menu->entries[i].flags = LE16(pso_initial_menu_auth_bb[i]->flag);
+            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_initial_menu_auth_bb[i]->desc, 0x20);
+            len += 0x2C;
         }
 
-        /* Fill in some basic stuff */
+        /* 填充数据头 */
+        menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
         menu->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
-        menu->hdr.pkt_len = LE16(menu_size);
-        menu->hdr.flags = count - 1;
+        menu->hdr.flags = i - 1;
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)menu);
-        /*return send_msg_box(c, "%s",
-            __(c, "\tE公会排行榜未完成."));*/
 
     case BB_GUILD_UNK_1EEA:
         pkt->hdr.pkt_len = LE16(0x0008);
@@ -12036,6 +12037,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
     case BB_GUILD_UNK_0EEA:
+        len = 0x0830;
+
         memset(&pkt->data[0x00], 0, 0x0830);
 
         *(uint32_t*)&pkt->data[0x00] = c->guildcard;
@@ -12045,7 +12048,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         *(uint32_t*)&pkt->data[0x2C] = c->bb_guild->guild_data.guild_rank;
         memcpy(&pkt->data[0x30], &c->bb_guild->guild_data.guild_flag[0], 0x800);
 
-        pkt->hdr.pkt_len = LE16(0x0838);
+        pkt->hdr.pkt_len = LE16(0x0830 + sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = 0x00000000;
 
@@ -12054,7 +12057,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     case BB_GUILD_DISSOLVE:
 
-        pkt->hdr.pkt_len = LE16(0x0008);
+        pkt->hdr.pkt_len = LE16(sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = 0x00000000;
 
@@ -12063,7 +12066,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
     case BB_GUILD_MEMBER_PROMOTE:
 
-        pkt->hdr.pkt_len = LE16(0x0008);
+        pkt->hdr.pkt_len = LE16(sizeof(bb_pkt_hdr_t));
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = 0x00000000;
 
@@ -12084,7 +12087,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             *(uint32_t*)&pkt->data[0x34] = c->bb_guild->guild_data.guild_rank;
         }
 
-        pkt->hdr.pkt_len = LE16(0x0040);//64 - 8 = 56
+        pkt->hdr.pkt_len = LE16(0x0038 + sizeof(bb_pkt_hdr_t));//64 - 8 = 56
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = 0x00000000;
 

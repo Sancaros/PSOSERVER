@@ -1134,19 +1134,19 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
 //( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
 //( 00000060 )   00 00 D9 01                                         ....                                 ...y
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
+        ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
             c->guildcard);
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
-    TEST_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u", invite_cmd, c->guildcard, d->guildcard);
+    //TEST_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u", invite_cmd, c->guildcard, d->guildcard);
 
     //0x02 应该时接受公会邀请指令
     if ((invite_cmd == 0x02) && (c->guildcard == target_guildcard))
         c->guild_accept = 1;
 
-    print_payload((uint8_t*)pkt, len);
+    //print_payload((uint8_t*)pkt, len);
 
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
@@ -1181,12 +1181,12 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
         return -1;
     }
 
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS%d c %u d %u", trans_cmd, c->guildcard, d->guildcard);
+    //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS%d c %u d %u", trans_cmd, c->guildcard, d->guildcard);
 
     switch (type) {
     case SUBCMD62_GUILD_MASTER_TRANS1:
 
-        if (c->bb_guild->guild_data.guild_priv_level != 0x40) {
+        if (c->bb_guild->guild_data.guild_priv_level != 0x00000040) {
             ERR_LOG("GC %u 公会权限不足", c->guildcard);
             return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
                 __(c, "\tC7您无权进行此操作."));
@@ -1194,12 +1194,17 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
 
         c->guild_master_exfer = trans_cmd;
 
-        print_payload((uint8_t*)pkt, len);
+        //print_payload((uint8_t*)pkt, len);
         break;
 
-    default:
-        print_payload((uint8_t*)pkt, len);
+    case SUBCMD62_GUILD_MASTER_TRANS2:
+        TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 指令%d c %u d %u", trans_cmd, c->guildcard, d->guildcard);
+
         break;
+
+    //default:
+    //    print_payload((uint8_t*)pkt, len);
+    //    break;
     }
 
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);

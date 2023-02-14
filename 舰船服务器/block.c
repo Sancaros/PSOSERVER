@@ -2500,8 +2500,6 @@ static int dc_process_menu(ship_client_t* c, dc_select_pkt* pkt) {
     uint8_t* bp = (uint8_t*)pkt + 0x0C;
     uint16_t len = LE16(pkt->hdr.dc.pkt_len) - 0x0C;
 
-    //DBG_LOG("dc_process_menu÷∏¡Ó: 0x%04X item_id %d", menu_id & 0xFF, item_id);
-
     return process_menu(c, menu_id, item_id, bp, len);
 }
 

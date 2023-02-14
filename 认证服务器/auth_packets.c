@@ -688,7 +688,7 @@ static int send_initial_menu_dc(login_client_t *c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = count;
     pkt->hdr.pkt_len = LE16(len);
@@ -738,7 +738,7 @@ static int send_initial_menu_gc(login_client_t *c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = count;
     pkt->hdr.pkt_len = LE16(len);
@@ -763,7 +763,7 @@ static int send_initial_menu_xbox(login_client_t *c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = count;
     pkt->hdr.pkt_len = LE16(len);
@@ -788,7 +788,7 @@ static int send_initial_menu_bb(login_client_t* c) {
         len += len2;
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
@@ -845,7 +845,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(dc_ship_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
 
     /* Fill in the "SHIP/cc" entry */
@@ -1050,7 +1050,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(pc_ship_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
 
     /* Fill in the "SHIP/cc" entry */
@@ -1241,7 +1241,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(bb_ship_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
 
     /* Fill in the "SHIP/cc" entry */
@@ -2251,7 +2251,7 @@ static int send_gc_info_list(login_client_t *c, uint32_t ver) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(dc_block_list_pkt));
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
 
     /* Fill in the DATABASE entry */
@@ -2321,7 +2321,7 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
     /* Clear the base packet */
     memset(pkt, 0, len);
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
 
     /* Fill in the DATABASE entry */
@@ -2879,7 +2879,7 @@ static int send_gm_menu_dc(login_client_t *c) {
     ++count;
     len += 0x1C;
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = (uint8_t)(count - 1);
     pkt->hdr.pkt_len = LE16(len);
@@ -2936,7 +2936,7 @@ static int send_gm_menu_pc(login_client_t *c) {
     ++count;
     len += 0x2C;
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = (uint8_t)(count  - 1);
     pkt->hdr.pkt_len = LE16(len);
@@ -2993,7 +2993,7 @@ static int send_gm_menu_bb(login_client_t* c) {
     ++count;
     len += 0x2C;
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = (uint8_t)(count - 1);
     pkt->hdr.pkt_len = LE16(len);
@@ -3573,7 +3573,7 @@ static int send_patch_menu_dcgc(login_client_t *c) {
         }
     }
 
-    /* Fill in some basic stuff */
+    /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.flags = (uint8_t)(count - 1);
     pkt->hdr.pkt_len = LE16(len);

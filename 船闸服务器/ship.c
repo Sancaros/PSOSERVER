@@ -1985,23 +1985,33 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    DBG_LOG("转换GC %u GID %u 指令发送 %u", target_gc, guild_id, sender);
+
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
         "WHERE guildcard = '%u' AND guild_id = '%u'", AUTH_ACCOUNT, guild_priv_level, target_gc, guild_id);
     psocn_db_real_query(&conn, myquery);
 
-    if (guild_priv_level == 0x40) {  // Master Transfer
-        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guildcard = '%u' WHERE guild_id = '%u'",
-            CLIENTS_BLUEBURST_GUILD, target_gc, guild_id);
+    if (guild_priv_level == 0x00000040) {  // 会长转让
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guildcard = '%u', guild_id = '%u' WHERE guild_id = '%u'",
+            CLIENTS_BLUEBURST_GUILD, target_gc, target_gc, guild_id);
+        psocn_db_real_query(&conn, myquery);
+
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
+            "WHERE guildcard = '%u' AND guild_id = '%u'", AUTH_ACCOUNT, 0x00000030, guild_id, guild_id);
+        psocn_db_real_query(&conn, myquery);
+
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '%u' "
+            "WHERE guild_id = '%u'", AUTH_ACCOUNT, target_gc, guild_id);
         psocn_db_real_query(&conn, myquery);
     }
 
     print_payload((uint8_t*)g_data, len);
 
-    //if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
-    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
-    //    return 0;
-    //}
+    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
 
     return 0;
 }
