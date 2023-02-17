@@ -2221,6 +2221,9 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+
     /* Add any padding needed */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
@@ -2293,6 +2296,9 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+
     /* Add any padding needed */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
@@ -2361,6 +2367,10 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
 
     /* Figure out how long the new string is. */
     len = (strlen16_raw(pkt->msg) << 1) + 0x10;
+
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
 
     /* Add any padding needed */
     while(len & 0x07) {
@@ -2495,6 +2505,9 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    pkt->msg[len++] = 0x00;
+
     /* Add any padding needed */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
@@ -2533,6 +2546,9 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     strcat16_raw(pkt->msg, msg);
     len = (strlen16_raw(pkt->msg) << 1) + 0x0E;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+
     /* Add any padding needed */
     while(len & 0x03) {
         sendbuf[len++] = 0;
@@ -2568,6 +2584,10 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     strcat16_raw(pkt->msg, tmp);
     strcat16_raw(pkt->msg, msg);
     len = (strlen16_raw(pkt->msg) << 1) + 0x12;
+
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
 
     /* Add any padding needed */
     while(len & 0x07) {
@@ -5039,12 +5059,11 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     size_t in, out;
     char* inptr;
     char* outptr;
-    char tm[514] = { 0 };
+    char tm[4096] = { 0 };
 
     /* Verify we got the sendbuf. */
-    if (!sendbuf) {
+    if (!sendbuf)
         return -1;
-    }
 
     /* Don't send these to GC players with buggy versions. */
     if ((c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
@@ -5055,11 +5074,11 @@ static int send_message_box(ship_client_t* c, const char* fmt,
         return 0;
     }
 
-    memset(&tm, 0, sizeof(tm));
+    memset(&tm[0], 0, sizeof(tm));
 
     /* Do the formatting */
-    vsnprintf(tm, 512, fmt, args);
-    tm[511] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */

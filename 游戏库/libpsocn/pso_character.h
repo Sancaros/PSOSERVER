@@ -67,9 +67,9 @@ typedef struct item_data { // 0x14 bytes
 } PACKED item_t;
 
 typedef struct psocn_iitem { // c bytes  
-    uint16_t present;
-    uint16_t tech;
-    uint32_t flags;
+    uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
+    uint16_t tech;  //是否鉴定
+    uint32_t flags;// 0x00000008 = 已装备
     item_t data;
 } PACKED iitem_t;
 
