@@ -1688,8 +1688,8 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
     if (!l)
         return 0;
 
-    for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] != NULL && l->clients_slot[i] && l->clients[i] != nosend) {
+    for (i = 0; i < l->num_clients; ++i) {
+        if (l->clients[i] && l->clients_slot[i] && l->clients[i] != nosend) {
             c2 = l->clients[i];
             pthread_mutex_lock(&c2->mutex);
 
@@ -11664,6 +11664,24 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
     return send_msg_box(c, "%s", string);
 }
 
+int check_size_v(size_t size, size_t min_size, size_t max_size) {
+    if (size < min_size) {
+        ERR_LOG("指令数据包太小 (最小应为 0x%zX 字节, 当前 0x%zX 字节)",
+            min_size, size);
+        return -1;
+    }
+    if (max_size < min_size) {
+        max_size = min_size;
+    }
+    if (size > max_size) {
+        ERR_LOG("指令数据包过大 (最大应为 0x%zX 字节, 当前 0x%zX 字节)",
+            max_size, size);
+        return -1;
+    }
+
+    return 0;
+}
+
 int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {
     uint8_t* sendbuf = get_sendbuf();
     bb_trade_D0_D3_pkt* pkt = (bb_trade_D0_D3_pkt*)sendbuf;
@@ -11673,7 +11691,7 @@ int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {
     if (/*items.size()*/item_size > sizeof(pkt->items) / sizeof(pkt->items[0])) {
         ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
             c->guildcard);
-        return rv;
+        return -1;
         //throw logic_error("too many items in execute trade command");
     }
     pkt->target_client_id = c->client_id;

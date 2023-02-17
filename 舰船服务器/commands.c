@@ -526,7 +526,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
         }
     }
     else {
-        ++l->item_next_lobby_id;
+        ++l->item_player_id[c->client_id];
     }
 
     /* Generate the packet to drop the item */
@@ -550,7 +550,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     bb.x = dc.x = c->x;
     bb.z = dc.z = c->z;
     bb.data = dc.data = c->new_item;
-    bb.data.item_id = dc.data.item_id = LE32((l->item_next_lobby_id - 1));
+    bb.data.item_id = dc.data.item_id = LE32((l->item_player_id[c->client_id] - 1));
     bb.two = dc.two = LE32(0x00000002);
 
     /* Clear the set item */

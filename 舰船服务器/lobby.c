@@ -318,8 +318,17 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
 
     l->block = block;
 
-    if(version == CLIENT_VERSION_BB)
+    if (version == CLIENT_VERSION_BB) {
         l->item_next_lobby_id = 0x00810000;
+        l->item_player_id[0] = 0x00010000; //初始化4名玩家物品ID
+        l->item_player_id[1] = 0x00210000;
+        l->item_player_id[2] = 0x00410000;
+        l->item_player_id[3] = 0x00610000;
+        l->bitem_player_id[0] = 0x00010000;
+        l->bitem_player_id[1] = 0x00210000;
+        l->bitem_player_id[2] = 0x00410000;
+        l->bitem_player_id[3] = 0x00610000;
+    }
     else
         l->item_next_lobby_id = 0xF0000000;
 
@@ -1230,7 +1239,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         c->lobby_id = c->cur_lobby->lobby_id;
         c->flags &= ~CLIENT_FLAG_SHOPPING;
         TEST_LOG("build_guild_full_data_pkt");
-        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
     else {
         memset(c->enemy_kills, 0, sizeof(uint32_t) * 0x60);
@@ -1243,7 +1252,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         memset(c->p2_drops, 0, sizeof(c->p2_drops));
         c->p2_drops_max = 0;
         TEST_LOG("build_guild_full_data_pkt");
-        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
     /* ...and let his/her new lobby know that he/she has arrived. */

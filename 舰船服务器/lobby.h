@@ -145,6 +145,7 @@ struct lobby {
     uint32_t bbmaps[128]; // ·¿¼äµØÍ¼
 
     uint32_t item_player_id[12];
+    uint32_t bitem_player_id[12];
     uint32_t item_next_lobby_id;
 
     uint32_t item_count;

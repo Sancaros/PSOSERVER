@@ -71,9 +71,9 @@ typedef struct client_blocklist_entry {
 } client_blocklist_t;
 
 typedef struct client_trade_item {
-    uint8_t other_client_id;
+    uint16_t other_client_id;
     bool confirmed; // true if client has sent a D2 command
-    item_t *items;
+    item_t items[0x20];
 } client_trade_item_t;
 
 typedef struct client_game_data {

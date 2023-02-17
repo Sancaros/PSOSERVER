@@ -537,75 +537,18 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
     int rv = 0;
     psocn_bb_db_char_t *char_data;
     psocn_bb_mini_char_t mc = { 0 };
-    //uLong sz2;
-    //char* raw_data;
-    //uint32_t data_length, data_size;
 
     /* Make sure the slot is sane */
     if(pkt->slot > 3) {
         return -1;
     }
 
-    DBG_LOG("reason %d", pkt->reason);
-
-    ///* 查询数据库并获取数据 */
-    //sprintf(query, "SELECT data, size FROM %s WHERE guildcard='%"
-    //        PRIu32 "' AND slot='%"PRIu8"'", CHARACTER, c->guildcard, pkt->slot);
-
-    //if(psocn_db_real_query(&conn, query)) {
-    //    return -2;
-    //}
-
-    //if(!(result = psocn_db_result_store(&conn))) {
-    //    return -3;
-    //}
-
-    //row = psocn_db_result_fetch(result);
-
-    /* Grab the data from the result */
-    //raw_data = db_get_char_raw_data(c->guildcard, pkt->slot, 0);
-
     if(pkt->reason == 0) {
         char_data = db_get_uncompress_char_data(c->guildcard, pkt->slot);
 
         /* The client wants the preview data for character select... */
         if(char_data != NULL) {
-            /*
-            data_length = db_get_char_data_length(c->guildcard, pkt->slot);
-            data_size = db_get_char_data_size(c->guildcard, pkt->slot);
-
-            char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
-
-            if(!char_data) {
-                ERR_LOG("无法分配角色数据内存空间");
-                ERR_LOG("%s", strerror(errno));
-                return -2;
-            }
-
-            if(data_size) {
-                if(data_size != sizeof(psocn_bb_db_char_t)) {
-                    ERR_LOG("无效角色数据长度!");
-                    free(char_data);
-                    return -2;
-                }
-
-                if(uncompress((Bytef *)char_data, &data_size, (Bytef *)raw_data,
-                              (uLong)data_length) != Z_OK) {
-                    ERR_LOG("无法解压角色数据流");
-                    free(char_data);
-                    return -3;
-                }
-            }
-            else {
-                if(data_length != sizeof(psocn_bb_db_char_t)) {
-                    ERR_LOG("无效(未知)角色数据,长度不一致!");
-                    free(char_data);
-                    return -2;
-                }
-
-                memcpy(char_data, raw_data, sizeof(psocn_bb_db_char_t));
-            }*/
-
+           
             /* 已获得角色数据... 将其从检索的行中复制出来. */
             mc.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
 

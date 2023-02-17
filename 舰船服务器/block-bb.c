@@ -977,6 +977,11 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
         send_bb_quest_data1(c, c->bb_pl->quest_data1);
 
+        if (c->cur_lobby)
+            send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        else
+            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
+
         /* Send a ping so we know when they're done loading in. This is useful
            for sending the MOTD as well as enforcing always-legit mode. */
         send_simple(c, PING_TYPE, 0);
@@ -1044,8 +1049,8 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
 
-        TEST_LOG("build_guild_full_data_pkt");
-        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+        TEST_LOG("bb_process_done_quest_burst");
+        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -1391,24 +1396,40 @@ static int bb_process_blacklist(ship_client_t* c,
 /* Process a blue burst client's trade request. */
 static int bb_process_trade(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
-    ship_client_t* c2;
-    int rv = -1;
+    uint32_t target_client_id = pkt->target_client_id;
+    ship_client_t* c2 = { 0 };
+    int i;
 
     if (!l || l->type != LOBBY_TYPE_GAME)
-        return rv;
+        return 0;
+
+    if (&c->game_data->pending_item_trade) {
+        ERR_LOG("玩家在一笔交易尚未完成时开始交易");
+        return 0;
+    }
 
     if (pkt->item_count > 0x20) {
         ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
             c->guildcard);
-        return rv;
+        return 0;
     }
 
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]->client_id == target_client_id) {
+            c2 = l->clients[i];
+            break;
+        }
+    }
+
+    if (c2 == NULL)
+        return send_msg1(c, "%s",
+            __(c, "\tE未找到需要交易的玩家."));
+
     /* Find the destination. */
-    c2 = l->clients[pkt->target_client_id];
     if (!c2) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
             c->guildcard);
-        return rv;
+        return 0;
     }
 
     DBG_LOG("GC %" PRIu32 " 尝试交易 %d 件物品 给 %" PRIu32 "!",
@@ -1416,8 +1437,8 @@ static int bb_process_trade(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
 
     print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
 
-    memset(c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    c->game_data->pending_item_trade->other_client_id = (uint8_t)pkt->target_client_id;
+    memset(&c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
+    c->game_data->pending_item_trade->other_client_id = target_client_id;
     for (size_t x = 0; x < pkt->item_count; x++) {
         c->game_data->pending_item_trade->items[x] = pkt->items[x];
     }
@@ -1425,53 +1446,52 @@ static int bb_process_trade(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
     DBG_LOG("GC %" PRIu32 " 尝试交易 %d 件物品 给 %" PRIu32 "!",
         c->guildcard, pkt->item_count, c2->guildcard);
 
-    rv = send_simple(c2, TRADE_1_TYPE, 0x00);
+    send_simple(c2, TRADE_1_TYPE, 0x00);
 
     if (c2->game_data->pending_item_trade)
-        rv = send_simple(c, TRADE_1_TYPE, 0x00);
+        send_simple(c, TRADE_1_TYPE, 0x00);
 
-    return rv;
+    return 0;
 }
 
 static int bb_process_trade_excute(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
-    ship_client_t* c2;
-    int rv = -1;
+    uint32_t target_client_id = pkt->target_client_id;
+    ship_client_t* c2 = { 0 };
+    int i;
 
     if (!l || l->type != LOBBY_TYPE_GAME)
-        return rv;
+        return 0;
 
     if (!c->game_data->pending_item_trade) {
         ERR_LOG("GC %" PRIu32 " 未产生交易!",
             c->guildcard);
-        return rv;
+        return 0;
     }
 
-    /* Find the destination. */
-    c2 = l->clients[c->game_data->pending_item_trade->other_client_id];
-    if (!c2) {
-        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
-            c->guildcard);
-        return rv;
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]->client_id == target_client_id) {
+            c2 = l->clients[i];
+            break;
+        }
     }
-    if(!c2->game_data->pending_item_trade) {
-        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
-            c2->guildcard);
-        return rv;
-    }
+
+    if (!c2 || !c2->game_data->pending_item_trade)
+        return send_msg1(c, "%s",
+            __(c, "\tE未找到需要交易的玩家."));
 
     print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
     c->game_data->pending_item_trade->confirmed = true;
     if (c2->game_data->pending_item_trade->confirmed) {
-        rv = send_bb_execute_item_trade(c, c2->game_data->pending_item_trade->items);
-        rv = send_bb_execute_item_trade(c2, c->game_data->pending_item_trade->items);
-        rv = send_simple(c, TRADE_4_TYPE, 0x01);
-        rv = send_simple(c2, TRADE_4_TYPE, 0x01);
+        send_bb_execute_item_trade(c, c2->game_data->pending_item_trade->items);
+        send_bb_execute_item_trade(c2, c->game_data->pending_item_trade->items);
+        send_simple(c, TRADE_4_TYPE, 0x01);
+        send_simple(c2, TRADE_4_TYPE, 0x01);
         memset(c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
         memset(c2->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
     }
 
-    return rv;
+    return 0;
 }
 
 static int bb_process_trade_error(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
@@ -1480,32 +1500,32 @@ static int bb_process_trade_error(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
     int rv = -1;
 
     if (!l || l->type != LOBBY_TYPE_GAME)
-        return rv;
+        return -1;
 
     if (!c->game_data->pending_item_trade)
         return 0;
 
-    uint8_t other_client_id = c->game_data->pending_item_trade->other_client_id;
-    memset(c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    rv = send_simple(c, TRADE_4_TYPE, 0);
+    uint16_t other_client_id = c->game_data->pending_item_trade->other_client_id;
+    memset(&c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
+    send_simple(c, TRADE_4_TYPE, 0);
 
     /* Find the destination. */
-    c2 = l->clients[pkt->target_client_id];
+    c2 = l->clients[other_client_id];
     if (!c2) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
             c->guildcard);
-        rv = -1;
+        return -1;
     }else if (!c2->game_data->pending_item_trade) {
-        rv = -1;
+        return -1;
     }
     else {
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
         memset(c2->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-        rv = send_simple(c2, TRADE_4_TYPE, 0);
+        send_simple(c2, TRADE_4_TYPE, 0);
     }
 
-    return rv;
+    return 0;
 }
 
 static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
@@ -2617,7 +2637,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
 
-        send_lobby_pkt(c->cur_lobby, NULL, build_guild_full_data_pkt(c), 1);
+        DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
+
+        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         return 0;
 
         /* 0x0006 6*/

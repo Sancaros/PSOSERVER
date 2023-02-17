@@ -464,157 +464,15 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return rv;
     }
-    send_simple(d, TRADE_5_TYPE, 0x01);
+
     send_msg(d, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC6交易功能存在故障，暂时关闭"));
-    send_simple(c, TRADE_5_TYPE, 0x01);
     send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC6交易功能存在故障，暂时关闭"));
 
-    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    DBG_LOG("GC %u -> %u", c->guildcard, d->guildcard);
 
-    //switch (pkt->menu.menu_id) {
-    //case 0x0000:
-    //    switch (pkt->menu.menu_pos)
-    //    {
-    //    case 0x0000:
-    //        printf("交易错误\n");
-    //        break;
+    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
-    //    case 0x0082:
-    //        printf("开始交易 \n");
-    //        break;
-
-    //    default:
-    //        break;
-    //    }
-    //    break;
-
-    //case 0xFFFF:
-    //    switch (pkt->menu.menu_pos)
-    //    {
-    //    case 0xFFFF:
-    //        d->game_data->pending_item_trade->confirmed = true;
-    //        printf("确认交易 \n");
-    //        break;
-
-    //    case 0xFF01:
-    //        printf("梅塞塔交易 数量 %d\n", pkt->trade_num);
-    //        break;
-
-    //    default:
-    //        break;
-    //    }
-    //    break;
-
-    //case 0x0085:
-    //    switch (pkt->menu.menu_pos)
-    //    {
-    //    case 0xB4F4:
-    //        printf("取消交易 \n");
-    //        break;
-
-    //    default:
-    //        break;
-    //    }
-    //    break;
-
-    //case 0x41A0:
-    //    printf("交易故障 \n");
-    //    break;
-
-    //case 0x21F2:
-    //    switch (pkt->menu.menu_pos)
-    //    {
-    //    case 0x9F40:
-    //        if (c->game_data->pending_item_trade->confirmed && d->game_data->pending_item_trade->confirmed) {
-    //            printf("双方确认，结束交易 \n");
-    //            rv = send_simple(d, TRADE_4_TYPE, 0x01);
-    //            rv = send_simple(c, TRADE_4_TYPE, 0x01);
-    //            memset(d->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    //            memset(c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    //        }
-    //        break;
-    //    case 0xA730:
-    //        rv = send_simple(d, TRADE_2_TYPE, 0x01);
-    //        rv = send_simple(c, TRADE_2_TYPE, 0x01);
-    //        break;
-
-    //    default:
-    //        break;
-    //    }
-    //    printf("对方同意交易 \n");
-    //    break;
-
-    //case 0x21F6:
-    //    switch (pkt->menu.menu_pos)
-    //    {
-    //    case 0xEF40:
-    //        rv = send_simple(d, TRADE_3_TYPE, 0x01);
-    //        rv = send_simple(c, TRADE_3_TYPE, 0x01);
-    //        printf("确认所有物品 \n");
-    //        break;
-
-    //    case 0xEC70:
-    //        rv = send_simple(d, TRADE_4_TYPE, 0x01);
-    //        rv = send_simple(c, TRADE_4_TYPE, 0x01);
-    //        break;
-
-    //    case 0xF730:
-    //    case 0xC730:
-    //        printf("0xF730 \n");
-    //        rv = send_simple(d, TRADE_5_TYPE, 0x01);
-    //        rv = send_simple(c, TRADE_5_TYPE, 0x01);
-    //        break;
-
-    //    default:
-    //        break;
-    //    }
-    //    break;
-
-    //case 0x0021:
-    //    uint16_t inv_item_pos = pkt->menu.menu_pos;
-    //    printf("加入交易物品 位置 %04X  \n", pkt->menu.menu_pos);
-    //    break;
-
-    //default:
-    //    //             物品背包位置   
-    //    //pkt->menu_id 06          00 21 00
-    //    printf("未确认菜单 ID 0x%04X POS 0x%04X\n", pkt->menu.menu_id, pkt->menu.menu_pos);
-    //    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-    //    break;
-    //}
-
-    rv = send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-    //if (pkt->menu_id == LE32(0x00000082)) {
-    //    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-    //}
-
-    //if (pkt->menu_id == LE32(0x21F6F730)) {
-    //    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-    //}
-
-    //t2 = c->game_data->pending_item_trade.other_client_id = (uint8_t)pkt->target_id;
-    //t1 = d->game_data->pending_item_trade.other_client_id = (uint8_t)pkt->req_id;
-
-    //if (t1 == d->game_data->pending_item_trade.other_client_id && pkt->menu_id == 0xFFFFFFFF) {
-    //    c->game_data->pending_item_trade.confirmed = 1;
-    //    rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-    //    return rv;
-    //}
-    //else if (t2 == c->game_data->pending_item_trade.other_client_id && pkt->menu_id == 0xFFFFFFFF) {
-    //    d->game_data->pending_item_trade.confirmed = 1;
-    //    rv = send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-    //    return rv;
-    //}
-
-    //if (pkt->menu_id == LE32(0x21F29F40)) {
-    //    memset(&c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    //    rv = send_simple(c, TRADE_5_TYPE, 0);
-    //    memset(&d->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
-    //    rv = send_simple(d, TRADE_5_TYPE, 0);
-    //}
-
-    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-    return rv;
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
 
 static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
@@ -1083,9 +941,9 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             ic[0] = iitem.data.data_l[0] = bitem.data.data_l[0];
             ic[1] = iitem.data.data_l[1] = bitem.data.data_l[1];
             ic[2] = iitem.data.data_l[2] = bitem.data.data_l[2];
-            iitem.data.item_id = LE32(l->item_next_lobby_id);
+            iitem.data.item_id = LE32(l->bitem_player_id[c->client_id]);
             iitem.data.data2_l = bitem.data.data2_l;
-            ++l->item_next_lobby_id;
+            ++l->bitem_player_id[c->client_id];
 
             /* 新增至玩家背包中... */
             found = item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, &iitem);
@@ -3428,9 +3286,10 @@ static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pk
 
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(c, l);
-
-        DBG_LOG("GC %u %d %d (0x%X 0x%X) X轴:%f Y轴:%f Z轴:%f", c->guildcard, 
+#ifdef DEBUG
+        DBG_LOG("GC %u %d %d (0x%X 0x%X) X轴:%f Y轴:%f Z轴:%f", c->guildcard,
             c->client_id, pkt->shdr.client_id, pkt->unk1, pkt->unused, pkt->x, pkt->y, pkt->z);
+#endif // DEBUG
     }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -5415,6 +5274,7 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_FINISH_LOAD:
+
         if (l->type != LOBBY_TYPE_GAME) {
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i] && l->clients[i] != c &&
@@ -5424,6 +5284,11 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
                 }
             }
         }
+
+        //DBG_LOG("SUBCMD60_FINISH_LOAD 0x60: 0x%02X\n", type);
+
+        //send_lobby_pkt(c->cur_lobby, NULL, build_guild_full_data_pkt(c), 1);
+
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
         break;
 
