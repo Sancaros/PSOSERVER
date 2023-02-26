@@ -2295,18 +2295,18 @@ static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
-static int process_bb_guild_unk_1AEA(ship_client_t* c, bb_guild_unk_1AEA_pkt* pkt) {
+static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_buy_special_item_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_unk_1AEA_pkt)) {
+    if (len != sizeof(bb_guild_buy_special_item_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
         //return -1;
     }
 
     print_payload((uint8_t*)pkt, len);
-    return send_bb_guild_cmd(c, BB_GUILD_UNK_1AEA);
+    return send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);
     //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
@@ -2442,8 +2442,8 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     case BB_GUILD_PRIVILEGE_LIST:
         return process_bb_guild_privilege_list(c, (bb_guild_privilege_list_pkt*)pkt);
 
-    case BB_GUILD_UNK_1AEA:
-        return process_bb_guild_unk_1AEA(c, (bb_guild_unk_1AEA_pkt*)pkt);
+    case BB_GUILD_BUY_SPECIAL_ITEM:
+        return process_bb_guild_buy_special_item(c, (bb_guild_buy_special_item_pkt*)pkt);
 
     case BB_GUILD_UNK_1BEA:
         return process_bb_guild_unk_1BEA(c, (bb_guild_unk_1BEA_pkt*)pkt);

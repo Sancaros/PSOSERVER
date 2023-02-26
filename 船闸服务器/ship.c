@@ -2197,12 +2197,12 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 /* 处理 Blue Burst 公会  */
 static int handle_bb_guild_unk_1AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_unk_1AEA_pkt* g_data = (bb_guild_unk_1AEA_pkt*)pkt->pkt;
+    bb_guild_buy_special_item_pkt* g_data = (bb_guild_buy_special_item_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    if (len != sizeof(bb_guild_unk_1AEA_pkt)) {
+    if (len != sizeof(bb_guild_buy_special_item_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)g_data, len);
 
@@ -2370,7 +2370,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case BB_GUILD_PRIVILEGE_LIST:
         return handle_bb_guild_privilege_list(c, pkt);
 
-    case BB_GUILD_UNK_1AEA:
+    case BB_GUILD_BUY_SPECIAL_ITEM:
         return handle_bb_guild_unk_1AEA(c, pkt);
 
     case BB_GUILD_UNK_1BEA:

@@ -3968,12 +3968,11 @@ typedef struct bb_guild_privilege_list {
     uint8_t data[];
 } PACKED bb_guild_privilege_list_pkt;
 
-// 1AEA: Unknown
-// 1CEA (C->S): Ranking information
-typedef struct bb_guild_unk_1AEA {
+// 1AEA: (S->C): Buy Guild Special Item
+typedef struct bb_guild_buy_special_item {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
-} PACKED bb_guild_unk_1AEA_pkt;
+} PACKED bb_guild_buy_special_item_pkt;
 
 // 1BEA (C->S): Unknown
 // header.flag is used, but no other arguments
@@ -3982,7 +3981,7 @@ typedef struct bb_guild_unk_1BEA {
     uint8_t data[];
 } PACKED bb_guild_unk_1BEA_pkt;
 
-// 1CEA (C->S): Unknown
+// 1CEA (C->S): Ranking information
 // No arguments
 typedef struct bb_guild_rank_list {
     bb_pkt_hdr_t hdr;

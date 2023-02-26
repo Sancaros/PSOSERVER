@@ -923,10 +923,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         }
                         break;
 
-                    case BB_GUILD_UNK_1AEA:
+                    case BB_GUILD_BUY_SPECIAL_ITEM:
                         if (c->guildcard == gc) {
 
-                            send_bb_guild_cmd(c, BB_GUILD_UNK_1AEA);
+                            send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);
                         }
                         break;
 

@@ -3472,6 +3472,9 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    pkt->msg[len++] = 0x00;
+
     /* Add any padding needed */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
@@ -3539,6 +3542,10 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
+
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
 
     /* Add any padding needed */
     while(len & 0x07) {
@@ -12226,7 +12233,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
-    case BB_GUILD_UNK_1AEA:
+    case BB_GUILD_BUY_SPECIAL_ITEM:
 
         memset(&pkt->data[0x00], 0, 0x04);
 

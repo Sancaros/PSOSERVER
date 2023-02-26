@@ -326,6 +326,9 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     /* Figure out how long the packet is */
     size += 65520 - out + 0x10;
 
+    sendbuf[size++] = 0;
+    sendbuf[size++] = 0;
+
     /* Pad to a length divisible by 4 */
     while(size & 0x07) {
         sendbuf[size++] = 0;
@@ -1575,6 +1578,10 @@ static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
     /* Fill in the unused fields of the packet. */
     pkt->unused[0] = pkt->unused[1] = 0;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
+
     /* Pad to a length that is divisible by 8. */
     while (len & 0x07) {
         sendbuf[len++] = 0;
@@ -2666,6 +2673,9 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    pkt->msg[len++] = 0x00;
+
     /* Add any padding needed */
     while (len & 0x03) {
         pkt->msg[len++] = 0;
@@ -2732,6 +2742,10 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
+
+    /* ½áÎ²Ìí¼Ó½Ø¶Ï×Ö·û 0x00*/
+    sendbuf[len++] = 0x00;
+    sendbuf[len++] = 0x00;
 
     /* Add any padding needed */
     while (len & 0x07) {
