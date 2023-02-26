@@ -937,7 +937,7 @@ typedef struct subcmd_bb_used_tech {
 } PACKED subcmd_bb_used_tech_t;
 
 // 0x49: Subtract PB energy
-typedef struct subcmd_bb_SubtractPBEnergy_6x49 {
+typedef struct subcmd_bb_subtract_PB_energy_6x49 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint8_t unknown_a1;
@@ -948,8 +948,8 @@ typedef struct subcmd_bb_SubtractPBEnergy_6x49 {
     struct {
         uint16_t unknown_a1;
         uint16_t unknown_a2;
-    } entries[];
-} PACKED subcmd_bb_SubtractPBEnergy_6x49_t;
+    } entries[14];
+} PACKED subcmd_bb_subtract_PB_energy_6x49_t;
 
 // 0x4A: Fully shield attack
 typedef struct subcmd_bb_defense_damage {
@@ -964,9 +964,10 @@ typedef struct subcmd_bb_defense_damage {
 typedef struct subcmd_take_damage {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unk1;
-    uint16_t hp_rem;
-    uint32_t unk2[2];
+    uint16_t angle;
+    uint16_t damage;
+    float x_velocity;
+    float z_velocity;
 } PACKED subcmd_take_damage_t;
 
 // 0x4B: Hit by enemy
@@ -976,9 +977,10 @@ typedef struct subcmd_take_damage {
 typedef struct subcmd_bb_take_damage {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unk1;
-    uint16_t hp_rem;
-    uint32_t unk2[2];
+    uint16_t angle;
+    uint16_t damage;
+    float x_velocity;
+    float z_velocity;
 } PACKED subcmd_bb_take_damage_t;
 
 // 0x4D: death sync (指令生效范围; 大厅和游戏)
@@ -1260,10 +1262,10 @@ typedef struct subcmd_pipe {
     float y;
     float z;
     uint32_t unused3;                  
-} PACKED subcmd_pipe_pkt_t;
+} PACKED subcmd_pipe_t;
 
 // 0x68: Telepipe/Ryuker
-typedef struct subcmd_bb_pipe_pkt {
+typedef struct subcmd_bb_pipe {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
@@ -1274,7 +1276,7 @@ typedef struct subcmd_bb_pipe_pkt {
     float y;
     float z;
     uint32_t unused3;
-} PACKED subcmd_bb_pipe_pkt_t;
+} PACKED subcmd_bb_pipe_t;
 
 // 0x69: Unknown (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_Unknown_6x69 {

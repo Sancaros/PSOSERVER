@@ -2521,7 +2521,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     return 0;
 }
 
-static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_pkt_t* pkt) {
+static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -4730,7 +4730,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_CREATE_PIPE:
-        rv = handle_bb_create_pipe(c, (subcmd_bb_pipe_pkt_t*)pkt);
+        rv = handle_bb_create_pipe(c, (subcmd_bb_pipe_t*)pkt);
         break;
 
     case SUBCMD60_SPAWN_NPC:
@@ -5080,7 +5080,7 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         /* 此函数正常载入 */
     case SUBCMD60_CREATE_PIPE:
-        rv = handle_bb_create_pipe(c, (subcmd_bb_pipe_pkt_t*)pkt);
+        rv = handle_bb_create_pipe(c, (subcmd_bb_pipe_t*)pkt);
         break;
 
         /* 此函数正常载入 */

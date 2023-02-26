@@ -2058,7 +2058,7 @@ static int handle_spawn_npc(ship_client_t *c, subcmd_pkt_t *pkt) {
     return subcmd_send_lobby_dc(l, c, pkt, 0);
 }
 
-static int handle_create_pipe(ship_client_t *c, subcmd_pipe_pkt_t *pkt) {
+static int handle_create_pipe(ship_client_t *c, subcmd_pipe_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2767,7 +2767,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_CREATE_PIPE:
-            rv = handle_create_pipe(c, (subcmd_pipe_pkt_t *)pkt);
+            rv = handle_create_pipe(c, (subcmd_pipe_t *)pkt);
             break;
 
         case SUBCMD60_SYNC_REG:
