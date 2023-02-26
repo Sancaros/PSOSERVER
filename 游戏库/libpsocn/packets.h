@@ -2672,17 +2672,46 @@ typedef struct patch_return {
 // C0 (S->C): Choice search options
 
 // Command is a list of these; header.flag is the entry count (incl. top-level).
-//template <typename ItemIDT, typename CharT>
+// template <typename ItemIDT, typename CharT>
 //struct S_ChoiceSearchEntry {
 //    // Category IDs are nonzero; if the high byte of the ID is nonzero then the
 //    // category can be set by the user at any time; otherwise it can't.
-//    ItemIDT parent_category_id; // 0 for top-level categories
-//    ItemIDT category_id;
+//    ItemIDT parent_category_id = 0; // 0 for top-level categories
+//    ItemIDT category_id = 0;
 //    ptext<CharT, 0x1C> text;
-//} PACKED;
-//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<uint32_t, char> { } PACKED;
-//struct S_ChoiceSearchEntry_V3_C0 : S_ChoiceSearchEntry<uint16_t, char> { } PACKED;
-//struct S_ChoiceSearchEntry_PC_BB_C0 : S_ChoiceSearchEntry<uint16_t, char16_t> { } PACKED;
+//} __packed__;
+
+//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<le_uint32_t, char> { } __packed__;
+//struct S_ChoiceSearchEntry_V3_C0 : S_ChoiceSearchEntry<le_uint16_t, char> { } __packed__;
+//struct S_ChoiceSearchEntry_PC_BB_C0 : S_ChoiceSearchEntry<le_uint16_t, char16_t> { } __packed__;
+
+typedef struct dc_cs_entry {
+    dc_pkt_hdr_t hdr;
+    uint32_t parent_category_id;
+    uint32_t category_id;
+    char text[0x1C];
+} PACKED dc_cs_entry_pkt;
+
+typedef struct v3_cs_entry {
+    dc_pkt_hdr_t hdr;
+    uint16_t parent_category_id;
+    uint16_t category_id;
+    char text[0x1C];
+} PACKED v3_cs_entry_pkt;
+
+typedef struct pc_cs_entry {
+    pc_pkt_hdr_t hdr;
+    uint16_t parent_category_id;
+    uint16_t category_id;
+    uint16_t text[0x1C];
+} PACKED pc_cs_entry_pkt;
+
+typedef struct bb_cs_entry {
+    bb_pkt_hdr_t hdr;
+    uint16_t parent_category_id;
+    uint16_t category_id;
+    uint16_t text[0x1C];
+} PACKED bb_cs_entry_pkt;
 
 // Top-level categories are things like "Level", "Class", etc.
 // Choices for each top-level category immediately follow the category, so

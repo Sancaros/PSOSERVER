@@ -81,6 +81,17 @@ typedef struct bb_player_hdr {
     uint32_t unk2;
 } PACKED bb_player_hdr_t;
 
+typedef struct cs_config_entry {
+    uint16_t parent_category_id;
+    uint16_t category_id;
+} PACKED cs_config_entry_t;
+
+typedef struct choice_search_config {
+    // 0 = enabled, 1 = disabled. Unused for command C3
+    uint32_t choice_search_disabled;
+    cs_config_entry_t entries[5];
+} PACKED choice_search_config_t;
+
 /* Alias some stuff from its "pso_character.h" versions to what was in
    here before... */
 
@@ -95,7 +106,8 @@ typedef struct v2_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_v2_c_rank_data_t chal_data;
-    uint32_t unk4[6];
+    //uint32_t unk4[6];
+    choice_search_config_t cs_config;
 } PACKED v2_player_t;
 
 /* 玩家数据结构 用于认证服务器 0x0061 指令*/
@@ -103,7 +115,8 @@ typedef struct pc_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_pc_c_rank_data_t chal_data;
-    uint32_t unk4[6];
+    //uint32_t unk4[6];
+    choice_search_config_t cs_config;
     uint32_t blacklist[30];
     uint32_t autoreply_enabled;
     uint16_t autoreply[];               /* Always at least 4 bytes! */
@@ -114,7 +127,8 @@ typedef struct v3_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_v3_c_rank_data_t chal_data;
-    uint32_t unk4[6];
+    //uint32_t unk4[6];
+    choice_search_config_t cs_config;
     char infoboard[0xAC];
     uint32_t blacklist[30];
     uint32_t autoreply_enabled;
@@ -126,7 +140,8 @@ typedef struct bb_player {
     inventory_t inv;
     psocn_bb_char_t character;
     psocn_bb_c_rank_data_t c_rank;
-    uint8_t unk4[24];
+    //uint8_t unk4[24];
+    choice_search_config_t cs_config;
     uint16_t infoboard[0x00AC];
     uint32_t blacklist[0x001E];
     uint32_t autoreply_enabled;
