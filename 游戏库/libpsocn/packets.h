@@ -644,34 +644,60 @@ typedef struct bb_game_create {
 
 // 0D: Invalid command
 
-// 0E (S->C): Unknown; possibly legacy join game (PC/V3)
-// There is a failure mode in the command handlers on PC and V3 that causes the
-// thread receiving the command to loop infinitely doing nothing, effectively
-// softlocking the game.
+// 0E (S->C): Incomplete/legacy join game (PC/V3)
+// header.flag = number of valid entries in lobby_data
+
+// It's fairly clear that this command was intended for joining games since its
+// structure is similar to that of 64. Furthermore, 0E sets a flag on the client
+// which is also set by commands 64, 67, and E8 (on Episode 3), which are all
+// lobby and game join commands.
+
+// There is a failure mode in the 0E command handlers on PC and V3 that causes
+// the thread receiving the command to loop infinitely doing nothing,
+// effectively softlocking the game. This happens if the local player's Guild
+// Card number doesn't match any of the lobby_data entries. (Notably, only the
+// first (header.flag) entries are checked.)
+// If the local players' Guild Card number does match one of the entries, the
+// command does not softlock, but instead does nothing (at least, on PC and V3)
+// because the 0E second-phase handler is missing on the client.
+
 // TODO: Check if this command exists on DC v1/v2.
-struct S_Unknown_PC_0E {
-    pc_pkt_hdr_t hdr;
-    uint8_t unknown_a1[0x08];
-    uint8_t unknown_a2[4][0x18];
-    uint8_t unknown_a3[0x18];
+
+typedef struct UnknownA1 {
+    uint32_t player_tag;
+    uint32_t guild_card_number;
+    uint8_t unknown_a1[0x10];
+} PACKED UnknownA1_t;
+
+struct S_LegacyJoinGame_PC_0E {
+    UnknownA1_t unknown_a1[4];
+    uint8_t unknown_a3[0x20];
 } PACKED;
 
-//struct S_Unknown_GC_0E {
-//    PlayerLobbyDataDCGC lobby_data[4]; // This type is a guess
-//    struct UnknownA0 {
-//        parray<uint8_t, 2> unknown_a1;
-//        uint16_t unknown_a2;
-//        uint32_t unknown_a3;
-//    } PACKED;
-//    parray<UnknownA0, 8> unknown_a0;
-//    uint32_t unknown_a1;
-//    parray<uint8_t, 0x20> unknown_a2;
-//    parray<uint8_t, 4> unknown_a3;
-//} PACKED;
-//
-//struct S_Unknown_XB_0E {
-//    parray<uint8_t, 0xE8> unknown_a1;
-//} PACKED;
+typedef struct UnknownA0 {
+    uint8_t unknown_a1[2];
+    uint16_t unknown_a2;
+    uint32_t unknown_a3;
+} PACKED UnknownA0_t;
+
+struct S_LegacyJoinGame_GC_0E {
+    dc_player_hdr_t lobby_data[4];
+    UnknownA0_t unknown_a0[8];
+    uint32_t unknown_a1;
+    uint8_t unknown_a2[0x20];
+    uint8_t unknown_a3[4];
+} PACKED;
+
+typedef struct UnknownA1_XB {
+    uint32_t player_tag;
+    uint32_t guild_card_number;
+    uint8_t unknown_a1[0x18];
+} PACKED UnknownA1_XB_t;
+
+struct S_LegacyJoinGame_XB_0E {
+    UnknownA1_XB_t unknown_a1[4];
+    uint8_t unknown_a2[0x68];
+} PACKED;
 
 // 0F: Invalid command
 
@@ -871,7 +897,7 @@ typedef struct bb_quest_chunk {
 // following structure.
 
 //struct SC_GameCardCheck_BB_0022 {
-//    parray<le_uint32_t, 4> data;
+//    parray<uint32_t, 4> data;
 //} PACKED;
 
 // Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
@@ -884,7 +910,7 @@ typedef struct bb_quest_chunk {
 //struct S_Unknown_BB_24 {
 //    uint16_t unknown_a1;
 //    uint16_t unknown_a2;
-//    parray<le_uint32_t, 8> values;
+//    parray<uint32_t, 8> values;
 //} PACKED;
 
 // 25 (S->C): Unknown (BB)
@@ -2493,7 +2519,7 @@ typedef struct bb_timestamp {
 //
 //struct S_ExecuteCode_Footer_GC_B2 : S_ExecuteCode_Footer_B2<be_uint32_t> { } PACKED;
 //struct S_ExecuteCode_Footer_DC_PC_XB_BB_B2
-//    : S_ExecuteCode_Footer_B2<le_uint32_t> { } PACKED;
+//    : S_ExecuteCode_Footer_B2<uint32_t> { } PACKED;
 
 // B3 (C->S): Execute code and/or checksum memory result
 // Not used on versions that don't support the B2 command (see above).
@@ -2531,7 +2557,7 @@ typedef struct patch_return {
 // The client sends this after it receives a B7 from the server.
 
 // B8 (S->C): Update card definitions (Episode 3)
-// Contents is a single little-endian le_uint32_t specifying the size of the
+// Contents is a single little-endian uint32_t specifying the size of the
 // (PRS-compressed) data, followed immediately by the data. The maximum size of
 // the compressed data is 0x9000 bytes, although the receive buffer size limit
 // applies first in practice, which limits this to 0x7BF8 bytes. The maximum
@@ -2654,7 +2680,7 @@ typedef struct patch_return {
 //    ItemIDT category_id;
 //    ptext<CharT, 0x1C> text;
 //} PACKED;
-//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<le_uint32_t, char> { } PACKED;
+//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<uint32_t, char> { } PACKED;
 //struct S_ChoiceSearchEntry_V3_C0 : S_ChoiceSearchEntry<uint16_t, char> { } PACKED;
 //struct S_ChoiceSearchEntry_PC_BB_C0 : S_ChoiceSearchEntry<uint16_t, char16_t> { } PACKED;
 
@@ -2713,7 +2739,7 @@ typedef struct patch_return {
 //    Entry entries[0];
 //} PACKED;
 //
-//struct C_ChoiceSearchSelections_DC_C2_C3 : C_ChoiceSearchSelections_C2_C3<le_uint32_t> { } PACKED;
+//struct C_ChoiceSearchSelections_DC_C2_C3 : C_ChoiceSearchSelections_C2_C3<uint32_t> { } PACKED;
 //struct C_ChoiceSearchSelections_PC_V3_BB_C2_C3 : C_ChoiceSearchSelections_C2_C3<uint16_t> { } PACKED;
 
 // C3 (C->S): Execute choice search
@@ -2846,7 +2872,7 @@ typedef struct bb_blacklist_update {
 
 //template <size_t Count>
 //struct C_SetBlockedSenders_C6 {
-//    parray<le_uint32_t, Count> blocked_senders;
+//    parray<uint32_t, Count> blocked_senders;
 //} PACKED;
 //
 //struct C_SetBlockedSenders_V3_C6 : C_SetBlockedSenders_C6<30> { } PACKED;
@@ -3580,7 +3606,7 @@ typedef struct bb_full_char {
 // header.flag = player count (including spectators)
 
 //struct S_JoinSpectatorTeam_GC_Ep3_E8 {
-//    parray<le_uint32_t, 0x20> variations; // 04-84; unused
+//    parray<uint32_t, 0x20> variations; // 04-84; unused
 //    struct PlayerEntry {
 //        PlayerLobbyDataDCGC lobby_data; // 0x20 bytes
 //        PlayerInventory inventory; // 0x34C bytes
@@ -3607,7 +3633,7 @@ typedef struct bb_full_char {
 //        uint8_t present;
 //        uint8_t unknown_a3;
 //        uint16_t level;
-//        parray<le_uint32_t, 2> unknown_a5;
+//        parray<uint32_t, 2> unknown_a5;
 //        parray<uint16_t, 2> unknown_a6;
 //    } PACKED; // 0x38 bytes
 //    // Somewhat misleadingly, this array also includes the players actually in the
@@ -3715,9 +3741,9 @@ typedef struct bb_guildcard_sort {
 // differences though.
 
 //struct S_TimedMessageBoxHeader_GC_Ep3_EA {
-//    le_uint32_t duration; // In frames; 30 frames = 1 second
+//    uint32_t duration; // In frames; 30 frames = 1 second
 //    // Message data follows here (up to 0x1000 chars)
-//} __packed__;
+//} PACKED;
 
 // EA: Team control (BB)
 
@@ -4139,19 +4165,19 @@ typedef struct bb_options_update_challenge_battle_config {
 
 // EE D0 (C->S): Begin trade
 //struct SC_TradeCards_GC_Ep3_EE_FlagD0_FlagD3 {
-//    le_uint16_t target_client_id;
-//    le_uint16_t entry_count;
+//    uint16_t target_client_id;
+//    uint16_t entry_count;
 //    struct Entry {
-//        le_uint32_t card_type;
-//        le_uint32_t count;
-//    } __packed__;
+//        uint32_t card_type;
+//        uint32_t count;
+//    } PACKED;
 //    parray<Entry, 4> entries;
-//} __packed__;
+//} PACKED;
 
 // EE D1 (S->C): Advance trade state
 //struct S_AdvanceCardTradeState_GC_Ep3_EE_FlagD1 {
-//    le_uint32_t unused;
-//} __packed__;
+//    uint32_t unused;
+//} PACKED;
 
 // EE D2 (C->S): Trade can proceed
 // No arguments
@@ -4163,8 +4189,8 @@ typedef struct bb_options_update_challenge_battle_config {
 // EE D4 (S->C): Trade complete
 
 //struct S_CardTradeComplete_GC_Ep3_EE_FlagD4 {
-//    le_uint32_t success; // 0 = failed, 1 = success, anything else = invalid
-//} __packed__;
+//    uint32_t success; // 0 = failed, 1 = success, anything else = invalid
+//} PACKED;
 
 // EE (S->C): Scrolling message (BB)
 // Same format as 01. The message appears at the top of the screen and slowly
@@ -4179,14 +4205,14 @@ typedef struct bb_info_reply_pkt bb_scroll_msg_pkt;
 // EF (S->C): Start card auction (Episode 3)
 
 //struct S_StartCardAuction_GC_Ep3_EF {
-//    le_uint16_t points_available;
-//    le_uint16_t unused;
+//    uint16_t points_available;
+//    uint16_t unused;
 //    struct Entry {
-//        le_uint16_t card_id = 0xFFFF; // Must be < 0x02F1
-//        le_uint16_t min_price; // Must be > 0 and < 100
-//    } __packed__;
+//        uint16_t card_id = 0xFFFF; // Must be < 0x02F1
+//        uint16_t min_price; // Must be > 0 and < 100
+//    } PACKED;
 //    parray<Entry, 0x14> entries;
-//} __packed__;
+//} PACKED;
 
 // EF (S->C): Unknown (BB)
 // Has an unknown number of subcommands (00EF, 01EF, etc.)
