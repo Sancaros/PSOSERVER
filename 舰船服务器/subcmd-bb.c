@@ -4392,7 +4392,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_BURST_DONE:
             /* TODO 将这个函数融合进房间函数中 */
             subcmd_send_bb_set_exp_rate(c, 3000);
-            TEST_LOG("build_guild_full_data_pkt");
+            //TEST_LOG("build_guild_full_data_pkt");
             send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
             rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
             break;

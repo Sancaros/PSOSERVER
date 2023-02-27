@@ -1049,7 +1049,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
 
-        TEST_LOG("bb_process_done_quest_burst");
+        //TEST_LOG("bb_process_done_quest_burst");
         send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
@@ -2727,7 +2727,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0089 137*/
     case LOBBY_ARROW_CHANGE_TYPE:
-        print_payload((unsigned char*)pkt, len);
         return bb_process_arrow(c, (uint8_t)flags);
 
         /* 0x008A 138*/
