@@ -5107,12 +5107,10 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_set_pos_0x24(c, (subcmd_bb_set_pos_0x24_t*)pkt);
         break;
 
-
         /* 此函数正常载入 */
     case SUBCMD60_GALLON_AREA:
         rv = handle_bb_gallon_area(c, (subcmd_bb_gallon_area_pkt_t*)pkt);
         break;
-
 
         /* 此函数正常载入 */
     case SUBCMD60_SET_AREA_20:
