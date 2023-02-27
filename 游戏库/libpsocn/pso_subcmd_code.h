@@ -274,23 +274,23 @@
 #define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */
 #define SUBCMD60_SAVE_PLAYER_ACT               0xA1    /* Save player actions */
 #define SUBCMD60_GDRAGON_ACT                   0xA8    /* Gol Dragon special actions */
-#define SUBCMD60_UNKNOW_A9                     0xA9 // Barba Ray actions
-#define SUBCMD60_UNKNOW_AA                     0xAA // Episode 2 boss actions
-#define SUBCMD60_LOBBY_CHAIR                   0xAB // Create lobby chair
+#define SUBCMD60_UNKNOW_A9                     0xA9   // Barba Ray actions
+#define SUBCMD60_UNKNOW_AA                     0xAA   // Episode 2 boss actions
+#define SUBCMD60_LOBBY_CHAIR                   0xAB   // Create lobby chair
 #define SUBCMD60_UNKNOW_AC                     0xAC
-#define SUBCMD60_UNKNOW_AD                     0xAD // Olga Flow phase 2 subordinate boss actions
+#define SUBCMD60_UNKNOW_AD                     0xAD   // Olga Flow phase 2 subordinate boss actions
 #define SUBCMD60_UNKNOW_AE                     0xAE
-#define SUBCMD60_CHAIR_DIR                     0xAF // 旋转椅子朝向
-#define SUBCMD60_CHAIR_MOVE                    0xB0 // 移动椅子
-#define SUBCMD60_UNKNOW_B5                     0xB5 // BB shop request process_subcommand_open_shop_bb_or_unknown_ep3
-#define SUBCMD60_SHOP_INV                      0xB6 /* Blue Burst - shop inventory */
-#define SUBCMD60_UNKNOW_B7                     0xB7 // process_subcommand_buy_shop_item_bb
-#define SUBCMD60_UNKNOW_B8                     0xB8 // process_subcommand_identify_item_bb
-#define SUBCMD60_UNKNOW_B9                     0xB9 // process_subcommand_unimplemented
-#define SUBCMD60_UNKNOW_BA                     0xBA // process_subcommand_accept_identify_item_bb
-#define SUBCMD60_UNKNOW_BB                     0xBB //process_subcommand_open_bank_bb
+#define SUBCMD60_CHAIR_DIR                     0xAF   // 旋转椅子朝向
+#define SUBCMD60_CHAIR_MOVE                    0xB0   // 移动椅子
+#define SUBCMD60_UNKNOW_B5                     0xB5   // BB shop request process_subcommand_open_shop_bb_or_unknown_ep3
+#define SUBCMD60_SHOP_INV                      0xB6   /* Blue Burst - shop inventory */
+#define SUBCMD60_UNKNOW_B7                     0xB7   // process_subcommand_buy_shop_item_bb
+#define SUBCMD60_UNKNOW_B8                     0xB8   // process_subcommand_identify_item_bb
+#define SUBCMD60_UNKNOW_B9                     0xB9   // process_subcommand_unimplemented
+#define SUBCMD60_UNKNOW_BA                     0xBA   // process_subcommand_accept_identify_item_bb
+#define SUBCMD60_UNKNOW_BB                     0xBB   //process_subcommand_open_bank_bb
 #define SUBCMD60_BANK_INV                      0xBC    /* Blue Burst - bank inventory */
-#define SUBCMD60_UNKNOW_BD                     0xBD //process_subcommand_bank_action_bb
+#define SUBCMD60_UNKNOW_BD                     0xBD   //process_subcommand_bank_action_bb
 #define SUBCMD60_CREATE_ITEM                   0xBE    /* Blue Burst - create new inventory item */
 #define SUBCMD60_JUKEBOX                       0xBF    /* Episode III - Change background music */
 #define SUBCMD60_GIVE_EXP                      0xBF    /* Blue Burst - give experience points */

@@ -1693,9 +1693,9 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
             c2 = l->clients[i];
             pthread_mutex_lock(&c2->mutex);
 
-            if (check) {
-                DBG_LOG("发送的客户端版本为 %d", c2->version);
-            }
+            //if (check) {
+            //    DBG_LOG("发送的客户端版本为 %d", c2->version);
+            //}
 
             /* Call the appropriate function. */
             switch (c2->version) {

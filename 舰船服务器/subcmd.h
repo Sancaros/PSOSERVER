@@ -997,11 +997,11 @@ typedef struct subcmd_bb_cmd_4e {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_cmd_4e_t;
 
-// 0x4F: Unknown (指令生效范围; 大厅和游戏)
-typedef struct subcmd_bb_Unknown_6x4F {
+// 0x4F: SUBCMD60_PLAYER_SAVED (指令生效范围; 大厅和游戏)
+typedef struct subcmd_bb_player_saved {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x4F_t;
+} PACKED subcmd_bb_player_saved_t;
 
 // 0x50: Unknown (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_switch_req {
@@ -1974,11 +1974,11 @@ typedef struct subcmd_bb_GalGryphonActions_6xA0 {
     uint32_t unknown_a4[4];
 } PACKED subcmd_bb_GalGryphonActions_6xA0_t;
 
-// 0xA1: Unknown (不支持 PC)
-typedef struct subcmd_bb_Unknown_6xA1 {
+// 0xA1: SUBCMD60_SAVE_PLAYER_ACT (不支持 PC)
+typedef struct subcmd_bb_save_player_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6xA1_t;
+} PACKED subcmd_bb_save_player_act_t;
 
 // 0xA2: Request for item drop from box (不支持 PC; handled by server on BB)
 typedef struct subcmd_bb_BoxItemDropRequest_6xA2 {

@@ -4269,6 +4269,30 @@ static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (pkt->shdr.client_id != c->client_id) {
+        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (pkt->shdr.client_id != c->client_id) {
+        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        UNK_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -4907,6 +4931,16 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SAVE_PLAYER_ACT:
+        rv = handle_bb_save_player_act(c, (subcmd_bb_save_player_act_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_PLAYER_SAVED:
+        rv = handle_bb_player_saved(c, (subcmd_bb_player_saved_t*)pkt);
+        break;
 
         /* 此函数正常载入 */
     case SUBCMD60_DEATH_SYNC:

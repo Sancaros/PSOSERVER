@@ -2637,7 +2637,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         c->flags |= CLIENT_FLAG_GOT_05;
         //c->flags |= CLIENT_FLAG_DISCONNECTED;
 
-        DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
+        //DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
 
         send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         return 0;
