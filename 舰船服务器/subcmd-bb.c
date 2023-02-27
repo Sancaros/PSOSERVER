@@ -2115,93 +2115,10 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     if (c->version == CLIENT_VERSION_GC)
         flags = SWAP32(flags);
 
-    /* Bail out now if we don't have any enemy data on the team. */
-    if (!l->map_enemies || l->challenge || l->battle) {
-        script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
-
-        if (flags & 0x00000800)
-            script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
-
-        return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
-    }
-
     if (enemy_id2 > l->map_enemies->count) {
-#ifdef DEBUG
-        ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
-            "%d)!"
-            "章节: %d, 层级: %d, 地图: (%d, %d)", c->guildcard, enemy_id2,
-            l->map_enemies->count, l->episode, c->cur_area,
-            l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
-
-        if ((l->flags & LOBBY_FLAG_QUESTING))
-            ERR_LOG("任务 ID: %d, 版本: %d", l->qid, l->version);
-#endif
-
-        if (l->logfp) {
-            fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: %d)!\n"
-                "章节: %d, 层级: %d, 地图: (%d, %d)\n", c->guildcard, enemy_id2,
-                l->map_enemies->count, l->episode, c->cur_area,
-                l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
-
-            if ((l->flags & LOBBY_FLAG_QUESTING))
-                fdebug(l->logfp, DBG_WARN, "任务 ID: %d, 版本: %d\n",
-                    l->qid, l->version);
-        }
-
-        script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
-
-        if (flags & 0x00000800)
-            script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_END);
-
-        /* If server-side drops aren't on, then just send it on and hope for the
-           best. We've probably got a bug somewhere on our end anyway... */
-        if (!(l->flags & LOBBY_FLAG_SERVER_DROPS))
-            return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
-
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!", c->guildcard, enemy_id2, l->map_enemies->count);
         return -1;
-    }
-
-    /* Make sure it looks like they're in the right area for this... */
-    /* XXXX: There are some issues still with Episode 2, so only spit this out
-       for now on Episode 1. */
-#ifdef DEBUG
-    if (c->cur_area != l->map_enemies->enemies[enemy_id2].area && l->episode == 1 &&
-        !(l->flags & LOBBY_FLAG_QUESTING)) {
-        ERR_LOG("GC %" PRIu32 " 在无效区域攻击了怪物 "
-            "(%d -- 地图怪物数量: %d)!\n 章节: %d, 区域: %d, 敌人数据区域: %d "
-            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->count,
-            l->episode, c->cur_area, l->map_enemies->enemies[enemy_id2].area,
-            l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
-    }
-#endif
-
-    if (l->logfp && c->cur_area != l->map_enemies->enemies[enemy_id2].area &&
-        !(l->flags & LOBBY_FLAG_QUESTING)) {
-        fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 在无效区域攻击了怪物 "
-            "(%d -- 地图怪物数量: %d)!\n 章节: %d, 区域: %d, 敌人数据区域: %d "
-            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->count,
-            l->episode, c->cur_area, l->map_enemies->enemies[enemy_id2].area,
-            l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
-    }
-
-    /* Make sure the person's allowed to be on this floor in the first place. */
-    if ((l->flags & LOBBY_FLAG_ONLY_ONE) && !(l->flags & LOBBY_FLAG_QUESTING)) {
-        if (l->episode == 1) {
-            switch (c->cur_area) {
-            case 5:     /* Cave 3 */
-            case 12:    /* De Rol Le */
-                ERR_LOG("GC %" PRIu32 " 在无法接近的区域内击中敌人 单人模式 (区域 %d X:%f Y:%f) "
-                    "房间 Flags: %08" PRIx32 "",
-                    c->guildcard, c->cur_area, c->x, c->z, l->flags);
-                break;
-            }
-        }
     }
 
     /* Save the hit, assuming the enemy isn't already dead. */
@@ -2209,28 +2126,9 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     if (!(en->clients_hit & 0x80)) {
         en->clients_hit |= (1 << c->client_id);
         en->last_client = c->client_id;
-
-        script_execute(ScriptActionEnemyHit, c, SCRIPT_ARG_PTR, c,
-            SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32, en->bp_entry,
-            SCRIPT_ARG_UINT8, en->rt_index, SCRIPT_ARG_UINT8,
-            en->clients_hit, SCRIPT_ARG_END);
-
-        /* If the kill flag is set, mark it as dead and update the client's
-           counter. */
-        if (flags & 0x00000800) {
-            en->clients_hit |= 0x80;
-
-            script_execute(ScriptActionEnemyKill, c, SCRIPT_ARG_PTR, c,
-                SCRIPT_ARG_UINT16, enemy_id2, SCRIPT_ARG_UINT32,
-                en->bp_entry, SCRIPT_ARG_UINT8, en->rt_index,
-                SCRIPT_ARG_UINT8, en->clients_hit, SCRIPT_ARG_END);
-
-            if (en->bp_entry < 0x60 && !(l->flags & LOBBY_FLAG_HAS_NPC))
-                ++c->enemy_kills[en->bp_entry];
-        }
     }
 
-    return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
@@ -4669,7 +4567,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_arrow_change(c, (subcmd_bb_arrow_change_t*)pkt);
         break;
 
-    case SUBCMD60_UNKNOW_89:
+    case SUBCMD60_PLAYER_DIED:
         rv = handle_bb_player_died(c, (subcmd_bb_player_died_t*)pkt);
         break;
 
@@ -5009,6 +4907,26 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /* 此函数正常载入 */
+    case SUBCMD60_DEATH_SYNC:
+        rv = handle_bb_death_sync(c, (subcmd_bb_death_sync_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_UNKNOW_4E:
+        rv = handle_bb_cmd_4e(c, (subcmd_bb_cmd_4e_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_PLAYER_DIED:
+        rv = handle_bb_player_died(c, (subcmd_bb_player_died_t*)pkt);
+        break;
+
+        /* 此函数正常载入 */
+    case SUBCMD60_SELL_ITEM:
+        rv = handle_bb_sell_item(c, (subcmd_bb_sell_item_t*)pkt);
+        break;
 
     case SUBCMD60_EX_ITEM_TEAM:
         rv = handle_bb_guild_ex_item(c, (subcmd_bb_guild_ex_item_t*)pkt);

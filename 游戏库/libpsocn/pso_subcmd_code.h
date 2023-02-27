@@ -176,7 +176,7 @@
 #define SUBCMD60_TAKE_DAMAGE2                  0x4C
 #define SUBCMD60_DEATH_SYNC                    0x4D
 #define SUBCMD60_UNKNOW_4E                     0x4E
-#define SUBCMD60_UNKNOW_4F                     0x4F
+#define SUBCMD60_PLAYER_SAVED                  0x4F /* 拯救玩家成功 含玩家client_id*/
 #define SUBCMD60_REQ_SWITCH                    0x50
 
 // 6x51: Invalid subcommand
@@ -240,7 +240,7 @@
 #define SUBCMD60_UNKNOW_86                     0x86
 #define SUBCMD60_UNKNOW_87                     0x87
 #define SUBCMD60_ARROW_CHANGE                  0x88
-#define SUBCMD60_UNKNOW_89                     0x89
+#define SUBCMD60_PLAYER_DIED                   0x89
 #define SUBCMD60_UNKNOW_CH_8A                  0x8A
 #define SUBCMD60_UNKNOW_8B                     0x8B
 #define SUBCMD60_UNKNOW_8C                     0x8C
@@ -272,6 +272,7 @@
 #define SUBCMD60_UNKNOW_9E                     0x9E
 #define SUBCMD60_GAL_GRYPHON_ACT               0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
 #define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */
+#define SUBCMD60_SAVE_PLAYER_ACT               0xA1    /* Save player actions */
 #define SUBCMD60_GDRAGON_ACT                   0xA8    /* Gol Dragon special actions */
 #define SUBCMD60_UNKNOW_A9                     0xA9 // Barba Ray actions
 #define SUBCMD60_UNKNOW_AA                     0xAA // Episode 2 boss actions
