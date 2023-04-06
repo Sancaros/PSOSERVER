@@ -1909,8 +1909,8 @@ typedef struct dc_login_92_93 {
     char access_key[17];
     // Note: The hardware_id field is likely shorter than this (only 8 bytes
     // appear to actually be used).
-    char dc_id[8];
-    uint8_t padding1[88];
+    char dc_id[48];
+    char unknown_a3[48];
     char name[16];
     uint8_t padding2[2];
     uint8_t extra_data[0];
