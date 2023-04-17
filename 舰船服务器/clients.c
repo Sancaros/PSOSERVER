@@ -1025,7 +1025,7 @@ static int check_char_v1(ship_client_t *c, player_t *pl) {
 
     /* Other stats omitted for now... */
 
-    /* If we get here, we've passed all the checks... */
+    /* 如果我们到了这里, we've passed all the checks... */
     return 0;
 }
 
@@ -1813,7 +1813,7 @@ static int client_hasItem_lua(lua_State *l) {
         }
     }
 
-    /* If we get here, the user doesn't have the item requested, so return
+    /* 如果我们到了这里, the user doesn't have the item requested, so return
        0 for false. */
     lua_pushboolean(l, 0);
     return 1;

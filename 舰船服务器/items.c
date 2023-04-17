@@ -4104,7 +4104,7 @@ int add_item(ship_client_t* c, iitem_t iitem) {
         }
     }
 
-    // If we get here, then it's not meseta and not a combine item, so it needs to
+    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
     // go into an empty inventory slot
     if (c->bb_pl->inv.item_count >= 30) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",

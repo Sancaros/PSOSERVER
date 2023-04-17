@@ -241,7 +241,7 @@ static monster_event_t* find_current_event(uint8_t difficulty, uint8_t ver,
                 continue;
         }
 
-        /* If we get here, then the event is valid, return it. */
+        /* 如果我们到了这里, then the event is valid, return it. */
         return events + i;
     }
 

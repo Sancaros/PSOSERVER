@@ -1704,7 +1704,7 @@ static int dc_process_guild_search(ship_client_t* c, dc_guild_search_pkt* pkt) {
         pthread_rwlock_unlock(&ship->blocks[i]->lock);
     }
 
-    /* If we get here, we didn't find it locally. Send to the shipgate to
+    /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
        continue searching. */
     if (!done) {
 #ifdef PSOCN_ENABLE_IPV6
@@ -1794,7 +1794,7 @@ static int dc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
     }
 
     if (!done) {
-        /* If we get here, we didn't find it locally. Send to the shipgate to
+        /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
            continue searching. */
         return shipgate_fw_dc(&ship->sg, pkt, 0, c);
     }
@@ -1876,7 +1876,7 @@ static int pc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
     }
 
     if (!done) {
-        /* If we get here, we didn't find it locally. Send to the shipgate to
+        /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
            continue searching. */
         return shipgate_fw_pc(&ship->sg, pkt, 0, c);
     }
@@ -2689,7 +2689,7 @@ static int process_qload_done(ship_client_t* c) {
         }
     }
 
-    /* If we get here, everyone's done. Send out the packet to everyone now. */
+    /* 如果我们到了这里, everyone's done. Send out the packet to everyone now. */
     for (i = 0; i < l->max_clients; ++i) {
         if ((c2 = l->clients[i]) && c2->version >= CLIENT_VERSION_GC) {
             if (send_simple(c2, QUEST_LOAD_DONE_TYPE, 0))

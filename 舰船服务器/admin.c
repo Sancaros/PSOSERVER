@@ -264,7 +264,7 @@ int refresh_limits(ship_client_t *c, msgfunc f) {
             def = l;
     }
 
-    /* If we get here, then everything has at least been read in successfully,
+    /* 如果我们到了这里, then everything has at least been read in successfully,
        go ahead and replace the data in the ship's structure. */
     pthread_rwlock_wrlock(&ship->llock);
     ship_free_limits_ex(&ship->all_limits);

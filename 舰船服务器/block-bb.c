@@ -825,7 +825,7 @@ static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
         pthread_rwlock_unlock(&ship->blocks[i]->lock);
     }
 
-    /* If we get here, we didn't find it locally. Send to the shipgate to
+    /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
        continue searching. */
     if (!done) {
 #ifdef PSOCN_ENABLE_IPV6
@@ -1132,7 +1132,7 @@ static int bb_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
     }
 
     if (!done) {
-        /* If we get here, we didn't find it locally. Send to the shipgate to
+        /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
            continue searching. */
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
@@ -1225,22 +1225,25 @@ static int process_bb_qload_done(ship_client_t* c) {
     ship_client_t* c2;
     int i;
 
-    if (!l || l->type != LOBBY_TYPE_GAME)
+    if (!l || l->type != LOBBY_TYPE_GAME) {
+        ERR_LOG("GC %" PRIu32 " 的房间载入任务完成出错!",
+            c->guildcard);
         return -1;
+    }
 
     c->flags |= CLIENT_FLAG_QLOAD_DONE;
 
-    /* See if everyone's done now. */
+    /* 检测所有成员是否完成任务载入. */
     for (i = 0; i < l->max_clients; ++i) {
         if ((c2 = l->clients[i])) {
-            /* This client isn't done, so we can end the search now. */
+            /* 该客户端未完成载入, 结束循环并执行下一步. */
             if (!(c2->flags & CLIENT_FLAG_QLOAD_DONE) &&
                 c2->version >= CLIENT_VERSION_GC)
                 return 0;
         }
     }
 
-    /* If we get here, everyone's done. Send out the packet to everyone now. */
+    /* 如果我们到了这里, 所有客户端载入完成. 向每一个客户端发送载入完成指令. */
     for (i = 0; i < l->max_clients; ++i) {
         if ((c2 = l->clients[i]) && c2->version >= CLIENT_VERSION_GC) {
             if (send_simple(c2, QUEST_LOAD_DONE_TYPE, 0))
@@ -1833,7 +1836,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     }
 
     if (!done) {
-        /* If we get here, we didn't find it locally. Send to the shipgate to
+        /* 如果我们到了这里, we didn't find it locally. Send to the shipgate to
            continue searching. */
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
@@ -2762,8 +2765,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x00AC 172*/
     case QUEST_LOAD_DONE_TYPE:
+        return process_bb_qload_done(c);
         /* XXXX: This isn't right... we need to synchronize this. */
-        return send_simple(c, QUEST_LOAD_DONE_TYPE, 0);
+        //return send_simple(c, QUEST_LOAD_DONE_TYPE, 0);
 
         /* 0x00C0 192*/
     case CHOICE_OPTION_TYPE:

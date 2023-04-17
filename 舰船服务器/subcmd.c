@@ -949,7 +949,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         }
     }
 
-    /* If we get here, either the game is not in legit mode, or the item is
+    /* 如果我们到了这里, either the game is not in legit mode, or the item is
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
     l->item_player_id[c->client_id] = (uint16_t)LE32(pkt->data.item_id);

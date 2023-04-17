@@ -1996,7 +1996,7 @@ static int handle_ignore(ship_client_t *c, const char *params) {
         }
     }
 
-    /* If we get here, the ignore list is full, report that to the user... */
+    /* 如果我们到了这里, the ignore list is full, report that to the user... */
     pthread_mutex_unlock(&l->mutex);
     return send_txt(c, "%s", __(c, "\tE\tC7Ignore list full."));
 }

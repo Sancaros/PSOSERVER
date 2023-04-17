@@ -510,7 +510,7 @@ int pso_prs_compress(const uint8_t* src, uint8_t** dst, size_t src_len) {
             }
         }
 
-        /* If we get here, we didn't find a suitable match, so just write the
+        /* 如果我们到了这里, we didn't find a suitable match, so just write the
            byte as a literal in the output. */
         if ((rv = set_bit(&cxt, 1)))
             goto out;

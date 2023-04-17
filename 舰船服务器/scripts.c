@@ -315,7 +315,7 @@ int script_remove_lobby_qfunc_locked(lobby_t *l, uint32_t id) {
         }
     }
 
-    /* If we get here, there wasn't actually anything registered on this
+    /* 如果我们到了这里, there wasn't actually anything registered on this
        lobby. */
     SCRIPT_LOG("Attempt to unregister lobby %" PRIu32 " script for "
           "quest function %" PRIu32 " that does not exist.", l->lobby_id, id);
@@ -917,7 +917,7 @@ uint32_t script_execute_qfunc(ship_client_t *c, lobby_t *l) {
         }
     }
 
-    /* If we get here, the function doesn't exist. */
+    /* 如果我们到了这里, the function doesn't exist. */
     return QUEST_FUNC_RET_INVALID_FUNC;
 }
 

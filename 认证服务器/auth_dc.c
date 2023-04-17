@@ -565,7 +565,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_BAD_SERIAL);
         }
         else {
-            /* If we get here, we have a PSOv2 (DC) user that isn't known to the
+            /* 如果我们到了这里, we have a PSOv2 (DC) user that isn't known to the
                server yet. Give them a nice fresh guildcard. */
             psocn_db_result_free(result);
 
@@ -827,7 +827,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
 
     psocn_db_result_free(result);
 
-    /* If we get here, we didn't find them, bail out. */
+    /* 如果我们到了这里, we didn't find them, bail out. */
     return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_NO_HL);
 }
 
@@ -912,7 +912,7 @@ static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
 
     psocn_db_result_free(result);
 
-    /* If we get here, we didn't find them, bail out. */
+    /* 如果我们到了这里, we didn't find them, bail out. */
     return -1;
 }
 
@@ -959,7 +959,7 @@ static int handle_gclogine(login_client_t *c, gc_login_9e_pkt *pkt) {
 
     psocn_db_result_free(result);
 
-    /* If we get here, we didn't find them, bail out. */
+    /* 如果我们到了这里, we didn't find them, bail out. */
     return -1;
 }
 

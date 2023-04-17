@@ -8341,7 +8341,7 @@ static int is_ship_menu_empty(ship_client_t *c, ship_t *s, uint16_t menu_code) {
             else if((i->privileges & c->privilege) != i->privileges && !isgm)
                 continue;
 
-            /* If we get here, then we found a ship the user can see, so the
+            /* 如果我们到了这里, then we found a ship the user can see, so the
                menu isn't empty. */
             return 0;
         }
@@ -9222,7 +9222,7 @@ static int fill_choice_entries(ship_client_t *c, uint8_t *sendbuf,
                     continue;
                 }
 
-                /* If we get here, they match the search. Fill in the
+                /* 如果我们到了这里, they match the search. Fill in the
                    entry. */
 #ifdef PSOCN_ENABLE_IPV6
                 if((c->flags & CLIENT_FLAG_IPV6)) {

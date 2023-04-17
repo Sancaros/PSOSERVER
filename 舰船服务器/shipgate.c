@@ -2238,7 +2238,7 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 
         SHIPS_LOG("正在从船闸服务器获取脚本文件 '%s'", pkt->filename);
 
-        /* If we get here, we don't have a matching script, let the shipgate
+        /* 如果我们到了这里, we don't have a matching script, let the shipgate
            know by sending an error packet. */
         if (!sendbuf)
             return -1;

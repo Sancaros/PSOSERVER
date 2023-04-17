@@ -906,7 +906,7 @@ static int lobby_add_client_locked(ship_client_t *c, lobby_t *l) {
         }
     }
 
-    /* If we get here, something went terribly wrong... */
+    /* 如果我们到了这里, something went terribly wrong... */
     return -1;
 }
 

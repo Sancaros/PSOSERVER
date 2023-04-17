@@ -1221,7 +1221,7 @@ int psocn_read_limits(const char *f, psocn_limits_t **l) {
         n = n->next;
     }
 
-    /* If we get here, parsing finished fine... */
+    /* 如果我们到了这里, parsing finished fine... */
     irv = 0;
     *l = rv;
 
@@ -1662,7 +1662,7 @@ static int check_weapon(psocn_limits_t *l, iitem_t *i,
         }
     }
 
-    /* If we get here, the item isn't listed. If we have defaults set, it still
+    /* 如果我们到了这里, the item isn't listed. If we have defaults set, it still
        needs to be checked against them... */
     if(!is_named_srank && !check_percents(l, i, NULL, version, ic))
         return 0;

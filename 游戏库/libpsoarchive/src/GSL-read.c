@@ -221,7 +221,7 @@ pso_gsl_read_t* pso_gsl_read_open(const char* fn, uint32_t flags,
     if ((rv = pso_gsl_read_open_fd(fd, (uint32_t)total, flags, err)))
         return rv;
 
-    /* If we get here, the pso_gsl_read_open_fd() function encountered an error.
+    /* 如果我们到了这里, the pso_gsl_read_open_fd() function encountered an error.
        Clean up the file descriptor and return NULL. The error code is already
        set in err, if applicable. */
     fclose(fd);
