@@ -2766,8 +2766,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x00AC 172*/
     case QUEST_LOAD_DONE_TYPE:
         return process_bb_qload_done(c);
-        /* XXXX: This isn't right... we need to synchronize this. */
-        //return send_simple(c, QUEST_LOAD_DONE_TYPE, 0);
 
         /* 0x00C0 192*/
     case CHOICE_OPTION_TYPE:
