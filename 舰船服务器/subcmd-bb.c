@@ -340,10 +340,53 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
     return 0;
 }
 
+//static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
+//    lobby_t* l = c->cur_lobby;
+//    int found;
+//    iitem_t iitem_data;
+//
+//    /* We can't get these in a lobby without someone messing with something that
+//       they shouldn't be... Disconnect anyone that tries. */
+//    if (l->type == LOBBY_TYPE_LOBBY) {
+//        ERR_LOG("GC %" PRIu32 " 在大厅中拾取了物品!",
+//            c->guildcard);
+//        return -1;
+//    }
+//
+//    /* 合理性检查... Make sure the size of the subcommand and the client id
+//       match with what we expect. Disconnect the client if not. */
+//    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
+//        pkt->shdr.client_id != c->client_id) {
+//        ERR_LOG("GC %" PRIu32 " 发送错误的拾取数据!",
+//            c->guildcard);
+//        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+//        return -1;
+//    }
+//
+//    /* Try to remove the item from the lobby... */
+//    found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
+//
+//    if (found < 0)
+//        return -1;
+//    else if (found > 0)
+//        /* Assume someone else already picked it up, and just ignore it... */
+//        return 0;
+//
+//    if (add_item(c, iitem_data))
+//        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+//            c->guildcard);
+//
+//    /* 给房间中客户端发包,消除这个物品. */
+//    subcmd_send_bb_pick_item(c, iitem_data.data.item_id, pkt->area);
+//
+//    return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
+//}
+
 static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found;
-    iitem_t iitem_data;
+    uint32_t item, tmp;
+    iitem_t iitem_data = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -353,31 +396,60 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         return -1;
     }
 
-    /* 合理性检查... Make sure the size of the subcommand and the client id
+    /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
+    if (pkt->hdr.pkt_len != LE16(0x14) || pkt->shdr.size != 0x03 ||
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误的拾取数据!",
             c->guildcard);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
     /* Try to remove the item from the lobby... */
     found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
-
-    if (found < 0)
+    if (found < 0) {
         return -1;
-    else if (found > 0)
+    }
+    else if (found > 0) {
         /* Assume someone else already picked it up, and just ignore it... */
         return 0;
+    }
+    else {
+        item = LE32(iitem_data.data.data_l[0]);
 
-    if (add_item(c, iitem_data))
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-            c->guildcard);
+        /* Is it meseta, or an item? */
+        if (item == Item_Meseta) {
+            tmp = LE32(iitem_data.data.data2_l) + LE32(c->bb_pl->character.disp.meseta);
 
-    /* 给房间中客户端发包,消除这个物品. */
-    subcmd_send_bb_pick_item(c, iitem_data.data.item_id, pkt->area);
+            /* Cap at 999,999 meseta. */
+            if (tmp > 999999)
+                tmp = 999999;
+
+            c->bb_pl->character.disp.meseta = LE32(tmp);
+            c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
+        }
+        else {
+            iitem_data.flags = 0;
+            iitem_data.present = LE16(1);
+            iitem_data.tech = 0;
+
+            /* Add the item to the client's inventory. */
+            found = item_add_to_inv(c->bb_pl->inv.iitems,
+                c->bb_pl->inv.item_count, &iitem_data);
+
+            if (found == -1) {
+                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+                    c->guildcard);
+                return -1;
+            }
+
+            c->bb_pl->inv.item_count += found;
+        }
+    }
+
+    /* Let everybody know that the client picked it up, and remove it from the
+       view. */
+    subcmd_send_bb_create_item(c, iitem_data.data, 1);
 
     return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
