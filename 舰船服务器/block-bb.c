@@ -2760,6 +2760,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case QUEST_END_LIST_TYPE:
         return process_bb_qlist_end(c);
 
+        /* 0x00AA 170*/
     case QUEST_STATS_TYPE:
         return process_bb_update_quest_stats(c, (bb_update_quest_stats_pkt*)pkt);
 
