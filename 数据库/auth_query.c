@@ -288,3 +288,36 @@ int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
     }
     return 0;
 }
+
+int db_update_auth_server_list(psocn_srvconfig_t* cfg) {
+
+    sprintf_s(myquery, _countof(myquery), "DELETE FROM %s", AUTH_SERVER_LIST);
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_SERVER_LIST);
+        exit(EXIT_FAILURE);
+    }
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "INSERT INTO %s "
+        "(id, name, host4, "
+        "host6, port, authflags, "
+        "timezone, allowedSecurityLevel, authbuilds)"
+        " VALUES ("
+        "'%d', '%s', '%s', "
+        "'%s', '%d', '%d', "
+        "'%d', '%d', '%s'"
+        ")", AUTH_SERVER_LIST,
+        1, "PSOSERVER", cfg->host4,
+        cfg->host6, 12000, 1,
+        1, 0, "0.00.01");
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        /* Should send an error message to the user */
+        SQLERR_LOG("无法初始化认证服务器:\n%s",
+            psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}

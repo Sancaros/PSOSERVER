@@ -131,6 +131,9 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
 
 /* 更新BB角色更衣室数据*/
 int db_update_char_dressflag(uint32_t gc, uint32_t flags);
+
+/* 更新认证服务器列表*/
+int db_update_auth_server_list(psocn_srvconfig_t* cfg);
 ///////////////////////////////////////////////////////
 /* 船闸查询 */
 

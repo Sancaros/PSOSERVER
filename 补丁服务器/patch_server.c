@@ -300,6 +300,104 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     return 0;
 }
 
+/* 用于更新服务器的最新IP地址 */
+static int update_addresses(psocn_srvconfig_t* cfg) {
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in* addr4;
+    struct sockaddr_in6* addr6;
+
+    /* Clear the addresses */
+    cfg->server_ip = 0;
+    memset(cfg->server_ip6, 0, 16);
+
+    PATCH_LOG("更新服务器IP...");
+
+    //CONFIG_LOG("检测域名获取: %s", host4);
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->host4, "11000", &hints, &server)) {
+        ERR_LOG("无效 IPv4 地址: %s", cfg->host4);
+        return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET) {
+            addr4 = (struct sockaddr_in*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv4 地址错误: %s", ipstr);
+            //    return -1;
+            //}
+            //else
+            //PATCH_LOG("    获取到 IPv4 地址: %s", ipstr);
+            cfg->server_ip = addr4->sin_addr.s_addr;
+        }
+        else if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //PATCH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    /* Make sure we found at least an IPv4 address */
+    if (!cfg->server_ip) {
+        ERR_LOG("无法获取IPv4地址!");
+        return -1;
+    }
+
+    /* If we don't have a separate IPv6 host set, we're done. */
+    if (!cfg->host6) {
+        return 0;
+    }
+
+    /* Now try with IPv6 only */
+    memset(cfg->server_ip6, 0, 16);
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->host6, "11000", &hints, &server)) {
+        ERR_LOG("无效IPv6地址: %s", cfg->host6);
+        //return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //PATCH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    if (!cfg->server_ip6[0]) {
+        ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
+        //return -1;
+    }
+
+    return 0;
+}
+
 /* Load the configuration file and print out parameters with DBG_LOG. */
 static patch_config_t *load_config(void) {
     patch_config_t* cfg;
@@ -521,10 +619,6 @@ static void run_server(int sockets[NUM_PORTS]) {
         FD_ZERO(&exceptfds);
         nfds = 0;
 
-        //if (!check_ipaddr(int2ipstr(cfg->server_ip))) {
-        //    setup_addresses(cfg);
-        //}
-
         /* Set the timeout differently if we're waiting on a rehash. */
         if(!rehash) {
             timeout.tv_sec = 9001;
@@ -600,6 +694,8 @@ static void run_server(int sockets[NUM_PORTS]) {
                                 else {
                                     PATCH_LOG("允许 %s:%d PC客户端获取补丁", ipstr, ports[j][1]);
                                 }
+
+                                update_addresses(srvcfg);
                             }
                             else {
                                 ++client_count;

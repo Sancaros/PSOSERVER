@@ -54,6 +54,109 @@ extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 extern time_t srv_time;
 
+/* 用于更新服务器的最新IP地址 */
+static int update_addresses(psocn_ship_t* cfg) {
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in* addr4;
+    struct sockaddr_in6* addr6;
+
+    /* Clear the addresses */
+    ship_ip4 = 0;
+    cfg->ship_ip4 = 0;
+    memset(ship_ip6, 0, 16);
+    memset(cfg->ship_ip6, 0, 16);
+
+    SHIPS_LOG("更新舰船地址...");
+
+    //CONFIG_LOG("检测域名获取: %s", host4);
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->ship_host4, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址: %s", cfg->ship_host4);
+        return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET) {
+            addr4 = (struct sockaddr_in*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv4 地址错误: %s", ipstr);
+            //    return -1;
+            //}
+            //else
+            //SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
+            cfg->ship_ip4 = ship_ip4 = addr4->sin_addr.s_addr;
+        }
+        else if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(ship_ip6, &addr6->sin6_addr, 16);
+            memcpy(cfg->ship_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    /* Make sure we found at least an IPv4 address */
+    if (!ship_ip4 || !cfg->ship_ip4) {
+        ERR_LOG("无法获取到IPv4地址!");
+        return -1;
+    }
+
+    /* If we don't have a separate IPv6 host set, we're done. */
+    if (!cfg->ship_host6) {
+        return 0;
+    }
+
+    /* Now try with IPv6 only */
+    memset(ship_ip6, 0, 16);
+    memset(cfg->ship_ip6, 0, 16);
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->ship_host6, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址 (v6): %s", cfg->ship_host6);
+        //return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(ship_ip6, &addr6->sin6_addr, 16);
+            memcpy(cfg->ship_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    if (!ship_ip6[0]) {
+        ERR_LOG("无法获取到IPv6地址 (但设置了IPv6域名)!");
+        return -1;
+    }
+
+    return 0;
+}
+
 #pragma warning(push) 
 #pragma warning(disable:4716)
 static void* block_thd(void* d) {

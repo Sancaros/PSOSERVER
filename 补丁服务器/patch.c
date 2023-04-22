@@ -470,6 +470,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
         if (send_simple(c, PATCH_LOGIN_TYPE)) {
             return -2;
         }
+        DBG_LOG("PATCH_WELCOME_TYPE");
         break;
 
     case PATCH_LOGIN_TYPE:
@@ -478,6 +479,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
         //psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
         //msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
 
+        DBG_LOG("PATCH_LOGIN_TYPE");
         /* TODO: Process login? */
         if (c->type == CLIENT_TYPE_PC_PATCH) {
             //if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {

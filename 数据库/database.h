@@ -38,6 +38,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define AUTH_BANS_IP6 "auth_bans_ip6" //IP封禁功能还未完成
 #define AUTH_LOGIN_TOKENS "auth_login_tokens"
 #define AUTH_SECURITY "auth_security"
+#define AUTH_SERVER_LIST "auth_server_list"
 //#define AUTH_BANNED "auth_banned"
 //#define AUTH_GUILD "auth_guild"
 //#define AUTH_QUESTITEM "auth_questitem"

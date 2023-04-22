@@ -242,7 +242,7 @@ void destroy_connection(login_client_t* c);
 
 int read_from_client(login_client_t* c);
 
-void disconnect_from_ships(uint32_t gcn);
+//void disconnect_from_ships(uint32_t gcn);
 
 /* In auth_server.c */
 int ship_transfer(login_client_t* c, uint32_t shipid);

@@ -504,6 +504,106 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     return 0;
 }
 
+/* 用于更新服务器的最新IP地址 */
+static int update_addresses(psocn_srvconfig_t* cfg) {
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in* addr4;
+    struct sockaddr_in6* addr6;
+
+    //psocn_read_srv_config(config_file, &cfg);
+
+    /* Clear the addresses */
+    cfg->server_ip = 0;
+    memset(cfg->server_ip6, 0, 16);
+
+    AUTH_LOG("更新服务器IP...");
+
+    //CONFIG_LOG("检测域名获取: %s", host4);
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->host4, "12000", &hints, &server)) {
+        ERR_LOG("无效 IPv4 域名: %s", cfg->host4);
+        return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET) {
+            addr4 = (struct sockaddr_in*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv4 地址错误: %s", ipstr);
+            //    return -1;
+            //}
+            //else
+            //AUTH_LOG("    获取到 IPv4 地址: %s", ipstr);
+            cfg->server_ip = addr4->sin_addr.s_addr;
+        }
+        else if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    /* Make sure we found at least an IPv4 address */
+    if (!cfg->server_ip) {
+        ERR_LOG("无法获取IPv4地址!");
+        return -1;
+    }
+
+    /* If we don't have a separate IPv6 host set, we're done. */
+    if (!cfg->host6) {
+        return 0;
+    }
+
+    /* Now try with IPv6 only */
+    memset(cfg->server_ip6, 0, 16);
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(cfg->host6, "12000", &hints, &server)) {
+        ERR_LOG("无效 IPv6 域名: %s", cfg->host6);
+        //return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //if (!check_ipaddr(ipstr)) {
+            //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
+            //    //return -1;
+            //}
+            //else
+            //AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    if (!cfg->server_ip6[0]) {
+        ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
+        //return -1;
+    }
+
+    return 0;
+}
+
 const void *my_ntop(struct sockaddr_storage *addr, char str[INET6_ADDRSTRLEN]) {
     int family = addr->ss_family;
 
@@ -670,6 +770,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         ++client_count;
                         ++client_count_dc;
                         AUTH_LOG("总玩家数: %d DreamCast 玩家数量: %d", client_count, client_count_dc);
@@ -693,6 +794,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         ++client_count;
                         ++client_count_pc;
                         AUTH_LOG("总玩家数: %d PC 玩家数量: %d", client_count, client_count_pc);
@@ -716,6 +818,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         ++client_count;
                         ++client_count_gc;
                         AUTH_LOG("总玩家数: %d GameCube 玩家数量: %d", client_count, client_count_gc);
@@ -739,6 +842,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         ++client_count;
                         ++client_count_ep3;
                         AUTH_LOG("总玩家数: %d Episode 3 玩家数量: %d", client_count, client_count_ep3);
@@ -771,6 +875,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         if (auth) {
                             ++client_count_bb_char;
                             ++client_count;
@@ -801,6 +906,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
+                        update_addresses(srvcfg);
                         ++client_count;
                         ++client_count_xbox;
                         AUTH_LOG("总玩家数: %d Xbox 玩家数量: %d", client_count, client_count_xbox);
@@ -816,6 +922,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         perror("accept");
                     }
                     else {
+                        update_addresses(srvcfg);
                         /* Send the number of connected clients, and close the
                            socket. */
                         client_count = LE32(client_count);
@@ -1194,18 +1301,20 @@ int __cdecl main(int argc, char** argv) {
 
     cfg = load_config();
 
-    srvcfg = load_srv_config();
-
     //dbcfg = load_db_config();
 
     open_log();
 
-    if (setup_addresses(srvcfg))
-        exit(EXIT_FAILURE);
-
 restart:
     shutting_down = 0;
     load_patch_config();
+
+    srvcfg = load_srv_config();
+
+    if (setup_addresses(srvcfg))
+        exit(EXIT_FAILURE);
+
+    db_update_auth_server_list(srvcfg);
 
     /* Initialize all the iconv contexts we'll need */
     if (init_iconv())
