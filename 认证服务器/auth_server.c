@@ -505,18 +505,20 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
 }
 
 /* 用于更新服务器的最新IP地址 */
-static int update_addresses(psocn_srvconfig_t* cfg) {
+static int update_addresses() {
     struct addrinfo hints;
     struct addrinfo* server, * j;
     char ipstr[INET6_ADDRSTRLEN];
     struct sockaddr_in* addr4;
     struct sockaddr_in6* addr6;
+    psocn_srvconfig_t cfg = { 0 };
 
     //psocn_read_srv_config(config_file, &cfg);
+    cfg = db_get_auth_server_list(AUTH_SERVER);
 
     /* Clear the addresses */
-    cfg->server_ip = 0;
-    memset(cfg->server_ip6, 0, 16);
+    srvcfg->server_ip = 0;
+    memset(srvcfg->server_ip6, 0, 16);
 
     AUTH_LOG("更新服务器IP...");
 
@@ -526,8 +528,8 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(cfg->host4, "12000", &hints, &server)) {
-        ERR_LOG("无效 IPv4 域名: %s", cfg->host4);
+    if (getaddrinfo(cfg.host4, "12000", &hints, &server)) {
+        ERR_LOG("无效 IPv4 域名: %s", cfg.host4);
         return -1;
     }
 
@@ -541,7 +543,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
             //}
             //else
             //AUTH_LOG("    获取到 IPv4 地址: %s", ipstr);
-            cfg->server_ip = addr4->sin_addr.s_addr;
+            srvcfg->server_ip = addr4->sin_addr.s_addr;
         }
         else if (j->ai_family == PF_INET6) {
             addr6 = (struct sockaddr_in6*)j->ai_addr;
@@ -552,31 +554,31 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
             //}
             //else
             //AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
-            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+            memcpy(srvcfg->server_ip6, &addr6->sin6_addr, 16);
         }
     }
 
     freeaddrinfo(server);
 
     /* Make sure we found at least an IPv4 address */
-    if (!cfg->server_ip) {
+    if (!srvcfg->server_ip) {
         ERR_LOG("无法获取IPv4地址!");
         return -1;
     }
 
     /* If we don't have a separate IPv6 host set, we're done. */
-    if (!cfg->host6) {
+    if (!cfg.host6) {
         return 0;
     }
 
     /* Now try with IPv6 only */
-    memset(cfg->server_ip6, 0, 16);
+    memset(srvcfg->server_ip6, 0, 16);
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = PF_INET6;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(cfg->host6, "12000", &hints, &server)) {
-        ERR_LOG("无效 IPv6 域名: %s", cfg->host6);
+    if (getaddrinfo(cfg.host6, "12000", &hints, &server)) {
+        ERR_LOG("无效 IPv6 域名: %s", cfg.host6);
         //return -1;
     }
 
@@ -590,13 +592,13 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
             //}
             //else
             //AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
-            memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+            memcpy(srvcfg->server_ip6, &addr6->sin6_addr, 16);
         }
     }
 
     freeaddrinfo(server);
 
-    if (!cfg->server_ip6[0]) {
+    if (!srvcfg->server_ip6[0]) {
         ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
         //return -1;
     }
@@ -770,7 +772,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         ++client_count;
                         ++client_count_dc;
                         AUTH_LOG("总玩家数: %d DreamCast 玩家数量: %d", client_count, client_count_dc);
@@ -794,7 +796,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         ++client_count;
                         ++client_count_pc;
                         AUTH_LOG("总玩家数: %d PC 玩家数量: %d", client_count, client_count_pc);
@@ -818,7 +820,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         ++client_count;
                         ++client_count_gc;
                         AUTH_LOG("总玩家数: %d GameCube 玩家数量: %d", client_count, client_count_gc);
@@ -842,7 +844,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         ++client_count;
                         ++client_count_ep3;
                         AUTH_LOG("总玩家数: %d Episode 3 玩家数量: %d", client_count, client_count_ep3);
@@ -875,7 +877,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         if (auth) {
                             ++client_count_bb_char;
                             ++client_count;
@@ -906,7 +908,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         closesocket(asock);
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         ++client_count;
                         ++client_count_xbox;
                         AUTH_LOG("总玩家数: %d Xbox 玩家数量: %d", client_count, client_count_xbox);
@@ -922,7 +924,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         perror("accept");
                     }
                     else {
-                        update_addresses(srvcfg);
+                        update_addresses();
                         /* Send the number of connected clients, and close the
                            socket. */
                         client_count = LE32(client_count);

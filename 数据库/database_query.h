@@ -134,6 +134,9 @@ int db_update_char_dressflag(uint32_t gc, uint32_t flags);
 
 /* 更新认证服务器列表*/
 int db_update_auth_server_list(psocn_srvconfig_t* cfg);
+
+/* 获取认证服务器列表*/
+psocn_srvconfig_t db_get_auth_server_list(uint32_t id);
 ///////////////////////////////////////////////////////
 /* 船闸查询 */
 

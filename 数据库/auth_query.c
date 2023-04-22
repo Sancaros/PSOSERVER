@@ -321,3 +321,44 @@ int db_update_auth_server_list(psocn_srvconfig_t* cfg) {
 
     return 0;
 }
+
+psocn_srvconfig_t db_get_auth_server_list(uint32_t id) {
+    void* result;
+    char** row;
+    psocn_srvconfig_t cfg;
+
+    memset(&cfg, 0, sizeof(psocn_srvconfig_t));
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Look up the user's saved config */
+    sprintf(myquery, "SELECT host4, host6, "
+        "port, authflags, timezone, allowedSecurityLevel, authbuilds FROM %s WHERE "
+        "id = '%" PRIu32 "'", AUTH_SERVER_LIST, id);
+
+    if (!psocn_db_real_query(&conn, myquery)) {
+
+        result = psocn_db_result_store(&conn);
+
+        if (!result) {
+            SQLERR_LOG("无法获取 %s 数据 "
+                "id %" PRIu32 "", AUTH_SERVER_LIST, id);
+            return cfg;
+        }
+
+        row = psocn_db_result_fetch(result);
+        /* See if we got a hit... */
+        if (!row) {
+            SQLERR_LOG("无法获取 %s 数据 "
+                "id %" PRIu32 "", AUTH_SERVER_LIST, id);
+            return cfg;
+        }
+
+        cfg.host4 = row[0];
+        cfg.host6 = row[1];
+
+        psocn_db_next_result_free(&conn, result);
+    }
+
+    return cfg;
+}
