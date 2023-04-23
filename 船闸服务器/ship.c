@@ -479,6 +479,7 @@ void destroy_connection(ship_t* c)
     free_safe(c);
 }
 
+/* 更新舰船IPv4 暂未完成更新IPv6 */
 int update_ship_ipv4(ship_t* c) {
     struct addrinfo hints;
     struct addrinfo* server, * j;

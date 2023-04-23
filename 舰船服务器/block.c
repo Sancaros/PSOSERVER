@@ -464,12 +464,12 @@ static void* block_thd(void* d) {
             tmp = TAILQ_NEXT(it, qentry);
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
-                if (it->bb_pl) {
+                if (it->bb_pl && it->guildcard) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
                         &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
-                else if (it->pl) {
+                else if (it->pl && it->guildcard) {
                     DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.disp.dress_data.guildcard_string,
                         it->guildcard);
                 }
