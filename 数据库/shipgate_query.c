@@ -191,7 +191,7 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the db query */
-    sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_BLUEBURST_GUILD);
+    sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_GUILD);
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_info,
         sizeof(guild.guild_data.guild_info));
@@ -215,7 +215,7 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_BLUEBURST_GUILD);
+        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_GUILD);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
@@ -229,7 +229,7 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the db query */
-    sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_BLUEBURST_OPTION);
+    sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_OPTION_BLUEBURST);
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.key_config,
         sizeof(opts.key_cfg.key_config));
@@ -349,7 +349,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, _countof(myquery), "SELECT * from %s WHERE guild_name_text = '%s'",
-        CLIENTS_BLUEBURST_GUILD, guild_name_text);
+        CLIENTS_GUILD, guild_name_text);
     if (!psocn_db_real_query(&conn, myquery))
     {
         result = psocn_db_result_store(&conn);
@@ -365,7 +365,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
         sprintf_s(myquery, _countof(myquery), "INSERT INTO %s "
             "(guildcard, guild_name_text, guild_name, guild_flag) "
             "VALUES ('%" PRIu32 "', '%s', '",
-            CLIENTS_BLUEBURST_GUILD, 
+            CLIENTS_GUILD, 
             gc, guild_name_text);
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_name,
@@ -415,7 +415,7 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id) {
 
     psocn_db_escape_str(&conn, &flag_slashes[0], guild_flag, 0x800);
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag = '%s' WHERE guild_id = '%u'",
-        CLIENTS_BLUEBURST_GUILD, (char*)&flag_slashes[0], guild_id);
+        CLIENTS_GUILD, (char*)&flag_slashes[0], guild_id);
     if (!psocn_db_real_query(&conn, myquery))
         return 0;
 
@@ -426,7 +426,7 @@ int db_dissolve_bb_guild(uint32_t guild_id) {
     int res = 0;
 
     sprintf_s(myquery, _countof(myquery), "DELETE from %s "
-        "WHERE guild_id = '%u'", CLIENTS_BLUEBURST_GUILD, guild_id);
+        "WHERE guild_id = '%u'", CLIENTS_GUILD, guild_id);
     if (psocn_db_real_query(&conn, myquery))
         res = 1;
 

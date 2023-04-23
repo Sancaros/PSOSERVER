@@ -111,10 +111,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         "%s.account_id = %s.account_id WHERE "
         "%s.username='%s'"
         , AUTH_ACCOUNT
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , CLIENTS_BLUEBURST, tmp);
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT_BLUEBURST, tmp);
 
     /* Query the database for the user... */
     if(psocn_db_real_query(&conn, query)) {
@@ -217,7 +217,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 
     //DBG_LOG("%s \n", c->bbversion_string);
     sprintf_s(query, _countof(query), "UPDATE %s SET versionstring = '%s', version = '%d' where guildcard = '%u'",
-        CLIENTS_BLUEBURST, c->bbversion_string, c->bbversion, c->guildcard);
+        AUTH_ACCOUNT_BLUEBURST, c->bbversion_string, c->bbversion, c->guildcard);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
         return -4;

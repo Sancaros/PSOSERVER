@@ -315,10 +315,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         "%s.account_id = %s.account_id WHERE "
         "%s.username='%s'"
         , AUTH_ACCOUNT
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , AUTH_ACCOUNT, CLIENTS_BLUEBURST
-        , CLIENTS_BLUEBURST, tmp
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
+        , AUTH_ACCOUNT_BLUEBURST, tmp
     );
 
     /* Query the database for the user... */
@@ -882,7 +882,7 @@ static int handle_guild_request(login_client_t *c) {
     /* Query the DB for the user's guildcard data */
     sprintf(query, "SELECT friend_gc, name, guild_name, text, language, "
             "section_id, class, comment FROM %s WHERE "
-            "guildcard='%" PRIu32 "' ORDER BY priority ASC", CLIENTS_BLUEBURST_GUILDCARDS, c->guildcard);
+            "guildcard='%" PRIu32 "' ORDER BY priority ASC", CLIENTS_FRIENDLIST, c->guildcard);
 
     if(psocn_db_real_query(&conn, query)) {
         /* Should send an error message to the user */

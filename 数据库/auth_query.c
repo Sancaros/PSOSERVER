@@ -56,7 +56,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     /* Look up the user's saved config */
     sprintf(myquery, "SELECT key_config, joystick_config, "
         "option_flags, shortcuts, symbol_chats, guild_name FROM %s WHERE "
-        "guildcard='%" PRIu32 "'", CLIENTS_BLUEBURST_OPTION, gc);
+        "guildcard='%" PRIu32 "'", CLIENTS_OPTION_BLUEBURST, gc);
 
     if (!psocn_db_real_query(&conn, myquery)) {
         result = psocn_db_result_store(&conn);
@@ -78,7 +78,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             memcpy(&opts.symbol_chats, default_symbolchats, sizeof(default_symbolchats));
 
             sprintf(myquery, "INSERT INTO %s (guildcard, key_config, joystick_config, symbol_chats)"
-                " VALUES ('%" PRIu32"', '", CLIENTS_BLUEBURST_OPTION, gc);
+                " VALUES ('%" PRIu32"', '", CLIENTS_OPTION_BLUEBURST, gc);
 
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
                 (char*)&opts.key_cfg.key_config, sizeof(opts.key_cfg.key_config));
@@ -116,11 +116,11 @@ int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc) {
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
         "guild_id = '%" PRIu32"' "
-        "WHERE guildcard = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, 
+        "WHERE guildcard = '%" PRIu32 "'", CLIENTS_GUILD, 
         guild_id, 
         gc);
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_BLUEBURST_GUILD);
+        SQLERR_LOG("无法更新角色 %s 公会数据!", CLIENTS_GUILD);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
@@ -167,7 +167,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
 
             /* 查询数据表 */
             sprintf(myquery, "SELECT * FROM %s WHERE "
-                "guild_id = '%" PRIu32 "'", CLIENTS_BLUEBURST_GUILD, guild_id);
+                "guild_id = '%" PRIu32 "'", CLIENTS_GUILD, guild_id);
 
             if (!psocn_db_real_query(&conn, myquery)) {
                 result = psocn_db_result_store(&conn);
@@ -214,7 +214,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     "guild_rank, guild_rewards1, guild_rewards2, "
                     "guild_info, guild_name, guild_flag)"
                     " VALUES ('%" PRIu32"', '%d', '%d', "
-                    "'%d', '%d', '%d', '", CLIENTS_BLUEBURST_GUILD,
+                    "'%d', '%d', '%d', '", CLIENTS_GUILD,
                     guild.guild_data.guildcard, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
                     guild.guild_data.guild_rank, guild.guild_data.guild_rewards[0], guild.guild_data.guild_rewards[1]);
 

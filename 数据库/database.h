@@ -31,20 +31,26 @@
 static char myquery[MAX_QUERY_SIZE] = { 0 };
 
 #define AUTH_ACCOUNT "auth_account"
+#define AUTH_ACCOUNT_BLUEBURST "auth_account_blueburst"
+#define AUTH_ACCOUNT_DREAMCAST "auth_account_dreamcast"
+#define AUTH_ACCOUNT_DREAMCAST_NTE "auth_account_dreamcast_nte"
+#define AUTH_ACCOUNT_GAMECUBE "auth_account_gamecube"
+#define AUTH_ACCOUNT_GUILDCARDS "auth_account_guildcards"
+#define AUTH_ACCOUNT_PC "auth_account_pc"
+#define AUTH_ACCOUNT_XBOX "auth_account_xbox"
+
 #define AUTH_BANS "auth_bans"
 #define AUTH_BANS_GC "auth_bans_gc"
 #define AUTH_BANS_HW "auth_bans_hw"
 #define AUTH_BANS_IP "auth_bans_ip" //IP封禁功能还未完成
 #define AUTH_BANS_IP6 "auth_bans_ip6" //IP封禁功能还未完成
+
 #define AUTH_LOGIN_TOKENS "auth_login_tokens"
 #define AUTH_SECURITY "auth_security"
 #define AUTH_SERVER_LIST "auth_server_list"
-//#define AUTH_BANNED "auth_banned"
-//#define AUTH_GUILD "auth_guild"
 //#define AUTH_QUESTITEM "auth_questitem"
 
 #define CHARACTER "character_"
-//#define CHARACTER_KEY "character_key"
 #define CHARACTER_BACKUP "character_backup"
 #define CHARACTER_BANK "character_bank"
 #define CHARACTER_BATTLE "character_battle"
@@ -52,22 +58,14 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_CHALLENGE "character_challenge"
 #define CHARACTER_DELETE "character_delete"
 #define CHARACTER_DRESS "character_dress"
-#define CHARACTER_FRIENDLIST "character_friendlist"
-//#define CHARACTER_GCCARDS "character_gccards"
+#define CHARACTER_GCDATA "character_gcdata"
 #define CHARACTER_STATS "character_stats"
 #define CHARACTER_TRADE "character_trade"
 
-#define CLIENTS_BLUEBURST "clients_blueburst"
-#define CLIENTS_BLUEBURST_GUILD "clients_blueburst_guild"
-#define CLIENTS_BLUEBURST_GUILDCARDS "clients_blueburst_guildcards"
-#define CLIENTS_BLUEBURST_OPTION "clients_blueburst_option"
-#define CLIENTS_DREAMCAST "clients_dreamcast"
-#define CLIENTS_DREAMCAST_NTE "clients_dreamcast_nte"
-#define CLIENTS_GAMECUBE "clients_gamecube"
-#define CLIENTS_GUILDCARDS "clients_guildcards"
-#define CLIENTS_OPTIONS "clients_options"
-#define CLIENTS_PC "clients_pc"
-#define CLIENTS_XBOX "clients_xbox"
+#define CLIENTS_FRIENDLIST "clients_friendlist"
+#define CLIENTS_GUILD "clients_guild"
+#define CLIENTS_OPTION "clients_option"
+#define CLIENTS_OPTION_BLUEBURST "clients_option_blueburst"
 
 #define PLAYER_LEVEL_START_STATS_TABLE_BB "player_level_start_stats_table_bb"
 //全职业数据总表

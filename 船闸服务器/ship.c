@@ -277,7 +277,7 @@ static int check_user_blocklist(uint32_t searcher, uint32_t guildcard,
 
     sprintf(query, "SELECT flags FROM %s NATURAL JOIN %s "
             "WHERE %s.blocked_gc='%u' AND guildcard='%u'"
-        , SERVER_BLOCKS_LIST, CLIENTS_BLUEBURST
+        , SERVER_BLOCKS_LIST, AUTH_ACCOUNT_BLUEBURST
         , SERVER_BLOCKS_LIST, searcher, guildcard);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -741,7 +741,7 @@ static int save_mail(uint32_t gc, uint32_t from, void* pkt, int version) {
 
     /* See if the user is registered first. */
     sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'"
-        , CLIENTS_GUILDCARDS, gc);
+        , AUTH_ACCOUNT_GUILDCARDS, gc);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("邮件: 无法查询到账户: %s",
             psocn_db_error(&conn));
@@ -1316,7 +1316,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         PRIu32 "', '%" PRIu32 "', '%s', '%s', '%s', '%" PRIu8 "', '%"
         PRIu8 "', '%" PRIu8 "') ON DUPLICATE KEY UPDATE "
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
-        "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_BLUEBURST_GUILDCARDS, sender,
+        "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_FRIENDLIST, sender,
         fr_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
         gc->gc_data.ch_class);
 
@@ -1494,7 +1494,7 @@ static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
     /* Build the query and run it */
     sprintf(query, "UPDATE %s SET comment='%s' WHERE "
         "guildcard='%" PRIu32"' AND friend_gc='%" PRIu32 "'"
-        , CLIENTS_BLUEBURST_GUILDCARDS, comment,
+        , CLIENTS_FRIENDLIST, comment,
         sender, fr_gc);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -2021,7 +2021,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (guild_priv_level == 0x00000040) {  // 会长转让
         sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guildcard = '%u', guild_id = '%u' WHERE guild_id = '%u'",
-            CLIENTS_BLUEBURST_GUILD, target_gc, target_gc, guild_id);
+            CLIENTS_GUILD, target_gc, target_gc, guild_id);
         psocn_db_real_query(&conn, myquery);
 
         sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
@@ -2892,11 +2892,11 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     /* Build the query asking for the data. */
     sprintf(query, "SELECT password, regtime, privlevel, islogged FROM %s "
         "NATURAL JOIN %s WHERE guildcard='%u' AND username='%s'"
-        , CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT_GUILDCARDS
         , AUTH_ACCOUNT, gc, esc);
 
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("登录失败 - 查询 %s 数据表失败 (玩家: %s, gc: %u)", CLIENTS_GUILDCARDS,
+        SQLERR_LOG("登录失败 - 查询 %s 数据表失败 (玩家: %s, gc: %u)", AUTH_ACCOUNT_GUILDCARDS,
             pkt->username, gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -2906,7 +2906,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("登录失败 - 玩家 %s 数据不存在 (玩家: %s, gc: %u)", CLIENTS_GUILDCARDS,
+        SQLERR_LOG("登录失败 - 玩家 %s 数据不存在 (玩家: %s, gc: %u)", AUTH_ACCOUNT_GUILDCARDS,
             pkt->username, gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3002,11 +3002,11 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     /* Make sure the requester has permission. */
     sprintf(query, "SELECT account_id, privlevel FROM %s NATURAL JOIN "
         "%s WHERE guildcard='%u' AND privlevel>'2'"
-        , CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT_GUILDCARDS
         , AUTH_ACCOUNT, req);
 
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法从 %s 获取到数据 (%u)", CLIENTS_GUILDCARDS, req);
+        SQLERR_LOG("无法从 %s 获取到数据 (%u)", AUTH_ACCOUNT_GUILDCARDS, req);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
@@ -3015,7 +3015,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("无法从 %s 获取到结果 (%u)", CLIENTS_GUILDCARDS, req);
+        SQLERR_LOG("无法从 %s 获取到结果 (%u)", AUTH_ACCOUNT_GUILDCARDS, req);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
@@ -3038,10 +3038,10 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
     /* Make sure the user isn't trying to ban someone with a higher privilege
        level than them... */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_ACCOUNT, target);
+        "WHERE guildcard='%u'", AUTH_ACCOUNT_GUILDCARDS, AUTH_ACCOUNT, target);
 
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法从 %s 获取到数据 (%u)", CLIENTS_GUILDCARDS, target);
+        SQLERR_LOG("无法从 %s 获取到数据 (%u)", AUTH_ACCOUNT_GUILDCARDS, target);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
@@ -3050,7 +3050,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("无法从 %s 获取到结果 (%u)", CLIENTS_GUILDCARDS, target);
+        SQLERR_LOG("无法从 %s 获取到结果 (%u)", AUTH_ACCOUNT_GUILDCARDS, target);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
@@ -3200,9 +3200,9 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
-        , CHARACTER_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
+        , CLIENTS_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3241,7 +3241,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
 skip_friends:
     /* See what options we have to deliver to the user */
     sprintf(query, "SELECT opt, value FROM %s WHERE "
-        "guildcard='%u'", CLIENTS_OPTIONS, gc);
+        "guildcard='%u'", CLIENTS_OPTION, gc);
 
     /* Query for any results */
     if (psocn_db_real_query(&conn, query)) {
@@ -3278,7 +3278,7 @@ skip_friends:
 skip_opts:
     /* See if the user has an account or not. */
     sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%"
-        PRIu32 "'", CLIENTS_GUILDCARDS, gc);
+        PRIu32 "'", AUTH_ACCOUNT_GUILDCARDS, gc);
 
     /* Query for any results */
     if (psocn_db_real_query(&conn, query)) {
@@ -3306,9 +3306,9 @@ skip_opts:
     sprintf(query, "SELECT COUNT(*) FROM %s INNER JOIN %s ON "
         "%s.recipient = %s.guildcard WHERE "
         "%s.account_id='%" PRIu32 "' AND %s.status='0'"
-        , SERVER_SIMPLE_MAIL, CLIENTS_GUILDCARDS
-        , SERVER_SIMPLE_MAIL, CLIENTS_GUILDCARDS
-        , CLIENTS_GUILDCARDS, acc, SERVER_SIMPLE_MAIL
+        , SERVER_SIMPLE_MAIL, AUTH_ACCOUNT_GUILDCARDS
+        , SERVER_SIMPLE_MAIL, AUTH_ACCOUNT_GUILDCARDS
+        , AUTH_ACCOUNT_GUILDCARDS, acc, SERVER_SIMPLE_MAIL
     );
 
     /* Query for any results */
@@ -3359,9 +3359,9 @@ skip_opts:
         "%s.recipient = %s.guildcard SET "
         "%s.status='2' WHERE %s.account_id='%" PRIu32
         "' AND %s.status='0'"
-        , SERVER_SIMPLE_MAIL, CLIENTS_GUILDCARDS
-        , SERVER_SIMPLE_MAIL, CLIENTS_GUILDCARDS
-        , SERVER_SIMPLE_MAIL, CLIENTS_GUILDCARDS
+        , SERVER_SIMPLE_MAIL, AUTH_ACCOUNT_GUILDCARDS
+        , SERVER_SIMPLE_MAIL, AUTH_ACCOUNT_GUILDCARDS
+        , SERVER_SIMPLE_MAIL, AUTH_ACCOUNT_GUILDCARDS
         , acc, SERVER_SIMPLE_MAIL
     );
 
@@ -3545,9 +3545,9 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
-        , CHARACTER_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
+        , CLIENTS_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3615,7 +3615,7 @@ static int handle_friendlist_add(ship_t* c, shipgate_friend_add_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "INSERT INTO %s(owner, friend, nickname) "
-        "VALUES('%u', '%u', '%s')", CHARACTER_FRIENDLIST, ugc, fgc, nickname);
+        "VALUES('%u', '%u', '%s')", CLIENTS_FRIENDLIST, ugc, fgc, nickname);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3644,7 +3644,7 @@ static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "DELETE FROM %s WHERE owner='%u' AND friend='%u'"
-        , CHARACTER_FRIENDLIST, ugc, fgc);
+        , CLIENTS_FRIENDLIST, ugc, fgc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3827,7 +3827,7 @@ static int handle_kick(ship_t* c, shipgate_kick_pkt* pkt) {
     /* Make sure the requester is a GM */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
         "WHERE privlevel>'1' AND guildcard='%u'"
-        , AUTH_ACCOUNT, CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS
         , gcr);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3862,7 +3862,7 @@ static int handle_kick(ship_t* c, shipgate_kick_pkt* pkt) {
     /* Make sure the user isn't trying to kick someone with a higher privilege
        level than them... */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-        "WHERE guildcard='%u'", CLIENTS_GUILDCARDS, AUTH_ACCOUNT
+        "WHERE guildcard='%u'", AUTH_ACCOUNT_GUILDCARDS, AUTH_ACCOUNT
         , gc);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3958,8 +3958,8 @@ static int handle_frlist_req(ship_t* c, shipgate_friend_list_req* pkt) {
         "LEFT OUTER JOIN %s ON %s.friend = "
         "%s.guildcard WHERE owner='%u' ORDER BY friend "
         "LIMIT 5 OFFSET %u"
-        , CHARACTER_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , CLIENTS_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
         , SERVER_CLIENTS_ONLINE
         , gcr, start);
     if (psocn_db_real_query(&conn, query)) {
@@ -4038,7 +4038,7 @@ static int handle_globalmsg(ship_t* c, shipgate_global_msg_pkt* pkt) {
     /* Make sure the requester is a GM */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
         "WHERE privlevel>'1' AND guildcard='%u'"
-        , AUTH_ACCOUNT, CLIENTS_GUILDCARDS
+        , AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS
         , gcr);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -4129,7 +4129,7 @@ static int handle_useropt(ship_t* c, shipgate_user_opt_pkt* pkt) {
        fixed if any other DB type is to be supported... */
     sprintf(query, "INSERT INTO %s(guildcard, opt, value) "
         "VALUES('%u', '%u', '%s') ON DUPLICATE KEY UPDATE "
-        "value=VALUES(value)", CLIENTS_OPTIONS, ugc, opttype, data);
+        "value=VALUES(value)", CLIENTS_OPTION, ugc, opttype, data);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -4205,7 +4205,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
 
     /* Find the user's account id */
     sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%"
-        PRIu32 "'", CLIENTS_GUILDCARDS, gc);
+        PRIu32 "'", AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Couldn't fetch account data (%" PRIu32 ")", gc);
@@ -4383,7 +4383,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
                 "JOIN %s NATURAL JOIN %s WHERE "
                 "guildcard='%u' AND username='%s' AND token='%s'"
 				, AUTH_ACCOUNT
-				, CLIENTS_GUILDCARDS, AUTH_LOGIN_TOKENS, gc
+				, AUTH_ACCOUNT_GUILDCARDS, AUTH_LOGIN_TOKENS, gc
 				, esc, esc2);
     }
     else {
@@ -4391,9 +4391,9 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
                 "%s NATURAL JOIN %s, %s NATURAL "
                 "JOIN %s WHERE username='%s' AND token='%s' AND "
                 "guildcard='%u' AND %s.account_id is NULL", AUTH_ACCOUNT
-            , AUTH_ACCOUNT, AUTH_LOGIN_TOKENS, CLIENTS_GUILDCARDS
-            , CLIENTS_XBOX, esc, esc2
-            , gc, CLIENTS_GUILDCARDS);
+            , AUTH_ACCOUNT, AUTH_LOGIN_TOKENS, AUTH_ACCOUNT_GUILDCARDS
+            , AUTH_ACCOUNT_XBOX, esc, esc2
+            , gc, AUTH_ACCOUNT_GUILDCARDS);
     }
 
     if (psocn_db_real_query(&conn, query)) {
@@ -4456,7 +4456,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     /* If this was a request to associate an XBL account, then do it. */
     if(pkt->hdr.version == TLOGIN_VER_XBOX) {
         sprintf(query, "UPDATE %s SET account_id='%u' WHERE "
-                "guildcard='%u' AND account_id is NULL", CLIENTS_GUILDCARDS, account_id, gc);
+                "guildcard='%u' AND account_id is NULL", AUTH_ACCOUNT_GUILDCARDS, account_id, gc);
 
         if(psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("Couldn't update guild card data (user: %s, "
@@ -4881,7 +4881,7 @@ static int handle_ubl_add(ship_t* c, shipgate_ubl_add_pkt* pkt) {
 
     /* See if the user has an account or not. */
     sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%"
-        PRIu32 "'", CLIENTS_GUILDCARDS, gc);
+        PRIu32 "'", AUTH_ACCOUNT_GUILDCARDS, gc);
 
     /* Query for any results */
     if (psocn_db_real_query(&conn, query)) {

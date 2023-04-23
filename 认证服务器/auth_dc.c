@@ -72,7 +72,7 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
-        , CLIENTS_DREAMCAST_NTE
+        , AUTH_ACCOUNT_DREAMCAST_NTE
         , serial, access);
 
     /* If we can't query the database, fail. */
@@ -119,7 +119,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "(dc_id='%s' OR dc_id IS NULL) AND serial_number='%s' AND "
         "access_key='%s'"
-        , CLIENTS_DREAMCAST_NTE
+        , AUTH_ACCOUNT_DREAMCAST_NTE
         , dc_id, serial
         , access);
 
@@ -141,7 +141,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
         psocn_db_result_free(result);
 
         /* Assign a nice fresh new guildcard number to the client. */
-        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", CLIENTS_GUILDCARDS);
+        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -192,7 +192,7 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -230,7 +230,7 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "(dc_id='%s' OR dc_id IS NULL) AND serial_number='%s' AND "
         "access_key='%s'"
-        , CLIENTS_DREAMCAST_NTE
+        , AUTH_ACCOUNT_DREAMCAST_NTE
         , dc_id, serial
         , access);
 
@@ -283,7 +283,7 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -337,7 +337,7 @@ static int handle_login0(login_client_t *c, dc_login_90_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
-        , CLIENTS_DREAMCAST
+        , AUTH_ACCOUNT_DREAMCAST
         , serial, access);
 
     /* If we can't query the database, fail. */
@@ -385,7 +385,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE (dc_id='%s' "
         "OR dc_id IS NULL) AND serial_number='%s' AND access_key='%s'"
-        , CLIENTS_DREAMCAST, dc_id
+        , AUTH_ACCOUNT_DREAMCAST, dc_id
         , serial, access);
 
     /* If we can't query the database, fail. */
@@ -406,7 +406,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
         psocn_db_result_free(result);
 
         /* Assign a nice fresh new guildcard number to the client. */
-        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", CLIENTS_GUILDCARDS);
+        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -420,7 +420,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
         /* Add the client into our database. */
         sprintf(query, "INSERT INTO %s (guildcard, "
                 "serial_number, access_key, dc_id) VALUES ('%u', '%s', '%s', "
-                "'%s')", CLIENTS_DREAMCAST, gc, serial, access, dc_id);
+                "'%s')", AUTH_ACCOUNT_DREAMCAST, gc, serial, access, dc_id);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -457,7 +457,7 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     /* Check if the user is a GM or not. */
     sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN %s "
-            "WHERE guildcard='%u'", AUTH_ACCOUNT, CLIENTS_GUILDCARDS, gc);
+            "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
         send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -529,7 +529,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
                 "(dc_id='%s' OR dc_id IS NULL) AND serial_number='%s' AND "
                 "access_key='%s'"
-                , CLIENTS_DREAMCAST
+                , AUTH_ACCOUNT_DREAMCAST
                 , dc_id, serial
                 , access);
             c->ext_version = CLIENT_EXTVER_DC | CLIENT_EXTVER_DCV2;
@@ -537,7 +537,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         else {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
                 "serial_number='%s' AND access_key='%s'"
-                , CLIENTS_PC
+                , AUTH_ACCOUNT_PC
                 , serial, access);
             c->ext_version = CLIENT_EXTVER_PC;
         }
@@ -570,7 +570,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             psocn_db_result_free(result);
 
             /* Assign a nice fresh new guildcard number to the client. */
-            sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", CLIENTS_GUILDCARDS);
+            sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
             if(psocn_db_real_query(&conn, query)) {
                 return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_ERROR);
@@ -583,7 +583,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             sprintf(query, "INSERT INTO %s (guildcard, "
                 "serial_number, access_key, dc_id) VALUES ('%u', '%s', "
                 "'%s', '%s')"
-                , CLIENTS_DREAMCAST
+                , AUTH_ACCOUNT_DREAMCAST
                 , gc, serial
                 , access, dc_id);
 
@@ -618,7 +618,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN "
             "%s WHERE guildcard='%u'"
             , AUTH_ACCOUNT
-            , CLIENTS_GUILDCARDS, gc);
+            , AUTH_ACCOUNT_GUILDCARDS, gc);
 
         if(psocn_db_real_query(&conn, query)) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_ERROR);
@@ -753,7 +753,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
-        , CLIENTS_GAMECUBE
+        , AUTH_ACCOUNT_GAMECUBE
         , serial, access);
 
     /* If we can't query the database, fail. */
@@ -792,7 +792,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
         /* The client has at least registered, check the password...
            We need the account to do that though. */
         sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'"
-            , CLIENTS_GUILDCARDS, gc);
+            , AUTH_ACCOUNT_GUILDCARDS, gc);
 
         if(psocn_db_real_query(&conn, query)) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
@@ -844,7 +844,7 @@ static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
     psocn_db_escape_str(&conn, access, pkt->access_key, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%s' AND access_key='%s'", CLIENTS_GAMECUBE, serial, access);
+        "serial_number='%s' AND access_key='%s'", AUTH_ACCOUNT_GAMECUBE, serial, access);
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
@@ -860,7 +860,7 @@ static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
         psocn_db_result_free(result);
 
         /* We need the account to do that though... */
-        sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'", CLIENTS_GUILDCARDS,
+        sprintf(query, "SELECT account_id FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT_GUILDCARDS,
             gc);
 
         if(psocn_db_real_query(&conn, query)) {
@@ -930,7 +930,7 @@ static int handle_gclogine(login_client_t *c, gc_login_9e_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
-        , CLIENTS_GAMECUBE
+        , AUTH_ACCOUNT_GAMECUBE
         , serial, access);
 
     /* If we can't query the database, fail. */
@@ -983,7 +983,7 @@ static int handle_xbhlcheck(login_client_t *c, xb_hlcheck_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "xbl_userid='%s'"
-        , CLIENTS_XBOX
+        , AUTH_ACCOUNT_XBOX
         , xbluid);
 
     /* If we can't query the database, fail. */
@@ -1041,7 +1041,7 @@ static int handle_xbloginc(login_client_t *c, xb_login_9c_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "xbl_userid='%s'"
-        , CLIENTS_XBOX
+        , AUTH_ACCOUNT_XBOX
         , xbluid);
 
     /* If we can't query the database, fail. */
@@ -1063,7 +1063,7 @@ static int handle_xbloginc(login_client_t *c, xb_login_9c_pkt *pkt) {
 
         /* Assign a nice fresh new guildcard number to the client. */
         sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)"
-            , CLIENTS_GUILDCARDS);
+            , AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -1077,7 +1077,7 @@ static int handle_xbloginc(login_client_t *c, xb_login_9c_pkt *pkt) {
         /* Add the client into our database. */
         sprintf(query, "INSERT INTO %s (guildcard, xbl_userid,"
             "xbl_gamertag) VALUES ('%u', '%s', '%s')"
-            , CLIENTS_XBOX
+            , AUTH_ACCOUNT_XBOX
             , gc, xbluid, xblgt);
 
         if(psocn_db_real_query(&conn, query)) {
@@ -1127,7 +1127,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
 
     sprintf(query, "SELECT guildcard, privlevel FROM %s NATURAL JOIN "
             "%s NATURAL LEFT OUTER JOIN %s WHERE "
-            "xbl_userid='%s'", CLIENTS_XBOX, CLIENTS_GUILDCARDS, AUTH_ACCOUNT, xbluid);
+            "xbl_userid='%s'", AUTH_ACCOUNT_XBOX, AUTH_ACCOUNT_GUILDCARDS, AUTH_ACCOUNT, xbluid);
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
@@ -1185,7 +1185,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
                                 16);
 
         /* Assign a nice fresh new guildcard number to the client. */
-        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", CLIENTS_GUILDCARDS);
+        sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
@@ -1198,7 +1198,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
 
         /* Add the client into our database. */
         sprintf(query, "INSERT INTO %s (guildcard, xbl_userid,"
-                "xbl_gamertag) VALUES ('%u', '%s', '%s')", CLIENTS_XBOX, gc, xbluid, xblgt);
+                "xbl_gamertag) VALUES ('%u', '%s', '%s')", AUTH_ACCOUNT_XBOX, gc, xbluid, xblgt);
 
         if(psocn_db_real_query(&conn, query)) {
             send_large_msg(c, __(c, "\tEInternal Server Error.\n"
