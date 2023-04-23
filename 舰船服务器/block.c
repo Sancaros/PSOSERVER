@@ -2271,7 +2271,7 @@ static int dc_process_done_burst(ship_client_t* c) {
 static int process_gm_menu(ship_client_t* c, uint32_t menu_id,
     uint32_t item_id) {
     if (!LOCAL_GM(c)) {
-        return send_msg1(c, "%s", __(c, "\tE\tC7Nice try."));
+        return send_msg1(c, "%s", __(c, "\tE\tC7您的权限不足."));
     }
 
     switch (menu_id) {
