@@ -493,7 +493,7 @@ static int send_bb_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     return crypt_send(c, BB_REDIRECT_LENGTH, sendbuf);
 }
 
-int send_redirect(ship_client_t *c, char* host, in_addr_t ip, uint16_t port) {
+int send_redirect(ship_client_t *c, char* host4, in_addr_t ip, uint16_t port) {
     struct addrinfo hints;
     struct addrinfo* server, * j;
     char ipstr[INET6_ADDRSTRLEN];
@@ -503,8 +503,13 @@ int send_redirect(ship_client_t *c, char* host, in_addr_t ip, uint16_t port) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(host, "9000", &hints, &server)) {
-        ERR_LOG("无效舰船地址: %s", host);
+    /* If we don't have a separate IPv6 host set, we're done. */
+    if (!host4) {
+        return 0;
+    }
+
+    if (getaddrinfo(host4, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址: %s", host4);
         return -1;
     }
 
@@ -531,16 +536,8 @@ int send_redirect(ship_client_t *c, char* host, in_addr_t ip, uint16_t port) {
         return -1;
     }
 
-    //ship_ip4
-    //DBG_LOG("获得 %s %d", host, ip);
-
-    if (ship_ip4 != ip) {
-        //DBG_LOG(" %d 不等于 %d", ship_ip4, ip);
+    if (ship_ip4 != ip)
         ip = ship_ip4;
-    }
-    //else {
-    //    DBG_LOG(" %d 等于 %d", ship_ip4, ip);
-    //}
 
     /* Call the appropriate function */
     switch(c->version) {
@@ -623,6 +620,47 @@ static int send_redirect6_bb(ship_client_t *c, const uint8_t ip[16],
 }
 
 int send_redirect6(ship_client_t *c, char* host6, const uint8_t ip[16], uint16_t port) {
+
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in6* addr6;
+
+    /* If we don't have a separate IPv6 host set, we're done. */
+    if (!host6) {
+        return 0;
+    }
+
+    /* Now try with IPv6 only */
+    memset(ship_ip6, 0, 16);
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = PF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(host6, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址 (v6): %s", host6);
+        //return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(ship_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    if (!ship_ip6[0]) {
+        ERR_LOG("无法获取到IPv6地址 (但设置了IPv6域名)!");
+        return -1;
+    }
+
+    if (ship_ip6 != ip)
+        ip = ship_ip6;
+
     /* Call the appropriate function. */
     switch(c->version) {
         case CLIENT_VERSION_DCV1:
