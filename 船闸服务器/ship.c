@@ -544,7 +544,9 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     psocn_db_result_free(result);
 
     /* Fill in the ship structure */
-    c->remote_addr = pkt->ship_addr4;
+    memcpy(c->remote_host4, pkt->ship_host4, 32);
+    memcpy(c->remote_host6, pkt->ship_host6, 128);
+    c->remote_addr4 = pkt->ship_addr4;
     memcpy(&c->remote_addr6, pkt->ship_addr6, 16);
     c->port = ntohs(pkt->ship_port);
     c->clients = ntohs(pkt->clients);
@@ -557,14 +559,12 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
 
     pack_ipv6(&c->remote_addr6, &ip6_hi, &ip6_lo);
 
-    //SHIPS_LOG("handle_shipgate_login6t c->privileges = %d", c->privileges);
-
-    sprintf(query, "INSERT INTO %s(name, players, ip, port, int_ip, "
+    sprintf(query, "INSERT INTO %s(name, players, ship_host4, ship_host6, ip, port, int_ip, "
         "ship_id, gm_only, games, menu_code, flags, ship_number, "
         "ship_ip6_high, ship_ip6_low, protocol_ver, privileges) VALUES "
-        "('%s', '%hu', '%lu', '%hu', '%u', '%u', '%d', '%hu', '%hu', '%u', "
+        "('%s', '%hu', '%s', '%s', '%lu', '%hu', '%u', '%u', '%d', '%hu', '%hu', '%u', "
         "'%d', '%llu', '%llu', '%u', '%u')", SERVER_SHIPS_ONLINE, c->name, c->clients,
-        ntohl(c->remote_addr), c->port, 0, c->key_idx,
+        c->remote_host4, c->remote_host6, ntohl(c->remote_addr4), c->port, 0, c->key_idx,
         !!(c->flags & LOGIN_FLAG_GMONLY), c->games, c->menu_code, c->flags,
         ship_number, (unsigned long long)ip6_hi,
         (unsigned long long)ip6_lo, pver, c->privileges);

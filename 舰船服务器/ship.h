@@ -63,6 +63,8 @@ typedef struct miniship {
     TAILQ_ENTRY(miniship) qentry;
 
     char name[12];
+    char ship_host4[32];
+    char ship_host6[128];
     uint32_t ship_id;
     uint32_t ship_addr;
     uint8_t ship_addr6[16];

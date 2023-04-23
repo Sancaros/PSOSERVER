@@ -79,6 +79,8 @@ char* csv_params[1024][64];
 ship_t *ship;
 int enable_ipv6 = 1;
 int restart_on_shutdown = 0;
+char ship_host4[32];
+char ship_host6[128];
 uint32_t ship_ip4;
 uint8_t ship_ip6[16];
 
@@ -251,6 +253,10 @@ static int setup_addresses(psocn_ship_t* cfg) {
     struct sockaddr_in6* addr6;
 
     /* Clear the addresses */
+    memcpy(ship_host4, cfg->ship_host4, sizeof(ship_host4));
+    ship_host4[31] = 0;
+    memcpy(ship_host6, cfg->ship_host6, sizeof(ship_host6));
+    ship_host6[127] = 0;
     ship_ip4 = 0;
     cfg->ship_ip4 = 0;
     memset(ship_ip6, 0, 16);
@@ -264,8 +270,8 @@ static int setup_addresses(psocn_ship_t* cfg) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(cfg->ship_host4, "9000", &hints, &server)) {
-        ERR_LOG("无效舰船地址: %s", cfg->ship_host4);
+    if (getaddrinfo(ship_host4, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址: %s", ship_host4);
         return -1;
     }
 
@@ -304,7 +310,7 @@ static int setup_addresses(psocn_ship_t* cfg) {
     }
 
     /* If we don't have a separate IPv6 host set, we're done. */
-    if (!cfg->ship_host6) {
+    if (!ship_host6) {
         return 0;
     }
 
@@ -315,8 +321,8 @@ static int setup_addresses(psocn_ship_t* cfg) {
     hints.ai_family = PF_INET6;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(cfg->ship_host6, "9000", &hints, &server)) {
-        ERR_LOG("无效舰船地址 (v6): %s", cfg->ship_host6);
+    if (getaddrinfo(ship_host6, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址 (v6): %s", ship_host6);
         //return -1;
     }
 

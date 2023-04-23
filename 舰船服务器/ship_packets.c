@@ -39,6 +39,8 @@
 #include "admin.h"
 #include "items.h"
 
+extern char ship_host4[32];
+extern char ship_host6[128];
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
@@ -491,7 +493,55 @@ static int send_bb_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     return crypt_send(c, BB_REDIRECT_LENGTH, sendbuf);
 }
 
-int send_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
+int send_redirect(ship_client_t *c, char* host, in_addr_t ip, uint16_t port) {
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in* addr4;
+    struct sockaddr_in6* addr6;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(host, "9000", &hints, &server)) {
+        ERR_LOG("无效舰船地址: %s", host);
+        return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET) {
+            addr4 = (struct sockaddr_in*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
+            ship_ip4 = addr4->sin_addr.s_addr;
+        }
+        else if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+            memcpy(ship_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    /* Make sure we found at least an IPv4 address */
+    if (!ship_ip4) {
+        ERR_LOG("无法获取到IPv4地址!");
+        return -1;
+    }
+
+    //ship_ip4
+    //DBG_LOG("获得 %s %d", host, ip);
+
+    if (ship_ip4 != ip) {
+        //DBG_LOG(" %d 不等于 %d", ship_ip4, ip);
+        ip = ship_ip4;
+    }
+    //else {
+    //    DBG_LOG(" %d 等于 %d", ship_ip4, ip);
+    //}
+
     /* Call the appropriate function */
     switch(c->version) {
         case CLIENT_VERSION_DCV1:
@@ -572,7 +622,7 @@ static int send_redirect6_bb(ship_client_t *c, const uint8_t ip[16],
     return crypt_send(c, BB_REDIRECT6_LENGTH, sendbuf);
 }
 
-int send_redirect6(ship_client_t *c, const uint8_t ip[16], uint16_t port) {
+int send_redirect6(ship_client_t *c, char* host6, const uint8_t ip[16], uint16_t port) {
     /* Call the appropriate function. */
     switch(c->version) {
         case CLIENT_VERSION_DCV1:

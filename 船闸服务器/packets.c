@@ -247,7 +247,9 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
     /* Fill in the info */
     memcpy(pkt->name, o->name, 12);
     pkt->ship_id = htonl(o->key_idx);
-    pkt->ship_addr4 = o->remote_addr;
+    memcpy(pkt->ship_host4, o->remote_host4, 32);
+    memcpy(pkt->ship_host6, o->remote_host6, 128);
+    pkt->ship_addr4 = o->remote_addr4;
     memcpy(pkt->ship_addr6, &o->remote_addr6, 16);
     pkt->ship_port = htons(o->port);
     pkt->status = htons(status);

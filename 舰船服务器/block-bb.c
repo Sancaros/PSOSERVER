@@ -51,6 +51,8 @@
 #include "items.h"
 
 extern int enable_ipv6;
+extern char ship_host4[32];
+extern char ship_host6[128];
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 extern time_t srv_time;
@@ -517,13 +519,13 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         /* Redirect the client where we want them to go. */
 #ifdef PSOCN_ENABLE_IPV6
         if (c->flags & CLIENT_FLAG_IPV6) {
-            return send_redirect6(c, ship_ip6, port);
+            return send_redirect6(c, ship_host6, ship_ip6, port);
         }
         else {
-            return send_redirect(c, ship_ip4, port);
+            return send_redirect(c, ship_host4, ship_ip4, port);
         }
 #else
-        return send_redirect(c, ship_ip4, port);
+        return send_redirect(c, ship_host4, ship_ip4, port);
 #endif
     }
 
@@ -661,15 +663,15 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
             if (i->ship_id == item_id) {
 #ifdef PSOCN_ENABLE_IPV6
                 if (c->flags & CLIENT_FLAG_IPV6 && i->ship_addr6[0]) {
-                    return send_redirect6(c, i->ship_addr6,
+                    return send_redirect6(c, i->ship_host6, i->ship_addr6,
                         i->ship_port + off);
                 }
                 else {
-                    return send_redirect(c, i->ship_addr,
+                    return send_redirect(c, i->ship_host4, i->ship_addr,
                         i->ship_port + off);
                 }
 #else
-                return send_redirect(c, i->ship_addr, i->ship_port + off);
+                return send_redirect(c, i->ship_host4, i->ship_addr, i->ship_port + off);
 #endif
             }
         }

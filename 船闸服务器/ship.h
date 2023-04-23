@@ -77,10 +77,12 @@ typedef struct ship {
     uint32_t flags;
     uint32_t menu;
 
+    char remote_host6[128];
     struct in6_addr remote_addr6;
     struct sockaddr_storage conn_addr;
 
-    in_addr_t remote_addr;
+    char remote_host4[32];
+    in_addr_t remote_addr4;
     uint32_t proto_ver;
     uint32_t privileges;
 

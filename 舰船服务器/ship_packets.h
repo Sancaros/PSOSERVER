@@ -92,12 +92,12 @@ int send_bb_security(ship_client_t *c, uint32_t gc, uint32_t err,
                      uint32_t guild_id, const void *data, int data_len);
 
 /* Send a redirect packet to the given client. */
-int send_redirect(ship_client_t *c, in_addr_t ip, uint16_t port);
+int send_redirect(ship_client_t *c, char* host, in_addr_t ip, uint16_t port);
 
 #ifdef PSOCN_ENABLE_IPV6
 
 /* Send a redirect packet (IPv6) to the given client. */
-int send_redirect6(ship_client_t *c, const uint8_t ip[16], uint16_t port);
+int send_redirect6(ship_client_t *c, char* host6, const uint8_t ip[16], uint16_t port);
 
 #endif
 

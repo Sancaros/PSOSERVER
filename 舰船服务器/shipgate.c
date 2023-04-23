@@ -53,6 +53,8 @@ extern gnutls_anon_client_credentials_t anoncred;
 extern gnutls_priority_t tls_prio;
 
 extern int enable_ipv6;
+extern char ship_host4[32];
+extern char ship_host6[128];
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
@@ -1199,6 +1201,10 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
         memcpy(i->name, p->name, 12);
         memcpy(i->ship_addr6, p->ship_addr6, 16);
         i->ship_id = sid;
+        memcpy(i->ship_host4, p->ship_host4, 32);
+        memcpy(i->ship_host6, p->ship_host6, 128);
+
+        DBG_LOG("此处需要继续往下写 %s", i->ship_host4);
         i->ship_addr = p->ship_addr4;
         i->ship_port = ntohs(p->ship_port);
         i->clients = ntohs(p->clients);
@@ -3247,12 +3253,19 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     pkt->flags = htonl(ship->cfg->shipgate_flags);
     strncpy((char*)pkt->name, ship->cfg->name, 11);
     pkt->name[11] = 0;
+    strncpy((char*)pkt->ship_host4, ship->cfg->ship_host4, 31);
+    pkt->ship_host4[31] = 0;
     pkt->ship_addr4 = ship_ip4;
 
     if (enable_ipv6) {
+        strncpy((char*)pkt->ship_host6, ship->cfg->ship_host6, 127);
+        pkt->ship_host6[127] = 0;
+        //pkt->ship_host6 = ship->cfg->ship_host6;
         memcpy(pkt->ship_addr6, ship_ip6, 16);
     }
     else {
+        memset(pkt->ship_host6, 0, sizeof(pkt->ship_host6));
+        //pkt->ship_host6 = 0;
         memset(pkt->ship_addr6, 0, 16);
     }
 
