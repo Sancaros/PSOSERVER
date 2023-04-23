@@ -22,9 +22,9 @@
 #  define PSOBBCN_LINKAGE_TYPE_STR "¶¯Ì¬¿â"
 #endif
 
-#define MAINVER 1
+#define MAINVER 2
 #define SUBVER1 0
-#define SUBVER2 2
+#define SUBVER2 0
 
 #define STR(s)     #s 
 #define VERSION(a,b,c)  STR(a)"."STR(b)"."STR(c)" - "__DATE__" - "__TIME__

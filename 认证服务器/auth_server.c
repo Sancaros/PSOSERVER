@@ -520,7 +520,7 @@ static int update_addresses() {
     srvcfg->server_ip = 0;
     memset(srvcfg->server_ip6, 0, 16);
 
-    AUTH_LOG("更新服务器IP...");
+    //AUTH_LOG("更新服务器IP...");
 
     //CONFIG_LOG("检测域名获取: %s", host4);
 
