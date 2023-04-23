@@ -30,10 +30,10 @@
 #define SHIPGATE_MINIMUM_PROTO_VER 12
 #define SHIPGATE_MAXIMUM_PROTO_VER 19
 
-#define VERSION_MAJOR 0;
-#define VERSION_MINOR 1;
-#define VERSION_MICRO 0;
-
+//#define VERSION_MAJOR 0;
+//#define VERSION_MINOR 1;
+//#define VERSION_MICRO 0;
+//
 
 
 /* Send a welcome packet to the given ship. */

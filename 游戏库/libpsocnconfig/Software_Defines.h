@@ -58,4 +58,7 @@ uint32_t server_name_num;
 char windows[TCP_BUFFER_SIZE * 4];
 char dp[TCP_BUFFER_SIZE * 4];
 
+void parse_version(uint8_t* maj, uint8_t* min, uint8_t* mic,
+	const char* ver);
+
 void load_program_info(const char* servername, const char* ver);

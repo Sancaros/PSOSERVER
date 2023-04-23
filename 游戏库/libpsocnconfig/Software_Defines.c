@@ -3,6 +3,18 @@
 #include <stdio.h>
 #include <string.h>
 
+void parse_version(uint8_t* maj, uint8_t* min, uint8_t* mic,
+	const char* ver) {
+	int v1, v2, v3;
+
+	if (!sscanf(ver, "%d.%d.%d", &v1, &v2, &v3))
+		return;
+
+	*maj = (uint8_t)v1;
+	*min = (uint8_t)v2;
+	*mic = (uint8_t)v3;
+}
+
 void load_program_info(const char* servername, const char* ver)
 {
 	memset(&windows[0], 0, sizeof(dp));
@@ -45,3 +57,4 @@ void load_program_info(const char* servername, const char* ver)
 	printf("本地语言类型为 %s\n", localLanguage);
 
 }
+

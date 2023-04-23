@@ -2562,18 +2562,6 @@ static void conv_shaid(uint8_t out[20], const char* shaid) {
 #undef NTI
 }
 
-static void parse_version(uint8_t* maj, uint8_t* min, uint8_t* mic,
-    const char* ver) {
-    int v1, v2, v3;
-
-    if (!sscanf(ver, "%d.%d.%d", &v1, &v2, &v3))
-        return;
-
-    *maj = (uint8_t)v1;
-    *min = (uint8_t)v2;
-    *mic = (uint8_t)v3;
-}
-
 #define GIT_REMOTE_URL "http://www.phantasystaronline.cn"
 #define GIT_BRANCH "main"
 #define GIT_SHAID "111111111"
@@ -2625,7 +2613,7 @@ static int handle_sctl_ver(shipgate_conn_t* c, shipgate_shipctl_pkt* pkt) {
     rep->unused = pkt->acc;
     rep->reserved1 = pkt->reserved1;
     rep->reserved2 = pkt->reserved2;
-    parse_version(&rep->ver_major, &rep->ver_minor, &rep->ver_micro, VERSION(MAINVER, SUBVER1, SUBVER2));
+    parse_version(&rep->ver_major, &rep->ver_minor, &rep->ver_micro, SHIPS_SERVER_VERSION);
     rep->flags = 0;
 #endif
 

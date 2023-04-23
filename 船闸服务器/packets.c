@@ -217,9 +217,7 @@ int send_welcome(ship_t* c) {
     strcpy(pkt->msg, shipgate_login_msg);
 
     /* Fill in the version information */
-    pkt->ver_major = VERSION_MAJOR;
-    pkt->ver_minor = VERSION_MINOR;
-    pkt->ver_micro = VERSION_MICRO;
+    parse_version(&pkt->ver_major, &pkt->ver_minor, &pkt->ver_micro, SGATE_SERVER_VERSION);
 
     /* Fill in the nonces */
     memcpy(pkt->ship_nonce, c->ship_nonce, 4);
