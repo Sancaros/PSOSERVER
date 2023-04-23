@@ -503,7 +503,7 @@ int update_ship_ipv4(ship_t* c) {
             addr4 = (struct sockaddr_in*)j->ai_addr;
             inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
             c->remote_addr4 = addr4->sin_addr.s_addr;
-            SGATE_LOG("    获取到 IPv4 地址: %s", ipstr);
+            //SGATE_LOG("    获取到 IPv4 地址: %s", ipstr);
         }
         else if (j->ai_family == PF_INET6) {
             addr6 = (struct sockaddr_in6*)j->ai_addr;
