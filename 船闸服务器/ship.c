@@ -427,7 +427,6 @@ err_cert:
 
 void db_remove_client(ship_t* c)
 {
-    //char query[256];
     ship_t* i;
 
     TAILQ_REMOVE(&ships, c, qentry);
@@ -446,30 +445,6 @@ void db_remove_client(ship_t* c)
 
         db_delete_transient_clients(c->name, c->key_idx);
 
-        ///* Remove the ship from the online_ships table. */
-        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-        //    , SERVER_SHIPS_ONLINE, c->key_idx);
-
-        //if (psocn_db_real_query(&conn, query)) {
-        //    SQLERR_LOG("无法清理在线舰船数据库表 %s",
-        //        c->name);
-        //}
-
-        ///* Remove any clients in the online_clients table on that ship */
-        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-        //    , SERVER_CLIENTS_ONLINE, c->key_idx);
-
-        //if (psocn_db_real_query(&conn, query)) {
-        //    SQLERR_LOG("无法清理在线玩家数据库表 %s", c->name);
-        //}
-
-        ///* Remove any clients in the transient_clients table on that ship */
-        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-        //    , SERVER_CLIENTS_TRANSIENT, c->key_idx);
-
-        //if (psocn_db_real_query(&conn, query)) {
-        //    SQLERR_LOG("无法清理临时玩家数据库表 %s", c->name);
-        //}
     }
 }
 
