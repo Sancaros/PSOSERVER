@@ -479,6 +479,52 @@ void destroy_connection(ship_t* c)
     free_safe(c);
 }
 
+int update_ship_ipv4(ship_t* c) {
+    struct addrinfo hints;
+    struct addrinfo* server, * j;
+    char ipstr[INET6_ADDRSTRLEN];
+    struct sockaddr_in* addr4;
+    struct sockaddr_in6* addr6;
+
+    if (!c->remote_host4)
+        return 0;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(c->remote_host4, "11000", &hints, &server)) {
+        ERR_LOG("无效 IPv4 地址: %s", c->remote_host4);
+        return -1;
+    }
+
+    for (j = server; j != NULL; j = j->ai_next) {
+        if (j->ai_family == PF_INET) {
+            addr4 = (struct sockaddr_in*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            c->remote_addr4 = addr4->sin_addr.s_addr;
+            SGATE_LOG("    获取到 IPv4 地址: %s", ipstr);
+        }
+        else if (j->ai_family == PF_INET6) {
+            addr6 = (struct sockaddr_in6*)j->ai_addr;
+            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
+        }
+    }
+
+    freeaddrinfo(server);
+
+    /* Make sure we found at least an IPv4 address */
+    if (!c->remote_addr4) {
+        ERR_LOG("无法获取IPv4地址!");
+        return -1;
+    }
+    else
+        db_update_ship_ipv4(c->remote_addr4, c->key_idx);
+
+    return 0;
+}
+
 /* 处理 ship's login response. */
 static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     char query[512];
@@ -4916,6 +4962,22 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
     return rv;
 }
 
+static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
+    shipgate_ping_t* p = (shipgate_ping_t*)pkt;
+    uint16_t length = ntohs(pkt->hdr.pkt_len);
+    uint16_t type = ntohs(pkt->hdr.pkt_type);
+    uint16_t flags = ntohs(pkt->hdr.flags);
+
+    if (!(flags & SHDR_RESPONSE)) {
+        ERR_LOG("舰船发送了无效的PING响应");
+        return -1;
+    }
+
+    //DBG_LOG("handle_ship_ping %s", p->host4);
+
+    return 0;
+}
+
 /* Process one ship packet. */
 int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     uint16_t length = ntohs(pkt->pkt_len);
@@ -4944,6 +5006,12 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return handle_bb(c, (shipgate_fw_9_pkt*)pkt);
 
     case SHDR_TYPE_PING:
+
+        if (handle_ship_ping(c, (shipgate_ping_t*)pkt)) {
+            ERR_LOG("handle_ship_ping");
+            return -1;
+        }
+
         /* If this is a ping request, reply. Otherwise, ignore it, the work
            has already been done. */
         if (!(flags & SHDR_RESPONSE)) {

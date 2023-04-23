@@ -172,6 +172,9 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 /* 初始化舰闸所需的数据表 */
 int db_initialize();
 
+/* 更新舰船数据表的IPv4 */
+int db_update_ship_ipv4(uint32_t ip, uint16_t key_idx);
+
 ///////////////////////////////////////////////////////////
 
 /* 更新BB角色公会数据 */

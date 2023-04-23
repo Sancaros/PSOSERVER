@@ -284,7 +284,7 @@ int send_dc_welcome(ship_client_t *c, uint32_t svect, uint32_t cvect) {
     uint8_t *sendbuf = get_sendbuf();
     dc_welcome_pkt *pkt = (dc_welcome_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -328,7 +328,7 @@ int send_bb_welcome(ship_client_t *c, const uint8_t svect[48],
     uint8_t *sendbuf = get_sendbuf();
     bb_welcome_pkt *pkt = (bb_welcome_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -364,7 +364,7 @@ int send_dc_security(ship_client_t *c, uint32_t gc, uint8_t *data,
     uint8_t *sendbuf = get_sendbuf();
     dc_security_pkt *pkt = (dc_security_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -402,7 +402,7 @@ int send_bb_security(ship_client_t *c, uint32_t gc, uint32_t err,
     uint8_t *sendbuf = get_sendbuf();
     bb_security_pkt *pkt = (bb_security_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -441,7 +441,7 @@ static int send_dc_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     uint8_t *sendbuf = get_sendbuf();
     dc_redirect_pkt *pkt = (dc_redirect_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -473,7 +473,7 @@ static int send_bb_redirect(ship_client_t *c, in_addr_t ip, uint16_t port) {
     uint8_t *sendbuf = get_sendbuf();
     bb_redirect_pkt *pkt = (bb_redirect_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -563,7 +563,7 @@ static int send_redirect6_dc(ship_client_t *c, const uint8_t ip[16],
     uint8_t *sendbuf = get_sendbuf();
     dc_redirect6_pkt *pkt = (dc_redirect6_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -598,7 +598,7 @@ static int send_redirect6_bb(ship_client_t *c, const uint8_t ip[16],
     uint8_t *sendbuf = get_sendbuf();
     bb_redirect6_pkt *pkt = (bb_redirect6_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -688,7 +688,7 @@ static int send_dc_timestamp(ship_client_t *c) {
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -747,7 +747,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     uint32_t len2 = 0x1C, len3 = 0x10;
     uint32_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -813,7 +813,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
     uint32_t len2 = 0x2C, len3 = 0x20;
     uint32_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -879,7 +879,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     uint32_t len2 = 0x2C, len3 = 0x20;
     uint32_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -967,7 +967,7 @@ static int send_dc_info_reply(ship_client_t *c, const char *msg) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1030,7 +1030,7 @@ static int send_bb_info_reply(ship_client_t *c, const char *msg) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1085,7 +1085,7 @@ static int send_dc_simple(ship_client_t *c, int type, int flags) {
     uint8_t *sendbuf = get_sendbuf();
     dc_pkt_hdr_t *pkt = (dc_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1103,7 +1103,7 @@ static int send_pc_simple(ship_client_t *c, int type, int flags) {
     uint8_t *sendbuf = get_sendbuf();
     pc_pkt_hdr_t *pkt = (pc_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1121,7 +1121,7 @@ static int send_bb_simple(ship_client_t *c, int type, int flags) {
     uint8_t *sendbuf = get_sendbuf();
     bb_pkt_hdr_t *pkt = (bb_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1161,7 +1161,7 @@ static int send_dc_lobby_list(ship_client_t *c) {
     dc_lobby_list_pkt *pkt = (dc_lobby_list_pkt *)sendbuf;
     uint32_t i, max = 15;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1220,7 +1220,7 @@ static int send_bb_lobby_list(ship_client_t *c) {
     bb_lobby_list_pkt *pkt = (bb_lobby_list_pkt *)sendbuf;
     uint32_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1270,7 +1270,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
     int i, pls = 0;
     uint16_t pkt_size = 8;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1333,7 +1333,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
     uint16_t pkt_size = 0x10;
     uint8_t event = l->event;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1399,7 +1399,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
     int i, pls = 0;
     uint16_t pkt_size = 0x10;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1464,7 +1464,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
     uint8_t event = l->event;
     ship_client_t *cl;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1552,7 +1552,7 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
         "send_bb_lobby_join端口 %d 版本识别 = %d",
         c->sock, c->version);*/
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1696,7 +1696,7 @@ int send_pkt_dc(ship_client_t *c, const dc_pkt_hdr_t *pkt) {
 
     //DBG_LOG("发送DC数据至客户端 ：版本 = %d GC = %u", c->version, c->guildcard);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -1734,7 +1734,7 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
     uint8_t *sendbuf = get_sendbuf();
     int len = (int)LE16(pkt->pkt_len);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1816,7 +1816,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
     uint8_t *sendbuf = get_sendbuf();
     dcnte_lobby_join_pkt *pkt = (dcnte_lobby_join_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1864,7 +1864,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
     uint8_t *sendbuf = get_sendbuf();
     dc_lobby_join_pkt *pkt = (dc_lobby_join_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1916,7 +1916,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     uint8_t *sendbuf = get_sendbuf();
     pc_lobby_join_pkt *pkt = (pc_lobby_join_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -1971,7 +1971,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     uint8_t *sendbuf = get_sendbuf();
     xb_lobby_join_pkt *pkt = (xb_lobby_join_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -2046,7 +2046,7 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
     bb_lobby_join_pkt *pkt = (bb_lobby_join_pkt *)sendbuf;
     uint16_t pkt_size = 0x14;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2145,7 +2145,7 @@ static int send_dc_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
     uint8_t *sendbuf = get_sendbuf();
     dc_lobby_leave_pkt *pkt = (dc_lobby_leave_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2177,7 +2177,7 @@ static int send_bb_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
     uint8_t *sendbuf = get_sendbuf();
     bb_lobby_leave_pkt *pkt = (bb_lobby_leave_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2234,7 +2234,7 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2337,7 +2337,7 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2412,7 +2412,7 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     //char *inptr;
     //char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2545,7 +2545,7 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2618,7 +2618,7 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     dc_chat_pkt *pkt = (dc_chat_pkt *)sendbuf;
     uint16_t tmp[2] = { LE16('\t'), 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2657,7 +2657,7 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     bb_chat_pkt *pkt = (bb_chat_pkt *)sendbuf;
     uint16_t tmp[2] = { LE16('\t'), 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -2751,7 +2751,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
     uint16_t port = 0;
     char lname[17], lobby_name[32];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -2844,7 +2844,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
     lobby_t *l = s->cur_lobby;
     block_t *b = s->cur_block;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -2909,7 +2909,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
     lobby_t *l = s->cur_lobby;
     block_t *b = s->cur_block;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -2995,7 +2995,7 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     uint16_t port = 0;
     char lname[17], lobby_name[32];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3089,7 +3089,7 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
     lobby_t *l = s->cur_lobby;
     block_t *b = s->cur_block;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3156,7 +3156,7 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
     lobby_t *l = s->cur_lobby;
     block_t *b = s->cur_block;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3277,7 +3277,7 @@ static int send_pc_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *dc) {
     pc_guild_reply_pkt *pkt = (pc_guild_reply_pkt *)sendbuf;
     uint16_t port = LE16(dc->port);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3373,7 +3373,7 @@ static int send_pc_guild_reply6_sg(ship_client_t *c, dc_guild_reply6_pkt *dc) {
     pc_guild_reply6_pkt *pkt = (pc_guild_reply6_pkt *)sendbuf;
     uint16_t port = LE16(dc->port);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3437,7 +3437,7 @@ static int send_dcnte_txt(ship_client_t *c, const char *fmt, va_list args) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -3509,7 +3509,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3598,7 +3598,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3778,7 +3778,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
     dcnte_game_join_pkt *pkt = (dcnte_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -3828,7 +3828,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
     dc_game_join_pkt *pkt = (dc_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3886,7 +3886,7 @@ static int send_pc_game_join(ship_client_t *c, lobby_t *l) {
     pc_game_join_pkt *pkt = (pc_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -3947,7 +3947,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
     gc_game_join_pkt *pkt = (gc_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4008,7 +4008,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
     int clients = 0, i;
     ship_client_t *cl;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4089,7 +4089,7 @@ static int send_ep3_game_join(ship_client_t *c, lobby_t *l) {
     ep3_game_join_pkt *pkt = (ep3_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4146,7 +4146,7 @@ static int send_bb_game_join(ship_client_t *c, lobby_t *l) {
     bb_game_join_pkt *pkt = (bb_game_join_pkt *)sendbuf;
     int clients = 0, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4240,7 +4240,7 @@ static int send_dc_game_list(ship_client_t *c, block_t *b) {
     int entries = 1, len = 0x20;
     lobby_t *l;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4355,7 +4355,7 @@ static int send_pc_game_list(ship_client_t *c, block_t *b) {
     int entries = 1, len = 0x30;
     lobby_t *l;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4458,7 +4458,7 @@ static int send_gc_game_list(ship_client_t *c, block_t *b) {
     int entries = 1, len = 0x20;
     lobby_t *l;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4557,7 +4557,7 @@ static int send_ep3_game_list(ship_client_t *c, block_t *b) {
     int entries = 1, len = 0x20;
     lobby_t *l;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4630,7 +4630,7 @@ static int send_bb_game_list(ship_client_t *c, block_t *b) {
     int entries = 1, len = 0x34;
     lobby_t *l;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4727,7 +4727,7 @@ static int send_dc_info_list(ship_client_t *c, ship_t *s, uint32_t v) {
     int i, len = 0x20, entries = 1;
     uint32_t lang = (1 << c->q_lang);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4799,7 +4799,7 @@ static int send_pc_info_list(ship_client_t *c, ship_t *s) {
     int i, len = 0x30, entries = 1;
     uint32_t lang = (1 << c->q_lang);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -4863,7 +4863,7 @@ static int send_bb_info_list(ship_client_t* c, ship_t* s) {
     int i, len = 0x30, entries = 1;
     uint32_t lang = (1 << c->q_lang);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -4954,7 +4954,7 @@ int send_pc_game_type_sel(ship_client_t *c) {
     pc_block_list_pkt *pkt = (pc_block_list_pkt *)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -5001,7 +5001,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
     bb_block_list_pkt* pkt = (bb_block_list_pkt*)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -5031,7 +5031,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
     bb_block_list_pkt* pkt = (bb_block_list_pkt*)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -5069,7 +5069,7 @@ static int send_dc_message_box(ship_client_t *c, const char *fmt,
     char *outptr;
     char tm[514];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -5156,7 +5156,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     char* outptr;
     char tm[4096] = { 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -5295,7 +5295,7 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
             qlist = &ship->qlist[CLIENT_VERSION_DCV2][lang];
     }
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -5410,7 +5410,7 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
             qlist = &ship->qlist[CLIENT_VERSION_DCV2][lang];
     }
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -5492,7 +5492,7 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
         qlist = &ship->qlist[CLIENT_VERSION_GC][lang];
     }
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -5597,7 +5597,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
     if (!qlist->cat_count)
         return -1;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -5707,7 +5707,7 @@ static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
     time_t now = time(NULL);
     int hasdc = 1, haspc = 0, hasgc = 0, hasxb = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -5914,7 +5914,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
     time_t now = time(NULL);
     int hasdc = 0, haspc = 0, hasgc = 0, hasxb = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -6100,7 +6100,7 @@ static int send_gc_quest_list(ship_client_t *c, int cn, int lang) {
     time_t now = time(NULL);
     int hasdc = 0, haspc = 0, hasgc = 0, hasxb = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -6324,7 +6324,7 @@ static int send_xbox_quest_list(ship_client_t *c, int cn, int lang) {
     time_t now = time(NULL);
     int hasdc = 0, haspc = 0, hasgc = 0, hasxb = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -6549,7 +6549,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     uint32_t episode = LE32(l->episode);
     uint32_t solo = LE32(l->oneperson);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -6736,7 +6736,7 @@ static int send_dc_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -6777,7 +6777,7 @@ static int send_pc_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -6808,7 +6808,7 @@ static int send_bb_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -6924,7 +6924,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     size_t amt;
     psocn_quest_t *q = qm->qptr[c->version][lang];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf || !q) {
         return -1;
     }
@@ -7086,7 +7086,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     size_t amt;
     psocn_quest_t *q = qm->qptr[c->version][lang];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf || !q) {
         return -1;
     }
@@ -7254,7 +7254,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     size_t amt;
     psocn_quest_t *q = qm->qptr[c->version][lang];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf || !q) {
         return -1;
     }
@@ -7428,7 +7428,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
     q = qm->qptr[v][lang];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf || !q) {
         return -1;
     }
@@ -7602,7 +7602,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
 
     q = qm->qptr[v][lang];
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf || !q) {
         return -1;
     }
@@ -8103,7 +8103,7 @@ static int send_dcv2_lobby_name(ship_client_t *c, lobby_t *l) {
     dc_msg_box_pkt *pkt = (dc_msg_box_pkt *)sendbuf;
     uint16_t len;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -8145,7 +8145,7 @@ static int send_pc_lobby_name(ship_client_t *c, lobby_t *l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -8185,7 +8185,7 @@ static int send_bb_lobby_name(ship_client_t *c, lobby_t *l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -8248,7 +8248,7 @@ static int send_dc_lobby_arrows(lobby_t *l, ship_client_t *c) {
     dc_arrow_list_pkt *pkt = (dc_arrow_list_pkt *)sendbuf;
     int clients = 0, len = 0x04, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8293,7 +8293,7 @@ static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c) {
     bb_arrow_list_pkt *pkt = (bb_arrow_list_pkt *)sendbuf;
     int clients = 0, len = 0x08, i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8448,7 +8448,7 @@ static int send_ship_list_dc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     miniship_t *i;
     char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8587,7 +8587,7 @@ static int send_ship_list_pc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     miniship_t *i;
     char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8717,7 +8717,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     miniship_t *i;
     char tmp[18] = { 0 }, tmp2[3] = { 0 };
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8864,7 +8864,7 @@ static int send_dc_warp(ship_client_t *c, uint8_t area) {
     uint8_t *sendbuf = get_sendbuf();
     dc_pkt_hdr_t *pkt = (dc_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8890,7 +8890,7 @@ static int send_pc_warp(ship_client_t *c, uint8_t area) {
     uint8_t *sendbuf = get_sendbuf();
     pc_pkt_hdr_t *pkt = (pc_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8916,7 +8916,7 @@ static int send_bb_warp(ship_client_t *c, uint8_t area) {
     uint8_t *sendbuf = get_sendbuf();
     bb_pkt_hdr_t *pkt = (bb_pkt_hdr_t *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -8992,7 +8992,7 @@ static int send_dc_choice_search(ship_client_t *c) {
     uint16_t len = 4 + 0x20 * CS_OPTIONS_COUNT;
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9019,7 +9019,7 @@ static int send_pc_choice_search(ship_client_t *c) {
     uint16_t len = 4 + 0x3C * CS_OPTIONS_COUNT;
     uint16_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9048,7 +9048,7 @@ static int send_bb_choice_search(ship_client_t* c) {
     uint16_t len = 4 + 0x3C * CS_OPTIONS_COUNT;
     uint16_t i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -9349,7 +9349,7 @@ static int send_dc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     uint16_t len;
     uint8_t entries;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9393,7 +9393,7 @@ static int send_pc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     uint16_t len;
     uint8_t entries;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9437,7 +9437,7 @@ static int send_gc_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     uint8_t entries;
     int off = 2;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9484,7 +9484,7 @@ static int send_ep3_choice_reply(ship_client_t *c, dc_choice_set_pkt *search,
     uint16_t len;
     uint8_t entries;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -9609,7 +9609,7 @@ static int send_pc_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     char *outptr;
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9663,7 +9663,7 @@ static int send_dc_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     char *outptr;
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9713,7 +9713,7 @@ static int send_pc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     uint8_t *sendbuf = get_sendbuf();
     simple_mail_pkt *pkt = (simple_mail_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9745,7 +9745,7 @@ static int send_dc_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9798,7 +9798,7 @@ static int send_bb_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9861,7 +9861,7 @@ static int send_bb_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     GetLocalTime(&rawtime);
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -9907,7 +9907,7 @@ static int send_bb_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     GetLocalTime(&rawtime);
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -10091,7 +10091,7 @@ static int send_gc_infoboard(ship_client_t *c, lobby_t *l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10176,7 +10176,7 @@ static int send_bb_infoboard(ship_client_t *c, lobby_t *l) {
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10666,7 +10666,7 @@ static int send_gc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
     int entries = 0, size = 4;
     ship_client_t *c2;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10700,7 +10700,7 @@ static int send_dc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
     int entries = 0, size = 4;
     ship_client_t *c2;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10734,7 +10734,7 @@ static int send_pc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
     int entries = 0, size = 4;
     ship_client_t *c2;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10768,7 +10768,7 @@ static int send_bb_lobby_c_rank(ship_client_t* c, lobby_t* l) {
     int entries = 0, size = sizeof(bb_pkt_hdr_t);
     ship_client_t* c2;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -10821,7 +10821,7 @@ static int send_gc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
     gc_c_rank_update_pkt *pkt = (gc_c_rank_update_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10841,7 +10841,7 @@ static int send_dc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
     dc_c_rank_update_pkt *pkt = (dc_c_rank_update_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10861,7 +10861,7 @@ static int send_pc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
     pc_c_rank_update_pkt *pkt = (pc_c_rank_update_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10881,7 +10881,7 @@ static int send_bb_c_rank_update(ship_client_t* d, ship_client_t* s) {
     uint8_t* sendbuf = get_sendbuf();
     bb_c_rank_update_pkt* pkt = (bb_c_rank_update_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -10940,7 +10940,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     subcmd_update_player_stat_t *pkt = (subcmd_update_player_stat_t *)sendbuf;
     int len = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -10992,7 +10992,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     subcmd_bb_update_player_stat_t *pkt = (subcmd_bb_update_player_stat_t *)sendbuf;
     int len = 0;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -11118,7 +11118,7 @@ int send_bb_full_char(ship_client_t *c) {
     uint8_t *sendbuf = get_sendbuf();
     bb_full_char_pkt *pkt = (bb_full_char_pkt *)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -11170,7 +11170,7 @@ static int send_dc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     int i, len = 0x20, entries = 1;
     const char *opt;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -11246,7 +11246,7 @@ static int send_pc_gm_menu(ship_client_t *c, uint32_t menu_id) {
     pc_block_list_pkt *pkt = (pc_block_list_pkt *)sendbuf;
     int i, len = 0x30, entries = 1;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -11312,7 +11312,7 @@ static int send_bb_gm_menu(ship_client_t *c, uint32_t menu_id) {
     bb_block_list_pkt *pkt = (bb_block_list_pkt *)sendbuf;
     int i, len = 0x34, entries = 1;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
         return -1;
     }
@@ -11467,7 +11467,7 @@ static int send_dc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     uint8_t entries = 1;
     const char *opt;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -11523,7 +11523,7 @@ static int send_pc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     uint16_t len = 0x30;
     uint8_t entries = 1;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -11575,7 +11575,7 @@ static int send_bb_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     uint16_t len = 0x34;
     uint8_t entries = 1;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
@@ -12386,7 +12386,7 @@ int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
     uint8_t* sendbuf = get_sendbuf();
     subcmd_bb_send_quest_data1_t* pkt = (subcmd_bb_send_quest_data1_t*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 

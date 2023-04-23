@@ -42,6 +42,13 @@ typedef struct shipgate_hdr {
     uint16_t flags;
 } PACKED shipgate_hdr_t;
 
+/* 舰船与舰闸之间相互ping数据包 */
+typedef struct shipgate_ping {
+    shipgate_hdr_t hdr;
+    char host4[32];
+    char host6[128];
+} PACKED shipgate_ping_t;
+
 /* General error packet. Individual packets can/should extend this base
    structure for more specific instances and to help match requests up with the
    error replies. */

@@ -266,21 +266,23 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
 
 /* Send a ping packet to a client. */
 int send_ping(ship_t* c, int reply) {
-    shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
+    shipgate_ping_t* pkt = (shipgate_ping_t*)sendbuf;
 
     /* 填充数据头. */
-    pkt->pkt_len = htons(sizeof(shipgate_hdr_t));
-    pkt->pkt_type = htons(SHDR_TYPE_PING);
-    pkt->reserved = 0;
-    pkt->version = 0;
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_ping_t));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_PING);
+    pkt->hdr.reserved = 0;
+    pkt->hdr.version = 0;
+
+    //DBG_LOG("%s", c->remote_host4);
 
     if (reply)
-        pkt->flags = htons(SHDR_RESPONSE);
+        pkt->hdr.flags = htons(SHDR_RESPONSE);
     else
-        pkt->flags = 0;
+        pkt->hdr.flags = 0;
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_hdr_t));
+    return send_crypt(c, sizeof(shipgate_ping_t));
 }
 
 /* Send the ship a character data restore. */

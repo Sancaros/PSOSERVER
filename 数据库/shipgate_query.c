@@ -479,3 +479,13 @@ int db_initialize() {
 
     return 0;
 }
+
+int db_update_ship_ipv4(uint32_t ip, uint16_t key_idx) {
+
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET ip = '%lu' WHERE ship_id = '%u'",
+        SERVER_SHIPS_ONLINE, ntohl(ip), key_idx);
+    if (!psocn_db_real_query(&conn, myquery))
+        return -1;
+
+    return 0;
+}

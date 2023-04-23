@@ -513,16 +513,18 @@ void run_server(int tsock, int tsock6) {
         while (i) {
             tmp = TAILQ_NEXT(i, qentry);
 
-            /* If we haven't heard from a ship in 2 minutes, its dead.
-               Disconnect it. */
+            /* 如果两分钟内未接收舰船的数据反馈,则断开其连接. */
             if(srv_time > i->last_message + 120 && i->last_ping &&
                 srv_time > i->last_ping + 60) {
                 destroy_connection(i);
                 i = tmp;
                 continue;
             }
-            /* Otherwise, if we haven't heard from it in a minute, ping it. */
+            /* 如果1分钟内未接收到舰船数据, 则对其进行更新数据库IP并PING. */
             else if(srv_time > i->last_message + 60 && srv_time > i->last_ping + 10) {
+                //DBG_LOG("此船数据 %d %s", i->key_idx, i->remote_host4);
+                update_ship_ipv4(i);
+
                 send_ping(i, 0);
                 i->last_ping = srv_time;
             }

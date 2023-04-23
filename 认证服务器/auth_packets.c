@@ -191,7 +191,7 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     char* inptr;
     char* outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -285,7 +285,7 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -1454,7 +1454,7 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
     char *inptr;
     char *outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -1543,7 +1543,7 @@ static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
     char* inptr;
     char* outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -2622,7 +2622,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     char* inptr;
     char* outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -2711,7 +2711,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     char* inptr;
     char* outptr;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }

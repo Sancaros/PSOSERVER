@@ -124,6 +124,9 @@ ship_t *create_connection_tls(int sock, struct sockaddr *addr, socklen_t size);
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(ship_t *c);
 
+/* ¸üÐÂipv4 */
+int update_ship_ipv4(ship_t* c);
+
 /* Handle incoming data to the shipgate. */
 int handle_pkt(ship_t *s);
 

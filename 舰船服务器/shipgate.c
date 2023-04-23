@@ -117,24 +117,30 @@ static int send_crypt(shipgate_conn_t *c, int len, uint8_t *sendbuf) {
 /* Send a ping packet to the server. */
 int shipgate_send_ping(shipgate_conn_t* c, int reply) {
     uint8_t* sendbuf = get_sendbuf();
-    shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
+    shipgate_ping_t* pkt = (shipgate_ping_t*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
 
     /* 填充数据头. */
-    pkt->pkt_len = htons(sizeof(shipgate_hdr_t));
-    pkt->pkt_type = htons(SHDR_TYPE_PING);
-    pkt->version = pkt->reserved = 0;
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_ping_t));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_PING);
+    pkt->hdr.version = 0;
+    pkt->hdr.reserved = 0;
+
+    //DBG_LOG("%s", c->ship->cfg->ship_host4);
+
+    memcpy(pkt->host4, c->ship->cfg->ship_host4, sizeof(pkt->host4));
+    memcpy(pkt->host6, c->ship->cfg->ship_host6, sizeof(pkt->host6));
 
     if(reply) {
-        pkt->flags = htons(SHDR_RESPONSE);
+        pkt->hdr.flags = htons(SHDR_RESPONSE);
     }
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_hdr_t), sendbuf);
+    return send_crypt(c, sizeof(shipgate_ping_t), sendbuf);
 }
 
 /* Attempt to connect to the shipgate. Returns < 0 on error, returns the socket
@@ -3190,7 +3196,7 @@ int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3215,7 +3221,7 @@ int shipgate_send_creq(shipgate_conn_t* c, uint32_t gc, uint32_t slot) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_req_pkt* pkt = (shipgate_char_req_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3236,7 +3242,7 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_login6_reply_pkt* pkt = (shipgate_login6_reply_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3284,7 +3290,7 @@ int shipgate_send_cnt(shipgate_conn_t* c, uint16_t clients, uint16_t games) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_cnt_pkt* pkt = (shipgate_cnt_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3312,7 +3318,7 @@ int shipgate_fw_dc(shipgate_conn_t* c, const void* dcp, uint32_t flags,
     int dc_len = LE16(dc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + dc_len;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3346,7 +3352,7 @@ int shipgate_fw_pc(shipgate_conn_t* c, const void* pcp, uint32_t flags,
     int pc_len = LE16(pc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + pc_len;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3380,7 +3386,7 @@ int shipgate_fw_bb(shipgate_conn_t* c, const void* bbp, uint32_t flags,
     int bb_len = LE16(bb->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + bb_len;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3412,7 +3418,7 @@ int shipgate_send_usrlogin(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_usrlogin_req_pkt* pkt = (shipgate_usrlogin_req_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3445,7 +3451,7 @@ int shipgate_send_ban(shipgate_conn_t* c, uint16_t type, uint32_t requester,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_ban_req_pkt* pkt = (shipgate_ban_req_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3482,7 +3488,7 @@ int shipgate_send_friend_del(shipgate_conn_t* c, uint32_t user,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_friend_upd_pkt* pkt = (shipgate_friend_upd_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3507,7 +3513,7 @@ int shipgate_send_friend_add(shipgate_conn_t* c, uint32_t user,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_friend_add_pkt* pkt = (shipgate_friend_add_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3536,7 +3542,7 @@ int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t gc,
     shipgate_block_login_pkt* pkt = (shipgate_block_login_pkt*)sendbuf;
     uint16_t type = on ? SHDR_TYPE_BLKLOGIN : SHDR_TYPE_BLKLOGOUT;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3563,7 +3569,7 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t gc, uint8_
     shipgate_block_login_pkt* pkt = (shipgate_block_login_pkt*)sendbuf;
     uint16_t type = on ? SHDR_TYPE_BLKLOGIN : SHDR_TYPE_BLKLOGOUT;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3591,7 +3597,7 @@ int shipgate_send_lobby_chg(shipgate_conn_t* c, uint32_t user, uint32_t lobby,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_lobby_change_pkt* pkt = (shipgate_lobby_change_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3624,7 +3630,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
     lobby_t* l;
     ship_client_t* cl;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3703,7 +3709,7 @@ int shipgate_send_kick(shipgate_conn_t* c, uint32_t requester, uint32_t user,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_kick_pkt* pkt = (shipgate_kick_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -3732,7 +3738,7 @@ int shipgate_send_frlist_req(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_friend_list_req* pkt = (shipgate_friend_list_req*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3759,7 +3765,7 @@ int shipgate_send_global_msg(shipgate_conn_t* c, uint32_t gc,
     size_t text_len = strlen(text) + 1, tl2 = (text_len + 7) & 0xFFF8;
     size_t len = tl2 + sizeof(shipgate_global_msg_pkt);
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3791,7 +3797,7 @@ int shipgate_send_user_opt(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     int padding = 8 - (len & 7);
     uint16_t pkt_len = len + sizeof(shipgate_user_opt_pkt) + 8 + padding;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3831,7 +3837,7 @@ int shipgate_send_bb_opt_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_opts_req_pkt* pkt = (shipgate_bb_opts_req_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3854,7 +3860,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3888,7 +3894,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 //    uint8_t* sendbuf = get_sendbuf();
 //    shipgate_bb_guild_req_pkt* pkt = (shipgate_bb_guild_req_pkt*)sendbuf;
 //
-//    /* Verify we got the sendbuf. */
+//    /* 确认已获得数据发送缓冲 */
 //    if (!sendbuf) {
 //        return -1;
 //    }
@@ -3911,7 +3917,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 //    uint8_t* sendbuf = get_sendbuf();
 //    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
 //
-//    /* Verify we got the sendbuf. */
+//    /* 确认已获得数据发送缓冲 */
 //    if (!sendbuf) {
 //        return -1;
 //    }
@@ -3935,7 +3941,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const v
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3964,7 +3970,7 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* game_info) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_bkup_pkt* pkt = (shipgate_char_bkup_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
         return -1;
     }
@@ -3994,7 +4000,7 @@ int shipgate_send_mkill(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     shipgate_mkill_pkt* pkt = (shipgate_mkill_pkt*)sendbuf;
     int i;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -4035,7 +4041,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
     shipgate_sdata_pkt* pkt = (shipgate_sdata_pkt*)sendbuf;
     uint16_t pkt_len;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
@@ -4077,7 +4083,7 @@ int shipgate_send_qflag(shipgate_conn_t* c, ship_client_t* sc, int set,
     uint8_t* sendbuf = get_sendbuf();
     shipgate_qflag_pkt* pkt = (shipgate_qflag_pkt*)sendbuf;
 
-    /* Verify we got the sendbuf. */
+    /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
