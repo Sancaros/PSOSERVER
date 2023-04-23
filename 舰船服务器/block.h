@@ -46,7 +46,7 @@ struct block {
 
     pthread_t thd;
 
-    /* Reader-writer lock for the client tailqueue */
+    /* 客户端队列读写锁 Reader-writer lock for the client tailqueue */
     pthread_rwlock_t lock;
     struct client_queue *clients;
     int num_clients;
@@ -71,12 +71,12 @@ struct block {
     uint16_t bb_port;
     uint16_t xb_port;
 
-    /* Reader-writer lock for the lobby tailqueue */
+    /* 大厅队列读写锁 Reader-writer lock for the lobby tailqueue */
     pthread_rwlock_t lobby_lock;
     struct lobby_queue lobbies;
     int num_games;
 
-    /* Random number generator state */
+    /* 随机数生成器状态 */
     struct mt19937_state rng;
 };
 
