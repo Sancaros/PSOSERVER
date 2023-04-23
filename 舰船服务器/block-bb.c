@@ -855,7 +855,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
        TODO: This should probably be more thorough and done as part of the
        client_check_character() function. */
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->bb.character.name) {
+    if (c->pl->bb.character.disp.dress_data.guildcard_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -868,15 +868,6 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                     c->cur_lobby->v2);
             }
         }
-       /* else
-            ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
-                " 版本 = %d 未找到对应角色", ship->cfg->name, c->cur_block->b,
-                c->guildcard, c->version);*/
-    }
-    else {
-        ERR_LOG("%s(%d): 角色数据检测 GC %" PRIu32
-            " 版本 = %d 未找到角色名", ship->cfg->name, c->cur_block->b,
-            c->guildcard, c->version);
     }
 
     v = LE32(pkt->data.bb.character.disp.level + 1);

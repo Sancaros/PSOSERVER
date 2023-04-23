@@ -1050,7 +1050,6 @@ static int check_char_bb(ship_client_t* c, player_t* pl) {
     psocn_disp_char_t disp1 = c->pl->bb.character.disp;
     psocn_disp_char_t disp2 = pl->bb.character.disp;
 
-
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
     if (disp1.dress_data.model != disp2.dress_data.model)

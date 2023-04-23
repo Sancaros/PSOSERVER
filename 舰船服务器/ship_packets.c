@@ -517,13 +517,13 @@ int send_redirect(ship_client_t *c, char* host4, in_addr_t ip, uint16_t port) {
         if (j->ai_family == PF_INET) {
             addr4 = (struct sockaddr_in*)j->ai_addr;
             inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
-            SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
+            //SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
             ship_ip4 = addr4->sin_addr.s_addr;
         }
         else if (j->ai_family == PF_INET6) {
             addr6 = (struct sockaddr_in6*)j->ai_addr;
             inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
-            SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+            //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
             memcpy(ship_ip6, &addr6->sin6_addr, 16);
         }
     }
