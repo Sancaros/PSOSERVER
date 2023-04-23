@@ -257,7 +257,7 @@ static int handle_drops(xmlNode *n, psocn_quest_t *q) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
         }
 
@@ -820,7 +820,7 @@ static int handle_quest(xmlNode *n, psocn_quest_category_t *c) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
         }
 
@@ -1035,7 +1035,7 @@ static int handle_category(xmlNode *n, psocn_quest_list_t *l) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
         }
 

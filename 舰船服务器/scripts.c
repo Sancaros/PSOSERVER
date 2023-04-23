@@ -444,7 +444,7 @@ int script_eventlist_read(const char *fn) {
             continue;
         }
         else if(xmlStrcmp(n->name, XC"script")) {
-            SCRIPT_LOG("Invalid Tag %s on line %hu", n->name, n->line);
+            SCRIPT_LOG("无效 %s 标记在行 %hu", n->name, n->line);
         }
         else {
             /* We've got the right tag, see if we have all the attributes... */

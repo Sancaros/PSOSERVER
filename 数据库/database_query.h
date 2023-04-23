@@ -113,6 +113,16 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot);
 int db_insert_char_data(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot);
 
 int db_update_char_stat(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot, uint32_t flag);
+
+/* 初始化在线舰船数据表 */
+int db_delete_online_ships(char* ship_name, uint16_t id);
+
+/* 初始化在线角色数据表 */
+int db_delete_online_clients(char* ship_name, uint16_t id);
+
+/* 初始化临时角色数据表 */
+int db_delete_transient_clients(char* ship_name, uint16_t id);
+
 ///////////////////////////////////////////////////////
 /* 认证查询 */
 
@@ -137,6 +147,7 @@ int db_update_auth_server_list(psocn_srvconfig_t* cfg);
 
 /* 获取认证服务器列表*/
 psocn_srvconfig_t db_get_auth_server_list(uint32_t id);
+
 ///////////////////////////////////////////////////////
 /* 船闸查询 */
 
@@ -157,6 +168,9 @@ uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色数据项 */
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
+
+/* 初始化舰闸所需的数据表 */
+int db_initialize();
 
 ///////////////////////////////////////////////////////////
 

@@ -376,7 +376,7 @@ static int handle_patch(xmlNode *n, patch_list_t *l) {
             p->patches[p->patchset_count++] = ps;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
         }
 

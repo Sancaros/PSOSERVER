@@ -461,7 +461,7 @@ static int handle_weapon(xmlNode *n, psocn_weapon_t *w) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -4;
         }
@@ -503,7 +503,7 @@ static int handle_frame(xmlNode *n, psocn_frame_t *f) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -4;
         }
@@ -540,7 +540,7 @@ static int handle_barrier(xmlNode *n, psocn_barrier_t *b) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -3;
         }
@@ -572,7 +572,7 @@ static int handle_unit(xmlNode *n, psocn_unit_t *u) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -2;
         }
@@ -645,7 +645,7 @@ static int handle_mag(xmlNode *n, psocn_mag_t *m) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -10;
         }
@@ -677,7 +677,7 @@ static int handle_tool(xmlNode *n, psocn_tool_t *t) {
             continue;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
             return -2;
         }
@@ -1214,7 +1214,7 @@ int psocn_read_limits(const char *f, psocn_limits_t **l) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char *)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char *)n->name,
                   n->line);
         }
 

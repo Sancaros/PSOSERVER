@@ -457,7 +457,7 @@ static int read_events_table() {
 }
 
 static void open_db() {
-    char query[256];
+    //char query[256];
 
     SGATE_LOG("初始化数据库连接");
 
@@ -466,41 +466,46 @@ static void open_db() {
         exit(EXIT_FAILURE);
     }
 
-    SGATE_LOG("初始化在线舰船数据表"/*, SERVER_SHIPS_ONLINE*/);
-
-    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_SHIPS_ONLINE);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_SHIPS_ONLINE);
+    if (db_initialize()) {
+        SQLERR_LOG("初始化数据库错误");
         exit(EXIT_FAILURE);
     }
 
-    SGATE_LOG("初始化在线玩家数据表"/*, SERVER_CLIENTS_ONLINE*/);
+    //SGATE_LOG("初始化在线舰船数据表"/*, SERVER_SHIPS_ONLINE*/);
 
-    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_ONLINE);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_ONLINE);
-        exit(EXIT_FAILURE);
-    }
+    //sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_SHIPS_ONLINE);
+    //if (psocn_db_real_query(&conn, query)) {
+    //    SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_SHIPS_ONLINE);
+    //    exit(EXIT_FAILURE);
+    //}
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", AUTH_ACCOUNT);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
-        exit(EXIT_FAILURE);
-    }
+    //SGATE_LOG("初始化在线玩家数据表"/*, SERVER_CLIENTS_ONLINE*/);
 
-    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
-        exit(EXIT_FAILURE);
-    }
+    //sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_ONLINE);
+    //if (psocn_db_real_query(&conn, query)) {
+    //    SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_ONLINE);
+    //    exit(EXIT_FAILURE);
+    //}
 
-    SGATE_LOG("初始化临时玩家数据表"/*, SERVER_CLIENTS_TRANSIENT*/);
+    //sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", AUTH_ACCOUNT);
+    //if (psocn_db_real_query(&conn, query)) {
+    //    SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
+    //    exit(EXIT_FAILURE);
+    //}
 
-    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_TRANSIENT);
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_TRANSIENT);
-        exit(EXIT_FAILURE);
-    }
+    //sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER);
+    //if (psocn_db_real_query(&conn, query)) {
+    //    SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
+    //    exit(EXIT_FAILURE);
+    //}
+
+    //SGATE_LOG("初始化临时玩家数据表"/*, SERVER_CLIENTS_TRANSIENT*/);
+
+    //sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_TRANSIENT);
+    //if (psocn_db_real_query(&conn, query)) {
+    //    SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_TRANSIENT);
+    //    exit(EXIT_FAILURE);
+    //}
 
     if (read_events_table()) {
         exit(EXIT_FAILURE);

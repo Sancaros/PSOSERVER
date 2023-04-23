@@ -434,7 +434,7 @@ static int handle_entry(xmlNode* n, patch_file_entry_t* ent, int cksum) {
             have_size = 1;
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char*)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char*)n->name,
                 n->line);
         }
 
@@ -652,7 +652,7 @@ static int handle_patch(xmlNode* n, struct file_queue* q) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char*)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char*)n->name,
                 n->line);
         }
 
@@ -726,7 +726,7 @@ static int handle_patches(xmlNode* n, patch_config_t* cfg) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char*)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char*)n->name,
                 n->line);
         }
 
@@ -852,7 +852,7 @@ int patch_read_config(const char* fn, patch_config_t** cfg) {
             }
         }
         else {
-            ERR_LOG("Invalid Tag %s on line %hu", (char*)n->name,
+            ERR_LOG("无效 %s 标记在行 %hu", (char*)n->name,
                 n->line);
         }
 

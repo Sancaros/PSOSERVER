@@ -1261,3 +1261,54 @@ int db_update_char_stat(psocn_bb_db_char_t* char_data,
 
     return 0;
 }
+
+int db_delete_online_ships(char* ship_name, uint16_t id) {
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Remove the ship from the server_online_ships table. */
+    sprintf(myquery, "DELETE FROM %s WHERE ship_id='%hu'"
+        , SERVER_SHIPS_ONLINE, id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法清理 %s 在线舰船数据库表 %s", ship_name,
+            SERVER_SHIPS_ONLINE);
+        return -1;
+    }
+
+    return 0;
+}
+
+int db_delete_online_clients(char* ship_name, uint16_t id) {
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Remove the client from the server_online_clients table. */
+    sprintf(myquery, "DELETE FROM %s WHERE ship_id='%hu'"
+        , SERVER_CLIENTS_ONLINE, id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法清理 %s 在线玩家数据库表 %s", ship_name,
+            SERVER_CLIENTS_ONLINE);
+        return -1;
+    }
+
+    return 0;
+}
+
+int db_delete_transient_clients(char* ship_name, uint16_t id) {
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Remove the client from the server_transient_clients table. */
+    sprintf(myquery, "DELETE FROM %s WHERE ship_id='%hu'"
+        , SERVER_CLIENTS_TRANSIENT, id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法清理 %s 临时玩家数据库表 %s", ship_name,
+            SERVER_CLIENTS_TRANSIENT);
+        return -1;
+    }
+
+    return 0;
+}

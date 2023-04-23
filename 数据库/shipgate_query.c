@@ -437,3 +437,45 @@ int db_dissolve_bb_guild(uint32_t guild_id) {
 
     return res;
 }
+
+int db_initialize() {
+    char query[256] = { 0 };
+
+    SGATE_LOG("初始化在线舰船数据表"/*, SERVER_SHIPS_ONLINE*/);
+
+    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_SHIPS_ONLINE);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_SHIPS_ONLINE);
+        return -1;
+    }
+
+    SGATE_LOG("初始化在线玩家数据表"/*, SERVER_CLIENTS_ONLINE*/);
+
+    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_ONLINE);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_ONLINE);
+        return -1;
+    }
+
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", AUTH_ACCOUNT);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
+        return -1;
+    }
+
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' WHERE islogged = '1'", CHARACTER);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
+        return -1;
+    }
+
+    SGATE_LOG("初始化临时玩家数据表"/*, SERVER_CLIENTS_TRANSIENT*/);
+
+    sprintf_s(query, _countof(query), "DELETE FROM %s", SERVER_CLIENTS_TRANSIENT);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", SERVER_CLIENTS_TRANSIENT);
+        return -1;
+    }
+
+    return 0;
+}

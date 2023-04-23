@@ -427,7 +427,7 @@ err_cert:
 
 void db_remove_client(ship_t* c)
 {
-    char query[256];
+    //char query[256];
     ship_t* i;
 
     TAILQ_REMOVE(&ships, c, qentry);
@@ -440,30 +440,36 @@ void db_remove_client(ship_t* c)
             send_ship_status(i, c, 0);
         }
 
-        /* Remove the ship from the online_ships table. */
-        sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-            , SERVER_SHIPS_ONLINE, c->key_idx);
+        db_delete_online_ships(c->name, c->key_idx);
 
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("无法清理在线舰船数据库表 %s",
-                c->name);
-        }
+        db_delete_online_clients(c->name, c->key_idx);
 
-        /* Remove any clients in the online_clients table on that ship */
-        sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-            , SERVER_CLIENTS_ONLINE, c->key_idx);
+        db_delete_transient_clients(c->name, c->key_idx);
 
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("无法清理在线玩家数据库表 %s", c->name);
-        }
+        ///* Remove the ship from the online_ships table. */
+        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
+        //    , SERVER_SHIPS_ONLINE, c->key_idx);
 
-        /* Remove any clients in the transient_clients table on that ship */
-        sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
-            , SERVER_CLIENTS_TRANSIENT, c->key_idx);
+        //if (psocn_db_real_query(&conn, query)) {
+        //    SQLERR_LOG("无法清理在线舰船数据库表 %s",
+        //        c->name);
+        //}
 
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("无法清理临时玩家数据库表 %s", c->name);
-        }
+        ///* Remove any clients in the online_clients table on that ship */
+        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
+        //    , SERVER_CLIENTS_ONLINE, c->key_idx);
+
+        //if (psocn_db_real_query(&conn, query)) {
+        //    SQLERR_LOG("无法清理在线玩家数据库表 %s", c->name);
+        //}
+
+        ///* Remove any clients in the transient_clients table on that ship */
+        //sprintf(query, "DELETE FROM %s WHERE ship_id='%hu'"
+        //    , SERVER_CLIENTS_TRANSIENT, c->key_idx);
+
+        //if (psocn_db_real_query(&conn, query)) {
+        //    SQLERR_LOG("无法清理临时玩家数据库表 %s", c->name);
+        //}
     }
 }
 

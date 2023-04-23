@@ -1073,8 +1073,7 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
 
     /* Make sure v1 is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NODCNTE)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO NTE is not supported on\n"
-            "this ship.\n\nDisconnecting."));
+        send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO NTE 客户端登录.\n\n正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
@@ -1115,8 +1114,7 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
 
     /* Make sure v1 is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOV1)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO Version 1 is not supported on\n"
-            "this ship.\n\nDisconnecting."));
+        send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Version 1 客户端登录.\n\n正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
@@ -1168,16 +1166,14 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     /* Make sure the client's version is allowed on this ship. */
     if (c->version != CLIENT_VERSION_PC) {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOV2)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Version 2 is not supported "
-                "on\nthis ship.\n\nDisconnecting."));
+            send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Version 2 客户端登录.\n\n正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
     }
     else {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPC)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO for PC is not supported "
-                "on\nthis ship.\n\nDisconnecting."));
+            send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO PC 客户端登录.\n\n正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
@@ -1187,9 +1183,8 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
             c->flags |= CLIENT_FLAG_IS_NTE;
 
             if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPCNTE)) {
-                send_msg_box(c, "%s", __(c, "\tEPSO for PC Network Trial "
-                    "Edition\nis not supported on "
-                    "this ship.\n\nDisconnecting."));
+                send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO PC Network Trial "
+                    "Edition 客户端登录.\n\n正在断开连接."));
                 c->flags |= CLIENT_FLAG_DISCONNECTED;
                 return 0;
             }
@@ -1231,18 +1226,16 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     /* Make sure PSOGC is allowed on this ship. */
     if(c->version == CLIENT_VERSION_GC) {
         if((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Episode 1 & 2 is not "
-                                         "supported on\nthis ship.\n\n"
-                                         "Disconnecting."));
+            send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Episode 1 & 2 客户端登录.\n\n"
+                                         "正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
     }
     else {
         if((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Episode 3 is not "
-                                         "supported on\nthis ship.\n\n"
-                                         "Disconnecting."));
+            send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Episode 3 客户端登录.\n\n"
+                                         "正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
@@ -1282,9 +1275,8 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
 
     /* Make sure PSOX is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO Episode 1 & 2 for Xbox "
-                                     "is not supported on\nthis ship.\n\n"
-                                     "Disconnecting."));
+        send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Episode 1 & 2 Xbox客户端登录.\n\n"
+                                     "正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
@@ -1324,9 +1316,8 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
 
     /* Make sure PSOBB is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & LOGIN_FLAG_NOBB)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO Blue Burst is not "
-                                        "supported on\nthis ship.\n\n"
-                                        "Disconnecting."));
+        send_msg_box(c, "%s", __(c, "\tE此舰船不支持 PSO Blue Burst 客户端登录.\n\n"
+                                        "正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
