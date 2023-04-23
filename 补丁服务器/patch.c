@@ -459,8 +459,8 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
     pkt_header_t* patch = (pkt_header_t*)pkt;
     uint16_t type = LE16(patch->pkt_type);
     uint16_t len = LE16(patch->pkt_len);
-    //size_t msglen = 0;
-    //char* patch_welcom_msg = 0;
+    size_t msglen = 0;
+    char* patch_welcom_msg = 0;
     //PATCH_LOG("补丁处理数据指令 0x%04X %s", type, c_cmd_name(type, 0));
 
     //UNK_CPD(type, c->version, (uint8_t*)pkt);
@@ -470,21 +470,19 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
         if (send_simple(c, PATCH_LOGIN_TYPE)) {
             return -2;
         }
-        DBG_LOG("PATCH_WELCOME_TYPE");
         break;
 
     case PATCH_LOGIN_TYPE:
-        //patch_welcom_msg = (char*)malloc(2048);
-        //memset(patch_welcom_msg, 0, sizeof(patch_welcom_msg));
-        //psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
-        //msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
+        patch_welcom_msg = (char*)malloc(4096);
+        memset(patch_welcom_msg, 0, 4096);
+        psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
+        msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
 
-        DBG_LOG("PATCH_LOGIN_TYPE");
         /* TODO: Process login? */
         if (c->type == CLIENT_TYPE_PC_PATCH) {
-            //if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
+            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
 
-            if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size)) {
+            //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size)) {
                 return -2;
             }
 #ifdef ENABLE_IPV6
@@ -503,9 +501,9 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
             }
         }
         else {
-            //if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
+            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
 
-            if (send_message(c, cfg->bb_welcome, cfg->bb_welcome_size)) {
+            //if (send_message(c, cfg->bb_welcome, cfg->bb_welcome_size)) {
                 return -2;
             }
 #ifdef ENABLE_IPV6

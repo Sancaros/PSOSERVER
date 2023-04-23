@@ -312,7 +312,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
     cfg->server_ip = 0;
     memset(cfg->server_ip6, 0, 16);
 
-    PATCH_LOG("更新服务器IP...");
+    //PATCH_LOG("更新服务器IP...");
 
     //CONFIG_LOG("检测域名获取: %s", host4);
 
