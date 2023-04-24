@@ -882,7 +882,7 @@ static int handle_guild_request(login_client_t *c) {
     /* Query the DB for the user's guildcard data */
     sprintf(query, "SELECT friend_gc, name, guild_name, text, language, "
             "section_id, class, comment FROM %s WHERE "
-            "guildcard='%" PRIu32 "' ORDER BY priority ASC", CLIENTS_FRIENDLIST, c->guildcard);
+            "guildcard='%" PRIu32 "' ORDER BY priority ASC", CLIENTS_GUILDCARDS, c->guildcard);
 
     if(psocn_db_real_query(&conn, query)) {
         /* Should send an error message to the user */

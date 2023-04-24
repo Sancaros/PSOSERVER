@@ -1316,7 +1316,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         PRIu32 "', '%" PRIu32 "', '%s', '%s', '%s', '%" PRIu8 "', '%"
         PRIu8 "', '%" PRIu8 "') ON DUPLICATE KEY UPDATE "
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
-        "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_FRIENDLIST, sender,
+        "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_GUILDCARDS, sender,
         fr_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
         gc->gc_data.ch_class);
 
@@ -1494,7 +1494,7 @@ static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
     /* Build the query and run it */
     sprintf(query, "UPDATE %s SET comment='%s' WHERE "
         "guildcard='%" PRIu32"' AND friend_gc='%" PRIu32 "'"
-        , CLIENTS_FRIENDLIST, comment,
+        , CLIENTS_GUILDCARDS, comment,
         sender, fr_gc);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3200,9 +3200,9 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
-        , CLIENTS_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , CHARACTER_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3545,9 +3545,9 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
         "%s INNER JOIN %s ON "
         "%s.guildcard = %s.owner WHERE "
         "%s.friend = '%u'"
-        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
-        , CLIENTS_FRIENDLIST, gc
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
+        , CHARACTER_FRIENDLIST, gc
     );
 
     /* Query for any results */
@@ -3615,7 +3615,7 @@ static int handle_friendlist_add(ship_t* c, shipgate_friend_add_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "INSERT INTO %s(owner, friend, nickname) "
-        "VALUES('%u', '%u', '%s')", CLIENTS_FRIENDLIST, ugc, fgc, nickname);
+        "VALUES('%u', '%u', '%s')", CHARACTER_FRIENDLIST, ugc, fgc, nickname);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3644,7 +3644,7 @@ static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
 
     /* Build the db query */
     sprintf(query, "DELETE FROM %s WHERE owner='%u' AND friend='%u'"
-        , CLIENTS_FRIENDLIST, ugc, fgc);
+        , CHARACTER_FRIENDLIST, ugc, fgc);
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
@@ -3958,8 +3958,8 @@ static int handle_frlist_req(ship_t* c, shipgate_friend_list_req* pkt) {
         "LEFT OUTER JOIN %s ON %s.friend = "
         "%s.guildcard WHERE owner='%u' ORDER BY friend "
         "LIMIT 5 OFFSET %u"
-        , CLIENTS_FRIENDLIST
-        , SERVER_CLIENTS_ONLINE, CLIENTS_FRIENDLIST
+        , CHARACTER_FRIENDLIST
+        , SERVER_CLIENTS_ONLINE, CHARACTER_FRIENDLIST
         , SERVER_CLIENTS_ONLINE
         , gcr, start);
     if (psocn_db_real_query(&conn, query)) {

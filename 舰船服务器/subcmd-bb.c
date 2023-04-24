@@ -1507,16 +1507,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
-    case SUBCMD60_SRANK_ATTR:
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
-    case SUBCMD60_EX_ITEM_MK:
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
     case SUBCMD62_QUEST_ONEPERSON_SET_BP:
         UNK_CSPD(type, c->version, pkt);
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
@@ -1525,7 +1515,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_WARP_ITEM:
         rv = handle_bb_warp_item(dest, (subcmd_bb_warp_item_t*)pkt);
         break;
-
 
     case SUBCMD62_QUEST_ONEPERSON_SET_EX_PC:
         rv = handle_bb_quest_oneperson_set_ex_pc(dest, (subcmd_bb_quest_oneperson_set_ex_pc_t*)pkt);
@@ -1542,6 +1531,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_QUEST_ITEM_RECEIVE:
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
     case SUBCMD62_GANBLING:
+        UNK_CSPD(type, c->version, pkt);
         rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
     }
 
@@ -4417,6 +4407,17 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+    case SUBCMD60_SRANK_ATTR:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        break;
+
+    case SUBCMD60_EX_ITEM_MK:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        break;
+
     case SUBCMD60_SWITCH_CHANGED:
         rv = handle_bb_switch_changed(c, (subcmd_bb_switch_changed_pkt_t*)pkt);
         break;
@@ -4964,7 +4965,7 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
-        //DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+        DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
 
         switch (type) {
         case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
