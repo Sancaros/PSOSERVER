@@ -4987,10 +4987,9 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         //    break;
 
 
-        //case SUBCMD60_CMODE_GRAVE:
-        //    UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        //    rv = handle_bb_cmode_grave(c, pkt);
-        //    break;
+        case SUBCMD60_CMODE_GRAVE:
+            rv = handle_bb_cmode_grave(c, pkt);
+            break;
 
         default:
             DBG_LOG("lobby_enqueue_pkt_bb 0x60 ЦёБо: 0x%02X", type);
