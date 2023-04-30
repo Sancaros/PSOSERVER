@@ -152,7 +152,7 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     struct addrinfo hints;
     struct addrinfo* server, * j;
     char sg_port[16];
-    char ipstr[INET6_ADDRSTRLEN];
+    //char ipstr[INET6_ADDRSTRLEN];
     void* addr;
 
     if (reconn) {
@@ -207,8 +207,8 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
             continue;
         }
 
-        inet_ntop(j->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
-        SHIPS_LOG("    µØÖ· %s", ipstr);
+        //inet_ntop(j->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
+        //SHIPS_LOG("    µØÖ· %s", ipstr);
 
         sock = socket(j->ai_family, SOCK_STREAM, IPPROTO_TCP);
 

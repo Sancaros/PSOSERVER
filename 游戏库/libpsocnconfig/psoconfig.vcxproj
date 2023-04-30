@@ -92,7 +92,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>..\..\通用库\regex\include;..\..\通用库\libgnutls\include;..\..\Debug\Library;..\..\通用库\libiconv-win-build\include;..\..\通用库\zlib-win-build;..\..\通用库\libxml2-win-build\include;..\..\数据库;..\..\数据库\mariadb\include\mysql;..\..\通用库\md5\include;..\..\通用库\lua5.4.4\src;..\..\通用库\pthread;..\..\游戏库\libpsocn;..\游戏库\libpsoarchive\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\通用库\regex\include;..\..\通用库\libgnutls\include;..\..\Debug\Library;..\..\通用库\libiconv-win-build\include;..\..\通用库\zlib-win-build;..\..\通用库\libxml2-win-build\include;..\..\数据库;..\..\数据库\mariadb\include\mysql;..\..\通用库\md5\include;..\..\通用库\lua5.4.4\src;..\..\通用库\pthread_win32;..\..\游戏库\libpsocn;..\游戏库\libpsoarchive\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>

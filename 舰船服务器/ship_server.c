@@ -248,7 +248,7 @@ static void cleanup_gnutls() {
 static int setup_addresses(psocn_ship_t* cfg) {
     struct addrinfo hints;
     struct addrinfo* server, * j;
-    char ipstr[INET6_ADDRSTRLEN];
+    //char ipstr[INET6_ADDRSTRLEN];
     struct sockaddr_in* addr4;
     struct sockaddr_in6* addr6;
 
@@ -278,24 +278,24 @@ static int setup_addresses(psocn_ship_t* cfg) {
     for (j = server; j != NULL; j = j->ai_next) {
         if (j->ai_family == PF_INET) {
             addr4 = (struct sockaddr_in*)j->ai_addr;
-            inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
+            //inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
             //if (!check_ipaddr(ipstr)) {
             //    ERR_LOG("    IPv4 地址错误: %s", ipstr);
             //    return -1;
             //}
             //else
-                SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
+                //SHIPS_LOG("    获取到 IPv4 地址: %s", ipstr);
             cfg->ship_ip4 = ship_ip4 = addr4->sin_addr.s_addr;
         }
         else if (j->ai_family == PF_INET6) {
             addr6 = (struct sockaddr_in6*)j->ai_addr;
-            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
             //if (!check_ipaddr(ipstr)) {
             //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
             //    //return -1;
             //}
             //else
-                SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+                //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
             memcpy(ship_ip6, &addr6->sin6_addr, 16);
             memcpy(cfg->ship_ip6, &addr6->sin6_addr, 16);
         }
@@ -329,13 +329,13 @@ static int setup_addresses(psocn_ship_t* cfg) {
     for (j = server; j != NULL; j = j->ai_next) {
         if (j->ai_family == PF_INET6) {
             addr6 = (struct sockaddr_in6*)j->ai_addr;
-            inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
+            //inet_ntop(j->ai_family, &addr6->sin6_addr, ipstr, INET6_ADDRSTRLEN);
             //if (!check_ipaddr(ipstr)) {
             //    ERR_LOG("    IPv6 地址错误: %s", ipstr);
             //    //return -1;
             //}
             //else
-                SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
+                //SHIPS_LOG("    获取到 IPv6 地址: %s", ipstr);
             memcpy(ship_ip6, &addr6->sin6_addr, 16);
             memcpy(cfg->ship_ip6, &addr6->sin6_addr, 16);
         }
@@ -855,11 +855,11 @@ int __cdecl main(int argc, char** argv) {
     if (err)
         ERR_EXIT("WSAStartup 错误...");
 
-    HWND consoleHwnd;
+    //HWND consoleHwnd;
     WNDCLASS wc = { 0 };
     HWND hwndWindow;
     HINSTANCE hinst = GetModuleHandle(NULL);
-    consoleHwnd = GetConsoleWindow();
+    //consoleHwnd = GetConsoleWindow();
 
     wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
@@ -883,9 +883,9 @@ int __cdecl main(int argc, char** argv) {
 
     ShowWindow(hwndWindow, SW_HIDE);
     UpdateWindow(hwndWindow);
-    MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
-    ShowWindow(consoleHwnd, window_hide_or_show);
-    UpdateWindow(consoleHwnd);
+    //MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
+    //ShowWindow(consoleHwnd, window_hide_or_show);
+    //UpdateWindow(consoleHwnd);
 
     server_name_num = SHIPS_SERVER;
 
@@ -904,6 +904,10 @@ restart:
     /* Parse the addresses */
     if(setup_addresses(cfg))
         ERR_EXIT("获取 IP 地址失败");
+
+    //if (setup_server_address(cfg, ship_host4, ship_host6, ship_ip4, ship_ip6)) {
+    //    ERR_EXIT("获取 IP 地址失败");
+    //}
 
     /* Initialize GnuTLS stuff... */
     if(!check_only) {

@@ -281,6 +281,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 int process_bblogin_packet(login_client_t *c, void *pkt) {
     bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt;
     uint16_t type = LE16(bb->pkt_type);
+    uint16_t len = LE16(bb->pkt_len);
 
     //DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
     //print_payload(pkt, LE16(bb->pkt_len));
@@ -296,7 +297,9 @@ int process_bblogin_packet(login_client_t *c, void *pkt) {
             return handle_bb_login(c, (bb_login_93_pkt *)pkt);
 
         default:
-            UNK_CPD(type, c->version, pkt);
+            DBG_LOG("未知 BB 认证 : 0x%02X\n", type);
+            //UNK_CPD(type, c->version, pkt);
+            print_payload((unsigned char*)pkt, len);
             return -1;
     }
 }

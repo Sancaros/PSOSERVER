@@ -2414,6 +2414,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             memset(tmp, 0, 32);
             memcpy(tmp, passwd, passwd_len);
             istrncpy16(ic_utf16_to_ascii, passwd_cmp, (uint16_t*)tmp, 16);
+            passwd_cmp[17] = 0x00;
         }
         else {
             if (passwd_len > 0x10) {

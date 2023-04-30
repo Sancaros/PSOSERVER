@@ -1749,8 +1749,9 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
             return handle_patch_return(c, (patch_return_pkt *)pkt);
 
         default:
-            UNK_CPD(type, c->version, pkt);
-            //print_payload((unsigned char *)pkt, len);
+            DBG_LOG("Î´Öª DC ÈÏÖ¤ : 0x%02X\n", type);
+            //UNK_CPD(type, c->version, pkt);
+            print_payload((unsigned char *)pkt, len);
             return -3;
     }
 

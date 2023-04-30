@@ -27,6 +27,8 @@
 
 #define BUG_REPORT_GC   1
 
+int setup_server_address(psocn_ship_t* cfg, char* ship_host4, char* ship_host6, uint32_t ship_ip4, uint8_t* ship_ip6);
+
 void print_packet(unsigned char* pkt, int len);
 void print_packet2(const unsigned char *pkt, int len);
 void fprint_packet(FILE *fp, const unsigned char *pkt, int len, int rec);

@@ -464,6 +464,7 @@ void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
 			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
 		}
+
 		if (console_log_hide_or_show)
 		{
 			if (consoleshow)

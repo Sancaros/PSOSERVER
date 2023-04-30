@@ -24,9 +24,6 @@
     <ClCompile Include="patch.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pidfile.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="patch_packets.h">
