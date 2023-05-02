@@ -426,11 +426,11 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     if (!rv) {
         if (l->exp_mult < LE32(exp_r)) {
             l->exp_mult = LE32(exp_r);
-            DBG_LOG("房间经验倍率提升为 %d 倍", l->exp_mult);
+            DBG_LOG("GC %" PRIu32 " 的房间经验倍率提升为 %u 倍", c->guildcard, l->exp_mult);
         }
     }
     else
-        ERR_LOG("GC %" PRIu32 " 设置房间经验 %d 倍失败!",
+        ERR_LOG("GC %" PRIu32 " 设置房间经验 %u 倍发生错误!",
             c->guildcard, exp_r);
 
     return rv;
