@@ -4355,6 +4355,77 @@ static int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_battle_mode_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int ch, ch2;
+    ship_client_t* lc = { 0 };
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if ((l->battle) && (c->mode)) {
+        // Battle restarting...
+        //
+        // If rule #1 we'll copy the character backup to the character array, otherwise
+        // we'll reset the character...
+        //
+        for (ch = 0; ch < l->max_clients; ch++) {
+            if ((l->clients_slot[ch]) && (l->clients[ch])) {
+                lc = l->clients[ch];
+                switch (lc->mode) {
+                case 0x01:
+                case 0x02:
+                    // Copy character backup
+                    if (lc->game_data->char_backup && lc->guildcard)
+                        memcpy(&lc->pl->bb.character, lc->game_data->char_backup, sizeof(lc->pl->bb.character));
+
+                    if (lc->mode == 0x02) {
+                        for (ch2 = 0; ch2 < lc->pl->bb.inv.item_count; ch2++)
+                        {
+                            if (lc->pl->bb.inv.iitems[ch2].data.data_b[0] == 0x02)
+                                lc->pl->bb.inv.iitems[ch2].present = 0;
+                        }
+                        //CleanUpInventory(lc);
+                        lc->pl->bb.character.disp.meseta = 0;
+                    }
+                    break;
+                case 0x03:
+                    // Wipe items and reset level.
+                    for (ch2 = 0; ch2 < 30; ch2++)
+                        lc->pl->bb.inv.iitems[ch2].present = 0;
+                    //CleanUpInventory(lc);
+
+                    uint8_t ch_class = lc->pl->bb.character.disp.dress_data.ch_class;
+
+                    lc->pl->bb.character.disp.level = 0;
+                    lc->pl->bb.character.disp.exp = 0;
+
+                    lc->pl->bb.character.disp.stats.atp = bb_char_stats.start_stats[ch_class].atp;
+                    lc->pl->bb.character.disp.stats.mst = bb_char_stats.start_stats[ch_class].mst;
+                    lc->pl->bb.character.disp.stats.evp = bb_char_stats.start_stats[ch_class].evp;
+                    lc->pl->bb.character.disp.stats.hp = bb_char_stats.start_stats[ch_class].hp;
+                    lc->pl->bb.character.disp.stats.dfp = bb_char_stats.start_stats[ch_class].dfp;
+                    lc->pl->bb.character.disp.stats.ata = bb_char_stats.start_stats[ch_class].ata;
+
+                    /*if (l->battle_level > 1)
+                        SkipToLevel(l->battle_level - 1, lc, 1);*/
+                    lc->pl->bb.character.disp.meseta = 0;
+                    break;
+                default:
+                    // Unknown mode?
+                    break;
+                }
+            }
+        }
+        // Reset boxes and monsters...
+        //memset(&l->boxHit, 0, 0xB50); // Reset box and monster data
+        //memset(&l->monsterData, 0, sizeof(l->monsterData));
+    }
+}
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -5003,6 +5074,22 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /*挑战模式 触发*/
+    case SUBCMD60_UNKNOW_7D:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        //rv = handle_bb_cmd_check_game_size(c, pkt, 0x06);
+        break;
+
+        /*挑战模式 触发*/
+    case SUBCMD60_UNKNOW_CH_8A:
+        rv = handle_bb_Unknown_6x8A(c, (subcmd_bb_Unknown_6x8A_t*)pkt);
+        break;
+
+    case SUBCMD60_BATTLEMODE:
+        rv = handle_bb_battle_mode(c, (subcmd_bb_battle_mode_t*)pkt);
+        break;
 
         /* 此函数正常载入 */
     case SUBCMD60_SAVE_PLAYER_ACT:

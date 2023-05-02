@@ -86,6 +86,8 @@ typedef struct client_game_data {
 
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;
+
+    void* char_backup; //用于临时备份角色
 } client_game_data_t;
 
 typedef struct client_type {

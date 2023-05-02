@@ -2588,12 +2588,18 @@ typedef struct subcmd_bb_guild_master_trans {
     uint16_t guild_name[0x0010];
 } PACKED subcmd_bb_guild_master_trans_t;
 
-// 0xCF: Unknown (指令生效范围; 仅限游戏; handled by the server on BB)
-typedef struct subcmd_bb_UNKNOW_0xCF {
+//[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF
+//
+//( 00000000 )   3C 00 60 00 00 00 00 00  CF 0D 76 00 00 00 00 00    <.`.......v.....
+//( 00000010 )   01 00 00 00 00 01 01 00  03 05 05 05 05 01 05 01    ................
+//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
+//( 00000030 )   0A 00 00 00 01 00 00 00  0A 00 00 00                ............
+// 0xCF: 挑战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
+typedef struct subcmd_bb_battle_mode {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
     uint8_t data[0];
-} PACKED subcmd_bb_UNKNOW_0xCF_t;
+} PACKED subcmd_bb_battle_mode_t;
 
 // 0xD0: Invalid subcommand
 // 0xD1: Invalid subcommand
