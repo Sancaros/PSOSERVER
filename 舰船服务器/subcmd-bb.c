@@ -2653,7 +2653,7 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
             bd.pt_index = (uint8_t)((l->episode == 2) ? 0x4E : 0x2F);
             bd.request_id = LE16(0x0B4F);
             bd.x = (l->episode == 2) ? -9999.0f : 10160.58984375f;
-            bd.z = 0.0f;
+            bd.z = 0;
             bd.unk1 = LE16(0x0002);
             bd.unk2 = LE16(0x0000);
             bd.unk3 = LE32(0xE0AEDC01);
@@ -3316,7 +3316,9 @@ static int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(c, l);
 
-        c->game_data->death = 0;
+        if (c->game_data->death) {
+            c->game_data->death = 0;
+        }
     }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);

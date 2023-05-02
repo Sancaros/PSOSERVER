@@ -3904,8 +3904,8 @@ void clear_iitem(iitem_t* iitem) {
 /* 初始化房间物品数据 */
 void clear_fitem(fitem_t* fitem) {
     clear_iitem(&fitem->inv_item);
-    fitem->x = 0.0f;
-    fitem->z = 0.0f;
+    fitem->x = 0;
+    fitem->z = 0;
     fitem->area = 0;
 }
 

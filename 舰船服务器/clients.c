@@ -136,13 +136,31 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         memset(rv->pl, 0, sizeof(player_t));
 
-        if(!(rv->enemy_kills = (uint32_t *)malloc(sizeof(uint32_t) * 0x60))) {
+        rv->enemy_kills = (uint32_t*)malloc(sizeof(uint32_t) * 0x60);
+
+        if(!rv->enemy_kills) {
             perror("malloc");
             free_safe(rv->pl);
             free_safe(rv);
             closesocket(sock);
             return NULL;
         }
+
+        memset(rv->enemy_kills, 0, sizeof(uint32_t) * 0x60);
+
+        rv->game_data =
+            (client_game_data_t*)malloc(sizeof(client_game_data_t));
+
+        if (!rv->game_data) {
+            perror("malloc");
+            free_safe(rv->pl);
+            free_safe(rv->enemy_kills);
+            free_safe(rv);
+            closesocket(sock);
+            return NULL;
+        }
+
+        memset(rv->game_data, 0, sizeof(client_game_data_t));
 
         if(version == CLIENT_VERSION_BB) {
             rv->bb_pl =
@@ -152,28 +170,13 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
             }
 
             memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
-
-            rv->game_data =
-                (client_game_data_t*)malloc(sizeof(client_game_data_t));
-
-            if (!rv->game_data) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->bb_pl);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
-            }
-
-            memset(rv->game_data, 0, sizeof(client_game_data_t));
-
             rv->bb_opts =
                 (psocn_bb_db_opts_t *)malloc(sizeof(psocn_bb_db_opts_t));
 
@@ -181,8 +184,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
-                free_safe(rv->bb_pl);
                 free_safe(rv->game_data);
+                free_safe(rv->bb_pl);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -197,8 +200,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
-                free_safe(rv->bb_pl);
                 free_safe(rv->game_data);
+                free_safe(rv->bb_pl);
                 free_safe(rv->bb_opts);
                 free_safe(rv);
                 closesocket(sock);
@@ -213,8 +216,9 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
             if(!rv->xbl_ip) {
                 perror("malloc");
-                free_safe(rv->enemy_kills);
                 free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -451,6 +455,10 @@ void client_destroy_connection(ship_client_t *c,
         free_safe(c->pl);
     }
 
+    if (c->game_data) {
+        free_safe(c->game_data);
+    }
+
     //if (c->game_info) {
     //    free_safe(c->game_info);
     //}
@@ -465,10 +473,6 @@ void client_destroy_connection(ship_client_t *c,
 
     if (c->bb_guild) {
         free_safe(c->bb_guild);
-    }
-
-    if (c->game_data) {
-        free_safe(c->game_data);
     }
 
     if(c->next_maps) {
