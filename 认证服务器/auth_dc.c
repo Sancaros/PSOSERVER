@@ -519,11 +519,13 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
 
     c->version = PSOCN_QUEST_V2;
 
+    DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
+
     if(!is_pctrial(pkt)) {
         /* Escape all the important strings. */
         psocn_db_escape_str(&conn, dc_id, pkt->dc_id, 8);
-        psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
-        psocn_db_escape_str(&conn, access, pkt->access_key, 16);
+        psocn_db_escape_str(&conn, serial, pkt->serial_number, 8);
+        psocn_db_escape_str(&conn, access, pkt->access_key, 8);
 
         if(c->type != CLIENT_AUTH_PC) {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
@@ -542,10 +544,14 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             c->ext_version = CLIENT_EXTVER_PC;
         }
 
+        DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, serial, access);
+
         /* If we can't query the database, fail. */
         if(psocn_db_real_query(&conn, query)) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_ERROR);
         }
+
+        DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
 
         result = psocn_db_result_store(&conn);
 
@@ -553,8 +559,12 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             /* We have seen this client before, save their guildcard for use. */
             gc = (uint32_t)strtoul(row[0], NULL, 0);
             psocn_db_result_free(result);
+            DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
+
         }
         else if(c->type == CLIENT_AUTH_PC) {
+            DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
+
             /* If we're here, then that means either the PSOPC user is not
                registered or they've put their information in wrong. Disconnect
                them so that they can fix that problem
@@ -568,6 +578,8 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             /* Èç¹ûÎÒÃÇµ½ÁËÕâÀï, we have a PSOv2 (DC) user that isn't known to the
                server yet. Give them a nice fresh guildcard. */
             psocn_db_result_free(result);
+
+            DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
 
             /* Assign a nice fresh new guildcard number to the client. */
             sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
@@ -592,6 +604,8 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             }
         }
 
+        DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
+
         /* Make sure the guildcard isn't banned. */
         banned = is_gc_banned(gc, &banlen, query);
 
@@ -613,7 +627,9 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             send_large_msg(c, __(c, "\tEYour guildcard is already online."));
             return -1;
         }
-        
+
+        DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
+
         /* Check if the user is a GM or not. */
         sprintf(query, "SELECT privlevel FROM %s NATURAL JOIN "
             "%s WHERE guildcard='%u'"
@@ -625,6 +641,8 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         }
 
         result = psocn_db_result_store(&conn);
+
+        DBG_LOG("°æ±¾ %d ÐòÁÐºÅ %s ÃÜÔ¿ %s", c->version, pkt->serial_number, pkt->access_key);
 
         if(result) {
             if((row = psocn_db_result_fetch(result))) {
