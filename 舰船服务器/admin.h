@@ -55,6 +55,8 @@ int refresh_limits(ship_client_t *c, msgfunc f);
 
 int broadcast_message(ship_client_t *c, const char *message, int prefix);
 
+int test_message(ship_client_t* c, uint16_t type, const char* message, int prefix);
+
 int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f);
 
 int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason);

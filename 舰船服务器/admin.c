@@ -318,6 +318,45 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
     return 0;
 }
 
+int test_message(ship_client_t* c, uint16_t type, const char* message, int prefix) {
+    block_t* b;
+    uint32_t i;
+    ship_client_t* i2;
+
+    /* Make sure we don't have anyone trying to escalate their privileges. */
+    if (c && !LOCAL_GM(c)) {
+        return -1;
+    }
+
+    /* Go through each block and send the message to anyone that is alive. */
+    for (i = 0; i < ship->cfg->blocks; ++i) {
+        b = ship->blocks[i];
+
+        if (b && b->run) {
+            pthread_rwlock_rdlock(&b->lock);
+
+            /* Send the message to each player. */
+            TAILQ_FOREACH(i2, b->clients, qentry) {
+                pthread_mutex_lock(&i2->mutex);
+
+                if (i2->pl) {
+                    if (prefix) {
+                        send_msg(i2, type, "%s", __(i2, "\tE\tC7全服消息:"));
+                    }
+
+                    send_msg(i2, type, "%s", message);
+                }
+
+                pthread_mutex_unlock(&i2->mutex);
+            }
+
+            pthread_rwlock_unlock(&b->lock);
+        }
+    }
+
+    return 0;
+}
+
 int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
     ship_client_t *i2;
     block_t *b;

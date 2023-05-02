@@ -374,6 +374,26 @@ static int handle_bcast(ship_client_t *c, const char *params) {
 
     return broadcast_message(c, params, 1);
 }
+/* 用法 /tmsg typecode,message */
+static int handle_tmsg(ship_client_t* c, const char* params) {
+    uint16_t typecode = 0;
+    char message[4096] = { 0 };
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%hu,%s", &typecode, &message[0]);
+
+    if (count == EOF || count == 0) {
+        return send_txt(c, "%s", __(c, "\tE\tC7无效参数代码."));
+    }
+
+    return test_message(c, typecode, message, 1);
+}
 
 /* 用法 /arrow color_number */
 static int handle_arrow(ship_client_t *c, const char *params) {
@@ -440,7 +460,7 @@ static int handle_item(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
     }
 
     /* Copy over the item data. */
@@ -2407,7 +2427,7 @@ static int handle_gbc(ship_client_t *c, const char *params) {
 
     /* Make sure there's a message to send */
     if(!strlen(params)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Forget something?"));
+        return send_txt(c, "%s", __(c, "\tE\tC7缺少参数?"));
     }
 
     return shipgate_send_global_msg(&ship->sg, c->guildcard, params);
@@ -2417,14 +2437,14 @@ static int handle_gbc(ship_client_t *c, const char *params) {
 static int handle_logout(ship_client_t *c, const char *params) {
     /* See if they're logged in first */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Not logged in."));
+        return send_txt(c, "%s", __(c, "\tE\tC7未登录管理后台."));
     }
 
     /* Clear the logged in status. */
     c->flags &= ~(CLIENT_FLAG_LOGGED_IN | CLIENT_FLAG_OVERRIDE_GAME);
     c->privilege &= ~(CLIENT_PRIV_LOCAL_GM | CLIENT_PRIV_LOCAL_ROOT);
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Logged out."));
+    return send_txt(c, "%s", __(c, "\tE\tC7已登出管理后台."));
 }
 
 /* 用法: /override */
@@ -3547,6 +3567,7 @@ static command_t cmds[] = {
     { "restore"  , handle_restore   },
     { "bstat"    , handle_bstat     },
     { "bcast"    , handle_bcast     },
+    { "tmsg"     , handle_tmsg      },
     { "arrow"    , handle_arrow     },
     { "login"    , handle_login     },
     { "item"     , handle_item      },
@@ -3659,8 +3680,7 @@ static int command_call(ship_client_t *c, const char *txt, size_t len) {
             strcpy(params, ch + 1);
         }
     }else
-        ERR_LOG( 
-            "指令参数为空");
+        ERR_LOG("指令参数为空");
 
     /* Look through the list for the one we want */
     while (i->hnd) {

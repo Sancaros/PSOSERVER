@@ -1328,7 +1328,7 @@ static int handle_usrlogin(shipgate_conn_t* conn,
             i->privilege |= ntohl(pkt->priv);
             i->flags |= CLIENT_FLAG_LOGGED_IN;
             i->flags &= ~CLIENT_FLAG_GC_PROTECT;
-            send_txt(i, "%s", __(i, "\tE\tC7欢迎回来."));
+            send_txt(i, "%s %u", __(i, "\tE\tC7欢迎回来."), gc);
             break;
         }
     }
