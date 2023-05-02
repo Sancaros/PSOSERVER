@@ -970,10 +970,10 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
         send_bb_quest_data1(c, c->bb_pl->quest_data1);
 
-        if (c->cur_lobby)
+        /*if (c->cur_lobby)
             send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         else
-            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
+            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);*/
 
         /* Send a ping so we know when they're done loading in. This is useful
            for sending the MOTD as well as enforcing always-legit mode. */
@@ -1043,7 +1043,7 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
         send_lobby_end_burst(l);
 
         //TEST_LOG("bb_process_done_quest_burst");
-        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
+        //send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -2082,7 +2082,7 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
-        send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+        //send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
         send_msg_box(c, "%s", __(c, "\tE\tC4公会已成功解散!"));
     }
@@ -2167,8 +2167,6 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
             c2->bb_guild->guild_data.guild_priv_level = guild_priv_level;
             send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
             send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-            //send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-            //send_lobby_pkt(c2->cur_lobby, NULL, build_guild_full_data_pkt(c2), 1);
         }
 
         send_bb_guild_cmd(c, BB_GUILD_MEMBER_PROMOTE);
@@ -2635,7 +2633,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         //DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
 
-        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        //send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
         return 0;
 
         /* 0x0006 6*/

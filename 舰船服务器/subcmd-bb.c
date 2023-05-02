@@ -193,7 +193,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memset(&pc, 0, sizeof(pc));
 
         /* First the name and text... */
-        memcpy(pc.name, &src->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+        memcpy(pc.name, &src->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 + 4);
         memcpy(pc.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
 
         /* Copy the rest over. */
@@ -1438,6 +1438,12 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
     case SUBCMD62_GUILDCARD:
+        /* Make sure the recipient is not ignoring the sender... */
+        if (client_has_ignored(dest, c->guildcard)) {
+            rv = 0;
+            break;
+        }
+
         rv = handle_bb_gcsend(c, dest);
         break;
 
@@ -4424,6 +4430,8 @@ static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_battle_mode_t* pkt)
         //memset(&l->boxHit, 0, 0xB50); // Reset box and monster data
         //memset(&l->monsterData, 0, sizeof(l->monsterData));
     }
+
+    return 0;
 }
 
 /* 处理BB 0x60 数据包. */
@@ -4447,7 +4455,6 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_BURST_DONE:
             /* TODO 将这个函数融合进房间函数中 */
             subcmd_send_bb_set_exp_rate(c, 3000);
-            //TEST_LOG("build_guild_full_data_pkt");
             send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
             rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
             break;
@@ -5393,10 +5400,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
                 }
             }
         }
-
-        //DBG_LOG("SUBCMD60_FINISH_LOAD 0x60: 0x%02X\n", type);
-
-        //send_lobby_pkt(c->cur_lobby, NULL, build_guild_full_data_pkt(c), 1);
 
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
         break;

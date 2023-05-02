@@ -715,7 +715,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                             c->bb_guild->guild_data = guild->guild_data;
                             send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
-                            //send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);

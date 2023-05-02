@@ -190,9 +190,9 @@ static int char_bb_minisize2 = sizeof(psocn_bb_mini_char_t);
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
-    uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
+    uint16_t name[BB_CHARACTER_NAME_LENGTH + 2]; //24
+    //uint32_t unknown_a3; //4
     uint32_t play_time; //4
-    uint32_t unknown_a3; //4
     uint8_t config[0xE8]; //232
     uint8_t techniques[0x14]; //20
 } PACKED psocn_bb_char_t;

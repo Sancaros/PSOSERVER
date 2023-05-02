@@ -2818,6 +2818,10 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     }
 
     switch(type) {
+        case SUBCMD60_UNKNOW_1C:
+            rv = subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
+            break;
+
         case SUBCMD60_TAKE_ITEM:
             rv = handle_take_item(c, (subcmd_take_item_t *)pkt);
             break;
@@ -2962,8 +2966,8 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             DBG_LOG("Î´Öª 0x60 Ö¸Áî: 0x%02X", type);
-            UNK_CSPD(type, c->version, pkt);
-            //print_payload((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
+            //UNK_CSPD(type, c->version, pkt);
+            print_payload((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
             break;
