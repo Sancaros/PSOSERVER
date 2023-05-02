@@ -5045,8 +5045,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
-        DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
-
         switch (type) {
         case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
             rv = handle_bb_set_pos(c, (subcmd_bb_set_pos_t*)pkt);
@@ -5062,11 +5060,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = handle_bb_load_3b(c, (subcmd_bb_pkt_t*)pkt);
             break;
 
-        //case SUBCMD60_SET_AREA_20:
-        //    rv = handle_bb_set_area_20(c, (subcmd_bb_set_area_20_t*)pkt);
-        //    break;
-
-
         case SUBCMD60_CMODE_GRAVE:
             rv = handle_bb_cmode_grave(c, pkt);
             break;
@@ -5075,8 +5068,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             DBG_LOG("lobby_enqueue_pkt_bb 0x60 指令: 0x%02X", type);
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
-
-        //DBG_LOG("LOBBY_FLAG_BURSTING DONE 0x60 指令: 0x%02X", type);
 
         pthread_mutex_unlock(&l->mutex);
         return rv;

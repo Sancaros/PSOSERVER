@@ -424,9 +424,10 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     rv = send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 
     if (!rv) {
-        l->exp_mult = LE32(exp_r);
-
-        DBG_LOG("房间经验倍率为 %d 倍", l->exp_mult);
+        if (l->exp_mult < LE32(exp_r)) {
+            l->exp_mult = LE32(exp_r);
+            DBG_LOG("房间经验倍率提升为 %d 倍", l->exp_mult);
+        }
     }
     else
         ERR_LOG("GC %" PRIu32 " 设置房间经验 %d 倍失败!",
