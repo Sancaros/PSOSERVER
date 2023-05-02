@@ -22,6 +22,7 @@
     <ClInclude Include="pso_cmd_code.h" />
     <ClInclude Include="packets.h" />
     <ClInclude Include="pso_menu.h" />
+    <ClInclude Include="pso_message.h" />
     <ClInclude Include="pso_ping.h" />
     <ClInclude Include="pso_version.h" />
     <ClInclude Include="sg_packets.h" />
@@ -38,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c" />
+    <ClCompile Include="pso_message.c" />
     <ClCompile Include="pso_ping.c" />
     <ClCompile Include="pso_version.c" />
     <ClCompile Include="pso_cmd_name.c" />

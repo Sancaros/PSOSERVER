@@ -57,8 +57,8 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
 
     /* Make sure the user isn't IP banned. */
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
@@ -77,8 +77,8 @@ static int handle_ntelogin(login_client_t *c, dcnte_login_88_pkt *pkt) {
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -125,8 +125,8 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -144,8 +144,8 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
         sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
 
@@ -158,8 +158,8 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
                 "'%s')", gc, serial, access, dc_id);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
     }
@@ -168,8 +168,8 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
     banned = is_gc_banned(gc, &banlen, query);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
@@ -181,12 +181,12 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
     banned = db_check_gc_online(gc);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
-        send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+        send_large_msg(c, __(c, "\tE您的账户已在线."));
         return -1;
     }
 
@@ -195,8 +195,8 @@ static int handle_ntelogin8a(login_client_t *c, dcnte_login_8a_pkt *pkt) {
             "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -236,8 +236,8 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -250,8 +250,8 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
     }
     else {
         psocn_db_result_free(result);
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -259,8 +259,8 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
     banned = is_gc_banned(gc, &banlen, query);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
@@ -272,12 +272,12 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
     banned = db_check_gc_online(gc);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
-        send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+        send_large_msg(c, __(c, "\tE您的账户已在线."));
         return -1;
     }
 
@@ -286,8 +286,8 @@ static int handle_ntelogin8b(login_client_t *c, dcnte_login_8b_pkt *pkt) {
             "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
 
@@ -316,8 +316,8 @@ static int handle_login0(login_client_t *c, dc_login_90_pkt *pkt) {
 
     /* Make sure the user isn't IP banned. */
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                       "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                       "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
@@ -342,8 +342,8 @@ static int handle_login0(login_client_t *c, dc_login_90_pkt *pkt) {
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                       "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                       "请稍后再尝试."));
         return -1;
     }
 
@@ -390,8 +390,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                       "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                       "请稍后再尝试."));
         return -1;
     }
 
@@ -409,8 +409,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
         sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                           "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                           "请稍后再尝试."));
             return -1;
         }
 
@@ -423,8 +423,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
                 "'%s')", AUTH_ACCOUNT_DREAMCAST, gc, serial, access, dc_id);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                           "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                           "请稍后再尝试."));
             return -1;
         }
     }
@@ -433,8 +433,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
     banned = is_gc_banned(gc, &banlen, query);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                       "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                       "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
@@ -446,12 +446,12 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
     banned = db_check_gc_online(gc);
 
     if(banned == -1) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                             "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                             "请稍后再尝试."));
         return -1;
     }
     else if(banned) {
-        send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+        send_large_msg(c, __(c, "\tE您的账户已在线."));
         return -1;
     }
 
@@ -460,8 +460,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
             "WHERE guildcard='%u'", AUTH_ACCOUNT, AUTH_ACCOUNT_GUILDCARDS, gc);
 
     if(psocn_db_real_query(&conn, query)) {
-        send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                       "Please try again later."));
+        send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                       "请稍后再尝试."));
         return -1;
     }
 
@@ -610,7 +610,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_9A_ERROR);
         }
         else if(banned) {
-            send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+            send_large_msg(c, __(c, "\tE您的账户已在线."));
             return -1;
         }
 
@@ -782,7 +782,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
         }
         else if(banned) {
-            send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+            send_large_msg(c, __(c, "\tE您的账户已在线."));
             return -1;
         }
 
@@ -1013,7 +1013,7 @@ static int handle_xbhlcheck(login_client_t *c, xb_hlcheck_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
         }
         else if(banned) {
-            send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+            send_large_msg(c, __(c, "\tE您的账户已在线."));
             return -1;
         }
 
@@ -1063,8 +1063,8 @@ static int handle_xbloginc(login_client_t *c, xb_login_9c_pkt *pkt) {
             , AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
 
@@ -1078,8 +1078,8 @@ static int handle_xbloginc(login_client_t *c, xb_login_9c_pkt *pkt) {
             , gc, xbluid, xblgt);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
 
@@ -1167,7 +1167,7 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_CONN_ERROR);
         }
         else if(banned) {
-            send_large_msg(c, __(c, "\tEYour guildcard is already online."));
+            send_large_msg(c, __(c, "\tE您的账户已在线."));
             return -1;
         }
 
@@ -1185,8 +1185,8 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
         sprintf(query, "INSERT INTO %s (account_id) VALUES (NULL)", AUTH_ACCOUNT_GUILDCARDS);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
 
@@ -1198,8 +1198,8 @@ static int handle_xblogine(login_client_t *c, xb_login_9e_pkt *pkt) {
                 "xbl_gamertag) VALUES ('%u', '%s', '%s')", AUTH_ACCOUNT_XBOX, gc, xbluid, xblgt);
 
         if(psocn_db_real_query(&conn, query)) {
-            send_large_msg(c, __(c, "\tEInternal Server Error.\n"
-                                 "Please try again later."));
+            send_large_msg(c, __(c, "\tE因特网服务错误.\n"
+                                 "请稍后再尝试."));
             return -1;
         }
 

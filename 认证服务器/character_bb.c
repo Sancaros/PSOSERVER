@@ -469,7 +469,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
             return -10;
         }
 
-        if(send_scroll_msg(c, __(c, &login_welcom_msg[0]))) {
+        if (send_msg(c, BB_SCROLL_MSG_TYPE, __(c, &login_welcom_msg[0]))) {
             free(login_welcom_msg);
             return -11;
         }

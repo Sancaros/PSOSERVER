@@ -755,7 +755,7 @@ typedef struct dc_info_reply {
 typedef struct bb_info_reply {
     bb_pkt_hdr_t hdr;
     uint32_t unused[2];
-    uint16_t msg[];
+    uint16_t msg[0];
 } PACKED bb_info_reply_pkt;
 
 // 12 (S->C): Valid but ignored (PC/V3/BB)

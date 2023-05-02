@@ -137,6 +137,9 @@ int send_message_box(login_client_t *c, const char *fmt, ...);
 /* Send a message box containing an information file entry. */
 int send_info_file(login_client_t *c, uint32_t entry);
 
+/* Send a text message to the client (i.e, for stuff related to commands). */
+int send_msg(login_client_t* c, uint16_t type, const char* fmt, ...);
+
 /* Send the GM operations menu to the user. */
 int send_gm_menu(login_client_t *c);
 

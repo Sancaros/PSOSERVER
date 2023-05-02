@@ -3507,7 +3507,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     dc_chat_pkt *pkt = (dc_chat_pkt *)sendbuf;
     int len;
     iconv_t ic;
-    char tm[512];
+    char tm[4096];
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -3521,8 +3521,8 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Do the formatting */
-    vsnprintf(tm, 512, fmt, args);
-    tm[511] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -3596,7 +3596,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     uint8_t *sendbuf = get_sendbuf();
     bb_chat_pkt *pkt = (bb_chat_pkt *)sendbuf;
     int len;
-    char tm[512];
+    char tm[4096];
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -3611,8 +3611,8 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Do the formatting */
-    vsnprintf(tm, 512, fmt, args);
-    tm[511] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */

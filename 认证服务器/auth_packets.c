@@ -2617,7 +2617,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     dc_chat_pkt* pkt = (dc_chat_pkt*)sendbuf;
     int len;
     iconv_t ic;
-    char tm[512];
+    char tm[4096];
     size_t in, out;
     char* inptr;
     char* outptr;
@@ -2631,8 +2631,8 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
     /* Do the formatting */
-    vsnprintf(tm, 512, fmt, args);
-    tm[511] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -2706,7 +2706,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     //uint8_t* sendbuf = get_sendbuf();
     bb_chat_pkt* pkt = (bb_chat_pkt*)sendbuf;
     int len;
-    char tm[512];
+    char tm[4096];
     size_t in, out;
     char* inptr;
     char* outptr;
@@ -2720,8 +2720,8 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Do the formatting */
-    vsnprintf(tm, 512, fmt, args);
-    tm[511] = '\0';
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
     in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
@@ -2760,83 +2760,28 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     return crypt_send(c, len);
 }
 
-/* Send a message to the client. */
-int send_msg_1(login_client_t*c, const char *fmt, ...) {
+/* Send a text message to the client (i.e, for stuff related to commands). */
+int send_msg(login_client_t* c, uint16_t type, const char* fmt, ...) {
     va_list args;
     int rv = -1;
 
     va_start(args, fmt);
 
     /* Call the appropriate function. */
-    switch(c->version) {
+    switch (c->version) {
+        case CLIENT_AUTH_DCNTE:
         case CLIENT_AUTH_DC:
         case CLIENT_AUTH_PC:
         case CLIENT_AUTH_GC:
         case CLIENT_AUTH_EP3:
         case CLIENT_AUTH_XBOX:
-            rv = send_dc_message(c, MSG1_TYPE, fmt, args);
+            rv = send_dc_message(c, type, fmt, args);
             break;
 
         case CLIENT_AUTH_BB_LOGIN:
         case CLIENT_AUTH_BB_CHARACTER:
-            rv = send_bb_message(c, MSG1_TYPE, fmt, args);
+            rv = send_bb_message(c, type, fmt, args);
             break;
-    }
-
-    va_end(args);
-
-    return rv;
-}
-
-/* Send a message to the client. */
-int send_info(login_client_t* c, const char* fmt, ...) {
-    va_list args;
-    int rv = -1;
-
-    va_start(args, fmt);
-
-    /* Call the appropriate function. */
-    switch (c->version) {
-    case CLIENT_AUTH_DC:
-    case CLIENT_AUTH_PC:
-    case CLIENT_AUTH_GC:
-    case CLIENT_AUTH_EP3:
-    case CLIENT_AUTH_XBOX:
-        rv = send_dc_message(c, INFO_REPLY_TYPE, fmt, args);
-        break;
-
-    case CLIENT_AUTH_BB_LOGIN:
-    case CLIENT_AUTH_BB_CHARACTER:
-        rv = send_bb_message(c, INFO_REPLY_TYPE, fmt, args);
-        break;
-    }
-
-    va_end(args);
-
-    return rv;
-}
-
-/* Send a message to the client. */
-int send_msg_scroll(login_client_t* c, const char* fmt, ...) {
-    va_list args;
-    int rv = -1;
-
-    va_start(args, fmt);
-
-    /* Call the appropriate function. */
-    switch (c->version) {
-    case CLIENT_AUTH_DC:
-    case CLIENT_AUTH_PC:
-    case CLIENT_AUTH_GC:
-    case CLIENT_AUTH_EP3:
-    case CLIENT_AUTH_XBOX:
-        rv = send_dc_message(c, BB_SCROLL_MSG_TYPE, fmt, args);
-        break;
-
-    case CLIENT_AUTH_BB_LOGIN:
-    case CLIENT_AUTH_BB_CHARACTER:
-        rv = send_bb_message(c, BB_SCROLL_MSG_TYPE, fmt, args);
-        break;
     }
 
     va_end(args);
@@ -3020,7 +2965,7 @@ int send_gm_menu(login_client_t *c) {
     /* Make sure the user is actually a GM... */
     if (!IS_GLOBAL_GM(c)) {
         if (c->type == CLIENT_AUTH_BB_LOGIN || c->type == CLIENT_AUTH_BB_CHARACTER)
-            send_msg_1(c, "%s", __(c, "\tE\tC4您没有权限这样做!"));
+            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4您没有权限这样做!"));
         return send_initial_menu(c);
     }
 
