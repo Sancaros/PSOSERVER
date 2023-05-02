@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "pso_cmd.h"
+#include "pso_cmd_name.h"
 
 char tmp_cmd_name[256] = { 0 };
 

@@ -287,6 +287,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     char timestamp[28];
 
     char* login_welcom_msg = 0;
+
     login_welcom_msg = (char*)malloc(4096);
     psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.login_welcom_file, Welcome_Files[1]);
     psocn_web_server_loadfile(Welcome_Files[1], &login_welcom_msg[0]);

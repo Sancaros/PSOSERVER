@@ -474,7 +474,7 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
 
     case PATCH_LOGIN_TYPE:
         patch_welcom_msg = (char*)malloc(4096);
-        memset(patch_welcom_msg, 0, 4096);
+        //memset(patch_welcom_msg, 0, 4096);
         psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
         msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
 

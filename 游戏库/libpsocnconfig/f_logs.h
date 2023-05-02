@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pso_cmd.h"
+#include "pso_cmd_name.h"
 #include "pso_timer.h"
 #include "pso_text.h"
 #include "Software_Defines.h"

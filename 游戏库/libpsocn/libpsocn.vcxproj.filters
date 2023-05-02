@@ -43,7 +43,7 @@
     <ClInclude Include="pso_sgcmd_code.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="pso_cmd.h">
+    <ClInclude Include="pso_cmd_name.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pso_timer.h">
@@ -69,7 +69,7 @@
     <ClCompile Include="pso_version.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pso_cmd.c">
+    <ClCompile Include="pso_cmd_name.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_timer.c">
