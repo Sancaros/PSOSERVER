@@ -97,6 +97,21 @@
     <ProjectReference Include="..\游戏库\libpsocnconfig\psoconfig.vcxproj">
       <Project>{d216c3d9-12da-4863-bf95-d49538d3e29d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\游戏库\libpsocn\libpsocn.vcxproj">
+      <Project>{542e80b3-5ec9-4e39-b9dd-7a1c29317b2c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\通用库\lua5.4.4\lua5.4.4.vcxproj">
+      <Project>{1a373e06-f0d0-439a-aff0-338397e5f145}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\通用库\md5\md5.vcxproj">
+      <Project>{88c59be5-b96d-4476-aa01-a5ba7c8dc2e9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\通用库\mtwist\mtwist.vcxproj">
+      <Project>{dc65a794-ce8a-4f91-8655-3e1b34edcb55}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\通用库\pthread_win32\windows\VS2022\pthread_lib.2022.vcxproj">
+      <Project>{a063dfad-6995-4e1a-afff-e43dc11e95b1}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -178,7 +193,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\通用库\lua\Debug\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\regex\lib;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread_win32;..\通用库\pthread_win32\windows\VS2022\bin\Release-MultiByte-32bit-x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\Library;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\通用库\lua\Debug\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\regex\lib;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\Library;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libmariadb.lib;mariadbclient.lib;libiconv.lib;libz.lib;libxml2.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthread_static_lib.lib;libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;md5.lib;gnutls.lib;regex.lib;lua5.4.4.lib;mini18n.lib;database.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
