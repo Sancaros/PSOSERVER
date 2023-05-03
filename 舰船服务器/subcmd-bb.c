@@ -1118,7 +1118,7 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
 
         if (c->bb_guild->guild_data.guild_priv_level != 0x00000040) {
             ERR_LOG("GC %u 公会权限不足", c->guildcard);
-            return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
+            return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
                 __(c, "\tC7您无权进行此操作."));
         }
 
@@ -4310,7 +4310,7 @@ static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* 
 
     /* TODO 完成挑战模式的物品掉落 */
     if (l->challenge) {
-        send_msg1(c, "%s", __(c, "\t挑战模式不支持转换物品!"));
+        send_msg(c, MSG1_TYPE, "%s", __(c, "\t挑战模式不支持转换物品!"));
         /* 数据包完成, 发送至游戏房间. */
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
@@ -4331,7 +4331,7 @@ static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* 
         return -1;
     }
 
-    send_msg1(c, "%s", __(c, "\t物品转换成功!"));
+    send_msg(c, MSG1_TYPE, "%s", __(c, "\t物品转换成功!"));
 
     c->bb_pl->inv.item_count -= found;
     //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;

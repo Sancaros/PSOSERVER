@@ -1672,7 +1672,7 @@ static int client_sendMsgBox_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
         s = (const char *)lua_tolstring(l, 2, &len);
 
-        send_msg1(c, "\tE%s", s);
+        send_msg(c, MSG1_TYPE, "\tE%s", s);
         lua_pushinteger(l, 0);
     }
     else {

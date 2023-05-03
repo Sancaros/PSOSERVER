@@ -42,7 +42,8 @@
     ((c->privilege & (CLIENT_PRIV_TESTER | CLIENT_PRIV_LOCAL_GM)) && \
      (c->flags & CLIENT_FLAG_LOGGED_IN))
 
-typedef int (*msgfunc)(ship_client_t *, const char *, ...);
+//typedef int (*msgfunc)(ship_client_t *, const char *, ...);
+typedef int (*msgfunc)(ship_client_t*, uint16_t, const char*, ...);
 
 int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason);
 

@@ -1528,7 +1528,7 @@ static int dc_process_menu(ship_client_t* c, dc_select_pkt* pkt) {
         /* We didn't find it, punt. */
 
         c->flags |= CLIENT_FLAG_DISCONNECTED;
-        return send_msg1(c, "%s",
+        return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
     case ITEM_ID_DISCONNECT & 0xFF:
@@ -1695,7 +1695,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
         //printf("That ship is now menu_id & 0x000000FF = %u", menu_id & 0x000000FF);
         /* We didn't find it, punt. */
-        return send_msg1(c, "%s",
+        return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
     case ITEM_ID_DISCONNECT & 0xFF:

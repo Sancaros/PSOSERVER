@@ -1347,7 +1347,7 @@ static int handle_bb_gcdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Build the query and run it */
-    sprintf(query, "CALL clients_blueburst_guildcards_delete('%" PRIu32 "', '%" PRIu32
+    sprintf(query, "CALL clients_guildcards_delete('%" PRIu32 "', '%" PRIu32
         "')", sender, fr_gc);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -1378,7 +1378,7 @@ static int handle_bb_gcsort(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Build the query and run it */
-    sprintf(query, "CALL clients_blueburst_guildcards_sort('%" PRIu32 "', '%" PRIu32
+    sprintf(query, "CALL clients_guildcards_sort('%" PRIu32 "', '%" PRIu32
         "', '%" PRIu32 "')", sender, fr_gc1, fr_gc2);
 
     if (psocn_db_real_query(&conn, query)) {

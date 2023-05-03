@@ -1997,7 +1997,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
 
         e = quest_lookup(&ship->qmap, qid);
         if(!e) {
-            rv = send_msg1(c, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
+            rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
                                            "请联系程序员添加."));
             l->flags &= ~LOBBY_FLAG_QUESTSEL;
             pthread_mutex_unlock(&l->mutex);
@@ -2031,7 +2031,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
 
                         e = quest_lookup(&ship->qmap, qid);
                         if(!e) {
-                            rv = send_msg1(c, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
+                            rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
                                            "请联系程序员添加."));
                             l->flags &= ~LOBBY_FLAG_QUESTSEL;
                             pthread_mutex_unlock(&l->mutex);
@@ -2055,7 +2055,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
 
             /* This shouldn't happen... */
             if(!q) {
-                rv = send_msg1(c, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
+                rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务信息缺失.\n\n"
                                            "请联系程序员添加."));
                 l->flags &= ~LOBBY_FLAG_QUESTSEL;
                 pthread_mutex_unlock(&l->mutex);
@@ -2166,7 +2166,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
     }
     else {
         /* This really shouldn't happen... */
-        rv = send_msg1(c, "%s", __(c, "\tE\tC4任务未设置."));
+        rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务未设置."));
     }
 
     pthread_mutex_unlock(&l->mutex);

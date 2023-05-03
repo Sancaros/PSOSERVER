@@ -11840,7 +11840,7 @@ int send_dc_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
 
     /* The item_id should be the information the client wants. */
     if ((int)entry >= s->cfg->info_file_count) {
-        send_msg1(c, "%s\n%s",
+        send_msg(c, MSG1_TYPE, "%s\n%s",
             __(c, "\tE\tC4Something went wrong!"),
             __(c, "\tC7The information requested is missing."));
         return 0;
@@ -11850,7 +11850,7 @@ int send_dc_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
     fp = fopen(s->cfg->info_files[entry].filename, "r");
 
     if (!fp) {
-        send_msg1(c, "%s\n%s",
+        send_msg(c, MSG1_TYPE, "%s\n%s",
             __(c, "\tE\tC4Something went wrong!"),
             __(c, "\tC7The information requested is missing."));
         return 0;
@@ -11883,7 +11883,7 @@ int send_bb_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
 
     /* The item_id should be the information the client wants. */
     if ((int)entry >= s->cfg->info_file_count) {
-        send_msg1(c, "%s\n%s",
+        send_msg(c, MSG1_TYPE, "%s\n%s",
             __(c, "\tE\tC4Something went wrong!"),
             __(c, "\tC7The information requested is missing."));
         return 0;
@@ -11893,7 +11893,7 @@ int send_bb_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
     fp = fopen(s->cfg->info_files[entry].filename, "r");
 
     if (!fp) {
-        send_msg1(c, "%s\n%s",
+        send_msg(c, MSG1_TYPE, "%s\n%s",
             __(c, "\tE\tC4Something went wrong!"),
             __(c, "\tC7The information requested is missing."));
         return 0;

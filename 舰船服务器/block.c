@@ -843,7 +843,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
 
     /* Make sure they don't have the protection flag on */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7You must login\nbefore joining a\nteam."));
         return -1;
     }
@@ -852,79 +852,79 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     rv = lobby_change_lobby(c, l);
     if (rv == LOBBY_FLAG_ERROR_GAME_V1_CLASS) {
         /* HUcaseal, FOmar, or RAmarl trying to join a v1 game */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Your class is\nnot allowed in a\n"
                 "PSOv1 game."));
     }
     if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER) {
         /* Single player mode */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nin single player\nmode."));
     }
     else if (rv == LOBBY_FLAG_ERROR_PC_ONLY) {
         /* PC only */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nfor PSOPC only."));
     }
     else if (rv == LOBBY_FLAG_ERROR_V1_ONLY) {
         /* V1 only */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nfor PSOv1 only."));
     }
     else if (rv == LOBBY_FLAG_ERROR_DC_ONLY) {
         /* DC only */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nfor PSODC only."));
     }
     else if (rv == LOBBY_FLAG_ERROR_LEGIT_TEMP_UNAVAIL) {
         /* Temporarily unavailable */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\ntemporarily\nunavailable."));
     }
     else if (rv == LOBBY_FLAG_ERROR_LEGIT_MODE) {
         /* Legit check failed */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Game mode is set\nto legit and you\n"
                 "failed the legit\ncheck!"));
     }
     else if (rv == LOBBY_FLAG_ERROR_QUESTSEL) {
         /* Quest selection in progress */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Quest selection\nis in progress"));
     }
     else if (rv == LOBBY_FLAG_ERROR_QUESTING) {
         /* Questing in progress */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7A quest is in\nprogress."));
     }
     else if (rv == LOBBY_FLAG_ERROR_DCV2_ONLY) {
         /* V1 client attempting to join a V2 only game */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7This game is for\nVersion 2 only."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MAX_LEVEL) {
         /* Level is too high */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Your level is\ntoo high."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MIN_LEVEL) {
         /* Level is too low */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Your level is\ntoo low."));
     }
     else if (rv == LOBBY_FLAG_ERROR_BURSTING) {
         /* A client is bursting. */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7玩家正在跃迁中"));
     }
     else if (rv == LOBBY_FLAG_ERROR_REMOVE_CLIENT) {
         /* The lobby has disappeared. */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7This game is\nnon-existant."));
     }
     else if (rv == LOBBY_FLAG_ERROR_ADD_CLIENT) {
         /* The lobby is full. */
-        send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7游戏房间人数已满."));
     }
     else {
@@ -1585,7 +1585,7 @@ int process_change_lobby(ship_client_t* c, uint32_t item_id) {
 
     /* Make sure they don't have the protection flag on */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
             __(c, "\tC7You must login\nbefore changing\n"
                 "lobbies."));
     }
@@ -1602,7 +1602,7 @@ int process_change_lobby(ship_client_t* c, uint32_t item_id) {
     /* The requested lobby is non-existant? What to do... */
     if (req == NULL) {
         pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
             __(c, "\tC7The lobby is non-\nexistant."));
     }
 
@@ -1611,11 +1611,11 @@ int process_change_lobby(ship_client_t* c, uint32_t item_id) {
     pthread_rwlock_unlock(&c->cur_block->lobby_lock);
 
     if (rv == -1) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
             __(c, "\tC7The lobby is full."));
     }
     else if (rv < 0) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4Can't change lobby!"),
             __(c, "\tC7Unknown error occurred."));
     }
     else {
@@ -2010,7 +2010,7 @@ static int dcnte_process_game_create(ship_client_t* c,
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
             __(c, "\tC7请稍后重试."));
     }
 
@@ -2047,7 +2047,7 @@ static int dc_process_game_create(ship_client_t* c, dc_game_create_pkt* pkt) {
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
         if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
-            return send_msg1(c, "%s\n %s\n%s\n\n%s\n%s%d",
+            return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
                 __(c, "\tC4创建失败!"),
@@ -2065,7 +2065,7 @@ static int dc_process_game_create(ship_client_t* c, dc_game_create_pkt* pkt) {
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
             __(c, "\tC7请稍后重试."));
     }
 
@@ -2095,7 +2095,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
         if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
-            return send_msg1(c, "%s\n %s\n%s\n\n%s\n%s%d",
+            return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
                 __(c, "\tC4创建失败!"),
@@ -2112,7 +2112,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
             __(c, "\tC7请稍后重试."));
     }
 
@@ -2157,7 +2157,7 @@ static int gc_process_game_create(ship_client_t* c, gc_game_create_pkt* pkt) {
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
         if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
-            return send_msg1(c, "%s\n %s\n%s\n\n%s\n%s%d",
+            return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
                 __(c, "\tC4创建失败!"),
@@ -2175,7 +2175,7 @@ static int gc_process_game_create(ship_client_t* c, gc_game_create_pkt* pkt) {
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
             __(c, "\tC7请稍后重试."));
     }
 
@@ -2214,7 +2214,7 @@ static int ep3_process_game_create(ship_client_t* c, ep3_game_create_pkt* pkt) {
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
-        return send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
+        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4创建游戏失败!"),
             __(c, "\tC7请稍后重试."));
     }
 
@@ -2271,20 +2271,20 @@ static int dc_process_done_burst(ship_client_t* c) {
 static int process_gm_menu(ship_client_t* c, uint32_t menu_id,
     uint32_t item_id) {
     if (!LOCAL_GM(c)) {
-        return send_msg1(c, "%s", __(c, "\tE\tC7您的权限不足."));
+        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7您的权限不足."));
     }
 
     switch (menu_id) {
     case MENU_ID_GM:
         switch (item_id) {
         case ITEM_ID_GM_REF_QUESTS:
-            return refresh_quests(c, send_msg1);
+            return refresh_quests(c, send_msg);
 
         case ITEM_ID_GM_REF_GMS:
-            return refresh_gms(c, send_msg1);
+            return refresh_gms(c, send_msg);
 
         case ITEM_ID_GM_REF_LIMITS:
-            return refresh_limits(c, send_msg1);
+            return refresh_limits(c, send_msg);
 
         case ITEM_ID_GM_RESTART:
         case ITEM_ID_GM_SHUTDOWN:
@@ -2298,12 +2298,12 @@ static int process_gm_menu(ship_client_t* c, uint32_t menu_id,
     case MENU_ID_GM_SHUTDOWN:
     case MENU_ID_GM_RESTART:
         return schedule_shutdown(c, item_id, menu_id == MENU_ID_GM_RESTART,
-            send_msg1);
+            send_msg);
 
     case MENU_ID_GM_GAME_EVENT:
         if (item_id < 7) {
             ship->game_event = item_id;
-            return send_msg1(c, "%s", __(c, "\tE\tC7Game Event set."));
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7游戏节日设置成功."));
         }
 
         break;
@@ -2312,13 +2312,13 @@ static int process_gm_menu(ship_client_t* c, uint32_t menu_id,
         if (item_id < 15) {
             ship->lobby_event = item_id;
             update_lobby_event();
-            return send_msg1(c, "%s", __(c, "\tE\tC7Event set."));
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7大厅节日设置成功."));
         }
 
         break;
     }
 
-    return send_msg1(c, "%s", __(c, "\tE\tC4Huh?"));
+    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4什么情况?"));
 }
 
 int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
@@ -2429,7 +2429,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
 
         if (!l) {
             /* The lobby has disappeared. */
-            send_msg1(c, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+            send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
                 __(c, "\tC7This game is\nnon-existant."));
             return 0;
         }
@@ -2437,7 +2437,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
         /* Check the provided password (if any). */
         if (!override) {
             if (l->passwd[0] && strcmp(passwd_cmp, l->passwd)) {
-                send_msg1(c, "%s\n\n%s",
+                send_msg(c, MSG1_TYPE, "%s\n\n%s",
                     __(c, "\tE\tC4无法加入游戏!"),
                     __(c, "\tC7密码错误."));
                 return 0;
@@ -2464,7 +2464,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             rv = send_quest_list(c, (int)item_id, lang);
         }
         else {
-            rv = send_msg1(c, "%s", __(c, "\tE\tC4未读取任务."));
+            rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未读取任务."));
         }
 
             pthread_rwlock_unlock(&ship->qlock);
@@ -2478,7 +2478,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
         lobby_t* l = c->cur_lobby;
 
         if (l->flags & LOBBY_FLAG_BURSTING) {
-            return send_msg1(c, "%s",
+            return send_msg(c, MSG1_TYPE, "%s",
                 __(c, "\tE\tC4请等待一会后操作."));
         }
 
@@ -2543,7 +2543,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
         }
 
         /* We didn't find it, punt. */
-        return send_msg1(c, "%s",
+        return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
 
@@ -2582,7 +2582,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             return 0;
         }
 
-        return send_msg1(c, "%s", __(c, "\tE\tC4Huh?"));
+        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4Huh?"));
     }
 
     /* GM Menu */
@@ -2637,7 +2637,7 @@ static int process_info_req(ship_client_t* c, uint32_t menu_id,
             rv = send_quest_info(c->cur_lobby, item_id, lang);
         }
         else {
-            rv = send_msg1(c, "%s", __(c, "\tE\tC4任务未加载."));
+            rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务未加载."));
         }
 
         pthread_rwlock_unlock(&ship->qlock);
@@ -2822,7 +2822,7 @@ static int process_qlist(ship_client_t* c) {
         rv = send_quest_categories(c, c->q_lang);
     }
     else {
-        rv = send_msg1(c, "%s", __(c, "\tE\tC4任务未设置."));
+        rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4任务未设置."));
     }
 
     pthread_mutex_unlock(&l->mutex);

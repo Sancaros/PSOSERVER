@@ -695,9 +695,11 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x88);
+
     gcpkt.shdr.type = SUBCMD62_GUILDCARD;
     gcpkt.shdr.size = 0x21;
     gcpkt.shdr.unused = 0x0000;
+
     gcpkt.player_tag = LE32(0x00010000);
     gcpkt.guildcard = LE32(BUG_REPORT_GC);
     gcpkt.unused2 = 0;
@@ -706,13 +708,13 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.section = 0;
     gcpkt.ch_class = 8;
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
-    sprintf(gcpkt.name, __(c, "Report Bug"));
-    sprintf(gcpkt.text, __(c, "Send a Simple Mail to this guildcard to report "
-                           "a bug."));
 
-    send_txt(c, "%s", __(c, "\tE\tC7Send a mail to the\n"
-                         "'Report Bug' user to report\n"
-                         "a bug."));
+    sprintf(gcpkt.name, __(c, "错误报告"));
+    sprintf(gcpkt.text, __(c, "向该GC上报一个错误报告."));
+
+    send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7发送邮件至\n"
+                         "'错误报告' 玩家并上报\n"
+                         "一个BUG."));
 
     return handle_dc_gcsend(NULL, c, &gcpkt);
 }
