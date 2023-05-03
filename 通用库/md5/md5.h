@@ -1,10 +1,14 @@
 /**
  * \file md5.h
  *
- *  Copyright (C) 2006-2009, Paul Bakker <polarssl_maintainer at polarssl.org>
- *  All rights reserved.
+ * \brief MD5 message digest algorithm (hash function)
  *
- *  Joined copyright on original XySSL code with: Christophe Devine
+ *  Copyright (C) 2006-2013, Brainspark B.V.
+ *
+ *  This file is part of PolarSSL (http://www.polarssl.org)
+ *  Lead Maintainer: Paul Bakker <polarssl_maintainer at polarssl.org>
+ *
+ *  All rights reserved.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,13 +27,30 @@
 #ifndef POLARSSL_MD5_H
 #define POLARSSL_MD5_H
 
+ //#include "config.h"
+
+#include <string.h>
+
+#ifdef _MSC_VER
+#include <basetsd.h>
+typedef UINT32 uint32_t;
+#else
+#include <inttypes.h>
+#endif
+
+#define POLARSSL_ERR_MD5_FILE_IO_ERROR                 -0x0074  /**< Read/write error in file. */
+
+#if !defined(POLARSSL_MD5_ALT)
+ // Regular implementation
+ //
+
  /**
   * \brief          MD5 context structure
   */
 typedef struct
 {
-    unsigned long total[2];     /*!< number of bytes processed  */
-    unsigned long state[4];     /*!< intermediate digest state  */
+    uint32_t total[2];          /*!< number of bytes processed  */
+    uint32_t state[4];          /*!< intermediate digest state  */
     unsigned char buffer[64];   /*!< data block being processed */
 
     unsigned char ipad[64];     /*!< HMAC: inner padding        */
@@ -55,7 +76,7 @@ extern "C" {
      * \param input    buffer holding the  data
      * \param ilen     length of the input data
      */
-    void md5_update(md5_context* ctx, unsigned char* input, int ilen);
+    void md5_update(md5_context* ctx, const unsigned char* input, size_t ilen);
 
     /**
      * \brief          MD5 final digest
@@ -65,6 +86,21 @@ extern "C" {
      */
     void md5_finish(md5_context* ctx, unsigned char output[16]);
 
+    /* Internal use */
+    void md5_process(md5_context* ctx, const unsigned char data[64]);
+
+#ifdef __cplusplus
+}
+#endif
+
+#else  /* POLARSSL_MD5_ALT */
+#include "md5_alt.h"
+#endif /* POLARSSL_MD5_ALT */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
     /**
      * \brief          Output = MD5( input buffer )
      *
@@ -72,7 +108,7 @@ extern "C" {
      * \param ilen     length of the input data
      * \param output   MD5 checksum result
      */
-    void md5(unsigned char* input, int ilen, unsigned char output[16]);
+    void md5(const unsigned char* input, size_t ilen, unsigned char output[16]);
 
     /**
      * \brief          Output = MD5( file contents )
@@ -80,10 +116,9 @@ extern "C" {
      * \param path     input file name
      * \param output   MD5 checksum result
      *
-     * \return         0 if successful, 1 if fopen failed,
-     *                 or 2 if fread failed
+     * \return         0 if successful, or POLARSSL_ERR_MD5_FILE_IO_ERROR
      */
-    int md5_file(char* path, unsigned char output[16]);
+    int md5_file(const char* path, unsigned char output[16]);
 
     /**
      * \brief          MD5 HMAC context setup
@@ -92,7 +127,8 @@ extern "C" {
      * \param key      HMAC secret key
      * \param keylen   length of the HMAC key
      */
-    void md5_hmac_starts(md5_context* ctx, unsigned char* key, int keylen);
+    void md5_hmac_starts(md5_context* ctx,
+        const unsigned char* key, size_t keylen);
 
     /**
      * \brief          MD5 HMAC process buffer
@@ -101,7 +137,8 @@ extern "C" {
      * \param input    buffer holding the  data
      * \param ilen     length of the input data
      */
-    void md5_hmac_update(md5_context* ctx, unsigned char* input, int ilen);
+    void md5_hmac_update(md5_context* ctx,
+        const unsigned char* input, size_t ilen);
 
     /**
      * \brief          MD5 HMAC final digest
@@ -112,6 +149,13 @@ extern "C" {
     void md5_hmac_finish(md5_context* ctx, unsigned char output[16]);
 
     /**
+     * \brief          MD5 HMAC context reset
+     *
+     * \param ctx      HMAC context to be reset
+     */
+    void md5_hmac_reset(md5_context* ctx);
+
+    /**
      * \brief          Output = HMAC-MD5( hmac key, input buffer )
      *
      * \param key      HMAC secret key
@@ -120,8 +164,8 @@ extern "C" {
      * \param ilen     length of the input data
      * \param output   HMAC-MD5 result
      */
-    void md5_hmac(unsigned char* key, int keylen,
-        unsigned char* input, int ilen,
+    void md5_hmac(const unsigned char* key, size_t keylen,
+        const unsigned char* input, size_t ilen,
         unsigned char output[16]);
 
     /**
