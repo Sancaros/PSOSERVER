@@ -31,7 +31,7 @@
 // ָ�
 // (60, 62, 6C, 6D, C9, CB).
 
-static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
+static int handle_set_area_1D(ship_client_t *c, subcmd_set_area_1D_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -89,7 +89,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
 
     switch(type) {
         case SUBCMD60_DCNTE_SET_AREA:
-            rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
+            rv = handle_set_area_1D(c, (subcmd_set_area_1D_t*)pkt);
             break;
 
         case SUBCMD60_DCNTE_SET_POS:

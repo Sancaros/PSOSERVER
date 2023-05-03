@@ -1200,7 +1200,7 @@ static void update_qpos(ship_client_t *c, lobby_t *l) {
     }
 }
 
-static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
+static int handle_set_area_1F(ship_client_t *c, subcmd_set_area_1F_t*pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -1221,15 +1221,44 @@ static int handle_set_area(ship_client_t *c, subcmd_set_area_t *pkt) {
         }
 
         c->cur_area = pkt->area;
-        c->x = pkt->x;
-        c->y = pkt->y;
-        c->z = pkt->z;
 
         if((l->flags & LOBBY_FLAG_QUESTING))
             update_qpos(c, l);
     }
 
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
+}
+
+static int handle_set_area_20(ship_client_t* c, subcmd_set_area_20_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the area is valid */
+    if (pkt->area > 17) {
+        return -1;
+    }
+
+    /* Save the new area and move along */
+    if (c->client_id == pkt->shdr.client_id) {
+        script_execute(ScriptActionChangeArea, c, SCRIPT_ARG_PTR, c,
+            SCRIPT_ARG_INT, (int)pkt->area, SCRIPT_ARG_INT,
+            c->cur_area, SCRIPT_ARG_END);
+
+        /* Clear the list of dropped items. */
+        if (c->cur_area == 0) {
+            memset(c->p2_drops, 0, sizeof(c->p2_drops));
+            c->p2_drops_max = 0;
+        }
+
+        c->cur_area = pkt->area;
+        c->x = pkt->x;
+        c->y = pkt->y;
+        c->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(c, l);
+    }
+
+    return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int handle_inter_level_warp(ship_client_t* c, subcmd_inter_level_warp_t* pkt) {
@@ -2800,7 +2829,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
                 break;
 
             case SUBCMD60_SET_AREA_1F:
-                rv = handle_set_area(c, (subcmd_set_area_t *)pkt);
+                rv = handle_set_area_1F(c, (subcmd_set_area_1F_t*)pkt);
                 break;
 
             case SUBCMD60_SET_POS_3F:
@@ -2842,11 +2871,11 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_SET_AREA_1F:
-            rv = handle_set_area(c, (subcmd_set_area_t*)pkt);
+            rv = handle_set_area_1F(c, (subcmd_set_area_1F_t*)pkt);
             break;
 
         case SUBCMD60_SET_AREA_20:
-            rv = handle_set_area(c, (subcmd_set_area_t*)pkt);
+            rv = handle_set_area_20(c, (subcmd_set_area_20_t*)pkt);
             break;
 
         case SUBCMD60_INTER_LEVEL_WARP:

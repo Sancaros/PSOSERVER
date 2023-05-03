@@ -440,6 +440,25 @@ typedef struct subcmd_bb_Unknown_6x1C {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_Unknown_6x1C_t;
 
+// 0x1D: Set position (existing clients send when a new client joins a lobby/game)
+// Packet used to update other people when a player warps to another area
+typedef struct subcmd_set_area_1D {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t area;
+    float x;
+    float y;
+    float z;
+    uint32_t unknown_a1;
+} PACKED subcmd_set_area_1D_t;
+
+// 0x1F: subcmd_set_area_1F (指令生效范围; 大厅和游戏)
+typedef struct subcmd_set_area_1F {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t area;
+} PACKED subcmd_set_area_1F_t;
+
 // 0x1F: subcmd_bb_set_area_1F (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_set_area_1F {
     bb_pkt_hdr_t hdr;
@@ -449,7 +468,7 @@ typedef struct subcmd_bb_set_area_1F {
 
 // 0x20: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
-typedef struct subcmd_set_area {
+typedef struct subcmd_set_area_20 {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t area;
@@ -457,7 +476,7 @@ typedef struct subcmd_set_area {
     float y;
     float z;
     uint32_t unknown_a1;
-} PACKED subcmd_set_area_t;
+} PACKED subcmd_set_area_20_t;
 
 // 0x20: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
