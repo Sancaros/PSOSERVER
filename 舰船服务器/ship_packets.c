@@ -3738,7 +3738,7 @@ int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) {
     return rv;
 }
 
-/* Send a text message to the client (i.e, for stuff related to commands). */
+/* 发送文本类型的信息数据统一函数 (i.e, for stuff related to commands). */
 int send_txt(ship_client_t *c, const char *fmt, ...) {
     va_list args;
     int rv = -1;
