@@ -2072,8 +2072,8 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
     uint32_t guild_id = 0;
-    int i;
-    ship_client_t* c2 = { 0 };
+    //int i;
+    //ship_client_t* c2 = { 0 };
 
     if (!l)
         return 0;
@@ -2098,20 +2098,20 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
 
-        for (i = 0; i < l->max_clients; ++i) {
-            if (l->clients[i]->guildcard != c->guildcard) {
-                if (l->clients[i]->bb_guild->guild_data.guild_id == guild_id && l->clients[i]->version >= CLIENT_VERSION_GC) {
-                    c2 = l->clients[i];
-                    check_gc_online(c, c2->guildcard);
-                    send_msg(c2, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已成功解散!"));
+        //for (i = 0; i < l->max_clients; ++i) {
+        //    if (l->clients[i]->guildcard != c->guildcard) {
+        //        if (l->clients[i]->bb_guild->guild_data.guild_id == guild_id && l->clients[i]->version >= CLIENT_VERSION_GC) {
+        //            c2 = l->clients[i];
+        //            check_gc_online(c, c2->guildcard);
+        //            send_msg(c2, MSG_BOX_TYPE, "%s", __(c2, "\tE\tC4公会已成功解散!"));
 
-                    memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-                    send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-                    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
-                    break;
-                }
-            }
-        }
+        //            memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+        //            send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+        //            send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
+        //            break;
+        //        }
+        //    }
+        //}
     }
 
     print_payload((uint8_t*)pkt, len);

@@ -685,289 +685,291 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
             TAILQ_FOREACH(c, b->clients, qentry) {
                 pthread_mutex_lock(&c->mutex);
 
-                switch (type)
-                {
-                    /* OK */
-                case BB_GUILD_CREATE:
-                    if (c->guildcard == gc) {
+                if (c->version >= CLIENT_VERSION_GC) {
+                    switch (type)
+                    {
+                        /* OK */
+                    case BB_GUILD_CREATE:
+                        if (c->guildcard == gc) {
 
-                        c->bb_guild->guild_data = guild->guild_data;
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
-                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);
-                    }
-                    break;
+                            c->bb_guild->guild_data = guild->guild_data;
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);
+                        }
+                        break;
 
-                    /* OK */
-                case BB_GUILD_UNK_02EA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_MEMBER_ADD:
-                    if (c->guildcard == gc) {
-
-                        c->bb_guild->guild_data = guild->guild_data;
-                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        //print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_04EA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_MEMBER_REMOVE:
-                    bb_guild_member_remove_pkt* remove_pkt = (bb_guild_member_remove_pkt*)pkt->pkt;
-
-                    if (c->guildcard == remove_pkt->target_guildcard &&
-                        c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
-
-                        memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
-                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_06EA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_CHAT:
-                    guild_id = pkt->fw_flags;
-
-                    if (c->bb_guild->guild_data.guild_id == guild_id && c->guildcard != 0)
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                    break;
-
-                    /* OK */
-                case BB_GUILD_MEMBER_SETTING:
-                    if (c->guildcard == gc)
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                    break;
-
-                case BB_GUILD_UNK_09EA:
-                    if (c->guildcard == gc)
-                        send_pkt_bb(c, (bb_pkt_hdr_t*)g);
-                    break;
-
-                case BB_GUILD_UNK_0AEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_0BEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_0CEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_INVITE:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_UNK_0EEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* 暂时完成了 但是要移除原有的新手flag标记 */
-                case BB_GUILD_MEMBER_FLAG_SETTING:
-                    bb_guild_member_flag_setting_pkt* flag_pkt = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
-                    guild_id = pkt->fw_flags;
-
-                    if (c->bb_guild->guild_data.guild_id == guild_id) {
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
-                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                    }
-                    break;
-
-                case BB_GUILD_DISSOLVE:
-                    guild_id = pkt->fw_flags;
-
-                    if ((c->bb_guild->guild_data.guild_id == guild_id) && (c->guildcard != 0)) {
-
-                        memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
-                        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-                    }
-                    break;
-
-                    /* OK */
-                case BB_GUILD_MEMBER_PROMOTE:
-                    bb_guild_member_promote_pkt* promote_pkt = (bb_guild_member_promote_pkt*)pkt->pkt;
-                    guild_id = pkt->fw_flags;
-
-                    if (c->bb_guild->guild_data.guild_id == guild_id) {
-
-                        if (c->guildcard == promote_pkt->target_guildcard) {
+                        /* OK */
+                    case BB_GUILD_UNK_02EA:
+                        if (c->guildcard == gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                             print_payload((uint8_t*)g, len);
-                            send_msg(c, MSG_BOX_TYPE, "%s",
-                                __(c, "\tE您的公会权限已被提升."));
                         }
-                        else {
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_MEMBER_ADD:
+                        if (c->guildcard == gc) {
+
+                            c->bb_guild->guild_data = guild->guild_data;
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            /*return send_msg(c, MSG_BOX_TYPE, "%s",
-                                __(c, "\tE公会权限已被提升."));*/
+                            //print_payload((uint8_t*)g, len);
                         }
+                        break;
+
+                    case BB_GUILD_UNK_04EA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_MEMBER_REMOVE:
+                        bb_guild_member_remove_pkt* remove_pkt = (bb_guild_member_remove_pkt*)pkt->pkt;
+
+                        if (c->guildcard == remove_pkt->target_guildcard &&
+                            c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
+
+                            memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_06EA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_CHAT:
+                        guild_id = pkt->fw_flags;
+
+                        if (c->bb_guild->guild_data.guild_id == guild_id && c->guildcard != 0)
+                            send_pkt_bb(c, (bb_pkt_hdr_t*)g);
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_MEMBER_SETTING:
+                        if (c->guildcard == gc)
+                            send_pkt_bb(c, (bb_pkt_hdr_t*)g);
+                        break;
+
+                    case BB_GUILD_UNK_09EA:
+                        if (c->guildcard == gc)
+                            send_pkt_bb(c, (bb_pkt_hdr_t*)g);
+                        break;
+
+                    case BB_GUILD_UNK_0AEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_0BEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_0CEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_INVITE:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_0EEA);
+                        }
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_UNK_0EEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                        /* 暂时完成了 但是要移除原有的新手flag标记 */
+                    case BB_GUILD_MEMBER_FLAG_SETTING:
+                        bb_guild_member_flag_setting_pkt* flag_pkt = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
+                        guild_id = pkt->fw_flags;
+
+                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                        }
+                        break;
+
+                    case BB_GUILD_DISSOLVE:
+                        guild_id = pkt->fw_flags;
+
+                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已成功解散!"));
+                            memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+                        }
+                        break;
+
+                        /* OK */
+                    case BB_GUILD_MEMBER_PROMOTE:
+                        bb_guild_member_promote_pkt* promote_pkt = (bb_guild_member_promote_pkt*)pkt->pkt;
+                        guild_id = pkt->fw_flags;
+
+                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+
+                            if (c->guildcard == promote_pkt->target_guildcard) {
+
+                                DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                                print_payload((uint8_t*)g, len);
+                                send_msg(c, MSG_BOX_TYPE, "%s",
+                                    __(c, "\tE您的公会权限已被提升."));
+                            }
+                            else {
+                                DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                                /*return send_msg(c, MSG_BOX_TYPE, "%s",
+                                    __(c, "\tE公会权限已被提升."));*/
+                            }
+                        }
+                        break;
+
+                    case BB_GUILD_INITIALIZATION_DATA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_LOBBY_SETTING:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
+                        }
+                        break;
+
+                    case BB_GUILD_MEMBER_TITLE:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
+                        }
+                        break;
+
+                    case BB_GUILD_FULL_DATA:
+                        if (c->guildcard == gc) {
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_16EA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_17EA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
+                        }
+                        break;
+
+                    case BB_GUILD_PRIVILEGE_LIST:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_PRIVILEGE_LIST);
+                        }
+                        break;
+
+                    case BB_GUILD_BUY_SPECIAL_ITEM:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_1BEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_RANKING_LIST:
+                        if (c->guildcard == gc) {
+
+                            send_bb_guild_cmd(c, BB_GUILD_RANKING_LIST);
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_1DEA:
+                        if (c->guildcard == gc) {
+
+                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
+                            print_payload((uint8_t*)g, len);
+                        }
+                        break;
+
+                        /* 卡住需要载入某种数据 */
+                    case BB_GUILD_UNK_1EEA:
+                        if (c->guildcard == gc) {
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_1EEA);
+                        }
+                        break;
+
+                        /* 菜单直接关闭了 */
+                    case BB_GUILD_UNK_1FEA:
+                        if (c->guildcard == gc) {
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_1FEA);
+                        }
+                        break;
+
+                    case BB_GUILD_UNK_20EA:
+                        if (c->guildcard == gc) {
+                            send_bb_guild_cmd(c, BB_GUILD_UNK_20EA);
+                        }
+                        break;
+
+                    default:
+                        DBG_LOG("未知 handle_bb_guild 0x%04X %d %d", type, len, gc);
+                        break;
                     }
-                    break;
-
-                case BB_GUILD_INITIALIZATION_DATA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_LOBBY_SETTING:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_LOBBY_SETTING);
-                    }
-                    break;
-
-                case BB_GUILD_MEMBER_TITLE:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
-                    }
-                    break;
-
-                case BB_GUILD_FULL_DATA:
-                    if (c->guildcard == gc) {
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_16EA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_17EA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
-                    }
-                    break;
-
-                case BB_GUILD_PRIVILEGE_LIST:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_PRIVILEGE_LIST);
-                    }
-                    break;
-
-                case BB_GUILD_BUY_SPECIAL_ITEM:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_1BEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_RANKING_LIST:
-                    if (c->guildcard == gc) {
-
-                        send_bb_guild_cmd(c, BB_GUILD_RANKING_LIST);
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_1DEA:
-                    if (c->guildcard == gc) {
-
-                        DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                        print_payload((uint8_t*)g, len);
-                    }
-                    break;
-
-                    /* 卡住需要载入某种数据 */
-                case BB_GUILD_UNK_1EEA:
-                    if (c->guildcard == gc) {
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_1EEA);
-                    }
-                    break;
-
-                    /* 菜单直接关闭了 */
-                case BB_GUILD_UNK_1FEA:
-                    if (c->guildcard == gc) {
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_1FEA);
-                    }
-                    break;
-
-                case BB_GUILD_UNK_20EA:
-                    if (c->guildcard == gc) {
-                        send_bb_guild_cmd(c, BB_GUILD_UNK_20EA);
-                    }
-                    break;
-
-                default:
-                    DBG_LOG("未知 handle_bb_guild 0x%04X %d %d", type, len, gc);
-                    break;
                 }
 
                 pthread_mutex_unlock(&c->mutex);
