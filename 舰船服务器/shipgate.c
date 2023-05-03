@@ -685,6 +685,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
             TAILQ_FOREACH(c, b->clients, qentry) {
                 pthread_mutex_lock(&c->mutex);
 
+                //DBG_LOG("¿Í»§¶Ë°æ±¾ %d GC %u", c->version, c->guildcard);
+
                 if (c->version >= CLIENT_VERSION_GC) {
                     switch (type)
                     {
@@ -753,10 +755,12 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                         /* OK */
                     case BB_GUILD_CHAT:
-                        guild_id = pkt->fw_flags;
+                        bb_guild_member_chat_pkt* chat_pkt = (bb_guild_member_chat_pkt*)pkt->pkt;
+                        guild_id = chat_pkt->guild_id;
 
                         if (c->bb_guild->guild_data.guild_id == guild_id && c->guildcard != 0)
                             send_pkt_bb(c, (bb_pkt_hdr_t*)g);
+
                         break;
 
                         /* OK */
