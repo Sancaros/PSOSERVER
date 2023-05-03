@@ -30,11 +30,9 @@
 
 //#include "polarssl/config.h"
 
-#define POLARSSL_MD5_C
+#include "md5.h"
 
 #if defined(POLARSSL_MD5_C)
-
-#include "md5.h"
 
 #if defined(POLARSSL_FS_IO) || defined(POLARSSL_SELF_TEST)
 #include <stdio.h>
