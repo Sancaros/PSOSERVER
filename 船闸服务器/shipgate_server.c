@@ -86,7 +86,6 @@ int pidfile_remove(struct pidfh *pfh);
 #define MYWM_NOTIFYICON (WM_USER+2)
 int32_t program_hidden = 1;
 HWND consoleHwnd;
-HWND backupHwnd;
 uint32_t window_hide_or_show = 1;
 
 /* Storage for our list of ships. */
@@ -922,23 +921,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-int __cdecl main(int argc, char** argv) {
-    int tsock = SOCKET_ERROR, tsock6 = SOCKET_ERROR;
-    WSADATA winsock_data;
+/* 初始化 */
+static void initialization() {
 
     load_log_config();
 
-    errno_t err = WSAStartup(MAKEWORD(2, 2), &winsock_data);
+    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+    WSADATA winsock_data;
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
 
     if (err)
         ERR_EXIT("WSAStartup 错误...");
-
+    
     HWND consoleHwnd;
-    HWND backupHwnd;
-    //NOTIFYICONDATA nid = { 0 };
     WNDCLASS wc = { 0 };
     HWND hwndWindow;
-    //MSG msg;
     HINSTANCE hinst = GetModuleHandle(NULL);
     consoleHwnd = GetConsoleWindow();
 
@@ -959,8 +962,6 @@ int __cdecl main(int argc, char** argv) {
         hinst,
         NULL);
 
-    backupHwnd = hwndWindow;
-
     if (!hwndWindow)
         ERR_EXIT("无法创建窗口.");
 
@@ -969,6 +970,12 @@ int __cdecl main(int argc, char** argv) {
     MoveWindow(consoleHwnd, 0, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
+}
+
+int __cdecl main(int argc, char** argv) {
+    int tsock = SOCKET_ERROR, tsock6 = SOCKET_ERROR;
+    
+    initialization();
 
     server_name_num = SGATE_SERVER;
 

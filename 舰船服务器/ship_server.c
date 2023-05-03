@@ -661,6 +661,57 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
+/* 初始化 */
+static void initialization() {
+
+    load_log_config();
+
+    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+    WSADATA winsock_data;
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err)
+        ERR_EXIT("WSAStartup 错误...");
+
+    //HWND consoleHwnd;
+    WNDCLASS wc = { 0 };
+    HWND hwndWindow;
+    HINSTANCE hinst = GetModuleHandle(NULL);
+    //consoleHwnd = GetConsoleWindow();
+
+    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
+    wc.hCursor = LoadCursor(hinst, IDC_ARROW);
+    wc.hInstance = hinst;
+    wc.lpfnWndProc = WndProc;
+    wc.lpszClassName = "Sancaros";
+    wc.style = CS_HREDRAW | CS_VREDRAW;
+
+    if (!RegisterClass(&wc))
+        ERR_EXIT("注册类失败.");
+
+    hwndWindow = CreateWindow("Sancaros", "hidden window", WS_MINIMIZE, 1, 1, 1, 1,
+        NULL,
+        NULL,
+        hinst,
+        NULL);
+
+    if (!hwndWindow)
+        ERR_EXIT("无法创建窗口.");
+
+    ShowWindow(hwndWindow, SW_HIDE);
+    UpdateWindow(hwndWindow);
+    //MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
+    //ShowWindow(consoleHwnd, window_hide_or_show);
+    //UpdateWindow(consoleHwnd);
+}
+
 int read_param_file(psocn_ship_t* cfg) {
     int rv;
 
@@ -846,46 +897,8 @@ int read_param_file(psocn_ship_t* cfg) {
 int __cdecl main(int argc, char** argv) {
     void *tmp;
     psocn_ship_t *cfg;
-    WSADATA winsock_data;
-
-    load_log_config();
-
-    errno_t err = WSAStartup(MAKEWORD(2, 2), &winsock_data);
-
-    if (err)
-        ERR_EXIT("WSAStartup 错误...");
-
-    //HWND consoleHwnd;
-    WNDCLASS wc = { 0 };
-    HWND hwndWindow;
-    HINSTANCE hinst = GetModuleHandle(NULL);
-    //consoleHwnd = GetConsoleWindow();
-
-    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
-    wc.hCursor = LoadCursor(hinst, IDC_ARROW);
-    wc.hInstance = hinst;
-    wc.lpfnWndProc = WndProc;
-    wc.lpszClassName = "Sancaros";
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-
-    if (!RegisterClass(&wc))
-        ERR_EXIT("注册类失败.");
-
-    hwndWindow = CreateWindow("Sancaros", "hidden window", WS_MINIMIZE, 1, 1, 1, 1,
-        NULL,
-        NULL,
-        hinst,
-        NULL);
-
-    if (!hwndWindow)
-        ERR_EXIT("无法创建窗口.");
-
-    ShowWindow(hwndWindow, SW_HIDE);
-    UpdateWindow(hwndWindow);
-    //MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
-    //ShowWindow(consoleHwnd, window_hide_or_show);
-    //UpdateWindow(consoleHwnd);
+   
+    initialization();
 
     server_name_num = SHIPS_SERVER;
 
