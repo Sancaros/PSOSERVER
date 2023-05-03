@@ -62,12 +62,12 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
                     }
 
                     if(reason) {
-                        send_msg_box(i, "%s\n\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                                          __(i, "\tE您已被GM踢出游戏."),
                                          __(i, "原因:"), reason);
                     }
                     else {
-                        send_msg_box(i, "%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s",
                                          __(i, "\tE您已被GM踢出游戏."));
                     }
 
@@ -494,24 +494,24 @@ int global_ban(ship_client_t *c, uint32_t gc, uint32_t l, const char *reason) {
 
                     /* Send the user a message telling them they're banned. */
                     if(reason && len) {
-                        send_msg_box(i, "%s\n%s %s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s\n%s\n%s",
                                          __(i, "\tEYou have been banned by a "
                                             "GM."), __(i, "Ban Length:"),
                                          len, __(i, "Reason:"), reason);
                     }
                     else if(len) {
-                        send_msg_box(i, "%s\n%s %s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s",
                                          __(i, "\tEYou have been banned by a "
                                             "GM."), __(i, "Ban Length:"),
                                          len);
                     }
                     else if(reason) {
-                        send_msg_box(i, "%s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s\n%s",
                                          __(i, "\tEYou have been banned by a "
                                             "GM."), __(i, "Reason:"), reason);
                     }
                     else {
-                        send_msg_box(i, "%s", __(i, "\tEYou have been "
+                        send_msg(i, MSG_BOX_TYPE, "%s", __(i, "\tEYou have been "
                                                      "banned by a GM."));
                     }
 

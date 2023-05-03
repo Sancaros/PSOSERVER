@@ -1781,10 +1781,6 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
             c2 = l->clients[i];
             pthread_mutex_lock(&c2->mutex);
 
-            //if (check) {
-            //    DBG_LOG("发送的客户端版本为 %d", c2->version);
-            //}
-
             /* Call the appropriate function. */
             switch (c2->version) {
             case CLIENT_VERSION_DCV1:
@@ -1794,7 +1790,10 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
             case CLIENT_VERSION_XBOX:
             case CLIENT_VERSION_PC:
                 /**/
-                send_pkt_dc(c2, (dc_pkt_hdr_t*)pkt);
+                if (!check) {
+                    DBG_LOG("发送的客户端版本为 %d", c2->version);
+                    send_pkt_dc(c2, (dc_pkt_hdr_t*)pkt);
+                }
                 break;
 
             case CLIENT_VERSION_BB:
@@ -3704,7 +3703,7 @@ const uint8_t PacketEE[] = {
     0x00, 0x00, 0xEE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-/* Send a text message to the client (i.e, for stuff related to commands). */
+/* 发送不同类型的信息数据统一函数 (i.e, type/ for stuff related to commands). */
 int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) {
     va_list args;
     int rv = -1;
@@ -7977,7 +7976,7 @@ int send_quest(lobby_t *l, uint32_t qid, int lc) {
             }
 
             if(rv) {
-                send_msg_box(c, "Error reading quest file!\nPlease report "
+                send_msg(c, MSG_BOX_TYPE, "Error reading quest file!\nPlease report "
                                  "this problem!\nInclude your guildcard\n"
                                  "number and the approximate\ntime in your "
                                  "error report.");
@@ -8091,7 +8090,7 @@ int send_quest_one(lobby_t *l, ship_client_t *c, uint32_t qid, int lc) {
     }
 
     if(rv) {
-        send_msg_box(c, "读取任务文件错误!\n请上报"
+        send_msg(c, MSG_BOX_TYPE, "读取任务文件错误!\n请上报"
                          "此错误!\n内容包含您的GC\n"
                          "和大约发生错误\n的时间.");
         c->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -8978,6 +8977,10 @@ int send_lobby_warp(lobby_t *l, uint8_t area) {
 
                 case CLIENT_VERSION_PC:
                     send_pc_warp(l->clients[i], area);
+                    break;
+
+                case CLIENT_VERSION_BB:
+                    send_bb_warp(l->clients[i], area);
                     break;
             }
 
@@ -11778,7 +11781,7 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
             rawtime.wMonth, rawtime.wDay);
     }
 
-    return send_msg_box(c, "%s", string);
+    return send_msg(c, MSG_BOX_TYPE, "%s", string);
 }
 
 int check_size_v(size_t size, size_t min_size, size_t max_size) {
@@ -11872,7 +11875,7 @@ int send_dc_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
     buf[len] = 0;
 
     /* Send the message to the client. */
-    return send_msg_box(c, "%s", buf);
+    return send_msg(c, MSG_BOX_TYPE, "%s", buf);
 }
 
 /* Send a message box containing an information file entry. */
@@ -11915,7 +11918,7 @@ int send_bb_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
     buf[len] = 0;
 
     /* Send the message to the client. */
-    return send_msg_box(c, "%s", buf);
+    return send_msg(c, MSG_BOX_TYPE, "%s", buf);
 }
 
 int send_info_file(ship_client_t* c, ship_t* s, uint32_t entry) {
@@ -12085,7 +12088,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     /* Clear the packet */
     memset(pkt, 0, sizeof(bb_guild_pkt_pkt));
 
-    DBG_LOG("向GC %u 发送公会指令 0x%04X", c->guildcard, cmd_code);
+    //DBG_LOG("向GC %u 发送公会指令 0x%04X", c->guildcard, cmd_code);
 
     switch (cmd_code)
     {
@@ -12115,6 +12118,17 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)menu);
 
+
+    //case BB_GUILD_UNK_02EA:
+    //case BB_GUILD_UNK_04EA:
+    //case BB_GUILD_DISSOLVE:
+    //case BB_GUILD_MEMBER_PROMOTE:
+    //case BB_GUILD_UNK_1DEA:
+    //case BB_GUILD_UNK_1EEA:
+    //case BB_GUILD_UNK_1FEA:
+    //case BB_GUILD_UNK_20EA:
+    //    return send_simple(c, cmd_code, 0);
+
     case BB_GUILD_UNK_1EEA:
         pkt->hdr.pkt_len = LE16(0x0008);
         pkt->hdr.pkt_type = cmd_code;
@@ -12138,22 +12152,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 加密并发送 */
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     case BB_GUILD_UNK_02EA:
         pkt->hdr.pkt_len = LE16(0x0008);
@@ -12233,7 +12231,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         uint32_t num = 0, len = 0;
 
         for (i = 0; i < l->max_clients; i++) {
-            if ((l->clients_slot[i]) && (l->clients[i])) {
+            if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
                 c2 = l->clients[i];
 
                 *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guildcard;
@@ -12409,4 +12407,45 @@ int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
     memcpy(pkt->quest_data1, quest_data1, sizeof(pkt->quest_data1));
 
     return crypt_send(c, 0x0210, sendbuf);
+}
+
+/* 用于查询玩家是否在线 指令*/
+int check_gc_online(ship_client_t* c, uint32_t target_gc) {
+    uint32_t i;
+    ship_client_t* it;
+    int done = 0, rv = 0;
+
+    /* 不允许查询预留的GC号. */
+    if (target_gc < 1000)
+        return 0;
+
+    /* Search the local ship first. */
+    for (i = 0; i < ship->cfg->blocks && !done; ++i) {
+        if (!ship->blocks[i] || !ship->blocks[i]->run) {
+            continue;
+        }
+
+        /* Look through all clients on that block. */
+        TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
+            /* Check if this is the target and the target has player
+               data. */
+            DBG_LOG("查询 GC %u 目标 GC %u", it->guildcard, target_gc);
+
+            if (it->guildcard == target_gc && it->pl) {
+
+                rv = 1;
+                done = 1;
+            }
+            else if (it->guildcard == target_gc) {
+                /* 如果只查询到GC却未查询到玩家数据,则查询成功并返回0. */
+                rv = 0;
+                done = 1;
+            }
+
+            if (done)
+                break;
+        }
+    }
+
+    return rv;
 }

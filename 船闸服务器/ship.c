@@ -2280,7 +2280,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    TEST_LOG("guild_id = %u",pkt->fw_flags);
+    TEST_LOG("handle_bb_guild_rank_list guild_id = %u",pkt->fw_flags);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2320,7 +2320,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t len = LE16(hdr->pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    DBG_LOG("舰闸：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+    //DBG_LOG("舰闸：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_GUILD_CREATE:
@@ -5108,11 +5108,9 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     case SHDR_TYPE_UBL_ADD:
         return handle_ubl_add(c, (shipgate_ubl_add_pkt*)pkt);
 
-    //case SHDR_TYPE_BBGUILD:
-    //    return handle_bbguild(c, (shipgate_bb_guild_pkt*)pkt);
-
-    //case SHDR_TYPE_BBGUILD_REQ:
-    //    return handle_bbguild_req(c, (shipgate_bb_guild_req_pkt*)pkt);
+    case SHDR_TYPE_CHECK_PLONLINE:
+        DBG_LOG("收到查询指令");
+        return 0;
 
     default:
         UNK_SPD(type,(uint8_t*)pkt);

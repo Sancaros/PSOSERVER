@@ -967,7 +967,7 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
 
     /* Make sure v1 is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NODCNTE)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO NTE is not supported on\n"
+        send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO NTE is not supported on\n"
             "this ship.\n\nDisconnecting."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
@@ -1031,7 +1031,7 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
 
     /* Make sure v1 is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOV1)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO Version 1 is not supported on\n"
+        send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO Version 1 is not supported on\n"
             "this ship.\n\nDisconnecting."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
@@ -1124,7 +1124,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     /* Make sure the client's version is allowed on this ship. */
     if (c->version != CLIENT_VERSION_PC) {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOV2)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Version 2 is not supported "
+            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO Version 2 is not supported "
                 "on\nthis ship.\n\nDisconnecting."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
@@ -1132,7 +1132,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     }
     else {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPC)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO for PC is not supported "
+            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO for PC is not supported "
                 "on\nthis ship.\n\nDisconnecting."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
@@ -1143,7 +1143,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
             c->flags |= CLIENT_FLAG_IS_NTE;
 
             if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPCNTE)) {
-                send_msg_box(c, "%s", __(c, "\tEPSO for PC Network Trial "
+                send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO for PC Network Trial "
                     "Edition\nis not supported on "
                     "this ship.\n\nDisconnecting."));
                 c->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -1251,7 +1251,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     /* Make sure PSOGC is allowed on this ship. */
     if (c->version == CLIENT_VERSION_GC) {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Episode 1 & 2 is not "
+            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO Episode 1 & 2 is not "
                 "supported on\nthis ship.\n\n"
                 "Disconnecting."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -1260,7 +1260,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     }
     else {
         if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3)) {
-            send_msg_box(c, "%s", __(c, "\tEPSO Episode 3 is not "
+            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO Episode 3 is not "
                 "supported on\nthis ship.\n\n"
                 "Disconnecting."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -1349,7 +1349,7 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
 
     /* Make sure PSOX is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX)) {
-        send_msg_box(c, "%s", __(c, "\tEPSO Episode 1 & 2 for Xbox "
+        send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tEPSO Episode 1 & 2 for Xbox "
             "is not supported on\nthis ship.\n\n"
             "Disconnecting."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -1436,7 +1436,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
        client_check_character() function. */
     v = LE32(pkt->data.v1.character.disp.level + 1);
     if (v > MAX_PLAYER_LEVEL) {
-        send_msg_box(c, __(c, "\tEHacked characters are not allowed\n"
+        send_msg(c, MSG_BOX_TYPE, __(c, "\tEHacked characters are not allowed\n"
             "on this server.\n\n"
             "This will be reported to the server\n"
             "administration."));
@@ -2913,7 +2913,7 @@ int send_motd(ship_client_t* c) {
     //ERR_LOG("block £ºsend_motd c->version = %d gc = %u", c->version, c->guildcard);
 
     /* Send the message to the client. */
-    return send_msg_box(c, "%s", buf);
+    return send_msg(c, MSG_BOX_TYPE, "%s", buf);
 }
 
 ship_client_t* block_find_client(block_t* b, uint32_t gc) {

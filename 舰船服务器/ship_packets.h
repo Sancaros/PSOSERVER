@@ -305,4 +305,7 @@ int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
 
 int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1);
 
+/* 用于查询玩家是否在线 指令*/
+int check_gc_online(ship_client_t* c, uint32_t target_gc);
+
 #endif /* !SHIP_PACKETS_H */

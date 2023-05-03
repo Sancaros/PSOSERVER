@@ -233,30 +233,30 @@ static int handle_max_level(ship_client_t *c, const char *params) {
 static int handle_refresh(ship_client_t *c, const char *params) {
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
     }
 
     /* Not valid for Blue Burst clients */
     if (c->version == CLIENT_VERSION_BB) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
     }
 
     if(!strcmp(params, "quests")) {
-        return refresh_quests(c, send_txt);
+        return refresh_quests(c, send_msg);
     }
     else if(!strcmp(params, "gms")) {
         /* Make sure the requester is a local root. */
         if(!LOCAL_ROOT(c)) {
-            return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+            return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
         }
 
-        return refresh_gms(c, send_txt);
+        return refresh_gms(c, send_msg);
     }
     else if(!strcmp(params, "limits")) {
-        return refresh_limits(c, send_txt);
+        return refresh_limits(c, send_msg);
     }
     else {
-        return send_txt(c, "%s", __(c, "\tE\tC7Unknown item to refresh."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7Unknown item to refresh."));
     }
 }
 
@@ -1005,7 +1005,7 @@ static int handle_shutdown(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local root. */
     if(!LOCAL_ROOT(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
     }
 
     /* Figure out when we're supposed to shut down. */
@@ -1014,7 +1014,7 @@ static int handle_shutdown(ship_client_t *c, const char *params) {
 
     if(errno != 0) {
         /* Send a message saying invalid time */
-        return send_txt(c, "%s", __(c, "\tE\tC7无效时间."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7无效时间."));
     }
 
     /* Give everyone at least a minute */
@@ -1022,7 +1022,7 @@ static int handle_shutdown(ship_client_t *c, const char *params) {
         when = 1;
     }
 
-    return schedule_shutdown(c, when, 0, send_txt);
+    return schedule_shutdown(c, when, 0, send_msg);
 }
 
 /* 用法: /log guildcard */
@@ -1804,7 +1804,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
     str[511] = '\0';
 
     /* 将数据包发送出去 */
-    return send_msg_box(c, "%s", str);
+    return send_msg(c, MSG_BOX_TYPE, "%s", str);
 }
 
 /* 用法 /npc number,client_id,follow_id */
@@ -2108,13 +2108,13 @@ static int handle_ban_d(ship_client_t *c, const char *params) {
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(strlen(reason) > 1) {
-                        send_msg_box(i, "%s\n%s %s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s\n%s\n%s",
                                          __(i, "\tE您已被GM封禁并逐出舰船."), __(i, "封禁时长:"),
                                          __(i, "1 天"), __(i, "封禁理由:"),
                                          reason + 1);
                     }
                     else {
-                        send_msg_box(i, "%s\n%s %s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s",
                                          __(i, "\tE您已被GM封禁并逐出舰船."), __(i, "封禁时长:"),
                                          __(i, "1 天"));
                     }
@@ -2166,14 +2166,14 @@ static int handle_ban_w(ship_client_t *c, const char *params) {
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(strlen(reason) > 1) {
-                        send_msg_box(i, "%s\n%s %s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s\n%s\n%s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "1 week"), __(i, "Reason:"),
                                          reason + 1);
                     }
                     else {
-                        send_msg_box(i, "%s\n%s %s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "1 week"));
@@ -2227,14 +2227,14 @@ static int handle_ban_m(ship_client_t *c, const char *params) {
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(strlen(reason) > 1) {
-                        send_msg_box(i, "%s\n%s %s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s\n%s\n%s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "30 days"), __(i, "Reason:"),
                                          reason + 1);
                     }
                     else {
-                        send_msg_box(i, "%s\n%s %s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "30 days"));
@@ -2287,14 +2287,14 @@ static int handle_ban_p(ship_client_t *c, const char *params) {
                 /* Disconnect them if we find them */
                 if(i->guildcard == gc) {
                     if(strlen(reason) > 1) {
-                        send_msg_box(i, "%s\n%s %s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s\n%s\n%s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "Forever"), __(i, "Reason:"),
                                          reason + 1);
                     }
                     else {
-                        send_msg_box(i, "%s\n%s %s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s %s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Ban Length:"),
                                          __(i, "Forever"));
@@ -2481,7 +2481,7 @@ static int handle_restart(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is a local root. */
     if(!LOCAL_ROOT(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
     }
 
     /* Figure out when we're supposed to shut down. */
@@ -2490,7 +2490,7 @@ static int handle_restart(ship_client_t *c, const char *params) {
 
     if(errno != 0) {
         /* Send a message saying invalid time */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid time."));
+        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7时间参数无效."));
     }
 
     /* Give everyone at least a minute */
@@ -2498,7 +2498,7 @@ static int handle_restart(ship_client_t *c, const char *params) {
         when = 1;
     }
 
-    return schedule_shutdown(c, when, 1, send_txt);
+    return schedule_shutdown(c, when, 1, send_msg);
 }
 
 /* 用法: /search guildcard */
@@ -3468,13 +3468,13 @@ static int handle_ib(ship_client_t *c, const char *params) {
                 if(nm->sin_family == PF_INET &&
                    ip->sin_addr.s_addr == nm->sin_addr.s_addr) {
                     if(reason && strlen(reason)) {
-                        send_msg_box(i, "%s\n%s\n%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s\n%s\n%s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."), __(i, "Reason:"),
                                          reason);
                     }
                     else {
-                        send_msg_box(i, "%s",
+                        send_msg(i, MSG_BOX_TYPE, "%s",
                                          __(i, "\tEYou have been banned from "
                                             "this ship."));
                     }

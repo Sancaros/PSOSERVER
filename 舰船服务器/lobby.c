@@ -1251,9 +1251,9 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         c->p2_drops_max = 0;
     }
 
-    //if (c->version >= CLIENT_VERSION_BB) {
-    //    send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
-    //}
+    if (c->version >= CLIENT_VERSION_BB) {
+        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
+    }
 
     /* ...and let his/her new lobby know that he/she has arrived. */
     send_lobby_add_player(c->cur_lobby, c);

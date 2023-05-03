@@ -448,21 +448,6 @@ typedef struct shipgate_bb_opts {
     uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
     //psocn_bb_db_guild_t guild;
 } PACKED shipgate_bb_opts_pkt;
-//
-///* 请求 Blue Burst 公会数据包 */
-//typedef struct shipgate_bb_guild_req {
-//    shipgate_hdr_t hdr;
-//    uint32_t guildcard;
-//    uint32_t block;
-//} PACKED shipgate_bb_guild_req_pkt;
-//
-///* 发送 Blue Burst 公会数据包至客户端 */
-//typedef struct shipgate_bb_guild {
-//    shipgate_hdr_t hdr;
-//    uint32_t guildcard;
-//    uint32_t block;
-//    psocn_bb_db_guild_t guild;
-//} PACKED shipgate_bb_guild_pkt;
 
 /* Packet used to send an update to the user's monster kill counts.
    Version 1 adds a client version code where there used to be a reserved byte
@@ -612,6 +597,15 @@ typedef struct shipgate_pl_level_bb {
     shipgate_hdr_t hdr;
     bb_level_table_t data;
 } PACKED shipgate_pl_level_bb_pkt;
+
+/* 用于查询玩家是否在线 */
+typedef struct shipgate_check_plonline {
+    shipgate_hdr_t hdr;
+    uint32_t req_gc;
+    uint32_t target_gc;
+    uint32_t block;
+    uint32_t flags;
+} PACKED shipgate_check_plonline_pkt;
 
 #ifndef _WIN32
 #else

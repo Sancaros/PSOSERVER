@@ -131,7 +131,7 @@ static int pllist_ship(ship_client_t *c, const char *name, int first,
     }
 
     /* Send the message away */
-    return send_msg_box(c, "%s", str);
+    return send_msg(c, MSG_BOX_TYPE, "%s", str);
 }
 
 static int pllist_block(ship_client_t *c, const char *name, int first,
@@ -220,7 +220,7 @@ static int pllist_block(ship_client_t *c, const char *name, int first,
     }
 
     /* Send the message away */
-    return send_msg_box(c, "%s", str);
+    return send_msg(c, MSG_BOX_TYPE, "%s", str);
 }
 
 static int pllist_lobby(ship_client_t *c, const char *name, int first,
@@ -304,7 +304,7 @@ static int pllist_lobby(ship_client_t *c, const char *name, int first,
     }
 
     /* Send the message away */
-    return send_msg_box(c, "%s", str);
+    return send_msg(c, MSG_BOX_TYPE, "%s", str);
 }
 
 int send_player_list(ship_client_t *c, const char *params) {

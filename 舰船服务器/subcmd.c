@@ -940,7 +940,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
                   LE32(pkt->data.data2_l));
 
             /* The item failed the check, so kick the user. */
-            send_msg_box(c, "%s\n\n%s\n%s",
+            send_msg(c, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                              __(c, "\tE您已被踢出服务器."),
                              __(c, "原因:"),
                              __(c, "Attempt to remove a non-legit item from\n"

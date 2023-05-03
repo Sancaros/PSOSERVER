@@ -65,6 +65,7 @@
 #define SHDR_TYPE_BBMAXTECH 0x0033      /* Blue Burst max tech level table data 51 */
 #define SHDR_TYPE_BBLVLDATA 0x0034      /* Blue Burst player level data 52 */
 //#define SHDR_TYPE_BBGUILD_REQ 0x0034      /* Request Blue Burst guild data 52 */
+#define SHDR_TYPE_CHECK_PLONLINE 0x0035      /* Check player online 53 */
 #define SHDR_TYPE_8000      0x8000      /* 0x8000 51 */
 
 /* Flags that can be set in the login packet */
