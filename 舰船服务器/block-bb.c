@@ -1727,6 +1727,7 @@ static int process_bb_guild_create(ship_client_t* c, bb_guild_create_pkt* pkt) {
     }
 
     pkt->guildcard = c->guildcard;
+    pkt->hdr.flags = c->version;
 
     //print_payload((uint8_t*)pkt, len);
 
@@ -2091,7 +2092,7 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
 
-        send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已成功解散!"));
+        send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4公会已成功解散!"));
 
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);

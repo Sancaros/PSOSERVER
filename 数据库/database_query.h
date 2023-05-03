@@ -152,7 +152,7 @@ psocn_srvconfig_t db_get_auth_server_list(uint32_t id);
 /* 船闸查询 */
 
 /* 处理BB 公会创建 */
-int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc);
+int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc, uint32_t version);
 
 /* 获取玩家角色数据长度 */
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);

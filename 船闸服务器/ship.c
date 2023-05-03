@@ -1541,7 +1541,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     istrncpy16_raw(ic_utf16_to_gbk, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
 
-    create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard);
+    create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard, g_data->hdr.flags);
 
     switch (create_res)
     {

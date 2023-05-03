@@ -325,7 +325,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
     return 0;
 }
 
-int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc) {
+int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc, uint32_t version) {
     void* result;
     //char** row;
     bb_guild_t* g_data;
@@ -363,10 +363,10 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     {
         // It doesn't... but it will now. :)
         sprintf_s(myquery, _countof(myquery), "INSERT INTO %s "
-            "(guildcard, guild_name_text, guild_name, guild_flag) "
-            "VALUES ('%" PRIu32 "', '%s', '",
+            "(guildcard, version, guild_name_text, guild_name, guild_flag) "
+            "VALUES ('%" PRIu32 "', '%d', '%s', '",
             CLIENTS_GUILD, 
-            gc, guild_name_text);
+            gc, version, guild_name_text);
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&g_data->guild_name,
             sizeof(g_data->guild_name));
