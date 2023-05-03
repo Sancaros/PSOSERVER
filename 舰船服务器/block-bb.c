@@ -1868,15 +1868,16 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
     }
 
     if (guild_id <= 0) {
-        return send_msg(c, MSG_BOX_TYPE, "%s",
+        return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE您不在任何一个公会中."));
     }
 
-    if (target_gc != c->guildcard && c->bb_guild->guild_data.guild_priv_level == 0x40) {
-        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
-        send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
 
-        if (check_gc_online(c, target_gc)) {
+    if (target_gc != c->guildcard) {
+        if (c->bb_guild->guild_data.guild_priv_level == 0x40) {
+            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+            send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
+
             for (i = 0; i < l->max_clients; ++i) {
                 if (l->clients[i]->guildcard == target_gc) {
                     c2 = l->clients[i];
@@ -1886,7 +1887,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
             }
 
             if (!c2 || c2->bb_guild->guild_data.guild_id != guild_id)
-                return send_msg(c, MSG_BOX_TYPE, "%s",
+                return send_msg(c, MSG1_TYPE, "%s",
                     __(c, "\tE未找到该玩家."));
 
             if (c2->bb_guild->guild_data.guild_priv_level < c->bb_guild->guild_data.guild_priv_level) {
@@ -1896,24 +1897,22 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
                 istrncpy16_raw(ic_utf16_to_gbk, guild_name, &c->bb_guild->guild_data.guild_name[2], 30, 0x1C);
 
-                send_msg(c2, MSG_BOX_TYPE, "%s%s%s",
+                send_msg(c2, MSG1_TYPE, "%s%s%s",
                     __(c2, "\tE您已被 "),
                     guild_name,
                     __(c2, "\tE 公会开除."));
 
-                return send_msg(c, MSG_BOX_TYPE, "%s",
+                return send_msg(c, MSG1_TYPE, "%s",
                     __(c, "\tE会员已移除."));
             }
             else
-                return send_msg(c, MSG_BOX_TYPE, "%s",
+                return send_msg(c, MSG1_TYPE, "%s",
                     __(c, "\tE您的公会权限不足."));
-        }
-
-        return send_msg(c, MSG_BOX_TYPE, "%s",
-            __(c, "\tE会员已移除,会员不在线."));
+        }else
+            return send_msg(c, MSG1_TYPE, "%s",
+            __(c, "\tE您的公会权限不足."));
     }
-
-    if(target_gc == c->guildcard) {
+    else {
         /* 操作数据库 */
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
         /* 初始化对应GC的公会数据 */
@@ -1922,7 +1921,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
         return send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
 
-    return send_msg(c, MSG_BOX_TYPE, "%s",
+    return send_msg(c, MSG1_TYPE, "%s",
         __(c, "\tE公会开除玩家发生错误,请联系管理员处理."));
 }
 

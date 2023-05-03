@@ -732,9 +732,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* OK */
                     case BB_GUILD_MEMBER_REMOVE:
                         bb_guild_member_remove_pkt* remove_pkt = (bb_guild_member_remove_pkt*)pkt->pkt;
+                        guild_id = pkt->fw_flags;
 
                         if (c->guildcard == remove_pkt->target_guildcard &&
-                            c->bb_guild->guild_data.guild_id == pkt->fw_flags) {
+                            c->bb_guild->guild_data.guild_id == guild_id) {
 
                             memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
