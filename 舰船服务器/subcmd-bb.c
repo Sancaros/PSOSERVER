@@ -114,7 +114,7 @@ static int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt)
         return -1;
     }
 
-    //UNK_CSPD(pkt->type, (uint8_t*)pkt);
+    UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5376,8 +5376,9 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("暂未完成 0x60: 0x%02X\n", type);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        //DBG_LOG("暂未完成 0x60: 0x%02X\n", type);
+        //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
         sent = 0;
         break;
@@ -5402,9 +5403,11 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD60_LOBBY_CHAIR:
     case SUBCMD60_CHAIR_DIR:
     case SUBCMD60_CHAIR_MOVE:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
-        DBG_LOG("最终未触发并发走的 0x60: 0x%02X\n", type);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        //DBG_LOG("最终未触发并发走的 0x60: 0x%02X\n", type);
+        //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        break;
     }
 
     /* Broadcast anything we don't care to check anything about. */

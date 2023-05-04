@@ -587,7 +587,7 @@ int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         // No size check packet encountered while in Lobby_Room mode...
         if (sizecheck == 4) {
-            DBG_LOG("没有0x60指令 0x%04X 的大小检测信息", type);
+            //DBG_LOG("没有0x60指令 0x%04X 的大小检测信息", type);
             sent = 1;
         }
     }

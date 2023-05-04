@@ -213,6 +213,8 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 
 extern void print_payload(uint8_t* payload, int len);
 
+extern void print_payload2(uint8_t* payload, int len);
+
 extern void load_log_config(void);
 
 extern void color(uint32_t x);

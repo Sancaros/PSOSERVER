@@ -1024,9 +1024,6 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
             /* 0x00E2 226*/
         case BB_OPTION_CONFIG_TYPE:
             return handle_option(c, (bb_opt_config_pkt *)pkt);
-            //c->disconnected = 1;
-            //UDONE_CPD(type,pkt);
-            //return 0;
 
             /* 0x00E3 227*/
         case BB_CHARACTER_SELECT_TYPE:

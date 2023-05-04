@@ -157,6 +157,62 @@ void print_payload(uint8_t* payload, int len) {
 	return;
 }
 
+void print_payload2(uint8_t* payload, int len) {
+
+	int len_rem = len;
+	int line_width = 16;			/* number of bytes per line */
+	int line_len;
+	int offset = 0;					/* zero-based offset counter */
+	uint8_t* ch = payload;
+
+	if (len <= 0)
+		return;
+
+	/* data fits on one line */
+	if (len <= line_width) {
+		print_hex_ascii_line(ch, len, offset);
+		return;
+	}
+
+	/* data spans multiple lines */
+	for (;; ) {
+		/* compute current line length */
+		line_len = line_width % len_rem;
+		/* print line */
+		print_hex_ascii_line(ch, line_len, offset);
+		/* compute total remaining */
+		len_rem = len_rem - line_len;
+		/* shift pointer to remaining bytes to print */
+		ch = ch + line_len;
+		/* add offset */
+		offset = offset + line_width;
+		/* check if we have line width chars or less */
+		if (len_rem <= line_width) {
+			/* print last line and get out */
+			print_hex_ascii_line(ch, len_rem, offset);
+			break;
+		}
+	}
+
+	return;
+}
+
+void print_b(void* pointer, size_t size) {
+	unsigned long data = *((unsigned long*)pointer);
+	int length = size * 8;
+	int counter = 0;
+	int d_len = 0;
+	printf("十进制: %lu\n", data);
+	printf("二进制: ");
+	while (length-- > 0) {
+		sprintf(&dp[d_len++], "%lu", (data >> length) & 0x1);
+		counter++;
+		if (counter % 8 == 0) {
+			sprintf(&dp[d_len++], " ");
+		}
+	}
+}
+
 void packet_to_text(uint8_t* buf, int32_t len)
 {
 	int32_t c, c2, c3, c4;
@@ -743,7 +799,7 @@ void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 	uint16_t size;
 	size = *(uint16_t*)&pkt[0];
 	Logs(codeline, error_log_console_show, ERR_LOG, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(pkt, size);
+	packet_to_text(&pkt[0], size);
 	Logs(codeline, error_log_console_show, ERR_LOG, "\n%s\n", &dp[0]);
 }
 
@@ -753,7 +809,7 @@ void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 	uint16_t size;
 	size = *(uint16_t*)&pkt[0];
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(pkt, size);
+	packet_to_text(&pkt[0], size);
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
@@ -763,7 +819,7 @@ void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 	uint16_t size;
 	size = *(uint16_t*)&pkt[0];
 	Logs_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(pkt, size);
+	packet_to_text(&pkt[0], size);
 	Logs_unknow(codeline, unknow_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
@@ -773,7 +829,7 @@ void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 	uint16_t size;
 	size = *(uint16_t*)&pkt[0];
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(pkt, size);
+	packet_to_text(&pkt[0], size);
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
