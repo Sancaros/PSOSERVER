@@ -1035,7 +1035,6 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
             /* 0x00E7 231*/
         case BB_FULL_CHARACTER_TYPE:
-            UDONE_CPD(type, c->version, pkt);
             /* Ignore these... they're meaningless and very broken when they
                manage to get sent to the login server... */
             return handle_full_char(c, (bb_full_char_pkt *)pkt);

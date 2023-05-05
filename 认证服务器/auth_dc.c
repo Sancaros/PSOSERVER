@@ -332,8 +332,8 @@ static int handle_login0(login_client_t *c, dc_login_90_pkt *pkt) {
     }
 
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 16);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number, 8);
+    psocn_db_escape_str(&conn, access, pkt->access_key, 8);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
@@ -380,8 +380,8 @@ static int handle_login3(login_client_t *c, dc_login_93_pkt *pkt) {
 
     /* Escape all the important strings. */
     psocn_db_escape_str(&conn, dc_id, pkt->dc_id, 8);
-    psocn_db_escape_str(&conn, serial, pkt->serial_number, 16);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 16);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number, 8);
+    psocn_db_escape_str(&conn, access, pkt->access_key, 8);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE (dc_id='%s' "
         "OR dc_id IS NULL) AND serial_number='%s' AND access_key='%s'"
