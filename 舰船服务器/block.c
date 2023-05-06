@@ -2323,6 +2323,9 @@ static int process_gm_menu(ship_client_t* c, uint32_t menu_id,
 
 int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
     const uint8_t* passwd, uint16_t passwd_len) {
+
+    //DBG_LOG("process_menu÷∏¡Ó: 0x%08X item_id %d", menu_id & 0xFF, item_id);
+
     /* Figure out what the client is selecting. */
     switch(menu_id & 0xFF) {
         /* Lobby Information Desk */

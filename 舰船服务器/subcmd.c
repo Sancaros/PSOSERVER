@@ -2792,7 +2792,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
 
         default:
 #ifdef LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
+            //DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
             UNK_CSPD(type, c->version, pkt);
             //print_payload((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
@@ -2819,6 +2819,8 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
         return 0;
 
     pthread_mutex_lock(&l->mutex);
+
+    DBG_LOG("0x60 指令: 0x%02X", type);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if(l->flags & LOBBY_FLAG_BURSTING) {
