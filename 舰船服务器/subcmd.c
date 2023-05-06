@@ -3019,8 +3019,8 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
         case SUBCMD60_WARP_55:
         case SUBCMD60_LOBBY_ACTION:
         case SUBCMD60_GOGO_BALL:
-        case SUBCMD60_LOBBY_CHAIR:
-        case SUBCMD60_CHAIR_DIR:
+        case SUBCMD60_CHAIR_CREATE:
+        case SUBCMD60_CHAIR_TURN:
         case SUBCMD60_CHAIR_MOVE:
             sent = 0;
     }

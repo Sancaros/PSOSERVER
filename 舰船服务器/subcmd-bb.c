@@ -3757,7 +3757,8 @@ static int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt)
     return word_select_send_gc(c, &gc);
 }
 
-static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_chair_dir_t* pkt) {
+//弃用
+static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_create_lobby_chair_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -4436,6 +4437,51 @@ static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_battle_mode_t* pkt)
     return 0;
 }
 
+static int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    uint8_t type = pkt->type;
+    lobby_t* l = c->cur_lobby;
+    int rv = 0;
+
+    /* We can't get these in lobbies without someone messing with something
+   that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    switch (type)
+    {
+        /* 0xAB */
+    case SUBCMD60_CHAIR_CREATE:
+        subcmd_bb_create_lobby_chair_t* pktab = (subcmd_bb_create_lobby_chair_t*)pkt;
+        DBG_LOG("SUBCMD60_CHAIR_CREATE %u %u ", pktab->unknown_a1, pktab->unknown_a2);
+
+        break;
+
+        /* 0xAE */
+    case SUBCMD60_CHAIR_STATE:
+        subcmd_bb_set_lobby_chair_state_t* pktae = (subcmd_bb_set_lobby_chair_state_t*)pkt;
+        DBG_LOG("SUBCMD60_CHAIR_STATE %u %u %u %u", pktae->unknown_a1, pktae->unknown_a2, pktae->unknown_a3, pktae->unknown_a4);
+
+        break;
+
+        /* 0xAF */
+    case SUBCMD60_CHAIR_TURN:
+        subcmd_bb_turn_lobby_chair_t* pktaf = (subcmd_bb_turn_lobby_chair_t*)pkt;
+        DBG_LOG("SUBCMD60_CHAIR_TURN %02X", pktaf->angle);
+        break;
+
+        /* 0xB0 */
+    case SUBCMD60_CHAIR_MOVE:
+        subcmd_bb_move_lobby_chair_t* pktb0 = (subcmd_bb_move_lobby_chair_t*)pkt;
+        DBG_LOG("SUBCMD60_CHAIR_MOVE %02X", pktb0->angle);
+        break;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -4878,16 +4924,16 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_gol_dragon_act(c, (subcmd_bb_gol_dragon_act_t*)pkt);
         break;
 
-    case SUBCMD60_LOBBY_CHAIR:
-        rv = handle_bb_chair_dir(c, (subcmd_bb_chair_dir_t*)pkt);
+    case SUBCMD60_CHAIR_CREATE:
+        rv = handle_bb_chair_dir(c, (subcmd_bb_create_lobby_chair_t*)pkt);
         break;
 
-    case SUBCMD60_CHAIR_DIR:
-        rv = handle_bb_chair_dir(c, (subcmd_bb_chair_dir_t*)pkt);
+    case SUBCMD60_CHAIR_TURN:
+        rv = handle_bb_chair_dir(c, (subcmd_bb_create_lobby_chair_t*)pkt);
         break;
 
     case SUBCMD60_CHAIR_MOVE:
-        rv = handle_bb_chair_dir(c, (subcmd_bb_chair_dir_t*)pkt);
+        rv = handle_bb_chair_dir(c, (subcmd_bb_create_lobby_chair_t*)pkt);
         break;
 
     case SUBCMD60_TRADE_DONE:
@@ -5074,6 +5120,14 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /*座椅状态 触发*/
+    case SUBCMD60_CHAIR_CREATE:
+    case SUBCMD60_CHAIR_STATE:
+    case SUBCMD60_CHAIR_TURN:
+    case SUBCMD60_CHAIR_MOVE:
+        rv = handle_bb_lobby_chair(c, (subcmd_bb_pkt_t*)pkt);
+        break;
 
         /*挑战模式 触发*/
     case SUBCMD60_UNKNOW_7D:
@@ -5400,9 +5454,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case SUBCMD60_WARP_55:
     case SUBCMD60_GOGO_BALL:
-    case SUBCMD60_LOBBY_CHAIR:
-    case SUBCMD60_CHAIR_DIR:
-    case SUBCMD60_CHAIR_MOVE:
         UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
         //DBG_LOG("最终未触发并发走的 0x60: 0x%02X\n", type);

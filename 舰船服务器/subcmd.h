@@ -1052,7 +1052,7 @@ typedef struct subcmd_bb_Unknown_6x53 {
 typedef struct subcmd_bb_map_warp {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t unknown_a1; //80 为 总督府 00 为先驱者2号
+    uint32_t area; //80 为 总督府 00 为先驱者2号
     float x1;
     float y1;
     float z1;
@@ -2159,21 +2159,13 @@ typedef struct subcmd_bb_Episode2BossActions_6xAA {
     uint32_t unknown_a3;
 } PACKED subcmd_bb_Episode2BossActions_6xAA_t;
 
-// 0xAB: Create lobby chair (不支持 PC)
-typedef struct subcmd_bb_CreateLobbyChair_6xAB {
+// 0xAB: 座椅状态 生成椅子 (不支持 PC)
+typedef struct subcmd_bb_create_lobby_chair {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED subcmd_bb_CreateLobbyChair_6xAB_t;
-
-// 0xAB: Create lobby chair (不支持 PC)
-typedef struct subcmd_bb_chair_dir {
-    bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
-    uint16_t unknown_a1;
-    uint16_t unknown_a2;
-} PACKED subcmd_bb_chair_dir_t;
+} PACKED subcmd_bb_create_lobby_chair_t;
 
 // 0xAC: Unknown (不支持 PC)
 typedef struct subcmd_bb_Unknown_6xAC {
@@ -2191,31 +2183,30 @@ typedef struct subcmd_bb_Unknown_6xAD {
     uint8_t unknown_a1[0x40];
 } PACKED subcmd_bb_Unknown_6xAD_t;
 
-// 0xAE: Set lobby chair state (sent by existing clients at join time)
-// This subcommand is 不支持 DC, PC, or GC Trial Edition.
-typedef struct subcmd_bb_SetLobbyChairState_6xAE {
+// 0xAE: 设置大厅椅子状态 (sent by existing clients at join time)
+// 该副指令不支持 DC, PC, GC 测试版.
+typedef struct subcmd_bb_set_lobby_chair_state {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
     uint32_t unknown_a3;
     uint32_t unknown_a4;
-} PACKED subcmd_bb_SetLobbyChairState_6xAE_t;
+} PACKED subcmd_bb_set_lobby_chair_state_t;
 
-// 0xAF: Turn lobby chair (不支持 PC or GC Trial Edition)
-typedef struct subcmd_bb_TurnLobbyChair_6xAF {
+// 0xAF: 座椅状态 转动椅子后得到的数据包 (不支持 PC or GC Trial Edition)
+typedef struct subcmd_bb_turn_lobby_chair {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t angle; // In range [0x0000, 0xFFFF]
-} PACKED subcmd_bb_TurnLobbyChair_6xAF_t;
+} PACKED subcmd_bb_turn_lobby_chair_t;
 
-// 0xB0: Move lobby chair (不支持 PC or GC Trial Edition)
-
-typedef struct subcmd_bb_MoveLobbyChair_6xB0 {
+// 0xB0: 座椅状态 移动椅子 (不支持 PC or GC Trial Edition)
+typedef struct subcmd_bb_move_lobby_chair {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t unknown_a1;
-} PACKED subcmd_bb_MoveLobbyChair_6xB0_t;
+    uint32_t angle; // In range [0x0000, 0xFFFF]
+} PACKED subcmd_bb_move_lobby_chair_t;
 
 // 0xB1: Unknown (不支持 PC or GC Trial Edition)
 // This subcommand is completely ignored (at least, by PSO GC).
