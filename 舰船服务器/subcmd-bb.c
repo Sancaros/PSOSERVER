@@ -5121,6 +5121,16 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
 
+        /* 动感足球函数 */
+    case SUBCMD60_GOGO_BALL:
+        rv = handle_bb_gogo_ball(c, (subcmd_bb_gogo_ball_t*)pkt);
+        break;
+
+        /* 地图传送变化触发 */
+    case SUBCMD60_WARP_55:
+        rv = handle_bb_map_warp_55(c, (subcmd_bb_map_warp_t*)pkt);
+        break;
+
         /*座椅状态 触发*/
     case SUBCMD60_CHAIR_CREATE:
     case SUBCMD60_CHAIR_STATE:
@@ -5450,14 +5460,6 @@ int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         }
 
         rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-        break;
-
-    case SUBCMD60_WARP_55:
-    case SUBCMD60_GOGO_BALL:
-        UNK_CSPD(type, c->version, (uint8_t*)pkt);
-        sent = 0;
-        //DBG_LOG("最终未触发并发走的 0x60: 0x%02X\n", type);
-        //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         break;
     }
 
