@@ -4455,27 +4455,27 @@ static int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         /* 0xAB */
     case SUBCMD60_CHAIR_CREATE:
         subcmd_bb_create_lobby_chair_t* pktab = (subcmd_bb_create_lobby_chair_t*)pkt;
-        DBG_LOG("SUBCMD60_CHAIR_CREATE %u %u ", pktab->unknown_a1, pktab->unknown_a2);
+        //DBG_LOG("SUBCMD60_CHAIR_CREATE %u %u ", pktab->unknown_a1, pktab->unknown_a2);
 
         break;
 
         /* 0xAE */
     case SUBCMD60_CHAIR_STATE:
         subcmd_bb_set_lobby_chair_state_t* pktae = (subcmd_bb_set_lobby_chair_state_t*)pkt;
-        DBG_LOG("SUBCMD60_CHAIR_STATE %u %u %u %u", pktae->unknown_a1, pktae->unknown_a2, pktae->unknown_a3, pktae->unknown_a4);
+        //DBG_LOG("SUBCMD60_CHAIR_STATE %u %u %u %u", pktae->unknown_a1, pktae->unknown_a2, pktae->unknown_a3, pktae->unknown_a4);
 
         break;
 
         /* 0xAF */
     case SUBCMD60_CHAIR_TURN:
         subcmd_bb_turn_lobby_chair_t* pktaf = (subcmd_bb_turn_lobby_chair_t*)pkt;
-        DBG_LOG("SUBCMD60_CHAIR_TURN %02X", pktaf->angle);
+        //DBG_LOG("SUBCMD60_CHAIR_TURN %02X", pktaf->angle);
         break;
 
         /* 0xB0 */
     case SUBCMD60_CHAIR_MOVE:
         subcmd_bb_move_lobby_chair_t* pktb0 = (subcmd_bb_move_lobby_chair_t*)pkt;
-        DBG_LOG("SUBCMD60_CHAIR_MOVE %02X", pktb0->angle);
+        //DBG_LOG("SUBCMD60_CHAIR_MOVE %02X", pktb0->angle);
         break;
     }
 
