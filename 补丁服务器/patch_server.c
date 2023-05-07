@@ -757,7 +757,7 @@ static void run_server(int sockets[NUM_PORTS]) {
             ERR_LOG("select 套接字 = -1");
         }
 
-        /* Clean up any dead connections (its not safe to do a TAILQ_REMOVE in
+        /* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
            the middle of a TAILQ_FOREACH, and destroy_connection does indeed
            use TAILQ_REMOVE). */
         canjump = 0;
@@ -863,12 +863,12 @@ static int open_sock(int family, uint16_t port) {
         addr.sin_port = htons(port);
 
         if (bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in))) {
-            SOCKET_ERR(sock, "绑定端口");
+            SOCKET_ERR(sock, "bind error");
             ERR_LOG("绑定端口 %d:%d 出现错误", family, port);
         }
 
         if (listen(sock, 10)) {
-            SOCKET_ERR(sock, "监听端口");
+            SOCKET_ERR(sock, "listen error");
             ERR_LOG("监听端口 %d:%d 出现错误", family, port);
         }
     }

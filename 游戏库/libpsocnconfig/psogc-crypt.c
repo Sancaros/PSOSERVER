@@ -97,7 +97,7 @@ void CRYPT_GC_CreateKeys(CRYPT_SETUP* cs, uint32_t seed)
     cs->gc_block_ptr = &(cs->keys[520]);
 }
 
-void CRYPT_GC_CryptData(CRYPT_SETUP* c, void* data, unsigned long size)
+void CRYPT_GC_CryptData(CRYPT_SETUP* c, void* data, uint32_t size)
 {
     uint32_t* address_start, * address_end, tmp;
 

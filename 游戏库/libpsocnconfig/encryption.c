@@ -13,17 +13,17 @@
 unsigned long CRYPT_PC_GetNextKey(CRYPT_SETUP*);
 void CRYPT_PC_MixKeys(CRYPT_SETUP*);
 void CRYPT_PC_CreateKeys(CRYPT_SETUP*, uint32_t);
-void CRYPT_PC_CryptData(CRYPT_SETUP*, void*, unsigned long);
+void CRYPT_PC_CryptData(CRYPT_SETUP*, void*, uint32_t);
 void CRYPT_PC_DEBUG_PrintKeys(CRYPT_SETUP*, char*);
 
 unsigned long CRYPT_GC_GetNextKey(CRYPT_SETUP*);
 void CRYPT_GC_MixKeys(CRYPT_SETUP*);
 void CRYPT_GC_CreateKeys(CRYPT_SETUP*, uint32_t);
-void CRYPT_GC_CryptData(CRYPT_SETUP*, void*, unsigned long);
+void CRYPT_GC_CryptData(CRYPT_SETUP*, void*, uint32_t);
 void CRYPT_GC_DEBUG_PrintKeys(CRYPT_SETUP*, char*);
 
-void CRYPT_BB_Decrypt(CRYPT_SETUP*, void*, unsigned long);
-void CRYPT_BB_Encrypt(CRYPT_SETUP*, void*, unsigned long);
+void CRYPT_BB_Decrypt(CRYPT_SETUP*, void*, uint32_t);
+void CRYPT_BB_Encrypt(CRYPT_SETUP*, void*, uint32_t);
 void CRYPT_BB_CreateKeys(CRYPT_SETUP*, void*);
 void CRYPT_BB_DEBUG_PrintKeys(CRYPT_SETUP*, char*);
 
@@ -88,7 +88,7 @@ void CRYPT_PrintData(void* ds, unsigned long data_size)
 {
     unsigned char* data_source = (unsigned char*)ds;
     unsigned long x, y, off;
-    char buffer[17];
+    char buffer[17] = { 0 };
     buffer[16] = 0;
     off = 0;
     printf("0000 | ");

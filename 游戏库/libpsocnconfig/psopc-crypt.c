@@ -78,7 +78,7 @@ static uint32_t CRYPT_PC_GetNextKey(CRYPT_SETUP* pc)
     return re;
 }
 
-void CRYPT_PC_CryptData(CRYPT_SETUP* pc, void* data, unsigned long size)
+void CRYPT_PC_CryptData(CRYPT_SETUP* pc, void* data, uint32_t size)
 {
     uint32_t x, tmp;
     for (x = 0; x < size; x += 4) {

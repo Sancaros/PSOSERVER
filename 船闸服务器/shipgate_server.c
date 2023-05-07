@@ -480,12 +480,12 @@ void run_server(int tsock, int tsock6) {
 #ifdef ENABLE_LUA
     uint32_t j;
 #endif
-    struct sockaddr_in addr;
-    struct sockaddr_in6 addr6;
+    struct sockaddr_in addr = { 0 };
+    struct sockaddr_in6 addr6 = { 0 };
     int asock;
     socklen_t len;
-    struct timeval timeout;
-    fd_set readfds, writefds, exceptfds;
+    struct timeval timeout = { 0 };
+    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     ship_t *i, *tmp;
     ssize_t sent;
     char ipstr[INET6_ADDRSTRLEN];
