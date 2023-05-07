@@ -48,9 +48,13 @@ int psocn_db_open(psocn_dbconfig_t* dbcfg, psocn_dbconn_t* conn) {
 
     /* 设置数据库 */
     if (show_set) {
-        CONFIG_LOG("MySQL 数据库连接参数");
+        CONFIG_LOG("数据库连接参数");
+        CONFIG_LOG("数据库类型: %s", dbcfg->type);
         CONFIG_LOG("数据库地址: %s", dbcfg->host);
         CONFIG_LOG("数据库端口: %u", dbcfg->port);
+        if (dbcfg->unix_socket) {
+            CONFIG_LOG("数据库代理: %s", dbcfg->unix_socket);
+        }
         CONFIG_LOG("数据库用户: %s", dbcfg->user);
         CONFIG_LOG("数据库密码: %s", dbcfg->pass);
         CONFIG_LOG("数据库表: %s", dbcfg->db);
@@ -61,7 +65,7 @@ int psocn_db_open(psocn_dbconfig_t* dbcfg, psocn_dbconn_t* conn) {
 
     /* Attempt to connect to the MySQL server. */
     if (!mysql_real_connect(mysql, dbcfg->host, dbcfg->user, dbcfg->pass, NULL,
-        dbcfg->port, NULL, 0)) {
+        dbcfg->port, dbcfg->unix_socket, 0)) {
         mysql_close(mysql);
         conn->conndata = NULL;
         return -2;

@@ -282,7 +282,7 @@ int db_remove_gc_char_login_state(uint32_t gc) {
     return 0;
 }
 
-int db_update_gc_char_login_state(uint32_t gc, uint8_t char_slot,
+int db_update_gc_char_login_state(uint32_t gc, uint32_t char_slot,
     uint32_t islogged, uint32_t block_num) {
     char query[512];
 

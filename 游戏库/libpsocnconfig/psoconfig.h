@@ -102,6 +102,7 @@ typedef struct psocn_dbconfig {
     char* pass;
     char* db;
     uint16_t port;
+    char* unix_socket;
     char* auto_reconnect;
     char* char_set;
     char* show_setting;

@@ -35,7 +35,7 @@
 #define XC (const xmlChar *)
 
 static int handle_database(xmlNode* n, psocn_dbconfig_t* cur) {
-    xmlChar* type, * host, * user, * pass, * db, * port, * rec, * char_set, *showsetting;
+    xmlChar* type, * host, * user, * pass, * db, * port, * unix_socket, * rec, * char_set, *showsetting;
     int rv;
     unsigned long rv2;
 
@@ -46,6 +46,7 @@ static int handle_database(xmlNode* n, psocn_dbconfig_t* cur) {
     pass = xmlGetProp(n, XC"pass");
     db = xmlGetProp(n, XC"db");
     port = xmlGetProp(n, XC"port");
+    unix_socket = xmlGetProp(n, XC"unix_socket");
     rec = xmlGetProp(n, XC"auto_reconnect");
     char_set = xmlGetProp(n, XC"char_set");
     showsetting = xmlGetProp(n, XC"show_setting");
@@ -68,6 +69,7 @@ static int handle_database(xmlNode* n, psocn_dbconfig_t* cur) {
     cur->user = (char*)user;
     cur->pass = (char*)pass;
     cur->db = (char*)db;
+    cur->unix_socket = (char*)unix_socket;
     cur->auto_reconnect = (char*)rec;
     cur->char_set = (char*)char_set;
     cur->show_setting = (char*)showsetting;
@@ -92,6 +94,7 @@ err:
     xmlFree(pass);
     xmlFree(db);
     xmlFree(port);
+    xmlFree(unix_socket);
     xmlFree(rec);
     xmlFree(char_set);
     xmlFree(showsetting);

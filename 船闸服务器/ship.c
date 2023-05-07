@@ -3121,9 +3121,9 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
 static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     char query[512];
     char name[64];
-    char tmp[128];
+    char tmp_name[128];
     uint32_t gc, bl, gc2, bl2, opt, acc = 0;
-    uint8_t slot;
+    uint32_t slot;
     uint16_t ship_id;
     ship_t* c2;
     void* result;
@@ -3162,7 +3162,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
 
     /* Parse out some stuff we'll use */
     gc = ntohl(pkt->guildcard);
-    slot = pkt->slot;
+    slot = ntohl(pkt->slot);
     bl = ntohl(pkt->blocknum);
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
@@ -3170,10 +3170,10 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         tbl_nm = SERVER_CLIENTS_TRANSIENT;
 
     /* Insert the client into the online_clients table */
-    psocn_db_escape_str(&conn, tmp, name, strlen(name));
+    psocn_db_escape_str(&conn, tmp_name, name, strlen(name));
     sprintf(query, "INSERT INTO %s(guildcard, name, ship_id, "
-        "block) VALUES('%u', '%s', '%hu', '%u')", tbl_nm, gc, tmp,
-        c->key_idx, bl);
+        "block) VALUES('%u', '%s', '%hu', '%u')", tbl_nm, 
+        gc, tmp_name, c->key_idx, bl);
 
     /* If the query fails, most likely its a primary key violation, so assume
        the user is already logged in */
@@ -3471,7 +3471,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
     char name[32];
     uint32_t gc, bl, gc2, bl2;
     uint16_t ship_id;
-    uint8_t slot;
+    uint32_t slot;
     ship_t* c2;
     void* result;
     char** row;
@@ -3504,7 +3504,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
 
     /* Parse out some stuff we'll use */
     gc = ntohl(pkt->guildcard);
-    slot = pkt->slot;
+    slot = ntohl(pkt->slot);
     bl = ntohl(pkt->blocknum);
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
@@ -3660,7 +3660,7 @@ static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
 
 static int handle_lobby_chg(ship_t* c, shipgate_lobby_change_pkt* pkt) {
     char query[512];
-    char tmp[128];
+    char tmp_lobby_name[128];
     uint32_t gc, lid;
     const char* tbl_nm = SERVER_CLIENTS_ONLINE;
 
@@ -3672,22 +3672,23 @@ static int handle_lobby_chg(ship_t* c, shipgate_lobby_change_pkt* pkt) {
     lid = ntohl(pkt->lobby_id);
 
     /* Update the client's entry */
-    psocn_db_escape_str(&conn, tmp, pkt->lobby_name,
+    psocn_db_escape_str(&conn, tmp_lobby_name, pkt->lobby_name,
         strlen(pkt->lobby_name));
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
     if (gc >= 500 && gc < 600)
         tbl_nm = SERVER_CLIENTS_TRANSIENT;
 
+
     if (lid > 20) {
         sprintf(query, "UPDATE %s SET lobby_id='%u', lobby='%s' "
-            "WHERE guildcard='%u' AND ship_id='%hu'", tbl_nm, lid, tmp, gc,
+            "WHERE guildcard='%u' AND ship_id='%hu'", tbl_nm, lid, tmp_lobby_name, gc,
             c->key_idx);
     }
     else {
         sprintf(query, "UPDATE %s SET lobby_id='%u', lobby='%s', "
             "dlobby_id='%u' WHERE guildcard='%u' AND ship_id='%hu'", tbl_nm,
-            lid, tmp, lid, gc, c->key_idx);
+            lid, tmp_lobby_name, lid, gc, c->key_idx);
     }
 
     /* This shouldn't ever "fail" so to speak... */

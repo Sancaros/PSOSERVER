@@ -3596,7 +3596,7 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t gc, uint8_
     pkt->hdr.flags = 0;
 
     pkt->guildcard = htonl(gc);
-    pkt->slot = slot;
+    pkt->slot = htonl(slot);
     pkt->blocknum = htonl(block);
     memcpy(pkt->ch_name, name, 31);
 

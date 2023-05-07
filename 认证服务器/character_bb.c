@@ -451,9 +451,9 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         }
 
         sprintf_s(query, _countof(query), "UPDATE %s SET "
-            "menu_id = '%d', preferred_lobby_id = '%d', thirtytwo = '%p', isgm = '%d', security_data = '%s', slot = '%d' "
+            "menu_id = '%d', preferred_lobby_id = '%d', isgm = '%d', security_data = '%s', slot = '%d' "
             "WHERE guildcard = '%u'", 
-            AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, c->guildcard, c->sec_data.slot);
+            AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, c->isgm, (char*)&c->sec_data, c->sec_data.slot, c->guildcard);
         if (psocn_db_real_query(&conn, query))
         {
             SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));

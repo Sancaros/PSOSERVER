@@ -54,7 +54,7 @@ static int handle_bb_burst(login_client_t* c, bb_burst_pkt* pkt) {
 static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     char query[512];
     int len;
-    char tmp[32];
+    char tmp_username[32];
     void *result;
     char **row;
     //uint8_t hash[32];
@@ -103,7 +103,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -1;
     }
 
-    psocn_db_escape_str(&conn, tmp, pkt->username, len);
+    psocn_db_escape_str(&conn, tmp_username, pkt->username, len);
 
     sprintf_s(query, _countof(query), "SELECT %s.account_id, isbanned, islogged ,isactive, guild_id, "
         "privlevel, %s.guildcard, dressflag, isgm, regtime, %s.password, menu_id, preferred_lobby_id FROM "
@@ -114,7 +114,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
         , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
         , AUTH_ACCOUNT, AUTH_ACCOUNT_BLUEBURST
-        , AUTH_ACCOUNT_BLUEBURST, tmp);
+        , AUTH_ACCOUNT_BLUEBURST, tmp_username);
 
     /* Query the database for the user... */
     if(psocn_db_real_query(&conn, query)) {
@@ -239,16 +239,16 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         c->preferred_lobby_id = pkt->preferred_lobby_id;
     }
 
-    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username = '%s'", AUTH_SECURITY, tmp);
+    sprintf_s(query, _countof(query), "SELECT guildcard FROM %s WHERE username = '%s'", AUTH_SECURITY, tmp_username);
     psocn_db_real_query(&conn, query);
     result = psocn_db_result_store(&conn);
     row = psocn_db_result_fetch(result);
 
     /* Query the database for the user... */
     if (!row) {
-        sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, username, menu_id, preferred_lobby_id, thirtytwo, isgm, security_data) "
-            "VALUES ('%u', '%s', '%d', '%d', '%p', '%d', '%s')",
-            AUTH_SECURITY, c->guildcard, tmp, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data);
+        sprintf_s(query, _countof(query), "INSERT INTO %s (guildcard, username, menu_id, preferred_lobby_id, isgm, security_data) "
+            "VALUES ('%u', '%s', '%d', '%d', '%d', '%s')",
+            AUTH_SECURITY, c->guildcard, tmp_username, c->menu_id, c->preferred_lobby_id, c->isgm, (char*)&c->sec_data);
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("新增GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
             send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
@@ -256,8 +256,9 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         }
     }
     else {
-        sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', thirtytwo = '%p', isgm = '%d', security_data = '%s'"
-            "WHERE username = '%s'", AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, &pkt->var.new_clients.hwinfo[0], c->isgm, (char*)&c->sec_data, tmp);
+        sprintf_s(query, _countof(query), "UPDATE %s SET menu_id = '%d', preferred_lobby_id = '%d', isgm = '%d', security_data = '%s'"
+            "WHERE username = '%s'", AUTH_SECURITY, c->menu_id, c->preferred_lobby_id, c->isgm, (char*)&c->sec_data, 
+            tmp_username);
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("更新GC %u 数据错误:\n %s", c->guildcard, psocn_db_error(&conn));
             send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
