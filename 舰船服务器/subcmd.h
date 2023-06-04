@@ -2727,12 +2727,10 @@ typedef struct subcmd_bb_quest_oneperson_set_ex_pc {
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
-int subcmd_bb_handle_one2(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 
 /* Handle a 0x60 packet. */
 int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_bb_handle_bcast(ship_client_t *c, subcmd_bb_pkt_t *pkt);
-int subcmd_bb_handle_bcast_o(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 /* Handle an 0xC9/0xCB packet from Episode 3. */

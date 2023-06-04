@@ -2687,7 +2687,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
     uint8_t type = pkt->type;
     int rv = -1;
 
-    /* Ignore these if the client isn't in a lobby or team. */
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if(!l)
         return 0;
 
@@ -3040,7 +3040,7 @@ int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int rv;
 
-    /* Ignore these if the client isn't in a lobby or team. */
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if(!l)
         return 0;
 
