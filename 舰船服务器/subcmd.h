@@ -35,31 +35,6 @@
 #pragma pack(push, 1) 
 #endif
 
-/* General format of a subcommand packet. */
-typedef struct subcmd_pkt {
-    union {
-        dc_pkt_hdr_t dc;
-        pc_pkt_hdr_t pc;
-    } hdr;
-    uint8_t type;
-    uint8_t size;
-    uint8_t data[0];
-} PACKED subcmd_pkt_t;
-
-static int char_dc_hdrsize2 = sizeof(subcmd_pkt_t);
-
-typedef struct subcmd_bb_pkt {
-    bb_pkt_hdr_t hdr;             /* 0x00 - 0x07 8 */
-    uint8_t type;                 /* 0x08 - 0x08 1 */
-    uint8_t size;                 /* 0x09 - 0x09 1 */
-    /* 数据头 + 数据信息 占用了 10 个字节 */
-    uint8_t data[0];              /* 0x0A -  */
-} PACKED subcmd_bb_pkt_t;
-
-static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
-
-// subcmd指令集通用数据头.
-
 // 含客户端ID的副指令结构 4字节
 typedef struct client_id_hdr {
     uint8_t type; //subcmd 指令
@@ -94,6 +69,33 @@ typedef struct unused_hdr {
     uint8_t size;
     uint16_t unused;
 } PACKED unused_hdr_t;
+
+/* General format of a subcommand packet. */
+typedef struct subcmd_pkt {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    uint8_t type;
+    uint8_t size;
+    uint16_t unk;
+    uint8_t data[0];
+} PACKED subcmd_pkt_t;
+
+static int char_dc_hdrsize2 = sizeof(subcmd_pkt_t);
+
+typedef struct subcmd_bb_pkt {
+    bb_pkt_hdr_t hdr;             /* 0x00 - 0x07 8 */
+    uint8_t type;                 /* 0x08 - 0x08 1 */
+    uint8_t size;                 /* 0x09 - 0x09 1 */
+    uint16_t unk;                 /* 0x0A - 0x0B 2 */
+    /* 数据头 + 数据信息 占用了 14 个字节 */
+    uint8_t data[0];              /* 0x0A -  */
+} PACKED subcmd_bb_pkt_t;
+
+static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
+
+// subcmd指令集通用数据头.
 
 // 0x04: Unknown 未知
 typedef struct subcmd_unknown_04 {

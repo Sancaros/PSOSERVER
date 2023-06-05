@@ -130,25 +130,25 @@ int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户
 int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
-    subcmd_bb_destroy_map_item_t d = { 0 };
+    subcmd_bb_destroy_map_item_t pkt = { 0 };
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    d.hdr.pkt_len = LE16(0x0014);
-    d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    d.hdr.flags = 0;
-    d.shdr.type = SUBCMD60_DEL_MAP_ITEM;
-    d.shdr.size = 0x03;
-    d.shdr.client_id = c->client_id;
+    pkt.hdr.pkt_len = LE16(0x0014);
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_DEL_MAP_ITEM;
+    pkt.shdr.size = 0x03;
+    pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
-    d.client_id2 = c->client_id;
-    d.area = area;
-    d.item_id = item_id;
+    pkt.client_id2 = c->client_id;
+    pkt.area = area;
+    pkt.item_id = item_id;
 
-    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&d, 0);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
