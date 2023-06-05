@@ -32,8 +32,8 @@
 int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int i;
-    subcmd_word_select_t pc, gc, xb;
-    subcmd_bb_word_select_t bb;
+    subcmd_word_select_t pc = { 0 }, gc = { 0 }, xb = { 0 };
+    subcmd_bb_word_select_t bb = { 0 };
     int pcusers = 0, gcusers = 0;
     int pcuntrans = 0, gcuntrans = 0;
     uint16_t dcw, pcw, gcw;
@@ -193,8 +193,8 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
 int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int i;
-    subcmd_word_select_t dc, gc, xb;
-    subcmd_bb_word_select_t bb;
+    subcmd_word_select_t dc = { 0 }, gc = { 0 }, xb = { 0 };
+    subcmd_bb_word_select_t bb = { 0 };
     int dcusers = 0, gcusers = 0;
     int dcuntrans = 0, gcuntrans = 0;
     uint16_t dcw, pcw, gcw;
@@ -347,8 +347,8 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
 int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int i;
-    subcmd_word_select_t pc, dc, xb, gc;
-    subcmd_bb_word_select_t bb;
+    subcmd_word_select_t pc = { 0 }, dc = { 0 }, xb = { 0 }, gc = { 0 };
+    subcmd_bb_word_select_t bb = { 0 };
     int pcusers = 0, dcusers = 0;
     int pcuntrans = 0, dcuntrans = 0;
     uint16_t dcw, pcw, gcw;

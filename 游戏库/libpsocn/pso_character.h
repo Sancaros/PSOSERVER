@@ -517,9 +517,9 @@ const enum Character_Classes {
 
 typedef struct full_class {
     uint32_t class_code;
-    char cn_name[16];
+    char cn_name[24];
     char en_name[16];
-    char class_file[24];
+    char class_file[64];
 } full_class_t;
 
 static full_class_t pso_class[] = {
