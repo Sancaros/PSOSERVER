@@ -352,7 +352,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     //struct timeval rawtime;
     //struct tm cooked;
     char filename[64];
-    char text[0x91];
+    char text[0x91] = { 0 };
     FILE *fp;
     char *inptr;
     char *outptr;
@@ -404,7 +404,7 @@ int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     //struct timeval rawtime;
     //struct tm cooked;
     char filename[64];
-    char text[0x200], name[0x40];
+    char text[0x200] = { 0 }, name[0x40] = { 0 };
     FILE *fp;
     char *inptr;
     char *outptr;

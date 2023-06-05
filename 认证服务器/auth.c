@@ -235,7 +235,7 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                                   socklen_t size, uint16_t port) {
     login_client_t *rv = (login_client_t *)malloc(sizeof(login_client_t));
     uint32_t client_seed_dc, server_seed_dc;
-    uint8_t client_seed_bb[48], server_seed_bb[48];
+    uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
     int i;
 
     if(!rv) {

@@ -718,10 +718,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                        int gcsocks[NUM_GCSOCKS], int websocks[NUM_WEBSOCKS],
                        int ep3socks[NUM_EP3SOCKS], int bbsocks[NUM_BBSOCKS],
                        int xbsocks[NUM_XBSOCKS]) {
-    fd_set readfds, writefds, exceptfds;
-    struct timeval timeout;
+    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
+    struct timeval timeout = { 0 };
     socklen_t len;
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr = { 0 };
     struct sockaddr *addr_p = (struct sockaddr *)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     int nfds, asock, j, type, auth;
@@ -1292,13 +1292,13 @@ void UnhookHandler() {
 
 int __cdecl main(int argc, char** argv) {
     int i, j;
-    int dcsocks[NUM_DCSOCKS];
-    int pcsocks[NUM_PCSOCKS];
-    int gcsocks[NUM_GCSOCKS];
-    int ep3socks[NUM_EP3SOCKS];
-    int bbsocks[NUM_BBSOCKS];
-    int xbsocks[NUM_XBSOCKS];
-    int websocks[NUM_WEBSOCKS];
+    int dcsocks[NUM_DCSOCKS] = { 0 };
+    int pcsocks[NUM_PCSOCKS] = { 0 };
+    int gcsocks[NUM_GCSOCKS] = { 0 };
+    int ep3socks[NUM_EP3SOCKS] = { 0 };
+    int bbsocks[NUM_BBSOCKS] = { 0 };
+    int xbsocks[NUM_XBSOCKS] = { 0 };
+    int websocks[NUM_WEBSOCKS] = { 0 };
     
     initialization();
 

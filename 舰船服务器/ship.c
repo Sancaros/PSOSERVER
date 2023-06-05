@@ -135,11 +135,11 @@ static void* ship_thd(void* d) {
     uint32_t i;
     int select_result = 0;
     ship_t* s = (ship_t*)d;
-    struct timeval timeout;
-    fd_set readfds, writefds, exceptfds;
+    struct timeval timeout = { 0 };
+    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     ship_client_t* it, * tmp;
     socklen_t len;
-    struct sockaddr_storage addr;
+    struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     int sock, rv;

@@ -46,7 +46,7 @@ int rt_read_v2(const char *fn) {
     FILE *fp;
     uint8_t buf[30];
     int rv = 0, i, j, k;
-    uint32_t offsets[40], tmp;
+    uint32_t offsets[40] = { 0 }, tmp;
     rt_entry_t ent;
 
     have_v2rt = 0;
@@ -166,7 +166,7 @@ int rt_read_gc(const char *fn) {
     FILE *fp;
     uint8_t buf[30];
     int rv = 0, i, j, k, l;
-    uint32_t offsets[80], tmp;
+    uint32_t offsets[80] = { 0 }, tmp;
     rt_entry_t ent;
 
     have_gcrt = 0;
@@ -281,7 +281,7 @@ int rt_read_bb(const char* fn) {
     FILE* fp;
     uint8_t buf[30];
     int rv = 0, i, j, k, l;
-    uint32_t offsets[160], tmp;
+    uint32_t offsets[160] = { 0 }, tmp;
     rt_entry_t ent;
 
     have_bbrt = 0;

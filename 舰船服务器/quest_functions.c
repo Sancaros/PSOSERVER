@@ -692,7 +692,7 @@ static uint32_t del_quest_lflag(ship_client_t *c, lobby_t *l) {
 }
 
 static uint32_t word_censor_check(ship_client_t *c, lobby_t *l, int sr) {
-    char str[25];
+    char str[25] = { 0 };
     uint32_t i;
     int rv;
 

@@ -160,7 +160,7 @@ static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char *fn, co
     const size_t sz = 0x60 * sizeof(bb_battle_param_t);
     //uint32_t battle_checksum;
     //size_t check_num;
-    char buf[128];
+    char buf[128] = { 0 };
     //int i = 0;
     sprintf_s(&buf[0], sizeof(buf), "%s%s", fn, file);
 
@@ -1598,8 +1598,8 @@ int bb_load_game_enemies(lobby_t *l) {
     uint32_t enemies = 0, index, objects = 0, index2;
     parsed_map_t *maps;
     parsed_objs_t *objs;
-    game_enemies_t *sets[0x10];
-    game_objs_t *osets[0x10];
+    game_enemies_t *sets[0x10] = { 0 };
+    game_objs_t *osets[0x10] = { 0 };
 
     /* Figure out the parameter set that will be in use first... */
     l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
@@ -1714,8 +1714,8 @@ int v2_load_game_enemies(lobby_t *l) {
     uint32_t enemies = 0, index, objects = 0, index2;
     parsed_map_t *maps;
     parsed_objs_t *objs;
-    game_enemies_t *sets[0x10];
-    game_objs_t *osets[0x10];
+    game_enemies_t *sets[0x10] = { 0 };
+    game_objs_t *osets[0x10] = { 0 };
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
@@ -1840,8 +1840,8 @@ int gc_load_game_enemies(lobby_t *l) {
     uint32_t enemies = 0, index, objects = 0, index2;
     parsed_map_t *maps;
     parsed_objs_t *objs;
-    game_enemies_t *sets[0x10];
-    game_objs_t *osets[0x10];
+    game_enemies_t *sets[0x10] = { 0 };
+    game_objs_t *osets[0x10] = { 0 };
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {

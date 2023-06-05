@@ -549,7 +549,7 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
 
 static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    iitem_t ii;
+    iitem_t ii = { 0 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
