@@ -52,8 +52,8 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
     xmlChar* proto_ver, * ip, * port, * ca, * addr;
     int rv;
     unsigned long rv2;
-    uint32_t ip4;
-    uint8_t ip6[16];
+    uint32_t ip4 = 0;
+    uint8_t ip6[16] = { 0 };
 
     /* Grab the attributes of the tag. */
     proto_ver = xmlGetProp(n, XC"proto_ver");

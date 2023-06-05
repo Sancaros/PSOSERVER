@@ -22,7 +22,7 @@
 int gettimeofday(struct timeval* timevaltmp, void* tzp)
 {
 	time_t clock;
-	struct tm tm;
+	struct tm tm = { 0 };
 	SYSTEMTIME wtm;
 	GetLocalTime(&wtm);
 	tm.tm_year = wtm.wYear - 1900;

@@ -1019,7 +1019,7 @@ int psocn_web_server_loadfile(const char* onlinefile, char* dest) {
     uint16_t* w2;
     FILE* fp = { 0 };
 
-    uint8_t msgdata[4096];
+    uint8_t msgdata[4096] = { 0 };
 
     size_t len = 0;
     errno_t err = fopen_s(&fp, onlinefile, "rb");
