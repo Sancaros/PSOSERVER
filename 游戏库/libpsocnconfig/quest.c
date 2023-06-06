@@ -32,6 +32,7 @@
 
 #include "quest.h"
 #include "f_logs.h"
+#include "f_iconv.h"
 #include "psomemory.h"
 #include "Strptime_win.h"
 
@@ -57,7 +58,7 @@ static int handle_long(xmlNode *n, psocn_quest_t *q) {
 
     /* Grab the long description from the node */
     if((desc = xmlNodeListGetString(n->doc, n->children, 1))) {
-        q->long_desc = (char *)desc;
+        q->long_desc = (char*)desc;
     }
 
     return 0;
@@ -68,8 +69,8 @@ static int handle_short(xmlNode *n, psocn_quest_t *q) {
 
     /* Grab the short description from the node */
     if((desc = xmlNodeListGetString(n->doc, n->children, 1))) {
-        strncpy(q->desc, (const char *)desc, 111);
-        q->desc[111] = '\0';
+        strncpy(q->desc, convert_enc("utf-8", "gbk", (const char*)desc), 127);
+        q->desc[128] = '\0';
         xmlFree(desc);
     }
 
@@ -717,7 +718,7 @@ static int handle_quest(xmlNode *n, psocn_quest_category_t *c) {
     q->event = (int)event_list;
     q->format = (int)format;
 
-    strncpy(q->name, (const char *)name, 31);
+    strncpy(q->name, convert_enc("utf-8", "gbk", (const char*)name), 31);
     q->name[31] = '\0';
     q->prefix = (char *)prefix;
 
@@ -856,7 +857,7 @@ static int handle_description(xmlNode *n, psocn_quest_category_t *c) {
 
     /* Grab the description from the node */
     if((desc = xmlNodeListGetString(n->doc, n->children, 1))) {
-        strncpy(c->desc, (const char *)desc, 111);
+        strncpy(c->desc, convert_enc("utf-8", "gbk", (const char*)desc), 111);
         c->desc[111] = '\0';
         xmlFree(desc);
     }
@@ -1011,7 +1012,10 @@ static int handle_category(xmlNode *n, psocn_quest_list_t *l) {
     cat->episodes = episodes;
     cat->privileges = privs;
 
-    strncpy(cat->name, (const char *)name, 31);
+    //convert_enc("utf-8", "gb2312", (const char*)name);
+
+    /* 任务菜单中文 */
+    strncpy(cat->name, convert_enc("utf-8", "gbk", (const char*)name), 31);
     cat->name[31] = '\0';
 
     /* Now that we're done with that, deal with any children of the node */

@@ -529,7 +529,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 #endif
     }
 
-    /* Game Selection */
+        /* Game Selection */
     case MENU_ID_GAME:
     {
         char passwd_cmp[17] = { 0 };
@@ -585,7 +585,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return 0;
     }
 
-    /* Quest category */
+        /* Quest category */
     case MENU_ID_QCATEGORY:
     {
         int rv;
@@ -605,7 +605,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return rv;
     }
 
-    /* Quest */
+        /* Quest */
     case MENU_ID_QUEST:
     {
         int lang = (menu_id >> 24) & 0xFF;
@@ -619,7 +619,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return lobby_setup_quest(l, c, item_id, lang);
     }
 
-    /* Ship */
+        /* Ship */
     case MENU_ID_SHIP:
     {
         miniship_t* i;
@@ -681,11 +681,11 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
 
-    /* Game type (PSOBB only) */
+        /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
         return bb_process_game_type(c, menu_id, item_id);
 
-    /* GM Menu */
+        /* GM Menu */
     case MENU_ID_GM:
         return bb_process_gm_menu(c, menu_id, item_id);
 

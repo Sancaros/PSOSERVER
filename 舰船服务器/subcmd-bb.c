@@ -4015,14 +4015,31 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     }
 
     if (c->client_id == pkt->shdr.client_id) {
-        //c->x = pkt->x;
-        //c->y = pkt->y;
-        //c->z = pkt->z;
 
-        //if ((l->flags & LOBBY_FLAG_QUESTING))
-        //    update_bb_qpos(c, l);
+        DBG_LOG("area = 0x%04X", pkt->area);
 
-        DBG_LOG("这里缺总督府任务识别");
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+
+        switch (pkt->area)
+        {
+            /* 总督府 实验室 */
+        case 0x8000:
+            l->govorlab = 1;
+            DBG_LOG("这里缺进入总督府任务识别");
+            break;
+
+            /* EP1飞船 */
+        case 0x0000:
+
+            /* EP2飞船 */
+        case 0xC000:
+
+        default:
+            l->govorlab = 0;
+            DBG_LOG("这里缺离开总督府任务识别");
+            break;
+        }
+
     }
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);

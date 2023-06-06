@@ -33,6 +33,7 @@
 
 #include "psoconfig.h"
 #include "f_logs.h"
+#include "f_iconv.h"
 #include "debug.h"
 
 #ifndef LIBXML_TREE_ENABLED

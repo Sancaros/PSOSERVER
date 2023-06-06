@@ -1064,7 +1064,8 @@ typedef struct subcmd_bb_Unknown_6x53 {
 typedef struct subcmd_bb_map_warp {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t area; //80 为 总督府 00 为先驱者2号
+    uint16_t area; //0x8000 为 总督府 0x0000 为先驱者2号
+    uint16_t unused;
     float x1;
     float y1;
     float z1;

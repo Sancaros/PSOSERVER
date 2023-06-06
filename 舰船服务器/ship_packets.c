@@ -5262,17 +5262,48 @@ int send_msg_box(ship_client_t *c, const char *fmt, ...) {
     return rv;
 }
 
+uint32_t check_special_quest_type(lobby_t* l) {
+    uint32_t type = PSOCN_QUEST_NORMAL;
+
+    if (l->battle)
+        type = PSOCN_QUEST_BATTLE;
+
+    if (l->challenge)
+        type = PSOCN_QUEST_CHALLENGE;
+
+    if (l->oneperson)
+        type = PSOCN_QUEST_ONEPERSON;
+
+    if (l->govorlab) {
+
+        switch (l->episode)
+        {
+        case GAME_TYPE_NORMAL:
+        case GAME_TYPE_EPISODE_1:
+            type = PSOCN_QUEST_GOVERNMENT;
+        case GAME_TYPE_EPISODE_2:
+            type = PSOCN_QUEST_LAB;
+        case GAME_TYPE_EPISODE_4:
+        default:
+            DBG_LOG("未匹配到总督府或实验室正确任务类型");
+            break;
+        }
+    }
+
+    return type;
+}
+
 /* Send the list of quest categories to the client. */
 static int send_dc_quest_categories(ship_client_t *c, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
-    uint32_t type = PSOCN_QUEST_NORMAL;
     size_t in, out;
     char *inptr;
     char *outptr;
     psocn_quest_list_t *qlist;
     lobby_t *l = c->cur_lobby;
+    uint32_t type = check_special_quest_type(l);
     uint32_t episode = LE32(l->episode);
 
     if(l->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
@@ -5300,12 +5331,6 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
-
-    if (l->battle)
-        type = PSOCN_QUEST_BATTLE;
-
-    if (l->challenge)
-        type = PSOCN_QUEST_CHALLENGE;
 
     /* Clear out the header */
     memset(pkt, 0, 0x04);
@@ -5348,12 +5373,12 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
         outptr = &pkt->entries[entries].name[2];
 
         if(lang == CLIENT_LANG_JAPANESE) {
-            iconv(ic_utf8_to_sjis, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
             pkt->entries[entries].name[0] = '\t';
             pkt->entries[entries].name[1] = 'J';
         }
         else {
-            iconv(ic_utf8_to_8859, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
             pkt->entries[entries].name[0] = '\t';
             pkt->entries[entries].name[1] = 'E';
         }
@@ -5364,12 +5389,12 @@ static int send_dc_quest_categories(ship_client_t *c, int lang) {
         outptr = &pkt->entries[entries].desc[2];
 
         if(lang == CLIENT_LANG_JAPANESE) {
-            iconv(ic_utf8_to_sjis, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
             pkt->entries[entries].desc[0] = '\t';
             pkt->entries[entries].desc[1] = 'J';
         }
         else {
-            iconv(ic_utf8_to_8859, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
             pkt->entries[entries].desc[0] = '\t';
             pkt->entries[entries].desc[1] = 'E';
         }
@@ -5393,9 +5418,9 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
     size_t in, out;
     char *inptr;
     char *outptr;
-    uint32_t type = PSOCN_QUEST_NORMAL;
     psocn_quest_list_t *qlist;
     lobby_t *l = c->cur_lobby;
+    uint32_t type = check_special_quest_type(l);
 
     if(!l->v2)
         qlist = &ship->qlist[CLIENT_VERSION_DCV1][lang];
@@ -5415,12 +5440,6 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
-
-    if (l->battle)
-        type = PSOCN_QUEST_BATTLE;
-
-    if (l->challenge)
-        type = PSOCN_QUEST_CHALLENGE;
 
     /* Clear out the header */
     memset(pkt, 0, 0x04);
@@ -5479,12 +5498,12 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     xb_quest_list_pkt *pkt = (xb_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
-    uint32_t type = PSOCN_QUEST_NORMAL;
     size_t in, out;
     char *inptr;
     char *outptr;
     psocn_quest_list_t *qlist;
     lobby_t *l = c->cur_lobby;
+    uint32_t type = check_special_quest_type(l);
 
     qlist = &ship->qlist[CLIENT_VERSION_GC][lang];
 
@@ -5497,12 +5516,6 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
-
-    if (l->battle)
-        type = PSOCN_QUEST_BATTLE;
-
-    if (l->challenge)
-        type = PSOCN_QUEST_CHALLENGE;
 
     /* Clear out the header */
     memset(pkt, 0, 0x04);
@@ -5539,12 +5552,12 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
         outptr = &pkt->entries[entries].name[2];
 
         if(lang == CLIENT_LANG_JAPANESE) {
-            iconv(ic_utf8_to_sjis, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
             pkt->entries[entries].name[0] = '\t';
             pkt->entries[entries].name[1] = 'J';
         }
         else {
-            iconv(ic_utf8_to_8859, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
             pkt->entries[entries].name[0] = '\t';
             pkt->entries[entries].name[1] = 'E';
         }
@@ -5555,12 +5568,12 @@ static int send_xbox_quest_categories(ship_client_t *c, int lang) {
         outptr = &pkt->entries[entries].desc[2];
 
         if(lang == CLIENT_LANG_JAPANESE) {
-            iconv(ic_utf8_to_sjis, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
             pkt->entries[entries].desc[0] = '\t';
             pkt->entries[entries].desc[1] = 'J';
         }
         else {
-            iconv(ic_utf8_to_8859, &inptr, &in, &outptr, &out);
+            iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
             pkt->entries[entries].desc[0] = '\t';
             pkt->entries[entries].desc[1] = 'E';
         }
@@ -5585,7 +5598,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
     size_t in, out;
     char* inptr;
     char* outptr;
-    uint32_t type = PSOCN_QUEST_NORMAL;
+    uint32_t type = check_special_quest_type(l);
     psocn_quest_list_t* qlist = &ship->qlist[CLIENT_VERSION_BB][lang];
     uint32_t episode = LE32(l->episode);
 
@@ -5602,15 +5615,6 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
-
-    if (l->battle)
-        type = PSOCN_QUEST_BATTLE;
-
-    if (l->challenge)
-        type = PSOCN_QUEST_CHALLENGE;
-
-    if (l->oneperson)
-        type = PSOCN_QUEST_ONEPERSON;
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
@@ -5647,13 +5651,13 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
         out = 64;
         inptr = qlist->cats[i].name;
         outptr = (char *)pkt->entries[entries].name;
-        iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
         in = 112;
         out = 244;
         inptr = qlist->cats[i].desc;
         outptr = (char *)pkt->entries[entries].desc;
-        iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
         ++entries;
         len += 0x13C;
@@ -6758,12 +6762,12 @@ static int send_dc_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     outptr = &pkt->msg[2];
 
     if(l == CLIENT_LANG_JAPANESE) {
-        iconv(ic_utf8_to_sjis, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
         pkt->msg[0] = '\t';
         pkt->msg[1] = 'J';
     }
     else {
-        iconv(ic_utf8_to_8859, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
         pkt->msg[0] = '\t';
         pkt->msg[1] = 'E';
     }
@@ -6828,7 +6832,7 @@ static int send_bb_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     inptr = q->long_desc;
     out = 0x248;
     outptr = pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
 
     /* 加密并发送 */
     return crypt_send(c, BB_QUEST_INFO_LENGTH, sendbuf);

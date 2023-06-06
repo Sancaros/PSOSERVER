@@ -402,3 +402,29 @@ void* strcat16_raw(void* d, const void* s) {
 
     return d;
 }
+
+char* convert_enc(char* encFrom, char* encTo, const char* in) {
+
+    static char bufin[1024], bufout[1024], * sin, * sout;
+    int mode = { 0 }, lenin, lenout, ret, nline = { 0 };
+    iconv_t c_pt;
+
+    if ((c_pt = iconv_open(encTo, encFrom)) == (iconv_t)-1) {
+        printf("iconv_open Ê§°Ü: %s ==> %s/n", encFrom, encTo);
+        return NULL;
+    }
+    iconv(c_pt, NULL, NULL, NULL, NULL);
+
+    lenin = strlen(in) + 1;
+    lenout = 1024;
+    sin = (char*)in;
+    sout = bufout;
+    ret = iconv(c_pt, &sin, (size_t*)&lenin, &sout, (size_t*)&lenout);
+
+    if (ret == -1) {
+        return NULL;
+    }
+
+    iconv_close(c_pt);
+    return bufout;
+}

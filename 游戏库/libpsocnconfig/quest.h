@@ -87,7 +87,7 @@ typedef struct psocn_quest {
     uint32_t privileges;
 
     char name[32];
-    char desc[112];
+    char desc[128];
 
     char *long_desc;
     char *prefix;

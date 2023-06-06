@@ -62,3 +62,6 @@ char* istrncpy16_raw(iconv_t ic, char* outs, const void* ins, int out_len,
     int max_src);
 void* strcpy16_raw(void* d, const void* s);
 void* strcat16_raw(void* d, const void* s);
+
+/* ×Ö·û´®¸ñÊ½×ª»» */
+char* convert_enc(char* encFrom, char* encTo, const char* in);

@@ -80,6 +80,8 @@ typedef struct client_game_data {
     uint32_t serial_number;
     bool should_save;
 
+    int bursting;
+
     client_trade_item_t *pending_item_trade;
     iitem_t identify_result;
     sitem_t shop_items[0x14];
