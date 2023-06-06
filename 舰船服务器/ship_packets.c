@@ -5624,7 +5624,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
            qlist->cats[i].privileges && !LOCAL_GM(c))
             continue;
 
-        printf("episodes %d %d \n", qlist->cats[i].episodes, episode);
+        //printf("episodes %d %d \n", qlist->cats[i].episodes, episode);
         /* 确认为该章节的任务 */
         if (!(qlist->cats[i].episodes == episode))
             continue;
