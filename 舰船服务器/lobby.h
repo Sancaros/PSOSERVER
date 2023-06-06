@@ -120,7 +120,8 @@ struct lobby {
     uint8_t battle;
     uint8_t challenge;
     uint8_t oneperson;
-    uint8_t govorlab;
+
+    uint32_t govorlab;
 
     uint32_t drops_disabled;
 

@@ -577,37 +577,48 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
         return -1;
     }
 
-    sprintf(mdir, "%s/.mapcache/v1", dir);
-    if(_mkdir(mdir) && errno != EEXIST) {
-        QERR_LOG("创建地图缓存文件夹错误: %s",
-              strerror(errno));
-        free_safe(mdir);
-        return -1;
+
+    for (j = 0; j < CLIENT_VERSION_ALL; ++j) {
+        sprintf(mdir, "%s/.mapcache/%s", dir, client_type[j]->ver_name);
+        if (_mkdir(mdir) && errno != EEXIST) {
+            QERR_LOG("创建地图缓存文件夹错误: %s",
+                strerror(errno));
+            free_safe(mdir);
+            return -1;
+        }
     }
 
-    sprintf(mdir, "%s/.mapcache/v2", dir);
-    if(_mkdir(mdir) && errno != EEXIST) {
-        QERR_LOG("创建地图缓存文件夹错误: %s",
-              strerror(errno));
-        free_safe(mdir);
-        return -1;
-    }
+    //sprintf(mdir, "%s/.mapcache/v1", dir);
+    //if(_mkdir(mdir) && errno != EEXIST) {
+    //    QERR_LOG("创建地图缓存文件夹错误: %s",
+    //          strerror(errno));
+    //    free_safe(mdir);
+    //    return -1;
+    //}
 
-    sprintf(mdir, "%s/.mapcache/gc", dir);
-    if(_mkdir(mdir) && errno != EEXIST) {
-        QERR_LOG("创建地图缓存文件夹错误: %s",
-              strerror(errno));
-        free_safe(mdir);
-        return -1;
-    }
+    //sprintf(mdir, "%s/.mapcache/v2", dir);
+    //if(_mkdir(mdir) && errno != EEXIST) {
+    //    QERR_LOG("创建地图缓存文件夹错误: %s",
+    //          strerror(errno));
+    //    free_safe(mdir);
+    //    return -1;
+    //}
 
-    sprintf(mdir, "%s/.mapcache/bb", dir);
-    if(_mkdir(mdir) && errno != EEXIST) {
-        QERR_LOG("创建地图缓存文件夹错误: %s",
-              strerror(errno));
-        free_safe(mdir);
-        return -1;
-    }
+    //sprintf(mdir, "%s/.mapcache/gc", dir);
+    //if(_mkdir(mdir) && errno != EEXIST) {
+    //    QERR_LOG("创建地图缓存文件夹错误: %s",
+    //          strerror(errno));
+    //    free_safe(mdir);
+    //    return -1;
+    //}
+
+    //sprintf(mdir, "%s/.mapcache/bb", dir);
+    //if(_mkdir(mdir) && errno != EEXIST) {
+    //    QERR_LOG("创建地图缓存文件夹错误: %s",
+    //          strerror(errno));
+    //    free_safe(mdir);
+    //    return -1;
+    //}
 
     TAILQ_FOREACH(i, map, qentry) {
         /* Process it. */

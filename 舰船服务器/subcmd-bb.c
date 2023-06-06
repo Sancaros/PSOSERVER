@@ -4015,16 +4015,14 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
 
     if (c->client_id == pkt->shdr.client_id) {
 
-        DBG_LOG("area = 0x%04X", pkt->area);
-
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        //DBG_LOG("area = 0x%04X", pkt->area);
 
         switch (pkt->area)
         {
             /* 总督府 实验室 */
         case 0x8000:
-            l->govorlab = 1;
-            DBG_LOG("这里缺进入总督府任务识别");
+            //l->govorlab = 1;
+            DBG_LOG("进入总督府任务识别");
             break;
 
             /* EP1飞船 */
@@ -4034,8 +4032,8 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
         case 0xC000:
 
         default:
-            l->govorlab = 0;
-            DBG_LOG("这里缺离开总督府任务识别");
+            //l->govorlab = 0;
+            DBG_LOG("离开总督府任务识别");
             break;
         }
 

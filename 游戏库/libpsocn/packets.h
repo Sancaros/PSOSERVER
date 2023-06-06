@@ -2284,7 +2284,7 @@ typedef struct bb_login_9e {
 // Same as 07 command.
 
 // A2 (C->S): Request quest menu
-// No arguments
+// 这里只用到了flags来区分总督府和飞船任务
 
 // A2 (S->C): Quest menu
 // Client will respond with an 09, 10, or A9 command. For 09, the server should

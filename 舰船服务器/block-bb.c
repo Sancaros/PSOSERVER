@@ -1244,10 +1244,13 @@ static int process_bb_qload_done(ship_client_t* c) {
         }
     }
 
+    if ((l->flags & LOBBY_FLAG_QUESTING) && (c->flags & CLIENT_FLAG_BURSTING))
+        send_bb_quest_state(c);
+
     return 0;
 }
 
-static int process_bb_qlist(ship_client_t* c) {
+static int process_bb_qlist(ship_client_t* c, uint32_t flags) {
     lobby_t* l = c->cur_lobby;
     int rv;
 
@@ -1260,6 +1263,7 @@ static int process_bb_qlist(ship_client_t* c) {
     /* Do we have quests configured? */
     if (!TAILQ_EMPTY(&ship->qmap)) {
         l->flags |= LOBBY_FLAG_QUESTSEL;
+        l->govorlab = flags;
         rv = send_quest_categories(c, c->q_lang);
     }
     else {
@@ -2769,7 +2773,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x00A2 162*/
     case QUEST_LIST_TYPE:
-        return process_bb_qlist(c);
+        return process_bb_qlist(c, flags);
 
         /* 0x00A9 169*/
     case QUEST_END_LIST_TYPE:

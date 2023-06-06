@@ -12448,3 +12448,15 @@ int check_gc_online(ship_client_t* c, uint32_t target_gc) {
 
     return rv;
 }
+
+/* 发送剩余任务状态 */
+int send_bb_quest_state(ship_client_t* c) {
+    bb_send_quest_state_pkt pkt = { 0 };
+
+    /* 填充数据头并准备发送 */
+    pkt.hdr.pkt_len = sizeof(bb_send_quest_state_pkt);
+    pkt.hdr.pkt_type = BB_SEND_QUEST_STATE;
+    pkt.hdr.flags = c->client_id;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
