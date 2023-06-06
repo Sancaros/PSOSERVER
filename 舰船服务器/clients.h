@@ -364,8 +364,7 @@ static client_type_t client_type[CLIENT_VERSION_ALL][3] = {
 };
 
 /* Language codes. */
-enum CLIENT_LANG
-{
+enum CLIENT_LANG {
     CLIENT_LANG_CHINESE_S,
     CLIENT_LANG_CHINESE_T,
     CLIENT_LANG_JAPANESE,
@@ -380,16 +379,6 @@ enum CLIENT_LANG
 static const char language_codes[][3] = {
     "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
-
-///* The list of version codes for the quest directories. */
-//static const char version_codes[][3] = {
-//    "v1", "v2", "pc", "gc", "e3", "bb", "xb"
-//};
-//
-///* Sizes of the headers sent on packets */
-//static const int hdr_sizes[] = {
-//    4, 4, 4, 4, 4, 8, 4
-//};
 
 /* Initialize the clients system, allocating any thread specific keys */
 int client_init(psocn_ship_t *cfg);
