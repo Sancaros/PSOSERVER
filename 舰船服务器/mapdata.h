@@ -62,7 +62,7 @@ typedef struct bb_battle_param {
 typedef struct map_enemy {
     uint32_t base;// 4 怪物的种类ID
     uint16_t reserved0;
-    uint16_t num_clones;
+    uint16_t num_clones;//变种数值
     uint32_t reserved[11];
 	float rareratio; // 4 怪物稀有率
     //uint32_t reserved12;

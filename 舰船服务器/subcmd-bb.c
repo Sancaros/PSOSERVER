@@ -2509,42 +2509,6 @@ static int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, pkt, 0);
 }
 
-/* 任务的完成度检测 */
-int quest_flag_check(uint8_t* flag_data, uint32_t flag, uint32_t difficulty) {
-    if (flag_data[(difficulty * 0x80) + (flag >> 3)] & (1 << (7 - (flag & 0x07))))
-        return 1;
-    else
-        return 0;
-}
-
-/* EP1 单人任务的完成度检测 */
-int quest_flag_check_ep1_solo(uint8_t* flag_data, uint32_t difficulty) {
-    int i;
-    uint32_t quest_flag;
-
-    for (i = 1; i <= 25; i++) {
-        quest_flag = 0x63 + (i << 1);
-        if (!quest_flag_check(flag_data, quest_flag, difficulty)) 
-            return 0;
-    }
-
-    return 1;
-}
-
-/* TODO 挑战任务的完成度检测 */
-int quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
-    int i;
-    uint32_t quest_flag;
-
-    for (i = 1; i <= 14; i++) {
-        quest_flag = 65535 + (i << 1);
-        if (!quest_flag_check(flag_data, quest_flag, difficulty)) 
-            return 0;
-    }
-
-    return 1;
-}
-
 static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t flag = pkt->flag;
