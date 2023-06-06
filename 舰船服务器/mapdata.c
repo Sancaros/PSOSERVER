@@ -808,7 +808,7 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
 
     /* Resize, so as not to waste space */
     if(!(tmp = realloc(gen, sizeof(game_enemy_t) * count))) {
-        ERR_LOG("无法调整敌人结构的大小: %s", strerror(errno));
+        ERR_LOG("无法重置 %d 个敌人结构的内存大小: %s", count, strerror(errno));
         tmp = gen;
     }
 

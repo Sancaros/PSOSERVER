@@ -792,7 +792,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
         pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
         pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_8859, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->desc, len3);
+        istrncpy(ic_gbk_to_8859, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
         ++entries;
         len += len2;
     }
@@ -858,7 +858,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
         pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
         pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
         ++entries;
         len += len2;
     }
@@ -924,7 +924,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
         pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
         pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
         ++entries;
         len += len2;
     }
@@ -4969,7 +4969,7 @@ int send_pc_game_type_sel(ship_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_game_create_menu_pc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_create_menu_pc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_create_menu_pc[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_pc[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_pc[count]->name, len3);
         len += len2;
     }
 
@@ -5015,7 +5015,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_game_create_menu_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_create_menu_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_create_menu_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_bb[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_bb[count]->name, len3);
         len += len2;
     }
 
@@ -5046,7 +5046,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_game_drop_menu_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_drop_menu_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_drop_menu_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_drop_menu_bb[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_drop_menu_bb[count]->name, len3);
         len += len2;
     }
 
@@ -5274,21 +5274,8 @@ uint32_t check_special_quest_type(lobby_t* l) {
     if (l->oneperson)
         type = PSOCN_QUEST_ONEPERSON;
 
-    if (l->govorlab) {
-
-        switch (l->episode)
-        {
-        case GAME_TYPE_NORMAL:
-        case GAME_TYPE_EPISODE_1:
-            type = PSOCN_QUEST_GOVERNMENT;
-        case GAME_TYPE_EPISODE_2:
-            type = PSOCN_QUEST_LAB;
-        case GAME_TYPE_EPISODE_4:
-        default:
-            DBG_LOG("未匹配到总督府或实验室正确任务类型");
-            break;
-        }
-    }
+    if (l->govorlab)
+        type = PSOCN_QUEST_GOVERNMENT;
 
     return type;
 }
@@ -5615,6 +5602,10 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
+    
+    /* 临时设置EP3的数值以对应任务列表中的数值 */
+    if (l->episode == LOBBY_EPISODE_4)
+        episode = 4;
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
@@ -5633,7 +5624,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
            qlist->cats[i].privileges && !LOCAL_GM(c))
             continue;
 
-        //printf("episodes %d %d \n", qlist->cats[i].episodes, episode);
+        printf("episodes %d %d \n", qlist->cats[i].episodes, episode);
         /* 确认为该章节的任务 */
         if (!(qlist->cats[i].episodes == episode))
             continue;
@@ -6588,6 +6579,10 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
         max = l->max_chal & 0x0F;
         max2 = (l->max_chal >> 4) & 0x0F;
     }
+
+    /* 临时设置EP3的数值以对应任务列表中的数值 */
+    if (l->episode == LOBBY_EPISODE_4)
+        episode = 4;
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
@@ -12110,7 +12105,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             menu->entries[i].menu_id = LE32(pso_guild_rank_list_bb[i]->menu_id);
             menu->entries[i].item_id = LE32(pso_guild_rank_list_bb[i]->item_id);
             menu->entries[i].flags = LE16(pso_guild_rank_list_bb[i]->flag);
-            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_guild_rank_list_bb[i]->desc, 0x20);
+            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_guild_rank_list_bb[i]->name, 0x20);
             len += 0x2C;
         }
 

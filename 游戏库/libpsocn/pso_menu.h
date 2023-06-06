@@ -34,7 +34,7 @@
 #endif
 
 typedef struct pso_menu {
-    char* desc;
+    char* name;
     uint32_t menu_id;
     uint32_t item_id;
     uint16_t flag;

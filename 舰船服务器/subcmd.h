@@ -1571,7 +1571,7 @@ typedef struct subcmd_set_flag {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t flag; // Must be < 0x400
-    uint16_t unknown_a1; // Must be 0 or 1
+    uint16_t checked; // Must be 0 or 1
     uint16_t difficulty;
     uint16_t unused;
 } PACKED subcmd_set_flag_t;
@@ -1581,7 +1581,7 @@ typedef struct subcmd_bb_set_flag {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t flag; // Must be < 0x400
-    uint16_t unknown_a1; // Must be 0 or 1
+    uint16_t checked; // Must be 0 or 1
     uint16_t difficulty;
     uint16_t unused;
 } PACKED subcmd_bb_set_flag_t;

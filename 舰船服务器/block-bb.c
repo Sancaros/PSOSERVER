@@ -1362,7 +1362,7 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     /* If its a non-challenge, non-battle, non-ultimate game, ask the user if
        they want v1 compatibility or not. */
     if (!pkt->battle && !pkt->challenge && pkt->difficulty != 4 &&
-        !(c->flags & CLIENT_FLAG_IS_NTE)) {
+        !(c->flags & CLIENT_FLAG_IS_NTE) && !pkt->single_player) {
         c->create_lobby = l;
         return send_bb_game_type_sel(c);
     }
@@ -1577,22 +1577,22 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     /* BB has this in two places for now... */
     memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));//
     memcpy(&c->bb_pl->character, &char_data.character, sizeof(psocn_bb_char_t));//
-    memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
+    memcpy(&c->bb_pl->quest_data1, &char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
     memcpy(&c->bb_pl->bank, &char_data.bank, sizeof(psocn_bank_t));//
-    memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-    memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
-    memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
-    memcpy(c->bb_pl->challenge_data, char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
-    memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
-    memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
+    memcpy(&c->bb_pl->guildcard_desc, &char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+    memcpy(&c->bb_pl->autoreply, &char_data.autoreply, sizeof(c->bb_pl->autoreply));
+    memcpy(&c->bb_pl->infoboard, &char_data.infoboard, sizeof(c->bb_pl->infoboard));
+    memcpy(&c->bb_pl->challenge_data, &char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
+    memcpy(&c->bb_pl->tech_menu, &char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
+    memcpy(&c->bb_pl->quest_data2, &char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
 
     memcpy(&c->bb_guild->guild_data, &char_data.guild_data, sizeof(bb_guild_t));
 
     memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, sizeof(bb_key_config_t));
     c->bb_opts->option_flags = char_data.option_flags;
-    memcpy(c->bb_opts->shortcuts, &char_data.shortcuts, 0x0A40);
-    memcpy(c->bb_opts->symbol_chats, &char_data.symbol_chats, 0x04E0);
-    memcpy(c->bb_opts->guild_name, &char_data.gc_data2.guild_name, sizeof(char_data.gc_data2.guild_name));
+    memcpy(&c->bb_opts->shortcuts, &char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
+    memcpy(&c->bb_opts->symbol_chats, &char_data.symbol_chats, sizeof(c->bb_opts->symbol_chats));
+    memcpy(&c->bb_opts->guild_name, &char_data.gc_data2.guild_name, sizeof(char_data.gc_data2.guild_name));
 
     return 0;
 }

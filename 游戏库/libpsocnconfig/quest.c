@@ -900,41 +900,17 @@ static int handle_category(xmlNode *n, psocn_quest_list_t *l) {
     else if (!xmlStrcmp(type, XC"Challenge")) {
         type_num = PSOCN_QUEST_CHALLENGE;
     }
-    else if (!xmlStrcmp(type, XC"Extermination")) {
-        type_num = PSOCN_QUEST_EXTERMINATION;
+    else if (!xmlStrcmp(type, XC"Oneperson")) {
+        type_num = PSOCN_QUEST_ONEPERSON;
     }
     else if (!xmlStrcmp(type, XC"Government")) {
         type_num = PSOCN_QUEST_GOVERNMENT;
     }
-    else if (!xmlStrcmp(type, XC"Retrieval")) {
-        type_num = PSOCN_QUEST_RETRIEVAL;
+    else if (!xmlStrcmp(type, XC"Unused1")) {
+        type_num = PSOCN_QUEST_UNUSED1;
     }
-    else if (!xmlStrcmp(type, XC"VR")) {
-        type_num = PSOCN_QUEST_VR;
-    }
-    else if (!xmlStrcmp(type, XC"NetCafe")) {
-        type_num = PSOCN_QUEST_NET_CAFE;
-    }
-    else if (!xmlStrcmp(type, XC"Shop")) {
-        type_num = PSOCN_QUEST_SHOP;
-    }
-    else if (!xmlStrcmp(type, XC"Lab")) {
-        type_num = PSOCN_QUEST_LAB;
-    }
-    else if (!xmlStrcmp(type, XC"Tower")) {
-        type_num = PSOCN_QUEST_TOWER;
-    }
-    else if (!xmlStrcmp(type, XC"Presents")) {
-        type_num = PSOCN_QUEST_PRESENTS;
-    }
-    else if (!xmlStrcmp(type, XC"Team")) {
-        type_num = PSOCN_QUEST_TEAM;
-    }
-    else if (!xmlStrcmp(type, XC"SideStory")) {
-        type_num = PSOCN_QUEST_SIDESTORY;
-    }
-    else if (!xmlStrcmp(type, XC"Oneperson")) {
-        type_num = PSOCN_QUEST_ONEPERSON;
+    else if (!xmlStrcmp(type, XC"Unused2")) {
+        type_num = PSOCN_QUEST_UNUSED2;
     }
     else if(!xmlStrcmp(type, XC"Debug")) {
         type_num = PSOCN_QUEST_NORMAL | PSOCN_QUEST_DEBUG;

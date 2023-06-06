@@ -36,19 +36,11 @@
 #define PSOCN_QUEST_NORMAL          (1 << 0)
 #define PSOCN_QUEST_BATTLE          (1 << 1)
 #define PSOCN_QUEST_CHALLENGE       (1 << 2)
-#define PSOCN_QUEST_TEAM            (1 << 3)
-#define PSOCN_QUEST_ONEPERSON       (1 << 4)
-#define PSOCN_QUEST_EXTERMINATION   (1 << 5)
-#define PSOCN_QUEST_GOVERNMENT      (1 << 6)
-#define PSOCN_QUEST_RETRIEVAL       (1 << 7)
-#define PSOCN_QUEST_VR              (1 << 8)
-#define PSOCN_QUEST_NET_CAFE        (1 << 9)
-#define PSOCN_QUEST_SHOP            (1 << 10)
-#define PSOCN_QUEST_LAB             (1 << 11)
-#define PSOCN_QUEST_TOWER           (1 << 12)
-#define PSOCN_QUEST_PRESENTS        (1 << 13)
-#define PSOCN_QUEST_SIDESTORY       (1 << 14)
-#define PSOCN_QUEST_DEBUG           (1 << 31)
+#define PSOCN_QUEST_ONEPERSON       (1 << 3)
+#define PSOCN_QUEST_GOVERNMENT      (1 << 4)
+#define PSOCN_QUEST_UNUSED1         (1 << 5)
+#define PSOCN_QUEST_UNUSED2         (1 << 6)
+#define PSOCN_QUEST_DEBUG           (1 << 7)
 #define PSOCN_QUEST_TYPE_MASK       0x000000FF
 
 #define PSOCN_QUEST_JOINABLE    (1 << 0)
@@ -125,7 +117,7 @@ typedef struct psocn_quest {
 
 typedef struct psocn_qcat {
     char name[32];
-    char desc[112];
+    char desc[128];
 
     uint32_t type;
     uint32_t episodes;

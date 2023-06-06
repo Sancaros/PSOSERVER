@@ -687,7 +687,7 @@ static int send_initial_menu_dc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_dc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_dc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_dc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_dc[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_dc[count]->name, len3);
         len += len2;
     }
 
@@ -712,7 +712,7 @@ static int send_initial_menu_pc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_pc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_pc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_pc[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_pc[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_pc[count]->name, len3);
         len += len2;
     }
 
@@ -737,7 +737,7 @@ static int send_initial_menu_gc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_gc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_gc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_gc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
         len += len2;
     }
 
@@ -762,7 +762,7 @@ static int send_initial_menu_xbox(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_gc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_gc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_gc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
         len += len2;
     }
 
@@ -787,7 +787,7 @@ static int send_initial_menu_bb(login_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_bb[count]->desc, len3);
+        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_bb[count]->name, len3);
         len += len2;
     }
 

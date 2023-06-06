@@ -2547,12 +2547,10 @@ int quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
 
 static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint16_t flag;
+    uint16_t flag = pkt->flag;
+    uint16_t checked = pkt->checked;
+    uint16_t difficulty = pkt->difficulty;
     int rv = 0;
-
-    //if (!l->is_game()) {
-    //    return;
-    //}
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2571,16 +2569,17 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
         return -1;
     }
 
-    DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令!",
-        c->guildcard);
+    DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令! flag = 0x%02X checked = 0x%02X episode = 0x%02X difficulty = 0x%02X",
+        c->guildcard, flag, checked, l->episode, difficulty);
 
-    flag = pkt->flag;
-    if (flag < 0x400)
-        c->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
+    if (!checked) {
+        if (flag < 0x400)
+            c->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
+    }
 
     bool should_send_boss_drop_req = false;
-    if (pkt->difficulty == l->difficulty) {
-        if ((l->episode == 1) && (c->cur_area == 0x0E)) {
+    if (difficulty == l->difficulty) {
+        if ((l->episode == GAME_TYPE_EPISODE_1) && (c->cur_area == 0x0E)) {
             // 在正常情况下，黑暗佛没有第三阶段，所以在第二阶段结束后发送掉落请求
             // 其他困难模式则在第三阶段结束后发送
             if (((l->difficulty == 0) && (flag == 0x00000035)) ||
@@ -2588,7 +2587,7 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
                 should_send_boss_drop_req = true;
             }
         }
-        else if ((l->episode == 2) && (flag == 0x00000057) && (c->cur_area == 0x0D)) {
+        else if ((l->episode == GAME_TYPE_EPISODE_2) && (flag == 0x00000057) && (c->cur_area == 0x0D)) {
             should_send_boss_drop_req = true;
         }
     }
@@ -2608,7 +2607,7 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
 
             /* 填充数据 */
             bd.area = (uint8_t)c->cur_area;
-            bd.pt_index = (uint8_t)((l->episode == 2) ? 0x4E : 0x2F);
+            bd.pt_index = (uint8_t)((l->episode == GAME_TYPE_EPISODE_2) ? 0x4E : 0x2F);
             bd.request_id = LE16(0x0B4F);
             bd.x = (l->episode == 2) ? -9999.0f : 10160.58984375f;
             bd.z = 0;
