@@ -558,8 +558,6 @@ int process_packet(patch_client_t* c, void* pkt) {
     uint16_t type = LE16(data->pkt_type);
     uint16_t len = LE16(data->pkt_len);
 
-    UNK_CPD(type, c->version, (uint8_t*)pkt);
-
     switch (type) {
     case PATCH_WELCOME_TYPE:
         return handle_patch_welcome(c);
@@ -575,6 +573,7 @@ int process_packet(patch_client_t* c, void* pkt) {
         return handle_list_done(c);
 
     default:
+        UNK_CPD(type, c->version, (uint8_t*)pkt);
         return -3;
     }
 

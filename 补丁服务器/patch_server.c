@@ -517,11 +517,9 @@ static int read_from_client(patch_client_t* c) {
     CRYPT_CryptData(&c->client_cipher, c->recvbuf + 4, pkt_sz - 4, 0);
 
 process:
-    if (c->type == CLIENT_TYPE_PC_PATCH || c->type == CLIENT_TYPE_BB_PATCH ||
-        c->type == CLIENT_TYPE_PC_DATA || c->type == CLIENT_TYPE_BB_DATA) {
-        rv = process_packet(c, c->recvbuf);
-    }
+    rv = process_packet(c, c->recvbuf);
 
+    /* 等待上面处理完数据后 清空接收并等待下一个数据包 */
     free(c->recvbuf);
     c->recvbuf = NULL;
     c->pkt_cur = c->pkt_sz = 0;
