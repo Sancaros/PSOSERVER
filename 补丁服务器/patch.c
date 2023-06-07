@@ -259,90 +259,62 @@ static int handle_patch_welcome(patch_client_t* c) {
 /* 处理补丁登录 */
 static int handle_patch_login(patch_client_t* c) {
     size_t msglen = 0;
+    uint16_t port = 0;
+    struct file_queue* patch_files = { 0 };
 
     switch (c->type)
     {
     case CLIENT_TYPE_PC_PATCH:
+        port = htons(PC_DATA_PORT);
+        goto patch;
+
+
     case CLIENT_TYPE_BB_PATCH:
-        memset(&patch_welcom_msg[0], 0, sizeof(patch_welcom_msg));
-
-        psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
-        msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
-
-        /* TODO: Process login? */
-        if (c->type == CLIENT_TYPE_PC_PATCH) {
-            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
-
-                //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size)) {
-                return -2;
-            }
-#ifdef ENABLE_IPV6
-            if (c->is_ipv6) {
-                if (send_redirect6(c, srvcfg->server_ip6,
-                    PC_DATA_PORT)) {
-                    return -2;
-                }
-
-                c->disconnected = 1;
-                break;
-            }
-#endif
-            if (send_redirect(c, srvcfg->server_ip, htons(PC_DATA_PORT))) {
-                return -2;
-            }
-        }
-        else {
-            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
-
-                //if (send_message(c, cfg->bb_welcome, cfg->bb_welcome_size)) {
-                return -2;
-            }
-#ifdef ENABLE_IPV6
-            if (c->is_ipv6) {
-                if (send_redirect6(c, srvcfg->server_ip6,
-                    BB_DATA_PORT)) {
-                    return -2;
-                }
-
-                c->disconnected = 1;
-                break;
-            }
-#endif
-            /* TODO 未完成动态域名解析 */
-            //DBG_LOG("%s %d", srvcfg->host4, srvcfg->server_ip);
-            //get_ips_by_domain(srvcfg->host4);
-            if (send_redirect(c, srvcfg->server_ip, htons(BB_DATA_PORT))) {
-                return -2;
-            }
-        }
-
-        /* Force the client to disconnect at this point to prevent problems
-           later on down the line if it decides to reconnect before we close
-           the current socket. */
-        c->disconnected = 1;
-
-        break;
+        port = htons(BB_DATA_PORT);
+        goto patch;
 
     case CLIENT_TYPE_PC_DATA:
+        patch_files = &cfg->pc_files;
+        goto data;
+
     case CLIENT_TYPE_BB_DATA:
-        if (send_simple(c, PATCH_START_LIST)) {
-            return -2;
-        }
-
-        /* Send the list of patches. */
-        if (c->type == CLIENT_TYPE_PC_DATA) {
-            if (send_file_list(c, &cfg->pc_files)) {
-                return -2;
-            }
-        }
-        else {
-            if (send_file_list(c, &cfg->bb_files)) {
-                return -2;
-            }
-        }
-
-        break;
+        patch_files = &cfg->bb_files;
+        goto data;
     }
+
+patch:
+    memset(&patch_welcom_msg[0], 0, sizeof(patch_welcom_msg));
+
+    psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
+    msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
+
+    if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen))
+        //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size))
+        return -2;
+
+#ifdef ENABLE_IPV6
+    if (c->is_ipv6) {
+        if (send_redirect6(c, srvcfg->server_ip6, port))
+            return -2;
+    } else
+#endif
+    if (send_redirect(c, srvcfg->server_ip, port))
+        return -2;
+
+    /* Force the client to disconnect at this point to prevent problems
+       later on down the line if it decides to reconnect before we close
+       the current socket. */
+    c->disconnected = 1;
+
+    return 0;
+
+data:
+    if (send_simple(c, PATCH_START_LIST))
+        return -2;
+
+    /* Send the list of patches. */
+    if (send_file_list(c, patch_files))
+        return -2;
 
     return 0;
 }
