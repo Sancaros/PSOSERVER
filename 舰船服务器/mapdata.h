@@ -42,7 +42,7 @@
 typedef struct bb_battle_param {
     uint16_t atp;           // 攻击强度
     //uint16_t psv;           // 掉落美塞塔
-    uint16_t mst;           // 掉落美塞塔
+    uint16_t psv;           // perseverance (intelligence?)
     uint16_t evp;           // 闪避
     uint16_t hp;            // 血量
     uint16_t dfp;           // 防御
@@ -54,7 +54,7 @@ typedef struct bb_battle_param {
     uint32_t hp2;           // 怪物的护盾值
     //uint8_t unk[12];
     uint32_t exp;           // 经验值
-    uint32_t diff;          // 怪物的魔法值
+    uint32_t difficulty;    // 难度
 } PACKED bb_battle_param_t;
 
 /* Enemy data in the map files. This the same as the ENEMY_ENTRY struct from
