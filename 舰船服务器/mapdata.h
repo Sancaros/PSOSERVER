@@ -41,8 +41,7 @@
    using basically the same data files (directly from the game itself). */
 typedef struct bb_battle_param {
     uint16_t atp;           // 攻击强度
-    //uint16_t psv;           // 掉落美塞塔
-    uint16_t psv;           // perseverance (intelligence?)
+    uint16_t psv;           // 毅力 (智商?)
     uint16_t evp;           // 闪避
     uint16_t hp;            // 血量
     uint16_t dfp;           // 防御
@@ -51,8 +50,7 @@ typedef struct bb_battle_param {
     uint16_t esp;           // 逃跑几率 ？？？？？
     uint32_t dfp_range;     // 防御距离
     uint32_t evp_range;     // 闪避距离
-    uint32_t hp2;           // 怪物的护盾值
-    //uint8_t unk[12];
+    uint32_t shield;        // 怪物的护盾值
     uint32_t exp;           // 经验值
     uint32_t difficulty;    // 难度
 } PACKED bb_battle_param_t;
