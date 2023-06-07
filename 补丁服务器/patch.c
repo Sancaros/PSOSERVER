@@ -249,8 +249,106 @@ patch_file_t* fetch_patch(uint32_t idx, struct file_queue* q) {
     return i;
 }
 
+/* 处理补丁欢迎信息 */
+static int handle_patch_welcome(patch_client_t* c) {
+    /* TODO 是否 还需要二次开发？*/
+
+    return send_simple(c, PATCH_LOGIN_TYPE);
+}
+
+/* 处理补丁登录 */
+static int handle_patch_login(patch_client_t* c) {
+    size_t msglen = 0;
+
+    switch (c->type)
+    {
+    case CLIENT_TYPE_PC_PATCH:
+    case CLIENT_TYPE_BB_PATCH:
+        memset(&patch_welcom_msg[0], 0, sizeof(patch_welcom_msg));
+
+        psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
+        msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
+
+        /* TODO: Process login? */
+        if (c->type == CLIENT_TYPE_PC_PATCH) {
+            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
+
+                //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size)) {
+                return -2;
+            }
+#ifdef ENABLE_IPV6
+            if (c->is_ipv6) {
+                if (send_redirect6(c, srvcfg->server_ip6,
+                    PC_DATA_PORT)) {
+                    return -2;
+                }
+
+                c->disconnected = 1;
+                break;
+            }
+#endif
+            if (send_redirect(c, srvcfg->server_ip, htons(PC_DATA_PORT))) {
+                return -2;
+            }
+        }
+        else {
+            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
+
+                //if (send_message(c, cfg->bb_welcome, cfg->bb_welcome_size)) {
+                return -2;
+            }
+#ifdef ENABLE_IPV6
+            if (c->is_ipv6) {
+                if (send_redirect6(c, srvcfg->server_ip6,
+                    BB_DATA_PORT)) {
+                    return -2;
+                }
+
+                c->disconnected = 1;
+                break;
+            }
+#endif
+            /* TODO 未完成动态域名解析 */
+            //DBG_LOG("%s %d", srvcfg->host4, srvcfg->server_ip);
+            //get_ips_by_domain(srvcfg->host4);
+            if (send_redirect(c, srvcfg->server_ip, htons(BB_DATA_PORT))) {
+                return -2;
+            }
+        }
+
+        /* Force the client to disconnect at this point to prevent problems
+           later on down the line if it decides to reconnect before we close
+           the current socket. */
+        c->disconnected = 1;
+
+        break;
+
+    case CLIENT_TYPE_PC_DATA:
+    case CLIENT_TYPE_BB_DATA:
+        if (send_simple(c, PATCH_START_LIST)) {
+            return -2;
+        }
+
+        /* Send the list of patches. */
+        if (c->type == CLIENT_TYPE_PC_DATA) {
+            if (send_file_list(c, &cfg->pc_files)) {
+                return -2;
+            }
+        }
+        else {
+            if (send_file_list(c, &cfg->bb_files)) {
+                return -2;
+            }
+        }
+
+        break;
+    }
+
+    return 0;
+}
+
 /* Save the file info sent by the client in their list. */
-int store_file(patch_client_t* c, patch_file_info_reply* pkt) {
+int handle_file_info_reply(patch_client_t* c, patch_file_info_reply* pkt) {
     patch_cfile_t* n;
     patch_file_t* f;
     patch_file_entry_t* ent;
@@ -454,139 +552,27 @@ done:
     return send_simple(c, PATCH_SEND_DONE);
 }
 
-/* Process one patch packet. */
-int process_patch_packet(patch_client_t* c, void* pkt) {
-    pkt_header_t* patch = (pkt_header_t*)pkt;
-    uint16_t type = LE16(patch->pkt_type);
-    uint16_t len = LE16(patch->pkt_len);
-    size_t msglen = 0;
-    char* patch_welcom_msg = 0;
-    //PATCH_LOG("补丁处理数据指令 0x%04X %s", type, c_cmd_name(type, 0));
-
-    //UNK_CPD(type, c->version, (uint8_t*)pkt);
-
-    switch (type) {
-    case PATCH_WELCOME_TYPE:
-        if (send_simple(c, PATCH_LOGIN_TYPE)) {
-            return -2;
-        }
-        break;
-
-    case PATCH_LOGIN_TYPE:
-        patch_welcom_msg = (char*)malloc(4096);
-        //memset(patch_welcom_msg, 0, 4096);
-        psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
-        msglen = psocn_web_server_loadfile(Welcome_Files[0], &patch_welcom_msg[0]);
-
-        /* TODO: Process login? */
-        if (c->type == CLIENT_TYPE_PC_PATCH) {
-            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
-
-            //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size)) {
-                return -2;
-            }
-#ifdef ENABLE_IPV6
-            if (c->is_ipv6) {
-                if (send_redirect6(c, srvcfg->server_ip6,
-                    PC_DATA_PORT)) {
-                    return -2;
-                }
-
-                c->disconnected = 1;
-                break;
-            }
-#endif
-            if (send_redirect(c, srvcfg->server_ip, htons(PC_DATA_PORT))) {
-                return -2;
-            }
-        }
-        else {
-            if (send_message(c, (uint16_t*)&patch_welcom_msg[0], (uint16_t)msglen)) {
-
-            //if (send_message(c, cfg->bb_welcome, cfg->bb_welcome_size)) {
-                return -2;
-            }
-#ifdef ENABLE_IPV6
-            if (c->is_ipv6) {
-                if (send_redirect6(c, srvcfg->server_ip6,
-                    BB_DATA_PORT)) {
-                    return -2;
-                }
-
-                c->disconnected = 1;
-                break;
-            }
-#endif
-            /* TODO 未完成动态域名解析 */
-            //DBG_LOG("%s %d", srvcfg->host4, srvcfg->server_ip);
-            //get_ips_by_domain(srvcfg->host4);
-            if (send_redirect(c, srvcfg->server_ip, htons(BB_DATA_PORT))) {
-                return -2;
-            }
-        }
-
-        /* Force the client to disconnect at this point to prevent problems
-           later on down the line if it decides to reconnect before we close
-           the current socket. */
-        c->disconnected = 1;
-        break;
-
-    default:
-        UNK_CPD(type, c->version, pkt);
-        return -3;
-    }
-
-    return 0;
-}
-
-/* Process one data packet. */
-int process_data_packet(patch_client_t* c, void* pkt) {
+/* 处理数据包. */
+int process_packet(patch_client_t* c, void* pkt) {
     pkt_header_t* data = (pkt_header_t*)pkt;
     uint16_t type = LE16(data->pkt_type);
     uint16_t len = LE16(data->pkt_len);
 
-    //UNK_CPD(type, c->version, (uint8_t*)pkt);
-    //PATCH_LOG("process_data_packet %d", type);
+    UNK_CPD(type, c->version, (uint8_t*)pkt);
 
     switch (type) {
     case PATCH_WELCOME_TYPE:
-        if (send_simple(c, PATCH_LOGIN_TYPE)) {
-            return -2;
-        }
-        break;
+        return handle_patch_welcome(c);
 
     case PATCH_LOGIN_TYPE:
-        if (send_simple(c, PATCH_START_LIST)) {
-            return -2;
-        }
-
-        /* Send the list of patches. */
-        if (c->type == CLIENT_TYPE_PC_DATA) {
-            if (send_file_list(c, &cfg->pc_files)) {
-                return -2;
-            }
-        }
-        else {
-            if (send_file_list(c, &cfg->bb_files)) {
-                return -2;
-            }
-        }
-
-        break;
+        return handle_patch_login(c);
 
     case PATCH_FILE_INFO_REPLY:
-        /* Store the file in the list. */
-        if (store_file(c, (patch_file_info_reply*)pkt)) {
-            return -2;
-        }
-        break;
+        return handle_file_info_reply(c, (patch_file_info_reply*)pkt);
 
     case PATCH_FILE_LIST_DONE:
         /* Check if we have to send anything... */
-        if (handle_list_done(c)) {
-            return -2;
-        }
-        break;
+        return handle_list_done(c);
 
     default:
         return -3;

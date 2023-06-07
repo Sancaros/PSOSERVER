@@ -5724,6 +5724,7 @@ uint32_t quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
     return 1;
 }
 
+/* EP1 单人任务的完成度状态检测 */
 uint32_t check_ep1_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint32_t difficulty, uint8_t* flag_data) {
     uint32_t ep1solo = quest_flag_check_ep1_solo(flag_data, difficulty);
     uint32_t show_quest = 1, quest_flag = 0, tier1 = 0;
@@ -6812,7 +6813,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             if((quest->flags & PSOCN_QUEST_HIDDEN))
                 continue;
 
-            printf("quest id = %d\n", quest->qid);
+            //printf("quest id = %d\n", quest->qid);
 
             /* 检测EP1 单人任务完成状态 */
             if(!check_ep1_solo_quest_stat(quest->qid, l->oneperson, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))

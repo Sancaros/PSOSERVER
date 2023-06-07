@@ -150,4 +150,7 @@ int process_patch_packet(patch_client_t* c, void* pkt);
 /* Process one data packet. */
 int process_data_packet(patch_client_t* c, void* pkt);
 
+/* Process data packet. */
+int process_packet(patch_client_t* c, void* pkt);
+
 #endif /* !PATCH_SERVER_H */

@@ -333,7 +333,7 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
 
             case 0x0041:    /* Rappies */
                 acc = en[i].skin & 0x01;
-                if(ep == 3) {   /* Del Rappy & Sand Rappy */
+                if(ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
                     if(alt) {
                         gen[count].bp_entry = 0x17 + acc;
                         gen[count].rt_index = 0x11 + acc;
@@ -347,7 +347,7 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
                     if(acc) { // Rag Rappy and Al Rappy (Love for Episode II)
                         gen[count].bp_entry = 0x19;
 
-                        if(ep == 1) {
+                        if(ep == LOBBY_EPISODE_1) {
                             gen[count].rt_index = 0x06;
                         }
                         else {
@@ -2239,7 +2239,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
             }
             else {
                 ERR_LOG("无法读取 objects 索引缓存 object id "
-                      "%" PRIu32 ": 缺少 %zu, 并非 %z", i,
+                      "%" PRIu32 ": 缺少 %zu, 并非 %zu", i,
                       sizeof(map_object_t), amt);
             }
 

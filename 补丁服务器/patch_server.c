@@ -517,12 +517,9 @@ static int read_from_client(patch_client_t* c) {
     CRYPT_CryptData(&c->client_cipher, c->recvbuf + 4, pkt_sz - 4, 0);
 
 process:
-    /* Pass it onto the correct handler. */
-    if (c->type == CLIENT_TYPE_PC_PATCH || c->type == CLIENT_TYPE_BB_PATCH) {
-        rv = process_patch_packet(c, c->recvbuf);
-    }
-    else if (c->type == CLIENT_TYPE_PC_DATA || c->type == CLIENT_TYPE_BB_DATA) {
-        rv = process_data_packet(c, c->recvbuf);
+    if (c->type == CLIENT_TYPE_PC_PATCH || c->type == CLIENT_TYPE_BB_PATCH ||
+        c->type == CLIENT_TYPE_PC_DATA || c->type == CLIENT_TYPE_BB_DATA) {
+        rv = process_packet(c, c->recvbuf);
     }
 
     free(c->recvbuf);

@@ -181,6 +181,9 @@ typedef struct patch_file_done {
 const static char patch_welcome_copyright[] =
     "Patch Server. Copyright SonicTeam, LTD. 2001";
 
+/* ²¹¶¡ÐÅÏ¢°åÄÚ´æ´æ´¢ */
+static char patch_welcom_msg[4096];
+
 /* Functions for sending the specified packets. */
 /* Send a simple "header-only" packet to the given client. */
 int send_simple(patch_client_t *c, uint16_t type);
