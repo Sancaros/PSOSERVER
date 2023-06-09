@@ -5710,6 +5710,34 @@ uint32_t quest_flag_check_ep1_solo(uint8_t* flag_data, uint32_t difficulty) {
     return 1;
 }
 
+/* EP2 单人任务的完成度检测 */
+uint32_t quest_flag_check_ep2_solo(uint8_t* flag_data, uint32_t difficulty) {
+    int i;
+    uint32_t quest_flag;
+
+    for (i = 1; i <= 25; i++) {
+        quest_flag = 0x63 + (i << 1);
+        if (!quest_flag_check(flag_data, quest_flag, difficulty))
+            return 0;
+    }
+
+    return 1;
+}
+
+/* EP4 单人任务的完成度检测 */
+uint32_t quest_flag_check_ep4_solo(uint8_t* flag_data, uint32_t difficulty) {
+    int i;
+    uint32_t quest_flag;
+
+    for (i = 1; i <= 25; i++) {
+        quest_flag = 0x63 + (i << 1);
+        if (!quest_flag_check(flag_data, quest_flag, difficulty))
+            return 0;
+    }
+
+    return 1;
+}
+
 /* TODO 挑战任务的完成度检测 */
 uint32_t quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
     int i;
@@ -5724,120 +5752,134 @@ uint32_t quest_flag_check_cmode(uint8_t* flag_data, uint32_t difficulty) {
     return 1;
 }
 
-/* EP1 单人任务的完成度状态检测 */
-uint32_t check_ep1_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint32_t difficulty, uint8_t* flag_data) {
+/* 单人任务的完成度状态检测 */
+uint32_t check_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint8_t episode, uint32_t difficulty, uint8_t* flag_data) {
     uint32_t ep1solo = quest_flag_check_ep1_solo(flag_data, difficulty);
+    uint32_t ep2solo = 0;
+    uint32_t ep4solo = 0;
     uint32_t show_quest = 1, quest_flag = 0, tier1 = 0;
-    
-    if (oneperson)
-        if ((qid <= 26))
-            if (!ep1solo)
-                show_quest = 0;
 
-    if (!show_quest) {
-        quest_flag = 0x63 + (qid << 1);
+    if (oneperson) {
+        switch (episode) 
+        {
+        case GAME_TYPE_EPISODE_1:
+            if (qid <= 26)
+                if (!ep1solo)
+                    show_quest = 0;
 
-        if (quest_flag_check(flag_data, quest_flag, difficulty))
-            show_quest = 2; //如果他们已经清除了任则设置新值 并显示任务
-        else {
-            tier1 = 0;
-            if ((quest_flag_check(flag_data, 0x65, difficulty)) &&  // Cleared first tier 当清理完第一章时
-                (quest_flag_check(flag_data, 0x67, difficulty)) &&
-                (quest_flag_check(flag_data, 0x6B, difficulty)))
-                tier1 = 1;
+            if (!show_quest) {
+                quest_flag = 0x63 + (qid << 1);
 
-            if (quest_flag_check(flag_data, quest_flag, difficulty) == 0) {
-                switch (qid)
-                {
-                case 4: // Battle Training 试练
-                case 2: // Claiming a Stake 拉古奥尔的大地主
-                case 1: // Magnitude of Metal 钢之心
-                    show_quest = 1;
-                    break;
-                case 5: // Journalistic Pursuit 先驱者二号的新闻
-                case 6: // The Fake In Yellow 黄色的伪装
-                case 7: // Native Research 大地的呼声
-                case 9: // Gran Squall 疾风号
-                    if (tier1)
-                        show_quest = 1;
-                    break;
-                case 8: // Forest of Sorrow 恸哭的森林
-                    if (quest_flag_check(flag_data, 0x71, difficulty)) // Cleared Native Research 完成大地的呼声时 隐藏任务
-                        show_quest = 1;
-                    break;
-                case 26: // Central Dome Fire Swirl 中心圆顶的火灾
-                case 27: // Central Dome Fire Swirl 中心圆顶的火灾 V2
-                    if (quest_flag_check(flag_data, 0x73, difficulty)) // Cleared Forest of Sorrow 完成恸哭的森林时 隐藏任务
-                        show_quest = 1;
-                    break;
-                }
+                if (quest_flag_check(flag_data, quest_flag, difficulty))
+                    show_quest = 2; //如果他们已经清除了任则设置新值 并显示任务
+                else {
+                    tier1 = 0;
+                    if ((quest_flag_check(flag_data, 0x65, difficulty)) &&  // Cleared first tier 当清理完第一章时
+                        (quest_flag_check(flag_data, 0x67, difficulty)) &&
+                        (quest_flag_check(flag_data, 0x6B, difficulty)))
+                        tier1 = 1;
 
-                if ((tier1) && (quest_flag_check(flag_data, 0x1F9, difficulty)))
-                {
-                    // 洞穴任务 (shown after Dragon is defeated) 洞穴任务（当巨龙被击败时）
-                    switch (qid)
-                    {
-                    case 03: // The Value of Money 金钱的价值
-                    case 11: // The Lost Bride 消失的新娘
-                    case 14: // Secret Delivery 秘密货物
-                    case 17: // Grave's Butler 格雷夫家的管家
-                    case 10: // Addicting Food 恶魔的食物
-                        show_quest = 1; // Always shown if first tier was cleared  如果第一层被清除，总是显示
-                        break;
-                    case 12: // Waterfall Tears 无归瀑
-                    case 15: // Soul of a Blacksmith 匠之魂
-                        if ((quest_flag_check(flag_data, 0x77, difficulty)) && // Cleared Addicting Food 当完成恶魔的食物
-                            (quest_flag_check(flag_data, 0x79, difficulty)) && // Cleared The Lost Bride 当完成消失的新娘
-                            (quest_flag_check(flag_data, 0x7F, difficulty)) && // Cleared Secret Delivery 当完成秘密货物
-                            (quest_flag_check(flag_data, 0x85, difficulty)))  // Cleared Grave's Butler 当完成格雷夫家的管家
+                    if (quest_flag_check(flag_data, quest_flag, difficulty) == 0) {
+                        switch (qid)
+                        {
+                        case 4: // Battle Training 试练
+                        case 2: // Claiming a Stake 拉古奥尔的大地主
+                        case 1: // Magnitude of Metal 钢之心
                             show_quest = 1;
-                        break;
-                    case 13: // Black Paper 黑页
-                        if (quest_flag_check(flag_data, 0x7B, difficulty)) // Cleared Waterfall Tears 当完成无归瀑
-                            show_quest = 1;
-                        break;
-                    }
-                }
+                            break;
+                        case 5: // Journalistic Pursuit 先驱者二号的新闻
+                        case 6: // The Fake In Yellow 黄色的伪装
+                        case 7: // Native Research 大地的呼声
+                        case 9: // Gran Squall 疾风号
+                            if (tier1)
+                                show_quest = 1;
+                            break;
+                        case 8: // Forest of Sorrow 恸哭的森林
+                            if (quest_flag_check(flag_data, 0x71, difficulty)) // Cleared Native Research 完成大地的呼声时 隐藏任务
+                                show_quest = 1;
+                            break;
+                        case 26: // Central Dome Fire Swirl 中心圆顶的火灾
+                        case 27: // Central Dome Fire Swirl 中心圆顶的火灾 V2
+                            if (quest_flag_check(flag_data, 0x73, difficulty)) // Cleared Forest of Sorrow 完成恸哭的森林时 隐藏任务
+                                show_quest = 1;
+                            break;
+                        }
 
-                if ((tier1) && (quest_flag_check(flag_data, 0x1FF, difficulty)))
-                {
-                    // 矿坑任务 (shown after De Rol Le is defeated) 洞窟任务（当击败De Rol Le怪物时）
-                    switch (qid)
-                    {
-                    case 16: // Letter from Lionel
-                    case 18: // Knowing One's Heart
-                    case 20: // Dr. Osto's Research
-                        show_quest = 1; // Always shown if first tier was cleared
-                        break;
-                    case 21: // The Unsealed Door
-                        if ((quest_flag_check(flag_data, 0x8B, difficulty)) && // Cleared Dr. Osto's Research
-                            (quest_flag_check(flag_data, 0x7F, difficulty)))  // Cleared Secret Delivery
-                            show_quest = 1;
-                        break;
-                    }
-                }
+                        if ((tier1) && (quest_flag_check(flag_data, 0x1F9, difficulty)))
+                        {
+                            // 洞穴任务 (shown after Dragon is defeated) 洞穴任务（当巨龙被击败时）
+                            switch (qid)
+                            {
+                            case 03: // The Value of Money 金钱的价值
+                            case 11: // The Lost Bride 消失的新娘
+                            case 14: // Secret Delivery 秘密货物
+                            case 17: // Grave's Butler 格雷夫家的管家
+                            case 10: // Addicting Food 恶魔的食物
+                                show_quest = 1; // Always shown if first tier was cleared  如果第一层被清除，总是显示
+                                break;
+                            case 12: // Waterfall Tears 无归瀑
+                            case 15: // Soul of a Blacksmith 匠之魂
+                                if ((quest_flag_check(flag_data, 0x77, difficulty)) && // Cleared Addicting Food 当完成恶魔的食物
+                                    (quest_flag_check(flag_data, 0x79, difficulty)) && // Cleared The Lost Bride 当完成消失的新娘
+                                    (quest_flag_check(flag_data, 0x7F, difficulty)) && // Cleared Secret Delivery 当完成秘密货物
+                                    (quest_flag_check(flag_data, 0x85, difficulty)))  // Cleared Grave's Butler 当完成格雷夫家的管家
+                                    show_quest = 1;
+                                break;
+                            case 13: // Black Paper 黑页
+                                if (quest_flag_check(flag_data, 0x7B, difficulty)) // Cleared Waterfall Tears 当完成无归瀑
+                                    show_quest = 1;
+                                break;
+                            }
+                        }
 
-                if ((tier1) && (quest_flag_check(flag_data, 0x207, difficulty)))
-                {
-                    // 废墟任务 (shown after Vol Opt is defeated)
-                    switch (qid)
-                    {
-                    case 19: // The Retired Hunter
-                    case 24: // Seek My Master
-                        show_quest = 1;  // Always shown if first tier was cleared
-                        break;
-                    case 25: // From the Depths
-                    case 22: // Soul of Steel
-                        if (quest_flag_check(flag_data, 0x91, difficulty)) // Cleared Doc's Secret Plan
-                            show_quest = 1;
-                        break;
-                    case 23: // Doc's Secret Plan
-                        if (quest_flag_check(flag_data, 0x7F, difficulty)) // Cleared Secret Delivery
-                            show_quest = 1;
-                        break;
+                        if ((tier1) && (quest_flag_check(flag_data, 0x1FF, difficulty)))
+                        {
+                            // 矿坑任务 (shown after De Rol Le is defeated) 洞窟任务（当击败De Rol Le怪物时）
+                            switch (qid)
+                            {
+                            case 16: // Letter from Lionel
+                            case 18: // Knowing One's Heart
+                            case 20: // Dr. Osto's Research
+                                show_quest = 1; // Always shown if first tier was cleared
+                                break;
+                            case 21: // The Unsealed Door
+                                if ((quest_flag_check(flag_data, 0x8B, difficulty)) && // Cleared Dr. Osto's Research
+                                    (quest_flag_check(flag_data, 0x7F, difficulty)))  // Cleared Secret Delivery
+                                    show_quest = 1;
+                                break;
+                            }
+                        }
+
+                        if ((tier1) && (quest_flag_check(flag_data, 0x207, difficulty)))
+                        {
+                            // 废墟任务 (shown after Vol Opt is defeated)
+                            switch (qid)
+                            {
+                            case 19: // The Retired Hunter
+                            case 24: // Seek My Master
+                                show_quest = 1;  // Always shown if first tier was cleared
+                                break;
+                            case 25: // From the Depths
+                            case 22: // Soul of Steel
+                                if (quest_flag_check(flag_data, 0x91, difficulty)) // Cleared Doc's Secret Plan
+                                    show_quest = 1;
+                                break;
+                            case 23: // Doc's Secret Plan
+                                if (quest_flag_check(flag_data, 0x7F, difficulty)) // Cleared Secret Delivery
+                                    show_quest = 1;
+                                break;
+                            }
+                        }
                     }
                 }
             }
+            break;
+
+        case GAME_TYPE_EPISODE_2:
+            break;
+
+        case GAME_TYPE_EPISODE_4:
+            break;
         }
     }
 
@@ -5847,7 +5889,7 @@ uint32_t check_ep1_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint32_t dif
 /* EP1 2 4 总督任务的完成度状态检测 */
 uint32_t check_government_quest_stat(uint32_t qid, uint8_t government, uint8_t episode, uint32_t difficulty, uint8_t* flag_data) {
     uint32_t show_quest = 1, quest_flag = 0;
-    int i;
+    uint32_t i;
 
     // Grey out Government quests that the player is not qualified for...不符合资格的玩家显示灰色的政府任务 sancaros
     if (government) {
@@ -6853,15 +6895,15 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             if((quest->flags & PSOCN_QUEST_HIDDEN))
                 continue;
 
-            //printf("quest id = %d\n", quest->qid);
-
             /* 检测EP1 单人任务完成状态 */
-            if(!check_ep1_solo_quest_stat(quest->qid, l->oneperson, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
+            if(!check_solo_quest_stat(quest->qid, l->oneperson, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
                 continue;
 
             /* 检测EP1 2 4 总督任务完成状态 */
             if(!check_government_quest_stat(quest->qid, l->govorlab, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
                 continue;
+
+            //printf("quest id = %d\n", quest->qid);
 
             /* Clear the entry */
             memset(pkt->entries + entries, 0, 0x13C);
