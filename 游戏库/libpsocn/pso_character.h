@@ -136,7 +136,7 @@ typedef struct psocn_dress_data {
     //uint32_t unk3[2];                   /* 命名与其他角色结构一致 */
     uint32_t dress_unk1;
     uint32_t dress_unk2;
-    uint8_t name_color_b;
+    uint8_t name_color_b; // ARGB8888
     uint8_t name_color_g;
     uint8_t name_color_r;
     uint8_t name_color_transparency;
@@ -162,7 +162,6 @@ typedef struct psocn_dress_data {
     uint16_t hair_b;
     float prop_x;
     float prop_y;
-    //uint16_t name[0x10];
 } PACKED psocn_dress_data_t;
 
 /* 角色信息数据结构 */
@@ -180,7 +179,7 @@ typedef struct psocn_bb_mini_char {
     uint32_t exp;
     uint32_t level;
     psocn_dress_data_t dress_data;
-    uint16_t name[0x0C];
+    uint16_t name[BB_CHARACTER_NAME_LENGTH];
     uint8_t hw_info[0x08]; // 0x7C - 0x83
     uint32_t play_time;
 } PACKED psocn_bb_mini_char_t;
@@ -190,9 +189,9 @@ static int char_bb_minisize2 = sizeof(psocn_bb_mini_char_t);
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
-    uint16_t name[BB_CHARACTER_NAME_LENGTH + 2]; //24
-    //uint32_t unknown_a3; //4
+    uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
     uint32_t play_time; //4
+    uint32_t unknown_a3; //4
     uint8_t config[0xE8]; //232
     uint8_t techniques[0x14]; //20
 } PACKED psocn_bb_char_t;
@@ -386,42 +385,29 @@ static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
 typedef struct psocn_bb_full_char {
     inventory_t inv;                              // 玩家数据表
     psocn_bb_char_t character;                    // 玩家数据表
-
     uint8_t name3[0x0010];                        // not saved
     uint32_t option_flags;                        // account
-
     uint8_t quest_data1[0x0208];                  // 玩家任务数据表1
-
     psocn_bank_t bank;                            // 玩家银行数据表
-
     psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分
-
     uint32_t unk2;                                // not saved
-
     uint8_t symbol_chats[0x04E0];                 // 选项数据表
     uint8_t shortcuts[0x0A40];                    // 选项数据表
-
     uint16_t autoreply[0x00AC];                   // 玩家数据表
     uint16_t infoboard[0x00AC];                   // 玩家数据表
-
     uint8_t unk3[0x001C];                         // not saved
-
     uint8_t challenge_data[0x0140];               // 玩家挑战数据表
     uint8_t tech_menu[0x0028];                    // 玩家法术栏数据表
-
     uint8_t unk4[0x002C];                         // not saved
-
     uint8_t quest_data2[0x0058];                  // 玩家任务数据表2
-
-    //uint8_t unk_gc[0x114];
     uint8_t unk1[0x000C];                         // 276 - 264 = 12
     psocn_bb_guildcard_t gc_data2;                // 264大小
-
     bb_key_config_t key_cfg;                      // 选项数据表
     bb_guild_t guild_data;                        // GUILD数据表
 } PACKED psocn_bb_full_char_t;
 
 static int bb_c_fullsize = sizeof(psocn_bb_full_char_t);
+static int bb_c_fullsize2 = 0x399C;
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
