@@ -4369,14 +4369,16 @@ typedef struct xb_quest_list {
     } entries[0];
 } PACKED xb_quest_list_pkt;
 
+typedef struct bb_quest {
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t name[32];
+    uint16_t desc[122];
+} PACKED bb_quest_t;
+
 typedef struct bb_quest_list {
     bb_pkt_hdr_t hdr;
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t name[32];
-        uint16_t desc[122];
-    } entries[0];
+    bb_quest_t entries[0];
 } PACKED bb_quest_list_pkt;
 
 /* The choice search options packet sent to tell clients what they can actually

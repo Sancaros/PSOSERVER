@@ -5930,7 +5930,7 @@ uint32_t check_government_quest_stat(uint32_t qid, uint8_t government, uint8_t e
 static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
-    int i, len = 0x04, entries = 0, max = INT_MAX, j, k, ver, v;
+    int i, len = sizeof(dc_pkt_hdr_t), entries = 0, max = INT_MAX, j, k, ver, v;
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -6137,7 +6137,7 @@ static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
 static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     pc_quest_list_pkt *pkt = (pc_quest_list_pkt *)sendbuf;
-    int i, len = 0x04, entries = 0, max = INT_MAX, j, k, ver, v;
+    int i, len = sizeof(dc_pkt_hdr_t), entries = 0, max = INT_MAX, j, k, ver, v;
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -6323,7 +6323,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
 static int send_gc_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
-    int i, len = 0x04, entries = 0, max = INT_MAX, max2 = INT_MAX, j, k, ver, v;
+    int i, len = sizeof(dc_pkt_hdr_t), entries = 0, max = INT_MAX, max2 = INT_MAX, j, k, ver, v;
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -6547,7 +6547,7 @@ static int send_gc_quest_list(ship_client_t *c, int cn, int lang) {
 static int send_xbox_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     xb_quest_list_pkt *pkt = (xb_quest_list_pkt *)sendbuf;
-    int i, len = 0x04, entries = 0, max = INT_MAX, max2 = INT_MAX, j, k, ver, v;
+    int i, len = sizeof(dc_pkt_hdr_t), entries = 0, max = INT_MAX, max2 = INT_MAX, j, k, ver, v;
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -6771,10 +6771,7 @@ static int send_xbox_quest_list(ship_client_t *c, int cn, int lang) {
 static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     bb_quest_list_pkt *pkt = (bb_quest_list_pkt *)sendbuf;
-    int i, len = 0x08, entries = 0, max = INT_MAX, max2 = INT_MAX, j, k;
-    size_t in, out;
-    char *inptr;
-    char *outptr;
+    int i, len = sizeof(bb_pkt_hdr_t), entries = 0, max = INT_MAX, max2 = INT_MAX, j, k;
     psocn_quest_list_t *qlist, *qlisten;
     lobby_t *l = c->cur_lobby;
     psocn_quest_category_t *cat, *caten;
@@ -6906,7 +6903,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             //printf("quest id = %d\n", quest->qid);
 
             /* Clear the entry */
-            memset(pkt->entries + entries, 0, 0x13C);
+            memset(pkt->entries + entries, 0, sizeof(bb_quest_t));
 
             /* Copy the category's information over to the packet */
             pkt->entries[entries].menu_id = LE32(((MENU_ID_QUEST) |
@@ -6915,20 +6912,12 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             pkt->entries[entries].item_id = LE32(quest->qid);
 
             /* Convert the name and the description to UTF-16. */
-            in = 32;
-            out = 64;
-            inptr = quest->name;
-            outptr = (char *)pkt->entries[entries].name;
-            iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, quest->name, sizeof(pkt->entries[entries].name));
 
-            in = 112;
-            out = 244;
-            inptr = quest->desc;
-            outptr = (char *)pkt->entries[entries].desc;
-            iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].desc, quest->desc, sizeof(pkt->entries[entries].desc));
 
             ++entries;
-            len += 0x13C;
+            len += sizeof(bb_quest_t);
         }
 
         /* If we already did English, then we're done. */

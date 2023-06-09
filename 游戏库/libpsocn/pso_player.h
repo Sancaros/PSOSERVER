@@ -139,7 +139,7 @@ typedef struct v3_player {
 typedef struct bb_player {
     inventory_t inv;
     psocn_bb_char_t character;
-    psocn_bb_c_rank_data_t c_rank;
+    psocn_bb_c_rank_data_t chal_data;
     //uint8_t unk4[24];
     choice_search_config_t cs_config;
     uint16_t infoboard[0x00AC];

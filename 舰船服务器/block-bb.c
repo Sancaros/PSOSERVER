@@ -892,7 +892,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     c->infoboard = (char*)c->pl->bb.infoboard;
-    c->c_rank = c->pl->bb.c_rank.c_rank.all;
+    c->c_rank = c->pl->bb.chal_data.c_rank.all;
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */

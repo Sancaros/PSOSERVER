@@ -772,7 +772,6 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
                     break;
 
                 case CLIENT_VERSION_GC:
-                case CLIENT_VERSION_BB:
                 case CLIENT_VERSION_XBOX:
                     for(i = 0; i < 9; ++i) {
                         if(c->pl->v3.chal_data.c_rank.part.times[i] == 0) {
@@ -782,6 +781,20 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
 
                     for(k = 0; k < 5; ++k) {
                         if(c->pl->v3.chal_data.c_rank.part.times_ep2[k] == 0)
+                            break;
+                    }
+
+                    break;
+
+                case CLIENT_VERSION_BB:
+                    for (i = 0; i < 9; ++i) {
+                        if (c->pl->bb.chal_data.c_rank.part.times[i] == 0) {
+                            break;
+                        }
+                    }
+
+                    for (k = 0; k < 5; ++k) {
+                        if (c->pl->bb.chal_data.c_rank.part.times_ep2[k] == 0)
                             break;
                     }
 
