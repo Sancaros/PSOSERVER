@@ -5844,6 +5844,46 @@ uint32_t check_ep1_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint32_t dif
     return show_quest;
 }
 
+/* EP1 2 4 总督任务的完成度状态检测 */
+uint32_t check_government_quest_stat(uint32_t qid, uint8_t government, uint8_t episode, uint32_t difficulty, uint8_t* flag_data) {
+    uint32_t show_quest = 1, quest_flag = 0;
+    int i;
+
+    // Grey out Government quests that the player is not qualified for...不符合资格的玩家显示灰色的政府任务 sancaros
+    if (government) {
+        switch (episode)
+        {
+        case GAME_TYPE_EPISODE_1:
+            qid -= 401;
+            qid <<= 1;
+            qid += 0x1F3;
+            for (i = 0x1F5; i <= qid; i += 2)
+                if (!quest_flag_check(flag_data, i, difficulty))
+                    show_quest = 0;
+            break;
+
+        case GAME_TYPE_EPISODE_2:
+            qid -= 451; //qid = qid - 451
+            qid <<= 1; //qid = qid 左移 1位 后赋值 十进制
+            qid += 0x211; //qid = qid + 0x211     (int32_t(529))
+            for (i = 0x213; i <= qid; i += 2)
+                if (!quest_flag_check(flag_data, i, difficulty))
+                    show_quest = 0;
+            break;
+
+        case GAME_TYPE_EPISODE_4:
+            qid -= 701;
+            qid += 0x2BC;
+            for (i = 0x2BD; i <= qid; i++)
+                if (!quest_flag_check(flag_data, i, difficulty))
+                    show_quest = 0;
+            break;
+        }
+    }
+
+    return show_quest;
+}
+
 /* Send the list of quests in a category to the client. */
 static int send_dc_quest_list(ship_client_t *c, int cn, int lang) {
     uint8_t *sendbuf = get_sendbuf();
@@ -6817,6 +6857,10 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
 
             /* 检测EP1 单人任务完成状态 */
             if(!check_ep1_solo_quest_stat(quest->qid, l->oneperson, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
+                continue;
+
+            /* 检测EP1 2 4 总督任务完成状态 */
+            if(!check_government_quest_stat(quest->qid, l->govorlab, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
                 continue;
 
             /* Clear the entry */

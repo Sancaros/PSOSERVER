@@ -268,7 +268,6 @@ static int handle_patch_login(patch_client_t* c) {
         port = htons(PC_DATA_PORT);
         goto patch;
 
-
     case CLIENT_TYPE_BB_PATCH:
         port = htons(BB_DATA_PORT);
         goto patch;
