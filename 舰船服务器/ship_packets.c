@@ -6895,7 +6895,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             if((quest->flags & PSOCN_QUEST_HIDDEN))
                 continue;
 
-            /* 检测EP1 单人任务完成状态 */
+            /* 检测单人任务完成状态 */
             if(!check_solo_quest_stat(quest->qid, l->oneperson, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
                 continue;
 
