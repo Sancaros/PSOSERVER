@@ -286,9 +286,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     GetLocalTime(&rawtime);
     char timestamp[28];
 
-    char* login_welcom_msg = 0;
-
-    login_welcom_msg = (char*)malloc(4096);
+    memset(&login_welcom_msg[0], 0, sizeof(login_welcom_msg));
     psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.login_welcom_file, Welcome_Files[1]);
     psocn_web_server_loadfile(Welcome_Files[1], &login_welcom_msg[0]);
 
@@ -470,12 +468,10 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         }
 
         if (send_msg(c, BB_SCROLL_MSG_TYPE, __(c, &login_welcom_msg[0]))) {
-            free(login_welcom_msg);
             return -11;
         }
     }
 
-    free(login_welcom_msg);
     return 0;
 }
 
