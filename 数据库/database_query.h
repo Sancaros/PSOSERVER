@@ -160,14 +160,17 @@ uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);
 /* 获取玩家角色数据大小 */
 uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot);
 
+/* 获取玩家角色数据项 */
+char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
+
+/* 获取玩家角色数值数据项 */
+int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t stats, int check);
+
 /* 注意 一定要确保更衣室数据存在 才可以使用此函数 */
 int db_updata_bb_char_create_code(uint32_t code,
     uint32_t gc, uint8_t slot);
 
 uint32_t db_get_char_data_play_time(uint32_t gc, uint8_t slot);
-
-/* 获取玩家角色数据项 */
-char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
 /* 初始化舰闸所需的数据表 */
 int db_initialize();

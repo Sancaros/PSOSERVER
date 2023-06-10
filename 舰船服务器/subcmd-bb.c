@@ -360,6 +360,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         pkt->shdr.client_id != c->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送错误的拾取数据!",
             c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 

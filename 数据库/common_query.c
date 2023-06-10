@@ -801,8 +801,10 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER, gc,
+    printf("slot = '%" PRIu8 "'\n", slot);
+
+    sprintf(query, "DELETE FROM %s WHERE (guildcard="
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -813,8 +815,8 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
         return -1;
     }
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_STATS, gc,
+    sprintf(query, "DELETE FROM %s WHERE (guildcard="
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_STATS, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -825,8 +827,8 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
         return -1;
     }
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_DRESS, gc,
+    sprintf(query, "DELETE FROM %s WHERE (guildcard="
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_DRESS, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -837,8 +839,8 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
         return -1;
     }
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_CHALLENGE, gc,
+    sprintf(query, "DELETE FROM %s WHERE (guildcard="
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_CHALLENGE, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -849,8 +851,8 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
         return -1;
     }
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_BATTLE, gc,
+    sprintf(query, "DELETE FROM %s WHERE (guildcard="
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_BATTLE, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
@@ -1224,6 +1226,8 @@ int db_update_char_stat(psocn_bb_db_char_t* char_data,
             return -6;
         }
         else {
+            ERR_LOG("触发了这里的设置 slot = '%" PRIu8 "'", slot);
+
             sprintf(query, "DELETE FROM %s WHERE guildcard="
                 "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_STATS, gc,
                 slot);

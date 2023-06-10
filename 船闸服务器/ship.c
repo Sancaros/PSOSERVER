@@ -2789,7 +2789,7 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         (uint8_t*)&pkt->game_info.guildcard, 8);
 }
 
-/* 处理舰船角色数据请求. */
+/* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
 static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t gc, slot;
     uint8_t *data;
@@ -2797,6 +2797,7 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t data_length, data_size;
     int sz, rv;
     uLong sz2, csz;
+    psocn_bb_db_char_t* bb_data = { 0 };
 
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
@@ -2832,8 +2833,7 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
         }
 
         sz = sz2;
-    }
-    else {
+    } else {
         data = (uint8_t *)malloc(sz);
         if(!data) {
             ERR_LOG("无法分配角色数据的内存空间");
@@ -2846,8 +2846,13 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
         memcpy(data, raw_data, data_length);
     }
 
+    bb_data = (psocn_bb_db_char_t*)data;
+
+    //print_payload((uint8_t*)bb_data, sizeof(psocn_bb_db_char_t));
+    db_get_char_stats(gc, slot, bb_data->character.disp.stats, 0);
+
     /* 将数据发回舰船. */
-    rv = send_cdata(c, gc, slot, data, sz, 0);
+    rv = send_cdata(c, gc, slot, bb_data, sz, 0);
 
     /* 清理内存并结束 */
     free_safe(data);

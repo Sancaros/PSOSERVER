@@ -185,6 +185,52 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
+int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t stats, int check) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_STATS, gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        if (check) {
+            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("%s", psocn_db_error(&conn));
+        }
+        return -3;
+    }
+
+    printf("ata = %d mst = %d", (uint32_t)strtoul(row[13], NULL, 0), (uint32_t)strtoul(row[14], NULL, 0));
+
+    //stats->ata = (uint32_t)strtoul(row[0], NULL, 0);
+
+
+    return 0;
+}
+
+int db_get_dress_data(uint32_t gc, uint8_t slot, int check) {
+    psocn_dress_data_t* dress_data = { 0 };
+
+    return 0;
+}
+
 int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     //DBG_LOG("更新 guild 设置");
 
