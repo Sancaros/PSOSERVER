@@ -106,8 +106,8 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot);
 /* 更新角色更衣室数据 */
 int db_update_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8_t slot, uint32_t flag);
 
-/* 获取玩家更衣室数据 */
-psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot);
+/* 获取玩家角色外观数据项 */
+int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check);
 
 /* 插入玩家角色数据 */
 int db_insert_char_data(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot);
@@ -165,9 +165,6 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
 /* 获取玩家角色数值数据项 */
 int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int check);
-
-/* 获取玩家角色外观数据项 */
-int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check);
 
 /* 注意 一定要确保更衣室数据存在 才可以使用此函数 */
 int db_updata_bb_char_create_code(uint32_t code,

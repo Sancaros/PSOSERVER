@@ -547,7 +547,12 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
         if(char_data != NULL) {
            
             /* 已获得角色数据... 将其从检索的行中复制出来. */
-            mc.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
+            if (db_get_dress_data(c->guildcard, pkt->slot, &mc.dress_data, 0)) {
+                SQLERR_LOG("无法更新玩家数据 (GC %"
+                    PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+                /* XXXX: 未完成给客户端发送一个错误信息 */
+                return -3;
+            }
 
             memcpy(&mc.name[0], &char_data->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
 
@@ -727,7 +732,12 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        char_data->character.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
+        if (db_get_dress_data(c->guildcard, pkt->slot, &char_data->character.dress_data, 0)) {
+            SQLERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
 
         memcpy(char_data->character.name, &pkt->data.name, sizeof(char_data->character.name));
 
