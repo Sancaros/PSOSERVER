@@ -167,11 +167,19 @@ typedef struct psocn_dress_data {
 /* 角色信息数据结构 */
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
-    uint8_t opt_flag[10];
+    uint8_t opt_flag1;
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
     uint32_t level;
     uint32_t exp;
     uint32_t meseta;
-    psocn_dress_data_t dress_data;
 } PACKED psocn_disp_char_t;
 
 /* 用于认证服务器的预览角色数据结构 */
@@ -189,6 +197,7 @@ static int char_bb_minisize2 = sizeof(psocn_bb_mini_char_t);
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
+    psocn_dress_data_t dress_data;
     uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
     uint32_t play_time; //4
     uint32_t unknown_a3; //4
@@ -200,6 +209,7 @@ static int char_bb_size2 = sizeof(psocn_bb_char_t);
 
 typedef struct psocn_v1v2v3pc_char {
     psocn_disp_char_t disp;
+    psocn_dress_data_t dress_data;
     uint8_t config[0x48];
     uint8_t techniques[0x14];
 } PACKED psocn_v1v2v3pc_char_t;

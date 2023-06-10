@@ -173,8 +173,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         dc.unused2 = 0;
         dc.disable_udp = 1;
         dc.language = src->language_code;
-        dc.section = src->pl->bb.character.disp.dress_data.section;
-        dc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
+        dc.section = src->pl->bb.character.dress_data.section;
+        dc.ch_class = src->pl->bb.character.dress_data.ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
@@ -209,8 +209,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         pc.padding = 0;
         pc.disable_udp = 1;
         pc.language = src->language_code;
-        pc.section = src->pl->bb.character.disp.dress_data.section;
-        pc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
+        pc.section = src->pl->bb.character.dress_data.section;
+        pc.ch_class = src->pl->bb.character.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
@@ -256,8 +256,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         gc.padding = 0;
         gc.disable_udp = 1;
         gc.language = src->language_code;
-        gc.section = src->pl->bb.character.disp.dress_data.section;
-        gc.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
+        gc.section = src->pl->bb.character.dress_data.section;
+        gc.ch_class = src->pl->bb.character.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
@@ -305,8 +305,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         xb.xbl_userid = LE64(src->guildcard);
         xb.disable_udp = 1;
         xb.language = src->language_code;
-        xb.section = src->pl->bb.character.disp.dress_data.section;
-        xb.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
+        xb.section = src->pl->bb.character.dress_data.section;
+        xb.ch_class = src->pl->bb.character.dress_data.ch_class;
 
         return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
@@ -330,8 +330,8 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memcpy(bb.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
         bb.disable_udp = 1;
         bb.language = src->language_code;
-        bb.section = src->pl->bb.character.disp.dress_data.section;
-        bb.ch_class = src->pl->bb.character.disp.dress_data.ch_class;
+        bb.section = src->pl->bb.character.dress_data.section;
+        bb.ch_class = src->pl->bb.character.dress_data.ch_class;
 
         return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
@@ -1120,7 +1120,7 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pk
 int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint8_t ch_class = c->bb_pl->character.disp.dress_data.ch_class;
+    uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
     iitem_t* item;
     int i, rv = 0;
 
@@ -1176,12 +1176,12 @@ int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
         ////}
 
         //// 检测玩家角色结构
-        //pkt->dress_data = c->bb_pl->character.disp.dress_data;
+        //pkt->dress_data = c->bb_pl->character.dress_data;
 
         //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
 
         //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
-        //if (c->bb_pl->character.disp.dress_data.v2flags) {
+        //if (c->bb_pl->character.dress_data.v2flags) {
         //    pkt->dress_data.v2flags = 0x00;
         //    pkt->dress_data.version = 0x00;
         //    pkt->dress_data.v1flags = LE32(0x00000000);
@@ -1895,7 +1895,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
         c->equip_flags & EQUIP_FLAGS_DROID
         ) {
         ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
-            c->guildcard, pso_class[c->pl->bb.character.disp.dress_data.ch_class].cn_name, 
+            c->guildcard, pso_class[c->pl->bb.character.dress_data.ch_class].cn_name, 
             max_tech_level[pkt->technique_number].tech_name);
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
@@ -1903,10 +1903,10 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
 
     //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
-    //printf("ch_class %d techniques %d = %d max_lvl %d\n", c->pl->bb.character.disp.dress_data.ch_class,
+    //printf("ch_class %d techniques %d = %d max_lvl %d\n", c->pl->bb.character.dress_data.ch_class,
     //    c->pl->bb.character.techniques[pkt->technique_number],
     //    c->bb_pl->character.techniques[pkt->technique_number], 
-    //    max_tech_level[pkt->technique_number].max_lvl[c->pl->bb.character.disp.dress_data.ch_class]);
+    //    max_tech_level[pkt->technique_number].max_lvl[c->pl->bb.character.dress_data.ch_class]);
 
     //if (c->version <= CLIENT_VERSION_BB) {
         check_aoe_timer(c, pkt);
@@ -4403,7 +4403,7 @@ static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_battle_mode_t* pkt)
                         lc->pl->bb.inv.iitems[ch2].present = 0;
                     //CleanUpInventory(lc);
 
-                    uint8_t ch_class = lc->pl->bb.character.disp.dress_data.ch_class;
+                    uint8_t ch_class = lc->pl->bb.character.dress_data.ch_class;
 
                     lc->pl->bb.character.disp.level = 0;
                     lc->pl->bb.character.disp.exp = 0;

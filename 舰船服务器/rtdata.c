@@ -412,7 +412,7 @@ uint32_t rt_generate_v2_rare(ship_client_t *c, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_v2rt)
@@ -451,7 +451,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *c, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_gcrt)
@@ -490,7 +490,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* c, lobby_t* l, int rt_index,
     double rnd;
     rt_set_t* set;
     int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     uint8_t game_type = 0;//和游戏章节类型相关
 
     /* Make sure we read in a rare table and we have a sane index */

@@ -664,9 +664,9 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
         }
         
-        //DBG_LOG("重建角色 create_code 数值 %d", char_data->character.disp.dress_data.create_code);
+        //DBG_LOG("重建角色 create_code 数值 %d", char_data->character.dress_data.create_code);
 
-        create_code = char_data->character.disp.dress_data.create_code;
+        create_code = char_data->character.dress_data.create_code;
 
         char_data->character.play_time = 0;
 
@@ -688,14 +688,14 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        if (db_update_char_stat(char_data, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
             goto err;
         }
 
-        if (db_update_char_dress_data(char_data->character.disp.dress_data, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_dress_data(&char_data->character.dress_data, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
@@ -720,18 +720,18 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
         char_data = db_get_uncompress_char_data(c->guildcard, pkt->slot);
 
-        if (db_update_char_dress_data(pkt->data.dress_data, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_dress_data(&pkt->data.dress_data, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
             goto err;
         }
 
-        char_data->character.disp.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
+        char_data->character.dress_data = db_get_char_dress_data(c->guildcard, pkt->slot);
 
         memcpy(char_data->character.name, &pkt->data.name, sizeof(char_data->character.name));
 
-        if (db_update_char_stat(char_data, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */

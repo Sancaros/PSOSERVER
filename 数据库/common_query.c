@@ -814,12 +814,12 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     }
 
     sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_STATS, gc,
+        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_DISP, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法清理旧玩家 %s 人物数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_STATS, gc, slot,
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DISP, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -881,7 +881,7 @@ int db_updata_bb_char_create_code(uint32_t code,
 }
 
 /* 更新玩家更衣室数据至数据库 */
-int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_t slot, uint32_t flag) {
+int db_update_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8_t slot, uint32_t flag) {
 
     //DBG_LOG("更新角色更衣室数据");
 
@@ -905,15 +905,15 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "'%d', '%d', '%d', '%f', '%f')",//5
             CHARACTER_DRESS, 
             gc, slot, 
-            dress_data.guildcard_string, 
-            dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
-            dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
-            dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
-            dress_data.skin, dress_data.face, dress_data.head, dress_data.hair, 
-            dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, dress_data.prop_x, dress_data.prop_y
+            dress_data->guildcard_string, 
+            dress_data->dress_unk1, dress_data->dress_unk2, dress_data->name_color_b, dress_data->name_color_g, dress_data->name_color_r,
+            dress_data->name_color_transparency, dress_data->model, (char*)dress_data->dress_unk3, dress_data->create_code, dress_data->name_color_checksum, dress_data->section,
+            dress_data->ch_class, dress_data->v2flags, dress_data->version, dress_data->v1flags, dress_data->costume,
+            dress_data->skin, dress_data->face, dress_data->head, dress_data->hair, 
+            dress_data->hair_r, dress_data->hair_g, dress_data->hair_b, dress_data->prop_x, dress_data->prop_y
         );
 
-        //DBG_LOG("保存角色更衣室数据 %d", dress_data.create_code);
+        //DBG_LOG("保存角色更衣室数据 %d", dress_data->create_code);
 
         if (psocn_db_real_query(&conn, myquery)) {
             SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
@@ -929,8 +929,8 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
     //        "hair = '%d', hair_r = '%d', hair_g = '%d', hair_b = '%d' "
     //        "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
     //        CHARACTER_DRESS,
-    //        dress_data.costume, 
-    //        dress_data.hair, dress_data.hair_r, dress_data.hair_g, dress_data.hair_b,
+    //        dress_data->costume, 
+    //        dress_data->hair, dress_data->hair_r, dress_data->hair_g, dress_data->hair_b,
     //        gc, slot
     //    );
 
@@ -957,13 +957,13 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
             "prop_x = '%f', prop_y = '%f' "
             "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'", 
             CHARACTER_DRESS, gc, slot,  
-            dress_data.guildcard_string, dress_data.dress_unk1, dress_data.dress_unk2, 
-            dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r, dress_data.name_color_transparency, 
-            dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
-            dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, 
-            dress_data.costume, dress_data.skin, dress_data.face, dress_data.head, 
-            dress_data.hair, dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, 
-            dress_data.prop_x, dress_data.prop_y
+            dress_data->guildcard_string, dress_data->dress_unk1, dress_data->dress_unk2, 
+            dress_data->name_color_b, dress_data->name_color_g, dress_data->name_color_r, dress_data->name_color_transparency, 
+            dress_data->model, (char*)dress_data->dress_unk3, dress_data->create_code, dress_data->name_color_checksum, dress_data->section,
+            dress_data->ch_class, dress_data->v2flags, dress_data->version, dress_data->v1flags, 
+            dress_data->costume, dress_data->skin, dress_data->face, dress_data->head, 
+            dress_data->hair, dress_data->hair_r, dress_data->hair_g, dress_data->hair_b, 
+            dress_data->prop_x, dress_data->prop_y
             , gc, slot
         );
 
@@ -1010,12 +1010,12 @@ int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_
                 "'%d', '%d', '%d', '%f', '%f')",//5
                 CHARACTER_DRESS,
                 gc, slot, 
-                dress_data.guildcard_string,
-                dress_data.dress_unk1, dress_data.dress_unk2, dress_data.name_color_b, dress_data.name_color_g, dress_data.name_color_r,
-                dress_data.name_color_transparency, dress_data.model, (char*)dress_data.dress_unk3, dress_data.create_code, dress_data.name_color_checksum, dress_data.section,
-                dress_data.ch_class, dress_data.v2flags, dress_data.version, dress_data.v1flags, dress_data.costume,
-                dress_data.skin, dress_data.face, dress_data.head, dress_data.hair,
-                dress_data.hair_r, dress_data.hair_g, dress_data.hair_b, dress_data.prop_x, dress_data.prop_y
+                dress_data->guildcard_string,
+                dress_data->dress_unk1, dress_data->dress_unk2, dress_data->name_color_b, dress_data->name_color_g, dress_data->name_color_r,
+                dress_data->name_color_transparency, dress_data->model, (char*)dress_data->dress_unk3, dress_data->create_code, dress_data->name_color_checksum, dress_data->section,
+                dress_data->ch_class, dress_data->v2flags, dress_data->version, dress_data->v1flags, dress_data->costume,
+                dress_data->skin, dress_data->face, dress_data->head, dress_data->hair,
+                dress_data->hair_r, dress_data->hair_g, dress_data->hair_b, dress_data->prop_x, dress_data->prop_y
             );
 
             if (psocn_db_real_query(&conn, myquery)) {
@@ -1169,89 +1169,105 @@ int db_insert_char_data(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot
 }
 
 /* 更新玩家基础数据至数据库 */
-int db_update_char_stat(psocn_bb_db_char_t* char_data, 
+int db_update_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot, uint32_t flag) {
-    static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
-    char name[64];
-    char class_name[64];
+    static char query[sizeof(psocn_disp_char_t) * 2 + 256];
+    //char name[64];
+    //char class_name[64];
+    const char* tbl = CHARACTER_DISP;
 
-    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
+    //istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
 
-    istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.disp.dress_data.ch_class].cn_name, 64);
+    //istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.dress_data.ch_class].cn_name, 64);
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
-        sprintf(query, "INSERT INTO %s (guildcard, slot, name, class, class_name, meseta"
-            ", level, xp, section, skin, hpmats_used"
-            ", tpmats_used, inventoryUse, lang, atp, mst"
-            ", evp, hp, dfp, ata, lck) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%d', '%s', '%d'"
-            ", '%d', '%d', '%d', '%d', '%d'"
-            ", '%d', '%d', '%d', '%d', '%d'"
-            ", '%d', '%d', '%d', '%d', '%d')", CHARACTER_STATS, gc,
-            slot
-            , name, char_data->character.disp.dress_data.ch_class, class_name, char_data->character.disp.meseta
-            , char_data->character.disp.level + 1, char_data->character.disp.exp, char_data->character.disp.dress_data.section, char_data->character.disp.dress_data.skin, char_data->inv.hpmats_used
-            , char_data->inv.tpmats_used, char_data->inv.item_count, char_data->inv.language, char_data->character.disp.stats.atp, char_data->character.disp.stats.mst
-            , char_data->character.disp.stats.evp, char_data->character.disp.stats.hp, char_data->character.disp.stats.dfp, char_data->character.disp.stats.ata, char_data->character.disp.stats.lck
+        sprintf(query, "INSERT INTO "
+            "%s (guildcard, slot, "
+            "atp, mst, evp, hp, "
+            "dfp, ata, lck, "
+            "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
+            "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
+            "level, exp, meseta) "
+            "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
+            "'%d', '%d', '%d', '%d', "
+            "'%d', '%d', '%d', "
+            "'%d', '%d', '%d', '%d', '%d',"
+            "'%d', '%d', '%d', '%d', '%d',"
+            "'%d', '%d', '%d')"
+            , tbl, gc, slot
+            , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
+            , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
+            , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
+            , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+            , disp_data->level + 1, disp_data->exp, disp_data->meseta
         );
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_STATS, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -6;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        sprintf(query, "UPDATE %s SET name='%s', class='%d', class_name='%s', meseta='%d'"
-            ", level='%d', xp='%d',section='%d', skin='%d', hpmats_used='%d'"
-            ", tpmats_used='%d', inventoryUse='%d', lang='%d', atp='%d', mst='%d'"
-            ", evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d'"
-            " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_STATS
-            , name, char_data->character.disp.dress_data.ch_class, class_name, char_data->character.disp.meseta
-            , char_data->character.disp.level + 1, char_data->character.disp.exp, char_data->character.disp.dress_data.section, char_data->character.disp.dress_data.skin, char_data->inv.hpmats_used
-            , char_data->inv.tpmats_used, char_data->inv.item_count, char_data->inv.language, char_data->character.disp.stats.atp, char_data->character.disp.stats.mst
-            , char_data->character.disp.stats.evp, char_data->character.disp.stats.hp, char_data->character.disp.stats.dfp, char_data->character.disp.stats.ata, char_data->character.disp.stats.lck
+        sprintf(query, "UPDATE %s SET"
+            " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
+            " opt_flags1='%d', opt_flags2='%d', opt_flags3='%d', opt_flags4='%d', opt_flags5='%d',"
+            " opt_flags6='%d', opt_flags7='%d', opt_flags8='%d', opt_flags9='%d', opt_flags10='%d',"
+            " level='%d', exp='%d', meseta='%d'"
+            " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", tbl
+            , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp, disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
+            , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
+            , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+            , disp_data->level + 1, disp_data->exp, disp_data->meseta
             , gc, slot
         );
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_STATS, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -6;
         }
         else {
             sprintf(query, "DELETE FROM %s WHERE guildcard="
-                "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_STATS, gc,
+                "'%" PRIu32 "' AND slot='%" PRIu8 "'", tbl, gc,
                 slot);
 
             if (psocn_db_real_query(&conn, query)) {
                 SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_STATS, gc, slot,
+                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
                     psocn_db_error(&conn));
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 return -1;
             }
 
-            sprintf(query, "INSERT INTO %s (guildcard, slot, name, class, class_name, meseta"
-                ", level, xp, section, skin, hpmats_used"
-                ", tpmats_used, inventoryUse, lang, atp, mst"
-                ", evp, hp, dfp, ata, lck) "
-                "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%d', '%s', '%d'"
-                ", '%d', '%d', '%d', '%d', '%d'"
-                ", '%d', '%d', '%d', '%d', '%d'"
-                ", '%d', '%d', '%d', '%d', '%d')", CHARACTER_STATS, gc, slot
-                , name, char_data->character.disp.dress_data.ch_class, class_name, char_data->character.disp.meseta
-                , char_data->character.disp.level + 1, char_data->character.disp.exp, char_data->character.disp.dress_data.section, char_data->character.disp.dress_data.skin, char_data->inv.hpmats_used
-                , char_data->inv.tpmats_used, char_data->inv.item_count, char_data->inv.language, char_data->character.disp.stats.atp, char_data->character.disp.stats.mst
-                , char_data->character.disp.stats.evp, char_data->character.disp.stats.hp, char_data->character.disp.stats.dfp, char_data->character.disp.stats.ata, char_data->character.disp.stats.lck);
+            sprintf(query, "INSERT INTO "
+                "%s (guildcard, slot, "
+                "atp, mst, evp, hp, "
+                "dfp, ata, lck, "
+                "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
+                "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
+                "level, exp, meseta) "
+                "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
+                "'%d', '%d', '%d', '%d', "
+                "'%d', '%d', '%d', "
+                "'%d', '%d', '%d', '%d', '%d',"
+                "'%d', '%d', '%d', '%d', '%d',"
+                "'%d', '%d', '%d')"
+                , tbl, gc, slot
+                , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
+                , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
+                , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
+                , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+                , disp_data->level + 1, disp_data->exp, disp_data->meseta
+            );
 
             if (psocn_db_real_query(&conn, query)) {
                 SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                    "槽位 %" PRIu8 "):\n%s", CHARACTER_STATS, gc, slot,
+                    "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
                     psocn_db_error(&conn));
                 /* XXXX: 未完成给客户端发送一个错误信息 */
                 return -6;

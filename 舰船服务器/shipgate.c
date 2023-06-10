@@ -447,7 +447,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
 
         /* Copy the name */
         for (i = 0; i < 16; ++i) {
-            p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.disp.dress_data.guildcard_string[i]);
+            p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.dress_data.guildcard_string[i]);
         }
 
         /* Copy the message */
@@ -474,7 +474,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         p.dcmaildata.gc_dest = LE32(dest);
 
         /* Copy the name and message */
-        memcpy(p.dcmaildata.dcname, s->pl->v1.character.disp.dress_data.guildcard_string, 16);
+        memcpy(p.dcmaildata.dcname, s->pl->v1.character.dress_data.guildcard_string, 16);
         memcpy(p.dcmaildata.stuff, s->autoreply, s->autoreply_len);
 
         /* Send it */
@@ -3663,7 +3663,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
 
                 /* Only do this if we have enough info to actually have sent
                    the block login before */
-                if (cl->pl->v1.character.disp.dress_data.guildcard_string[0]) {
+                if (cl->pl->v1.character.dress_data.guildcard_string[0]) {
                     l = cl->cur_lobby;
 
                     /* Fill in what we have */
@@ -3671,7 +3671,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                     pkt->entries[count].dlobby = htonl(cl->lobby_id);
 
                     if (cl->version != CLIENT_VERSION_BB) {
-                        strncpy(pkt->entries[count].ch_name, cl->pl->v1.character.disp.dress_data.guildcard_string,
+                        strncpy(pkt->entries[count].ch_name, cl->pl->v1.character.dress_data.guildcard_string,
                             32);
                     }
                     else {

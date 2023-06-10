@@ -1395,7 +1395,17 @@ typedef struct subcmd_burst_pldata_old {
     uint8_t techs[20];
     psocn_dress_data_t dress_data;  /* 00D4 */
     psocn_pl_stats_t stats;         /* 0124 */
-    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag1;              /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
+    //uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
     uint32_t level;
     uint32_t exp;
     uint32_t meseta;
@@ -1436,7 +1446,17 @@ typedef struct subcmd_burst_pldata {
 
     psocn_dress_data_t dress_data;  /* 00D4 */
     psocn_pl_stats_t stats;         /* 0124 */
-    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag1;              /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
+    //uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
     uint32_t level;                 /* 013C  316 - 319 size 4 */
     uint32_t exp;                   /* 0140  320 - 323 size 4 */
     uint32_t meseta;                /* 0144  324 - 327 size 4 */
@@ -1482,7 +1502,16 @@ typedef struct subcmd_bb_burst_pldata {
     uint16_t name[0x0C];
     uint8_t hw_info[0x08];
     psocn_pl_stats_t stats;
-    uint8_t opt_flag[10];
+    uint8_t opt_flag1;
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
     uint32_t level;
     uint32_t exp;
     uint32_t meseta;
@@ -1532,7 +1561,17 @@ typedef struct G_Unknown_6x70 {
 
     psocn_dress_data_t dress_data;  /* 00D4 */
     psocn_pl_stats_t stats;         /* 0124 */
-    uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag1;              /* 0132  306 - 315 size 10 */
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
+    //uint8_t opt_flag[0x0A];         /* 0132  306 - 315 size 10 */
     uint32_t level;                 /* 013C  316 - 319 size 4 */
     uint32_t exp;                   /* 0140  320 - 323 size 4 */
     uint32_t meseta;                /* 0144  324 - 327 size 4 */

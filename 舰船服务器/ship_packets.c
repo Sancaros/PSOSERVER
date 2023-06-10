@@ -1302,7 +1302,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
                            l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
-            memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+            memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
         }
 
         /* Do any character data conversion we have to deal with... */
@@ -1375,7 +1375,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
                            l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
-            memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+            memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
         }
 
         /* Do any character data conversion that we have to deal with... */
@@ -1438,7 +1438,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
         }
         else {
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[pls].hdr.name,
-                     l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                     l->clients[i]->pl->v1.character.dress_data.guildcard_string, 32);
         }
 
         /* Do any character data conversion that we have to deal with... */
@@ -1524,7 +1524,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
                            cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
-            memcpy(pkt->entries[pls].hdr.name, cl->pl->v1.character.disp.dress_data.guildcard_string, 16);
+            memcpy(pkt->entries[pls].hdr.name, cl->pl->v1.character.dress_data.guildcard_string, 16);
         }
 
         /* Do any character data conversion that we have to deal with... */
@@ -1593,7 +1593,7 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
         }
         else {
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[pls].hdr.name,
-                     l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                     l->clients[i]->pl->v1.character.dress_data.guildcard_string, 32);
         }
 
         make_disp_data(l->clients[i], c, &pkt->entries[pls].inv);
@@ -1842,7 +1842,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
                        &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
-        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.disp.dress_data.guildcard_string, 16);
+        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
     }
 
     /* Do any character data conversion that we have to deal with... */
@@ -1900,7 +1900,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
                        &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
-        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.disp.dress_data.guildcard_string, 16);
+        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
     }
 
     /* Do any character data conversion that we have to deal with... */
@@ -1955,7 +1955,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     }
     else {
         istrncpy(ic_8859_to_utf16, (char *)pkt->entries[0].hdr.name,
-                 nc->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                 nc->pl->v1.character.dress_data.guildcard_string, 32);
     }
 
     /* Do any character data conversion that we have to deal with... */
@@ -2030,7 +2030,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
                        &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
-        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.disp.dress_data.guildcard_string, 16);
+        memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
     }
 
     make_disp_data(nc, c, &pkt->entries[0].data);
@@ -2083,7 +2083,7 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
         pkt->entries[0].hdr.name[0] = '\t';
         pkt->entries[0].hdr.name[0] = 'J';
         istrncpy(ic_8859_to_utf16, (char *)&pkt->entries[0].hdr.name[2],
-                 nc->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                 nc->pl->v1.character.dress_data.guildcard_string, 32);
     }
 
     make_disp_data(nc, c, &pkt->entries[0].inv);
@@ -2253,17 +2253,17 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1) {
             if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+                in = sprintf(tm, "%s\t%s", s->pl->v1.character.dress_data.guildcard_string, msg) + 1;
             else {
-                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.disp.dress_data.guildcard_string, s->client_id,
+                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.dress_data.guildcard_string, s->client_id,
                              msg + 2) + 1;
             }
         }
         else {
             if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+                in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.dress_data.guildcard_string, msg) + 1;
             else {
-                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.disp.dress_data.guildcard_string, s->client_id,
+                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.dress_data.guildcard_string, s->client_id,
                              msg) + 1;
             }
         }
@@ -2272,17 +2272,17 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1) {
             if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+                in = sprintf(tm, "%s\t%s", s->pl->v1.character.dress_data.guildcard_string, cmsg) + 1;
             else {
-                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.disp.dress_data.guildcard_string, s->client_id,
+                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.dress_data.guildcard_string, s->client_id,
                              cmsg + 2) + 1;
             }
         }
         else {
             if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+                in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.dress_data.guildcard_string, cmsg) + 1;
             else {
-                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.disp.dress_data.guildcard_string, s->client_id,
+                in = sprintf(tm, "%s>%X%s", s->pl->v1.character.dress_data.guildcard_string, s->client_id,
                              cmsg) + 1;
             }
         }
@@ -2351,16 +2351,16 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->v1.character.dress_data.guildcard_string, msg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.dress_data.guildcard_string, msg) + 1;
     }
     else {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->v1.character.dress_data.guildcard_string, cmsg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->v1.character.dress_data.guildcard_string, cmsg) + 1;
     }
 
     if (!in) {
@@ -2426,16 +2426,16 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     if(!(c->flags & CLIENT_FLAG_WORD_CENSOR)) {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->bb.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->bb.character.dress_data.guildcard_string, msg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.disp.dress_data.guildcard_string, msg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.dress_data.guildcard_string, msg) + 1;
     }
     else {
         if(!(s->flags & CLIENT_FLAG_IS_NTE) ||
            s->version != CLIENT_VERSION_DCV1)
-            in = sprintf(tm, "%s\t%s", s->pl->bb.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t%s", s->pl->bb.character.dress_data.guildcard_string, cmsg) + 1;
         else
-            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.disp.dress_data.guildcard_string, cmsg) + 1;
+            in = sprintf(tm, "%s\t\tJ%s", s->pl->bb.character.dress_data.guildcard_string, cmsg) + 1;
     }
 
     if (!in) {
@@ -2802,7 +2802,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
                        &s->bb_pl->character.name[2], 0x20, BB_CHARACTER_NAME_LENGTH);
     }
     else {
-        strcpy(pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string);
+        strcpy(pkt->name, s->pl->v1.character.dress_data.guildcard_string);
     }
 
     /* Fill in the location string. The lobby name is UTF-8 and everything
@@ -2897,7 +2897,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
         memcpy(pkt->name, &s->bb_pl->character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
     }
     else {
-        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string, 0x40);
+        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.dress_data.guildcard_string, 0x40);
     }
 
     /* 加密并发送 */
@@ -2959,7 +2959,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
     else {
         pkt->name[0] = LE16('\t');
         pkt->name[1] = LE16('E');
-        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.character.disp.dress_data.guildcard_string, 0x3C);
+        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.character.dress_data.guildcard_string, 0x3C);
     }
 
     /* 加密并发送 */
@@ -3047,7 +3047,7 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
                        &s->bb_pl->character.name[2], 0x20, 16);
     }
     else {
-        strcpy(pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string);
+        strcpy(pkt->name, s->pl->v1.character.dress_data.guildcard_string);
     }
 
     /* Fill in the location string. The lobby name is UTF-8 and everything
@@ -3143,7 +3143,7 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
         memcpy(pkt->name, &s->bb_pl->character.name[2], 28);
     }
     else {
-        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.disp.dress_data.guildcard_string, 0x40);
+        istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.dress_data.guildcard_string, 0x40);
     }
 
 
@@ -3207,7 +3207,7 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
     else {
         pkt->name[0] = LE16('\t');
         pkt->name[1] = LE16('E');
-        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.character.disp.dress_data.guildcard_string, 0x3C);
+        istrncpy(ic_8859_to_utf16, (char *)&pkt->name[2], s->pl->v1.character.dress_data.guildcard_string, 0x3C);
     }
 
     /* 加密并发送 */
@@ -3811,7 +3811,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
                                l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
-                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
             }
 
             ++clients;
@@ -3869,7 +3869,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
                                l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
-                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
             }
 
             ++clients;
@@ -3930,7 +3930,7 @@ static int send_pc_game_join(ship_client_t *c, lobby_t *l) {
             }
             else {
                 istrncpy(ic_8859_to_utf16, (char *)pkt->players[i].name,
-                         l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                         l->clients[i]->pl->v1.character.dress_data.guildcard_string, 32);
             }
 
             ++clients;
@@ -3990,7 +3990,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
                                l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
-                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+                memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
             }
 
             ++clients;
@@ -4072,7 +4072,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
                                cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
-                memcpy(pkt->players[i].name, cl->pl->v1.character.disp.dress_data.guildcard_string, 16);
+                memcpy(pkt->players[i].name, cl->pl->v1.character.dress_data.guildcard_string, 16);
             }
 
             ++clients;
@@ -4126,7 +4126,7 @@ static int send_ep3_game_join(ship_client_t *c, lobby_t *l) {
             pkt->players[i].client_id = LE32(i);
 
             /* No need to iconv the names, they'll be good as is */
-            memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 16);
+            memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
 
             /* Copy the player data to that part of the packet. */
             memcpy(&pkt->player_data[i], &l->clients[i]->pl->v1,
@@ -4192,7 +4192,7 @@ static int send_bb_game_join(ship_client_t *c, lobby_t *l) {
             }
             else {
                 istrncpy(ic_8859_to_utf16, (char *)pkt->players[i].name,
-                         l->clients[i]->pl->v1.character.disp.dress_data.guildcard_string, 32);
+                         l->clients[i]->pl->v1.character.dress_data.guildcard_string, 32);
             }
 
             ++clients;
@@ -9350,9 +9350,9 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
 
             /* All the text needs to be converted with iconv to UTF-16LE... */
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].name,
-                     it->pl->v1.character.disp.dress_data.guildcard_string, 0x20);
+                     it->pl->v1.character.dress_data.guildcard_string, 0x20);
 
-            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name,
+            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.dress_data.ch_class].cn_name,
                     it->pl->v1.character.disp.level + 1);
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
@@ -9389,9 +9389,9 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
 
             /* Everything here is ISO-8859-1 already... so no need to
                iconv anything in here */
-            strcpy(pkt->entries[entry].name, it->pl->v1.character.disp.dress_data.guildcard_string);
+            strcpy(pkt->entries[entry].name, it->pl->v1.character.dress_data.guildcard_string);
             sprintf(pkt->entries[entry].cl_lvl, "%s Lvl %d\n",
-                    pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
+                    pso_class[it->pl->v1.character.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
 
             /* iconv the lobby name */
             if(it->cur_lobby->name[0] == '\t' &&
@@ -9437,9 +9437,9 @@ static int fill_one_choice6_entry(uint8_t *sendbuf, int version,
 
             /* All the text needs to be converted with iconv to UTF-16LE... */
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].name,
-                     it->pl->v1.character.disp.dress_data.guildcard_string, 0x20);
+                     it->pl->v1.character.dress_data.guildcard_string, 0x20);
 
-            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name,
+            sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.dress_data.ch_class].cn_name,
                     it->pl->v1.character.disp.level + 1);
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
@@ -9476,9 +9476,9 @@ static int fill_one_choice6_entry(uint8_t *sendbuf, int version,
 
             /* Everything here is ISO-8859-1 already... so no need to
                iconv anything in here */
-            strcpy(pkt->entries[entry].name, it->pl->v1.character.disp.dress_data.guildcard_string);
+            strcpy(pkt->entries[entry].name, it->pl->v1.character.dress_data.guildcard_string);
             sprintf(pkt->entries[entry].cl_lvl, "%s Lvl %d\n",
-                pso_class[it->pl->v1.character.disp.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
+                pso_class[it->pl->v1.character.dress_data.ch_class].cn_name, it->pl->v1.character.disp.level + 1);
 
             /* iconv the lobby name */
             if(it->cur_lobby->name[0] == '\t' &&
@@ -9536,7 +9536,7 @@ static int fill_choice_entries(ship_client_t *c, uint8_t *sendbuf,
                     (int)it->pl->v1.character.disp.level > maxlvl) {
                     continue;
                 }
-                else if(cl != 0 && it->pl->v1.character.disp.dress_data.ch_class != cl - 1) {
+                else if(cl != 0 && it->pl->v1.character.dress_data.ch_class != cl - 1) {
                     continue;
                 }
                 else if(it == c) {
@@ -10262,7 +10262,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
 
             /* Copy the name */
             for(i = 0; i < 16; ++i) {
-                p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.disp.dress_data.guildcard_string[i]);
+                p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.dress_data.guildcard_string[i]);
             }
 
             /* Copy the message */
@@ -10289,7 +10289,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
             p.dcmaildata.gc_dest = LE32(d->guildcard);
 
             /* Copy the name and message */
-            memcpy(p.dcmaildata.dcname, s->pl->v1.character.disp.dress_data.guildcard_string, 16);
+            memcpy(p.dcmaildata.dcname, s->pl->v1.character.dress_data.guildcard_string, 16);
             memcpy(p.dcmaildata.stuff, s->autoreply, s->autoreply_len);
 
             /* Send it */
@@ -10351,7 +10351,7 @@ static int send_gc_infoboard(ship_client_t *c, lobby_t *l) {
                 case CLIENT_VERSION_XBOX:
                     if(c2->infoboard[0]) {
                         memset(&pkt->entries[entries], 0, 0xBC);
-                        strcpy(pkt->entries[entries].name, c2->pl->v1.character.disp.dress_data.guildcard_string);
+                        strcpy(pkt->entries[entries].name, c2->pl->v1.character.dress_data.guildcard_string);
                         strcpy(pkt->entries[entries].msg, c2->infoboard);
                         break;
                     }
@@ -10442,7 +10442,7 @@ static int send_bb_infoboard(ship_client_t *c, lobby_t *l) {
                         pkt->entries[entries].name[1] = LE16('E');
                         in = 16;
                         out = 28;
-                        inptr = c2->pl->v1.character.disp.dress_data.guildcard_string;
+                        inptr = c2->pl->v1.character.dress_data.guildcard_string;
                         outptr = (char *)&pkt->entries[entries].name[2];
 
                         iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
@@ -11387,7 +11387,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
     pkt->data.gc_data.present = 1;
     pkt->data.gc_data.language = c->language_code;
-    pkt->data.gc_data.ch_class = c->bb_pl->character.disp.dress_data.ch_class;
+    pkt->data.gc_data.ch_class = c->bb_pl->character.dress_data.ch_class;
     ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(c->bb_opts->symbol_chats));
     memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));

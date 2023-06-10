@@ -41,25 +41,25 @@ static uint32_t get_section_id(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[0])
             send_sync_register(c, c->q_stack[4],
-                               l->clients[0]->pl->v1.character.disp.dress_data.section);
+                               l->clients[0]->pl->v1.character.dress_data.section);
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
         if(l->clients[1])
             send_sync_register(c, c->q_stack[5],
-                               l->clients[1]->pl->v1.character.disp.dress_data.section);
+                               l->clients[1]->pl->v1.character.dress_data.section);
         else
             send_sync_register(c, c->q_stack[5], 0xFFFFFFFF);
 
         if(l->clients[2])
             send_sync_register(c, c->q_stack[6],
-                               l->clients[2]->pl->v1.character.disp.dress_data.section);
+                               l->clients[2]->pl->v1.character.dress_data.section);
         else
             send_sync_register(c, c->q_stack[6], 0xFFFFFFFF);
 
         if(l->clients[3])
             send_sync_register(c, c->q_stack[7],
-                               l->clients[3]->pl->v1.character.disp.dress_data.section);
+                               l->clients[3]->pl->v1.character.dress_data.section);
         else
             send_sync_register(c, c->q_stack[7], 0xFFFFFFFF);
 
@@ -75,7 +75,7 @@ static uint32_t get_section_id(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[c->q_stack[3]])
             send_sync_register(c, c->q_stack[4],
-                               l->clients[c->q_stack[3]]->pl->v1.character.disp.dress_data.section);
+                               l->clients[c->q_stack[3]]->pl->v1.character.dress_data.section);
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
@@ -136,25 +136,25 @@ static uint32_t get_char_class(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[0])
             send_sync_register(c, c->q_stack[4],
-                               l->clients[0]->pl->v1.character.disp.dress_data.ch_class);
+                               l->clients[0]->pl->v1.character.dress_data.ch_class);
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
         if(l->clients[1])
             send_sync_register(c, c->q_stack[5],
-                               l->clients[1]->pl->v1.character.disp.dress_data.ch_class);
+                               l->clients[1]->pl->v1.character.dress_data.ch_class);
         else
             send_sync_register(c, c->q_stack[5], 0xFFFFFFFF);
 
         if(l->clients[2])
             send_sync_register(c, c->q_stack[6],
-                               l->clients[2]->pl->v1.character.disp.dress_data.ch_class);
+                               l->clients[2]->pl->v1.character.dress_data.ch_class);
         else
             send_sync_register(c, c->q_stack[6], 0xFFFFFFFF);
 
         if(l->clients[3])
             send_sync_register(c, c->q_stack[7],
-                               l->clients[3]->pl->v1.character.disp.dress_data.ch_class);
+                               l->clients[3]->pl->v1.character.dress_data.ch_class);
         else
             send_sync_register(c, c->q_stack[7], 0xFFFFFFFF);
 
@@ -170,7 +170,7 @@ static uint32_t get_char_class(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[c->q_stack[3]])
             send_sync_register(c, c->q_stack[4],
-                               l->clients[c->q_stack[3]]->pl->v1.character.disp.dress_data.ch_class);
+                               l->clients[c->q_stack[3]]->pl->v1.character.dress_data.ch_class);
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
@@ -206,25 +206,25 @@ static uint32_t get_char_gender(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[0])
             send_sync_register(c, c->q_stack[4],
-                               GENDER(l->clients[0]->pl->v1.character.disp.dress_data.ch_class));
+                               GENDER(l->clients[0]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
         if(l->clients[1])
             send_sync_register(c, c->q_stack[5],
-                               GENDER(l->clients[1]->pl->v1.character.disp.dress_data.ch_class));
+                               GENDER(l->clients[1]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[5], 0xFFFFFFFF);
 
         if(l->clients[2])
             send_sync_register(c, c->q_stack[6],
-                               GENDER(l->clients[2]->pl->v1.character.disp.dress_data.ch_class));
+                               GENDER(l->clients[2]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[6], 0xFFFFFFFF);
 
         if(l->clients[3])
             send_sync_register(c, c->q_stack[7],
-                               GENDER(l->clients[3]->pl->v1.character.disp.dress_data.ch_class));
+                               GENDER(l->clients[3]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[7], 0xFFFFFFFF);
 
@@ -242,7 +242,7 @@ static uint32_t get_char_gender(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[cl])
             send_sync_register(c, c->q_stack[4],
-                               GENDER(l->clients[cl]->pl->v1.character.disp.dress_data.ch_class));
+                               GENDER(l->clients[cl]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
@@ -269,25 +269,25 @@ static uint32_t get_char_race(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[0])
             send_sync_register(c, c->q_stack[4],
-                               RACE(l->clients[0]->pl->v1.character.disp.dress_data.ch_class));
+                               RACE(l->clients[0]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
         if(l->clients[1])
             send_sync_register(c, c->q_stack[5],
-                               RACE(l->clients[1]->pl->v1.character.disp.dress_data.ch_class));
+                               RACE(l->clients[1]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[5], 0xFFFFFFFF);
 
         if(l->clients[2])
             send_sync_register(c, c->q_stack[6],
-                               RACE(l->clients[2]->pl->v1.character.disp.dress_data.ch_class));
+                               RACE(l->clients[2]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[6], 0xFFFFFFFF);
 
         if(l->clients[3])
             send_sync_register(c, c->q_stack[7],
-                               RACE(l->clients[3]->pl->v1.character.disp.dress_data.ch_class));
+                               RACE(l->clients[3]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[7], 0xFFFFFFFF);
 
@@ -305,7 +305,7 @@ static uint32_t get_char_race(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[cl])
             send_sync_register(c, c->q_stack[4],
-                               RACE(l->clients[cl]->pl->v1.character.disp.dress_data.ch_class));
+                               RACE(l->clients[cl]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
@@ -332,25 +332,25 @@ static uint32_t get_char_job(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[0])
             send_sync_register(c, c->q_stack[4],
-                               JOB(l->clients[0]->pl->v1.character.disp.dress_data.ch_class));
+                               JOB(l->clients[0]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 
         if(l->clients[1])
             send_sync_register(c, c->q_stack[5],
-                               JOB(l->clients[1]->pl->v1.character.disp.dress_data.ch_class));
+                               JOB(l->clients[1]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[5], 0xFFFFFFFF);
 
         if(l->clients[2])
             send_sync_register(c, c->q_stack[6],
-                               JOB(l->clients[2]->pl->v1.character.disp.dress_data.ch_class));
+                               JOB(l->clients[2]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[6], 0xFFFFFFFF);
 
         if(l->clients[3])
             send_sync_register(c, c->q_stack[7],
-                               JOB(l->clients[3]->pl->v1.character.disp.dress_data.ch_class));
+                               JOB(l->clients[3]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[7], 0xFFFFFFFF);
 
@@ -368,7 +368,7 @@ static uint32_t get_char_job(ship_client_t *c, lobby_t *l) {
 
         if(l->clients[cl])
             send_sync_register(c, c->q_stack[4],
-                               JOB(l->clients[cl]->pl->v1.character.disp.dress_data.ch_class));
+                               JOB(l->clients[cl]->pl->v1.character.dress_data.ch_class));
         else
             send_sync_register(c, c->q_stack[4], 0xFFFFFFFF);
 

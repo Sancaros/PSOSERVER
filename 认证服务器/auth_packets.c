@@ -2191,38 +2191,38 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     
     //DBG_LOG("更新角色更衣室");
 
-    memcpy(&c->disp.dress_data.guildcard_string, &mc->dress_data.guildcard_string, sizeof(mc->dress_data.guildcard_string));
+    memcpy(&c->dress_data.guildcard_string, &mc->dress_data.guildcard_string, sizeof(mc->dress_data.guildcard_string));
 
-    c->disp.dress_data.dress_unk1 = mc->dress_data.dress_unk1;
-    c->disp.dress_data.dress_unk2 = mc->dress_data.dress_unk2;
+    c->dress_data.dress_unk1 = mc->dress_data.dress_unk1;
+    c->dress_data.dress_unk2 = mc->dress_data.dress_unk2;
 
-    c->disp.dress_data.name_color_b = mc->dress_data.name_color_b;
-    c->disp.dress_data.name_color_g = mc->dress_data.name_color_g;
-    c->disp.dress_data.name_color_r = mc->dress_data.name_color_r;
-    c->disp.dress_data.name_color_transparency = mc->dress_data.name_color_transparency;
-    c->disp.dress_data.model = mc->dress_data.model;
+    c->dress_data.name_color_b = mc->dress_data.name_color_b;
+    c->dress_data.name_color_g = mc->dress_data.name_color_g;
+    c->dress_data.name_color_r = mc->dress_data.name_color_r;
+    c->dress_data.name_color_transparency = mc->dress_data.name_color_transparency;
+    c->dress_data.model = mc->dress_data.model;
 
     for (int i = 0; i < 10; ++i) {
-        c->disp.dress_data.dress_unk3[i] = mc->dress_data.dress_unk3[i];
+        c->dress_data.dress_unk3[i] = mc->dress_data.dress_unk3[i];
     }
 
-    c->disp.dress_data.create_code = mc->dress_data.create_code;
-    c->disp.dress_data.name_color_checksum = mc->dress_data.name_color_checksum;
-    c->disp.dress_data.section = mc->dress_data.section;
-    c->disp.dress_data.ch_class = mc->dress_data.ch_class;
-    c->disp.dress_data.v2flags = mc->dress_data.v2flags;
-    c->disp.dress_data.version = mc->dress_data.version;
-    c->disp.dress_data.v1flags = mc->dress_data.v1flags;
-    c->disp.dress_data.costume = mc->dress_data.costume;
-    c->disp.dress_data.skin = mc->dress_data.skin;
-    c->disp.dress_data.face = mc->dress_data.face;
-    c->disp.dress_data.head = mc->dress_data.head;
-    c->disp.dress_data.hair = mc->dress_data.hair;
-    c->disp.dress_data.hair_r = mc->dress_data.hair_r;
-    c->disp.dress_data.hair_g = mc->dress_data.hair_g;
-    c->disp.dress_data.hair_b = mc->dress_data.hair_b;
-    c->disp.dress_data.prop_x = mc->dress_data.prop_x;
-    c->disp.dress_data.prop_y = mc->dress_data.prop_y;
+    c->dress_data.create_code = mc->dress_data.create_code;
+    c->dress_data.name_color_checksum = mc->dress_data.name_color_checksum;
+    c->dress_data.section = mc->dress_data.section;
+    c->dress_data.ch_class = mc->dress_data.ch_class;
+    c->dress_data.v2flags = mc->dress_data.v2flags;
+    c->dress_data.version = mc->dress_data.version;
+    c->dress_data.v1flags = mc->dress_data.v1flags;
+    c->dress_data.costume = mc->dress_data.costume;
+    c->dress_data.skin = mc->dress_data.skin;
+    c->dress_data.face = mc->dress_data.face;
+    c->dress_data.head = mc->dress_data.head;
+    c->dress_data.hair = mc->dress_data.hair;
+    c->dress_data.hair_r = mc->dress_data.hair_r;
+    c->dress_data.hair_g = mc->dress_data.hair_g;
+    c->dress_data.hair_b = mc->dress_data.hair_b;
+    c->dress_data.prop_x = mc->dress_data.prop_x;
+    c->dress_data.prop_y = mc->dress_data.prop_y;
 
     memcpy(&c->name, &mc->name, sizeof(mc->name));
 

@@ -75,13 +75,13 @@ static int pllist_ship(ship_client_t *c, const char *name, int first,
             }
 
             /* Next check if the class matches the request */
-            if(ch_class != -1 && c2->pl->v1.character.disp.dress_data.ch_class != ch_class) {
+            if(ch_class != -1 && c2->pl->v1.character.dress_data.ch_class != ch_class) {
                 pthread_mutex_unlock(&c2->mutex);
                 continue;
             }
 
             /* Check the name filter, if given */
-            if(name && regexec(&re, c2->pl->v1.character.disp.dress_data.guildcard_string, 0, NULL, 0)) {
+            if(name && regexec(&re, c2->pl->v1.character.dress_data.guildcard_string, 0, NULL, 0)) {
                 pthread_mutex_unlock(&c2->mutex);
                 continue;
             }
@@ -95,15 +95,15 @@ static int pllist_ship(ship_client_t *c, const char *name, int first,
 
                 if(c2->cur_lobby) {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                            "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                            "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.dress_data.guildcard_string,
+                            pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip,
                             skip_lang_code(c2->cur_lobby->name));
                 }
                 else {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                            "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                            "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.dress_data.guildcard_string,
+                            pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip);
                 }
 
@@ -165,13 +165,13 @@ static int pllist_block(ship_client_t *c, const char *name, int first,
         }
 
         /* Next check if the class matches the request */
-        if(ch_class != -1 && c2->pl->v1.character.disp.dress_data.ch_class != ch_class) {
+        if(ch_class != -1 && c2->pl->v1.character.dress_data.ch_class != ch_class) {
             pthread_mutex_unlock(&c2->mutex);
             continue;
         }
 
         /* Check the name filter, if given */
-        if(name && regexec(&re, c2->pl->v1.character.disp.dress_data.guildcard_string, 0, NULL, 0)) {
+        if(name && regexec(&re, c2->pl->v1.character.dress_data.guildcard_string, 0, NULL, 0)) {
             pthread_mutex_unlock(&c2->mutex);
             continue;
         }
@@ -185,15 +185,15 @@ static int pllist_block(ship_client_t *c, const char *name, int first,
 
             if(c2->cur_lobby) {
                 sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                        "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                        pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                        "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.dress_data.guildcard_string,
+                        pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                         c2->guildcard, c2->cur_block->b, ip,
                         skip_lang_code(c2->cur_lobby->name));
             }
             else {
                 sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                        "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                        pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                        "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.dress_data.guildcard_string,
+                        pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                         c2->guildcard, c2->cur_block->b, ip);
             }
 
@@ -254,13 +254,13 @@ static int pllist_lobby(ship_client_t *c, const char *name, int first,
             }
 
             /* Next check if the class matches the request */
-            if(ch_class != -1 && c2->pl->v1.character.disp.dress_data.ch_class != ch_class) {
+            if(ch_class != -1 && c2->pl->v1.character.dress_data.ch_class != ch_class) {
                 pthread_mutex_unlock(&c2->mutex);
                 continue;
             }
 
             /* Check the name filter, if given */
-            if(name && regexec(&re, c2->pl->v1.character.disp.dress_data.guildcard_string, 0, NULL, 0)) {
+            if(name && regexec(&re, c2->pl->v1.character.dress_data.guildcard_string, 0, NULL, 0)) {
                 pthread_mutex_unlock(&c2->mutex);
                 continue;
             }
@@ -274,15 +274,15 @@ static int pllist_lobby(ship_client_t *c, const char *name, int first,
 
                 if(c2->cur_lobby) {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                            "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                            "B: %d  IP: %s  Lobby: %s\n", c2->pl->v1.character.dress_data.guildcard_string,
+                            pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip,
                             skip_lang_code(c2->cur_lobby->name));
                 }
                 else {
                     sprintf(&str[len], "%s  %s  Lv.%d  GC: %d\n"
-                            "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.disp.dress_data.guildcard_string,
-                            pso_class[c2->pl->v1.character.disp.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
+                            "B: %d  IP: %s  Lobby: ----\n", c2->pl->v1.character.dress_data.guildcard_string,
+                            pso_class[c2->pl->v1.character.dress_data.ch_class].cn_name, c2->pl->v1.character.disp.level + 1,
                             c2->guildcard, c2->cur_block->b, ip);
                 }
 

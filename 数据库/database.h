@@ -57,10 +57,10 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_BLACKLIST "character_blacklist"
 #define CHARACTER_CHALLENGE "character_challenge"
 #define CHARACTER_DELETE "character_delete"
+#define CHARACTER_DISP "character_disp"
 #define CHARACTER_DRESS "character_dress"
 #define CHARACTER_FRIENDLIST "character_friendlist"
 #define CHARACTER_GCDATA "character_gcdata"
-#define CHARACTER_STATS "character_stats"
 #define CHARACTER_TRADE "character_trade"
 
 #define CLIENTS_GUILD "clients_guild"

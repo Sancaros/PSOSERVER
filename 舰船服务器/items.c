@@ -4537,7 +4537,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
 
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c) {
-    uint8_t c_class = c->bb_pl->character.disp.dress_data.ch_class;
+    uint8_t c_class = c->bb_pl->character.dress_data.ch_class;
 
     c->equip_flags = 0;
 

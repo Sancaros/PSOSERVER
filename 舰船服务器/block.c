@@ -213,7 +213,7 @@ static void* block_thd(void* d) {
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
-                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.disp.dress_data.guildcard_string,
+                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.dress_data.guildcard_string,
                         it->guildcard);
                 }
 
@@ -470,7 +470,7 @@ static void* block_thd(void* d) {
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl && it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.disp.dress_data.guildcard_string,
+                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.dress_data.guildcard_string,
                         it->guildcard);
                 }
                 else {
@@ -943,7 +943,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->pl->v1.character.disp.dress_data.guildcard_string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     /* Try to backup their character data */
@@ -1416,7 +1416,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     pthread_mutex_lock(&c->mutex);
 
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->v1.character.disp.dress_data.guildcard_string[0]) {
+    if (c->pl->v1.character.dress_data.guildcard_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -1535,7 +1535,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
             /* Notify the shipgate */
             shipgate_send_block_login(&ship->sg, 1, c->guildcard,
-                c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_string);
+                c->cur_block->b, c->pl->v1.character.dress_data.guildcard_string);
 
             if (c->cur_lobby)
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
@@ -2005,7 +2005,7 @@ static int dcnte_process_game_create(ship_client_t* c,
 
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
-        0, 0, 0, 0, c->version, c->pl->v1.character.disp.dress_data.section,
+        0, 0, 0, 0, c->version, c->pl->v1.character.dress_data.section,
         event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2060,7 +2060,7 @@ static int dc_process_game_create(ship_client_t* c, dc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
         pkt->difficulty, pkt->battle, pkt->challenge,
-        pkt->version, c->version, c->pl->v1.character.disp.dress_data.section,
+        pkt->version, c->version, c->pl->v1.character.dress_data.section,
         event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2108,7 +2108,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, password, pkt->difficulty,
         pkt->battle, pkt->challenge, 1, c->version,
-        c->pl->v1.character.disp.dress_data.section, event, 0, c, 0, 0);
+        c->pl->v1.character.dress_data.section, event, 0, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
@@ -2170,7 +2170,7 @@ static int gc_process_game_create(ship_client_t* c, gc_game_create_pkt* pkt) {
     /* Create the lobby structure. */
     l = lobby_create_game(c->cur_block, name, pkt->password,
         pkt->difficulty, pkt->battle, pkt->challenge,
-        0, c->version, c->pl->v1.character.disp.dress_data.section, event,
+        0, c->version, c->pl->v1.character.dress_data.section, event,
         pkt->episode, c, 0, 0);
 
     /* If we don't have a game, something went wrong... tell the user. */
@@ -2210,7 +2210,7 @@ static int ep3_process_game_create(ship_client_t* c, ep3_game_create_pkt* pkt) {
 
     /* Create the lobby structure. */
     l = lobby_create_ep3_game(c->cur_block, name, pkt->password,
-        pkt->view_battle, c->pl->v1.character.disp.dress_data.section, c);
+        pkt->view_battle, c->pl->v1.character.dress_data.section, c);
 
     /* If we don't have a game, something went wrong... tell the user. */
     if (!l) {
@@ -3198,7 +3198,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return process_ep3_command(c, pkt);
 
     case EP3_SERVER_DATA_TYPE:
-        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.disp.dress_data.guildcard_string,
+        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_string,
             c->guildcard);
         print_payload((unsigned char*)pkt, len);
         return 0;

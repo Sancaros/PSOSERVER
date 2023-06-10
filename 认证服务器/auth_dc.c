@@ -1408,14 +1408,14 @@ static int handle_char_data(login_client_t *c, dc_char_data_pkt *pkt) {
         return -1;
     }
 
-    if(pl->v1.character.disp.dress_data.model != 0 || (pl->v1.character.disp.dress_data.v2flags & 0x02)) {
+    if(pl->v1.character.dress_data.model != 0 || (pl->v1.character.dress_data.v2flags & 0x02)) {
         send_large_msg(c, __(c, "\tEHacked characters are not allowed\n"
                                 "on this server.\n\n"
                                 "This will be reported to the server\n"
                                 "administration."));
         ERR_LOG("Character with invalid model (%d:%02x) detected!\n"
-              "    Guild card: %" PRIu32 "", (int)pl->v1.character.disp.dress_data.model,
-              pl->v1.character.disp.dress_data.v2flags, c->guildcard);
+              "    Guild card: %" PRIu32 "", (int)pl->v1.character.dress_data.model,
+              pl->v1.character.dress_data.v2flags, c->guildcard);
         return -1;
     }
 

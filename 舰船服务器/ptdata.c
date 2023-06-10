@@ -2200,7 +2200,7 @@ static int check_and_send(ship_client_t *c, lobby_t *l, uint32_t item[4],
         iitem.data.data2_l = LE32(item[3]);
 
         if(!psocn_limits_check_item(l->limits_list, &iitem, v)) {
-            section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+            section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
             ITEM_LOG("发现不合法服务器掉落\n"
                   "%08X %08X %08X %08X\n"
                   "游戏房间信息: 难度: %d, 角色颜色ID: %d, 房间标签: %08X\n"
@@ -2284,7 +2284,7 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
    and thus is appropriate for any version before PSOGC. */
 int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_itemreq_t *req = (subcmd_itemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     pt_v2_entry_t *ent;
     uint32_t rnd;
     uint32_t item[4] = { 0 };
@@ -2576,7 +2576,7 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
 
 int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_itemreq_t *req = (subcmd_itemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     pt_v2_entry_t *ent;
     uint16_t obj_id;
     game_object_t *gobj;
@@ -2857,7 +2857,7 @@ generate_meseta:
    This function only works for PSOGC. */
 int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_itemreq_t *req = (subcmd_itemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     pt_v3_entry_t *ent;
     uint32_t rnd;
     uint32_t item[4] = { 0 };
@@ -3208,7 +3208,7 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
 
 int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_bitemreq_t *req = (subcmd_bitemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->v1.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     pt_v3_entry_t *ent;
     uint16_t obj_id;
     game_object_t *gobj;
@@ -3559,7 +3559,7 @@ generate_meseta:
 
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_bb_itemreq_t *req = (subcmd_bb_itemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->bb.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
     pt_bb_entry_t*ent;
     uint32_t rnd;
     uint32_t item[4] = { 0 };
@@ -3876,7 +3876,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
 
 int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     subcmd_bb_bitemreq_t *req = (subcmd_bb_bitemreq_t *)r;
-    int section = l->clients[l->leader_id]->pl->bb.character.disp.dress_data.section;
+    int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
     pt_bb_entry_t *ent;
     uint16_t obj_id;
     game_object_t *gobj;

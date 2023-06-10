@@ -977,7 +977,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 			else
 				mag->level++; // Level up!
 			mag->defense = ((mag->defense / 100) * 100) + mDefense;
-			mag_bb_check_evolution(mag, c->pl->bb.character.disp.dress_data.section, c->pl->bb.character.disp.dress_data.ch_class, EvolutionClass);
+			mag_bb_check_evolution(mag, c->pl->bb.character.dress_data.section, c->pl->bb.character.dress_data.ch_class, EvolutionClass);
 		}
 		else
 			mag->defense = ((mag->defense / 100) * 100) + mDefense;
@@ -997,7 +997,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 			else
 				mag->level++; // Level up!
 			mag->power = ((mag->power / 100) * 100) + mPower;
-			mag_bb_check_evolution(mag, c->pl->bb.character.disp.dress_data.section, c->pl->bb.character.disp.dress_data.ch_class, EvolutionClass);
+			mag_bb_check_evolution(mag, c->pl->bb.character.dress_data.section, c->pl->bb.character.dress_data.ch_class, EvolutionClass);
 		}
 		else
 			mag->power = ((mag->power / 100) * 100) + mPower;
@@ -1017,7 +1017,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 			else
 				mag->level++; // Level up!
 			mag->dex = ((mag->dex / 100) * 100) + mDex;
-			mag_bb_check_evolution(mag, c->pl->bb.character.disp.dress_data.section, c->pl->bb.character.disp.dress_data.ch_class, EvolutionClass);
+			mag_bb_check_evolution(mag, c->pl->bb.character.dress_data.section, c->pl->bb.character.dress_data.ch_class, EvolutionClass);
 		}
 		else
 			mag->dex = ((mag->dex / 100) * 100) + mDex;
@@ -1037,7 +1037,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 			else
 				mag->level++; // Level up!
 			mag->mind = ((mag->mind / 100) * 100) + mMind;
-			mag_bb_check_evolution(mag, c->pl->bb.character.disp.dress_data.section, c->pl->bb.character.disp.dress_data.ch_class, EvolutionClass);
+			mag_bb_check_evolution(mag, c->pl->bb.character.dress_data.section, c->pl->bb.character.dress_data.ch_class, EvolutionClass);
 		}
 		else
 			mag->mind = ((mag->mind / 100) * 100) + mMind;

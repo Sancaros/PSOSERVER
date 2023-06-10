@@ -1143,7 +1143,7 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
 
     /* Don't allow HUcaseal, FOmar, or RAmarl characters in v1 games. */
     if(req->type == LOBBY_TYPE_GAME && req->version == CLIENT_VERSION_DCV1 &&
-       c->pl->v1.character.disp.dress_data.ch_class > DCPCClassMax) {
+       c->pl->v1.character.dress_data.ch_class > DCPCClassMax) {
         rv = LOBBY_FLAG_ERROR_GAME_V1_CLASS;
         goto out;
     }
@@ -1612,8 +1612,8 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             pl = l->clients[i]->pl;
 
             len += snprintf(msg + len, 511 - len, "%s µÈ¼¶ L%d\n  %s    \n  ÓïÑÔ: %s\n",
-                            pl->v1.character.disp.dress_data.guildcard_string, pl->v1.character.disp.level + 1,
-                            pso_class[pl->v1.character.disp.dress_data.ch_class].cn_name,
+                            pl->v1.character.dress_data.guildcard_string, pl->v1.character.disp.level + 1,
+                            pso_class[pl->v1.character.dress_data.ch_class].cn_name,
                             mini_language_codes_cn[pl->v1.inv.language]);
         }
     }

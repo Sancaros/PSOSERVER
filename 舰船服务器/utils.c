@@ -337,7 +337,7 @@ int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -389,7 +389,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.disp.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -768,12 +768,12 @@ static void convert_gc_to_dcpc(ship_client_t* s, void* buf) {
     memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
 
     /* Normalize the character class and costumes to the set known by v1/v2. */
-    costume = LE16(s->pl->v1.character.disp.dress_data.costume) % 9;
-    d->character.disp.dress_data.costume = LE16(costume);
-    costume = LE16(s->pl->v1.character.disp.dress_data.skin) % 9;
-    d->character.disp.dress_data.skin = LE16(costume);
-    costume = LE16(s->pl->v1.character.disp.dress_data.hair);
-    ch_class = s->pl->v1.character.disp.dress_data.ch_class;
+    costume = LE16(s->pl->v1.character.dress_data.costume) % 9;
+    d->character.dress_data.costume = LE16(costume);
+    costume = LE16(s->pl->v1.character.dress_data.skin) % 9;
+    d->character.dress_data.skin = LE16(costume);
+    costume = LE16(s->pl->v1.character.dress_data.hair);
+    ch_class = s->pl->v1.character.dress_data.ch_class;
 
     /* Map v3 classes over to the closest thing we can. Note: these all
        (unfortunately) change the gender of the character... */
@@ -789,8 +789,8 @@ static void convert_gc_to_dcpc(ship_client_t* s, void* buf) {
         costume > 6)
         costume = 0;
 
-    d->character.disp.dress_data.hair = LE16(costume);
-    d->character.disp.dress_data.ch_class = ch_class;
+    d->character.dress_data.hair = LE16(costume);
+    d->character.dress_data.ch_class = ch_class;
 
     /* TODO: Apply any inventory fixups if we ever attempt cross-play. */
 }
@@ -839,41 +839,51 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.stats.dfp = sp->character.disp.stats.dfp;
     c->disp.stats.ata = sp->character.disp.stats.ata;
     c->disp.stats.lck = sp->character.disp.stats.lck;
-    for (int i = 0; i < 10;i++) {
-        c->disp.opt_flag[i] = sp->character.disp.opt_flag[i];
-    }
+    c->disp.opt_flag1 = sp->character.disp.opt_flag1;
+    c->disp.opt_flag2 = sp->character.disp.opt_flag2;
+    c->disp.opt_flag3 = sp->character.disp.opt_flag3;
+    c->disp.opt_flag4 = sp->character.disp.opt_flag4;
+    c->disp.opt_flag5 = sp->character.disp.opt_flag5;
+    c->disp.opt_flag6 = sp->character.disp.opt_flag6;
+    c->disp.opt_flag7 = sp->character.disp.opt_flag7;
+    c->disp.opt_flag8 = sp->character.disp.opt_flag8;
+    c->disp.opt_flag9 = sp->character.disp.opt_flag9;
+    c->disp.opt_flag10 = sp->character.disp.opt_flag10;
+    //for (int i = 0; i < 10;i++) {
+    //    c->disp.opt_flag[i] = sp->character.disp.opt_flag[i];
+    //}
     //c->disp.unk1 = sp->unk1;
     //c->disp.unk2[0] = sp->unk2[0];
     //c->disp.unk2[1] = sp->unk2[1];
     c->disp.level = sp->character.disp.level;
     c->disp.exp = sp->character.disp.exp;
     c->disp.meseta = sp->character.disp.meseta;
-    strcpy(c->disp.dress_data.guildcard_string, "         0");
-    c->disp.dress_data.dress_unk1 = sp->character.disp.dress_data.dress_unk1;
-    c->disp.dress_data.dress_unk2 = sp->character.disp.dress_data.dress_unk2;
-    c->disp.dress_data.name_color_b = sp->character.disp.dress_data.name_color_b;
-    c->disp.dress_data.name_color_g = sp->character.disp.dress_data.name_color_g;
-    c->disp.dress_data.name_color_r = sp->character.disp.dress_data.name_color_r;
-    c->disp.dress_data.name_color_transparency = sp->character.disp.dress_data.name_color_transparency;
-    c->disp.dress_data.model = sp->character.disp.dress_data.model;
-    memcpy(c->disp.dress_data.dress_unk3, sp->character.disp.dress_data.dress_unk3, sizeof(sp->character.disp.dress_data.dress_unk3));
-    c->disp.dress_data.create_code = sp->character.disp.dress_data.create_code;
-    c->disp.dress_data.name_color_checksum = sp->character.disp.dress_data.name_color_checksum;
-    c->disp.dress_data.section = sp->character.disp.dress_data.section;
-    c->disp.dress_data.ch_class = sp->character.disp.dress_data.ch_class;
-    c->disp.dress_data.v2flags = sp->character.disp.dress_data.v2flags;
-    c->disp.dress_data.version = sp->character.disp.dress_data.version;
-    c->disp.dress_data.v1flags = sp->character.disp.dress_data.v1flags;
-    c->disp.dress_data.costume = sp->character.disp.dress_data.costume;
-    c->disp.dress_data.skin = sp->character.disp.dress_data.skin;
-    c->disp.dress_data.face = sp->character.disp.dress_data.face;
-    c->disp.dress_data.head = sp->character.disp.dress_data.head;
-    c->disp.dress_data.hair = sp->character.disp.dress_data.hair;
-    c->disp.dress_data.hair_r = sp->character.disp.dress_data.hair_r;
-    c->disp.dress_data.hair_g = sp->character.disp.dress_data.hair_g;
-    c->disp.dress_data.hair_b = sp->character.disp.dress_data.hair_b;
-    c->disp.dress_data.prop_x = sp->character.disp.dress_data.prop_x;
-    c->disp.dress_data.prop_y = sp->character.disp.dress_data.prop_y;
+    strcpy(c->dress_data.guildcard_string, "         0");
+    c->dress_data.dress_unk1 = sp->character.dress_data.dress_unk1;
+    c->dress_data.dress_unk2 = sp->character.dress_data.dress_unk2;
+    c->dress_data.name_color_b = sp->character.dress_data.name_color_b;
+    c->dress_data.name_color_g = sp->character.dress_data.name_color_g;
+    c->dress_data.name_color_r = sp->character.dress_data.name_color_r;
+    c->dress_data.name_color_transparency = sp->character.dress_data.name_color_transparency;
+    c->dress_data.model = sp->character.dress_data.model;
+    memcpy(c->dress_data.dress_unk3, sp->character.dress_data.dress_unk3, sizeof(sp->character.dress_data.dress_unk3));
+    c->dress_data.create_code = sp->character.dress_data.create_code;
+    c->dress_data.name_color_checksum = sp->character.dress_data.name_color_checksum;
+    c->dress_data.section = sp->character.dress_data.section;
+    c->dress_data.ch_class = sp->character.dress_data.ch_class;
+    c->dress_data.v2flags = sp->character.dress_data.v2flags;
+    c->dress_data.version = sp->character.dress_data.version;
+    c->dress_data.v1flags = sp->character.dress_data.v1flags;
+    c->dress_data.costume = sp->character.dress_data.costume;
+    c->dress_data.skin = sp->character.dress_data.skin;
+    c->dress_data.face = sp->character.dress_data.face;
+    c->dress_data.head = sp->character.dress_data.head;
+    c->dress_data.hair = sp->character.dress_data.hair;
+    c->dress_data.hair_r = sp->character.dress_data.hair_r;
+    c->dress_data.hair_g = sp->character.dress_data.hair_g;
+    c->dress_data.hair_b = sp->character.dress_data.hair_b;
+    c->dress_data.prop_x = sp->character.dress_data.prop_x;
+    c->dress_data.prop_y = sp->character.dress_data.prop_y;
     memcpy(c->config, sp->character.config, sizeof(sp->character.config));
     memcpy(c->techniques, sp->character.techniques, sizeof(sp->character.techniques));
 
@@ -882,7 +892,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name[1] = LE16('J');
 
     for(i = 2; i < BB_CHARACTER_NAME_LENGTH; ++i) {
-        c->name[i] = LE16(sp->character.disp.dress_data.guildcard_string[i - 2]);
+        c->name[i] = LE16(sp->character.dress_data.guildcard_string[i - 2]);
     }
 }
 
@@ -905,46 +915,57 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.stats.dfp = sp->disp.stats.dfp;
     c->character.disp.stats.ata = sp->disp.stats.ata;
     c->character.disp.stats.lck = sp->disp.stats.lck;
-    for (int i = 0; i < 10; i++) {
-        c->character.disp.opt_flag[i] = sp->disp.opt_flag[i];
-    }
+
+    c->character.disp.opt_flag1 = sp->disp.opt_flag1;
+    c->character.disp.opt_flag2 = sp->disp.opt_flag2;
+    c->character.disp.opt_flag3 = sp->disp.opt_flag3;
+    c->character.disp.opt_flag4 = sp->disp.opt_flag4;
+    c->character.disp.opt_flag5 = sp->disp.opt_flag5;
+    c->character.disp.opt_flag6 = sp->disp.opt_flag6;
+    c->character.disp.opt_flag7 = sp->disp.opt_flag7;
+    c->character.disp.opt_flag8 = sp->disp.opt_flag8;
+    c->character.disp.opt_flag9 = sp->disp.opt_flag9;
+    c->character.disp.opt_flag10 = sp->disp.opt_flag10;
+    //for (int i = 0; i < 10; i++) {
+    //    c->character.disp.opt_flag[i] = sp->disp.opt_flag[i];
+    //}
     //c->character.unk1 = sp->disp.unk1;
     //c->character.unk2[0] = sp->disp.unk2[0];
     //c->character.unk2[1] = sp->disp.unk2[1];
     c->character.disp.level = sp->disp.level;
     c->character.disp.exp = sp->disp.exp;
     c->character.disp.meseta = sp->disp.meseta;
-    strcpy(c->character.disp.dress_data.guildcard_string, "---");
-    c->character.disp.dress_data.dress_unk1 = sp->disp.dress_data.dress_unk1;
-    c->character.disp.dress_data.dress_unk2 = sp->disp.dress_data.dress_unk2;
-    c->character.disp.dress_data.name_color_b = sp->disp.dress_data.name_color_b;
-    c->character.disp.dress_data.name_color_g = sp->disp.dress_data.name_color_g;
-    c->character.disp.dress_data.name_color_r = sp->disp.dress_data.name_color_r;
-    c->character.disp.dress_data.name_color_transparency = sp->disp.dress_data.name_color_transparency;
-    c->character.disp.dress_data.model = sp->disp.dress_data.model;
-    memcpy(c->character.disp.dress_data.dress_unk3, sp->disp.dress_data.dress_unk3, sizeof(sp->disp.dress_data.dress_unk3));
-    c->character.disp.dress_data.create_code = sp->disp.dress_data.create_code;
-    c->character.disp.dress_data.name_color_checksum = sp->disp.dress_data.name_color_checksum;
-    c->character.disp.dress_data.section = sp->disp.dress_data.section;
-    c->character.disp.dress_data.ch_class = sp->disp.dress_data.ch_class;
-    c->character.disp.dress_data.v2flags = sp->disp.dress_data.v2flags;
-    c->character.disp.dress_data.version = sp->disp.dress_data.version;
-    c->character.disp.dress_data.v1flags = sp->disp.dress_data.v1flags;
-    c->character.disp.dress_data.costume = sp->disp.dress_data.costume;
-    c->character.disp.dress_data.skin = sp->disp.dress_data.skin;
-    c->character.disp.dress_data.face = sp->disp.dress_data.face;
-    c->character.disp.dress_data.head = sp->disp.dress_data.head;
-    c->character.disp.dress_data.hair = sp->disp.dress_data.hair;
-    c->character.disp.dress_data.hair_r = sp->disp.dress_data.hair_r;
-    c->character.disp.dress_data.hair_g = sp->disp.dress_data.hair_g;
-    c->character.disp.dress_data.hair_b = sp->disp.dress_data.hair_b;
-    c->character.disp.dress_data.prop_x = sp->disp.dress_data.prop_x;
-    c->character.disp.dress_data.prop_y = sp->disp.dress_data.prop_y;
+    strcpy(c->character.dress_data.guildcard_string, "---");
+    c->character.dress_data.dress_unk1 = sp->dress_data.dress_unk1;
+    c->character.dress_data.dress_unk2 = sp->dress_data.dress_unk2;
+    c->character.dress_data.name_color_b = sp->dress_data.name_color_b;
+    c->character.dress_data.name_color_g = sp->dress_data.name_color_g;
+    c->character.dress_data.name_color_r = sp->dress_data.name_color_r;
+    c->character.dress_data.name_color_transparency = sp->dress_data.name_color_transparency;
+    c->character.dress_data.model = sp->dress_data.model;
+    memcpy(c->character.dress_data.dress_unk3, sp->dress_data.dress_unk3, sizeof(sp->dress_data.dress_unk3));
+    c->character.dress_data.create_code = sp->dress_data.create_code;
+    c->character.dress_data.name_color_checksum = sp->dress_data.name_color_checksum;
+    c->character.dress_data.section = sp->dress_data.section;
+    c->character.dress_data.ch_class = sp->dress_data.ch_class;
+    c->character.dress_data.v2flags = sp->dress_data.v2flags;
+    c->character.dress_data.version = sp->dress_data.version;
+    c->character.dress_data.v1flags = sp->dress_data.v1flags;
+    c->character.dress_data.costume = sp->dress_data.costume;
+    c->character.dress_data.skin = sp->dress_data.skin;
+    c->character.dress_data.face = sp->dress_data.face;
+    c->character.dress_data.head = sp->dress_data.head;
+    c->character.dress_data.hair = sp->dress_data.hair;
+    c->character.dress_data.hair_r = sp->dress_data.hair_r;
+    c->character.dress_data.hair_g = sp->dress_data.hair_g;
+    c->character.dress_data.hair_b = sp->dress_data.hair_b;
+    c->character.dress_data.prop_x = sp->dress_data.prop_x;
+    c->character.dress_data.prop_y = sp->dress_data.prop_y;
     memcpy(c->character.config, sp->config, sizeof(c->character.config));
     memcpy(c->character.techniques, sp->techniques, sizeof(sp->techniques));
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.disp.dress_data.guildcard_string, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_string, &sp->name[2], 16, BB_CHARACTER_NAME_LENGTH);
 }
 
 void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {

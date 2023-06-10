@@ -399,9 +399,9 @@ void client_destroy_connection(ship_client_t *c,
 #endif
 
     /* If the user was on a block, notify the shipgate */
-    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.disp.dress_data.guildcard_string[0]) {
+    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.guildcard_string[0]) {
         shipgate_send_block_login(&ship->sg, 0, c->guildcard,
-                                  c->cur_block->b, c->pl->v1.character.disp.dress_data.guildcard_string);
+                                  c->cur_block->b, c->pl->v1.character.dress_data.guildcard_string);
     }
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
         uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
@@ -838,7 +838,7 @@ int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
     exp_total = LE32(c->bb_pl->character.disp.exp);
     exp_total += exp_amount;
     c->bb_pl->character.disp.exp = LE32(exp_total);
-    cl = c->bb_pl->character.disp.dress_data.ch_class;
+    cl = c->bb_pl->character.dress_data.ch_class;
     level = LE32(c->bb_pl->character.disp.level);
 
     /* Send the packet telling them they've gotten experience. */
@@ -881,7 +881,7 @@ int client_give_level(ship_client_t *c, uint32_t level_req) {
         return 0;
 
     /* Grab the entry for that level... */
-    cl = c->bb_pl->character.disp.dress_data.ch_class;
+    cl = c->bb_pl->character.dress_data.ch_class;
     ent = &bb_char_stats.levels[cl][level_req];
 
     /* Add in the experience to their total so far. */
@@ -941,7 +941,7 @@ int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
         return 0;
 
     /* Give all the stat boosts for the intervening levels... */
-    cl = c->pl->v1.character.disp.dress_data.ch_class;
+    cl = c->pl->v1.character.dress_data.ch_class;
 
     for(i = c->pl->v1.character.disp.level + 1; i <= (int)level_req; ++i) {
         ent = &v2_char_stats.levels[cl][i];
@@ -961,53 +961,53 @@ static int check_char_v1(ship_client_t *c, player_t *pl) {
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if(c->pl->v1.character.disp.dress_data.model != pl->v1.character.disp.dress_data.model)
+    if(c->pl->v1.character.dress_data.model != pl->v1.character.dress_data.model)
         return -10;
 
-    if(c->pl->v1.character.disp.dress_data.section != pl->v1.character.disp.dress_data.section)
+    if(c->pl->v1.character.dress_data.section != pl->v1.character.dress_data.section)
         return -11;
 
-    if(c->pl->v1.character.disp.dress_data.ch_class != pl->v1.character.disp.dress_data.ch_class)
+    if(c->pl->v1.character.dress_data.ch_class != pl->v1.character.dress_data.ch_class)
         return -12;
 
-    if(c->pl->v1.character.disp.dress_data.costume != pl->v1.character.disp.dress_data.costume)
+    if(c->pl->v1.character.dress_data.costume != pl->v1.character.dress_data.costume)
         return -13;
 
-    if(c->pl->v1.character.disp.dress_data.skin != pl->v1.character.disp.dress_data.skin)
+    if(c->pl->v1.character.dress_data.skin != pl->v1.character.dress_data.skin)
         return -14;
 
-    if(c->pl->v1.character.disp.dress_data.face != pl->v1.character.disp.dress_data.face)
+    if(c->pl->v1.character.dress_data.face != pl->v1.character.dress_data.face)
         return -15;
 
-    if(c->pl->v1.character.disp.dress_data.head != pl->v1.character.disp.dress_data.head)
+    if(c->pl->v1.character.dress_data.head != pl->v1.character.dress_data.head)
         return -16;
 
-    if(c->pl->v1.character.disp.dress_data.hair != pl->v1.character.disp.dress_data.hair)
+    if(c->pl->v1.character.dress_data.hair != pl->v1.character.dress_data.hair)
         return -17;
 
-    if(c->pl->v1.character.disp.dress_data.hair_r != pl->v1.character.disp.dress_data.hair_r)
+    if(c->pl->v1.character.dress_data.hair_r != pl->v1.character.dress_data.hair_r)
         return -18;
 
-    if(c->pl->v1.character.disp.dress_data.hair_g != pl->v1.character.disp.dress_data.hair_g)
+    if(c->pl->v1.character.dress_data.hair_g != pl->v1.character.dress_data.hair_g)
         return -19;
 
-    if(c->pl->v1.character.disp.dress_data.hair_b != pl->v1.character.disp.dress_data.hair_b)
+    if(c->pl->v1.character.dress_data.hair_b != pl->v1.character.dress_data.hair_b)
         return -20;
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
        ordering or whatnot). */
-    f1.f = c->pl->v1.character.disp.dress_data.prop_x;
-    f2.f = pl->v1.character.disp.dress_data.prop_x;
+    f1.f = c->pl->v1.character.dress_data.prop_x;
+    f2.f = pl->v1.character.dress_data.prop_x;
     if(f1.b != f2.b)
         return -21;
 
-    f1.f = c->pl->v1.character.disp.dress_data.prop_y;
-    f2.f = pl->v1.character.disp.dress_data.prop_y;
+    f1.f = c->pl->v1.character.dress_data.prop_y;
+    f2.f = pl->v1.character.dress_data.prop_y;
     if(f1.b != f2.b)
         return -22;
 
-    if(memcmp(c->pl->v1.character.disp.dress_data.guildcard_string, pl->v1.character.disp.dress_data.guildcard_string, 16))
+    if(memcmp(c->pl->v1.character.dress_data.guildcard_string, pl->v1.character.dress_data.guildcard_string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
@@ -1051,58 +1051,60 @@ static int check_char_xbox(ship_client_t *c, player_t *pl) {
 
 static int check_char_bb(ship_client_t* c, player_t* pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
+    psocn_dress_data_t dress_data1 = c->pl->bb.character.dress_data;
+    psocn_dress_data_t dress_data2 = pl->bb.character.dress_data;
     psocn_disp_char_t disp1 = c->pl->bb.character.disp;
     psocn_disp_char_t disp2 = pl->bb.character.disp;
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if (disp1.dress_data.model != disp2.dress_data.model)
+    if (dress_data1.model != dress_data2.model)
         return -10;
 
-    if (disp1.dress_data.section != disp2.dress_data.section)
+    if (dress_data1.section != dress_data2.section)
         return -11;
 
-    if (disp1.dress_data.ch_class != disp2.dress_data.ch_class)
+    if (dress_data1.ch_class != dress_data2.ch_class)
         return -12;
 
-    if (disp1.dress_data.costume != disp2.dress_data.costume)
+    if (dress_data1.costume != dress_data2.costume)
         return -13;
 
-    if (disp1.dress_data.skin != disp2.dress_data.skin)
+    if (dress_data1.skin != dress_data2.skin)
         return -14;
 
-    if (disp1.dress_data.face != disp2.dress_data.face)
+    if (dress_data1.face != dress_data2.face)
         return -15;
 
-    if (disp1.dress_data.head != disp2.dress_data.head)
+    if (dress_data1.head != dress_data2.head)
         return -16;
 
-    if (disp1.dress_data.hair != disp2.dress_data.hair)
+    if (dress_data1.hair != dress_data2.hair)
         return -17;
 
-    if (disp1.dress_data.hair_r != disp2.dress_data.hair_r)
+    if (dress_data1.hair_r != dress_data2.hair_r)
         return -18;
 
-    if (disp1.dress_data.hair_g != disp2.dress_data.hair_g)
+    if (dress_data1.hair_g != dress_data2.hair_g)
         return -19;
 
-    if (disp1.dress_data.hair_b != disp2.dress_data.hair_b)
+    if (dress_data1.hair_b != dress_data2.hair_b)
         return -20;
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
        ordering or whatnot). */
-    f1.f = disp1.dress_data.prop_x;
-    f2.f = disp2.dress_data.prop_x;
+    f1.f = dress_data1.prop_x;
+    f2.f = dress_data2.prop_x;
     if (f1.b != f2.b)
         return -21;
 
-    f1.f = disp1.dress_data.prop_y;
-    f2.f = disp2.dress_data.prop_y;
+    f1.f = dress_data1.prop_y;
+    f2.f = dress_data2.prop_y;
     if (f1.b != f2.b)
         return -22;
 
-    if (memcmp(disp1.dress_data.guildcard_string, disp2.dress_data.guildcard_string, 16))
+    if (memcmp(dress_data1.guildcard_string, dress_data2.guildcard_string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
@@ -1490,7 +1492,7 @@ static int client_name_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
 
         if(c->pl)
-            lua_pushstring(l, c->pl->v1.character.disp.dress_data.guildcard_string);
+            lua_pushstring(l, c->pl->v1.character.dress_data.guildcard_string);
         else
             lua_pushnil(l);
     }

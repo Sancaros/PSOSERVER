@@ -104,7 +104,7 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot);
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot);
 
 /* 更新角色更衣室数据 */
-int db_update_char_dress_data(psocn_dress_data_t dress_data, uint32_t gc, uint8_t slot, uint32_t flag);
+int db_update_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8_t slot, uint32_t flag);
 
 /* 获取玩家更衣室数据 */
 psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot);
@@ -112,7 +112,7 @@ psocn_dress_data_t db_get_char_dress_data(uint32_t gc, uint8_t slot);
 /* 插入玩家角色数据 */
 int db_insert_char_data(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot);
 
-int db_update_char_stat(psocn_bb_db_char_t *char_data, uint32_t gc, uint8_t slot, uint32_t flag);
+int db_update_char_disp(psocn_disp_char_t *disp_data, uint32_t gc, uint8_t slot, uint32_t flag);
 
 /* 初始化在线舰船数据表 */
 int db_delete_online_ships(char* ship_name, uint16_t id);
@@ -164,7 +164,7 @@ uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot);
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
 /* 获取玩家角色数值数据项 */
-int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t* stats, int check);
+int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int check);
 
 /* 获取玩家角色外观数据项 */
 int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check);

@@ -2536,7 +2536,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
     
-    if (db_update_char_stat(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_disp(&char_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         SQLERR_LOG("无法更新玩家数据 (GC %"
@@ -2544,7 +2544,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_dress_data(char_data->character.disp.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_dress_data(&char_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         SQLERR_LOG("无法更新玩家外观数据 (GC %"
@@ -2848,7 +2848,7 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    if (db_get_char_stats(gc, slot, &bb_data->character.disp.stats, 0)) {
+    if (db_get_char_disp(gc, slot, &bb_data->character.disp, 0)) {
         ERR_LOG("无法获取角色数值数据");
 
         send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2856,7 +2856,7 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
         return 0;
     }
 
-    if (db_get_dress_data(gc, slot, &bb_data->character.disp.dress_data, 0)) {
+    if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
         ERR_LOG("无法获取角色外观数据");
 
         send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
