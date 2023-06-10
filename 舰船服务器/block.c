@@ -905,12 +905,12 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     else if (rv == LOBBY_FLAG_ERROR_MAX_LEVEL) {
         /* Level is too high */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Your level is\ntoo high."));
+            __(c, "\tC7你的等级\n太高了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MIN_LEVEL) {
         /* Level is too low */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Your level is\ntoo low."));
+            __(c, "\tC7你的等级\n太低了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_BURSTING) {
         /* A client is bursting. */

@@ -332,25 +332,44 @@ extern pthread_key_t sendbuf_key;
 #define CLIENT_FLAG_WORD_CENSOR     0x08000000
 #define CLIENT_FLAG_SHOPPING        0x10000000
 
-/* Technique numbers */
+/* 科技函数ID */
+/* 火球术 */
 #define TECHNIQUE_FOIE              0
+/* 火墙术 */
 #define TECHNIQUE_GIFOIE            1
+/* 炎狱术 */
 #define TECHNIQUE_RAFOIE            2
+/* 冻气术 */
 #define TECHNIQUE_BARTA             3
+/* 冰箭术 */
 #define TECHNIQUE_GIBARTA           4
+/* 极冰术 */
 #define TECHNIQUE_RABARTA           5
+/* 闪电术 */
 #define TECHNIQUE_ZONDE             6
+/* 群雷术 */
 #define TECHNIQUE_GIZONDE           7
+/* 雷爆术 */
 #define TECHNIQUE_RAZONDE           8
+/* 圣光术 */
 #define TECHNIQUE_GRANTS            9
+/* 强体术 */
 #define TECHNIQUE_DEBAND            10
+/* 降攻术 */
 #define TECHNIQUE_JELLEN            11
+/* 降防术 */
 #define TECHNIQUE_ZALURE            12
+/* 强攻术 */
 #define TECHNIQUE_SHIFTA            13
+/* 瞬移术 */
 #define TECHNIQUE_RYUKER            14
+/* 圣泉术 */
 #define TECHNIQUE_RESTA             15
+/* 状态术 */
 #define TECHNIQUE_ANTI              16
+/* 回魂术 */
 #define TECHNIQUE_REVERSER          17
+/* 死咒术 */
 #define TECHNIQUE_MEGID             18
 
 static client_type_t client_type[CLIENT_VERSION_ALL][3] = {

@@ -79,6 +79,7 @@ int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&drop, 0);
 }
 
+/* BB 拾取物品 */
 int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_map_item_t pkt = { 0 };
@@ -102,6 +103,7 @@ int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area) 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
+/* BB 获得物品 */
 int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
@@ -127,6 +129,7 @@ int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
+/* BB 消除地图上的物品 */
 int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
@@ -151,6 +154,7 @@ int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
+/* BB 消除物品 */
 int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt) {
     lobby_t* l = c->cur_lobby;

@@ -885,6 +885,10 @@ typedef struct subcmd_bb_natk {
     uint16_t unknown_a2;
 } PACKED subcmd_bb_natk_t;
 
+typedef struct enemy_entry {
+    uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
+    uint16_t unused;
+} enemy_entry_t;
 
 // 0x46: Attack finished (sent after each of 43, 44, and 45)
 // Packet sent when an object is hit by a physical attack.
@@ -892,10 +896,7 @@ typedef struct subcmd_objhit_phys {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t hit_count;
-    struct {
-        uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
-        uint16_t unused;
-    } objects[];
+    enemy_entry_t objects[];
 } PACKED subcmd_objhit_phys_t;
 
 // 0x46: Attack finished (sent after each of 43, 44, and 45)
@@ -904,10 +905,7 @@ typedef struct subcmd_bb_objhit_phys {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t hit_count;
-    struct {
-        uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
-        uint16_t unused;
-    } objects[];
+    enemy_entry_t objects[];
 } PACKED subcmd_bb_objhit_phys_t;
 
 
@@ -924,29 +922,27 @@ typedef struct subcmd_objhit_tech {
     // never cleaned it up.
     uint8_t level;
     uint8_t hit_count;
-    struct {
-        uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
-        uint16_t unused;
-    } objects[];
+    enemy_entry_t objects[];
 } PACKED subcmd_objhit_tech_t;
-
+//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
+//(00000010)   14 10 00 00                                         ....
+//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
+//(00000010)   14 10 00 00                                         ....
+//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
+//(00000010)   14 10 00 00                                         ....
 // 0x47: Cast technique
 // Packet sent when an object is hit by a technique.
 typedef struct subcmd_bb_objhit_tech {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t tech;
-    // Note: The level here isn't the actual tech level that was cast, if the
-    // level is > 15. In that case, a 0x8D is sent first, which contains the
-    // additional level which is added to this level at cast time. They probably
-    // did this for legacy reasons when dealing with v1/v2 compatibility, and
-    // never cleaned it up.
+    uint16_t technique_number;
+    /*注：如果等级>15，这里的等级不是实际的技术等级。
+    在这种情况下，首先发送一个6x8D，其中包含在铸造时添加到此级别的附加级别。
+    在处理v1/v2兼容性时，
+    他们这样做可能是出于遗留的原因，从未清理过。*/
     uint8_t level;
-    uint8_t hit_count;
-    struct {
-        uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
-        uint16_t unused;
-    } objects[];
+    uint8_t target_count;
+    enemy_entry_t objects[];
 } PACKED subcmd_bb_objhit_tech_t;
 
 // 0x48: Cast technique complete
@@ -954,7 +950,7 @@ typedef struct subcmd_bb_objhit_tech {
 typedef struct subcmd_used_tech {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t tech;
+    uint16_t technique_number;
     uint16_t level;
 } PACKED subcmd_used_tech_t;
 
@@ -963,7 +959,7 @@ typedef struct subcmd_used_tech {
 typedef struct subcmd_bb_used_tech {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t tech;
+    uint16_t technique_number;
     uint16_t level;
 } PACKED subcmd_bb_used_tech_t;
 
@@ -1249,6 +1245,30 @@ typedef struct subcmd_bb_levelup_req {
 // 0x62: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
 
+//[2023年06月10日 14:10:45:951] 截获(4877): subcmd-bb.c 4877 行 未找到相关指令名称 指令 0x0060 未处理. (数据如下)
+//[2023年06月10日 14:10:45:967] 截获(4877):
+//( 00000000 )   14 00 60 00 00 00 00 00  63 03 D3 1D 01 00 81 00 ..`.....c.?..?
+//( 00000010 )   01 00 00 00                                     ....
+//
+//[2023年06月10日 14:10:46:010] 截获(4877): subcmd-bb.c 4877 行 未找到相关指令名称 指令 0x0060 未处理. (数据如下)
+//[2023年06月10日 14:10:46:031] 截获(4877):
+//( 00000000 )   14 00 60 00 00 00 00 00  63 03 D2 1D 03 00 81 00 ..`.....c.?..?
+//( 00000010 )   01 00 00 00                                     ....
+//
+//[2023年06月10日 14:10:46:071] 截获(4877): subcmd-bb.c 4877 行 未找到相关指令名称 指令 0x0060 未处理. (数据如下)
+//[2023年06月10日 14:10:46:100] 截获(4877):
+//( 00000000 )   14 00 60 00 00 00 00 00  63 03 D2 1D 04 00 81 00 ..`.....c.?..?
+//( 00000010 )   01 00 00 00                                     ....
+//
+//[2023年06月10日 14:10:49:818] 截获(4877): subcmd-bb.c 4877 行 未找到相关指令名称 指令 0x0060 未处理. (数据如下)
+//[2023年06月10日 14:10:49:841] 截获(4877):
+//( 00000000 )   14 00 60 00 00 00 00 00  63 03 D2 1D 05 00 81 00 ..`.....c.?..?
+//( 00000010 )   01 00 00 00                                     ....
+//
+//[2023年06月10日 14:10:54:117] 截获(4877): subcmd-bb.c 4877 行 未找到相关指令名称 指令 0x0060 未处理. (数据如下)
+//[2023年06月10日 14:10:54:134] 截获(4877):
+//( 00000000 )   14 00 60 00 00 00 00 00  63 03 D2 1D 06 00 81 00 ..`.....c.?..?
+//( 00000010 )   01 00 00 00                                     ....
 // 0x63: Destroy item on the ground (used when too many items have been dropped)
 typedef struct subcmd_bb_DestroyGroundItem_6x63 {
     bb_pkt_hdr_t hdr;
@@ -2579,11 +2599,29 @@ typedef struct subcmd_bb_req_exp {
     uint16_t client_id;
     uint8_t last_hitter;
     uint8_t unused2[3];
-} PACKED subcmd_bb_req_exp_pkt_t;
+} PACKED subcmd_bb_req_exp_t;
 
+//[2023年06月10日 13:22:52:762] 截获(1498): subcmd-bb.c 1498 行 GAME_COMMAND_C9_TYPE - 客户端至服务器指令 指令 0x0062 未处理. (数据如下)
+//[2023年06月10日 13:22:52:787] 截获(1498):
+//( 00000000 )   10 00 62 00 00 00 00 00  C9 02 FF FF DC 05 00 00 ..b.....?[2023年06月10日 13:23:21:695] 断连(0470): 客户 端 123(42004064) 断开连接
 
-// 0xC9: Invalid subcommand
-// 0xCA: Invalid subcommand
+//[2023年06月10日 13:25:25:957] 截获(1498): subcmd-bb.c 1498 行 GAME_COMMAND_C9_TYPE - 客户端至服务器指令 指令 0x0062 未处理. (数据如下)
+//[2023年06月10日 13:25:25:982] 截获(1498):
+//( 00000000 )   10 00 62 00 00 00 00 00  C9 02 FF FF DC 05 00 00 ..b.....?
+// 0xC9: 获取任务奖励 类型未知
+typedef struct subcmd_bb_quest_reward_meseta {
+    bb_pkt_hdr_t hdr;
+    object_id_hdr_t shdr; /* object_id FF FF meseta */
+    uint32_t amount;
+} PACKED subcmd_bb_quest_reward_meseta_t;
+
+// 0xCA: 获取任务奖励物品 类型未知
+typedef struct subcmd_bb_quest_reward_item {
+    bb_pkt_hdr_t hdr;
+    object_id_hdr_t shdr; /* object_id FF FF meseta */
+    uint32_t item[3];
+    uint8_t data[0];
+} PACKED subcmd_bb_quest_reward_item_t;
 
 // 0xCB: Unknown
 typedef struct subcmd_bb_UNKNOW_0xCB {

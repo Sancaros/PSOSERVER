@@ -1108,9 +1108,14 @@ void update_lobby_event(void) {
 
 uint64_t get_ms_time(void) {
     struct timeval tv;
-
     gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+
+    //return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+
+    SYSTEMTIME aoetime;
+    GetLocalTime(&aoetime);
+
+    return (aoetime.wSecond * 1000) + aoetime.wMilliseconds;
 }
 
 void memcpy_str(void * restrict d, const char * restrict s, size_t sz) {

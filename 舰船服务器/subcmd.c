@@ -2923,7 +2923,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_OBJHIT_PHYS:
-            /* Don't even try to deal with these in battle or challenge mode. */
+            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
             if(l->challenge || l->battle) {
                 sent = 0;
                 break;
@@ -2933,7 +2933,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_OBJHIT_TECH:
-            /* Don't even try to deal with these in battle or challenge mode. */
+            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
             if(l->challenge || l->battle) {
                 sent = 0;
                 break;
@@ -2943,7 +2943,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_HIT_OBJ:
-            /* Don't even try to deal with these in battle or challenge mode. */
+            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
             if(l->challenge || l->battle) {
                 sent = 0;
                 break;

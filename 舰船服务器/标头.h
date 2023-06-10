@@ -217,7 +217,7 @@ int subcmd_bb_handle_bcastv1(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_REQ_EXP:
-        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_pkt_t*)pkt);
+        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_t*)pkt);
         break;
 
     case SUBCMD60_USED_TECH:
@@ -599,7 +599,7 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_REQ_EXP:
-        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_pkt_t*)pkt);
+        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_t*)pkt);
         break;
 
     case SUBCMD60_EX_ITEM_TEAM:

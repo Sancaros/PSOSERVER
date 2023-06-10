@@ -405,8 +405,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         }
     }
 
-    /* Let everybody know that the client picked it up, and remove it from the
-       view. */
+    /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
     subcmd_send_bb_create_item(c, iitem_data.data, 1);
 
     return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
@@ -1334,6 +1333,63 @@ static int handle_bb_quest_oneperson_set_ex_pc(ship_client_t* c, subcmd_bb_quest
     return 0;
 }
 
+static int handle_bb_quest_reward_meseta(ship_client_t* c, subcmd_bb_quest_reward_meseta_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int meseta;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务美赛塔奖励!",
+            c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    if (l->flags & LOBBY_FLAG_QUESTING) {
+        meseta = pkt->amount;
+
+        if (meseta < 0) {
+            meseta = -meseta;
+            c->bb_pl->character.disp.meseta -= meseta;
+        } else {
+            meseta += LE32(c->bb_pl->character.disp.meseta);
+
+            /* Cap at 999,999 meseta. */
+            if (meseta > 999999)
+                meseta = 999999;
+
+            c->bb_pl->character.disp.meseta = meseta;
+        }
+
+        c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
+
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+    }
+
+    ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务美赛塔奖励!",
+        c->guildcard);
+    return -1;
+}
+
+static int handle_bb_quest_reward_item(ship_client_t* c, subcmd_bb_quest_reward_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+}
+
 /* 处理BB 0x62/0x6D 数据包. */
 int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -1484,6 +1540,13 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_quest_oneperson_set_ex_pc(dest, (subcmd_bb_quest_oneperson_set_ex_pc_t*)pkt);
         break;
 
+    case SUBCMD62_QUEST_REWARD_MESETA:
+        rv = handle_bb_quest_reward_meseta(c, (subcmd_bb_quest_reward_meseta_t*)pkt);
+        break;
+
+    case SUBCMD62_QUEST_REWARD_ITEM:
+        rv = handle_bb_quest_reward_item(c, (subcmd_bb_quest_reward_item_t*)pkt);
+        break;
 
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
@@ -1491,8 +1554,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
 
-    case SUBCMD62_QUEST_ITEM_UNKNOW1:
-    case SUBCMD62_QUEST_ITEM_RECEIVE:
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
     case SUBCMD62_GANBLING:
         UNK_CSPD(type, c->version, pkt);
@@ -1668,7 +1729,7 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
         return -1;
     }
 
-    /* Don't even try to deal with these in battle or challenge mode. */
+    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
     if (l->challenge || l->battle)
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
@@ -1720,54 +1781,26 @@ static const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
 static const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 static const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 
-static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
+int check_aoe_timer(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint8_t tech_level;
-
-    /* We can't get these in lobbies without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅用法术攻击实例!",
-            c->guildcard);
-        return -1;
-    }
-
-    /* Don't even try to deal with these in battle or challenge mode. */
-    if (l->challenge || l->battle)
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-
-    if (pkt->hdr.pkt_len == LE16(0x0010)) {
-        /* 对空气进行攻击 */
-        return 0;
-    }
-
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的法术攻击数据!",
-            c->guildcard);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-        return -1;
-    }
+    uint8_t tech_level = 0;
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = c->pl->bb.character.techniques[pkt->tech];
+    tech_level = c->pl->bb.character.techniques[pkt->technique_number];
     if (tech_level == 0xFF) {
-        /* This might happen if the user learns a new tech in a team. Until we
-           have real inventory tracking, we'll have to fudge this. Once we have
-           real, full inventory tracking, this condition should probably
-           disconnect the client */
+        /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
+        在我们有真正的库存跟踪之前，我们将不得不篡改这一点。
+        一旦我们有了真实的、完整的库存跟踪，这种情况可能会断开客户端的连接 */
         tech_level = pkt->level;
     }
 
     if (c->version >= CLIENT_VERSION_DCV2)
-        tech_level += c->pl->bb.inv.iitems[pkt->tech].tech;
+        tech_level += c->pl->bb.inv.iitems[pkt->technique_number].tech;
 
     if (tech_level < pkt->level) {
-        /* This might happen if the user learns a new tech in a team. Until we
-           have real inventory tracking, we'll have to fudge this. Once we have
-           real, full inventory tracking, this condition should probably
-           disconnect the client */
+        /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
+        在我们有真正的库存跟踪之前，我们将不得不篡改这一点。
+        一旦我们有了真实的、完整的库存跟踪，这种情况可能会断开客户端的连接 */
         tech_level = pkt->level;
     }
 
@@ -1777,7 +1810,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
     /* See what technique was used... */
-    switch (pkt->tech) {
+    switch (pkt->technique_number) {
         /* These work just like physical hits and can only hit one target, so
            handle them the simple way... */
     case TECHNIQUE_FOIE:
@@ -1804,6 +1837,9 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
            item hit in the packet, and just act in a broken manner in general. We
            have to do some annoying stuff to handle them here. */
     case TECHNIQUE_BARTA:
+        SYSTEMTIME aoetime;
+        GetLocalTime(&aoetime);
+        printf("%03u\n", aoetime.wMilliseconds);
         c->aoe_timer = get_ms_time() + BARTA_TIMING;
         break;
 
@@ -1830,20 +1866,61 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
     case TECHNIQUE_RABARTA:
         c->aoe_timer = get_ms_time() + rabarta_timing[tlindex(tech_level)];
         break;
+    }
 
-    default:
-        ERR_LOG("GC %" PRIu32 " 使用了损坏的法术: %d",
-            c->guildcard, (int)pkt->tech);
+    return 0;
+}
+
+/* TODO */
+static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅用法术攻击实例!",
+            c->guildcard);
         return -1;
     }
+
+    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+    if (l->challenge || l->battle)
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->shdr.client_id != c->client_id ||
+        pkt->technique_number > TECHNIQUE_MEGID ||
+        c->equip_flags & EQUIP_FLAGS_DROID
+        ) {
+        ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
+            c->guildcard, pso_class[c->pl->bb.character.disp.dress_data.ch_class].cn_name, 
+            max_tech_level[pkt->technique_number].tech_name);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+
+    //printf("ch_class %d techniques %d = %d max_lvl %d\n", c->pl->bb.character.disp.dress_data.ch_class,
+    //    c->pl->bb.character.techniques[pkt->technique_number],
+    //    c->bb_pl->character.techniques[pkt->technique_number], 
+    //    max_tech_level[pkt->technique_number].max_lvl[c->pl->bb.character.disp.dress_data.ch_class]);
+
+    //if (c->version <= CLIENT_VERSION_BB) {
+        check_aoe_timer(c, pkt);
+    //}
 
     /* We're not doing any more interesting parsing with this one for now, so
        just send it along. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+/* TODO */
 static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
     uint64_t now = get_ms_time();
+    //SYSTEMTIME aoetime;
+    //GetLocalTime(&aoetime);
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something that
@@ -1854,9 +1931,13 @@ static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
         return -1;
     }
 
-    /* Don't even try to deal with these in battle or challenge mode. */
+    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
     if (l->challenge || l->battle)
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+
+    //printf("wMilliseconds = %d\n", aoetime.wMilliseconds);
+
+    //printf("aoe_timer = %d now = %d\n", (uint32_t)c->aoe_timer, (uint32_t)now);
 
     /* We only care about these if the AoE timer is set on the sender. */
     if (c->aoe_timer < now)
@@ -2005,7 +2086,7 @@ static int handle_bb_charge_act(ship_client_t* c, subcmd_bb_charge_act_t* pkt) {
 }
 
 /* 从怪物获取的经验倍率未进行调整 */
-static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_pkt_t* pkt) {
+static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t mid;
     uint32_t bp, exp_amount;
@@ -3296,7 +3377,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     }
 
     /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge) {
+    if (l->challenge || l->battle) {
         /* 数据包完成, 发送至游戏房间. */
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
@@ -3461,7 +3542,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge) {
+    if (l->challenge || l->battle) {
         /* 数据包完成, 发送至游戏房间. */
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
     }
@@ -3505,7 +3586,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     if (!(it = lobby_add_item_locked(l, &item_data))) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
-        ERR_LOG("无法将物品添加至游戏房间!\n");
+        ERR_LOG("无法将物品添加至游戏房间!");
         return -1;
     }
 
@@ -4762,7 +4843,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
         /* 此函数正常载入 */
     case SUBCMD60_REQ_EXP:
-        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_pkt_t*)pkt);
+        rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_t*)pkt);
         break;
 
         /* 此函数正常载入 */

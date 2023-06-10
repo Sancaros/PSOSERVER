@@ -55,8 +55,8 @@
 #define SUBCMD62_GUILD_INVITE2                 0xC2
 #define SUBCMD62_GUILD_MASTER_TRANS1           0xCD
 #define SUBCMD62_GUILD_MASTER_TRANS2           0xCE
-#define SUBCMD62_QUEST_ITEM_UNKNOW1            0xC9
-#define SUBCMD62_QUEST_ITEM_RECEIVE            0xCA
+#define SUBCMD62_QUEST_REWARD_MESETA           0xC9
+#define SUBCMD62_QUEST_REWARD_ITEM             0xCA
 #define SUBCMD62_BATTLE_CHAR_LEVEL_FIX         0xD0
 #define SUBCMD62_CH_GRAVE_DATA                 0xD1
 #define SUBCMD62_WARP_ITEM                     0xD6

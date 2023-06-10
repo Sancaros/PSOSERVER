@@ -23,7 +23,7 @@
 
 typedef struct bb_max_tech_level {
     char tech_name[12];
-    unsigned char max_lvl[MAX_PLAYER_CLASS_BB];
+    uint8_t max_lvl[MAX_PLAYER_CLASS_BB];
 } bb_max_tech_level_t;
 
 bb_max_tech_level_t max_tech_level[BB_MAX_TECH_LEVEL];
