@@ -2848,8 +2848,21 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    //print_payload((uint8_t*)bb_data, sizeof(psocn_bb_db_char_t));
-    db_get_char_stats(gc, slot, bb_data->character.disp.stats, 0);
+    if (db_get_char_stats(gc, slot, &bb_data->character.disp.stats, 0)) {
+        ERR_LOG("无法获取角色数值数据");
+
+        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
+
+    if (db_get_dress_data(gc, slot, &bb_data->character.disp.dress_data, 0)) {
+        ERR_LOG("无法获取角色外观数据");
+
+        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
 
     /* 将数据发回舰船. */
     rv = send_cdata(c, gc, slot, bb_data, sz, 0);

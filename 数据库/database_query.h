@@ -164,7 +164,10 @@ uint32_t db_get_char_data_size(uint32_t gc, uint8_t slot);
 char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check);
 
 /* 获取玩家角色数值数据项 */
-int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t stats, int check);
+int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t* stats, int check);
+
+/* 获取玩家角色外观数据项 */
+int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check);
 
 /* 注意 一定要确保更衣室数据存在 才可以使用此函数 */
 int db_updata_bb_char_create_code(uint32_t code,

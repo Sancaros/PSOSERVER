@@ -94,13 +94,13 @@ typedef struct psocn_bank {
 } PACKED psocn_bank_t;
 
 typedef struct psocn_pl_stats {
-    uint16_t atp;//力量
-    uint16_t mst;//精神力
-    uint16_t evp;//闪避力
-    uint16_t hp;//初始血量
-    uint16_t dfp;//防御力
-    uint16_t ata;
-    uint16_t lck;//运气
+    uint16_t atp;//力量 初始3点 然后 1 : 1 增加
+    uint16_t mst;//精神力 1 : 1
+    uint16_t evp;//闪避力 1 : 1
+    uint16_t hp;//初始血量 不知道如何计算的 按理说 应该是 1点+2血
+    uint16_t dfp;//防御力 1 : 1
+    uint16_t ata;//命中率 计算 = 数据库ata / 5
+    uint16_t lck;//运气 1 : 1
 } PACKED psocn_pl_stats_t;
 
 typedef struct psocn_lvl_stats {

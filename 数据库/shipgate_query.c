@@ -185,7 +185,7 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
-int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t stats, int check) {
+int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t* stats, int check) {
     void* result;
     char** row;
 
@@ -217,16 +217,81 @@ int db_get_char_stats(uint32_t gc, uint8_t slot, psocn_pl_stats_t stats, int che
         return -3;
     }
 
-    printf("ata = %d mst = %d", (uint32_t)strtoul(row[13], NULL, 0), (uint32_t)strtoul(row[14], NULL, 0));
-
-    //stats->ata = (uint32_t)strtoul(row[0], NULL, 0);
-
+    stats->atp = (uint16_t)strtoul(row[13], NULL, 0);
+    stats->mst = (uint16_t)strtoul(row[14], NULL, 0);
+    stats->evp = (uint16_t)strtoul(row[15], NULL, 0);
+    stats->hp = (uint16_t)strtoul(row[16], NULL, 0);
+    stats->dfp = (uint16_t)strtoul(row[17], NULL, 0);
+    stats->ata = (uint16_t)strtoul(row[18], NULL, 0);
+    stats->lck = (uint16_t)strtoul(row[19], NULL, 0);
 
     return 0;
 }
 
-int db_get_dress_data(uint32_t gc, uint8_t slot, int check) {
-    psocn_dress_data_t* dress_data = { 0 };
+int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_DRESS, gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        if (check) {
+            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("%s", psocn_db_error(&conn));
+        }
+        return -3;
+    }
+
+    memcpy(&dress_data->guildcard_string[0], row[2], sizeof(dress_data->guildcard_string));
+
+    dress_data->dress_unk1 = (uint32_t)strtoul(row[3], NULL, 0);
+    dress_data->dress_unk2 = (uint32_t)strtoul(row[4], NULL, 0);
+    dress_data->name_color_b = (uint8_t)strtoul(row[5], NULL, 0);
+    dress_data->name_color_g = (uint8_t)strtoul(row[6], NULL, 0);
+    dress_data->name_color_r = (uint8_t)strtoul(row[7], NULL, 0);
+    dress_data->name_color_transparency = (uint8_t)strtoul(row[8], NULL, 0);
+    dress_data->model = (uint16_t)strtoul(row[9], NULL, 0);
+
+    memcpy(&dress_data->dress_unk3[0], row[10], sizeof(dress_data->dress_unk3));
+
+    dress_data->create_code = (uint32_t)strtoul(row[11], NULL, 0);
+    dress_data->name_color_checksum = (uint32_t)strtoul(row[12], NULL, 0);
+
+    dress_data->section = (uint8_t)strtoul(row[13], NULL, 0);
+    dress_data->ch_class = (uint8_t)strtoul(row[14], NULL, 0);
+    dress_data->v2flags = (uint8_t)strtoul(row[15], NULL, 0);
+    dress_data->version = (uint8_t)strtoul(row[16], NULL, 0);
+    dress_data->v1flags = (uint32_t)strtoul(row[17], NULL, 0);
+
+    dress_data->costume = (uint16_t)strtoul(row[18], NULL, 0);
+    dress_data->skin = (uint16_t)strtoul(row[19], NULL, 0);
+    dress_data->face = (uint16_t)strtoul(row[20], NULL, 0);
+    dress_data->head = (uint16_t)strtoul(row[21], NULL, 0);
+    dress_data->hair = (uint16_t)strtoul(row[22], NULL, 0);
+    dress_data->hair_r = (uint16_t)strtoul(row[23], NULL, 0);
+    dress_data->hair_g = (uint16_t)strtoul(row[24], NULL, 0);
+    dress_data->hair_b = (uint16_t)strtoul(row[25], NULL, 0);
+
+    dress_data->prop_x = strtof(row[26], NULL);
+    dress_data->prop_y = strtof(row[27], NULL);
 
     return 0;
 }
