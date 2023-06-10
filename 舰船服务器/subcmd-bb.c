@@ -3760,28 +3760,6 @@ static int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt)
     return word_select_send_gc(c, &gc);
 }
 
-//弃用
-static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_create_lobby_chair_t* pkt) {
-    lobby_t* l = c->cur_lobby;
-
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
-            c->guildcard);
-        return -1;
-    }
-
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            c->guildcard, pkt->shdr.type);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-        return -1;
-    }
-
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-}
-
 static int handle_bb_cmode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     int i;
     lobby_t* l = c->cur_lobby;
@@ -4500,6 +4478,46 @@ static int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_ground_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int rv = 0;
+
+    /* We can't get these in lobbies without someone messing with something
+   that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+            c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    if (l->flags & LOBBY_TYPE_CHEATS_ENABLED) {
+        //auto item = l->remove_item(cmd.item_id);
+        //auto name = item.data.name(false);
+        //l->log.info("地面物品 %08" PRIX32 " 已被摧毁 (%s)", cmd.item_id.load(),
+        //    name.c_str());
+        //if (c->options.debug) {
+        //    string name = item.data.name(true);
+        //    send_text_message_printf(c, "$C5物品: destroy/ground %08" PRIX32 "\n%s",
+        //        cmd.item_id.load(), name.c_str());
+        //}
+        //forward_subcommand(l, c, command, flag, data);
+        DBG_LOG("开启物品追踪");
+    }
+
+    return 0;
+}
+
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -4545,6 +4563,11 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /* 用于过多掉落物时 */
+    case SUBCMD60_DESTROY_ITEM:
+        rv = handle_bb_destroy_ground_item(c, (subcmd_bb_destory_ground_item_t*)pkt);
+        break;
 
         /* 动感足球函数 */
     case SUBCMD60_GOGO_BALL:

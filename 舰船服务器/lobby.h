@@ -215,6 +215,8 @@ TAILQ_HEAD(lobby_queue, lobby);
 #define LOBBY_TYPE_PERSISTENT         0x00000008
 #define LOBBY_TYPE_CHEATS_ENABLED     0x00000100
 
+#define LOBBY_ITEM_TRACKING_ENABLED   0x00000001
+
 #define LOBBY_EPISODE_NONE         0
 #define LOBBY_EPISODE_1            1
 #define LOBBY_EPISODE_2            2

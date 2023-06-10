@@ -1269,13 +1269,13 @@ typedef struct subcmd_bb_levelup_req {
 //[2023年06月10日 14:10:54:134] 截获(4877):
 //( 00000000 )   14 00 60 00 00 00 00 00  63 03 D2 1D 06 00 81 00 ..`.....c.?..?
 //( 00000010 )   01 00 00 00                                     ....
-// 0x63: Destroy item on the ground (used when too many items have been dropped)
-typedef struct subcmd_bb_DestroyGroundItem_6x63 {
+// 0x63: 当地面物品过多时,摧毁6个最早的物品 (用于过多掉落物时)
+typedef struct subcmd_bb_destory_ground_item {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t item_id;
     uint32_t area;
-} PACKED subcmd_bb_DestroyGroundItem_6x63_t;
+} PACKED subcmd_bb_destory_ground_item_t;
 
 // 0x64: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).

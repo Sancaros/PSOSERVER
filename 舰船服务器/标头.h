@@ -275,6 +275,28 @@ int subcmd_bb_handle_bcastv1(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 }
 
 
+//弃用
+static int handle_bb_chair_dir(ship_client_t* c, subcmd_bb_create_lobby_chair_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || c->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, pkt->shdr.type);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
