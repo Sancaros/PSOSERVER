@@ -572,11 +572,11 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     ii.flags = LE32(0);
 
     /* 填充物品数据 */
-    memcpy(&ii.data.data_l[0], &c->game_data->shop_items[pkt->shop_item_index].data_l[0], sizeof(item_t));
+    memcpy(&ii.data.data_b[0], &c->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
 
     /* 如果是堆叠物品 */
     if (pkt->num_bought <= stack_size_for_item(ii.data)) {
-        ii.data.data_l[5] = pkt->num_bought;
+        ii.data.data_b[5] = pkt->num_bought;
     } else {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
             c->guildcard);
