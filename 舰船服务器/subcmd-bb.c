@@ -4533,7 +4533,6 @@ static int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_gro
     return 0;
 }
 
-
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -4580,6 +4579,12 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     switch (type) {
 
+    case SUBCMD60_UNKNOW_1C:
+        //subcmd_bb_Unknown_6x1C_t
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        break;
+
         /* 用于过多掉落物时 */
     case SUBCMD60_DESTROY_ITEM:
         rv = handle_bb_destroy_ground_item(c, (subcmd_bb_destory_ground_item_t*)pkt);
@@ -4607,7 +4612,6 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD60_UNKNOW_7D:
         UNK_CSPD(type, c->version, (uint8_t*)pkt);
         sent = 0;
-        //rv = handle_bb_cmd_check_game_size(c, pkt, 0x06);
         break;
 
         /*挑战模式 触发*/

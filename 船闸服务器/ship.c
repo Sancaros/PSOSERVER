@@ -2561,6 +2561,14 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
+    if (db_update_bank(&char_data->bank, gc, slot)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家银行数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
     if (db_update_char_challenge(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
@@ -2857,14 +2865,8 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    /* 事实证明 屌用没有 逻辑错误 TODO 需要找到一个折中的办法 在其他地方做动态读取*/
-    //if (psocn_crc32((uint8_t*)&bb_data->inv, sizeof(inventory_t)) != db_get_char_inv_checkum(gc, slot)) {
-    //    db_insert_inventory(&bb_data->inv, gc, slot);
-    //} else {
-    //}
-
     /* 从背包数据库中获取玩家角色的背包数据 */
-    if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
+    if (db_get_char_inventory(gc, slot, &bb_data->inv, 0)) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         db_insert_inventory(&bb_data->inv, gc, slot);
     }
@@ -2877,6 +2879,12 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     /* 从数据库中获取玩家角色外观数据 */
     if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据", gc, slot);
+    }
+
+    /* 从银行数据库中获取玩家角色的银行数据 */
+    if (db_get_char_bank(gc, slot, &bb_data->bank, 0)) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
+        db_insert_bank(&bb_data->bank, gc, slot);
     }
 
     /* 将数据发回舰船. */

@@ -446,6 +446,9 @@ typedef struct subcmd_bb_Unknown_6x1B {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_Unknown_6x1B_t;
 
+//[2023年06月12日 00:56:44:427] 截获(4909): subcmd-bb.c 4909 行 BB_REDIRECT6_LENGTH - 客户端至服务器指令 指令 0x0060 未处 理. (数据如下)
+//[2023年06月12日 00:56:44:450] 截获(4909):
+//( 00000000 )   0C 00 60 00 00 00 00 00  1C 01 01 00             ..`.........
 // 0x1C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 typedef struct subcmd_bb_Unknown_6x1C {
     bb_pkt_hdr_t hdr;

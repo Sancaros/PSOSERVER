@@ -610,6 +610,8 @@ const char* item_get_name_by_code(item_code_t code, int version) {
 
     (void)version;
 
+    const char* unknow_name = "未识别物品名称";
+
     /* Take care of mags so that we'll match them properly... */
     if ((code & 0xFF) == 0x02) {
         code &= 0xFFFF;
@@ -625,7 +627,7 @@ const char* item_get_name_by_code(item_code_t code, int version) {
     }
 
     /* No item found... */
-    return NULL;
+    return unknow_name;
 }
 
 /* 物品名称总清单. 英文. */
@@ -3741,6 +3743,8 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
     //TODO 未完成多语言物品名称
     (void)version;
 
+    const char* unknow_name = "未识别物品名称";
+
     //TODO 未完成多语言物品名称
     int32_t languageCheck = 1;
     if (languageCheck) {
@@ -3764,14 +3768,13 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
     ERR_LOG("物品ID不存在 %06X", cur->code);
 
     /* No item found... */
-    return NULL;
+    return unknow_name;
 }
 
 /* 获取物品名称 */
 const char* item_get_name(item_t* item, int version) {
-    //uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
-    //    (item->data_b[2] << 16);
-    uint32_t code = LE32(item->data_l[0]);
+    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
+        (item->data_b[2] << 16);
 
     /* 获取相关物品参数对比 */
     switch (item->data_b[0]) {

@@ -53,6 +53,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER "character_"
 #define CHARACTER_BACKUP "character_backup"
 #define CHARACTER_BANK "character_bank"
+#define CHARACTER_BANK_ITEMS "character_bank_items"
 #define CHARACTER_BATTLE "character_battle"
 #define CHARACTER_BLACKLIST "character_blacklist"
 #define CHARACTER_CHALLENGE "character_challenge"

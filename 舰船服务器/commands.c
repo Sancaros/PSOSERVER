@@ -3539,21 +3539,40 @@ static int handle_logme(ship_client_t *c, const char *params) {
 #endif /* DEBUG */
 }
 
-/* 用法: /fixinv 用于背包清理急救*/
-static int handle_fixinv(ship_client_t* c, const char* params) {
+/* 用法: /cleaninv 用于背包清理急救*/
+static int handle_cleaninv(ship_client_t* c, const char* params) {
 
     if (c->version != CLIENT_VERSION_BB)
         return send_txt(c, "%s", __(c, "\tE\tC7游戏版本不支持."));
 
-    c->bb_pl->inv.item_count = 0;
+    int size = sizeof(c->bb_pl->inv.iitems) / sizeof(iitem_t);
 
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < size; i++) {
         memset(&c->bb_pl->inv.iitems[i], 0, sizeof(iitem_t));
     }
 
+    c->bb_pl->inv.item_count = 0;
     c->pl->bb.inv = c->bb_pl->inv;
 
     return send_txt(c, "%s", __(c, "\tE\tC6背包数据已清空."));
+}
+
+/* 用法: /cleanbank 用于背包清理急救*/
+static int handle_cleanbank(ship_client_t* c, const char* params) {
+
+    if (c->version != CLIENT_VERSION_BB)
+        return send_txt(c, "%s", __(c, "\tE\tC7游戏版本不支持."));
+
+    int size = sizeof(c->bb_pl->bank.bitems) / sizeof(bitem_t);
+
+    for (int i = 0; i < size; i++) {
+        memset(&c->bb_pl->bank.bitems[i], 0, sizeof(iitem_t));
+    }
+
+    c->bb_pl->bank.item_count = 0;
+    c->bb_pl->bank.meseta = 0;
+
+    return send_txt(c, "%s", __(c, "\tE\tC6银行数据已清空."));
 }
 
 static command_t cmds[] = {
@@ -3654,7 +3673,8 @@ static command_t cmds[] = {
     { "ib"       , handle_ib        },
     { "xblink"   , handle_xblink    },
     { "logme"    , handle_logme     },
-    { "fixinv"   , handle_fixinv     },
+    { "cleaninv" , handle_cleaninv  },
+    { "cleanbank", handle_cleanbank },
     { ""         , NULL             }     /* End marker -- DO NOT DELETE */
 };
 

@@ -133,10 +133,22 @@ int db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
 int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色背包数据数据项 */
-int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check);
+int db_get_char_inventory(uint32_t gc, uint8_t slot, inventory_t* inv, int check);
 
 /* 更新角色更衣室数据 暂时弃用*/
-int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32_t flag);
+//int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32_t flag);
+
+/* 新增玩家银行背包数据至数据库 */
+int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
+
+/* 更新玩家银行数据至数据库 */
+int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
+
+/* 获取玩家角色银行背包数据数据项 */
+int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check);
+
+/* 获取玩家银行数据checkum */
+uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot);
 
 ///////////////////////////////////////////////////////
 /* 认证查询 */

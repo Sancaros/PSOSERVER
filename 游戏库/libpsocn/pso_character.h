@@ -90,7 +90,7 @@ typedef struct psocn_bitem { // 0x18 bytes
 typedef struct psocn_bank {
     uint32_t item_count;
     uint32_t meseta;
-    bitem_t items[200];
+    bitem_t bitems[200];
 } PACKED psocn_bank_t;
 
 typedef struct psocn_pl_stats {
