@@ -4095,7 +4095,7 @@ size_t stack_size_for_item(item_t item) {
 int add_item(ship_client_t* c, iitem_t iitem) {
     uint32_t pid = primary_identifier(&iitem.data);
 
-    // Annoyingly, meseta is in the disp data, not in the inventory struct. If the
+    // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
     // item is meseta, we have to modify disp instead.
     if (pid == 0x00040000) {
         c->bb_pl->character.disp.meseta += iitem.data.data2_l;
@@ -4108,8 +4108,7 @@ int add_item(ship_client_t* c, iitem_t iitem) {
     // 处理堆叠物品
     size_t combine_max = stack_size_for_item(iitem.data);
     if (combine_max > 1) {
-        // Get the item index if there's already a stack of the same item in the
-        // player's inventory
+        //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
         size_t y;
         for (y = 0; y < c->bb_pl->inv.item_count; y++) {
             if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem.data)) {
@@ -4117,7 +4116,7 @@ int add_item(ship_client_t* c, iitem_t iitem) {
             }
         }
 
-        // If we found an existing stack, add it to the total and return
+        // 如果已经发现存在同类型堆叠物品, 则将其添加至相同物品槽位
         if (y < c->bb_pl->inv.item_count) {
             c->bb_pl->inv.iitems[y].data.data_b[5] += iitem.data.data_b[5];
             if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
@@ -4134,6 +4133,7 @@ int add_item(ship_client_t* c, iitem_t iitem) {
             c->guildcard);
         return -1;
     }
+
     c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = iitem;
     c->bb_pl->inv.item_count++;
 
