@@ -2389,10 +2389,10 @@ typedef struct subcmd_bb_shop_buy {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t new_inv_item_id;//0x0C                   /* 购买后生成的物品ID */
-    uint8_t shop_type;//0x10                  /* 0 工具 1 武器 2 装甲*/
-    uint8_t shop_item_index;//0x11                 /* 物品所处商店清单位置 */
-    uint8_t num_bought;//0x12                 /* 购买数量 最高 10个 也就是 09*/
-    uint8_t unknown_a1; // TODO: Probably actually unused; verify this
+    uint8_t shop_type;       //0x10                   /* 0 工具 1 武器 2 装甲*/
+    uint8_t shop_item_index; //0x11                   /* 物品所处商店清单位置 */
+    uint8_t num_bought;      //0x12                   /* 购买数量 最高 10个 也就是 09*/
+    uint8_t unknown_a1; //                            /*TODO: Probably actually unused; verify this*/
 } PACKED subcmd_bb_shop_buy_t;
 
 // 0xB8: Unknown (Episode 3 Trial Edition)

@@ -4112,8 +4112,7 @@ int add_item(ship_client_t* c, iitem_t iitem) {
         // player's inventory
         size_t y;
         for (y = 0; y < c->bb_pl->inv.item_count; y++) {
-            if (primary_identifier(&c->bb_pl->inv.iitems[y].data)
-                == primary_identifier(&iitem.data)) {
+            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem.data)) {
                 break;
             }
         }

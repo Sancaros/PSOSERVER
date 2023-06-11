@@ -564,21 +564,35 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
         return -1;
     }
 
-    DBG_LOG("购买物品");
+    DBG_LOG("购买 %d 个物品 %02X %04X", pkt->num_bought, pkt->unknown_a1, pkt->shdr.unused);
 
-    memcpy(&ii.data.data_l[0], &c->game_data->shop_items[pkt->shop_item_index].data_l[0], sizeof(ii.data));
+    /* 填充物品数据头 */
+    ii.present = LE16(1);
+    ii.tech = LE16(0);
+    ii.flags = LE32(0);
 
-    print_item_data(&ii.data, c->version);
+    /* 填充物品数据 */
+    memcpy(&ii.data.data_l[0], &c->game_data->shop_items[pkt->shop_item_index].data_l[0], sizeof(item_t));
+
+    /* 如果是堆叠物品 */
+    if (pkt->num_bought <= stack_size_for_item(ii.data)) {
+        ii.data.data_l[5] = pkt->num_bought;
+    } else {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
+            c->guildcard);
+        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        return -1;
+    }
+
+    print_iitem_data(&ii, 0, c->version);
 
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
-
-    ii.present = LE16(1); //需要占用物品槽，不然会出错
     ii.data.item_id = l->item_player_id[c->client_id]++;
 
     //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
 
     if (add_item(c, ii))
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             c->guildcard);
 
     subcmd_send_bb_delete_meseta(c, ii.data.data2_l, 0);

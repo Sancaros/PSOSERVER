@@ -2300,6 +2300,7 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
 
 // TODO: Eliminate duplication between this function and the parallel function
 // in PlayerBank
+size_t stack_size_for_item(item_t item);
 int add_item(ship_client_t* c, iitem_t iitem);
 
 /* 获取背包中目标物品所在槽位 */

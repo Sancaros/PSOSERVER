@@ -2536,7 +2536,15 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;
     }
-    
+
+    if (db_update_inventory(&char_data->inv, gc, slot)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家背包数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
     if (db_update_char_disp(&char_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
@@ -2553,23 +2561,6 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_inventory(&char_data->inv, gc, slot)) {
-        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        SQLERR_LOG("无法更新玩家背包数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
-        return 0;
-    }
-    
-    if (db_compress_char_data(char_data, data_len, gc, slot)) {
-        ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
-
-        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        return -6;
-    }
-
     if (db_update_char_challenge(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
@@ -2583,6 +2574,15 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;
+    }
+
+    if (db_compress_char_data(char_data, data_len, gc, slot)) {
+        ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+            "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return -6;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
