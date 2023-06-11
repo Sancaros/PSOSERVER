@@ -3822,9 +3822,9 @@ const char* item_get_name(item_t* item, int version) {
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version) {
     ITEM_LOG("////////////////////////////////////////////////////////////");
-    ITEM_LOG("物品信息: %s (ID %d / %08X)",
-        item_get_name(item, version), item->item_id, item->item_id);
-    ITEM_LOG("物品数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+    ITEM_LOG("物品:(ID %d / %08X) %s",
+        item->item_id, item->item_id, item_get_name(item, version));
+    ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
         item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
         item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
         item->data_b[8], item->data_b[9], item->data_b[10], item->data_b[11],
@@ -3833,18 +3833,18 @@ void print_item_data(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_iitem_data(iitem_t* iitem, int item_index, int version) {
-    ITEM_LOG("物品: %s (ID %d / %08X)",
-        item_get_name(&iitem->data, version), iitem->data.item_id, iitem->data.item_id);
+    ITEM_LOG("物品:(ID %d / %08X) %s",
+        iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
     ITEM_LOG(""
-        "槽位 %d "
-        "%s %04X "
+        "槽位 (%d) "
+        "(%s) %04X "
         "鉴定 %d "
-        "%s Flags %08X",
+        "(%s) Flags %08X",
         item_index, 
-        ((iitem->present == 0x0001) ? "占用槽位" : "未占用槽位"), 
+        ((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"), 
         iitem->present, 
         iitem->tech, 
-        ((iitem->flags == 0x00000008) ? "穿戴" : "未穿戴"),
+        ((iitem->flags == 0x00000008) ? "已装备" : "未装备"),
         iitem->flags
     );
     ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",

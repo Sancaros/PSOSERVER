@@ -126,8 +126,11 @@ int db_delete_transient_clients(char* ship_name, uint16_t id);
 /* 获取玩家背包数据checkum */
 uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot);
 
+/* 新增玩家背包数据至数据库 */
+int db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
+
 /* 更新玩家背包数据至数据库 */
-void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
+int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check);

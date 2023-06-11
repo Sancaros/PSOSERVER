@@ -1422,7 +1422,7 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
     return 0;
 }
 
-int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
+int db_update_inventory_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
     memset(myquery, 0, sizeof(myquery));
 
@@ -1641,9 +1641,12 @@ int db_get_char_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_index, 
     return 0;
 }
 
-/* 更新玩家背包数据至数据库 */
-void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
+/* 新增玩家背包数据至数据库 */
+int db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t *)inv, sizeof(inventory_t));
+    // 查询自增长 ID
+    uint32_t item_index = 0;
+    int i = 0;
     
     memset(myquery, 0, sizeof(myquery));
 
@@ -1660,46 +1663,63 @@ void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        db_update_inventory(inv, gc, slot);
+        db_update_inventory_param(inv, gc, slot);
     }
 
     db_cleanup_inventory_items(gc, slot);
 
-    // 查询自增长 ID
-    uint32_t item_index = 0;
-
     // 遍历背包数据，插入到数据库中
-    for (int i = 0; i < inv->item_count; i++) {
-        const iitem_t* iitem = &inv->iitems[i];
-
-        // 设置 player_id
-        iitem_t new_iitem = *iitem;
-        //new_iitem.data.item_id = item_id;
-
-        if (db_insert_inventory_items(&new_iitem, gc, slot, item_index))
-            db_update_inventory_items(&new_iitem, gc, slot, item_index);
-
+    for (i; i < inv->item_count; i++) {
+        if (db_insert_inventory_items(&inv->iitems[i], gc, slot, item_index)) {
+            SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数据", gc, slot);
+            return -1;
+        }
         item_index++;
     }
+
+    return 0;
+}
+
+int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
+    // 查询自增长 ID
+    uint32_t item_index = 0;
+    int i = 0;
+
+    db_update_inventory_param(inv, gc, slot);
+
+    db_cleanup_inventory_items(gc, slot);
+
+    // 遍历背包数据，插入到数据库中
+    for (i; i < inv->item_count; i++) {
+        if (db_insert_inventory_items(&inv->iitems[i], gc, slot, item_index)) {
+            SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数据", gc, slot);
+            return -1;
+        }
+        item_index++;
+    }
+
+    return 0;
 }
 
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
-    uint32_t db_inv_crc32 = db_get_char_inv_checkum(gc, slot);
+    //uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
+    //uint32_t db_inv_crc32 = 0;
 
-    if (inv_crc32 == db_inv_crc32)
-        return 0;
-    else
-        db_insert_inventory(inv, gc, slot);
+    //if (inv_crc32 == db_inv_crc32)
+    //    return 0;
+    //else
+    //    db_insert_inventory(inv, gc, slot);
+
+    memset(inv, 0, sizeof(inventory_t));
 
     if (db_get_char_inv_param(gc, slot, inv)) {
-        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
         return -1;
     }
 
     if (inv->item_count == 0) {
-        SQLERR_LOG("无法查询角色背包物品数量 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数量", gc, slot);
         return 0;
     }
 

@@ -2553,17 +2553,14 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-
-    db_insert_inventory(&char_data->inv, gc, slot);
-
-    //if (db_update_char_inventory(&char_data->inv, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
-    //    send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-    //        ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-    //    SQLERR_LOG("无法更新玩家背包数据 (GC %"
-    //        PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
-    //    return 0;
-    //}
-
+    if (db_update_inventory(&char_data->inv, gc, slot)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家背包数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+    
     if (db_compress_char_data(char_data, data_len, gc, slot)) {
         ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
@@ -2860,24 +2857,26 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    if (psocn_crc32((uint8_t*)&bb_data->inv, sizeof(inventory_t)) != db_get_char_inv_checkum(gc, slot)) {
+    /* 事实证明 屌用没有 逻辑错误 TODO 需要找到一个折中的办法 在其他地方做动态读取*/
+    //if (psocn_crc32((uint8_t*)&bb_data->inv, sizeof(inventory_t)) != db_get_char_inv_checkum(gc, slot)) {
+    //    db_insert_inventory(&bb_data->inv, gc, slot);
+    //} else {
+    //}
+
+    /* 从背包数据库中获取玩家角色的背包数据 */
+    if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         db_insert_inventory(&bb_data->inv, gc, slot);
-    } else {
-        /* 从背包数据库中获取玩家角色的背包数据 */
-        if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
-            SQLERR_LOG("无法获取角色背包数据");
-            db_insert_inventory(&bb_data->inv, gc, slot);
-        }
     }
 
     /* 从数据库中获取玩家角色数值数据 */
     if (db_get_char_disp(gc, slot, &bb_data->character.disp, 0)) {
-        SQLERR_LOG("无法获取角色数值数据");
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色数值数据", gc, slot);
     }
 
     /* 从数据库中获取玩家角色外观数据 */
     if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
-        SQLERR_LOG("无法获取角色外观数据");
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据", gc, slot);
     }
 
     /* 将数据发回舰船. */
