@@ -571,6 +571,8 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     print_item_data(&ii.data, c->version);
 
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
+
+    ii.present = LE16(1); //需要占用物品槽，不然会出错
     ii.data.item_id = l->item_player_id[c->client_id]++;
 
     //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
