@@ -84,7 +84,11 @@
     <ClCompile Include="pso_text.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pso_message.c" />
-    <ClCompile Include="pso_items.c" />
+    <ClCompile Include="pso_items.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_message.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

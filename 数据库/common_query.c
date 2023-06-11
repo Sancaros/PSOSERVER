@@ -1360,11 +1360,11 @@ int db_update_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "data_b1 = '%02X', data_b2 = '%02X', data_b3 = '%02X', data_b4 = '%02X', "
-        "data_b5 = '%02X', data_b6 = '%02X', data_b7 = '%02X', data_b8 = '%02X', "
-        "data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', data_b12 = '%02X', "
+        "data_b0 = '%02X', data_b1 = '%02X', data_b2 = '%02X', data_b3 = '%02X', "
+        "data_b4 = '%02X', data_b5 = '%02X', data_b6 = '%02X', data_b7 = '%02X', "
+        "data_b8 = '%02X', data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', "
         "item_id = '%08X', "
-        "data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', data2_b4 = '%02X', "
+        "data2_b0 = '%02X', data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', "
         "present = '%04X', tech = '%04X', flags = '%08X', "
         "item_name = '%s'"
         " WHERE "
@@ -1401,11 +1401,11 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "data_b1, data_b2, data_b3, data_b4, "
-        "data_b5, data_b6, data_b7, data_b8, "
-        "data_b9, data_b10, data_b11, data_b12, "
+        "data_b0, data_b1, data_b2, data_b3, "
+        "data_b4, data_b5, data_b6, data_b7, "
+        "data_b8, data_b9, data_b10, data_b11, "
         "item_id, "
-        "data2_b1, data2_b2, data2_b3, data2_b4, "
+        "data2_b0, data2_b1, data2_b2, data2_b3, "
         "item_index, present, tech, flags, "
         "item_name, "
         "guildcard, slot"

@@ -2304,12 +2304,9 @@ typedef struct bb_item_mst {
     uint32_t amt; //mst amount
 } bb_item_mst_t;
 
-/* 物品名称代码. 英文. */
-const char* item_get_name_by_code(item_code_t code, int version);
-/* 物品名称代码. 中文 */
-const char* bbitem_get_name_by_code(bbitem_code_t code, int version);
 /* 获取物品名称 */
 const char* item_get_name(item_t* item, int version);
+
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version);
 

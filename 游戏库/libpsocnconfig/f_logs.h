@@ -121,6 +121,40 @@ extern int32_t monster_error_log_console_show;
 extern int32_t config_log_console_show;
 extern int32_t script_log_console_show;
 
+#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
+#define LE16(x) (((x >> 8) & 0xFF) | ((x & 0xFF) << 8))
+#define LE32(x) (((x >> 24) & 0x00FF) | \
+                 ((x >>  8) & 0xFF00) | \
+                 ((x & 0xFF00) <<  8) | \
+                 ((x & 0x00FF) << 24))
+#define LE64(x) (((x >> 56) & 0x000000FF) | \
+                 ((x >> 40) & 0x0000FF00) | \
+                 ((x >> 24) & 0x00FF0000) | \
+                 ((x >>  8) & 0xFF000000) | \
+                 ((x & 0xFF000000) <<  8) | \
+                 ((x & 0x00FF0000) << 24) | \
+                 ((x & 0x0000FF00) << 40) | \
+                 ((x & 0x000000FF) << 56))
+#define BE64(x) x
+#else
+#define LE16(x) x
+#define SWAP16(x) (((x >> 8) & 0xFF) | ((x & 0xFF) << 8))
+#define LE32(x) x
+#define SWAP32(x) (((x >> 24) & 0x00FF) | \
+                   ((x >>  8) & 0xFF00) | \
+                   ((x & 0xFF00) <<  8) | \
+                   ((x & 0x00FF) << 24))
+#define LE64(x) x
+#define SWAP64(x) (((x >> 56) & 0x000000FF) | \
+                 ((x >> 40) & 0x0000FF00) | \
+                 ((x >> 24) & 0x00FF0000) | \
+                 ((x >>  8) & 0xFF000000) | \
+                 ((x & 0xFF000000) <<  8) | \
+                 ((x & 0x00FF0000) << 24) | \
+                 ((x & 0x0000FF00) << 40) | \
+                 ((x & 0x000000FF) << 56))
+#endif
+
 #define PRINT_IP_FORMAT "%u.%u.%u.%u"
 #define PRINT_HIP(x)\
        ((x >> 0) & 0xFF),\

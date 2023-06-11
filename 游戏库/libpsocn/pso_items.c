@@ -605,7 +605,7 @@ static item_map_t item_list[] = {
 };
 
 const char* item_get_name_by_code(item_code_t code, int version) {
-    item_map_t* cur = &item_list[0];
+    item_map_t* cur = item_list;
     //TODO Î´Íê³É¶àÓïÑÔÎïÆ·Ãû³Æ
 
     (void)version;
@@ -3737,14 +3737,14 @@ static bbitem_map_t bbitem_list_cn[] = {
 };
 
 const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
-    bbitem_map_t* cur = &bbitem_list_en[0];
+    bbitem_map_t* cur = bbitem_list_en;
     //TODO Î´Íê³É¶àÓïÑÔÎïÆ·Ãû³Æ
     (void)version;
 
     //TODO Î´Íê³É¶àÓïÑÔÎïÆ·Ãû³Æ
     int32_t languageCheck = 1;
     if (languageCheck) {
-        cur = &bbitem_list_cn[0];
+        cur = bbitem_list_cn;
     }
 
     /* Take care of mags so that we'll match them properly... */
@@ -3769,8 +3769,9 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
 
 /* »ñÈ¡ÎïÆ·Ãû³Æ */
 const char* item_get_name(item_t* item, int version) {
-    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
-        (item->data_b[2] << 16);
+    //uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
+    //    (item->data_b[2] << 16);
+    uint32_t code = LE32(item->data_l[0]);
 
     /* »ñÈ¡Ïà¹ØÎïÆ·²ÎÊı¶Ô±È */
     switch (item->data_b[0]) {
@@ -3781,7 +3782,7 @@ const char* item_get_name(item_t* item, int version) {
         break;
 
     case ITEM_TYPE_GUARD:  /* ×°¼× */
-        if (item->data_b[1] != 0x03 && item->data_b[3]) {
+        if (item->data_b[1] != ITEM_SUBTYPE_UNIT && item->data_b[3]) {
             code = code | (item->data_b[3] << 16);
         }
         //printf("Êı¾İ1: %02X Êı¾İ3: %02X\n", item->item_data1[1], item->item_data1[3]);
