@@ -33,7 +33,7 @@
     <ClCompile Include="gm.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="items.c">
+    <ClCompile Include="iitems.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="list.c">
@@ -125,7 +125,7 @@
     <ClInclude Include="gm.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="items.h">
+    <ClInclude Include="iitems.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="lobby.h">
@@ -201,6 +201,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="标头.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="测试.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

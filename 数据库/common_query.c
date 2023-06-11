@@ -18,6 +18,7 @@
 #include "database.h"
 #include "database_query.h"
 #include "f_checksum.h"
+#include "iitems.h"
 
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
@@ -1352,6 +1353,10 @@ int db_cleanup_inventory_items(uint32_t gc, uint8_t slot) {
 }
 
 int db_update_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
+    char item_name_text[256];
+
+    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
@@ -1360,16 +1365,18 @@ int db_update_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
         "data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', data_b12 = '%02X', "
         "item_id = '%08X', "
         "data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', data2_b4 = '%02X', "
-        "present = '%04X', tech = '%04X', flags = '%08X'"
+        "present = '%04X', tech = '%04X', flags = '%08X', "
+        "item_name = '%s'"
         " WHERE "
-        "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')", 
+        "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
         CHARACTER_INVENTORY_ITEMS,
         item->data.data_b[0], item->data.data_b[1], item->data.data_b[2], item->data.data_b[3],
         item->data.data_b[4], item->data.data_b[5], item->data.data_b[6], item->data.data_b[7],
         item->data.data_b[8], item->data.data_b[9], item->data.data_b[10], item->data.data_b[11],
         item->data.item_id,
         item->data.data2_b[0], item->data.data2_b[1], item->data.data2_b[2], item->data.data2_b[3],
-        item->present, item->tech, item->flags, 
+        item->present, item->tech, item->flags,
+        item_name_text,
         gc, slot, item_index
     );
 
@@ -1387,6 +1394,10 @@ int db_update_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
 }
 
 int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
+    char item_name_text[256];
+
+    istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
+
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
@@ -1396,6 +1407,7 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
         "item_id, "
         "data2_b1, data2_b2, data2_b3, data2_b4, "
         "item_index, present, tech, flags, "
+        "item_name, "
         "guildcard, slot"
         ") VALUES ("
         "'%02X', '%02X', '%02X', '%02X', "
@@ -1404,6 +1416,7 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
         "'%08X', "
         "'%02X', '%02X', '%02X', '%02X', "
         "'%d', '%04X', '%04X', '%08X', "
+        "'%s', "
         "'%" PRIu32 "', '%" PRIu8 "'"
         ")", 
         CHARACTER_INVENTORY_ITEMS,
@@ -1412,7 +1425,8 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
         item->data.data_b[8], item->data.data_b[9], item->data.data_b[10], item->data.data_b[11],
         item->data.item_id,
         item->data.data2_b[0], item->data.data2_b[1], item->data.data2_b[2], item->data.data2_b[3],
-        item_index, item->present, item->tech, item->flags, 
+        item_index, item->present, item->tech, item->flags,
+        item_name_text,
         gc, slot
     );
 
@@ -1595,7 +1609,7 @@ int db_get_char_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_index, 
         return -3;
     }
 
-    int i = 3;
+    int i = 4;
     sscanf(row[i], "%hx", &item->present);
     i++;
     sscanf(row[i], "%hx", &item->tech);
@@ -1718,8 +1732,9 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
         return -1;
     }
 
+    /* 如果背包为空则返回0 */
     if (inv->item_count == 0) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数量", gc, slot);
+        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数量", gc, slot);
         return 0;
     }
 

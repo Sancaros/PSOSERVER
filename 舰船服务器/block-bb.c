@@ -48,7 +48,7 @@
 #include "scripts.h"
 #include "admin.h"
 #include "smutdata.h"
-#include "items.h"
+#include "iitems.h"
 
 extern int enable_ipv6;
 extern char ship_host4[32];

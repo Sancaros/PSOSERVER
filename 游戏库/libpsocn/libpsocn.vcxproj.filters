@@ -61,6 +61,9 @@
     <ClInclude Include="pso_message.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_items.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -82,5 +85,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_message.c" />
+    <ClCompile Include="pso_items.c" />
   </ItemGroup>
 </Project>

@@ -34,7 +34,7 @@
 #include "clients.h"
 #include "ship_packets.h"
 #include "utils.h"
-#include "items.h"
+#include "iitems.h"
 #include "word_select.h"
 #include "scripts.h"
 #include "shipgate.h"

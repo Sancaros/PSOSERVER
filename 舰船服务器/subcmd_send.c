@@ -18,7 +18,7 @@
 #include "subcmd_send.h"
 #include "subcmd_size_table.h"
 
-#include "items.h"
+#include "iitems.h"
 #include "f_logs.h"
 
 

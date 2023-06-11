@@ -25,7 +25,7 @@
     <ClCompile Include="clients.c" />
     <ClCompile Include="commands.c" />
     <ClCompile Include="gm.c" />
-    <ClCompile Include="items.c" />
+    <ClCompile Include="iitems.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="lobby.c" />
     <ClCompile Include="mapdata.c" />
@@ -57,7 +57,7 @@
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="gm.h" />
-    <ClInclude Include="items.h" />
+    <ClInclude Include="iitems.h" />
     <ClInclude Include="lobby.h" />
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="pmtdata.h" />
@@ -83,6 +83,7 @@
     <ClInclude Include="subcmd_size_table.h" />
     <ClInclude Include="subcmd_send.h" />
     <ClInclude Include="标头.h" />
+    <ClInclude Include="测试.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico" />

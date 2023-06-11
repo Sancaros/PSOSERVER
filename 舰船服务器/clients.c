@@ -39,7 +39,7 @@
 #include "scripts.h"
 #include "subcmd.h"
 #include "mapdata.h"
-#include "items.h"
+#include "iitems.h"
 
 #ifdef ENABLE_LUA
 #include <lua.h>

@@ -46,7 +46,7 @@
 #include "scripts.h"
 #include "quest_functions.h"
 #include "max_tech_level.h"
-#include "items.h"
+#include "iitems.h"
 
 /* TLS stuff -- from ship_server.c */
 extern gnutls_anon_client_credentials_t anoncred;

@@ -24,7 +24,7 @@
 #include "mag_bb.h"
 #include "clients.h"
 #include "ship_packets.h"
-#include "items.h"
+#include "iitems.h"
 
 //玛古同步概率的代码
 void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb)

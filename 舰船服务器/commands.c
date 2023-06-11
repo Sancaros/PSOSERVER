@@ -35,7 +35,7 @@
 #include "subcmd.h"
 #include "utils.h"
 #include "shipgate.h"
-#include "items.h"
+#include "iitems.h"
 #include "bans.h"
 #include "admin.h"
 #include "ptdata.h"
