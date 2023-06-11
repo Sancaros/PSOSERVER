@@ -568,7 +568,7 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     memcpy(&ii.data.data_l[0], &c->game_data->shop_items[pkt->shop_item_index].data_l[0], sizeof(ii.data));
 
-    print_item_data(c, &ii.data);
+    print_item_data(&ii.data, c->version);
 
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
     ii.data.item_id = l->item_player_id[c->client_id]++;
@@ -612,7 +612,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
         DBG_LOG("%04X %04X", tek_item_slot, pkt->item_id);
 
-        print_item_data(c, &c->bb_pl->inv.iitems[tek_item_slot].data);
+        print_item_data(&c->bb_pl->inv.iitems[tek_item_slot].data, c->version);
 
         if (c->bb_pl->inv.iitems[tek_item_slot].data.data_b[0] != 0x00) {
             ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",

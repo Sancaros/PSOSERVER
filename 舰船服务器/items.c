@@ -3820,9 +3820,9 @@ const char* item_get_name(item_t* item, int version) {
 }
 
 /* 打印物品数据 */
-void print_item_data(ship_client_t* c, item_t* item) {
+void print_item_data(item_t* item, int version) {
     ITEM_LOG("物品信息: %s (ID %d / %08X)",
-        item_get_name(item, c->version), item->item_id, item->item_id);
+        item_get_name(item, version), item->item_id, item->item_id);
     ITEM_LOG("物品数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
         item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
         item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
@@ -4147,7 +4147,7 @@ size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
 
     c->version = 5;
 
-    print_item_data(c, &inv.iitems->data);
+    print_item_data(&inv.iitems->data, c->version);
 
     free_safe(c);
 
@@ -4366,7 +4366,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     i = item_get_inv_item_slot(c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
-    print_item_data(c, &c->bb_pl->inv.iitems[i].data);
+    print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);
 #endif // DEBUG
 
     if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {

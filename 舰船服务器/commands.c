@@ -479,7 +479,7 @@ static int handle_item(ship_client_t *c, const char *params) {
     c->new_item.data_l[2] = SWAP32(item[2]);
     c->new_item.data2_l = SWAP32(item[3]);
 
-    print_item_data(c, &c->new_item);
+    print_item_data(&c->new_item, c->version);
 
     return send_txt(c, "%s %s %s",
         __(c, "\tE\tC8物品:"),
@@ -1501,7 +1501,7 @@ static void dumpinv_internal(ship_client_t *c) {
 
         for(i = 0; i < c->item_count; ++i) {
             item = c->iitems[i].data;
-            print_item_data(c, &item);
+            print_item_data(&item, c->version);
 
             //SHIPS_LOG("槽位 %d (%08X): %08X %08X %08X %08X: %s", i,
             //       LE32(c->iitems[i].data.item_id), LE32(c->iitems[i].data.data_l[0]),
@@ -1517,7 +1517,7 @@ static void dumpinv_internal(ship_client_t *c) {
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
 
             item = c->iitems[i].data;
-            print_item_data(c, &item);
+            print_item_data(&item, c->version);
 
 
             //ITEM_LOG("%s\n%d.(%08x): %08X %08X %08X %08X",
@@ -3559,7 +3559,7 @@ static int handle_logme(ship_client_t *c, const char *params) {
 #endif /* DEBUG */
 }
 
-/* 用法: /fixinv */
+/* 用法: /fixinv 用于背包清理急救*/
 static int handle_fixinv(ship_client_t* c, const char* params) {
 
     if (c->version != CLIENT_VERSION_BB)

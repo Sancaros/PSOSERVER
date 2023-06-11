@@ -2269,7 +2269,7 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version);
 /* 获取物品名称 */
 const char *item_get_name(item_t* item, int version);
 /* 打印物品数据 */
-void print_item_data(ship_client_t* c, item_t* item);
+void print_item_data(item_t* item, int version);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //释放房间物品内存

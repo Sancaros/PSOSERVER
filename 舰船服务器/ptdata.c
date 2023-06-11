@@ -2270,7 +2270,7 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
     c->new_item.item_id = generate_item_id(l, c->client_id);
     c->new_item.data2_l = item[3];
 
-    //print_item_data(c, &c->new_item);
+    //print_item_data(&c->new_item, c->version);
 
     pthread_mutex_lock(&c->mutex);
     it = lobby_add_new_item_locked(l, &c->new_item);
