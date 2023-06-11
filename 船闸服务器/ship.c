@@ -2552,6 +2552,16 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
+    db_insert_inventory(&char_data->inv, gc, slot);
+
+    //if (db_update_char_inventory(&char_data->inv, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    //    send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+    //    SQLERR_LOG("无法更新玩家背包数据 (GC %"
+    //        PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+    //    return 0;
+    //}
+
     if (db_compress_char_data(char_data, data_len, gc, slot)) {
         ERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);

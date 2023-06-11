@@ -61,6 +61,8 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_DRESS "character_dress"
 #define CHARACTER_FRIENDLIST "character_friendlist"
 #define CHARACTER_GCDATA "character_gcdata"
+#define CHARACTER_INVENTORY "character_inventory"
+#define CHARACTER_INVENTORY_ITEMS "character_inventory_items"
 #define CHARACTER_TRADE "character_trade"
 
 #define CLIENTS_GUILD "clients_guild"
@@ -156,6 +158,9 @@ extern unsigned long psocn_db_escape_str(psocn_dbconn_t* conn, char* to,
 /* ¾²Ì¬Êý¾Ý¿â×Ö·û´® */
 extern unsigned long psocn_db_str(psocn_dbconn_t* conn, char* q, const char* str, unsigned long len);
 extern const char* psocn_db_error(psocn_dbconn_t* conn);
+
+extern int psocn_db_commit(psocn_dbconn_t* conn);
+extern unsigned long long psocn_db_affected_rows(psocn_dbconn_t* conn);
 
 #include "database_query.h"
 

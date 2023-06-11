@@ -693,6 +693,13 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
+        if (db_update_char_inventory(&char_data->inv, c->guildcard, pkt->slot, flags)) {
+            SQLERR_LOG("无法更新玩家背包数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
+
         if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
@@ -732,8 +739,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        if (db_get_dress_data(c->guildcard, pkt->slot, &char_data->character.dress_data, 0)) {
-            SQLERR_LOG("无法更新玩家数据 (GC %"
+        if (db_get_dress_data(c->guildcard, pkt->slot, &char_data->character.dress_data, flags)) {
+            SQLERR_LOG("无法获取玩家外观数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
             goto err;

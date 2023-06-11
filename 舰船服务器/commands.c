@@ -3559,6 +3559,23 @@ static int handle_logme(ship_client_t *c, const char *params) {
 #endif /* DEBUG */
 }
 
+/* 用法: /fixinv */
+static int handle_fixinv(ship_client_t* c, const char* params) {
+
+    if (c->version != CLIENT_VERSION_BB)
+        return send_txt(c, "%s", __(c, "\tE\tC7游戏版本不支持."));
+
+    c->bb_pl->inv.item_count = 0;
+
+    for (int i = 0; i < 30; i++) {
+        memset(&c->bb_pl->inv.iitems[i], 0, sizeof(iitem_t));
+    }
+
+    c->pl->bb.inv = c->bb_pl->inv;
+
+    return send_txt(c, "%s", __(c, "\tE\tC6背包数据已清空."));
+}
+
 static command_t cmds[] = {
     { "warp"     , handle_warp      },
     { "kill"     , handle_kill      },
@@ -3657,6 +3674,7 @@ static command_t cmds[] = {
     { "ib"       , handle_ib        },
     { "xblink"   , handle_xblink    },
     { "logme"    , handle_logme     },
+    { "fixinv"   , handle_fixinv     },
     { ""         , NULL             }     /* End marker -- DO NOT DELETE */
 };
 

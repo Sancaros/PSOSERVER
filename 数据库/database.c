@@ -223,3 +223,19 @@ const char* psocn_db_error(psocn_dbconn_t* conn) {
 
     return mysql_error((MYSQL*)conn->conndata);
 }
+
+int psocn_db_commit(psocn_dbconn_t* conn) {
+    if (!conn || !conn->conndata) {
+        return -42;
+    }
+
+    return mysql_commit((MYSQL*)conn->conndata);
+}
+
+unsigned long long psocn_db_affected_rows(psocn_dbconn_t* conn) {
+    if (!conn || !conn->conndata) {
+        return -42;
+    }
+
+    return mysql_affected_rows((MYSQL*)conn->conndata);
+}

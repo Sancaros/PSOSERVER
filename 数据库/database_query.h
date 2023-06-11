@@ -123,6 +123,12 @@ int db_delete_online_clients(char* ship_name, uint16_t id);
 /* 初始化临时角色数据表 */
 int db_delete_transient_clients(char* ship_name, uint16_t id);
 
+/* 更新玩家背包数据至数据库 */
+void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
+
+/* 更新角色更衣室数据 暂时弃用*/
+int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32_t flag);
+
 ///////////////////////////////////////////////////////
 /* 认证查询 */
 
@@ -200,4 +206,10 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);
 /* 更新BB角色挑战数据 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
 ///////////////////////////////////////////////////////
+
+
+
+
+
+
 #endif /* !PSOCN_DATABASE_QUERY */
