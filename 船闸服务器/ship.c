@@ -2858,16 +2858,27 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    if (db_get_char_disp(gc, slot, &bb_data->character.disp, 0)) {
-        ERR_LOG("无法获取角色数值数据");
+    /* 从背包数据库中获取玩家角色的背包数据 */
+    if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
+        SQLERR_LOG("无法获取角色背包数据");
 
         send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;
     }
 
+    /* 从数据库中获取玩家角色数值数据 */
+    if (db_get_char_disp(gc, slot, &bb_data->character.disp, 0)) {
+        SQLERR_LOG("无法获取角色数值数据");
+
+        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
+
+    /* 从数据库中获取玩家角色外观数据 */
     if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
-        ERR_LOG("无法获取角色外观数据");
+        SQLERR_LOG("无法获取角色外观数据");
 
         send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
