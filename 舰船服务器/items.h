@@ -2271,6 +2271,9 @@ const char *item_get_name(item_t* item, int version);
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version);
 
+/* 打印背包物品数据 */
+void print_iitem_data(iitem_t* iitem, int item_index, int version);
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //释放房间物品内存
 uint32_t free_lobby_item(lobby_t* l);

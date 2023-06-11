@@ -123,6 +123,9 @@ int db_delete_online_clients(char* ship_name, uint16_t id);
 /* 初始化临时角色数据表 */
 int db_delete_transient_clients(char* ship_name, uint16_t id);
 
+/* 获取玩家背包数据checkum */
+uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot);
+
 /* 更新玩家背包数据至数据库 */
 void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
 

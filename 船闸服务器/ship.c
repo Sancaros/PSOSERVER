@@ -42,6 +42,7 @@
 #include <md5.h>
 #include <pso_menu.h>
 #include <pso_character.h>
+#include <f_checksum.h>
 
 #ifdef ENABLE_LUA
 #include <lua.h>
@@ -2520,7 +2521,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
 }
 
 /* 船闸保存角色数据. */
-static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
+static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint32_t gc, slot;
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
@@ -2551,6 +2552,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
     }
+
 
     db_insert_inventory(&char_data->inv, gc, slot);
 
@@ -2591,7 +2593,7 @@ static int handle_cdata(ship_t* c, shipgate_char_data_pkt* pkt) {
         (uint8_t*)&pkt->guildcard, 8);
 }
 
-static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
+static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     const char name[], uint32_t block) {
     char query[256];
     char name2[65];
@@ -2727,7 +2729,7 @@ static int handle_cbkup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
     return rv;
 }
 
-static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
+static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
     static char query[16384];
     uint32_t gc, block, version;
     int slot;
@@ -2747,7 +2749,7 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 
     /* Is this a restore request or are we saving the character data? */
     if (len == 0) {
-        return handle_cbkup_req(c, pkt, gc, name, block);
+        return handle_char_data_backup_req(c, pkt, gc, name, block);
     }
 
     /* Is it a Blue Burst character or not? */
@@ -2800,7 +2802,7 @@ static int handle_cbkup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 }
 
 /* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
-static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
+static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t gc, slot;
     uint8_t *data;
     char *raw_data;
@@ -2858,31 +2860,24 @@ static int handle_creq(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     bb_data = (psocn_bb_db_char_t*)data;
 
-    /* 从背包数据库中获取玩家角色的背包数据 */
-    if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
-        SQLERR_LOG("无法获取角色背包数据");
-
-        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        return 0;
+    if (psocn_crc32((uint8_t*)&bb_data->inv, sizeof(inventory_t)) != db_get_char_inv_checkum(gc, slot)) {
+        db_insert_inventory(&bb_data->inv, gc, slot);
+    } else {
+        /* 从背包数据库中获取玩家角色的背包数据 */
+        if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
+            SQLERR_LOG("无法获取角色背包数据");
+            db_insert_inventory(&bb_data->inv, gc, slot);
+        }
     }
 
     /* 从数据库中获取玩家角色数值数据 */
     if (db_get_char_disp(gc, slot, &bb_data->character.disp, 0)) {
         SQLERR_LOG("无法获取角色数值数据");
-
-        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        return 0;
     }
 
     /* 从数据库中获取玩家角色外观数据 */
     if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
         SQLERR_LOG("无法获取角色外观数据");
-
-        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        return 0;
     }
 
     /* 将数据发回舰船. */
@@ -5062,10 +5057,10 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return 0;
 
     case SHDR_TYPE_CDATA:
-        return handle_cdata(c, (shipgate_char_data_pkt*)pkt);
+        return handle_char_data_save(c, (shipgate_char_data_pkt*)pkt);
 
     case SHDR_TYPE_CREQ:
-        return handle_creq(c, (shipgate_char_req_pkt*)pkt);
+        return handle_char_data_req(c, (shipgate_char_req_pkt*)pkt);
 
     case SHDR_TYPE_USRLOGIN:
         return handle_usrlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
@@ -5111,7 +5106,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return handle_bbopt_req(c, (shipgate_bb_opts_req_pkt*)pkt);
 
     case SHDR_TYPE_CBKUP:
-        return handle_cbkup(c, (shipgate_char_bkup_pkt*)pkt);
+        return handle_char_data_backup(c, (shipgate_char_bkup_pkt*)pkt);
 
     case SHDR_TYPE_MKILL:
         return handle_mkill(c, (shipgate_mkill_pkt*)pkt);

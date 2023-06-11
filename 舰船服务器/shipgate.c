@@ -46,6 +46,7 @@
 #include "scripts.h"
 #include "quest_functions.h"
 #include "max_tech_level.h"
+#include "items.h"
 
 /* TLS stuff -- from ship_server.c */
 extern gnutls_anon_client_credentials_t anoncred;
@@ -1253,7 +1254,7 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
     return 0;
 }
 
-static int handle_creq(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
+static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
     uint32_t i;
     ship_t *s = conn->ship;
     block_t *b;
@@ -1282,6 +1283,12 @@ static int handle_creq(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
                         /* We've found them, overwrite their data, and send the
                            refresh packet. */
                         memcpy(c->pl, pkt->data, clen);
+
+                        ITEM_LOG("////////////////////////////////////////////////////////////");
+                        for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
+                            print_iitem_data(&c->pl->bb.inv.iitems[i], i, c->version);
+                        }
+
                         send_lobby_join(c, c->cur_lobby);
 
                     }
@@ -1292,7 +1299,13 @@ static int handle_creq(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
                         for(i = 0; i < 30; ++i) {
                             c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
                         }
+
+                        ITEM_LOG("////////////////////////////////////////////////////////////");
+                        for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+                            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
+                        }
                     }
+
                     done = 1;
                 }
 
@@ -1386,7 +1399,7 @@ static int handle_count(shipgate_conn_t* conn, shipgate_cnt_pkt* pkt) {
     return -1;
 }
 
-static int handle_cdata(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
+static int handle_char_data_save(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
     uint32_t i;
     ship_t* s = conn->ship;
     block_t* b;
@@ -2909,7 +2922,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return 0;
 
         case SHDR_TYPE_CDATA:
-            return handle_cdata(conn, (shipgate_cdata_err_pkt*)pkt);
+            return handle_char_data_save(conn, (shipgate_cdata_err_pkt*)pkt);
 
         case SHDR_TYPE_CREQ:
         case SHDR_TYPE_CBKUP:
@@ -2965,7 +2978,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return shipgate_send_ping(conn, 1);
 
         case SHDR_TYPE_CREQ:
-            return handle_creq(conn, (shipgate_char_data_pkt*)pkt);
+            return handle_char_data_req(conn, (shipgate_char_data_pkt*)pkt);
 
         case SHDR_TYPE_USRLOGIN:
             return handle_usrlogin(conn, (shipgate_usrlogin_reply_pkt*)pkt);
@@ -2974,7 +2987,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return handle_count(conn, (shipgate_cnt_pkt*)pkt);
 
         case SHDR_TYPE_CDATA:
-            return handle_cdata(conn, (shipgate_cdata_err_pkt*)pkt);
+            return handle_char_data_save(conn, (shipgate_cdata_err_pkt*)pkt);
 
         case SHDR_TYPE_IPBAN:
         case SHDR_TYPE_GCBAN:

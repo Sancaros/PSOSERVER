@@ -693,7 +693,9 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        db_insert_inventory(&char_data->inv, c->guildcard, pkt->slot);
+        /* 获取玩家角色背包数据数据项 */
+        if(db_get_char_inv(c->guildcard, pkt->slot, &char_data->inv, flags))
+            db_insert_inventory(&char_data->inv, c->guildcard, pkt->slot);
 
         //if (db_update_char_inventory(&char_data->inv, c->guildcard, pkt->slot, flags)) {
         //    SQLERR_LOG("无法更新玩家背包数据 (GC %"

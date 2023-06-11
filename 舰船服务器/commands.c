@@ -1493,44 +1493,24 @@ static void dumpinv_internal(ship_client_t *c) {
     char name[64];
     int i;
     int v = c->version;
-    item_t item = { 0 };
 
     if(v != CLIENT_VERSION_BB) {
+        ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG(" %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
-            item = c->iitems[i].data;
-            print_item_data(&item, c->version);
-
-            //SHIPS_LOG("槽位 %d (%08X): %08X %08X %08X %08X: %s", i,
-            //       LE32(c->iitems[i].data.item_id), LE32(c->iitems[i].data.data_l[0]),
-            //       LE32(c->iitems[i].data.data_l[1]), LE32(c->iitems[i].data.data_l[2]),
-            //       LE32(c->iitems[i].data.data2_l), item_get_name(&c->iitems[i].data, v));
+            print_iitem_data(&c->iitems[i], i, c->version);
         }
     }
     else {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
             BB_CHARACTER_NAME_LENGTH);
+        ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG(" %s (%d) 背包数据转储", name, c->guildcard);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
-
-            item = c->iitems[i].data;
-            print_item_data(&item, c->version);
-
-
-            //ITEM_LOG("%s\n%d.(%08x): %08X %08X %08X %08X",
-            //    item_get_name(&c->bb_pl->inv.iitems[i].data, v), i,
-            //      LE32(c->bb_pl->inv.iitems[i].data.item_id),
-            //      LE32(c->bb_pl->inv.iitems[i].data.data_l[0]),
-            //      LE32(c->bb_pl->inv.iitems[i].data.data_l[1]),
-            //      LE32(c->bb_pl->inv.iitems[i].data.data_l[2]),
-            //      LE32(c->bb_pl->inv.iitems[i].data.data2_l));
-            ITEM_LOG("物品标签: %08X %04X %04X",
-                  LE32(c->bb_pl->inv.iitems[i].flags),
-                  LE16(c->bb_pl->inv.iitems[i].present),
-                  LE16(c->bb_pl->inv.iitems[i].tech));
+            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
         }
     }
 }

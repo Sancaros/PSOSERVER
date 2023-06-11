@@ -17,6 +17,7 @@
 
 #include "database.h"
 #include "database_query.h"
+#include "f_checksum.h"
 
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
@@ -1354,12 +1355,12 @@ int db_update_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "data_b1 = '%" PRIu8 "', data_b2 = '%" PRIu8 "', data_b3 = '%" PRIu8 "', data_b4 = '%" PRIu8 "', "
-        "data_b5 = '%" PRIu8 "', data_b6 = '%" PRIu8 "', data_b7 = '%" PRIu8 "', data_b8 = '%" PRIu8 "', "
-        "data_b9 = '%" PRIu8 "', data_b10 = '%" PRIu8 "', data_b11 = '%" PRIu8 "', data_b12 = '%" PRIu8 "', "
-        "item_id = '%" PRIu32 "', "
-        "data2_b1 = '%" PRIu8 "', data2_b2 = '%" PRIu8 "', data2_b3 = '%" PRIu8 "', data2_b4 = '%" PRIu8 "', "
-        "present = '%" PRIu16 "', tech = '%" PRIu16 "', flags = '%" PRIu32 "'"
+        "data_b1 = '%02X', data_b2 = '%02X', data_b3 = '%02X', data_b4 = '%02X', "
+        "data_b5 = '%02X', data_b6 = '%02X', data_b7 = '%02X', data_b8 = '%02X', "
+        "data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', data_b12 = '%02X', "
+        "item_id = '%08X', "
+        "data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', data2_b4 = '%02X', "
+        "present = '%04X', tech = '%04X', flags = '%08X'"
         " WHERE "
         "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')", 
         CHARACTER_INVENTORY_ITEMS,
@@ -1397,12 +1398,12 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
         "item_index, present, tech, flags, "
         "guildcard, slot"
         ") VALUES ("
-        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', "
-        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', "
-        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', "
-        "'%" PRIu32 "', "
-        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', "
-        "'%d', '%" PRIu16 "', '%" PRIu16 "', '%" PRIu32 "', "
+        "'%02X', '%02X', '%02X', '%02X', "
+        "'%02X', '%02X', '%02X', '%02X', "
+        "'%02X', '%02X', '%02X', '%02X', "
+        "'%08X', "
+        "'%02X', '%02X', '%02X', '%02X', "
+        "'%d', '%04X', '%04X', '%08X', "
         "'%" PRIu32 "', '%" PRIu8 "'"
         ")", 
         CHARACTER_INVENTORY_ITEMS,
@@ -1422,14 +1423,17 @@ int db_insert_inventory_items(iitem_t* item, uint32_t gc, uint8_t slot, int item
 }
 
 int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "item_count = '%" PRIu8 "', hpmats_used = '%" PRIu8 "', tpmats_used = '%" PRIu8 "', language = '%" PRIu8 "'"
+        "item_count = '%" PRIu8 "', hpmats_used = '%" PRIu8 "', tpmats_used = '%" PRIu8 "', language = '%" PRIu8 "', inv_check_num = '%" PRIu32 "'"
         " WHERE "
         "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "')", 
         CHARACTER_INVENTORY,
-        inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language, gc, slot);
+        inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language, inv_crc32,
+        gc, slot
+    );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
@@ -1439,46 +1443,8 @@ int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-/* 更新玩家背包数据至数据库 */
-void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
-    memset(myquery, 0, sizeof(myquery));
-
-    // 插入玩家数据
-    _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "guildcard, slot, item_count, hpmats_used, tpmats_used, language"
-        ") VALUES ("
-        "'%" PRIu32 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "'"
-        ")", 
-        CHARACTER_INVENTORY, 
-        gc, slot, inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language
-    );
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        //SQLERR_LOG("psocn_db_real_query() 失败 或许 已存在: %s", psocn_db_error(&conn));
-        db_update_inventory(inv, gc, slot);
-    }
-
-    db_cleanup_inventory_items(gc, slot);
-
-    // 查询自增长 ID
-    uint32_t item_index = 0;
-
-    // 遍历背包数据，插入到数据库中
-    for (int i = 0; i < inv->item_count; i++) {
-        const iitem_t* iitem = &inv->iitems[i];
-
-        // 设置 player_id
-        iitem_t new_iitem = *iitem;
-        //new_iitem.data.item_id = item_id;
-
-        if (db_insert_inventory_items(&new_iitem, gc, slot, item_index))
-            db_update_inventory_items(&new_iitem, gc, slot, item_index);
-
-        item_index++;
-    }
-}
-
-uint8_t db_get_char_inv_count(uint32_t gc, uint8_t slot) {
+/* 优先获取背包数据库中的数量 */
+uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot) {
     uint8_t item_count = 0;
     void* result;
     char** row;
@@ -1487,6 +1453,79 @@ uint8_t db_get_char_inv_count(uint32_t gc, uint8_t slot) {
 
     /* Build the query asking for the data. */
     sprintf(myquery, "SELECT item_count FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    item_count = (uint8_t)strtoul(row[0], NULL, 0);
+
+    return item_count;
+}
+
+/* 优先获取背包数据checkum */
+uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = 0;
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT inv_check_num FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    inv_crc32 = (uint32_t)strtoul(row[0], NULL, 0);
+
+    return inv_crc32;
+}
+
+/* 优先获取背包数据库中的物品数量 */
+int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
         "AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
@@ -1509,9 +1548,16 @@ uint8_t db_get_char_inv_count(uint32_t gc, uint8_t slot) {
         return -3;
     }
 
-    item_count = (uint8_t)strtoul(row[0], NULL, 0);
+    int i = 2;
+    inv->item_count = (uint8_t)strtoul(row[i], NULL, 0);
+    i++;
+    inv->hpmats_used = (uint8_t)strtoul(row[i], NULL, 0);
+    i++;
+    inv->tpmats_used = (uint8_t)strtoul(row[i], NULL, 0);
+    i++;
+    inv->language = (uint8_t)strtoul(row[i], NULL, 0);
 
-    return item_count;
+    return 0;
 }
 
 int db_get_char_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_index, int check) {
@@ -1550,68 +1596,121 @@ int db_get_char_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_index, 
     }
 
     int i = 3;
-    item->present = (uint16_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hx", &item->present);
     i++;
-    item->tech = (uint16_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hx", &item->tech);
     i++;
-    item->flags = (uint32_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%X", &item->flags);
     i++;
 
     /* 获取物品的二进制数据 */
-    item->data.data_b[0] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[0]);
     i++;
-    item->data.data_b[1] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[1]);
     i++;
-    item->data.data_b[2] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[2]);
     i++;
-    item->data.data_b[3] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[3]);
     i++;
-    item->data.data_b[4] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[4]);
     i++;
-    item->data.data_b[5] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[5]);
     i++;
-    item->data.data_b[6] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[6]);
     i++;
-    item->data.data_b[7] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[7]);
     i++;
-    item->data.data_b[8] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[8]);
     i++;
-    item->data.data_b[9] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[9]);
     i++;
-    item->data.data_b[10] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[10]);
     i++;
-    item->data.data_b[11] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data_b[11]);
     i++;
-    item->data.item_id = (uint32_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%X", &item->data.item_id);
     i++;
-    item->data.data2_b[0] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data2_b[0]);
     i++;
-    item->data.data2_b[1] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data2_b[1]);
     i++;
-    item->data.data2_b[2] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data2_b[2]);
     i++;
-    item->data.data2_b[3] = (uint8_t)strtoul(row[i], NULL, 0);
+    sscanf(row[i], "%hhx", &item->data.data2_b[3]);
 
     return 0;
 }
 
+/* 更新玩家背包数据至数据库 */
+void db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = psocn_crc32((uint8_t *)inv, sizeof(inventory_t));
+    
+    memset(myquery, 0, sizeof(myquery));
+
+    // 插入玩家数据
+    _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+        "guildcard, slot, item_count, hpmats_used, tpmats_used, language, inv_check_num"
+        ") VALUES ("
+        "'%" PRIu32 "', '%" PRIu8 "', "
+        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "'"
+        ")", 
+        CHARACTER_INVENTORY, 
+        gc, slot, 
+        inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language, inv_crc32
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        db_update_inventory(inv, gc, slot);
+    }
+
+    db_cleanup_inventory_items(gc, slot);
+
+    // 查询自增长 ID
+    uint32_t item_index = 0;
+
+    // 遍历背包数据，插入到数据库中
+    for (int i = 0; i < inv->item_count; i++) {
+        const iitem_t* iitem = &inv->iitems[i];
+
+        // 设置 player_id
+        iitem_t new_iitem = *iitem;
+        //new_iitem.data.item_id = item_id;
+
+        if (db_insert_inventory_items(&new_iitem, gc, slot, item_index))
+            db_update_inventory_items(&new_iitem, gc, slot, item_index);
+
+        item_index++;
+    }
+}
+
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
-    uint8_t item_count = 0;
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
+    uint32_t db_inv_crc32 = db_get_char_inv_checkum(gc, slot);
 
-    if ((item_count = db_get_char_inv_count(gc, slot)) < 0) {
-        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+    if (inv_crc32 == db_inv_crc32)
+        return 0;
+    else
+        db_insert_inventory(inv, gc, slot);
+
+    if (db_get_char_inv_param(gc, slot, inv)) {
+        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         return -1;
     }
 
-    for (int i = 0; i < item_count; i++) {
+    if (inv->item_count == 0) {
+        SQLERR_LOG("无法查询角色背包物品数量 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
+    for (int i = 0; i < inv->item_count; i++) {
         db_get_char_items(gc, slot, &inv->iitems[i], i, 1);
     }
 
     return 0;
 }
 
-/* 更新玩家更衣室数据至数据库 */
+/* 更新玩家更衣室数据至数据库 弃用*/
 int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32_t flag) {
     const char* tbl = CHARACTER_INVENTORY;
 
@@ -1623,7 +1722,7 @@ int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32
             "item_count, hpmats_used, tpmats_used, language"
             ") VALUES ("
             "'%" PRIu32 "', '%" PRIu8 "', "
-            "'%d', '%d', '%d', '%d'"
+            "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "'"
             ")",
             tbl,
             gc, slot,
@@ -1642,7 +1741,7 @@ int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32
 
         sprintf(myquery, "UPDATE %s SET "
             "guildcard = '%" PRIu32 "', slot = '%" PRIu8 "', "
-            "item_count = '%d', hpmats_used = '%d', tpmats_used = '%d', language = '%d'"
+            "item_count = '%" PRIu8 "', hpmats_used = '%" PRIu8 "', tpmats_used = '%" PRIu8 "', language = '%" PRIu8 "'"
             " WHERE "
             "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "')",
             tbl, gc, slot,
@@ -1677,7 +1776,7 @@ int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32
                 "item_count, hpmats_used, tpmats_used, language"
                 ") VALUES ("
                 "'%" PRIu32 "', '%" PRIu8 "', "
-                "'%d', '%d', '%d', '%d'"
+                "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "'"
                 ")",
                 tbl,
                 gc, slot,
