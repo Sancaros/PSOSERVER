@@ -2384,3 +2384,206 @@ done:
 
     return 0;
 }
+
+// 定义结构体 AreaMapFileIndex
+typedef struct AreaMapFileIndex {
+    const char* name_token;
+    uint32_t* variation1_values;
+    uint32_t* variation2_values;
+} AreaMapFileIndex_t;
+
+// 定义结构体 EpisodeMapInfo
+typedef struct EpisodeMapInfo {
+    AreaMapFileIndex_t* non_solo;
+    AreaMapFileIndex_t* solo;
+} EpisodeMapInfo_t;
+
+// These are indexed as [episode][is_solo][area], where episode is 0-2
+static const EpisodeMapInfo_t map_file_info[3][2] = {
+{
+        // Episode 1
+        {
+        // Non-solo
+        (AreaMapFileIndex_t[]) {
+        {"city00", NULL, (uint32_t[]) { 0 }},
+        {"forest01", NULL, (uint32_t[]) { 0, 1, 2, 3, 4 }},
+        {"forest02", NULL, (uint32_t[]) { 0, 1, 2, 3, 4 }},
+        {"cave01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"cave02", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"cave03", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"machine01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"machine02", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"ancient01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"ancient02", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"ancient03", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0, 1 }},
+        {"boss01", NULL, NULL},
+        {"boss02", NULL, NULL},
+        {"boss03", NULL, NULL},
+        {"boss04", NULL, NULL},
+        {NULL, NULL, NULL},
+        },
+    // Solo
+    (AreaMapFileIndex_t[]) {
+    {"city00", NULL, (uint32_t[]) { 0 }},
+    {"forest01", NULL, (uint32_t[]) { 0, 2, 4 }},
+    {"forest02", NULL, (uint32_t[]) { 0, 3, 4 }},
+    {"cave01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+    {"cave02", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+    {"cave03", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    },
+    },
+    },
+    {
+        // Episode 2
+        {
+            // Non-solo
+            (AreaMapFileIndex_t[]) {
+            {"labo00", NULL, (uint32_t[]) { 0 }},
+            {"ruins01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+            {"ruins02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+            {"space01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+            {"space02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+            {"jungle01", NULL, (uint32_t[]) { 0, 1, 2 }},
+            {"jungle02", NULL, (uint32_t[]) { 0, 1, 2 }},
+            {"jungle03", NULL, (uint32_t[]) { 0, 1, 2 }},
+            {"jungle04", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0, 1 }},
+            {"jungle05", NULL, (uint32_t[]) { 0, 1, 2 }},
+            {"seabed01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0, 1 }},
+            {"seabed02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0, 1 }},
+            {"boss05", NULL, NULL},
+            {"boss06", NULL, NULL},
+            {"boss07", NULL, NULL},
+            {"boss08", NULL, NULL},
+            },
+    // Solo
+    (AreaMapFileIndex_t[]) {
+    {"labo00", NULL, (uint32_t[]) { 0 }},
+    {"ruins01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"ruins02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"space01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"space02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"jungle01", NULL, (uint32_t[]) { 0, 1, 2 }},
+    {"jungle02", NULL, (uint32_t[]) { 0, 1, 2 }},
+    {"jungle03", NULL, (uint32_t[]) { 0, 1, 2 }},
+    {"jungle04", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0, 1 }},
+    {"jungle05", NULL, (uint32_t[]) { 0, 1, 2 }},
+    {"seabed01", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"seabed02", (uint32_t[]) { 0, 1 }, (uint32_t[]) { 0 }},
+    {"boss05", NULL, NULL},
+    {"boss06", NULL, NULL},
+    {"boss07", NULL, NULL},
+    {"boss08", NULL, NULL},
+    },
+    },
+    },
+    {
+        // Episode 4
+        {
+            // Non-solo
+            (AreaMapFileIndex_t[]) {
+            {"city02", (uint32_t[]) { 0 }, (uint32_t[]) { 0 }},
+            {"wilds01", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+            {"wilds01", (uint32_t[]) { 1 }, (uint32_t[]) { 0, 1, 2 }},
+            {"wilds01", (uint32_t[]) { 2 }, (uint32_t[]) { 0, 1, 2 }},
+            {"wilds01", (uint32_t[]) { 3 }, (uint32_t[]) { 0, 1, 2 }},
+            {"crater01", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+            {"desert01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+            {"desert02", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+            {"desert03", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+            {"boss09", (uint32_t[]) { 0 }, (uint32_t[]) { 0 }},
+            {NULL, NULL, NULL},
+            {NULL, NULL, NULL},
+            {NULL, NULL, NULL},
+            {NULL, NULL, NULL},
+            {NULL, NULL, NULL},
+            {NULL, NULL, NULL},
+            },
+    // Solo
+    (AreaMapFileIndex_t[]) {
+    {"city02", (uint32_t[]) { 0 }, (uint32_t[]) { 0 }},
+    {"wilds01", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+    {"wilds01", (uint32_t[]) { 1 }, (uint32_t[]) { 0, 1, 2 }},
+    {"wilds01", (uint32_t[]) { 2 }, (uint32_t[]) { 0, 1, 2 }},
+    {"wilds01", (uint32_t[]) { 3 }, (uint32_t[]) { 0, 1, 2 }},
+    {"crater01", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+    {"desert01", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+    {"desert02", (uint32_t[]) { 0 }, (uint32_t[]) { 0, 1, 2 }},
+    {"desert03", (uint32_t[]) { 0, 1, 2 }, (uint32_t[]) { 0 }},
+    {"boss09", (uint32_t[]) { 0 }, (uint32_t[]) { 0 }},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    {NULL, NULL, NULL},
+    },
+    },
+    },
+};
+
+/**
+ * 从地图索引信息中获取值
+ *
+ * @param episode 要查找的 episode，从0开始
+ * @param is_solo 是否为 solo 模式，非0表示是，0表示不是
+ * @param area 要查找的 area，从0开始
+ * @param name_token 地图名称指针会通过此参数返回
+ * @param variation1_values 第一个变量指针会通过此参数返回，如果不存在则为 NULL
+ * @param variation2_values 第二个变量指针会通过此参数返回，如果不存在则为 NULL
+ *
+ * @return 成功返回0，否则返回-1
+ */
+int get_map_file_info(uint32_t episode, uint32_t is_solo, uint32_t area,
+    const char** name_token, uint32_t** variation1_values, uint32_t** variation2_values)
+{
+    // 确保 episode 和 is_solo 的值在范围内
+    if (episode >= 3 || is_solo >= 2) {
+        return -1;
+    }
+
+    // 获取结构体 EpisodeMapInfo 中的 non_solo 或 solo，根据参数is_solo来选择
+    EpisodeMapInfo_t* info = &map_file_info[episode][is_solo];
+
+    // 根据参数 area 查找对应的 AreaMapFileIndex，确保数组不为空，避免访问 NULL 指针
+    if (info->non_solo == NULL || info->solo == NULL) {
+        return -1;
+    }
+    AreaMapFileIndex_t* area_index = is_solo ? &info->solo[area] : &info->non_solo[area];
+    if (area_index == NULL) {
+        return -1;
+    }
+
+    // 返回值
+    if (name_token != NULL) {
+        *name_token = area_index->name_token;
+    }
+    if (variation1_values != NULL) {
+        *variation1_values = area_index->variation1_values;
+    }
+    if (variation2_values != NULL) {
+        *variation2_values = area_index->variation2_values;
+    }
+
+    return 0;
+}
+
+void test_map(uint32_t episode, uint32_t is_solo, uint32_t area, const char* name_token, uint32_t* variation1_values, uint32_t* variation2_values) {
+
+    // 获取第一个 episode 的第一个 area 的 name_token 和 variation2_values
+    if (get_map_file_info(episode, is_solo, area, &name_token, &variation1_values, &variation2_values) == 0) {
+        printf("Episode 1, non-solo, area 1: %s, %u\n", name_token, *variation2_values);
+    }
+    else {
+        printf("Error occurred!\n");
+    }
+}
