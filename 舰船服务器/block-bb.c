@@ -1221,7 +1221,7 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     return 0;
 }
 
-static int process_bb_qload_done(ship_client_t* c) {
+static int bb_process_qload_done(ship_client_t* c) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* c2;
     int i;
@@ -1258,7 +1258,7 @@ static int process_bb_qload_done(ship_client_t* c) {
     return 0;
 }
 
-static int process_bb_qlist(ship_client_t* c, uint32_t flags) {
+static int bb_process_qlist(ship_client_t* c, uint32_t flags) {
     lobby_t* l = c->cur_lobby;
     int rv;
 
@@ -1284,7 +1284,7 @@ static int process_bb_qlist(ship_client_t* c, uint32_t flags) {
     return rv;
 }
 
-static int process_bb_qlist_end(ship_client_t* c) {
+static int bb_process_qlist_end(ship_client_t* c) {
     lobby_t* l = c->cur_lobby;
 
     if (!l || l->type != LOBBY_TYPE_GAME)
@@ -1298,7 +1298,7 @@ static int process_bb_qlist_end(ship_client_t* c) {
 }
 
 /* Process a 0xAA packet. This command is used in Maximum Attack 2 */
-static int process_bb_update_quest_stats(ship_client_t* c,
+static int bb_process_update_quest_stats(ship_client_t* c,
     bb_update_quest_stats_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
@@ -2779,19 +2779,19 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x00A2 162*/
     case QUEST_LIST_TYPE:
-        return process_bb_qlist(c, flags);
+        return bb_process_qlist(c, flags);
 
         /* 0x00A9 169*/
     case QUEST_END_LIST_TYPE:
-        return process_bb_qlist_end(c);
+        return bb_process_qlist_end(c);
 
         /* 0x00AA 170*/
     case QUEST_STATS_TYPE:
-        return process_bb_update_quest_stats(c, (bb_update_quest_stats_pkt*)pkt);
+        return bb_process_update_quest_stats(c, (bb_update_quest_stats_pkt*)pkt);
 
         /* 0x00AC 172*/
     case QUEST_LOAD_DONE_TYPE:
-        return process_bb_qload_done(c);
+        return bb_process_qload_done(c);
 
         /* 0x00C0 192*/
     case CHOICE_OPTION_TYPE:

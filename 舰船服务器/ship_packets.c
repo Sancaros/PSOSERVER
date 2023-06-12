@@ -12602,13 +12602,14 @@ int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
 
 int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
     bb_confirm_update_quest_statistics_pkt pkt;
+    size_t pkt_size = sizeof(bb_confirm_update_quest_statistics_pkt);
 
-    memset(&pkt, 0, sizeof(bb_confirm_update_quest_statistics_pkt));
+    memset(&pkt, 0, pkt_size);
 
     /* 填充数据头并准备发送 */
+    pkt.hdr.pkt_len = LE16(pkt_size);
     pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
     pkt.hdr.flags = LE16(0x0000);
-    pkt.hdr.pkt_len = LE16(0x000C);
 
     /* 填充剩余数据 */
     pkt.unknown_a1 = LE16(0x0000);
