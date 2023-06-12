@@ -306,6 +306,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
 
 static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
+    l->lobby_create = 1;
 
     if (l) {
         switch (item_id) {
@@ -338,10 +339,17 @@ static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t ite
             break;
 
         default:
+            l->lobby_create = 0;
+            DBG_LOG("返回上一级");
+            break;
+        }
+
+        DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
+
+        if (!l->lobby_create) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            DBG_LOG("返回上一级");
             return send_bb_game_create(c);
         }
 

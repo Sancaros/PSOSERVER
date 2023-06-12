@@ -115,6 +115,8 @@ struct lobby {
 
     block_t *block;
 
+    uint8_t lobby_create;
+
     uint8_t leader_id;
     uint8_t difficulty;
     uint8_t battle;
