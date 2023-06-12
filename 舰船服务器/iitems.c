@@ -30,7 +30,7 @@
 #include "rtdata.h"
 
 /* 初始化房间物品列表数据 */
-void clear_lobby_item(lobby_t* l) {
+void cleanup_lobby_item(lobby_t* l) {
     uint32_t ch = 0, item_count = 0;
     size_t len;
 
@@ -265,13 +265,13 @@ size_t stack_size_for_item(item_t item) {
 
 // TODO: Eliminate duplication between this function and the parallel function
 // in PlayerBank
-int add_item(ship_client_t* c, iitem_t iitem) {
-    uint32_t pid = primary_identifier(&iitem.data);
+int add_item(ship_client_t* c, iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
 
     // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
     // item is meseta, we have to modify disp instead.
     if (pid == 0x00040000) {
-        c->bb_pl->character.disp.meseta += iitem.data.data2_l;
+        c->bb_pl->character.disp.meseta += iitem->data.data2_l;
         if (c->bb_pl->character.disp.meseta > 999999) {
             c->bb_pl->character.disp.meseta = 999999;
         }
@@ -279,19 +279,19 @@ int add_item(ship_client_t* c, iitem_t iitem) {
     }
 
     // 处理堆叠物品
-    size_t combine_max = stack_size_for_item(iitem.data);
+    size_t combine_max = stack_size_for_item(iitem->data);
     if (combine_max > 1) {
         //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
         size_t y;
         for (y = 0; y < c->bb_pl->inv.item_count; y++) {
-            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem.data)) {
+            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem->data)) {
                 break;
             }
         }
 
         // 如果已经发现存在同类型堆叠物品, 则将其添加至相同物品槽位
         if (y < c->bb_pl->inv.item_count) {
-            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem.data.data_b[5];
+            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem->data.data_b[5];
             if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
                 c->bb_pl->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
             }
@@ -307,25 +307,14 @@ int add_item(ship_client_t* c, iitem_t iitem) {
         return -1;
     }
 
-    c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = iitem;
+    memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
     c->bb_pl->inv.item_count++;
 
     return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 /* 获取背包中目标物品所在槽位 */
-size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
+size_t find_inv_item_slot(inventory_t inv, uint32_t item_id) {
     size_t x;
 
     for (x = 0; x < inv.item_count; x++) {
@@ -335,17 +324,7 @@ size_t item_get_inv_item_slot(inventory_t inv, uint32_t item_id) {
     }
 
     ERR_LOG("未从背包中找到该物品");
-
-    ship_client_t* c = (ship_client_t*)malloc(sizeof(ship_client_t));
-
-    if (!c)
-        return -1;
-
-    c->version = 5;
-
-    print_item_data(&inv.iitems->data, c->version);
-
-    free_safe(c);
+    print_item_data(&inv.iitems->data, 5);
 
     return -1;
 }
@@ -559,7 +538,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     uint32_t found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
     size_t i = 0;
 
-    i = item_get_inv_item_slot(c->bb_pl->inv, item_id);
+    i = find_inv_item_slot(c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);

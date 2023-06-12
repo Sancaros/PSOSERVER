@@ -103,8 +103,47 @@ int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area) 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
-/* BB 获得物品 */
-int subcmd_send_bb_create_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
+/* BB 单人获得物品 */
+int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
+    uint16_t client_id = c->client_id;
+    subcmd_bb_create_item_t pkt = { 0 };
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+    pkt.shdr.type = SUBCMD60_CREATE_ITEM;
+    pkt.shdr.size = 0x07;
+    pkt.shdr.client_id = c->client_id;
+
+    /* 填充剩余数据 */
+    pkt.item = item;
+    pkt.unused2 = 0;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
+/* BB 单人获得鉴定物品 */
+int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
+    uint16_t client_id = c->client_id;
+    subcmd_bb_tekk_identify_result_t pkt = { 0 };
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_tekk_identify_result_t));
+    pkt.hdr.flags = 0x00000000;
+    pkt.shdr.type = SUBCMD62_TEKKED_RESULT;
+    pkt.shdr.size = sizeof(pkt) / 4;
+    pkt.shdr.client_id = c->client_id;
+
+    /* 填充剩余数据 */
+    pkt.item = item;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
+/* BB 发送给大厅玩家物品 */
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
 

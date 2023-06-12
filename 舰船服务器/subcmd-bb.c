@@ -407,7 +407,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     }
 
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
-    subcmd_send_bb_create_item(c, iitem_data.data, 1);
+    subcmd_send_lobby_bb_create_inv_item(c, iitem_data.data, 1);
 
     return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
 }
@@ -591,13 +591,13 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
 
-    if (add_item(c, ii))
+    if (add_item(c, &ii))
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             c->guildcard);
 
     subcmd_send_bb_delete_meseta(c, ii.data.data2_l, 0);
 
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    return subcmd_send_bb_create_inv_item(c, ii.data);
 }
 
 static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
@@ -605,7 +605,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
     block_t* b = c->cur_block;
     subcmd_bb_tekk_identify_result_t i_res = { 0 };
     uint32_t tek_item_slot = 0, attrib = 0;
-    uint8_t percent_mod;
+    uint8_t percent_mod = 0;
 
     if (l->version == CLIENT_VERSION_BB) {
         if (c->bb_pl->character.disp.meseta < 100)
@@ -624,56 +624,70 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
             return -2;
         }
 
-        tek_item_slot = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_id);
+        tek_item_slot = find_inv_item_slot(c->bb_pl->inv, pkt->item_id);
 
-        DBG_LOG("%04X %04X", tek_item_slot, pkt->item_id);
+        iitem_t* id_result = &(c->game_data->identify_result);
+        id_result->data = c->bb_pl->inv.iitems[tek_item_slot].data;
 
-        print_item_data(&c->bb_pl->inv.iitems[tek_item_slot].data, c->version);
+        print_iitem_data(id_result, tek_item_slot, c->version);
 
-        if (c->bb_pl->inv.iitems[tek_item_slot].data.data_b[0] != 0x00) {
+        if (id_result->data.data_b[0] != ITEM_TYPE_WEAPON) {
             ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
                 c->guildcard);
             return -3;
         }
 
-        c->game_data->identify_result = c->bb_pl->inv.iitems[tek_item_slot];
-        attrib = c->game_data->identify_result.data.data_b[4] & ~(0x80);
+        // 技能属性提取和随机数处理
+        attrib = id_result->data.data_b[4] & ~(0x80);
 
-        if (attrib < 0x29)
+        if (attrib < 0x29) {
+            id_result->data.data_b[4] = tekker_attributes[(attrib * 3) + 1];
+            uint32_t mt_result_1 = mt19937_genrand_int32(&b->rng) % 100;
+            if (mt_result_1 > 70)
+                id_result->data.data_b[4] += mt_result_1 % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+        } else
+            id_result->data.data_b[4] = 0;
+
+        // 百分比修正处理
+        uint32_t mt_result_2 = mt19937_genrand_int32(&b->rng) % 10;
+
+        switch (mt_result_2)
         {
-            c->game_data->identify_result.data.data_b[4] = tekker_attributes[(attrib * 3) + 1];
-            if ((mt19937_genrand_int32(&b->rng) % 100) > 70)
-                c->game_data->identify_result.data.data_b[4] += mt19937_genrand_int32(&b->rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+        case 0:
+        case 1:
+            percent_mod = -10;
+            break;
+        case 2:
+        case 3:
+            percent_mod = -5;
+            break;
+        case 4:
+        case 5:
+            percent_mod = 5;
+            break;
+        case 6:
+        case 7:
+            percent_mod = 10;
+            break;
         }
-        else
-            c->game_data->identify_result.data.data_b[4] = 0;
 
-        if ((mt19937_genrand_int32(&b->rng) % 10) < 2) percent_mod = -10;
-        else
-            if ((mt19937_genrand_int32(&b->rng) % 10) < 2) percent_mod = -5;
-            else
-                if ((mt19937_genrand_int32(&b->rng) % 10) < 2) percent_mod = 5;
-                else
-                    if ((mt19937_genrand_int32(&b->rng) % 10) < 2) percent_mod = 10;
-                    else
-                        percent_mod = 0;
+        // 各属性值修正处理
+        if (!(id_result->data.data_b[6] & 128) && (id_result->data.data_b[7] > 0))
+            id_result->data.data_b[7] += percent_mod;
 
-        if ((!(c->bb_pl->inv.iitems[tek_item_slot].data.data_b[6] & 128)) && (c->bb_pl->inv.iitems[tek_item_slot].data.data_b[7] > 0))
-            c->game_data->identify_result.data.data_b[7] += percent_mod;
+        if (!(id_result->data.data_b[8] & 128) && (id_result->data.data_b[9] > 0))
+            id_result->data.data_b[9] += percent_mod;
 
-        if ((!(c->bb_pl->inv.iitems[tek_item_slot].data.data_b[8] & 128)) && (c->bb_pl->inv.iitems[tek_item_slot].data.data_b[9] > 0))
-            c->game_data->identify_result.data.data_b[9] += percent_mod;
+        if (!(id_result->data.data_b[10] & 128) && (id_result->data.data_b[11] > 0))
+            id_result->data.data_b[11] += percent_mod;
 
-        if ((!(c->bb_pl->inv.iitems[tek_item_slot].data.data_b[10] & 128)) && (c->bb_pl->inv.iitems[tek_item_slot].data.data_b[11] > 0))
-            c->game_data->identify_result.data.data_b[11] += percent_mod;
-
-        if (!c->game_data->identify_result.data.item_id) {
+        if (!id_result->data.item_id) {
             ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
                 c->guildcard);
             return -4;
         }
 
-        if (c->game_data->identify_result.data.item_id != pkt->item_id) {
+        if (id_result->data.item_id != pkt->item_id) {
             ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
                 c->guildcard);
             return -5;
@@ -681,21 +695,10 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
         subcmd_send_bb_delete_meseta(c, 100, 0);
 
-        /* 填充数据头 */
-        i_res.hdr.pkt_type = GAME_COMMAND0_TYPE;
-        i_res.hdr.pkt_len = LE16(sizeof(i_res));
-        i_res.hdr.flags = 0x00000000;
-        i_res.shdr.type = SUBCMD60_UNKNOW_B9;
-        i_res.shdr.size = sizeof(i_res) / 4;
-        i_res.shdr.client_id = c->client_id;
-
-        /* 填充数据 */
-        i_res.item = c->game_data->identify_result.data;
-
-        c->drop_item = i_res.item.item_id;
+        c->drop_item = id_result->data.item_id;
         c->drop_amt = 1;
 
-        return send_pkt_bb(c, (bb_pkt_hdr_t*)&i_res);
+        return subcmd_send_bb_create_tekk_item(c, id_result->data);
     }
     else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -704,56 +707,57 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
 static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identification_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    block_t* b = c->cur_block;
+    uint8_t i = 0;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            c->guildcard);
-        return -1;
-    }
+    if (l->version == CLIENT_VERSION_BB) {
 
-    if (!c->game_data->identify_result.data.item_id) {
-        ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备!",
-            c->guildcard);
-        return -1;
-    }
+        iitem_t* id_result = &(c->game_data->identify_result);
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-
-    /* TODO 未完成*/
-    uint32_t ch2, ch;
-
-    for (ch = 0; ch < 4; ch++) {
-        if (/*(l->slot_use[ch]) && (*/l->clients[ch]/*)*/) {
-            for (ch2 = 0; ch2 < l->clients[ch]->pl->bb.inv.item_count; ch2++)
-                if (l->clients[ch]->pl->bb.inv.iitems[ch2].data.item_id == c->game_data->identify_result.data.item_id) {
-                    //Message_Box(L"", L"Item duplication attempt!", client, BigMes_Pkt1A, NULL, 94);
-                    ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
-                        c->guildcard);
-                    return -1;
-                }
+        if (!id_result->data.item_id) {
+            ERR_LOG("no identify result present");
+            return -1;
         }
-    }
 
-    for (ch = 0; ch < l->item_count; l++) {
-        uint32_t itemNum = l->item_list[ch];
-        if (l->item_id_to_lobby_item[itemNum].inv_item.data.item_id == c->game_data->identify_result.data.item_id) {
-            // Added to the game's inventory by the client...
-            // Delete it and avoid duping...
-            //被客户端添加到游戏目录中。。。
-            //删除它并避免复制。。
-            memset(&l->item_id_to_lobby_item[itemNum], 0, sizeof(fitem_t));
-            l->item_list[ch] = EMPTY_STRING;
-            break;
+        if (id_result->data.item_id != pkt->item_id) {
+            ERR_LOG("identify_result.data.item_id != pkt->item_id");
+            return -1;
         }
+
+        for (i = 0; i < c->pl->bb.inv.item_count; i++)
+            if (c->pl->bb.inv.iitems[i].data.item_id == id_result->data.item_id) {
+                ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
+                    c->guildcard);
+                return -1;
+            }
+
+        for (i = 0; i < l->item_count; i++) {
+            uint32_t item_index = l->item_list[i];
+            if (l->item_id_to_lobby_item[item_index].inv_item.data.item_id == id_result->data.item_id) {
+                memset(&l->item_id_to_lobby_item[item_index], 0, sizeof(fitem_t));
+                l->item_list[i] = EMPTY_STRING;
+                break;
+            }
+        }
+
+        cleanup_lobby_item(l);
+
+        if (add_item(c, id_result)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                c->guildcard);
+            return -1;
+        }
+
+        /* 初始化临时鉴定的物品数据 */
+        memset(&c->game_data->identify_result, 0, sizeof(iitem_t));
+
+        c->drop_item = 0xFFFFFFFF;
+        c->drop_amt = 0;
+
+        return subcmd_send_bb_create_inv_item(c, id_result->data);
     }
-
-    clear_lobby_item(l);
-    subcmd_send_bb_create_item(c, c->game_data->identify_result.data, 1);
-    //Add_To_Inventory(&client->tekked, 1, 1, client);
-    memset(&c->game_data->identify_result, 0, sizeof(iitem_t));
-
-    return 0;
+    else {
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    }
 }
 
 static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
@@ -1002,7 +1006,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             c->bb_pl->inv.item_count += found;
 
             /* 发送至房间中的客户端. */
-            return subcmd_send_bb_create_item(c, iitem.data, 1);
+            return subcmd_send_lobby_bb_create_inv_item(c, iitem.data, 1);
         }
 
     default:
@@ -2351,7 +2355,7 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     /* Find the item and remove the equip flag. */
     inv = c->bb_pl->inv.item_count;
 
-    i = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_id);
+    i = find_inv_item_slot(c->bb_pl->inv, pkt->item_id);
 
     if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
         c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -2519,7 +2523,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            size_t index = item_get_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
+            size_t index = find_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
     }

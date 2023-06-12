@@ -42,6 +42,45 @@
 #include "mag_bb.h"
 #include "subcmd-bb.c"
 
+
+static int handle_bb_destroy_ground_item2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int rv = 0;
+    subcmd_bb_destory_ground_item_t* data = (subcmd_bb_destory_ground_item_t*)pkt;
+
+    /* We can't get these in lobbies without someone messing with something
+   that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+            c->guildcard);
+        print_payload((uint8_t*)data, LE16(data->hdr.pkt_len));
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    if (data->hdr.pkt_len != LE16(0x0014) || data->shdr.size != 0x03) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            c->guildcard, data->shdr.type);
+        print_payload((uint8_t*)data, LE16(data->hdr.pkt_len));
+        return -1;
+    }
+
+    if (l->flags & LOBBY_TYPE_CHEATS_ENABLED) {
+        DBG_LOG("开启物品追踪");
+    }
+
+    return 0;
+}
+
+typedef int (*subcmd_handle_t)(
+    ship_client_t* c, subcmd_bb_pkt_t* pkt);
+
+subcmd_handle_t subcmd_handle[0x100] = {
+    handle_bb_destroy_ground_item2,
+};
+
+
 // 当客户端发送游戏命令时, 调用此文件中的函数
 // 指令集
 // (60, 62, 6C, 6D, C9, CB).
