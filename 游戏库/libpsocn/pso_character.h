@@ -84,7 +84,7 @@ typedef struct psocn_inventory {
 typedef struct psocn_bitem { // 0x18 bytes
     item_t data;
     uint16_t amount;
-    uint16_t flags;
+    uint16_t show_flags; //ÊÇ·ñÏÔÊ¾
 } PACKED bitem_t;
 
 typedef struct psocn_bank {

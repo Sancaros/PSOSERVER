@@ -3831,7 +3831,7 @@ void print_item_data(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_iitem_data(iitem_t* iitem, int item_index, int version) {
-    ITEM_LOG("物品:(ID %d / %08X) %s",
+    ITEM_LOG("背包物品:(ID %d / %08X) %s",
         iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
     ITEM_LOG(""
         "槽位 (%d) "
@@ -3845,9 +3845,30 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
         ((iitem->flags == 0x00000008) ? "已装备" : "未装备"),
         iitem->flags
     );
-    ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+    ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
         iitem->data.data_b[0], iitem->data.data_b[1], iitem->data.data_b[2], iitem->data.data_b[3],
         iitem->data.data_b[4], iitem->data.data_b[5], iitem->data.data_b[6], iitem->data.data_b[7],
         iitem->data.data_b[8], iitem->data.data_b[9], iitem->data.data_b[10], iitem->data.data_b[11],
         iitem->data.data2_b[0], iitem->data.data2_b[1], iitem->data.data2_b[2], iitem->data.data2_b[3]);
+}
+
+/* 打印物品数据 */
+void print_bitem_data(bitem_t* bitem, int item_index, int version) {
+    ITEM_LOG("银行物品:(ID %d / %08X) %s",
+        bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
+    ITEM_LOG(""
+        "槽位 (%d) "
+        "(%s) %04X "
+        "(%s) Flags %04X",
+        item_index,
+        ((bitem->amount == 0x0001) ? "堆叠" : "单独"),
+        bitem->amount,
+        ((bitem->show_flags == 0x0001) ? "显示" : "隐藏"),
+        bitem->show_flags
+    );
+    ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+        bitem->data.data_b[0], bitem->data.data_b[1], bitem->data.data_b[2], bitem->data.data_b[3],
+        bitem->data.data_b[4], bitem->data.data_b[5], bitem->data.data_b[6], bitem->data.data_b[7],
+        bitem->data.data_b[8], bitem->data.data_b[9], bitem->data.data_b[10], bitem->data.data_b[11],
+        bitem->data.data2_b[0], bitem->data.data2_b[1], bitem->data.data2_b[2], bitem->data.data2_b[3]);
 }

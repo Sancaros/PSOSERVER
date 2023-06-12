@@ -1288,7 +1288,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
                             print_iitem_data(&c->pl->bb.inv.iitems[i], i, c->version);
                         }
-
+                        
                         send_lobby_join(c, c->cur_lobby);
 
                     }
@@ -1303,6 +1303,11 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
                             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
+                        }
+
+                        ITEM_LOG("////////////////////////////////////////////////////////////");
+                        for (i = 0; i < c->bb_pl->bank.item_count; ++i) {
+                            print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
                         }
                     }
 

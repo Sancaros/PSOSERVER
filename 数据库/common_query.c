@@ -1871,7 +1871,7 @@ int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_inde
         "data_b8, data_b9, data_b10, data_b11, "
         "item_id, "
         "data2_b0, data2_b1, data2_b2, data2_b3, "
-        "item_index, amount, flags, "
+        "item_index, amount, show_flags, "
         "item_name, "
         "guildcard, slot"
         ") VALUES ("
@@ -1890,7 +1890,7 @@ int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_inde
         item->data.data_b[8], item->data.data_b[9], item->data.data_b[10], item->data.data_b[11],
         item->data.item_id,
         item->data.data2_b[0], item->data.data2_b[1], item->data.data2_b[2], item->data.data2_b[3],
-        item_index, item->amount, item->flags,
+        item_index, item->amount, item->show_flags,
         item_name_text,
         gc, slot
     );
@@ -2065,7 +2065,7 @@ int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int item_in
     int i = 4;
     sscanf(row[i], "%hx", &item->amount);
     i++;
-    sscanf(row[i], "%hx", &item->flags);
+    sscanf(row[i], "%hx", &item->show_flags);
     i++;
 
     /* 获取物品的二进制数据 */

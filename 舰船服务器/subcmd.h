@@ -2499,9 +2499,9 @@ typedef struct subcmd_WordSelectDuringBattle_GC_Ep3_6xBD {
 typedef struct subcmd_bb_bank_act {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t item_id;
+    uint32_t item_id; // 0xFFFFFFFF = meseta; anything else = item
     uint32_t meseta_amount;
-    uint8_t action;
+    uint8_t action;  // 0 = deposit, 1 = take
     uint8_t item_amount;
     uint16_t unused2;                   /* 0xFFFF */
 } PACKED subcmd_bb_bank_act_t;

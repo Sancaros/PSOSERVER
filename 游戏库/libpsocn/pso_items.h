@@ -2313,4 +2313,6 @@ void print_item_data(item_t* item, int version);
 /* 打印背包物品数据 */
 void print_iitem_data(iitem_t* iitem, int item_index, int version);
 
+/* 打印银行物品数据 */
+void print_bitem_data(bitem_t* iitem, int item_index, int version);
 #endif /* !PSO_ITEMS_H */

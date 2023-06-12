@@ -810,7 +810,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " did bank action in lobby!",
+        ERR_LOG("GC %" PRIu32 " 在大厅中操作银行!",
             c->guildcard);
         return -1;
     }
@@ -818,7 +818,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
-        ERR_LOG("GC %" PRIu32 " sent bad bank action!",
+        ERR_LOG("GC %" PRIu32 " 发送损坏的银行操作数据!",
             c->guildcard);
         print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
@@ -913,7 +913,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 bitem.amount = LE16(1);
             }
 
-            bitem.flags = LE16(1);
+            bitem.show_flags = LE16(1);
             bitem.data.data_l[0] = iitem.data.data_l[0];
             bitem.data.data_l[1] = iitem.data.data_l[1];
             bitem.data.data_l[2] = iitem.data.data_l[2];
@@ -975,15 +975,14 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             found = item_take_from_bank(c, pkt->item_id, pkt->item_amount, &bitem);
 
             if (found < 0) {
-                ERR_LOG("GC %" PRIu32 " taking invalid item "
-                    "from bank!", c->guildcard);
+                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", c->guildcard);
                 return -1;
             }
 
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
             iitem.present = LE16(0x0001);
             iitem.tech = LE16(0x0000);
-            iitem.flags = 0;
+            iitem.flags = LE32(0);
             ic[0] = iitem.data.data_l[0] = bitem.data.data_l[0];
             ic[1] = iitem.data.data_l[1] = bitem.data.data_l[1];
             ic[2] = iitem.data.data_l[2] = bitem.data.data_l[2];
