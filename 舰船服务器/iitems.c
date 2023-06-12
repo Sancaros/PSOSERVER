@@ -28,6 +28,7 @@
 #include "pmtdata.h"
 #include "ptdata.h"
 #include "rtdata.h"
+#include "mag_bb.h"
 
 /* 初始化房间物品列表数据 */
 void cleanup_lobby_item(lobby_t* l) {
@@ -840,4 +841,221 @@ iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool al
     c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = (iitem_t){ 0 };
 
     return ret;
+}
+
+//修复背包银行数据错误的物品代码
+void fix_inv_bank_item(item_t* i) {
+    uint32_t ch3;
+    pmt_guard_bb_t tmp_guard = { 0 };
+
+    switch (i->data_b[0])
+    {
+    case ITEM_TYPE_WEAPON:// 修正武器的值
+        int8_t percent_table[6] = { 0 };
+        int8_t percent = 0;
+        uint32_t max_percents = 0, num_percents = 0;
+        int32_t srank = 0;
+
+        if ((i->data_b[1] == 0x33) ||  // SJS和Lame最大2%
+            (i->data_b[1] == 0xAB))
+            max_percents = 2;
+        else
+            max_percents = 3;
+
+        memset(&percent_table[0], 0, 6);
+
+        for (ch3 = 6; ch3 <= 4 + (max_percents * 2); ch3 += 2) {
+            if (i->data_b[ch3] & 128) {
+                srank = 1; // S-Rank
+                break;
+            }
+
+            if ((i->data_b[ch3]) && (i->data_b[ch3] < 0x06)) {
+                // Percents over 100 or under -100 get set to 0 
+                // 百分比高于100或低于-100则设为0
+                percent = (int8_t)i->data_b[ch3 + 1];
+
+                if ((percent > 100) || (percent < -100))
+                    percent = 0;
+                // 保存百分比
+                percent_table[i->data_b[ch3]] = percent;
+            }
+        }
+
+        if (!srank) {
+            for (ch3 = 6; ch3 <= 4 + (max_percents * 2); ch3 += 2) {
+                // 重置 %s
+                i->data_b[ch3] = 0;
+                i->data_b[ch3 + 1] = 0;
+            }
+
+            for (ch3 = 1; ch3 <= 5; ch3++) {
+                // 重建 %s
+                if (percent_table[ch3]) {
+                    i->data_b[6 + (num_percents * 2)] = ch3;
+                    i->data_b[7 + (num_percents * 2)] = (uint8_t)percent_table[ch3];
+                    num_percents++;
+                    if (num_percents == max_percents)
+                        break;
+                }
+            }
+        }
+
+        break;
+
+    case ITEM_TYPE_GUARD:// 修正装甲和护盾的值
+        if (pmt_lookup_guard_bb(i->data_l[0], &tmp_guard)) {
+            ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->data_l[0]);
+            return -3;
+        }
+
+        switch (i->data_b[1])
+        {
+        case ITEM_SUBTYPE_FRAME:
+            if (i->data_b[6] > tmp_guard.dfp_range)
+                i->data_b[6] = tmp_guard.dfp_range;
+            if (i->data_b[8] > tmp_guard.evp_range)
+                i->data_b[8] = tmp_guard.evp_range;
+            break;
+
+        case ITEM_SUBTYPE_BARRIER:
+            if (i->data_b[6] > tmp_guard.dfp_range)
+                i->data_b[6] = tmp_guard.dfp_range;
+            if (i->data_b[8] > tmp_guard.evp_range)
+                i->data_b[8] = tmp_guard.evp_range;
+            break;
+        }
+        break;
+    case ITEM_TYPE_MAG:// 玛古
+        mag_t* playermag;
+        int16_t mag_def, mag_pow, mag_dex, mag_mind;
+        int32_t total_levels;
+
+        playermag = (mag_t*)&i->data_b[0];
+
+        if (playermag->synchro > 120)
+            playermag->synchro = 120;
+
+        if (playermag->synchro < 0)
+            playermag->synchro = 0;
+
+        if (playermag->IQ > 200)
+            playermag->IQ = 200;
+
+        if ((playermag->defense < 0) || (playermag->power < 0) || (playermag->dex < 0) || (playermag->mind < 0))
+            total_levels = 201; // Auto fail if any stat is under 0...
+        else
+        {
+            mag_def = playermag->defense / 100;
+            mag_pow = playermag->power / 100;
+            mag_dex = playermag->dex / 100;
+            mag_mind = playermag->mind / 100;
+            total_levels = mag_def + mag_pow + mag_dex + mag_mind;
+        }
+
+        if ((total_levels > 200) || (playermag->level > 200))
+        {
+            // 玛古修正失败,则初始化所有数据
+            playermag->defense = 500;
+            playermag->power = 0;
+            playermag->dex = 0;
+            playermag->mind = 0;
+            playermag->level = 5;
+            playermag->blasts = 0;
+            playermag->IQ = 0;
+            playermag->synchro = 20;
+            playermag->mtype = 0;
+            playermag->PBflags = 0;
+        }
+        break;
+
+    case ITEM_TYPE_TOOL:
+    default:
+        ERR_LOG("fix_inv_bank_item 出现未知物品类型 0x%02X", i->data_b[0]);
+        break;
+    }
+
+}
+
+//修复背包装备数据错误的物品代码
+void fix_equip_item(inventory_t* inv) {
+    uint32_t i, eq_weapon = 0, eq_armor = 0, eq_shield = 0, eq_mag = 0;
+
+    /* 检查所有已装备的物品 */
+    for (i = 0; i < inv->item_count; i++) {
+        if (inv->iitems[i].flags & 0x08) {
+            switch (inv->iitems[i].data.data_b[0])
+            {
+            case ITEM_TYPE_WEAPON:
+                eq_weapon++;
+                break;
+
+            case ITEM_TYPE_GUARD:
+                switch (inv->iitems[i].data.data_b[1])
+                {
+                case ITEM_SUBTYPE_FRAME:
+                    eq_armor++;
+                    break;
+
+                case ITEM_SUBTYPE_BARRIER:
+                    eq_shield++;
+                    break;
+                }
+                break;
+
+            case ITEM_TYPE_MAG:
+                eq_mag++;
+                break;
+            }
+        }
+    }
+
+    if (eq_weapon > 1) {
+        for (i = 0; i < inv->item_count; i++) {
+            // Unequip all weapons when there is more than one equipped.  
+            // 当装备了多个武器时,取消所装备武器
+            if ((inv->iitems[i].data.data_b[0] == 0x00) &&
+                (inv->iitems[i].flags & 0x08))
+                inv->iitems[i].flags &= ~(0x08);
+        }
+
+    }
+
+    if (eq_armor > 1) {
+        for (i = 0; i < inv->item_count; i++) {
+            // Unequip all armor and slot items when there is more than one armor equipped. 
+            // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
+            if ((inv->iitems[i].data.data_b[0] == 0x01) &&
+                (inv->iitems[i].data.data_b[1] != 0x02) &&
+                (inv->iitems[i].flags & 0x08)) {
+
+                inv->iitems[i].data.data_b[3] = 0x00;
+                inv->iitems[i].flags &= ~(0x08);
+            }
+        }
+    }
+
+    if (eq_shield > 1) {
+        for (i = 0; i < inv->item_count; i++) {
+            // Unequip all shields when there is more than one equipped. 
+            // 当装备了多个护盾时，取消装备所有护盾。 
+            if ((inv->iitems[i].data.data_b[0] == 0x01) &&
+                (inv->iitems[i].data.data_b[1] == 0x02) &&
+                (inv->iitems[i].flags & 0x08)) {
+
+                inv->iitems[i].data.data_b[3] = 0x00;
+                inv->iitems[i].flags &= ~(0x08);
+            }
+        }
+    }
+
+    if (eq_mag > 1) {
+        for (i = 0; i < inv->item_count; i++) {
+            // Unequip all mags when there is more than one equipped. 
+            // 当装备了多个玛古时，取消装备所有玛古。 
+            if ((inv->iitems[i].data.data_b[0] == 0x02) &&
+                (inv->iitems[i].flags & 0x08))
+                inv->iitems[i].flags &= ~(0x08);
+        }
+    }
 }

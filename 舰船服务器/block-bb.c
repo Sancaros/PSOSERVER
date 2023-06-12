@@ -974,8 +974,6 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("shipgate_send_lobby_chg ´íÎó");
         }
 
-        //print_payload((uint8_t*)&c->bb_pl->quest_data1[0], sizeof(c->bb_pl->quest_data1));
-
         send_bb_quest_data1(c, c->bb_pl->quest_data1);
 
         if (c->cur_lobby)
@@ -1574,17 +1572,6 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         ERR_LOG("GC %d µÈ¼¶³¬¹ý 200 (%d)", c->guildcard, c->bb_pl->character.disp.level + 1);
         return -1;
     }
-
-    ///* BB has this in two places for now... */
-    //memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
-    //memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-    //memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
-    //memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
-    //memcpy(c->bb_pl->challenge_data, char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
-    //memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
-    //memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
-
-    //memcpy(&c->bb_guild->guild_data, &char_data.guild_data, sizeof(bb_guild_t));
 
     /* BB has this in two places for now... */
     memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));//
@@ -2839,7 +2826,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x00E7 231*/
     case BB_FULL_CHARACTER_TYPE:
         //UDONE_CPD(type,pkt);
-        //print_payload((unsigned char*)pkt, len);
+        print_payload((unsigned char*)pkt, len);
         /* Ignore for now... */
         return bb_process_full_char(c, (bb_full_char_pkt*)pkt);
 

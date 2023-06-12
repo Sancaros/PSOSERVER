@@ -34,7 +34,7 @@
 /* Âê¹Å½á¹¹ */
 typedef struct mag {
 	//typedef struct st_mag
-	uint8_t two; // "02" =P
+	uint8_t item_type; // "02" =P
 	uint8_t mtype;
 	uint8_t level;
 	uint8_t blasts;

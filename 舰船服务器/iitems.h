@@ -81,4 +81,10 @@ int add_inv_item(ship_client_t* c, iitem_t* iitem);
 /* 移除背包物品 */
 iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 
+//修复背包银行数据错误的物品代码
+void fix_inv_bank_item(item_t* i);
+
+//修复背包装备数据错误的物品代码
+void fix_equip_item(inventory_t* inv);
+
 #endif /* !IITEMS_H */
