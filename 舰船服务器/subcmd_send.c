@@ -143,7 +143,7 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
 }
 
 /* BB 发送给大厅玩家物品 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 发送给其他客户端) {
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发送) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
 
@@ -162,7 +162,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 发送
     pkt.item = item;
     pkt.unused2 = 0;
 
-    if (发送给其他客户端)
+    if (全发送)
         return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
     else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
@@ -685,3 +685,4 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     return sent;
 }
+

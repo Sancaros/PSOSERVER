@@ -76,7 +76,11 @@ STAILQ_HEAD(lobby_pkt_queue, lobby_pkt);
 typedef struct lobby_item {
     TAILQ_ENTRY(lobby_item) qentry;
 
+    // Item info
     iitem_t d;
+    float x;
+    float z;
+    uint8_t area;
 } lobby_item_t;
 
 TAILQ_HEAD(lobby_item_queue, lobby_item);

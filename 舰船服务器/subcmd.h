@@ -2568,7 +2568,7 @@ typedef struct subcmd_bb_guild_invite {
 // item drop subcommand is generated instead.
 // Packet sent by the client to notify that they're dropping part of a stack of
 // items and tell where they're dropping them. (Blue Burst)
-typedef struct subcmd_bb_drop_pos {
+typedef struct subcmd_bb_drop_split_stacked_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t area;
@@ -2576,7 +2576,7 @@ typedef struct subcmd_bb_drop_pos {
     float z;
     uint32_t item_id;
     uint32_t amount;
-} PACKED subcmd_bb_drop_pos_t;
+} PACKED subcmd_bb_drop_split_stacked_item_t;
 
 // 0xC4: Sort inventory (handled by the server on BB)
 // Packet sent by clients to sort their inventory. (Blue Burst)

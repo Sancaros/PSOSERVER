@@ -52,11 +52,8 @@ uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
 // in PlayerBank
 size_t stack_size_for_item(item_t item);
 
-/* 增加物品背包 ID */
-int add_item(ship_client_t* c, iitem_t* iitem);
-
 /* 获取背包中目标物品所在槽位 */
-size_t find_inv_item_slot(inventory_t inv, uint32_t item_id);
+size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id);
 
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
@@ -77,5 +74,11 @@ int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c);
+
+/* 增加背包物品 */
+int add_inv_item(ship_client_t* c, iitem_t* iitem);
+
+/* 移除背包物品 */
+iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 
 #endif /* !IITEMS_H */

@@ -171,7 +171,7 @@ struct ship_client {
     float drop_x;
     float drop_z;
     uint32_t drop_area;
-    uint32_t drop_item;
+    uint32_t drop_item_id;
     uint32_t drop_amt;
 
     uint32_t privilege;

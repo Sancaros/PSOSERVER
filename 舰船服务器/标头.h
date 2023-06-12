@@ -243,8 +243,8 @@ int subcmd_bb_handle_bcastv1(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_word_select(c, (subcmd_bb_word_select_t*)pkt);
         break;
 
-    case SUBCMD60_DROP_POS:
-        rv = handle_bb_drop_pos(c, (subcmd_bb_drop_pos_t*)pkt);
+    case SUBCMD60_DROP_SPLIT_STACKED_ITEM:
+        rv = handle_bb_drop_split_stacked_item(c, (subcmd_bb_drop_pos_t*)pkt);
         break;
 
     case SUBCMD60_SORT_INV:
@@ -639,8 +639,8 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_sell_item(c, (subcmd_bb_sell_item_t*)pkt);
         break;
 
-    case SUBCMD60_DROP_POS:
-        rv = handle_bb_drop_pos(c, (subcmd_bb_drop_pos_t*)pkt);
+    case SUBCMD60_DROP_SPLIT_STACKED_ITEM:
+        rv = handle_bb_drop_split_stacked_item(c, (subcmd_bb_drop_pos_t*)pkt);
         break;
 
     case SUBCMD60_SORT_INV:

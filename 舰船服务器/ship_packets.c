@@ -12602,7 +12602,7 @@ int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
 
 int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
     bb_confirm_update_quest_statistics_pkt pkt;
-    size_t pkt_size = sizeof(bb_confirm_update_quest_statistics_pkt);
+    uint16_t pkt_size = sizeof(bb_confirm_update_quest_statistics_pkt);
 
     memset(&pkt, 0, pkt_size);
 

@@ -263,68 +263,18 @@ size_t stack_size_for_item(item_t item) {
     return 1;
 }
 
-// TODO: Eliminate duplication between this function and the parallel function
-// in PlayerBank
-int add_item(ship_client_t* c, iitem_t* iitem) {
-    uint32_t pid = primary_identifier(&iitem->data);
-
-    // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
-    // item is meseta, we have to modify disp instead.
-    if (pid == 0x00040000) {
-        c->bb_pl->character.disp.meseta += iitem->data.data2_l;
-        if (c->bb_pl->character.disp.meseta > 999999) {
-            c->bb_pl->character.disp.meseta = 999999;
-        }
-        return 0;
-    }
-
-    // 处理堆叠物品
-    size_t combine_max = stack_size_for_item(iitem->data);
-    if (combine_max > 1) {
-        //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
-        size_t y;
-        for (y = 0; y < c->bb_pl->inv.item_count; y++) {
-            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem->data)) {
-                break;
-            }
-        }
-
-        // 如果已经发现存在同类型堆叠物品, 则将其添加至相同物品槽位
-        if (y < c->bb_pl->inv.item_count) {
-            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem->data.data_b[5];
-            if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
-                c->bb_pl->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
-            }
-            return 0;
-        }
-    }
-
-    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
-    // go into an empty inventory slot
-    if (c->bb_pl->inv.item_count >= 30) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-            c->guildcard);
-        return -1;
-    }
-
-    memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
-    c->bb_pl->inv.item_count++;
-
-    return 0;
-}
-
 /* 获取背包中目标物品所在槽位 */
-size_t find_inv_item_slot(inventory_t inv, uint32_t item_id) {
+size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id) {
     size_t x;
 
-    for (x = 0; x < inv.item_count; x++) {
-        if (inv.iitems[x].data.item_id == item_id) {
+    for (x = 0; x < inv->item_count; x++) {
+        if (inv->iitems[x].data.item_id == item_id) {
             return x;
         }
     }
 
     ERR_LOG("未从背包中找到该物品");
-    print_item_data(&inv.iitems->data, 5);
+    print_item_data(&inv->iitems->data, 5);
 
     return -1;
 }
@@ -538,7 +488,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     uint32_t found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
     size_t i = 0;
 
-    i = find_inv_item_slot(c->bb_pl->inv, item_id);
+    i = find_inv_item_slot(&c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);
@@ -791,4 +741,103 @@ int item_class_tag_equip_flag(ship_client_t* c) {
     }
 
     return 0;
+}
+
+int add_inv_item(ship_client_t* c, iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
+
+    // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
+    // item is meseta, we have to modify disp instead.
+    if (pid == 0x00040000) {
+        c->bb_pl->character.disp.meseta += iitem->data.data2_l;
+        if (c->bb_pl->character.disp.meseta > 999999) {
+            c->bb_pl->character.disp.meseta = 999999;
+        }
+        return 0;
+    }
+
+    // 处理堆叠物品
+    size_t combine_max = stack_size_for_item(iitem->data);
+    if (combine_max > 1) {
+        //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
+        size_t y;
+        for (y = 0; y < c->bb_pl->inv.item_count; y++) {
+            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem->data)) {
+                break;
+            }
+        }
+
+        // 如果已经发现存在同类型堆叠物品, 则将其添加至相同物品槽位
+        if (y < c->bb_pl->inv.item_count) {
+            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem->data.data_b[5];
+            if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
+                c->bb_pl->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
+            }
+            return 0;
+        }
+    }
+
+    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
+    // go into an empty inventory slot
+    if (c->bb_pl->inv.item_count >= 30) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
+            c->guildcard);
+        return -1;
+    }
+
+    memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
+    c->bb_pl->inv.item_count++;
+
+    return 0;
+}
+
+iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
+    iitem_t ret = { 0 };
+
+    // If we're removing meseta (signaled by an invalid item ID), then create a
+    // meseta item.
+    if (item_id == 0xFFFFFFFF) {
+        if (amount <= c->bb_pl->character.disp.meseta) {
+            c->bb_pl->character.disp.meseta -= amount;
+        }
+        else if (allow_meseta_overdraft) {
+            c->bb_pl->character.disp.meseta = 0;
+        }
+        else {
+            ERR_LOG("玩家背包中没有足够的美赛塔");
+            return ret;
+        }
+        ret.data.data_b[0] = 0x04;
+        ret.data.data2_l = amount;
+        return ret;
+    }
+
+    size_t index = find_inv_item_slot(&c->bb_pl->inv, item_id);
+    iitem_t inventory_item = c->bb_pl->inv.iitems[index];
+
+    // If the item is a combine item and are we removing less than we have of it,
+    // then create a new item and reduce the amount of the existing stack. Note
+    // that passing amount == 0 means to remove the entire stack, so this only
+    // applies if amount is nonzero.
+    if (amount && (stack_size_for_item(inventory_item.data) > 1) &&
+        (amount < inventory_item.data.data_b[5])) {
+        ret = inventory_item;
+        ret.data.data_b[5] = amount;
+        ret.data.item_id = 0xFFFFFFFF;
+        inventory_item.data.data_b[5] -= amount;
+        return ret;
+    }
+
+    // If we get here, then it's not meseta, and either it's not a combine item or
+    // we're removing the entire stack. Delete the item from the inventory slot
+    // and return the deleted item.
+    ret = inventory_item;
+    c->bb_pl->inv.item_count--;
+    for (size_t x = index; x < c->bb_pl->inv.item_count; x++) {
+        c->bb_pl->inv.iitems[x] = c->bb_pl->inv.iitems[x + 1];
+    }
+
+    c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = (iitem_t){ 0 };
+
+    return ret;
 }

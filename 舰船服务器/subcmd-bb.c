@@ -364,13 +364,13 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
         return -1;
     }
 
-    /* Try to remove the item from the lobby... */
+    /* 尝试从大厅物品栏中移除... */
     found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
     if (found < 0) {
         return -1;
     }
     else if (found > 0) {
-        /* Assume someone else already picked it up, and just ignore it... */
+        /* 假设别人已经捡到了, 就忽略它... */
         return 0;
     }
     else {
@@ -591,13 +591,15 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
 
-    if (add_item(c, &ii))
+    if (add_inv_item(c, &ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             c->guildcard);
+        return -1;
+    }
 
     subcmd_send_bb_delete_meseta(c, ii.data.data2_l, 0);
 
-    return subcmd_send_bb_create_inv_item(c, ii.data);
+    return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 1);
 }
 
 static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
@@ -624,7 +626,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
             return -2;
         }
 
-        tek_item_slot = find_inv_item_slot(c->bb_pl->inv, pkt->item_id);
+        tek_item_slot = find_inv_item_slot(&c->bb_pl->inv, pkt->item_id);
 
         iitem_t* id_result = &(c->game_data->identify_result);
         id_result->data = c->bb_pl->inv.iitems[tek_item_slot].data;
@@ -695,12 +697,11 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
         subcmd_send_bb_delete_meseta(c, 100, 0);
 
-        c->drop_item = id_result->data.item_id;
+        c->drop_item_id = id_result->data.item_id;
         c->drop_amt = 1;
 
         return subcmd_send_bb_create_tekk_item(c, id_result->data);
-    }
-    else
+    } else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 
 }
@@ -741,7 +742,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
 
         cleanup_lobby_item(l);
 
-        if (add_item(c, id_result)) {
+        if (add_inv_item(c, id_result)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 c->guildcard);
             return -1;
@@ -750,14 +751,12 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
         /* 初始化临时鉴定的物品数据 */
         memset(&c->game_data->identify_result, 0, sizeof(iitem_t));
 
-        c->drop_item = 0xFFFFFFFF;
+        c->drop_item_id = 0xFFFFFFFF;
         c->drop_amt = 0;
 
         return subcmd_send_bb_create_inv_item(c, id_result->data);
-    }
-    else {
+    } else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    }
 }
 
 static int handle_bb_bank(ship_client_t* c, subcmd_bb_bank_open_t* req) {
@@ -2355,7 +2354,7 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     /* Find the item and remove the equip flag. */
     inv = c->bb_pl->inv.item_count;
 
-    i = find_inv_item_slot(c->bb_pl->inv, pkt->item_id);
+    i = find_inv_item_slot(&c->bb_pl->inv, pkt->item_id);
 
     if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
         c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -2523,7 +2522,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            size_t index = find_inv_item_slot(c->bb_pl->inv, pkt->item_ids[x]);
+            size_t index = find_inv_item_slot(&c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
     }
@@ -3465,75 +3464,66 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_drop_pos(ship_client_t* c, subcmd_bb_drop_pos_t* pkt) {
+static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    int found = -1;
-    uint32_t i, meseta, amt;
+    iitem_t iitem = { 0 };
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
-            c->guildcard);
-        return -1;
-    }
-
-    /* 合理性检查... Make sure the size of the subcommand and the client id
-       match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
-        pkt->shdr.client_id != c->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
-            c->guildcard);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-        return -1;
-    }
-
-    /* Look for the item in the user's inventory. */
-    if (pkt->item_id != 0xFFFFFFFF) {
-        for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-                found = i;
-                break;
-            }
-        }
-
-        if (c->mode > 0) {
-            for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-                if (c->pl->bb.inv.iitems[i].data.item_id == pkt->item_id) {
-                    found = i;
-                    break;
-                }
-            }
-        }
-
-        /* If the item isn't found, then punt the user from the ship. */
-        if (found == -1) {
-            ERR_LOG("GC %" PRIu32 " 丢弃了无效的物品ID!",
+    if (l->version == CLIENT_VERSION_BB) {
+        /* We can't get these in a lobby without someone messing with something that
+           they shouldn't be... Disconnect anyone that tries. */
+        if (l->type == LOBBY_TYPE_LOBBY) {
+            ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
                 c->guildcard);
             return -1;
         }
-    }
-    else {
-        meseta = LE32(c->bb_pl->character.disp.meseta);
-        amt = LE32(pkt->amount);
 
-        if (meseta < amt) {
-            ERR_LOG("GC %" PRIu32 " 丢弃的美赛塔超出所拥有的!",
+        /* 合理性检查... Make sure the size of the subcommand and the client id
+           match with what we expect. Disconnect the client if not. */
+        if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
+            pkt->shdr.client_id != c->client_id) {
+            ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
+                c->guildcard);
+            print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+            return -1;
+        }
+
+        iitem = remove_item(c, pkt->item_id, pkt->amount, c->version != CLIENT_VERSION_BB);
+
+        // if a stack was split, the original item still exists, so the dropped item
+        // needs a new ID. remove_item signals this by returning an item with id=-1
+        if (iitem.data.item_id == 0xFFFFFFFF) {
+            iitem.data.item_id = generate_item_id(l, c->client_id);
+        }
+
+        // PSOBB sends a 6x29 command after it receives the 6x5D, so we need to add
+        // the item back to the player's inventory to correct for this (it will get
+        // removed again by the 6x29 handler)
+        if (add_inv_item(c, &iitem)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 c->guildcard);
             return -1;
         }
-    }
 
-    /* We have the item... Record the information for use with the subcommand
-       0x29 that should follow. */
-    c->drop_x = pkt->x;
-    c->drop_z = pkt->z;
-    c->drop_area = pkt->area;
-    c->drop_item = pkt->item_id;
-    c->drop_amt = pkt->amount;
+        /* We have the item... Add it to the lobby's inventory.
+        我们有这个物品…把它添加到大厅的背包中*/
+        if (!lobby_add_item_locked(l, &iitem)) {
+            /* *Gulp* The lobby is probably toast... At least make sure this user is
+               still (mostly) safe... */
+            ERR_LOG("Couldn't add item to lobby inventory!\n");
+            return -1;
+        }
 
-    /* 数据包完成, 发送至游戏房间. */
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+        /* We have the item... Record the information for use with the subcommand
+        0x29 that should follow. */
+        c->drop_x = pkt->x;
+        c->drop_z = pkt->z;
+        c->drop_area = pkt->area;
+        c->drop_item_id = pkt->item_id;
+        c->drop_amt = pkt->amount;
+
+        return subcmd_send_bb_drop_stack(c, pkt->area, pkt->x, pkt->z, &iitem);
+    }else
+        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
@@ -3595,10 +3585,10 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     /* Make sure the item id and amount match the most recent 0xC3. */
-    if (pkt->item_id != c->drop_item || pkt->amount != c->drop_amt) {
+    if (pkt->item_id != c->drop_item_id || pkt->amount != c->drop_amt) {
         ERR_LOG("GC %" PRIu32 " 掉了不同的堆叠物品!",
             c->guildcard);
-        ERR_LOG("pkt->item_id %d c->drop_item %d pkt->amount %d c->drop_amt %d", pkt->item_id, c->drop_item, pkt->amount, c->drop_amt);
+        ERR_LOG("pkt->item_id %d c->drop_item %d pkt->amount %d c->drop_amt %d", pkt->item_id, c->drop_item_id, pkt->amount, c->drop_amt);
         return -1;
     }
 
@@ -4874,8 +4864,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
         /* 此函数正常载入 */
-    case SUBCMD60_DROP_POS:
-        rv = handle_bb_drop_pos(c, (subcmd_bb_drop_pos_t*)pkt);
+    case SUBCMD60_DROP_SPLIT_STACKED_ITEM:
+        rv = handle_bb_drop_split_stacked_item(c, (subcmd_bb_drop_split_stacked_item_t*)pkt);
         break;
 
         /* 此函数正常载入 */

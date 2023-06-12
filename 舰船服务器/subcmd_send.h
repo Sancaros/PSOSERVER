@@ -36,7 +36,7 @@ int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item);
 int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item);
 
 /* BB 发送给大厅玩家背包物品 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 发送给其他客户端);
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发送);
 
 int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
     uint32_t item_id);
