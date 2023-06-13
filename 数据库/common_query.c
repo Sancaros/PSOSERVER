@@ -23,7 +23,7 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
-/* */
+/* 读取玩家最大科技魔法的等级表 */
 int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) {
     char query[256];
     void* result;
@@ -1463,7 +1463,7 @@ int db_update_inventory_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 }
 
 /* 优先获取背包数据库中的物品数量 */
-int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv) {
+int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
     void* result;
     char** row;
 
@@ -1488,8 +1488,10 @@ int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv) {
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
+        if (check) {
+            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("%s", psocn_db_error(&conn));
+        }
         return -3;
     }
 
@@ -1726,8 +1728,8 @@ uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inventory(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 
-    if (db_get_char_inv_param(gc, slot, inv)) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
+    if (db_get_char_inv_param(gc, slot, inv, 0)) {
+        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
         return -1;
     }
 
@@ -1990,7 +1992,7 @@ int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 }
 
 /* 优先获取背包数据库中的物品数量 */
-int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
+int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
     void* result;
     char** row;
 
@@ -2015,8 +2017,10 @@ int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
+        if (check) {
+            SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("%s", psocn_db_error(&conn));
+        }
         return -3;
     }
 
@@ -2111,8 +2115,8 @@ int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int item_in
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
     uint32_t i = 0;
 
-    if (db_get_char_bank_param(gc, slot, bank)) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
+    if (db_get_char_bank_param(gc, slot, bank, 0)) {
+        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
         return -1;
     }
 

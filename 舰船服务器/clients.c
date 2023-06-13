@@ -1124,13 +1124,6 @@ static int check_char_bb(ship_client_t* c, player_t* pl) {
     if (LE32(disp1.level) > LE32(disp2.level))
         return -27;
 
-    //if (c->bb_pl->inv.item_count != c->pl->bb.inv.item_count) {
-    //    //memcpy(&c->bb_pl->inv, &c->pl->bb.inv, sizeof(inventory_t));
-    //    memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(inventory_t));
-    //    DBG_LOG("背包数量不一致,重写背包数据 数据库 %d 游戏 %d", c->bb_pl->inv.item_count, c->pl->bb.inv.item_count);
-    //    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-    //}
-
     return 0;
 }
 

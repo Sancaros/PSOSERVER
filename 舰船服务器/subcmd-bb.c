@@ -403,6 +403,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
             }
 
             c->bb_pl->inv.item_count += found;
+            c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
         }
     }
 
@@ -905,6 +906,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             }
 
             c->bb_pl->inv.item_count = (iitem_count -= found);
+            c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
             /* Fill in the bank item. */
             if (stack) {
@@ -1002,6 +1004,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             }
 
             c->bb_pl->inv.item_count += found;
+            c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
             /* 发送至房间中的客户端. */
             return subcmd_send_lobby_bb_create_inv_item(c, iitem.data, 1);
@@ -1303,6 +1306,8 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
         }
 
         c->bb_pl->inv.item_count += found;
+        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+
         memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(iitem_t));
     }
     else {
@@ -1341,6 +1346,7 @@ static int handle_bb_quest_oneperson_set_ex_pc(ship_client_t* c, subcmd_bb_quest
         }
 
         c->bb_pl->inv.item_count = (iitem_count -= found);
+        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
         if (!found) {
             l->drops_disabled = 1;
@@ -2446,7 +2452,7 @@ static int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     /* Subtract 10 meseta from the client. */
     c->bb_pl->character.disp.meseta -= 10;
-    c->pl->bb.character.disp.meseta -= 10;
+    c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3409,7 +3415,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
             /* If it is an equipped frame, we need to unequip all the units
                that are attached to it.
-               如果它是一个装备好的护甲，我们需要取消与它相连的所有单元的装备*/
+               如果它是一个装备好的护甲，我们需要取消与它相连的所有装备的插件 */
             if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
                 c->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_FRAME &&
                 (c->bb_pl->inv.iitems[i].flags & LE32(0x00000008))) {
@@ -3427,10 +3433,12 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
         return -1;
     }
 
-    /* Clear the equipped flag. */
+    /* Clear the equipped flag. 
+    清理已装备的标签*/
     c->bb_pl->inv.iitems[found].flags &= LE32(0xFFFFFFF7);
 
-    /* Unequip any units, if the item was equipped and a frame. */
+    /* Unequip any units, if the item was equipped and a frame. 
+    卸掉所有已插入在这件装备的插件*/
     if (isframe) {
         for (i = 0; i < inv; ++i) {
             if (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
@@ -3610,7 +3618,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
         }
 
         c->bb_pl->inv.item_count -= found;
-        //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
     }
     else {
         /* Remove the meseta from the character data */
@@ -3995,6 +4003,8 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
 
                 if (c->bb_pl->character.disp.meseta > 999999)
                     c->bb_pl->character.disp.meseta = 999999;
+
+                c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
             }
 
             return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -4339,7 +4349,7 @@ static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* 
     send_msg(c, MSG1_TYPE, "%s", __(c, "\t物品转换成功!"));
 
     c->bb_pl->inv.item_count -= found;
-    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+    c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
