@@ -3872,3 +3872,61 @@ void print_bitem_data(bitem_t* bitem, int item_index, int version) {
         bitem->data.data_b[8], bitem->data.data_b[9], bitem->data.data_b[10], bitem->data.data_b[11],
         bitem->data.data2_b[0], bitem->data.data2_b[1], bitem->data.data2_b[2], bitem->data.data2_b[3]);
 }
+
+void print_biitem_data(void* data, int item_index, int version, int inv, int err) {
+    char* inv_text = ((inv == 1) ? "背包" : "银行");
+    char* err_text = ((err == 1) ? "错误" : "玩家");
+
+    if (data) {
+        if (inv) {
+            iitem_t* iitem = (iitem_t*)data;
+
+            ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
+                iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
+
+            ITEM_LOG(""
+                "槽位 (%d) "
+                "(%s) %04X "
+                "鉴定 %d "
+                "(%s) Flags %08X",
+                item_index,
+                ((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"),
+                iitem->present,
+                iitem->tech,
+                ((iitem->flags == 0x00000008) ? "已装备" : "未装备"),
+                iitem->flags
+            );
+
+            ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                inv_text,
+                iitem->data.data_b[0], iitem->data.data_b[1], iitem->data.data_b[2], iitem->data.data_b[3],
+                iitem->data.data_b[4], iitem->data.data_b[5], iitem->data.data_b[6], iitem->data.data_b[7],
+                iitem->data.data_b[8], iitem->data.data_b[9], iitem->data.data_b[10], iitem->data.data_b[11],
+                iitem->data.data2_b[0], iitem->data.data2_b[1], iitem->data.data2_b[2], iitem->data.data2_b[3]);
+        }
+        else {
+            bitem_t* bitem = (bitem_t*)data;
+
+            ITEM_LOG("%s X %s物品:(ID %d / %08X) %s", err_text, inv_text,
+                bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
+
+            ITEM_LOG(""
+                "槽位 (%d) "
+                "(%s) %04X "
+                "(%s) Flags %04X",
+                item_index,
+                ((bitem->amount == 0x0001) ? "堆叠" : "单独"),
+                bitem->amount,
+                ((bitem->show_flags == 0x0001) ? "显示" : "隐藏"),
+                bitem->show_flags
+            );
+
+            ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
+                inv_text,
+                bitem->data.data_b[0], bitem->data.data_b[1], bitem->data.data_b[2], bitem->data.data_b[3],
+                bitem->data.data_b[4], bitem->data.data_b[5], bitem->data.data_b[6], bitem->data.data_b[7],
+                bitem->data.data_b[8], bitem->data.data_b[9], bitem->data.data_b[10], bitem->data.data_b[11],
+                bitem->data.data2_b[0], bitem->data.data2_b[1], bitem->data.data2_b[2], bitem->data.data2_b[3]);
+        }
+    }
+}

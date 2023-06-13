@@ -2399,7 +2399,7 @@ typedef struct EpisodeMapInfo {
 } EpisodeMapInfo_t;
 
 // These are indexed as [episode][is_solo][area], where episode is 0-2
-static const EpisodeMapInfo_t map_file_info[3][2] = {
+static EpisodeMapInfo_t map_file_info[3][2] = {
 {
         // Episode 1
         {

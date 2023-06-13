@@ -215,6 +215,7 @@ extern int32_t script_log_console_show;
 #define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define ERR_CSPD(CODE,VERSION,DATA) err_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define DC_LOG(...) Logs(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
@@ -270,6 +271,8 @@ extern void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* file
 extern void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 
 extern void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
+
+extern void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 
 extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 

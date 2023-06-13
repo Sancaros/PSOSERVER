@@ -119,7 +119,7 @@ int shipgate_send_ping(shipgate_conn_t *c, int reply);
 
 /* Send the shipgate a character data save request. */
 int shipgate_send_cdata(shipgate_conn_t *c, uint32_t gc, uint32_t slot,
-                        const void *cdata, int len, uint32_t block);
+                        const void *cdata, size_t len, uint32_t block);
 
 /* Send the shipgate a request for character data. */
 int shipgate_send_creq(shipgate_conn_t *c, uint32_t gc, uint32_t slot);

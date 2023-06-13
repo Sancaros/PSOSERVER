@@ -2826,7 +2826,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x00E7 231*/
     case BB_FULL_CHARACTER_TYPE:
         //UDONE_CPD(type,pkt);
-        print_payload((unsigned char*)pkt, len);
+        //print_payload((unsigned char*)pkt, len);
         /* Ignore for now... */
         return bb_process_full_char(c, (bb_full_char_pkt*)pkt);
 

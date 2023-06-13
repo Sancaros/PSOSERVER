@@ -904,14 +904,15 @@ void fix_inv_bank_item(item_t* i) {
         break;
 
     case ITEM_TYPE_GUARD:// 修正装甲和护盾的值
-        if (pmt_lookup_guard_bb(i->data_l[0], &tmp_guard)) {
-            ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->data_l[0]);
-            return -3;
-        }
-
         switch (i->data_b[1])
         {
         case ITEM_SUBTYPE_FRAME:
+
+            if (pmt_lookup_guard_bb(i->data_l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->data_l[0]);
+                break;
+            }
+
             if (i->data_b[6] > tmp_guard.dfp_range)
                 i->data_b[6] = tmp_guard.dfp_range;
             if (i->data_b[8] > tmp_guard.evp_range)
@@ -919,6 +920,12 @@ void fix_inv_bank_item(item_t* i) {
             break;
 
         case ITEM_SUBTYPE_BARRIER:
+
+            if (pmt_lookup_guard_bb(i->data_l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", i->data_l[0]);
+                break;
+            }
+
             if (i->data_b[6] > tmp_guard.dfp_range)
                 i->data_b[6] = tmp_guard.dfp_range;
             if (i->data_b[8] > tmp_guard.evp_range)
@@ -967,11 +974,6 @@ void fix_inv_bank_item(item_t* i) {
             playermag->mtype = 0;
             playermag->PBflags = 0;
         }
-        break;
-
-    case ITEM_TYPE_TOOL:
-    default:
-        ERR_LOG("fix_inv_bank_item 出现未知物品类型 0x%02X", i->data_b[0]);
         break;
     }
 

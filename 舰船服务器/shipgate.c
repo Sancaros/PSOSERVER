@@ -1295,19 +1295,43 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                     else if(c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
-                        /* Clear the item ids from the inventory. */
-                        for(i = 0; i < 30; ++i) {
+                        /* 清理背包的物品ID以备重写. */
+                        for(i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
                             c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
                         }
 
                         ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-                            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
+                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+                            if (c->bb_pl->inv.iitems[i].present) {
+                                print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 0);
+                                fix_inv_bank_item(&c->bb_pl->inv.iitems[i].data);
+                            }
+                            //else
+                            //    if ((c->bb_pl->inv.iitems[i].data.data_l[0] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[1] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[2] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[3] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data2_l != 0)
+                            //        )
+                            //        print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 1);
                         }
 
+                        fix_equip_item(&c->bb_pl->inv);
+
                         ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->bb_pl->bank.item_count; ++i) {
-                            print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
+                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+                            if (c->bb_pl->bank.bitems[i].show_flags) {
+                                print_biitem_data(&c->bb_pl->bank.bitems[i], i, c->version, 0, 0);
+                                fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
+                            }
+                            //else
+                            //    if ((c->bb_pl->inv.iitems[i].data.data_l[0] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[1] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[2] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data_l[3] != 0) ||
+                            //        (c->bb_pl->inv.iitems[i].data.data2_l != 0)
+                            //        )
+                            //        print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 0, 1);
                         }
                     }
 
@@ -1404,7 +1428,7 @@ static int handle_count(shipgate_conn_t* conn, shipgate_cnt_pkt* pkt) {
     return -1;
 }
 
-static int handle_char_data_save(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
+static int handle_char_data_db_save(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
     uint32_t i;
     ship_t* s = conn->ship;
     block_t* b;
@@ -1517,7 +1541,7 @@ static int handle_ban(shipgate_conn_t* conn, shipgate_ban_err_pkt* pkt) {
     return 0;
 }
 
-static int handle_creq_err(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
+static int handle_char_data_req_err(shipgate_conn_t* conn, shipgate_cdata_err_pkt* pkt) {
     uint32_t i;
     ship_t* s = conn->ship;
     block_t* b;
@@ -2927,11 +2951,11 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return 0;
 
         case SHDR_TYPE_CDATA:
-            return handle_char_data_save(conn, (shipgate_cdata_err_pkt*)pkt);
+            return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
 
         case SHDR_TYPE_CREQ:
         case SHDR_TYPE_CBKUP:
-            return handle_creq_err(conn, (shipgate_cdata_err_pkt*)pkt);
+            return handle_char_data_req_err(conn, (shipgate_cdata_err_pkt*)pkt);
 
         case SHDR_TYPE_USRLOGIN:
             return handle_usrlogin_err(conn, (shipgate_gm_err_pkt*)pkt);
@@ -2992,7 +3016,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             return handle_count(conn, (shipgate_cnt_pkt*)pkt);
 
         case SHDR_TYPE_CDATA:
-            return handle_char_data_save(conn, (shipgate_cdata_err_pkt*)pkt);
+            return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
 
         case SHDR_TYPE_IPBAN:
         case SHDR_TYPE_GCBAN:
@@ -3223,16 +3247,17 @@ int shipgate_send_pkts(shipgate_conn_t* c) {
 /* Packets are below here. */
 /* Send the shipgate a character data save request. */
 int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
-    const void* cdata, int len, uint32_t block) {
+    const void* cdata, size_t len, uint32_t block) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
+    uint16_t pkt_size = (uint16_t)(sizeof(shipgate_char_data_pkt) + len);
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
         return -1;
 
     /* 填充数据头. */
-    pkt->hdr.pkt_len = htons(sizeof(shipgate_char_data_pkt) + len);
+    pkt->hdr.pkt_len = htons(pkt_size);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CDATA);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
@@ -3244,7 +3269,7 @@ int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
     memcpy(pkt->data, cdata, len);
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_char_data_pkt) + len, sendbuf);
+    return send_crypt(c, pkt_size, sendbuf);
 }
 
 /* Send the shipgate a request for character data. */

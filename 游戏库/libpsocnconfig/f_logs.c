@@ -793,6 +793,68 @@ void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	}
 }
 
+void Logs_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+{
+	va_list args;
+	char mes[4096] = { 0 };
+	//char headermes[128] = { 0 };
+	//char text[4096] = { 0 };
+	SYSTEMTIME rawtime;
+
+	FILE* fp;
+	char logdir[64] = { 0 };
+	char logfile[256] = { 0 };
+	GetLocalTime(&rawtime);
+
+	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
+	//strcat(headermes, log_header[files]);
+	va_start(args, fmt);
+	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	va_end(args);
+	//strcpy(logfile, "Log\\");
+	sprintf(logdir, "错误数据包\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	if (!_mkdir(logdir)) {
+		//printf("%u年%02u月%02u日 日志目录创建成功", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	else
+	{
+		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	strcpy(logfile, logdir);
+	strcat(logfile, "\\");
+	strcat(logfile, files_name);
+	strcat(logfile, ".log");
+	errno_t err = fopen_s(&fp, logfile, "a");
+	if (err) {
+		color(4);
+		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, files_name);
+	}
+	else
+	{
+		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[UNKNOW_PACKET_LOG].name, codeline, mes))
+		{
+			color(UNKNOW_PACKET_LOG);
+			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[UNKNOW_PACKET_LOG].name);
+		}
+		if (console_log_hide_or_show)
+		{
+			if (consoleshow)
+			{
+				color(UNKNOW_PACKET_LOG);
+				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[UNKNOW_PACKET_LOG].name, codeline, mes);
+			}
+		}
+		color(16);
+		fclose(fp);
+	}
+}
+
 /* 截取舰船未处理的数据包 */
 void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 {
@@ -811,6 +873,16 @@ void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size);
 	Logs_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+}
+
+/* 截取舰船错误的数据包 */
+void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
+{
+	uint16_t size;
+	size = *(uint16_t*)&pkt[0];
+	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 数据错误. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	packet_to_text(&pkt[0], size);
+	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
