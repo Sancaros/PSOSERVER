@@ -609,7 +609,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
     uint32_t tek_item_slot = 0, attrib = 0;
     uint8_t percent_mod = 0;
 
-    if (l->version == CLIENT_VERSION_BB) {
+    if (c->version == CLIENT_VERSION_BB) {
         if (c->bb_pl->character.disp.meseta < 100)
             return 0;
 
@@ -710,7 +710,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
     lobby_t* l = c->cur_lobby;
     uint8_t i = 0;
 
-    if (l->version == CLIENT_VERSION_BB) {
+    if (c->version == CLIENT_VERSION_BB) {
 
         iitem_t* id_result = &(c->game_data->identify_result);
 
@@ -1428,6 +1428,8 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
+    DBG_LOG("client num %d 0x62/0x6D 指令: 0x%02X", dnum, type);
+
     pthread_mutex_lock(&l->mutex);
 
     /* Find the destination. */
@@ -1444,8 +1446,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
-        //DBG_LOG("LOBBY_FLAG_BURSTING 0x62 指令: 0x%02X", type);
-
         switch (type) {
         case SUBCMD62_BURST1://6D //其他大厅跃迁进房时触发 1
         case SUBCMD62_BURST2://6B //其他大厅跃迁进房时触发 2
@@ -1469,7 +1469,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
 
-        //DBG_LOG("LOBBY_FLAG_BURSTING DONE 0x62 指令: 0x%02X", type);
         pthread_mutex_unlock(&l->mutex);
         return rv;
     }
@@ -3475,62 +3474,33 @@ static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_sp
     lobby_t* l = c->cur_lobby;
     iitem_t iitem = { 0 };
 
-    if (l->version == CLIENT_VERSION_BB) {
-        /* We can't get these in a lobby without someone messing with something that
-           they shouldn't be... Disconnect anyone that tries. */
-        if (l->type == LOBBY_TYPE_LOBBY) {
-            ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
-                c->guildcard);
-            return -1;
-        }
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
+            c->guildcard);
+        return -1;
+    }
 
-        /* 合理性检查... Make sure the size of the subcommand and the client id
-           match with what we expect. Disconnect the client if not. */
-        if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
-            pkt->shdr.client_id != c->client_id) {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
-                c->guildcard);
-            ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-            return -1;
-        }
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
+        pkt->shdr.client_id != c->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
+            c->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
 
-        iitem = remove_item(c, pkt->item_id, pkt->amount, c->version != CLIENT_VERSION_BB);
+    /* We have the item... Record the information for use with the subcommand
+    0x29 that should follow. */
+    c->drop_x = pkt->x;
+    c->drop_z = pkt->z;
+    c->drop_area = pkt->area;
+    c->drop_item_id = pkt->item_id;
+    c->drop_amt = pkt->amount;
 
-        // if a stack was split, the original item still exists, so the dropped item
-        // needs a new ID. remove_item signals this by returning an item with id=-1
-        if (iitem.data.item_id == 0xFFFFFFFF) {
-            iitem.data.item_id = generate_item_id(l, c->client_id);
-        }
-
-        // PSOBB sends a 6x29 command after it receives the 6x5D, so we need to add
-        // the item back to the player's inventory to correct for this (it will get
-        // removed again by the 6x29 handler)
-        if (add_inv_item(c, &iitem)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                c->guildcard);
-            return -1;
-        }
-
-        /* We have the item... Add it to the lobby's inventory.
-        我们有这个物品…把它添加到大厅的背包中*/
-        if (!lobby_add_item_locked(l, &iitem)) {
-            /* *Gulp* The lobby is probably toast... At least make sure this user is
-               still (mostly) safe... */
-            ERR_LOG("Couldn't add item to lobby inventory!\n");
-            return -1;
-        }
-
-        /* We have the item... Record the information for use with the subcommand
-        0x29 that should follow. */
-        c->drop_x = pkt->x;
-        c->drop_z = pkt->z;
-        c->drop_area = pkt->area;
-        c->drop_item_id = pkt->item_id;
-        c->drop_amt = pkt->amount;
-
-        return subcmd_send_bb_drop_stack(c, pkt->area, pkt->x, pkt->z, &iitem);
-    }else
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
@@ -3701,14 +3671,6 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
 
 static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) {
     lobby_t* l = c->cur_lobby;
-
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    //if (l->type == LOBBY_TYPE_LOBBY) {
-    //    ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC完成交谈!",
-    //        c->guildcard);
-    //    return -1;
-    //}
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
@@ -4544,6 +4506,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if (!l)
         return 0;
+
+    DBG_LOG("玩家 0x60 指令: 0x%02X", type);
 
     pthread_mutex_lock(&l->mutex);
 

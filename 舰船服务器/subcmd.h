@@ -678,10 +678,10 @@ typedef struct subcmd_bb_talk_npc {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unk;           /* Always 0xFFFF for NPCs? */
-    uint16_t zero;          /* Always 0? */
+    uint16_t zero;          /* Always 0? ’‚ «≤Àµ•∞…? 0xFFFF0000*/
     float x;
     float z;
-    float unused2;       /* Always zero? */
+    float unused2;          /* Always zero? */
 } PACKED subcmd_bb_talk_npc_t;
 
 // 0x2D: Done talking to NPC

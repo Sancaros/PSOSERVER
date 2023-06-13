@@ -804,72 +804,12 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
 
     sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_INVENTORY, gc,
-        slot);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法清理旧玩家 %s 人物背包数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_INVENTORY, gc, slot,
-            psocn_db_error(&conn));
-        /* XXXX: 未完成给客户端发送一个错误信息 */
-        return -1;
-    }
-
-    sprintf(query, "DELETE FROM %s WHERE (guildcard="
         "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER, gc,
         slot);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER, gc, slot,
-            psocn_db_error(&conn));
-        /* XXXX: 未完成给客户端发送一个错误信息 */
-        return -1;
-    }
-
-    sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_DISP, gc,
-        slot);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法清理旧玩家 %s 人物数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DISP, gc, slot,
-            psocn_db_error(&conn));
-        /* XXXX: 未完成给客户端发送一个错误信息 */
-        return -1;
-    }
-
-    sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_DRESS, gc,
-        slot);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法清理旧玩家 %s 人物数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
-            psocn_db_error(&conn));
-        /* XXXX: 未完成给客户端发送一个错误信息 */
-        return -1;
-    }
-
-    sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_CHALLENGE, gc,
-        slot);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法清理旧玩家 %s 挑战数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
-            psocn_db_error(&conn));
-        /* XXXX: 未完成给客户端发送一个错误信息 */
-        return -1;
-    }
-
-    sprintf(query, "DELETE FROM %s WHERE (guildcard="
-        "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER_BATTLE, gc,
-        slot);
-
-    if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法清理旧玩家 %s 对战数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_BATTLE, gc, slot,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
