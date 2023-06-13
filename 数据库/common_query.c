@@ -1534,7 +1534,7 @@ int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_ind
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         if (check) {
-            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("未找到索引 %d 的背包物品数据 (%" PRIu32 ": %u)", item_index, gc, slot);
             SQLERR_LOG("%s", psocn_db_error(&conn));
         }
         return -3;
@@ -1737,8 +1737,9 @@ int db_get_char_inventory(uint32_t gc, uint8_t slot, inventory_t* inv, int check
         return 0;
     }
 
-    for (int i = 0; i < inv->item_count; i++) {
-        db_get_char_inv_items(gc, slot, &inv->iitems[i], i, 1);
+    for (int i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+        if (db_get_char_inv_items(gc, slot, &inv->iitems[i], i, 0))
+            break;
     }
 
     return 0;
@@ -2056,7 +2057,7 @@ int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int item_in
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         if (check) {
-            SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("未找到索引 %d 的银行物品数据 (%" PRIu32 ": %u)", item_index, gc, slot);
             SQLERR_LOG("%s", psocn_db_error(&conn));
         }
         return -3;
@@ -2121,8 +2122,9 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
         return 0;
     }
 
-    for (i; i < bank->item_count; i++) {
-        db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 1);
+    for (i; i < MAX_PLAYER_BANK_ITEMS; i++) {
+        if (db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 0))
+            break;
     }
 
     return 0;

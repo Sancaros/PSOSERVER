@@ -35,6 +35,8 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
 void clear_item(item_t* item);
 /* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem);
+/* 初始化银行物品数据 */
+void clear_bitem(bitem_t* bitem);
 /* 初始化房间物品数据 */
 void clear_fitem(fitem_t* fitem);
 

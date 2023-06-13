@@ -508,7 +508,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
 static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
     lobby_t* l = c->cur_lobby;
     block_t* b = c->cur_block;
-    sitem_t item_data = { 0 };
+    sitem_t item_data;
     uint32_t shop_type = LE32(req->shop_type);
     uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
 
@@ -520,6 +520,7 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
 
     for (uint8_t i = 0; i < num_items; ++i) {
         memset(&c->game_data->shop_items[i], 0, sizeof(sitem_t));
+        memset(&item_data, 0, sizeof(sitem_t));
 
         switch (shop_type) {
         case BB_SHOPTYPE_TOOL:// 工具商店
@@ -584,12 +585,10 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
         return -1;
     }
 
-    print_iitem_data(&ii, 0, c->version);
-
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
     ii.data.item_id = l->item_player_id[c->client_id]++;
 
-    //item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, ii);
+    print_iitem_data(&ii, 0, c->version);
 
     if (add_inv_item(c, &ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",

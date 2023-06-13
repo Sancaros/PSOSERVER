@@ -26,7 +26,7 @@
 #define PC_CHARACTER_NAME_LENGTH 0x0010
 
 #define MAX_PLAYER_LEVEL                200
-#define MAX_PLAYER_ITEMS                200
+#define MAX_PLAYER_BANK_ITEMS           200
 #define MAX_PLAYER_INV_ITEMS            30
 #define MAX_PLAYER_CLASS_DC             9
 #define MAX_PLAYER_CLASS_BB             12

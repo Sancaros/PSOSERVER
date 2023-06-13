@@ -3132,16 +3132,6 @@ typedef bb_autoreply_set_pkt bb_write_info_pkt;
 // DB (C->S): Verify license (V3/BB)
 // Server should respond with a 9A command.
 // The packet to verify that a hunter's license has been procured.
-//struct C_VerifyLicense_V3_DB {
-//    ptext<char, 0x20> unused;
-//    ptext<char, 0x10> serial_number; // On XB, this is the XBL gamertag
-//    ptext<char, 0x10> access_key; // On XB, this is the XBL user ID
-//    ptext<char, 0x08> unused2;
-//    uint32_t sub_version;
-//    ptext<char, 0x30> serial_number2; // On XB, this is the XBL gamertag
-//    ptext<char, 0x30> access_key2; // On XB, this is the XBL user ID
-//    ptext<char, 0x30> password; // On XB, this contains "xbox-pso"
-//} PACKED;
 typedef struct login_gc_hlcheck {
     dc_pkt_hdr_t hdr;
     uint8_t padding1[32];

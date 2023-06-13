@@ -87,7 +87,7 @@ void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = 0xFFFFFFFF;
+    item->item_id = 0x00000000;
     item->data2_l = 0;
 }
 
@@ -97,6 +97,13 @@ void clear_iitem(iitem_t* iitem) {
     iitem->tech = 0x0000;
     iitem->flags = 0x00000000;
     clear_item(&iitem->data);
+}
+
+/* 初始化背包物品数据 */
+void clear_bitem(bitem_t* bitem) {
+    clear_item(&bitem->data);
+    bitem->show_flags = 0x0000;
+    bitem->amount = 0x0000;
 }
 
 /* 初始化房间物品数据 */
@@ -365,7 +372,7 @@ void cleanup_bb_bank(ship_client_t *c) {
     }
 
     /* Clear all the rest of them... */
-    for(; i < MAX_PLAYER_ITEMS; ++i) {
+    for(; i < MAX_PLAYER_BANK_ITEMS; ++i) {
         memset(&c->bb_pl->bank.bitems[i], 0, sizeof(bitem_t));
         c->bb_pl->bank.bitems[i].data.item_id = EMPTY_STRING;
     }
@@ -376,7 +383,7 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it) {
     int amount;
 
     /* Make sure there's space first. */
-    if(count == MAX_PLAYER_ITEMS) {
+    if(count == MAX_PLAYER_BANK_ITEMS) {
         return -1;
     }
 

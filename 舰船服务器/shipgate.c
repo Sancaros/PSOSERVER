@@ -1295,43 +1295,31 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                     else if(c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
-                        /* 清理背包的物品ID以备重写. */
+                        /* 清理背包的物品ID以备重写, 大厅状态无法使用物品. */
                         for(i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
                             c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
                         }
 
-                        ITEM_LOG("////////////////////////////////////////////////////////////");
+                        //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
                             if (c->bb_pl->inv.iitems[i].present) {
-                                print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 0);
+                                //print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 0);
                                 fix_inv_bank_item(&c->bb_pl->inv.iitems[i].data);
                             }
-                            //else
-                            //    if ((c->bb_pl->inv.iitems[i].data.data_l[0] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[1] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[2] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[3] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data2_l != 0)
-                            //        )
-                            //        print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 1);
+                            else
+                                clear_iitem(&c->bb_pl->inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
                         }
 
                         fix_equip_item(&c->bb_pl->inv);
 
-                        ITEM_LOG("////////////////////////////////////////////////////////////");
+                        //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
                             if (c->bb_pl->bank.bitems[i].show_flags) {
-                                print_biitem_data(&c->bb_pl->bank.bitems[i], i, c->version, 0, 0);
+                                //print_biitem_data(&c->bb_pl->bank.bitems[i], i, c->version, 0, 0);
                                 fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
                             }
-                            //else
-                            //    if ((c->bb_pl->inv.iitems[i].data.data_l[0] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[1] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[2] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data_l[3] != 0) ||
-                            //        (c->bb_pl->inv.iitems[i].data.data2_l != 0)
-                            //        )
-                            //        print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 0, 1);
+                            else
+                                clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
                         }
                     }
 

@@ -60,6 +60,7 @@ static int td(ship_client_t *c, lobby_t *l, void *req);
 
 lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
+    pthread_mutexattr_t attr;
 
     /* If we don't have a lobby, bail. */
     if(!l) {
@@ -107,7 +108,10 @@ lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
 #endif
 
     /* Initialize the lobby mutex. */
-    pthread_mutex_init(&l->mutex, NULL);
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&l->mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
 
     return l;
 }
@@ -240,6 +244,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                            uint8_t event, uint8_t episode, ship_client_t *c,
                            uint8_t single_player, int bb) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
+    pthread_mutexattr_t attr;
     uint32_t *pid, id;
     int i;
 
@@ -376,7 +381,10 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     STAILQ_INIT(&l->burst_queue);
 
     /* Initialize the lobby mutex. */
-    pthread_mutex_init(&l->mutex, NULL);
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&l->mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
 
     /* We need episode to be either 1 or 2 for the below map selection code to
        work. On PSODC and PSOPC, it'll be 0 at this point, so make it 1 (as it
@@ -563,6 +571,7 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
                                ship_client_t *c) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
     uint32_t id = 0x20;
+    pthread_mutexattr_t attr;
 
     /* If we don't have a lobby, bail. */
     if(!l) {
@@ -607,7 +616,10 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
     STAILQ_INIT(&l->burst_queue);
 
     /* Initialize the lobby mutex. */
-    pthread_mutex_init(&l->mutex, NULL);
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&l->mutex, &attr);
+    pthread_mutexattr_destroy(&attr);
 
     /* Add it to the list of lobbies, and increment the game count. */
     pthread_rwlock_wrlock(&block->lobby_lock);

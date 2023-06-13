@@ -138,14 +138,14 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
         break;
 
     case ITEM_TYPE_GUARD:
-
-        if (pmt_lookup_guard_bb(ci->data.data_l[0], &tmp_guard)) {
-            ERR_LOG("未从PMT获取到 0x%04X 的数据!", ci->data.data_l[0]);
-            return -3;
-        }
-
         switch (ci->data.data_b[1]) {
         case ITEM_SUBTYPE_FRAME: // Armor 装备
+
+            if (pmt_lookup_guard_bb(ci->data.data_l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", ci->data.data_l[0]);
+                return -3;
+            }
+
             if (ci->data.data_b[2] < 0x18) {
                 // Calculate the amount to boost because of slots...
                 if (ci->data.data_b[5] > 4)
@@ -167,6 +167,12 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
             }
             break;
         case ITEM_SUBTYPE_BARRIER: // Shield 盾牌
+
+            if (pmt_lookup_guard_bb(ci->data.data_l[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", ci->data.data_l[0]);
+                return -3;
+            }
+
             if (ci->data.data_b[2] < 0x15) {
                 if (ci->data.data_b[6] > tmp_guard.dfp_range)
                     variation = 0;
