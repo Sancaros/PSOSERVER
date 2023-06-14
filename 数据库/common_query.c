@@ -1108,6 +1108,8 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
         dress_data->prop_y = strtof(row[i], NULL);
     }
 
+    psocn_db_result_free(result);
+
     return 0;
 }
 

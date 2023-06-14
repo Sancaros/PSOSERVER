@@ -84,6 +84,12 @@
 #define MSG_BOX_TYPE                    0x001A //大信息窗口文本代码
 #define PING_TYPE                       0x001D //Ping pong 心跳数据包
 #define LOBBY_INFO_TYPE                 0x001F
+
+#define ITEM_EXCHANGE_DONE              0x0023 // PSOBB 1.0 服务端 副指令发送 S->C 8字节
+
+
+
+
 #define GUILD_SEARCH_TYPE               0x0040
 #define GUILD_REPLY_TYPE                0x0041
 #define QUEST_FILE_TYPE                 0x0044

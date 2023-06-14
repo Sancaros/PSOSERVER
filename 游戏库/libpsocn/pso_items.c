@@ -3765,7 +3765,7 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
         ++cur;
     }
 
-    ERR_LOG("物品ID不存在 %06X", cur->code);
+    //ERR_LOG("物品ID不存在 %06X", cur->code);
 
     /* No item found... */
     return unknow_name;

@@ -155,7 +155,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
     pkt.shdr.type = SUBCMD60_CREATE_ITEM;
-    pkt.shdr.size = 0x07;
+    pkt.shdr.size = sizeof(pkt) / 4;
     pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
@@ -673,4 +673,3 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     return sent;
 }
-

@@ -12698,3 +12698,17 @@ int send_bb_quest_state(ship_client_t* c) {
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
+
+/* 物品兑换完成 */
+int send_bb_ex_item_done(ship_client_t* c, uint32_t done) {
+    bb_item_exchange_done_pkt pkt = { 0 };
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_len = LE16(sizeof(bb_item_exchange_done_pkt));
+    pkt.hdr.pkt_type = LE16(ITEM_EXCHANGE_DONE);
+    pkt.hdr.flags = done;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
+

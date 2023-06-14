@@ -241,6 +241,8 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
     data->exp = (uint32_t)strtoul(row[20], NULL, 0);
     data->meseta = (uint32_t)strtoul(row[21], NULL, 0);
 
+    psocn_db_result_free(result);
+
     return 0;
 }
 

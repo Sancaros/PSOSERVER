@@ -868,8 +868,11 @@ typedef struct bb_quest_chunk {
 // Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
 // This version of the command has no other arguments.
 
-// 23 (S->C): Unknown (BB)
-// header.flag is used, but the command has no other arguments.
+// 23 (S->C): Exchange Done 物品交换完成 (BB)
+// hdr.flags 已使用, 但这个指令没有任何参数.
+typedef struct bb_item_exchange_done {
+    bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
+} PACKED bb_item_exchange_done_pkt;
 
 // 24 (S->C): Unknown (BB)
 //struct S_Unknown_BB_24 {

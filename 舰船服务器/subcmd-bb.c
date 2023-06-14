@@ -3398,10 +3398,10 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     }
 
     /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge || l->battle) {
-        /* 数据包完成, 发送至游戏房间. */
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //if (l->challenge || l->battle) {
+    //    /* 数据包完成, 发送至游戏房间. */
+    //    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     /* Look for the item in the user's inventory. */
     inv = c->bb_pl->inv.item_count;
@@ -3527,10 +3527,10 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     }
 
     /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge || l->battle) {
-        /* 数据包完成, 发送至游戏房间. */
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //if (l->challenge || l->battle) {
+    //    /* 数据包完成, 发送至游戏房间. */
+    //    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     if (pkt->item_id != 0xFFFFFFFF) {
         /* 查找用户库存中的物品. */
@@ -4542,6 +4542,12 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+        /* Momoka Item Exchange  Momoka物品交换 */
+    case SUBCMD60_EX_ITEM_MK:
+        UNK_CSPD(type, c->version, (uint8_t*)pkt);
+        sent = 0;
+        break;
 
     case SUBCMD60_UNKNOW_1C:
         //subcmd_bb_Unknown_6x1C_t

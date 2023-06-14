@@ -2749,7 +2749,14 @@ typedef struct subcmd_bb_warp_item {
 
 // 0xD7: Invalid subcommand
 // 0xD8: Invalid subcommand
-// 0xD9: Invalid subcommand
+
+// 0xD9: Momoka Item Exchange  Momoka物品交换
+typedef struct subcmd_bb_UNKNOW_0xD9 {
+    bb_pkt_hdr_t hdr;
+    params_hdr_t shdr;
+    uint8_t data[0];
+} PACKED subcmd_bb_UNKNOW_0xD9_t;
+
 // 0xDA: Invalid subcommand
 
 // 0xDB: Unknown 24字节
