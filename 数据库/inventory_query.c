@@ -300,7 +300,6 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
     i++;
     item->flags = (uint32_t)strtoul(row[i], &endptr, 16);
     i++;
-    
 
     item->data.data_b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
