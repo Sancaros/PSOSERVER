@@ -40,22 +40,6 @@
 #pragma pack(push, 1) 
 #endif
 
-/* 商店物品结构 */
-typedef struct shop_item {
-	union sitem_data {
-		uint8_t data_b[12];
-		uint16_t data_w[6];//宽字节
-		uint32_t data_l[3];
-	};
-	uint32_t sitem_id;              /* Set to 0xFFFFFFFF */
-	union cost
-	{
-		uint8_t costb[4];
-		uint16_t costw[2];
-		uint32_t costl;
-	};
-} PACKED sitem_t;
-
 /* 商店物品参数 */
 typedef struct shop_item_params {
 	struct mt19937_state* 随机因子;
@@ -78,7 +62,7 @@ typedef struct shop_data {
     uint8_t shop_type;
     uint8_t num_items;
     uint16_t reserved2;
-    sitem_t item[0x18];
+	item_t item[0x18];
     uint8_t reserved4[16];
 } PACKED shop_data_t;
 
@@ -93,7 +77,7 @@ typedef struct shop_data {
 uint32_t get_bb_shop_price(iitem_t* ci);
 
 /* 生成商店物品 */
-sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子);
+item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子);
 
 const static char* shop_files[] = {
     "System\\Shop\\shop.dat",

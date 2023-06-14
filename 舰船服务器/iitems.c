@@ -259,16 +259,44 @@ uint32_t primary_identifier(item_t* i) {
 }
 
 size_t stack_size_for_item(item_t item) {
-    if (item.data_b[0] == ITEM_TYPE_MESETA)
+
+    switch (item.data_b[0])
+    {
+    case ITEM_TYPE_MESETA:
         return 999999;
 
-    if (item.data_b[0] == ITEM_TYPE_TOOL)
-        if ((item.data_b[1] < 9) && (item.data_b[1] != ITEM_SUBTYPE_DISK))
-            return 10;
-        else if (item.data_b[1] == ITEM_SUBTYPE_PHOTON)
+    case ITEM_TYPE_TOOL:
+
+        switch (item.data_b[1])
+        {
+            /* 支持大量堆叠 */
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+        case ITEM_SUBTYPE_SOL_ATOMIZER:
+        case ITEM_SUBTYPE_MOON_ATOMIZER:
+        case ITEM_SUBTYPE_STAR_ATOMIZER:
+        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_TELEPIPE:
+        case ITEM_SUBTYPE_TRAP_VISION:
+        case ITEM_SUBTYPE_GRINDER:
+        case ITEM_SUBTYPE_MATERIAL:
+        case ITEM_SUBTYPE_MAG_CELL1:
+        case ITEM_SUBTYPE_MONSTER_LIMBS:
+        case ITEM_SUBTYPE_MAG_CELL2:
+        case ITEM_SUBTYPE_ADD_SLOT:
+        case ITEM_SUBTYPE_PHOTON:
             return 99;
 
-    return 1;
+        case ITEM_SUBTYPE_DISK:
+            return 1;
+
+
+        default:
+            return 10;
+        }
+    }
+
+    return 0;
 }
 
 /* 获取背包中目标物品所在槽位 */
@@ -307,7 +335,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(inv[i].data.data_l[0])) && amt != EMPTY_STRING) {
+    if(stack_size_for_item(inv[i].data) && amt != EMPTY_STRING) {
         tmp = inv[i].data.data_b[5];
 
         if(amt < tmp) {
@@ -321,44 +349,6 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
        question used to occupy. */
     memmove(inv + i, inv + i + 1, (inv_count - i - 1) * sizeof(iitem_t));
     return 1;
-}
-
-/* 新增背包物品操作 */
-int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it) {
-    int i, rv = 1;
-
-    /* Make sure there's space first. */
-    if(inv_count >= MAX_PLAYER_INV_ITEMS) {
-        return -1;
-    }
-
-    //DBG_LOG("新增背包前 %d", inv_count);
-
-    /* Look for the item in question. If it exists, we're in trouble! */
-    for(i = 0; i < inv_count; ++i) {
-        if(inv[i].data.item_id == it->data.item_id) {
-            rv = -1;
-        }
-    }
-
-    /* Check if the item is stackable, since we may have to do some stuff
-       differently... */
-    if(item_is_stackable(LE32(it->data.data_l[0]))) {
-        /* Look for anything that matches this item in the inventory. */
-        for(i = 0; i < inv_count; ++i) {
-            if(inv[i].data.data_l[0] == it->data.data_l[0]) {
-                inv[i].data.data_b[5] += it->data.data_b[5];
-                rv = 1;
-            }
-        }
-    }
-
-    /* Copy the new item in at the end. */
-    inv[inv_count++] = *it;
-
-    //DBG_LOG("新增背包后 %d", inv_count);
-
-    return rv;
 }
 
 /* 背包物品操作 */
@@ -389,7 +379,7 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it) {
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(it->data.data_l[0]))) {
+    if(stack_size_for_item(it->data)) {
         /* Look for anything that matches this item in the inventory. */
         for(i = 0; i < count; ++i) {
             if(c->bb_pl->bank.bitems[i].data.data_l[0] == it->data.data_l[0]) {
@@ -431,7 +421,7 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(item_is_stackable(LE32(it->data.data_l[0]))) {
+    if(stack_size_for_item(it->data)) {
         if(amt < it->data.data_b[5]) {
             it->data.data_b[5] -= amt;
             it->amount = LE16(it->data.data_b[5]);
@@ -455,21 +445,6 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
     c->bb_pl->bank.item_count = LE32(count);
 
     return 1;
-}
-
-/* 堆叠物品检测 */
-int item_is_stackable(uint32_t code) {
-    if((code & 0x000000FF) == 0x03) {
-        code = (code >> 8) & 0xFF;
-        if(code < 0x1A && code != 0x02) {
-            return 1;
-        }
-        //if(code < 0x09 && code != 0x02) {
-        //    return 1;
-        //}
-    }
-
-    return 0;
 }
 
 //检查装备穿戴标记item_equip_flags
@@ -751,7 +726,8 @@ int item_class_tag_equip_flag(ship_client_t* c) {
     return 0;
 }
 
-int add_inv_item(ship_client_t* c, iitem_t* iitem) {
+/* 新增背包物品 */
+int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
     uint32_t pid = primary_identifier(&iitem->data);
 
     // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
@@ -787,11 +763,8 @@ int add_inv_item(ship_client_t* c, iitem_t* iitem) {
 
     // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
     // go into an empty inventory slot
-    if (c->bb_pl->inv.item_count >= 30) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-            c->guildcard);
+    if (c->bb_pl->inv.item_count >= 30)
         return -1;
-    }
 
     memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
     c->bb_pl->inv.item_count++;

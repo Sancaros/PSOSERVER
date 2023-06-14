@@ -216,12 +216,12 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
     return (uint32_t)price;
 }
 
-sitem_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
+item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
     static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
     static const uint8_t max_tech_lvl[4] = { 8, 15, 23, 30 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
-    sitem_t item = { 0 };
+    item_t item = { 0 };
     uint32_t tmp_value = 0;
     item.data_b[0] = 物品类型;
 

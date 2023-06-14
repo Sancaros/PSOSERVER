@@ -52,8 +52,6 @@
 
 extern volatile sig_atomic_t shutting_down;
 
-#define MIN(a, b) (a < b ? a : b)
-
 #define MAX_DRESS_FLAGS 500
 
 /* This stuff is cached at the start of the program */
@@ -694,8 +692,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         }
 
         /* 获取玩家角色背包数据数据项 */
-        if(db_get_char_inventory(c->guildcard, pkt->slot, &char_data->inv, flags))
-            db_insert_inventory(&char_data->inv, c->guildcard, pkt->slot);
+        if(db_get_char_inv(c->guildcard, pkt->slot, &char_data->inv, flags))
+            db_insert_char_inv(&char_data->inv, c->guildcard, pkt->slot);
 
         if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"

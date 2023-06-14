@@ -23,9 +23,11 @@
     <ClInclude Include="database_query.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="bank_query.c" />
     <ClCompile Include="database.c" />
     <ClCompile Include="database_config.c" />
     <ClCompile Include="auth_query.c" />
+    <ClCompile Include="inventory_query.c" />
     <ClCompile Include="shipgate_query.c" />
     <ClCompile Include="common_query.c" />
   </ItemGroup>

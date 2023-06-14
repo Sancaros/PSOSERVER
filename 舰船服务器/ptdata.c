@@ -153,8 +153,6 @@ typedef struct fpt_v2_entry {
 #define LOG(team, ...) team_log_write(team, TLOG_DROPS, __VA_ARGS__)
 #define LOGV(team, ...) team_log_write(team, TLOG_DROPSV, __VA_ARGS__)
 
-#define MIN(x, y) (x < y ? x : y)
-
 static const int tool_base[28] = {
     Item_Monomate, Item_Dimate, Item_Trimate,
     Item_Monofluid, Item_Difluid, Item_Trifluid,
@@ -2025,8 +2023,10 @@ static int generate_tool_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     /* Clear the rest of the item. */
     item[1] = item[2] = item[3] = 0;
 
+    item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if(item_is_stackable(item[0])) {
+    if(stack_size_for_item(tmp_item)) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2066,8 +2066,10 @@ static int generate_tool_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     /* Clear the rest of the item. */
     item[1] = item[2] = item[3] = 0;
 
+    item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if(item_is_stackable(item[0])) {
+    if(stack_size_for_item(tmp_item)) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2107,8 +2109,10 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     /* Clear the rest of the item. */
     item[1] = item[2] = item[3] = 0;
 
+    item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if (item_is_stackable(item[0])) {
+    if (stack_size_for_item(tmp_item)) {
 #ifdef DEBUG
         if (l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2472,7 +2476,9 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -2692,8 +2698,10 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
             item[0] = ntohl(obj->dword[2]);
             item[1] = item[2] = item[3] = 0;
 
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(item_is_stackable(item[0]))
+            if(stack_size_for_item(tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -2779,7 +2787,9 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3082,7 +3092,9 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3367,8 +3379,10 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                       ntohl(obj->dword[2]));
 #endif
 
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(item_is_stackable(item[0]))
+            if(stack_size_for_item(tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -3469,7 +3483,9 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3784,7 +3800,9 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -4062,8 +4080,10 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
             item[0] = ntohl(obj->dword[2]);
             item[1] = item[2] = item[3] = 0;
 
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(item_is_stackable(item[0]))
+            if(stack_size_for_item(tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -4145,7 +4165,9 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 /* Tool -- Give it a quantity of 1 if its stackable. */
                 item[1] = item[2] = item[3] = 0;
 
-                if(item_is_stackable(item[0]))
+                item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+                if(stack_size_for_item(tmp_item))
                     item[1] = (1 << 8);
                 break;
 

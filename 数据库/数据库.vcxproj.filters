@@ -38,5 +38,11 @@
     <ClCompile Include="common_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="inventory_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bank_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -123,20 +123,26 @@ int db_delete_online_clients(char* ship_name, uint16_t id);
 /* 初始化临时角色数据表 */
 int db_delete_transient_clients(char* ship_name, uint16_t id);
 
+///////////////////////////////////////////////////////
+//玩家背包数据库操作
+
+/* 新增玩家背包数据至数据库 */
+int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot);
+
+/* 更新玩家背包数据至数据库 */
+int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot);
+
+/* 获取玩家角色背包数据数据项 */
+int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check);
+
+/* 优先获取背包数据库中的数量 */
+uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot);
+
 /* 获取玩家背包数据checkum */
 uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot);
 
-/* 新增玩家背包数据至数据库 */
-int db_insert_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
-
-/* 更新玩家背包数据至数据库 */
-int db_update_inventory(inventory_t* inv, uint32_t gc, uint8_t slot);
-
-/* 获取玩家角色背包数据数据项 */
-int db_get_char_inventory(uint32_t gc, uint8_t slot, inventory_t* inv, int check);
-
-/* 更新角色更衣室数据 暂时弃用*/
-//int db_update_char_inventory(inventory_t* inv, uint32_t gc, uint8_t slot, uint32_t flag);
+///////////////////////////////////////////////////////
+//玩家银行数据库操作
 
 /* 新增玩家银行背包数据至数据库 */
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);

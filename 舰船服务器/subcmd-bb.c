@@ -342,7 +342,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
 
 static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    int found;
+    int pick_count;
     uint32_t item, tmp;
     iitem_t iitem_data = { 0 };
 
@@ -365,11 +365,11 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     }
 
     /* 尝试从大厅物品栏中移除... */
-    found = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
-    if (found < 0) {
+    pick_count = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
+    if (pick_count < 0) {
         return -1;
     }
-    else if (found > 0) {
+    else if (pick_count > 0) {
         /* 假设别人已经捡到了, 就忽略它... */
         return 0;
     }
@@ -393,16 +393,12 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
             iitem_data.tech = 0;
 
             /* Add the item to the client's inventory. */
-            found = item_add_to_inv(c->bb_pl->inv.iitems,
-                c->bb_pl->inv.item_count, &iitem_data);
+            pick_count = item_add_to_inv(c, &iitem_data);
 
-            if (found == -1) {
-                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-                    c->guildcard);
-                return -1;
-            }
+            if (pick_count == -1)
+                return 0;
 
-            c->bb_pl->inv.item_count += found;
+            c->bb_pl->inv.item_count += pick_count;
             c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
         }
     }
@@ -509,7 +505,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
 static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
     lobby_t* l = c->cur_lobby;
     block_t* b = c->cur_block;
-    sitem_t item_data;
+    item_t item_data;
     uint32_t shop_type = LE32(req->shop_type);
     uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
 
@@ -520,8 +516,8 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
     }
 
     for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&c->game_data->shop_items[i], 0, sizeof(sitem_t));
-        memset(&item_data, 0, sizeof(sitem_t));
+        memset(&c->game_data->shop_items[i], 0, sizeof(item_t));
+        memset(&item_data, 0, sizeof(item_t));
 
         switch (shop_type) {
         case BB_SHOPTYPE_TOOL:// 工具商店
@@ -541,9 +537,9 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
             return -1;
         }
 
-        item_data.sitem_id = generate_item_id(l, c->client_id);
+        item_data.item_id = generate_item_id(l, c->client_id);
 
-        memcpy(&c->game_data->shop_items[i], &item_data, sizeof(sitem_t));
+        memcpy(&c->game_data->shop_items[i], &item_data, sizeof(item_t));
     }
 
     return subcmd_bb_send_shop(c, shop_type, num_items);
@@ -591,7 +587,7 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     print_iitem_data(&ii, 0, c->version);
 
-    if (add_inv_item(c, &ii)) {
+    if (item_add_to_inv(c, &ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             c->guildcard);
         return -1;
@@ -742,7 +738,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
 
         cleanup_lobby_item(l);
 
-        if (add_inv_item(c, id_result)) {
+        if (item_add_to_inv(c, id_result)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 c->guildcard);
             return -1;
@@ -888,7 +884,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 return -1;
             }
 
-            stack = item_is_stackable(iitem.data.data_l[0]);
+            stack = stack_size_for_item(iitem.data);
 
             if (!stack && pkt->item_amount > 1) {
                 ERR_LOG("GC %" PRIu32 " banking multiple of "
@@ -995,9 +991,9 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             ++l->bitem_player_id[c->client_id];
 
             /* 新增至玩家背包中... */
-            found = item_add_to_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, &iitem);
+            found = item_add_to_inv(c, &iitem);
 
-            if (found < 0) {
+            if (found == -1) {
                 /* Uh oh... Guess we should put it back in the bank... */
                 item_deposit_to_bank(c, &bitem);
                 return -1;
@@ -1245,7 +1241,7 @@ int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
 
 static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
-    uint32_t iitem_count, found, i;
+    uint32_t iitem_count, found, i, stack;
     uint32_t wrap_id;
     iitem_t backup_item;
 
@@ -1266,7 +1262,7 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
     }
 
     if (backup_item.data.item_id) {
-        //stack = item_is_stackable(backup_item.data.data_l[0]);
+        stack = stack_size_for_item(backup_item.data);
 
         //if (!stack && pkt->item_amount > 1) {
         //    ERR_LOG("GC %" PRIu32 " banking multiple of "
@@ -1296,14 +1292,10 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
             backup_item.data.data_b[4] |= 0x40; // Wrap other
 
         /* 将物品新增至背包. */
-        found = item_add_to_inv(c->bb_pl->inv.iitems,
-            c->bb_pl->inv.item_count, &backup_item);
+        found = item_add_to_inv(c, &backup_item);
 
-        if (found == -1) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法拾取!",
-                c->guildcard);
-            //return -1;
-        }
+        if (found == -1)
+            return 0;
 
         c->bb_pl->inv.item_count += found;
         c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
@@ -1428,7 +1420,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
-    DBG_LOG("client num %d 0x62/0x6D 指令: 0x%02X", dnum, type);
+    //DBG_LOG("client num %d 0x62/0x6D 指令: 0x%02X", dnum, type);
 
     pthread_mutex_lock(&l->mutex);
 
@@ -4507,7 +4499,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
-    DBG_LOG("玩家 0x60 指令: 0x%02X", type);
+    //DBG_LOG("玩家 0x60 指令: 0x%02X", type);
 
     pthread_mutex_lock(&l->mutex);
 

@@ -959,7 +959,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         goto send_pkt;
 
     /* See if its a stackable item, since we have to treat them differently. */
-    if(item_is_stackable(v)) {
+    if(stack_size_for_item(pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
@@ -1387,7 +1387,7 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
         return -1;
 
     /* Make a note of the item ID, and add to the inventory */
-    l->item_player_id[c->client_id] = LE32(pkt->data.sitem_id);
+    l->item_player_id[c->client_id] = LE32(pkt->data.item_id);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -1395,7 +1395,7 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
     ic = LE32(pkt->data.data_l[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
-    if(item_is_stackable(ic)) {
+    if(stack_size_for_item(pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */

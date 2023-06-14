@@ -60,8 +60,6 @@ size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id);
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
-/* 新增背包物品操作 */
-int item_add_to_inv(iitem_t *inv, int inv_count, iitem_t *it);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);
@@ -69,8 +67,6 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it);
 int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
                         bitem_t *rv);
 
-/* 堆叠物品检测 */
-int item_is_stackable(uint32_t code);
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
@@ -78,7 +74,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
 int item_class_tag_equip_flag(ship_client_t* c);
 
 /* 增加背包物品 */
-int add_inv_item(ship_client_t* c, iitem_t* iitem);
+int item_add_to_inv(ship_client_t* c, iitem_t* iitem);
 
 /* 移除背包物品 */
 iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);

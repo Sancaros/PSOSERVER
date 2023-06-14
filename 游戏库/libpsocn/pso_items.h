@@ -66,6 +66,10 @@
 #define ITEM_SUBTYPE_TRAP_VISION        0x08
 #define ITEM_SUBTYPE_GRINDER            0x0A
 #define ITEM_SUBTYPE_MATERIAL           0x0B
+#define ITEM_SUBTYPE_MAG_CELL1          0x0C
+#define ITEM_SUBTYPE_MONSTER_LIMBS      0x0D
+#define ITEM_SUBTYPE_MAG_CELL2          0x0E
+#define ITEM_SUBTYPE_ADD_SLOT           0x0F
 #define ITEM_SUBTYPE_PHOTON             0x10
 
 /* Default behaviors for the item lists. ITEM_DEFAULT_ALLOW means to accept any

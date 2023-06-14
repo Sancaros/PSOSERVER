@@ -22,7 +22,7 @@
 /* 数据库连接 */
 extern psocn_dbconn_t conn;
 
-int db_upload_temp_data(void* data, uint32_t size) {
+int db_upload_temp_data(void* data, size_t size) {
 
     memset(myquery, 0, sizeof(myquery));
 

@@ -155,6 +155,13 @@ extern int32_t script_log_console_show;
                  ((x & 0x000000FF) << 56))
 #endif
 
+
+/* 三目运算 对比 a b 的值 返回最大的值 相等则返回 b */
+#define MAX(a, b) (a > b ? a : b)
+
+/* 三目运算 对比 a b 的值 返回最小的值 相等则返回 b */
+#define MIN(a, b) (a < b ? a : b)
+
 #define PRINT_IP_FORMAT "%u.%u.%u.%u"
 #define PRINT_HIP(x)\
        ((x >> 0) & 0xFF),\

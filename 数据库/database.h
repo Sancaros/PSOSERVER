@@ -54,6 +54,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_BACKUP "character_backup"
 #define CHARACTER_BANK "character_bank"
 #define CHARACTER_BANK_ITEMS "character_bank_items"
+#define CHARACTER_BANK_ITEMS_BACKUP "character_bank_items_backup"
 #define CHARACTER_BATTLE "character_battle"
 #define CHARACTER_BLACKLIST "character_blacklist"
 #define CHARACTER_CHALLENGE "character_challenge"
@@ -64,6 +65,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_GCDATA "character_gcdata"
 #define CHARACTER_INVENTORY "character_inventory"
 #define CHARACTER_INVENTORY_ITEMS "character_inventory_items"
+#define CHARACTER_INVENTORY_ITEMS_BACKUP "character_inventory_items_backup"
 #define CHARACTER_TRADE "character_trade"
 
 #define CLIENTS_GUILD "clients_guild"

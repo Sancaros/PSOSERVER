@@ -2535,7 +2535,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_inventory(&char_data->inv, gc, slot)) {
+    if (db_update_char_inv(&char_data->inv, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
@@ -2864,9 +2864,9 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     bb_data = (psocn_bb_db_char_t*)data;
 
     /* 从背包数据库中获取玩家角色的背包数据 */
-    if (db_get_char_inventory(gc, slot, &bb_data->inv, 0)) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
-        db_insert_inventory(&bb_data->inv, gc, slot);
+    if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
+        //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
+        db_insert_char_inv(&bb_data->inv, gc, slot);
     }
 
     /* 从数据库中获取玩家角色数值数据 */
@@ -2881,7 +2881,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     /* 从银行数据库中获取玩家角色的银行数据 */
     if (db_get_char_bank(gc, slot, &bb_data->bank, 0)) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
+        //SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         db_insert_bank(&bb_data->bank, gc, slot);
     }
 

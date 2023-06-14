@@ -1594,14 +1594,15 @@ static int client_sendMenu_lua(lua_State *l) {
 static int client_dropItem_lua(lua_State *l) {
     ship_client_t *c;
     lobby_t *lb;
-    uint32_t item[4] = { 0, 0, 0, 0 };
+    //uint32_t item[4] = { 0, 0, 0, 0 };
+    item_t item = { 0 };
     subcmd_drop_stack_t p2 = { 0 };
 
     /* We need at least the client itself and the first dword of the item */
     if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
         c = (ship_client_t *)lua_touserdata(l, 1);
         lb = c->cur_lobby;
-        item[0] = (uint32_t)lua_tointeger(l, 2);
+        item.data_l[0] = (uint32_t)lua_tointeger(l, 2);
 
         /* Make sure we're in a team, not a regular lobby... */
         if(lb->type != LOBBY_TYPE_GAME) {
@@ -1611,22 +1612,22 @@ static int client_dropItem_lua(lua_State *l) {
 
         /* Check all the optional arguments */
         if(lua_isinteger(l, 3)) {
-            item[1] = (uint32_t)lua_tointeger(l, 3);
+            item.data_l[1] = (uint32_t)lua_tointeger(l, 3);
 
             if(lua_isinteger(l, 4)) {
-                item[2] = (uint32_t)lua_tointeger(l, 4);
+                item.data_l[2] = (uint32_t)lua_tointeger(l, 4);
 
                 if(lua_isinteger(l, 5)) {
-                    item[3] = (uint32_t)lua_tointeger(l, 5);
+                    item.data2_l = (uint32_t)lua_tointeger(l, 5);
                 }
             }
         }
 
         /* Do some basic checks of the item... */
-        if(item_is_stackable(item[0]) && !(item[1] & 0x0000FF00)) {
+        if(stack_size_for_item(item) && !(item.data_l[1] & 0x0000FF00)) {
             /* If the item is stackable and doesn't have a quantity, give one
                of it. */
-            item[1] |= (1 << 8);
+            item.data_l[1] |= (1 << 8);
         }
 
         /* Generate the packet to drop the item */
@@ -1640,11 +1641,11 @@ static int client_dropItem_lua(lua_State *l) {
         p2.unk = LE16(0);
         p2.x = c->x;
         p2.z = c->z;
-        p2.data.data_l[0] = LE32(item[0]);
-        p2.data.data_l[1] = LE32(item[1]);
-        p2.data.data_l[2] = LE32(item[2]);
+        p2.data.data_l[0] = LE32(item.data_l[0]);
+        p2.data.data_l[1] = LE32(item.data_l[1]);
+        p2.data.data_l[2] = LE32(item.data_l[2]);
         p2.data.item_id = LE32(lb->item_next_lobby_id);
-        p2.data.data2_l = LE32(item[3]);
+        p2.data.data2_l = LE32(item.data2_l);
         p2.two = LE32(0x00000002);
         ++lb->item_next_lobby_id;
 

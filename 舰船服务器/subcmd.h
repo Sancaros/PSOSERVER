@@ -1186,7 +1186,7 @@ typedef struct subcmd_bb_drop_stack {
 typedef struct subcmd_buy {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    sitem_t data;
+    item_t data;
 } PACKED subcmd_buy_t;
 
 // 0x5E: change_chair
@@ -2396,7 +2396,7 @@ typedef struct subcmd_bb_shop_inv {
     uint8_t num_items;
     uint16_t unused2;                   /* Set to 0 */
     // Note: costl of these entries should be the price
-    sitem_t items[0x14];
+    item_t items[0x14];
 } PACKED subcmd_bb_shop_inv_t;
 
 // 0xB7: Unknown (Episode 3 Trial Edition)

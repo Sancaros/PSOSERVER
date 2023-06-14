@@ -551,18 +551,18 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
         rv = -1;
     }
 
-    uint16_t len = LE16(0x0016) + num_items * sizeof(sitem_t);
+    uint16_t len = LE16(0x0016) + num_items * sizeof(item_t);
 
     for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&shop->items[i], 0, sizeof(sitem_t));
+        memset(&shop->items[i], 0, sizeof(item_t));
         shop->items[i] = c->game_data->shop_items[i];
     }
 
-    shop->hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * sizeof(sitem_t)
+    shop->hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * sizeof(item_t)
     shop->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
     shop->hdr.flags = 0;
     shop->shdr.type = SUBCMD60_SHOP_INV;
-    shop->shdr.size = (uint8_t)sizeof(c->game_data->shop_items);
+    shop->shdr.size = sizeof(c->game_data->shop_items) / 4;
     shop->shdr.params = LE16(0x037F);
     shop->shop_type = shop_type;
     shop->num_items = num_items;
