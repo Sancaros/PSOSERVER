@@ -575,11 +575,12 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     /* 如果是堆叠物品 */
     if (pkt->num_bought <= stack_size_for_item(ii.data)) {
         ii.data.data_b[5] = pkt->num_bought;
-    } else {
+    }
+    else {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
             c->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return -1;
+        return 0;
     }
 
     l->item_player_id[c->client_id] = pkt->new_inv_item_id;
@@ -593,7 +594,8 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
         return -1;
     }
 
-    subcmd_send_bb_delete_meseta(c, ii.data.data2_l, 0);
+    uint32_t price = ii.data.data2_l * pkt->num_bought;
+    subcmd_send_bb_delete_meseta(c, price, 0);
 
     return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 1);
 }

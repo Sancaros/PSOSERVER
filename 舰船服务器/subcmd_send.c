@@ -535,43 +535,31 @@ int subcmd_send_bb_level(ship_client_t* c) {
 // 向玩家发送货物清单
 int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
     block_t* b = c->cur_block;
-    subcmd_bb_shop_inv_t* shop = { 0 };
-    int rv = 0;
+    subcmd_bb_shop_inv_t shop = { 0 };
 
-    shop = (subcmd_bb_shop_inv_t*)malloc(sizeof(subcmd_bb_shop_inv_t));
-
-    if (!shop) {
-        ERR_LOG("无法分配商店物品清单内存");
-        rv = -1;
-    }
-
-    if (num_items > sizeof(shop->items) / sizeof(shop->items[0])) {
+    if (num_items > sizeof(shop.items) / sizeof(shop.items[0])) {
         ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! %d %d",
-            c->guildcard, num_items, sizeof(shop->items) / sizeof(shop->items[0]));
-        rv = -1;
+            c->guildcard, num_items, sizeof(shop.items) / sizeof(shop.items[0]));
+        return -1;
     }
 
     uint16_t len = LE16(0x0016) + num_items * sizeof(item_t);
 
     for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&shop->items[i], 0, sizeof(item_t));
-        shop->items[i] = c->game_data->shop_items[i];
+        memset(&shop.items[i], 0, sizeof(item_t));
+        shop.items[i] = c->game_data->shop_items[i];
     }
 
-    shop->hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * sizeof(item_t)
-    shop->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
-    shop->hdr.flags = 0;
-    shop->shdr.type = SUBCMD60_SHOP_INV;
-    shop->shdr.size = sizeof(c->game_data->shop_items) / 4;
-    shop->shdr.params = LE16(0x037F);
-    shop->shop_type = shop_type;
-    shop->num_items = num_items;
+    shop.hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * sizeof(item_t)
+    shop.hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
+    shop.hdr.flags = 0;
+    shop.shdr.type = SUBCMD60_SHOP_INV;
+    shop.shdr.size = sizeof(c->game_data->shop_items) / 4;
+    shop.shdr.params = LE16(0x037F);
+    shop.shop_type = shop_type;
+    shop.num_items = num_items;
 
-    //print_payload((unsigned char*)&shop, LE16(shop.hdr.pkt_len));
-
-    rv = send_pkt_bb(c, (bb_pkt_hdr_t*)shop);
-    free_safe(shop);
-    return rv;
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&shop);
 }
 
 int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {

@@ -296,7 +296,7 @@ size_t stack_size_for_item(item_t item) {
         }
     }
 
-    return 0;
+    return 1;
 }
 
 /* 获取背包中目标物品所在槽位 */
