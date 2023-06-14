@@ -52,6 +52,35 @@ typedef struct command {
     int (*hnd)(ship_client_t *c, const char *params);
 } command_t;
 
+/* 用法: /debug 0 | 1*/
+static int handle_gmdebug(ship_client_t* c, const char* params) {
+    unsigned long param;
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
+
+    /* Figure out the floor requested */
+    errno = 0;
+    param = strtoul(params, NULL, 10);
+
+    if (errno) {
+        /* Send a message saying invalid area */
+        return send_txt(c, "%s", __(c, "\tE\tC7未选择开启或关闭 1或0."));
+    }
+
+    if (param == 1) {
+        c->game_data->gm_debug = 1;
+        return send_txt(c, "%s", __(c, "\tE\tC6DEBUG模式开启."));
+    }
+    else {
+        c->game_data->gm_debug = 0;
+        return send_txt(c, "%s", __(c, "\tE\tC4DEBUG模式关闭."));
+    }
+}
+
 /* 用法: /warp area */
 static int handle_warp(ship_client_t *c, const char *params) {
     unsigned long area;
@@ -3576,6 +3605,7 @@ static int handle_cleanbank(ship_client_t* c, const char* params) {
 }
 
 static command_t cmds[] = {
+    { "debug"    , handle_gmdebug   },
     { "warp"     , handle_warp      },
     { "kill"     , handle_kill      },
     { "minlvl"   , handle_min_level },

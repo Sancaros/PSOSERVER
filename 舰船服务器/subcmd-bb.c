@@ -626,10 +626,14 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 
         tek_item_slot = find_inv_item_slot(&c->bb_pl->inv, pkt->item_id);
 
+        /* 获取鉴定物品的内存指针 */
         iitem_t* id_result = &(c->game_data->identify_result);
+
+        /* 获取背包鉴定物品所在位置的数据 */
         id_result->data = c->bb_pl->inv.iitems[tek_item_slot].data;
 
-        print_iitem_data(id_result, tek_item_slot, c->version);
+        if (c->game_data->gm_debug)
+            print_iitem_data(id_result, tek_item_slot, c->version);
 
         if (id_result->data.data_b[0] != ITEM_TYPE_WEAPON) {
             ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
