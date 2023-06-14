@@ -244,13 +244,13 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
     }
 
     int i = 2;
-    inv->item_count = (uint8_t)strtoul(row[i], NULL, 0);
+    inv->item_count = (uint8_t)strtoul(row[i], NULL, 16);
     i++;
-    inv->hpmats_used = (uint8_t)strtoul(row[i], NULL, 0);
+    inv->hpmats_used = (uint8_t)strtoul(row[i], NULL, 16);
     i++;
-    inv->tpmats_used = (uint8_t)strtoul(row[i], NULL, 0);
+    inv->tpmats_used = (uint8_t)strtoul(row[i], NULL, 16);
     i++;
-    inv->language = (uint8_t)strtoul(row[i], NULL, 0);
+    inv->language = (uint8_t)strtoul(row[i], NULL, 16);
 
     psocn_db_result_free(result);
 
@@ -260,6 +260,7 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
 static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int item_index, int check) {
     void* result;
     char** row;
+    char* endptr;
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -293,47 +294,96 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
     }
 
     int i = 4;
-    sscanf(row[i], "%hx", &item->present);
+    item->present = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%hx", &item->tech);
+    item->tech = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%X", &item->flags);
+    item->flags = (uint32_t)strtoul(row[i], &endptr, 16);
+    i++;
+    
+
+    item->data.data_b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data_b[11] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    /* 获取物品的二进制数据 */
-    sscanf(row[i], "%hhx", &item->data.data_b[0]);
+    item->data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[1]);
+
+    item->data.data2_b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[2]);
+    item->data.data2_b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[3]);
+    item->data.data2_b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[4]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[5]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[6]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[7]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[8]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[9]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[10]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data_b[11]);
-    i++;
-    sscanf(row[i], "%X", &item->data.item_id);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data2_b[0]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data2_b[1]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data2_b[2]);
-    i++;
-    sscanf(row[i], "%hhx", &item->data.data2_b[3]);
+    item->data.data2_b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+
+    if (*endptr != '\0') {
+        SQLERR_LOG("获取的物品数据 索引 %d 字符串读取有误", item_index);
+        // 转换失败，输入字符串中包含非十六进制字符
+    }
+
+    //sscanf(row[i], "%hx", &item->present);
+    //i++;
+    //sscanf(row[i], "%hx", &item->tech);
+    //i++;
+    //sscanf(row[i], "%X", &item->flags);
+    //i++;
+
+    ///* 获取物品的二进制数据 */
+    //sscanf(row[i], "%hhx", &item->data.data_b[0]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[1]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[2]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[3]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[4]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[5]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[6]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[7]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[8]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[9]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[10]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data_b[11]);
+    //i++;
+    //sscanf(row[i], "%X", &item->data.item_id);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data2_b[0]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data2_b[1]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data2_b[2]);
+    //i++;
+    //sscanf(row[i], "%hhx", &item->data.data2_b[3]);
 
     psocn_db_result_free(result);
 
@@ -377,9 +427,6 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     size_t i = 0, ic = 0;
 
     db_update_inv_param(inv, gc, slot);
-
-    if (inv->item_count == 0)
-        return 0;
 
     /* 获取数据库中 背包物品的数量 用于对比 */
     db_item_count = db_get_char_inv_item_count(gc, slot);

@@ -409,9 +409,6 @@ int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     db_update_bank_param(bank, gc, slot);
 
-    if (bank->item_count == 0)
-        return 0;
-
     db_item_count = db_get_char_bank_item_count(gc, slot);
 
     ic = MAX(bank->item_count, db_item_count);
