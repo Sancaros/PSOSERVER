@@ -343,8 +343,6 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
 /* 新增玩家背包数据至数据库 */
 int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
-    // 查询自增长 ID
-    uint32_t item_index = 0;
     int i = 0;
 
     memset(myquery, 0, sizeof(myquery));
@@ -366,10 +364,9 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
     // 遍历背包数据，插入到数据库中
     for (i; i < inv->item_count; i++) {
-        if (db_insert_inv_items(&inv->iitems[i], gc, slot, item_index)) {
-            db_update_inv_items(&inv->iitems[i], gc, slot, item_index);
+        if (db_insert_inv_items(&inv->iitems[i], gc, slot, i)) {
+            db_update_inv_items(&inv->iitems[i], gc, slot, i);
         }
-        item_index++;
     }
 
     return 0;
@@ -377,7 +374,7 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
 int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint8_t db_item_count = 0;
-    int i = 0, ic = 0;
+    size_t i = 0, ic = 0;
 
     db_update_inv_param(inv, gc, slot);
 
@@ -393,8 +390,10 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     // 遍历背包数据，插入到数据库中
     for (i = 0; i < ic; i++) {
         if (db_insert_inv_items(&inv->iitems[i], gc, slot, i)) {
-            if (db_update_inv_items(&inv->iitems[i], gc, slot, i))
+            if (db_update_inv_items(&inv->iitems[i], gc, slot, i)) {
+                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数据", gc, slot);
                 return -1;
+            }
         }
     }
 
