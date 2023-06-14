@@ -343,7 +343,7 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
 /* 新增玩家背包数据至数据库 */
 int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
-    int i = 0;
+    size_t i = 0;
 
     memset(myquery, 0, sizeof(myquery));
 

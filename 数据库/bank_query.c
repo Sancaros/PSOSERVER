@@ -372,8 +372,7 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
 /* 新增玩家银行背包数据至数据库 */
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
-    // 查询自增长 ID
-    uint32_t i = 0;
+    size_t i = 0;
 
     memset(myquery, 0, sizeof(myquery));
 
