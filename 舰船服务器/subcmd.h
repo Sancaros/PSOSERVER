@@ -1370,9 +1370,65 @@ typedef struct subcmd_bb_Unknown_6x6A {
     uint16_t unused;
 } PACKED subcmd_bb_Unknown_6x6A_t;
 
+struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
+    unused_hdr_t shdr;
+    uint32_t decompressed_size;
+    uint32_t compressed_size; // Must be <= subcommand_size - 0x10
+    uint8_t data[0]; // BC0-compressed data follows here (see bc0_decompress)
+} PACKED;
+
 // 0x6B: Sync enemy state (used while loading into game; same header format as 6E)
+// Decompressed format is a list of these
+typedef struct subcmd_bb_G_SyncEnemyState_6x6B_Entry_Decompressed {
+    // TODO: Verify this format on DC and PC. It appears correct for GC and BB.
+    uint32_t unknown_a1; // Possibly some kind of flags
+    // enemy_index is not the same as enemy_id, unfortunately - the enemy_id sent
+    // in the 6x76 command when an enemy is killed does not match enemy_index
+    uint16_t enemy_index; // FFFF = enemy is dead
+    uint16_t damage_taken;
+    uint8_t unknown_a4;
+    uint8_t unknown_a5;
+    uint8_t unknown_a6;
+    uint8_t unknown_a7;
+} PACKED subcmd_bb_G_SyncEnemyState_6x6B_Entry_Decompressed;
+
 // 0x6C: Sync object state (used while loading into game; same header format as 6E)
+// Decompressed format is a list of these
+struct G_SyncObjectState_6x6C_Entry_Decompressed {
+    // TODO: Verify this format on DC and PC. It appears correct for GC and BB.
+    uint16_t flags;
+    uint16_t object_index;
+} PACKED;
+
 // 0x6D: Sync item state (used while loading into game; same header format as 6E)
+struct G_SyncItemState_6x6D_Decompressed {
+    // TODO: Verify this format on DC and PC. It appears correct for GC and BB.
+    // Note: 16 vs. 15 is not a bug here - there really is an extra field in the
+    // total drop count vs. the floor item count. Despite this, Pioneer 2 or Lab
+    // (area 0) isn't included in total_items_dropped_per_area (so Forest 1 is [0]
+    // in that array) but it is included in floor_item_count_per_area (so Forest 1
+    // is [1] there).
+    uint16_t total_items_dropped_per_area[16];
+    // Only [0]-[3] in this array are ever actually used in normal gameplay, but
+    // the client fills in all 12 of these with reasonable values.
+    uint32_t next_item_id_per_player[12];
+    uint32_t floor_item_count_per_area[15];
+    struct FloorItem {
+        uint16_t area;
+        uint16_t unknown_a1;
+        float x;
+        float z;
+        uint16_t unknown_a2;
+        // The drop number is scoped to the area and increments by 1 each time an
+        // item is dropped. The last item dropped in each area has drop_number equal
+        // to total_items_dropped_per_area[area - 1] - 1.
+        uint16_t drop_number;
+        item_t data;
+    } PACKED;
+    // Variable-length field follows:
+    // FloorItem items[sum(floor_item_count_per_area)];
+} PACKED;
+
 // 0x6E: Sync flag state (used while loading into game)
 typedef struct subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     bb_pkt_hdr_t hdr;
