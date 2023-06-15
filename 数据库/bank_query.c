@@ -324,6 +324,7 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
         return -3;
     }
 
+    /* 获取物品的二进制数据 */
     int i = 4;
     item->amount = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
@@ -370,46 +371,6 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
         SQLERR_LOG("获取的物品数据 索引 %d 字符串读取有误", item_index);
         // 转换失败，输入字符串中包含非十六进制字符
     }
-
-    //sscanf(row[i], "%hx", &item->amount);
-    //i++;
-    //sscanf(row[i], "%hx", &item->show_flags);
-    //i++;
-
-    ///* 获取物品的二进制数据 */
-    //sscanf(row[i], "%hhx", &item->data.data_b[0]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[1]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[2]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[3]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[4]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[5]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[6]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[7]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[8]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[9]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[10]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data_b[11]);
-    //i++;
-    //sscanf(row[i], "%X", &item->data.item_id);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data2_b[0]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data2_b[1]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data2_b[2]);
-    //i++;
-    //sscanf(row[i], "%hhx", &item->data.data2_b[3]);
 
     psocn_db_result_free(result);
 
