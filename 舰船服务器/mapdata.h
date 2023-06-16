@@ -61,9 +61,9 @@ typedef struct map_enemy {
     uint32_t base;// 4 怪物的种类ID
     uint16_t reserved0;
     uint16_t num_clones;//变种数值
-    uint32_t reserved[11];
+    uint32_t reserved[10];
 	float rareratio; // 4 怪物稀有率
-    //uint32_t reserved12;
+    float reserved12;
     uint32_t reserved13;
     uint32_t exp;// 4 该怪物可获取的经验值
     uint32_t skin;// 4 检测相同类型怪物是否有皮肤 0 1
@@ -95,7 +95,7 @@ typedef struct map_object {
 #pragma pack()
 #endif
 
-struct PSOEnemy {
+typedef struct PSOEnemy {
     uint64_t id;
     uint16_t source_type;
     uint8_t hit_flags;
@@ -103,7 +103,9 @@ struct PSOEnemy {
     uint32_t experience;
     uint32_t rt_index;
     const char* type_name;
-};
+} PSOEnemy_t;
+
+size_t sds = sizeof(PSOEnemy_t);
 
 /* Enemy data as used in the game. */
 typedef struct game_enemy {
