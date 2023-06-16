@@ -105,8 +105,6 @@ typedef struct PSOEnemy {
     const char* type_name;
 } PSOEnemy_t;
 
-size_t sds = sizeof(PSOEnemy_t);
-
 /* Enemy data as used in the game. */
 typedef struct game_enemy {
     uint32_t bp_entry;
