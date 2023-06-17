@@ -974,7 +974,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("shipgate_send_lobby_chg ´íÎó");
         }
 
-        send_bb_quest_data1(c, c->bb_pl->quest_data1);
+        send_bb_quest_data1(c, &c->bb_pl->quest_data1);
 
         if (c->cur_lobby)
             send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);

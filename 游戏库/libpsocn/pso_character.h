@@ -183,6 +183,7 @@ typedef struct psocn_disp_char {
 } PACKED psocn_disp_char_t;
 
 /* 用于认证服务器的预览角色数据结构 */
+/* 不含指令头 124 字节*/
 typedef struct psocn_bb_mini_char {
     uint32_t exp;
     uint32_t level;
@@ -192,9 +193,8 @@ typedef struct psocn_bb_mini_char {
     uint32_t play_time;
 } PACKED psocn_bb_mini_char_t;
 
-static int char_bb_minisize2 = sizeof(psocn_bb_mini_char_t);
-
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
+/* 400字节 玩家外观描述数值数据*/
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
@@ -205,8 +205,7 @@ typedef struct psocn_bb_char {
     uint8_t techniques[0x14]; //20
 } PACKED psocn_bb_char_t;
 
-static int char_bb_size2 = sizeof(psocn_bb_char_t);
-
+/* v1v2v3pc 玩家数据结构 208字节 */
 typedef struct psocn_v1v2v3pc_char {
     psocn_disp_char_t disp;
     psocn_dress_data_t dress_data;
@@ -214,15 +213,13 @@ typedef struct psocn_v1v2v3pc_char {
     uint8_t techniques[0x14];
 } PACKED psocn_v1v2v3pc_char_t;
 
-static int char_v1v2v3pc_size = sizeof(psocn_v1v2v3pc_char_t);
-
-/* BB键位设置数据结构 */
+/* BB键位设置数据结构 410 字节*/
 typedef struct psocn_bb_key_config {
     uint8_t key_config[0x016C];           // 0114
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
 
-/* BB公会数据结构 TODO*/
+/* BB公会数据结构 TODO 2180字节*/
 typedef struct psocn_bb_guild {
     uint32_t guildcard;                    // 02B8         4
     uint32_t guild_id;                     // 02BC         4 
@@ -391,13 +388,19 @@ typedef struct psocn_bb_guildcard {
 
 static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
 
+typedef struct psocn_quest_data1 {
+    //uint32_t quest_guildcard;
+    uint8_t data[0x0208];                  // 玩家任务数据表1
+    //uint32_t quest_flags;
+} PACKED psocn_quest_data1_t;
+
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
     inventory_t inv;                              // 玩家数据表
     psocn_bb_char_t character;                    // 玩家数据表
     uint8_t name3[0x0010];                        // not saved
     uint32_t option_flags;                        // account
-    uint8_t quest_data1[0x0208];                  // 玩家任务数据表1
+    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1
     psocn_bank_t bank;                            // 玩家银行数据表
     psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分
     uint32_t unk2;                                // not saved
@@ -423,7 +426,7 @@ static int bb_c_fullsize2 = 0x399C;
 typedef struct psocn_bb_db_char {
     inventory_t inv;
     psocn_bb_char_t character;
-    uint8_t quest_data1[0x0208];
+    psocn_quest_data1_t quest_data1;
     psocn_bank_t bank;
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172

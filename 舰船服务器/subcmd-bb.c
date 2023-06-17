@@ -2640,7 +2640,7 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
 
     if (!checked) {
         if (flag < 0x400)
-            c->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
+            c->bb_pl->quest_data1.data[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
     }
 
     bool should_send_boss_drop_req = false;

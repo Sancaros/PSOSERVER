@@ -692,8 +692,12 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         }
 
         /* 获取玩家角色背包数据数据项 */
-        if(db_get_char_inv(c->guildcard, pkt->slot, &char_data->inv, flags))
-            db_insert_char_inv(&char_data->inv, c->guildcard, pkt->slot);
+        if (db_update_char_inv(&char_data->inv, c->guildcard, pkt->slot)) {
+            SQLERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
 
         if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
@@ -710,8 +714,25 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         }
 
         /* 获取玩家角色背包数据数据项 */
-        if (db_get_char_bank(c->guildcard, pkt->slot, &char_data->bank, flags))
-            db_insert_bank(&char_data->bank, c->guildcard, pkt->slot);
+        if (db_update_char_bank(&char_data->bank, c->guildcard, pkt->slot)) {
+            ERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
+
+        /* 获取玩家角色背包数据数据项 */
+        if (db_update_char_quest_data1(&char_data->quest_data1, c->guildcard, pkt->slot, flags)) {
+            ERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
+
+
+
+
+
 
         if (db_updata_bb_char_create_code(create_code,
             c->guildcard, pkt->slot)) {
@@ -1285,7 +1306,7 @@ int load_bb_char_data(void) {
         fread(cur->guildcard_desc, 1, 176, fp);
         fread(cur->infoboard, 1, 344, fp);
         fread(&cur->inv, 1, sizeof(inventory_t), fp);
-        fread(cur->quest_data1, 1, 520, fp);
+        fread(cur->quest_data1.data, 1, 520, fp);
         fread(cur->quest_data2, 1, 88, fp);
         fread(cur->tech_menu, 1, 40, fp);
         fclose(fp);

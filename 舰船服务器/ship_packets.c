@@ -6893,11 +6893,11 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
                 continue;
 
             /* 检测单人任务完成状态 */
-            if(!check_solo_quest_stat(quest->qid, l->oneperson, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
+            if(!check_solo_quest_stat(quest->qid, l->oneperson, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1.data[0]))
                 continue;
 
             /* 检测EP1 2 4 总督任务完成状态 */
-            if(!check_government_quest_stat(quest->qid, l->govorlab, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1[0]))
+            if(!check_government_quest_stat(quest->qid, l->govorlab, l->episode, LE32(l->difficulty), &c->bb_pl->quest_data1.data[0]))
                 continue;
 
             //printf("quest id = %d\n", quest->qid);
@@ -11379,7 +11379,7 @@ int send_bb_full_char(ship_client_t *c) {
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.option_flags = c->bb_opts->option_flags;
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, sizeof(c->bb_pl->quest_data1));
+    memcpy(&pkt->data.quest_data1, &c->bb_pl->quest_data1, sizeof(psocn_quest_data1_t));
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
     memcpy(pkt->data.gc_data.name, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
@@ -12620,7 +12620,7 @@ int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_t
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
-int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
+int send_bb_quest_data1(ship_client_t* c, psocn_quest_data1_t* quest_data1) {
     uint8_t* sendbuf = get_sendbuf();
     subcmd_bb_send_quest_data1_t* pkt = (subcmd_bb_send_quest_data1_t*)sendbuf;
 
@@ -12641,7 +12641,7 @@ int send_bb_quest_data1(ship_client_t* c, uint8_t* quest_data1) {
     pkt->shdr.unused = 0x0000;
 
     /* 填充剩余数据 */
-    memcpy(pkt->quest_data1, quest_data1, sizeof(pkt->quest_data1));
+    memcpy(&pkt->quest_data1, quest_data1, sizeof(psocn_quest_data1_t));
 
     return crypt_send(c, 0x0210, sendbuf);
 }

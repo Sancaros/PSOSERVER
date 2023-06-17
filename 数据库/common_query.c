@@ -1117,13 +1117,7 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
 int db_update_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot, uint32_t flag) {
     static char query[sizeof(psocn_disp_char_t) * 2 + 256];
-    //char name[64];
-    //char class_name[64];
     const char* tbl = CHARACTER_DISP;
-
-    //istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
-
-    //istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.dress_data.ch_class].cn_name, 64);
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(query, "INSERT INTO "
@@ -1170,13 +1164,6 @@ int db_update_char_disp(psocn_disp_char_t* disp_data,
         );
 
         if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
-                psocn_db_error(&conn));
-            /* XXXX: 未完成给客户端发送一个错误信息 */
-            return -6;
-        }
-        else {
             sprintf(query, "DELETE FROM %s WHERE guildcard="
                 "'%" PRIu32 "' AND slot='%" PRIu8 "'", tbl, gc,
                 slot);

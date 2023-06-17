@@ -44,5 +44,8 @@
     <ClCompile Include="bank_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="quest_data1._query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

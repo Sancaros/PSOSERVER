@@ -1444,7 +1444,7 @@ typedef struct subcmd_bb_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
 typedef struct subcmd_bb_send_quest_data1 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint8_t quest_data1[0x0208];
+    psocn_quest_data1_t quest_data1;
 } PACKED subcmd_bb_send_quest_data1_t;
 
 // 0x70: Sync player disp data and inventory (used while loading into game)

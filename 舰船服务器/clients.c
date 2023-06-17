@@ -492,9 +492,9 @@ void client_send_bb_data(ship_client_t* c) {
         c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
        //DBG_LOG("Ã¿¸ô5Ãë±£´æ(GC %u:%d)Íæ¼Ò", c->guildcard, c->sec_data.slot);
-       shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+       /*shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
             c->bb_pl, sizeof(psocn_bb_db_char_t),
-            c->cur_block->b);
+            c->cur_block->b);*/
 
        /*shipgate_send_bb_opts(&ship->sg, c);*/
     }

@@ -91,39 +91,39 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
     return 0;
 }
 
-/* 优先获取背包数据库中的数量 */
-uint8_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
-    uint8_t item_count = 0;
+/* 优先获取银行数据库中的数量 */
+uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
+    uint32_t item_count = 0;
     void* result;
     char** row;
 
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT item_count FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_BANK, gc, slot);
+    sprintf(myquery, "SELECT COUNT(*) FROM %s WHERE guildcard = '%" PRIu32 "' "
+        "AND slot = '%u'", CHARACTER_BANK_ITEMS, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
+        return 0;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -2;
+        return 0;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -3;
+        return 0;
     }
 
-    item_count = (uint8_t)strtoul(row[0], NULL, 0);
+    item_count = (uint32_t)strtoul(row[0], NULL, 0);
 
     psocn_db_result_free(result);
 
@@ -200,7 +200,7 @@ static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
@@ -245,7 +245,7 @@ static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_
     return 0;
 }
 
-/* 优先获取背包数据库中的物品数量 */
+/* 优先获取银行数据库中的物品数量 */
 static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
     void* result;
     char** row;
@@ -377,7 +377,7 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     return 0;
 }
 
-/* 新增玩家银行背包数据至数据库 */
+/* 新增玩家银行银行数据至数据库 */
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
     size_t i = 0;
@@ -399,29 +399,40 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     if (psocn_db_real_query(&conn, myquery))
         db_update_bank_param(bank, gc, slot);
 
-    db_cleanup_bank_items(gc, slot);
-
-    // 遍历背包数据，插入到数据库中
+    // 遍历银行数据，插入到数据库中
     for (i; i < bank->item_count; i++) {
         if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
             db_update_bank_items(&bank->bitems[i], gc, slot, i);
         }
     }
 
+    if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
+        return -1;
+
     return 0;
 }
 
-int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint8_t db_item_count = 0;
-    size_t i = 0, ic = 0;
+    size_t i = 0, ic = bank->item_count;
 
-    db_update_bank_param(bank, gc, slot);
+    //db_item_count = db_get_char_bank_item_count(gc, slot);
 
-    db_item_count = db_get_char_bank_item_count(gc, slot);
+    ///* 取目前最大的数量 */
+    //if (ic != db_item_count)
+    //    ic = db_item_count;
 
-    ic = MAX(bank->item_count, db_item_count);
+    if (ic > MAX_PLAYER_BANK_ITEMS)
+        ic = db_get_char_bank_item_count(gc, slot);;
 
-    // 遍历背包数据，插入到数据库中
+    bank->item_count = ic;
+
+    if (db_update_bank_param(bank, gc, slot)) {
+        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
+        return -1;
+    }
+
+    // 遍历银行数据，插入到数据库中
     for (i; i < ic; i++) {
         if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
             if (db_update_bank_items(&bank->bitems[i], gc, slot, i)) {
@@ -439,28 +450,37 @@ int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
 /* 获取玩家角色银行数据数据项 */
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
-    uint32_t i = 0;
+    uint32_t db_item_count = 0;
+    size_t i = 0, ic = bank->item_count;
+
+    /* 获取数据库中 银行物品的数量 用于对比 */
+    db_item_count = db_get_char_bank_item_count(gc, slot);
+
+    if (ic != db_item_count)
+        ic = db_item_count;
+
+    if (ic > MAX_PLAYER_BANK_ITEMS)
+        ic = MAX_PLAYER_BANK_ITEMS;
+
+    bank->item_count = ic;
 
     if (db_get_char_bank_param(gc, slot, bank, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
         return -1;
     }
 
-    /* 如果背包为空则返回0 */
-    if (bank->item_count == 0) {
-        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包物品数量", gc, slot);
-        return 0;
-    }
-
-    for (i; i < MAX_PLAYER_BANK_ITEMS; i++) {
+    for (i; i < ic; i++) {
         if (db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 0))
             break;
     }
 
+    if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
+        return -1;
+
     return 0;
 }
 
-/* 优先获取背包数据checkum */
+/* 优先获取银行数据checkum */
 uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot) {
     uint32_t bank_crc32 = 0;
     void* result;
@@ -473,21 +493,21 @@ uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot) {
         "AND slot = '%u'", CHARACTER_BANK, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色背包数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -3;
     }

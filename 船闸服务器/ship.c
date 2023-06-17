@@ -2559,7 +2559,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_bank(&char_data->bank, gc, slot)) {
+    if (db_update_char_bank(&char_data->bank, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         SQLERR_LOG("无法更新玩家银行数据 (GC %"
@@ -2568,6 +2568,15 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     }
 
     if (db_update_char_challenge(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
+
+    if (db_update_char_quest_data1(&char_data->quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -2866,7 +2875,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     /* 从背包数据库中获取玩家角色的背包数据 */
     if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
-        db_insert_char_inv(&bb_data->inv, gc, slot);
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据", gc, slot);
     }
 
     /* 从数据库中获取玩家角色数值数据 */
@@ -2882,7 +2891,13 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     /* 从银行数据库中获取玩家角色的银行数据 */
     if (db_get_char_bank(gc, slot, &bb_data->bank, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
-        db_insert_bank(&bb_data->bank, gc, slot);
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据", gc, slot);
+    }
+
+    /* 从背包数据库中获取玩家角色的背包数据 */
+    if (db_get_char_quest_data1(gc, slot, &bb_data->quest_data1, 0)) {
+        //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据", gc, slot);
     }
 
     /* 将数据发回舰船. */

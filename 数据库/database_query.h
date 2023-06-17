@@ -148,7 +148,7 @@ uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot);
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
 
 /* 更新玩家银行数据至数据库 */
-int db_update_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
+int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色银行背包数据数据项 */
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check);
@@ -233,8 +233,14 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);
 /* 更新BB角色挑战数据 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
 ///////////////////////////////////////////////////////
+/* 新增玩家QUEST_DATA1数据至数据库 */
+int db_insert_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot);
 
+/* 更新角色QUEST_DATA1 */
+int db_update_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot, uint32_t flag);
 
+/* 获取玩家QUEST_DATA1数据数据项 */
+int db_get_char_quest_data1(uint32_t gc, uint8_t slot, psocn_quest_data1_t* quest_data1, int check);
 
 
 
