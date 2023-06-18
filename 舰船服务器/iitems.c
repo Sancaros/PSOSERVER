@@ -740,6 +740,11 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
         return 0;
     }
 
+    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
+    // go into an empty inventory slot
+    if (c->bb_pl->inv.item_count >= 30)
+        return -1;
+
     // 处理堆叠物品
     size_t combine_max = stack_size_for_item(iitem->data);
     if (combine_max > 1) {
@@ -761,16 +766,63 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
         }
     }
 
-    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
-    // go into an empty inventory slot
-    if (c->bb_pl->inv.item_count >= 30)
-        return -1;
-
     memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
-    c->bb_pl->inv.item_count++;
+    //c->bb_pl->inv.item_count++;
+    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+    //memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(iitem_t));
+
+    return 1;
+}
+
+int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
+    int add_count = -1;
+
+    add_count = item_add_to_inv(c, iitem);
+
+    if (add_count == -1) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+            c->guildcard);
+        return -1;
+    }
+
+    c->bb_pl->inv.item_count += add_count;
+    c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
     return 0;
 }
+
+//
+//int item_add_to_inv2(item_t* inv, int inv_count, item_t* it) {
+//    int i;
+//
+//    /* Make sure there's space first. */
+//    if (inv_count == 30) {
+//        return -1;
+//    }
+//
+//    /* Look for the item in question. If it exists, we're in trouble! */
+//    for (i = 0; i < inv_count; ++i) {
+//        if (inv[i].item_id == it->item_id) {
+//            return -1;
+//        }
+//    }
+//
+//    /* Check if the item is stackable, since we may have to do some stuff
+//       differently... */
+//    if (stack_size_for_item(LE32(it->data_l[0]))) {
+//        /* Look for anything that matches this item in the inventory. */
+//        for (i = 0; i < inv_count; ++i) {
+//            if (inv[i].data_l[0] == it->data_l[0]) {
+//                inv[i].data_b[5] += it->data_b[5];
+//                return 0;
+//            }
+//        }
+//    }
+//
+//    /* Copy the new item in at the end. */
+//    inv[inv_count] = *it;
+//    return 1;
+//}
 
 iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
     iitem_t ret = { 0 };

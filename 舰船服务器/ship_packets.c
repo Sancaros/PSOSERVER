@@ -12641,7 +12641,7 @@ int send_bb_quest_data1(ship_client_t* c, psocn_quest_data1_t* quest_data1) {
     pkt->shdr.unused = 0x0000;
 
     /* Ìî³äÊ£ÓàÊý¾Ý */
-    memcpy(&pkt->quest_data1, quest_data1, sizeof(psocn_quest_data1_t));
+    memcpy(&pkt->quest_data1.data, &quest_data1->data, sizeof(psocn_quest_data1_t));
 
     return crypt_send(c, 0x0210, sendbuf);
 }

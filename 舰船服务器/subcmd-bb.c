@@ -393,13 +393,13 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
             iitem_data.tech = 0;
 
             /* Add the item to the client's inventory. */
-            pick_count = item_add_to_inv(c, &iitem_data);
+            pick_count = add_item_to_client(c, &iitem_data);
 
             if (pick_count == -1)
                 return 0;
 
-            c->bb_pl->inv.item_count += pick_count;
-            c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+            //c->bb_pl->inv.item_count += pick_count;
+            //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
         }
     }
 
@@ -548,6 +548,7 @@ static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
 static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = c->cur_lobby;
     iitem_t ii = { 0 };
+    int found = -1;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -588,11 +589,16 @@ static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
 
     print_iitem_data(&ii, 0, c->version);
 
-    if (item_add_to_inv(c, &ii)) {
+    found = add_item_to_client(c, &ii);
+
+    if (found == -1) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             c->guildcard);
         return -1;
     }
+
+    //c->bb_pl->inv.item_count += found;
+    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
     uint32_t price = ii.data.data2_l * pkt->num_bought;
     subcmd_send_bb_delete_meseta(c, price, 0);
@@ -711,6 +717,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
 static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identification_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t i = 0;
+    int found = -1;
 
     if (c->version == CLIENT_VERSION_BB) {
 
@@ -744,7 +751,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
 
         cleanup_lobby_item(l);
 
-        if (item_add_to_inv(c, id_result)) {
+        if (add_item_to_client(c, id_result)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 c->guildcard);
             return -1;
@@ -997,7 +1004,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
             ++l->bitem_player_id[c->client_id];
 
             /* 新增至玩家背包中... */
-            found = item_add_to_inv(c, &iitem);
+            found = add_item_to_client(c, &iitem);
 
             if (found == -1) {
                 /* Uh oh... Guess we should put it back in the bank... */
@@ -1005,8 +1012,8 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
                 return -1;
             }
 
-            c->bb_pl->inv.item_count += found;
-            c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+            //c->bb_pl->inv.item_count += found;
+            //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
             /* 发送至房间中的客户端. */
             return subcmd_send_lobby_bb_create_inv_item(c, iitem.data, 1);
@@ -1298,15 +1305,10 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
             backup_item.data.data_b[4] |= 0x40; // Wrap other
 
         /* 将物品新增至背包. */
-        found = item_add_to_inv(c, &backup_item);
+        found = add_item_to_client(c, &backup_item);
 
         if (found == -1)
             return 0;
-
-        c->bb_pl->inv.item_count += found;
-        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-
-        memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(iitem_t));
     }
     else {
         ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",

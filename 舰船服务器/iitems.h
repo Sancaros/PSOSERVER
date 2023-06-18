@@ -76,6 +76,9 @@ int item_class_tag_equip_flag(ship_client_t* c);
 /* 增加背包物品 */
 int item_add_to_inv(ship_client_t* c, iitem_t* iitem);
 
+/* 增加物品至客户端 */
+int add_item_to_client(ship_client_t* c, iitem_t* iitem);
+
 /* 移除背包物品 */
 iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 
