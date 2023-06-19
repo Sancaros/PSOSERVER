@@ -50,5 +50,11 @@
     <ClCompile Include="option_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="techniques_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="dress_data_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

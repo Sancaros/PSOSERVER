@@ -148,7 +148,7 @@ uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
         return 0;
     }
 
-    item_count = (uint32_t)strtoul(row[0], NULL, 0);
+    item_count = (uint32_t)strtoul(row[0], NULL, 16);
 
     psocn_db_result_free(result);
 
@@ -304,9 +304,9 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
     }
 
     int i = 2;
-    bank->item_count = (uint32_t)strtoul(row[i], NULL, 0);
+    bank->item_count = (uint32_t)strtoul(row[i], NULL, 16);
     i++;
-    bank->meseta = (uint32_t)strtoul(row[i], NULL, 0);
+    bank->meseta = (uint32_t)strtoul(row[i], NULL, 16);
 
     psocn_db_result_free(result);
 

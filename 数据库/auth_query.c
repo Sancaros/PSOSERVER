@@ -82,8 +82,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
         result = psocn_db_result_store(&conn);
         if (psocn_db_result_rows(result)) {
             row = psocn_db_result_fetch(result);
-            guild_id = (uint32_t)strtoul(row[0], NULL, 0);
-            guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
+            guild_id = (uint32_t)strtoul(row[0], NULL, 16);
+            guild_priv_level = (uint32_t)strtoul(row[1], NULL, 16);
             psocn_db_result_free(result);
         }
         else {
@@ -108,12 +108,10 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 /* 查找是否有数据 */
                 if (psocn_db_result_rows(result)) {
                     row = psocn_db_result_fetch(result);
-                    guild.guild_data.guildcard = atoi(row[0])/*(uint32_t)strtoul(row[0], NULL, 0)*/;
-                    guild.guild_data.guild_id = atoi(row[1])/*(uint32_t)strtoul(row[1], NULL, 0)*/;
+                    guild.guild_data.guildcard = atoi(row[0]);
+                    guild.guild_data.guild_id = atoi(row[1]);
                     memcpy(&guild.guild_data.guild_info, row[2], sizeof(guild.guild_data.guild_info));
-                    //memcpy(&guild.guild_data.guild_priv_level, row[3], sizeof(guild.guild_data.guild_priv_level));
-                    guild.guild_data.guild_priv_level = guild_priv_level/*(uint32_t)strtoul(row[3], NULL, 0)*/;
-                    //memcpy(&guild.guild_data.reserved, row[4], sizeof(guild.guild_data.reserved));
+                    guild.guild_data.guild_priv_level = guild_priv_level;
 
                     /* 赋予名称颜色代码 */
                     guild.guild_data.guild_name[0] = 0x0009;
@@ -121,11 +119,11 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     memcpy(&guild.guild_data.guild_name, row[4], sizeof(guild.guild_data.guild_name) - 4);
 
                     /* TODO 公会等级未实现 */
-                    guild.guild_data.guild_rank = atoi(row[5])/*(uint32_t)strtoul(row[5], NULL, 0)*/;
+                    guild.guild_data.guild_rank = atoi(row[5]);
 
                     memcpy(&guild.guild_data.guild_flag, row[6], sizeof(guild.guild_data.guild_flag));
-                    guild.guild_data.guild_rewards[0] = atoi(row[7])/*(uint32_t)strtoul(row[7], NULL, 0)*/;
-                    guild.guild_data.guild_rewards[1] = atoi(row[8])/*(uint32_t)strtoul(row[8], NULL, 0)*/;
+                    guild.guild_data.guild_rewards[0] = atoi(row[7]);
+                    guild.guild_data.guild_rewards[1] = atoi(row[8]);
                 }
 
                 psocn_db_result_free(result);
@@ -166,8 +164,6 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     (char*)&guild.guild_data.guild_flag, sizeof(guild.guild_data.guild_flag));
 
                 strcat(myquery, "')");
-
-                //printf("%s \n", myquery);
 
                 if (psocn_db_real_query(&conn, myquery)) {
                     SQLERR_LOG("无法插入设置数据 "

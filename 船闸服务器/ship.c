@@ -2559,6 +2559,14 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
+    if (db_update_char_techniques(char_data->character.techniques, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家科技数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
     if (db_update_char_bank(&char_data->bank, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
@@ -2888,6 +2896,11 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     /* 从数据库中获取玩家角色外观数据 */
     if (db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0)) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据", gc, slot);
+    }
+
+    /* 从数据库中获取玩家角色外观数据 */
+    if (db_get_char_techniques(gc, slot, bb_data->character.techniques, 0)) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色科技数据", gc, slot);
     }
 
     /* 从数据库中获取玩家角色的银行数据 */

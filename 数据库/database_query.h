@@ -242,6 +242,12 @@ int db_update_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, ui
 /* 获取玩家QUEST_DATA1数据数据项 */
 int db_get_char_quest_data1(uint32_t gc, uint8_t slot, psocn_quest_data1_t* quest_data1, int check);
 
+////////////////////////////////////////////////////////////////
+
+int db_get_char_techniques(uint32_t gc, uint8_t slot, uint8_t tech_data[20], int check);
+
+int db_update_char_techniques(uint8_t tech_data[20], uint32_t gc, uint32_t slot, uint32_t flag);
+
 
 
 

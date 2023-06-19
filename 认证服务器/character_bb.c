@@ -713,6 +713,13 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
+        if (db_update_char_techniques(char_data->character.techniques, c->guildcard, pkt->slot, flags)) {
+            ERR_LOG("无法更新玩家科技数据至数据库 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            goto err;
+        }
+
         /* 获取玩家角色背包数据数据项 */
         if (db_update_char_bank(&char_data->bank, c->guildcard, pkt->slot)) {
             ERR_LOG("无法更新玩家数据 (GC %"
