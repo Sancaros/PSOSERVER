@@ -439,7 +439,7 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
-        return -1;
+        goto build;
     }
 
     for (i = 0; i < ic; i++) {
@@ -449,6 +449,16 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
 
     if (db_del_inv_items(gc, slot, ic, MAX_PLAYER_INV_ITEMS))
         return -1;
+
+    return 0;
+
+build:
+    db_insert_inv_param(inv, gc, slot);
+
+    for (i = 0; i < ic; i++) {
+        if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
+            break;
+    }
 
     return 0;
 }

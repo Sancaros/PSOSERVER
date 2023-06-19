@@ -284,48 +284,6 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     return 0;
 }
 
-int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
-    //DBG_LOG("更新设置 %d", gc);
-
-    memset(myquery, 0, sizeof(myquery));
-
-    /* Build the db query */
-    sprintf(myquery, "UPDATE %s SET key_config='", CLIENTS_OPTION_BLUEBURST);
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.key_config,
-        sizeof(opts.key_cfg.key_config));
-
-    strcat(myquery, "', joystick_config = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.key_cfg.joystick_config,
-        sizeof(opts.key_cfg.joystick_config));
-
-    strcat(myquery, "', shortcuts = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.shortcuts,
-        sizeof(opts.shortcuts));
-
-    strcat(myquery, "', symbol_chats = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
-        sizeof(opts.symbol_chats));
-
-    strcat(myquery, "', guild_name = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.guild_name,
-        sizeof(opts.guild_name));
-
-    sprintf(myquery + strlen(myquery), "', option_flags = '%d' WHERE guildcard='%" PRIu32 "'", opts.option_flags, gc);
-
-    /* Execute the query */
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 更新玩家基础数据至数据库 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag) {
     static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];

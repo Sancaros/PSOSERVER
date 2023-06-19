@@ -2816,63 +2816,65 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 /* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
 static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     uint32_t gc, slot;
-    uint8_t *data;
-    char *raw_data;
-    uint32_t data_length, data_size;
-    int sz, rv;
-    uLong sz2, csz;
+    //uint8_t *data;
+    //char *raw_data;
+    //uint32_t data_length, data_size;
+    int /*sz, */rv;
+    //uLong sz2, csz;
     psocn_bb_db_char_t* bb_data = { 0 };
 
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
 
     /* Grab the data from the result */
-    data_length = db_get_char_data_length(gc, slot);
-    data_size = db_get_char_data_size(gc, slot);
-    raw_data = db_get_char_raw_data(gc, slot, 1);
+    //data_length = db_get_char_data_length(gc, slot);
+    //data_size = db_get_char_data_size(gc, slot);
+    //raw_data = db_get_char_raw_data(gc, slot, 1);
 
-    sz = (int)data_length;
+    //sz = (int)data_length;
 
-    if(data_size) {
-        sz2 = data_size;
-        csz = (uLong)sz;
+    //if(data_size) {
+    //    sz2 = data_size;
+    //    csz = (uLong)sz;
 
-        data = (uint8_t *)malloc(sz2);
-        if(!data) {
-            SQLERR_LOG("无法分配解压角色数据的内存空间");
-            SQLERR_LOG("%s", strerror(errno));
+    //    data = (uint8_t *)malloc(sz2);
+    //    if(!data) {
+    //        SQLERR_LOG("无法分配解压角色数据的内存空间");
+    //        SQLERR_LOG("%s", strerror(errno));
 
-            send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
-            return 0;
-        }
+    //        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+    //                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+    //        return 0;
+    //    }
 
-        /* 解压缩数据 */
-        if(uncompress((Bytef *)data, &sz2, (Bytef *)raw_data, csz) != Z_OK) {
-            ERR_LOG("无法解压角色数据");
+    //    /* 解压缩数据 */
+    //    if(uncompress((Bytef *)data, &sz2, (Bytef *)raw_data, csz) != Z_OK) {
+    //        ERR_LOG("无法解压角色数据");
 
-            send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
-            return 0;
-        }
+    //        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+    //                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+    //        return 0;
+    //    }
 
-        sz = sz2;
-    } else {
-        data = (uint8_t *)malloc(sz);
-        if(!data) {
-            ERR_LOG("无法分配角色数据的内存空间");
-            ERR_LOG("%s", strerror(errno));
+    //    sz = sz2;
+    //} else {
+    //    data = (uint8_t *)malloc(sz);
+    //    if(!data) {
+    //        ERR_LOG("无法分配角色数据的内存空间");
+    //        ERR_LOG("%s", strerror(errno));
 
-            send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
-            return 0;
-        }
-        memcpy(data, raw_data, data_length);
-    }
+    //        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+    //                   ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+    //        return 0;
+    //    }
+    //    memcpy(data, raw_data, data_length);
+    //}
 
-    bb_data = (psocn_bb_db_char_t*)data;
+    //bb_data = (psocn_bb_db_char_t*)data;
 
-    /* 从背包数据库中获取玩家角色的背包数据 */
+    bb_data = db_get_uncompress_char_data(gc, slot);
+
+    /* 从数据库中获取玩家角色的背包数据 */
     if (db_get_char_inv(gc, slot, &bb_data->inv, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据", gc, slot);
@@ -2888,23 +2890,23 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据", gc, slot);
     }
 
-    /* 从银行数据库中获取玩家角色的银行数据 */
+    /* 从数据库中获取玩家角色的银行数据 */
     if (db_get_char_bank(gc, slot, &bb_data->bank, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据", gc, slot);
     }
 
-    /* 从背包数据库中获取玩家角色的背包数据 */
+    /* 从数据库中获取玩家角色的QUEST_DATA1数据 */
     if (db_get_char_quest_data1(gc, slot, &bb_data->quest_data1, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据", gc, slot);
     }
 
     /* 将数据发回舰船. */
-    rv = send_cdata(c, gc, slot, bb_data, sz, 0);
+    rv = send_cdata(c, gc, slot, bb_data, sizeof(psocn_bb_db_char_t), 0);
 
     /* 清理内存并结束 */
-    free_safe(data);
+    free_safe(bb_data);
     return rv;
 }
 

@@ -202,7 +202,7 @@ typedef struct psocn_bb_char {
     uint32_t play_time; //4
     uint32_t unknown_a3; //4
     uint8_t config[0xE8]; //232
-    uint8_t techniques[0x14]; //20
+    uint8_t techniques[0x14]; //20 /* 默认 FF 为空*/
 } PACKED psocn_bb_char_t;
 
 /* v1v2v3pc 玩家数据结构 208字节 */
@@ -389,9 +389,9 @@ typedef struct psocn_bb_guildcard {
 static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
 
 typedef struct psocn_quest_data1 {
-    //uint32_t quest_guildcard;
-    uint8_t data[0x0208];                  // 玩家任务数据表1
-    //uint32_t quest_flags;
+    uint32_t quest_guildcard;
+    uint8_t data[0x0200];                  // 玩家任务数据表1
+    uint32_t quest_flags;
 } PACKED psocn_quest_data1_t;
 
 typedef struct st_chardata {
@@ -482,20 +482,22 @@ typedef struct st_chardata {
     unsigned char unknown14[276]; // 0x2EAC - 0x2FBF; // I don't know what this is, but split from unknown13 because this chunk is 
     // actually copied into the 0xE2 packet during login @ 0x08
 
-    unsigned char keyConfigGlobal[364]; // 0x2FC0 - 0x312B  // Copied into 0xE2 login packet @ 0x11C
-    // Stored from ED 04 packet.
-    unsigned char joyConfigGlobal[56]; // 0x312C - 0x3163 // Copied into 0xE2 login packet @ 0x288
+    bb_key_config_t key_cfg;                      // 选项数据表
+    //unsigned char keyConfigGlobal[364]; // 0x2FC0 - 0x312B  // Copied into 0xE2 login packet @ 0x11C
+    //// Stored from ED 04 packet.
+    //unsigned char joyConfigGlobal[56]; // 0x312C - 0x3163 // Copied into 0xE2 login packet @ 0x288
 
     // Stored from ED 05 packet.
-    unsigned guildCard2; // 0x3164 - 0x3167 (From here on copied into 0xE2 login packet @ 0x2C0...)
-    unsigned teamID; // 0x3168 - 0x316B
-    unsigned char teamInformation[8]; // 0x316C - 0x3173 (usually blank...)
-    unsigned short privilegeLevel; // 0x3174 - 0x3175
-    unsigned short reserved3; // 0x3176 - 0x3177
-    unsigned char teamName[28]; // 0x3178 - 0x3193
-    unsigned unknown15; // 0x3194 - 0x3197
-    unsigned char teamFlag[2048]; // 0x3198 - 0x3997
-    unsigned char teamRewards[8]; // 0x3998 - 0x39A0
+    bb_guild_t guild_data;                        // GUILD数据表
+    //unsigned guildCard2; // 0x3164 - 0x3167 (From here on copied into 0xE2 login packet @ 0x2C0...)
+    //unsigned teamID; // 0x3168 - 0x316B
+    //unsigned char teamInformation[8]; // 0x316C - 0x3173 (usually blank...)
+    //unsigned short privilegeLevel; // 0x3174 - 0x3175
+    //unsigned short reserved3; // 0x3176 - 0x3177
+    //unsigned char teamName[28]; // 0x3178 - 0x3193
+    //unsigned unknown15; // 0x3194 - 0x3197
+    //unsigned char teamFlag[2048]; // 0x3198 - 0x3997
+    //unsigned char teamRewards[8]; // 0x3998 - 0x39A0
 } PACKED CHARDATA;
 
 static int char_full = sizeof(CHARDATA);
@@ -541,6 +543,8 @@ typedef struct psocn_bb_db_char {
     uint8_t tech_menu[0x0028];
     uint8_t quest_data2[0x0058];
 } PACKED psocn_bb_db_char_t;
+
+static int bb_c_dbsize = sizeof(psocn_bb_db_char_t);
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {

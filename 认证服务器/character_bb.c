@@ -1306,7 +1306,7 @@ int load_bb_char_data(void) {
         fread(cur->guildcard_desc, 1, 176, fp);
         fread(cur->infoboard, 1, 344, fp);
         fread(&cur->inv, 1, sizeof(inventory_t), fp);
-        fread(cur->quest_data1.data, 1, 520, fp);
+        fread(&cur->quest_data1, 1, sizeof(psocn_quest_data1_t), fp);
         fread(cur->quest_data2, 1, 88, fp);
         fread(cur->tech_menu, 1, 40, fp);
         fclose(fp);

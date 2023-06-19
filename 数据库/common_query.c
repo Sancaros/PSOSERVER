@@ -628,6 +628,7 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
     Bytef* cmp_buf;
     uLong cmp_sz;
     int compressed = ~Z_OK;
+    int compress_power = 0;
     uint32_t* len;
     char** row;
     //uint32_t data_size;
@@ -696,7 +697,7 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
 
     if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
         compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)char_data,
-            (uLong)data_len, 9);
+            (uLong)data_len, compress_power);
     }
 
     if (compressed == Z_OK && cmp_sz < data_len) {

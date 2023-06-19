@@ -12638,10 +12638,12 @@ int send_bb_quest_data1(ship_client_t* c, psocn_quest_data1_t* quest_data1) {
     /* 填充子数据头并准备发送 */
     pkt->shdr.type = SUBCMD60_QUEST_DATA1;
     pkt->shdr.size = 0x84;
-    pkt->shdr.unused = 0x0000;
+    pkt->shdr.unused = 0;
 
     /* 填充剩余数据 */
-    memcpy(&pkt->quest_data1.data, &quest_data1->data, sizeof(psocn_quest_data1_t));
+    pkt->quest_data1.quest_guildcard = c->guildcard;
+    memcpy(&pkt->quest_data1.data, &quest_data1->data, sizeof(quest_data1->data));
+    pkt->quest_data1.quest_flags = 0;
 
     return crypt_send(c, 0x0210, sendbuf);
 }

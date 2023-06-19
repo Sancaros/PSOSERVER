@@ -23,6 +23,31 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
+static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
+
+    memset(myquery, 0, sizeof(myquery));
+
+    // 插入玩家数据
+    _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
+        "guildcard, slot, item_count, meseta, bank_check_num"
+        ") VALUES ("
+        "'%" PRIu32 "', '%" PRIu8 "', "
+        "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "'"
+        ")",
+        CHARACTER_BANK,
+        gc, slot,
+        bank->item_count, bank->meseta, inv_crc32
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        //SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
 static int db_cleanup_bank_items(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
@@ -81,9 +106,9 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法新增玩家银行数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", gc, slot,
-            psocn_db_error(&conn));
+        //SQLERR_LOG("无法新增玩家银行数据 (GC %"
+        //    PRIu32 ", 槽位 %" PRIu8 "):\n%s", gc, slot,
+        //    psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
     }
@@ -429,7 +454,7 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     if (db_update_bank_param(bank, gc, slot)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        return -1;
+        goto build;
     }
 
     // 遍历银行数据，插入到数据库中
@@ -444,6 +469,16 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;
+
+    return 0;
+
+build:
+    db_insert_bank_param(bank, gc, slot);
+
+    for (i = 0; i < ic; i++) {
+        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+            break;
+    }
 
     return 0;
 }
@@ -466,7 +501,7 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
 
     if (db_get_char_bank_param(gc, slot, bank, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        return -1;
+        goto build;
     }
 
     for (i; i < ic; i++) {
@@ -478,6 +513,17 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
         return -1;
 
     return 0;
+
+build:
+    db_insert_bank_param(bank, gc, slot);
+
+    for (i = 0; i < ic; i++) {
+        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+            break;
+    }
+
+    return 0;
+
 }
 
 /* 优先获取银行数据checkum */
