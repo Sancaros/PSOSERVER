@@ -3019,9 +3019,8 @@ static int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     c->game_data->death = 1;
 
     for (i = 0; i < c->bb_pl->inv.item_count; i++) {
-        if ((c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
-            (c->bb_pl->inv.iitems[i].flags & 0x08))
-        {
+        if ((c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_MAG) &&
+            (c->bb_pl->inv.iitems[i].flags & LE32(0x00000008))) {
             if (c->bb_pl->inv.iitems[i].data.data2_b[0] >= 5)
                 c->bb_pl->inv.iitems[i].data.data2_b[0] -= 5;
             else

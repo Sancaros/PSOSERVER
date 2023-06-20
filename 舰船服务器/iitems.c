@@ -1024,7 +1024,7 @@ void fix_equip_item(inventory_t* inv) {
 
     /* 检查所有已装备的物品 */
     for (i = 0; i < inv->item_count; i++) {
-        if (inv->iitems[i].flags & 0x08) {
+        if (inv->iitems[i].flags & LE32(0x00000008)) {
             switch (inv->iitems[i].data.data_b[0])
             {
             case ITEM_TYPE_WEAPON:
@@ -1056,8 +1056,8 @@ void fix_equip_item(inventory_t* inv) {
             // Unequip all weapons when there is more than one equipped.  
             // 当装备了多个武器时,取消所装备武器
             if ((inv->iitems[i].data.data_b[0] == 0x00) &&
-                (inv->iitems[i].flags & 0x08))
-                inv->iitems[i].flags &= ~(0x08);
+                (inv->iitems[i].flags & LE32(0x00000008)))
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
         }
 
     }
@@ -1068,10 +1068,10 @@ void fix_equip_item(inventory_t* inv) {
             // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
             if ((inv->iitems[i].data.data_b[0] == 0x01) &&
                 (inv->iitems[i].data.data_b[1] != 0x02) &&
-                (inv->iitems[i].flags & 0x08)) {
+                (inv->iitems[i].flags & LE32(0x00000008))) {
 
                 inv->iitems[i].data.data_b[3] = 0x00;
-                inv->iitems[i].flags &= ~(0x08);
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
     }
@@ -1082,10 +1082,10 @@ void fix_equip_item(inventory_t* inv) {
             // 当装备了多个护盾时，取消装备所有护盾。 
             if ((inv->iitems[i].data.data_b[0] == 0x01) &&
                 (inv->iitems[i].data.data_b[1] == 0x02) &&
-                (inv->iitems[i].flags & 0x08)) {
+                (inv->iitems[i].flags & LE32(0x00000008))) {
 
                 inv->iitems[i].data.data_b[3] = 0x00;
-                inv->iitems[i].flags &= ~(0x08);
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
     }
@@ -1095,8 +1095,8 @@ void fix_equip_item(inventory_t* inv) {
             // Unequip all mags when there is more than one equipped. 
             // 当装备了多个玛古时，取消装备所有玛古。 
             if ((inv->iitems[i].data.data_b[0] == 0x02) &&
-                (inv->iitems[i].flags & 0x08))
-                inv->iitems[i].flags &= ~(0x08);
+                (inv->iitems[i].flags & LE32(0x00000008)))
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
         }
     }
 }

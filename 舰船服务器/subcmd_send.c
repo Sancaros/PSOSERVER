@@ -701,7 +701,7 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
             compare_id = c->bb_pl->inv.iitems[ch].data.item_id;
         // Found the item?
         if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->inv.iitems[ch].data.item_id)) {
-            if (c->bb_pl->inv.iitems[ch].data.data_b[0] == 0x03)
+            if (c->bb_pl->inv.iitems[ch].data.data_b[0] == ITEM_SUBTYPE_UNIT)
                 stackable = stack_size_for_item(c->bb_pl->inv.iitems[ch].data);
 
             if (stackable > 1) {
@@ -728,16 +728,16 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
             subcmd_send_bb_destroy_item(c, c->bb_pl->inv.iitems[ch].data.item_id, (uint8_t)count);
 
             if (delete_item) {
-                if (c->bb_pl->inv.iitems[ch].data.data_b[0] == 0x01) {
+                if (c->bb_pl->inv.iitems[ch].data.data_b[0] == ITEM_TYPE_GUARD) {
                     // equipped armor, remove slot items
-                    if ((c->bb_pl->inv.iitems[ch].data.data_b[1] == 0x01) &&
-                        (c->bb_pl->inv.iitems[ch].flags & 0x00000008)) {
+                    if ((c->bb_pl->inv.iitems[ch].data.data_b[1] == ITEM_SUBTYPE_FRAME) &&
+                        (c->bb_pl->inv.iitems[ch].flags & LE32(0x00000008))) {
                         for (ch2 = 0; ch2 < c->bb_pl->inv.item_count; ch2++)
-                            if ((c->bb_pl->inv.iitems[ch2].data.data_b[0] == 0x01) &&
-                                (c->bb_pl->inv.iitems[ch2].data.data_b[1] != 0x02) &&
-                                (c->bb_pl->inv.iitems[ch2].flags & 0x00000008)) {
+                            if ((c->bb_pl->inv.iitems[ch2].data.data_b[0] == ITEM_TYPE_GUARD) &&
+                                (c->bb_pl->inv.iitems[ch2].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
+                                (c->bb_pl->inv.iitems[ch2].flags & LE32(0x00000008))) {
                                 c->bb_pl->inv.iitems[ch2].data.data_b[4] = 0x00;
-                                c->bb_pl->inv.iitems[ch2].flags &= ~(0x00000008);
+                                c->bb_pl->inv.iitems[ch2].flags &= LE32(0xFFFFFFF7);
                             }
                     }
                 }
