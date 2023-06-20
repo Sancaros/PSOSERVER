@@ -171,7 +171,9 @@ static void* block_thd(void* d) {
     socklen_t len;
     struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
+#ifdef DEBUG
     char ipstr[INET6_ADDRSTRLEN];
+#endif // DEBUG
     char nm[64];
     int sock;
     ssize_t sent;
@@ -294,9 +296,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 DC 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_DCV1,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -311,9 +315,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 PC 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_PC,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -328,9 +334,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 GameCube 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_GC,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -345,9 +353,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 Episode 3 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_EP3,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -362,9 +372,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 Blue Burst 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_BB,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -379,9 +391,11 @@ static void* block_thd(void* d) {
                         perror("accept");
                     }
 
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     BLOCK_LOG("%s(%d): 允许 Xbox 舰仓连接 IP: "
                         "%s", s->cfg->name, b->b, ipstr);
+#endif // DEBUG
 
                     if (!client_create_connection(sock, CLIENT_VERSION_XBOX,
                         CLIENT_TYPE_BLOCK, b->clients,
@@ -473,11 +487,13 @@ static void* block_thd(void* d) {
                     DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.dress_data.guildcard_string,
                         it->guildcard);
                 }
+#ifdef DEBUG
                 else {
                     my_ntop(&it->ip_addr, ipstr);
                     DC_LOG("切断未识别的连接 (IP: %s).",
                         ipstr);
                 }
+#endif // DEBUG
 
                 /* Remove the player from the lobby before disconnecting
                    them, or else bad things might happen. */

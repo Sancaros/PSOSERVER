@@ -183,7 +183,7 @@ static int db_del_inv_items(uint32_t gc, uint8_t slot, int item_index, int del_c
 
             psocn_db_real_query(&conn, myquery);
 
-            for (item_index; item_index < MAX_PLAYER_INV_ITEMS; item_index++) {
+            for (item_index; item_index < del_count; item_index++) {
 
                 sprintf(myquery, "DELETE FROM %s WHERE "
                     "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%" PRIu32 "'",
@@ -348,6 +348,22 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
     return 0;
 }
 
+void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
+    for (item_index; item_index < del_count; item_index++) {
+        //clear_iitem(&inv->iitems[item_index]);
+
+        inv->iitems[item_index].present = LE16(0xFF);
+        inv->iitems[item_index].tech = 0;
+        inv->iitems[item_index].flags = 0;
+
+        inv->iitems[item_index].data.data_l[0] = 0;
+        inv->iitems[item_index].data.data_l[1] = 0;
+        inv->iitems[item_index].data.data_l[2] = 0;
+        inv->iitems[item_index].data.item_id = 0xFFFFFFFF;
+        inv->iitems[item_index].data.data2_l = 0;
+    }
+}
+
 /* 新增玩家背包数据至数据库 */
 int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
@@ -377,6 +393,8 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
         }
     }
 
+    clean_up_char_inv(inv, inv->item_count, MAX_PLAYER_INV_ITEMS);
+
     if (db_del_inv_items(gc, slot, inv->item_count, MAX_PLAYER_INV_ITEMS))
         return -1;
 
@@ -396,7 +414,7 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     //    ic = db_item_count;
 
     if (ic > MAX_PLAYER_INV_ITEMS)
-        ic = db_get_char_inv_item_count(gc, slot);;
+        ic = db_get_char_inv_item_count(gc, slot);
 
     inv->item_count = ic;
 
@@ -415,6 +433,8 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
         }
     }
 
+    clean_up_char_inv(inv, ic, MAX_PLAYER_INV_ITEMS);
+
     if (db_del_inv_items(gc, slot, ic, MAX_PLAYER_INV_ITEMS))
         return -1;
 
@@ -424,18 +444,19 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
     uint8_t db_item_count = 0;
-    size_t i = 0, ic = inv->item_count;
+    size_t i = 0;
+    uint8_t ic = inv->item_count;
 
-    /* 获取数据库中 背包物品的数量 用于对比 */
-    db_item_count = db_get_char_inv_item_count(gc, slot);
+    ///* 获取数据库中 背包物品的数量 用于对比 */
+    //db_item_count = db_get_char_inv_item_count(gc, slot);
 
-    if (ic != db_item_count)
-        ic = db_item_count;
+    //if (ic != db_item_count)
+    //    ic = db_item_count;
 
     if (ic > MAX_PLAYER_INV_ITEMS)
-        ic = MAX_PLAYER_INV_ITEMS;
+        ic = db_get_char_inv_item_count(gc, slot);
 
-    inv->item_count = (uint8_t)ic;
+    inv->item_count = ic;
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
@@ -446,6 +467,8 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
         if (db_get_char_inv_items(gc, slot, &inv->iitems[i], i, 0))
             break;
     }
+
+    clean_up_char_inv(inv, ic, MAX_PLAYER_INV_ITEMS);
 
     if (db_del_inv_items(gc, slot, ic, MAX_PLAYER_INV_ITEMS))
         return -1;

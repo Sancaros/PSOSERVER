@@ -819,10 +819,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     if((asock = accept(dcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
-
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dcports[j][1]);
-
+#endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
                                           dcports[j][1])) {
                         closesocket(asock);
@@ -831,7 +831,9 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         update_addresses();
                         ++client_count;
                         ++client_count_dc;
+#ifdef DEBUG
                         AUTH_LOG("总玩家数: %d DreamCast 玩家数量: %d", client_count, client_count_dc);
+#endif // DEBUG
                     }
                 }
             }
@@ -843,10 +845,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     if((asock = accept(pcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
-
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pcports[j][1]);
-
+#endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
                                           pcports[j][1])) {
                         closesocket(asock);
@@ -855,7 +857,9 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         update_addresses();
                         ++client_count;
                         ++client_count_pc;
+#ifdef DEBUG
                         AUTH_LOG("总玩家数: %d PC 玩家数量: %d", client_count, client_count_pc);
+#endif // DEBUG
                     }
                 }
             }
@@ -867,10 +871,11 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     if((asock = accept(gcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
-
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gcports[j][1]);
 
+#endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
                                           gcports[j][1])) {
                         closesocket(asock);
@@ -879,7 +884,9 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         update_addresses();
                         ++client_count;
                         ++client_count_gc;
+#ifdef DEBUG
                         AUTH_LOG("总玩家数: %d GameCube 玩家数量: %d", client_count, client_count_gc);
+#endif // DEBUG
                     }
                 }
             }
@@ -891,10 +898,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     if((asock = accept(ep3socks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
-
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3ports[j][1]);
-
+#endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
                                           len, ep3ports[j][1])) {
                         closesocket(asock);
@@ -903,7 +910,9 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         update_addresses();
                         ++client_count;
                         ++client_count_ep3;
+#ifdef DEBUG
                         AUTH_LOG("总玩家数: %d Episode 3 玩家数量: %d", client_count, client_count_ep3);
+#endif // DEBUG
                     }
                 }
             }
@@ -916,7 +925,6 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         perror("accept");
                     }
 
-                    my_ntop(&addr, ipstr);
                     if(j & 1) {
                         type = CLIENT_AUTH_BB_CHARACTER;
                         auth = 1;
@@ -925,24 +933,30 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         type = CLIENT_AUTH_BB_LOGIN;
                         auth = 0;
                     }
-
+#ifdef DEBUG
+                    my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bbports[auth][1], auth ? "登录" : "连接");
-
+#endif // DEBUG
                     if(!create_connection(asock, type, addr_p, len,
                                           bbports[auth][1])) {
                         closesocket(asock);
                     }
                     else {
                         update_addresses();
+
                         if (auth) {
                             ++client_count_bb_char;
                             ++client_count;
+#ifdef DEBUG
                             AUTH_LOG("总玩家数: %d Blue Burst 玩家登录数量: %d", client_count, client_count_bb_char);
+#endif // DEBUG
                         }
                         else {
                             ++client_count_bb_login;
                             ++client_count;
+#ifdef DEBUG
                             AUTH_LOG("总玩家数: %d Blue Burst 玩家连接数量: %d", client_count, client_count_bb_login);
+#endif // DEBUG
                         }
                     }
                 }
@@ -955,10 +969,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     if((asock = accept(xbsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
-
+#ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xbports[j][1]);
-
+#endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
                                           len, xbports[j][1])) {
                         closesocket(asock);
@@ -967,7 +981,9 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                         update_addresses();
                         ++client_count;
                         ++client_count_xbox;
+#ifdef DEBUG
                         AUTH_LOG("总玩家数: %d Xbox 玩家数量: %d", client_count, client_count_xbox);
+#endif // DEBUG
                     }
                 }
             }
@@ -1067,13 +1083,18 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
             if(i->disconnected) {
                 my_ntop(&i->ip_addr, ipstr);
 
-                if(!i->guildcard) {
-                    AUTH_LOG("客户端 (%s:%d) 断开连接",
-                          ipstr, i->sock);
+                if(i->guildcard) {
+                    if(i->auth)
+                        AUTH_LOG("客户端 %" PRIu32 " (%s:%d) 进入跃迁轨道", i->guildcard, ipstr, i->sock);
+                    else
+                        AUTH_LOG("客户端 %" PRIu32 " (%s:%d) 断开认证", i->guildcard, ipstr, i->sock);
                 }
+#ifdef DEBUG
                 else {
-                    AUTH_LOG("客户端 %" PRIu32 " (%s:%d) %s", i->guildcard, ipstr, i->sock, i->auth ? "进入跃迁轨道" : "断开认证");
+                    AUTH_LOG("客户端 (%s:%d) 断开连接",
+                        ipstr, i->sock);
                 }
+#endif // DEBUG
 
                 switch (i->version) {
                 case CLIENT_AUTH_BB_LOGIN:

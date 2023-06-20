@@ -87,23 +87,23 @@ void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = 0x00000000;
+    item->item_id = 0xFFFFFFFF;
     item->data2_l = 0;
 }
 
 /* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem) {
-    iitem->present = 0x0000;
-    iitem->tech = 0x0000;
-    iitem->flags = 0x00000000;
+    iitem->present = LE16(0xFF);
+    iitem->tech = 0;
+    iitem->flags = 0;
     clear_item(&iitem->data);
 }
 
 /* 初始化背包物品数据 */
 void clear_bitem(bitem_t* bitem) {
     clear_item(&bitem->data);
-    bitem->show_flags = 0x0000;
-    bitem->amount = 0x0000;
+    bitem->show_flags = 0;
+    bitem->amount = 0;
 }
 
 /* 初始化房间物品数据 */

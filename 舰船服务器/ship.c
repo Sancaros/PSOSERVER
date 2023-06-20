@@ -308,8 +308,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 Dreamcast 客户端连接 IP: %s",
                         s->cfg->name, ipstr);
+#endif // DEBUG
 
                     if (!(tmp = client_create_connection(sock,
                         CLIENT_VERSION_DCV1,
@@ -335,8 +337,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 PC 客户端连接 IP: %s",
                         s->cfg->name, ipstr);
+#endif // DEBUG
 
                     if (!(tmp = client_create_connection(sock, CLIENT_VERSION_PC,
                         CLIENT_TYPE_SHIP,
@@ -361,8 +365,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 GameCube 客户端连接 IP: %s",
                         s->cfg->name, ipstr);
+#endif // DEBUG
 
                     if (!(tmp = client_create_connection(sock, CLIENT_VERSION_GC,
                         CLIENT_TYPE_SHIP,
@@ -387,8 +393,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 Episode 3 客户端连接 "
                         "IP: %s", s->cfg->name, ipstr);
+#endif // DEBUG
 
                     if (!(tmp = client_create_connection(sock,
                         CLIENT_VERSION_EP3,
@@ -414,9 +422,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 Blue Burst 客户端连接 "
                         "IP: %s", s->cfg->name, ipstr);
-
+#endif // DEBUG
                     if (!(tmp = client_create_connection(sock,
                         CLIENT_VERSION_BB,
                         CLIENT_TYPE_SHIP,
@@ -441,8 +450,10 @@ static void* ship_thd(void* d) {
                     }
 
                     my_ntop(&addr, ipstr);
+#ifdef DEBUG
                     SHIPS_LOG("%s: 舰船收到 Xbox 客户端连接 "
                         "IP: %s", s->cfg->name, ipstr);
+#endif // DEBUG
 
                     if (!(tmp = client_create_connection(sock,
                         CLIENT_VERSION_XBOX,
@@ -465,7 +476,7 @@ static void* ship_thd(void* d) {
             /* Process the shipgate */
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
                 if((rv = shipgate_process_pkt(&s->sg))) {
-                    SHIPS_LOG("%s: 失去与船闸的连接1 rv = %d",
+                    ERR_LOG("%s: 失去与船闸的连接1 rv = %d",
                         s->cfg->name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
@@ -475,7 +486,7 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
 
                     if (rv < -1) {
-                        SHIPS_LOG("%s: 与船闸连接出错1, 断开!",
+                        ERR_LOG("%s: 与船闸连接出错1, 断开!",
                             s->cfg->name);
                         s->run = 0;
                     }
@@ -484,7 +495,7 @@ static void* ship_thd(void* d) {
 
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
                 if(rv = shipgate_send_pkts(&s->sg)) {
-                    SHIPS_LOG("%s: 失去与船闸的连接2 rv = %d",
+                    ERR_LOG("%s: 失去与船闸的连接2 rv = %d",
                         s->cfg->name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
@@ -494,7 +505,7 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
                     
                     if (rv < -1) {
-                        SHIPS_LOG("%s: 与船闸连接出错2, 断开!",
+                        ERR_LOG("%s: 与船闸连接出错2, 断开!",
                             s->cfg->name);
                     }
                 }

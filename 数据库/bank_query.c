@@ -402,6 +402,20 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     return 0;
 }
 
+void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
+    for (item_index; item_index < del_count; item_index++) {
+
+        bank->bitems[item_index].amount = 0;
+        bank->bitems[item_index].show_flags = LE16(0x0000);
+
+        bank->bitems[item_index].data.data_l[0] = 0;
+        bank->bitems[item_index].data.data_l[1] = 0;
+        bank->bitems[item_index].data.data_l[2] = 0;
+        bank->bitems[item_index].data.item_id = 0xFFFFFFFF;
+        bank->bitems[item_index].data.data2_l = 0;
+    }
+}
+
 /* 新增玩家银行银行数据至数据库 */
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
@@ -430,6 +444,8 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
             db_update_bank_items(&bank->bitems[i], gc, slot, i);
         }
     }
+
+    clean_up_char_bank(bank, gc, slot);
 
     if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
         return -1;
@@ -467,6 +483,8 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
         }
     }
 
+    clean_up_char_bank(bank, gc, slot);
+
     if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;
 
@@ -488,14 +506,14 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
     uint32_t db_item_count = 0;
     size_t i = 0, ic = bank->item_count;
 
-    /* 获取数据库中 银行物品的数量 用于对比 */
-    db_item_count = db_get_char_bank_item_count(gc, slot);
+    ///* 获取数据库中 银行物品的数量 用于对比 */
+    //db_item_count = db_get_char_bank_item_count(gc, slot);
 
-    if (ic != db_item_count)
-        ic = db_item_count;
+    //if (ic != db_item_count)
+    //    ic = db_item_count;
 
     if (ic > MAX_PLAYER_BANK_ITEMS)
-        ic = MAX_PLAYER_BANK_ITEMS;
+        ic = db_get_char_bank_item_count(gc, slot);
 
     bank->item_count = ic;
 
@@ -508,6 +526,8 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
         if (db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 0))
             break;
     }
+
+    clean_up_char_bank(bank, gc, slot);
 
     if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;
