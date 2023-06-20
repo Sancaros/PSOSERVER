@@ -91,6 +91,8 @@ typedef struct client_game_data {
 
     int gm_debug;
 
+    int db_save_done;
+
     void* char_backup; //用于临时备份角色
 } client_game_data_t;
 

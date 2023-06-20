@@ -395,17 +395,22 @@ typedef struct psocn_quest_data1 {
 } PACKED psocn_quest_data1_t;
 
 typedef struct st_chardata {
-    unsigned short packetSize; // 0x00-0x01  // Always set to 0x399C
-    unsigned short command; // 0x02-0x03 // // Always set to 0x00E7
-    unsigned char flags[4]; // 0x04-0x07
+    uint16_t pkt_len;
+    uint16_t pkt_type;
+    uint32_t flags;
+    //unsigned short packetSize; // 0x00-0x01  // Always set to 0x399C
+    //unsigned short command; // 0x02-0x03 // // Always set to 0x00E7
+    //unsigned char flags[4]; // 0x04-0x07
+
+    inventory_t inv;                              // 玩家数据表
     //unsigned char inventoryUse; // 0x08
     //unsigned char HPmat; // 0x09
     //unsigned char TPmat; // 0x0A
     //unsigned char lang; // 0x0B
     //iitem_t inventory[30]; // 0x0C-0x353
 
-    inventory_t inv;                              // 玩家数据表
 
+    psocn_bb_char_t character;                    // 玩家数据表
     //unsigned short ATP; // 0x354-0x355
     //unsigned short MST; // 0x356-0x357
     //unsigned short EVP; // 0x358-0x359
@@ -446,14 +451,15 @@ typedef struct st_chardata {
     //unsigned char keyConfig[232]; // 0x3E8 - 0x4CF;
     //// Stored from ED 07 packet.
     //unsigned char techniques[20]; // 0x4D0 - 0x4E3;
-    psocn_bb_char_t character;                    // 玩家数据表
 
     unsigned char unknown7[16]; // 0x4E4 - 0x4F3;
     unsigned char options[4]; // 0x4F4-0x4F7;
     // Stored from ED 01 packet.
-    unsigned reserved4; // not sure
-    unsigned char quest_data1[512]; // 0x4FC - 0x6FB; (Quest data 1)
-    unsigned reserved5;
+
+    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1
+    //unsigned reserved4; // not sure
+    //unsigned char quest_data1[512]; // 0x4FC - 0x6FB; (Quest data 1)
+    //unsigned reserved5;
     unsigned bankUse; // 0x700 - 0x703
     unsigned bankMeseta; // 0x704 - 0x707;
     bitem_t bankInventory[200]; // 0x708 - 0x19C7

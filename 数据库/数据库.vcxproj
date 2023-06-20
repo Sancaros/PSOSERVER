@@ -28,6 +28,7 @@
     <ClCompile Include="database_config.c" />
     <ClCompile Include="auth_query.c" />
     <ClCompile Include="dress_data_query.c" />
+    <ClCompile Include="guild_query.c" />
     <ClCompile Include="inventory_query.c" />
     <ClCompile Include="option_query.c" />
     <ClCompile Include="quest_data1._query.c" />

@@ -3,6 +3,7 @@ E:\梦幻之星项目\PSOSERVER\数据库\database.c;E:\梦幻之星项目\PSOSE
 E:\梦幻之星项目\PSOSERVER\数据库\database_config.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\database_config.obj
 E:\梦幻之星项目\PSOSERVER\数据库\auth_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\auth_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\dress_data_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\dress_data_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\guild_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\guild_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\inventory_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\inventory_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\option_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\option_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\quest_data1._query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\quest_data1._query.obj

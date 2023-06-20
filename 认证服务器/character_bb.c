@@ -1335,6 +1335,7 @@ int load_bb_char_data(void) {
 
     fseek(fp, 0, SEEK_END);
     len = ftell(fp);
+    /* 跳过数据头 长度 0x399C 14748*/
     fseek(fp, sizeof(bb_pkt_hdr_t), SEEK_SET);
 
     if (!fread(&default_full_chars, 1, sizeof(psocn_bb_full_char_t), fp))

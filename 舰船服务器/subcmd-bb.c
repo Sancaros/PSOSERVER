@@ -2521,8 +2521,11 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
         return -1;
     }
 
+    memset(&sorted, 0, sizeof(inventory_t));
+
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
+            sorted.iitems[x].data.data_b[1] = 0xFF;
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
@@ -2535,12 +2538,6 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     sorted.hpmats_used = c->bb_pl->inv.hpmats_used;
     sorted.tpmats_used = c->bb_pl->inv.tpmats_used;
     sorted.language = c->bb_pl->inv.language;
-
-    ///* Make sure we got everything... */
-    //if (j != sorted.item_count) {
-    //    ERR_LOG("GC %" PRIu32 " 忘了物品还在排序中! %d != %d", c->guildcard, j, sorted.item_count);
-    //    return -1;
-    //}
 
     c->bb_pl->inv = sorted;
     c->pl->bb.inv = sorted;
@@ -3472,6 +3469,8 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
 static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
+    int found = -1;
+    uint32_t i, meseta, amt;
     iitem_t iitem = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
@@ -3490,6 +3489,33 @@ static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_sp
             c->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    /* Look for the item in the user's inventory. */
+    if (pkt->item_id != 0xFFFFFFFF) {
+        for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+            if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
+                found = i;
+                break;
+            }
+        }
+
+        /* If the item isn't found, then punt the user from the ship. */
+        if (found == -1) {
+            ERR_LOG("GC %" PRIu32 " 掉落的物品ID无效!",
+                c->guildcard);
+            return -1;
+        }
+    }
+    else {
+        meseta = LE32(c->bb_pl->character.disp.meseta);
+        amt = LE32(pkt->amount);
+
+        if (meseta < amt) {
+            ERR_LOG("GC %" PRIu32 " 掉落太多美赛塔!\n",
+                c->guildcard);
+            return -1;
+        }
     }
 
     /* We have the item... Record the information for use with the subcommand
