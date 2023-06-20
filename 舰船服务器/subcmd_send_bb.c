@@ -21,7 +21,6 @@
 #include "iitems.h"
 #include "f_logs.h"
 
-
 /* 0x5D SUBCMD60_DROP_STACK BB µôÂä¶ÑµþÎïÆ·*/
 int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;

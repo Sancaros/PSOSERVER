@@ -3829,7 +3829,7 @@ void print_item_data(item_t* item, int version) {
         item->data2_b[0], item->data2_b[1], item->data2_b[2], item->data2_b[3]);
 }
 
-/* 打印物品数据 */
+/* 打印背包物品数据 */
 void print_iitem_data(iitem_t* iitem, int item_index, int version) {
     ITEM_LOG("背包物品:(ID %d / %08X) %s",
         iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
@@ -3839,10 +3839,10 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
         "鉴定 %d "
         "(%s) Flags %08X",
         item_index,
-        ((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"),
+        ((iitem->present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
         iitem->present,
         iitem->tech,
-        ((iitem->flags == 0x00000008) ? "已装备" : "未装备"),
+        ((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
         iitem->flags
     );
     ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -3852,7 +3852,7 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
         iitem->data.data2_b[0], iitem->data.data2_b[1], iitem->data.data2_b[2], iitem->data.data2_b[3]);
 }
 
-/* 打印物品数据 */
+/* 打印银行物品数据 */
 void print_bitem_data(bitem_t* bitem, int item_index, int version) {
     ITEM_LOG("银行物品:(ID %d / %08X) %s",
         bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
@@ -3861,9 +3861,9 @@ void print_bitem_data(bitem_t* bitem, int item_index, int version) {
         "(%s) %04X "
         "(%s) Flags %04X",
         item_index,
-        ((bitem->amount == 0x0001) ? "堆叠" : "单独"),
+        ((bitem->amount & LE32(0x0001)) ? "堆叠" : "单独"),
         bitem->amount,
-        ((bitem->show_flags == 0x0001) ? "显示" : "隐藏"),
+        ((bitem->show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
         bitem->show_flags
     );
     ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",

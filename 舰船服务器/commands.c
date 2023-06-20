@@ -1525,7 +1525,7 @@ static void dumpinv_internal(ship_client_t *c) {
 
     if(v != CLIENT_VERSION_BB) {
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG(" %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_string,
+        ITEM_LOG("玩家 %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
@@ -1536,52 +1536,128 @@ static void dumpinv_internal(ship_client_t *c) {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
             BB_CHARACTER_NAME_LENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG(" %s (%d) 背包数据转储", name, c->guildcard);
+        ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
         }
     }
 }
-
 /* 用法: /dumpinv [lobby/clientid/guildcard] */
-static int handle_dumpinv(ship_client_t *c, const char *params) {
-    lobby_t *l = c->cur_lobby;
-    lobby_item_t *j;
+static int handle_dumpinv(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+    lobby_item_t* j;
     int do_lobby;
     uint32_t client;
 
     /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
+    if (!LOCAL_GM(c)) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
     }
 
     do_lobby = params && !strcmp(params, "lobby");
 
     /* If the arguments say "lobby", then dump the lobby's inventory. */
-    if(do_lobby) {
+    if (do_lobby) {
         pthread_mutex_lock(&l->mutex);
 
-        if(l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
+        if (l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
             pthread_mutex_unlock(&l->mutex);
             return send_txt(c, "%s", __(c, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
         SHIPS_LOG("大厅背包Dump %s (%" PRIu32 ")", l->name,
-              l->lobby_id);
+            l->lobby_id);
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
-                  LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
-                  LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
-                  LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
+                LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
+                LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
+                LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
         }
 
         pthread_mutex_unlock(&l->mutex);
     }
     /* If there's no arguments, then dump the caller's inventory. */
-    else if(!params || params[0] == '\0') {
+    else if (!params || params[0] == '\0') {
         dumpinv_internal(c);
+    }
+    /* Otherwise, try to parse the arguments. */
+    else {
+        /* Figure out the user requested */
+        errno = 0;
+        client = (int)strtoul(params, NULL, 10);
+
+        if (errno) {
+            return send_txt(c, "%s", __(c, "\tE\tC7无效目标."));
+        }
+
+        /* See if we have a client ID or a guild card number... */
+        if (client < 12) {
+            pthread_mutex_lock(&l->mutex);
+
+            if (client >= 4 && l->type == LOBBY_TYPE_GAME) {
+                pthread_mutex_unlock(&l->mutex);
+                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+            }
+
+            if (l->clients[client]) {
+                dumpinv_internal(l->clients[client]);
+            }
+            else {
+                pthread_mutex_unlock(&l->mutex);
+                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+            }
+
+            pthread_mutex_unlock(&l->mutex);
+        }
+        /* Otherwise, assume we're looking for a guild card number. */
+        else {
+            ship_client_t* target = block_find_client(c->cur_block, client);
+
+            if (!target) {
+                return send_txt(c, "%s", __(c, "\tE\tC7未找到请求的玩家."));
+            }
+
+            dumpinv_internal(target);
+        }
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC7已转储的背包数据到日志文件."));
+}
+
+static void dumpbank_internal(ship_client_t* c) {
+    char name[64];
+    size_t i;
+    int v = c->version;
+
+    if (v == CLIENT_VERSION_BB) {
+        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
+            BB_CHARACTER_NAME_LENGTH);
+        ITEM_LOG("////////////////////////////////////////////////////////////");
+        ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", name, c->guildcard, c->sec_data.slot);
+
+        for (i = 0; i < c->bb_pl->bank.item_count; ++i) {
+            print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
+        }
+    }
+    else {
+        send_txt(c, "%s", __(c, "\tE\tC7仅限于BB使用."));
+    }
+}
+
+/* 用法: /dumpbank [clientid/guildcard] */
+static int handle_dumpbank(ship_client_t *c, const char *params) {
+    lobby_t *l = c->cur_lobby;
+    uint32_t client;
+
+    /* Make sure the requester is a GM. */
+    if(!LOCAL_GM(c)) {
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
+    
+    if(!params || params[0] == '\0') {
+        dumpbank_internal(c);
     }
     /* Otherwise, try to parse the arguments. */
     else {
@@ -1603,7 +1679,7 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
             }
 
             if(l->clients[client]) {
-                dumpinv_internal(l->clients[client]);
+                dumpbank_internal(l->clients[client]);
             }
             else {
                 pthread_mutex_unlock(&l->mutex);
@@ -1620,7 +1696,7 @@ static int handle_dumpinv(ship_client_t *c, const char *params) {
                 return send_txt(c, "%s", __(c, "\tE\tC7未找到请求的玩家."));
             }
 
-            dumpinv_internal(target);
+            dumpbank_internal(target);
         }
     }
 
@@ -3648,6 +3724,7 @@ static command_t cmds[] = {
     { "smite"    , handle_smite     },
     { "teleport" , handle_teleport  },
     { "dumpinv"  , handle_dumpinv   },
+    { "dumpbank" , handle_dumpbank  },
     { "showdcpc" , handle_showdcpc  },
     { "allowgc"  , handle_allowgc   },
     { "ws"       , handle_ws        },
