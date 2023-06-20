@@ -431,7 +431,7 @@ static int handle_bb_pick_up(ship_client_t* c, subcmd_bb_pick_up_t* pkt) {
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
     subcmd_send_lobby_bb_create_inv_item(c, iitem_data.data, 1);
 
-    return subcmd_send_bb_destroy_map_item(c, pkt->area, iitem_data.data.item_id);
+    return subcmd_send_bb_pick_item(c, pkt->area, iitem_data.data.item_id);
 }
 
 static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, subcmd_bb_itemreq_t* pkt) {
@@ -788,7 +788,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
         c->drop_item_id = 0xFFFFFFFF;
         c->drop_amt = 0;
 
-        return subcmd_send_bb_create_inv_item(c, id_result->data);
+        return subcmd_send_lobby_bb_create_inv_item(c, id_result->data, 0);
     } else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3658,7 +3658,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
     然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
     第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-    subcmd_send_bb_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
+    subcmd_send_bb_lobby_drop_stack(c, c->drop_area, c->drop_x, c->drop_z, it);
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);

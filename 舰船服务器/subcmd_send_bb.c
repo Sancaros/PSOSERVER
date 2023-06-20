@@ -22,61 +22,67 @@
 #include "f_logs.h"
 
 
-/* It is assumed that all parameters are already in little-endian order. */
-int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
+/* 0x5D SUBCMD60_DROP_STACK BB 掉落堆叠物品*/
+int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;
-    subcmd_bb_drop_stack_t drop = { 0 };
+    subcmd_bb_drop_stack_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_drop_stack_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送.. */
-    drop.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    drop.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    drop.hdr.flags = 0;
-    drop.shdr.type = SUBCMD60_DROP_STACK;
-    drop.shdr.size = 0x09;
-    drop.shdr.client_id = c->client_id;
+    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
+    pkt.shdr.type = SUBCMD60_DROP_STACK;
+    pkt.shdr.size = 0x09;
+    pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
-    drop.area = area;
-    drop.x = x;
-    drop.z = z;
-    drop.data.data_l[0] = item->data.data_l[0];
-    drop.data.data_l[1] = item->data.data_l[1];
-    drop.data.data_l[2] = item->data.data_l[2];
-    drop.data.item_id = item->data.item_id;
-    drop.data.data2_l = item->data.data2_l;
-    drop.two = 0x00000000;
+    pkt.area = area;
+    pkt.x = x;
+    pkt.z = z;
+    pkt.data.data_l[0] = item->data.data_l[0];
+    pkt.data.data_l[1] = item->data.data_l[1];
+    pkt.data.data_l[2] = item->data.data_l[2];
+    pkt.data.item_id = item->data.item_id;
+    pkt.data.data2_l = item->data.data2_l;
+    pkt.two = 0x00000000;
 
-    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&drop, 0);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
-/* BB 拾取物品 */
-int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t item_id, uint32_t area) {
+/* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
+int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t area, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_map_item_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_destroy_map_item_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_destroy_map_item_t));
+    pkt.hdr.pkt_len = LE16(pkt_size);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_DEL_MAP_ITEM;
     pkt.shdr.size = 0x03;
     pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
     pkt.client_id2 = c->client_id;
-    pkt.item_id = item_id;
     pkt.area = area;
+    pkt.item_id = item_id;
 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
-/* BB 单人获得物品 */
+/* 0xBE SUBCMD60_CREATE_ITEM BB 单人获得物品 */
 int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
     uint16_t client_id = c->client_id;
     subcmd_bb_create_item_t pkt = { 0 };
@@ -85,6 +91,8 @@ int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
     pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_CREATE_ITEM;
     pkt.shdr.size = 0x07;
     pkt.shdr.client_id = c->client_id;
@@ -96,27 +104,8 @@ int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
-/* BB 单人获得鉴定物品 */
-int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
-    uint16_t client_id = c->client_id;
-    subcmd_bb_tekk_identify_result_t pkt = { 0 };
-
-    /* 填充数据并准备发送 */
-    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_tekk_identify_result_t));
-    pkt.hdr.flags = 0x00000000;
-    pkt.shdr.type = SUBCMD62_TEKKED_RESULT;
-    pkt.shdr.size = sizeof(pkt) / 4;
-    pkt.shdr.client_id = c->client_id;
-
-    /* 填充剩余数据 */
-    pkt.item = item;
-
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
-}
-
-/* BB 发送给大厅玩家物品 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发送) {
+/* 0xBE SUBCMD60_CREATE_ITEM BB 发送给大厅玩家物品 用于SHOP类型的获取 */
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
 
@@ -127,6 +116,8 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发
     pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_CREATE_ITEM;
     pkt.shdr.size = 0x07;
     pkt.shdr.client_id = c->client_id;
@@ -135,37 +126,35 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发
     pkt.item = item;
     pkt.unused2 = 0;
 
-    if (全发送)
+    if (shop)
         return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
     else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
-/* BB 消除地图上的物品 */
-int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area, uint32_t item_id) {
-    lobby_t* l = c->cur_lobby;
-    subcmd_bb_destroy_map_item_t pkt = { 0 };
-
-    if (!l)
-        return -1;
+/* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
+int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
+    uint16_t client_id = c->client_id;
+    subcmd_bb_tekk_identify_result_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_tekk_identify_result_t);
 
     /* 填充数据并准备发送 */
-    pkt.hdr.pkt_len = LE16(0x0014);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    pkt.hdr.flags = 0;
-    pkt.shdr.type = SUBCMD60_DEL_MAP_ITEM;
-    pkt.shdr.size = 0x03;
+    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pkt.hdr.flags = 0x00000000;
+
+    /* 填充副指令数据 */
+    pkt.shdr.type = SUBCMD62_TEKKED_RESULT;
+    pkt.shdr.size = pkt_size / 4;
     pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
-    pkt.client_id2 = c->client_id;
-    pkt.area = area;
-    pkt.item_id = item_id;
+    pkt.item = item;
 
-    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
-/* BB 消除物品 */
+/* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
 int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t d = { 0 };
@@ -178,8 +167,10 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt)
     d.hdr.pkt_len = LE16(pkt_size);
     d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     d.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     d.shdr.type = SUBCMD60_DELETE_ITEM;
-    d.shdr.size = pkt_size/4;
+    d.shdr.size = 0x03;
     d.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
@@ -189,7 +180,7 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&d, 0);
 }
 
-//从客户端移除美赛塔
+/* BB 从客户端移除美赛塔 */
 int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
     uint32_t stack_count;
     uint32_t tmp;
@@ -237,27 +228,33 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_bb_drop_stack(c, c->drop_area, c->x, c->z, meseta))
+        if (subcmd_send_bb_lobby_drop_stack(c, c->drop_area, c->x, c->z, meseta))
             return -1;
     }
 
     return 0;
 }
 
+/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     subcmd_bb_itemgen_t gen = { 0 };
+    int pkt_size = sizeof(subcmd_bb_itemgen_t);
     int r = LE16(req->request_id);
     lobby_t* l = c->cur_lobby;
 
     /* 填充数据并准备发送. */
+    gen.hdr.pkt_len = LE16(0x30);
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
-    gen.hdr.pkt_len = LE16(0x30);
+
+    /* 填充副指令数据 */
     gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
+
+    /* 填充剩余数据 */
     gen.data.area = req->area;
-    gen.data.from_enemy = 0x02;
+    gen.data.from_enemy = /*0x02*/req->pt_index != 0x30;
     gen.data.request_id = req->request_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -320,19 +317,24 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)req);
 }
 
+/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
     /* 填充数据并准备发送. */
+    gen.hdr.pkt_len = LE16(0x0030);
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
-    gen.hdr.pkt_len = LE16(0x0030);
+
+    /* 填充副指令数据 */
     gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
+
+    /* 填充剩余数据 */
     gen.data.area = req->area;
-    gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
+    gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
     gen.data.request_id = req->request_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -349,6 +351,7 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 }
 
+/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
@@ -360,12 +363,15 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
+
+    /* 填充副指令数据 */
     gen.shdr.type = SUBCMD60_ENEMY_ITEM_DROP_REQ;
     gen.shdr.size = 0x06;
     gen.shdr.unused = 0x0000;
 
+    /* 填充剩余数据 */
     gen.data.area = req->area;
-    gen.data.from_enemy = req->pt_index;   /* Probably not right... but whatever. */
+    gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
     gen.data.request_id = req->request_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
@@ -382,7 +388,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 }
 
-/* 0xBF 玩家获得经验 */
+/* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_exp_t pkt = { 0 };
@@ -395,17 +401,23 @@ int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     pkt.hdr.pkt_len = LE16(pkt_size);
     pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_GIVE_EXP;
     pkt.shdr.size = pkt_size / 4;
     pkt.shdr.client_id = c->client_id;
+
+    /* 填充剩余数据 */
     pkt.exp_amount = LE32(exp_amount);
 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
+/* 0xDD SUBCMD60_SET_EXP_RATE BB 设置游戏经验倍率 */
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_set_exp_rate_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_set_exp_rate_t);
     uint16_t exp_r;
     int rv = 0;
 
@@ -429,31 +441,36 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
         exp_r = 1;
 
     /* 填充数据并准备发送 */
-    pkt.hdr.pkt_len = LE16(0x000C);
+    pkt.hdr.pkt_len = LE16(pkt_size);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_SET_EXP_RATE;
-    pkt.shdr.size = 0x03;
+    pkt.shdr.size = pkt_size / 4;
     pkt.shdr.params = LE16(exp_r);
 
     rv = send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 
-    if (!rv) {
+    if (rv) {
+        ERR_LOG("GC %" PRIu32 " 设置房间经验 %u 倍发生错误!",
+            c->guildcard, exp_r);
+    }
+    else {
         if (l->exp_mult < LE32(exp_r)) {
             l->exp_mult = LE32(exp_r);
             DBG_LOG("GC %" PRIu32 " 的房间经验倍率提升为 %u 倍", c->guildcard, l->exp_mult);
         }
     }
-    else
-        ERR_LOG("GC %" PRIu32 " 设置房间经验 %u 倍发生错误!",
-            c->guildcard, exp_r);
 
     return rv;
 }
 
+/* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
 int subcmd_send_bb_level(ship_client_t* c) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_level_up_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_level_up_t);
     int i;
     uint16_t base, mag;
 
@@ -461,9 +478,11 @@ int subcmd_send_bb_level(ship_client_t* c) {
         return -1;
 
     /* 填充数据并准备发送 */
-    pkt.hdr.pkt_len = LE16(0x001C);
+    pkt.hdr.pkt_len = LE16(pkt_size);
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_LEVEL_UP;
     pkt.shdr.size = 0x05;
     pkt.shdr.client_id = c->client_id;
@@ -480,7 +499,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
     /* 增加MAG的升级奖励. */
     for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
         if ((c->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-            c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) {
+            c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_MAG) {
             base = LE16(pkt.dfp);
             mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[2]) / 100;
             pkt.dfp = LE16((base + mag));
@@ -504,7 +523,7 @@ int subcmd_send_bb_level(ship_client_t* c) {
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
-// 向玩家发送货物清单
+/* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
 int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
     block_t* b = c->cur_block;
     subcmd_bb_shop_inv_t shop = { 0 };
@@ -515,7 +534,7 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
         return -1;
     }
 
-    uint16_t len = LE16(0x0016) + num_items * sizeof(item_t);
+    uint16_t len = LE16(16) + num_items * sizeof(item_t);
 
     for (uint8_t i = 0; i < num_items; ++i) {
         memset(&shop.items[i], 0, sizeof(item_t));
@@ -525,9 +544,13 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
     shop.hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * sizeof(item_t)
     shop.hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
     shop.hdr.flags = 0;
+
+    /* 填充副指令数据 */
     shop.shdr.type = SUBCMD60_SHOP_INV;
     shop.shdr.size = sizeof(c->game_data->shop_items) / 4;
-    shop.shdr.params = LE16(0x037F);
+    shop.shdr.params = LE16(0x0000);
+
+    /* 填充剩余数据 */
     shop.shop_type = shop_type;
     shop.num_items = num_items;
 
