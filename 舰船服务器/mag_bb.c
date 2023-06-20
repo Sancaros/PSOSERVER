@@ -840,8 +840,8 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 		}
 
 		/* 从玩家的背包中移除该物品. */
-		if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
-			item_id, EMPTY_STRING) < 1) {
+		if (item_remove_from_inv(c->bb_pl->inv.iitems, item_id, 1,
+				0) < 1) {
 			ERR_LOG("无法从玩家背包中移除物品!");
 			return -4;
 		}

@@ -774,6 +774,64 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
     return 1;
 }
 
+iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
+    iitem_t ret = { 0 };
+    bool is_meseta = false;
+    uint32_t meseta = 0;
+
+    // If we're removing meseta (signaled by an invalid item ID), then create a
+    // meseta item.
+    if (item_id == 0xFFFFFFFF) {
+        is_meseta = true;
+        meseta = c->bb_pl->character.disp.meseta;
+        if (amount <= meseta) {
+            meseta -= amount;
+        }
+        else if (allow_meseta_overdraft) {
+            meseta = 0;
+        }
+        else {
+            ERR_LOG("player does not have enough meseta");
+        }
+        ret.data.data_b[0] = 0x04;
+        ret.data.data2_l = amount;
+    }
+    else {
+        // Search for the item in the inventory.
+        size_t index = find_inv_item_slot(&c->bb_pl->inv, item_id);
+        iitem_t inventory_item = c->bb_pl->inv.iitems[index];
+
+        // If the item is a combine item and are we removing less than we have of it,
+        // then create a new item and reduce the amount of the existing stack. Note
+        // that passing amount == 0 means to remove the entire stack, so this only
+        // applies if amount is nonzero.
+        if (amount && (stack_size_for_item(inventory_item.data) > 1) &&
+            (amount < inventory_item.data.data_b[5])) {
+            ret = inventory_item;
+            ret.data.data_b[5] = amount;
+            ret.data.item_id = 0xFFFFFFFF;
+            inventory_item.data.data_b[5] -= amount;
+        }
+        else {
+            // If we get here, then it's not meseta, and either it's not a combine item or
+            // we're removing the entire stack. Delete the item from the inventory slot
+            // and return the deleted item.
+            ret = inventory_item;
+            c->bb_pl->inv.item_count--;
+            for (size_t x = index; x < c->bb_pl->inv.item_count; x++) {
+                c->bb_pl->inv.iitems[x] = c->bb_pl->inv.iitems[x + 1];
+            }
+            clear_iitem(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count]);
+        }
+    }
+
+    if (is_meseta) {
+        c->bb_pl->character.disp.meseta = meseta;
+    }
+
+    return ret;
+}
+
 int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
     int add_count = -1;
 
@@ -823,57 +881,6 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
 //    inv[inv_count] = *it;
 //    return 1;
 //}
-
-iitem_t remove_item(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
-    iitem_t ret = { 0 };
-
-    // If we're removing meseta (signaled by an invalid item ID), then create a
-    // meseta item.
-    if (item_id == 0xFFFFFFFF) {
-        if (amount <= c->bb_pl->character.disp.meseta) {
-            c->bb_pl->character.disp.meseta -= amount;
-        }
-        else if (allow_meseta_overdraft) {
-            c->bb_pl->character.disp.meseta = 0;
-        }
-        else {
-            ERR_LOG("玩家背包中没有足够的美赛塔");
-            return ret;
-        }
-        ret.data.data_b[0] = 0x04;
-        ret.data.data2_l = amount;
-        return ret;
-    }
-
-    size_t index = find_inv_item_slot(&c->bb_pl->inv, item_id);
-    iitem_t inventory_item = c->bb_pl->inv.iitems[index];
-
-    // If the item is a combine item and are we removing less than we have of it,
-    // then create a new item and reduce the amount of the existing stack. Note
-    // that passing amount == 0 means to remove the entire stack, so this only
-    // applies if amount is nonzero.
-    if (amount && (stack_size_for_item(inventory_item.data) > 1) &&
-        (amount < inventory_item.data.data_b[5])) {
-        ret = inventory_item;
-        ret.data.data_b[5] = amount;
-        ret.data.item_id = 0xFFFFFFFF;
-        inventory_item.data.data_b[5] -= amount;
-        return ret;
-    }
-
-    // If we get here, then it's not meseta, and either it's not a combine item or
-    // we're removing the entire stack. Delete the item from the inventory slot
-    // and return the deleted item.
-    ret = inventory_item;
-    c->bb_pl->inv.item_count--;
-    for (size_t x = index; x < c->bb_pl->inv.item_count; x++) {
-        c->bb_pl->inv.iitems[x] = c->bb_pl->inv.iitems[x + 1];
-    }
-
-    c->bb_pl->inv.iitems[c->bb_pl->inv.item_count] = (iitem_t){ 0 };
-
-    return ret;
-}
 
 //修复背包银行数据错误的物品代码
 void fix_inv_bank_item(item_t* i) {
@@ -1092,4 +1099,79 @@ void fix_equip_item(inventory_t* inv) {
                 inv->iitems[i].flags &= ~(0x08);
         }
     }
+}
+
+/* 清理背包物品 */
+void clean_up_inv(inventory_t* inv) {
+    iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };
+    unsigned ch, ch2 = 0;
+
+    memset(&sort_data[0], 0, sizeof(iitem_t) * MAX_PLAYER_INV_ITEMS);
+
+    ch2 = 0;
+
+    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
+        if (inv->iitems[ch].present)
+            sort_data[ch2++] = inv->iitems[ch];
+
+    inv->item_count = ch2;
+
+    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
+        inv->iitems[ch] = sort_data[ch];
+}
+
+
+void sort_client_inv(inventory_t* inv) {
+    iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };
+    unsigned ch, ch2, ch3, ch4, itemid;
+
+    ch2 = 0x0C;
+
+    memset(&sort_data[0], 0, sizeof(iitem_t) * MAX_PLAYER_INV_ITEMS);
+
+    for (ch4 = 0; ch4 < MAX_PLAYER_INV_ITEMS; ch4++) {
+        sort_data[ch4].data.data_b[1] = 0xFF;
+        sort_data[ch4].data.item_id = 0xFFFFFFFF;
+    }
+
+    ch4 = 0;
+
+    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++) {
+        itemid = inv->iitems[ch2].data.item_id;
+        ch2 += 4;
+        if (itemid != 0xFFFFFFFF) {
+            for (ch3 = 0; ch3 < inv->item_count; ch3++) {
+                if ((inv->iitems[ch3].present) && (inv->iitems[ch3].data.item_id == itemid)) {
+                    sort_data[ch4++] = inv->iitems[ch3];
+                    break;
+                }
+            }
+        }
+    }
+
+    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
+        inv->iitems[ch] = sort_data[ch];
+
+}
+
+void clean_up_bank(psocn_bank_t* bank) {
+    bitem_t bank_data[MAX_PLAYER_BANK_ITEMS] = { 0 };
+    unsigned ch, ch2 = 0;
+
+    memset(&bank_data[0], 0, sizeof(bitem_t) * MAX_PLAYER_BANK_ITEMS);
+
+    for (ch2 = 0; ch2 < MAX_PLAYER_BANK_ITEMS; ch2++)
+        bank_data[ch2].data.item_id = 0xFFFFFFFF;
+
+    ch2 = 0;
+
+    for (ch = 0; ch < MAX_PLAYER_BANK_ITEMS; ch++)
+        if (bank->bitems[ch].data.item_id != 0xFFFFFFFF)
+            bank_data[ch2++] = bank->bitems[ch]; 
+
+    bank->item_count = ch2;
+
+    for (ch = 0; ch < MAX_PLAYER_BANK_ITEMS; ch++)
+        bank->bitems[ch] = bank_data[ch];
+
 }

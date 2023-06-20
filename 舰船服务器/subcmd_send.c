@@ -198,16 +198,17 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t d = { 0 };
+    int pkt_size = sizeof(subcmd_bb_destroy_item_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    d.hdr.pkt_len = LE16(0x0014);
+    d.hdr.pkt_len = LE16(pkt_size);
     d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     d.hdr.flags = 0;
     d.shdr.type = SUBCMD60_DELETE_ITEM;
-    d.shdr.size = 0x03;
+    d.shdr.size = pkt_size/4;
     d.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
@@ -672,4 +673,88 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         sent = 1;
 
     return sent;
+}
+
+/* 来自T端的移除背包物品的函数 */
+int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
+    uint32_t ch, ch2;
+    int found_item = -1;
+    lobby_t* l = c->cur_lobby;
+    size_t stackable = 0;
+    uint32_t delete_item = 0;
+    uint32_t stack_count;
+    uint32_t compare_item1 = 0;
+    uint32_t compare_item2 = 0;
+    uint32_t compare_id;
+
+    // Deletes an item from the client's character data.
+
+    if (!l)
+        return -1;
+
+    memcpy(&compare_item1, &i->data.data_b[0], 3);
+    if (i->data.item_id)
+        compare_id = i->data.item_id;
+    for (ch = 0; ch < c->bb_pl->inv.item_count; ch++) {
+        memcpy(&compare_item2, &c->bb_pl->inv.iitems[ch].data.data_b[0], 3);
+        if (!i->data.item_id)
+            compare_id = c->bb_pl->inv.iitems[ch].data.item_id;
+        // Found the item?
+        if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->inv.iitems[ch].data.item_id)) {
+            if (c->bb_pl->inv.iitems[ch].data.data_b[0] == 0x03)
+                stackable = stack_size_for_item(c->bb_pl->inv.iitems[ch].data);
+
+            if (stackable > 1) {
+                if (!count)
+                    count = 1;
+
+                stack_count = c->bb_pl->inv.iitems[ch].data.data_b[5];
+                if (!stack_count)
+                    stack_count = 1;
+
+                if (stack_count < count)
+                    count = stack_count;
+
+                stack_count -= count;
+
+                c->bb_pl->inv.iitems[ch].data.data_b[5] = (uint8_t)stack_count;
+
+                if (!stack_count)
+                    delete_item = 1;
+            }
+            else
+                delete_item = 1;
+
+            subcmd_send_bb_destroy_item(c, c->bb_pl->inv.iitems[ch].data.item_id, (uint8_t)count);
+
+            if (delete_item) {
+                if (c->bb_pl->inv.iitems[ch].data.data_b[0] == 0x01) {
+                    // equipped armor, remove slot items
+                    if ((c->bb_pl->inv.iitems[ch].data.data_b[1] == 0x01) &&
+                        (c->bb_pl->inv.iitems[ch].flags & 0x00000008)) {
+                        for (ch2 = 0; ch2 < c->bb_pl->inv.item_count; ch2++)
+                            if ((c->bb_pl->inv.iitems[ch2].data.data_b[0] == 0x01) &&
+                                (c->bb_pl->inv.iitems[ch2].data.data_b[1] != 0x02) &&
+                                (c->bb_pl->inv.iitems[ch2].flags & 0x00000008)) {
+                                c->bb_pl->inv.iitems[ch2].data.data_b[4] = 0x00;
+                                c->bb_pl->inv.iitems[ch2].flags &= ~(0x00000008);
+                            }
+                    }
+                }
+                c->bb_pl->inv.iitems[ch].present = LE16(0);
+            }
+            found_item = ch;
+            break;
+        }
+    }
+    if (found_item == -1)
+    {
+        ERR_LOG("Could not find item to delete from inventory.");
+        return found_item;
+    }
+    else
+        clean_up_inv(&c->bb_pl->inv);
+
+    return found_item;
+
 }

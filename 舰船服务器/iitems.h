@@ -60,6 +60,7 @@ size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id);
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
+iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);
@@ -87,5 +88,8 @@ void fix_inv_bank_item(item_t* i);
 
 //修复背包装备数据错误的物品代码
 void fix_equip_item(inventory_t* inv);
+
+/* 清理背包物品 */
+void clean_up_inv(inventory_t* inv);
 
 #endif /* !IITEMS_H */
