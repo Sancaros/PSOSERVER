@@ -38,6 +38,7 @@
 #include "ship_packets.h"
 #include "scripts.h"
 #include "subcmd.h"
+#include "subcmd_send_bb.h"
 #include "mapdata.h"
 #include "iitems.h"
 

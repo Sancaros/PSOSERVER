@@ -2897,14 +2897,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 /* Handle an 0xC9/0xCB packet from Episode 3. */
 int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
-int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
-                           const uint32_t item[4]);
-int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item);
-
-int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp);
-int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
-int subcmd_send_bb_level(ship_client_t* c);
+int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req, const uint32_t item[4]);
 
 int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
 

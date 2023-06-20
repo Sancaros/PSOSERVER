@@ -51,18 +51,14 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req);
 
 int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest);
 
-int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item);
+int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
-int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item);
+int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount);
-
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
-
 int subcmd_send_bb_level(ship_client_t* c);
-
+ 
 // 向玩家发送货物清单
 int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items);
 

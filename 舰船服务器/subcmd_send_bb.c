@@ -15,42 +15,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "subcmd_send.h"
+#include "subcmd_send_bb.h"
 #include "subcmd_size_table.h"
 
 #include "iitems.h"
 #include "f_logs.h"
 
 
-// subcmd 直接发送指令至客户端
-/* 发送副指令数据包至房间 ignore_check 是否忽略客户端忽略的玩家 c 是否不发给自己*/
-int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int ignore_check) {
-    int i;
-
-    /* Send the packet to every connected client. */
-    for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients[i] != c) {
-            /* If we're supposed to check the ignore list, and this client is on
-               it, don't send the packet
-               如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
-            if (ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
-                continue;
-            }
-
-            if (l->clients[i]->version != CLIENT_VERSION_DCV1 ||
-                !(l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
-                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
-            else
-                subcmd_translate_bb_to_nte(l->clients[i], pkt);
-        }
-    }
-
-    return 0;
-}
-
 /* It is assumed that all parameters are already in little-endian order. */
-int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x,
-    float z, iitem_t* item) {
+int subcmd_send_bb_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_drop_stack_t drop = { 0 };
 
@@ -155,7 +128,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
     pkt.shdr.type = SUBCMD60_CREATE_ITEM;
-    pkt.shdr.size = sizeof(pkt) / 4;
+    pkt.shdr.size = 0x07;
     pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
@@ -169,8 +142,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int 全发
 }
 
 /* BB 消除地图上的物品 */
-int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
-    uint32_t item_id) {
+int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_map_item_t pkt = { 0 };
 
@@ -194,8 +166,7 @@ int subcmd_send_bb_destroy_map_item(ship_client_t* c, uint16_t area,
 }
 
 /* BB 消除物品 */
-int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
-    uint8_t amt) {
+int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t d = { 0 };
     int pkt_size = sizeof(subcmd_bb_destroy_item_t);
@@ -349,8 +320,7 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)req);
 }
 
-int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item) {
+int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -379,8 +349,7 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 }
 
-int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
-    const iitem_t* item) {
+int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -413,19 +382,21 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req,
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 }
 
+/* 0xBF 玩家获得经验 */
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_exp_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_exp_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    pkt.hdr.pkt_len = LE16(0x0010);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
     pkt.hdr.flags = 0;
     pkt.shdr.type = SUBCMD60_GIVE_EXP;
-    pkt.shdr.size = 0x02;
+    pkt.shdr.size = pkt_size / 4;
     pkt.shdr.client_id = c->client_id;
     pkt.exp_amount = LE32(exp_amount);
 
