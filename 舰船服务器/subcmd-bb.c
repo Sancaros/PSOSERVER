@@ -776,7 +776,7 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
 
         cleanup_lobby_item(l);
 
-        if (add_item_to_client(c, id_result)) {
+        if (add_item_to_client(c, id_result) == -1) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 c->guildcard);
             return -1;
@@ -1399,30 +1399,35 @@ static int handle_bb_quest_reward_meseta(ship_client_t* c, subcmd_bb_quest_rewar
         return -1;
     }
 
-    if (l->flags & LOBBY_FLAG_QUESTING) {
-        meseta = pkt->amount;
+    meseta = pkt->amount;
 
-        if (meseta < 0) {
-            meseta = -meseta;
+    if (meseta < 0) {
+        meseta = -meseta;
+
+        if (meseta > (int)c->bb_pl->character.disp.meseta) {
+            c->bb_pl->character.disp.meseta = 0;
+        }
+        else
             c->bb_pl->character.disp.meseta -= meseta;
-        } else {
-            meseta += LE32(c->bb_pl->character.disp.meseta);
 
-            /* Cap at 999,999 meseta. */
-            if (meseta > 999999)
-                meseta = 999999;
+        return 0;
 
-            c->bb_pl->character.disp.meseta = meseta;
+    }
+    else {
+        iitem_t ii;
+        memset(&ii, 0, sizeof(iitem_t));
+        ii.data.data_b[0] = ITEM_TYPE_MESETA;
+        ii.data.data2_l = meseta;
+        ii.data.item_id = generate_item_id(l, 0xFF);
+
+        if (add_item_to_client(c, &ii) == -1) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                c->guildcard);
+            return -1;
         }
 
-        c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
-
-        return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+        return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 0);
     }
-
-    ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务美赛塔奖励!",
-        c->guildcard);
-    return -1;
 }
 
 static int handle_bb_quest_reward_item(ship_client_t* c, subcmd_bb_quest_reward_item_t* pkt) {
@@ -1436,7 +1441,18 @@ static int handle_bb_quest_reward_item(ship_client_t* c, subcmd_bb_quest_reward_
 
     print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+    iitem_t ii;
+    memset(&ii, 0, sizeof(iitem_t));
+    ii.data = pkt->item_data;
+    ii.data.item_id = generate_item_id(l, 0xFF);
+
+    if (add_item_to_client(c, &ii) == -1) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+            c->guildcard);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 0);
 }
 
 /* 处理BB 0x62/0x6D 数据包. */
@@ -4004,8 +4020,8 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
                 /* 从玩家的背包中移除该物品. */
                 if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
                     pkt->item_id, 0xFFFFFFFF) < 1) {
-                    ERR_LOG("无法从玩家背包中移除物品!");
-                    break;
+                    ERR_LOG("无法从玩家GC %u 背包中移除ID %u 物品!", c->guildcard, pkt->item_id);
+                    return -1;
                 }
 
                 --c->bb_pl->inv.item_count;

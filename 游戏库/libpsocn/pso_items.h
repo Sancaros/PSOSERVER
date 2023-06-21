@@ -47,6 +47,8 @@
 #define ITEM_TYPE_TOOL                  0x03
 #define ITEM_TYPE_MESETA                0x04
 
+#define MESETA_IDENTIFIER               0x00040000
+
    /* ITEM_TYPE_GUARD items are actually slightly more specialized, and fall into
       three subtypes of their own. These are the second least significant byte in
       the item code. */

@@ -2732,15 +2732,15 @@ typedef struct subcmd_bb_quest_reward_meseta {
 typedef struct subcmd_bb_quest_reward_item {
     bb_pkt_hdr_t hdr;
     object_id_hdr_t shdr; /* object_id FF FF meseta */
-    uint32_t item[3];
-    uint8_t data[0];
+    item_t item_data;
 } PACKED subcmd_bb_quest_reward_item_t;
 
-// 0xCB: Unknown
+// 0xCB: Request to transfer item (BB)
 typedef struct subcmd_bb_UNKNOW_0xCB {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
+    client_id_hdr_t shdr;
+    uint32_t unknown_a1;
+    uint32_t unknown_a2;
 } PACKED subcmd_bb_UNKNOW_0xCB_t;
 
 // 0xCC: subcmd_bb_guild_ex_item

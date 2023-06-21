@@ -732,7 +732,7 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
 
     // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
     // item is meseta, we have to modify disp instead.
-    if (pid == 0x00040000) {
+    if (pid == MESETA_IDENTIFIER) {
         c->bb_pl->character.disp.meseta += iitem->data.data2_l;
         if (c->bb_pl->character.disp.meseta > 999999) {
             c->bb_pl->character.disp.meseta = 999999;
@@ -765,11 +765,6 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
             return 0;
         }
     }
-
-    memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
-    //c->bb_pl->inv.item_count++;
-    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-    //memcpy(&c->pl->bb.inv, &c->bb_pl->inv, sizeof(iitem_t));
 
     return 1;
 }
@@ -837,16 +832,30 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
 
     add_count = item_add_to_inv(c, iitem);
 
-    if (add_count == -1) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+    switch (add_count)
+    {
+        /* 背包空间不足时 返回 -1 */
+    case -1:
+        return -1;
+
+    case 0:
+        /* 如果背包中有堆叠的 则直接新增到堆叠中 包括美赛塔*/
+        return 0;
+
+    case 1:
+        memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
+
+        c->bb_pl->inv.item_count += add_count;
+        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+        return 0;
+
+        /* 即使程序不会这么走 我还是写一个默认 */
+    default:
+        ERR_LOG("GC %" PRIu32 " add_item_to_client 逻辑错误!",
             c->guildcard);
         return -1;
     }
 
-    c->bb_pl->inv.item_count += add_count;
-    c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-
-    return 0;
 }
 
 //

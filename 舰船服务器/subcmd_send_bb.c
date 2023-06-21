@@ -126,9 +126,9 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop
     pkt.unused2 = 0;
 
     if (shop)
-        return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
-    else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
+    else
+        return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
