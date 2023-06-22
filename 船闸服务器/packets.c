@@ -427,7 +427,7 @@ int send_kick(ship_t* c, uint32_t requester, uint32_t user, uint32_t block,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_kick_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_kick_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_KICK);
     pkt->hdr.flags = 0;
@@ -452,7 +452,7 @@ int send_friendlist(ship_t* c, uint32_t requester, uint32_t block,
     uint16_t len = sizeof(shipgate_friend_list_pkt) +
         sizeof(friendlist_data_t) * count;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_FRLIST);
     pkt->hdr.flags = htons(SHDR_RESPONSE);
@@ -475,7 +475,7 @@ int send_global_msg(ship_t* c, uint32_t requester, const char* text,
     shipgate_global_msg_pkt* pkt = (shipgate_global_msg_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_global_msg_pkt) + text_len;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_GLOBALMSG);
     pkt->hdr.flags = 0;
@@ -494,7 +494,7 @@ int send_global_msg(ship_t* c, uint32_t requester, const char* text,
 void* user_options_begin(uint32_t guildcard, uint32_t block) {
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = sizeof(shipgate_user_opt_pkt);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_USEROPT);
     pkt->hdr.flags = 0;
@@ -557,7 +557,7 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild) {
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_opts_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BBOPTS);
     pkt->hdr.reserved = 0;
@@ -568,6 +568,7 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     pkt->block = htonl(block);
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
 
+    //pkt->guild_owner_gc = guild->guild_data.guild_owner_gc;
     pkt->guild_id = guild->guild_data.guild_id;
     memcpy(&pkt->guild_info, guild->guild_data.guild_info, sizeof(guild->guild_data.guild_info));
     pkt->guild_priv_level = guild->guild_data.guild_priv_level;
@@ -590,7 +591,7 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
 //    psocn_bb_db_guild_t* guild) {
 //    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
 //
-//    /* Fill in the packet */
+//    /* 填充数据头 */
 //    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_pkt));
 //    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD);
 //    pkt->hdr.reserved = 0;
@@ -896,7 +897,7 @@ int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
 void user_blocklist_begin(uint32_t guildcard, uint32_t block) {
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = sizeof(shipgate_user_blocklist_pkt);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_UBLOCKS);
     pkt->hdr.flags = 0;

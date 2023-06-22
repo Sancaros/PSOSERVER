@@ -2627,7 +2627,7 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Clear the packet header */
     memset(pkt, 0, sizeof(dc_chat_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
 
@@ -2666,7 +2666,7 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* Clear the packet header */
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->client_id = LE32(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
@@ -11429,7 +11429,7 @@ int send_ep3_jukebox_reply(ship_client_t *c, uint16_t magic) {
 
     /* XXXX: Fill in meseta values with correct numbers. */
 
-    /* Fill in the packet first... */
+    /* 填充数据头 first... */
     pkt->hdr.pkt_type = EP3_COMMAND_TYPE;
     pkt->hdr.flags = EP3_COMMAND_JUKEBOX_REPLY;
     pkt->hdr.pkt_len = LE16(0x0010);
@@ -11448,7 +11448,7 @@ int send_ep3_ba01(ship_client_t *c, uint16_t magic) {
 
     /* XXXX: Fill in meseta values with correct numbers. */
 
-    /* Fill in the packet first... */
+    /* 填充数据头 first... */
     pkt->hdr.pkt_type = EP3_COMMAND_TYPE;
     pkt->hdr.flags = EP3_COMMAND_LEAVE_TEAM;
     pkt->hdr.pkt_len = LE16(0x0010);
@@ -12384,7 +12384,7 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->hdr.flags = LE32(0x00000001);
 
     /* 填充剩余数据 */
-    pkt->guild_owner_gc = c->bb_guild->guild_data.guild_owner_gc;
+    pkt->guild_owner_gc = c->guildcard;
     pkt->guild_id = c->bb_guild->guild_data.guild_id;
     memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(pkt->guild_info));
     pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;

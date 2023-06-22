@@ -944,12 +944,13 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             return -2;
         }
 
-        //if (c->cur_lobby) {
-        //    /* 这里无法给自己发数据 */
-        //    send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
-        //}
-        //else
-        //    ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
+        if (c->cur_lobby) {
+            /* 这里无法给自己发数据 */
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        }
+        else
+            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
 
         if (send_lobby_add_player(c->cur_lobby, c)) {
             pthread_mutex_unlock(&c->mutex);
@@ -2283,7 +2284,7 @@ static int process_bb_guild_full_data(ship_client_t* c, bb_guild_full_data_pkt* 
 
     print_payload((uint8_t*)pkt, len);
 
-    return send_lobby_pkt(l, NULL, build_guild_full_data_pkt(c), 1);
+    return send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
 }
 
 static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pkt) {

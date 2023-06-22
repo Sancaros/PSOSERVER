@@ -1184,8 +1184,10 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
     istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
     istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
 
+#ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, c->guildcard, d->guildcard);
     print_payload((uint8_t*)pkt, len);
+#endif // DEBUG
 
     switch (type) {
     case SUBCMD62_GUILD_MASTER_TRANS1:
@@ -4694,7 +4696,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
-        //case SUBCMD60_BURST_DONE:
+        case SUBCMD60_BURST_DONE:
             /* TODO 将这个函数融合进房间函数中 */
             rv = handle_bb_load_3b(c, (subcmd_bb_pkt_t*)pkt);
             break;

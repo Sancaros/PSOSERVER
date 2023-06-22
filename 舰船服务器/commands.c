@@ -1793,7 +1793,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7Invalid WS code."));
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     memset(p, 0, 0x24);
     memset(&tmp[0x0C], 0xFF, 0x10);
     p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
@@ -1984,7 +1984,7 @@ static int handle_npc(ship_client_t *c, const char *params) {
     /* We're done with the lobby data now... */
     pthread_mutex_unlock(&l->mutex);
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     memset(p, 0, 0x10);
     p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
     p->hdr.dc.pkt_len = LE16(0x0010);

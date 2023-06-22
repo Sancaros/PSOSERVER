@@ -56,7 +56,7 @@ typedef struct shipgate_error {
     shipgate_hdr_t hdr;
     uint32_t error_code;
     uint32_t reserved;
-    uint8_t data[2048];
+    uint8_t data[4096];
 } PACKED shipgate_error_pkt;
 
 /* Error packet in reply to character data send or character request */
@@ -439,7 +439,7 @@ typedef struct shipgate_bb_opts {
     uint32_t guildcard;
     uint32_t block;
     psocn_bb_db_opts_t opts;
-    uint32_t guild_owner_gc;               // 公会创始人
+    //uint32_t guild_owner_gc;               // 公会创始人
     uint32_t guild_id;                     // 公会索引 
     uint8_t guild_info[8];                 // 公会信息     8
     uint32_t guild_priv_level;             // 会员等级     4

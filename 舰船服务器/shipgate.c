@@ -2229,9 +2229,11 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
 
             /* 复制角色选项数据 */
-            //TEST_LOG("1111 %d 发送数据 %d 字节", c->sock, pkt->guild_id);
-            if (pkt->guild_id != -1) {
-                i->bb_guild->guild_data.guild_owner_gc = pkt->guild_owner_gc;
+#ifdef DEBUG
+            TEST_LOG("端口 %d GUILD ID %u", c->sock, pkt->guild_id);
+#endif // DEBUG
+            if (pkt->guild_id != 0) {
+                i->bb_guild->guild_data.guild_owner_gc = i->guildcard;
                 i->bb_guild->guild_data.guild_id = pkt->guild_id;
                 memcpy(&i->bb_guild->guild_data.guild_info[0], &pkt->guild_info[0], sizeof(pkt->guild_info));
                 i->bb_guild->guild_data.guild_priv_level = pkt->guild_priv_level;
@@ -3612,7 +3614,7 @@ int shipgate_send_friend_del(shipgate_conn_t* c, uint32_t user,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_friend_upd_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_friend_upd_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_DELFRIEND);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3637,7 +3639,7 @@ int shipgate_send_friend_add(shipgate_conn_t* c, uint32_t user,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_friend_add_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_friend_add_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_ADDFRIEND);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3666,7 +3668,7 @@ int shipgate_send_block_login(shipgate_conn_t* c, int on, uint32_t gc,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_block_login_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_block_login_pkt));
     pkt->hdr.pkt_type = htons(type);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3693,7 +3695,7 @@ int shipgate_send_block_login_bb(shipgate_conn_t* c, int on, uint32_t gc, uint8_
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_block_login_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_block_login_pkt));
     pkt->hdr.pkt_type = htons(type);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3721,7 +3723,7 @@ int shipgate_send_lobby_chg(shipgate_conn_t* c, uint32_t user, uint32_t lobby,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_lobby_change_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_lobby_change_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_LOBBYCHG);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3833,7 +3835,7 @@ int shipgate_send_kick(shipgate_conn_t* c, uint32_t requester, uint32_t user,
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(shipgate_kick_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_kick_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_KICK);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3860,7 +3862,7 @@ int shipgate_send_frlist_req(shipgate_conn_t* c, uint32_t gc, uint32_t block,
         return -1;
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_friend_list_req));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_FRLIST);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3892,7 +3894,7 @@ int shipgate_send_global_msg(shipgate_conn_t* c, uint32_t gc,
         return -1;
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons((uint16_t)len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_GLOBALMSG);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3935,7 +3937,7 @@ int shipgate_send_user_opt(shipgate_conn_t* c, uint32_t gc, uint32_t block,
 
     pkt->options[0].length = htonl(len + 8);
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(pkt_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_USEROPT);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3959,7 +3961,7 @@ int shipgate_send_bb_opt_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
         return -1;
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_opts_req_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BBOPT_REQ);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3982,7 +3984,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
         return -1;
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_opts_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BBOPTS);
     pkt->hdr.version = pkt->hdr.reserved = 0;
@@ -3990,8 +3992,12 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 
     pkt->guildcard = htonl(cl->guildcard);
     pkt->block = htonl(cl->cur_block->b);
+
+    /* 填充选项数据 */
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
 
+    /* 填充公会数据 */
+    //pkt->guild_owner_gc = cl->bb_guild->guild_data.guild_owner_gc;
     pkt->guild_id = cl->bb_guild->guild_data.guild_id;
     memcpy(&pkt->guild_info[0], &cl->bb_guild->guild_data.guild_info[0], sizeof(cl->bb_guild->guild_data.guild_info));
     pkt->guild_priv_level = cl->bb_guild->guild_data.guild_priv_level;
@@ -4186,7 +4192,7 @@ int shipgate_send_check_plonline_req(shipgate_conn_t* c, ship_client_t* cl) {
         return -1;
     }
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_check_plonline_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CHECK_PLONLINE);
     pkt->hdr.version = pkt->hdr.reserved = 0;

@@ -2063,7 +2063,7 @@ int send_ep3_card_update(login_client_t *c) {
        from Fuzziqer's newserv) */
     pkt_len = (13 + size) & 0xFFFC;
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(pkt_len);
     pkt->hdr.pkt_type = EP3_CARD_UPDATE_TYPE;
     pkt->hdr.flags = 0;
@@ -2102,7 +2102,7 @@ int send_bb_char_ack(login_client_t *c, uint8_t slot, uint8_t code) {
     /* Clear it out first */
     memset(pkt, 0, sizeof(bb_char_ack_pkt));
 
-    /* Fill in the packet */
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(sizeof(bb_char_ack_pkt));
     pkt->hdr.pkt_type = LE16(BB_CHARACTER_ACK_TYPE);
     pkt->slot = slot;
