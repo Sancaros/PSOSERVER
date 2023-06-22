@@ -40,12 +40,12 @@
     <ClCompile Include="ship_packets.c" />
     <ClCompile Include="ship_server.c" />
     <ClCompile Include="smutdata.c" />
-    <ClCompile Include="subcmd-dcnte.c" />
+    <ClCompile Include="subcmd_dcnte.c" />
     <ClCompile Include="subcmd.c" />
     <ClCompile Include="utils.c" />
     <ClCompile Include="word_select.c" />
-    <ClCompile Include="subcmd-bb.c" />
-    <ClCompile Include="block-bb.c" />
+    <ClCompile Include="subcmd_bb.c" />
+    <ClCompile Include="block_bb.c" />
     <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />
     <ClCompile Include="subcmd_send_bb.c" />

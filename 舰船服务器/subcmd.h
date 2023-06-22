@@ -366,6 +366,37 @@ typedef struct subcmd_bb_dragon_act {
 
 // 0x13: De Rol Le boss actions (不支持 Episode 3)
 //(00000000)   10 00 60 00 00 00 00 00  13 02 34 11 0C 00 06 00
+//[2023年06月21日 10:36:32:954] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:32:990] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 03 00 01 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:39:788] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:39:816] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 18 00 02 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:42:721] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:42:763] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 06 00 03 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:49:854] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:49:889] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1E 00 03 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:49:923] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:49:960] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 11 00 04 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:50:008] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:50:044] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1E 00 04 00 ..`.......4.....
+//
+//[2023年06月21日 10:36:53:287] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:36:53:344] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1F 00 04 00 ..`.......4.....
+//
+//[2023年06月21日 10:37:01:620] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
+//[2023年06月21日 10:37:01:659] 截获(4951):
+//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 20 00 04 00 ..`.......4. ...
 typedef struct subcmd_bb_DeRolLeBoss_act {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
@@ -1370,6 +1401,8 @@ typedef struct subcmd_bb_Unknown_6x6A {
     uint16_t unused;
 } PACKED subcmd_bb_Unknown_6x6A_t;
 
+// 0x6B: Sync enemy state (used while loading into game; same header format as 6E)
+// Decompressed format is a list of these
 struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     unused_hdr_t shdr;
     uint32_t decompressed_size;
@@ -1377,8 +1410,6 @@ struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
     uint8_t data[0]; // BC0-compressed data follows here (see bc0_decompress)
 } PACKED;
 
-// 0x6B: Sync enemy state (used while loading into game; same header format as 6E)
-// Decompressed format is a list of these
 typedef struct subcmd_bb_G_SyncEnemyState_6x6B_Entry_Decompressed {
     // TODO: Verify this format on DC and PC. It appears correct for GC and BB.
     uint32_t unknown_a1; // Possibly some kind of flags
@@ -1400,6 +1431,19 @@ struct G_SyncObjectState_6x6C_Entry_Decompressed {
     uint16_t object_index;
 } PACKED;
 
+typedef struct FloorItem {
+    uint16_t area;
+    uint16_t unknown_a1;
+    float x;
+    float z;
+    uint16_t unknown_a2;
+    // The drop number is scoped to the area and increments by 1 each time an
+    // item is dropped. The last item dropped in each area has drop_number equal
+    // to total_items_dropped_per_area[area - 1] - 1.
+    uint16_t drop_number;
+    item_t data;
+} PACKED floor_item_t;
+
 // 0x6D: Sync item state (used while loading into game; same header format as 6E)
 struct G_SyncItemState_6x6D_Decompressed {
     // TODO: Verify this format on DC and PC. It appears correct for GC and BB.
@@ -1413,20 +1457,9 @@ struct G_SyncItemState_6x6D_Decompressed {
     // the client fills in all 12 of these with reasonable values.
     uint32_t next_item_id_per_player[12];
     uint32_t floor_item_count_per_area[15];
-    struct FloorItem {
-        uint16_t area;
-        uint16_t unknown_a1;
-        float x;
-        float z;
-        uint16_t unknown_a2;
-        // The drop number is scoped to the area and increments by 1 each time an
-        // item is dropped. The last item dropped in each area has drop_number equal
-        // to total_items_dropped_per_area[area - 1] - 1.
-        uint16_t drop_number;
-        item_t data;
-    } PACKED;
     // Variable-length field follows:
     // FloorItem items[sum(floor_item_count_per_area)];
+    floor_item_t items[0];
 } PACKED;
 
 // 0x6E: Sync flag state (used while loading into game)

@@ -82,7 +82,7 @@ static int send_raw(patch_client_t *c, int len) {
     return 0;
 }
 
-/* Encrypt and send a packet away. */
+/* 加密并发送一个数据包. */
 static int crypt_send(patch_client_t* c, int len) {
     /* Expand it to be a multiple of 8/4 bytes long */
     while (len & (hdr_sizes[c->type] - 1)) {

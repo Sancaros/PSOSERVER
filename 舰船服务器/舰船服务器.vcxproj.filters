@@ -81,7 +81,7 @@
     <ClCompile Include="subcmd.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd-dcnte.c">
+    <ClCompile Include="subcmd_dcnte.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="word_select.c">
@@ -90,10 +90,10 @@
     <ClCompile Include="utils.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd-bb.c">
+    <ClCompile Include="subcmd_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="block-bb.c">
+    <ClCompile Include="block_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="shop.c">

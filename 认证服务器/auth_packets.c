@@ -109,7 +109,7 @@ static int send_raw(login_client_t *c, int len) {
     return 0;
 }
 
-/* Encrypt and send a packet away. */
+/* 加密并发送一个数据包. */
 static int crypt_send(login_client_t *c, int len) {
     /* Expand it to be a multiple of 8/4 bytes long */
     while(len & (client_type[c->type]->hdr_size - 1)) {

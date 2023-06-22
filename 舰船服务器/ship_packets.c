@@ -230,7 +230,7 @@ static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
     return 0;
 }
 
-/* Encrypt and send a packet away. */
+/* 加密并发送一个数据包. */
 int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
     /* Expand it to be a multiple of 8/4 bytes long */
     while(len & (c->hdr_size - 1))
@@ -253,7 +253,7 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
     return send_raw(c, len, sendbuf);
 }
 
-/* Retrieve the thread-specific sendbuf for the current thread. */
+/* 获取当前线程的 sendbuf 线程特定数据. */
 uint8_t *get_sendbuf() {
     uint8_t *sendbuf = (uint8_t *)pthread_getspecific(sendbuf_key);
 
