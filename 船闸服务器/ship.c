@@ -2029,21 +2029,37 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     DBG_LOG("转换GC %u GID %u 指令发送 %u", target_gc, guild_id, sender);
 
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
-        "WHERE guildcard = '%u' AND guild_id = '%u'", AUTH_ACCOUNT, guild_priv_level, target_gc, guild_id);
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+        "guild_priv_level = '%u'"
+        " WHERE "
+        "guildcard = '%u' AND guild_id = '%u'"
+        , AUTH_ACCOUNT
+        , guild_priv_level
+        , target_gc, guild_id
+    );
     psocn_db_real_query(&conn, myquery);
 
     if (guild_priv_level == 0x00000040) {  // 会长转让
-        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guildcard = '%u', guild_id = '%u' WHERE guild_id = '%u'",
-            CLIENTS_GUILD, target_gc, target_gc, guild_id);
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+            "guild_priv_level = '%u'"
+            " WHERE "
+            "guildcard = '%u' AND guild_id = '%u'"
+            , AUTH_ACCOUNT
+            , 0x00000030
+            , sender, guild_id
+        );
+
         psocn_db_real_query(&conn, myquery);
 
-        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_priv_level = '%u' "
-            "WHERE guildcard = '%u' AND guild_id = '%u'", AUTH_ACCOUNT, 0x00000030, guild_id, guild_id);
-        psocn_db_real_query(&conn, myquery);
+        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+            "guildcard = '%u'"
+            " WHERE "
+            "guildcard = '%u' AND guild_id = '%u'",
+            CLIENTS_GUILD
+            , target_gc
+            , sender, guild_id
+        );
 
-        sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '%u' "
-            "WHERE guild_id = '%u'", AUTH_ACCOUNT, target_gc, guild_id);
         psocn_db_real_query(&conn, myquery);
     }
 

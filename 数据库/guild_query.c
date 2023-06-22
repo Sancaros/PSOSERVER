@@ -160,7 +160,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 /* 查找是否有数据 */
                 if (psocn_db_result_rows(result)) {
                     row = psocn_db_result_fetch(result);
-                    guild.guild_data.guildcard = atoi(row[0]);
+                    guild.guild_data.guild_owner_gc = atoi(row[0]);
                     guild.guild_data.guild_id = atoi(row[1]);
                     memcpy(&guild.guild_data.guild_info, row[2], sizeof(guild.guild_data.guild_info));
                     guild.guild_data.guild_priv_level = guild_priv_level;
@@ -182,7 +182,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
             }
             else {
                 /* 初始化默认数据 */
-                guild.guild_data.guildcard = gc;
+                guild.guild_data.guild_owner_gc = gc;
                 guild.guild_data.guild_id = guild_id;
                 guild.guild_data.guild_priv_level = guild_priv_level;
 
@@ -199,7 +199,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     "guild_info, guild_name, guild_flag)"
                     " VALUES ('%" PRIu32"', '%d', '%d', "
                     "'%d', '%d', '%d', '", CLIENTS_GUILD,
-                    guild.guild_data.guildcard, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
+                    guild.guild_data.guild_owner_gc, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
                     guild.guild_data.guild_rank, guild.guild_data.guild_dress_rewards, guild.guild_data.guild_flag_rewards);
 
                 psocn_db_escape_str(&conn, myquery + strlen(myquery),
@@ -252,7 +252,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf_s(myquery, _countof(myquery), "SELECT * from %s WHERE guild_name_text = '%s'",
+    sprintf_s(myquery, _countof(myquery), "SELECT * FROM %s WHERE guild_name_text = '%s'",
         CLIENTS_GUILD, guild_name_text);
     if (!psocn_db_real_query(&conn, myquery))
     {
@@ -269,8 +269,9 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
 
         // It doesn't... but it will now. :)
         sprintf_s(myquery, _countof(myquery), "INSERT INTO %s "
-            "(guildcard, version, guild_name_text, guild_name, guild_flag) "
-            "VALUES ('%" PRIu32 "', '%d', '%s', '",
+            "(guildcard, version, guild_name_text, guild_name, guild_flag)"
+            " VALUES "
+            "('%" PRIu32 "', '%d', '%s', '",
             CLIENTS_GUILD,
             gc, version, guild_name_text);
 
@@ -289,8 +290,15 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
             memset(myquery, 0, sizeof(myquery));
 
             guild_id = (uint32_t)psocn_db_insert_id(&conn);
-            sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_id = '%u', guild_priv_level = '%u' "
-                "WHERE guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, guild_id, 0x40, gc);
+            sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
+                "guild_id = '%u', guild_priv_level = '%u'"
+                " WHERE "
+                "guildcard = '%" PRIu32 "'"
+                , AUTH_ACCOUNT
+                , guild_id, 0x00000040
+                , gc
+            );
+
             if (psocn_db_real_query(&conn, myquery))
                 create_res = 1;
             else
@@ -370,7 +378,7 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
         "', guildcard = '%d', guild_id = '%d', guild_priv_level = '%d'"
         ", guild_rank = '%d', guild_dress_rewards = '%d', guild_flag_rewards = '%d'"
         " WHERE guildcard = '%" PRIu32 "'",
-        guild.guild_data.guildcard, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
+        guild.guild_data.guild_owner_gc, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
         guild.guild_data.guild_rank, guild.guild_data.guild_dress_rewards, guild.guild_data.guild_flag_rewards, gc);
 
     /* Execute the query */

@@ -1819,7 +1819,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     /* 初始化新会员的公会数据包 */
                     memset(&c2->bb_guild->guild_data, 0, sizeof(bb_guild_t));
 
-                    c2->bb_guild->guild_data.guildcard = c2->bb_guild->guild_data.guildcard;
+                    c2->bb_guild->guild_data.guild_owner_gc = c->bb_guild->guild_data.guild_owner_gc;
                     c2->bb_guild->guild_data.guild_id = c->bb_guild->guild_data.guild_id;
                     memcpy(&c2->bb_guild->guild_data.guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(c->bb_guild->guild_data.guild_info));
                     c2->bb_guild->guild_data.guild_priv_level = 0;

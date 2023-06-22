@@ -12384,7 +12384,7 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->hdr.flags = LE32(0x00000001);
 
     /* 填充剩余数据 */
-    pkt->guildcard = c->bb_guild->guild_data.guildcard;
+    pkt->guild_owner_gc = c->bb_guild->guild_data.guild_owner_gc;
     pkt->guild_id = c->bb_guild->guild_data.guild_id;
     memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(pkt->guild_info));
     pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
@@ -12525,7 +12525,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         memset(&pkt->data[0x00], 0, 0x0830);
 
-        *(uint32_t*)&pkt->data[0x00] = c->guildcard;
+        *(uint32_t*)&pkt->data[0x00] = c->bb_guild->guild_data.guild_owner_gc;
         *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_id;
         memcpy(&pkt->data[0x08], &c->bb_guild->guild_data.guild_info[0], 0x08);
         memcpy(&pkt->data[0x10], &c->bb_guild->guild_data.guild_name[0], 0x1C);
@@ -12563,7 +12563,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         if (c->bb_guild->guild_data.guild_id)
         {
-            *(uint32_t*)&pkt->data[0x04] = c->guildcard;
+            *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_owner_gc;
             *(uint32_t*)&pkt->data[0x08] = c->bb_guild->guild_data.guild_id;
             memcpy(&pkt->data[0x0C], &c->bb_guild->guild_data.guild_info[0], 8);
             *(uint32_t*)&pkt->data[0x14] = c->bb_guild->guild_data.guild_priv_level;
@@ -12585,7 +12585,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
                 c2 = l->clients[i];
 
-                *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guildcard;
+                *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_owner_gc;
                 len += 4;
                 *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_id;
                 len += 4;
@@ -12644,7 +12644,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 构建完整公会数据包 并发送*/
     case BB_GUILD_FULL_DATA:
-        return send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
+        return send_bb_client_guild_data_to_all(c, NULL);
 
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
 

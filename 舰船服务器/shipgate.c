@@ -696,8 +696,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->guildcard == gc) {
                             c->bb_guild->guild_data = guild->guild_data;
                             send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
-                            send_bb_client_guild_data_to_all(c, NULL);
-                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);
                         }
@@ -741,8 +740,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             c->bb_guild->guild_data.guild_id == guild_id) {
 
                             memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
-                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                            send_bb_client_guild_data_to_all(c, NULL);
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
@@ -825,8 +823,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                             memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
-                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                            send_bb_client_guild_data_to_all(c, NULL);
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         }
                         break;
 
@@ -836,8 +833,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
                             send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
                             memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-                            send_bb_client_guild_data_to_all(c, NULL);
-                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
@@ -2234,8 +2230,8 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
 
             /* 复制角色选项数据 */
             //TEST_LOG("1111 %d 发送数据 %d 字节", c->sock, pkt->guild_id);
-            if (pkt->guild_id != 0) {
-                i->bb_guild->guild_data.guildcard = i->guildcard;
+            if (pkt->guild_id != -1) {
+                i->bb_guild->guild_data.guild_owner_gc = pkt->guild_owner_gc;
                 i->bb_guild->guild_data.guild_id = pkt->guild_id;
                 memcpy(&i->bb_guild->guild_data.guild_info[0], &pkt->guild_info[0], sizeof(pkt->guild_info));
                 i->bb_guild->guild_data.guild_priv_level = pkt->guild_priv_level;

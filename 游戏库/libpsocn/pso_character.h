@@ -256,7 +256,7 @@ typedef struct psocn_bb_key_config {
 
 /* BB公会数据结构 TODO 2180字节*/
 typedef struct psocn_bb_guild {
-    uint32_t guildcard;                    // 公会创始人
+    uint32_t guild_owner_gc;               // 公会创始人
     uint32_t guild_id;                     // 公会索引 
     uint8_t guild_info[8];                 // 公会信息     8
     uint32_t guild_priv_level;             // 会员等级     4

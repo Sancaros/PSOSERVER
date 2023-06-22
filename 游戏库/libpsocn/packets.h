@@ -3938,7 +3938,7 @@ typedef struct bb_guild_member_tittle {
 // 15EA (S->C): Unknown
 typedef struct bb_guild_full_data {
     bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
-    uint32_t guildcard;                            /* 0x0008 - 0x000B*/
+    uint32_t guild_owner_gc;                       /* 0x0008 - 0x000B*/
     uint32_t guild_id;                             /* 0x000C - 0x000F*/
     uint8_t guild_info[8];                         /* 0x0010 - 0x0017*/
     uint32_t guild_priv_level;                     /* 0x0018 - 0x001B*/
