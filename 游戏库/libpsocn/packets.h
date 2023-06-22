@@ -3937,19 +3937,20 @@ typedef struct bb_guild_member_tittle {
 
 // 15EA (S->C): Unknown
 typedef struct bb_guild_full_data {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard;
-    uint32_t guild_id;
-    uint8_t guild_info[8];
-    uint32_t guild_priv_level;
-    uint16_t guild_name[0x000E];
-    uint32_t guild_rank;
-    uint32_t target_guildcard;
-    uint32_t client_id;
-    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-    uint8_t guild_flag[0x0800];
-    uint32_t guild_dress_rewards;           // 公会奖励    标志上传
-    uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
+    bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
+    uint32_t guildcard;                            /* 0x0008 - 0x000B*/
+    uint32_t guild_id;                             /* 0x000C - 0x000F*/
+    uint8_t guild_info[8];                         /* 0x0010 - 0x0017*/
+    uint32_t guild_priv_level;                     /* 0x0018 - 0x001B*/
+    uint16_t guild_name[0x000E];                   /* 0x001C - 0x0037*/
+    uint32_t guild_rank;                           /* 0x0038 - 0x003B*/
+    uint32_t target_guildcard;                     /* 0x003C - 0x003F*/
+    uint32_t client_id;                            /* 0x0040 - 0x0043*/
+    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];  /* 0x0044 - 0x005B*/
+    uint32_t guild_dress_rewards;                  /* 0x005C - 0x005F*/
+    uint32_t guild_flag_rewards;                   /* 0x0060 - 0x0063*/
+    uint8_t guild_flag[0x0800];                    /* 0x0064 - 0x0863*/
+    uint32_t padding;
 } PACKED bb_guild_full_data_pkt;
 
 // 16EA (S->C): UNKNOW

@@ -939,6 +939,18 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             return -2;
         }
 
+        if (send_bb_quest_data1(c, &c->bb_pl->quest_data1)) {
+            pthread_mutex_unlock(&c->mutex);
+            return -2;
+        }
+
+        //if (c->cur_lobby) {
+        //    /* 这里无法给自己发数据 */
+        //    send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+        //}
+        //else
+        //    ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
+
         if (send_lobby_add_player(c->cur_lobby, c)) {
             pthread_mutex_unlock(&c->mutex);
             return -3;
@@ -974,13 +986,6 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("shipgate_send_lobby_chg 错误");
         }
 
-        send_bb_quest_data1(c, &c->bb_pl->quest_data1);
-
-        if (c->cur_lobby)
-            send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
-        else
-            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
-
         /* Send a ping so we know when they're done loading in. This is useful
            for sending the MOTD as well as enforcing always-legit mode. */
         send_simple(c, PING_TYPE, 0);
@@ -1013,6 +1018,9 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
 
         if (l->version == CLIENT_VERSION_BB) {
             send_lobby_end_burst(l);
+
+            /* 将房间中的玩家公会数据发送至新进入的客户端 */
+            send_bb_other_guild_data_to_client(c);
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);
@@ -1048,8 +1056,8 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
 
-        //TEST_LOG("bb_process_done_quest_burst");
-        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
+        /* 将房间中的玩家公会数据发送至新进入的客户端 */
+        send_bb_other_guild_data_to_client(c);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -2174,14 +2182,16 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE您的权限不足."));
     }
-
+#ifdef DEBUG
     DBG_LOG("转换GC %u", target_gc);
+#endif // DEBUG
 
     for (i = 0; i < l->max_clients; ++i) {
         if (l->clients[i]->guildcard == target_gc && !l->clients[i]->guild_master_exfer) {
             c2 = l->clients[i];
-
+#ifdef DEBUG
             DBG_LOG("非会长转换GC %u", c2->guildcard);
+#endif // DEBUG
 
             break;
         }
@@ -2673,7 +2683,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         //DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
 
-        send_lobby_pkt(c->cur_lobby, c, build_guild_full_data_pkt(c), 1);
+            /* 将房间中的玩家公会数据发送至新进入的客户端 */
+        send_bb_other_guild_data_to_client(c);
+
         return 0;
 
         /* 0x0006 6*/

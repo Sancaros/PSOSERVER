@@ -2734,7 +2734,6 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     }
 
     /* Convert the message to the appropriate encoding. */
-    in = strlen(tm) + 1;
     out = 65520;
     inptr = tm;
     outptr = (char*)pkt->msg;

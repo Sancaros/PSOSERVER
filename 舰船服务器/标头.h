@@ -525,11 +525,11 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_level_up(c, (subcmd_bb_level_up_t*)pkt);
         break;
 
-    case SUBCMD60_UNKNOW_MEDIC_31:
+    case SUBCMD60_MEDIC_REQ:
         rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x01);
         break;
 
-    case SUBCMD60_UNKNOW_MEDIC_32:
+    case SUBCMD60_MEDIC_DONE:
         rv = handle_bb_cmd_check_lobby_size(c, pkt, 0x01);
         break;
 

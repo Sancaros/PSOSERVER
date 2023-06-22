@@ -88,7 +88,7 @@ typedef struct subcmd_bb_pkt {
     bb_pkt_hdr_t hdr;             /* 0x00 - 0x07 8 */
     uint8_t type;                 /* 0x08 - 0x08 1 */
     uint8_t size;                 /* 0x09 - 0x09 1 */
-    uint16_t unk;                 /* 0x0A - 0x0B 2 */
+    uint16_t param;               /* 0x0A - 0x0B 2 */
     /* 数据头 + 数据信息 占用了 14 个字节 */
     uint8_t data[0];              /* 0x0A -  */
 } PACKED subcmd_bb_pkt_t;
@@ -794,17 +794,17 @@ typedef struct subcmd_bb_level_up {
 
 // 0x31: Medical center
 // 0x32: Unknown (occurs when using Medical Center)
-struct subcmd_UseMedicalCenter_6x31 {
+typedef struct subcmd_use_medical_center {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_use_medical_center_t;
 
 // 0x31: Medical center
 // 0x32: Unknown (occurs when using Medical Center)
-struct subcmd_bb_UseMedicalCenter_6x31 {
+typedef struct subcmd_bb_use_medical_center {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED;
+} PACKED subcmd_bb_use_medical_center_t;
 
 // 0x33: Revive player (e.g. with moon atomizer)
 struct subcmd_RevivePlayer_6x33 {
@@ -2793,7 +2793,8 @@ typedef struct subcmd_bb_guild_master_trans {
     uint32_t traget_guildcard;
     uint32_t trans_cmd;
     uint16_t master_name[0x0018];
-    uint16_t guild_name[0x0010];
+    uint16_t guild_name[0x000E];
+    uint32_t unknow; /* ???????? 未知 00 00 E3 23*/
 } PACKED subcmd_bb_guild_master_trans_t;
 
 //[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF

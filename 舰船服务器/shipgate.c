@@ -694,10 +694,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* OK */
                     case BB_GUILD_CREATE:
                         if (c->guildcard == gc) {
-
                             c->bb_guild->guild_data = guild->guild_data;
                             send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
-                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_client_guild_data_to_all(c, NULL);
+                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_UNK_1DEA);
                         }
@@ -741,7 +741,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             c->bb_guild->guild_data.guild_id == guild_id) {
 
                             memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
-                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_client_guild_data_to_all(c, NULL);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
@@ -824,7 +825,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                             memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
-                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_client_guild_data_to_all(c, NULL);
                         }
                         break;
 
@@ -834,7 +836,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
                             send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
                             memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-                            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+                            send_bb_client_guild_data_to_all(c, NULL);
+                            //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
@@ -980,6 +983,79 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                 pthread_mutex_unlock(&c->mutex);
 
+            }
+
+            pthread_rwlock_unlock(&b->lock);
+        }
+    }
+
+    return 0;
+}
+
+static int handle_bb_guild_err(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
+    uint32_t i;
+    ship_t* s = conn->ship;
+    block_t* b;
+    ship_client_t* c;
+    uint32_t err = ntohl(pkt->error_code);
+    int done = 0;
+    uint16_t flags = ntohs(pkt->hdr.flags);
+    bb_guild_data_pkt* guild = (bb_guild_data_pkt*)pkt->data;
+    uint32_t dest = guild->hdr.flags;
+
+    /* Make sure the packet looks sane */
+    if (!(flags & SHDR_RESPONSE)) {
+        return 0;
+    }
+
+    for (i = 0; i < s->cfg->blocks && !done; ++i) {
+        if (s->blocks[i]) {
+            b = s->blocks[i];
+            pthread_rwlock_rdlock(&b->lock);
+
+            TAILQ_FOREACH(c, b->clients, qentry) {
+                pthread_mutex_lock(&c->mutex);
+
+                if (c->guildcard == dest && c->pl) {
+                    /* We've found them, figure out what to tell them. */
+                    if (flags & SHDR_FAILURE) {
+                        switch (err)
+                        {
+                        case ERR_GUILD_SENT_PKT:
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4发送公会数据错误."));
+                            break;
+
+                        case ERR_GUILD_SQLERR:
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4创建公会数据失败, 数据库错误."));
+                            break;
+
+                        case ERR_GUILD_EXIST:
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4该名称的公会已存在."));
+                            break;
+
+                        case ERR_GUILD_ALREADY_IN:
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4你已经在一个公会中."));
+                            break;
+
+                        default:
+                            ERR_LOG("创建GC %u 的数据错误.", dest);
+                            break;
+                        }
+                    }
+                    done = 1;
+                }
+                else if (c->guildcard == dest) {
+                    /* Act like they don't exist for right now (they don't
+                       really exist right now)
+                        假装他们现在不存在（他们现在真的不存在） */
+                    done = 1;
+                }
+
+                pthread_mutex_unlock(&c->mutex);
+
+                if (done) {
+                    break;
+                }
             }
 
             pthread_rwlock_unlock(&b->lock);
@@ -2936,6 +3012,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_PC:
         case SHDR_TYPE_BB:
             /* Ignore these for now, we shouldn't get them. */
+            handle_bb_guild_err(conn, (shipgate_error_pkt*)pkt);
             return 0;
 
         case SHDR_TYPE_CDATA:

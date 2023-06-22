@@ -94,6 +94,12 @@
 #define ERR_BAD_ERROR           0x80000001
 #define ERR_REQ_LOGIN           0x80000002
 
+/* 公会数据错误码 */
+#define ERR_GUILD_SENT_PKT       0x00000001
+#define ERR_GUILD_SQLERR         0x00000002
+#define ERR_GUILD_EXIST          0x00000003
+#define ERR_GUILD_ALREADY_IN     0x00000004
+
 /* Error codes in response to shipgate_login_reply_pkt */
 #define ERR_LOGIN_BAD_KEY       0x00000001
 #define ERR_LOGIN_BAD_PROTO     0x00000002

@@ -241,11 +241,11 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
         fprint_packet(c->logfile, sendbuf, len, 0);
     }
 
-    /*DBG_LOG(
-        "舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
-        sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);*/
-
-    //print_payload(sendbuf, len);
+#ifdef DEBUG
+    DBG_LOG("舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
+        sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);
+    print_payload(sendbuf, len);
+#endif // DEBUG
 
     /* Encrypt the packet */
     CRYPT_CryptData(&c->skey, sendbuf, len, 1);
@@ -1776,7 +1776,7 @@ int send_lobby_pkt(lobby_t* l, ship_client_t* nosend, const uint8_t* pkt,
     if (!l)
         return 0;
 
-    for (i = 0; i < l->num_clients; ++i) {
+    for (i = 0; i < l->max_clients; ++i) {
         if (l->clients[i] && l->clients_slot[i] && l->clients[i] != nosend) {
             c2 = l->clients[i];
             pthread_mutex_lock(&c2->mutex);
@@ -3703,41 +3703,6 @@ const uint8_t PacketEE[] = {
     0x00, 0x00, 0xEE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-/* 发送不同类型的信息数据统一函数 (i.e, type/ for stuff related to commands). */
-int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) {
-    va_list args;
-    int rv = -1;
-
-    va_start(args, fmt);
-
-    /* Call the appropriate function. */
-    switch (c->version) {
-    case CLIENT_VERSION_DCV1:
-        /* The NTE will crash if it gets the standard version of this
-           packet, so fake it in the easiest way possible... */
-        if (c->flags & CLIENT_FLAG_IS_NTE) {
-            rv = send_dcnte_txt(c, fmt, args);
-            break;
-        }
-
-    case CLIENT_VERSION_DCV2:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
-        rv = send_dc_message(c, type, fmt, args);
-        break;
-
-    case CLIENT_VERSION_BB:
-        rv = send_bb_message(c, type, fmt, args);
-        break;
-    }
-
-    va_end(args);
-
-    return rv;
-}
-
 /* 发送文本类型的信息数据统一函数 (i.e, for stuff related to commands). */
 int send_txt(ship_client_t *c, const char *fmt, ...) {
     va_list args;
@@ -5203,6 +5168,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     }
 
     /* Convert the message to the appropriate encoding. */
+    in = strlen(tm) + 1;
     out = 65500;
     inptr = tm;
     outptr = (char*)pkt->msg;
@@ -5255,6 +5221,145 @@ int send_msg_box(ship_client_t *c, const char *fmt, ...) {
         case CLIENT_VERSION_XBOX:
         case CLIENT_VERSION_BB:
             rv = send_message_box(c, fmt, args);
+    }
+
+    va_end(args);
+
+    return rv;
+}
+
+/* Send a message to the client. */
+static int send_message_type(ship_client_t* c, uint16_t type, const char* fmt,
+    va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
+    msg_box_pkt* pkt = (msg_box_pkt*)sendbuf;
+    int len;
+    iconv_t ic;
+    size_t in, out;
+    char* inptr;
+    char* outptr;
+    char tm[4096] = { 0 };
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* Don't send these to GC players with buggy versions. */
+    if ((c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
+        c->version == CLIENT_VERSION_XBOX) &&
+        !(c->flags & CLIENT_FLAG_TYPE_SHIP) &&
+        !(c->flags & CLIENT_FLAG_GC_MSG_BOXES)) {
+        SHIPS_LOG("Silently (to the user) dropping message box for GC");
+        return 0;
+    }
+
+    memset(&tm[0], 0, sizeof(tm));
+
+    /* Do the formatting */
+    vsnprintf(tm, 4096, fmt, args);
+    tm[4095] = '\0';
+    in = strlen(tm) + 1;
+
+    /* Make sure we have a language code tag */
+    if (tm[0] != '\t' || (tm[1] != 'E' && tm[1] != 'J')) {
+        /* Assume Non-Japanese if we don't have a marker. */
+        memmove(&tm[2], &tm[0], in);
+        tm[0] = '\t';
+        tm[1] = 'E';
+        in += 2;
+    }
+
+    /* Set up to convert between encodings */
+    if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
+        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
+        c->version == CLIENT_VERSION_XBOX) {
+        if (tm[1] == 'J') {
+            ic = ic_gbk_to_sjis;
+        }
+        else {
+            ic = ic_gbk_to_8859;
+        }
+    }
+    else {
+        ic = ic_gbk_to_utf16;
+    }
+
+    /* Convert the message to the appropriate encoding. */
+    in = strlen(tm) + 1;
+    out = 65500;
+    inptr = tm;
+    outptr = (char*)pkt->msg;
+    iconv(ic, &inptr, &in, &outptr, &out);
+    len = 65500 - out;
+
+    /* Add any padding needed */
+    while (len & (c->hdr_size - 1)) {
+        pkt->msg[len++] = 0;
+    }
+
+    /* 填充数据头 */
+    len += c->hdr_size;
+
+    if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
+        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
+        c->version == CLIENT_VERSION_XBOX) {
+        pkt->hdr.dc.pkt_type = (uint8_t)type;
+        pkt->hdr.dc.flags = 0;
+        pkt->hdr.dc.pkt_len = LE16(len);
+    }
+    else if (c->version == CLIENT_VERSION_PC) {
+        pkt->hdr.pc.pkt_type = (uint8_t)type;
+        pkt->hdr.pc.flags = 0;
+        pkt->hdr.pc.pkt_len = LE16(len);
+    }
+    else {
+        pkt->hdr.bb.pkt_type = type;
+        pkt->hdr.bb.flags = 0;
+        pkt->hdr.bb.pkt_len = LE16(len);
+    }
+
+    /* 加密并发送 */
+    return crypt_send(c, len, sendbuf);
+}
+
+/* 发送不同类型的信息数据统一函数 (i.e, type/ for stuff related to commands). */
+int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) {
+    va_list args;
+    int rv = -1;
+
+    va_start(args, fmt);
+
+    /* Call the appropriate function. */
+    switch (type)
+    {
+    case MSG_BOX_TYPE:
+        rv = send_message_type(c, type, fmt, args);
+        break;
+
+    default:
+        switch (c->version)
+        {
+        case CLIENT_VERSION_DCV1:
+            /* The NTE will crash if it gets the standard version of this
+               packet, so fake it in the easiest way possible... */
+            if (c->flags & CLIENT_FLAG_IS_NTE) {
+                rv = send_dcnte_txt(c, fmt, args);
+                break;
+            }
+
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+        case CLIENT_VERSION_XBOX:
+            rv = send_dc_message(c, type, fmt, args);
+            break;
+
+        case CLIENT_VERSION_BB:
+            rv = send_bb_message(c, type, fmt, args);
+            break;
+        }
+        break;
     }
 
     va_end(args);
@@ -12265,6 +12370,7 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     return 0;
 }
 
+/* 构建公会完整数据包 */
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     uint8_t* sendbuf = get_sendbuf(); 
     bb_guild_full_data_pkt* pkt = (bb_guild_full_data_pkt*)sendbuf;
@@ -12272,23 +12378,25 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
 
     memset(pkt, 0, len);
 
-    pkt->guildcard = c->bb_guild->guild_data.guildcard;
-    pkt->guild_id = c->bb_guild->guild_data.guild_id;
-    memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], 0x08);
-    pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
-    memcpy(&pkt->guild_name[0], &c->bb_guild->guild_data.guild_name[0], 0x1C);
-    pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
-    pkt->target_guildcard = c->guildcard;
-    pkt->client_id = c->client_id;
-    memcpy(&pkt->guild_name[0], &c->pl->bb.character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
-    memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], 0x800);
-    pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
-    pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
-
-
+    /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(0x0864);
     pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
     pkt->hdr.flags = LE32(0x00000001);
+
+    /* 填充剩余数据 */
+    pkt->guildcard = c->bb_guild->guild_data.guildcard;
+    pkt->guild_id = c->bb_guild->guild_data.guild_id;
+    memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(pkt->guild_info));
+    pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+    memcpy(&pkt->guild_name[0], &c->bb_guild->guild_data.guild_name[0], sizeof(pkt->guild_name));
+    pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
+    pkt->target_guildcard = c->guildcard;
+    pkt->client_id = c->client_id;
+    memcpy(&pkt->char_name[0], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+    pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
+    pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
+    memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt->guild_flag));
+    pkt->padding = 0;
 
     return (uint8_t*)pkt;
     
@@ -12297,12 +12405,15 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
 //    memset(&sendbuf[0x05], 0, 3);
 //    *(uint32_t*)&sendbuf[0x08] = c->guildcard;
 //    *(uint32_t*)&sendbuf[0x0C] = c->bb_guild->guild_data.guild_id;
+//    memcpy(&sendbuf[0x10], &c->bb_guild->guild_data.guild_info[0], 8);
 //    *(uint32_t*)&sendbuf[0x18] = c->bb_guild->guild_data.guild_priv_level;
 //    memcpy(&sendbuf[0x1C], &c->bb_guild->guild_data.guild_name[0], 28);
-//    sprintf(&sendbuf[0x38], "\x84\x6C\x98");
+//    *(uint32_t*)&sendbuf[0x38] = c->bb_guild->guild_data.guild_rank;
 //    *(uint32_t*)&sendbuf[0x3C] = c->guildcard;
 //    sendbuf[0x40] = c->client_id;
 //    memcpy(&sendbuf[0x44], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+//    *(uint32_t*)&sendbuf[0x5C] = c->bb_guild->guild_data.guild_dress_rewards;
+//    *(uint32_t*)&sendbuf[0x60] = c->bb_guild->guild_data.guild_flag_rewards;
 //    memcpy(&sendbuf[0x64], &c->bb_guild->guild_data.guild_flag[0], 0x800);
 //    *(uint32_t*)&sendbuf[0x864] = 0;
 //
@@ -12715,6 +12826,47 @@ int send_bb_ex_item_done(ship_client_t* c, uint32_t done) {
     pkt.hdr.flags = done;
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
+int send_bb_other_guild_data_to_client(ship_client_t* c) {
+    lobby_t* l = c->cur_lobby;
+    int  i = 0, rv = 0;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l) {
+        ERR_LOG("玩家GC %u 未处于大厅中", c->guildcard);
+        return rv;
+    }
+
+    /* 将房间中的玩家公会数据发送至新进入的客户端 */
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients_slot[i]) {
+            rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+        }
+    }
+
+    return rv;
+}
+
+int send_bb_client_guild_data_to_all(ship_client_t* c, ship_client_t* nosend) {
+    lobby_t* l = c->cur_lobby;
+    int  i = 0, rv = 0;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l) {
+        ERR_LOG("玩家未处于大厅中");
+        return 0;
+    }
+
+    for (i = 0; i < l->max_clients; i++) {
+        if ((l->clients_slot[i]) && 
+            (l->clients[i]) && 
+            (l->clients[i] != nosend)) {
+            crypt_send(l->clients[i], 2152, build_guild_full_data_pkt(c));
+        }
+    }
+
+    return 0;
 }
 
 

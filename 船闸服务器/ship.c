@@ -1544,48 +1544,62 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard, g_data->hdr.flags);
 
+    guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
+
+    if (!guild) {
+        ERR_LOG("分配公会数据内存错误.");
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return -1;
+    }
+
+    memset(guild, 0, sizeof(bb_guild_data_pkt));
+
+    guild->hdr.pkt_type = g_data->hdr.pkt_type;
+    guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
+    guild->hdr.flags = g_data->hdr.flags;
+
     switch (create_res)
     {
     case 0x00:
-        guild = (bb_guild_data_pkt*)malloc(sizeof(bb_guild_data_pkt));
-
-        if (!guild) {
-            ERR_LOG("分配公会数据内存错误.");
-            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)g_data, len);
-            return -1;
-        }
-
         guild->guild = db_get_bb_char_guild(sender);
 
-        guild->hdr.pkt_type = g_data->hdr.pkt_type;
-        guild->hdr.pkt_len = sizeof(bb_guild_data_pkt);
-        guild->hdr.flags = g_data->hdr.flags;
-
         if (send_bb_pkt_to_ship(c, sender, (uint8_t*)guild)) {
+            guild->hdr.flags = sender;
             send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)guild, len);
-            return 0;
+                ERR_GUILD_SENT_PKT, (uint8_t*)guild, len);
         }
 
         //DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
-        free_safe(guild);
         break;
 
     case 0x01:
         ERR_LOG("创建GC %d 公会数据失败, 数据库错误.", sender);
+        guild->hdr.flags = sender;
+        /* TODO 需要给客户端返回错误信息 */
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_GUILD_SQLERR, (uint8_t*)guild, len);
         break;
 
     case 0x02:
         ERR_LOG("创建GC %d 公会数据失败, %s 公会已存在.", sender, guild_name);
+        guild->hdr.flags = sender;
+        /* TODO 需要给客户端返回错误信息 */
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_GUILD_EXIST, (uint8_t*)guild, len);
         break;
 
     case 0x03:
         ERR_LOG("创建GC %d 公会数据失败,该 GC 已在公会中.", sender);
+        guild->hdr.flags = sender;
+        /* TODO 需要给客户端返回错误信息 */
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_GUILD_ALREADY_IN, (uint8_t*)guild, len);
         break;
     }
 
     /* 完成数据包设置,发送至舰船... */
+    free_safe(guild);
     return 0;
 }
 

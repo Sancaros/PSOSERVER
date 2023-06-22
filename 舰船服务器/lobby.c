@@ -61,7 +61,6 @@ static int td(ship_client_t *c, lobby_t *l, void *req);
 
 lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
-    pthread_mutexattr_t attr;
 
     /* If we don't have a lobby, bail. */
     if(!l) {
@@ -109,6 +108,7 @@ lobby_t *lobby_create_default(block_t *block, uint32_t lobby_id, uint8_t ev) {
 #endif
 
     /* Initialize the lobby mutex. */
+    pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&l->mutex, &attr);
@@ -246,7 +246,6 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                            uint8_t event, uint8_t episode, ship_client_t *c,
                            uint8_t single_player, int bb) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
-    pthread_mutexattr_t attr;
     uint32_t *pid, id;
     int i;
 
@@ -383,6 +382,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     STAILQ_INIT(&l->burst_queue);
 
     /* Initialize the lobby mutex. */
+    pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&l->mutex, &attr);
@@ -574,7 +574,6 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
                                ship_client_t *c) {
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
     uint32_t id = 0x20;
-    pthread_mutexattr_t attr;
 
     /* If we don't have a lobby, bail. */
     if(!l) {
@@ -619,6 +618,7 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
     STAILQ_INIT(&l->burst_queue);
 
     /* Initialize the lobby mutex. */
+    pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&l->mutex, &attr);
@@ -1280,9 +1280,10 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
         c->p2_drops_max = 0;
     }
 
-    if (c->version >= CLIENT_VERSION_BB) {
-        send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
-    }
+    //if (c->version >= CLIENT_VERSION_BB) {
+    //    TEST_LOG("bb_process_done_burst");
+    //    send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
+    //}
 
     /* ...and let his/her new lobby know that he/she has arrived. */
     send_lobby_add_player(c->cur_lobby, c);

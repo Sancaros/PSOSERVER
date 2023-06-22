@@ -109,7 +109,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             sent = 0;
             break;
 
-        case 0x1F:
+        case SUBCMD60_SET_AREA_1F:
             if(l->type == LOBBY_TYPE_LOBBY) {
                 for(i = 0; i < l->max_clients; ++i) {
                     if(l->clients[i] && l->clients[i] != c &&

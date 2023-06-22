@@ -312,4 +312,8 @@ int send_bb_quest_state(ship_client_t* c);
 
 int send_bb_ex_item_done(ship_client_t* c, uint32_t done);
 
+/* 将房间中的玩家公会数据发送至新进入的客户端 */
+int send_bb_other_guild_data_to_client(ship_client_t* c);
+int send_bb_client_guild_data_to_all(ship_client_t* c, ship_client_t* nosend);
+
 #endif /* !SHIP_PACKETS_H */
