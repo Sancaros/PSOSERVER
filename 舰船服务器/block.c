@@ -1784,7 +1784,7 @@ static int dc_process_guild_search(ship_client_t* c, dc_guild_search_pkt* pkt) {
     if (gc < 1000)
         return 0;
 
-    /* Search the local ship first. */
+    /* 首先搜索本地的舰船. */
     for (i = 0; i < ship->cfg->blocks && !done; ++i) {
         if (!ship->blocks[i] || !ship->blocks[i]->run) {
             continue;
@@ -1792,7 +1792,7 @@ static int dc_process_guild_search(ship_client_t* c, dc_guild_search_pkt* pkt) {
 
         pthread_rwlock_rdlock(&ship->blocks[i]->lock);
 
-        /* Look through all clients on that block. */
+        /* 查看该舰仓的所有客户端. */
         TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
             /* Check if this is the target and the target has player
                data. */
@@ -1867,7 +1867,7 @@ static int dc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
     if (gc < 1000)
         return 0;
 
-    /* Search the local ship first. */
+    /* 首先搜索本地的舰船. */
     for (i = 0; i < ship->cfg->blocks && !done; ++i) {
         if (!ship->blocks[i] || !ship->blocks[i]->run) {
             continue;
@@ -1875,7 +1875,7 @@ static int dc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
 
         pthread_rwlock_rdlock(&ship->blocks[i]->lock);
 
-        /* Look through all clients on that block. */
+        /* 查看该舰仓的所有客户端. */
         TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
             /* Check if this is the target and the target has player
                data. */
@@ -1950,7 +1950,7 @@ static int pc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
     if (gc < 1000)
         return 0;
 
-    /* Search the local ship first. */
+    /* 首先搜索本地的舰船. */
     for (i = 0; i < ship->cfg->blocks && !done; ++i) {
         if (!ship->blocks[i] || !ship->blocks[i]->run) {
             continue;
@@ -1958,7 +1958,7 @@ static int pc_process_mail(ship_client_t* c, simple_mail_pkt* pkt) {
 
         pthread_rwlock_rdlock(&ship->blocks[i]->lock);
 
-        /* Look through all clients on that block. */
+        /* 查看该舰仓的所有客户端. */
         TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
             /* Check if this is the target and the target has player
                data. */

@@ -2166,8 +2166,8 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
                 memcpy(&i->bb_guild->guild_data.guild_name, &pkt->guild_name[0], sizeof(pkt->guild_name));
                 i->bb_guild->guild_data.guild_rank = pkt->guild_rank;
                 memcpy(&i->bb_guild->guild_data.guild_flag, &pkt->guild_flag[0], sizeof(pkt->guild_flag));
-                i->bb_guild->guild_data.guild_rewards[0] = pkt->guild_rewards[0];
-                i->bb_guild->guild_data.guild_rewards[1] = pkt->guild_rewards[1];
+                i->bb_guild->guild_data.guild_dress_rewards = pkt->guild_dress_rewards;
+                i->bb_guild->guild_data.guild_flag_rewards = pkt->guild_flag_rewards;
             }
 
             //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
@@ -3925,8 +3925,8 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     memcpy(&pkt->guild_name[0], &cl->bb_guild->guild_data.guild_name[0], sizeof(cl->bb_guild->guild_data.guild_name));
     pkt->guild_rank = cl->bb_guild->guild_data.guild_rank;
     memcpy(&pkt->guild_flag[0], &cl->bb_guild->guild_data.guild_flag[0], sizeof(cl->bb_guild->guild_data.guild_flag));
-    pkt->guild_rewards[0] = cl->bb_guild->guild_data.guild_rewards[0];
-    pkt->guild_rewards[1] = cl->bb_guild->guild_data.guild_rewards[1];
+    pkt->guild_dress_rewards = cl->bb_guild->guild_data.guild_dress_rewards;
+    pkt->guild_flag_rewards = cl->bb_guild->guild_data.guild_flag_rewards;
 
     //memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 

@@ -1057,24 +1057,9 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
     uint8_t type = pkt->shdr.type;
     uint32_t invite_cmd = pkt->trans_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
+    char guild_name_text[24];
+    char inviter_name_text[24];
 
-    // 公会邀请 C1 & C2, 会长转让 CD & CE.
-//[2023年02月13日 21:13:20:264] 测试(subcmd-bb.c 1521): SUBCMD62_GUILD_INVITE1
-//( 00000000 )   64 00 62 00 00 00 00 00  C1 17 80 3F 01 00 00 00    d.b........?....
-//( 00000010 )   00 00 00 00 09 00 42 00  31 00 32 00 33 00 00 00    .... .B.1.2.3...
-//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
-//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000060 )   00 00 D9 01                                         ....
-//[2023年02月13日 21:13:25:223] 测试(subcmd-bb.c 1533): SUBCMD62_GUILD_INVITE2
-//( 00000000 )   64 00 62 00 01 00 00 00  C2 17 E9 6D 60 EE 80 02    d.b........m`...
-//( 00000010 )   02 00 00 00 09 00 42 00  31 00 00 00 00 00 00 00    .... .B.1.......
-//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
-//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000060 )   00 00 D9 01                                         ....                                 ...y
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
             c->guildcard);
@@ -1082,15 +1067,50 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
         return -1;
     }
 
-    //TEST_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u", invite_cmd, c->guildcard, d->guildcard);
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, sizeof(pkt->inviter_name) - 4);
 
-    //0x02 应该时接受公会邀请指令
-    if ((invite_cmd == 0x02) && (c->guildcard == target_guildcard))
-        c->guild_accept = 1;
+    switch (invite_cmd)
+    {
+        /* 公会邀请起始 检测双方的 公会情况 */
+    case 0x00:
 
-    //print_payload((uint8_t*)pkt, len);
+        if (d->guildcard == target_guildcard) {
+            if (d->bb_guild->guild_data.guild_id != -1) {
+                d->guild_accept = 0;
+                DBG_LOG("被邀请方 GUILD ID %u", d->bb_guild->guild_data.guild_id);
+                /* 到这就没了, 获取对方已经属于某个公会. */
+                send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法邀请玩家!"),
+                    __(c, "\tC7对方已在公会中."));
+            }
+            else
+                d->guild_accept = 1;
+        }
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 
-    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+        /* 公会邀请起始 检测双方的 公会情况 */
+    case 0x01:
+        TEST_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u %s", invite_cmd, c->guildcard, d->guildcard, inviter_name_text);
+        print_payload((uint8_t*)pkt, len);
+        break;
+
+        /* 公会邀请成功 检测对方的 公会情况 */
+    case 0x02:
+        if (c->guildcard == target_guildcard)
+            c->guild_accept = 1;
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+
+        /* 公会邀请失败 给双方返回错误信息 */
+    case 0x04:
+        return send_msg(c, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(c, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
+
+
+    default:
+        ERR_LOG("SUBCMD62_GUILD_INVITE%d c %u d %u %s", invite_cmd, c->guildcard, d->guildcard, inviter_name_text);
+        break;
+    }
+
+    return 0;
 }
 
 static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_guild_master_trans_t* pkt) {

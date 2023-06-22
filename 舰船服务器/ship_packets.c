@@ -9523,7 +9523,7 @@ static int fill_choice_entries(ship_client_t *c, uint8_t *sendbuf,
         if(b && b->run) {
             pthread_rwlock_rdlock(&b->lock);
 
-            /* Look through all clients on that block. */
+            /* 查看该舰仓的所有客户端. */
             TAILQ_FOREACH(it, b->clients, qentry) {
                 /* Look to see if they match the search. */
                 if(!it->pl) {
@@ -12282,8 +12282,8 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->client_id = c->client_id;
     memcpy(&pkt->guild_name[0], &c->pl->bb.character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
     memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], 0x800);
-    pkt->guild_rewards[0] = c->bb_guild->guild_data.guild_rewards[0];
-    pkt->guild_rewards[1] = c->bb_guild->guild_data.guild_rewards[1];
+    pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
+    pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
 
 
     pkt->hdr.pkt_len = LE16(0x0864);
@@ -12662,13 +12662,13 @@ int check_gc_online(ship_client_t* c, uint32_t target_gc) {
     if (target_gc < 1000)
         return 0;
 
-    /* Search the local ship first. */
+    /* 首先搜索本地的舰船. */
     for (i = 0; i < ship->cfg->blocks && !done; ++i) {
         if (!ship->blocks[i] || !ship->blocks[i]->run) {
             continue;
         }
 
-        /* Look through all clients on that block. */
+        /* 查看该舰仓的所有客户端. */
         TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
             /* Check if this is the target and the target has player
                data. */

@@ -2663,8 +2663,9 @@ typedef struct subcmd_bb_guild_invite {
     params_hdr_t shdr;
     uint32_t traget_guildcard;
     uint32_t trans_cmd;
-    uint16_t master_name[0x0018];
-    uint16_t guild_name[0x0010];
+    uint16_t inviter_name[0x0018];
+    uint16_t guild_name[0x000E];
+    uint32_t guild_rank; /*????????? δ֪ 00 00 D9 01*/
 } PACKED subcmd_bb_guild_invite_t;
 
 // 0xC3: Split stacked item (handled by the server on BB)

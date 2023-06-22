@@ -3812,7 +3812,8 @@ typedef struct bb_guild_member_setting {
         uint32_t guild_priv_level;             // 会员等级     4
         uint32_t guildcard_client;
         uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
-        uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
+        uint32_t guild_dress_rewards;           // 公会奖励    标志上传
+        uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
     } entries[0];
     //uint8_t data[];
 } PACKED bb_guild_member_setting_pkt;
@@ -3921,7 +3922,8 @@ typedef struct bb_guild_lobby_setting {
         uint32_t guildcard_client;
         uint32_t client_id;
         uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
-        uint32_t guild_rewards[2];             // 公会奖励 包含 更改皮肤  4 + 4
+        uint32_t guild_dress_rewards;           // 公会奖励    标志上传
+        uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
         uint8_t guild_flag[0x0800];            // 公会图标     2048
     } entries[0];
 } PACKED bb_guild_lobby_setting_pkt;
@@ -3946,7 +3948,8 @@ typedef struct bb_guild_full_data {
     uint32_t client_id;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
     uint8_t guild_flag[0x0800];
-    uint32_t guild_rewards[2];
+    uint32_t guild_dress_rewards;           // 公会奖励    标志上传
+    uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
 } PACKED bb_guild_full_data_pkt;
 
 // 16EA (S->C): UNKNOW

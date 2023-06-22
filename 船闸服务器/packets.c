@@ -574,8 +574,8 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     memcpy(&pkt->guild_name, guild->guild_data.guild_name, sizeof(guild->guild_data.guild_name));
     pkt->guild_rank = guild->guild_data.guild_rank;
     memcpy(&pkt->guild_flag, guild->guild_data.guild_flag, sizeof(guild->guild_data.guild_flag));
-    pkt->guild_rewards[0] = guild->guild_data.guild_rewards[0];
-    pkt->guild_rewards[1] = guild->guild_data.guild_rewards[1];
+    pkt->guild_dress_rewards = guild->guild_data.guild_dress_rewards;
+    pkt->guild_flag_rewards = guild->guild_data.guild_flag_rewards;
 
     //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 

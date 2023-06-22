@@ -1553,8 +1553,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
             ERR_LOG("分配公会数据内存错误.");
             send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
                 ERR_BAD_ERROR, (uint8_t*)g_data, len);
-            create_res = 1;
-            return 0;
+            return -1;
         }
 
         guild->guild = db_get_bb_char_guild(sender);
@@ -1587,7 +1586,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* 完成数据包设置,发送至舰船... */
-    return create_res;
+    return 0;
 }
 
 /* 处理 Blue Burst 公会  */
@@ -1775,8 +1774,8 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         g_data->entries[i].guildcard_client = LE32(atoi(row[0]));
         memcpy(&g_data->entries[i].char_name[0], row[2], len3);
         g_data->entries[i].char_name[1] = 0x0045;
-        g_data->entries[i].guild_rewards[0] = 0;
-        g_data->entries[i].guild_rewards[1] = 0;
+        g_data->entries[i].guild_dress_rewards = 0;
+        g_data->entries[i].guild_flag_rewards = 0;
 
         size += entries_size;
     }
