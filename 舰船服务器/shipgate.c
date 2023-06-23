@@ -831,7 +831,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         guild_id = pkt->fw_flags;
 
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
-                            send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
+                            send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
                             memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);

@@ -12848,8 +12848,9 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
         if ((l->clients_slot[i]) && 
             (l->clients[i]) &&
             (l->clients[i] != nosend)) {
-            rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+            rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
         }
     }
 
