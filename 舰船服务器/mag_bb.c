@@ -755,8 +755,9 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	if (!l || l->type != LOBBY_TYPE_GAME)
 		return -1;
 
-	//if (l->challenge || l->battle)
-	//	return -2;
+	/* 暂时不处理 TODO*/
+	if (l->challenge || l->battle)
+		return 0;
 
 	uint32_t i, mt_index;
 	int32_t EvolutionClass = 0;

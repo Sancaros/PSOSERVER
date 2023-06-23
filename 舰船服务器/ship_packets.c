@@ -12384,19 +12384,21 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->hdr.flags = LE32(0x00000001);
 
     /* Ìî³äÊ£ÓàÊı¾İ */
-    pkt->guild_owner_gc = c->guildcard;
-    pkt->guild_id = c->bb_guild->guild_data.guild_id;
-    memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(pkt->guild_info));
-    pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
-    memcpy(&pkt->guild_name[0], &c->bb_guild->guild_data.guild_name[0], sizeof(pkt->guild_name));
-    pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
-    pkt->target_guildcard = c->guildcard;
-    pkt->client_id = c->client_id;
-    memcpy(&pkt->char_name[0], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
-    pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
-    pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
-    memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt->guild_flag));
-    pkt->padding = 0;
+    if (c->bb_guild->guild_data.guild_id != 0) {
+        pkt->guild_owner_gc = c->guildcard;
+        pkt->guild_id = c->bb_guild->guild_data.guild_id;
+        memcpy(&pkt->guild_info[0], &c->bb_guild->guild_data.guild_info[0], sizeof(pkt->guild_info));
+        pkt->guild_priv_level = c->bb_guild->guild_data.guild_priv_level;
+        memcpy(&pkt->guild_name[0], &c->bb_guild->guild_data.guild_name[0], sizeof(pkt->guild_name));
+        pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
+        pkt->target_guildcard = c->guildcard;
+        pkt->client_id = c->client_id;
+        memcpy(&pkt->char_name[0], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+        pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
+        pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
+        memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt->guild_flag));
+        pkt->padding = 0;
+    }
 
     return (uint8_t*)pkt;
     
@@ -12561,8 +12563,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         memset(&pkt->data[0x00], 0, 0x38);
 
-        if (c->bb_guild->guild_data.guild_id)
-        {
+        if (c->bb_guild->guild_data.guild_id != 0) {
             *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_data.guild_owner_gc;
             *(uint32_t*)&pkt->data[0x08] = c->bb_guild->guild_data.guild_id;
             memcpy(&pkt->data[0x0C], &c->bb_guild->guild_data.guild_info[0], 8);

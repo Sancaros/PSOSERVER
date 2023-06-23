@@ -1281,10 +1281,8 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     }
 
     if (c->version >= CLIENT_VERSION_BB) {
-        TEST_LOG("bb_process_done_burst");
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-        //send_lobby_pkt(l, c, build_guild_full_data_pkt(c), 1);
     }
 
     /* ...and let his/her new lobby know that he/she has arrived. */
