@@ -93,15 +93,6 @@ static int db_updata_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, 
 int db_insert_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
-    //sprintf(myquery, "INSERT INTO %s "
-    //    "(guildcard, slot, quest_guildcard, data, quest_flags)"
-    //    " VALUES "
-    //    "('%" PRIu32 "', '%" PRIu8 "', '%" PRIu32 "', '%s', '%" PRIu32 "')"
-    //    , TABLE1
-    //    , gc, slot
-    //    , quest_data1->quest_guildcard, (char*)&quest_data1->data, quest_data1->quest_flags
-    //);
-
     sprintf(myquery, "INSERT INTO %s "
         "(guildcard, slot, quest_guildcard, quest_flags, data)"
         " VALUES "

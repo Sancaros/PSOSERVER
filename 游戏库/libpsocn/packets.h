@@ -3853,11 +3853,11 @@ typedef struct bb_guild_invite_0DEA {
 
 // 0EEA (S->C): Unknown
 typedef struct bb_guild_unk_0EEA {
-    bb_pkt_hdr_t hdr;
-    uint32_t guildcard;                    // 02B8         4
-    uint32_t guild_id;                     // 02BC
-    uint8_t guild_info[8];                 // 公会信息     8
-    uint16_t guild_name[0x000E];           // 02CC
+    bb_pkt_hdr_t hdr;                      // 0x00 - 0x07
+    uint32_t guildcard;                    // 0x08 - 0x0B
+    uint32_t guild_id;                     // 0x0C - 0x0F
+    uint8_t guild_info[8];                 // 0x10 - 0x17
+    uint16_t guild_name[0x000E];           // 0x18 - 0x1C
     uint16_t unk_flag;
     uint8_t guild_flag[0x0800];            // 公会图标
     uint8_t unk2;
