@@ -2027,7 +2027,11 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("×ª»»GC %u GID %u Ö¸Áî·¢ËÍ %u", target_gc, guild_id, sender);
+
+#endif // DEBUG
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
         "guild_priv_level = '%u'"
@@ -2063,7 +2067,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         psocn_db_real_query(&conn, myquery);
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,

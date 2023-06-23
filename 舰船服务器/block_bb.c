@@ -2194,7 +2194,9 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         c->bb_guild->guild_data.guild_priv_level = 0x00000030;
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+#ifdef DEBUG
         DBG_LOG("»á³¤×ª»»GC %u", c->guildcard);
+#endif // DEBUG
     }
 
     if (c2 != NULL) {

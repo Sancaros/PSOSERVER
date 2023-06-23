@@ -144,7 +144,9 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
             return guild;
         }
 
+#ifdef DEBUG
         DBG_LOG("%u %d %d", gc, guild_id, guild_priv_level);
+#endif // DEBUG
 
         if (guild_id != -1) {
 

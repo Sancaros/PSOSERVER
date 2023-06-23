@@ -3958,27 +3958,36 @@ typedef struct bb_guild_unk_16EA {
     uint8_t data[];
 } PACKED bb_guild_unk_16EA_pkt;
 
-// 17EA (S->C): UNKNOW
+// 17EA (S->C): 未完成
 typedef struct bb_guild_unk_17EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_17EA_pkt;
 
-// 18EA: Membership information
-// No arguments (C->S)
-// TODO: Document S->C format
+// 18EA: 公会点数情报
+// 客户端只发送8字节请求 (C->S)
+// TODO: 服务器发送至客户端 S->C 
 typedef struct bb_guild_buy_privilege_and_point_info {
     bb_pkt_hdr_t hdr;
-    uint8_t unk_data[0x000C];
-    uint8_t guild_info[8];
-    uint32_t guild_priv_level;
-    uint32_t guildcard_client;
-    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
+    struct {
+        uint32_t guild_rank_points;
+        uint8_t unk_data2[4];
+        uint32_t guild_points_rest;
+        uint32_t guild_member_num;
+        uint32_t leaderboard_index;
+        uint32_t guild_priv_level;
+        uint32_t guildcard_client;
+        uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
+        uint8_t unk_data3[4];
+        uint8_t unk_data4[4];
+        uint32_t personal_donation_points;
+        uint8_t unk_data5[4];
+    } entries[0];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
-// 19EA: Privilege list
-// No arguments (C->S)
-// TODO: Document S->C format
+// 19EA: 公会排行榜 需要数据库读取支持
+// 客户端只发送8字节请求 (C->S)
+// TODO: 服务器发送至客户端 S->C
 typedef struct bb_guild_privilege_list {
     bb_pkt_hdr_t hdr;
     uint8_t data[];

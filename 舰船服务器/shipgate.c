@@ -674,7 +674,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t guild_id = 0;
 
+#ifdef DEBUG
+
     DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
+
+#endif // DEBUG
 
     //这是从船闸返回来的公会数据包
 
@@ -846,17 +850,23 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->bb_guild->guild_data.guild_id == guild_id) {
 
                             if (c->guildcard == promote_pkt->target_guildcard) {
-
+#ifdef DEBUG
                                 DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                                 print_payload((uint8_t*)g, len);
+#endif // DEBUG
+
                                 send_msg(c, MSG_BOX_TYPE, "%s",
                                     __(c, "\tE您的公会权限已被提升."));
                             }
+#ifdef DEBUG
                             else {
                                 DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                                 /*return send_msg(c, MSG_BOX_TYPE, "%s",
                                     __(c, "\tE公会权限已被提升."));*/
-                            }
+                        }
+
+#endif // DEBUG
+
                         }
                         break;
 
@@ -937,6 +947,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_RANKING_LIST:
                         if (c->guildcard == gc) {
 
+                            /* 返回一个列表数据包 TODO */
                             send_bb_guild_cmd(c, BB_GUILD_RANKING_LIST);
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
                             print_payload((uint8_t*)g, len);

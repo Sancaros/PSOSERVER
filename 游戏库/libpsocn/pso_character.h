@@ -254,7 +254,7 @@ typedef struct psocn_bb_key_config {
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
 
-/* BB公会数据结构 TODO 2180字节*/
+/* BB公会数据结构 TODO 2108字节*/
 typedef struct psocn_bb_guild {
     uint32_t guild_owner_gc;               // 公会创始人
     uint32_t guild_id;                     // 公会索引 
