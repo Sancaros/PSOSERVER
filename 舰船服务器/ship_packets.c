@@ -12594,46 +12594,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 18EA 公会点数情报 */
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-        //memset(&pkt->data[0x00], 0, 0x44);
-        //len = 0, num = 1;
-
-        ///* 长度应该是 68 一个包 */
-
-        //for (i = 0; i < l->max_clients; i++) {
-        //    if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
-        //        if (l->clients[i]->bb_guild->guild_data.guild_id == c->bb_guild->guild_data.guild_id) {
-        //            c2 = l->clients[i];
-
-        //            sprintf(&pkt->data[len], "\x00\x00\x00\x00\x02\x02\x02\x02\x03\x03\x03\x03");
-        //            len += 12;
-
-        //            *(uint32_t*)&pkt->data[len] = num;/* 改为 1 只显示了一个玩家 这是玩家的数量*/
-        //            len += 4;
-        //            *(uint32_t*)&pkt->data[len] = num;/* 内部捐赠点数排名 要从数据库中读取？ */
-        //            len += 4;
-        //            /* 隔着 */
-        //            *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_priv_level;
-        //            len += 4;
-
-        //            *(uint32_t*)&pkt->data[len] = c2->guildcard;
-        //            len += 4;
-
-        //            memcpy(&pkt->data[len], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
-        //            len += 24;
-
-        //            *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_dress_rewards;
-        //            len += 4;
-        //            *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_flag_rewards;
-        //            len += 4;
-
-        //            memcpy(&pkt->data[len], &c2->bb_guild->guild_data.guild_info[0], 8);
-        //            len += 8;
-
-        //            num++;
-
-        //        }
-        //    }
-        //}
 
         bb_guild_buy_privilege_and_point_info_pkt* info = (bb_guild_buy_privilege_and_point_info_pkt*)sendbuf;
 
@@ -12645,30 +12605,30 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         len = 0, num = 0;
 
         /* 填充菜单实例 */
-        for (i = 0; i < l->max_clients; ++i) {
-            if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
-                if (l->clients[i]->bb_guild->guild_data.guild_id == c->bb_guild->guild_data.guild_id) {
-                    c2 = l->clients[i];
-                    num++;
+        //for (i = 0; i < l->max_clients; ++i) {
+        //    if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
+        //        if (l->clients[i]->bb_guild->guild_data.guild_id == c->bb_guild->guild_data.guild_id) {
+        //            c2 = l->clients[i];
+        //            num++;
 
-                    info->entries[i].guild_rank_points = 0x11111111;
-                    sprintf(&info->entries[i].unk_data2[0], "\x02\x02\x02\x02");
-                    info->entries[i].guild_points_rest = 0x22222222;
-                    info->entries[i].guild_member_num = num;
-                    info->entries[i].leaderboard_index = num;
-                    info->entries[i].guild_priv_level = c2->bb_guild->guild_data.guild_priv_level;
-                    info->entries[i].guildcard_client = c2->guildcard;
-                    memcpy(&info->entries[i].char_name[0], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
-                    sprintf(&info->entries[i].unk_data3[0], "\x03\x03\x03\x03");
-                    sprintf(&info->entries[i].unk_data4[0], "\x04\x04\x04\x04");
+        //            info->entries[i].guild_rank_points = 0x11111111;
+        //            sprintf(&info->entries[i].unk_data2[0], "\x02\x02\x02\x02");
+        //            info->entries[i].guild_points_rest = 0x22222222;
+        //            info->entries[i].guild_member_num = num;
+        //            info->entries[i].leaderboard_index = num;
+        //            info->entries[i].guild_priv_level = c2->bb_guild->guild_data.guild_priv_level;
+        //            info->entries[i].guildcard_client = c2->guildcard;
+        //            memcpy(&info->entries[i].char_name[0], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+        //            sprintf(&info->entries[i].unk_data3[0], "\x03\x03\x03\x03");
+        //            sprintf(&info->entries[i].unk_data4[0], "\x04\x04\x04\x04");
 
-                    info->entries[i].personal_donation_points = 0x33333333;
-                    sprintf(&info->entries[i].unk_data5[0], "\x05\x05\x05\x05");
+        //            info->entries[i].personal_donation_points = 0x33333333;
+        //            sprintf(&info->entries[i].unk_data5[0], "\x05\x05\x05\x05");
 
-                    len += 0x44;
-                }
-            }
-        }
+        //            len += 0x44;
+        //        }
+        //    }
+        //}
 
 
         //pkt->data[0x0C] = 0x01;
@@ -12682,7 +12642,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         //pkt->hdr.pkt_len = LE16(0x004C); 76 - 8 = 68 单个玩家
         info->hdr.pkt_type = cmd_code;
         //pkt->hdr.flags = 0x00000000;
-        info->hdr.flags = LE32(num); /* 这应该是剩余的点数？？？ */
+        info->hdr.flags = LE32(num); /* flag一般都是菜单数量 */
 
 
         print_payload((uint8_t*)info, info->hdr.pkt_len);

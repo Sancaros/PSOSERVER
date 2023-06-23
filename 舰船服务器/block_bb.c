@@ -2302,8 +2302,14 @@ static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_gu
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    print_payload((uint8_t*)pkt, len);
-    return send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
+    if (c->bb_guild->guild_data.guild_id <= 0) {
+        print_payload((uint8_t*)pkt, len);
+        return 0;
+    }
+
+    return shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_data.guild_id, c);
+    //print_payload((uint8_t*)pkt, len);
+    //return send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
     //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
@@ -2391,7 +2397,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
 
-    //DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+    DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_GUILD_CREATE:

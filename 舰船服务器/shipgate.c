@@ -680,6 +680,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
 #endif // DEBUG
 
+    DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
+
     //这是从船闸返回来的公会数据包
 
     for (i = 0; i < s->cfg->blocks; ++i) {
@@ -916,10 +918,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         break;
 
                     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
-                        if (c->guildcard == gc) {
-
-                            send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
-                        }
+                        if (c->guildcard == gc)
+                            send_pkt_bb(c, (bb_pkt_hdr_t*)g);
                         break;
 
                     case BB_GUILD_PRIVILEGE_LIST:

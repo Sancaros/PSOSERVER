@@ -1757,13 +1757,22 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
-    uint32_t num_mates, guildcard, privlevel, guild_id = pkt->fw_flags;
+    uint32_t num_mates, guild_id = pkt->fw_flags;
     size_t i = 0, size = 0, entries_size = 0x30, len3 = BB_CHARACTER_NAME_LENGTH * 2;
     void* result;
     char** row;
 
-    sprintf_s(myquery, _countof(myquery), "SELECT guildcard, guild_priv_level, lastchar_blob "
-        "FROM %s WHERE guild_id = '%" PRIu32 "'", AUTH_ACCOUNT, guild_id);
+    sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
+        "lastchar_blob, %s.guild_dress_rewards, guild_flag_rewards FROM "
+        "%s INNER JOIN %s ON "
+        "%s.guild_id = %s.guild_id WHERE "
+        "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
+        , AUTH_ACCOUNT, AUTH_ACCOUNT
+        , CLIENTS_GUILD
+        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , CLIENTS_GUILD, guild_id
+    );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
@@ -1775,21 +1784,18 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     result = psocn_db_result_store(&conn);
     num_mates = (uint32_t)psocn_db_result_rows(result);
 
-    g_data->amount = num_mates;
+    g_data->guild_member_amount = num_mates;
 
-    for (i = 0; i < num_mates; i++)
-    {
+    for (i = 0; i < num_mates; i++) {
         row = psocn_db_result_fetch(result);
-        guildcard = atoi(row[0]);
-        privlevel = atoi(row[1]);
 
-        g_data->entries[i].member_num = i + 1;
-        g_data->entries[i].guild_priv_level = LE32(atoi(row[1]));
-        g_data->entries[i].guildcard_client = LE32(atoi(row[0]));
+        g_data->entries[i].member_index = i + 1;
+        g_data->entries[i].guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
+        g_data->entries[i].guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].char_name[0], row[2], len3);
         g_data->entries[i].char_name[1] = 0x0045;
-        g_data->entries[i].guild_dress_rewards = 0;
-        g_data->entries[i].guild_flag_rewards = 0;
+        g_data->entries[i].guild_dress_rewards = (uint32_t)strtoul(row[3], NULL, 0);
+        g_data->entries[i].guild_flag_rewards = (uint32_t)strtoul(row[4], NULL, 0);
 
         size += entries_size;
     }
@@ -2209,23 +2215,69 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t num_mates, guild_id = pkt->fw_flags;
+    size_t i = 0, j = 0, d = 0, size = 0x10 + sizeof(bb_pkt_hdr_t), entries_size = sizeof(bb_guild_point_info_list_t);
+    void* result;
+    char** row;
 
-    /*if (len != sizeof(bb_guild_buy_privilege_and_point_info_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)g_data, len);
+    sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
+        "lastchar_blob, guild_points_personal_donation, "
+        "%s.guild_dress_rewards, guild_flag_rewards, guild_points_rank, guild_points_rest"
+        " FROM "
+        "%s INNER JOIN %s ON "
+        "%s.guild_id = %s.guild_id WHERE "
+        "%s.guild_id = '%" PRIu32 "' ORDER BY guild_points_personal_donation DESC"
+        , AUTH_ACCOUNT, AUTH_ACCOUNT
+        , CLIENTS_GUILD
+        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , CLIENTS_GUILD, guild_id
+    );
 
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
         return 0;
-    }*/
+    }
+
+    result = psocn_db_result_store(&conn);
+    num_mates = (uint32_t)psocn_db_result_rows(result);
+
+    g_data->guild_member_amount = num_mates;
+
+    sprintf(&g_data->unk_data2[0], "\x01\x00\x00\x00");
+
+    for (i = 0; i < num_mates; i++) {
+        row = psocn_db_result_fetch(result);
+
+        g_data->guild_points_rank = (uint32_t)strtoul(row[6], NULL, 0);
+        g_data->guild_points_rest = (uint32_t)strtoul(row[7], NULL, 0);
+
+        g_data->entries[i].member_list.member_index = i + 1;
+        g_data->entries[i].member_list.guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
+        g_data->entries[i].member_list.guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
+        memcpy(&g_data->entries[i].member_list.char_name[0], row[2], BB_CHARACTER_NAME_LENGTH * 2);
+        g_data->entries[i].member_list.char_name[1] = 0x0045; //颜色代码
+        g_data->entries[i].member_list.guild_dress_rewards = (uint32_t)strtoul(row[4], NULL, 0);
+        g_data->entries[i].member_list.guild_flag_rewards = (uint32_t)strtoul(row[5], NULL, 0);
+
+        g_data->entries[i].guild_points_personal_donation = (uint32_t)strtoul(row[3], NULL, 0);
+
+        size += entries_size;
+    }
+
+    psocn_db_result_free(result);
+
+    g_data->hdr.pkt_len = LE16((uint16_t)size);
+    g_data->hdr.pkt_type = LE16(BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
+    g_data->hdr.flags = 0x00000000;
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
         return 0;
     }
-
-    print_payload((uint8_t*)g_data, len);
 
     return 0;
 }

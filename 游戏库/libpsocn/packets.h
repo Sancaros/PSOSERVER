@@ -3740,6 +3740,15 @@ typedef struct bb_guild_pkt {
     uint8_t data[];
 } PACKED bb_guild_pkt_pkt;
 
+typedef struct bb_guild_member_list {
+    uint32_t member_index;
+    uint32_t guild_priv_level;
+    uint32_t guildcard_client;
+    uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
+    uint32_t guild_dress_rewards;
+    uint32_t guild_flag_rewards;
+} PACKED bb_guild_member_list_t;
+
 //////////////////////////////////////////////////////////////////////////
 /* Blue Burst 公会创建数据 */
 typedef struct bb_guild_data {
@@ -3806,16 +3815,8 @@ typedef struct bb_guild_member_chat {
 // No arguments
 typedef struct bb_guild_member_setting {
     bb_pkt_hdr_t hdr;
-    uint32_t amount;                           // 数量
-    struct {
-        uint32_t member_num;                   // 必须 1 起始
-        uint32_t guild_priv_level;             // 会员等级     4
-        uint32_t guildcard_client;
-        uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
-        uint32_t guild_dress_rewards;           // 公会奖励    标志上传
-        uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
-    } entries[0];
-    //uint8_t data[];
+    uint32_t guild_member_amount;
+    bb_guild_member_list_t entries[0];
 } PACKED bb_guild_member_setting_pkt;
 
 // 09EA (S->C): UNKNOW
@@ -3964,25 +3965,22 @@ typedef struct bb_guild_unk_17EA {
     uint8_t data[];
 } PACKED bb_guild_unk_17EA_pkt;
 
+// 18EA: 公会点数情报子列表
+typedef struct bb_guild_point_info_list {
+    bb_guild_member_list_t member_list;
+    uint32_t guild_points_personal_donation;
+} PACKED bb_guild_point_info_list_t;
+
 // 18EA: 公会点数情报
 // 客户端只发送8字节请求 (C->S)
 // TODO: 服务器发送至客户端 S->C 
 typedef struct bb_guild_buy_privilege_and_point_info {
     bb_pkt_hdr_t hdr;
-    struct {
-        uint32_t guild_rank_points;
-        uint8_t unk_data2[4];
-        uint32_t guild_points_rest;
-        uint32_t guild_member_num;
-        uint32_t leaderboard_index;
-        uint32_t guild_priv_level;
-        uint32_t guildcard_client;
-        uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-        uint8_t unk_data3[4];
-        uint8_t unk_data4[4];
-        uint32_t personal_donation_points;
-        uint8_t unk_data5[4];
-    } entries[0];
+    uint32_t guild_points_rank;
+    uint8_t unk_data2[4];
+    uint32_t guild_points_rest;
+    uint32_t guild_member_amount;
+    bb_guild_point_info_list_t entries[0];
 } PACKED bb_guild_buy_privilege_and_point_info_pkt;
 
 // 19EA: 公会排行榜 需要数据库读取支持
