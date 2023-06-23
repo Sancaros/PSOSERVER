@@ -2131,7 +2131,7 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_payload((uint8_t*)g_data, len);
+    //print_payload((uint8_t*)g_data, len);
     return 0;
 }
 

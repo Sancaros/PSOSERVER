@@ -3950,7 +3950,6 @@ typedef struct bb_guild_full_data {
     uint32_t guild_dress_rewards;                  /* 0x005C - 0x005F*/
     uint32_t guild_flag_rewards;                   /* 0x0060 - 0x0063*/
     uint8_t guild_flag[0x0800];                    /* 0x0064 - 0x0863*/
-    uint32_t padding;
 } PACKED bb_guild_full_data_pkt;
 
 // 16EA (S->C): UNKNOW

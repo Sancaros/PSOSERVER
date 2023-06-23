@@ -5078,7 +5078,8 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             }
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
-            send_bb_other_guild_data_to_client(c);
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
         }
 
         sent = 0;

@@ -1021,7 +1021,8 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
             send_lobby_end_burst(l);
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
-            send_bb_other_guild_data_to_client(c);
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);
@@ -1058,7 +1059,8 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
         send_lobby_end_burst(l);
 
         /* 将房间中的玩家公会数据发送至新进入的客户端 */
-        send_bb_other_guild_data_to_client(c);
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -1764,7 +1766,7 @@ static int process_bb_guild_unk_02EA(ship_client_t* c, bb_guild_unk_02EA_pkt* pk
     if (len != sizeof(bb_guild_unk_02EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     print_payload((uint8_t*)pkt, len);
@@ -2084,7 +2086,7 @@ static int process_bb_guild_member_flag_setting(ship_client_t* c, bb_guild_membe
         return -1;
     }
 
-    if ((c->bb_guild->guild_data.guild_priv_level == 0x40) && (c->bb_guild->guild_data.guild_id != 0)) {
+    if ((c->bb_guild->guild_data.guild_priv_level == 0x00000040) && (c->bb_guild->guild_data.guild_id != 0)) {
         pkt->hdr.flags = c->bb_guild->guild_data.guild_id;
         return shipgate_fw_bb(&ship->sg, pkt, 0, c);
     }
@@ -2122,21 +2124,6 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
         memset(&c->bb_guild->guild_data, 0, sizeof(c->bb_guild->guild_data));
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-
-        //for (i = 0; i < l->max_clients; ++i) {
-        //    if (l->clients[i]->guildcard != c->guildcard) {
-        //        if (l->clients[i]->bb_guild->guild_data.guild_id == guild_id && l->clients[i]->version >= CLIENT_VERSION_GC) {
-        //            c2 = l->clients[i];
-        //            check_gc_online(c, c2->guildcard);
-        //            send_msg(c2, MSG_BOX_TYPE, "%s", __(c2, "\tE\tC4公会已成功解散!"));
-
-        //            memset(&c2->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
-        //            send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-        //            send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
-        //            break;
-        //        }
-        //    }
-        //}
     }
 
     print_payload((uint8_t*)pkt, len);
@@ -2260,11 +2247,9 @@ static int process_bb_guild_member_tittle(ship_client_t* c, bb_guild_member_titt
     if (len != sizeof(bb_guild_member_tittle_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
-    print_payload((uint8_t*)pkt, len);
-    //return send_bb_guild_cmd(c, BB_GUILD_MEMBER_TITLE);
     return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
@@ -2279,10 +2264,8 @@ static int process_bb_guild_full_data(ship_client_t* c, bb_guild_full_data_pkt* 
     if (len != sizeof(bb_guild_full_data_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         print_payload((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
-
-    print_payload((uint8_t*)pkt, len);
 
     return send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
 }
@@ -2685,7 +2668,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         //DBG_LOG("BURSTING_TYPE: 0x%02X\n", type);
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
-        send_bb_other_guild_data_to_client(c);
+        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
 
         return 0;
 

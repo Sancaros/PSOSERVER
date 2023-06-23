@@ -12396,7 +12396,6 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
     pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
     memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt->guild_flag));
-    pkt->padding = 0;
 
     return (uint8_t*)pkt;
     
@@ -12439,21 +12438,12 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     /* Clear the packet */
     memset(pkt, 0, sizeof(bb_guild_pkt_pkt));
 
+#ifdef DEBUG
     DBG_LOG("send_bb_guild_cmd 向GC %u 发送指令 0x%04X", c->guildcard, cmd_code);
+#endif // DEBUG
 
     switch (cmd_code)
     {
-
-    //case BB_GUILD_UNK_02EA:
-    //case BB_GUILD_UNK_04EA:
-    //case BB_GUILD_DISSOLVE:
-    //case BB_GUILD_MEMBER_PROMOTE:
-    //case BB_GUILD_UNK_1DEA:
-    //case BB_GUILD_UNK_1EEA:
-    //case BB_GUILD_UNK_1FEA:
-    //case BB_GUILD_UNK_20EA:
-    //    return send_simple(c, cmd_code, 0);
-
         /* 02EA */
     case BB_GUILD_UNK_02EA:
         pkt->hdr.pkt_len = LE16(0x0008);
@@ -12601,7 +12591,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 15EA */
         /* 构建完整公会数据包 并发送*/
     case BB_GUILD_FULL_DATA:
-        return send_bb_client_guild_data_to_all(c, NULL);
+        return send_bb_guild_data(c, NULL);
 
         /* 18EA */
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
@@ -12843,7 +12833,7 @@ int send_bb_ex_item_done(ship_client_t* c, uint32_t done) {
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
-int send_bb_other_guild_data_to_client(ship_client_t* c) {
+int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
     lobby_t* l = c->cur_lobby;
     int  i = 0, rv = 0;
 
@@ -12855,33 +12845,14 @@ int send_bb_other_guild_data_to_client(ship_client_t* c) {
 
     /* 将房间中的玩家公会数据发送至新进入的客户端 */
     for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients_slot[i]) {
+        if ((l->clients_slot[i]) && 
+            (l->clients[i]) &&
+            (l->clients[i] != nosend)) {
             rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
         }
     }
 
     return rv;
 }
-
-int send_bb_client_guild_data_to_all(ship_client_t* c, ship_client_t* nosend) {
-    lobby_t* l = c->cur_lobby;
-    int  i = 0, rv = 0;
-
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l) {
-        ERR_LOG("玩家未处于大厅中");
-        return 0;
-    }
-
-    for (i = 0; i < l->max_clients; i++) {
-        if ((l->clients_slot[i]) && 
-            (l->clients[i]) && 
-            (l->clients[i] != nosend)) {
-            crypt_send(l->clients[i], 2152, build_guild_full_data_pkt(c));
-        }
-    }
-
-    return 0;
-}
-
 
