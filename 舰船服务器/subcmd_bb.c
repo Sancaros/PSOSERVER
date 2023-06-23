@@ -4706,7 +4706,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         default:
-            DBG_LOG("lobby_enqueue_pkt_bb 0x60 ЦёБо: 0x%02X", type);
+            DBG_LOG("LOBBY_FLAG_BURSTING 0x60 ЦёБо: 0x%02X", type);
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
 
