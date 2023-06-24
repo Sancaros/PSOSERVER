@@ -3572,6 +3572,8 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
         pkt->msg[len++] = 0;
     }
 
+    char_add_color_tag(pkt->msg);
+
     /* Fill in the length */
     len += 0x0C;
 
@@ -3643,6 +3645,8 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     while(len & 0x07) {
         sendbuf[len++] = 0;
     }
+
+    wchar_add_color_tag(pkt->msg);
 
     pkt->hdr.pkt_type = LE16(type);
     pkt->hdr.flags = 0;
@@ -5182,6 +5186,8 @@ static int send_message_box(ship_client_t* c, const char* fmt,
         pkt->msg[len++] = 0;
     }
 
+    char_add_color_tag(pkt->msg);
+
     /* 填充数据头 */
     len += 0x04;
 
@@ -5298,6 +5304,8 @@ static int send_message_type(ship_client_t* c, uint16_t type, const char* fmt,
     while (len & (c->hdr_size - 1)) {
         pkt->msg[len++] = 0;
     }
+
+    char_add_color_tag(pkt->msg);
 
     /* 填充数据头 */
     len += c->hdr_size;
@@ -5570,11 +5578,15 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
         outptr = (char *)pkt->entries[entries].name;
         iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
+        wchar_add_color_tag(pkt->entries[entries].name);
+
         in = 112;
         out = 224;
         inptr = qlist->cats[i].desc;
         outptr = (char *)pkt->entries[entries].desc;
         iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+
+        wchar_add_color_tag(pkt->entries[entries].desc);
 
         ++entries;
         len += 0x128;
@@ -5751,11 +5763,15 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
         outptr = (char *)pkt->entries[entries].name;
         iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
+        wchar_add_color_tag(pkt->entries[entries].name);
+
         in = 112;
         out = 244;
         inptr = qlist->cats[i].desc;
         outptr = (char *)pkt->entries[entries].desc;
         iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+
+        wchar_add_color_tag(pkt->entries[entries].desc);
 
         ++entries;
         len += 0x13C;
@@ -5793,7 +5809,6 @@ int send_quest_categories(ship_client_t *c, int lang) {
 
     return -1;
 }
-
 
 /* 任务的完成度检测 */
 uint32_t quest_flag_check(uint8_t* flag_data, uint32_t flag, uint32_t difficulty) {
@@ -6402,11 +6417,15 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
             outptr = (char *)pkt->entries[entries].name;
             iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
+            wchar_add_color_tag(pkt->entries[entries].name);
+
             in = 112;
             out = 224;
             inptr = quest->desc;
             outptr = (char *)pkt->entries[entries].desc;
             iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+
+            wchar_add_color_tag(pkt->entries[entries].desc);
 
             ++entries;
             len += 0x128;
@@ -7021,7 +7040,11 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             /* Convert the name and the description to UTF-16. */
             istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, quest->name, sizeof(pkt->entries[entries].name));
 
+            wchar_add_color_tag(pkt->entries[entries].name);
+
             istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].desc, quest->desc, sizeof(pkt->entries[entries].desc));
+
+            wchar_add_color_tag(pkt->entries[entries].desc);
 
             ++entries;
             len += sizeof(bb_quest_t);

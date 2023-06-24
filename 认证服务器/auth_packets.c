@@ -2670,8 +2670,6 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     outptr = pkt->msg;
     iconv(ic, &inptr, &in, &outptr, &out);
 
-    char_add_color_tag(pkt->msg);
-
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
@@ -2682,6 +2680,8 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     while (len & 0x03) {
         pkt->msg[len++] = 0;
     }
+
+    char_add_color_tag(pkt->msg);
 
     /* Fill in the length */
     len += 0x0C;
@@ -2741,8 +2741,6 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     outptr = (char*)pkt->msg;
     iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
 
-    wchar_add_color_tag(pkt->msg);
-
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
 
@@ -2754,6 +2752,8 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     while (len & 0x07) {
         sendbuf[len++] = 0;
     }
+
+    wchar_add_color_tag(pkt->msg);
 
     pkt->hdr.pkt_type = LE16(type);
     pkt->hdr.flags = 0;

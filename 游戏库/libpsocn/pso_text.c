@@ -81,6 +81,21 @@ char repd[] = { '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?', '?',
 wchar_t wreps[] = { L'd', L'x', L'p', L'+', L'1', L'2', L'3', L'c', L'l', L'y', L'X', L'Y', L'Z', L'?', L'C', L'R', L's', L'%', L'n', 0 };
 wchar_t wrepd[] = { L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'?', L'$', L'%', L'#', 0 };
 
+int detectCharacterType(char* str) {
+    int result = 0; // 用于存储结果，0表示单字符，1表示宽字符
+
+    // 检查字符串是否包含非ASCII字符
+    size_t len = strlen(str);
+    for (size_t i = 0; i < len; i++) {
+        if ((unsigned char)str[i] >= 128) {
+            result = 1; // 包含非ASCII字符，字符串是宽字符
+            break;
+        }
+    }
+
+    return result;
+}
+
 /* 单字节字符串增加颜色识别 */
 int char_add_color_tag(char* a) {
     long x;
@@ -115,6 +130,13 @@ int wchar_add_color_tag(wchar_t* a) {
         a++;
     }
     return 0;
+}
+
+int add_color_tag(void* str) {
+    if (detectCharacterType(str))
+        return wchar_add_color_tag(str);
+    else
+        return char_add_color_tag(str);
 }
 
 // Checksums an amount of data.
