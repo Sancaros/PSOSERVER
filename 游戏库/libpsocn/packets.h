@@ -38,43 +38,63 @@ typedef union {
 #pragma pack(push, 1) 
 #endif
 
-// Text escape codes
+// 这个文件是 newserv 的客户端/服务器协议的权威参考。
 
-// Most text fields allow the use of various escape codes to change decoding,
-// change color, or create symbols. These escape codes are always preceded by a
-// tab character (0x09, or '\t'). For brevity, we generally refer to them with $
-// instead in newserv, since the server substitutes most usage of $ in player-
-// provided text with \t. The escape codes are:
-// - Language codes
-// - - $E: Set text interpretation to English
-// - - $J: Set text interpretation to Japanese
-// - Color codes
-// - - $C0: Black (000000)
-// - - $C1: Blue (0000FF)
-// - - $C2: Green (00FF00)
-// - - $C3: Cyan (00FFFF)
-// - - $C4: Red (FF0000)
-// - - $C5: Magenta (FF00FF)
-// - - $C6: Yellow (FFFF00)
-// - - $C7: White (FFFFFF)
-// - - $C8: Pink (FF8080)
-// - - $C9: Violet (8080FF)
-// - - $CG: Orange pulse (FFE000 + darkenings thereof)
-// - - $Ca: Orange (F5A052; Episode 3 only)
-// - Special character codes (Ep3 only)
-// - - $B: Dash + small bullet
-// - - $D: Large bullet
-// - - $F: Female symbol
-// - - $I: Infinity
-// - - $M: Male symbol
-// - - $O: Open circle
-// - - $R: Solid circle
-// - - $S: Star-like ability symbol
-// - - $X: Cross
-// - - $d: Down arrow
-// - - $l: Left arrow
-// - - $r: Right arrow
-// - - $u: Up arrow
+// 对于不熟悉的人，le_uint 和 be_uint 类型（来自 phosg/Encoding.hh）与普通的 uint 类型相同，只是明确指定为小端或大端。
+// parray 和 ptext 类型（来自 Text.hh）与标准数组相同，但具有各种安全和便利功能，
+// 使我们不必使用易于出错的函数（如 memset/memcpy 和 strncpy）。
+
+// 结构体命名类似于 [S|C|SC]CommandName[Versions]_Numbers
+// S/C 表示谁发送了该命令（S = 服务器，C = 客户端，SC = 双方）
+// 如果未指定版本，则格式对所有版本都相同。
+
+// 版本标记如下：
+// DCv1 = PSO Dreamcast v1
+// DCv2 = PSO Dreamcast v2
+// DC = DCv1 和 DCv2 都支持
+// PC = PSO PC（v2）
+// GC = PSO GC Episodes 1&2 和/或 Episode 3
+// XB = PSO XBOX Episodes 1&2
+// BB = PSO Blue Burst
+// V3 = PSO GC 和 PSO XBOX（这些版本类似，共享许多格式）
+
+// 对于可变长度的命令，通常在结构体末尾包含一个长度为零的数组，如果命令由 newserv 接收，则包含该数组，如果命令由 newserv 发送，则省略该数组。在后一种情况下，我们经常使用 StringWriter 来构造命令数据。
+
+// 结构体按命令编号排序。长的 BB 命令按其低字节顺序排列；例如，命令 01EB 的位置是 EB。
+
+// 文本转义代码
+
+// 大多数文本字段允许使用不同的转义代码来改变解码、改变颜色或创建符号。这些转义代码总是以制表符字符（0x09，或 '\t'）开头。为了简洁起见，在 newserv 中我们通常用 $ 来表示它们，因为服务器会将玩家提供的文本中的大多数 $ 替换为 \t。这些转义代码包括：
+// - 语言代码
+// - - $E：将文本解释设置为英语
+// - - $J：将文本解释设置为日语
+// - 颜色代码
+// - - $C0：黑色（000000）
+// - - $C1：蓝色（0000FF）
+// - - $C2：绿色（00FF00）
+// - - $C3：青色（00FFFF）
+// - - $C4：红色（FF0000）
+// - - $C5：品红色（FF00FF）
+// - - $C6：黄色（FFFF00）
+// - - $C7：白色（FFFFFF）
+// - - $C8：粉色（FF8080）
+// - - $C9：紫罗兰色（8080FF）
+// - - $CG：橙色脉动（FFE000 + 其他变暗色）
+// - - $Ca：橙色（F5A052；仅第三集）
+// - 特殊字符代码（仅适用于第三集）
+// - - $B：破折号 + 小圆点符号
+// - - $D：大圆点符号
+// - - $F：女性符号
+// - - $I：无限符号
+// - - $M：男性符号
+// - - $O：空心圆
+// - - $R：实心圆
+// - - $S：星形能力符号
+// - - $X：交叉符号
+// - - $d：向下箭头
+// - - $l：向左箭头
+// - - $r：向右箭头
+// - - $u：向上箭头
 
 /* DC V3 GC XBOX客户端数据头 4字节 */
 typedef struct dc_pkt_hdr {
@@ -147,16 +167,14 @@ typedef union pkt_header {
 //   Server: 12
 //   Server disconnects
 
-// 00: Invalid command
-// 01: Invalid command
+// 00: 无效或未解析指令
+// 01: 无效或未解析指令
 
-// 02 (S->C): Start encryption
-// Client will respond with an 02 command.
-// All commands after this command will be encrypted with PSO V2 encryption.
-// If this command is sent during an encrypted session, the client will not
-// reject it; it will simply re-initialize its encryption state and respond with
-// an 02 as normal.
-// The copyright field in the below structure must contain the following text:
+// 02 (服务器->客户端)：开始加密
+// 客户端将使用一个 02 命令作出回应。
+// 此命令后的所有命令将使用 PSO V2 加密方式进行加密。
+// 如果在已加密会话期间发送此命令，客户端不会拒绝它；而是会重新初始化加密状态并以正常方式回应一个 02 命令。
+// 下面的结构中的版权字段必须包含以下文本：
 // "Patch Server. Copyright SonicTeam, LTD. 2001"
 
 /* The packet sent to inform clients of their security data */
@@ -261,34 +279,52 @@ typedef struct bb_security {
 #pragma pack(push, 1) 
 #endif
 
-// Game server commands
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// 游戏指令 ////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-// 00: Invalid command
+// 00: 无效或未解析指令
 
-// 01 (S->C): Lobby message box
-// A small message box appears in lower-right corner, and the player must press
-// a key to continue. The maximum length of the message is 0x200 bytes.
-// This format is shared by multiple commands; for all of them except 06 (S->C),
-// the guild_card_number field is unused and should be 0.
+// 01 (服务器->客户端)：大厅消息框
+// 内部名称：RcvError
+// 一个小的消息框出现在右下角，玩家必须按下一个键才能继续。消息的最大长度为 0x200 字节。
+// 在 PSO 的内部，它被称为 RcvError，因为通常用于告诉玩家为什么他们无法做某事（例如加入一个已满的游戏）。
+// 这个格式被多个命令共享；对于除了 06 (服务器->客户端) 之外的所有命令，guild_card_number 字段未使用，应该为 0。
 
-// 02 (S->C): Start encryption (except on BB)
-// This command should be used for non-initial sessions (after the client has
-// already selected a ship, for example). Command 17 should be used instead for
-// the first connection.
-// All commands after this command will be encrypted with PSO V2 encryption on
-// DC, PC, and GC Episodes 1&2 Trial Edition, or PSO V3 encryption on other V3
-// versions.
-// DCv1 clients will respond with an (encrypted) 93 command.
-// DCv2 and PC clients will respond with an (encrypted) 9A or 9D command.
-// V3 clients will respond with an (encrypted) 9A or 9E command, except for GC
-// Episodes 1&2 Trial Edition, which behaves like PC.
-// The copyright field in the below structure must contain the following text:
+struct SC_TextHeader_01_06_11_B0_EE {
+    uint32_t unused;
+    uint32_t guild_card_number;
+    // Text immediately follows here (char[] on DC/V3, char16_t[] on PC/BB)
+} PACKED;
+
+// 02 (服务器->客户端)：开始加密（不适用于 BB 版本）
+// 内部名称：RcvPsoConnectV2
+// 此命令应用于非初始会话（例如，在客户端已经选择了一个船只之后）。对于首次连接，应使用命令 17。
+// 此命令后的所有命令将在 DC、PC 和 GC Episodes 1&2 Trial Edition 上使用 PSO V2 加密，或在其他 V3 版本上使用 PSO V3 加密。
+// DCv1 客户端将以（加密的）93 命令作出回应。
+// DCv2 和 PC 客户端将以（加密的）9A 或 9D 命令作出回应。
+// V3 客户端将以（加密的）9A 或 9E 命令作出回应，除了 GC Episodes 1&2 Trial Edition，它的行为类似于 PC。
+// 下面的结构中的版权字段必须包含以下文本：
 // "DreamCast Lobby Server. Copyright SEGA Enterprises. 1999"
-// (The above text is required on all versions that use this command, including
-// those versions that don't run on the DreamCast.)
+// （上述文本在所有使用此命令的版本上都是必需的，包括那些不运行在 DreamCast 上的版本。）
 
-// 03 (C->S): Legacy login (non-BB)
-// TODO: Check if this command exists on DC v1/v2.
+struct S_ServerInitDefault_DC_PC_V3_02_17_91_9B {
+    char copyright[0x40];
+    uint32_t server_key; // Key for data sent by server
+    uint32_t client_key; // Key for data sent by client
+} PACKED;
+
+struct S_ServerInitWithAfterMessage_DC_PC_V3_02_17_91_9B {
+    struct S_ServerInitDefault_DC_PC_V3_02_17_91_9B basic_cmd;
+    // 这个字段不是 SEGA 实现的一部分；客户端会忽略它。
+    // newserv 在这里发送一条消息否认前面的版权声明。
+    char after_message[];
+} PACKED;
+
+// 03 (客户端->服务器): 传统注册（非 BB 版本）
+// 内部名称: SndRegist
 
 /* The welcome packet for setting up encryption keys */
 typedef struct dc_welcome {
@@ -299,63 +335,104 @@ typedef struct dc_welcome {
     char copyright[0x40];
     uint32_t svect;
     uint32_t cvect;
-    // As in 02, this field is not part of SEGA's implementation.
+    // 这个字段不是 SEGA 实现的一部分；客户端会忽略它。
+    // newserv 在这里发送一条消息否认前面的版权声明。
     char after_message[0xC0];
 } PACKED dc_welcome_pkt;
 
-// 03 (S->C): Legacy password check result (non-BB)
-// header.flag specifies if the password was correct. If header.flag is 0, the
-// password saved to the memory card (if any) is deleted and the client is
-// disconnected. If header.flag is nonzero, the client responds with an 04
-// command. Curiously, it looks like even DCv1 doesn't use this command in its
-// standard login sequence, so this may be a relic from very early development.
-// No other arguments
+// 03 (服务器->客户端): 传统密码检查结果（非 BB 版本）
+// header.flag 指示密码是否正确。如果 header.flag 为 0，
+// 则删除保存在记忆卡中的密码（如果有），并断开客户端连接。
+// 如果 header.flag 非零，则客户端将以 04 命令作出回应。有趣的是，
+// 即使 DCv1 在其标准登录序列中也没有使用此命令，
+// 因此这可能是一个非常早期开发的遗物。
+// 没有其他参数
 
-// 03 (S->C): Start encryption (BB)
-// Client will respond with an (encrypted) 93 command.
-// All commands after this command will be encrypted with PSO BB encryption.
-// The copyright field in the below structure must contain the following text:
+// 03 (服务器->客户端): 开始加密（BB 版本）
+// 客户端将以（加密的）93 命令作出回应。
+// 此命令后的所有命令将使用 PSO BB 加密。
+// 下面的结构中的版权字段必须包含以下文本: 
 // "Phantasy Star Online Blue Burst Game Server. Copyright 1999-2004 SONICTEAM."
 typedef struct bb_welcome {
     bb_pkt_hdr_t hdr;
     char copyright[0x60];
     uint8_t server_key[0x30];
     uint8_t client_key[0x30];
-    // As in 02, this field is not part of SEGA's implementation.
+    // 这个字段不是 SEGA 实现的一部分；客户端会忽略它。
+    // newserv 在这里发送一条消息否认前面的版权声明。
     char after_message[0xC0];
 } PACKED bb_welcome_pkt;
 
-// 05: Disconnect
-// No arguments
-// Sending this command to a client will cause it to disconnect. There's no
-// advantage to doing this over simply closing the TCP connection. Clients will
-// send this command to the server when they are about to disconnect, but the
-// server does not need to close the connection when it receives this command
-// (and in some cases, the client will send multiple 05 commands before actually
-// disconnecting).
+// 04 (服务器->客户端): 设置公会卡号并更新客户端配置（"安全数据"）
+// 内部名称: RcvLogin
+// header.flag 指定错误代码；以下描述的格式仅在该代码为0（无错误）时使用。否则，命令没有参数。
+// 错误代码（对于游戏机卡）：
+//   01 = 线路忙（103）
+//   02 = 已登录（104）
+//   03 = 密码错误（106）
+//   04 = 帐户暂停（107）
+//   05 = 服务器维护中（108）
+//   06 = 密码错误（127）
+//   其他非零值 = 一般故障（101）
+// 此命令中的客户端配置字段被早期 V3 客户端以及第一和第二集试用版忽略。
+// 所有其他 V3 客户端将其保存为不透明数据，稍后在9E或9F命令中返回。
+// 不管客户端是否忽略它，newserv 都会发送客户端配置。
+// 客户端将以96命令作出回应，但仅在首次收到此命令时才会回应——对于后续的04命令，
+// 客户端仍会更新其客户端配置，但不会回应。随时更改安全数据似乎都没有问题，
+// 但在将客户端的公会卡号设置后更改它可能会使客户端混乱，
+// 并且（对于早期 V3 客户端）可能破坏角色数据。
+// 因此，newserv 在客户端连接到代理服务器时尽力隐藏远程公会卡号。
+// BB 客户端有多个客户端配置；此命令设置由9E和9F命令返回的客户端配置，
+// 但不影响E6命令设置的客户端配置（并在93命令中返回）。
+// 在大多数情况下，应该使用E6命令来设置 BB 客户端的客户端配置，而不是04命令。
+
+//template <typename ClientConfigT>
+//struct S_UpdateClientConfig {
+//    // 注意：这里所称的 player_tag 实际上是三个字段：
+//    // 两个 uint8_t，后跟一个 le_uint16_t。
+//    // 目前不清楚这两个 uint8_t 字段的用途（它们似乎始终为零），
+//    // 但 le_uint16_t 可能是一个布尔值，表示玩家是否存在（例如，在大厅数据结构中）。
+//    // 出于历史和简单性的原因，newserv 将这三个字段合并为一个字段，
+//    // 当玩家存在时，其取值为0x00010000，没有玩家存在时为零。
+//    le_uint32_t player_tag = 0x00010000;
+//    le_uint32_t guild_card_number = 0;
+//    // ClientConfig 结构描述了 newserv 如何使用这个命令；
+//    // 其他服务器可能不会以相同的格式使用接下来的 0x20 或 0x28 字节（或者可能根本不使用）。
+//    // cfg 字段对客户端来说是不透明的；它将在下一个 9E 命令中原样返回内容（或者通过 9F 请求返回）。
+//    ClientConfigT cfg;
+//} __packed__;
+//
+//struct S_UpdateClientConfig_DC_PC_V3_04 : S_UpdateClientConfig<ClientConfig> {
+//} __packed__;
+//struct S_UpdateClientConfig_BB_04 : S_UpdateClientConfig<ClientConfigBB> {
+//} __packed__;
+
+// 05: 断开连接
+// 内部名称: SndLogout
+// 无参数
+// 向客户端发送此命令将导致其断开连接。
+// 相比于简单地关闭TCP连接，这样做没有任何优势。
+// 当客户端准备断开连接时，将向服务器发送此命令，
+// 但服务器在接收到此命令时不需要关闭连接（在某些情况下，客户端会在实际断开连接之前发送多个05命令）。
 typedef struct bb_burst {
     bb_pkt_hdr_t hdr;
     uint32_t menu_id;
     uint32_t item_id;
 } PACKED bb_burst_pkt;
 
-// 06: Chat
-// Server->client format is same as 01 command. The maximum size of the message
-// is 0x200 bytes.
-// When sent by the client, the text field includes only the message. When sent
-// by the server, the text field includes the origin player's name, followed by
-// a tab character, followed by the message.
-// During Episode 3 battles, the first byte of an inbound 06 command's message
-// is interpreted differently. It should be treated as a bit field, with the low
-// 4 bits intended as masks for who can see the message. If the low bit (1) is
-// set, for example, then the chat message displays as " (whisper)" on player
-// 0's screen regardless of the message contents. The next bit (2) hides the
-// message from player 1, etc. The high 4 bits of this byte appear not to be
-// used, but are often nonzero and set to the value 4. We call this byte
-// private_flags in the places where newserv uses it.
-// Client->server format is very similar; we include a zero-length array in this
-// struct to make parsing easier.
-/* The packet sent from/to clients for sending a normal chat */
+// 06: 聊天
+// 内部名称: RcvChat 和 SndChat
+// 服务器->客户端的格式与 01 命令相同。消息的最大大小为 0x200 字节。
+// 客户端->服务器的格式非常类似；我们在这个结构中包含了一个零长度的数组，以便更容易解析。
+// 当由客户端发送时，text 字段仅包含消息内容。当由服务器发送时，text 字段包括原始玩家的名称，
+// 后跟一个制表符，然后是消息内容。
+// 在第三集战斗期间，入站的 06 命令的消息的第一个字节被解释方式与其他情况不同。
+// 它应被视为一个位字段，其中低 4 位被用作指示谁能看到消息的掩码。
+// 例如，如果设置了最低位（1），那么无论消息内容如何，在玩家 0 的屏幕上聊天消息将显示为“（悄悄话）”。
+// 下一个位（2）将隐藏消息对玩家 1 不可见，以此类推。
+// 这个字节的高 4 位似乎没有被使用，但通常非零且设置为值 4。
+// （这可能是为了确保该字段始终是有效的 ASCII 字符，并且不会意外终止聊天字符串。）
+// 在 newserv 中，我们称这个字节为 private_flags。
 typedef struct dc_chat {
     union {
         dc_pkt_hdr_t dc;
@@ -366,22 +443,19 @@ typedef struct dc_chat {
     char msg[0];
 } PACKED dc_chat_pkt;
 
-// 06: Chat
-// Server->client format is same as 01 command. The maximum size of the message
-// is 0x200 bytes.
-// When sent by the client, the text field includes only the message. When sent
-// by the server, the text field includes the origin player's name, followed by
-// a tab character, followed by the message.
-// During Episode 3 battles, the first byte of an inbound 06 command's message
-// is interpreted differently. It should be treated as a bit field, with the low
-// 4 bits intended as masks for who can see the message. If the low bit (1) is
-// set, for example, then the chat message displays as " (whisper)" on player
-// 0's screen regardless of the message contents. The next bit (2) hides the
-// message from player 1, etc. The high 4 bits of this byte appear not to be
-// used, but are often nonzero and set to the value 4. We call this byte
-// private_flags in the places where newserv uses it.
-// Client->server format is very similar; we include a zero-length array in this
-// struct to make parsing easier.
+// 06: 聊天
+// 内部名称: RcvChat 和 SndChat
+// 服务器->客户端的格式与 01 命令相同。消息的最大大小为 0x200 字节。
+// 客户端->服务器的格式非常类似；我们在这个结构中包含了一个零长度的数组，以便更容易解析。
+// 当由客户端发送时，text 字段仅包含消息内容。当由服务器发送时，text 字段包括原始玩家的名称，
+// 后跟一个制表符，然后是消息内容。
+// 在第三集战斗期间，入站的 06 命令的消息的第一个字节被解释方式与其他情况不同。
+// 它应被视为一个位字段，其中低 4 位被用作指示谁能看到消息的掩码。
+// 例如，如果设置了最低位（1），那么无论消息内容如何，在玩家 0 的屏幕上聊天消息将显示为“（悄悄话）”。
+// 下一个位（2）将隐藏消息对玩家 1 不可见，以此类推。
+// 这个字节的高 4 位似乎没有被使用，但通常非零且设置为值 4。
+// （这可能是为了确保该字段始终是有效的 ASCII 字符，并且不会意外终止聊天字符串。）
+// 在 newserv 中，我们称这个字节为 private_flags。
 typedef struct bb_chat {
     bb_pkt_hdr_t hdr;
     uint32_t client_id;
@@ -389,11 +463,17 @@ typedef struct bb_chat {
     uint16_t msg[0];
 } PACKED bb_chat_pkt;
 
-// 07 (S->C): Ship select menu
-// Command is a list of these; header.flag is the entry count. The first entry
-// is not included in the count and does not appear on the client. The text of
-// the first entry becomes the ship name when the client joins a lobby.
-/* The ship list packet sent to tell clients what ships are up */
+// 07 (S->C): 选择飞船菜单
+// 内部名称: RcvDirList
+// 此命令触发了一个通用的阻塞式菜单，
+// Sega（以及所有其他私服，似乎都是）在飞船选择菜单和区块选择菜单中使用了相同的形式。
+// 有趣的是，在 PSO v1 和 v2 中出现了字符串“RcvBlockList”，
+// 但它没有被使用，这意味着在某些时候可能有一个单独的命令用于发送区块列表，
+// 但是它被废弃了。也许这个命令被用于 A1 命令，该命令在所有版本的 PSO（除了 DC NTE）中与 07 命令和 A0 命令相同。
+
+// 命令是一个包含多个条目的列表；header.flag 是条目的数量。
+// 第一个条目不包括在计数中，也不会出现在客户端上。
+// 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct dc_ship_list {
     dc_pkt_hdr_t hdr;           /* The flags field says how many entries */
     struct {
@@ -404,10 +484,17 @@ typedef struct dc_ship_list {
     } entries[0];
 } PACKED dc_ship_list_pkt;
 
-// 07 (S->C): Ship select menu
-// Command is a list of these; header.flag is the entry count. The first entry
-// is not included in the count and does not appear on the client. The text of
-// the first entry becomes the ship name when the client joins a lobby.
+// 07 (S->C): 选择飞船菜单
+// 内部名称: RcvDirList
+// 此命令触发了一个通用的阻塞式菜单，
+// Sega（以及所有其他私服，似乎都是）在飞船选择菜单和区块选择菜单中使用了相同的形式。
+// 有趣的是，在 PSO v1 和 v2 中出现了字符串“RcvBlockList”，
+// 但它没有被使用，这意味着在某些时候可能有一个单独的命令用于发送区块列表，
+// 但是它被废弃了。也许这个命令被用于 A1 命令，该命令在所有版本的 PSO（除了 DC NTE）中与 07 命令和 A0 命令相同。
+
+// 命令是一个包含多个条目的列表；header.flag 是条目的数量。
+// 第一个条目不包括在计数中，也不会出现在客户端上。
+// 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct pc_ship_list {
     pc_pkt_hdr_t hdr;           /* The flags field says how many entries */
     struct {
@@ -418,10 +505,17 @@ typedef struct pc_ship_list {
     } entries[0];
 } PACKED pc_ship_list_pkt;
 
-// 07 (S->C): Ship select menu
-// Command is a list of these; header.flag is the entry count. The first entry
-// is not included in the count and does not appear on the client. The text of
-// the first entry becomes the ship name when the client joins a lobby.
+// 07 (S->C): 选择飞船菜单
+// 内部名称: RcvDirList
+// 此命令触发了一个通用的阻塞式菜单，
+// Sega（以及所有其他私服，似乎都是）在飞船选择菜单和区块选择菜单中使用了相同的形式。
+// 有趣的是，在 PSO v1 和 v2 中出现了字符串“RcvBlockList”，
+// 但它没有被使用，这意味着在某些时候可能有一个单独的命令用于发送区块列表，
+// 但是它被废弃了。也许这个命令被用于 A1 命令，该命令在所有版本的 PSO（除了 DC NTE）中与 07 命令和 A0 命令相同。
+
+// 命令是一个包含多个条目的列表；header.flag 是条目的数量。
+// 第一个条目不包括在计数中，也不会出现在客户端上。
+// 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct bb_ship_list {
     bb_pkt_hdr_t hdr;           /* The flags field says how many entries */
     struct {
@@ -433,12 +527,15 @@ typedef struct bb_ship_list {
 } PACKED bb_ship_list_pkt;
 
 // 08 (C->S): Request game list
+// Internal name: SndGameList
 // No arguments
+
 // 08 (S->C): Game list
+// Internal name: RcvGameList
 // Client responds with 09 and 10 commands (or nothing if the player cancels).
+
 // Command is a list of these; header.flag is the entry count. The first entry
 // is not included in the count and does not appear on the client.
-/* The packet sent to clients to give them the game select list */
 typedef struct dc_game_list {
     dc_pkt_hdr_t hdr;
     struct {
@@ -452,13 +549,12 @@ typedef struct dc_game_list {
     } entries[0];
 } PACKED dc_game_list_pkt;
 
-// 08 (C->S): Request game list
-// No arguments
 // 08 (S->C): Game list
+// Internal name: RcvGameList
 // Client responds with 09 and 10 commands (or nothing if the player cancels).
+
 // Command is a list of these; header.flag is the entry count. The first entry
 // is not included in the count and does not appear on the client.
-/* The packet sent to clients to give them the game select list */
 typedef struct pc_game_list {
     pc_pkt_hdr_t hdr;
     struct {
@@ -472,20 +568,19 @@ typedef struct pc_game_list {
     } entries[0];
 } PACKED pc_game_list_pkt;
 
-// 08 (C->S): Request game list
-// No arguments
 // 08 (S->C): Game list
+// Internal name: RcvGameList
 // Client responds with 09 and 10 commands (or nothing if the player cancels).
+
 // Command is a list of these; header.flag is the entry count. The first entry
 // is not included in the count and does not appear on the client.
-/* The packet sent to clients to give them the game select list */
 typedef struct bb_game_list {
     bb_pkt_hdr_t hdr;
     struct {
         uint32_t menu_id;
         uint32_t item_id;
-        // difficulty_tag is 0x0A on Episode 3; on all other versions, it's
-        // difficulty + 0x22 (so 0x25 means Ultimate, for example)
+        // 在第三集中，difficulty_tag 是 0x0A；
+        // 在其他所有版本中，它是 difficulty + 0x22（因此，0x25 表示终极难度）。
         uint8_t difficulty;
         uint8_t players;
         uint16_t name[16];
@@ -507,9 +602,9 @@ typedef struct bb_game_list {
 } PACKED bb_game_list_pkt;
 
 // 09 (C->S): Menu item info request
+// Internal name: SndInfo
 // Server will respond with an 11 command, or an A3 or A5 if the specified menu
 // is the quest menu.
-/* The menu selection packet that the client sends to us */
 typedef struct dc_select {
     union {
         dc_pkt_hdr_t dc;
@@ -520,6 +615,7 @@ typedef struct dc_select {
 } PACKED dc_select_pkt;
 
 // 09 (C->S): Menu item info request
+// Internal name: SndInfo
 // Server will respond with an 11 command, or an A3 or A5 if the specified menu
 // is the quest menu.
 typedef struct bb_select {
@@ -528,12 +624,11 @@ typedef struct bb_select {
     uint32_t item_id;
 } PACKED bb_select_pkt;
 
-// 0B: Invalid command
+// 0B: 无效或未解析指令
 
-// 0C: Create game (DCv1)
-// Same format as C1, but fields not supported by v1 (e.g. episode, v2 mode) are
-// unused.
-/* The packet sent by clients to create a game */
+// 0C (C->S): Create game (DCv1)
+// Same format as C1, but fields not supported by v1 (e.g. episode, v2 mode)
+// are unused.
 typedef struct dcnte_game_create {
     dc_pkt_hdr_t hdr;
     // menu_id and item_id are only used for the E7 (create spectator team) form
@@ -607,31 +702,30 @@ typedef struct bb_game_create {
     uint8_t padding[3];
 } PACKED bb_game_create_pkt;
 
-// 0D: Invalid command
+// 0D: 无效或未解析指令
 
-// 0E (S->C): Incomplete/legacy join game (PC/V3)
+// 0E (S->C): Incomplete/legacy join game (non-BB)
+// Internal name: RcvStartGame
 // header.flag = number of valid entries in lobby_data
 
-// It's fairly clear that this command was intended for joining games since its
-// structure is similar to that of 64. Furthermore, 0E sets a flag on the client
-// which is also set by commands 64, 67, and E8 (on Episode 3), which are all
-// lobby and game join commands.
+// This command appears to be a vestige of very early development; its
+// second-phase handler is missing even in the earliest public prototype of PSO
+// (DC NTE), and the command format is missing some important information
+// necessary to start a game on any version.
 
-// There is a failure mode in the 0E command handlers on PC and V3 that causes
-// the thread receiving the command to loop infinitely doing nothing,
-// effectively softlocking the game. This happens if the local player's Guild
-// Card number doesn't match any of the lobby_data entries. (Notably, only the
-// first (header.flag) entries are checked.)
-// If the local players' Guild Card number does match one of the entries, the
-// command does not softlock, but instead does nothing (at least, on PC and V3)
-// because the 0E second-phase handler is missing on the client.
-
-// TODO: Check if this command exists on DC v1/v2.
+// There is a failure mode in the 0E command handler that causes the thread
+// receiving the command to loop infinitely doing nothing, effectively
+// softlocking the game. This happens if the local player's Guild Card number
+// doesn't match any of the lobby_data entries. (Notably, only the first
+// (header.flag) entries are checked.)
+// If the local player's Guild Card number does match one of the entries, the
+// command does not softlock, but instead does nothing because the 0E
+// second-phase handler is missing.
 
 typedef struct UnknownA1 {
     uint32_t player_tag;
     uint32_t guild_card_number;
-    uint8_t unknown_a1[0x10];
+    uint8_t name[0x10];
 } PACKED UnknownA1_t;
 
 struct S_LegacyJoinGame_PC_0E {
@@ -656,7 +750,7 @@ struct S_LegacyJoinGame_GC_0E {
 typedef struct UnknownA1_XB {
     uint32_t player_tag;
     uint32_t guild_card_number;
-    uint8_t unknown_a1[0x18];
+    uint8_t name[0x18];
 } PACKED UnknownA1_XB_t;
 
 struct S_LegacyJoinGame_XB_0E {
@@ -664,9 +758,10 @@ struct S_LegacyJoinGame_XB_0E {
     uint8_t unknown_a2[0x68];
 } PACKED;
 
-// 0F: Invalid command
+// 0F: 无效或未解析指令
 
 // 10 (C->S): Menu selection
+// Internal name: SndAction
 // header.flag contains two flags: 02 specifies if a password is present, and 01
 // specifies... something else. These two bits directly correspond to the two
 // lowest bits in the flags field of the game menu: 02 specifies that the game
@@ -676,38 +771,45 @@ struct S_LegacyJoinGame_XB_0E {
 // used!
 //
 //struct C_MenuSelection_10_Flag00 {
-//    uint32_t menu_id;
-//    uint32_t item_id;
-//} PACKED;
+//  le_uint32_t menu_id = 0;
+//  le_uint32_t item_id = 0;
+//} __packed__;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag01 {
-//    C_MenuSelection_10_Flag00 basic_cmd;
-//    ptext<CharT, 0x10> unknown_a1;
-//} PACKED;
-//struct C_MenuSelection_DC_V3_10_Flag01 : C_MenuSelection_10_Flag01<char> { } PACKED;
-//struct C_MenuSelection_PC_BB_10_Flag01 : C_MenuSelection_10_Flag01<char16_t> { } PACKED;
+//  C_MenuSelection_10_Flag00 basic_cmd;
+//  ptext<CharT, 0x10> unknown_a1;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag01 : C_MenuSelection_10_Flag01<char> {
+//} __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag01 : C_MenuSelection_10_Flag01<char16_t> {
+//} __packed__;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag02 {
-//    C_MenuSelection_10_Flag00 basic_cmd;
-//    ptext<CharT, 0x10> password;
-//} PACKED;
-//struct C_MenuSelection_DC_V3_10_Flag02 : C_MenuSelection_10_Flag02<char> { } PACKED;
-//struct C_MenuSelection_PC_BB_10_Flag02 : C_MenuSelection_10_Flag02<char16_t> { } PACKED;
+//  C_MenuSelection_10_Flag00 basic_cmd;
+//  ptext<CharT, 0x10> password;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag02 : C_MenuSelection_10_Flag02<char> {
+//} __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag02 : C_MenuSelection_10_Flag02<char16_t> {
+//} __packed__;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag03 {
-//    C_MenuSelection_10_Flag00 basic_cmd;
-//    ptext<CharT, 0x10> unknown_a1;
-//    ptext<CharT, 0x10> password;
-//} PACKED;
-//struct C_MenuSelection_DC_V3_10_Flag03 : C_MenuSelection_10_Flag03<char> { } PACKED;
-//struct C_MenuSelection_PC_BB_10_Flag03 : C_MenuSelection_10_Flag03<char16_t> { } PACKED;
+//  C_MenuSelection_10_Flag00 basic_cmd;
+//  ptext<CharT, 0x10> unknown_a1;
+//  ptext<CharT, 0x10> password;
+//} __packed__;
+//struct C_MenuSelection_DC_V3_10_Flag03 : C_MenuSelection_10_Flag03<char> {
+//} __packed__;
+//struct C_MenuSelection_PC_BB_10_Flag03 : C_MenuSelection_10_Flag03<char16_t> {
+//} __packed__;
 
 // 11 (S->C): Ship info
-// Same format as 01 command.
-// The packet used for the information reply
+// Internal name: RcvMessage
+// Same format as 01 command. The text appears in a small box in the lower-left
+// corner (on V3/BB) or lower-right corner of the screen.
 typedef struct dc_info_reply {
     union {
         dc_pkt_hdr_t dc;
@@ -723,10 +825,17 @@ typedef struct bb_info_reply {
     uint16_t msg[0];
 } PACKED bb_info_reply_pkt;
 
-// 12 (S->C): Valid but ignored (PC/V3/BB)
-// TODO: Check if this command exists on DC v1/v2.
+// 12 (S->C): Valid but ignored (all versions)
+// Internal name: RcvBaner
+// This command's internal name is possibly a misspelling of "banner", which
+// could be an early version of the 1A/D5 (large message box) commands, or of
+// BB's 00EE (scrolling message) command; however, the existence of
+// RcvBanerHead (16) seems to contradict this hypothesis since a text message
+// would not require a separate header command. Even on DC NTE, this command
+// does nothing, so this must have been scrapped very early in development.
 
 // 13 (S->C): Write online quest file
+// Internal name: RcvDownLoad
 // Used for downloading online quests. For download quests (to be saved to the
 // memory card), use A7 instead.
 // All chunks except the last must have 0x400 data bytes. When downloading an
@@ -767,28 +876,36 @@ typedef struct bb_quest_chunk {
 //    ptext<char, 0x10> filename;
 //} PACKED;
 
+// 14 (S->C): Valid but ignored (all versions)
+// Internal name: RcvUpLoad
+// Based on its internal name, this command seems like the logical opposite of
+// 13 (quest file download, named RcvDownLoad internally). However, even in DC
+// NTE, this command does nothing, so it must have been scrapped very early in
+// development. There is a SndUpLoad string in the DC versions, but the
+// corresponding function was deleted.
 
-// 14 (S->C): Valid but ignored (PC/V3/BB)
-// TODO: Check if this command exists on DC v1/v2.
+// 15: 无效或未解析指令
 
-// 15: Invalid command
-
-// 16 (S->C): Valid but ignored (PC/V3/BB)
-// TODO: Check if this command exists on DC v1/v2.
+// 16 (S->C): Valid but ignored (all versions)
+// Internal name: RcvBanerHead
+// It's not clear what this command was supposed to do, but it's likely related
+// to 12 in some way. Like 12, this command does nothing, even on DC NTE.
 
 // 17 (S->C): Start encryption at login server (except on BB)
+// Internal name: RcvPsoRegistConnectV2
 // Same format and usage as 02 command, but a different copyright string:
 // "DreamCast Port Map. Copyright SEGA Enterprises. 1999"
 // Unlike the 02 command, V3 clients will respond with a DB command when they
 // receive a 17 command in any online session, with the exception of Episodes
-// 1&2 trial edition (which responds with a 9A). DCv1 will respond with a 90.
-// Other non-V3 clients will respond with a 9A or 9D.
+// 1&2 trial edition (which responds with a 9A). DCv1 will respond with a 90. DC
+// NTE will respond with an 8B. Other non-V3 clients will respond with a 9A or
+// 9D.
 
 // 18 (S->C): License verification result (PC/V3)
 // Behaves exactly the same as 9A (S->C). No arguments except header.flag.
-// TODO: Check if this command exists on DC v1/v2.
 
 // 19 (S->C): Reconnect to different address
+// Internal name: RcvPort
 // Client will disconnect, and reconnect to the given address/port. Encryption
 // will be disabled on the new connection; the server should send an appropriate
 // command to enable it when the client connects.
@@ -814,6 +931,7 @@ typedef struct bb_quest_chunk {
 //} PACKED;
 
 // 1A (S->C): Large message box
+// Internal name: RcvText
 // On V3, client will sometimes respond with a D6 command (see D6 for more
 // information).
 // Contents are plain text (char on DC/V3, char16_t on PC/BB). There must be at
@@ -821,16 +939,20 @@ typedef struct bb_quest_chunk {
 // There is a bug in V3 (and possibly all versions) where if this command is
 // sent after the client has joined a lobby, the chat log window contents will
 // appear in the message box, prepended to the message text from the command.
-// The maximum length of the message is 0x400 bytes. This is the only difference
-// between this command and the D5 command.
+// The maximum length of the message is 0x400 bytes. This is the only
+// difference between this command and the D5 command.
 
-// 1B (S->C): Valid but ignored (PC/V3)
-// TODO: Check if this command exists on DC v1/v2.
+// 1B (S->C): Valid but ignored (all versions)
+// Internal name: RcvBattleData
+// This command does nothing in all PSO versions. There is a SndBattleData
+// string in the DC versions, but the corresponding function was deleted.
 
-// 1C (S->C): Valid but ignored (PC/V3)
-// TODO: Check if this command exists on DC v1/v2.
+// 1C (S->C): Valid but ignored (all versions)
+// Internal name: RcvSystemFile
+// This command does nothing in all PSO versions.
 
 // 1D: Ping
+// Internal name: RcvPing
 // No arguments
 // When sent to the client, the client will respond with a 1D command. Data sent
 // by the server is ignored; the client always sends a 1D command with no data.
@@ -838,18 +960,18 @@ typedef struct bb_quest_chunk {
 // 1E: Invalid command
 
 // 1F (C->S): Request information menu
+// Internal name: SndTextList
 // No arguments
 // This command is used in PSO DC and PC. It exists in V3 as well but is
 // apparently unused.
 
-// 1F (S->C): Information menu
-// Same format and usage as 07 command, except:
-// - The menu title will say "Information" instead of "Ship Select".
-// - There is no way to request details before selecting a menu item (the client
-//   will not send 09 commands).
-// - The player can press a button (B on GC, for example) to close the menu
-//   without selecting anything, unlike the ship select menu. The client does
-//   not send anything when this happens.
+// 1F (S->C): 信息菜单
+// 内部名称: RcvTextList
+// 与 07 命令相同的格式和用法，除了：
+// - 菜单标题将显示为“信息”而不是“选择飞船”。
+// - 在选择菜单项之前没有请求详细信息的方式（客户端不会发送 09 命令）。
+// - 玩家可以按下一个按钮（例如GC上的B按钮）
+// 关闭菜单而不选择任何内容，与飞船选择菜单不同。当这种情况发生时，客户端不会发送任何内容。
 
 // 20: Invalid command
 
@@ -861,27 +983,33 @@ typedef struct bb_quest_chunk {
 // Command 0022 is a 16-byte challenge (sent in the data field) using the
 // following structure.
 
-//struct SC_GameCardCheck_BB_0022 {
-//    parray<uint32_t, 4> data;
-//} PACKED;
+struct SC_GameCardCheck_BB_0022 {
+    uint32_t data[4];
+} PACKED;
 
 // Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
 // This version of the command has no other arguments.
 
-// 23 (S->C): Exchange Done 物品交换完成 (BB)
-// hdr.flags 已使用, 但这个指令没有任何参数.
+// 23 (S->C): Momoka Item Exchange result (BB)
+// Sent in response to a 6xD9 command from the client.
+// header.flag indicates if an item was exchanged: 0 means success, 1 means
+// failure.
+
+// 24 (S->C): 祝您好运的结果（BB）
+// 在客户端发送的 6xDE 命令的响应中发送。
+// header.flag 指示客户端的库存中是否有任何秘密彩票（从而可以参与）：0 表示成功，1 表示失败。
 typedef struct bb_item_exchange_done {
     bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
 } PACKED bb_item_exchange_done_pkt;
 
-// 24 (S->C): Unknown (BB)
-//struct S_Unknown_BB_24 {
-//    uint16_t unknown_a1;
-//    uint16_t unknown_a2;
-//    parray<uint32_t, 8> values;
-//} PACKED;
+struct S_GoodLuckResult_BB_24 {
+    uint16_t unknown_a1;
+    uint16_t unknown_a2;
+    uint32_t unknown_a3[8];
+} PACKED;
 
-// 25 (S->C): Unknown (BB)
+// 25 (S->C): Gallon's Plan result (BB)
+// Sent in response to a 6xE1 command from the client.
 //struct S_Unknown_BB_25 {
 //    bb_pkt_hdr_t hdr;
 //    uint16_t unknown_a1;
@@ -892,37 +1020,41 @@ typedef struct bb_item_exchange_done {
 //    uint16_t unused;
 //} PACKED;
 
-// 26: Invalid command
-// 27: Invalid command
-// 28: Invalid command
-// 29: Invalid command
-// 2A: Invalid command
-// 2B: Invalid command
-// 2C: Invalid command
-// 2D: Invalid command
-// 2E: Invalid command
-// 2F: Invalid command
-// 30: Invalid command
-// 31: Invalid command
-// 32: Invalid command
-// 33: Invalid command
-// 34: Invalid command
-// 35: Invalid command
-// 36: Invalid command
-// 37: Invalid command
-// 38: Invalid command
-// 39: Invalid command
-// 3A: Invalid command
-// 3B: Invalid command
-// 3C: Invalid command
-// 3D: Invalid command
-// 3E: Invalid command
-// 3F: Invalid command
+// 26: 无效或未解析指令
+// 27: 无效或未解析指令
+// 28: 无效或未解析指令
+// 29: 无效或未解析指令
+// 2A: 无效或未解析指令
+// 2B: 无效或未解析指令
+// 2C: 无效或未解析指令
+// 2D: 无效或未解析指令
+// 2E: 无效或未解析指令
+// 2F: 无效或未解析指令
+// 30: 无效或未解析指令
+// 31: 无效或未解析指令
+// 32: 无效或未解析指令
+// 33: 无效或未解析指令
+// 34: 无效或未解析指令
+// 35: 无效或未解析指令
+// 36: 无效或未解析指令
+// 37: 无效或未解析指令
+// 38: 无效或未解析指令
+// 39: 无效或未解析指令
+// 3A: 无效或未解析指令
+// 3B: 无效或未解析指令
+// 3C: 无效或未解析指令
+// 3D: 无效或未解析指令
+// 3E: 无效或未解析指令
+// 3F: 无效或未解析指令
 
 // 40 (C->S): Guild card search
+// Internal name: SndFindUser
+// There is an unused command named SndFavorite in the DC versions of PSO,
+// which may have been related to this command. SndFavorite seems to be
+// completely unused; its sender function was optimized out of all known
+// builds, leaving only its name string remaining.
 // The server should respond with a 41 command if the target is online. If the
 // target is not online, the server doesn't respond at all.
-/* The packet sent to search for a player */
 typedef struct dc_guild_search {
     union {
         dc_pkt_hdr_t dc;
@@ -934,6 +1066,11 @@ typedef struct dc_guild_search {
 } PACKED dc_guild_search_pkt;
 
 // 40 (C->S): Guild card search
+// Internal name: SndFindUser
+// There is an unused command named SndFavorite in the DC versions of PSO,
+// which may have been related to this command. SndFavorite seems to be
+// completely unused; its sender function was optimized out of all known
+// builds, leaving only its name string remaining.
 // The server should respond with a 41 command if the target is online. If the
 // target is not online, the server doesn't respond at all.
 typedef struct bb_guild_search {
@@ -944,7 +1081,7 @@ typedef struct bb_guild_search {
 } PACKED bb_guild_search_pkt;
 
 // 41 (S->C): Guild card search result
-/* The packet sent to reply to a guild card search */
+// Internal name: RcvUserAns
 typedef struct dc_guild_reply {
     dc_pkt_hdr_t hdr;
     uint32_t player_tag;
@@ -1044,30 +1181,59 @@ typedef struct bb_guild_reply6 {
     uint16_t name[0x20];
 } PACKED bb_guild_reply6_pkt;
 
-//// 42: Invalid command
-//// 43: Invalid command
+//// 42: 无效或未解析指令
+//// 43: 无效或未解析指令
 
 // 44 (S->C): Open file for download
-// Used for downloading online quests. For download quests (to be saved to the
-// memory card), use A6 instead.
-// Unlike the A6 command, the client will react to a 44 command only if the
-// filename ends in .bin or .dat.
-//
+// Internal name: RcvDownLoadHead
+// Used for downloading online quests. The client will react to a 44 command if
+// the filename ends in .bin or .dat.
+// For download quests (to be saved to the memory card) and GBA games, the A6
+// command is used instead. The client will react to A6 if the filename ends in
+// .bin/.dat (quests), .pvr (textures), or .gba (GameBoy Advance games).
+// It appears that the .gba handler for A6 was not deleted in PSO XB, even
+// though it doesn't make sense for an XB client to receive such a file.
+
 //struct S_OpenFile_DC_44_A6 {
-//    ptext<char, 0x20> name; // Should begin with "PSO/"
-//    parray<uint8_t, 2> unused;
-//    uint8_t flags;
+//    ptext<char, 0x22> name; // Should begin with "PSO/"
+//    // The type field is only used for download quests (A6); it is ignored for
+//    // online quests (44). The following values are valid for A6:
+//    //   0 = download quest (client expects .bin and .dat files)
+//    //   1 = download quest (client expects .bin, .dat, and .pvr files)
+//    //   2 = GBA game (GC only; client expects .gba file only)
+//    //   3 = Episode 3 download quest (Ep3 only; client expects .bin file only)
+//    // There is a bug in the type logic: an A6 command always overwrites the
+//    // current download type even if the filename doesn't end in .bin, .dat, .pvr,
+//    // or .gba. This may lead to a resource exhaustion bug if exploited carefully,
+//    // but I haven't verified this. Generally the server should send all files for
+//    // a given piece of content with the same type in each file's A6 command.
+//    uint8_t type = 0;
 //    ptext<char, 0x11> filename;
-//    uint32_t file_size;
-//} PACKED;
+//    le_uint32_t file_size = 0;
+//} __packed__;
 //
 //struct S_OpenFile_PC_V3_44_A6 {
-//    ptext<char, 0x20> name; // Should begin with "PSO/"
-//    parray<uint8_t, 2> unused;
-//    uint16_t flags; // 0 = download quest, 2 = online quest, 3 = Episode 3
+//    ptext<char, 0x22> name; // Should begin with "PSO/"
+//    le_uint16_t type = 0;
 //    ptext<char, 0x10> filename;
-//    uint32_t file_size;
-//} PACKED;
+//    le_uint32_t file_size = 0;
+//} __packed__;
+//
+//// Curiously, PSO XB expects an extra 0x18 bytes at the end of this command, but
+//// those extra bytes are unused, and the client does not fail if they're
+//// omitted.
+//struct S_OpenFile_XB_44_A6 : S_OpenFile_PC_V3_44_A6 {
+//    parray<uint8_t, 0x18> unused2;
+//} __packed__;
+//
+//struct S_OpenFile_BB_44_A6 {
+//    parray<uint8_t, 0x22> unused;
+//    le_uint16_t type = 0;
+//    ptext<char, 0x10> filename;
+//    le_uint32_t file_size = 0;
+//    ptext<char, 0x18> name;
+//} __packed__;
+
 
 // 44 (S->C): Open file for download
 // Used for downloading online quests. For download quests (to be saved to the
@@ -1136,37 +1302,39 @@ typedef struct bb_quest_file {
 // > 0xFF so the flag is essentially meaningless)
 //struct C_OpenFileConfirmation_44_A6 {
 //    ptext<char, 0x10> filename;
-//} PACKED;
+//} __packed__;
 
-// 45: Invalid command
-// 46: Invalid command
-// 47: Invalid command
-// 48: Invalid command
-// 49: Invalid command
-// 4A: Invalid command
-// 4B: Invalid command
-// 4C: Invalid command
-// 4D: Invalid command
-// 4E: Invalid command
-// 4F: Invalid command
-// 50: Invalid command
-// 51: Invalid command
-// 52: Invalid command
-// 53: Invalid command
-// 54: Invalid command
-// 55: Invalid command
-// 56: Invalid command
-// 57: Invalid command
-// 58: Invalid command
-// 59: Invalid command
-// 5A: Invalid command
-// 5B: Invalid command
-// 5C: Invalid command
-// 5D: Invalid command
-// 5E: Invalid command
-// 5F: Invalid command
+// 45: 无效或未解析指令
+// 46: 无效或未解析指令
+// 47: 无效或未解析指令
+// 48: 无效或未解析指令
+// 49: 无效或未解析指令
+// 4A: 无效或未解析指令
+// 4B: 无效或未解析指令
+// 4C: 无效或未解析指令
+// 4D: 无效或未解析指令
+// 4E: 无效或未解析指令
+// 4F: 无效或未解析指令
+// 50: 无效或未解析指令
+// 51: 无效或未解析指令
+// 52: 无效或未解析指令
+// 53: 无效或未解析指令
+// 54: 无效或未解析指令
+// 55: 无效或未解析指令
+// 56: 无效或未解析指令
+// 57: 无效或未解析指令
+// 58: 无效或未解析指令
+// 59: 无效或未解析指令
+// 5A: 无效或未解析指令
+// 5B: 无效或未解析指令
+// 5C: 无效或未解析指令
+// 5D: 无效或未解析指令
+// 5E: 无效或未解析指令
+// 5F: 无效或未解析指令
+
 
 // 60: Broadcast command
+// Internal name: SndPsoData
 // When a client sends this command, the server should forward it to all players
 // in the same game/lobby, except the player who originally sent the command.
 // See ReceiveSubcommands or the subcommand index below for details on contents.
@@ -1174,6 +1342,7 @@ typedef struct bb_quest_file {
 // the client will exhibit undefined behavior.
 
 // 61 (C->S): Player data
+// Internal name: SndCharaDataV2 (SndCharaData in DCv1)
 // See the PSOPlayerData structs in Player.hh for this command's format.
 // header.flag specifies the format version, which is related to (but not
 // identical to) the game's major version. For example, the format version is 01
@@ -1188,6 +1357,7 @@ typedef struct bb_quest_file {
 // character rather than the live state.
 
 // 62: Target command
+// Internal name: SndPsoData2
 // When a client sends this command, the server should forward it to the player
 // identified by header.flag in the same game/lobby, even if that player is the
 // player who originally sent it.
@@ -1195,18 +1365,23 @@ typedef struct bb_quest_file {
 // The data in this command may be up to 0x400 bytes in length. If it's larger,
 // the client will exhibit undefined behavior.
 
-// 63: Invalid command
+// 63: 无效或未解析指令
 
 #ifdef PLAYER_H
 
 // 64 (S->C): Join game
+// Internal name: RcvStartGame3
+
 // This is sent to the joining player; the other players get a 65 instead.
 // Note that (except on Episode 3) this command does not include the player's
 // disp or inventory data. The clients in the game are responsible for sending
 // that data to each other during the join process with 60/62/6C/6D commands.
-// 68 (S->C): Add player to lobby
-// Same format as 65 command, but used for lobbies instead of games.
-// The command only includes the joining player's data.
+
+// Curiously, this command is named RcvStartGame3 internally, while 0E is named
+// RcvStartGame. The string RcvStartGame2 appears in the DC versions, but it
+// seems the relevant code was deleted - there are no references to the string.
+// Based on the large gap between commands 0E and 64, we can't guess at which
+// command number RcvStartGame2 might have been.
 typedef struct dcnte_game_join {
     dc_pkt_hdr_t hdr;
     uint8_t client_id;
@@ -1487,6 +1662,7 @@ typedef struct bb_lobby_join {
 #endif
 
 // 66 (S->C): Remove player from game
+// Internal name: RcvExitGame
 // This is sent to all players in a game except the leaving player.
 // header.flag should be set to the leaving player ID (same as client_id).
 // 69 (S->C): Remove player from lobby
@@ -1505,7 +1681,23 @@ typedef struct dc_lobby_leave {
 // 66 (S->C): Remove player from game
 // This is sent to all players in a game except the leaving player.
 // header.flag should be set to the leaving player ID (same as client_id).
+
+// 67 (S->C): Join lobby
+// Internal name: RcvStartLobby2
+// This is sent to the joining player; the other players receive a 68 instead.
+// Same format as 65 command, but used for lobbies instead of games.
+
+// Curiously, this command is named RcvStartLobby2 internally, but there is no
+// command named RcvStartLobby. The string "RcvStartLobby" does appear in the DC
+// game executable, but it appears the relevant code was deleted.
+
+// 68 (S->C): Add player to lobby
+// Internal name: RcvBurstLobby
+// Same format as 65 command, but used for lobbies instead of games.
+// The command only includes the joining player's data.
+
 // 69 (S->C): Remove player from lobby
+// Internal name: RcvExitLobby
 // Same format as 66 command, but used for lobbies instead of games.
 typedef struct bb_lobby_leave {
     bb_pkt_hdr_t hdr;
@@ -1519,18 +1711,20 @@ typedef struct bb_lobby_leave {
 // 6B: Invalid command
 
 // 6C: Broadcast command
+// Internal name: RcvPsoDataLong and SndPsoDataLong
 // Same format and usage as 60 command, but with no size limit.
 
 // 6D: Target command
+// Internal name: RcvPsoDataLong and SndPsoDataLong2
 // Same format and usage as 62 command, but with no size limit.
 
 // 6E: Invalid command
 
 // 6F (C->S): Set game status
+// Internal name: SndBurstEnd
 // This command is sent when a player is done loading and other players can then
 // join the game. On BB, this command is sent as 016F if a quest is in progress
 // and the game should not be joined by anyone else.
-// 006F
 typedef struct bb_done_burst {
     union {
         dc_pkt_hdr_t dc;
@@ -1550,22 +1744,22 @@ typedef struct bb_done_quest_burst {
     uint8_t data[];
 } PACKED bb_done_quest_burst_pkt;
 
-// 70: Invalid command
-// 71: Invalid command
-// 72: Invalid command
-// 73: Invalid command
-// 74: Invalid command
-// 75: Invalid command
-// 76: Invalid command
-// 77: Invalid command
-// 78: Invalid command
-// 79: Invalid command
-// 7A: Invalid command
-// 7B: Invalid command
-// 7C: Invalid command
-// 7D: Invalid command
-// 7E: Invalid command
-// 7F: Invalid command
+// 70: 无效或未解析指令
+// 71: 无效或未解析指令
+// 72: 无效或未解析指令
+// 73: 无效或未解析指令
+// 74: 无效或未解析指令
+// 75: 无效或未解析指令
+// 76: 无效或未解析指令
+// 77: 无效或未解析指令
+// 78: 无效或未解析指令
+// 79: 无效或未解析指令
+// 7A: 无效或未解析指令
+// 7B: 无效或未解析指令
+// 7C: 无效或未解析指令
+// 7D: 无效或未解析指令
+// 7E: 无效或未解析指令
+// 7F: 无效或未解析指令
 
 // 80 (S->C): Ignored (PC/V3)
 // TODO: Check if this command exists on DC v1/v2.
@@ -1647,7 +1841,7 @@ typedef struct simple_mail {
     };
 } PACKED simple_mail_pkt;
 
-// 82: Invalid command
+// 82: 无效或未解析指令
 
 // 83 (S->C): Lobby menu
 // This sets the menu item IDs that the client uses for the lobby teleport menu.
@@ -1681,9 +1875,9 @@ typedef struct bb_lobby_list {
 
 // 84 (C->S): Choose lobby same as bb_select_pkt
 
-// 85: Invalid command
-// 86: Invalid command
-// 87: Invalid command
+// 85: 无效或未解析指令
+// 86: 无效或未解析指令
+// 87: 无效或未解析指令
 
 // 88 (C->S): License check (DC NTE only)
 // The server should respond with an 88 command.
@@ -1816,15 +2010,15 @@ typedef struct dcnte_login_8b {
     uint8_t unused[2];
 } PACKED dcnte_login_8b_pkt;
 
-// 8C: Invalid command
+// 8C: 无效或未解析指令
 
 // 8D (S->C): Request player data (DC NTE only) DCNTE_CHAR_DATA_REQ_TYPE
 // Behaves the same as 95 (S->C) on all other versions. DC NTE crashes if it
 // receives 95, so this is used instead.
 
-// 8E: Invalid command DCNTE_SHIP_LIST_TYPE dc_ship_list_pkt
+// 8E: 无效或未解析指令 DCNTE_SHIP_LIST_TYPE dc_ship_list_pkt
 
-// 8F: Invalid command DCNTE_BLOCK_LIST_REQ_TYPE dc_block_list_pkt
+// 8F: 无效或未解析指令 DCNTE_BLOCK_LIST_REQ_TYPE dc_block_list_pkt
 
 // 90 (C->S): V1 login (DC/PC/V3)
 // This command is used during the DCv1 login sequence; a DCv1 client will
@@ -1922,7 +2116,7 @@ typedef struct bb_login_93 {
     } PACKED var;
 } PACKED bb_login_93_pkt;
 
-// 94: Invalid command
+// 94: 无效或未解析指令
 
 // 95 (S->C): Request player data
 // No arguments
@@ -2306,7 +2500,7 @@ typedef struct bb_login_9e {
 // Like the 13 command, the client->server form of this command is only used on
 // V3 and BB.
 
-// A8: Invalid command
+// A8: 无效或未解析指令
 
 // A9 (C->S): Quest menu closed (canceled)
 // No arguments
@@ -2379,9 +2573,9 @@ typedef struct bb_confirm_update_quest_statistics {
 // will cause it to crash.
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
 
-// AD: Invalid command
-// AE: Invalid command
-// AF: Invalid command
+// AD: 无效或未解析指令
+// AE: 无效或未解析指令
+// AF: 无效或未解析指令
 
 // B0 (S->C): Text message
 // Same format as 01 command.
@@ -2506,9 +2700,9 @@ typedef struct patch_return {
     uint32_t checksum;
 } PACKED patch_return_pkt;
 
-// B4: Invalid command
-// B5: Invalid command
-// B6: Invalid command
+// B4: 无效或未解析指令
+// B5: 无效或未解析指令
+// B6: 无效或未解析指令
 
 // B7 (S->C): Rank update (Episode 3)
 
@@ -2628,10 +2822,10 @@ typedef struct patch_return {
 //    parray<MatchEntry, 0x40> match_entries;
 //} PACKED;
 
-// BC: Invalid command
-// BD: Invalid command
-// BE: Invalid command
-// BF: Invalid command
+// BC: 无效或未解析指令
+// BD: 无效或未解析指令
+// BE: 无效或未解析指令
+// BF: 无效或未解析指令
 
 // C0 (C->S): Request choice search options
 // No arguments
@@ -2947,9 +3141,9 @@ typedef struct bb_autoreply_set {
 //    parray<TeamEntry, 0x20> team_entries;
 //} PACKED;
 
-// CD: Invalid command
-// CE: Invalid command
-// CF: Invalid command
+// CD: 无效或未解析指令
+// CE: 无效或未解析指令
+// CF: 无效或未解析指令
 
 // D0 (C->S): Start trade sequence (V3/BB)
 // The trade window sequence is a bit complicated. The normal flow is:
@@ -4231,21 +4425,21 @@ typedef struct S_Unknown_BB_F0 {
     uint32_t unknown_a3;
 } PACKED S_Unknown_BB_F0_pkt;
 
-// F1: Invalid command
-// F2: Invalid command
-// F3: Invalid command
-// F4: Invalid command
-// F5: Invalid command
-// F6: Invalid command
-// F7: Invalid command
-// F8: Invalid command
-// F9: Invalid command
-// FA: Invalid command
-// FB: Invalid command
-// FC: Invalid command
-// FD: Invalid command
-// FE: Invalid command
-// FF: Invalid command
+// F1: 无效或未解析指令
+// F2: 无效或未解析指令
+// F3: 无效或未解析指令
+// F4: 无效或未解析指令
+// F5: 无效或未解析指令
+// F6: 无效或未解析指令
+// F7: 无效或未解析指令
+// F8: 无效或未解析指令
+// F9: 无效或未解析指令
+// FA: 无效或未解析指令
+// FB: 无效或未解析指令
+// FC: 无效或未解析指令
+// FD: 无效或未解析指令
+// FE: 无效或未解析指令
+// FF: 无效或未解析指令
 
 /* The packet sent to redirect clients */
 typedef struct dc_redirect {
