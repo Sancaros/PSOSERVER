@@ -380,6 +380,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
         return -1;
     }
 
+#ifdef ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (!cfg->host6) {
         return 0;
@@ -416,7 +417,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
         ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
         //return -1;
     }
-
+#endif
     return 0;
 }
 
@@ -430,65 +431,79 @@ static int setup_ports(psocn_srvconfig_t* cfg) {
     else {
         for (int i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
             if (dc_sockets[i].port != cfg->auth_port.dcports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", dc_sockets[i].sockets_name, dc_sockets[i].port, cfg->auth_port.dcports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", dc_sockets[i].port, dc_sockets[i].sockets_name
+                    , cfg->auth_port.dcports[i]);
                 dc_sockets[i].port = cfg->auth_port.dcports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", dc_sockets[i].sockets_name, cfg->auth_port.dcports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.dcports[i]
+                    , dc_sockets[i].port, dc_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_PC_SOCKS; ++i) {
             if (pc_sockets[i].port != cfg->auth_port.pcports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", pc_sockets[i].sockets_name, pc_sockets[i].port, cfg->auth_port.pcports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", pc_sockets[i].port, pc_sockets[i].sockets_name
+                    , cfg->auth_port.pcports[i]);
                 pc_sockets[i].port = cfg->auth_port.pcports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", pc_sockets[i].sockets_name, cfg->auth_port.pcports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.pcports[i]
+                    , pc_sockets[i].port, pc_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_GC_SOCKS; ++i) {
             if (gc_sockets[i].port != cfg->auth_port.gcports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", gc_sockets[i].sockets_name, gc_sockets[i].port, cfg->auth_port.gcports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", gc_sockets[i].port, gc_sockets[i].sockets_name
+                    , cfg->auth_port.gcports[i]);
                 gc_sockets[i].port = cfg->auth_port.gcports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", gc_sockets[i].sockets_name, cfg->auth_port.gcports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.gcports[i]
+                    , gc_sockets[i].port, gc_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_EP3_SOCKS; ++i) {
             if (ep3_sockets[i].port != cfg->auth_port.ep3ports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", ep3_sockets[i].sockets_name, ep3_sockets[i].port, cfg->auth_port.ep3ports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", ep3_sockets[i].port, ep3_sockets[i].sockets_name
+                    , cfg->auth_port.ep3ports[i]);
                 ep3_sockets[i].port = cfg->auth_port.ep3ports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", ep3_sockets[i].sockets_name, cfg->auth_port.ep3ports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.ep3ports[i]
+                    , ep3_sockets[i].port, ep3_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_XB_SOCKS; ++i) {
             if (xb_sockets[i].port != cfg->auth_port.xbports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", xb_sockets[i].sockets_name, xb_sockets[i].port, cfg->auth_port.xbports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", xb_sockets[i].port, xb_sockets[i].sockets_name
+                    , cfg->auth_port.xbports[i]);
                 xb_sockets[i].port = cfg->auth_port.xbports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", xb_sockets[i].sockets_name, cfg->auth_port.xbports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.xbports[i]
+                    , xb_sockets[i].port, xb_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_WEB_SOCKS; ++i) {
             if (web_sockets[i].port != cfg->auth_port.webports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", web_sockets[i].sockets_name, web_sockets[i].port, cfg->auth_port.webports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", web_sockets[i].port, web_sockets[i].sockets_name
+                    , cfg->auth_port.webports[i]);
                 web_sockets[i].port = cfg->auth_port.webports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", web_sockets[i].sockets_name, cfg->auth_port.webports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.webports[i]
+                    , web_sockets[i].port, web_sockets[i].sockets_name);
         }
 
         for (int i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
             if (bb_sockets[i].port != cfg->auth_port.bbports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", bb_sockets[i].sockets_name, bb_sockets[i].port, cfg->auth_port.bbports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", bb_sockets[i].port, bb_sockets[i].sockets_name
+                    , cfg->auth_port.bbports[i]);
                 bb_sockets[i].port = cfg->auth_port.bbports[i];
             }
             else
-                AUTH_LOG("    %s 与默认端口 %d 一致...", bb_sockets[i].sockets_name, cfg->auth_port.bbports[i]);
+                AUTH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->auth_port.bbports[i]
+                    , bb_sockets[i].port, bb_sockets[i].sockets_name);
         }
     }
 
@@ -556,6 +571,7 @@ static int update_addresses() {
         return -1;
     }
 
+#ifdef ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (cfg.host6 == NULL) {
         return 0;
@@ -593,6 +609,7 @@ static int update_addresses() {
         //return -1;
     }
 
+#endif
     return 0;
 }
 
@@ -1311,12 +1328,13 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         dcsocks[i] = open_sock(dc_sockets[i].sock_type, dc_sockets[i].port);
 
         if (dcsocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", dc_sockets[i].sockets_name, dc_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", dc_sockets[i].port
+                , dc_sockets[i].sockets_name, dc_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", dc_sockets[i].sockets_name, dc_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", dc_sockets[i].port, dc_sockets[i].sockets_name);
         }
     }
 
@@ -1324,12 +1342,13 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         pcsocks[i] = open_sock(pc_sockets[i].sock_type, pc_sockets[i].port);
 
         if (pcsocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", pc_sockets[i].sockets_name, pc_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", pc_sockets[i].port
+                , pc_sockets[i].sockets_name, pc_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", pc_sockets[i].sockets_name, pc_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", pc_sockets[i].port, pc_sockets[i].sockets_name);
         }
     }
 
@@ -1337,12 +1356,13 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         gcsocks[i] = open_sock(gc_sockets[i].sock_type, gc_sockets[i].port);
 
         if (gcsocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", gc_sockets[i].sockets_name, gc_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", gc_sockets[i].port
+                , gc_sockets[i].sockets_name, gc_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", gc_sockets[i].sockets_name, gc_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", gc_sockets[i].port, gc_sockets[i].sockets_name);
         }
     }
 
@@ -1350,25 +1370,13 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         ep3socks[i] = open_sock(ep3_sockets[i].sock_type, ep3_sockets[i].port);
 
         if (ep3socks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", ep3_sockets[i].sockets_name, ep3_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", ep3_sockets[i].port
+                , ep3_sockets[i].sockets_name, ep3_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", ep3_sockets[i].sockets_name, ep3_sockets[i].port);
-        }
-    }
-
-    for (i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
-        bbsocks[i] = open_sock(bb_sockets[i].sock_type, bb_sockets[i].port);
-
-        if (bbsocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", bb_sockets[i].sockets_name, bb_sockets[i].port);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 %s %u 成功.", bb_sockets[i].sockets_name, bb_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", ep3_sockets[i].port, ep3_sockets[i].sockets_name);
         }
     }
 
@@ -1376,12 +1384,13 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         xbsocks[i] = open_sock(xb_sockets[i].sock_type, xb_sockets[i].port);
 
         if (xbsocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", xb_sockets[i].sockets_name, xb_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", xb_sockets[i].port
+                , xb_sockets[i].sockets_name, xb_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", xb_sockets[i].sockets_name, xb_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", xb_sockets[i].port, xb_sockets[i].sockets_name);
         }
     }
 
@@ -1389,12 +1398,27 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         websocks[i] = open_sock(web_sockets[i].sock_type, web_sockets[i].port);
 
         if (websocks[i] < 0) {
-            ERR_LOG("监听 %s %u 失败.", web_sockets[i].sockets_name, web_sockets[i].port);
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", web_sockets[i].port
+                , web_sockets[i].sockets_name, web_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 %s %u 成功.", web_sockets[i].sockets_name, web_sockets[i].port);
+            AUTH_LOG("监听 %d (%s) 成功.", web_sockets[i].port, web_sockets[i].sockets_name);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
+        bbsocks[i] = open_sock(bb_sockets[i].sock_type, bb_sockets[i].port);
+
+        if (bbsocks[i] < 0) {
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", bb_sockets[i].port
+                , bb_sockets[i].sockets_name, bb_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 %d (%s) 成功.", bb_sockets[i].port, bb_sockets[i].sockets_name);
         }
     }
 }
@@ -1465,10 +1489,12 @@ restart:
 
     srvcfg = load_srv_config();
 
+    /* 获取地址 */
     if (setup_addresses(srvcfg))
         exit(EXIT_FAILURE);
 
-    if(setup_ports(srvcfg))
+    /* 获取设置的端口 */
+    if (setup_ports(srvcfg))
         exit(EXIT_FAILURE);
 
     db_update_auth_server_list(srvcfg);

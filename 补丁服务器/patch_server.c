@@ -260,6 +260,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
         return -1;
     }
 
+#ifdef ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (!cfg->host6) {
         return 0;
@@ -297,6 +298,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
         //return -1;
     }
 
+#endif
     return 0;
 }
 
@@ -310,11 +312,13 @@ static int setup_ports(psocn_srvconfig_t* cfg) {
     else {
         for (int i = 0; i < PATCH_CLIENT_SOCKETS_TYPE_MAX; ++i) {
             if (patch_sockets[i].port != cfg->patch_port.ptports[i]) {
-                CONFIG_LOG("    修改 %s %d 为 %d ...", patch_sockets[i].sockets_name, patch_sockets[i].port, cfg->patch_port.ptports[i]);
+                CONFIG_LOG("    修改 %d (%s) 为 %d ...", patch_sockets[i].port, 
+                    patch_sockets[i].sockets_name, cfg->patch_port.ptports[i]);
                 patch_sockets[i].port = cfg->patch_port.ptports[i];
             }
             else
-                PATCH_LOG("    %s 与默认端口 %d 一致...", patch_sockets[i].sockets_name, cfg->patch_port.ptports[i]);
+                PATCH_LOG("    默认端口 %d 与 %d (%s) 一致...", cfg->patch_port.ptports[i]
+                    , patch_sockets[i].port, patch_sockets[i].sockets_name);
 
         }
     }
@@ -380,6 +384,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
         return -1;
     }
 
+#ifdef ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (cfg->host6 == NULL) {
         return 0;
@@ -417,6 +422,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
         //return -1;
     }
 
+#endif
     return 0;
 }
 
@@ -1049,12 +1055,12 @@ static void listen_sockets(int sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX]) {
         sockets[i] = open_sock(patch_sockets[i].sock_type, patch_sockets[i].port);
 
         if (sockets[i] < 0) {
-            ERR_LOG("监听 %s %d (%s) 错误, 程序退出", patch_sockets[i].sockets_name,
-                patch_sockets[i].port, patch_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
+            ERR_LOG("监听 %d (%s : %s) 错误, 程序退出", patch_sockets[i].port
+                , patch_sockets[i].sockets_name, patch_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             exit(EXIT_FAILURE);
         }
         else {
-            PATCH_LOG("监听 %s %d 成功.", patch_sockets[i].sockets_name, patch_sockets[i].port);
+            PATCH_LOG("监听 %d (%s) 成功.", patch_sockets[i].port, patch_sockets[i].sockets_name);
         }
     }
 }
@@ -1093,7 +1099,7 @@ int __cdecl main(int argc, char** argv) {
     /* 获取设置的端口 */
     if (setup_ports(srvcfg))
         exit(EXIT_FAILURE);
-    
+
     /* 读取随机32位种子. */
     init_genrand((uint32_t)time(NULL));
 
