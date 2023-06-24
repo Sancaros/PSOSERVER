@@ -27,6 +27,7 @@
     <ClInclude Include="patch_packets.h" />
     <ClInclude Include="patch_server.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

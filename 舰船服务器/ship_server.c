@@ -49,6 +49,7 @@
 #include <f_iconv.h>
 #include <libxml/parser.h>
 
+#include "version.h"
 #include "ship.h"
 #include "clients.h"
 #include "shipgate.h"

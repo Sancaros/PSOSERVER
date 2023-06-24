@@ -47,6 +47,7 @@
 #include <quest.h>
 #include <items.h>
 
+#include "version.h"
 #include "auth.h"
 #include "auth_packets.h"
 #include "patch.h"

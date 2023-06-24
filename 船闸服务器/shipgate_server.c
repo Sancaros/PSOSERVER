@@ -68,6 +68,7 @@ int pidfile_remove(struct pidfh *pfh);
 #endif
 #endif
 
+#include "version.h"
 #include "shipgate.h"
 #include "ship.h"
 #include "scripts.h"

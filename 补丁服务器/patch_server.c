@@ -81,6 +81,7 @@ int pidfile_remove(struct pidfh* pfh);
 #endif
 #endif
 
+#include "version.h"
 #include "patch_packets.h"
 #include "patch_server.h"
 
@@ -139,7 +140,7 @@ static void rehash_files();
 
 /* Print information about this program to stdout. */
 static void print_program_info() {
-    printf("%s version %s\n", PATCH_SERVER_VERSION, PATCH_SERVER_VERSION);
+    printf("%s version %s\n", server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
     printf("∞Ê»® (C) 2022 Sancaros\n\n");
     printf("This program is free software: you can redistribute it and/or\n"
         "modify it under the terms of the GNU Affero General Public\n"

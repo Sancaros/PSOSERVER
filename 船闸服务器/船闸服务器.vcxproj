@@ -160,6 +160,7 @@
     <ClInclude Include="scripts.h" />
     <ClInclude Include="shipgate.h" />
     <ClInclude Include="ship.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\数据库\数据库.vcxproj">

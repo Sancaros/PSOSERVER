@@ -27,6 +27,7 @@
 #include <f_checksum.h>
 #include <f_iconv.h>
 
+#include "version.h"
 #include "shipgate.h"
 #include "ship.h"
 

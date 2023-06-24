@@ -37,6 +37,7 @@
 
 #include <zlib.h>
 
+#include "version.h"
 #include "admin.h"
 #include "ship.h"
 #include "utils.h"

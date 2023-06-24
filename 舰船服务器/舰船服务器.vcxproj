@@ -73,6 +73,7 @@
     <ClInclude Include="smutdata.h" />
     <ClInclude Include="subcmd.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="word_select-dc.h" />
     <ClInclude Include="word_select-gc.h" />
     <ClInclude Include="word_select-pc.h" />

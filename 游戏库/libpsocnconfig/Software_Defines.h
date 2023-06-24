@@ -22,12 +22,7 @@
 #  define PSOBBCN_LINKAGE_TYPE_STR "¶¯Ì¬¿â"
 #endif
 
-#define MAINVER 2
-#define SUBVER1 0
-#define SUBVER2 0
-
 #define STR(s)     #s 
-#define VERSION(a,b,c)  STR(a)"."STR(b)"."STR(c)" - "__DATE__" - "__TIME__
 
 #define PATCH_SERVER 0x00
 #define AUTH_SERVER  0x01
@@ -47,11 +42,6 @@ static server_map_st server_name[] = {
 };
 
 uint32_t server_name_num;
-
-#define PATCH_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)
-#define AUTH_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)
-#define SHIPS_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)
-#define SGATE_SERVER_VERSION VERSION(MAINVER, SUBVER1, SUBVER2)
 
 #define TCP_BUFFER_SIZE 64000
 

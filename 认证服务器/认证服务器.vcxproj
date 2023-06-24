@@ -33,6 +33,7 @@
     <ClInclude Include="patch.h" />
     <ClInclude Include="patch_stubs.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
