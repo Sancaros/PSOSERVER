@@ -1311,12 +1311,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         dcsocks[i] = open_sock(dc_sockets[i].sock_type, dc_sockets[i].port);
 
         if (dcsocks[i] < 0) {
-            AUTH_LOG("¼àÌý Dreamcast ¶Ë¿Ú %u Ê§°Ü.", dc_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", dc_sockets[i].sockets_name, dc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý Dreamcast ¶Ë¿Ú %u ³É¹¦.", dc_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", dc_sockets[i].sockets_name, dc_sockets[i].port);
         }
     }
 
@@ -1324,12 +1324,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         pcsocks[i] = open_sock(pc_sockets[i].sock_type, pc_sockets[i].port);
 
         if (pcsocks[i] < 0) {
-            AUTH_LOG("¼àÌý PC ¶Ë¿Ú %u Ê§°Ü.", pc_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", pc_sockets[i].sockets_name, pc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý PC ¶Ë¿Ú %u ³É¹¦.", pc_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", pc_sockets[i].sockets_name, pc_sockets[i].port);
         }
     }
 
@@ -1337,12 +1337,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         gcsocks[i] = open_sock(gc_sockets[i].sock_type, gc_sockets[i].port);
 
         if (gcsocks[i] < 0) {
-            AUTH_LOG("¼àÌý Gamecube ¶Ë¿Ú %u Ê§°Ü.", gc_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", gc_sockets[i].sockets_name, gc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý Gamecube ¶Ë¿Ú %u ³É¹¦.", gc_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", gc_sockets[i].sockets_name, gc_sockets[i].port);
         }
     }
 
@@ -1350,12 +1350,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         ep3socks[i] = open_sock(ep3_sockets[i].sock_type, ep3_sockets[i].port);
 
         if (ep3socks[i] < 0) {
-            AUTH_LOG("¼àÌý Episode 3 ¶Ë¿Ú %u Ê§°Ü.", ep3_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", ep3_sockets[i].sockets_name, ep3_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý Episode 3 ¶Ë¿Ú %u ³É¹¦.", ep3_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", ep3_sockets[i].sockets_name, ep3_sockets[i].port);
         }
     }
 
@@ -1363,12 +1363,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         bbsocks[i] = open_sock(bb_sockets[i].sock_type, bb_sockets[i].port);
 
         if (bbsocks[i] < 0) {
-            AUTH_LOG("¼àÌý Blue Burst ¶Ë¿Ú %u Ê§°Ü.", bb_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", bb_sockets[i].sockets_name, bb_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý Blue Burst ¶Ë¿Ú %u ³É¹¦.", bb_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", bb_sockets[i].sockets_name, bb_sockets[i].port);
         }
     }
 
@@ -1376,12 +1376,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         xbsocks[i] = open_sock(xb_sockets[i].sock_type, xb_sockets[i].port);
 
         if (xbsocks[i] < 0) {
-            AUTH_LOG("¼àÌý Xbox ¶Ë¿Ú %u Ê§°Ü.", xb_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", xb_sockets[i].sockets_name, xb_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý Xbox ¶Ë¿Ú %u ³É¹¦.", xb_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", xb_sockets[i].sockets_name, xb_sockets[i].port);
         }
     }
 
@@ -1389,12 +1389,12 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
         websocks[i] = open_sock(web_sockets[i].sock_type, web_sockets[i].port);
 
         if (websocks[i] < 0) {
-            AUTH_LOG("¼àÌý ÍøÂçÊý¾Ý ¶Ë¿Ú %u Ê§°Ü.", web_sockets[i].port);
+            ERR_LOG("¼àÌý %s %u Ê§°Ü.", web_sockets[i].sockets_name, web_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("¼àÌý ÍøÂçÊý¾Ý ¶Ë¿Ú %u ³É¹¦.", web_sockets[i].port);
+            AUTH_LOG("¼àÌý %s %u ³É¹¦.", web_sockets[i].sockets_name, web_sockets[i].port);
         }
     }
 }

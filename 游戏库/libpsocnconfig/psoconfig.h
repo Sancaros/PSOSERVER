@@ -96,6 +96,21 @@ static const char* Welcome_Files[] = {
 #define PSOCN_REG_XBOX          0x00000010
 #define PSOCN_REG_BB            0x00000020
 
+/* 用于区分补丁服务器中的客户端端口类型 */
+#define CLIENT_TYPE_PC_PATCH           0
+#define CLIENT_TYPE_PC_DATA            1
+#define CLIENT_TYPE_WEB                2
+#define CLIENT_TYPE_BB_PATCH           3
+#define CLIENT_TYPE_BB_PATCH_SCHTHACK  4
+#define CLIENT_TYPE_BB_DATA            5
+#define CLIENT_TYPE_BB_DATA_SCHTHACK   6
+
+#ifdef ENABLE_IPV6
+#define PATCH_CLIENT_SOCKETS_TYPE_MAX 14
+#else
+#define PATCH_CLIENT_SOCKETS_TYPE_MAX 7
+#endif
+
 #ifndef ENABLE_IPV6
 #define NUM_AUTH_DC_SOCKS  3
 #define NUM_AUTH_PC_SOCKS  1
@@ -113,36 +128,6 @@ static const char* Welcome_Files[] = {
 #define NUM_AUTH_BB_SOCKS  8
 #define NUM_AUTH_XB_SOCKS  2
 #endif
-
-//#ifdef ENABLE_IPV6
-//#define NUM_PATCH_PORTS 10
-//#else
-//#define NUM_PATCH_PORTS 5
-//#endif
-
-/* 预设补丁服务器的端口. */
-//#define PC_PATCH_PORT   10000
-//#define PC_DATA_PORT    10001
-//#define WEB_PORT        10002
-//#define BB_PATCH_PORT   11000
-//#define BB_DATA_PORT    11001
-
-/* 用于区分补丁服务器中的客户端端口类型 */
-const enum pasocn_patch_client_sockets_type{
-    CLIENT_TYPE_PC_PATCH,
-    CLIENT_TYPE_PC_DATA,
-    CLIENT_TYPE_WEB,
-    CLIENT_TYPE_BB_PATCH,
-    CLIENT_TYPE_BB_PATCH_SCHTHACK,
-    CLIENT_TYPE_BB_DATA,
-    CLIENT_TYPE_BB_DATA_SCHTHACK,
-    PATCH_CLIENT_SOCKETS_TYPE_MAX
-};
-//#define CLIENT_TYPE_PC_PATCH 0
-//#define CLIENT_TYPE_PC_DATA  1
-//#define CLIENT_TYPE_WEB      2
-//#define CLIENT_TYPE_BB_PATCH 3
-//#define CLIENT_TYPE_BB_DATA  4
 
 typedef struct psocn_srvsockets {
     int sock_type;

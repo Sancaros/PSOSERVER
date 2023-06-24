@@ -38,7 +38,7 @@ static const int hdr_sizes[] = {
 };
 
 static psocn_srvsockets_t patch_sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX] = {
-    { PF_INET , 10000 , CLIENT_TYPE_PC_PATCH                , "PC²¹¶¡¶Ë¿Ú"},
+    { PF_INET , 10000 , CLIENT_TYPE_PC_PATCH                , "PC²¹¶¡¶Ë¿Ú" },
     { PF_INET , 10001 , CLIENT_TYPE_PC_DATA                 , "PCÊý¾Ý¶Ë¿Ú" },
     { PF_INET , 10002 , CLIENT_TYPE_WEB                     , "ÍøÒ³Êý¾Ý¶Ë¿Ú" },
     { PF_INET , 11000 , CLIENT_TYPE_BB_PATCH                , "BB²¹¶¡¶Ë¿Ú" },
@@ -46,7 +46,7 @@ static psocn_srvsockets_t patch_sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX] = {
     { PF_INET , 11001 , CLIENT_TYPE_BB_DATA                 , "BBÊý¾Ý¶Ë¿Ú" },
     { PF_INET , 13000 , CLIENT_TYPE_BB_DATA_SCHTHACK        , "BBÊý¾Ý¶Ë¿Ú(Schthack)" },
 #ifdef ENABLE_IPV6
-    { PF_INET6 , 10000 , CLIENT_TYPE_PC_PATCH                , "PC²¹¶¡¶Ë¿Ú"},
+    { PF_INET6 , 10000 , CLIENT_TYPE_PC_PATCH                , "PC²¹¶¡¶Ë¿Ú" },
     { PF_INET6 , 10001 , CLIENT_TYPE_PC_DATA                 , "PCÊý¾Ý¶Ë¿Ú" },
     { PF_INET6 , 10002 , CLIENT_TYPE_WEB                     , "ÍøÒ³Êý¾Ý¶Ë¿Ú" },
     { PF_INET6 , 11000 , CLIENT_TYPE_BB_PATCH                , "BB²¹¶¡¶Ë¿Ú" },

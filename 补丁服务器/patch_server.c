@@ -1049,12 +1049,12 @@ static void listen_sockets(int sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX]) {
         sockets[i] = open_sock(patch_sockets[i].sock_type, patch_sockets[i].port);
 
         if (sockets[i] < 0) {
-            ERR_LOG("¼àÌý²¹¶¡¶Ë¿Ú %d (%s) ´íÎó, ³ÌÐòÍË³ö",
+            ERR_LOG("¼àÌý %s %d (%s) ´íÎó, ³ÌÐòÍË³ö", patch_sockets[i].sockets_name,
                 patch_sockets[i].port, patch_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
             exit(EXIT_FAILURE);
         }
         else {
-            PATCH_LOG("¼àÌý²¹¶¡¶Ë¿Ú %d ³É¹¦.", patch_sockets[i].port);
+            PATCH_LOG("¼àÌý %s %d ³É¹¦.", patch_sockets[i].sockets_name, patch_sockets[i].port);
         }
     }
 }
