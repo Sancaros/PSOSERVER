@@ -2611,18 +2611,18 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
 
-    gc = ntohl(pkt->guildcard);
-    slot = ntohl(pkt->slot);
+    gc = ntohl(pkt->game_info.guildcard);
+    slot = ntohl(pkt->game_info.slot);
 
     if (gc == 0) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
     if (db_update_char_inv(&char_data->inv, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2630,7 +2630,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_disp(&char_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         SQLERR_LOG("无法更新玩家数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2638,7 +2638,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_dress_data(&char_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         SQLERR_LOG("无法更新玩家外观数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2646,7 +2646,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_techniques(char_data->character.techniques, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2654,7 +2654,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_bank(&char_data->bank, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         SQLERR_LOG("无法更新玩家银行数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2665,7 +2665,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
@@ -2674,13 +2674,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
     if (db_update_gc_login_state(gc, 0, -1, (char*)char_data->character.name)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
@@ -2689,13 +2689,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return -6;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->guildcard, 8);
+        (uint8_t*)&pkt->game_info.guildcard, 8);
 }
 
 static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,

@@ -166,13 +166,13 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->pl->bb.character.dress_data.guildcard_string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     /* 备份临时数据 TODO BB版本未完成 */
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, &c->game_info, &c->pl->bb, sizeof(psocn_bb_db_char_t))) {
+        if (shipgate_send_cbkup(&ship->sg, &c->game_info, &c->bb_pl, sizeof(psocn_bb_db_char_t))) {
             DBG_LOG("备份临时数据 版本 %d", c->version);
             return rv;
         }

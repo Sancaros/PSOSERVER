@@ -384,10 +384,16 @@ void client_destroy_connection(ship_client_t *c,
     /* If the client was on Blue Burst, update their db character */
     if(c->version == CLIENT_VERSION_BB &&
        !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
+
+        /* 将游戏时间存储入人物数据 */
         c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+
+        /* 将玩家数据存入数据库 */
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
                             c->bb_pl, sizeof(psocn_bb_db_char_t),
                             c->cur_block->b);
+
+        /* 将玩家选项数据存入数据库 */
         //shipgate_send_bb_guild(&ship->sg, c);
         shipgate_send_bb_opts(&ship->sg, c);
     }

@@ -1342,7 +1342,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
     ship_t *s = conn->ship;
     block_t *b;
     ship_client_t *c;
-    uint32_t dest = ntohl(pkt->guildcard);
+    uint32_t dest = ntohl(pkt->game_info.guildcard);
     int done = 0;
     uint16_t flags = ntohs(pkt->hdr.flags);
     uint16_t plen = ntohs(pkt->hdr.pkt_len);
@@ -3337,9 +3337,9 @@ int shipgate_send_cdata(shipgate_conn_t* c, uint32_t gc, uint32_t slot,
     pkt->hdr.flags = 0;
 
     /* Fill in the body. */
-    pkt->guildcard = htonl(gc);
-    pkt->slot = htonl(slot);
-    pkt->block = htonl(block);
+    pkt->game_info.guildcard = htonl(gc);
+    pkt->game_info.slot = htonl(slot);
+    pkt->game_info.block = htonl(block);
     memcpy(pkt->data, cdata, len);
 
     /* ¼ÓÃÜ²¢·¢ËÍ. */
