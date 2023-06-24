@@ -252,7 +252,7 @@ typedef struct login_client {
 #define CLIENT_EXTVER_GC_REG_MASK   (3 << 6)
 #define CLIENT_EXTVER_GC_VER_MASK   (0xFF << 8)
 
-static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT][3] = {
+static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT] = {
     {CLIENT_AUTH_DC,           "dc", 4},
     {CLIENT_AUTH_PC,           "pc", 4},
     {CLIENT_AUTH_GC,           "gc", 4},
@@ -264,8 +264,7 @@ static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT][3] = {
 };
 
 /* Language codes. */
-enum CLIENT_LANG
-{
+enum CLIENT_LANG {
     CLIENT_LANG_CHINESE_S,
     CLIENT_LANG_CHINESE_T,
     CLIENT_LANG_JAPANESE,

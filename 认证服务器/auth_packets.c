@@ -112,7 +112,7 @@ static int send_raw(login_client_t *c, int len) {
 /* 加密并发送一个数据包. */
 static int crypt_send(login_client_t *c, int len) {
     /* Expand it to be a multiple of 8/4 bytes long */
-    while(len & (client_type[c->type]->hdr_size - 1)) {
+    while(len & (client_type[c->type].hdr_size - 1)) {
         sendbuf[len++] = 0;
     }
 
@@ -1970,7 +1970,7 @@ int send_quest(login_client_t *c, psocn_quest_t *q) {
     int v = c->type;
 
     /* Figure out what file we're going to send. */
-    sprintf(filename, "%s/%s/%s/%s.qst", cfg->quests_dir, client_type[v]->ver_name,
+    sprintf(filename, "%s/%s/%s/%s.qst", cfg->quests_dir, client_type[v].ver_name,
             language_codes[c->language_code], q->prefix);
     fp = fopen(filename, "rb");
 
@@ -1995,8 +1995,8 @@ int send_quest(login_client_t *c, psocn_quest_t *q) {
         }
 
         /* Make sure we read up to a header-size boundary. */
-        if((read & (client_type[c->type]->hdr_size - 1)) && !feof(fp)) {
-            long amt = (read & (client_type[c->type]->hdr_size - 1));
+        if((read & (client_type[c->type].hdr_size - 1)) && !feof(fp)) {
+            long amt = (read & (client_type[c->type].hdr_size - 1));
 
             fseek(fp, -amt, SEEK_CUR);
             read -= amt;

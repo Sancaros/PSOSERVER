@@ -489,7 +489,7 @@ int read_from_client(login_client_t *c) {
     int pkt_sz = c->pkt_sz, pkt_cur = c->pkt_cur, rv;
     pkt_header_t tmp_hdr = { 0 };
     dc_pkt_hdr_t dc;
-    const int hs = client_type[c->type]->hdr_size, hsm = 0x10000 - hs;
+    const int hs = client_type[c->type].hdr_size, hsm = 0x10000 - hs;
 
     if(!c->recvbuf) {
         /* Read in a new header... */
