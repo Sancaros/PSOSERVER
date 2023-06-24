@@ -291,7 +291,7 @@ patch:
         //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size))
         return -2;
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     if (c->is_ipv6) {
         if (send_redirect6(c, srvcfg->server_ip6, port))
             return -2;

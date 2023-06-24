@@ -179,7 +179,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
     return send_raw(c, PATCH_REDIRECT_LENGTH);
 }
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 
 /* Send a IPv6 redirect packet to the given client.
    The port must be in network byte order. */

@@ -73,7 +73,7 @@ typedef struct patch_redirect {
     uint16_t padding;        /* Zero */
 } PACKED patch_redirect_pkt;
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 
 /* IPv6 version of the above */
 typedef struct patch_redirect6 {
@@ -198,7 +198,7 @@ int send_message(patch_client_t *c, uint16_t *msg, uint16_t size);
    IP and port MUST both be in network byte-order. */
 int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port);
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 
 /* Send a IPv6 redirect packet to the given client.
    The port must be in network byte order. */

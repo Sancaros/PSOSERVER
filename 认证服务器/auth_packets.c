@@ -501,7 +501,7 @@ int send_redirect(login_client_t *c, in_addr_t ip, uint16_t port) {
     return -1;
 }
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 /* Send a redirect packet (IPv6) to the given client. */
 static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
                              uint16_t port) {
@@ -577,7 +577,7 @@ static int send_selective_redirect_ipv4(login_client_t *c) {
 }
 
 int send_selective_redirect(login_client_t *c) {
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     if(c->is_ipv6) {
         /* This is handled in the proxy for IPv6. */
         return 0;

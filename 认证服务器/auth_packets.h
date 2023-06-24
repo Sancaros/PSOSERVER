@@ -68,7 +68,7 @@ int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
 /* Send a redirect packet to the given client. */
 int send_redirect(login_client_t *c, in_addr_t ip, uint16_t port);
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 /* Send a redirect packet (IPv6) to the given client. */
 int send_redirect6(login_client_t *c, const uint8_t ip[16], uint16_t port);
 #endif

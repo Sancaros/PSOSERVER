@@ -105,13 +105,13 @@ static const char* Welcome_Files[] = {
 #define CLIENT_TYPE_BB_DATA            5
 #define CLIENT_TYPE_BB_DATA_SCHTHACK   6
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
 #define PATCH_CLIENT_SOCKETS_TYPE_MAX 14
 #else
 #define PATCH_CLIENT_SOCKETS_TYPE_MAX 7
 #endif
 
-#ifndef ENABLE_IPV6
+#ifndef PSOCN_ENABLE_IPV6
 #define NUM_AUTH_DC_SOCKS  3
 #define NUM_AUTH_PC_SOCKS  1
 #define NUM_AUTH_GC_SOCKS  2

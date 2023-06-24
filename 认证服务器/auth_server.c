@@ -75,7 +75,7 @@ psocn_srvsockets_t dc_sockets[NUM_AUTH_DC_SOCKS] = {
     { PF_INET , 9200 , 0, "DC认证端口-eu10"},
     { PF_INET , 9201 , 1, "DC认证端口-eu11"},
     { PF_INET , 9000 , 2, "DC认证端口-jp10"},                 /* Dreamcast Network Trial Edition */
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6, 9200 , 0, "DC认证端口-eu10"},
     { PF_INET6, 9201 , 1, "DC认证端口-eu11"},
     { PF_INET6, 9000 , 2, "DC认证端口-jp10"}
@@ -84,7 +84,7 @@ psocn_srvsockets_t dc_sockets[NUM_AUTH_DC_SOCKS] = {
 
 psocn_srvsockets_t pc_sockets[NUM_AUTH_PC_SOCKS] = {
     { PF_INET , 9300 , 0, "PC认证端口"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6, 9300 , 0, "PC认证端口"}
 #endif
 };
@@ -92,7 +92,7 @@ psocn_srvsockets_t pc_sockets[NUM_AUTH_PC_SOCKS] = {
 psocn_srvsockets_t gc_sockets[NUM_AUTH_GC_SOCKS] = {
     { PF_INET , 9001 , 0, "GC认证端口-jp11"},
     { PF_INET , 9100 , 1, "GC认证端口-us10"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6, 9001 , 0, "GC认证端口-jp11"},
     { PF_INET6, 9100 , 1, "GC认证端口-us10"}
 #endif
@@ -103,7 +103,7 @@ psocn_srvsockets_t ep3_sockets[NUM_AUTH_EP3_SOCKS] = {
     { PF_INET , 9003 , 1, "EP3认证端口-jp3"},
     { PF_INET , 9203 , 2, "EP3认证端口-eu3"},
     { PF_INET , 9002 , 3, "EP3认证端口-jp3te"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6 , 9103 , 0, "EP3认证端口-us3"},
     { PF_INET6 , 9003 , 1, "EP3认证端口-jp3"},
     { PF_INET6 , 9203 , 2, "EP3认证端口-eu3"},
@@ -113,14 +113,14 @@ psocn_srvsockets_t ep3_sockets[NUM_AUTH_EP3_SOCKS] = {
 
 psocn_srvsockets_t xb_sockets[NUM_AUTH_XB_SOCKS] = {
     { PF_INET , 9500 , 0, "XBOX认证端口"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6, 9500 , 0, "XBOX认证端口"}
 #endif
 };
 
 psocn_srvsockets_t web_sockets[NUM_AUTH_WEB_SOCKS] = {
     { PF_INET , 10003 , 0, "认证网页端口"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6, 10003 , 0, "认证网页端口"}
 #endif
 };
@@ -130,7 +130,7 @@ psocn_srvsockets_t bb_sockets[NUM_AUTH_BB_SOCKS] = {
     { PF_INET , 12001 , 1, "BB数据端口1"},
     { PF_INET , 12002 , 2, "BB数据端口2"},
     { PF_INET , 12003 , 3, "BB数据端口3"},
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     { PF_INET6 , 12000 , 0, "BB认证端口"},
     { PF_INET6 , 12001 , 1, "BB数据端口1"},
     { PF_INET6 , 12002 , 2, "BB数据端口2"},
@@ -447,7 +447,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
         return -1;
     }
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (!cfg->host6) {
         return 0;
@@ -638,7 +638,7 @@ static int update_addresses() {
         return -1;
     }
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     /* If we don't have a separate IPv6 host set, we're done. */
     if (cfg.host6 == NULL) {
         return 0;

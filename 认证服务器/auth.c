@@ -686,7 +686,7 @@ int ship_transfer(login_client_t* c, uint32_t shipid) {
     char** row;
     in_addr_t ip;
     uint16_t port;
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     uint64_t ip6_hi, ip6_lo;
     uint8_t ip6[16];
 #endif
@@ -715,7 +715,7 @@ int ship_transfer(login_client_t* c, uint32_t shipid) {
     else
         port = (uint16_t)strtoul(row[1], NULL, 0) + 4;
 
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     if (row[2] && row[3]) {
         ip6_hi = (uint64_t)strtoull(row[2], NULL, 0);
         ip6_lo = (uint64_t)strtoull(row[3], NULL, 0);
@@ -726,7 +726,7 @@ int ship_transfer(login_client_t* c, uint32_t shipid) {
         ip = htonl((in_addr_t)strtoul(row[0], NULL, 0));
 
         return send_redirect(c, ip, port);
-#ifdef ENABLE_IPV6
+#ifdef PSOCN_ENABLE_IPV6
     }
     else {
         ip6[0] = (uint8_t)(ip6_hi >> 56);
