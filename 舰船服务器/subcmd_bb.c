@@ -765,30 +765,48 @@ static int handle_bb_item_tekked(ship_client_t* c, subcmd_bb_accept_item_identif
                 return -1;
             }
 
-        for (i = 0; i < l->item_count; i++) {
-            uint32_t item_index = l->item_list[i];
-            if (l->item_id_to_lobby_item[item_index].inv_item.data.item_id == id_result->data.item_id) {
-                memset(&l->item_id_to_lobby_item[item_index], 0, sizeof(fitem_t));
-                l->item_list[i] = EMPTY_STRING;
-                break;
-            }
-        }
+        //for (i = 0; i < l->item_count; i++) {
+        //    uint32_t item_index = l->item_list[i];
+        //    if (l->item_id_to_lobby_item[item_index].inv_item.data.item_id == id_result->data.item_id) {
+        //        memset(&l->item_id_to_lobby_item[item_index], 0, sizeof(fitem_t));
+        //        l->item_list[i] = EMPTY_STRING;
+        //        break;
+        //    }
+        //}
 
-        cleanup_lobby_item(l);
+        //cleanup_lobby_item(l);
 
-        if (add_item_to_client(c, id_result) == -1) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+        /* 尝试从大厅物品栏中移除... */
+        found = lobby_remove_item_locked(l, pkt->item_id, id_result);
+        if (found < 0) {
+            /* 未找到需要移除的物品... */
+            ERR_LOG("GC %" PRIu32 " 鉴定的物品不存在!",
                 c->guildcard);
             return -1;
         }
+        else if (found > 0) {
+            /* 假设别人已经捡到了, 就忽略它... */
+            ERR_LOG("GC %" PRIu32 " 鉴定的物品已被拾取!",
+                c->guildcard);
+            return 0;
+        }
+        else {
 
-        /* 初始化临时鉴定的物品数据 */
-        memset(&c->game_data->identify_result, 0, sizeof(iitem_t));
+            if (add_item_to_client(c, id_result) == -1) {
+                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                    c->guildcard);
+                return -1;
+            }
 
-        c->drop_item_id = 0xFFFFFFFF;
-        c->drop_amt = 0;
+            /* 初始化临时鉴定的物品数据 */
+            memset(&c->game_data->identify_result, 0, sizeof(iitem_t));
 
-        return subcmd_send_lobby_bb_create_inv_item(c, id_result->data, 0);
+            c->drop_item_id = 0xFFFFFFFF;
+            c->drop_amt = 0;
+
+            return subcmd_send_lobby_bb_create_inv_item(c, id_result->data, 0);
+        }
+
     } else
         return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3594,7 +3612,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     if (!lobby_add_item_locked(l, &c->bb_pl->inv.iitems[found])) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
-        ERR_LOG("Couldn't add item to lobby inventory!\n");
+        ERR_LOG("无法将物品新增游戏房间背包!");
         return -1;
     }
 

@@ -30,29 +30,6 @@
 #include "rtdata.h"
 #include "mag_bb.h"
 
-/* 初始化房间物品列表数据 */
-void cleanup_lobby_item(lobby_t* l) {
-    uint32_t ch = 0, item_count = 0;
-    size_t len;
-
-    while (ch < l->item_count) {
-        // Combs the entire game inventory for items in use
-        if (l->item_list[ch] != EMPTY_STRING) {
-            if (ch > item_count)
-                l->item_list[item_count] = l->item_list[ch];
-            item_count++;
-        }
-        ch++;
-    }
-
-    len = (MAX_LOBBY_SAVED_ITEMS - item_count) * 4;
-
-    if (item_count < MAX_LOBBY_SAVED_ITEMS)
-        memset(&l->item_list[item_count], 0xFF, len);
-
-    l->item_count = item_count;
-}
-
 /* 修复玩家背包数据 */
 void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     uint32_t id;
@@ -104,14 +81,6 @@ void clear_bitem(bitem_t* bitem) {
     clear_item(&bitem->data);
     bitem->show_flags = 0;
     bitem->amount = 0;
-}
-
-/* 初始化房间物品数据 */
-void clear_fitem(fitem_t* fitem) {
-    clear_iitem(&fitem->inv_item);
-    fitem->x = 0;
-    fitem->z = 0;
-    fitem->area = 0;
 }
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
@@ -187,46 +156,6 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     }
 
     return 1;
-}
-
-//释放房间物品库存内存,并在房间物品空余库存中生成新的物品存储位置
-uint32_t free_lobby_item(lobby_t* l) {
-    uint32_t i, rv, old_item_id;
-
-    rv = old_item_id = EMPTY_STRING;
-
-    // 如果物品ID在当前索引为0,则直接返回
-    if ((l->item_count < MAX_LOBBY_SAVED_ITEMS) && (l->item_id_to_lobby_item[l->item_count].inv_item.data.item_id == 0))
-        return l->item_count;
-
-    // 扫描gameItem数组中是否有可用的物品槽 
-    for (i = 0; i < MAX_LOBBY_SAVED_ITEMS; i++) {
-        if (l->item_id_to_lobby_item[i].inv_item.data.item_id == 0) {
-            rv = i;
-            break;
-        }
-    }
-
-    if (rv != EMPTY_STRING)
-        return rv;
-
-    // 库存内存不足！是时候删除游戏中最旧的掉落物品了
-    for (i = 0; i < MAX_LOBBY_SAVED_ITEMS; i++) {
-        if ((l->item_id_to_lobby_item[i].inv_item.data.item_id < old_item_id) &&
-            (l->item_id_to_lobby_item[i].inv_item.data.item_id >= 0x810000)) {
-            rv = i;
-            old_item_id = l->item_id_to_lobby_item[i].inv_item.data.item_id;
-        }
-    }
-
-    if (rv != EMPTY_STRING) {
-        l->item_id_to_lobby_item[rv].inv_item.data.item_id = 0; // Item deleted. 物品删除
-        return rv;
-    }
-
-    ERR_LOG("请注意:房间背包故障!!!!");
-
-    return 0;
 }
 
 /* 生成物品ID */
@@ -858,39 +787,6 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
 
 }
 
-//
-//int item_add_to_inv2(item_t* inv, int inv_count, item_t* it) {
-//    int i;
-//
-//    /* Make sure there's space first. */
-//    if (inv_count == 30) {
-//        return -1;
-//    }
-//
-//    /* Look for the item in question. If it exists, we're in trouble! */
-//    for (i = 0; i < inv_count; ++i) {
-//        if (inv[i].item_id == it->item_id) {
-//            return -1;
-//        }
-//    }
-//
-//    /* Check if the item is stackable, since we may have to do some stuff
-//       differently... */
-//    if (stack_size_for_item(LE32(it->data_l[0]))) {
-//        /* Look for anything that matches this item in the inventory. */
-//        for (i = 0; i < inv_count; ++i) {
-//            if (inv[i].data_l[0] == it->data_l[0]) {
-//                inv[i].data_b[5] += it->data_b[5];
-//                return 0;
-//            }
-//        }
-//    }
-//
-//    /* Copy the new item in at the end. */
-//    inv[inv_count] = *it;
-//    return 1;
-//}
-
 //修复背包银行数据错误的物品代码
 void fix_inv_bank_item(item_t* i) {
     uint32_t ch3;
@@ -1128,7 +1024,6 @@ void clean_up_inv(inventory_t* inv) {
     for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
         inv->iitems[ch] = sort_data[ch];
 }
-
 
 void sort_client_inv(inventory_t* inv) {
     iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };

@@ -381,7 +381,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
     }
 
     /* If we don't have a separate IPv6 host set, we're done. */
-    if (!cfg->host6) {
+    if (cfg->host6 == NULL) {
         return 0;
     }
 
@@ -392,7 +392,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(cfg->host6, "11000", &hints, &server)) {
-        ERR_LOG("无效IPv6地址: %s", cfg->host6);
+        //ERR_LOG("无效IPv6地址: %s", cfg->host6);
         //return -1;
     }
 
@@ -413,7 +413,7 @@ static int update_addresses(psocn_srvconfig_t* cfg) {
     freeaddrinfo(server);
 
     if (!cfg->server_ip6[0]) {
-        ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
+        //ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
         //return -1;
     }
 
@@ -861,7 +861,7 @@ static int open_sock(int family, uint16_t port) {
 
     if (sock < 0) {
         SOCKET_ERR(sock, "创建端口监听");
-        ERR_LOG("创建端口监听 %d:%d 出现错误", family, port);
+        //ERR_LOG("创建端口监听 %d:%d 出现错误", family, port);
     }
 
     /* Set SO_REUSEADDR so we don't run into issues when we kill the login

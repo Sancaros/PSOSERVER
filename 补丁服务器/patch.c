@@ -49,7 +49,7 @@ patch_client_t* create_connection(int sock, int type,
 
     memset(rv, 0, sizeof(patch_client_t));
 
-    /* Store basic parameters in the client structure. */
+    /* 将基础参数存储进客户端的结构. */
     rv->sock = sock;
     rv->type = type;
     memcpy(&rv->ip_addr, ip, size);

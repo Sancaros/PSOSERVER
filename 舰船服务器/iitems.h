@@ -25,10 +25,10 @@
 #include "clients.h"
 #include "shop.h"
 
-//释放房间物品内存
-uint32_t free_lobby_item(lobby_t* l);
-/* 初始化房间物品列表数据 */
-void cleanup_lobby_item(lobby_t* l);
+////释放房间物品内存
+//uint32_t free_lobby_item(lobby_t* l);
+///* 初始化房间物品列表数据 */
+//void cleanup_lobby_item(lobby_t* l);
 /* 修复玩家背包数据 */
 void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
 /* 初始化物品数据 */
@@ -37,8 +37,8 @@ void clear_item(item_t* item);
 void clear_iitem(iitem_t* iitem);
 /* 初始化银行物品数据 */
 void clear_bitem(bitem_t* bitem);
-/* 初始化房间物品数据 */
-void clear_fitem(fitem_t* fitem);
+///* 初始化房间物品数据 */
+//void clear_fitem(fitem_t* fitem);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */

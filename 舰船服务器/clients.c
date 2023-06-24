@@ -229,7 +229,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
         }
     }
 
-    /* Store basic parameters in the client structure. */
+    /* 将基础参数存储进客户端的结构. */
     rv->sock = sock;
     rv->version = version;
     rv->cur_block = block;

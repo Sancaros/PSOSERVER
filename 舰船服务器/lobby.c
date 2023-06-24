@@ -724,7 +724,7 @@ static void lobby_destroy_locked(lobby_t *l, int remove) {
     if(l->limits_list)
         release(l->limits_list);
 
-    /* Free up any items left in the lobby for Blue Burst. */
+    /* 清理留在 Blue Burst 房间的物品. */
     i = TAILQ_FIRST(&l->item_queue);
     while(i) {
         tmp = TAILQ_NEXT(i, qentry);

@@ -334,7 +334,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
     memset(rv, 0, sizeof(ship_t));
 
-    /* Store basic parameters in the client structure. */
+    /* 将基础参数存储进客户端的结构. */
     rv->sock = sock;
     rv->last_message = time(NULL);
     memcpy(&rv->conn_addr, addr, size);

@@ -73,6 +73,7 @@ typedef struct lobby_pkt {
 
 STAILQ_HEAD(lobby_pkt_queue, lobby_pkt);
 
+/* 地面物品信息 */
 typedef struct lobby_item {
     TAILQ_ENTRY(lobby_item) qentry;
 
@@ -95,14 +96,6 @@ typedef struct lobby_qfunc {
 } lobby_qfunc_t;
 
 SLIST_HEAD(lobby_qfunc_list, lobby_qfunc);
-
-// item info
-typedef struct floor_item {
-    iitem_t inv_item;
-    float x;
-    float z;
-    uint8_t area;
-} fitem_t;
 
 struct lobby {
     TAILQ_ENTRY(lobby) qentry;
@@ -158,14 +151,15 @@ struct lobby {
     uint32_t item_next_lobby_id;
 
     uint32_t item_count;
-    uint32_t item_list[LOBBY_MAX_SAVED_ITEMS];
-    fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
+    /* 游戏房间物品链表 用于存储物品丢出 鉴定 */
+    struct lobby_item_queue item_queue;
+    //uint32_t item_list[LOBBY_MAX_SAVED_ITEMS]; 与 truct lobby_item_queue item_queue; 作用相同 移除
+    //fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
 
     ship_client_t *clients[LOBBY_MAX_CLIENTS]; // 角色数据所在位置 与 clients_slot 可以合并为加入房间的双重认证
     int clients_slot[LOBBY_MAX_CLIENTS]; // 记录角色所处格子 检测角色是否真实存在 角色在进入游戏后占用该格子
 
     struct lobby_pkt_queue pkt_queue;
-    struct lobby_item_queue item_queue;
     struct lobby_pkt_queue burst_queue;
     time_t create_time;
 
