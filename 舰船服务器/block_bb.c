@@ -964,7 +964,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
             uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
 
-            memcpy(bbname, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
+            memcpy(bbname, &c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
             bbname[BB_CHARACTER_NAME_LENGTH] = 0;
 
             /* Notify the shipgate */

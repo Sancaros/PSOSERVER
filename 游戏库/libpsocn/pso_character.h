@@ -22,8 +22,12 @@
 #include <time.h>
 #include <stdint.h>
 
-#define BB_CHARACTER_NAME_LENGTH 0x000C
-#define PC_CHARACTER_NAME_LENGTH 0x0010
+#define BB_CHARACTER_NAME_LENGTH            0x000C //完整的玩家名称结构长度 含tag        12双字节
+#define BB_CHARACTER_CHAR_NAME_LENGTH_      0x000A //定义双字节的玩家名称长度            10双字节
+#define BB_CHARACTER_CHAR_NAME_WLENGTH      0x0014 //用于单字节拷贝玩家名称不带tag的长度 20字节
+#define BB_CHARACTER_CHAR_TAG_NAME_WLENGTH  0x0018 //用于单字节拷贝玩家名称带tag的长度   24字节
+
+#define PC_CHARACTER_NAME_LENGTH       0x0010
 
 #define MAX_PLAYER_LEVEL                200
 #define MAX_PLAYER_BANK_ITEMS           200
@@ -243,7 +247,8 @@ typedef struct psocn_bb_mini_char {
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
-    uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
+    //uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
+    psocn_bb_char_name_t name;
     uint32_t play_time; //4
     uint32_t unknown_a3; //4
     uint8_t config[0xE8]; //232

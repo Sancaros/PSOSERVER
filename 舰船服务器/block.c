@@ -211,7 +211,7 @@ static void* block_thd(void* d) {
             if (srv_time > it->last_message + 90) {
                 if (it->bb_pl) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
+                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_WLENGTH);
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
@@ -480,7 +480,7 @@ static void* block_thd(void* d) {
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->bb_pl && it->guildcard) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name[2], 64, BB_CHARACTER_NAME_LENGTH);
+                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_WLENGTH);
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl && it->guildcard) {

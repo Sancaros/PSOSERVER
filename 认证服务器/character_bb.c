@@ -552,13 +552,10 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 return -3;
             }
 
-            //memcpy(&mc.name[0], &char_data->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
-
-            mc.name.name_tag = char_data->character.name[0];
-            mc.name.name_tag2 = char_data->character.name[1];
-            memcpy(&mc.name.char_name[0], &char_data->character.name[2], sizeof(mc.name.char_name));
+            mc.name.name_tag = char_data->character.name.name_tag;
+            mc.name.name_tag2 = char_data->character.name.name_tag2;
+            memcpy(&mc.name.char_name[0], &char_data->character.name.char_name[0], BB_CHARACTER_CHAR_NAME_WLENGTH);
             
-
             mc.level = char_data->character.disp.level;
             mc.exp = char_data->character.disp.exp;
             mc.play_time = char_data->character.play_time;
@@ -778,7 +775,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             goto err;
         }
 
-        memcpy(char_data->character.name, &pkt->data.name, sizeof(char_data->character.name));
+        memcpy(&char_data->character.name, &pkt->data.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
 
         if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
@@ -840,7 +837,7 @@ static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
 
     printf("刷新玩家在线数据... ");
 
-    if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, (char*)pkt->data.character.name)) {
+    if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, (char*)&pkt->data.character.name)) {
         return -1;
     }
 

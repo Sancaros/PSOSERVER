@@ -496,7 +496,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         p.bbmaildata.gc_dest = LE32(dest);
 
         /* Copy the name, date/time, and message */
-        memcpy(p.bbmaildata.bbname, s->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(p.bbmaildata.bbname, &s->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
         memcpy(p.bbmaildata.message, s->autoreply, s->autoreply_len);
 
         /* Send it */
@@ -3793,7 +3793,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                     }
                     else {
                         memcpy(pkt->entries[count].ch_name,
-                            cl->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
+                            &cl->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
                     }
 
                     if (l) {

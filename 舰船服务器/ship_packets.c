@@ -1299,7 +1299,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
         /* If its a Blue Burst client, iconv it. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
             istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
-                           l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                           &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
             memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
@@ -1372,7 +1372,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
         /* If its a Blue Burst client, iconv it. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
             istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
-                           l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                           &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
             memcpy(pkt->entries[pls].hdr.name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
@@ -1432,7 +1432,7 @@ static int send_pc_lobby_join(ship_client_t *c, lobby_t *l) {
         /* Convert the name to UTF-16. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
             memcpy(pkt->entries[pls].hdr.name,
-                   &l->clients[i]->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+                   &l->clients[i]->pl->bb.character.name.char_name[0], BB_CHARACTER_NAME_LENGTH * 2 - 4);
             pkt->entries[pls].hdr.name[14] = 0;
             pkt->entries[pls].hdr.name[15] = 0;
         }
@@ -1523,7 +1523,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
         /* If its a Blue Burst client, iconv it. */
         if(cl->version == CLIENT_VERSION_BB) {
             istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
-                           cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                           &cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
             memcpy(pkt->entries[pls].hdr.name, cl->pl->v1.character.dress_data.guildcard_string, 16);
@@ -1591,7 +1591,7 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
         /* Convert the name to UTF-16. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
             memcpy(pkt->entries[pls].hdr.name,
-                   l->clients[i]->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+                   &l->clients[i]->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
         }
         else {
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[pls].hdr.name,
@@ -1841,7 +1841,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
         istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
-                       &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
+                       &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
         memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
@@ -1899,7 +1899,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
         istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
-                       &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
+                       &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
         memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
@@ -1951,7 +1951,7 @@ static int send_pc_lobby_add_player(lobby_t *l, ship_client_t *c,
     /* Convert the name to UTF-16. */
     if(nc->version == CLIENT_VERSION_BB) {
         memcpy(pkt->entries[0].hdr.name,
-               &nc->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+               &nc->pl->bb.character.name.char_name[0], BB_CHARACTER_NAME_LENGTH * 2 - 4);
         pkt->entries[0].hdr.name[14] = 0;
         pkt->entries[0].hdr.name[15] = 0;
     }
@@ -2029,7 +2029,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
         istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
-                       &nc->pl->bb.character.name[2], 16, BB_CHARACTER_NAME_LENGTH);
+                       &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_NAME_LENGTH);
     }
     else {
         memcpy(pkt->entries[0].hdr.name, nc->pl->v1.character.dress_data.guildcard_string, 16);
@@ -2079,7 +2079,7 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* Convert the name to UTF-16. */
     if(nc->version == CLIENT_VERSION_BB) {
-        memcpy(pkt->entries[0].hdr.name, nc->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(pkt->entries[0].hdr.name, &nc->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     }
     else {
         pkt->entries[0].hdr.name[0] = '\t';
@@ -2561,9 +2561,9 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the name string first. */
-    in = strlen16_raw(&s->pl->bb.character.name[2]) * 2;
+    in = strlen16_raw(&s->pl->bb.character.name.char_name[0]) * 2;
     out = 65520;
-    inptr = (char *)&s->pl->bb.character.name[2];
+    inptr = (char *)&s->pl->bb.character.name.char_name[0];
     outptr = pkt->msg;
     iconv(ic_utf16_to_gbk/*³¢ÊÔGBK*/, &inptr, &in, &outptr, &out);
 
@@ -2633,7 +2633,7 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->client_id = LE32(0x00010000);
     pkt->guildcard = LE32(s->guildcard);
 
-    strcpy16_raw(pkt->msg, &s->pl->bb.character.name[2]);
+    strcpy16_raw(pkt->msg, &s->pl->bb.character.name.char_name[0]);
     strcat16_raw(pkt->msg, tmp);
     strcat16_raw(pkt->msg, msg);
     len = (strlen16_raw(pkt->msg) << 1) + 0x0E;
@@ -2672,7 +2672,7 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->client_id = LE32(s->client_id);
     pkt->guildcard = LE32(s->guildcard);
 
-    strcpy16_raw(pkt->msg, s->pl->bb.character.name);
+    strcpy16_raw(pkt->msg, &s->pl->bb.character.name);
     strcat16_raw(pkt->msg, tmp);
     strcat16_raw(pkt->msg, msg);
     len = (strlen16_raw(pkt->msg) << 1) + 0x12;
@@ -2801,7 +2801,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
     /* iconv the name, if needed... */
     if(s->version == CLIENT_VERSION_BB) {
         istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->name,
-                       &s->bb_pl->character.name[2], 0x20, BB_CHARACTER_NAME_LENGTH);
+                       &s->bb_pl->character.name.char_name[0], 0x20, BB_CHARACTER_NAME_LENGTH);
     }
     else {
         strcpy(pkt->name, s->pl->v1.character.dress_data.guildcard_string);
@@ -2896,7 +2896,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
-        memcpy(pkt->name, &s->bb_pl->character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+        memcpy(pkt->name, &s->bb_pl->character.name.char_name[0], BB_CHARACTER_NAME_LENGTH * 2 - 4);
     }
     else {
         istrncpy(ic_8859_to_utf16, (char *)pkt->name, s->pl->v1.character.dress_data.guildcard_string, 0x40);
@@ -2956,7 +2956,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
-        memcpy(pkt->name, s->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(pkt->name, &s->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     }
     else {
         pkt->name[0] = LE16('\t');
@@ -3775,7 +3775,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
-                               l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                               &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
                 memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
@@ -3833,7 +3833,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
-                               l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                               &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
                 memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
@@ -3891,7 +3891,7 @@ static int send_pc_game_join(ship_client_t *c, lobby_t *l) {
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 memcpy(pkt->players[i].name,
-                       &l->clients[i]->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 - 4);
+                       &l->clients[i]->pl->bb.character.name.char_name[0], BB_CHARACTER_NAME_LENGTH * 2 - 4);
                 pkt->players[i].name[14] = 0;
                 pkt->players[i].name[15] = 0;
             }
@@ -3954,7 +3954,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
-                               l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                               &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
                 memcpy(pkt->players[i].name, l->clients[i]->pl->v1.character.dress_data.guildcard_string, 16);
@@ -4036,7 +4036,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
-                               cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
+                               &cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
                 memcpy(pkt->players[i].name, cl->pl->v1.character.dress_data.guildcard_string, 16);
@@ -4155,7 +4155,7 @@ static int send_bb_game_join(ship_client_t *c, lobby_t *l) {
             /* Convert the name to UTF-16. */
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
                 memcpy(pkt->players[i].name,
-                       l->clients[i]->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+                       &l->clients[i]->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
             }
             else {
                 istrncpy(ic_8859_to_utf16, (char *)pkt->players[i].name,
@@ -10417,7 +10417,7 @@ int send_mail_autoreply(ship_client_t *d, ship_client_t *s) {
             p.bbmaildata.gc_dest = LE32(d->guildcard);
 
             /* Copy the name, date/time, and message */
-            memcpy(p.bbmaildata.bbname, s->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+            memcpy(p.bbmaildata.bbname, &s->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
             memcpy(p.bbmaildata.message, s->autoreply, s->autoreply_len);
 
             /* Send it */
@@ -10472,7 +10472,7 @@ static int send_gc_infoboard(ship_client_t *c, lobby_t *l) {
                         /* Convert the name */
                         in = BB_CHARACTER_NAME_LENGTH * 2 - 4;
                         out = BB_CHARACTER_NAME_LENGTH;
-                        inptr = (char *)&c2->pl->bb.character.name[2];
+                        inptr = (char *)&c2->pl->bb.character.name.char_name[0];
                         outptr = pkt->entries[entries].name;
                         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
@@ -10575,7 +10575,7 @@ static int send_bb_infoboard(ship_client_t *c, lobby_t *l) {
                     if(c2->infoboard[0]) {
                         memset(&pkt->entries[entries], 0, 0x178);
                         memcpy(pkt->entries[entries].name,
-                               c2->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+                               &c2->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
                         memcpy(pkt->entries[entries].msg,
                                c2->infoboard, 0x158);
                         break;
@@ -11493,7 +11493,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(&pkt->data.bank, &c->bb_pl->bank, sizeof(psocn_bank_t));
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
-    memcpy(pkt->data.gc_data.name, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH * 2);
+    memcpy(pkt->data.gc_data.name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
     memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
     pkt->data.gc_data.present = 1;
@@ -12394,7 +12394,7 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->guild_rank = c->bb_guild->guild_data.guild_rank;
     pkt->target_guildcard = c->guildcard;
     pkt->client_id = c->client_id;
-    memcpy(&pkt->char_name[0], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+    memcpy(&pkt->char_name[0], &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     pkt->guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
     pkt->guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
     memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_data.guild_flag[0], sizeof(pkt->guild_flag));
@@ -12555,7 +12555,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 len += 4;
                 *(uint32_t*)&pkt->data[len] = c2->client_id;
                 len += 4;
-                memcpy(&pkt->data[len], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+                memcpy(&pkt->data[len], &c2->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
                 len += 24;
                 if (c2->bb_guild->guild_data.guild_id != 0) {
                     *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_data.guild_dress_rewards;

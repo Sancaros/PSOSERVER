@@ -2678,7 +2678,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_gc_login_state(gc, 0, -1, (char*)char_data->character.name)) {
+    if (db_update_gc_login_state(gc, 0, -1, (char*)&char_data->character.name)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         return 0;

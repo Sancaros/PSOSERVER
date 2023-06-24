@@ -413,7 +413,7 @@ void client_destroy_connection(ship_client_t *c,
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
         uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
 
-        memcpy(bbname, c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
+        memcpy(bbname, &c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
         bbname[BB_CHARACTER_NAME_LENGTH] = 0;
         shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
                                      c->cur_block->b, bbname);

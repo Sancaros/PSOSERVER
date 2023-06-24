@@ -168,7 +168,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memset(&dc.name, '-', 16);
         in = 48;
         out = 24;
-        inptr = (char*)&src->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name.char_name[0];
         outptr = dc.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
@@ -218,7 +218,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memset(&pc, 0, sizeof(pc));
 
         /* First the name and text... */
-        memcpy(pc.name, &src->pl->bb.character.name[2], BB_CHARACTER_NAME_LENGTH * 2 + 4);
+        memcpy(pc.name, &src->pl->bb.character.name.char_name[0], BB_CHARACTER_NAME_LENGTH * 2 + 4);
         memcpy(pc.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
 
         /* Copy the rest over. */
@@ -251,7 +251,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memset(&gc.name, '-', 16);
         in = 48;
         out = BB_CHARACTER_NAME_LENGTH * 2;
-        inptr = (char*)&src->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name.char_name[0];
         outptr = gc.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
@@ -300,7 +300,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         memset(&xb.name, '-', 16);
         in = 48;
         out = BB_CHARACTER_NAME_LENGTH * 2;
-        inptr = (char*)&src->pl->bb.character.name[2];
+        inptr = (char*)&src->pl->bb.character.name.char_name[0];
         outptr = xb.name;
         iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
 
@@ -350,7 +350,7 @@ static int handle_bb_gcsend(ship_client_t* src, ship_client_t* dest) {
         bb.shdr.unused = 0x0000;
 
         bb.guildcard = LE32(src->guildcard);
-        memcpy(bb.name, src->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(bb.name, &src->pl->bb.character.name, BB_CHARACTER_NAME_LENGTH * 2);
         memcpy(bb.guild_name, src->bb_opts->guild_name, sizeof(src->bb_opts->guild_name));
         memcpy(bb.text, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
         bb.disable_udp = 1;

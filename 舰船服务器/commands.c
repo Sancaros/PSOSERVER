@@ -1533,7 +1533,7 @@ static void dumpinv_internal(ship_client_t *c) {
         }
     }
     else {
-        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
+        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_NAME_LENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
@@ -1632,7 +1632,7 @@ static void dumpbank_internal(ship_client_t* c) {
     int v = c->version;
 
     if (v == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name[2], 64,
+        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_NAME_LENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", name, c->guildcard, c->sec_data.slot);
