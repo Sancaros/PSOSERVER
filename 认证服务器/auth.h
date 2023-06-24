@@ -66,8 +66,8 @@ static psocn_srvsockets_t gc_sockets[NUM_AUTH_GC_SOCKS] = {
     { PF_INET , 9001 , 0, "gc-jp11"},
     { PF_INET , 9100 , 1, "gc-us10"},
 #ifdef ENABLE_IPV6
-    { PF_INET6, 9001 , 0, "gc-jp11"}
-    { PF_INET6, 9100 , 1, "gc-us10"},
+    { PF_INET6, 9001 , 0, "gc-jp11"},
+    { PF_INET6, 9100 , 1, "gc-us10"}
 #endif
 };
 
@@ -80,7 +80,7 @@ static psocn_srvsockets_t ep3_sockets[NUM_AUTH_EP3_SOCKS] = {
     { PF_INET6 , 9103 , 0, "gc-us3"},
     { PF_INET6 , 9003 , 1, "gc-jp3"},
     { PF_INET6 , 9203 , 2, "gc-eu3"},
-    { PF_INET6 , 9002 , 3, "gc-jp3te"},
+    { PF_INET6 , 9002 , 3, "gc-jp3te"}
 #endif
 };
 
@@ -107,7 +107,7 @@ static psocn_srvsockets_t bb_sockets[NUM_AUTH_BB_SOCKS] = {
     { PF_INET6 , 12000 , 0, "BB接入端口"},
     { PF_INET6 , 12001 , 1, "BB数据端口1"},
     { PF_INET6 , 12002 , 2, "BB数据端口2"},
-    { PF_INET6 , 12003 , 3, "BB数据端口3"},
+    { PF_INET6 , 12003 , 3, "BB数据端口3"}
 #endif
 };
 
