@@ -22,7 +22,8 @@
 #  define PSOBBCN_LINKAGE_TYPE_STR "¶¯Ì¬¿â"
 #endif
 
-#define STR(s)     #s 
+#define STR(s)     #s
+#define VERSION(a,b,c)  STR(a)"."STR(b)"."STR(c)" - "__DATE__" - "__TIME__ 
 
 #define PATCH_SERVER 0x00
 #define AUTH_SERVER  0x01

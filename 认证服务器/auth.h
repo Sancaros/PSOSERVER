@@ -37,6 +37,8 @@ typedef __int64 ssize_t;
 typedef int ssize_t;
 #endif
 
+#define AUTH_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+
 /* Determine if a client is in our LAN */
 #define IN_NET(c, s, n) ((c & n) == (s & n))
 

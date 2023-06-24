@@ -20,5 +20,10 @@
 #include <stdint.h>
 #include <string.h>
 
-int add_color_tag(uint16_t* text);
 uint8_t hexToByte(char* hs);
+
+/* 单字节字符串增加颜色识别 */
+int char_add_color_tag(char* a);
+
+/* 宽字节字符串增加颜色识别 */
+int wchar_add_color_tag(wchar_t* a);

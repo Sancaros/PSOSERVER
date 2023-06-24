@@ -26,6 +26,8 @@
 #include <psoconfig.h>
 #include <mtwist.h>
 
+#define PATCH_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH) 
+
 /* Define as a signed type of the same size as size_t. */
 #ifdef _WIN64
 typedef __int64 ssize_t;

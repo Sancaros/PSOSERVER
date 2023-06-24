@@ -2670,6 +2670,8 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     outptr = pkt->msg;
     iconv(ic, &inptr, &in, &outptr, &out);
 
+    char_add_color_tag(pkt->msg);
+
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
@@ -2738,6 +2740,8 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     inptr = tm;
     outptr = (char*)pkt->msg;
     iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+
+    wchar_add_color_tag(pkt->msg);
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;

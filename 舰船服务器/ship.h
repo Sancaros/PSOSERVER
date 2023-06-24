@@ -44,6 +44,8 @@
 #include "quests.h"
 #include "bans.h"
 
+#define SHIPS_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)
+
 /* Forward declarations. */
 struct client_queue;
 struct ship_client;
