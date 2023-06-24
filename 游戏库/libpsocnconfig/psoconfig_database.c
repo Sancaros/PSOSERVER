@@ -74,7 +74,7 @@ static int handle_database(xmlNode* n, psocn_dbconfig_t* cur) {
     cur->show_setting = (char*)showsetting;
 
 
-    /* Parse the port out */
+    /* 分析设置端口参数 */
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {

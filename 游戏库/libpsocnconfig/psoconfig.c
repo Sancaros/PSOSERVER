@@ -294,7 +294,7 @@ int check_ipaddr(char* IP)
 //    cur->dbcfg.show_setting = (char*)showsetting;
 //
 //
-//    /* Parse the port out */
+//    /* 分析设置端口参数 */
 //    rv2 = strtoul((char*)port, NULL, 0);
 //
 //    //ERR_LOG("数据库端口: %u", rv2);
@@ -336,7 +336,7 @@ static int handle_web_server(xmlNode* n, psocn_config_t* cur) {
     if (web_host) {
         cur->w_motd.web_host = (char*)web_host;
 
-        /* Parse the port out */
+        /* 分析设置端口参数 */
         rv2 = strtoul((char*)web_port, NULL, 0);
 
         if (rv2 == 0 || rv2 > 0xFFFF) {
@@ -394,7 +394,7 @@ static int handle_shipgate(xmlNode* n, psocn_config_t* cur) {
         goto err;
     }
 
-    /* Parse the port out */
+    /* 分析设置端口参数 */
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {

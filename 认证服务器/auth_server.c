@@ -61,69 +61,6 @@ int32_t program_hidden = 1;
 uint32_t window_hide_or_show = 1;
 HWND consoleHwnd;
 
-psocn_srvsockets_t dcports[NUM_AUTH_DC_SOCKS] = {
-    { PF_INET , 9200 },
-    { PF_INET , 9201 },
-    { PF_INET , 9000 },                 /* Dreamcast Network Trial Edition */
-#ifdef ENABLE_IPV6
-    { PF_INET6, 9200 },
-    { PF_INET6, 9201 },
-    { PF_INET6, 9000 }
-#endif
-};
-
-psocn_srvsockets_t pcports[NUM_AUTH_PC_SOCKS] = {
-    { PF_INET , 9300 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 9300 }
-#endif
-};
-
-psocn_srvsockets_t gcports[NUM_AUTH_GC_SOCKS] = {
-    { PF_INET , 9100 },
-    { PF_INET , 9001 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 9100 },
-    { PF_INET6, 9001 }
-#endif
-};
-
-psocn_srvsockets_t ep3ports[NUM_AUTH_EP3_SOCKS] = {
-    { PF_INET , 9103 },
-    { PF_INET , 9003 },
-    { PF_INET , 9203 },
-    { PF_INET , 9002 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 9103 },
-    { PF_INET6, 9003 },
-    { PF_INET6, 9203 },
-    { PF_INET6, 9002 }
-#endif
-};
-
-psocn_srvsockets_t webports[NUM_AUTH_WEB_SOCKS] = {
-    { PF_INET , 10003 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 10003 }
-#endif
-};
-
-psocn_srvsockets_t bbports[NUM_AUTH_BB_SOCKS] = {
-    { PF_INET , 12000 },
-    { PF_INET , 12001 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 12000 },
-    { PF_INET6, 12001 }
-#endif
-};
-
-psocn_srvsockets_t xbports[NUM_AUTH_XB_SOCKS] = {
-    { PF_INET , 9500 },
-#ifdef ENABLE_IPV6
-    { PF_INET6, 9500 }
-#endif
-};
-
 /* Stuff read from the config files */
 psocn_config_t *cfg;
 psocn_srvconfig_t *srvcfg;
@@ -483,6 +420,81 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     return 0;
 }
 
+/* 暂时不返回任何错误 因为已经有默认的参数 */
+static int setup_ports(psocn_srvconfig_t* cfg) {
+
+    AUTH_LOG("获取服务器端口...");
+
+    if (!&cfg->auth_port)
+        AUTH_LOG("无法读取服务端端口参数,将启用默认端口...");
+    else {
+        for (int i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
+            if (dc_sockets[i].port != cfg->auth_port.dcports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", dc_sockets[i].sockets_name, dc_sockets[i].port, cfg->auth_port.dcports[i]);
+                dc_sockets[i].port = cfg->auth_port.dcports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", dc_sockets[i].sockets_name, cfg->auth_port.dcports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_PC_SOCKS; ++i) {
+            if (pc_sockets[i].port != cfg->auth_port.pcports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", pc_sockets[i].sockets_name, pc_sockets[i].port, cfg->auth_port.pcports[i]);
+                pc_sockets[i].port = cfg->auth_port.pcports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", pc_sockets[i].sockets_name, cfg->auth_port.pcports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_GC_SOCKS; ++i) {
+            if (gc_sockets[i].port != cfg->auth_port.gcports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", gc_sockets[i].sockets_name, gc_sockets[i].port, cfg->auth_port.gcports[i]);
+                gc_sockets[i].port = cfg->auth_port.gcports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", gc_sockets[i].sockets_name, cfg->auth_port.gcports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_EP3_SOCKS; ++i) {
+            if (ep3_sockets[i].port != cfg->auth_port.ep3ports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", ep3_sockets[i].sockets_name, ep3_sockets[i].port, cfg->auth_port.ep3ports[i]);
+                ep3_sockets[i].port = cfg->auth_port.ep3ports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", ep3_sockets[i].sockets_name, cfg->auth_port.ep3ports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_XB_SOCKS; ++i) {
+            if (xb_sockets[i].port != cfg->auth_port.xbports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", xb_sockets[i].sockets_name, xb_sockets[i].port, cfg->auth_port.xbports[i]);
+                xb_sockets[i].port = cfg->auth_port.xbports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", xb_sockets[i].sockets_name, cfg->auth_port.xbports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_WEB_SOCKS; ++i) {
+            if (web_sockets[i].port != cfg->auth_port.webports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", web_sockets[i].sockets_name, web_sockets[i].port, cfg->auth_port.webports[i]);
+                web_sockets[i].port = cfg->auth_port.webports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", web_sockets[i].sockets_name, cfg->auth_port.webports[i]);
+        }
+
+        for (int i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
+            if (bb_sockets[i].port != cfg->auth_port.bbports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", bb_sockets[i].sockets_name, bb_sockets[i].port, cfg->auth_port.bbports[i]);
+                bb_sockets[i].port = cfg->auth_port.bbports[i];
+            }
+            else
+                AUTH_LOG("    %s 与默认端口 %d 一致...", bb_sockets[i].sockets_name, cfg->auth_port.bbports[i]);
+        }
+    }
+
+    return 0;
+}
+
 /* 用于更新服务器的最新IP地址 */
 static int update_addresses() {
     struct addrinfo hints;
@@ -800,10 +812,10 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dcports[j].port);
+                    AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dc_sockets[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
-                                          dcports[j].port)) {
+                                          dc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -826,10 +838,10 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pcports[j].port);
+                    AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pc_sockets[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
-                                          pcports[j].port)) {
+                                          pc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -852,11 +864,11 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gcports[j].port);
+                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
 
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
-                                          gcports[j].port)) {
+                                          gc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -879,10 +891,10 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3ports[j].port);
+                    AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3_sockets[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
-                                          len, ep3ports[j].port)) {
+                                          len, ep3_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -914,10 +926,10 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bbports[auth].port, auth ? "登录" : "连接");
+                    AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bb_sockets[auth].port, auth ? "登录" : "连接");
 #endif // DEBUG
                     if(!create_connection(asock, type, addr_p, len,
-                                          bbports[auth].port)) {
+                                          bb_sockets[auth].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -950,10 +962,10 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xbports[j].port);
+                    AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xb_sockets[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
-                                          len, xbports[j].port)) {
+                                          len, xb_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -1296,93 +1308,93 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
     int i;
 
     for (i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
-        dcsocks[i] = open_sock(dcports[i].sock_type, dcports[i].port);
+        dcsocks[i] = open_sock(dc_sockets[i].sock_type, dc_sockets[i].port);
 
         if (dcsocks[i] < 0) {
-            AUTH_LOG("监听 Dreamcast 端口 %u 失败.", dcports[i].port);
+            AUTH_LOG("监听 Dreamcast 端口 %u 失败.", dc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 Dreamcast 端口 %u 成功.", dcports[i].port);
+            AUTH_LOG("监听 Dreamcast 端口 %u 成功.", dc_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_PC_SOCKS; ++i) {
-        pcsocks[i] = open_sock(pcports[i].sock_type, pcports[i].port);
+        pcsocks[i] = open_sock(pc_sockets[i].sock_type, pc_sockets[i].port);
 
         if (pcsocks[i] < 0) {
-            AUTH_LOG("监听 PC 端口 %u 失败.", pcports[i].port);
+            AUTH_LOG("监听 PC 端口 %u 失败.", pc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 PC 端口 %u 成功.", pcports[i].port);
+            AUTH_LOG("监听 PC 端口 %u 成功.", pc_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_GC_SOCKS; ++i) {
-        gcsocks[i] = open_sock(gcports[i].sock_type, gcports[i].port);
+        gcsocks[i] = open_sock(gc_sockets[i].sock_type, gc_sockets[i].port);
 
         if (gcsocks[i] < 0) {
-            AUTH_LOG("监听 Gamecube 端口 %u 失败.", gcports[i].port);
+            AUTH_LOG("监听 Gamecube 端口 %u 失败.", gc_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 Gamecube 端口 %u 成功.", gcports[i].port);
+            AUTH_LOG("监听 Gamecube 端口 %u 成功.", gc_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_EP3_SOCKS; ++i) {
-        ep3socks[i] = open_sock(ep3ports[i].sock_type, ep3ports[i].port);
+        ep3socks[i] = open_sock(ep3_sockets[i].sock_type, ep3_sockets[i].port);
 
         if (ep3socks[i] < 0) {
-            AUTH_LOG("监听 Episode 3 端口 %u 失败.", ep3ports[i].port);
+            AUTH_LOG("监听 Episode 3 端口 %u 失败.", ep3_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 Episode 3 端口 %u 成功.", ep3ports[i].port);
+            AUTH_LOG("监听 Episode 3 端口 %u 成功.", ep3_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
-        bbsocks[i] = open_sock(bbports[i].sock_type, bbports[i].port);
+        bbsocks[i] = open_sock(bb_sockets[i].sock_type, bb_sockets[i].port);
 
         if (bbsocks[i] < 0) {
-            AUTH_LOG("监听 Blue Burst 端口 %u 失败.", bbports[i].port);
+            AUTH_LOG("监听 Blue Burst 端口 %u 失败.", bb_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 Blue Burst 端口 %u 成功.", bbports[i].port);
+            AUTH_LOG("监听 Blue Burst 端口 %u 成功.", bb_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_XB_SOCKS; ++i) {
-        xbsocks[i] = open_sock(xbports[i].sock_type, xbports[i].port);
+        xbsocks[i] = open_sock(xb_sockets[i].sock_type, xb_sockets[i].port);
 
         if (xbsocks[i] < 0) {
-            AUTH_LOG("监听 Xbox 端口 %u 失败.", xbports[i].port);
+            AUTH_LOG("监听 Xbox 端口 %u 失败.", xb_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 Xbox 端口 %u 成功.", xbports[i].port);
+            AUTH_LOG("监听 Xbox 端口 %u 成功.", xb_sockets[i].port);
         }
     }
 
     for (i = 0; i < NUM_AUTH_WEB_SOCKS; ++i) {
-        websocks[i] = open_sock(webports[i].sock_type, webports[i].port);
+        websocks[i] = open_sock(web_sockets[i].sock_type, web_sockets[i].port);
 
         if (websocks[i] < 0) {
-            AUTH_LOG("监听 网络数据 端口 %u 失败.", webports[i].port);
+            AUTH_LOG("监听 网络数据 端口 %u 失败.", web_sockets[i].port);
             psocn_db_close(&conn);
             exit(EXIT_FAILURE);
         }
         else {
-            AUTH_LOG("监听 网络数据 端口 %u 成功.", webports[i].port);
+            AUTH_LOG("监听 网络数据 端口 %u 成功.", web_sockets[i].port);
         }
     }
 }
@@ -1454,6 +1466,9 @@ restart:
     srvcfg = load_srv_config();
 
     if (setup_addresses(srvcfg))
+        exit(EXIT_FAILURE);
+
+    if(setup_ports(srvcfg))
         exit(EXIT_FAILURE);
 
     db_update_auth_server_list(srvcfg);

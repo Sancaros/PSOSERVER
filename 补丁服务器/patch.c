@@ -265,11 +265,11 @@ static int handle_patch_login(patch_client_t* c) {
     switch (c->type)
     {
     case CLIENT_TYPE_PC_PATCH:
-        port = htons(PC_DATA_PORT);
+        port = htons(patch_sockets[CLIENT_TYPE_PC_DATA].port);
         goto patch;
 
     case CLIENT_TYPE_BB_PATCH:
-        port = htons(BB_DATA_PORT);
+        port = htons(patch_sockets[CLIENT_TYPE_BB_DATA].port);
         goto patch;
 
     case CLIENT_TYPE_PC_DATA:

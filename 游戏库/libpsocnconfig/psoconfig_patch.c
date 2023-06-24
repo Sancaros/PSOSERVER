@@ -96,7 +96,7 @@ static int handle_web_server(xmlNode* n, patch_config_t* cur) {
     if (web_host) {
         cur->w_motd.web_host = (char*)web_host;
 
-        /* Parse the port out */
+        /* 分析设置端口参数 */
         rv2 = strtoul((char*)web_port, NULL, 0);
 
         if (rv2 == 0 || rv2 > 0xFFFF) {

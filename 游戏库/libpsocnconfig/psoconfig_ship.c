@@ -98,7 +98,7 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
         cfg->shipgate_host = (char*)ip;
     }
 
-    /* Parse the port out */
+    /* 分析设置端口参数 */
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {
@@ -176,7 +176,7 @@ static int handle_net(xmlNode* n, psocn_ship_t* cur) {
         }
     }
 
-    /* Parse the port out */
+    /* 分析设置端口参数 */
     rv2 = strtoul((char*)port, NULL, 0);
 
     if (rv2 == 0 || rv2 > 0xFFFF) {

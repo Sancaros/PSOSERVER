@@ -37,6 +37,23 @@ static const int hdr_sizes[] = {
     4, 4, 4, 4, 8, 8, 4, 4
 };
 
+static psocn_srvsockets_t patch_sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX] = {
+    { PF_INET , 10000 , CLIENT_TYPE_PC_PATCH                , "PC补丁端口"},
+    { PF_INET , 10001 , CLIENT_TYPE_PC_DATA                 , "PC数据端口" },
+    { PF_INET , 10002 , CLIENT_TYPE_WEB                     , "网页数据端口" },
+    { PF_INET , 11000 , CLIENT_TYPE_BB_PATCH                , "BB补丁端口" },
+    { PF_INET , 10500 , CLIENT_TYPE_BB_PATCH_SCHTHACK       , "BB补丁端口(Schthack)" },
+    { PF_INET , 11001 , CLIENT_TYPE_BB_DATA                 , "BB数据端口" },
+    { PF_INET , 13000 , CLIENT_TYPE_BB_DATA_SCHTHACK        , "BB数据端口(Schthack)" },
+#ifdef ENABLE_IPV6
+    { PF_INET6, PC_PATCH_PORT, CLIENT_TYPE_PC_PATCH, "PC补丁端口" },
+    { PF_INET6, PC_DATA_PORT , CLIENT_TYPE_PC_DATA , "PC数据端口" },
+    { PF_INET6, WEB_PORT     , CLIENT_TYPE_WEB     , "网页数据端口" },
+    { PF_INET6, BB_PATCH_PORT, CLIENT_TYPE_BB_PATCH, "BB补丁端口" },
+    { PF_INET6, BB_DATA_PORT , CLIENT_TYPE_BB_DATA , "BB数据端口" }
+#endif
+};
+
 #ifdef PACKED
 #undef PACKED
 #endif
@@ -110,11 +127,11 @@ void destroy_connection(patch_client_t* c);
 /* Act on a list done packet from the client. */
 int handle_list_done(patch_client_t* c);
 
-/* Process one patch packet. */
-int process_patch_packet(patch_client_t* c, void* pkt);
-
-/* Process one data packet. */
-int process_data_packet(patch_client_t* c, void* pkt);
+///* Process one patch packet. */
+//int process_patch_packet(patch_client_t* c, void* pkt);
+//
+///* Process one data packet. */
+//int process_data_packet(patch_client_t* c, void* pkt);
 
 /* Process data packet. */
 int process_packet(patch_client_t* c, void* pkt);
