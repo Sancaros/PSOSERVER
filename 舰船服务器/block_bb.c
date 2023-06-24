@@ -2332,11 +2332,11 @@ static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_buy_spec
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_guild_buy_special_item_pkt)) {
-        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        print_payload((uint8_t*)pkt, len);
-        //return -1;
-    }
+    //if (len != sizeof(bb_guild_buy_special_item_pkt)) {
+    //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+    //    print_payload((uint8_t*)pkt, len);
+    //    //return -1;
+    //}
 
     print_payload((uint8_t*)pkt, len);
     return send_bb_guild_cmd(c, BB_GUILD_BUY_SPECIAL_ITEM);

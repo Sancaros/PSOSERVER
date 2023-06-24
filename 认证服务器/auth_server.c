@@ -61,25 +61,7 @@ int32_t program_hidden = 1;
 uint32_t window_hide_or_show = 1;
 HWND consoleHwnd;
 
-#ifndef ENABLE_IPV6
-#define NUM_DCSOCKS  3
-#define NUM_PCSOCKS  1
-#define NUM_GCSOCKS  2
-#define NUM_EP3SOCKS 4
-#define NUM_WEBSOCKS 1
-#define NUM_BBSOCKS  2
-#define NUM_XBSOCKS  1
-#else
-#define NUM_DCSOCKS  6
-#define NUM_PCSOCKS  2
-#define NUM_GCSOCKS  4
-#define NUM_EP3SOCKS 8
-#define NUM_WEBSOCKS 2
-#define NUM_BBSOCKS  4
-#define NUM_XBSOCKS  2
-#endif
-
-static const int dcports[NUM_DCSOCKS][2] = {
+psocn_srvsockets_t dcports[NUM_AUTH_DC_SOCKS] = {
     { PF_INET , 9200 },
     { PF_INET , 9201 },
     { PF_INET , 9000 },                 /* Dreamcast Network Trial Edition */
@@ -90,14 +72,14 @@ static const int dcports[NUM_DCSOCKS][2] = {
 #endif
 };
 
-static const int pcports[NUM_PCSOCKS][2] = {
+psocn_srvsockets_t pcports[NUM_AUTH_PC_SOCKS] = {
     { PF_INET , 9300 },
 #ifdef ENABLE_IPV6
     { PF_INET6, 9300 }
 #endif
 };
 
-static const int gcports[NUM_GCSOCKS][2] = {
+psocn_srvsockets_t gcports[NUM_AUTH_GC_SOCKS] = {
     { PF_INET , 9100 },
     { PF_INET , 9001 },
 #ifdef ENABLE_IPV6
@@ -106,7 +88,7 @@ static const int gcports[NUM_GCSOCKS][2] = {
 #endif
 };
 
-static const int ep3ports[NUM_EP3SOCKS][2] = {
+psocn_srvsockets_t ep3ports[NUM_AUTH_EP3_SOCKS] = {
     { PF_INET , 9103 },
     { PF_INET , 9003 },
     { PF_INET , 9203 },
@@ -119,14 +101,14 @@ static const int ep3ports[NUM_EP3SOCKS][2] = {
 #endif
 };
 
-static const int webports[NUM_WEBSOCKS][2] = {
+psocn_srvsockets_t webports[NUM_AUTH_WEB_SOCKS] = {
     { PF_INET , 10003 },
 #ifdef ENABLE_IPV6
     { PF_INET6, 10003 }
 #endif
 };
 
-static const int bbports[NUM_BBSOCKS][2] = {
+psocn_srvsockets_t bbports[NUM_AUTH_BB_SOCKS] = {
     { PF_INET , 12000 },
     { PF_INET , 12001 },
 #ifdef ENABLE_IPV6
@@ -135,7 +117,7 @@ static const int bbports[NUM_BBSOCKS][2] = {
 #endif
 };
 
-static const int xbports[NUM_XBSOCKS][2] = {
+psocn_srvsockets_t xbports[NUM_AUTH_XB_SOCKS] = {
     { PF_INET , 9500 },
 #ifdef ENABLE_IPV6
     { PF_INET6, 9500 }
@@ -411,8 +393,6 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     struct sockaddr_in* addr4;
     struct sockaddr_in6* addr6;
 
-    //psocn_read_srv_config(config_file, &cfg);
-
     /* Clear the addresses */
     cfg->server_ip = 0;
     memset(cfg->server_ip6, 0, 16);
@@ -512,7 +492,6 @@ static int update_addresses() {
     struct sockaddr_in6* addr6;
     psocn_srvconfig_t cfg = { 0 };
 
-    //psocn_read_srv_config(config_file, &cfg);
     cfg = db_get_auth_server_list(AUTH_SERVER);
 
     /* Clear the addresses */
@@ -714,10 +693,10 @@ static void initialization() {
     UpdateWindow(consoleHwnd);
 }
 
-static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
-                       int gcsocks[NUM_GCSOCKS], int websocks[NUM_WEBSOCKS],
-                       int ep3socks[NUM_EP3SOCKS], int bbsocks[NUM_BBSOCKS],
-                       int xbsocks[NUM_XBSOCKS]) {
+static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
+                       int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+                       int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+                       int xbsocks[NUM_AUTH_XB_SOCKS]) {
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     struct timeval timeout = { 0 };
     socklen_t len;
@@ -775,44 +754,44 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
         }
 
         /* Add the listening sockets for incoming connections to the fd_set. */
-        for(j = 0; j < NUM_DCSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
             FD_SET(dcsocks[j], &readfds);
             nfds = max(nfds, dcsocks[j]);
         }
 
-        for(j = 0; j < NUM_GCSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
             FD_SET(gcsocks[j], &readfds);
             nfds = max(nfds, gcsocks[j]);
         }
 
-        for(j = 0; j < NUM_EP3SOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
             FD_SET(ep3socks[j], &readfds);
             nfds = max(nfds, ep3socks[j]);
         }
 
-        for(j = 0; j < NUM_PCSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
             FD_SET(pcsocks[j], &readfds);
             nfds = max(nfds, pcsocks[j]);
         }
 
-        for(j = 0; j < NUM_BBSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
             FD_SET(bbsocks[j], &readfds);
             nfds = max(nfds, bbsocks[j]);
         }
 
-        for(j = 0; j < NUM_XBSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
             FD_SET(xbsocks[j], &readfds);
             nfds = max(nfds, xbsocks[j]);
         }
 
-        for(j = 0; j < NUM_WEBSOCKS; ++j) {
+        for(j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
             FD_SET(websocks[j], &readfds);
             nfds = max(nfds, websocks[j]);
         }
 
         if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* See if we have an incoming client. */
-            for(j = 0; j < NUM_DCSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
                 if(FD_ISSET(dcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -821,10 +800,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dcports[j][1]);
+                    AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dcports[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
-                                          dcports[j][1])) {
+                                          dcports[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -838,7 +817,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_PCSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
                 if(FD_ISSET(pcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -847,10 +826,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pcports[j][1]);
+                    AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pcports[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
-                                          pcports[j][1])) {
+                                          pcports[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -864,7 +843,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_GCSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
                 if(FD_ISSET(gcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -873,11 +852,11 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gcports[j][1]);
+                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gcports[j].port);
 
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
-                                          gcports[j][1])) {
+                                          gcports[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -891,7 +870,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_EP3SOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
                 if(FD_ISSET(ep3socks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -900,10 +879,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3ports[j][1]);
+                    AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3ports[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
-                                          len, ep3ports[j][1])) {
+                                          len, ep3ports[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -917,7 +896,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_BBSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
                 if(FD_ISSET(bbsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -935,10 +914,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bbports[auth][1], auth ? "登录" : "连接");
+                    AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bbports[auth].port, auth ? "登录" : "连接");
 #endif // DEBUG
                     if(!create_connection(asock, type, addr_p, len,
-                                          bbports[auth][1])) {
+                                          bbports[auth].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -962,7 +941,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_XBSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
                 if(FD_ISSET(xbsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -971,10 +950,10 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xbports[j][1]);
+                    AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xbports[j].port);
 #endif // DEBUG
                     if(!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
-                                          len, xbports[j][1])) {
+                                          len, xbports[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -988,7 +967,7 @@ static void run_server(int dcsocks[NUM_DCSOCKS], int pcsocks[NUM_PCSOCKS],
                 }
             }
 
-            for(j = 0; j < NUM_WEBSOCKS; ++j) {
+            for(j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
                 if(FD_ISSET(websocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -1255,7 +1234,6 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        AUTH_LOG("%s启动完成.", server_name[AUTH_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -1311,15 +1289,149 @@ void UnhookHandler() {
     }
 }
 
+static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
+    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+    int xbsocks[NUM_AUTH_XB_SOCKS]) {
+    int i;
+
+    for (i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
+        dcsocks[i] = open_sock(dcports[i].sock_type, dcports[i].port);
+
+        if (dcsocks[i] < 0) {
+            AUTH_LOG("监听 Dreamcast 端口 %u 失败.", dcports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 Dreamcast 端口 %u 成功.", dcports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_PC_SOCKS; ++i) {
+        pcsocks[i] = open_sock(pcports[i].sock_type, pcports[i].port);
+
+        if (pcsocks[i] < 0) {
+            AUTH_LOG("监听 PC 端口 %u 失败.", pcports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 PC 端口 %u 成功.", pcports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_GC_SOCKS; ++i) {
+        gcsocks[i] = open_sock(gcports[i].sock_type, gcports[i].port);
+
+        if (gcsocks[i] < 0) {
+            AUTH_LOG("监听 Gamecube 端口 %u 失败.", gcports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 Gamecube 端口 %u 成功.", gcports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_EP3_SOCKS; ++i) {
+        ep3socks[i] = open_sock(ep3ports[i].sock_type, ep3ports[i].port);
+
+        if (ep3socks[i] < 0) {
+            AUTH_LOG("监听 Episode 3 端口 %u 失败.", ep3ports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 Episode 3 端口 %u 成功.", ep3ports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
+        bbsocks[i] = open_sock(bbports[i].sock_type, bbports[i].port);
+
+        if (bbsocks[i] < 0) {
+            AUTH_LOG("监听 Blue Burst 端口 %u 失败.", bbports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 Blue Burst 端口 %u 成功.", bbports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_XB_SOCKS; ++i) {
+        xbsocks[i] = open_sock(xbports[i].sock_type, xbports[i].port);
+
+        if (xbsocks[i] < 0) {
+            AUTH_LOG("监听 Xbox 端口 %u 失败.", xbports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 Xbox 端口 %u 成功.", xbports[i].port);
+        }
+    }
+
+    for (i = 0; i < NUM_AUTH_WEB_SOCKS; ++i) {
+        websocks[i] = open_sock(webports[i].sock_type, webports[i].port);
+
+        if (websocks[i] < 0) {
+            AUTH_LOG("监听 网络数据 端口 %u 失败.", webports[i].port);
+            psocn_db_close(&conn);
+            exit(EXIT_FAILURE);
+        }
+        else {
+            AUTH_LOG("监听 网络数据 端口 %u 成功.", webports[i].port);
+        }
+    }
+}
+
+static void cleanup_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
+    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+    int xbsocks[NUM_AUTH_XB_SOCKS]) {
+    int i;
+
+    /* Clean up. */
+    for (i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
+        closesocket(dcsocks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_PC_SOCKS; ++i) {
+        closesocket(pcsocks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_GC_SOCKS; ++i) {
+        closesocket(gcsocks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_EP3_SOCKS; ++i) {
+        closesocket(ep3socks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_BB_SOCKS; ++i) {
+        closesocket(bbsocks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_XB_SOCKS; ++i) {
+        closesocket(xbsocks[i]);
+    }
+
+    for (i = 0; i < NUM_AUTH_WEB_SOCKS; ++i) {
+        closesocket(websocks[i]);
+    }
+}
+
 int __cdecl main(int argc, char** argv) {
     int i, j;
-    int dcsocks[NUM_DCSOCKS] = { 0 };
-    int pcsocks[NUM_PCSOCKS] = { 0 };
-    int gcsocks[NUM_GCSOCKS] = { 0 };
-    int ep3socks[NUM_EP3SOCKS] = { 0 };
-    int bbsocks[NUM_BBSOCKS] = { 0 };
-    int xbsocks[NUM_XBSOCKS] = { 0 };
-    int websocks[NUM_WEBSOCKS] = { 0 };
+    int dcsocks[NUM_AUTH_DC_SOCKS] = { 0 };
+    int pcsocks[NUM_AUTH_PC_SOCKS] = { 0 };
+    int gcsocks[NUM_AUTH_GC_SOCKS] = { 0 };
+    int ep3socks[NUM_AUTH_EP3_SOCKS] = { 0 };
+    int bbsocks[NUM_AUTH_BB_SOCKS] = { 0 };
+    int xbsocks[NUM_AUTH_XB_SOCKS] = { 0 };
+    int websocks[NUM_AUTH_WEB_SOCKS] = { 0 };
     
     initialization();
 
@@ -1355,145 +1467,16 @@ restart:
 
     HookupHandler();
 
-    //AUTH_LOG("Opening Dreamcast ports for connections.");
+    listen_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
-    for(i = 0; i < NUM_DCSOCKS; ++i) {
-        dcsocks[i] = open_sock(dcports[i][0], dcports[i][1]);
-
-        if(dcsocks[i] < 0) {
-            AUTH_LOG("监听 Dreamcast 端口 %u 失败.", dcports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 Dreamcast 端口 %u 成功.", dcports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening PSO for PC ports for connections.");
-
-    for(i = 0; i < NUM_PCSOCKS; ++i) {
-        pcsocks[i] = open_sock(pcports[i][0], pcports[i][1]);
-
-        if(pcsocks[i] < 0) {
-            AUTH_LOG("监听 PC 端口 %u 失败.", pcports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 PC 端口 %u 成功.", pcports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening PSO for Gamecube ports for connections.");
-
-    for(i = 0; i < NUM_GCSOCKS; ++i) {
-        gcsocks[i] = open_sock(gcports[i][0], gcports[i][1]);
-
-        if(gcsocks[i] < 0) {
-            AUTH_LOG("监听 Gamecube 端口 %u 失败.", gcports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 Gamecube 端口 %u 成功.", gcports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening PSO Episode 3 ports for connections.");
-
-    for(i = 0; i < NUM_EP3SOCKS; ++i) {
-        ep3socks[i] = open_sock(ep3ports[i][0], ep3ports[i][1]);
-
-        if(ep3socks[i] < 0) {
-            AUTH_LOG("监听 Episode 3 端口 %u 失败.", ep3ports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 Episode 3 端口 %u 成功.", ep3ports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening Blue Burst ports for connections.");
-
-    for(i = 0; i < NUM_BBSOCKS; ++i) {
-        bbsocks[i] = open_sock(bbports[i][0], bbports[i][1]);
-
-        if(bbsocks[i] < 0) {
-            AUTH_LOG("监听 Blue Burst 端口 %u 失败.", bbports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 Blue Burst 端口 %u 成功.", bbports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening Xbox ports for connections.");
-
-    for(i = 0; i < NUM_XBSOCKS; ++i) {
-        xbsocks[i] = open_sock(xbports[i][0], xbports[i][1]);
-
-        if(xbsocks[i] < 0) {
-            AUTH_LOG("监听 Xbox 端口 %u 失败.", xbports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 Xbox 端口 %u 成功.", xbports[i][1]);
-        }
-    }
-
-    //AUTH_LOG("Opening Web access ports for connections.");
-
-    for(i = 0; i < NUM_WEBSOCKS; ++i) {
-        websocks[i] = open_sock(webports[i][0], webports[i][1]);
-
-        if(websocks[i] < 0) {
-            AUTH_LOG("监听 网络数据 端口 %u 失败.", webports[i][1]);
-            psocn_db_close(&conn);
-            exit(EXIT_FAILURE);
-        }
-        else {
-            AUTH_LOG("监听 网络数据 端口 %u 成功.", webports[i][1]);
-        }
-    }
-
+    AUTH_LOG("%s启动完成.", server_name[AUTH_SERVER].name);
     AUTH_LOG("程序运行中...");
     AUTH_LOG("请用 <Ctrl-C> 关闭程序.");
 
     /* Run the login server. */
     run_server(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
-    /* Clean up. */
-    for(i = 0; i < NUM_DCSOCKS; ++i) {
-        closesocket(dcsocks[i]);
-    }
-
-    for(i = 0; i < NUM_PCSOCKS; ++i) {
-        closesocket(pcsocks[i]);
-    }
-
-    for(i = 0; i < NUM_GCSOCKS; ++i) {
-        closesocket(gcsocks[i]);
-    }
-
-    for(i = 0; i < NUM_EP3SOCKS; ++i) {
-        closesocket(ep3socks[i]);
-    }
-
-    for(i = 0; i < NUM_BBSOCKS; ++i) {
-        closesocket(bbsocks[i]);
-    }
-
-    for(i = 0; i < NUM_XBSOCKS; ++i) {
-        closesocket(xbsocks[i]);
-    }
-
-    for(i = 0; i < NUM_WEBSOCKS; ++i) {
-        closesocket(websocks[i]);
-    }
+    cleanup_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
     WSACleanup();
 

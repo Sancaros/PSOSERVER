@@ -51,64 +51,6 @@ static void patch_free_entry(patch_file_t* e) {
     free_safe(e);
 }
 
-static int handle_server(xmlNode* n, patch_config_t* cur) {
-    xmlChar* addr4, * addr6, * ip4, * ip6;
-    int rv;
-
-    /* Grab the attributes of the tag. */
-    addr4 = xmlGetProp(n, XC"addr4");
-    addr6 = xmlGetProp(n, XC"addr6");
-    ip4 = xmlGetProp(n, XC"ip4");
-    ip6 = xmlGetProp(n, XC"ip6");
-
-    /* Make sure we have at least an IPv4 address... */
-    if (!ip4 || !addr4) {
-        ERR_LOG("服务器域名或IP未填写");
-        rv = -1;
-        goto err;
-    }
-
-    cur->srvcfg.host4 = (char*)addr4;
-
-    //CONFIG_LOG("检测域名获取: %s", host4);
-
-    if (check_ipaddr((char*)ip4)) {
-        /* Parse the IP address out */
-        rv = inet_pton(PF_INET, (char*)ip4, &cur->srvcfg.server_ip);
-
-        if (rv < 1) {
-            ERR_LOG("未获取到正确的 IP 地址: %s",
-                (char*)ip4);
-            rv = -2;
-            goto err;
-        }
-    }
-
-    /* See if we have a configured IPv6 address */
-    if (ip6 || addr6) {
-
-        cur->srvcfg.host6 = (char*)addr6;
-
-        if (ip6) {
-            rv = inet_pton(PF_INET6, (char*)ip6, cur->srvcfg.server_ip6);
-
-            /* This isn't actually fatal, for now, anyway. */
-            if (rv < 1) {
-                //ERR_LOG("无效 IPv6 地址: %s", (char*)ip6);
-            }
-        }
-    }
-
-    rv = 0;
-
-err:
-    xmlFree(addr4);
-    xmlFree(addr6);
-    xmlFree(ip4);
-    xmlFree(ip6);
-    return rv;
-}
-
 static int handle_versions(xmlNode* n, patch_config_t* cfg) {
     xmlChar* pc, * bb;
     int rv = 0;
@@ -821,33 +763,27 @@ int patch_read_config(const char* fn, patch_config_t** cfg) {
             n = n->next;
             continue;
         }
-        else if (!xmlStrcmp(n->name, XC"server")) {
-            if (handle_server(n, rv)) {
-                irv = -7;
-                goto err_doc;
-            }
-        }
         else if (!xmlStrcmp(n->name, XC"versions")) {
             if (handle_versions(n, rv)) {
-                irv = -8;
+                irv = -7;
                 goto err_doc;
             }
         }
         else if (!xmlStrcmp(n->name, XC"welcome")) {
             if (handle_welcome(n, rv)) {
-                irv = -9;
+                irv = -8;
                 goto err_doc;
             }
         }
         else if (!xmlStrcmp(n->name, XC"patches")) {
             if (handle_patches(n, rv)) {
-                irv = -10;
+                irv = -9;
                 goto err_doc;
             }
         }
         else if (!xmlStrcmp(n->name, XC"web_server")) {
             if (handle_web_server(n, rv)) {
-                irv = -11;
+                irv = -10;
                 goto err_doc;
             }
         }

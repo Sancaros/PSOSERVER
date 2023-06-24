@@ -105,6 +105,21 @@ patch_config_t *cfg;
 psocn_srvconfig_t* srvcfg;
 extern time_t srv_time;
 
+psocn_srvsockets_t patch_ports[NUM_PATCH_PORTS] = {
+    { PF_INET , PC_PATCH_PORT, CLIENT_TYPE_PC_PATCH, "PC补丁端口"},
+    { PF_INET , PC_DATA_PORT , CLIENT_TYPE_PC_DATA , "PC数据端口" },
+    { PF_INET , WEB_PORT     , CLIENT_TYPE_WEB     , "网页数据端口" },
+    { PF_INET , BB_PATCH_PORT, CLIENT_TYPE_BB_PATCH, "BB补丁端口" },
+    { PF_INET , BB_DATA_PORT , CLIENT_TYPE_BB_DATA , "BB数据端口" },
+#ifdef ENABLE_IPV6
+    { PF_INET6, PC_PATCH_PORT, CLIENT_TYPE_PC_PATCH, "PC补丁端口" },
+    { PF_INET6, PC_DATA_PORT , CLIENT_TYPE_PC_DATA , "PC数据端口" },
+    { PF_INET6, WEB_PORT     , CLIENT_TYPE_WEB     , "网页数据端口" },
+    { PF_INET6, BB_PATCH_PORT, CLIENT_TYPE_BB_PATCH, "BB补丁端口" },
+    { PF_INET6, BB_DATA_PORT , CLIENT_TYPE_BB_DATA , "BB数据端口" }
+#endif
+};
+
 static jmp_buf jmpbuf;
 static volatile sig_atomic_t rehash = 0;
 static volatile sig_atomic_t should_exit = 0;
@@ -295,6 +310,22 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     if (!cfg->server_ip6[0]) {
         ERR_LOG("无法获取IPv6地址(但设置了IPv6域名)!");
         //return -1;
+    }
+
+    PATCH_LOG("获取服务器端口...");
+
+    if (!&cfg->patch_port)
+        PATCH_LOG("无法读取服务端端口参数,将启用默认端口...");
+    else {
+        for (int i = 0; i < NUM_PATCH_PORTS; ++i) {
+            if (patch_ports[i].port != cfg->patch_port.ptports[i]) {
+                CONFIG_LOG("    修改 %s %d 为 %d ...", patch_ports[i].sockets_name, patch_ports[i].port, cfg->patch_port.ptports[i]);
+                patch_ports[i].port = cfg->patch_port.ptports[i];
+            }
+            else
+                PATCH_LOG("    %s 与设置 %d 一致...", patch_ports[i].sockets_name, cfg->patch_port.ptports[i]);
+
+        }
     }
 
     return 0;
@@ -580,7 +611,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 /* Connection handling loop... */
-static void run_server(int sockets[NUM_PORTS]) {
+static void run_server(int sockets[NUM_PATCH_PORTS]) {
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     struct timeval timeout = { 0 };
     socklen_t len;
@@ -646,7 +677,7 @@ static void run_server(int sockets[NUM_PORTS]) {
            in the fd_set if we are waiting, we don't have to worry about clients
            connecting while we're trying to do a rehash operation. */
         if(!rehash) {
-            for(j = 0; j < NUM_PORTS; ++j) {
+            for(j = 0; j < NUM_PATCH_PORTS; ++j) {
                 FD_SET(sockets[j], &readfds);
                 nfds = max(nfds, sockets[j]);
             }
@@ -659,7 +690,7 @@ static void run_server(int sockets[NUM_PORTS]) {
             canjump = 0;
 
             /* Check the listening sockets first. */
-            for(j = 0; j < NUM_PORTS; ++j) {
+            for(j = 0; j < NUM_PATCH_PORTS; ++j) {
                 if(FD_ISSET(sockets[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
@@ -667,7 +698,7 @@ static void run_server(int sockets[NUM_PORTS]) {
                         perror("accept");
                     }
                     else {
-                        if(ports[j][2] == CLIENT_TYPE_WEB) {
+                        if(patch_ports[j].port_type == CLIENT_TYPE_WEB) {
                             /* Send the number of connected clients, and close
                                the socket. */
                             nfds = LE32(client_count);
@@ -676,25 +707,25 @@ static void run_server(int sockets[NUM_PORTS]) {
                             continue;
                         }
 
-                        if(!create_connection(sock, ports[j][2], addr_p, len)) {
+                        if(!create_connection(sock, patch_ports[j].port_type, addr_p, len)) {
                             closesocket(sock);
                         }
                         else {
                             my_ntop(&addr, ipstr);
-                            if(ports[j][2] == CLIENT_TYPE_PC_PATCH ||
-                               ports[j][2] == CLIENT_TYPE_BB_PATCH) {
-                                if (ports[j][2] == CLIENT_TYPE_BB_PATCH) {
-                                    PATCH_LOG("允许 %s:%d BB客户端获取补丁", ipstr, ports[j][1]);
+                            if(patch_ports[j].port_type == CLIENT_TYPE_PC_PATCH ||
+                                patch_ports[j].port_type == CLIENT_TYPE_BB_PATCH) {
+                                if (patch_ports[j].port_type == CLIENT_TYPE_BB_PATCH) {
+                                    PATCH_LOG("允许 %s:%d BB客户端获取补丁", ipstr, patch_ports[j].port);
                                 }
                                 else {
-                                    PATCH_LOG("允许 %s:%d PC客户端获取补丁", ipstr, ports[j][1]);
+                                    PATCH_LOG("允许 %s:%d PC客户端获取补丁", ipstr, patch_ports[j].port);
                                 }
 
                                 update_addresses(srvcfg);
                             }
                             else {
                                 ++client_count;
-                                PATCH_LOG("允许 %s:%d 客户端获取数据", ipstr, ports[j][1]);
+                                PATCH_LOG("允许 %s:%d 客户端获取数据", ipstr, patch_ports[j].port);
                             }
                         }
                     }
@@ -964,8 +995,6 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        PATCH_LOG(
-            "%s启动完成.", server_name[PATCH_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -1021,9 +1050,35 @@ void UnhookHandler() {
     }
 }
 
-int __cdecl main(int argc, char** argv) {
+static void listen_sockets(int sockets[NUM_PATCH_PORTS]) {
     int i;
-    int sockets[NUM_PORTS] = { 0 };
+
+    /* 开启所有监听端口 */
+    for (i = 0; i < NUM_PATCH_PORTS; ++i) {
+        sockets[i] = open_sock(patch_ports[i].sock_type, patch_ports[i].port);
+
+        if (sockets[i] < 0) {
+            ERR_LOG("监听补丁端口 %d (%s) 错误, 程序退出",
+                patch_ports[i].port, patch_ports[i].sock_type == PF_INET ? "IPv4" : "IPv6");
+            exit(EXIT_FAILURE);
+        }
+        else {
+            PATCH_LOG("监听补丁端口 %d 成功.", patch_ports[i].port);
+        }
+    }
+}
+
+static void cleanup_sockets(int sockets[NUM_PATCH_PORTS]) {
+    int i;
+
+    /* Clean up. */
+    for (i = 0; i < NUM_PATCH_PORTS; ++i) {
+        closesocket(sockets[i]);
+    }
+}
+
+int __cdecl main(int argc, char** argv) {
+    int sockets[NUM_PATCH_PORTS] = { 0 };
 
     initialization();
 
@@ -1054,29 +1109,16 @@ int __cdecl main(int argc, char** argv) {
     /* 读取信号监听. */
     HookupHandler();
 
-    /* 开启所有监听端口 */
-    for(i = 0; i < NUM_PORTS; ++i) {
-        sockets[i] = open_sock(ports[i][0], ports[i][1]);
+    listen_sockets(sockets);
 
-        if(sockets[i] < 0) {
-            ERR_LOG("监听补丁端口 %d (%s) 错误, 程序退出",
-                  ports[i][1], ports[i][0] == PF_INET ? "IPv4" : "IPv6");
-            exit(EXIT_FAILURE);
-        }
-        else {
-            PATCH_LOG("监听补丁端口 %d 成功.", ports[i][1]);
-        }
-    }
-
+    PATCH_LOG("%s启动完成.", server_name[PATCH_SERVER].name);
     PATCH_LOG("程序运行中...");
     PATCH_LOG("请用 <Ctrl-C> 关闭程序.");
 
     /* 进入主链接监听循环. */
     run_server(sockets);
 
-    for (i = 0; i < NUM_PORTS; ++i) {
-        closesocket(sockets[i]);
-    }
+    cleanup_sockets(sockets);
 
     WSACleanup();
     cleanup_iconv();

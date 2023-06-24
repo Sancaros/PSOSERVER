@@ -37,40 +37,6 @@ static const int hdr_sizes[] = {
     4, 4, 4, 4, 8, 8, 4, 4
 };
 
-#ifdef ENABLE_IPV6
-#define NUM_PORTS 10
-#else
-#define NUM_PORTS 5
-#endif
-
-/* The ports to listen on. */
-#define PC_PATCH_PORT   10000
-#define PC_DATA_PORT    10001
-#define WEB_PORT        10002
-#define BB_PATCH_PORT   11000
-#define BB_DATA_PORT    11001
-
-#define CLIENT_TYPE_PC_PATCH 0
-#define CLIENT_TYPE_PC_DATA  1
-#define CLIENT_TYPE_WEB      2
-#define CLIENT_TYPE_BB_PATCH 3
-#define CLIENT_TYPE_BB_DATA  4
-
-static const int ports[NUM_PORTS][3] = {
-    { PF_INET , PC_PATCH_PORT, CLIENT_TYPE_PC_PATCH },
-    { PF_INET , PC_DATA_PORT , CLIENT_TYPE_PC_DATA  },
-    { PF_INET , WEB_PORT     , CLIENT_TYPE_WEB      },
-    { PF_INET , BB_PATCH_PORT, CLIENT_TYPE_BB_PATCH },
-    { PF_INET , BB_DATA_PORT , CLIENT_TYPE_BB_DATA  },
-#ifdef ENABLE_IPV6
-    { PF_INET6, PC_PATCH_PORT, CLIENT_TYPE_PC_PATCH },
-    { PF_INET6, PC_DATA_PORT , CLIENT_TYPE_PC_DATA  },
-    { PF_INET6, WEB_PORT     , CLIENT_TYPE_WEB      },
-    { PF_INET6, BB_PATCH_PORT, CLIENT_TYPE_BB_PATCH },
-    { PF_INET6, BB_DATA_PORT , CLIENT_TYPE_BB_DATA  }
-#endif
-};
-
 #ifdef PACKED
 #undef PACKED
 #endif

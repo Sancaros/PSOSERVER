@@ -96,6 +96,51 @@ static const char* Welcome_Files[] = {
 #define PSOCN_REG_XBOX          0x00000010
 #define PSOCN_REG_BB            0x00000020
 
+#ifndef ENABLE_IPV6
+#define NUM_AUTH_DC_SOCKS  3
+#define NUM_AUTH_PC_SOCKS  1
+#define NUM_AUTH_GC_SOCKS  2
+#define NUM_AUTH_EP3_SOCKS 4
+#define NUM_AUTH_WEB_SOCKS 1
+#define NUM_AUTH_BB_SOCKS  2
+#define NUM_AUTH_XB_SOCKS  1
+#else
+#define NUM_AUTH_DC_SOCKS  6
+#define NUM_AUTH_PC_SOCKS  2
+#define NUM_AUTH_GC_SOCKS  4
+#define NUM_AUTH_EP3_SOCKS 8
+#define NUM_AUTH_WEB_SOCKS 2
+#define NUM_AUTH_BB_SOCKS  4
+#define NUM_AUTH_XB_SOCKS  2
+#endif
+
+#ifdef ENABLE_IPV6
+#define NUM_PATCH_PORTS 10
+#else
+#define NUM_PATCH_PORTS 5
+#endif
+
+/* 预设补丁服务器的端口. */
+#define PC_PATCH_PORT   10000
+#define PC_DATA_PORT    10001
+#define WEB_PORT        10002
+#define BB_PATCH_PORT   11000
+#define BB_DATA_PORT    11001
+
+/* 用于区分补丁服务器中的客户端端口类型 */
+#define CLIENT_TYPE_PC_PATCH 0
+#define CLIENT_TYPE_PC_DATA  1
+#define CLIENT_TYPE_WEB      2
+#define CLIENT_TYPE_BB_PATCH 3
+#define CLIENT_TYPE_BB_DATA  4
+
+typedef struct psocn_srvsockets {
+    int sock_type;
+    int port;
+    int port_type;
+    char* sockets_name;
+} psocn_srvsockets_t;
+
 typedef struct psocn_dbconfig {
     char* type;
     char* host;
@@ -109,11 +154,27 @@ typedef struct psocn_dbconfig {
     char* show_setting;
 } psocn_dbconfig_t;
 
+typedef struct psocn_patch_port {
+    int ptports[NUM_PATCH_PORTS];
+} psocn_patch_port_t;
+
+typedef struct psocn_auth_port {
+    int dcports[NUM_AUTH_DC_SOCKS];
+    int pcports[NUM_AUTH_PC_SOCKS];
+    int gcports[NUM_AUTH_GC_SOCKS];
+    int ep3ports[NUM_AUTH_EP3_SOCKS];
+    int web_port[NUM_AUTH_WEB_SOCKS];
+    int bbports[NUM_AUTH_BB_SOCKS];
+    int xbports[NUM_AUTH_XB_SOCKS];
+} psocn_auth_port_t;
+
 typedef struct psocn_srvconfig {
     char* host4;
     char* host6;
     uint32_t server_ip;
     uint8_t server_ip6[16];
+    psocn_patch_port_t patch_port;
+    psocn_auth_port_t auth_port;
 } psocn_srvconfig_t;
 
 typedef struct psocn_sgconfig {

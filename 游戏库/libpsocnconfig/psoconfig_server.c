@@ -42,7 +42,8 @@
 #define XC (const xmlChar *)
 
 static int handle_server(xmlNode* n, psocn_srvconfig_t* cur) {
-    xmlChar* addr4, * addr6, * ip4, * ip6;
+    xmlChar* addr4, * addr6, * ip4, * ip6, 
+        * pc_patch_port, * pc_data_port, * web_port, * bb_patch_port, * bb_data_port;
     int rv;
 
     /* Grab the attributes of the tag. */
@@ -50,10 +51,21 @@ static int handle_server(xmlNode* n, psocn_srvconfig_t* cur) {
     addr6 = xmlGetProp(n, XC"addr6");
     ip4 = xmlGetProp(n, XC"ip4");
     ip6 = xmlGetProp(n, XC"ip6");
+    pc_patch_port = xmlGetProp(n, XC"pc_patch_port");
+    pc_data_port = xmlGetProp(n, XC"pc_data_port");
+    web_port = xmlGetProp(n, XC"web_port");
+    bb_patch_port = xmlGetProp(n, XC"bb_patch_port");
+    bb_data_port = xmlGetProp(n, XC"bb_data_port");
 
     /* Make sure we have what we need... */
     if (!ip4 || !addr4) {
         ERR_LOG("服务器域名或IP未填写");
+        rv = -1;
+        goto err;
+    }
+
+    if (!pc_patch_port || !pc_data_port || !web_port || !bb_patch_port || !bb_data_port) {
+        ERR_LOG("服务器端口未填写");
         rv = -1;
         goto err;
     }
@@ -89,6 +101,63 @@ static int handle_server(xmlNode* n, psocn_srvconfig_t* cur) {
         }
     }
 
+    /* Parse the port out */
+    rv = (int)strtoul((char*)pc_patch_port, NULL, 0);
+
+    if (rv == 0 || rv > 0xFFFF) {
+        ERR_LOG("端口无效: %s", (char*)pc_patch_port);
+        rv = -3;
+        goto err;
+    }
+
+    cur->patch_port.ptports[0] = rv;
+
+    /* Parse the port out */
+    rv = (int)strtoul((char*)pc_data_port, NULL, 0);
+
+    if (rv == 0 || rv > 0xFFFF) {
+        ERR_LOG("端口无效: %s", (char*)pc_data_port);
+        rv = -3;
+        goto err;
+    }
+
+    cur->patch_port.ptports[1] = rv;
+
+    /* Parse the port out */
+    rv = (int)strtoul((char*)web_port, NULL, 0);
+
+    if (rv == 0 || rv > 0xFFFF) {
+        ERR_LOG("端口无效: %s", (char*)web_port);
+        rv = -3;
+        goto err;
+    }
+
+    cur->patch_port.ptports[2] = rv;
+
+    /* Parse the port out */
+    rv = (int)strtoul((char*)bb_patch_port, NULL, 0);
+
+    if (rv == 0 || rv > 0xFFFF) {
+        ERR_LOG("端口无效: %s", (char*)bb_patch_port);
+        rv = -3;
+        goto err;
+    }
+
+    cur->patch_port.ptports[3] = rv;
+
+    /* Parse the port out */
+    rv = (int)strtoul((char*)bb_data_port, NULL, 0);
+
+    if (rv == 0 || rv > 0xFFFF) {
+        ERR_LOG("端口无效: %s", (char*)bb_data_port);
+        rv = -3;
+        goto err;
+    }
+
+    cur->patch_port.ptports[4] = rv;
+
+    DBG_LOG("%d", cur->patch_port.ptports[4]);
+
     rv = 0;
 
 err:
@@ -96,6 +165,11 @@ err:
     xmlFree(addr6);
     xmlFree(ip4);
     xmlFree(ip6);
+    xmlFree(pc_patch_port);
+    xmlFree(pc_data_port);
+    xmlFree(web_port);
+    xmlFree(bb_patch_port);
+    xmlFree(bb_data_port);
     return rv;
 }
 

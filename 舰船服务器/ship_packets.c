@@ -1510,6 +1510,8 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
             memset(&pkt->entries[pls].hdr.xbox_ip.mac_addr, 0x12, 6);
             pkt->entries[pls].hdr.xbox_ip.sg_addr = 0x90807060;
             pkt->entries[pls].hdr.xbox_ip.sg_session_id = 0x12345678;
+            pkt->entries[pls].hdr.xbox_ip.xbox_account_id =
+                +(0xAE00000000000000ULL) | LE32(cl->guildcard);
         }
 
         /* TODO: I have no idea what these three things are. */
@@ -12662,14 +12664,63 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 1AEA */
     case BB_GUILD_BUY_SPECIAL_ITEM:
+        //len = 0x00;
 
-        memset(&pkt->data[0x00], 0, 0x04);
+        ///* 物品数量 */
+        //*(uint32_t*)&pkt->data[len] = 2;
+        //len += 4;
 
-        pkt->hdr.pkt_len = LE16(0x000C);
-        pkt->hdr.pkt_type = cmd_code;
-        pkt->hdr.flags = 0x00000000;
+        ///* 物品名称 暂未查明最大字符数 但是已经到头了 */
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
 
-        return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+        //*(uint32_t*)&pkt->data[len] = 0;
+        //len += 4;
+
+        ///* 物品名称 暂未查明最大字符数 但是已经到头了 */
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
+        //sprintf(&pkt->data[len], "\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B\x4B\x6D\xD5\x8B");
+        //len += 16;
+
+        //pkt->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+        //pkt->hdr.pkt_type = cmd_code;
+        //pkt->hdr.flags = 0x00000000;
+
+        bb_guild_buy_special_item_pkt* spec_item_list = (bb_guild_buy_special_item_pkt*)sendbuf;
+        len = 0x100;
+
+        /* 初始化数据包 */
+        memset(spec_item_list, 0, len);
+
+        size_t entries_size = sizeof(bb_guild_special_item_list_t);
+
+        len = 0;
+
+        spec_item_list->item_num = 4;
+
+        /* 填充菜单实例 */
+        for (i = 0; i < spec_item_list->item_num; ++i) {
+            istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_name, pso_guild_rank_list_bb[i]->name, sizeof(spec_item_list->entries[i].item_name));
+            istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_desc, "Bronze Pen1111111111111111", sizeof(spec_item_list->entries[i].item_desc));
+            spec_item_list->entries[i].price = 123;
+            len += entries_size;
+        }
+
+        /* 填充数据头 */
+        spec_item_list->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+        spec_item_list->hdr.pkt_type = cmd_code;
+        spec_item_list->hdr.flags = i - 1;
+
+        print_payload((uint8_t*)spec_item_list, spec_item_list->hdr.pkt_len);
+
+        return send_pkt_bb(c, (bb_pkt_hdr_t*)spec_item_list);
 
         /* 1CEA */
     case BB_GUILD_RANKING_LIST:
@@ -12677,7 +12728,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         len = 0x100;
 
         /* 初始化数据包 */
-        memset(pkt, 0, len);
+        memset(menu, 0, len);
 
         len = 0;
 

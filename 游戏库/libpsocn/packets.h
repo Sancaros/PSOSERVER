@@ -3991,13 +3991,20 @@ typedef struct bb_guild_privilege_list {
     uint8_t data[];
 } PACKED bb_guild_privilege_list_pkt;
 
-// 1AEA: (S->C): Buy Guild Special Item
+typedef struct bb_guild_special_item_list {
+    uint16_t item_name[0x0C];
+    uint16_t item_desc[0x60];
+    uint32_t price;
+} PACKED bb_guild_special_item_list_t;
+
+// 1AEA: (S->C): 购买公会特典
 typedef struct bb_guild_buy_special_item {
     bb_pkt_hdr_t hdr;
-    uint8_t data[];
+    uint32_t item_num;
+    bb_guild_special_item_list_t entries[0];
 } PACKED bb_guild_buy_special_item_pkt;
 
-// 1BEA (C->S): Unknown
+// 1BEA (C->S): 购买公会特典完成 扣除点数
 // header.flag is used, but no other arguments
 typedef struct bb_guild_unk_1BEA {
     bb_pkt_hdr_t hdr;
