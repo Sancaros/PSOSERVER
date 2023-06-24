@@ -298,9 +298,9 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     pkt->hdr.version = 0;
 
     /* Fill in the body. */
-    pkt->game_info.guildcard = htonl(gc);
-    pkt->game_info.slot = htonl(slot);
-    pkt->game_info.block = htonl(block);
+    pkt->guildcard = htonl(gc);
+    pkt->slot = htonl(slot);
+    pkt->block = htonl(block);
     memcpy(pkt->data, cdata, sz);
 
     /* ¼ÓÃÜ²¢·¢ËÍ. */

@@ -552,7 +552,12 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 return -3;
             }
 
-            memcpy(&mc.name[0], &char_data->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+            //memcpy(&mc.name[0], &char_data->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
+
+            mc.name.name_tag = char_data->character.name[0];
+            mc.name.name_tag2 = char_data->character.name[1];
+            memcpy(&mc.name.char_name[0], &char_data->character.name[2], sizeof(mc.name.char_name));
+            
 
             mc.level = char_data->character.disp.level;
             mc.exp = char_data->character.disp.exp;

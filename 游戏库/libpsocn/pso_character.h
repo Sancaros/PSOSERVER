@@ -171,6 +171,7 @@ typedef struct psocn_dress_data {
     //uint32_t unk3[2];                   /* 命名与其他角色结构一致 */
     uint32_t dress_unk1;
     uint32_t dress_unk2;
+    //玩家名称颜色
     uint8_t name_color_b; // ARGB8888
     uint8_t name_color_g;
     uint8_t name_color_r;
@@ -195,6 +196,7 @@ typedef struct psocn_dress_data {
     uint16_t hair_r;
     uint16_t hair_g;
     uint16_t hair_b;
+    //玩家体态数据
     float prop_x;
     float prop_y;
 } PACKED psocn_dress_data_t;
@@ -202,6 +204,7 @@ typedef struct psocn_dress_data {
 /* 角色信息数据结构 */
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
+    //TODO 这是什么参数
     uint8_t opt_flag1;
     uint8_t opt_flag2;
     uint8_t opt_flag3;
@@ -217,13 +220,20 @@ typedef struct psocn_disp_char {
     uint32_t meseta;
 } PACKED psocn_disp_char_t;
 
+typedef struct psocn_bb_char_name {
+    uint16_t name_tag;
+    uint16_t name_tag2;
+    uint16_t char_name[0x0A];
+} PACKED psocn_bb_char_name_t;
+
 /* 用于认证服务器的预览角色数据结构 */
 /* 不含指令头 124 字节*/
 typedef struct psocn_bb_mini_char {
     uint32_t exp;
     uint32_t level;
     psocn_dress_data_t dress_data;
-    uint16_t name[BB_CHARACTER_NAME_LENGTH];
+    //uint16_t name[BB_CHARACTER_NAME_LENGTH];
+    psocn_bb_char_name_t name;
     uint8_t hw_info[0x08]; // 0x7C - 0x83
     uint32_t play_time;
 } PACKED psocn_bb_mini_char_t;

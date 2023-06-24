@@ -224,23 +224,22 @@ typedef struct shipgate_ship_status6 {
     uint32_t privileges;
 } PACKED shipgate_ship_status6_pkt;
 
-typedef struct sg_char_bkup {
+/* A packet sent to/from clients to save/restore character data. */
+typedef struct shipgate_char_data {
+    shipgate_hdr_t hdr;
     uint32_t guildcard;
     uint32_t slot;
+    uint32_t block;
+    uint8_t data[];
+} PACKED shipgate_char_data_pkt;
+
+typedef struct sg_char_bkup {
+    uint32_t guildcard;
+    uint8_t slot;
     uint32_t block;
     uint32_t c_version;
     uint8_t name[32];
 } PACKED sg_char_bkup_pkt;
-
-/* A packet sent to/from clients to save/restore character data. */
-typedef struct shipgate_char_data {
-    shipgate_hdr_t hdr;
-    sg_char_bkup_pkt game_info;
-    //uint32_t guildcard;
-    //uint32_t slot;
-    //uint32_t block;
-    uint8_t data[];
-} PACKED shipgate_char_data_pkt;
 
 /* A packet sent from clients to save their character backup or to request that
    the gate send it back to them. */
