@@ -812,8 +812,6 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        SGATE_LOG(
-            "%s启动完成.", server_name[SGATE_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
@@ -1016,6 +1014,7 @@ restart:
     /* Clean up the DB now that we've done everything else that might fail... */
     open_db();
 
+    SGATE_LOG("%s启动完成.", server_name[SGATE_SERVER].name);
     SGATE_LOG("程序运行中...");
     SGATE_LOG("请用 <Ctrl-C> 关闭程序.");
 

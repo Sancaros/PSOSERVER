@@ -276,7 +276,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     }
 
     /* Last step is to redirect them to the charater data port... */
-    return send_redirect(c, srvcfg->server_ip, 12001);
+    return send_redirect(c, srvcfg->server_ip, bb_sockets[1].port);
 }
 
 int process_bblogin_packet(login_client_t *c, void *pkt) {

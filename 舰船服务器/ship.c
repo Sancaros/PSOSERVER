@@ -165,6 +165,7 @@ static void* ship_thd(void* d) {
 
     BLOCK_LOG("%s: 舰仓 (1 - %d) 已开启", s->cfg->name, i - 1);
 
+    SHIPS_LOG("%s启动完成.", server_name[SHIPS_SERVER].name);
     SHIPS_LOG("程序运行中...");
     SHIPS_LOG("请用 <Ctrl-C> 关闭程序.");
 

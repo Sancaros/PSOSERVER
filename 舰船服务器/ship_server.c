@@ -573,7 +573,6 @@ void HookupHandler() {
         already_hooked_up = false;*/
     }
     else {
-        SHIPS_LOG("%sÆô¶¯Íê³É.", server_name[SHIPS_SERVER].name);
         already_hooked_up = true;
     }
 #ifdef _WIN32 
