@@ -49,6 +49,10 @@ int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, fl
     pkt.data.data_l[2] = item->data.data_l[2];
     pkt.data.item_id = item->data.item_id;
     pkt.data.data2_l = item->data.data2_l;
+
+    if (c->version == CLIENT_VERSION_GC)
+        pkt.data.data2_l = SWAP32(item->data.data2_l);
+
     pkt.two = 0x00000000;
 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);

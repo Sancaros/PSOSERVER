@@ -140,8 +140,10 @@ void packet_to_text(uint8_t* buf, size_t len, bool show) {
 }
 
 //显示数据用
-void display_packet(uint8_t* buf, size_t len) {
-	packet_to_text(buf, len, true);
+void display_packet(void* buf, size_t len) {
+	uint8_t* buff = (uint8_t*)buf;
+
+	packet_to_text(buff, len, true);
 }
 
 /* 日志设置 */

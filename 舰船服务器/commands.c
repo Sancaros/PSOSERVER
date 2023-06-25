@@ -1524,23 +1524,25 @@ static void dumpinv_internal(ship_client_t *c) {
     int v = c->version;
 
     if(v != CLIENT_VERSION_BB) {
-        ITEM_LOG("////////////////////////////////////////////////////////////");
+        ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家 %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
             print_iitem_data(&c->iitems[i], i, c->version);
         }
+        ITEM_LOG("------------------------------------------------------------");
     }
     else {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_NAME_LENGTH);
-        ITEM_LOG("////////////////////////////////////////////////////////////");
+        ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
         }
+        ITEM_LOG("------------------------------------------------------------");
     }
 }
 /* 用法: /dumpinv [lobby/clientid/guildcard] */
@@ -1566,15 +1568,18 @@ static int handle_dumpinv(ship_client_t* c, const char* params) {
             return send_txt(c, "%s", __(c, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        SHIPS_LOG("大厅背包Dump %s (%" PRIu32 ")", l->name,
+        SHIPS_LOG("------------------------------------------------------------");
+        SHIPS_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
             l->lobby_id);
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
-                LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
-                LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
-                LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
+            print_item_data(&j->d.data, c->version);
+            //SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
+            //    LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
+            //    LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
+            //    LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
         }
+        SHIPS_LOG("------------------------------------------------------------");
 
         pthread_mutex_unlock(&l->mutex);
     }

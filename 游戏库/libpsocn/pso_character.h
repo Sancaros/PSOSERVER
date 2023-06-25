@@ -55,41 +55,51 @@ typedef struct dress_flag {
 } PACKED dress_flag_t;
 
 typedef struct item_data { // 0x14 bytes
-  // QUICK ITEM FORMAT REFERENCE
-  //           data1/0  data1/4  data1/8  data2
-  //   Weapon: 00ZZZZGG SS00AABB AABBAABB 00000000
-  //   Armor:  0101ZZ00 FFTTDDDD EEEE0000 00000000
-  //   Shield: 0102ZZ00 FFTTDDDD EEEE0000 00000000
-  //   Unit:   0103ZZ00 FF0000RR RR000000 00000000
-  //   Mag:    02ZZLLWW HHHHIIII JJJJKKKK YYQQPPVV
-  //   Tool:   03ZZZZFF 00CC0000 00000000 00000000
-  //   Meseta: 04000000 00000000 00000000 MMMMMMMM
-  // A = attribute type (for S-ranks, custom name)
-  // B = attribute amount (for S-ranks, custom name)
-  // C = stack size (for tools)
-  // D = DEF bonus
-  // E = EVP bonus
-  // F = flags (40=present; for tools, unused if item is stackable)
-  // G = weapon grind
-  // H = mag DEF
-  // I = mag POW
-  // J = mag DEX
-  // K = mag MIND
-  // L = mag level
-  // M = meseta amount
-  // P = mag flags (40=present, 04=has left pb, 02=has right pb, 01=has center pb)
-  // Q = mag IQ
-  // R = unit modifier (little-endian)
-  // S = weapon flags (80=unidentified, 40=present) and special (low 6 bits)
-  // T = slot count
-  // V = mag color
-  // W = photon blasts
-  // Y = mag synchro
-  // Z = item ID
-  // Note: PSO GC erroneously byteswaps data2 even when the item is a mag. This
-  // makes it incompatible with little-endian versions of PSO (i.e. all other
-  // versions). We manually byteswap data2 upon receipt and immediately before
-  // sending where needed.
+    // 这是一个关于物品格式的参考注释，用于解释不同类型物品的数据格式。
+    // 以下是各种物品类型及其相应的数据格式：
+    // 武器（Weapon）  ：00ZZZZGG SS00AABB AABBAABB 00000000
+    // 
+    // 防具（Armor）   ：0101ZZ00 FFTTDDDD EEEE0000 00000000
+    // 
+    // 盾牌（Shield）  ：0102ZZ00 FFTTDDDD EEEE0000 00000000
+    // 
+    // 插件（Unit）    ：0103ZZ00 FF0000RR RR000000 00000000
+    // 
+    // 玛古（Mag）     ：02ZZLLWW HHHHIIII JJJJKKKK YYQQPPVV
+    // 
+    // 工具（Tool）    ：03ZZZZFF 00CC0000 00000000 00000000
+    // 
+    // 梅塞塔（Meseta）：04000000 00000000 00000000 MMMMMMMM
+    // 
+    // 在上述格式中，每个大写字母代表一个特定的属性或数值字段。
+    // 例如，
+    // A 表示属性类型（对于 S 级物品，则表示自定义名称），
+    // B 表示属性数量（对于 S 级物品，则表示自定义名称），
+    // C 表示堆叠大小（对于工具类物品），
+    // D 表示防御加成，
+    // E 表示闪避加成，
+    // F 表示标志位（40 表示存在；对于工具类物品而言，如果物品可堆叠，则此字段未使用），
+    // G 表示武器打磨等级，
+    // H 表示玛古防御力，
+    // I 表示玛古攻击力，
+    // J 表示玛古敏捷度，
+    // K 表示玛古力量，
+    // L 表示玛古等级，
+    // M 表示梅塞塔数量，
+    // P 表示玛古标志位（40 表示存在，04 表示拥有左侧 PB，02 表示拥有右侧 PB，01 表示拥有中心 PB），
+    // Q 表示玛古智力，
+    // R 表示单位修饰符（小端序），
+    // S 表示武器标志位（80 表示未鉴定，40 表示存在），
+    // T 表示插槽数量，
+    // V 表示玛古颜色，
+    // W 表示光子爆发，
+    // Y 表示玛古同步，
+    // Z 表示物品 ID。
+    // 请注意：PSO GC 版本在处理玛古物品时会错误地对 data2 进行字节交换（byteswaps），
+    // 即使该物品实际上是小端序。
+    // 这导致它与其他版本的 PSO（即所有其他版本）不兼容。
+    // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
+
     union {
         uint8_t data_b[12];//字节
         uint16_t data_w[6];//宽字节

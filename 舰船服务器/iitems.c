@@ -110,6 +110,7 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     return &item->d;
 }
 
+/* 玩家丢出的 取出的 购买的物品 */
 iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* it) {
     lobby_item_t* item;
 
@@ -377,19 +378,17 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 }
 
 //检查装备穿戴标记item_equip_flags
-int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签)
-{
+int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
     int32_t eqOK = EQUIP_FLAGS_OK;
     uint32_t ch;
 
-    for (ch = 0; ch < EQUIP_FLAGS_MAX; ch++)
-    {
-        if ((客户端装备标签 & (1 << ch)) && (!(装备标签 & (1 << ch))))
-        {
+    for (ch = 0; ch < EQUIP_FLAGS_MAX; ch++) {
+        if ((客户端装备标签 & (1 << ch)) && (!(装备标签 & (1 << ch)))) {
             eqOK = EQUIP_FLAGS_NONE;
             break;
         }
     }
+
     return eqOK;
 }
 

@@ -2611,6 +2611,8 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
 
+    //display_packet(&pkt->data[0], sizeof(psocn_bb_db_char_t));
+
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
 

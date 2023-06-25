@@ -3819,7 +3819,6 @@ const char* item_get_name(item_t* item, int version) {
 
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version) {
-    ITEM_LOG("////////////////////////////////////////////////////////////");
     ITEM_LOG("物品:(ID %d / %08X) %s",
         item->item_id, item->item_id, item_get_name(item, version));
     ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",

@@ -3618,13 +3618,12 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
     /* 从玩家的背包中移除该物品. */
     if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count,
-        pkt->item_id, 0xFFFFFFFF) < 1) {
+        pkt->item_id, EMPTY_STRING) < 1) {
         ERR_LOG("无法从玩家背包中移除物品!");
         return -1;
     }
 
     --c->bb_pl->inv.item_count;
-    c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3754,7 +3753,8 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     if (pkt->item_id != c->drop_item_id || pkt->amount != c->drop_amt) {
         ERR_LOG("GC %" PRIu32 " 掉了不同的堆叠物品!",
             c->guildcard);
-        ERR_LOG("pkt->item_id %d c->drop_item %d pkt->amount %d c->drop_amt %d", pkt->item_id, c->drop_item_id, pkt->amount, c->drop_amt);
+        ERR_LOG("pkt->item_id %d c->drop_item %d pkt->amount %d c->drop_amt %d", 
+            pkt->item_id, c->drop_item_id, pkt->amount, c->drop_amt);
         return -1;
     }
 
@@ -3777,7 +3777,6 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
         }
 
         c->bb_pl->inv.item_count -= found;
-        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
     }
     else {
         /* Remove the meseta from the character data */
@@ -4313,8 +4312,8 @@ static int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
 
     if (mid < 0xB50) {
         for (i = 0; i < c->bb_pl->inv.item_count; i++) {
-            if ((c->bb_pl->inv.iitems[i].flags & 0x08) &&
-                (c->bb_pl->inv.iitems[i].data.data_b[0] == 0x00)) {
+            if ((c->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
+                (c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_WEAPON)) {
                 if ((c->bb_pl->inv.iitems[i].data.data_b[1] < 0x0A) &&
                     (c->bb_pl->inv.iitems[i].data.data_b[2] < 0x05)) {
                     special = (c->bb_pl->inv.iitems[i].data.data_b[4] & 0x1F);

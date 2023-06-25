@@ -146,15 +146,12 @@ struct lobby {
     uint32_t maps[0x20];
     uint32_t bbmaps[128]; // 房间地图
 
-    uint32_t item_player_id[12];
-    uint32_t bitem_player_id[12];
-    uint32_t item_next_lobby_id;
-
-    uint32_t item_count;
+    uint32_t item_player_id[12]; //玩家背包物品id容器
+    uint32_t bitem_player_id[12]; //玩家银行背包物品id容器
+    uint32_t item_next_lobby_id; //大厅背包物品id容器
+    uint32_t item_count; //大厅背包物品数量
     /* 游戏房间物品链表 用于存储物品丢出 鉴定 */
     struct lobby_item_queue item_queue;
-    //uint32_t item_list[LOBBY_MAX_SAVED_ITEMS]; 与 truct lobby_item_queue item_queue; 作用相同 移除
-    //fitem_t item_id_to_lobby_item[LOBBY_MAX_SAVED_ITEMS];
 
     ship_client_t *clients[LOBBY_MAX_CLIENTS]; // 角色数据所在位置 与 clients_slot 可以合并为加入房间的双重认证
     int clients_slot[LOBBY_MAX_CLIENTS]; // 记录角色所处格子 检测角色是否真实存在 角色在进入游戏后占用该格子
@@ -359,13 +356,6 @@ int lobby_enqueue_burst(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p);
 /* Enqueue a packet for later sending (due to a player bursting) */
 int lobby_enqueue_pkt_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p);
 int lobby_enqueue_burst_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p);
-
-///* Add an item to the lobby's inventory. The caller must hold the lobby's mutex
-//   before calling this. Returns NULL on any problems... */
-//iitem_t *lobby_add_new_item_locked(lobby_t *l, uint32_t item_data[4]);
-//iitem_t *lobby_add_item_locked(lobby_t *l, iitem_t *item);
-//
-//int lobby_remove_item_locked(lobby_t *l, uint32_t item_id, iitem_t *rv);
 
 /* Send the kill counts for all clients in the lobby that have kill tracking
    enabled. */

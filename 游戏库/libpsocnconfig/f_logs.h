@@ -260,7 +260,7 @@ extern void load_log_config(void);
 extern void color(uint32_t x);
 
 extern void packet_to_text(uint8_t* buf, size_t len, bool show);
-extern void display_packet(uint8_t* buf, size_t len);
+extern void display_packet(void* buf, size_t len);
 
 extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
