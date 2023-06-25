@@ -195,43 +195,46 @@ extern int32_t script_log_console_show;
 //#define ERR_EXIT(m) (perror(m),exit(EXIT_FAILURE))
 #define CODE_LINE(LINE) fprintf(LINE,"%d",__LINE__)
 
-#define P_DATA(DATA, LENGTH) print_payload((unsigned char*)DATA, LE16(LENGTH));
+#define P_DATA(DATA, LENGTH) display_packet((unsigned char*)DATA, LE16(LENGTH));
 //#define qWiFiDebug(format, ...) qDebug("[WiFi] "format" File:%s, Line:%d, Function:%s", ##__VA_ARGS__, __FILE__, __LINE__ , __func__); 
 
-#define PATCH_LOG(...) Logs(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__)
-#define AUTH_LOG(...) Logs(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__)
-#define SHIPS_LOG(...) Logs(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__)
-#define BLOCK_LOG(...) Logs(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__)
-#define ERR_LOG(...) err_Logs(filename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
+#define PATCH_LOG(...) flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__)
+#define AUTH_LOG(...) flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__)
+#define SHIPS_LOG(...) flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__)
+#define BLOCK_LOG(...) flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__)
+#define ERR_LOG(...) flog_err(filename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
 #define ERR_EXIT(...) \
     do { \
         ERR_LOG(__VA_ARGS__); \
         exit(EXIT_FAILURE); \
     } while(0)
 
-#define LOBBY_LOG(...) Logs(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__)
-#define SGATE_LOG(...) Logs(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__)
-#define ITEM_LOG(...) Logs(__LINE__, item_log_console_show, ITEM_LOG, __VA_ARGS__)
-#define SQLERR_LOG(...) err_Logs(filename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
-#define QERR_LOG(...) err_Logs(filename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
-#define GM_LOG(...) Logs(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__)
-#define DBG_LOG(...) dbg_Logs(filename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
-#define FILE_LOG(...) Logs(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__)
-#define HOST_LOG(...) Logs(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__)
+#define LOBBY_LOG(...) flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__)
+#define SGATE_LOG(...) flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__)
+#define ITEM_LOG(...) flog(__LINE__, item_log_console_show, ITEM_LOG, __VA_ARGS__)
+#define SQLERR_LOG(...) flog_err(filename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
+#define QERR_LOG(...) flog_err(filename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
+#define GM_LOG(...) flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__)
+#define DBG_LOG(...) flog_debug(filename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
+#define FILE_LOG(...) flog(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__)
+#define HOST_LOG(...) flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__)
+
 #define UNK_CPD(CODE,VERSION,DATA) unk_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define ERR_CSPD(CODE,VERSION,DATA) err_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+
 #define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
 #define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define DC_LOG(...) Logs(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
-#define DSENT_LOG(...) Logs(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__)
-#define TEST_LOG(...) dbg_Logs(filename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
-#define MERR_LOG(...) err_Logs(filename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
-#define CONFIG_LOG(...) Logs(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
-#define SCRIPT_LOG(...) Logs(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)
-#define LOG_LOG(...) Logs(__LINE__, config_log_console_show, LOG, __VA_ARGS__)
+
+#define DC_LOG(...) flog(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
+#define DSENT_LOG(...) flog(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__)
+#define TEST_LOG(...) flog_debug(filename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
+#define MERR_LOG(...) flog_err(filename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
+#define CONFIG_LOG(...) flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
+#define SCRIPT_LOG(...) flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)
+#define LOG_LOG(...) flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__)
 
 #define CHECK3(...) { printf(__VA_ARGS__); }
 
@@ -240,7 +243,7 @@ extern int32_t script_log_console_show;
                         (unsigned int)(EXP)<(unsigned int)0xFFFFFFFF ){\
                             free((EXP));\
                         }else if((EXP)!=0){\
-                            Logs(__LINE__, \
+                            flog(__LINE__, \
                             error_log_console_show, \
                             ERR_LOG, "%s:%dÐÐ:FREE_ERROR:%s ÄÚ´æ 0x%08x", \
                             filename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
@@ -253,34 +256,21 @@ extern int32_t script_log_console_show;
 int gettimeofday(struct timeval* timevaltmp, void* tzp);
 #endif
 
-extern void print_payload(uint8_t* payload, int len);
-
-extern void print_payload2(uint8_t* payload, int len);
-
 extern void load_log_config(void);
-
 extern void color(uint32_t x);
 
-extern void packet_to_text(uint8_t* buf, int32_t len);
+extern void packet_to_text(uint8_t* buf, size_t len, bool show);
+extern void display_packet(uint8_t* buf, size_t len);
 
-extern void display_packet(uint8_t* buf, int32_t len);
+extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
+extern void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
 
-extern void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-
-extern void err_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-
-extern void dbg_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
-
-extern void Logs_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
-
-extern void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
 
 extern void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
-
 extern void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
-
 extern void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
-
 extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
-
 extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);

@@ -71,7 +71,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     int banned = is_ip_banned(c, &banlen, query);
     int logged = 0;
 
-    //print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
+    //display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
 
     bool is_old_format;
     if (pkt->hdr.pkt_len == sizeof(bb_login_93_pkt) - sizeof(pkt->hdr)) {
@@ -285,7 +285,7 @@ int process_bblogin_packet(login_client_t *c, void *pkt) {
     uint16_t len = LE16(bb->pkt_len);
 
     //DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
-    //print_payload(pkt, LE16(bb->pkt_len));
+    //display_packet(pkt, LE16(bb->pkt_len));
 
     switch(type) {
             /* 0x0005 5*/
@@ -300,7 +300,7 @@ int process_bblogin_packet(login_client_t *c, void *pkt) {
         default:
             DBG_LOG("未知 BB 认证 : 0x%02X\n", type);
             //UNK_CPD(type, c->version, pkt);
-            print_payload((unsigned char*)pkt, len);
+            display_packet((unsigned char*)pkt, len);
             return -1;
     }
 }

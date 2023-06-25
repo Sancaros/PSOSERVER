@@ -244,7 +244,7 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
 #ifdef DEBUG
     DBG_LOG("舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
         sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);
-    print_payload(sendbuf, len);
+    display_packet(sendbuf, len);
 #endif // DEBUG
 
     /* Encrypt the packet */
@@ -7061,7 +7061,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     pkt->hdr.flags = LE32(entries);
     pkt->hdr.pkt_len = LE16(len);
 
-    //print_payload(sendbuf, len);
+    //display_packet(sendbuf, len);
 
     /* 加密并发送 */
     return crypt_send(c, len, sendbuf);
@@ -12673,7 +12673,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         info->hdr.flags = LE32(num); /* flag一般都是菜单数量 */
 
 
-        print_payload((uint8_t*)info, info->hdr.pkt_len);
+        display_packet((uint8_t*)info, info->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)info);
 
@@ -12744,7 +12744,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         spec_item_list->hdr.pkt_type = cmd_code;
         spec_item_list->hdr.flags = i - 1;
 
-        print_payload((uint8_t*)spec_item_list, spec_item_list->hdr.pkt_len);
+        display_packet((uint8_t*)spec_item_list, spec_item_list->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)spec_item_list);
 

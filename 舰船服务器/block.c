@@ -2743,7 +2743,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t *l = c->cur_lobby;
 
-    print_payload((unsigned char*)pkt, len);
+    display_packet((unsigned char*)pkt, len);
 
     if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
@@ -2787,7 +2787,7 @@ static int process_ep3_command(ship_client_t* c, const uint8_t* pkt) {
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
             ERR_LOG("未知 Episode 3 指令: 0x%04X", hdr->flags);
-            print_payload((unsigned char*)pkt, len);
+            display_packet((unsigned char*)pkt, len);
             return -1;
         }
         return 0;
@@ -3216,7 +3216,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case EP3_SERVER_DATA_TYPE:
         ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_string,
             c->guildcard);
-        print_payload((unsigned char*)pkt, len);
+        display_packet((unsigned char*)pkt, len);
         return 0;
 
     case EP3_MENU_CHANGE_TYPE:
@@ -3235,7 +3235,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
             len)) {
             ERR_LOG("未知数据包!");
-            print_payload((unsigned char*)pkt, len);
+            display_packet((unsigned char*)pkt, len);
             return -3;
         }
         return 0;

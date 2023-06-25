@@ -70,7 +70,7 @@ static int handle_ignored_pkt(login_client_t* c, const char* cmd, void* pkt, int
 
     //DBG_LOG("忽略的BB数据包指令 0x%04X", type);
     UDONE_CPD(type, c->version, pkt);
-    //print_payload(pkt, LE16(bb->pkt_len));
+    //display_packet(pkt, LE16(bb->pkt_len));
 
     return 0;
 }
@@ -515,7 +515,7 @@ static int handle_option(login_client_t* c, bb_opt_config_pkt* pkt) {
 
     int config_size = sizeof(bb_opt_config_pkt);
 
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     DBG_LOG("测试是否经过");
 
@@ -833,7 +833,7 @@ static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
     //char query[256];
     //char mysqlerr[1024];
     
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     printf("刷新玩家在线数据... ");
 
@@ -1031,7 +1031,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
     //DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
 
-    //print_payload(pkt, LE16(bb->pkt_len));
+    //display_packet(pkt, LE16(bb->pkt_len));
 
     switch(type) {
             /* 0x0005 5*/
@@ -1109,7 +1109,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
         default:
             UNK_CPD(type, c->version, pkt);
-            //print_payload(pkt, LE16(bb->pkt_len));
+            //display_packet(pkt, LE16(bb->pkt_len));
             return -1;
     }
 }

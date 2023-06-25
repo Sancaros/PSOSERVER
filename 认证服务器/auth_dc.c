@@ -500,7 +500,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
     time_t banlen;
     int banned = is_ip_banned(c, &banlen, query);
 
-    //print_payload((unsigned char*)pkt, LE16(pkt->hdr.pc.pkt_len));
+    //display_packet((unsigned char*)pkt, LE16(pkt->hdr.pc.pkt_len));
 
     /* Make sure the user isn't IP banned. */
     if(banned == -1) {
@@ -1748,7 +1748,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
         default:
             DBG_LOG("Î´Öª DC ÈÏÖ¤ : 0x%02X\n", type);
             //UNK_CPD(type, c->version, pkt);
-            print_payload((unsigned char *)pkt, len);
+            display_packet((unsigned char *)pkt, len);
             return -3;
     }
 

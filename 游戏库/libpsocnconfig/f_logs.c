@@ -71,209 +71,77 @@ int32_t config_log_console_show;
 
 uint8_t datadp[65535];
 
-void print_hex_ascii_line(uint8_t* payload, int len, int offset) {
+void packet_to_text(uint8_t* buf, size_t len, bool show) {
+	static const char hex_digits[] = "0123456789ABCDEF";
 
-	int i;
-	int gap;
-	uint8_t* ch;
-
-	/* offset */
-	printf("( %08X )   ", offset);
-
-	/* hex */
-	ch = payload;
-	for (i = 0; i < len; i++) {
-		printf("%02X ", *ch);
-		ch++;
-		/* print extra space after 8th byte for visual aid */
-		if (i == 7)
-			printf(" ");
-	}
-	/* print space to handle line less than 8 bytes */
-	if (len < 8)
-		printf(" ");
-
-	/* fill hex gap with spaces if not full line */
-	if (len < 16) {
-		gap = 16 - len;
-		for (i = 0; i < gap; i++) {
-			printf("   ");
-		}
-	}
-	printf("   ");
-
-	/* ascii (if printable) */
-	ch = payload;
-	for (i = 0; i < len; i++) {
-		if (isprint(*ch))
-			printf("%c", *ch);
-		else
-			printf(".");
-		ch++;
-	}
-
-	printf("\n");
-
-	return;
-}
-
-void print_payload(uint8_t* payload, int len) {
-
-	int len_rem = len;
-	int line_width = 16;			/* number of bytes per line */
-	int line_len;
-	int offset = 0;					/* zero-based offset counter */
-	uint8_t* ch = payload;
-
-	if (len <= 0)
-		return;
-
-	/* data fits on one line */
-	if (len <= line_width) {
-		print_hex_ascii_line(ch, len, offset);
-		return;
-	}
-
-	/* data spans multiple lines */
-	for (;; ) {
-		/* compute current line length */
-		line_len = line_width % len_rem;
-		/* print line */
-		print_hex_ascii_line(ch, line_len, offset);
-		/* compute total remaining */
-		len_rem = len_rem - line_len;
-		/* shift pointer to remaining bytes to print */
-		ch = ch + line_len;
-		/* add offset */
-		offset = offset + line_width;
-		/* check if we have line width chars or less */
-		if (len_rem <= line_width) {
-			/* print last line and get out */
-			print_hex_ascii_line(ch, len_rem, offset);
-			break;
-		}
-	}
-
-	return;
-}
-
-void print_payload2(uint8_t* payload, int len) {
-
-	int len_rem = len;
-	int line_width = 16;			/* number of bytes per line */
-	int line_len;
-	int offset = 0;					/* zero-based offset counter */
-	uint8_t* ch = payload;
-
-	if (len <= 0)
-		return;
-
-	/* data fits on one line */
-	if (len <= line_width) {
-		print_hex_ascii_line(ch, len, offset);
-		return;
-	}
-
-	/* data spans multiple lines */
-	for (;; ) {
-		/* compute current line length */
-		line_len = line_width % len_rem;
-		/* print line */
-		print_hex_ascii_line(ch, line_len, offset);
-		/* compute total remaining */
-		len_rem = len_rem - line_len;
-		/* shift pointer to remaining bytes to print */
-		ch = ch + line_len;
-		/* add offset */
-		offset = offset + line_width;
-		/* check if we have line width chars or less */
-		if (len_rem <= line_width) {
-			/* print last line and get out */
-			print_hex_ascii_line(ch, len_rem, offset);
-			break;
-		}
-	}
-
-	return;
-}
-
-void print_b(void* pointer, size_t size) {
-	unsigned long data = *((unsigned long*)pointer);
-	int length = size * 8;
-	int counter = 0;
-	int d_len = 0;
-	printf("十进制: %lu\n", data);
-	printf("二进制: ");
-	while (length-- > 0) {
-		sprintf(&dp[d_len++], "%lu", (data >> length) & 0x1);
-		counter++;
-		if (counter % 8 == 0) {
-			sprintf(&dp[d_len++], " ");
-		}
-	}
-}
-
-void packet_to_text(uint8_t* buf, int32_t len)
-{
-	int32_t c, c2, c3, c4;
-
+	size_t c, c2, c3, c4;
 	c = c2 = c3 = c4 = 0;
 
-	for (c = 0; c < len; c++)
-	{
-		if (c3 == 16)
-		{
-			for (; c4 < c; c4++)
+	for (c = 0; c < len; c++) {
+		if (c3 == 16) {
+			for (; c4 < c; c4++) {
 				if (buf[c4] >= 0x20)
 					dp[c2++] = buf[c4];
 				else
 					dp[c2++] = 0x2E;
+			}
 			c3 = 0;
-			sprintf(&dp[c2++], "\n");
+			dp[c2++] = '\n';
 		}
 
-		if ((c == 0) || !(c % 16))
-		{
+		if ((c == 0) || !(c % 16)) {
 			sprintf(&dp[c2], "( %08X )   ", c);
 			c2 += 15;
 		}
 
-		sprintf(&dp[c2], "%02X ", buf[c]);
-		c2 += 3;
+		dp[c2++] = hex_digits[buf[c] >> 4];
+		dp[c2++] = hex_digits[buf[c] & 0x0F];
+		dp[c2++] = ' ';
 
 		if (c3 == 7) {
-			sprintf(&dp[c2], " ");
-			c2 += 1;
+			dp[c2++] = ' ';
+		}
+
+		if ((c + 1) % 8 == 0) {  // 每8个字节空一格
+			dp[c2++] = ' ';
 		}
 
 		c3++;
 	}
 
-	if (len % 16)
-	{
+	if (len % 16) {
 		c3 = len;
-		while (c3 % 16)
-		{
-			sprintf(&dp[c2], "   ");
-			c2 += 3;
+		while (c3 % 16) {
+			dp[c2++] = ' ';
+			dp[c2++] = ' ';
+			dp[c2++] = ' ';
 			c3++;
 		}
 	}
 
-	for (; c4 < c; c4++)
+	for (; c4 < c; c4++) {
 		if (buf[c4] >= 0x20)
 			dp[c2++] = buf[c4];
 		else
 			dp[c2++] = 0x2E;
+	}
 
-	dp[c2] = 0;
+	dp[c2] = '\0';
+
+	if (show) {
+		// 打印结果
+		char* pch = dp;
+		while (*pch != '\0') {
+			putchar(*pch);
+			pch++;
+		}
+		printf("\n");
+	}
 }
 
 //显示数据用
-void display_packet(uint8_t* buf, int32_t len)
-{
-	packet_to_text(buf, len);
-	printf("%s\n\n", &dp[0]);
+void display_packet(uint8_t* buf, size_t len) {
+	packet_to_text(buf, len, true);
 }
 
 /* 日志设置 */
@@ -470,7 +338,7 @@ void color(uint32_t x)	//自定义函根据参数改变颜色
 	//	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 
-void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -535,7 +403,7 @@ void Logs(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 	}
 }
 
-void err_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -602,7 +470,7 @@ void err_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 }
 
-void dbg_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
+void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -669,7 +537,7 @@ void dbg_Logs(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 	}
 }
 
-void Logs_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -731,7 +599,7 @@ void Logs_undone(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	}
 }
 
-void Logs_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -856,53 +724,48 @@ void Logs_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 }
 
 /* 截取舰船未处理的数据包 */
-void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
-{
-	uint16_t size;
-	size = *(uint16_t*)&pkt[0];
-	Logs(codeline, error_log_console_show, ERR_LOG, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(&pkt[0], size);
-	Logs(codeline, error_log_console_show, ERR_LOG, "\n%s\n", &dp[0]);
+void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
+	uint16_t size = *(uint16_t*)&pkt[0];
+
+	flog(codeline, error_log_console_show, ERR_LOG, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	packet_to_text(&pkt[0], size, false);
+	flog(codeline, error_log_console_show, ERR_LOG, "\n%s\n", &dp[0]);
 }
 
 /* 截取舰船未完成的数据包 */
-void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
-{
-	uint16_t size;
-	size = *(uint16_t*)&pkt[0];
-	Logs_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(&pkt[0], size);
-	Logs_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
+	uint16_t size = *(uint16_t*)&pkt[0];
+
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	packet_to_text(&pkt[0], size, false);
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取舰船错误的数据包 */
-void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
-{
-	uint16_t size;
-	size = *(uint16_t*)&pkt[0];
+void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
+	uint16_t size = *(uint16_t*)&pkt[0];
+
 	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 数据错误. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(&pkt[0], size);
+	packet_to_text(&pkt[0], size, false);
 	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
-void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
-{
-	uint16_t size;
-	size = *(uint16_t*)&pkt[0];
-	Logs_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(&pkt[0], size);
-	Logs_unknow(codeline, unknow_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
+	uint16_t size = *(uint16_t*)&pkt[0];
+
+	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	packet_to_text(&pkt[0], size, false);
+	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
-void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename)
-{
-	uint16_t size;
-	size = *(uint16_t*)&pkt[0];
-	Logs_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
-	packet_to_text(&pkt[0], size);
-	Logs_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
+	uint16_t size = *(uint16_t*)&pkt[0];
+
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	packet_to_text(&pkt[0], size, false);
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 void cpd_log(int32_t codeline, int code, void* data, int flag) {

@@ -1850,7 +1850,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return send_block_list(c, ship);
 
     case GAME_COMMAND0_TYPE:
-        print_payload((unsigned char*)pkt, len);
+        display_packet((unsigned char*)pkt, len);
         /* Ignore these, since taking screenshots on PSOPC generates them
            for some reason. */
         return 0;
@@ -1859,7 +1859,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
             len)) {
             ERR_LOG("未知数据包!");
-            print_payload((unsigned char*)pkt, len);
+            display_packet((unsigned char*)pkt, len);
             return -3;
         }
         return 0;
@@ -1873,7 +1873,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
     //DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
 
-    //print_payload((unsigned char*)pkt, len);
+    //display_packet((unsigned char*)pkt, len);
 
     switch (type) {
         /* 0x0005 5*/
@@ -1917,7 +1917,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
             len)) {
             ERR_LOG("未知数据包!");
-            print_payload((unsigned char*)pkt, len);
+            display_packet((unsigned char*)pkt, len);
             return -3;
         }
         return 0;

@@ -431,7 +431,7 @@ int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
     if(data_len)
         memcpy(pkt->security_data, data, data_len);
 
-    //print_payload((uint8_t*)pkt, BB_SECURITY_LENGTH);
+    //display_packet((uint8_t*)pkt, BB_SECURITY_LENGTH);
 
     /* 将数据包发送出去 */
     return crypt_send(c, BB_SECURITY_LENGTH);

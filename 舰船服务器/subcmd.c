@@ -1666,7 +1666,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             c->guildcard);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1820,7 +1820,7 @@ static int handle_mhit(ship_client_t *c, subcmd_mhit_pkt_t *pkt) {
     if(pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
               c->guildcard);
-        print_payload((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        display_packet((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2037,7 +2037,7 @@ static int handle_objhit_phys(ship_client_t *c, subcmd_objhit_phys_t *pkt) {
     if(LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
               c->guildcard);
-        print_payload((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
+        display_packet((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2093,7 +2093,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
     if(LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
               c->guildcard);
-        print_payload((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
+        display_packet((unsigned char *)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2794,7 +2794,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
 #ifdef LOG_UNKNOWN_SUBS
             //DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
             UNK_CSPD(type, c->version, pkt);
-            //print_payload((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
+            //display_packet((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             /* Forward the packet unchanged to the destination. */
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
@@ -3000,7 +3000,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
 #ifdef LOG_UNKNOWN_SUBS
             //DBG_LOG("未知 0x60 指令: 0x%02X", type);
             UNK_CSPD(type, c->version, pkt);
-            //print_payload((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
+            //display_packet((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
             break;

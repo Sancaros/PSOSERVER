@@ -122,7 +122,7 @@ static int handle_bb_cmd_check_game_size(ship_client_t* c, subcmd_bb_pkt_t* pkt)
         return -1;
     }
 
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -522,7 +522,7 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
 
     DBG_LOG("GC %u -> %u", c->guildcard, d->guildcard);
 
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
@@ -1065,7 +1065,7 @@ static int handle_bb_bank_action(ship_client_t* c, subcmd_bb_bank_act_t* pkt) {
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             c->guildcard, pkt->action);
-        print_payload((uint8_t*)pkt, 0x18);
+        display_packet((uint8_t*)pkt, 0x18);
         return -1;
     }
 }
@@ -1090,7 +1090,7 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, c->guildcard, d->guildcard, target_guildcard);
-    print_payload((uint8_t*)pkt, len);
+    display_packet((uint8_t*)pkt, len);
 #endif // DEBUG
 
     switch (type)
@@ -1117,7 +1117,7 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
         case 0x01:
         default:
             ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, c->guildcard, d->guildcard, target_guildcard);
-            print_payload((uint8_t*)pkt, len);
+            display_packet((uint8_t*)pkt, len);
             break;
         }
 
@@ -1157,7 +1157,7 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
 
         default:
             ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, c->guildcard, d->guildcard, target_guildcard);
-            print_payload((uint8_t*)pkt, len);
+            display_packet((uint8_t*)pkt, len);
             break;
         }
 
@@ -1204,7 +1204,7 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, c->guildcard, d->guildcard);
-    print_payload((uint8_t*)pkt, len);
+    display_packet((uint8_t*)pkt, len);
 #endif // DEBUG
 
     switch (type) {
@@ -1562,7 +1562,7 @@ static int handle_bb_quest_reward_item(ship_client_t* c, subcmd_bb_quest_reward_
         return -1;
     }
 
-    print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     iitem_t ii;
     memset(&ii, 0, sizeof(iitem_t));
@@ -1738,7 +1738,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x62/0x6D 指令: 0x%02X", type);
-        print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 #endif /* BB_LOG_UNKNOWN_SUBS */
 
     case SUBCMD62_BATTLE_CHAR_LEVEL_FIX:
@@ -2087,7 +2087,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
         return -1;
     }
 
-    //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    //display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     //printf("ch_class %d techniques %d = %d max_lvl %d\n", c->pl->bb.character.dress_data.ch_class,
     //    c->pl->bb.character.techniques[pkt->technique_number],
@@ -3845,7 +3845,7 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
+        display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3866,7 +3866,7 @@ static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t
     if (pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             c->guildcard, pkt->shdr.type);
-        print_payload((uint8_t*)pkt, pkt->hdr.pkt_len);
+        display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4055,7 +4055,7 @@ static int handle_bb_cmode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     case CLIENT_VERSION_BB:
         memcpy(&bb, pkt, sizeof(subcmd_bb_grave_t));
-        print_payload((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
+        display_packet((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
         break;
 
     default:
@@ -5078,7 +5078,7 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     default:
 #ifdef BB_LOG_UNKNOWN_SUBS
         //DBG_LOG("暂未完成 0x60: 0x%02X\n", type);
-        //print_payload((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        //display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         UNK_CSPD(type, c->version, (uint8_t*)pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
         sent = 0;
