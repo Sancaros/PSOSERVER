@@ -12460,6 +12460,9 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     if (!l)
         return 0;
 
+    if (c->version != CLIENT_VERSION_BB)
+        return 0;
+
     /* Clear the packet */
     memset(pkt, 0, sizeof(bb_guild_pkt_pkt));
 
@@ -12959,7 +12962,9 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
     for (i = 0; i < l->max_clients; ++i) {
         if ((l->clients_slot[i]) && 
             (l->clients[i]) &&
-            (l->clients[i] != nosend)) {
+            (l->clients[i] != nosend) &&
+            (l->clients[i]->version == CLIENT_VERSION_BB)
+            ) {
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
             rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));

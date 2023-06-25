@@ -3955,20 +3955,21 @@ typedef struct bb_guild_rv_data {
     uint8_t data[0];
 } PACKED bb_guild_rv_data_pkt;
 
-// 01EA (C->S): Create team
+// 01EA (C->S): 创建公会
 typedef struct bb_guild_create {
     bb_pkt_hdr_t hdr;
     uint16_t guild_name[0x000E];
     uint32_t guildcard;
 } PACKED bb_guild_create_pkt;
 
-// 02EA (S->C): UNKNOW
+// 02EA (S->C): 应该是某种公会功能完成后的响应
+// This command behaves exactly like 1FEA.
 typedef struct bb_guild_unk_02EA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_02EA_pkt;
 
-// 03EA (C->S): Add team member
+// 03EA (C->S): 新增会员
 typedef struct bb_guild_member_add {
     bb_pkt_hdr_t hdr;
     uint32_t target_guildcard;
@@ -3981,7 +3982,7 @@ typedef struct bb_guild_unk_04EA {
     uint8_t data[];
 } PACKED bb_guild_unk_04EA_pkt;
 
-// 05EA (C->S): Remove team member
+// 05EA (C->S): 移除公会会员
 // Same format as 03EA.
 typedef struct bb_guild_member_remove {
     bb_pkt_hdr_t hdr;
@@ -3995,13 +3996,15 @@ typedef struct bb_guild_unk_06EA {
     uint8_t data[];
 } PACKED bb_guild_unk_06EA_pkt;
 
-// 07EA (C->S): Team chat
+// 07EA (C->S): 公会聊天
 typedef struct bb_guild_member_chat {
     bb_pkt_hdr_t hdr;                                            /* 0x0000 8 */
     //uint32_t guild_id;                                         /* 0x0008 4 */
     uint16_t name[BB_CHARACTER_NAME_LENGTH];                     /* 0x000C 24 */
     uint32_t guildcard;
     uint32_t guild_id;
+    // It seems there are no real limits on the message length, other than the
+    // overall command length limit of 0x7C00 bytes.
     uint8_t chat[];
 } PACKED bb_guild_member_chat_pkt;
 
@@ -4070,13 +4073,13 @@ typedef struct bb_guild_0EEA {
     uint8_t panding;
 } PACKED bb_guild_0EEA_pkt;
 
-// 0FEA (C->S): Set team flag
+// 0FEA (C->S): 设置公会旗帜
 typedef struct bb_guild_member_flag_setting {
     bb_pkt_hdr_t hdr;
     uint8_t guild_flag[0x0800];
 } PACKED bb_guild_member_flag_setting_pkt;
 
-// 10EA: Delete team
+// 10EA: 解散公会
 // No arguments
 typedef struct bb_guild_dissolve {
     bb_pkt_hdr_t hdr;
@@ -4084,7 +4087,7 @@ typedef struct bb_guild_dissolve {
     uint8_t data[];
 } PACKED bb_guild_dissolve_pkt;
 
-// 11EA (C->S): Promote team member
+// 11EA (C->S): 提升会员权限
 // TODO: header.flag is used for this command. Figure out what it's for.
 typedef struct bb_guild_member_promote {
     bb_pkt_hdr_t hdr;
@@ -4130,7 +4133,7 @@ typedef struct bb_guild_member_tittle {
     uint8_t data[];
 } PACKED bb_guild_member_tittle_pkt;
 
-// 15EA (S->C): Unknown
+// 15EA (S->C): BB 玩家整体公会数据 用于发送给其他玩家
 typedef struct bb_guild_full_data {
     bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
     uint32_t guild_owner_gc;                       /* 0x0008 - 0x000B*/
