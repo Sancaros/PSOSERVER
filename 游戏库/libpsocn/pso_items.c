@@ -3892,7 +3892,7 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
                 ((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"),
                 iitem->present,
                 iitem->tech,
-                ((iitem->flags == 0x00000008) ? "已装备" : "未装备"),
+                ((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
                 iitem->flags
             );
 

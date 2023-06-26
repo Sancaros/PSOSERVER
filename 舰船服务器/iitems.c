@@ -59,16 +59,16 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     }
 }
 
-/* 初始化物品数据 */
+/* 初始化玩家背包物品数据 */
 void clear_item(item_t* item) {
     item->data_l[0] = 0;
     item->data_l[1] = 0;
     item->data_l[2] = 0;
-    item->item_id = 0xFFFFFFFF;
+    item->item_id = EMPTY_STRING;
     item->data2_l = 0;
 }
 
-/* 初始化背包物品数据 */
+/* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
     iitem->present = LE16(0xFF);
     iitem->tech = 0;
@@ -76,7 +76,7 @@ void clear_iitem(iitem_t* iitem) {
     clear_item(&iitem->data);
 }
 
-/* 初始化背包物品数据 */
+/* 初始化银行背包数据 */
 void clear_bitem(bitem_t* bitem) {
     clear_item(&bitem->data);
     bitem->show_flags = 0;

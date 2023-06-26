@@ -317,9 +317,9 @@
 #define BB_OPTION_CONFIG_LENGTH         0x0AF8
 
 //数据包大小 14748
-#define BB_FULL_CHARACTER_LENGTH        0x399C
+#define BB_FULL_CHARACTER_LENGTH        0x399C //T端长度
 
-//数据包大小 14752
+//数据包大小 14748
 #define BB_FULL_CHARACTER_DATA_LENGTH   0x399C
 
 #define DC_PATCH_HEADER_LENGTH          0x0014

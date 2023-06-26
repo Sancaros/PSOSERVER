@@ -180,11 +180,18 @@ typedef struct v2_level_table {
 extern bb_level_table_t bb_char_stats;
 extern v2_level_table_t v2_char_stats;
 
+///* 10字节 字符串 GC 含空格 16 字节 */
+//typedef struct psocn_guildcard_string {
+//    uint8_t space_tag[2];
+//    char guildcard_str[14];
+//    //uint8_t unk[6]; /* 00 30 00 30 00 32 ????? TODO*/
+//} PACKED psocn_guildcard_string_t;
+
 typedef struct psocn_dress_data {
-    char guildcard_string[16];            /* GC号的文本形态 */
-    //uint32_t unk3[2];                   /* 命名与其他角色结构一致 */
+    char guildcard_string[16];            /* GC号的文本形态  psocn_guildcard_string_t */
     uint32_t dress_unk1;
     uint32_t dress_unk2;
+
     //玩家名称颜色
     uint8_t name_color_b; // ARGB8888
     uint8_t name_color_g;
@@ -234,6 +241,7 @@ typedef struct psocn_disp_char {
     uint32_t meseta;
 } PACKED psocn_disp_char_t;
 
+/* BB 客户端 玩家名称结构 24字节 */
 typedef struct psocn_bb_char_name {
     uint16_t name_tag;
     uint16_t name_tag2;
@@ -257,7 +265,6 @@ typedef struct psocn_bb_mini_char {
 typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
-    //uint16_t name[BB_CHARACTER_NAME_LENGTH]; //24
     psocn_bb_char_name_t name;
     uint32_t play_time; //4
     uint32_t unknown_a3; //4
@@ -427,7 +434,7 @@ static int v3_c_size = sizeof(psocn_v3_c_rank_data_t);
 typedef struct psocn_v3_guild_card {
     uint32_t player_tag;
     uint32_t guildcard;
-    char name[0x0018];
+    char name[24];
     char guildcard_desc[0x006C];
     uint8_t present; // 1 表示该GC存在
     uint8_t language;
@@ -435,16 +442,43 @@ typedef struct psocn_v3_guild_card {
     uint8_t ch_class;
 } PACKED psocn_v3_guild_card_t;
 
+//         psocn_bb_guildcard_t
+//         guildcard   psocn_bb_char_name_t 24字节
+//                     name_tag      char_name 20字节
+//( 1 )    DF 2A B7 00 09 00 42 00   31 00 31 00 31 00 31 00  ??..B.1.1.1.1.
+//                                               unknow_name 24字节
+//( 2 )    31 00 31 00 31 00 31 00   31 00 31 00 00 00 00 00  1.1.1.1.1.1.....
+//( 3 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//                     guild_name 24字节
+//( 4 )    00 00 00 00 09 00 42 00   4A 55 4A 55 4A 55 4A 55  ......B.JUJUJUJU
+//                                               guildcard_desc 176字节
+//( 5 )    4A 55 4A 55 4A 55 4A 55   4A 55 4A 55 00 00 00 00  JUJUJUJUJUJU....
+//( 6 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 7 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 8 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 9 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 10 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 11 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 12 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 13 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 14 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 15 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 16 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//                     present language section ch_class
+//( 17 )   00 00 00 00 01 00 05 00
+// 
 // BB GC 数据 TODO 264 + 120 = 384
+// 19C0 - 19C7
 typedef struct psocn_bb_guildcard {
-    uint32_t guildcard;
-    uint16_t name[0x0018]; //24 * 2 = 48
-    uint16_t guild_name[0x0010]; // 32
-    uint16_t guildcard_desc[0x0058];
-    uint8_t present; // 1 表示该GC存在
-    uint8_t language;
-    uint8_t section;
-    uint8_t ch_class;
+    uint32_t guildcard;                 /* 4   32位 GC  */
+    psocn_bb_char_name_t name;          /* 24  玩家名称 */
+    uint16_t unknow_name[12];           /* 24  未知名称 */
+    uint16_t guild_name[16];            /* 48  公会名称 */
+    uint16_t guildcard_desc[0x0058];    /* 176 玩家描述 */
+    uint8_t present;                    /* 1   占位符 0x01 表示存在 */
+    uint8_t language;                   /* 1   语言 0 -8 */
+    uint8_t section;                    /* 1   颜色ID */
+    uint8_t ch_class;                   /* 1   人物职业 */
 } PACKED psocn_bb_guildcard_t;
 
 static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
@@ -455,143 +489,28 @@ typedef struct psocn_quest_data1 {
     uint32_t quest_flags;
 } PACKED psocn_quest_data1_t;
 
-typedef struct st_chardata {
-    uint16_t pkt_len;
-    uint16_t pkt_type;
-    uint32_t flags;
-    //unsigned short packetSize; // 0x00-0x01  // Always set to 0x399C
-    //unsigned short command; // 0x02-0x03 // // Always set to 0x00E7
-    //unsigned char flags[4]; // 0x04-0x07
-
-    inventory_t inv;                              // 玩家数据表
-    //unsigned char inventoryUse; // 0x08
-    //unsigned char HPmat; // 0x09
-    //unsigned char TPmat; // 0x0A
-    //unsigned char lang; // 0x0B
-    //iitem_t inventory[30]; // 0x0C-0x353
-
-
-    psocn_bb_char_t character;                    // 玩家数据表
-    //unsigned short ATP; // 0x354-0x355
-    //unsigned short MST; // 0x356-0x357
-    //unsigned short EVP; // 0x358-0x359
-    //unsigned short HP; // 0x35A-0x35B
-    //unsigned short DFP; // 0x35C-0x35D
-    //unsigned short ATA; // 0x35E-0x35F
-    //unsigned short LCK; // 0x360-0x361
-    //unsigned char unknown[10]; // 0x362-0x36B
-    //unsigned short level; // 0x36C-0x36D;
-    //unsigned short unknown2; // 0x36E-0x36F;
-    //unsigned XP; // 0x370-0x373
-    //unsigned meseta; // 0x374-0x377;
-    //char gcString[10]; // 0x378-0x381;
-    //unsigned char unknown3[14]; // 0x382-0x38F;  // Same as E5 unknown2
-    //unsigned char nameColorBlue; // 0x390;
-    //unsigned char nameColorGreen; // 0x391;
-    //unsigned char nameColorRed; // 0x392;
-    //unsigned char nameColorTransparency; // 0x393;
-    //unsigned short skinID; // 0x394-0x395;
-    //unsigned char unknown4[18]; // 0x396-0x3A7
-    //unsigned char sectionID; // 0x3A8;
-    //unsigned char _class; // 0x3A9;
-    //unsigned char skinFlag; // 0x3AA;
-    //unsigned char unknown5[5]; // 0x3AB-0x3AF;  // Same as E5 unknown4.
-    //unsigned short costume; // 0x3B0 - 0x3B1;
-    //unsigned short skin; // 0x3B2 - 0x3B3;
-    //unsigned short face; // 0x3B4 - 0x3B5;
-    //unsigned short head; // 0x3B6 - 0x3B7;
-    //unsigned short hair; // 0x3B8 - 0x3B9;
-    //unsigned short hairColorRed; // 0x3BA-0x3BB;
-    //unsigned short hairColorBlue; // 0x3BC-0x3BD;
-    //unsigned short hairColorGreen; // 0x3BE-0x3BF;
-    //unsigned proportionX; // 0x3C0-0x3C3;
-    //unsigned proportionY; // 0x3C4-0x3C7;
-    //unsigned char name[24]; // 0x3C8-0x3DF;
-    //unsigned playTime; // 0x3E0 - 0x3E3;
-    //unsigned char unknown6[4];  // 0x3E4 - 0x3E7
-    //unsigned char keyConfig[232]; // 0x3E8 - 0x4CF;
-    //// Stored from ED 07 packet.
-    //unsigned char techniques[20]; // 0x4D0 - 0x4E3;
-
-    unsigned char unknown7[16]; // 0x4E4 - 0x4F3;
-    unsigned char options[4]; // 0x4F4-0x4F7;
-    // Stored from ED 01 packet.
-
-    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1
-    //unsigned reserved4; // not sure
-    //unsigned char quest_data1[512]; // 0x4FC - 0x6FB; (Quest data 1)
-    //unsigned reserved5;
-    unsigned bankUse; // 0x700 - 0x703
-    unsigned bankMeseta; // 0x704 - 0x707;
-    bitem_t bankInventory[200]; // 0x708 - 0x19C7
-    unsigned guildCard; // 0x19C8-0x19CB;
-    // Stored from E8 06 packet.
-    unsigned char name2[24]; // 0x19CC - 0x19E3;
-    unsigned char unknown9[56]; // 0x19E4-0x1A1B;
-    unsigned char guildcard_text[176]; // 0x1A1C - 0x1ACB
-    unsigned char reserved1;  // 0x1ACC; // Has value 0x01 on Schthack's
-    unsigned char reserved2; // 0x1ACD; // Has value 0x01 on Schthack's
-    unsigned char sectionID2; // 0x1ACE;
-    unsigned char _class2; // 0x1ACF;
-    unsigned char unknown10[4]; // 0x1AD0-0x1AD3;
-    unsigned char symbol_chats[1248];	// 0x1AD4 - 0x1FB3
-    // Stored from ED 02 packet.
-    unsigned char shortcuts[2624];	// 0x1FB4 - 0x29F3
-    // Stored from ED 03 packet.
-    unsigned char autoReply[344]; // 0x29F4 - 0x2B4B;
-    unsigned char GCBoard[172]; // 0x2B4C - 0x2BF7;
-    unsigned char unknown12[200]; // 0x2BF8 - 0x2CBF;
-    unsigned char challengeData[320]; // 0x2CC0 - 0X2DFF
-    unsigned char techConfig[40]; // 0x2E00 - 0x2E27
-    unsigned char unknown13[40]; // 0x2E28-0x2E4F
-    unsigned char quest_data2[92]; // 0x2E50 - 0x2EAB (Quest data 2)
-
-    unsigned char unknown14[276]; // 0x2EAC - 0x2FBF; // I don't know what this is, but split from unknown13 because this chunk is 
-    // actually copied into the 0xE2 packet during login @ 0x08
-
-    bb_key_config_t key_cfg;                      // 选项数据表
-    //unsigned char keyConfigGlobal[364]; // 0x2FC0 - 0x312B  // Copied into 0xE2 login packet @ 0x11C
-    //// Stored from ED 04 packet.
-    //unsigned char joyConfigGlobal[56]; // 0x312C - 0x3163 // Copied into 0xE2 login packet @ 0x288
-
-    // Stored from ED 05 packet.
-    bb_guild_t guild_data;                        // GUILD数据表
-    //unsigned guildCard2; // 0x3164 - 0x3167 (From here on copied into 0xE2 login packet @ 0x2C0...)
-    //unsigned teamID; // 0x3168 - 0x316B
-    //unsigned char teamInformation[8]; // 0x316C - 0x3173 (usually blank...)
-    //unsigned short privilegeLevel; // 0x3174 - 0x3175
-    //unsigned short reserved3; // 0x3176 - 0x3177
-    //unsigned char teamName[28]; // 0x3178 - 0x3193
-    //unsigned unknown15; // 0x3194 - 0x3197
-    //unsigned char teamFlag[2048]; // 0x3198 - 0x3997
-    //unsigned char teamRewards[8]; // 0x3998 - 0x39A0
-} PACKED CHARDATA;
-
-static int char_full = sizeof(CHARDATA);
-
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
     inventory_t inv;                              // 玩家数据表
-    psocn_bb_char_t character;                    // 玩家数据表
-    uint8_t name3[0x0010];                        // not saved
+    psocn_bb_char_t character;                    // 玩家数据表               OK
+    char guildcard_string[16];                    // not saved
     uint32_t option_flags;                        // account
-    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1
-    psocn_bank_t bank;                            // 玩家银行数据表
-    psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分
+    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1          TODO
+    psocn_bank_t bank;                            // 玩家银行数据表           OK
+    psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分         OK
     uint32_t unk2;                                // not saved
     uint8_t symbol_chats[0x04E0];                 // 选项数据表
     uint8_t shortcuts[0x0A40];                    // 选项数据表
     uint16_t autoreply[0x00AC];                   // 玩家数据表
     uint16_t infoboard[0x00AC];                   // 玩家数据表
     uint8_t unk3[0x001C];                         // not saved
-    uint8_t challenge_data[0x0140];               // 玩家挑战数据表
-    uint8_t tech_menu[0x0028];                    // 玩家法术栏数据表
+    uint8_t challenge_data[0x0140];               // 玩家挑战数据表           OK
+    uint8_t tech_menu[0x0028];                    // 玩家法术栏数据表         OK
     uint8_t unk4[0x002C];                         // not saved
     uint8_t quest_data2[0x0058];                  // 玩家任务数据表2
-    uint8_t unk1[0x000C];                         // 276 - 264 = 12
-    psocn_bb_guildcard_t gc_data2;                // 264大小
-    bb_key_config_t key_cfg;                      // 选项数据表
-    bb_guild_t guild_data;                        // GUILD数据表
+    uint8_t unk1[276];                            // 276 - 264 = 12
+    bb_key_config_t key_cfg;                      // 选项数据表               OK
+    bb_guild_t guild_data;                        // GUILD数据表              OK
 } PACKED psocn_bb_full_char_t;
 
 static int bb_c_fullsize = sizeof(psocn_bb_full_char_t);

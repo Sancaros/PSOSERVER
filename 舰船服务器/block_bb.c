@@ -1584,7 +1584,30 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         return -1;
     }
 
+    //printf("数据来源\n");
+    //display_packet(char_data, sizeof(psocn_bb_full_char_t));
+    //printf("原数据\n");
+    //display_packet(c->bb_pl, sizeof(psocn_bb_full_char_t));
+
+    /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
+    for (int i = 0; i < char_data.inv.item_count;i++) {
+        if (char_data.inv.iitems[i].present == LE16(0x0002)) {
+            char_data.inv.iitems[i].present = LE16(0x0001);
+            char_data.inv.iitems[i].flags = LE32(0x00000008);
+        }else {
+            char_data.inv.iitems[i].present = LE16(0x0001);
+            char_data.inv.iitems[i].flags = LE32(0x00000000);
+        }
+        char_data.inv.iitems[i].data.item_id = EMPTY_STRING;
+    }
+
     if (!c->game_data->db_save_done) {
+
+        //printf("C->S数据来源 %d 字节\n", len);
+        //display_packet(&pkt, len);
+        //printf("原数据\n");
+        //display_packet(c->bb_pl, sizeof(psocn_bb_full_char_t));
+
         /* BB has this in two places for now... */
         ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));
@@ -1606,7 +1629,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(&c->bb_pl->tech_menu, &char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
         memcpy(&c->bb_pl->quest_data2, &char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
         ///////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_opts->guild_name, &char_data.gc_data2.guild_name, sizeof(char_data.gc_data2.guild_name));
+        memcpy(&c->bb_opts->guild_name, &char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
         ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, sizeof(bb_key_config_t));
         ///////////////////////////////////////////////////////////////////////////////////////

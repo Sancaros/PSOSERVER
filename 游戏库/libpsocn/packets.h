@@ -3851,7 +3851,9 @@ typedef struct bb_checksum {
 // Blue Burst packet to acknowledge the client's checksum.
 typedef struct bb_checksum_ack {
     bb_pkt_hdr_t hdr;
-    uint32_t ack;
+    //uint32_t ack;
+    uint32_t needs_update;
+    uint32_t unused;
 } PACKED bb_checksum_ack_pkt;
 
 // 03E8 (C->S): Request guild card file
@@ -3889,7 +3891,7 @@ typedef bb_guildcard_del_pkt bb_blacklist_del_pkt;
 typedef struct bb_guildcard_comment {
     bb_pkt_hdr_t hdr;
     uint32_t guildcard;
-    uint16_t text[88];
+    uint16_t guildcard_desc[88];
 } PACKED bb_guildcard_comment_pkt;
 
 // 0AE8 (C->S): Set guild card position in list

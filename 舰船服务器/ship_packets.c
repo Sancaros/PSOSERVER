@@ -11516,7 +11516,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(&pkt->data.bank, &c->bb_pl->bank, sizeof(psocn_bank_t));
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.gc_data.guildcard = LE32(c->guildcard);
-    memcpy(pkt->data.gc_data.name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    memcpy(&pkt->data.gc_data.name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
     memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
     memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
     pkt->data.gc_data.present = 1;

@@ -1307,7 +1307,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Escape all the strings first */
-    psocn_db_escape_str(&conn, name, (char*)gc->gc_data.name, 48);
+    psocn_db_escape_str(&conn, name, (char*)&gc->gc_data.name, 48);
     psocn_db_escape_str(&conn, guild_name, (char*)gc->gc_data.guild_name, 32);
     psocn_db_escape_str(&conn, text, (char*)gc->gc_data.guildcard_desc, 176);
 
@@ -1413,7 +1413,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Escape all the strings first */
-    psocn_db_escape_str(&conn, name, (char*)gc->gc_data.name, 48);
+    psocn_db_escape_str(&conn, name, (char*)&gc->gc_data.name, 48);
     psocn_db_escape_str(&conn, guild_name, (char*)gc->gc_data.guild_name, 32);
     psocn_db_escape_str(&conn, text, (char*)gc->gc_data.guildcard_desc, 176);
 
@@ -1486,11 +1486,11 @@ static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     /* Scan the string for its length */
-    while (len < 0x88 && gc->text[len]) ++len;
-    memset(&gc->text[len], 0, (0x88 - len) * 2);
+    while (len < 0x88 && gc->guildcard_desc[len]) ++len;
+    memset(&gc->guildcard_desc[len], 0, (0x88 - len) * 2);
     len = (len + 1) * 2;
 
-    psocn_db_escape_str(&conn, comment, (char*)gc->text, len);
+    psocn_db_escape_str(&conn, comment, (char*)gc->guildcard_desc, len);
 
     /* Build the query and run it */
     sprintf(query, "UPDATE %s SET comment='%s' WHERE "

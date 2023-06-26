@@ -1379,16 +1379,11 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                     else if(c->bb_pl) {
                         memcpy(c->bb_pl, pkt->data, clen);
 
-                        /* 清理背包的物品ID以备重写, 大厅状态无法使用物品. */
-                        for(i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
-                            c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
-                        }
-
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
                             if (c->bb_pl->inv.iitems[i].present) {
-                                //print_biitem_data(&c->bb_pl->inv.iitems[i], i, c->version, 1, 0);
                                 fix_inv_bank_item(&c->bb_pl->inv.iitems[i].data);
+                                c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
                             }
                             else
                                 clear_iitem(&c->bb_pl->inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
@@ -1397,9 +1392,8 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         fix_equip_item(&c->bb_pl->inv);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+                        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {
                             if (c->bb_pl->bank.bitems[i].show_flags) {
-                                //print_biitem_data(&c->bb_pl->bank.bitems[i], i, c->version, 0, 0);
                                 fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
                             }
                             else

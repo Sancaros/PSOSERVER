@@ -2122,7 +2122,8 @@ int send_bb_checksum_ack(login_client_t *c, uint32_t ack) {
     /* Fill it in */
     pkt->hdr.pkt_len = LE16(sizeof(bb_checksum_ack_pkt));
     pkt->hdr.pkt_type = LE16(BB_CHECKSUM_ACK_TYPE);
-    pkt->ack = LE32(ack);
+
+    pkt->needs_update = LE32(ack);
 
     /* º”√‹≤¢∑¢ÀÕ */
     return crypt_send(c, sizeof(bb_checksum_ack_pkt));
