@@ -858,7 +858,10 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.level = sp->character.disp.level;
     c->disp.exp = sp->character.disp.exp;
     c->disp.meseta = sp->character.disp.meseta;
-    strcpy(c->dress_data.guildcard_string, "         0");
+
+    memcpy(c->dress_data.guildcard_string, sp->character.dress_data.guildcard_string, sizeof(sp->character.dress_data.guildcard_string));
+    //strcpy(c->dress_data.guildcard_string, "         0");
+
     c->dress_data.dress_unk1 = sp->character.dress_data.dress_unk1;
     c->dress_data.dress_unk2 = sp->character.dress_data.dress_unk2;
     c->dress_data.name_color_b = sp->character.dress_data.name_color_b;
@@ -935,7 +938,10 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.level = sp->disp.level;
     c->character.disp.exp = sp->disp.exp;
     c->character.disp.meseta = sp->disp.meseta;
-    strcpy(c->character.dress_data.guildcard_string, "---");
+
+    //strcpy(c->character.dress_data.guildcard_string, "---");
+    memcpy(c->character.dress_data.guildcard_string, sp->dress_data.guildcard_string, sizeof(sp->dress_data.guildcard_string));
+
     c->character.dress_data.dress_unk1 = sp->dress_data.dress_unk1;
     c->character.dress_data.dress_unk2 = sp->dress_data.dress_unk2;
     c->character.dress_data.name_color_b = sp->dress_data.name_color_b;

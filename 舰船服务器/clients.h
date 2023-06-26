@@ -457,6 +457,8 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver);
 /* Run a legit check on a given client. */
 int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
 
+int client_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
+
 #ifdef ENABLE_LUA
 #include <lua.h>
 

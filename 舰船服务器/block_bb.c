@@ -1859,8 +1859,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     c2->bb_guild->guild_data.guild_rank = c->bb_guild->guild_data.guild_rank;
 
                     memcpy(&c2->bb_guild->guild_data.guild_flag, &c->bb_guild->guild_data.guild_flag, sizeof(c->bb_guild->guild_data.guild_flag));
-                    c2->bb_guild->guild_data.guild_dress_rewards = c->bb_guild->guild_data.guild_dress_rewards;
-                    c2->bb_guild->guild_data.guild_flag_rewards = c->bb_guild->guild_data.guild_flag_rewards;
+                    c2->bb_guild->guild_data.guild_rewards = c->bb_guild->guild_data.guild_rewards;
 
                     rv = send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
                     rv = send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);

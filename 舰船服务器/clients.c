@@ -1242,6 +1242,23 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
     return 0;
 }
 
+int client_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {
+    size_t dst_name_len = sizeof(dst->char_name);
+    size_t src_name_len = sizeof(src->char_name);
+
+    dst->name_tag = src->name_tag;
+    dst->name_tag2 = src->name_tag2;
+
+    memcpy_s(&dst->char_name, dst_name_len, &src->char_name, src_name_len);
+
+    if (!dst->char_name[0]) {
+        ERR_LOG("Íæ¼ÒÃû³Æ %s ¿½±´Ê§°Ü", src->char_name);
+        return -1;
+    }
+
+    return 0;
+}
+
 #ifdef ENABLE_LUA
 
 static int client_guildcard_lua(lua_State *l) {

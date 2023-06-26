@@ -295,8 +295,8 @@ typedef struct psocn_bb_guild {
     uint16_t guild_name[0x000E];           // 公会名称
     uint32_t guild_rank;                   // 公会排行     4
     uint8_t guild_flag[0x0800];            // 公会图标     2048
-    uint32_t guild_dress_rewards;          // 公会奖励    更衣室奖励
-    uint32_t guild_flag_rewards;           // 公会奖励    标志上传
+    uint32_t guild_rewards;                // 公会奖励
+    //uint32_t guild_flag_rewards;           // 公会奖励
 } PACKED bb_guild_t;
 
 //   client_id  32       /        unk1  32       /          times[0]     /      times[1]

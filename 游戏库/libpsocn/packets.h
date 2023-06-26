@@ -3597,8 +3597,7 @@ typedef struct bb_option_req {
 /* Blue Burst option configuration packet */
 typedef struct bb_opt_config {
     bb_pkt_hdr_t hdr;
-    uint8_t unk1[0x000C];                         //276 - 264 = 12
-    psocn_bb_guildcard_t gc_data2;               //264ด๓ะก
+    uint8_t unk1[276];                            // 276 - 264 = 12
     bb_key_config_t key_cfg;
     bb_guild_t guild_data;
 } PACKED bb_opt_config_pkt;
@@ -3941,8 +3940,7 @@ typedef struct bb_guild_member_list {
     uint32_t guild_priv_level;
     uint32_t guildcard_client;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-    uint32_t guild_dress_rewards;
-    uint32_t guild_flag_rewards;
+    uint32_t guild_rewards;
 } PACKED bb_guild_member_list_t;
 
 //////////////////////////////////////////////////////////////////////////

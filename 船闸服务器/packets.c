@@ -569,15 +569,14 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     pkt->block = htonl(block);
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
 
-    //pkt->guild_owner_gc = guild->guild_data.guild_owner_gc;
+    pkt->guild_owner_gc = guild->guild_data.guild_owner_gc;
     pkt->guild_id = guild->guild_data.guild_id;
     memcpy(&pkt->guild_info, guild->guild_data.guild_info, sizeof(guild->guild_data.guild_info));
     pkt->guild_priv_level = guild->guild_data.guild_priv_level;
     memcpy(&pkt->guild_name, guild->guild_data.guild_name, sizeof(guild->guild_data.guild_name));
     pkt->guild_rank = guild->guild_data.guild_rank;
     memcpy(&pkt->guild_flag, guild->guild_data.guild_flag, sizeof(guild->guild_data.guild_flag));
-    pkt->guild_dress_rewards = guild->guild_data.guild_dress_rewards;
-    pkt->guild_flag_rewards = guild->guild_data.guild_flag_rewards;
+    pkt->guild_rewards = guild->guild_data.guild_rewards;
 
     //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 

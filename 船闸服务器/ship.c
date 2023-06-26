@@ -1763,7 +1763,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     char** row;
 
     sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
-        "lastchar_blob, %s.guild_dress_rewards, guild_flag_rewards FROM "
+        "lastchar_blob, %s.guild_rewards FROM "
         "%s INNER JOIN %s ON "
         "%s.guild_id = %s.guild_id WHERE "
         "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
@@ -1794,8 +1794,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         g_data->entries[i].guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].char_name[0], row[2], len3);
         g_data->entries[i].char_name[1] = 0x0045;
-        g_data->entries[i].guild_dress_rewards = (uint32_t)strtoul(row[3], NULL, 0);
-        g_data->entries[i].guild_flag_rewards = (uint32_t)strtoul(row[4], NULL, 0);
+        g_data->entries[i].guild_rewards = (uint32_t)strtoul(row[3], NULL, 0);
 
         size += entries_size;
     }
@@ -2222,7 +2221,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
 
     sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
         "lastchar_blob, guild_points_personal_donation, "
-        "%s.guild_dress_rewards, guild_flag_rewards, guild_points_rank, guild_points_rest"
+        "%s.guild_rewards, guild_points_rank, guild_points_rest"
         " FROM "
         "%s INNER JOIN %s ON "
         "%s.guild_id = %s.guild_id WHERE "
@@ -2251,16 +2250,15 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     for (i = 0; i < num_mates; i++) {
         row = psocn_db_result_fetch(result);
 
-        g_data->guild_points_rank = (uint32_t)strtoul(row[6], NULL, 0);
-        g_data->guild_points_rest = (uint32_t)strtoul(row[7], NULL, 0);
+        g_data->guild_points_rank = (uint32_t)strtoul(row[5], NULL, 0);
+        g_data->guild_points_rest = (uint32_t)strtoul(row[6], NULL, 0);
 
         g_data->entries[i].member_list.member_index = i + 1;
         g_data->entries[i].member_list.guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
         g_data->entries[i].member_list.guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].member_list.char_name[0], row[2], BB_CHARACTER_NAME_LENGTH * 2);
         g_data->entries[i].member_list.char_name[1] = 0x0045; //ÑÕÉ«´úÂë
-        g_data->entries[i].member_list.guild_dress_rewards = (uint32_t)strtoul(row[4], NULL, 0);
-        g_data->entries[i].member_list.guild_flag_rewards = (uint32_t)strtoul(row[5], NULL, 0);
+        g_data->entries[i].member_list.guild_rewards = (uint32_t)strtoul(row[4], NULL, 0);
 
         g_data->entries[i].guild_points_personal_donation = (uint32_t)strtoul(row[3], NULL, 0);
 

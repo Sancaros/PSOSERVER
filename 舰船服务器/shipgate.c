@@ -2239,15 +2239,14 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             TEST_LOG("端口 %d GUILD ID %u", c->sock, pkt->guild_id);
 #endif // DEBUG
             if (pkt->guild_id != 0) {
-                i->bb_guild->guild_data.guild_owner_gc = i->guildcard;
+                i->bb_guild->guild_data.guild_owner_gc = pkt->guild_owner_gc;
                 i->bb_guild->guild_data.guild_id = pkt->guild_id;
                 memcpy(&i->bb_guild->guild_data.guild_info[0], &pkt->guild_info[0], sizeof(pkt->guild_info));
                 i->bb_guild->guild_data.guild_priv_level = pkt->guild_priv_level;
                 memcpy(&i->bb_guild->guild_data.guild_name, &pkt->guild_name[0], sizeof(pkt->guild_name));
                 i->bb_guild->guild_data.guild_rank = pkt->guild_rank;
                 memcpy(&i->bb_guild->guild_data.guild_flag, &pkt->guild_flag[0], sizeof(pkt->guild_flag));
-                i->bb_guild->guild_data.guild_dress_rewards = pkt->guild_dress_rewards;
-                i->bb_guild->guild_data.guild_flag_rewards = pkt->guild_flag_rewards;
+                i->bb_guild->guild_data.guild_rewards = pkt->guild_rewards;
             }
 
             //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
@@ -4003,15 +4002,14 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
 
     /* 填充公会数据 */
-    //pkt->guild_owner_gc = cl->bb_guild->guild_data.guild_owner_gc;
+    pkt->guild_owner_gc = cl->bb_guild->guild_data.guild_owner_gc;
     pkt->guild_id = cl->bb_guild->guild_data.guild_id;
     memcpy(&pkt->guild_info[0], &cl->bb_guild->guild_data.guild_info[0], sizeof(cl->bb_guild->guild_data.guild_info));
     pkt->guild_priv_level = cl->bb_guild->guild_data.guild_priv_level;
     memcpy(&pkt->guild_name[0], &cl->bb_guild->guild_data.guild_name[0], sizeof(cl->bb_guild->guild_data.guild_name));
     pkt->guild_rank = cl->bb_guild->guild_data.guild_rank;
     memcpy(&pkt->guild_flag[0], &cl->bb_guild->guild_data.guild_flag[0], sizeof(cl->bb_guild->guild_data.guild_flag));
-    pkt->guild_dress_rewards = cl->bb_guild->guild_data.guild_dress_rewards;
-    pkt->guild_flag_rewards = cl->bb_guild->guild_data.guild_flag_rewards;
+    pkt->guild_rewards = cl->bb_guild->guild_data.guild_rewards;
 
     //memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 
