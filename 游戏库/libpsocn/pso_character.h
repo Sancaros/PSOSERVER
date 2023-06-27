@@ -23,7 +23,7 @@
 #include <stdint.h>
 
 #define BB_CHARACTER_NAME_LENGTH            0x000C //完整的玩家名称结构长度 含tag        12双字节
-#define BB_CHARACTER_CHAR_NAME_LENGTH_      0x000A //定义双字节的玩家名称长度            10双字节
+#define BB_CHARACTER_CHAR_NAME_LENGTH       0x000A //定义双字节的玩家名称长度            10双字节
 #define BB_CHARACTER_CHAR_NAME_WLENGTH      0x0014 //用于单字节拷贝玩家名称不带tag的长度 20字节
 #define BB_CHARACTER_CHAR_TAG_NAME_WLENGTH  0x0018 //用于单字节拷贝玩家名称带tag的长度   24字节
 
@@ -286,18 +286,52 @@ typedef struct psocn_bb_key_config {
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
 
+typedef struct psocn_bb_guild_rewards {
+    uint8_t guild_reward0;
+    uint8_t guild_reward1;
+    uint8_t guild_reward2;
+    uint8_t guild_reward3;
+    uint8_t guild_reward4;
+    uint8_t guild_reward5;
+    uint8_t guild_reward6;
+    uint8_t guild_reward7;
+} PACKED psocn_bb_guild_rewards_t;
+
 /* BB公会数据结构 TODO 2108字节*/
 typedef struct psocn_bb_guild {
     uint32_t guild_owner_gc;               // 公会创始人
     uint32_t guild_id;                     // 公会索引 
-    uint8_t guild_info[8];                 // 公会信息     8
+    // 公会信息     8
+    uint32_t guild_points_rank;
+    uint32_t guild_points_rest;
     uint32_t guild_priv_level;             // 会员等级     4
-    uint16_t guild_name[0x000E];           // 公会名称
+    uint16_t guild_name[0x000E];           // 公会名称     28
     uint32_t guild_rank;                   // 公会排行     4
     uint8_t guild_flag[0x0800];            // 公会图标     2048
-    uint32_t guild_rewards;                // 公会奖励
-    //uint32_t guild_flag_rewards;           // 公会奖励
+    // 公会奖励     8种奖励
+    union {
+        struct guild_rewards {
+            uint8_t guild_reward0;
+            uint8_t guild_reward1;
+            uint8_t guild_reward2;
+            uint8_t guild_reward3;
+            uint8_t guild_reward4;
+            uint8_t guild_reward5;
+            uint8_t guild_reward6;
+            uint8_t guild_reward7;
+        };
+        uint8_t guild_reward[8];
+    };
 } PACKED bb_guild_t;
+
+#define BB_GUILD_PRIV_LEVEL_MASTER 0x00000040
+#define BB_GUILD_PRIV_LEVEL_ADMIN  0x00000030
+#define BB_GUILD_PRIV_LEVEL_MEMBER 0x00000000
+
+typedef bb_guild_t psocn_bb_db_guild_t;
+
+static int guild_size = sizeof(psocn_bb_db_guild_t);
+
 
 //   client_id  32       /        unk1  32       /          times[0]     /      times[1]
 //0x00, 0x00, 0x06, 0x00, 0x03, 0x00, 0x01, 0x00, 0x07, 0x00, 0x04, 0x00, 0x02, 0x00, 0x08, 0x00,
@@ -471,9 +505,8 @@ typedef struct psocn_v3_guild_card {
 // 19C0 - 19C7
 typedef struct psocn_bb_guildcard {
     uint32_t guildcard;                 /* 4   32位 GC  */
-    psocn_bb_char_name_t name;          /* 24  玩家名称 */
-    uint16_t unknow_name[12];           /* 24  未知名称 */
-    uint16_t guild_name[16];            /* 48  公会名称 */
+    uint16_t name[24];                  /* 48  玩家名称 */
+    uint16_t guild_name[16];            /* 32  公会名称 */
     uint16_t guildcard_desc[0x0058];    /* 176 玩家描述 */
     uint8_t present;                    /* 1   占位符 0x01 表示存在 */
     uint8_t language;                   /* 1   语言 0 -8 */
@@ -562,13 +595,6 @@ typedef struct psocn_bb_db_opts {
 } PACKED psocn_bb_db_opts_t;
 
 static int opt_size = sizeof(psocn_bb_db_opts_t);
-
-/* BB 公会数据文件 TODO */
-typedef struct psocn_bb_db_guild {
-    bb_guild_t guild_data;                  // account
-} PACKED psocn_bb_db_guild_t;
-
-static int guild_size = sizeof(psocn_bb_db_guild_t);
 
 #ifndef _WIN32
 #else

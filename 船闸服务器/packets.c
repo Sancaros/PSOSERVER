@@ -34,7 +34,7 @@
 static uint8_t sendbuf[65536];
 
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
-    int ret = 0;
+    int ret;
     LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
     return ret;
     //return gnutls_record_send(c->session, buffer, len);
@@ -50,7 +50,7 @@ static int send_raw(ship_t* c, int len) {
         while (total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("船闸发送端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if (rv < 0) {
@@ -98,8 +98,11 @@ static int send_raw(ship_t* c, int len) {
 /* Encrypt a packet, and send it away. */
 static int send_crypt(ship_t* c, int len) {
     /* Make sure its at least a header in length. */
-    if (len < 8)
+    if (len < 8) {
+        ERR_LOG(
+            "send_crypt端口 %d 长度 = %d字节", c->sock, len);
         return -1;
+    }
 
     return send_raw(c, len);
 }
@@ -558,6 +561,8 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild) {
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
+    memset(pkt, 0, sizeof(shipgate_bb_opts_pkt));
+
     /* 填充数据头 */
     pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_opts_pkt));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BBOPTS);
@@ -567,44 +572,15 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
 
     pkt->guildcard = htonl(gc);
     pkt->block = htonl(block);
+
     memcpy(&pkt->opts, opts, sizeof(psocn_bb_db_opts_t));
 
-    pkt->guild_owner_gc = guild->guild_data.guild_owner_gc;
-    pkt->guild_id = guild->guild_data.guild_id;
-    memcpy(&pkt->guild_info, guild->guild_data.guild_info, sizeof(guild->guild_data.guild_info));
-    pkt->guild_priv_level = guild->guild_data.guild_priv_level;
-    memcpy(&pkt->guild_name, guild->guild_data.guild_name, sizeof(guild->guild_data.guild_name));
-    pkt->guild_rank = guild->guild_data.guild_rank;
-    memcpy(&pkt->guild_flag, guild->guild_data.guild_flag, sizeof(guild->guild_data.guild_flag));
-    pkt->guild_rewards = guild->guild_data.guild_rewards;
-
-    //memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
-
-    //TEST_LOG("send_bb_opts发送数据 %d / %d %d 字节", c->sock, guild->guild_data.guild_id, pkt->guild_id);
+    /* 填充公会数据 */
+    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt));
 }
-//
-///* 发送客户端 Blue Burst 公会数据 */
-//int send_bb_guild(ship_t* c, uint32_t gc, uint32_t block,
-//    psocn_bb_db_guild_t* guild) {
-//    shipgate_bb_guild_pkt* pkt = (shipgate_bb_guild_pkt*)sendbuf;
-//
-//    /* 填充数据头 */
-//    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_pkt));
-//    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBGUILD);
-//    pkt->hdr.reserved = 0;
-//    pkt->hdr.version = 0;
-//    pkt->hdr.flags = htons(SHDR_RESPONSE);
-//
-//    pkt->guildcard = htonl(gc);
-//    pkt->block = htonl(block);
-//    memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
-//
-//    /* 将数据包发送出去 */
-//    return send_crypt(c, sizeof(shipgate_bb_guild_pkt));
-//}
 
 /* Send a system-generated simple mail message. */
 int send_simple_mail(ship_t* c, uint32_t gc, uint32_t block, uint32_t sender,

@@ -27,7 +27,7 @@ typedef struct {
     uint32_t gc_seed; // PSOGC seed used 
     uint32_t bb_posn; // BB position (not used) 
     uint32_t bb_seed[12]; // BB seed used 
-    void (*mangle)(struct crypt_setup*);
+    void (*mangle)(struct CRYPT_SETUP*);
 } CRYPT_SETUP;
 
 /* int CRYPT_CreateKeys(CRYPT_SETUP* cs,void* key,unsigned char type)

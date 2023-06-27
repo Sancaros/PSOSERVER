@@ -1,0 +1,3868 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE quests PUBLIC "-//Psocn//DTD quests Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/quests.dtd">
+
+<!-- Quest type:Normal Battle Challenge Oneperson Government Unused1 Unused2 Debug-->
+
+<quests>
+	<category name="Empty Mode" type="Debug" episodes="1" privileges="0">
+		<description>Battle Mode</description>
+		<quest name="Battle1" prefix="quest501" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="501" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				1
+			</short>
+			<long>
+				2
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Battle Mode" type="Battle" episodes="1" privileges="0">
+		<description>Battle Mode</description>
+		<quest name="Battle1" prefix="quest501" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="501" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				SPACESHIP:10 minutes
+				Fight a duel without
+				changing player
+				levels and
+				parameters.
+			</short>
+			<long>
+				[Most kills wins]
+				Use the walls to ambush
+				your opponents.
+
+				Teams will be assigned
+				automatically when 4 players
+				join.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle2" prefix="quest502" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="502" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PALACE:10 minutes
+				All players' levels
+				will revert to
+				Level 1.
+			</short>
+			<long>
+				[Most kills wins]
+				Item boxes appear
+				on the field.
+				Be careful, if you are killed,
+				you lose points.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle3" prefix="quest503" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="503" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				SPACESHIP:10 minutes
+				Warp Battle
+				All players' levels
+				are equal, so use
+				warps to win this
+				battle.
+			</short>
+			<long>
+				[WARP battle]
+				Use the warps to get behind
+				your rivals.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle4" prefix="quest504" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="504" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PALACE:10 minutes
+				Meseta Battle
+				All levels are equal,
+				so use the map to
+				find Meseta.
+			</short>
+			<long>
+				[Meseta Battle]
+				Get the highest amount of
+				Meseta to win.
+				Kill other players before
+				they get Meseta.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle5" prefix="quest505" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="505" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PALACE:10 minutes
+				Meseta battle
+				There are no revivals
+				and no level limits.
+			</short>
+			<long>
+				[Meseta Battle]
+				Bring plenty of health items
+				and equip healing spells.
+				Get the highest amount of
+				Meseta to win.
+				Notice : Mag is unusable.
+				Teams will be assigned
+				automatically when 4 players
+				join.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle6" prefix="quest506" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="506" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				SPACESHIP:10 minutes
+				Battle it out and
+				shoot at each other
+				from behind walls.
+			</short>
+			<long>
+				[Most kills wins]
+				Use the walls to ambush
+				your opponents.
+
+				Teams will be assigned
+				automatically when 4 players
+				join.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle7" prefix="quest507" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="507" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				SPACESHIP:10 minutes
+				Obstacle Race
+			</short>
+			<long>
+				[Obstacle Race]
+
+				Avoid obstacles
+				Get Meseta
+				Avoid enemies
+				15 lives
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Battle8" prefix="quest508" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="508" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				SPACESHIP:10 minutes
+				Battle it out through
+				trap hell.
+			</short>
+			<long>
+				[Trap Hell]
+
+				Watch out for
+				random traps!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Challenge Mode" type="Challenge" episodes="1" privileges="0">
+		<description>EP1 Challenge Mode</description>
+		<quest name="Stage1 (1c1) test" prefix="chl01test" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65522" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 1--
+
+				Composition
+				Area 01 - 03
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 1--
+				Composition : Area 01 - 03
+				Target Time : 00'40''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c2) test" prefix="chl02test" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65523" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 2--
+
+				Composition
+				Area 04 - 08
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 2--
+				Composition : Area 04 - 08
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c3) test" prefix="chl03test" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65524" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 3--
+
+				Composition
+				Area 09 - 13
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 3--
+				Composition : Area 09 - 13
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c4)" prefix="chl04" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65525" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 4--
+
+				Composition
+				Area 14 - 19
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 4--
+				Composition : Area 14 - 19
+				Target Time : 01'40''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c5)" prefix="chl05" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65526" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 5--
+
+				Composition
+				Area 20 - 24
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 5--
+				Composition : Area 20 - 24
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c6)" prefix="chl06" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65527" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 6--
+
+				Composition
+				Area 25 - 30
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 6--
+				Composition : Area 25 - 30
+				Target Time : 01'40''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c7)" prefix="chl07" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65528" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 7--
+
+				Composition
+				Area 31 - 35
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 7--
+				Composition : Area 31 - 35
+				Target Time : 01'30''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c8)" prefix="chl08" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65529" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 8--
+
+				Composition
+				Area 36 - 40
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 8--
+				Composition : Area 36 - 40
+				Target Time : 01'30''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (1c9)" prefix="chl09" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="65530" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 9--
+
+				Composition
+				Area 41 - 46
+			</short>
+			<long>
+				Challenge Mode
+
+				--Stage 9--
+				Composition : Area 41 - 46
+				Target Time : 02'00''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Challenge Mode" type="Challenge" episodes="2" privileges="0">
+		<description>EP2 Challenge Mode</description>
+		<quest name="Stage1 (2c1) test" prefix="chlep201test" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="65531" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 1--
+
+				Composition
+				Area 01 - 07
+			</short>
+			<long>
+				EP2 Challenge Mode
+
+				--Stage 1--
+				Composition : Area 01 - 07
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (2c2)" prefix="chlep202" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="65532" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 2--
+
+				Composition
+				Area 08 - 14
+			</short>
+			<long>
+				EP2 Challenge Mode
+
+				--Stage 2--
+				Composition : Area 08 - 14
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (2c3)" prefix="chlep203" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="65533" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 3--
+
+				Composition
+				Area 15 - 20
+			</short>
+			<long>
+				EP2 Challenge Mode
+
+				--Stage 3--
+				Composition : Area 15 - 20
+				Target Time : 01'20''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (2c4)" prefix="chlep204" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="65534" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 4--
+
+				Composition
+				Area 21 - 27
+			</short>
+			<long>
+				EP2 Challenge Mode
+
+				--Stage 4--
+				Composition : Area 21 - 27
+				Target Time : 02'00''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Stage1 (2c5)" prefix="chlep205" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="65535" minpl="2" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				--Stage 5--
+
+				Composition
+				Area 28 - 29
+			</short>
+			<long>
+				EP2 Challenge Mode
+
+				--Stage 5--
+				Composition : Area 28 - 29
+				Target Time : 01'00''00
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Event" type="Normal" episodes="1" privileges="0">
+		<description>EP1 Normal Event</description>
+		<quest name="White Day" prefix="quest125" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="125" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Let's make a
+				bouquet as a
+				present for
+				White Day!
+			</short>
+			<long>
+				Ask Naula sisters where
+				the flowers are blooming
+				and make a bouquet for
+				White Day!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Sugoroku" prefix="quest127" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="127" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Hunters:
+				Defeat all
+				enemies!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Defeat as many enemies
+				as you can in the
+				simulator within
+				the time limit.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="AOL CUP -Maximum Attack-" prefix="quest142" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="142" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Hunters:
+				Defeat all
+				enemies!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Defeat as many enemies
+				as you can in the
+				simulator within
+				the time limit.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="AOL CUP -Sunset Base-" prefix="quest143" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="143" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Get to the
+				bottom of
+				this strange
+				request!
+			</short>
+			<long>
+				Client: Rapeel
+				Quest:
+				A strange request has
+				arrived via mail.
+				It seems that somebody
+				desperately needs help.
+
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -A-" prefix="quest144" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="144" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -B-" prefix="quest145" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="145" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -C-" prefix="quest146" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="146" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Gift of Governor" prefix="quest220" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="220" minpl="1" maxpl="2" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				On the other hand
+				The governor made up
+				A new VR program.
+				What's that?
+			</short>
+			<long>
+				Chief: Governor General
+				Request:
+				It is called 'howaya.'
+				A new VR program was produced.
+				Enhance hunters' bonds
+				I want you to experience it by all means.
+				Reward: 300 minutes
+				※ this quest is for two players only.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Event" type="Normal" episodes="2" privileges="0">
+		<description>EP2 Normal Event</description>
+		<quest name="Dream Messenger" prefix="quest201" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="201" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Help a boy's
+				mysterious
+				dream come
+				true.
+			</short>
+			<long>
+				Client: A father
+				Job description: My son
+				insists on going down to
+				Ragol, and won't take no
+				for an answer. Go to
+				Ragol and find out what
+				my son is looking for.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Pioneer Halloween" prefix="quest207" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="207" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Find some
+				legendary cake
+				to hand out to
+				the children!
+			</short>
+			<long>
+				Client: Young woman
+				Quest:
+				I need you to get me
+				the best cake in
+				the universe! But
+				the 3 Naura Sisters
+				are somewhere on Gal
+				Da Val Island!
+				Reward: ???
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 2" prefix="quest211" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="211" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Use teamwork
+				to defeat the
+				enemies.
+			</short>
+			<long>
+				Client: Principal
+				Job description:
+				Work together with
+				other hunters to
+				obliterate the enemies
+				to achieve your goal
+				under a time limit.
+				Reward: ???
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Beach Laughter (Ver ?)" prefix="quest214" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="214" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Bring life to
+				the rappies!
+			</short>
+			<long>
+				Client: ???
+
+				Quest:
+				Give life to
+				the rappies!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Singing by the Beach" prefix="quest216" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="216" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Party with the
+				Rappies!
+			</short>
+			<long>
+				Client: ???
+				Job description:
+				Rappies are throwing a
+				party! Please come join
+				us!
+
+				Reward: ???
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Festivity On The Beach" prefix="quest232" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="232" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				???
+			</short>
+			<long>
+				The Lab is closed for
+				the night...
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Beach Laughter" prefix="quest239" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="239" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Bring life to
+				the Rappys!
+			</short>
+			<long>
+				Client: ???
+
+				Quest:
+				Give life to
+				the rappies!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Pioneer Christmas" prefix="quest240" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="240" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Please deliver
+				the cake
+				wrapping paper
+				to the cake
+				shop.
+			</short>
+			<long>
+				Client: Naura sisters
+				Quest:
+				I came to purchase cake
+				wrapping paper for the
+				Christmas cake, but I'm
+				caught up in some
+				busywork. Can you
+				deliver it to my
+				sisters?
+				Reward: 500 Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -A-" prefix="quest241" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="241" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -B-" prefix="quest242" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="242" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -C-" prefix="quest243"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="243" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="true">
+			<short>
+				PSO BB
+				3rd Anniversary Memorial quest.
+				Play three battlefields again
+				Rescue the crisis of the lagoon!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				The mysterious photon concentration rose sharply.
+				A large number of living things were found in lagools.
+				I want you to take control of hunters.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(40,000,000 kills)"
+			   prefix="quest244"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="244" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="true">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (40,000,000 kills)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				40,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(80,000,000 kills)"
+			   prefix="quest245"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="245" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="true">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (80,000,000 kills)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				80,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(10,000,000 kills)"
+			   prefix="quest246"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="246" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="true">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (100,000,000 kills)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				100,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(40,000,000 kills, debug)"
+			   prefix="quest247"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="247" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="true">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (40,000,000 kills, debug)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				40,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(80,000,000 kills, debug)"
+			   prefix="quest248"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="248" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="false">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (80,000,000 kills, debug)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				80,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MA4 Special Venue(100,000,000 kills, debug)"
+			   prefix="quest249"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="2" event="1"
+			   format="qst" id="249" minpl="1" maxpl="4"
+			   sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1"
+			   privileges="0" hidden="true">
+			<short>
+				-MA4 Special Venue-
+				Deep Into The Deep (100,000,000 kills, debug)
+				Lost in lagol
+				I met the battle
+				Hunters on
+				Fate to wait for!
+			</short>
+			<long>
+				Client: joint measures headquarters
+				Request:
+				Hunters in action
+				Prepare supplies for you
+				Yes.
+				Please make use of it.
+				100,000,000 kills Congratulations!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Event" type="Normal" episodes="4" privileges="0">
+		<description>EP4 Normal Event</description>
+		<quest name="荒野のくちばし亭" prefix="quest302" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="302" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -A- (Ep IV, E)" prefix="quest303" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="303" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -A- (Ep IV, E)" prefix="quest304" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="304" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Maximum Attack 4th Stage -C- (Ep IV, E)" prefix="quest305" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="305" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="LOGiN presents 勇場のマッチレース" prefix="quest306" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="306" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Claire's Deal 1" prefix="quest308" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="308" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Claire's Deal 2" prefix="quest309" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="309" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Claire's Deal 3" prefix="quest310" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="310" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Claire's Deal 4" prefix="quest311" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="311" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Claire's Deal 5" prefix="quest312" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="312" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Beyond the Horizon" prefix="quest313" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="313" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="荒野のくちばし亭Ver2" prefix="quest315" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="315" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Extermination" type="Normal" episodes="1" privileges="0">
+		<description>EP1 Normal Extermination</description>
+		<quest name="Mop-up Operation #1" prefix="quest101" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="101" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mission:
+				Sweep monsters
+				from forest.
+			</short>
+			<long>
+				Client: lieutenant
+				Quest:
+				I want the monsters
+				in the forest around
+				the Central Dome
+				to be swept away.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Mop-up Operation #2" prefix="quest102" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="102" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mission:
+				Sweep monsters
+				from caves.
+			</short>
+			<long>
+				Client: lieutenant
+				Quest:
+				I want the monsters in
+				the underground caves
+				to be swept away.
+				Reward: ??? Meseta
+				*This quest requires
+				at least 2 players.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Mop-up Operation #3" prefix="quest103" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="103" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mission:
+				Sweep machines
+				in the mines.
+			</short>
+			<long>
+				Client: lieutenant
+				Quest:
+				I want the machines in
+				the mines underground
+				to be swept out.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Mop-up Operation #4" prefix="quest104" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="104" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mission:
+				Sweep monsters
+				from the ruins.
+			</short>
+			<long>
+				Client: lieutenant
+				Quest:
+				I want the monsters in
+				the ruins underground
+				to be swept out.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Endless Nightmare #1" prefix="quest108" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="108" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Exterminate all
+				monsters in the
+				forest on Ragol.
+			</short>
+			<long>
+				Client: soldier
+				Quest:
+				Monsters seem to
+				be constantly
+				regenerating in one
+				area of the forest.
+				Exterminate them.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Endless Nightmare #2" prefix="quest109" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+			   format="qst" id="109" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mission:
+				Exterminate all
+				monsters in a
+				cave on Ragol.
+			</short>
+			<long>
+				Client: soldier
+				Quest:
+				Monsters seem to
+				be constantly
+				regenerating in one
+				area of the caves.
+				Exterminate them.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Endless Nightmare #3" prefix="quest110" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+		   format="qst" id="110" minpl="1" maxpl="4"
+		   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Exterminate all
+				monsters in the
+				mines on Ragol.
+			</short>
+			<long>
+				Client: soldier
+				Quest:
+				Monsters seem to
+				be constantly
+				regenerating in one
+				area of the mines.
+				Exterminate them.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Endless Nightmare #4" prefix="quest111" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+		   format="qst" id="111" minpl="1" maxpl="4"
+		   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Exterminate all
+				monsters in the
+				ruins on Ragol.
+			</short>
+			<long>
+				Client: soldier
+				Quest:
+				Monsters seem to
+				be constantly
+				regenerating in one
+				area of the ruins.
+				Exterminate them.
+				Reward: ??? Meseta
+				* This quest requires
+				at least 2 players.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Today's Rate" prefix="quest117" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1"
+		   format="qst" id="117" minpl="1" maxpl="4"
+		   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Infiltrate the
+				depths of the
+				laboratory and
+				delete the
+				research data!
+			</short>
+			<long>
+				Client: A spy who
+				infiltrated the lab
+				Quest:
+				Prevent the disclosure
+				of the research to the
+				outside world!
+				Destroy the host computer
+				to prevent the disclosure!
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Extermination" type="Normal" episodes="2" privileges="0">
+		<description>EP2 Normal Extermination</description>
+		<quest name="幻界的尽头 1" prefix="quest233" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="233" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="幻界的尽头 2" prefix="quest234" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="234" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="幻界的尽头 3" prefix="quest235" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="235" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="幻界的尽头 4" prefix="quest236" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="236" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Extermination" type="Normal" episodes="4" privileges="0">
+		<description>EP4 Normal Extermination</description>
+		<quest name="War of Limits 1" prefix="quest811" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="811" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="War of Limits 2" prefix="quest812" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="812" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="War of Limits 3" prefix="quest813" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="813" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="War of Limits 4" prefix="quest814" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="814" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="War of Limits 5" prefix="quest815" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="815" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="New Mop-up Operation #1" prefix="quest816" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="816" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="New Mop-up Operation #2" prefix="quest817" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="817" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="New Mop-up Operation #3" prefix="quest818" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="818" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="New Mop-up Operation #4" prefix="quest819" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="819" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="New Mop-up Operation #5" prefix="quest820" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1"
+			   format="qst" id="820" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Government" type="Government" episodes="1" privileges="0">
+		<description>Government Mission</description>
+		<quest name="1-1:Planet Ragol" prefix="quest401"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="401"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Go down to
+				Ragol's surface
+				and report on
+				the conditions
+				there.
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				We need expert hunters
+				like yourself to explore
+				and gather data from
+				Ragol's surface.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="1-2:Torrential Woods" prefix="quest402"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="402"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Eliminate the
+				hostile animals
+				prowling around
+				the Central
+				Dome area!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Please eliminate the
+				dangerous wildlife in
+				the area around the
+				Central Dome.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="1-3:Subterranean Den" prefix="quest403"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="403"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Nobody has
+				come back from
+				beneath
+				the Central
+				Dome alive...
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Nobody that we've sent
+				beneath the Central Dome
+				has come back alive.
+				Please go down and
+				investigate.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="2-1:Infernal Cavern" prefix="quest404"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="404"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				A cave has been
+				found beneath
+				Ragol. Go and
+				investigate.
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				A network of
+				subterranean caverns
+				has been found under
+				the surface of Ragol.
+				Please investigate.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="2-2:Deep Within" prefix="quest405"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="405"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				A bizarre
+				monument,
+				has been found
+				within the
+				caverns...
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Please get some data
+				readings on the strange
+				monument discovered
+				in the caverns.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="2-3:The Mutation" prefix="quest406"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="406"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Gather data on
+				the creatures
+				that live
+				underground.
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				We have no data on
+				the creatures living
+				in the caves. Please
+				go and take some
+				data readings on them.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="2-4:Waterway Shadow" prefix="quest407"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="407"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Mysterious
+				"thing" seen
+				in the
+				underground
+				waterway.
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Make your way to
+				the underground
+				waterway in the
+				caverns.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="3-1:The Facility" prefix="quest408"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="408"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Why is there a
+				large-scale
+				facility
+				underneath
+				Ragol?
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Please investigate the
+				strange, large-scale
+				facility that was
+				discovered beneath
+				Ragol's surface.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="3-2:Machines Attack" prefix="quest409"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="409"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Annihilate the
+				machines that
+				are down in
+				the mines!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Annihilate the machines
+				that have begun
+				attacking everything
+				in the underground
+				mine area.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="3-3:Central Control" prefix="quest410"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="410"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Find the
+				control room
+				to the
+				underground
+				facility!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				There must be some
+				sort of central control
+				room to the underground
+				facility. Try to find it.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="4-1:The Lost Ruins" prefix="quest411"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="411"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Break the
+				seal to the
+				ruins and
+				get inside!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				We believe that we have
+				found ruins under the
+				surface of Ragol.
+				The entrance is sealed,
+				however. Please try to
+				find a way inside in
+				order to investigate.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="4-2:Buried Relics" prefix="quest412"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="412"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Get data on
+				the writing
+				from the
+				stone monument
+				in the ruins!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Please take some
+				data of the writing
+				on the stone relics
+				in the ruins.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="4-3:Hero and Daughter" prefix="quest413"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="413"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				A secret
+				request from
+				the Principal.
+				What could
+				he want?
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Details pending.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="4-4:The Tomb Stirs" prefix="quest414"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="414"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Exterminate the
+				enemies and
+				secure a path
+				through the
+				ruins!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Exterminate the
+				strange life forms in
+				the ruins, and secure
+				a path to the bottom.
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="4-5:Dark Inheritance" prefix="quest415"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="1" event="1" format="qst" id="415"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Get to the
+				bottom of
+				the ruins!
+				The answers
+				must lie there!
+			</short>
+			<long>
+				Client: Principal
+				Quest:
+				Whatever is down in
+				those sealed ruins
+				is what brings this
+				all together...
+				※ Job can be joined
+				while in progress.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Laboratory" type="Government" episodes="2" privileges="0">
+		<description>章节2 实验室任务</description>
+		<quest name="5-1: 资格测试1 虚拟神殿1" prefix="quest451" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="451" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="5-2: 资格测试2 虚拟神殿2" prefix="quest452" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="452" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="5-3: 资格测试3 虚拟神殿3" prefix="quest453" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="453" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="5-4: 资格测试4 虚拟神殿4" prefix="quest454" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="454" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="5-5: 资格测试5 虚拟神殿5" prefix="quest455" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="455" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="6-1: 资格测试6 虚拟宇宙船1" prefix="quest456" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="456" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="6-2: 资格测试7 虚拟宇宙船2" prefix="quest457" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="457" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="6-3: 资格测试8 虚拟宇宙船3" prefix="quest458" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="458" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="6-4: 资格测试9 虚拟宇宙船4" prefix="quest459" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="459" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="6-5: 资格测试10 虚拟宇宙船5" prefix="quest460" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="460" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="7-1: 来自过去的留言" prefix="quest461" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="461" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="7-2: 探寻线索" prefix="quest462" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="462" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="7-3: 寂静的海滩" prefix="quest463" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="463" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="7-4: 中央管理区 (CS)" prefix="quest464" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="464" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="7-5: 亚生命体小岛" prefix="quest465" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="465" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="8-1: 长眠水底之物" prefix="quest466" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="466" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="8-2: 欲望的尽头" prefix="quest467" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="467" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="8-3: 蓝紫色的灯火" prefix="quest468" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="468" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+	
+	<category name="Government" type="Government" episodes="4" privileges="0">
+		<description>Government Mission</description>
+		<quest name="9-1: Missing Research" prefix="quest701"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="701"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-2: Data Retrieval" prefix="quest702"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="702"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-3: Reality And Truth" prefix="quest703"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="703"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-4: Pursuit" prefix="quest704"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="704"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-5: The Chosen" prefix="quest705"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="705"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-6: The Chosen" prefix="quest706"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="706"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-7: Sacred Ground" prefix="quest707"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="707"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="9-8: The Final Cycle" prefix="quest708"
+			   v1="true" v2="true" gc="true" bb="true" xbox="true"
+			   episode="4" event="1" format="qst" id="708"
+			   minpl="1" maxpl="4" sync="true"
+			   joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Retrieval" type="Normal" episodes="1" privileges="0">
+		<description>Retrieval Mission</description>
+		<quest name="The Missing Maracas" prefix="quest068" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="68" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Get out there
+				and find the
+				missing
+				maracas!
+			</short>
+			<long>
+				Client: Memory Hunter
+				Quest:
+				Search for the missing
+				maracas to regain
+				lost memories.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Lost HEAT SWORD" prefix="quest105" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="105" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Retrieve a
+				weapon from
+				a Dragon!
+			</short>
+			<long>
+				Client:  Hopkins, hunter
+				Quest:
+				My weapon was taken
+				from me when I was
+				fighting a Dragon.
+				Reward:  ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Lost ICE SPINNER" prefix="quest106" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="106" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Retrieve a
+				weapon from
+				a De Rol Le!!
+			</short>
+			<long>
+				Client:  Hopkins, hunter
+				Quest:
+				My weapon was taken
+				from me when I was
+				fighting a De Rol Le.
+				Reward:  ??? Meseta
+				*This quest requires
+				at least 2 players.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Lost SOUL BLADE" prefix="quest107" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="107" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Retrieve a
+				weapon from
+				a Vol Opt!!!
+			</short>
+			<long>
+				Client:  Hopkins, hunter
+				Quest:
+				My weapon was taken
+				from me when I was
+				fighting a Vol Opt.
+				Reward:  ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Fragments of a Memory" prefix="quest119" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="119" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				The search for
+				message capsules
+				left in the
+				Ruins.
+			</short>
+			<long>
+				Client: Military
+				Request:
+				Pioneer 1 may have left
+				message capsules in the
+				Underground Ruins on
+				Ragol. I want you to
+				look for them.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Lost HELL PALLASCH" prefix="quest120" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="120" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Will this be
+				the final request
+				from Hopkins?
+				Retrieve a
+				weapon from
+				an enemy!!!!
+			</short>
+			<long>
+				Client: Hopkins, Force
+				Request:
+				My weapon was taken
+				from me when I was
+				fighting in the
+				Ruins. I want to
+				get it back!
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Rappy's Holiday" prefix="quest137" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="137" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Let's play
+				with Rappy!
+			</short>
+			<long>
+				The Rappies are having
+				a festival. Participate
+				and get excited.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Gallon's Treachery" prefix="quest138" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="138" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				"Shoot a movie
+				on the surface
+				of Ragol"
+				What are Gallon's
+				expectations?
+			</short>
+			<long>
+				Client: Gallon
+				Details:
+				Partake in a movie!
+				Apply now for lead
+				roles! Active duty
+				hunters welcome.
+				Need 2 to 4 roles.
+				Reward: ??? Meseta
+				* This quest requires
+				at least 2 players.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Virtual Reality" type="Normal" episodes="1" privileges="0">
+		<description>EP1 Virtual Reality Mission</description>
+		<quest name="Towards the Future" prefix="quest118" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="118" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Challenge the
+				new simulator.
+			</short>
+			<long>
+				Client: Principal
+				Quest: Wishes to have
+				hunters challenge the
+				new simulator.
+				Reward: ??? Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="Labyrinthine Trial" prefix="quest141" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="141" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Build a strong
+				bond with your
+				teammates using
+				the Principal's
+				simulation!
+			</short>
+			<long>
+				Client: Irene
+				Job description:
+				A combat simulation
+				has been prepared to
+				help you build your
+				team skills.
+				* This quest requires
+				more than one player.
+				Reward: 0 Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+
+		<quest name="MAXIMUM ATTACK 1 Ver2" prefix="quest237" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="237" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Use teamwork
+				to defeat the
+				enemies.
+			</short>
+			<long>
+				Client: Man in
+				highfaluting clothes.
+				Quest:
+				All hunters must
+				cooperate to keep
+				destroying enemies
+				in the simulator to
+				save specific points.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Virtual Reality" type="Normal" episodes="2" privileges="0">
+		<description>EP2 Virtual Reality Mission</description>
+		<quest name="指尖传情" prefix="quest203" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="203" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="各自的明天" prefix="quest231" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="231" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MAXIMUM ATTACK 2 Ver2" prefix="quest238" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="238" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+	
+	<category name="Virtual Reality" type="Normal" episodes="4" privileges="0">
+		<description>EP4 Virtual Reality Mission</description>
+		<quest name="Beyond the Horizon" prefix="quest313" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="313" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="MAXIMUM ATTACK 3 Ver2 (E)" prefix="quest314" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="314" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+	
+	<category name="Shop" type="Normal" episodes="2" privileges="0">
+		<description>章节2 商业街</description>
+		<quest name="Pioneer Warehouse (Ver ?)" prefix="quest202" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="202" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Reach for the Dream" prefix="quest203" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="203" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Gallon's Shop" prefix="quest204" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="204" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Gallon's Shop (???)" prefix="quest206" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="206" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Gallon's Shop (Valentines Event)" prefix="quest219" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="219" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Pioneer Warehouse" prefix="quest334" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="205" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Tower" type="Normal" episodes="2" privileges="0">
+		<description>章节2 控制塔</description>
+		<quest name="东天之塔" prefix="quest223" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="223" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="西天之塔" prefix="quest224" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1"
+			   format="qst" id="224" minpl="1" maxpl="4"
+			   sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Event" type="Oneperson" episodes="1" privileges="0">
+		<description>One Person Mission</description>
+		<quest name="Famitsu Cup v2 (v1)" prefix="quest070" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="70" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Hunters ranking
+				Challenge!
+				Kyoso
+				Corporation
+				Enter brain
+				Corporation
+				E access
+			</short>
+			<long>
+				Lord? Man in an agate clothes
+				Request:
+				We want to determine
+				hunters' ranking,
+				so please clear our issue.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="The Tinkerbell's Dog 2" prefix="quest073" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="73" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Find a pet that
+				ran away!
+			</short>
+			<long>
+				Client: Neighborhood child
+				Quest:
+				A pet that was kept in
+				secret ran away.
+				Owner wants it brought
+				home.
+				Reward: ??? Meseta.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="St. Valentine's Day" prefix="quest124" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="124" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Special Quest
+				for a single
+				player. Females
+				only.
+			</short>
+			<long>
+				Borrow utensils from
+				patisserie sisters and
+				let's make a handmade
+				chocolate.
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Good Luck!" prefix="quest126" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="126" minpl="1" maxpl="4" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				Inside item pack
+				Invitation...
+			</short>
+			<long>
+				Client:?
+				Request:
+				Happy New Year!
+				Are you a lucky Casino
+				As an honorary visitor
+				Hunters were chosen from inside!
+				Chance once in this life
+				Come and visit us!
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Net Café" type="Oneperson" episodes="1" privileges="0">
+		<description>单人任务</description>
+		<quest name="加隆的计划" prefix="quest035" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="35" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				What's this "thing" you
+				can
+				obtain in the forests of
+				Ragol?
+			</short>
+			<long>
+				Client: Gallon
+				Information:
+				I want you to go down on Ragol
+				and bring me a certain thing that can
+				be found in the forest.
+				Reward: 500 Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+	
+	<category name="Side Story" type="Oneperson" episodes="1" privileges="0">
+		<description>EP1 Side Story</description>
+		<quest name="钢之心" prefix="quest001" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="1" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+			A valuable
+			commodity on
+			Ragol was
+			lost?!
+			</short>
+			<long>
+			Client: Garon, trader
+			Quest:
+			Retrieve items that
+			were stolen on a
+			trip back from Ragol.
+			Reward: 500 Meseta
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="拉古奥尔的大地主" prefix="quest002" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="2" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="金钱的价值" prefix="quest003" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="3" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="试练" prefix="quest004" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="4" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="先驱者二号的新闻" prefix="quest005" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="5" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="黄色的伪装" prefix="quest006" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="6" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="大地的呼声" prefix="quest007" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="7" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="恸哭的森林" prefix="quest008" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="8" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="疾风号" prefix="quest009" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="9" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="恶魔的食物" prefix="quest010" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="10" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="消失的新娘" prefix="quest011" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="11" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="无归瀑" prefix="quest012" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="12" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="黑页" prefix="quest013" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="13" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="秘密货物" prefix="quest014" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="14" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="匠之魂" prefix="quest015" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="15" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="莱昂内尔的邮件" prefix="quest016" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="16" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="格雷夫家的管家" prefix="quest017" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="17" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="心的形状" prefix="quest018" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="18" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="隐居的猎人" prefix="quest019" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="19" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="奥斯特博士的研究" prefix="quest020" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="20" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="紧闭的门扉" prefix="quest021" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="21" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="钢之魂" prefix="quest022" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="22" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="博士的秘密欲望" prefix="quest023" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="23" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="猎人的右臂" prefix="quest024" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="24" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="深渊来客" prefix="quest025" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="25" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="中心圆顶的火灾" prefix="quest026" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="26" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="中心圆顶的火灾(在线版本)(V2)" prefix="quest072" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="1" event="1" format="qst" id="72" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Side Story" type="Oneperson" episodes="2" privileges="0">
+		<description>EP2 Side Story</description>
+		<quest name="Seat of the Heart (Offline Version)" prefix="quest027" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="27" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Blue Star Memories (Ver ?)" prefix="quest230" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="230" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Seat of the Heart (Online Version)" prefix="quest477" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="477" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Blue Star Memories" prefix="quest486" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="2" event="1" format="qst" id="486" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+		
+	<category name="Side Story" type="Oneperson" episodes="4" privileges="0">
+		<description>EP4 Side Story</description>
+		<quest name="Warrior's Pride" prefix="quest030" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="30" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Black Paper's Dangerous Deal" prefix="quest031" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="31" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="The Restless Lion" prefix="quest032" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="32" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Pioneer Spirits" prefix="quest033" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="33" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Black Paper's Dangerous Deal 2" prefix="quest034" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="34" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="Gallon's Plan" prefix="quest035" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="35" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="To the End of the Wilderness" prefix="quest036" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="36" minpl="1" maxpl="1" sync="true" joinable="false" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+	
+	<category name="Presents" type="Normal" episodes="4" privileges="0">
+		<description>礼物任务</description>
+		<quest name="道具大放送" prefix="quest205" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="205" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+
+	<category name="Team" type="Normal" episodes="4" privileges="0">
+		<description>礼物任务</description>
+		<quest name="灾祸的中心" prefix="quest709" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="709" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+		<quest name="黄昏下的游乐设施" prefix="quest710" v1="true" v2="true" gc="true" bb="true" xbox="true" episode="4" event="1" format="qst" id="710" minpl="1" maxpl="4" sync="true" joinable="true" sflag="1" datareg="1" ctlreg="1" privileges="0" hidden="false">
+			<short>
+				作者懒
+			</short>
+			<long>
+				时间不够,来不及翻译
+			</long>
+			<drops default="none" type="client">
+				<monster type="100" id="" drops="default"></monster>
+			</drops>
+			<syncregs default="all" list="none"></syncregs>
+			<availability start="2022-1-1 00:00:00" end="2099-12-31 00:00:0"></availability>
+			<script load="Scripts\test.lua" before_load="Scripts\test.lua"></script>
+		</quest>
+	</category>
+</quests>

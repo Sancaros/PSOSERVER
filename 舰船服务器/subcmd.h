@@ -114,6 +114,21 @@ typedef struct subcmd_bb_switch_changed {
     bb_switch_changed_t data;
 } PACKED subcmd_bb_switch_changed_pkt_t;
 
+typedef struct G_SendGuildCard_DC {
+    dc_pkt_hdr_t hdr;
+    unused_hdr_t shdr;
+    uint32_t player_tag;
+    uint32_t guild_card_number;
+    char name[0x18];
+    char description[0x48];
+    uint8_t unused2[0x11];
+    uint8_t present;
+    uint8_t present2;
+    uint8_t section_id;
+    uint8_t char_class;
+    uint8_t unused3[3];
+} PACKED G_SendGuildCard_DC_6x06;
+
 // 0x06: Send guild card
 // Guild card send packet (Dreamcast).
 typedef struct subcmd_dc_gcsend {
@@ -122,7 +137,7 @@ typedef struct subcmd_dc_gcsend {
     uint32_t player_tag;
     uint32_t guildcard;
     char name[24];
-    char text[88];
+    char guildcard_desc[88];
     uint8_t unused2;
     uint8_t disable_udp;
     uint8_t language;
@@ -130,6 +145,20 @@ typedef struct subcmd_dc_gcsend {
     uint8_t ch_class;
     uint8_t padding[3];
 } PACKED subcmd_dc_gcsend_t;
+
+typedef struct G_SendGuildCard_PC {
+    dc_pkt_hdr_t hdr;
+    unused_hdr_t shdr;
+    uint32_t player_tag;
+    uint32_t guild_card_number;
+    uint16_t name[0x18];
+    uint16_t description[0x48];
+    uint8_t unused2[0x24];
+    uint8_t present;
+    uint8_t present2;
+    uint8_t section_id;
+    uint8_t char_class;
+} PACKED G_SendGuildCard_PC_6x06;
 
 // 0x06: Send guild card
 // Guild card send packet (PC).
@@ -139,13 +168,27 @@ typedef struct subcmd_pc_gcsend {
     uint32_t player_tag;
     uint32_t guildcard;
     uint16_t name[24];
-    uint16_t text[88];
+    uint16_t guildcard_desc[0x58];
     uint32_t padding;
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t ch_class;
 } PACKED subcmd_pc_gcsend_t;
+
+typedef struct G_SendGuildCard_V3 {
+    dc_pkt_hdr_t hdr;
+    unused_hdr_t shdr;
+    uint32_t player_tag;
+    uint32_t guild_card_number;
+    char name[0x18];
+    char description[0x48];
+    uint8_t unused2[0x24];
+    uint8_t present;
+    uint8_t present2;
+    uint8_t section_id;
+    uint8_t char_class;
+} PACKED G_SendGuildCard_V3_6x06;
 
 // 0x06: Send guild card
 // Guild card send packet (Gamecube).
@@ -155,7 +198,7 @@ typedef struct subcmd_gc_gcsend {
     uint32_t player_tag;
     uint32_t guildcard;
     char name[24];
-    char text[104];
+    char guildcard_desc[104];
     uint32_t padding;
     uint8_t disable_udp;
     uint8_t language;
@@ -172,7 +215,7 @@ typedef struct subcmd_xb_gcsend {
     uint32_t guildcard;
     uint64_t xbl_userid;
     char name[24];
-    char text[512];                     /* Why so long? */
+    char guildcard_desc[512];                     /* Why so long? */
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
@@ -187,12 +230,25 @@ typedef struct subcmd_bb_gc_send {
     uint32_t guildcard;
     uint16_t name[0x18];
     uint16_t guild_name[0x10];
-    uint16_t text[0x58];
+    uint16_t guildcard_desc[0x58];
     uint8_t disable_udp;
     uint8_t language;
     uint8_t section;
     uint8_t ch_class;
 } PACKED subcmd_bb_gcsend_t;
+
+typedef struct G_SendGuildCard_BB {
+    bb_pkt_hdr_t hdr;
+    unused_hdr_t shdr;
+    uint32_t guild_card_number;
+    uint16_t name[0x18];
+    uint16_t team_name[0x10];
+    uint16_t description[0x58];
+    uint8_t present;
+    uint8_t present2;
+    uint8_t section_id;
+    uint8_t char_class;
+} PACKED G_SendGuildCard_BB_6x06;
 
 // 0x07: Symbol chat
 typedef struct subcmd_symbol_chat_corner_object {

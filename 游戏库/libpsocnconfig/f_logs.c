@@ -143,7 +143,10 @@ void packet_to_text(uint8_t* buf, size_t len, bool show) {
 void display_packet(void* buf, size_t len) {
 	uint8_t* buff = (uint8_t*)buf;
 
-	packet_to_text(buff, len, true);
+	if (!buff)
+		ERR_LOG("无法显示数据包");
+	else
+		packet_to_text(buff, len, true);
 }
 
 /* 日志设置 */

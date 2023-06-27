@@ -43,6 +43,7 @@
     <ClCompile Include="pso_menu.c" />
     <ClCompile Include="pso_message.c" />
     <ClCompile Include="pso_ping.c" />
+    <ClCompile Include="pso_player.c" />
     <ClCompile Include="pso_version.c" />
     <ClCompile Include="pso_cmd_name.c" />
     <ClCompile Include="pso_timer.c" />

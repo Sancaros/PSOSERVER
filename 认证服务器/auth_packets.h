@@ -119,7 +119,7 @@ int send_bb_checksum_ack(login_client_t *c, uint32_t ack);
 int send_bb_guild_header(login_client_t *c, uint32_t checksum);
 
 /* Send a Blue Burst guildcard chunk packet. */
-int send_bb_guild_chunk(login_client_t *c, uint32_t chunk_index);
+int send_bb_guildcard_chunk(login_client_t *c, uint32_t chunk_index);
 
 /* Send a prepared Blue Burst packet. */
 int send_bb_pkt(login_client_t *c, bb_pkt_hdr_t *hdr);

@@ -173,12 +173,6 @@ int shipgate_send_bb_opt_req(shipgate_conn_t *c, uint32_t gc, uint32_t block);
 
 /* 发送 Blue Burst 客户端选项数据至数据库 */
 int shipgate_send_bb_opts(shipgate_conn_t *c, ship_client_t *cl);
-//
-///* 请求 Blue Burst 客户端公会数据 */
-//int shipgate_send_bb_guild_req(shipgate_conn_t* c, uint32_t gc, uint32_t block);
-//
-///* 发送 Blue Burst 客户端公会数据至数据库 */
-//int shipgate_send_bb_guild(shipgate_conn_t* c, ship_client_t* cl);
 
 /* Send the shipgate a character data backup request. */
 int shipgate_send_cbkup(shipgate_conn_t *c, sg_char_bkup_pkt* info, const void *cdata, int len);

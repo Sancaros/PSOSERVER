@@ -739,7 +739,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
 
     sprintf(gcpkt.name, __(c, "错误报告"));
-    sprintf(gcpkt.text, __(c, "向该GC上报一个错误报告."));
+    sprintf(gcpkt.guildcard_desc, __(c, "向该GC上报一个错误报告."));
 
     send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7发送邮件至\n"
                          "'错误报告' 玩家并上报\n"
@@ -1334,7 +1334,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.guildcard = LE32(gc);
     strncpy(gcpkt.name, name + 1, 16);
     gcpkt.name[15] = 0;
-    memset(gcpkt.text, 0, 88);
+    memset(gcpkt.guildcard_desc, 0, 88);
     gcpkt.unused2 = 0;
     gcpkt.disable_udp = 1;
     gcpkt.language = CLIENT_LANG_ENGLISH;
@@ -1535,7 +1535,7 @@ static void dumpinv_internal(ship_client_t *c) {
     }
     else {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_NAME_LENGTH);
+            BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
 
@@ -1638,7 +1638,7 @@ static void dumpbank_internal(ship_client_t* c) {
 
     if (v == CLIENT_VERSION_BB) {
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_NAME_LENGTH);
+            BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", name, c->guildcard, c->sec_data.slot);
 

@@ -221,7 +221,8 @@ static int init_gnutls() {
     gnutls_global_init();
 
     /* Set up our credentials */
-    if ((rv = gnutls_anon_allocate_client_credentials(&anoncred))) {
+    rv = gnutls_anon_allocate_client_credentials(&anoncred);
+    if (rv) {
         ERR_LOG(
             "无法为匿名 GnuTLS 分配内存: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
@@ -229,7 +230,8 @@ static int init_gnutls() {
     }
 
     /* Set our priorities */
-    if ((rv = gnutls_priority_init(&tls_prio, "PERFORMANCE:+ANON-ECDH:+ANON-DH", NULL))) {
+    rv = gnutls_priority_init(&tls_prio, "PERFORMANCE:+ANON-ECDH:+ANON-DH", NULL);
+    if (rv) {
         ERR_LOG(
             "无法初始化 GnuTLS 优先权: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
@@ -871,7 +873,8 @@ int read_param_file(psocn_ship_t* cfg) {
         /* Read the BB ItemRT file... */
         if (cfg->bb_rtdata_file) {
             CONFIG_LOG("读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
-            if (rv = rt_read_bb(cfg->bb_rtdata_file)) {
+            rv = rt_read_bb(cfg->bb_rtdata_file);
+            if (rv) {
                 ERR_LOG("无法读取 Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
             }
         }
@@ -976,12 +979,14 @@ restart:
             pthread_join(ship->thd, NULL);
 
         /* Clean up... */
-        if((tmp = pthread_getspecific(sendbuf_key))) {
+        tmp = pthread_getspecific(sendbuf_key);
+        if(tmp) {
             free_safe(tmp);
             pthread_setspecific(sendbuf_key, NULL);
         }
 
-        if((tmp = pthread_getspecific(recvbuf_key))) {
+        tmp = pthread_getspecific(recvbuf_key);
+        if(tmp) {
             free_safe(tmp);
             pthread_setspecific(recvbuf_key, NULL);
         }

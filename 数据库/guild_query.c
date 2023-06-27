@@ -127,8 +127,13 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     memset(myquery, 0, sizeof(myquery));
 
     /* 查询数据表 */
-    sprintf(myquery, "SELECT guild_id, guild_priv_level FROM %s WHERE "
-        "guildcard = '%" PRIu32 "'", AUTH_ACCOUNT, gc);
+    sprintf(myquery, "SELECT "
+        "guild_id, guild_priv_level"
+        " FROM %s WHERE "
+        "guildcard = '%" PRIu32 "'", 
+        AUTH_ACCOUNT, 
+        gc
+    );
 
     if (!psocn_db_real_query(&conn, myquery)) {
 
@@ -155,69 +160,106 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 return guild;
 
             /* 查询数据表 */
-            sprintf(myquery, "SELECT * FROM %s WHERE "
-                "guild_id = '%" PRIu32 "'", CLIENTS_GUILD, guild_id);
+            sprintf(myquery, "SELECT "
+                "guildcard, guild_id, guild_points_rank, guild_points_rest, "
+                "guild_name, guild_rank, guild_flag, "
+                "guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+                "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
+                " FROM "
+                "%s"
+                " WHERE "
+                "guild_id = '%" PRIu32 "'", 
+                CLIENTS_GUILD, 
+                guild_id
+            );
 
             if (!psocn_db_real_query(&conn, myquery)) {
                 result = psocn_db_result_store(&conn);
                 /* 查找是否有数据 */
                 if (psocn_db_result_rows(result)) {
                     row = psocn_db_result_fetch(result);
-                    guild.guild_data.guild_owner_gc = (uint32_t)strtoul(row[0], NULL, 0);
-                    guild.guild_data.guild_id = guild_id;
-                    memcpy(&guild.guild_data.guild_info, row[2], sizeof(guild.guild_data.guild_info));
-                    guild.guild_data.guild_priv_level = guild_priv_level;
-
+                    guild.guild_owner_gc = (uint32_t)strtoul(row[0], NULL, 0);
+                    guild.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
+                    guild.guild_points_rank = (uint32_t)strtoul(row[2], NULL, 0);
+                    guild.guild_points_rest = (uint32_t)strtoul(row[3], NULL, 0);
+                    guild.guild_priv_level = guild_priv_level;
                     /* 赋予名称颜色代码 */
-                    guild.guild_data.guild_name[0] = 0x0009;
-                    guild.guild_data.guild_name[1] = 0x0045;
-                    memcpy(&guild.guild_data.guild_name, row[4], sizeof(guild.guild_data.guild_name) - 4);
+                    guild.guild_name[0] = 0x0009;
+                    guild.guild_name[1] = 0x0045;
+                    memcpy(&guild.guild_name, row[4], sizeof(guild.guild_name) - 4);
 
                     /* TODO 公会等级未实现 */
-                    guild.guild_data.guild_rank = (uint32_t)strtoul(row[5], NULL, 0);
+                    guild.guild_rank = (uint32_t)strtoul(row[5], NULL, 0);
 
-                    memcpy(&guild.guild_data.guild_flag, row[6], sizeof(guild.guild_data.guild_flag));
-                    guild.guild_data.guild_rewards = (uint32_t)strtoul(row[7], NULL, 0);
+                    memcpy(&guild.guild_flag, row[6], sizeof(guild.guild_flag));
+                    guild.guild_reward[0] = (uint8_t)strtoul(row[7], NULL, 0);
+                    guild.guild_reward[1] = (uint8_t)strtoul(row[8], NULL, 0);
+                    guild.guild_reward[2] = (uint8_t)strtoul(row[9], NULL, 0);
+                    guild.guild_reward[3] = (uint8_t)strtoul(row[10], NULL, 0);
+                    guild.guild_reward[4] = (uint8_t)strtoul(row[11], NULL, 0);
+                    guild.guild_reward[5] = (uint8_t)strtoul(row[12], NULL, 0);
+                    guild.guild_reward[6] = (uint8_t)strtoul(row[13], NULL, 0);
+                    guild.guild_reward[7] = (uint8_t)strtoul(row[14], NULL, 0);
+
                 }
 
                 psocn_db_result_free(result);
             }
             else {
                 /* 初始化默认数据 */
-                guild.guild_data.guild_owner_gc = gc;
-                guild.guild_data.guild_id = guild_id;
-                guild.guild_data.guild_priv_level = guild_priv_level;
+                guild.guild_owner_gc = gc;
+                guild.guild_id = guild_id;
+                guild.guild_points_rank = 0;
+                guild.guild_points_rest = 0;
+                guild.guild_priv_level = guild_priv_level;
+                /* 赋予名称颜色代码 */
+                guild.guild_name[0] = 0x0009;
+                guild.guild_name[1] = 0x0045;
+                memcpy(&guild.guild_name, "公会数据错误", sizeof(guild.guild_name) - 4);
 
-                //guild.guild_data.guild_rank = 0x00986C84; // ?? 应该是排行榜未完成的参数了
+                guild.guild_rank = 0; // ?? 应该是排行榜未完成的参数了
 
-                guild.guild_data.guild_rank = 0x00000000; // ?? 应该是排行榜未完成的参数了
+                memset(&guild.guild_flag, 0, sizeof(guild.guild_flag));
 
                 /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
-                guild.guild_data.guild_rewards = 0xFFFFFFFF; //和更衣室有关
+                guild.guild_reward[0] = 0;
+                guild.guild_reward[1] = 0;
+                guild.guild_reward[2] = 0;
+                guild.guild_reward[3] = 0;
+                guild.guild_reward[4] = 0;
+                guild.guild_reward[5] = 0;
+                guild.guild_reward[6] = 0;
+                guild.guild_reward[7] = 0;
 
                 sprintf(myquery, "INSERT INTO %s ("
-                    "guildcard, guild_id, guild_priv_level, "
-                    "guild_rank, guild_rewards, "
-                    "guild_info, guild_name, guild_flag"
+                    "guildcard, guild_id, guild_points_rank, guild_points_rest, guild_priv_level, "
+                    "guild_rank, "
+                    "guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+                    "guild_reward4, guild_reward5, guild_reward6, guild_reward7, "
+                    "guild_points_rank, guild_points_rest, "
+                    "guild_name, guild_flag"
                     ") VALUES ("
-                    "'%" PRIu32"', '%u', '%u', "
-                    "'%u', '%u', '", CLIENTS_GUILD,
-                    guild.guild_data.guild_owner_gc, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
-                    guild.guild_data.guild_rank, guild.guild_data.guild_rewards
+                    "'%" PRIu32"', '%" PRIu32"', '%" PRIu32"', "
+                    "'%" PRIu32"', "
+                    "'%" PRIu8"', '%" PRIu8"', '%" PRIu8"', '%" PRIu8"', "
+                    "'%" PRIu8"', '%" PRIu8"', '%" PRIu8"', '%" PRIu8"', "
+                    "'%" PRIu32"', '%" PRIu32"', '"
+                    ,
+                    CLIENTS_GUILD,
+                    guild.guild_owner_gc, guild.guild_id, guild.guild_priv_level,
+                    guild.guild_rank,
+                    guild.guild_reward0, guild.guild_reward1, guild.guild_reward2, guild.guild_reward3,
+                    guild.guild_reward4, guild.guild_reward5, guild.guild_reward6, guild.guild_reward7,
+                    guild.guild_points_rank, guild.guild_points_rest
                 );
 
                 psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                    (char*)&guild.guild_data.guild_info, sizeof(guild.guild_data.guild_info));
+                    (char*)&guild.guild_name, sizeof(guild.guild_name));
 
                 strcat(myquery, "', '");
 
                 psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                    (char*)&guild.guild_data.guild_name, sizeof(guild.guild_data.guild_name));
-
-                strcat(myquery, "', '");
-
-                psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                    (char*)&guild.guild_data.guild_flag, sizeof(guild.guild_data.guild_flag));
+                    (char*)&guild.guild_flag, sizeof(guild.guild_flag));
 
                 strcat(myquery, "')");
 
@@ -323,7 +365,7 @@ int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
-        "guild_id = '%u',guild_priv_level = '0' WHERE guildcard = '%" PRIu32"'",
+        "guild_id = '%" PRIu32"',guild_priv_level = '0' WHERE guildcard = '%" PRIu32"'",
         AUTH_ACCOUNT, guild_id, gc_target);
     if (!psocn_db_real_query(&conn, myquery))
         return 0;
@@ -337,7 +379,7 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id) {
 
     psocn_db_escape_str(&conn, &flag_slashes[0], guild_flag, 0x800);
 
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag = '%s' WHERE guild_id = '%u'",
+    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET guild_flag = '%s' WHERE guild_id = '%" PRIu32"'",
         CLIENTS_GUILD, (char*)&flag_slashes[0], guild_id);
 
     if (!psocn_db_real_query(&conn, myquery))
@@ -363,28 +405,27 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the db query */
-    sprintf(myquery, "UPDATE %s SET guild_info = '", CLIENTS_GUILD);
+    sprintf(myquery, "UPDATE %s SET guild_name = '", CLIENTS_GUILD);
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_info,
-        sizeof(guild.guild_data.guild_info));
-
-    strcat(myquery, "', guild_name = '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_name,
-        sizeof(guild.guild_data.guild_name));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_name,
+        sizeof(guild.guild_name));
 
     strcat(myquery, "', guild_flag = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_data.guild_flag,
-        sizeof(guild.guild_data.guild_flag));
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&guild.guild_flag,
+        sizeof(guild.guild_flag));
 
     sprintf(myquery + strlen(myquery),
-        "', guildcard = '%u', guild_id = '%u', guild_priv_level = '%u'"
-        ", guild_rank = '%u', guild_rewards = '%u'"
+        "', guildcard = '%" PRIu32"', guild_id = '%" PRIu32"', guild_priv_level = '%" PRIu32"'"
+        ", guild_rank = '%" PRIu32"', guild_reward0 = '%" PRIu8"', guild_reward1 = '%" PRIu8"', guild_reward2 = '%" PRIu8"'"
+        ", guild_reward3 = '%" PRIu8"', guild_reward4 = '%" PRIu8"', guild_reward5 = '%" PRIu8"', guild_reward6 = '%" PRIu8"'"
+        ", guild_reward7 = '%" PRIu8"'"
         " WHERE "
         "guildcard = '%" PRIu32 "'",
-        guild.guild_data.guild_owner_gc, guild.guild_data.guild_id, guild.guild_data.guild_priv_level,
-        guild.guild_data.guild_rank, guild.guild_data.guild_rewards, 
+        guild.guild_owner_gc, guild.guild_id, guild.guild_priv_level,
+        guild.guild_rank, guild.guild_reward0, guild.guild_reward1, guild.guild_reward2, 
+        guild.guild_reward3, guild.guild_reward4, guild.guild_reward5, guild.guild_reward6, 
+        guild.guild_reward7, 
         gc
     );
 

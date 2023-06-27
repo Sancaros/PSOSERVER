@@ -136,7 +136,7 @@ struct ship_client {
     int version;
     int sock;
     int hdr_size;
-    int client_id;
+    uint32_t client_id;
 
     int language_code;
     int cur_area;
@@ -222,11 +222,11 @@ struct ship_client {
     bb_client_config_pkt sec_data;
     psocn_bb_db_char_t *bb_pl;
     psocn_bb_db_opts_t *bb_opts;
-    sg_char_bkup_pkt game_info;
-
     int32_t guild_accept;
     int guild_master_exfer;
     psocn_bb_db_guild_t *bb_guild;
+
+    sg_char_bkup_pkt game_info;
 
     client_game_data_t *game_data;
 
@@ -456,8 +456,6 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver);
 
 /* Run a legit check on a given client. */
 int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
-
-int client_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
 
 #ifdef ENABLE_LUA
 #include <lua.h>

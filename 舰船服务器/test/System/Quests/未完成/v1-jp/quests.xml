@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE quests PUBLIC "-//Psocn//DTD quests Configuration 0.1//EN"
+  "http://www.phantasystaronline.cn:88/server/dtd/quests.dtd">
+
+<quests>
+	<category 
+		name="testquest"
+		type="normal"
+		episodes="1,2"
+		privileges=""
+		>
+		<description>testtesttest</description>
+		<quest
+			name="quest125"
+			prefix="quest125"
+			v1="true"
+			v2="true"
+			gc="true"
+			bb="true"
+			xbox="true"
+			episode="1"
+			event="0"
+			format="qst"
+			id="1"
+			minpl="1"
+			maxpl="4"
+			sync="true"
+			joinable="true"
+			sflag="1"
+			datareg="1"
+			ctlreg="1"
+			privileges="-1"
+			hidden="false"
+			>
+			<short>short</short>
+			<long>long</long>
+			<drops default="none" type="client">
+				<monster
+					type="100"
+					id=""
+					drops="default"
+					></monster>
+			</drops>
+			<syncregs
+				default="all"
+				list="none"
+				></syncregs>
+			<availability
+				start="2022-1-11 12:30:16"
+				end="2022-12-12 12:30:16"
+				></availability>
+			<script
+				load=""
+				before_load=""
+				></script>
+		</quest>
+	</category>
+</quests>

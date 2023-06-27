@@ -426,8 +426,7 @@ err_cert:
     return NULL;
 }
 
-void db_remove_client(ship_t* c)
-{
+void db_remove_client(ship_t* c) {
     ship_t* i;
 
     TAILQ_REMOVE(&ships, c, qentry);
@@ -450,8 +449,7 @@ void db_remove_client(ship_t* c)
 }
 
 /* Destroy a connection, closing the socket and removing it from the list. */
-void destroy_connection(ship_t* c)
-{
+void destroy_connection(ship_t* c) {
     if (c->name[0]) {
         SGATE_LOG("关闭与 %s 的连接", c->name);
     }
@@ -1763,7 +1761,10 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     char** row;
 
     sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
-        "lastchar_blob, %s.guild_rewards FROM "
+        "lastchar_blob, "
+        "%s.guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+        "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
+        " FROM "
         "%s INNER JOIN %s ON "
         "%s.guild_id = %s.guild_id WHERE "
         "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
@@ -1794,7 +1795,14 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         g_data->entries[i].guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].char_name[0], row[2], len3);
         g_data->entries[i].char_name[1] = 0x0045;
-        g_data->entries[i].guild_rewards = (uint32_t)strtoul(row[3], NULL, 0);
+        g_data->entries[i].guild_reward[0] = (uint32_t)strtoul(row[3], NULL, 0);
+        g_data->entries[i].guild_reward[1] = (uint32_t)strtoul(row[4], NULL, 0);
+        g_data->entries[i].guild_reward[2] = (uint32_t)strtoul(row[5], NULL, 0);
+        g_data->entries[i].guild_reward[3] = (uint32_t)strtoul(row[6], NULL, 0);
+        g_data->entries[i].guild_reward[4] = (uint32_t)strtoul(row[7], NULL, 0);
+        g_data->entries[i].guild_reward[5] = (uint32_t)strtoul(row[8], NULL, 0);
+        g_data->entries[i].guild_reward[6] = (uint32_t)strtoul(row[9], NULL, 0);
+        g_data->entries[i].guild_reward[7] = (uint32_t)strtoul(row[10], NULL, 0);
 
         size += entries_size;
     }
@@ -2146,12 +2154,12 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 /* 处理 Blue Burst 公会 完整公会数据*/
 static int handle_bb_guild_full_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    bb_guild_full_data_pkt* g_data = (bb_guild_full_data_pkt*)pkt->pkt;
+    bb_full_guild_data_pkt* g_data = (bb_full_guild_data_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    if (len != sizeof(bb_guild_full_data_pkt)) {
+    if (len != sizeof(bb_full_guild_data_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)g_data, len);
 
@@ -2221,7 +2229,9 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
 
     sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
         "lastchar_blob, guild_points_personal_donation, "
-        "%s.guild_rewards, guild_points_rank, guild_points_rest"
+        "%s.guild_points_rank, guild_points_rest, "
+        "guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+        "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
         " FROM "
         "%s INNER JOIN %s ON "
         "%s.guild_id = %s.guild_id WHERE "
@@ -2250,15 +2260,22 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     for (i = 0; i < num_mates; i++) {
         row = psocn_db_result_fetch(result);
 
-        g_data->guild_points_rank = (uint32_t)strtoul(row[5], NULL, 0);
-        g_data->guild_points_rest = (uint32_t)strtoul(row[6], NULL, 0);
+        g_data->guild_points_rank = (uint32_t)strtoul(row[4], NULL, 0);
+        g_data->guild_points_rest = (uint32_t)strtoul(row[5], NULL, 0);
 
         g_data->entries[i].member_list.member_index = i + 1;
         g_data->entries[i].member_list.guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
         g_data->entries[i].member_list.guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
-        memcpy(&g_data->entries[i].member_list.char_name[0], row[2], BB_CHARACTER_NAME_LENGTH * 2);
+        memcpy(&g_data->entries[i].member_list.char_name[0], row[2], BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
         g_data->entries[i].member_list.char_name[1] = 0x0045; //颜色代码
-        g_data->entries[i].member_list.guild_rewards = (uint32_t)strtoul(row[4], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[0] = (uint32_t)strtoul(row[6], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[1] = (uint32_t)strtoul(row[7], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[2] = (uint32_t)strtoul(row[8], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[3] = (uint32_t)strtoul(row[9], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[4] = (uint32_t)strtoul(row[10], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[5] = (uint32_t)strtoul(row[11], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[6] = (uint32_t)strtoul(row[12], NULL, 0);
+        g_data->entries[i].member_list.guild_reward[7] = (uint32_t)strtoul(row[13], NULL, 0);
 
         g_data->entries[i].guild_points_personal_donation = (uint32_t)strtoul(row[3], NULL, 0);
 
@@ -2550,8 +2567,9 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt->pkt;
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
-
-    //DBG_LOG("舰船：BB处理数据 指令= 0x%04X %s 长度 = %d 字节", type, c_cmd_name(type, 0), len);
+#ifdef DEBUG
+    DBG_LOG("舰船:BB指令 0x%04X %s %d 字节", type, c_cmd_name(type, 0), len);
+#endif // DEBUG
 
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {

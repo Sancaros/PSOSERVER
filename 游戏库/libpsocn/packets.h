@@ -3935,12 +3935,13 @@ typedef struct bb_guild_pkt {
     uint8_t data[];
 } PACKED bb_guild_pkt_pkt;
 
+/* TODO 解析公会会员的列表信息 暂未确定最后 8 位情况 */
 typedef struct bb_guild_member_list {
     uint32_t member_index;
     uint32_t guild_priv_level;
     uint32_t guildcard_client;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-    uint32_t guild_rewards;
+    uint8_t guild_reward[8];
 } PACKED bb_guild_member_list_t;
 
 //////////////////////////////////////////////////////////////////////////
@@ -4111,18 +4112,19 @@ typedef struct bb_guild_unk_12EA {
 typedef struct bb_guild_lobby_setting {
     bb_pkt_hdr_t hdr;
     struct {
-        uint32_t guildcard;                    // 02B8         4
-        uint32_t guild_id;                     // 02BC         4 
-        uint8_t guild_info[8];                 // 公会信息     8
-        uint32_t guild_priv_level;             // 会员等级     4
-        uint16_t guild_name[0x000E];           // 02CC         28
-        uint32_t guild_rank;                   // 公会排行     4
+        uint32_t guildcard;
+        uint32_t guild_id; 
+        //uint8_t guild_info[8];                 // 公会信息     8
+        uint32_t guild_points_rank;
+        uint32_t guild_points_rest;
+        uint32_t guild_priv_level;
+        uint16_t guild_name[0x000E];
+        uint32_t guild_rank;
         uint32_t guildcard_client;
         uint32_t client_id;
-        uint16_t char_name[BB_CHARACTER_NAME_LENGTH]; //24
-        uint32_t guild_dress_rewards;           // 公会奖励    标志上传
-        uint32_t guild_flag_rewards;          // 公会奖励    更衣室奖励
-        uint8_t guild_flag[0x0800];            // 公会图标     2048
+        uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
+        uint8_t guild_reward[8];
+        uint8_t guild_flag[0x0800];
     } entries[0];
 } PACKED bb_guild_lobby_setting_pkt;
 
@@ -4134,21 +4136,21 @@ typedef struct bb_guild_member_tittle {
 } PACKED bb_guild_member_tittle_pkt;
 
 // 15EA (S->C): BB 玩家整体公会数据 用于发送给其他玩家
-typedef struct bb_guild_full_data {
+typedef struct bb_full_guild_data {
     bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
     uint32_t guild_owner_gc;                       /* 0x0008 - 0x000B*/
     uint32_t guild_id;                             /* 0x000C - 0x000F*/
-    uint8_t guild_info[8];                         /* 0x0010 - 0x0017*/
+    uint32_t guild_points_rank;                    /* 0x0010 - 0x0013*/
+    uint32_t guild_points_rest;                    /* 0x0014 - 0x0017*/
     uint32_t guild_priv_level;                     /* 0x0018 - 0x001B*/
     uint16_t guild_name[0x000E];                   /* 0x001C - 0x0037*/
     uint32_t guild_rank;                           /* 0x0038 - 0x003B*/
     uint32_t target_guildcard;                     /* 0x003C - 0x003F*/
     uint32_t client_id;                            /* 0x0040 - 0x0043*/
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];  /* 0x0044 - 0x005B*/
-    uint32_t guild_dress_rewards;                  /* 0x005C - 0x005F*/
-    uint32_t guild_flag_rewards;                   /* 0x0060 - 0x0063*/
+    uint8_t guild_reward[8];                       /* 0x005C - 0x0063*/
     uint8_t guild_flag[0x0800];                    /* 0x0064 - 0x0863*/
-} PACKED bb_guild_full_data_pkt;
+} PACKED bb_full_guild_data_pkt;
 
 // 16EA (S->C): UNKNOW
 typedef struct bb_guild_unk_16EA {

@@ -63,7 +63,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
 
             /* Copy the name and text over. */
             memcpy(gc.name, pkt->name, 24);
-            memcpy(gc.text, pkt->text, 88);
+            memcpy(gc.guildcard_desc, pkt->guildcard_desc, 88);
 
             /* Copy the rest over. */
             gc.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -92,7 +92,7 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
 
             /* Copy the name and text over. */
             memcpy(xb.name, pkt->name, 24);
-            memcpy(xb.text, pkt->text, 88);
+            memcpy(xb.guildcard_desc, pkt->guildcard_desc, 88);
 
             /* Copy the rest over. */
             xb.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -141,10 +141,10 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)pc.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)pc.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -190,10 +190,10 @@ int handle_dc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_dc_gcsend_t *pkt
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)bb.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)bb.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -256,10 +256,10 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
             in = 176;
             out = 88;
-            inptr = (char *)pkt->text;
-            outptr = dc.text;
+            inptr = (char *)pkt->guildcard_desc;
+            outptr = dc.guildcard_desc;
 
-            if(pkt->text[1] == LE16('J')) {
+            if(pkt->guildcard_desc[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -305,10 +305,10 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
             in = 176;
             out = 88;
-            inptr = (char *)pkt->text;
-            outptr = gc.text;
+            inptr = (char *)pkt->guildcard_desc;
+            outptr = gc.guildcard_desc;
 
-            if(pkt->text[1] == LE16('J')) {
+            if(pkt->guildcard_desc[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -353,10 +353,10 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
             in = 176;
             out = 512;
-            inptr = (char *)pkt->text;
-            outptr = xb.text;
+            inptr = (char *)pkt->guildcard_desc;
+            outptr = xb.guildcard_desc;
 
-            if(pkt->text[1] == LE16('J')) {
+            if(pkt->guildcard_desc[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -397,7 +397,7 @@ static int handle_pc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_pc_gcsend
             bb.name[0] = LE16('\t');
             bb.name[1] = LE16('E');
             memcpy(&bb.name[2], pkt->name, 28);
-            memcpy(bb.text, pkt->text, 176);
+            memcpy(bb.guildcard_desc, pkt->guildcard_desc, 176);
             bb.disable_udp = 1;
             bb.language = pkt->language;
             bb.section = pkt->section;
@@ -431,7 +431,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
 
             /* Copy the name and text over. */
             memcpy(dc.name, pkt->name, 24);
-            memcpy(dc.text, pkt->text, 88);
+            memcpy(dc.guildcard_desc, pkt->guildcard_desc, 88);
 
             /* Copy the rest over. */
             dc.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -461,7 +461,7 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
 
             /* Copy the name and text over. */
             memcpy(xb.name, pkt->name, 24);
-            memcpy(xb.text, pkt->text, 104);
+            memcpy(xb.guildcard_desc, pkt->guildcard_desc, 104);
 
             /* Copy the rest over. */
             xb.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -505,10 +505,10 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)pc.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)pc.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -554,10 +554,10 @@ static int handle_gc_gcsend(ship_client_t *s, ship_client_t *d, subcmd_gc_gcsend
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)bb.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)bb.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -604,7 +604,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
 
             /* Copy the name and text over. */
             memcpy(dc.name, pkt->name, 24);
-            memcpy(dc.text, pkt->text, 88);
+            memcpy(dc.guildcard_desc, pkt->guildcard_desc, 88);
 
             /* Copy the rest over. */
             dc.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -634,7 +634,7 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
 
             /* Copy the name and text over. */
             memcpy(gc.name, pkt->name, 24);
-            memcpy(gc.text, pkt->text, 88);
+            memcpy(gc.guildcard_desc, pkt->guildcard_desc, 88);
 
             /* Copy the rest over. */
             gc.hdr.pkt_type = pkt->hdr.pkt_type;
@@ -682,10 +682,10 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)pc.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)pc.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -731,10 +731,10 @@ int handle_xb_gcsend(ship_client_t *s, ship_client_t *d, subcmd_xb_gcsend_t *pkt
             /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
             in = 88;
             out = 176;
-            inptr = pkt->text;
-            outptr = (char *)bb.text;
+            inptr = pkt->guildcard_desc;
+            outptr = (char *)bb.guildcard_desc;
 
-            if(pkt->text[1] == 'J') {
+            if(pkt->guildcard_desc[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {

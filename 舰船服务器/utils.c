@@ -894,8 +894,8 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name.name_tag = LE16('\t');
     c->name.name_tag2 = LE16('J');
 
-    for(i = 2; i < BB_CHARACTER_NAME_LENGTH; ++i) {
-        c->name.char_name[i] = LE16(sp->character.dress_data.guildcard_string[i - 2]);
+    for(i = 0; i < BB_CHARACTER_CHAR_NAME_LENGTH; ++i) {
+        c->name.char_name[i] = LE16(sp->character.dress_data.guildcard_string[i]);
     }
 }
 
@@ -989,10 +989,11 @@ void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            /* As long as the destination isn't a BB player, just copy
-               the data over as-is. Technically if we ever allowed
-               cross-play, we would need to deal with the differences in
-               Mags on Gamecube and Xbox here, at least. */
+            /* 只要目标不是BB玩家（BB player），
+            就直接按原样复制数据即可。从技术上讲，
+            如果我们允许跨平台游戏，
+            就需要在这里处理Gamecube和Xbox上玛古（Mags）之间的差异，
+            至少要有相关处理机制。. */
             memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
             break;
 

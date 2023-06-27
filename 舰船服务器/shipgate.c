@@ -403,7 +403,7 @@ static int handle_bb_greply(shipgate_conn_t* conn, bb_guild_reply_pkt* pkt,
     uint32_t dest = LE32(pkt->gc_searcher);
 
     /* Make sure the block given is sane */
-    if((int)block > ship->cfg->blocks || !ship->blocks[block - 1]) {
+    if(block > ship->cfg->blocks || !ship->blocks[block - 1]) {
         return 0;
     }
 
@@ -671,7 +671,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     ship_t* s = conn->ship;
     block_t* b;
     ship_client_t* c = { 0 };
-    ship_client_t* c2 = { 0 };
+    //ship_client_t* c2 = { 0 };
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t guild_id = 0;
 
@@ -680,8 +680,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
 
 #endif // DEBUG
-
-    DBG_LOG("G->S 指令0x%04X %d %d %d", type, gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
 
     //这是从船闸返回来的公会数据包
 
@@ -701,7 +699,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* OK */
                     case BB_GUILD_CREATE:
                         if (c->guildcard == gc) {
-                            c->bb_guild->guild_data = guild->guild_data;
+                            c->bb_guild = guild;
                             send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
@@ -722,7 +720,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_MEMBER_ADD:
                         if (c->guildcard == gc) {
 
-                            c->bb_guild->guild_data = guild->guild_data;
+                            c->bb_guild = guild;
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
@@ -744,9 +742,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         guild_id = pkt->fw_flags;
 
                         if (c->guildcard == remove_pkt->target_guildcard &&
-                            c->bb_guild->guild_data.guild_id == guild_id) {
+                            c->bb_guild->guild_id == guild_id) {
 
-                            memset(&c->bb_guild->guild_data, 0, sizeof(bb_guild_t));
+                            memset(&c->bb_guild, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -765,7 +763,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_chat_pkt* chat_pkt = (bb_guild_member_chat_pkt*)pkt->pkt;
                         guild_id = chat_pkt->guild_id;
 
-                        if (c->bb_guild->guild_data.guild_id == guild_id && c->guildcard != 0)
+                        if (c->bb_guild->guild_id == guild_id && c->guildcard != 0)
                             send_pkt_bb(c, (bb_pkt_hdr_t*)g);
 
                         break;
@@ -827,9 +825,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_flag_setting_pkt* flag_pkt = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+                        if (c->bb_guild->guild_id == guild_id) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            memcpy(&c->bb_guild->guild_data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_data.guild_flag));
+                            memcpy(&c->bb_guild->guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_flag));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         }
                         break;
@@ -837,9 +835,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_DISSOLVE:
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+                        if (c->bb_guild->guild_id == guild_id) {
                             send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
-                            memset(&c->bb_guild->guild_data, 0, sizeof(psocn_bb_db_guild_t));
+                            memset(&c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -850,7 +848,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_promote_pkt* promote_pkt = (bb_guild_member_promote_pkt*)pkt->pkt;
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_data.guild_id == guild_id) {
+                        if (c->bb_guild->guild_id == guild_id) {
 
                             if (c->guildcard == promote_pkt->target_guildcard) {
 #ifdef DEBUG
@@ -1140,7 +1138,7 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
         return 0;
     }
 
-    return -2;
+    //return -2;
 }
 
 static void menu_code_sort(uint16_t* codes, int count) {
@@ -1189,7 +1187,7 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
     uint16_t status = ntohs(p->status);
     uint32_t sid = ntohl(p->ship_id);
     ship_t* s = conn->ship;
-    miniship_t *i, *j, *k;
+    miniship_t* i, * j, * k = { 0 };
     uint16_t code = 0;
     int ship_found = 0;
     void* tmp;
@@ -1707,7 +1705,8 @@ static int handle_blogin_err(shipgate_conn_t* c, shipgate_blogin_err_pkt* pkt) {
     ship_client_t* i;
 
     /* Grab the block first */
-    if((int)block > s->cfg->blocks || !(b = s->blocks[block - 1])) {
+    b = s->blocks[block - 1];
+    if(block > s->cfg->blocks || !b) {
         return 0;
     }
 
@@ -1791,7 +1790,8 @@ static int handle_friend(shipgate_conn_t* c, shipgate_friend_login_4_pkt* pkt) {
     fbl = ntohl(pkt->friend_block);
 
     /* Grab the block structure where the user is */
-    if((int)ubl > s->cfg->blocks || !(b = s->blocks[ubl - 1])) {
+    b = s->blocks[ubl - 1];
+    if(ubl > s->cfg->blocks || !b) {
         return 0;
     }
 
@@ -2231,25 +2231,15 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
         if (i->guildcard == gc) {
             pthread_mutex_lock(&i->mutex);
 
-            /* 复制角色选项数据 */
-            memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
-
-            /* 复制角色选项数据 */
 #ifdef DEBUG
             TEST_LOG("端口 %d GUILD ID %u", c->sock, pkt->guild_id);
 #endif // DEBUG
-            if (pkt->guild_id != 0) {
-                i->bb_guild->guild_data.guild_owner_gc = pkt->guild_owner_gc;
-                i->bb_guild->guild_data.guild_id = pkt->guild_id;
-                memcpy(&i->bb_guild->guild_data.guild_info[0], &pkt->guild_info[0], sizeof(pkt->guild_info));
-                i->bb_guild->guild_data.guild_priv_level = pkt->guild_priv_level;
-                memcpy(&i->bb_guild->guild_data.guild_name, &pkt->guild_name[0], sizeof(pkt->guild_name));
-                i->bb_guild->guild_data.guild_rank = pkt->guild_rank;
-                memcpy(&i->bb_guild->guild_data.guild_flag, &pkt->guild_flag[0], sizeof(pkt->guild_flag));
-                i->bb_guild->guild_data.guild_rewards = pkt->guild_rewards;
-            }
 
-            //memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
+            /* 复制角色选项数据 */
+            memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
+
+            /* 复制角色公会数据 */
+            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
@@ -2314,7 +2304,8 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
     if ((pkt->chunk_type & SCHUNK_CHECK)) {
         /* Check packet */
         /* Attempt to check the file, if it exists. */
-        if ((fp = fopen(filename, "rb"))) {
+        fp = fopen(filename, "rb");
+        if (fp) {
             /* File exists, check the length */
             fseek(fp, 0, SEEK_END);
             len2 = ftell(fp);
@@ -2322,7 +2313,8 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
 
             if (len2 == (long)len) {
                 /* File exists and is the right length, check the crc */
-                if (!(buf = (uint8_t*)malloc(len))) {
+                buf = (uint8_t*)malloc(len);
+                if (!buf) {
                     ERR_LOG("分配脚本BUFF内存错误!");
                     fclose(fp);
                     return -1;
@@ -2391,7 +2383,8 @@ static int handle_schunk(shipgate_conn_t* c, shipgate_schunk_pkt* pkt) {
             return 0;
         }
 
-        if (!(fp = fopen(filename, "wb"))) {
+        fp = fopen(filename, "wb");
+        if (!fp) {
             /* XXXX */
             SHIPS_LOG("无法读写脚本文件 '%s'",
                 filename);
@@ -2587,7 +2580,8 @@ static int handle_qflag_err(shipgate_conn_t* c, shipgate_qflag_err_pkt* pkt) {
     uint8_t flag_reg;
 
     /* Grab the block first */
-    if((int)block > s->cfg->blocks || !(b = s->blocks[block - 1])) {
+    b = s->blocks[block - 1];
+    if(block > s->cfg->blocks || !b) {
         return 0;
     }
 
@@ -2913,7 +2907,7 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
 }
 
 static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* pkt) {
-    int i, j;
+    uint32_t i, j;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
     if (!&pkt->data) {
@@ -3183,11 +3177,13 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 /* 从船闸服务器读取数据流. */
 int shipgate_process_pkt(shipgate_conn_t* c) {
     ssize_t sz;
-    uint16_t pkt_sz;
+    ssize_t pkt_sz;
     int rv = 0;
     unsigned char* rbp;
     uint8_t* recvbuf = get_recvbuf();
     void* tmp;
+    /* 确保8字节的倍数传输 */
+    int recv_size = 8;
 
     /* If we've got anything buffered, copy it out to the main buffer to make
        the rest of this a bit easier. */
@@ -3199,7 +3195,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
     sz = sg_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    //TEST_LOG("舰船接收数据 %d 接收数据 %d 字节", c->sock, sz);
+    //TEST_LOG("舰船端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {
@@ -3215,11 +3211,11 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
     rbp = recvbuf;
 
     /* As long as what we have is long enough, decrypt it. */
-    while(sz >= 8 && rv == 0) {
+    while(sz >= recv_size && rv == 0) {
         /* Copy out the packet header so we know what exactly we're looking
            for, in terms of packet length. */
         if(!c->hdr_read) {
-            memcpy(&c->pkt, rbp, 8);
+            memcpy(&c->pkt, rbp, recv_size);
             c->hdr_read = 1;
         }
 
@@ -3228,16 +3224,17 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
         /* We'll always need a multiple of 8 bytes. */
         if(pkt_sz & 0x07) {
-            pkt_sz = (pkt_sz & 0xFFF8) + 8;
+            pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
         }
 
         /* Do we have the whole packet? */
         if(sz >= (ssize_t)pkt_sz) {
             /* Yes, we do, copy it out. */
-            memcpy(rbp, &c->pkt, 8);
+            memcpy(rbp, &c->pkt, recv_size);
 
             /* Pass it on. */
-            if((rv = handle_pkt(c, (shipgate_hdr_t *)rbp))) {
+            rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+            if(rv) {
                 break;
             }
 
@@ -3455,7 +3452,7 @@ int shipgate_fw_dc(shipgate_conn_t* c, const void* dcp, uint32_t flags,
     }
 
     /* Fill in the shipgate header */
-    pkt->hdr.pkt_len = htons(full_len);
+    pkt->hdr.pkt_len = htons((u_short)full_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_DC);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
@@ -3489,7 +3486,7 @@ int shipgate_fw_pc(shipgate_conn_t* c, const void* pcp, uint32_t flags,
     }
 
     /* Fill in the shipgate header */
-    pkt->hdr.pkt_len = htons(full_len);
+    pkt->hdr.pkt_len = htons((u_short)full_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_PC);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
@@ -3523,7 +3520,7 @@ int shipgate_fw_bb(shipgate_conn_t* c, const void* bbp, uint32_t flags,
     }
 
     /* Fill in the shipgate header */
-    pkt->hdr.pkt_len = htons(full_len);
+    pkt->hdr.pkt_len = htons((u_short)full_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BB);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
@@ -3918,8 +3915,8 @@ int shipgate_send_user_opt(shipgate_conn_t* c, uint32_t gc, uint32_t block,
     uint32_t opt, uint32_t len, const uint8_t* data) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
-    int padding = 8 - (len & 7);
-    uint16_t pkt_len = len + sizeof(shipgate_user_opt_pkt) + 8 + padding;
+    size_t padding = 8 - (len & 7);
+    uint16_t pkt_len = (uint16_t)(len + sizeof(shipgate_user_opt_pkt) + 8 + padding);
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
@@ -4002,16 +3999,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
 
     /* 填充公会数据 */
-    pkt->guild_owner_gc = cl->bb_guild->guild_data.guild_owner_gc;
-    pkt->guild_id = cl->bb_guild->guild_data.guild_id;
-    memcpy(&pkt->guild_info[0], &cl->bb_guild->guild_data.guild_info[0], sizeof(cl->bb_guild->guild_data.guild_info));
-    pkt->guild_priv_level = cl->bb_guild->guild_data.guild_priv_level;
-    memcpy(&pkt->guild_name[0], &cl->bb_guild->guild_data.guild_name[0], sizeof(cl->bb_guild->guild_data.guild_name));
-    pkt->guild_rank = cl->bb_guild->guild_data.guild_rank;
-    memcpy(&pkt->guild_flag[0], &cl->bb_guild->guild_data.guild_flag[0], sizeof(cl->bb_guild->guild_data.guild_flag));
-    pkt->guild_rewards = cl->bb_guild->guild_data.guild_rewards;
-
-    //memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
+    memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
@@ -4028,7 +4016,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const v
     }
 
     /* 填充数据头. */
-    pkt->hdr.pkt_len = htons(sizeof(shipgate_char_bkup_pkt) + len);
+    pkt->hdr.pkt_len = htons((u_short)(sizeof(shipgate_char_bkup_pkt) + len));
     pkt->hdr.pkt_type = htons(SHDR_TYPE_CBKUP);
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
@@ -4038,7 +4026,7 @@ int shipgate_send_cbkup(shipgate_conn_t* c, sg_char_bkup_pkt* game_info, const v
     pkt->game_info.slot = game_info->slot;
     pkt->game_info.block = htonl(game_info->block);
     pkt->game_info.c_version = htonl(game_info->c_version);
-    strncpy((char*)pkt->game_info.name, game_info->name, sizeof(pkt->game_info.name));
+    strncpy((char*)pkt->game_info.name, (char*)game_info->name, sizeof(pkt->game_info.name));
     pkt->game_info.name[31] = 0;
     memcpy(pkt->data, cdata, len);
 
@@ -4067,7 +4055,7 @@ int shipgate_send_cbkup_req(shipgate_conn_t* c, sg_char_bkup_pkt* game_info) {
     pkt->game_info.slot = game_info->slot;
     pkt->game_info.block = htonl(game_info->block);
     pkt->game_info.c_version = htonl(game_info->c_version);
-    strncpy((char*)pkt->game_info.name, game_info->name, sizeof(pkt->game_info.name));
+    strncpy((char*)pkt->game_info.name, (char*)game_info->name, sizeof(pkt->game_info.name));
     pkt->game_info.name[31] = 0;
 
     /* 加密并发送. */
@@ -4120,7 +4108,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
     const uint8_t* data, uint32_t len) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_sdata_pkt* pkt = (shipgate_sdata_pkt*)sendbuf;
-    uint16_t pkt_len;
+    size_t pkt_len;
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf)
@@ -4138,7 +4126,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
 
     /* 填充数据并准备发送.. */
     memset(pkt, 0, pkt_len);
-    pkt->hdr.pkt_len = htons(pkt_len);
+    pkt->hdr.pkt_len = htons((u_short)pkt_len);
     pkt->hdr.pkt_type = htons(SHDR_TYPE_SDATA);
     pkt->event_id = htonl(event);
     pkt->data_len = htonl(len);
@@ -4150,7 +4138,7 @@ int shipgate_send_sdata(shipgate_conn_t* c, ship_client_t* sc, uint32_t event,
         pkt->difficulty = sc->cur_lobby->difficulty;
     }
 
-    pkt->version = sc->version;
+    pkt->version = (uint8_t)sc->version;
     memcpy(pkt->data, data, len);
 
     /* 加密并发送. */

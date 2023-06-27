@@ -474,7 +474,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 }
 
 /* 0x03DC 988*/
-static int handle_guild_chunk(login_client_t* c, bb_guildcard_req_pkt* pkt) {
+static int handle_bb_guildcard_chunk_req(login_client_t* c, bb_guildcard_req_pkt* pkt) {
     uint32_t chunk_index, cont;
 
     chunk_index = LE32(pkt->chunk_index);
@@ -483,7 +483,7 @@ static int handle_guild_chunk(login_client_t* c, bb_guildcard_req_pkt* pkt) {
     /* Send data as long as the client is still looking for it. */
     if (cont) {
         /* Send the chunk */
-        return send_bb_guild_chunk(c, chunk_index);
+        return send_bb_guildcard_chunk(c, chunk_index);
     }
 
     return 0;
@@ -499,7 +499,7 @@ static int handle_option_request(login_client_t *c, bb_option_req_pkt* pkt) {
 
     guild_data = db_get_bb_char_guild(c->guildcard);
 
-    rv = send_bb_option_reply(c, opts.key_cfg, guild_data.guild_data);
+    rv = send_bb_option_reply(c, opts.key_cfg, guild_data);
 
     if (rv) {
         send_large_msg(c, __(c, "\tEÊý¾Ý¿â´íÎó.\n\n"
@@ -1057,7 +1057,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
 
             /* 0x03DC 988*/
         case BB_GUILDCARD_CHUNK_REQ_TYPE:
-            return handle_guild_chunk(c, (bb_guildcard_req_pkt *)pkt);
+            return handle_bb_guildcard_chunk_req(c, (bb_guildcard_req_pkt *)pkt);
 
             /* 0x00E0 224*/
         case BB_OPTION_REQUEST_TYPE:
