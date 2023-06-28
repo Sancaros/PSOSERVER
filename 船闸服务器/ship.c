@@ -1765,13 +1765,24 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         "%s.guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
         "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
         " FROM "
-        "%s INNER JOIN %s ON "
-        "%s.guild_id = %s.guild_id WHERE "
+        "%s"
+        " INNER JOIN "
+        "%s"
+        " ON "
+        "%s.guild_id = %s.guild_id"
+        " INNER JOIN "
+        "%s"
+        " ON "
+        "%s.guildcard = %s.guildcard"
+        " WHERE "
         "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
         , AUTH_ACCOUNT, AUTH_ACCOUNT
         , CLIENTS_GUILD
+        , AUTH_ACCOUNT
+        , CLIENTS_GUILD
         , AUTH_ACCOUNT, CLIENTS_GUILD
-        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , SERVER_CLIENTS_ONLINE
+        , AUTH_ACCOUNT, SERVER_CLIENTS_ONLINE
         , CLIENTS_GUILD, guild_id
     );
 
