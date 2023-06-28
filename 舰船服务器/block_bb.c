@@ -1619,29 +1619,26 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         /* BB has this in two places for now... */
         ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));
-        ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->character, &char_data.character, sizeof(psocn_bb_char_t));
-        ///////////////////////////////////////////////////////////////////////////////////////
-        c->bb_opts->option_flags = char_data.option_flags;
-        ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->quest_data1, &char_data.quest_data1, sizeof(psocn_quest_data1_t));
-        ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->bank, &char_data.bank, sizeof(psocn_bank_t));
-        ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->guildcard_desc, &char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-        memcpy(&c->bb_opts->symbol_chats, &char_data.symbol_chats, sizeof(c->bb_opts->symbol_chats));
-        memcpy(&c->bb_opts->shortcuts, &char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
         memcpy(&c->bb_pl->autoreply, &char_data.autoreply, sizeof(c->bb_pl->autoreply));
         memcpy(&c->bb_pl->infoboard, &char_data.infoboard, sizeof(c->bb_pl->infoboard));
         memcpy(&c->bb_pl->challenge_data, &char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
         memcpy(&c->bb_pl->tech_menu, &char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
         memcpy(&c->bb_pl->quest_data2, &char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
         ///////////////////////////////////////////////////////////////////////////////////////
+        memcpy(c->bb_guild, &char_data.guild_data, sizeof(bb_guild_t));
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        c->bb_opts->option_flags = char_data.option_flags;
+        memcpy(&c->bb_opts->symbol_chats, &char_data.symbol_chats, sizeof(c->bb_opts->symbol_chats));
+        memcpy(&c->bb_opts->shortcuts, &char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
         memcpy(&c->bb_opts->guild_name, &char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
-        ///////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, sizeof(bb_key_config_t));
-        ///////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_guild, &char_data.guild_data, sizeof(bb_guild_t));
+
 
         c->game_data->db_save_done = 1;
 #ifdef DEBUG
@@ -1851,7 +1848,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->guild_id, c2);
 
                     /* 初始化新会员的公会数据包 */
-                    memset(&c2->bb_guild, 0, sizeof(bb_guild_t));
+                    memset(&c2->bb_guild->guild_owner_gc, 0, sizeof(bb_guild_t));
 
                     c2->bb_guild->guild_owner_gc = c->bb_guild->guild_owner_gc;
                     c2->bb_guild->guild_id = c->bb_guild->guild_id;
@@ -1953,7 +1950,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
                     __(c, "\tE未找到该玩家."));
 
             if (c2->bb_guild->guild_priv_level < c->bb_guild->guild_priv_level) {
-                memset(&c2->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+                memset(c2->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
                 send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
                 send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
 
@@ -1978,7 +1975,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
         /* 操作数据库 */
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
         /* 初始化对应GC的公会数据 */
-        memset(&c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+        memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         return send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
@@ -2437,6 +2434,9 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 
 #endif // DEBUG
 
+    uint16_t len = LE16(hdr->pkt_len);
+    DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+
     switch (type) {
     case BB_GUILD_CREATE:
         return process_bb_guild_create(c, (bb_guild_create_pkt*)pkt);
@@ -2694,10 +2694,11 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
         type, c_cmd_name(type, 0), len, flags, c->guildcard);
     display_packet((unsigned char*)pkt, len);
-#endif // DEBUG
 
     DBG_LOG("舰仓:BB指令 0x%04X %s GC %u",
         type, c_cmd_name(type, 0), c->guildcard);
+#endif // DEBUG
+
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {
         /* 0x00DF 挑战模式 */

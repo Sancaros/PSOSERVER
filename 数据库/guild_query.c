@@ -122,7 +122,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     psocn_bb_db_guild_t guild;
     uint32_t guild_id, guild_priv_level;
 
-    memset(&guild, 0, sizeof(bb_guild_t));
+    memset(&guild.guild_owner_gc, 0, sizeof(bb_guild_t));
 
     memset(myquery, 0, sizeof(myquery));
 

@@ -744,7 +744,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (c->guildcard == remove_pkt->target_guildcard &&
                             c->bb_guild->guild_id == guild_id) {
 
-                            memset(&c->bb_guild, 0, sizeof(bb_guild_t));
+                            memset(&c->bb_guild->guild_owner_gc, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -837,7 +837,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                         if (c->bb_guild->guild_id == guild_id) {
                             send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
-                            memset(&c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+                            memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }

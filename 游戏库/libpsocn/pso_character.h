@@ -297,7 +297,7 @@ typedef struct psocn_bb_guild_rewards {
     uint8_t guild_reward7;
 } PACKED psocn_bb_guild_rewards_t;
 
-/* BB公会数据结构 TODO 2108字节*/
+/* BB公会数据结构 TODO 2108字节 无法整除8倍数 缺8位 会导致数据无法传输 */
 typedef struct psocn_bb_guild {
     uint32_t guild_owner_gc;               // 公会创始人
     uint32_t guild_id;                     // 公会索引 

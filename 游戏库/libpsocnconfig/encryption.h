@@ -18,7 +18,7 @@
 #define TABLE_SIZE (1024 + 18)
 
 // Encryption data struct 
-typedef struct {
+typedef struct crypt_setup {
     uint32_t type; // what kind of encryption is this? 
     uint32_t keys[TABLE_SIZE]; // encryption stream 
     uint32_t pc_posn; // PSOPC crypt position 
@@ -27,7 +27,7 @@ typedef struct {
     uint32_t gc_seed; // PSOGC seed used 
     uint32_t bb_posn; // BB position (not used) 
     uint32_t bb_seed[12]; // BB seed used 
-    void (*mangle)(struct CRYPT_SETUP*);
+    void (*mangle)(struct crypt_setup*);
 } CRYPT_SETUP;
 
 /* int CRYPT_CreateKeys(CRYPT_SETUP* cs,void* key,unsigned char type)

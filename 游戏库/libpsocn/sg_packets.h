@@ -439,8 +439,8 @@ typedef struct shipgate_bb_opts {
     uint32_t guildcard;
     uint32_t block;
     psocn_bb_db_opts_t opts;
-    uint32_t padding;
     psocn_bb_db_guild_t guild;
+    uint32_t unused;
 } PACKED shipgate_bb_opts_pkt;
 
 /* Packet used to send an update to the user's monster kill counts.

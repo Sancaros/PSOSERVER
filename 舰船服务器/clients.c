@@ -193,7 +193,6 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             }
 
             memset(rv->bb_opts, 0, sizeof(psocn_bb_db_opts_t));
-
             rv->bb_guild =
                 (psocn_bb_db_guild_t *)malloc(sizeof(psocn_bb_db_guild_t));
 

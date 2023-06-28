@@ -11532,7 +11532,8 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(&pkt->data.guild_data, &c->bb_guild, sizeof(bb_guild_t));
+    /* 复制完整的公会数据 从首个元素开始 复制 2108字节 */
+    memcpy(&pkt->data.guild_data.guild_owner_gc, &c->bb_guild->guild_owner_gc, sizeof(bb_guild_t));
 
     /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */
