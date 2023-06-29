@@ -99,13 +99,15 @@ int smutdata_read(const char *fn) {
     }
 
     /* Allocate the arrays... */
-    if(!(smutdata_west = (wchar_t **)malloc(sizeof(wchar_t *) * entries1))) {
+    smutdata_west = (wchar_t**)malloc(sizeof(wchar_t*) * entries1);
+    if(!smutdata_west) {
         SHIPS_LOG("分配smutdata数组内存时出错");
         free_safe(ucbuf);
         return -4;
     }
 
-    if(!(smutdata_east = (wchar_t **)malloc(sizeof(wchar_t *) * entries2))) {
+    smutdata_east = (wchar_t**)malloc(sizeof(wchar_t*) * entries2);
+    if(!smutdata_east) {
         SHIPS_LOG("分配smutdata数组内存时出错");
         free_safe(smutdata_west);
         free_safe(ucbuf);
@@ -276,7 +278,8 @@ int smutdata_check_string(const char *str, int which) {
         return 0;
 
     /* Convert the input string to a string of wchar_t. */
-    if(!(real_wstr = (wchar_t *)malloc((len + 1) * sizeof(wchar_t))))
+    real_wstr = (wchar_t*)malloc((len + 1) * sizeof(wchar_t));
+    if(!real_wstr)
         return 0;
 
     memset(&state, 0, sizeof(mbstate_t));
@@ -403,7 +406,7 @@ static const char censor_str[] = "#!@%";
 char *smutdata_censor_string(const char *str, int which) {
     size_t len = strlen(str);
     uint32_t i, k;
-    size_t j, len2;
+    size_t j, len2 = 0;
     int matched = 0, skip = 0;
     wchar_t* wstr, * cmp = { 0 }, * real_wstr;
     const wchar_t *tmp2;
@@ -413,7 +416,8 @@ char *smutdata_censor_string(const char *str, int which) {
     wchar_t tc;
 
     /* Convert the input string to a string of wchar_t. */
-    if(!(real_wstr = (wchar_t *)malloc((len + 1) * sizeof(wchar_t))))
+    real_wstr = (wchar_t*)malloc((len + 1) * sizeof(wchar_t));
+    if(!real_wstr)
         return NULL;
 
     memset(&state, 0, sizeof(mbstate_t));
@@ -577,7 +581,8 @@ out:
     tmp2 = real_wstr;
     len2 = wcsrtombs(NULL, &tmp2, 0, &state);
 
-    if(!(rv = (char *)malloc(len2 + 1))) {
+    rv = (char*)malloc(len2 + 1);
+    if(!rv) {
         free_safe(real_wstr);
         return NULL;
     }

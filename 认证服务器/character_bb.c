@@ -499,7 +499,7 @@ static int handle_option_request(login_client_t *c, bb_option_req_pkt* pkt) {
 
     guild_data = db_get_bb_char_guild(c->guildcard);
 
-    rv = send_bb_option_reply(c, opts.key_cfg, guild_data);
+    rv = send_bb_option_reply(c, opts.key_cfg, guild_data.data);
 
     if (rv) {
         send_large_msg(c, __(c, "\tEÊı¾İ¿â´íÎó.\n\n"

@@ -55,7 +55,6 @@ typedef struct command {
 /* 用法: /debug 0 | 1*/
 static int handle_gmdebug(ship_client_t* c, const char* params) {
     unsigned long param;
-    lobby_t* l = c->cur_lobby;
 
     /* Make sure the requester is a GM. */
     if (!LOCAL_GM(c)) {
@@ -738,8 +737,8 @@ static int handle_bug(ship_client_t *c, const char *params) {
     gcpkt.ch_class = 8;
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
 
-    sprintf(gcpkt.name, __(c, "错误报告"));
-    sprintf(gcpkt.guildcard_desc, __(c, "向该GC上报一个错误报告."));
+    sprintf(gcpkt.name, "%s", __(c, "错误报告"));
+    sprintf(gcpkt.guildcard_desc, "%s", __(c, "向该GC上报一个错误报告."));
 
     send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7发送邮件至\n"
                          "'错误报告' 玩家并上报\n"

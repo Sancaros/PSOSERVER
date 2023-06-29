@@ -2429,7 +2429,7 @@ static int send_gc_message_box(login_client_t *c, const char *fmt,
         len += 2;
     }
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2465,7 +2465,7 @@ static int send_bb_message_box(login_client_t* c, const char* fmt,
         len += 2;
     }
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while (len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2677,7 +2677,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     /* 结尾添加截断字符 0x00*/
     pkt->msg[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while (len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2749,7 +2749,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     sendbuf[len++] = 0x00;
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while (len & 0x07) {
         sendbuf[len++] = 0;
     }

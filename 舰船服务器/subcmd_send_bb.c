@@ -25,13 +25,12 @@
 int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_drop_stack_t pkt = { 0 };
-    int pkt_size = sizeof(subcmd_bb_drop_stack_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送.. */
-    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
     pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     pkt.hdr.flags = 0;
 
@@ -87,7 +86,6 @@ int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t area, uint32_t item_id) 
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 单人获得物品 */
 int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
-    uint16_t client_id = c->client_id;
     subcmd_bb_create_item_t pkt = { 0 };
 
     /* 填充数据并准备发送 */
@@ -137,7 +135,6 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
 int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
-    uint16_t client_id = c->client_id;
     subcmd_bb_tekk_identify_result_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_tekk_identify_result_t);
 
@@ -210,7 +207,8 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         tmp_meseta.data.data2_l = count;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        if (!(meseta = lobby_add_item_locked(l, &tmp_meseta))) {
+        meseta = lobby_add_item_locked(l, &tmp_meseta);
+        if (!meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!\n");
             return -1;
@@ -528,8 +526,11 @@ int subcmd_send_bb_level(ship_client_t* c) {
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
 int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
-    block_t* b = c->cur_block;
+    lobby_t* l = c->cur_lobby;
     subcmd_bb_shop_inv_t shop = { 0 };
+
+    if (!l)
+        return 0;
 
     if (num_items > sizeof(shop.items) / sizeof(shop.items[0])) {
         ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! %d %d",

@@ -254,7 +254,6 @@ typedef struct psocn_bb_mini_char {
     uint32_t exp;
     uint32_t level;
     psocn_dress_data_t dress_data;
-    //uint16_t name[BB_CHARACTER_NAME_LENGTH];
     psocn_bb_char_name_t name;
     uint8_t hw_info[0x08]; // 0x7C - 0x83
     uint32_t play_time;
@@ -285,17 +284,17 @@ typedef struct psocn_bb_key_config {
     uint8_t key_config[0x016C];           // 0114
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
-
-typedef struct psocn_bb_guild_rewards {
-    uint8_t guild_reward0;
-    uint8_t guild_reward1;
-    uint8_t guild_reward2;
-    uint8_t guild_reward3;
-    uint8_t guild_reward4;
-    uint8_t guild_reward5;
-    uint8_t guild_reward6;
-    uint8_t guild_reward7;
-} PACKED psocn_bb_guild_rewards_t;
+//
+//typedef struct psocn_bb_guild_rewards {
+//    uint8_t guild_reward0;
+//    uint8_t guild_reward1;
+//    uint8_t guild_reward2;
+//    uint8_t guild_reward3;
+//    uint8_t guild_reward4;
+//    uint8_t guild_reward5;
+//    uint8_t guild_reward6;
+//    uint8_t guild_reward7;
+//} PACKED psocn_bb_guild_rewards_t;
 
 /* BB公会数据结构 TODO 2108字节 无法整除8倍数 缺8位 会导致数据无法传输 */
 typedef struct psocn_bb_guild {
@@ -305,7 +304,7 @@ typedef struct psocn_bb_guild {
     uint32_t guild_points_rank;
     uint32_t guild_points_rest;
     uint32_t guild_priv_level;             // 会员等级     4
-    uint16_t guild_name[0x000E];           // 公会名称     28
+    uint16_t guild_name[0x000E];           // 公会名称     28 guild_name_tag1 guild_name_tag2 guild_name[12]
     uint32_t guild_rank;                   // 公会排行     4
     uint8_t guild_flag[0x0800];            // 公会图标     2048
     // 公会奖励     8种奖励
@@ -328,7 +327,9 @@ typedef struct psocn_bb_guild {
 #define BB_GUILD_PRIV_LEVEL_ADMIN  0x00000030
 #define BB_GUILD_PRIV_LEVEL_MEMBER 0x00000000
 
-typedef bb_guild_t psocn_bb_db_guild_t;
+typedef struct psocn_bb_db_guild {
+    bb_guild_t data;
+} psocn_bb_db_guild_t;
 
 static int guild_size = sizeof(psocn_bb_db_guild_t);
 

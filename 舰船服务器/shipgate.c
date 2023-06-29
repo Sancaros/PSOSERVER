@@ -699,7 +699,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* OK */
                     case BB_GUILD_CREATE:
                         if (c->guildcard == gc) {
-                            c->bb_guild = guild;
+                            memcpy(&c->bb_guild->data.guild_owner_gc, &guild->data.guild_owner_gc, sizeof(bb_guild_t));
+                            //c->bb_guild = guild;
                             send_bb_guild_cmd(c, BB_GUILD_UNK_02EA);
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
@@ -719,8 +720,8 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         /* OK */
                     case BB_GUILD_MEMBER_ADD:
                         if (c->guildcard == gc) {
-
-                            c->bb_guild = guild;
+                            memcpy(&c->bb_guild->data.guild_owner_gc, &guild->data.guild_owner_gc, sizeof(bb_guild_t));
+                            //c->bb_guild = guild;
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
@@ -742,9 +743,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         guild_id = pkt->fw_flags;
 
                         if (c->guildcard == remove_pkt->target_guildcard &&
-                            c->bb_guild->guild_id == guild_id) {
+                            c->bb_guild->data.guild_id == guild_id) {
 
-                            memset(&c->bb_guild->guild_owner_gc, 0, sizeof(bb_guild_t));
+                            memset(&c->bb_guild->data.guild_owner_gc, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -763,7 +764,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_chat_pkt* chat_pkt = (bb_guild_member_chat_pkt*)pkt->pkt;
                         guild_id = chat_pkt->guild_id;
 
-                        if (c->bb_guild->guild_id == guild_id && c->guildcard != 0)
+                        if (c->bb_guild->data.guild_id == guild_id && c->guildcard != 0)
                             send_pkt_bb(c, (bb_pkt_hdr_t*)g);
 
                         break;
@@ -825,9 +826,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_flag_setting_pkt* flag_pkt = (bb_guild_member_flag_setting_pkt*)pkt->pkt;
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_id == guild_id) {
+                        if (c->bb_guild->data.guild_id == guild_id) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, c->guildcard);
-                            memcpy(&c->bb_guild->guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->guild_flag));
+                            memcpy(&c->bb_guild->data.guild_flag[0], &flag_pkt->guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
                         }
                         break;
@@ -835,7 +836,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_DISSOLVE:
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_id == guild_id) {
+                        if (c->bb_guild->data.guild_id == guild_id) {
                             send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE\tC4公会已被解散!"));
                             memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
                             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
@@ -848,7 +849,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_promote_pkt* promote_pkt = (bb_guild_member_promote_pkt*)pkt->pkt;
                         guild_id = pkt->fw_flags;
 
-                        if (c->bb_guild->guild_id == guild_id) {
+                        if (c->bb_guild->data.guild_id == guild_id) {
 
                             if (c->guildcard == promote_pkt->target_guildcard) {
 #ifdef DEBUG

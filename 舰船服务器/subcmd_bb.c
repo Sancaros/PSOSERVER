@@ -1101,9 +1101,9 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
         {
             /* 公会邀请起始 检测双方的 公会情况 */
         case 0x00:
-                if (d->bb_guild->guild_id != 0) {
+                if (d->bb_guild->data.guild_id != 0) {
                     d->guild_accept = 0;
-                    DBG_LOG("被邀请方 GUILD ID %u", d->bb_guild->guild_id);
+                    DBG_LOG("被邀请方 GUILD ID %u", d->bb_guild->data.guild_id);
                     /* 到这就没了, 获取对方已经属于某个公会. */
                     send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法邀请玩家!"),
                         __(c, "\tC7对方已在公会中."));
@@ -1131,9 +1131,9 @@ static int handle_bb_guild_invite(ship_client_t* c, ship_client_t* d, subcmd_bb_
             /* 公会邀请成功 检测对方的 公会情况 */
         case 0x02:
             if (c->guildcard == target_guildcard)
-                if (c->bb_guild->guild_id != 0) {
+                if (c->bb_guild->data.guild_id != 0) {
                     c->guild_accept = 0;
-                    DBG_LOG("被邀请方 GUILD ID %u", d->bb_guild->guild_id);
+                    DBG_LOG("被邀请方 GUILD ID %u", d->bb_guild->data.guild_id);
                     /* 到这就没了, 获取对方已经属于某个公会. */
                     send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法邀请玩家!"),
                         __(c, "\tC7对方已在公会中."));
@@ -1214,7 +1214,7 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
         //{
         //case 0x00:
         //case 0x01:
-        //    if (c->bb_guild->guild_data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
+        //    if (c->bb_guild->data.guild_data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         //        ERR_LOG("GC %u 公会权限不足", c->guildcard);
         //        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
         //            __(c, "\tC7您无权进行此操作."));
@@ -1228,7 +1228,7 @@ static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_g
         //    break;
         //}
 
-        if (c->bb_guild->guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
+        if (c->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
             ERR_LOG("GC %u 公会权限不足", c->guildcard);
             return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
                 __(c, "\tC7您无权进行此操作."));

@@ -2313,7 +2313,7 @@ static int send_dc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* 结尾添加截断字符 0x00*/
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2388,7 +2388,7 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* 结尾添加截断字符 0x00*/
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2464,7 +2464,7 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     sendbuf[len++] = 0x00;
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x07) {
         sendbuf[len++] = 0;
     }
@@ -2600,7 +2600,7 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* 结尾添加截断字符 0x00*/
     pkt->msg[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -2641,7 +2641,7 @@ static int send_pc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     /* 结尾添加截断字符 0x00*/
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         sendbuf[len++] = 0;
     }
@@ -2681,7 +2681,7 @@ static int send_bb_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     sendbuf[len++] = 0x00;
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x07) {
         sendbuf[len++] = 0;
     }
@@ -3487,7 +3487,7 @@ static int send_dcnte_txt(ship_client_t *c, const char *fmt, va_list args) {
     /* Figure out how long the new string is. */
     len = 65520 - out;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -3567,7 +3567,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     /* 结尾添加截断字符 0x00*/
     pkt->msg[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -3641,7 +3641,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     sendbuf[len++] = 0x00;
     sendbuf[len++] = 0x00;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x07) {
         sendbuf[len++] = 0;
     }
@@ -5092,7 +5092,7 @@ static int send_dc_message_box(ship_client_t *c, const char *fmt,
     iconv(ic, &inptr, &in, &outptr, &out);
     len = 65500 - out;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -5181,7 +5181,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
     iconv(ic, &inptr, &in, &outptr, &out);
     len = 65500 - out;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while (len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -5300,7 +5300,7 @@ static int send_message_type(ship_client_t* c, uint16_t type, const char* fmt,
     iconv(ic, &inptr, &in, &outptr, &out);
     len = 65500 - out;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while (len & (c->hdr_size - 1)) {
         pkt->msg[len++] = 0;
     }
@@ -8492,7 +8492,7 @@ static int send_dcv2_lobby_name(ship_client_t *c, lobby_t *l) {
 
     len = (uint16_t)strlen(pkt->msg) + 1;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -8532,7 +8532,7 @@ static int send_pc_lobby_name(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pc.pkt_type = LOBBY_NAME_TYPE;
     pkt->hdr.pc.flags = 0;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -8572,7 +8572,7 @@ static int send_bb_lobby_name(ship_client_t *c, lobby_t *l) {
     pkt->hdr.pkt_type = LE16(LOBBY_NAME_TYPE);
     pkt->hdr.flags = 0;
 
-    /* Add any padding needed */
+    /* 增加字节偏移以适应4或8字节对齐 */
     while(len & 0x03) {
         pkt->msg[len++] = 0;
     }
@@ -11533,7 +11533,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, sizeof(bb_key_config_t));
     ///////////////////////////////////////////////////////////////////////////////////////
     /* 复制完整的公会数据 从首个元素开始 复制 2108字节 */
-    memcpy(&pkt->data.guild_data.guild_owner_gc, &c->bb_guild->guild_owner_gc, sizeof(bb_guild_t));
+    memcpy(&pkt->data.guild_data.guild_owner_gc, &c->bb_guild->data.guild_owner_gc, sizeof(bb_guild_t));
 
     /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */
@@ -11821,9 +11821,6 @@ int send_lobby_end_burst(lobby_t *l) {
     /* Only send these to Blue Burst game lobbies */
     if(!(l->type & LOBBY_TYPE_GAME) || l->version != CLIENT_VERSION_BB)
         return 0;
-
-    /*DBG_LOG(
-        "send_lobby_end_burst");*/
 
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i]) {
@@ -12399,44 +12396,46 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 /* 构建公会完整数据包 */
 uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     uint8_t* sendbuf = get_sendbuf(); 
-    //bb_full_guild_data_pkt* pkt = (bb_full_guild_data_pkt*)sendbuf;
-    //int len = sizeof(bb_full_guild_data_pkt);
+    bb_full_guild_data_pkt* pkt = (bb_full_guild_data_pkt*)sendbuf;
+    int len = sizeof(bb_full_guild_data_pkt);
 
-    //memset(pkt, 0, len);
+    memset(pkt, 0, len);
 
-    ///* 填充数据头 */
-    //pkt->hdr.pkt_len = LE16(0x0864);
-    //pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
-    //pkt->hdr.flags = LE32(0x00000001);
+    /* 填充数据头 */
+    pkt->hdr.pkt_len = LE16(len);
+    pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
+    pkt->hdr.flags = LE32(0x00000001);
 
-    ///* 填充剩余数据 */
-    //pkt->guild_owner_gc = c->guildcard;
-    //pkt->guild_id = c->bb_guild->guild_id;
-    //memcpy(&pkt->guild_info[0], &c->bb_guild->guild_info[0], sizeof(pkt->guild_info));
-    //pkt->guild_priv_level = c->bb_guild->guild_priv_level;
-    //memcpy(&pkt->guild_name[0], &c->bb_guild->guild_name[0], sizeof(pkt->guild_name));
-    //pkt->guild_rank = c->bb_guild->guild_rank;
-    //pkt->target_guildcard = c->guildcard;
-    //pkt->client_id = c->client_id;
-    //memcpy(&pkt->char_name[0], &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    //pkt->guild_dress_rewards = c->bb_guild->guild_rewards;
-    //memcpy(&pkt->guild_flag[0], &c->bb_guild->guild_flag[0], sizeof(pkt->guild_flag));
+    /* 填充剩余数据 */
+    pkt->entries.guild_owner_gc = c->guildcard;
+    pkt->entries.guild_id = c->bb_guild->data.guild_id;
+    pkt->entries.guild_points_rank = c->bb_guild->data.guild_points_rank;
+    pkt->entries.guild_points_rest = c->bb_guild->data.guild_points_rest;
+    pkt->entries.guild_priv_level = c->bb_guild->data.guild_priv_level;
+    memcpy(&pkt->entries.guild_name[0], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
+    pkt->entries.guild_rank = c->bb_guild->data.guild_rank;
+    pkt->entries.client_guildcard = c->guildcard;
+    pkt->entries.client_id = c->client_id;
+    memcpy(&pkt->entries.char_name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    for (int i = 0; i < 8; i++)
+        pkt->entries.guild_reward[i] = c->bb_guild->data.guild_reward[i];
+    memcpy(&pkt->entries.guild_flag[0], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
 
-    //return (uint8_t*)pkt;
+    return sendbuf;
 
-    sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
-    memset(&sendbuf[0x05], 0, 3);
+    //sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
+    //memset(&sendbuf[0x05], 0, 3);
 
-    *(unsigned*)&sendbuf[0x08] = c->guildcard;
-    *(unsigned*)&sendbuf[0x0C] = c->bb_guild->guild_id;
-    *(unsigned*)&sendbuf[0x18] = c->bb_guild->guild_priv_level;
-    memcpy(&sendbuf[0x1C], &c->bb_guild->guild_name[0], sizeof(c->bb_guild->guild_name));
-    sprintf(&sendbuf[0x38], "\x84\x6C\x98");
-    *(unsigned*)&sendbuf[0x3C] = c->guildcard;
-    sendbuf[0x40] = c->client_id;
-    memcpy(&sendbuf[0x44], &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    memcpy(&sendbuf[0x64], &c->bb_guild->guild_flag[0], sizeof(c->bb_guild->guild_flag));
-    return &sendbuf[0];
+    //*(unsigned*)&sendbuf[0x08] = c->guildcard;
+    //*(unsigned*)&sendbuf[0x0C] = c->bb_guild->data.guild_id;
+    //*(unsigned*)&sendbuf[0x18] = c->bb_guild->data.guild_priv_level;
+    //memcpy(&sendbuf[0x1C], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
+    //sprintf(&sendbuf[0x38], "\x84\x6C\x98");
+    //*(unsigned*)&sendbuf[0x3C] = c->guildcard;
+    //sendbuf[0x40] = c->client_id;
+    //memcpy(&sendbuf[0x44], &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    //memcpy(&sendbuf[0x64], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
+    //return &sendbuf[0];
 }
 
 /* 用于 0x00EA BB公会 指令*/
@@ -12446,7 +12445,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* c2;
     int i;
-    uint32_t len = 0, num = 0;
+    uint16_t len = 0, num = 0;
 
     /* Make sure we got the sendbuf */
     if (!sendbuf)
@@ -12491,13 +12490,13 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         memset(&pkt->data[0x00], 0, len);
 
-        *(uint32_t*)&pkt->data[0x00] = c->bb_guild->guild_owner_gc;
-        *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_id;
-        *(uint32_t*)&pkt->data[0x08] = c->bb_guild->guild_points_rank;
-        *(uint32_t*)&pkt->data[0x0C] = c->bb_guild->guild_points_rest;
-        memcpy(&pkt->data[0x10], &c->bb_guild->guild_name[0], sizeof(c->bb_guild->guild_name));
-        *(uint32_t*)&pkt->data[0x2C] = c->bb_guild->guild_rank;
-        memcpy(&pkt->data[0x30], &c->bb_guild->guild_flag[0], 0x800);
+        *(uint32_t*)&pkt->data[0x00] = c->bb_guild->data.guild_owner_gc;
+        *(uint32_t*)&pkt->data[0x04] = c->bb_guild->data.guild_id;
+        *(uint32_t*)&pkt->data[0x08] = c->bb_guild->data.guild_points_rank;
+        *(uint32_t*)&pkt->data[0x0C] = c->bb_guild->data.guild_points_rest;
+        memcpy(&pkt->data[0x10], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
+        *(uint32_t*)&pkt->data[0x2C] = c->bb_guild->data.guild_rank;
+        memcpy(&pkt->data[0x30], &c->bb_guild->data.guild_flag[0], 0x800);
 
         pkt->hdr.pkt_len = LE16(len);
         pkt->hdr.pkt_type = cmd_code;
@@ -12531,13 +12530,15 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         memset(&pkt->data[0x00], 0, 0x38);
 
-        *(uint32_t*)&pkt->data[0x04] = c->bb_guild->guild_owner_gc;
-        *(uint32_t*)&pkt->data[0x08] = c->bb_guild->guild_id;
-        *(uint32_t*)&pkt->data[0x0C] = c->bb_guild->guild_points_rank;
-        *(uint32_t*)&pkt->data[0x10] = c->bb_guild->guild_points_rest;
-        *(uint32_t*)&pkt->data[0x14] = c->bb_guild->guild_priv_level;
-        memcpy(&pkt->data[0x18], &c->bb_guild->guild_name[0], sizeof(c->bb_guild->guild_name));
-        *(uint32_t*)&pkt->data[0x34] = c->bb_guild->guild_rank;
+        if (c->bb_guild != NULL) {
+            *(uint32_t*)&pkt->data[0x04] = c->bb_guild->data.guild_owner_gc;
+            *(uint32_t*)&pkt->data[0x08] = c->bb_guild->data.guild_id;
+            *(uint32_t*)&pkt->data[0x0C] = c->bb_guild->data.guild_points_rank;
+            *(uint32_t*)&pkt->data[0x10] = c->bb_guild->data.guild_points_rest;
+            *(uint32_t*)&pkt->data[0x14] = c->bb_guild->data.guild_priv_level;
+            memcpy(&pkt->data[0x18], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
+            *(uint32_t*)&pkt->data[0x34] = c->bb_guild->data.guild_rank;
+        }
 
         pkt->hdr.pkt_len = LE16(0x0038 + sizeof(bb_pkt_hdr_t));//64 - 8 = 56
         pkt->hdr.pkt_type = cmd_code;
@@ -12548,50 +12549,54 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* 13EA */
     case BB_GUILD_LOBBY_SETTING:
+        bb_guild_lobby_setting_pkt* lbs = (bb_guild_lobby_setting_pkt*)sendbuf;
+
+        len = 0x860;
 
         for (i = 0; i < l->max_clients; i++) {
             if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
                 c2 = l->clients[i];
 
-                *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_owner_gc;
-                len += 4;
-                *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_id;
-                len += 4;
-                if (c2->bb_guild->guild_id != 0) {
-                    *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_points_rank;
-                    len += 4;
-                    *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_points_rest;
-                    len += 4;
+                lbs->entries[num].guild_owner_gc = c2->bb_guild->data.guild_owner_gc;
+                lbs->entries[num].guild_id = c2->bb_guild->data.guild_id;
+                lbs->entries[num].guild_points_rank = c2->bb_guild->data.guild_points_rank;
+                lbs->entries[num].guild_points_rest = c2->bb_guild->data.guild_points_rest;
+                lbs->entries[num].guild_priv_level = c2->bb_guild->data.guild_priv_level;
+                memcpy(&lbs->entries[num].guild_name[0], &c2->bb_guild->data.guild_name[0], sizeof(c2->bb_guild->data.guild_name));
+                if (c2->bb_guild->data.guild_id != 0)
+                    lbs->entries[num].guild_rank = c2->bb_guild->data.guild_rank;
+                else
+                    lbs->entries[num].guild_rank = 0;
+                lbs->entries[num].client_guildcard = c2->guildcard;
+                lbs->entries[num].client_id = c2->client_id;
+                memcpy(&lbs->entries[num].char_name, &c2->bb_pl->character.name, sizeof(c2->bb_pl->character.name));
+                if (c2->bb_guild->data.guild_id != 0) {
+
+                    lbs->entries[num].guild_reward[0] = c2->bb_guild->data.guild_reward[0];
+                    lbs->entries[num].guild_reward[1] = c2->bb_guild->data.guild_reward[1];
+                    lbs->entries[num].guild_reward[2] = c2->bb_guild->data.guild_reward[2];
+                    lbs->entries[num].guild_reward[3] = c2->bb_guild->data.guild_reward[3];
+                    lbs->entries[num].guild_reward[4] = c2->bb_guild->data.guild_reward[4];
+                    lbs->entries[num].guild_reward[5] = c2->bb_guild->data.guild_reward[5];
+                    lbs->entries[num].guild_reward[6] = c2->bb_guild->data.guild_reward[6];
+                    lbs->entries[num].guild_reward[7] = c2->bb_guild->data.guild_reward[7];
                 }
                 else {
-                    memset(&pkt->data[len], 0, 8);
-                    len += 8;
+                    lbs->entries[num].guild_reward[0] = 0;
+                    lbs->entries[num].guild_reward[1] = 0;
+                    lbs->entries[num].guild_reward[2] = 0;
+                    lbs->entries[num].guild_reward[3] = 0;
+                    lbs->entries[num].guild_reward[4] = 0;
+                    lbs->entries[num].guild_reward[5] = 0;
+                    lbs->entries[num].guild_reward[6] = 0;
+                    lbs->entries[num].guild_reward[7] = 0;
                 }
-                pkt->data[len] = (uint8_t)c2->bb_guild->guild_priv_level;
-                len += 4;
-                memcpy(&pkt->data[len], &c2->bb_guild->guild_name[0], 28);
-                len += 28;
-                if (c2->bb_guild->guild_id != 0) {
-                    *(uint32_t*)&pkt->data[len] = c2->bb_guild->guild_rank;
-                } else {
-                    memset(&pkt->data[len], 0, 4);
-                }
-                len += 4;
-                *(uint32_t*)&pkt->data[len] = c2->guildcard;
-                len += 4;
-                *(uint32_t*)&pkt->data[len] = c2->client_id;
-                len += 4;
-                memcpy(&pkt->data[len], &c2->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-                len += 24;
-                memset(&pkt->data[len], 0, 8);
-                len += 8;
-                memcpy(&pkt->data[len], &c2->bb_guild->guild_flag[0], 0x800);
-                len += 0x800;
+                memcpy(&lbs->entries[num].guild_flag, &c2->bb_guild->data.guild_flag, sizeof(c2->bb_guild->data.guild_flag));
                 num++;
             }
         }
 
-        pkt->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+        pkt->hdr.pkt_len = LE16(len * num + sizeof(bb_pkt_hdr_t));/* 2144 * num + 8 */
         pkt->hdr.pkt_type = cmd_code;
         pkt->hdr.flags = LE32(num);
 
@@ -12627,7 +12632,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 填充菜单实例 */
         //for (i = 0; i < l->max_clients; ++i) {
         //    if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
-        //        if (l->clients[i]->bb_guild->guild_id == c->bb_guild->guild_id) {
+        //        if (l->clients[i]->bb_guild->guild_id == c->bb_guild->data.guild_id) {
         //            c2 = l->clients[i];
         //            num++;
 
@@ -12636,7 +12641,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         //            info->entries[i].guild_points_rest = 0x22222222;
         //            info->entries[i].guild_member_num = num;
         //            info->entries[i].leaderboard_index = num;
-        //            info->entries[i].guild_priv_level = c2->bb_guild->guild_priv_level;
+        //            info->entries[i].guild_priv_level = c2->bb_guild->data.guild_priv_level;
         //            info->entries[i].guildcard_client = c2->guildcard;
         //            memcpy(&info->entries[i].char_name[0], &c2->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
         //            sprintf(&info->entries[i].unk_data3[0], "\x03\x03\x03\x03");
@@ -12653,7 +12658,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         //pkt->data[0x0C] = 0x01;
         //pkt->data[0x10] = 0x01;
-        //*(uint32_t*)&pkt->data[0x14] = c->bb_guild->guild_priv_level;
+        //*(uint32_t*)&pkt->data[0x14] = c->bb_guild->data.guild_priv_level;
         //*(uint32_t*)&pkt->data[0x18] = c->guildcard;
         //memcpy(&pkt->data[0x1C], &c->bb_pl->character.name[0], BB_CHARACTER_NAME_LENGTH * 2);
         //pkt->data[0x40] = 0x02;
@@ -12712,14 +12717,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         //pkt->hdr.flags = 0x00000000;
 
         bb_guild_buy_special_item_pkt* spec_item_list = (bb_guild_buy_special_item_pkt*)sendbuf;
-        len = 0x100;
 
-        /* 初始化数据包 */
-        memset(spec_item_list, 0, len);
-
-        size_t entries_size = sizeof(bb_guild_special_item_list_t);
-
-        len = 0;
+        len = sizeof(bb_guild_special_item_list_t);
 
         spec_item_list->item_num = 4;
 
@@ -12728,13 +12727,13 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_name, pso_guild_rank_list_bb[i]->name, sizeof(spec_item_list->entries[i].item_name));
             istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_desc, "Bronze Pen1111111111111111", sizeof(spec_item_list->entries[i].item_desc));
             spec_item_list->entries[i].price = 123;
-            len += entries_size;
+            num++;
         }
 
         /* 填充数据头 */
-        spec_item_list->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+        spec_item_list->hdr.pkt_len = LE16(len * num + sizeof(bb_pkt_hdr_t));
         spec_item_list->hdr.pkt_type = cmd_code;
-        spec_item_list->hdr.flags = i - 1;
+        spec_item_list->hdr.flags = num;
 
         display_packet((uint8_t*)spec_item_list, spec_item_list->hdr.pkt_len);
 
@@ -12958,7 +12957,7 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
             (l->clients[i]->version == CLIENT_VERSION_BB)
             ) {
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
-            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+            /*rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));*/
             rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
         }
     }
