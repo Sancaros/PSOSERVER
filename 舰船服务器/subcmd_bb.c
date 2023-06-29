@@ -655,7 +655,7 @@ static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
             return -2;
         }
 
-        tek_item_slot = find_inv_item_slot(&c->bb_pl->inv, pkt->item_id);
+        tek_item_slot = find_iitem_slot(&c->bb_pl->inv, pkt->item_id);
 
         /* 获取鉴定物品的内存指针 */
         iitem_t* id_result = &(c->game_data->identify_result);
@@ -2522,7 +2522,7 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     /* Find the item and remove the equip flag. */
     inv = c->bb_pl->inv.item_count;
 
-    i = find_inv_item_slot(&c->bb_pl->inv, pkt->item_id);
+    i = find_iitem_slot(&c->bb_pl->inv, pkt->item_id);
 
     if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
         c->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -2693,7 +2693,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            size_t index = find_inv_item_slot(&c->bb_pl->inv, pkt->item_ids[x]);
+            size_t index = find_iitem_slot(&c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
     }

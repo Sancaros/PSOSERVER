@@ -230,10 +230,8 @@ size_t stack_size_for_item(item_t item) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id) {
-    size_t x;
-
-    for (x = 0; x < inv->item_count; x++) {
+size_t find_iitem_slot(inventory_t* inv, uint32_t item_id) {
+    for (size_t x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
         }
@@ -400,7 +398,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     size_t i = 0;
     item_t found_item = { 0 };
 
-    i = find_inv_item_slot(&c->bb_pl->inv, item_id);
+    i = find_iitem_slot(&c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);
@@ -724,7 +722,7 @@ iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amoun
     }
     else {
         // Search for the item in the inventory.
-        size_t index = find_inv_item_slot(&c->bb_pl->inv, item_id);
+        size_t index = find_iitem_slot(&c->bb_pl->inv, item_id);
         iitem_t inventory_item = c->bb_pl->inv.iitems[index];
 
         // If the item is a combine item and are we removing less than we have of it,

@@ -767,39 +767,19 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	int16_t mIQ, mDefense, mPower, mDex, mMind;
 
 	if (item_id != EMPTY_STRING) {
-		if (c->mode > 0) {
-			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-				if (c->pl->bb.inv.iitems[i].data.item_id == item_id) {
-					feed_item = &c->pl->bb.inv.iitems[i].data;
-					break;
-				}
+		for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+			if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
+				feed_item = &c->bb_pl->inv.iitems[i].data;
+				break;
 			}
-
-			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-				if ((c->pl->bb.inv.iitems[i].data.item_id == mag_id) &&
-					(c->pl->bb.inv.iitems[i].data.data_b[0] == 0x02) &&
-					(c->pl->bb.inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
-					mag = (mag_t*)&c->pl->bb.inv.iitems[i].data;
-					break;
-				}
-			}
-			DBG_LOG("mode feed");
 		}
-		else {
-			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-				if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
-					feed_item = &c->bb_pl->inv.iitems[i].data;
-					break;
-				}
-			}
 
-			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-				if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
-					(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
-					(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
-					mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
-					break;
-				}
+		for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
+			if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
+				(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
+				(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
+				mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
+				break;
 			}
 		}
 
