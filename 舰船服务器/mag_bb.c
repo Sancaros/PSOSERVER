@@ -816,25 +816,25 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 			//return -3;
 		}
 
-		if ((feed_item->data_b[0] == 0x03) &&
-			(feed_item->data_b[1] < 0x07) &&
-			(feed_item->data_b[1] != 0x02) &&
+		if ((feed_item->data_b[0] == ITEM_TYPE_TOOL) &&
+			(feed_item->data_b[1] < ITEM_SUBTYPE_TELEPIPE) &&
+			(feed_item->data_b[1] != ITEM_SUBTYPE_DISK) &&
 			(feed_item->data_b[5] > 0x00))
 		{
 			switch (feed_item->data_b[1])
 			{
-			case 0x00:
+			case ITEM_SUBTYPE_MATE:
 				mt_index = feed_item->data_b[2];
 				break;
-			case 0x01:
+			case ITEM_SUBTYPE_FLUID:
 				mt_index = 3 + feed_item->data_b[2];
 				break;
-			case 0x03:
-			case 0x04:
-			case 0x05:
+			case ITEM_SUBTYPE_SOL_ATOMIZER:
+			case ITEM_SUBTYPE_MOON_ATOMIZER:
+			case ITEM_SUBTYPE_STAR_ATOMIZER:
 				mt_index = 5 + feed_item->data_b[1];
 				break;
-			case 0x06:
+			case ITEM_SUBTYPE_ANTI:
 				mt_index = 6 + feed_item->data_b[2];
 				break;
 			}
@@ -971,8 +971,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 		if (mDefense < 0)
 			mDefense = 0;
 
-		if (mDefense >= 100)
-		{
+		if (mDefense >= 100) {
 			if (mag->level == MAX_PLAYER_LEVEL)
 				mDefense = 99; // Don't go above level 200
 			else
@@ -991,8 +990,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 		if (mPower < 0)
 			mPower = 0;
 
-		if (mPower >= 100)
-		{
+		if (mPower >= 100) {
 			if (mag->level == MAX_PLAYER_LEVEL)
 				mPower = 99; // Don't go above level 200
 			else

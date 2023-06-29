@@ -1010,7 +1010,11 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         return -1;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("bb_process_done_burst %u", flag);
+
+#endif // DEBUG
 
     /* Lock the lobby, clear its bursting flag, send the resume game packet to
        the rest of the lobby, and continue on. */
@@ -2417,15 +2421,10 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     //bb_guild_pkt_pkt* gpkt = (bb_guild_pkt_pkt*)pkt;
     uint16_t type = LE16(hdr->pkt_type);
 
-#ifdef DEBUG
-
+#ifdef DEBUG_GUILD
     uint16_t len = LE16(hdr->pkt_len);
-    DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
-
-#endif // DEBUG
-
-    uint16_t len = LE16(hdr->pkt_len);
-    DBG_LOG("舰仓：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+    DBG_LOG("舰仓:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+#endif // DEBUG_GUILD
 
     switch (type) {
     case BB_GUILD_CREATE:

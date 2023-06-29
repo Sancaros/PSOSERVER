@@ -2432,7 +2432,9 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t len = LE16(hdr->pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
 
-    //DBG_LOG("舰闸：BB 公会功能指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+#ifdef DEBUG_GUILD
+    DBG_LOG("舰闸:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
+#endif // DEBUG_GUILD
 
     switch (type) {
     case BB_GUILD_CREATE:

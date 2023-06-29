@@ -4209,6 +4209,8 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
 
         //DBG_LOG("area = 0x%04X", pkt->area);
 
+#ifdef DEBUG
+
         switch (pkt->area)
         {
             /* 总督府 实验室 */
@@ -4228,6 +4230,8 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
             DBG_LOG("离开总督府任务识别");
             break;
         }
+
+#endif // DEBUG
 
     }
 
@@ -4732,6 +4736,10 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
 
     switch (type) {
+
+    case SUBCMD60_FEED_MAG:
+        rv = handle_bb_feed_mag(c, (subcmd_bb_feed_mag_t*)pkt);
+        break;
 
         /* Momoka Item Exchange  Momoka物品交换 */
     case SUBCMD60_EX_ITEM_MK:

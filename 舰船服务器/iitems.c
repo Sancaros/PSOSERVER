@@ -239,7 +239,7 @@ size_t find_inv_item_slot(inventory_t* inv, uint32_t item_id) {
         }
     }
 
-    ERR_LOG("未从背包中找到该物品");
+    ERR_LOG("未从背包中找到ID %u 物品", item_id);
     print_item_data(&inv->iitems->data, 5);
 
     return -1;
@@ -396,8 +396,9 @@ int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签) {
 int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     pmt_weapon_bb_t tmp_wp = { 0 };
     pmt_guard_bb_t tmp_guard = { 0 };
-    uint32_t found_item = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
+    uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
     size_t i = 0;
+    item_t found_item = { 0 };
 
     i = find_inv_item_slot(&c->bb_pl->inv, item_id);
 #ifdef DEBUG
@@ -405,14 +406,16 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);
 #endif // DEBUG
 
-    if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
-        found_item = 1;
+    found_item = c->bb_pl->inv.iitems[i].data;
+
+    if (found_item.item_id == item_id) {
+        found = 1;
         inv_count = c->bb_pl->inv.item_count;
 
-        switch (c->bb_pl->inv.iitems[i].data.data_b[0])
+        switch (found_item.data_b[0])
         {
         case ITEM_TYPE_WEAPON:
-            if (pmt_lookup_weapon_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_wp)) {
+            if (pmt_lookup_weapon_bb(found_item.data_l[0], &tmp_wp)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                     c->guildcard);
                 return -1;
@@ -436,9 +439,9 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
             break;
 
         case ITEM_TYPE_GUARD:
-            switch (c->bb_pl->inv.iitems[i].data.data_b[1]) {
+            switch (found_item.data_b[1]) {
             case ITEM_SUBTYPE_FRAME:
-                if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
+                if (pmt_lookup_guard_bb(found_item.data_l[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         c->guildcard);
                     return -3;
@@ -472,7 +475,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
                 break;
 
             case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
-                if (pmt_lookup_guard_bb(c->bb_pl->inv.iitems[i].data.data_l[0], &tmp_guard)) {
+                if (pmt_lookup_guard_bb(found_item.data_l[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         c->guildcard);
                     return -3;
@@ -568,7 +571,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
         c->bb_pl->inv.iitems[i].flags |= LE32(0x00000008);
     }
 
-    return found_item;
+    return found;
 }
 
 /* 给客户端标记可穿戴职业装备的标签 */
