@@ -4120,26 +4120,14 @@ typedef struct bb_guild_lobby_client {
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
     uint8_t guild_reward[8];
     uint8_t guild_flag[0x0800];
+    uint32_t padding;
 } PACKED bb_guild_lobby_client_t;
 
 // 13EA: 大厅玩家公会邀请
 // header.flag specifies the number of entries.
 typedef struct bb_guild_lobby_setting {
     bb_pkt_hdr_t hdr;
-    struct {
-        uint32_t guild_owner_gc;
-        uint32_t guild_id;
-        uint32_t guild_points_rank;
-        uint32_t guild_points_rest;
-        uint32_t guild_priv_level;
-        uint16_t guild_name[0x000E];
-        uint32_t guild_rank;
-        uint32_t client_guildcard;
-        uint32_t client_id;
-        uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-        uint8_t guild_reward[8];
-        uint8_t guild_flag[0x0800];
-    }entries[0];
+    bb_guild_lobby_client_t entries[0];
 } PACKED bb_guild_lobby_setting_pkt;
 
 // 14EA (C->S): 玩家头衔反馈
@@ -4153,7 +4141,6 @@ typedef struct bb_guild_member_tittle {
 typedef struct bb_full_guild_data {
     bb_pkt_hdr_t hdr;                              /* 0x0000 - 0x0007*/
     bb_guild_lobby_client_t entries;
-    uint32_t padding;
 } PACKED bb_full_guild_data_pkt;
 
 // 16EA (S->C): UNKNOW

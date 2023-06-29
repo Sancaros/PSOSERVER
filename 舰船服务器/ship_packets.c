@@ -12551,7 +12551,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     case BB_GUILD_LOBBY_SETTING:
         bb_guild_lobby_setting_pkt* lbs = (bb_guild_lobby_setting_pkt*)sendbuf;
 
-        len = 0x860;
+        len = sizeof(bb_guild_lobby_client_t);
 
         for (i = 0; i < l->max_clients; i++) {
             if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
