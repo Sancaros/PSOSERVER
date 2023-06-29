@@ -37,7 +37,7 @@ typedef struct mag {
 	uint8_t item_type; // "02" =P
 	uint8_t mtype;
 	uint8_t level;
-	uint8_t blasts;
+	uint8_t photon_blasts;
 	int16_t defense;
 	int16_t power;
 	int16_t dex;

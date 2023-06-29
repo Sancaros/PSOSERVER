@@ -243,6 +243,76 @@ size_t find_iitem_slot(inventory_t* inv, uint32_t item_id) {
     return -1;
 }
 
+/* 获取背包中目标物品所在槽位 */
+size_t find_equipped_weapon(inventory_t* inv){
+    ssize_t ret = -1;
+    for (size_t y = 0; y < inv->item_count; y++) {
+        if (!(inv->iitems[y].flags & 0x00000008)) {
+            continue;
+        }
+        if (inv->iitems[y].data.data_b[0] != ITEM_TYPE_WEAPON) {
+            continue;
+        }
+        if (ret < 0) {
+            ret = y;
+        }
+        else {
+            ERR_LOG("找到装备多件武器");
+        }
+    }
+    if (ret < 0) {
+        ERR_LOG("未从背包中找已装备的武器");
+    }
+    return ret;
+}
+
+/* 获取背包中目标物品所在槽位 */
+size_t find_equipped_armor(inventory_t* inv) {
+    ssize_t ret = -1;
+    for (size_t y = 0; y < inv->item_count; y++) {
+        if (!(inv->iitems[y].flags & 0x00000008)) {
+            continue;
+        }
+        if (inv->iitems[y].data.data_b[0] != ITEM_TYPE_GUARD || 
+            inv->iitems[y].data.data_b[1] != ITEM_SUBTYPE_FRAME) {
+            continue;
+        }
+        if (ret < 0) {
+            ret = y;
+        }
+        else {
+            ERR_LOG("找到装备多件盔甲");
+        }
+    }
+    if (ret < 0) {
+        ERR_LOG("未从背包中找已装备的盔甲");
+    }
+    return ret;
+}
+
+/* 获取背包中目标物品所在槽位 */
+size_t find_equipped_mag(inventory_t* inv) {
+    ssize_t ret = -1;
+    for (size_t y = 0; y < inv->item_count; y++) {
+        if (!(inv->iitems[y].flags & 0x00000008)) {
+            continue;
+        }
+        if (inv->iitems[y].data.data_b[0] != ITEM_TYPE_MAG) {
+            continue;
+        }
+        if (ret < 0) {
+            ret = y;
+        }
+        else {
+            ERR_LOG("找到装备多件玛古");
+        }
+    }
+    if (ret < 0) {
+        ERR_LOG("未从背包中找已装备的玛古");
+    }
+    return ret;
+}
+
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt) {

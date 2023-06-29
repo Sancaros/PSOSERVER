@@ -106,7 +106,6 @@ typedef struct v2_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_v2_c_rank_data_t chal_data;
-    //uint32_t unk4[6];
     choice_search_config_t cs_config;
 } PACKED v2_player_t;
 
@@ -115,7 +114,6 @@ typedef struct pc_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_pc_c_rank_data_t chal_data;
-    //uint32_t unk4[6];
     choice_search_config_t cs_config;
     uint32_t blacklist[30];
     uint32_t autoreply_enabled;
@@ -127,7 +125,6 @@ typedef struct v3_player {
     inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_v3_c_rank_data_t chal_data;
-    //uint32_t unk4[6];
     choice_search_config_t cs_config;
     char infoboard[0xAC];
     uint32_t blacklist[30];
@@ -140,7 +137,6 @@ typedef struct bb_player {
     inventory_t inv;
     psocn_bb_char_t character;
     psocn_bb_c_rank_data_t chal_data;
-    //uint8_t unk4[24];
     choice_search_config_t cs_config;
     uint16_t infoboard[0x00AC];
     uint32_t blacklist[0x001E];

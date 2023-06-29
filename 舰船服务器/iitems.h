@@ -50,6 +50,9 @@ size_t stack_size_for_item(item_t item);
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_iitem_slot(inventory_t* inv, uint32_t item_id);
+size_t find_equipped_weapon(inventory_t* inv);
+size_t find_equipped_armor(inventory_t* inv);
+size_t find_equipped_mag(inventory_t* inv);
 
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,

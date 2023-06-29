@@ -27,8 +27,7 @@
 #include "iitems.h"
 
 //玛古同步概率的代码
-void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb)
-{
+void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb) {
 	int32_t pb_exists = 0;
 	uint8_t pbv;
 	uint32_t pb_slot;
@@ -83,8 +82,7 @@ void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb)
 }
 
 //玛古的代码
-int32_t mag_bb_alignment(mag_t* m)
-{
+int32_t mag_bb_alignment(mag_t* m) {
 	int32_t v1, v2, v3, v4, v5, v6;
 
 	v4 = 0;
@@ -123,8 +121,7 @@ int32_t mag_bb_alignment(mag_t* m)
 	return v4;
 }
 
-int32_t mag_bb_special_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass)
-{
+int32_t mag_bb_special_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
 	uint8_t oldType;
 	int16_t mDefense, mPower, mDex, mMind;
 
@@ -253,8 +250,7 @@ int32_t mag_bb_special_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int3
 	return (int32_t)(oldType != m->mtype);
 }
 
-void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass)
-{
+void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
 	int32_t v10, v11, v12, v13;
 
 	int32_t Alignment = mag_bb_alignment(m);
@@ -280,12 +276,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 				if (v12 > v11)
 				{
 					m->mtype = Mag_Apsaras;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 				}
 				else
 				{
 					m->mtype = Mag_Kama;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 				}
 			}
 			else
@@ -293,12 +289,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 				if (v12 > v11)
 				{
 					m->mtype = Mag_Bhirava;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 				}
 				else
 				{
 					m->mtype = Mag_Varaha;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 				}
 			}
 		}
@@ -311,12 +307,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v10 > v12)
 					{
 						m->mtype = Mag_Garuda;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 					}
 					else
 					{
 						m->mtype = Mag_Yaksa;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 					}
 				}
 				else
@@ -324,12 +320,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v10 > v12)
 					{
 						m->mtype = Mag_Ila;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 					else
 					{
 						m->mtype = Mag_Nandin;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 					}
 				}
 			}
@@ -342,12 +338,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v11 > v10)
 						{
 							m->mtype = Mag_Soma;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 						}
 						else
 						{
 							m->mtype = Mag_Bana;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 						}
 					}
 					else
@@ -355,12 +351,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v11 > v10)
 						{
 							m->mtype = Mag_Ushasu;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 						}
 						else
 						{
 							m->mtype = Mag_Kabanda;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 						}
 					}
 				}
@@ -378,12 +374,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 				if (v10 > v12)
 				{
 					m->mtype = Mag_Kaitabha;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 				}
 				else
 				{
 					m->mtype = Mag_Varaha;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 				}
 			}
 			else
@@ -391,12 +387,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 				if (v10 > v12)
 				{
 					m->mtype = Mag_Bhirava;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 				}
 				else
 				{
 					m->mtype = Mag_Kama;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 				}
 			}
 		}
@@ -409,12 +405,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v12 > v11)
 					{
 						m->mtype = Mag_Kaitabha;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 					else
 					{
 						m->mtype = Mag_Madhu;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 				}
 				else
@@ -422,12 +418,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v12 > v11)
 					{
 						m->mtype = Mag_Bhirava;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 					}
 					else
 					{
 						m->mtype = Mag_Kama;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 					}
 				}
 			}
@@ -440,12 +436,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v11 > v10)
 						{
 							m->mtype = Mag_Durga;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 						}
 						else
 						{
 							m->mtype = Mag_Kabanda;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 						}
 					}
 					else
@@ -453,12 +449,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v11 > v10)
 						{
 							m->mtype = Mag_Apsaras;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 						}
 						else
 						{
 							m->mtype = Mag_Varaha;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 						}
 					}
 				}
@@ -474,7 +470,7 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 			if (v13 > 44)
 			{
 				m->mtype = Mag_Bana;
-				mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+				mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 			}
 			else
 			{
@@ -483,12 +479,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v11 > v10)
 					{
 						m->mtype = Mag_Ila;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 					else
 					{
 						m->mtype = Mag_Kumara;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 					}
 				}
 				else
@@ -496,12 +492,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v11 > v10)
 					{
 						m->mtype = Mag_Kabanda;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 					else
 					{
 						m->mtype = Mag_Naga;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					}
 				}
 			}
@@ -513,7 +509,7 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 				if (v13 > 44)
 				{
 					m->mtype = Mag_Andhaka;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 				}
 				else
 				{
@@ -522,12 +518,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v12 > v11)
 						{
 							m->mtype = Mag_Naga;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 						}
 						else
 						{
 							m->mtype = Mag_Marica;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 						}
 					}
 					else
@@ -535,12 +531,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 						if (v12 > v11)
 						{
 							m->mtype = Mag_Ravana;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Farlla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Farlla);
 						}
 						else
 						{
 							m->mtype = Mag_Naraka;
-							mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+							mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 						}
 					}
 				}
@@ -552,7 +548,7 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 					if (v13 > 44)
 					{
 						m->mtype = Mag_Bana;
-						mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+						mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 					}
 					else
 					{
@@ -561,12 +557,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 							if (v10 > v12)
 							{
 								m->mtype = Mag_Garuda;
-								mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+								mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 							}
 							else
 							{
 								m->mtype = Mag_Bhirava;
-								mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+								mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 							}
 						}
 						else
@@ -574,12 +570,12 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 							if (v10 > v12)
 							{
 								m->mtype = Mag_Ribhava;
-								mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Farlla);
+								mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Farlla);
 							}
 							else
 							{
 								m->mtype = Mag_Sita;
-								mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+								mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 							}
 						}
 					}
@@ -590,8 +586,7 @@ void mag_bb_lv50_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	}
 }
 
-void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass)
-{
+void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass){
 	int32_t Alignment = mag_bb_alignment(m);
 
 	if (EvolutionClass > 3) // Don't bother to check if a special mag.
@@ -603,26 +598,21 @@ void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_HUNEWEARL:
 	case CLASS_HUCAST:
 	case CLASS_HUCASEAL:
-		if (Alignment & 0x108)
-		{
+		if (Alignment & 0x108) {
 			m->mtype = Mag_Rudra;
-			mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+			mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 			return;
 		}
-		else
-		{
-			if (Alignment & 0x10)
-			{
+		else {
+			if (Alignment & 0x10) {
 				m->mtype = Mag_Marutah;
-				mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+				mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 				return;
 			}
-			else
-			{
-				if (Alignment & 0x20)
-				{
+			else {
+				if (Alignment & 0x20) {
 					m->mtype = Mag_Vayu;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					return;
 				}
 			}
@@ -632,26 +622,21 @@ void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_RACAST:
 	case CLASS_RACASEAL:
 	case CLASS_RAMARL:
-		if (Alignment & 0x110)
-		{
+		if (Alignment & 0x110) {
 			m->mtype = Mag_Mitra;
-			mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+			mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 			return;
 		}
-		else
-		{
-			if (Alignment & 0x08)
-			{
+		else {
+			if (Alignment & 0x08) {
 				m->mtype = Mag_Surya;
-				mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+				mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 				return;
 			}
-			else
-			{
-				if (Alignment & 0x20)
-				{
+			else {
+				if (Alignment & 0x20) {
 					m->mtype = Mag_Tapas;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 					return;
 				}
 			}
@@ -661,26 +646,21 @@ void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_FONEWEARL:
 	case CLASS_FOMARL:
 	case CLASS_FOMAR:
-		if (Alignment & 0x120)
-		{
+		if (Alignment & 0x120) {
 			m->mtype = Mag_Namuci;
-			mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Mylla_Youlla);
+			mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Mylla_Youlla);
 			return;
 		}
-		else
-		{
-			if (Alignment & 0x08)
-			{
+		else {
+			if (Alignment & 0x08) {
 				m->mtype = Mag_Sumba;
-				mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Golla);
+				mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Golla);
 				return;
 			}
-			else
-			{
-				if (Alignment & 0x10)
-				{
+			else {
+				if (Alignment & 0x10) {
 					m->mtype = Mag_Ashvinau;
-					mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Pilla);
+					mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Pilla);
 					return;
 				}
 			}
@@ -689,8 +669,7 @@ void mag_bb_lv35_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	}
 }
 
-void mag_bb_lv10_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass)
-{
+void mag_bb_lv10_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
 	switch (type)
 	{
 	case CLASS_HUMAR:
@@ -698,51 +677,44 @@ void mag_bb_lv10_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t Ev
 	case CLASS_HUCAST:
 	case CLASS_HUCASEAL:
 		m->mtype = Mag_Varuna;
-		mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Farlla);
+		mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Farlla);
 		break;
 	case CLASS_RAMAR:
 	case CLASS_RACAST:
 	case CLASS_RACASEAL:
 	case CLASS_RAMARL:
 		m->mtype = Mag_Kalki;
-		mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Estlla);
+		mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Estlla);
 		break;
 	case CLASS_FONEWM:
 	case CLASS_FONEWEARL:
 	case CLASS_FOMARL:
 	case CLASS_FOMAR:
 		m->mtype = Mag_Vritra;
-		mag_bb_add_pb(&m->PBflags, &m->blasts, PB_Leilla);
+		mag_bb_add_pb(&m->PBflags, &m->photon_blasts, PB_Leilla);
 		break;
 	}
 }
 
-void mag_bb_check_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass)
-{
-	if ((m->level < 10) || (m->level >= 35))
-	{
-		if ((m->level < 35) || (m->level >= 50))
-		{
-			if (m->level >= 50)
-			{
-				if (!(m->level % 5)) // Divisible by 5 with no remainder.
-				{
-					if (EvolutionClass <= 3)
-					{
+void mag_bb_check_evolution(mag_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
+	if ((m->level < 10) || (m->level >= 35)) {
+		if ((m->level < 35) || (m->level >= 50)) {
+			if (m->level >= 50) {
+				// Divisible by 5 with no remainder.
+				if (!(m->level % 5)) {
+					if (EvolutionClass <= 3) {
 						if (!mag_bb_special_evolution(m, sectionID, type, EvolutionClass))
 							mag_bb_lv50_evolution(m, sectionID, type, EvolutionClass);
 					}
 				}
 			}
 		}
-		else
-		{
+		else {
 			if (EvolutionClass < 2)
 				mag_bb_lv35_evolution(m, sectionID, type, EvolutionClass);
 		}
 	}
-	else
-	{
+	else {
 		if (EvolutionClass <= 0)
 			mag_bb_lv10_evolution(m, sectionID, type, EvolutionClass);
 	}
@@ -767,34 +739,25 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	int16_t mIQ, mDefense, mPower, mDex, mMind;
 
 	if (item_id != EMPTY_STRING) {
-		for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-			if (c->bb_pl->inv.iitems[i].data.item_id == item_id) {
-				feed_item = &c->bb_pl->inv.iitems[i].data;
-				break;
-			}
+		i = find_iitem_slot(&c->bb_pl->inv, item_id);
+
+		if (i == -1) {
+			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID %u",
+				c->guildcard, item_id);
+			return -1;
 		}
 
-		for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-			if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
-				(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
-				(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
-				mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
-				break;
-			}
+		feed_item = &c->bb_pl->inv.iitems[i].data;
+
+		i = find_equipped_mag(&c->bb_pl->inv);
+
+		if (i == -1) {
+			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID %u",
+				c->guildcard, mag_id);
+			return -3;
 		}
 
-		/* If the item isn't found, then punt the user from the ship. */
-		if (!feed_item) {
-			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID.",
-				c->guildcard);
-			//return -2;
-		}
-
-		if (!mag) {
-			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID.",
-				c->guildcard);
-			//return -3;
-		}
+		mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
 
 		if ((feed_item->data_b[0] == ITEM_TYPE_TOOL) &&
 			(feed_item->data_b[1] < ITEM_SUBTYPE_TELEPIPE) &&
@@ -821,8 +784,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 		}
 
 		/* 从玩家的背包中移除该物品. */
-		if (item_remove_from_inv(c->bb_pl->inv.iitems, item_id, 1,
-				0) < 1) {
+		if (item_remove_from_inv(c->bb_pl->inv.iitems, c->bb_pl->inv.item_count, item_id, 1) < 1) {
 			ERR_LOG("无法从玩家背包中移除物品!");
 			return -4;
 		}
@@ -831,26 +793,15 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 		c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
 		// Rescan to update Mag pointer (if changed due to clean up) 重新扫描以更新磁指针（如果由于清理而更改） 
-		if (c->mode > 0) {
-			for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-				if ((c->pl->bb.inv.iitems[i].data.item_id == mag_id) &&
-					(c->pl->bb.inv.iitems[i].data.data_b[0] == 0x02) &&
-					(c->pl->bb.inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
-					mag = (mag_t*)&c->pl->bb.inv.iitems[i].data;
-					break;
-				}
-			}
+		i = find_equipped_mag(&c->bb_pl->inv);
+
+		if (i == -1) {
+			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID %u",
+				c->guildcard, mag_id);
+			return -3;
 		}
-		else {
-			for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-				if ((c->bb_pl->inv.iitems[i].data.item_id == mag_id) &&
-					(c->bb_pl->inv.iitems[i].data.data_b[0] == 0x02) &&
-					(c->bb_pl->inv.iitems[i].data.data_b[1] <= Mag_Agastya)) {
-					mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
-					break;
-				}
-			}
-		}
+
+		mag = (mag_t*)&c->bb_pl->inv.iitems[i].data;
 
 		// Feed that mag (Updates to code by Lee from schtserv.com)
 		switch (mag->mtype)
