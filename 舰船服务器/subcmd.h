@@ -2184,7 +2184,7 @@ typedef struct subcmd_update_player_stat {
     // 2 = subtract Meseta
     // 3 = add HP
     // 4 = add TP
-    uint8_t stat;
+    uint8_t stat_type;
     uint8_t amount;
 } PACKED subcmd_update_player_stat_t;
 
@@ -2199,7 +2199,7 @@ typedef struct subcmd_bb_update_player_stat {
     // 2 = subtract Meseta
     // 3 = add HP
     // 4 = add TP
-    uint8_t stat;
+    uint8_t stat_type;
     uint8_t amount;
 } PACKED subcmd_bb_update_player_stat_t;
 

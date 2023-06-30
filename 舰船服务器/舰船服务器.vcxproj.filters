@@ -105,6 +105,9 @@
     <ClCompile Include="subcmd_send_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="subcmd_bb_handle_60.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -207,6 +210,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="version.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="subcmd_bb_handle_60.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1063,7 +1063,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
             dp.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dp.hdr.pkt_len = LE16(0x0010);
-            dp.shdr.type = SUBCMD60_DESTROY_ITEM;
+            dp.shdr.type = SUBCMD60_DESTROY_GROUND_ITEM;
             dp.shdr.size = 0x03;
             dp.item_id = pkt->data.item.item_id;
 

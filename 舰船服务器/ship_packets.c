@@ -11305,7 +11305,7 @@ int send_c_rank_update(ship_client_t *c, lobby_t *l) {
 }
 
 /* Send a statistics mod packet to a client. */
-static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
+static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
     //subcmd_pkt_t *pkt = (subcmd_pkt_t *)sendbuf;
@@ -11323,7 +11323,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
         pkt->shdr.size = 0x02;
         pkt->shdr.client_id = s->client_id;
         pkt->client_id2 = 0x0000;
-        pkt->stat = stat;
+        pkt->stat_type = stat_type;
         pkt->amount = (amt > 0xFF) ? 0xFF : amt;
 
         len += sizeof(subcmd_update_player_stat_t);
@@ -11357,7 +11357,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     return crypt_send(d, len, sendbuf);
 }
 
-static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
+static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
     //subcmd_bb_pkt_t *pkt = (subcmd_bb_pkt_t *)sendbuf;
@@ -11375,7 +11375,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
         pkt->shdr.size = 0x02;
         pkt->shdr.client_id = s->client_id;
         pkt->client_id2 = 0x0000;
-        pkt->stat = stat;
+        pkt->stat_type = stat_type;
         pkt->amount = (amt > 0xFF) ? 0xFF : amt;
 
         len += sizeof(subcmd_bb_update_player_stat_t);
@@ -11402,7 +11402,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat,
     return crypt_send(d, len, sendbuf);
 }
 
-int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
+int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat_type, int amt) {
     int i;
 
     /* Don't send these to default lobbies, ever */
@@ -11411,7 +11411,7 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
     }
 
     /* Make sure the request is sane */
-    if(stat < SUBCMD60_STAT_HPDOWN || stat > SUBCMD60_STAT_TPUP || amt < 1 ||
+    if(stat_type < SUBCMD60_STAT_HPDOWN || stat_type > SUBCMD60_STAT_TPUP || amt < 1 ||
        amt > 2040) {
         return 0;
     }
@@ -11430,11 +11430,11 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt) {
                 case CLIENT_VERSION_GC:
                 case CLIENT_VERSION_EP3:
                 case CLIENT_VERSION_XBOX:
-                    send_dc_mod_stat(l->clients[i], c, stat, amt);
+                    send_dc_mod_stat(l->clients[i], c, stat_type, amt);
                     break;
 
                 case CLIENT_VERSION_BB:
-                    send_bb_mod_stat(l->clients[i], c, stat, amt);
+                    send_bb_mod_stat(l->clients[i], c, stat_type, amt);
             }
 
             pthread_mutex_unlock(&l->clients[i]->mutex);

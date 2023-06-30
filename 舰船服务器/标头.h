@@ -254,7 +254,7 @@ int subcmd_bb_handle_bcastv1(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_medic(c, (subcmd_bb_pkt_t*)pkt);
         break;
 
-    case SUBCMD60_REQ_EXP:
+    case SUBCMD60_EXP_REQ:
         rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_t*)pkt);
         break;
 
@@ -373,7 +373,7 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         case SUBCMD60_CMODE_GRAVE:
-            rv = handle_bb_cmode_grave(c, pkt);
+            rv = handle_bb_challenge_mode_grave(c, pkt);
             break;
 
         default:
@@ -618,7 +618,7 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_cmd_4e(c, (subcmd_bb_cmd_4e_t*)pkt);
         break;
 
-    case SUBCMD60_REQ_SWITCH:
+    case SUBCMD60_SWITCH_REQ:
         rv = handle_bb_switch_req(c, (subcmd_bb_switch_req_t*)pkt);
         break;
 
@@ -658,11 +658,11 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = handle_bb_charge_act(c, (subcmd_bb_charge_act_t*)pkt);
         break;
 
-    case SUBCMD60_REQ_EXP:
+    case SUBCMD60_EXP_REQ:
         rv = handle_bb_req_exp(c, (subcmd_bb_req_exp_t*)pkt);
         break;
 
-    case SUBCMD60_EX_ITEM_TEAM:
+    case SUBCMD60_GUILD_EX_ITEM:
         sent = 0;
         break;
 
@@ -712,7 +712,7 @@ int subcmd_bb_handle_bcastv2(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
 
     case SUBCMD60_CMODE_GRAVE:
-        rv = handle_bb_cmode_grave(c, pkt);
+        rv = handle_bb_challenge_mode_grave(c, pkt);
         break;
 
         /*挑战模式 触发*/

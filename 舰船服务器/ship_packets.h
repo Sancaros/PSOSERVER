@@ -251,7 +251,7 @@ int send_bb_game_type_sel(ship_client_t* c);
 int send_bb_game_game_drop_set(ship_client_t* c);
 
 /* Send a statistics mod packet to the lobby. */
-int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat, int amt);
+int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat_type, int amt);
 
 /* Send a reply to an Episode III jukebox request (showing updated meseta values
    for the requesting client). */

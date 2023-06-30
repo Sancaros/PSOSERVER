@@ -177,7 +177,7 @@
 #define SUBCMD60_DEATH_SYNC                    0x4D
 #define SUBCMD60_UNKNOW_4E                     0x4E
 #define SUBCMD60_PLAYER_SAVED                  0x4F /* 拯救玩家成功 含玩家client_id*/
-#define SUBCMD60_REQ_SWITCH                    0x50
+#define SUBCMD60_SWITCH_REQ                    0x50
 
 // 6x51: Invalid subcommand
 #define SUBCMD60_UNKNOW_51                     0x51
@@ -202,7 +202,7 @@
 #define SUBCMD60_ENEMY_ITEM_DROP_REQ           0x60 // Request for item drop (handled by the server on BB)
 #define SUBCMD60_LEVEL_UP_REQ                  0x61
 #define SUBCMD60_UNKNOW_62                     0x62
-#define SUBCMD60_DESTROY_ITEM                  0x63    /* Sent when game inventory is full */
+#define SUBCMD60_DESTROY_GROUND_ITEM           0x63    /* Sent when game inventory is full */
 #define SUBCMD60_UNKNOW_64                     0x64
 #define SUBCMD60_UNKNOW_65                     0x65
 #define SUBCMD60_UNKNOW_66                     0x66
@@ -300,8 +300,8 @@
 #define SUBCMD60_MEDIC                         0xC5    /* Blue Burst - Use the medical center */
 #define SUBCMD60_STEAL_EXP                     0xC6
 #define SUBCMD60_CHARGE_ACT                    0xC7
-#define SUBCMD60_REQ_EXP                       0xC8    /* Blue Burst - Request Experience */
-#define SUBCMD60_EX_ITEM_TEAM                  0xCC
+#define SUBCMD60_EXP_REQ                       0xC8    /* Blue Burst - Request Experience */
+#define SUBCMD60_GUILD_EX_ITEM                 0xCC
 #define SUBCMD60_BATTLEMODE                    0xCF
 #define SUBCMD60_GALLON_AREA                   0xD2
 #define SUBCMD60_TRADE_DONE                    0xD4

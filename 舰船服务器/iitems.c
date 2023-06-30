@@ -965,8 +965,7 @@ void fix_inv_bank_item(item_t* i) {
 
         if ((playermag->defense < 0) || (playermag->power < 0) || (playermag->dex < 0) || (playermag->mind < 0))
             total_levels = 201; // Auto fail if any stat is under 0...
-        else
-        {
+        else {
             mag_def = playermag->defense / 100;
             mag_pow = playermag->power / 100;
             mag_dex = playermag->dex / 100;
@@ -974,15 +973,14 @@ void fix_inv_bank_item(item_t* i) {
             total_levels = mag_def + mag_pow + mag_dex + mag_mind;
         }
 
-        if ((total_levels > 200) || (playermag->level > 200))
-        {
+        if ((total_levels > 200) || (playermag->level > 200)) {
             // 玛古修正失败,则初始化所有数据
             playermag->defense = 500;
             playermag->power = 0;
             playermag->dex = 0;
             playermag->mind = 0;
             playermag->level = 5;
-            playermag->blasts = 0;
+            playermag->photon_blasts = 0;
             playermag->IQ = 0;
             playermag->synchro = 20;
             playermag->mtype = 0;
