@@ -41,6 +41,7 @@
     <ClCompile Include="ship_server.c" />
     <ClCompile Include="smutdata.c" />
     <ClCompile Include="subcmd_bb_handle_60.c" />
+    <ClCompile Include="subcmd_bb_handle_62.c" />
     <ClCompile Include="subcmd_dcnte.c" />
     <ClCompile Include="subcmd.c" />
     <ClCompile Include="utils.c" />
@@ -74,6 +75,7 @@
     <ClInclude Include="smutdata.h" />
     <ClInclude Include="subcmd.h" />
     <ClInclude Include="subcmd_bb_handle_60.h" />
+    <ClInclude Include="subcmd_bb_handle_62.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="word_select-dc.h" />
