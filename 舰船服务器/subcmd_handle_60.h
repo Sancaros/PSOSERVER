@@ -19,13 +19,13 @@
 #define SUBCMD_BB_HANDLE_60_H
 
 // 定义函数指针的类型
-typedef int (*subcmd60_bb_handle_t)(ship_client_t*, void*);
+typedef int (*subcmd60_handle_t)(ship_client_t*, void*);
 
-typedef struct subcmd60_h {
+typedef struct subcmd60_handle_func {
     int cmd_type;
-    subcmd60_bb_handle_t func;
-} subcmd60_handle_t;
+    subcmd60_handle_t func;
+} subcmd60_handle_func_t;
 
-extern subcmd60_bb_handle_t subcmd60_bb_handle[0x100];
+extern subcmd60_handle_t subcmd60_bb_handle[0x100];
 
 #endif /* !SUBCMD_BB_HANDLE_60_H */

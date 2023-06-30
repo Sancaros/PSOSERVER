@@ -41,7 +41,7 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
-#include "subcmd_bb_handle_62.h"
+#include "subcmd_handle_62.h"
 
 static int sub62_06_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gcsend_t* pkt) {

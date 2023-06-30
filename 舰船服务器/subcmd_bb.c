@@ -29,8 +29,8 @@
 
 #include "subcmd.h"
 #include "subcmd_send_bb.h"
-#include "subcmd_bb_handle_60.h"
-#include "subcmd_bb_handle_62.h"
+#include "subcmd_handle_60.h"
+#include "subcmd_handle_62.h"
 #include "shop.h"
 #include "pmtdata.h"
 #include "clients.h"

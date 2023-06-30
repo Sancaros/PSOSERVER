@@ -41,7 +41,7 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
-#include "subcmd_bb_handle_60.h"
+#include "subcmd_handle_60.h"
 
 static int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -2898,7 +2898,7 @@ static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* 
 
 
 // 定义函数指针数组
-subcmd60_bb_handle_t subcmd60_bb_handle[0x100] = {
+subcmd60_handle_t subcmd60_bb_handle[0x100] = {
     /* 60指令 0x00 */ NULL,
     /* 60指令 0x01 */ NULL,
     /* 60指令 0x02 */ NULL,
