@@ -28,7 +28,6 @@
     <ClCompile Include="iitems.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="lobby.c" />
-    <ClCompile Include="map.c" />
     <ClCompile Include="mapdata.c" />
     <ClCompile Include="pmtdata.c" />
     <ClCompile Include="ptdata.c" />
