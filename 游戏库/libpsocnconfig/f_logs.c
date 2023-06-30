@@ -666,7 +666,7 @@ void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name,
 	}
 }
 
-void Logs_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
+void flog_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...)
 {
 	va_list args;
 	char mes[4096] = { 0 };
@@ -732,7 +732,7 @@ void Logs_err_packet(int32_t codeline, uint32_t consoleshow, const char* files_n
 void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog(codeline, error_log_console_show, ERR_LOG, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	flog(codeline, error_log_console_show, ERR_LOG, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
 	flog(codeline, error_log_console_show, ERR_LOG, "\n%s\n", &dp[0]);
 }
@@ -741,7 +741,7 @@ void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
 	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
@@ -750,16 +750,16 @@ void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) 
 void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 数据错误. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	flog_err_packet(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 数据错误.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
-	Logs_err_packet(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
+	flog_err_packet(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
 
 /* 截取客户端未处理的数据包 */
 void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未处理. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未处理.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
 	flog_unknow(codeline, unknow_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }
@@ -768,7 +768,7 @@ void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename) {
 	uint16_t size = *(uint16_t*)&pkt[0];
 
-	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %d 行 %s 指令 0x%02X%02X 未完成. (数据如下)", filename, codeline, cmd, pkt[3], pkt[2]);
+	flog_undone(codeline, undone_packet_log_console_show, cmd, "%s %s 指令 0x%02X%02X 未完成.", filename, cmd, pkt[3], pkt[2]);
 	packet_to_text(&pkt[0], size, false);
 	flog_undone(codeline, undone_packet_log_console_show, cmd, "\n%s\n", &dp[0]);
 }

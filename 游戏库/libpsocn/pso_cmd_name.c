@@ -24,7 +24,7 @@ const char* get_name(cmd_map_st* cur, uint16_t cmd) {
     /* 检索物品表 */
     while (cur->cmd != NO_SUCH_CMD) {
         if (cur->cmd == cmd) {
-            sprintf_s(tmp_cmd_name, _countof(tmp_cmd_name), "%s - %s", cur->name, cur->cnname);
+            sprintf_s(tmp_cmd_name, _countof(tmp_cmd_name), "[%s - %s]", cur->name, cur->cnname);
 
             return &tmp_cmd_name[0];
         }
@@ -33,7 +33,7 @@ const char* get_name(cmd_map_st* cur, uint16_t cmd) {
     }
 
     /* 未找到物品数据... */
-    return "未找到相关指令名称";
+    return "[未命名]";
 }
 
 /* 通过代码对比获取物品名称 */
