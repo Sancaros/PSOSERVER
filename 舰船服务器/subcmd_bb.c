@@ -200,110 +200,6 @@ static int handle_bb_trade(ship_client_t* c, ship_client_t* d, subcmd_bb_trade_t
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
 
-static int handle_bb_shop_req(ship_client_t* c, subcmd_bb_shop_req_t* req) {
-    lobby_t* l = c->cur_lobby;
-    block_t* b = c->cur_block;
-    item_t item_data;
-    uint32_t shop_type = LE32(req->shop_type);
-    uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
-
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            c->guildcard);
-        return -1;
-    }
-
-    for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&c->game_data->shop_items[i], 0, sizeof(item_t));
-        memset(&item_data, 0, sizeof(item_t));
-
-        switch (shop_type) {
-        case BB_SHOPTYPE_TOOL:// 工具商店
-            item_data = create_bb_shop_item(l->difficulty, 3, &b->rng);
-            break;
-
-        case BB_SHOPTYPE_WEAPON:// 武器商店
-            item_data = create_bb_shop_item(l->difficulty, 0, &b->rng);
-            break;
-
-        case BB_SHOPTYPE_ARMOR:// 装甲商店
-            item_data = create_bb_shop_item(l->difficulty, 1, &b->rng);
-            break;
-
-        default:
-            ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
-            return -1;
-        }
-
-        item_data.item_id = generate_item_id(l, c->client_id);
-
-        memcpy(&c->game_data->shop_items[i], &item_data, sizeof(item_t));
-    }
-
-    return subcmd_bb_send_shop(c, shop_type, num_items);
-}
-
-static int handle_bb_shop_buy(ship_client_t* c, subcmd_bb_shop_buy_t* pkt) {
-    lobby_t* l = c->cur_lobby;
-    iitem_t ii = { 0 };
-    int found = -1;
-
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            c->guildcard);
-        return -1;
-    }
-
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
-            c->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return -1;
-    }
-
-    DBG_LOG("购买 %d 个物品 %02X %04X", pkt->num_bought, pkt->unknown_a1, pkt->shdr.unused);
-
-    /* 填充物品数据头 */
-    ii.present = LE16(1);
-    ii.tech = LE16(0);
-    ii.flags = LE32(0);
-
-    /* 填充物品数据 */
-    memcpy(&ii.data.data_b[0], &c->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
-
-    /* 如果是堆叠物品 */
-    if (pkt->num_bought <= stack_size_for_item(ii.data)) {
-        ii.data.data_b[5] = pkt->num_bought;
-    }
-    else {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
-            c->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return 0;
-    }
-
-    l->item_player_id[c->client_id] = pkt->new_inv_item_id;
-    ii.data.item_id = l->item_player_id[c->client_id]++;
-
-    print_iitem_data(&ii, 0, c->version);
-
-    found = add_item_to_client(c, &ii);
-
-    if (found == -1) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            c->guildcard);
-        return -1;
-    }
-
-    //c->bb_pl->inv.item_count += found;
-    //c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-
-    uint32_t price = ii.data.data2_l * pkt->num_bought;
-    subcmd_send_bb_delete_meseta(c, price, 0);
-
-    return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 1);
-}
-
 static int handle_bb_item_tekk(ship_client_t* c, subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     block_t* b = c->cur_block;
@@ -1322,36 +1218,18 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_GUILDCARD:
 
     case SUBCMD62_PICK_UP:
+    case SUBCMD62_SHOP_REQ:
+    case SUBCMD62_SHOP_BUY:
         rv = func(c, dest, pkt);
         break;
 
     case SUBCMD62_ITEMREQ:
-        rv = l->dropfunc(c, l, pkt);
-        break;
-
     case SUBCMD62_BITEMREQ:
         rv = l->dropfunc(c, l, pkt);
         break;
 
     case SUBCMD62_TRADE:
         rv = handle_bb_trade(c, dest, (subcmd_bb_trade_t*)pkt);
-        break;
-
-        // Barba Ray actions
-    case SUBCMD62_UNKNOW_A9:
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
-    case SUBCMD62_CHARACTER_INFO:
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
-    case SUBCMD62_SHOP_REQ:
-        rv = handle_bb_shop_req(c, (subcmd_bb_shop_req_t*)pkt);
-        break;
-
-    case SUBCMD62_SHOP_BUY:
-        rv = handle_bb_shop_buy(c, (subcmd_bb_shop_buy_t*)pkt);
         break;
 
     case SUBCMD62_TEKKING:
@@ -1378,16 +1256,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_GUILD_MASTER_TRANS1:
     case SUBCMD62_GUILD_MASTER_TRANS2:
         rv = handle_bb_guild_trans(c, dest, (subcmd_bb_guild_master_trans_t*)pkt);
-        break;
-
-    case SUBCMD62_CH_GRAVE_DATA:
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        break;
-
-    case SUBCMD62_QUEST_ONEPERSON_SET_BP:
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         break;
 
     case SUBCMD62_WARP_ITEM:
