@@ -300,112 +300,6 @@ static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
-    subcmd_bb_burst_pldata_t* pkt) {
-    lobby_t* l = c->cur_lobby;
-    uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
-    iitem_t* item;
-    int i, rv = 0;
-
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", c->guildcard);
-        return -1;
-    }
-
-    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
-        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
-        /* 扫描库存并在发送之前修复所有mag. */
-
-
-        for (i = 0; i < pkt->inv.item_count; ++i) {
-            item = &pkt->inv.iitems[i];
-
-            /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
-            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
-                item->data.data2_l = SWAP32(item->data.data2_l);
-            }
-        }
-    }
-    else {
-        //pkt->guildcard = c->guildcard;
-
-        //// Check techniques...检查魔法,如果是机器人就不该有魔法
-        //if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
-        //    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        //        //if (pkt->techniques[i] == 0xFF)
-        //            //pkt->techniques[i] = 0x00;
-
-        //        if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
-        //            rv = -1;
-
-        //        if (rv) {
-        //            ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
-        //                pkt->techniques[i], max_tech_level[i].tech_name, 
-        //                max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
-
-        //            /* 规范化数据包的魔法等级 */
-        //            //pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
-        //            rv = 0;
-        //        }
-        //    }
-        //}
-
-        ////for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        ////    // 学会所有技能 TODO 增加作弊开关
-        ////    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
-        ////    pkt->techniques[i] = c->bb_pl->character.techniques[i];
-        ////}
-
-        //// 检测玩家角色结构
-        //pkt->dress_data = c->bb_pl->character.dress_data;
-
-        //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
-
-        //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
-        //if (c->bb_pl->character.dress_data.v2flags) {
-        //    pkt->dress_data.v2flags = 0x00;
-        //    pkt->dress_data.version = 0x00;
-        //    pkt->dress_data.v1flags = LE32(0x00000000);
-        //    pkt->dress_data.costume = LE16(0x0000);
-        //    pkt->dress_data.skin = LE16(0x0000);
-        //}
-
-        ///* 检测人物基础数值 */
-        //pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
-        //pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
-        //pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
-        //pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
-        //pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
-        //pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
-        //pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
-
-        //for (i = 0; i < 10; i++)
-        //    pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
-
-        //pkt->level = c->bb_pl->character.disp.level;
-        //pkt->exp = c->bb_pl->character.disp.exp;
-        //pkt->meseta = c->bb_pl->character.disp.meseta;
-
-
-        //// Could check inventory here 查看背包
-        //pkt->inv.item_count = c->bb_pl->inv.item_count;
-
-        //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        //    memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
-
-        //for (i = 0; i < sizeof(uint32_t); i++)
-        //    memset(&pkt->unused[i], 0, sizeof(uint32_t));
-
-        //pkt->shdr.size = pkt->hdr.pkt_len / 4;
-    }
-
-    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
-
-    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-}
-
 static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t iitem_count, found, i, stack;
@@ -599,7 +493,7 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
-    //DBG_LOG("client num %d 0x62/0x6D 指令: 0x%02X", dnum, type);
+    DBG_LOG("客户端 %d 0x%02X 指令: 0x%02X", dnum, hdr_type, type);
 
     pthread_mutex_lock(&l->mutex);
 
@@ -616,34 +510,27 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     subcmd62_handle_t func = subcmd62_get_handler(type, c->version);
 
-#ifdef BB_LOG_UNKNOWN_SUBS
-    if (func == NULL) {
-        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-        UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-    }
-#endif /* BB_LOG_UNKNOWN_SUBS */
-
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
         switch (type) {
-        case SUBCMD62_BURST1://6D //其他大厅跃迁进房时触发 1
-        case SUBCMD62_BURST2://6B //其他大厅跃迁进房时触发 2
-        case SUBCMD62_BURST3://6C //其他大厅跃迁进房时触发 3
-        case SUBCMD62_BURST4://6E //其他大厅跃迁进房时触发 4
-            if (l->flags & LOBBY_FLAG_QUESTING)
-                rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
-            /* Fall through... */
+        //case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
+        //case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
+        //case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
+        //case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
+        //    if (l->flags & LOBBY_FLAG_QUESTING)
+        //        rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
+        //    /* Fall through... */
 
-        case SUBCMD62_BURST5://6F //其他大厅跃迁进房时触发 5
-        case SUBCMD62_BURST6://71 //其他大厅跃迁进房时触发 6
+        case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
+        case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
+            send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
 
-        case SUBCMD62_BURST_PLDATA://70 //其他大厅跃迁进房时触发 7
-            rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
-            break;
+        //case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
+        //    rv = func(c, dest, pkt);
+        //    break;
 
         default:
             DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
@@ -696,9 +583,186 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         break;
     }
 
+#ifdef BB_LOG_UNKNOWN_SUBS
+    if (func == NULL && rv == -1) {
+        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+        //UNK_CSPD(type, c->version, pkt);
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    }
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
     pthread_mutex_unlock(&l->mutex);
     return rv;
 }
+
+int handle_bb_burst_pldata(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_burst_pldata_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
+    iitem_t* item;
+    int i, rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* 扫描库存并在发送之前修复所有mag. */
+
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+    else {
+        //pkt->guildcard = c->guildcard;
+
+        //// Check techniques...检查魔法,如果是机器人就不该有魔法
+        //if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
+        //    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        //        //if (pkt->techniques[i] == 0xFF)
+        //            //pkt->techniques[i] = 0x00;
+
+        //        if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
+        //            rv = -1;
+
+        //        if (rv) {
+        //            ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
+        //                pkt->techniques[i], max_tech_level[i].tech_name, 
+        //                max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
+
+        //            /* 规范化数据包的魔法等级 */
+        //            //pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        //            rv = 0;
+        //        }
+        //    }
+        //}
+
+        ////for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        ////    // 学会所有技能 TODO 增加作弊开关
+        ////    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        ////    pkt->techniques[i] = c->bb_pl->character.techniques[i];
+        ////}
+
+        //// 检测玩家角色结构
+        //pkt->dress_data = c->bb_pl->character.dress_data;
+
+        //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
+
+        //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
+        //if (c->bb_pl->character.dress_data.v2flags) {
+        //    pkt->dress_data.v2flags = 0x00;
+        //    pkt->dress_data.version = 0x00;
+        //    pkt->dress_data.v1flags = LE32(0x00000000);
+        //    pkt->dress_data.costume = LE16(0x0000);
+        //    pkt->dress_data.skin = LE16(0x0000);
+        //}
+
+        ///* 检测人物基础数值 */
+        //pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
+        //pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
+        //pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
+        //pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
+        //pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
+        //pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
+        //pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
+
+        //for (i = 0; i < 10; i++)
+        //    pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
+
+        //pkt->level = c->bb_pl->character.disp.level;
+        //pkt->exp = c->bb_pl->character.disp.exp;
+        //pkt->meseta = c->bb_pl->character.disp.meseta;
+
+
+        //// Could check inventory here 查看背包
+        //pkt->inv.item_count = c->bb_pl->inv.item_count;
+
+        //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        //    memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
+
+        //for (i = 0; i < sizeof(uint32_t); i++)
+        //    memset(&pkt->unused[i], 0, sizeof(uint32_t));
+
+        //pkt->shdr.size = pkt->hdr.pkt_len / 4;
+    }
+
+    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
+
+int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    ship_client_t* dest;
+    uint16_t len = pkt->hdr.pkt_len;
+    uint16_t hdr_type = pkt->hdr.pkt_type;
+    uint8_t type = pkt->type;
+    uint8_t size = pkt->size;
+    int rv = -1;
+    uint32_t dnum = LE32(pkt->hdr.flags);
+
+    /* Ignore these if the client isn't in a lobby. */
+    if (!l)
+        return 0;
+
+    DBG_LOG("客户端 %d 0x%02X 指令: 0x%02X", dnum, hdr_type, type);
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Find the destination. */
+    dest = l->clients[dnum];
+
+    /* The destination is now offline, don't bother sending it. */
+    if (!dest) {
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
+    }
+
+    //subcmd_bb_626Dsize_check(c, pkt);
+
+    subcmd62_handle_t func = subcmd62_get_handler(type, c->version);
+
+    /* If there's a burst going on in the lobby, delay most packets */
+    if (l->flags & LOBBY_FLAG_BURSTING) {
+        rv = 0;
+        switch (type) {
+        case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
+        case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
+        case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
+        case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
+            if (l->flags & LOBBY_FLAG_QUESTING)
+                rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
+            /* Fall through... */
+            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            break;
+
+        case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
+            //rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
+            rv = func(c, dest, pkt);
+            break;
+
+        default:
+            DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
+            rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
+        }
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+    }
+
+    pthread_mutex_unlock(&l->mutex);
+    return rv;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

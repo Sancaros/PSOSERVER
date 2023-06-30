@@ -266,9 +266,6 @@ int send_bb_full_char(ship_client_t *c);
 /* Send a GM Menu to a client. */
 int send_gm_menu(ship_client_t *c, uint32_t menu_id);
 
-/* Send BB lobby rare monster data to a client. */
-int send_bb_rare_monster_data(ship_client_t* c);
-
 /* Send a done bursting message to Blue Burst clients in a game. */
 int send_lobby_end_burst(lobby_t *l);
 
@@ -314,5 +311,8 @@ int send_bb_ex_item_done(ship_client_t* c, uint32_t done);
 
 /* 将房间中的玩家公会数据发送至新进入的客户端 */
 int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend);
+
+/* Send BB lobby rare monster data to a client. */
+int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes);
 
 #endif /* !SHIP_PACKETS_H */

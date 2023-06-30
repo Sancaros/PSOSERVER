@@ -333,6 +333,126 @@ static int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
 }
 
+static int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_send_quest_data1_t* pkt) {
+    lobby_t* l = dest->cur_lobby;
+
+    return send_bb_quest_data1(dest, &pkt->quest_data1);
+}
+
+static int sub62_70_bb(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_burst_pldata_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
+    iitem_t* item;
+    int i, rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* 扫描库存并在发送之前修复所有mag. */
+
+
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+    else {
+        //pkt->guildcard = c->guildcard;
+
+        //// Check techniques...检查魔法,如果是机器人就不该有魔法
+        //if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
+        //    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        //        //if (pkt->techniques[i] == 0xFF)
+        //            //pkt->techniques[i] = 0x00;
+
+        //        if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
+        //            rv = -1;
+
+        //        if (rv) {
+        //            ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
+        //                pkt->techniques[i], max_tech_level[i].tech_name, 
+        //                max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
+
+        //            /* 规范化数据包的魔法等级 */
+        //            //pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        //            rv = 0;
+        //        }
+        //    }
+        //}
+
+        ////for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        ////    // 学会所有技能 TODO 增加作弊开关
+        ////    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
+        ////    pkt->techniques[i] = c->bb_pl->character.techniques[i];
+        ////}
+
+        //// 检测玩家角色结构
+        //pkt->dress_data = c->bb_pl->character.dress_data;
+
+        //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
+
+        //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
+        //if (c->bb_pl->character.dress_data.v2flags) {
+        //    pkt->dress_data.v2flags = 0x00;
+        //    pkt->dress_data.version = 0x00;
+        //    pkt->dress_data.v1flags = LE32(0x00000000);
+        //    pkt->dress_data.costume = LE16(0x0000);
+        //    pkt->dress_data.skin = LE16(0x0000);
+        //}
+
+        ///* 检测人物基础数值 */
+        //pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
+        //pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
+        //pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
+        //pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
+        //pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
+        //pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
+        //pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
+
+        //for (i = 0; i < 10; i++)
+        //    pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
+
+        //pkt->level = c->bb_pl->character.disp.level;
+        //pkt->exp = c->bb_pl->character.disp.exp;
+        //pkt->meseta = c->bb_pl->character.disp.meseta;
+
+
+        //// Could check inventory here 查看背包
+        //pkt->inv.item_count = c->bb_pl->inv.item_count;
+
+        //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        //    memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
+
+        //for (i = 0; i < sizeof(uint32_t); i++)
+        //    memset(&pkt->unused[i], 0, sizeof(uint32_t));
+
+        //pkt->shdr.size = pkt->hdr.pkt_len / 4;
+    }
+
+    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
+
+static int sub62_71_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
 static int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_trade_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1034,6 +1154,9 @@ subcmd62_handle_func_t subcmd62_handle = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
     { SUBCMD62_GUILDCARD                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_06_bb },
     { SUBCMD62_PICK_UP                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_5A_bb },
+    { SUBCMD62_BURST5                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_6F_bb },
+    { SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_70_bb },
+    { SUBCMD62_BURST6                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_71_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
     { SUBCMD62_SHOP_BUY                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B7_bb },

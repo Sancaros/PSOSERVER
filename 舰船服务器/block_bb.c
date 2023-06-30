@@ -1051,19 +1051,19 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
 static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
-    uint32_t flag = LE32(pkt->bb.flags);
+    //uint32_t flag = LE32(pkt->bb.flags);
 
         /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
-    DBG_LOG("bb_process_done_quest_burst %u", flag);
+    //DBG_LOG("bb_process_done_quest_burst %u", flag);
 
     /* Lock the lobby, clear its bursting flag, send the resume game packet to
        the rest of the lobby, and continue on. */
     pthread_mutex_lock(&l->mutex);
 
-    send_bb_rare_monster_data(c);
+    //send_bb_rare_monster_data(c); TODO
 
     if (l->version == CLIENT_VERSION_BB) {
         send_lobby_end_burst(l);
@@ -2777,9 +2777,11 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case GAME_COMMAND2_TYPE:
         /* 0x006C 108*/
     case GAME_COMMANDC_TYPE:
+        return subcmd_bb_handle_one(c, (subcmd_bb_pkt_t*)pkt);
+
         /* 0x006D 109*/
     case GAME_COMMANDD_TYPE:
-        return subcmd_bb_handle_one(c, (subcmd_bb_pkt_t*)pkt);
+        return subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x006F 111*/
     case DONE_BURSTING_TYPE:

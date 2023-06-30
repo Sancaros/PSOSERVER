@@ -2707,10 +2707,10 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
         rv = 0;
 
         switch(type) {
-            case SUBCMD62_BURST1:
-            case SUBCMD62_BURST2:
-            case SUBCMD62_BURST3:
-            case SUBCMD62_BURST4:
+            case SUBCMD6D_BURST1:
+            case SUBCMD6D_BURST2:
+            case SUBCMD6D_BURST3:
+            case SUBCMD6D_BURST4:
                 if(l->flags & LOBBY_FLAG_QUESTING)
                     rv = lobby_enqueue_burst(l, c, (dc_pkt_hdr_t *)pkt);
                 /* Fall through... */
@@ -2720,7 +2720,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
                 rv |= send_pkt_dc(dest, (dc_pkt_hdr_t *)pkt);
                 break;
 
-            case SUBCMD62_BURST_PLDATA:
+            case SUBCMD6D_BURST_PLDATA:
                 rv = handle_burst_pldata(c, dest, (subcmd_burst_pldata_t*)pkt);
                 break;
 
@@ -2793,7 +2793,7 @@ int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             //DBG_LOG("Î´Öª 0x62/0x6D Ö¸Áî: 0x%02X", type);
-            UNK_CSPD(type, c->version, pkt);
+            //UNK_CSPD(type, c->version, pkt);
             //display_packet((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             /* Forward the packet unchanged to the destination. */

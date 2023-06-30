@@ -23,12 +23,12 @@
 /////////////////////////////////////////////////////////////////////////////////////
 /* The commands OK to send during bursting (0x62/0x6D). These are named for the
    order in which they're sent, hence why the names are out of order... */
-#define SUBCMD62_BURST2                        0x6B
-#define SUBCMD62_BURST3                        0x6C
-#define SUBCMD62_BURST1                        0x6D
-#define SUBCMD62_BURST4                        0x6E
+#define SUBCMD6D_BURST2                        0x6B
+#define SUBCMD6D_BURST3                        0x6C
+#define SUBCMD6D_BURST1                        0x6D
+#define SUBCMD6D_BURST4                        0x6E
 #define SUBCMD62_BURST5                        0x6F
-#define SUBCMD62_BURST_PLDATA                  0x70
+#define SUBCMD6D_BURST_PLDATA                  0x70
 #define SUBCMD62_BURST6                        0x71
 /////////////////////////////////////////////////////////////////////////////////////
 #define SUBCMD62_BITEMREQ                      0xA2    /*SUBCMD62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */

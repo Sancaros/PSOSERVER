@@ -74,6 +74,8 @@ uint8_t datadp[65535];
 void packet_to_text(uint8_t* buf, size_t len, bool show) {
 	static const char hex_digits[] = "0123456789ABCDEF";
 
+	memset(dp, 0, sizeof(dp));
+
 	size_t c, c2, c3, c4;
 	c = c2 = c3 = c4 = 0;
 

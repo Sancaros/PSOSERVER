@@ -11775,27 +11775,6 @@ int send_gm_menu(ship_client_t *c, uint32_t menu_id) {
     return -1;
 }
 
-int send_bb_rare_monster_data(ship_client_t* c) {
-    lobby_t* l = c->cur_lobby;
-    uint8_t* sendbuf = get_sendbuf();
-    bb_rare_monster_list_pkt* pkt = (bb_rare_monster_list_pkt*)sendbuf;
-
-    /* Make sure we got the sendbuf */
-    if (!sendbuf)
-        return -1;
-
-    uint16_t len = sizeof(bb_rare_monster_list_pkt);
-
-    /* 填充数据并准备发送 */
-    pkt->hdr.pkt_type = LE16(BB_RARE_MONSTER_LIST);
-    pkt->hdr.pkt_len = LE16(len);
-    pkt->hdr.flags = 0;
-
-    memcpy(&pkt->enemy_ids[0], &l->map_enemies->enemies[0], sizeof(pkt->enemy_ids));
-
-    return crypt_send(c, len, sendbuf);
-}
-
 static int send_bb_end_burst(ship_client_t *c) {
     uint8_t *sendbuf = get_sendbuf();
     subcmd_bb_end_burst_t *pkt = (subcmd_bb_end_burst_t *)sendbuf;
@@ -12963,5 +12942,31 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
     }
 
     return rv;
+}
+
+int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_rare_monster_list_pkt* pkt = (bb_rare_monster_list_pkt*)sendbuf;
+    size_t enemy_ids_count = sizeof(pkt->enemy_ids) / sizeof(pkt->enemy_ids[0]);
+    size_t indexes_size = sizeof(indexes) / sizeof(indexes[0]);
+
+    if (indexes_size > enemy_ids_count) {
+        // 抛出异常
+        ERR_LOG("too many rare enemies");
+        return -1;
+    }
+    for (size_t z = 0; z < indexes_size; z++) {
+        pkt->enemy_ids[z] = indexes[z];
+    }
+    for (size_t i = indexes_size; i < enemy_ids_count; i++) {
+        pkt->enemy_ids[i] = 0xFFFF;
+    }
+
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_len = LE16(sizeof(bb_rare_monster_list_pkt));
+    pkt->hdr.pkt_type = LE16(BB_RARE_MONSTER_LIST);
+    pkt->hdr.flags = 0;
+
+    return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);
 }
 

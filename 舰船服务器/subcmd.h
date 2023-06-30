@@ -1534,6 +1534,7 @@ typedef struct subcmd_bb_send_quest_data1 {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     psocn_quest_data1_t quest_data1;
+    uint32_t padding;
 } PACKED subcmd_bb_send_quest_data1_t;
 
 // 0x70: Sync player disp data and inventory (used while loading into game)
@@ -3001,6 +3002,9 @@ typedef struct subcmd_bb_quest_oneperson_set_ex_pc {
 /* Handle a 0x62/0x6D packet. */
 int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
 int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+
+/* Handle BB 0x6D packet. */
+int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 
 /* Handle a 0x60 packet. */
 int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);

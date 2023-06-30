@@ -114,21 +114,21 @@ int subcmd_bb_handle_onev1(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         rv = 0;
 
         switch (type) {
-        case SUBCMD62_BURST1://6D
-        case SUBCMD62_BURST2://6B
-        case SUBCMD62_BURST3://6C
-        case SUBCMD62_BURST4://6E
+        case SUBCMD6D_BURST1://6D
+        case SUBCMD6D_BURST2://6B
+        case SUBCMD6D_BURST3://6C
+        case SUBCMD6D_BURST4://6E
             if (l->flags & LOBBY_FLAG_QUESTING)
                 rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
             /* Fall through... */
 
         case SUBCMD62_BURST5://6F
         case SUBCMD62_BURST6://71
-            //case SUBCMD62_BURST_PLDATA://70
+            //case SUBCMD6D_BURST_PLDATA://70
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
 
-        case SUBCMD62_BURST_PLDATA://70
+        case SUBCMD6D_BURST_PLDATA://70
             rv = handle_bb_burst_pldata(c, dest, (subcmd_bb_burst_pldata_t*)pkt);
             break;
 
