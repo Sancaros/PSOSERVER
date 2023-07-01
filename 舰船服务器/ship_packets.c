@@ -12702,7 +12702,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         spec_item_list->item_num = 4;
 
         /* Ìî³ä²Ëµ¥ÊµÀý */
-        for (i = 0; i < spec_item_list->item_num; ++i) {
+        for (i = 0; i < (int)spec_item_list->item_num; ++i) {
             istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_name, pso_guild_rank_list_bb[i]->name, sizeof(spec_item_list->entries[i].item_name));
             istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_desc, "Bronze Pen1111111111111111", sizeof(spec_item_list->entries[i].item_desc));
             spec_item_list->entries[i].price = 123;

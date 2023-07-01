@@ -1007,7 +1007,7 @@ static int handle_bb_guild_err(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
     int done = 0;
     uint16_t flags = ntohs(pkt->hdr.flags);
     bb_guild_data_pkt* guild = (bb_guild_data_pkt*)pkt->data;
-    uint32_t dest = guild->hdr.flags;
+    uint32_t target_gc = guild->hdr.flags;
 
     /* Make sure the packet looks sane */
     if (!(flags & SHDR_RESPONSE)) {
@@ -1022,7 +1022,7 @@ static int handle_bb_guild_err(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
             TAILQ_FOREACH(dest, b->clients, qentry) {
                 pthread_mutex_lock(&dest->mutex);
 
-                if (dest->guildcard == dest && dest->pl) {
+                if (dest->guildcard == target_gc && dest->pl) {
                     /* We've found them, figure out what to tell them. */
                     if (flags & SHDR_FAILURE) {
                         switch (err)
@@ -1050,7 +1050,7 @@ static int handle_bb_guild_err(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
                     }
                     done = 1;
                 }
-                else if (dest->guildcard == dest) {
+                else if (dest->guildcard == target_gc) {
                     /* Act like they don't exist for right now (they don't
                        really exist right now)
                         假装他们现在不存在（他们现在真的不存在） */
