@@ -3949,6 +3949,7 @@ typedef struct bb_guild_member_list {
 typedef struct bb_guild_data {
     bb_pkt_hdr_t hdr;
     psocn_bb_db_guild_t guild;
+    uint32_t padding;
 } PACKED bb_guild_data_pkt;
 
 typedef struct bb_guild_rv_data {
@@ -4120,7 +4121,6 @@ typedef struct bb_guild_lobby_client {
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
     uint8_t guild_reward[8];
     uint8_t guild_flag[0x0800];
-    uint32_t padding;
 } PACKED bb_guild_lobby_client_t;
 
 // 13EA: 大厅玩家公会邀请

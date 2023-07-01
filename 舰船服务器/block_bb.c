@@ -1811,7 +1811,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     uint16_t len = LE16(pkt->hdr.pkt_len);
     ship_client_t* c2 = { 0 };
     uint32_t  i = 0, target_gc = pkt->target_guildcard;
-    int done = 0, rv = -1;
+    int done = 0;
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -1827,7 +1827,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
     if (c->bb_guild->data.guild_id <= 0)
         return 0;
 
-    if (c->bb_guild->data.guild_priv_level < 0x30)
+    if (c->bb_guild->data.guild_priv_level < BB_GUILD_PRIV_LEVEL_ADMIN)
         return 0;
 
     /* 首先搜索本地的舰船. */
@@ -1852,7 +1852,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c2);
 
                     /* 初始化新会员的公会数据包 */
-                    memset(&c2->bb_guild->data.guild_owner_gc, 0, sizeof(bb_guild_t));
+                    memset(&c2->bb_guild->data, 0, sizeof(bb_guild_t));
 
                     c2->bb_guild->data.guild_owner_gc = c->bb_guild->data.guild_owner_gc;
                     c2->bb_guild->data.guild_id = c->bb_guild->data.guild_id;
@@ -1865,7 +1865,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     c2->bb_guild->data.guild_name[0] = 0x0009;
                     c2->bb_guild->data.guild_name[1] = 0x0045;
 
-                    /* TODO 公会等级未实现 */
+                    /* TODO 公会排行榜未实现 */
                     c2->bb_guild->data.guild_rank = c->bb_guild->data.guild_rank;
 
                     memcpy(&c2->bb_guild->data.guild_flag, &c->bb_guild->data.guild_flag, sizeof(c->bb_guild->data.guild_flag));
@@ -1874,10 +1874,10 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                         c2->bb_guild->data.guild_reward[j] = c->bb_guild->data.guild_reward[j];
                     }
 
-                    rv = send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
-                    rv = send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
-                    rv = send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
-                    rv = send_bb_guild_cmd(c2, BB_GUILD_UNK_04EA);
+                    send_bb_guild_cmd(c2, BB_GUILD_FULL_DATA);
+                    send_bb_guild_cmd(c2, BB_GUILD_INITIALIZATION_DATA);
+                    send_bb_guild_cmd(c, BB_GUILD_UNK_04EA);
+                    send_bb_guild_cmd(c2, BB_GUILD_UNK_04EA);
 
                     pthread_mutex_unlock(&c2->mutex);
                     done = 1;
@@ -1918,7 +1918,6 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
-    uint32_t guild_id = c->bb_guild->data.guild_id;
     uint32_t target_gc = pkt->target_guildcard;
     int i;
     ship_client_t* c2 = { 0 };
@@ -1930,7 +1929,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
         //return -1;
     }
 
-    if (guild_id <= 0) {
+    if (c->bb_guild->data.guild_id <= 0) {
         return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE您不在任何一个公会中."));
     }
@@ -1938,7 +1937,10 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
     if (target_gc != c->guildcard) {
         if (c->bb_guild->data.guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) {
-            shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+
+            pkt->hdr.flags = c->bb_guild->data.guild_id;
+
+            shipgate_fw_bb(&ship->sg, pkt, 0, c);
             send_bb_guild_cmd(c, BB_GUILD_UNK_06EA);
 
             for (i = 0; i < l->max_clients; ++i) {
@@ -1949,7 +1951,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
                 }
             }
 
-            if (!c2 || c2->bb_guild->data.guild_id != guild_id)
+            if (!c2 || c2->bb_guild->data.guild_id != c->bb_guild->data.guild_id)
                 return send_msg(c, MSG1_TYPE, "%s",
                     __(c, "\tE未找到该玩家."));
 
@@ -1976,16 +1978,15 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
             __(c, "\tE您的公会权限不足."));
     }
     else {
+        pkt->hdr.flags = c->bb_guild->data.guild_id;
+
         /* 操作数据库 */
-        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        shipgate_fw_bb(&ship->sg, pkt, 0, c);
         /* 初始化对应GC的公会数据 */
         memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         return send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
-
-    //return send_msg(c, MSG1_TYPE, "%s",
-    //    __(c, "\tE公会开除玩家发生错误,请联系管理员处理."));
 }
 
 static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
@@ -2008,7 +2009,6 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
         return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4您不在公会中!"),
             __(c, "\tC7您无权进行此操作."));
     }
-
 
     pkt->guildcard = c->guildcard;
     pkt->guild_id = c->bb_guild->data.guild_id;
@@ -2125,7 +2125,6 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
-    uint32_t guild_id = 0;
     //int i;
     //ship_client_t* c2 = { 0 };
 
@@ -2139,15 +2138,12 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
     }
 
     if ((c->bb_guild->data.guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) && (c->bb_guild->data.guild_id != 0)) {
-        guild_id = c->bb_guild->data.guild_id;
 
-        DBG_LOG("%u ", guild_id);
-
-        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
-        memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
-        send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-        send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        //memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+        //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+        //send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
 
     //display_packet((uint8_t*)pkt, len);
@@ -2159,7 +2155,6 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     uint16_t len = LE16(pkt->hdr.pkt_len);
     uint32_t guild_priv_level = pkt->hdr.flags;
     uint32_t target_gc = pkt->target_guildcard;
-    uint32_t guild_id = c->bb_guild->data.guild_id;
     lobby_t* l = c->cur_lobby;
     ship_client_t* c2 = { 0 };
     int i;
@@ -2213,11 +2208,13 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
         return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE未找到需要提升的公会玩家."));
 
-    shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+    pkt->hdr.flags = c->bb_guild->data.guild_id;
+
+    shipgate_fw_bb(&ship->sg, pkt, 0, c);
 
     if (guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER && c->guild_master_exfer) {
         //会长转让
-        shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+        shipgate_fw_bb(&ship->sg, pkt, 0, c);
         c->bb_guild->data.guild_priv_level = BB_GUILD_PRIV_LEVEL_ADMIN;
         send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
         send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);

@@ -12443,6 +12443,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     DBG_LOG("send_bb_guild_cmd 向GC %u 发送指令 0x%04X", c->guildcard, cmd_code);
 #endif // DEBUG
 
+    DBG_LOG("send_bb_guild_cmd 向GC %u 发送指令 0x%04X", c->guildcard, cmd_code);
+
     switch (cmd_code)
     {
         /* 02EA */
@@ -12509,7 +12511,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         memset(&pkt->data[0x00], 0, 0x38);
 
-        if (c->bb_guild != NULL) {
+        if (c->bb_guild->data.guild_id) {
             *(uint32_t*)&pkt->data[0x04] = c->bb_guild->data.guild_owner_gc;
             *(uint32_t*)&pkt->data[0x08] = c->bb_guild->data.guild_id;
             *(uint32_t*)&pkt->data[0x0C] = c->bb_guild->data.guild_points_rank;
@@ -12535,6 +12537,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         for (i = 0; i < l->max_clients; i++) {
             if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
                 c2 = l->clients[i];
+
+                DBG_LOG("%u %d", c2->bb_guild->data.guild_owner_gc, l->clients[i]->version);
 
                 lbs->entries[num].guild_owner_gc = c2->bb_guild->data.guild_owner_gc;
                 lbs->entries[num].guild_id = c2->bb_guild->data.guild_id;

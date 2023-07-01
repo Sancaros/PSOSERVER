@@ -1092,6 +1092,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t target_guildcard = pkt->traget_guildcard;
     char guild_name_text[24];
     char inviter_name_text[24];
+    src->guild_accept = 0;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
@@ -1114,7 +1115,6 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     case 0x02:
         if (src->guildcard == target_guildcard)
             if (src->bb_guild->data.guild_id != 0) {
-                src->guild_accept = 0;
                 DBG_LOG("被邀请方 GUILD ID %u", dest->bb_guild->data.guild_id);
                 /* 到这就没了, 获取对方已经属于某个公会. */
                 send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
@@ -1127,14 +1127,12 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 对方拒绝加入公会 */
     case 0x03:
-        src->guild_accept = 0;
-        send_msg(src, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(src, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
         break;
 
         /* 公会邀请失败 给双方返回错误信息 */
     case 0x04:
-        src->guild_accept = 0;
-        send_msg(src, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(src, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
         break;
 
     default:

@@ -1638,6 +1638,10 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    /* 如果没搜传递GC过来 就不要回应 */
+    if (!gc_target)
+        return 0;
+
     if (db_update_bb_guild_member_add(guild_id, gc_target)) {
 
         SQLERR_LOG("新增 BB %s 数据包 (%d) 失败", c_cmd_name(type, 0), len);
@@ -1648,6 +1652,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    /* 不需要通知舰船了 */
     return 0;
 }
 
@@ -1707,8 +1712,6 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
     }
-
-    g_data->hdr.flags = guild_id;
 
     return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
 }
@@ -1770,10 +1773,10 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         "%s"
         " ON "
         "%s.guild_id = %s.guild_id"
-        " INNER JOIN "
-        "%s"
-        " ON "
-        "%s.guildcard = %s.guildcard"
+        //" INNER JOIN "
+        //"%s"
+        //" ON "
+        //"%s.guildcard = %s.guildcard"
         " WHERE "
         "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
         , AUTH_ACCOUNT, AUTH_ACCOUNT
@@ -1781,8 +1784,8 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         , AUTH_ACCOUNT
         , CLIENTS_GUILD
         , AUTH_ACCOUNT, CLIENTS_GUILD
-        , SERVER_CLIENTS_ONLINE
-        , AUTH_ACCOUNT, SERVER_CLIENTS_ONLINE
+        //, SERVER_CLIENTS_ONLINE
+        //, AUTH_ACCOUNT, SERVER_CLIENTS_ONLINE
         , CLIENTS_GUILD, guild_id
     );
 
@@ -1886,7 +1889,6 @@ static int handle_bb_guild_unk_0BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     display_packet((uint8_t*)g_data, len);
-
     return 0;
 }
 
@@ -1983,8 +1985,6 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
         return -1;
     }
 
-    pkt->fw_flags = guild_id;
-
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
@@ -2028,6 +2028,8 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
+    g_data->hdr.flags = guild_id;
+
     return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
 }
 
@@ -2035,7 +2037,6 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
 static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint32_t sender = ntohl(pkt->guildcard);
     uint32_t guild_id = pkt->fw_flags;
-
     bb_guild_member_promote_pkt* g_data = (bb_guild_member_promote_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
@@ -2103,7 +2104,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 }
 
 /* 处理 Blue Burst 公会  */
-static int handle_bb_guild_unk_12EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_unk_12EA_pkt* g_data = (bb_guild_unk_12EA_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
@@ -2336,7 +2337,7 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 }
 
 /* 处理 Blue Burst 公会  */
-static int handle_bb_guild_unk_1AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
+static int handle_bb_guild_buy_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_guild_buy_special_item_pkt* g_data = (bb_guild_buy_special_item_pkt*)pkt->pkt;
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
@@ -2489,7 +2490,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_member_promote(c, pkt);
 
     case BB_GUILD_INITIALIZATION_DATA:
-        return handle_bb_guild_unk_12EA(c, pkt);
+        return handle_bb_guild_initialization_data(c, pkt);
 
     case BB_GUILD_LOBBY_SETTING:
         return handle_bb_guild_lobby_setting(c, pkt);
@@ -2513,7 +2514,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_privilege_list(c, pkt);
 
     case BB_GUILD_BUY_SPECIAL_ITEM:
-        return handle_bb_guild_unk_1AEA(c, pkt);
+        return handle_bb_guild_buy_special_item(c, pkt);
 
     case BB_GUILD_UNK_1BEA:
         return handle_bb_guild_unk_1BEA(c, pkt);
