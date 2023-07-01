@@ -327,9 +327,7 @@ typedef struct psocn_bb_guild {
 #define BB_GUILD_PRIV_LEVEL_ADMIN  0x00000030
 #define BB_GUILD_PRIV_LEVEL_MEMBER 0x00000000
 
-typedef struct psocn_bb_db_guild {
-    bb_guild_t data;
-} psocn_bb_db_guild_t;
+typedef bb_guild_t psocn_bb_db_guild_t;
 
 static int guild_size = sizeof(psocn_bb_db_guild_t);
 

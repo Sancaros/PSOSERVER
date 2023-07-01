@@ -173,114 +173,6 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, subcmd_bb_bit
     return rv;
 }
 
-static int handle_bb_guild_trans(ship_client_t* c, ship_client_t* d, subcmd_bb_guild_master_trans_t* pkt) {
-    uint16_t len = pkt->hdr.pkt_len;
-    uint8_t type = pkt->shdr.type;
-    uint32_t trans_cmd = pkt->trans_cmd;
-    uint32_t target_guildcard = pkt->traget_guildcard;
-    char guild_name_text[24];
-    char master_name_text[24];
-
-    // 公会邀请 C1 & C2, 会长转让 CD & CE.                             ...y
-//[2023年02月13日 19:20:13:191] 测试(subcmd-bb.c 1495): SUBCMD62_GUILD_MASTER_TRANS1
-//( 00000000 )   64 00 62 00 00 00 00 00  CD 17 14 04 01 00 00 00    d.b.............
-//( 00000010 )   00 00 00 00 09 00 42 00  31 00 32 00 33 00 00 00    .... .B.1.2.3...
-//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
-//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000060 )   00 00 BB 79                                         ...y
-//[2023年02月13日 19:20:29:038] 测试(subcmd-bb.c 1501): SUBCMD62_GUILD_MASTER_TRANS2
-//( 00000000 )   64 00 62 00 01 00 00 00  CE 17 85 00 60 EE 80 02    d.b.........`...
-//( 00000010 )   01 00 00 00 09 00 42 00  31 00 00 00 00 00 00 00    .... .B.1.......
-//( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000030 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000040 )   00 00 00 00 09 00 42 00  F8 76 B2 4E F8 76 31 72    .... .B..v.N.v1r
-//( 00000050 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
-//( 00000060 )   00 00 BB 79                                         ...y
-    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
-            c->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return -1;
-    }
-
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
-    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
-
-#ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, c->guildcard, d->guildcard);
-    display_packet((uint8_t*)pkt, len);
-#endif // DEBUG
-
-    switch (type) {
-    case SUBCMD62_GUILD_MASTER_TRANS1:
-
-        //switch (trans_cmd)
-        //{
-        //case 0x00:
-        //case 0x01:
-        //    if (c->bb_guild->data.guild_data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
-        //        ERR_LOG("GC %u 公会权限不足", c->guildcard);
-        //        return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
-        //            __(c, "\tC7您无权进行此操作."));
-        //    }
-
-        //    c->guild_master_exfer = trans_cmd;
-        //    break;
-
-        //default:
-        //    ERR_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, c->guildcard, d->guildcard);
-        //    break;
-        //}
-
-        if (c->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
-            ERR_LOG("GC %u 公会权限不足", c->guildcard);
-            return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4公会权限不足!"),
-                __(c, "\tC7您无权进行此操作."));
-        }
-
-        c->guild_master_exfer = trans_cmd;
-        break;
-
-    case SUBCMD62_GUILD_MASTER_TRANS2:
-
-        switch (trans_cmd)
-        {
-        case 0x01:
-            d->guild_master_exfer = 1;
-            send_msg(d, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(d, "\tE\tC4会长变更中."), master_name_text, guild_name_text);
-            break;
-
-            /* 公会转移成功 TODO 通知其他会员 */
-        case 0x02:
-            d->guild_master_exfer = 0;
-            send_msg(d, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(d, "\tE\tC4会长已变更."), master_name_text, guild_name_text);
-            break;
-
-            /* 对方拒绝成为会长 */
-        case 0x03:
-            d->guild_master_exfer = 0;
-            send_msg(d, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(d, "\tE\tC4对方拒绝成为会长."), master_name_text, guild_name_text);
-            break;
-
-            /* 公会转移失败 给双方返回错误信息 */
-        case 0x04:
-            d->guild_master_exfer = 0;
-            send_msg(c, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(c, "\tE\tC4公会转移失败."), master_name_text, guild_name_text);
-            break;
-
-        default:
-            ERR_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, c->guildcard, d->guildcard);
-            break;
-        }
-
-        break;
-    }
-
-    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
-}
-
 static int handle_bb_62_check_game_loading(ship_client_t* c, subcmd_bb_pkt_t* pkt, int size) {
     lobby_t* l = c->cur_lobby;
 
@@ -514,23 +406,11 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
         switch (type) {
-        //case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
-        //case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
-        //case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
-        //case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
-        //    if (l->flags & LOBBY_FLAG_QUESTING)
-        //        rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
-        //    /* Fall through... */
-
         case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
         case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
             send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
             rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             break;
-
-        //case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
-        //    rv = func(c, dest, pkt);
-        //    break;
 
         default:
             DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
@@ -553,17 +433,14 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD62_BANK_ACTION:
     case SUBCMD62_GUILD_INVITE1:
     case SUBCMD62_GUILD_INVITE2:
+    case SUBCMD62_GUILD_MASTER_TRANS1:
+    case SUBCMD62_GUILD_MASTER_TRANS2:
         rv = func(c, dest, pkt);
         break;
 
     case SUBCMD62_ITEMREQ:
     case SUBCMD62_BITEMREQ:
         rv = l->dropfunc(c, l, pkt);
-        break;
-
-    case SUBCMD62_GUILD_MASTER_TRANS1:
-    case SUBCMD62_GUILD_MASTER_TRANS2:
-        rv = handle_bb_guild_trans(c, dest, (subcmd_bb_guild_master_trans_t*)pkt);
         break;
 
     case SUBCMD62_WARP_ITEM:

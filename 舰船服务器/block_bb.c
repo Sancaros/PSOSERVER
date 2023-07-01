@@ -2003,9 +2003,8 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
 }
 
 static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_pkt* pkt) {
-    uint32_t guild_id = c->bb_guild->data.guild_id;
 
-    if (guild_id <= 0) {
+    if (c->bb_guild->data.guild_id <= 0) {
         return send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4您不在公会中!"),
             __(c, "\tC7您无权进行此操作."));
     }
@@ -2014,7 +2013,7 @@ static int process_bb_guild_member_chat(ship_client_t* c, bb_guild_member_chat_p
     pkt->guildcard = c->guildcard;
     pkt->guild_id = c->bb_guild->data.guild_id;
 
-    return shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
+    return shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
 }
 
 static int process_bb_guild_member_setting(ship_client_t* c, bb_guild_member_setting_pkt* pkt) {
@@ -2141,6 +2140,9 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
 
     if ((c->bb_guild->data.guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) && (c->bb_guild->data.guild_id != 0)) {
         guild_id = c->bb_guild->data.guild_id;
+
+        DBG_LOG("%u ", guild_id);
+
         shipgate_fw_bb(&ship->sg, pkt, guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
         memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));

@@ -43,7 +43,7 @@
 
 #include "subcmd_handle_62.h"
 
-static int sub62_06_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_06_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gcsend_t* pkt) {
     size_t in, out;
     char* inptr;
@@ -263,7 +263,7 @@ static int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-static int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int pick_count;
@@ -333,14 +333,14 @@ static int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
 }
 
-static int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_send_quest_data1_t* pkt) {
     lobby_t* l = dest->cur_lobby;
 
     return send_bb_quest_data1(dest, &pkt->quest_data1);
 }
 
-static int sub62_70_bb(ship_client_t* c, ship_client_t* d,
+int sub62_70_bb(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
@@ -446,14 +446,14 @@ static int sub62_70_bb(ship_client_t* c, ship_client_t* d,
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
 
-static int sub62_71_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_71_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
-static int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_trade_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = -1;
@@ -481,7 +481,7 @@ static int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
-static int sub62_B5_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_B5_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_shop_req_t* req) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
@@ -525,7 +525,7 @@ static int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_bb_send_shop(src, shop_type, num_items);
 }
 
-static int sub62_B7_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_B7_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t ii = { 0 };
@@ -587,7 +587,7 @@ static int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1);
 }
 
-static int sub62_B8_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_B8_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
@@ -698,7 +698,7 @@ static int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
 }
 
-static int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_accept_item_identification_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint8_t i = 0;
@@ -772,7 +772,7 @@ static int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub62_BB_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_BB_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_bank_open_t* req) {
     lobby_t* l = src->cur_lobby;
     uint8_t* sendbuf = get_sendbuf();
@@ -815,7 +815,7 @@ static int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     return crypt_send(src, (int)size, sendbuf);
 }
 
-static int sub62_BD_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_BD_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_bank_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id;
@@ -1033,7 +1033,7 @@ static int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     }
 }
 
-static int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
+int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_invite_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
@@ -1053,7 +1053,7 @@ static int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, sizeof(pkt->inviter_name) - 4);
 
 #ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
+    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
     display_packet((uint8_t*)pkt, len);
 #endif // DEBUG
 
@@ -1084,7 +1084,7 @@ static int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
-static int sub62_C2_bb(ship_client_t* src, ship_client_t* dest, 
+int sub62_C2_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_guild_invite_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
@@ -1146,8 +1146,97 @@ static int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
+int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_guild_master_trans_t* pkt) {
+    uint16_t len = pkt->hdr.pkt_len;
+    uint8_t type = pkt->shdr.type;
+    uint32_t trans_cmd = pkt->trans_cmd;
+    uint32_t target_guildcard = pkt->traget_guildcard;
+    char guild_name_text[24];
+    char master_name_text[24];
 
+    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
+
+#ifdef DEBUG
+    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    display_packet((uint8_t*)pkt, len);
+#endif // DEBUG
+
+    if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
+        ERR_LOG("GC %u 公会权限不足", src->guildcard);
+        return send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4公会权限不足!"),
+            __(src, "\tC7您无权进行此操作."));
+    }
+
+    src->guild_master_exfer = trans_cmd;
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_guild_master_trans_t* pkt) {
+    uint16_t len = pkt->hdr.pkt_len;
+    uint8_t type = pkt->shdr.type;
+    uint32_t trans_cmd = pkt->trans_cmd;
+    uint32_t target_guildcard = pkt->traget_guildcard;
+    char guild_name_text[24];
+    char master_name_text[24];
+
+    if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
+
+#ifdef DEBUG
+    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    display_packet((uint8_t*)pkt, len);
+#endif // DEBUG
+
+    switch (trans_cmd)
+    {
+    case 0x01:
+        dest->guild_master_exfer = 1;
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4会长变更中."), master_name_text, guild_name_text);
+        break;
+
+        /* 公会转移成功 TODO 通知其他会员 */
+    case 0x02:
+        dest->guild_master_exfer = 0;
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4会长已变更."), master_name_text, guild_name_text);
+        break;
+
+        /* 对方拒绝成为会长 */
+    case 0x03:
+        dest->guild_master_exfer = 0;
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4对方拒绝成为会长."), master_name_text, guild_name_text);
+        break;
+
+        /* 公会转移失败 给双方返回错误信息 */
+    case 0x04:
+        dest->guild_master_exfer = 0;
+        send_msg(src, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(src, "\tE\tC4公会转移失败."), master_name_text, guild_name_text);
+        break;
+
+    default:
+        ERR_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+        break;
+    }
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
 
 // 定义函数指针数组
 subcmd62_handle_func_t subcmd62_handle = {
@@ -1166,6 +1255,8 @@ subcmd62_handle_func_t subcmd62_handle = {
     { SUBCMD62_BANK_ACTION               , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BD_bb },
     { SUBCMD62_GUILD_INVITE1             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C1_bb },
     { SUBCMD62_GUILD_INVITE2             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C2_bb },
+    { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
+    { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
 };
 
 // 使用函数指针直接调用相应的处理函数

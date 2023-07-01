@@ -12930,13 +12930,12 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
 
     /* 将房间中的玩家公会数据发送至新进入的客户端 */
     for (i = 0; i < l->max_clients; ++i) {
-        if ((l->clients_slot[i]) && 
-            (l->clients[i]) &&
+        if ((l->clients[i]) &&
             (l->clients[i] != nosend) &&
             (l->clients[i]->version == CLIENT_VERSION_BB)
             ) {
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
-            /*rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));*/
             rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
         }
     }
@@ -12956,7 +12955,7 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
         return -1;
     }
     for (size_t z = 0; z < indexes_size; z++) {
-        pkt->enemy_ids[z] = indexes[z];
+        pkt->enemy_ids[z] = (uint16_t)indexes[z];
     }
     for (size_t i = indexes_size; i < enemy_ids_count; i++) {
         pkt->enemy_ids[i] = 0xFFFF;
