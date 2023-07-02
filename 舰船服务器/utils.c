@@ -432,8 +432,8 @@ int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     text[0x1FF] = '\0';
 
-    istrncpy16_raw(ic_utf16_to_gbk, name, &c->pl->bb.character.name.char_name[0], 0x40,
-        BB_CHARACTER_CHAR_NAME_WLENGTH);
+    istrncpy16_raw(ic_utf16_to_gbk, name, &c->pl->bb.character.name.char_name[0], 64,
+        BB_CHARACTER_CHAR_NAME_LENGTH);
 
     /* Attempt to open up the file. */
     fp = fopen(filename, "w");
@@ -971,7 +971,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(c->character.techniques, sp->techniques, sizeof(sp->techniques));
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_WLENGTH);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
 }
 
 void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {

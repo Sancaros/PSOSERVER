@@ -667,6 +667,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         if (send_bb_char_dressing_room(&char_data->character, &pkt->data)) {
             ERR_LOG("无法更新玩家更衣室数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            free_safe(char_data);
+            return -1;
         }
         
         //DBG_LOG("重建角色 create_code 数值 %d", char_data->character.dress_data.create_code);
@@ -678,19 +680,23 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         if (db_backup_bb_char_data(c->guildcard, pkt->slot)) {
             ERR_LOG("无法备份已删除的玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_delete_bb_char_data(c->guildcard, pkt->slot)) {
-            SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
-            goto err;
+            SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_insert_char_data(char_data, c->guildcard, pkt->slot)) {
             ERR_LOG("无法创建玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         /* 获取玩家角色背包数据数据项 */
@@ -698,28 +704,32 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_update_char_disp(&char_data->character.disp, c->guildcard, pkt->slot, flags)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_update_char_dress_data(&char_data->character.dress_data, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_update_char_techniques(char_data->character.techniques, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家科技数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         /* 获取玩家角色背包数据数据项 */
@@ -727,7 +737,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         /* 获取玩家角色背包数据数据项 */
@@ -735,7 +746,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
 
@@ -748,7 +760,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         //DBG_LOG("保存角色数据");
@@ -765,14 +778,16 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             ERR_LOG("无法更新玩家更衣室数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_get_dress_data(c->guildcard, pkt->slot, &char_data->character.dress_data, flags)) {
             SQLERR_LOG("无法获取玩家外观数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         memcpy(&char_data->character.name, &pkt->data.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
@@ -781,7 +796,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         if (db_compress_char_data(char_data, sizeof(psocn_bb_db_char_t), c->guildcard, pkt->slot)) {
@@ -789,7 +805,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
                 "槽位 %" PRIu8 "):%s", CHARACTER, c->guildcard, pkt->slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
-            goto err;
+            free_safe(char_data);
+            return -1;
         }
 
         //DBG_LOG("更新角色更衣室");
@@ -805,7 +822,8 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         /* Should send an error message to the user */
         ERR_LOG("无法初始化更衣室 (GC %" PRIu32 ", 标签 %"
             PRIu8 ")", c->guildcard, c->flags);
-        goto err;
+        free_safe(char_data);
+        return -1;
     }
     
     /* Send state information down to the client to have them inform the
@@ -818,14 +836,13 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
     if (send_bb_security(c, c->guildcard, 0, c->guild_id, &c->sec_data,
         sizeof(bb_client_config_pkt))) {
-        goto err;
+        free_safe(char_data);
+        return -1;
     }
 
-    return send_bb_char_ack(c, pkt->slot, BB_CHAR_ACK_UPDATE);
+    free_safe(char_data);
 
-err:
-    free(char_data);
-    return -1;
+    return send_bb_char_ack(c, pkt->slot, BB_CHAR_ACK_UPDATE);
 }
 
 /* 0x00E7 231*/

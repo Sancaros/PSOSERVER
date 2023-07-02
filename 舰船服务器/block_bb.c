@@ -951,14 +951,9 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             script_execute(ScriptActionClientBlockLogin, c, SCRIPT_ARG_PTR,
                 c, SCRIPT_ARG_END);
 
-            uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
-
-            memcpy(bbname, &c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
-            bbname[BB_CHARACTER_NAME_LENGTH] = 0;
-
             /* Notify the shipgate */
             shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard, c->sec_data.slot,
-                c->cur_block->b, bbname);
+                c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
 
             if (c->cur_lobby)
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
@@ -1602,18 +1597,18 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //display_packet(c->bb_pl, sizeof(psocn_bb_full_char_t));
 
     /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-    for (int i = 0; i < char_data.inv.item_count;i++) {
-        if (char_data.inv.iitems[i].present == LE16(0x0002)) {
-            char_data.inv.iitems[i].present = LE16(0x0001);
-            char_data.inv.iitems[i].flags = LE32(0x00000008);
-        }else {
-            char_data.inv.iitems[i].present = LE16(0x0001);
-            char_data.inv.iitems[i].flags = LE32(0x00000000);
-        }
-        char_data.inv.iitems[i].data.item_id = EMPTY_STRING;
-    }
+    //for (int i = 0; i < char_data.inv.item_count;i++) {
+    //    if (char_data.inv.iitems[i].present == LE16(0x0002)) {
+    //        char_data.inv.iitems[i].present = LE16(0x0001);
+    //        char_data.inv.iitems[i].flags = LE32(0x00000008);
+    //    }else {
+    //        char_data.inv.iitems[i].present = LE16(0x0001);
+    //        char_data.inv.iitems[i].flags = LE32(0x00000000);
+    //    }
+    //    char_data.inv.iitems[i].data.item_id = EMPTY_STRING;
+    //}
 
-    if (!c->game_data->db_save_done) {
+    //if (!c->game_data->db_save_done) {
 
         //printf("C->S数据来源 %d 字节\n", len);
         //display_packet(&pkt, len);
@@ -1633,7 +1628,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(&c->bb_pl->tech_menu, &char_data.tech_menu, sizeof(char_data.tech_menu));
         memcpy(&c->bb_pl->quest_data2, &char_data.quest_data2, sizeof(char_data.quest_data2));
         ///////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_guild->data.guild_owner_gc, &char_data.guild_data, sizeof(bb_guild_t));
+        memcpy(&c->bb_guild->data, &char_data.guild_data, sizeof(bb_guild_t));
 
 
         ///////////////////////////////////////////////////////////////////////////////////////
@@ -1644,12 +1639,12 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, sizeof(bb_key_config_t));
 
 
-        c->game_data->db_save_done = 1;
+        //c->game_data->db_save_done = 1;
 #ifdef DEBUG
         DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
         display_packet((uint8_t*)&char_data, sizeof(psocn_bb_full_char_t));
 #endif // DEBUG
-    }
+    //}
 
     return 0;
 }
@@ -1953,7 +1948,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
             if (c2->bb_guild->data.guild_priv_level < c->bb_guild->data.guild_priv_level) {
 
-                istrncpy16_raw(ic_utf16_to_gbk, guild_name, &c->bb_guild->data.guild_name[2], 30, 0x1C);
+                istrncpy16_raw(ic_utf16_to_gbk, guild_name, &c->bb_guild->data.guild_name[2], 30, 12);
 
                 send_msg(c2, MSG1_TYPE, "%s%s%s",
                     __(c2, "\tE您已被 "),

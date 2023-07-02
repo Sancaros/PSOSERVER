@@ -43,7 +43,7 @@
 
 #include "subcmd_handle_60.h"
 
-static int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -60,7 +60,7 @@ static int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_cmd_check_lobby(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_cmd_check_lobby(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -86,7 +86,7 @@ static int handle_bb_cmd_check_lobby(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static inline int tlindex(uint8_t l) {
+inline int tlindex(uint8_t l) {
     switch (l) {
     case 0: case 1: case 2: case 3: case 4: return 0;
     case 5: case 6: case 7: case 8: case 9: return 1;
@@ -97,7 +97,7 @@ static inline int tlindex(uint8_t l) {
     }
 }
 
-static void update_bb_qpos(ship_client_t* c, lobby_t* l) {
+void update_bb_qpos(ship_client_t* c, lobby_t* l) {
     uint8_t r;
 
     if ((r = l->qpos_regs[c->client_id][0])) {
@@ -129,13 +129,13 @@ static void update_bb_qpos(ship_client_t* c, lobby_t* l) {
 #define BARTA_TIMING 1500
 #define GIBARTA_TIMING 2200
 
-static const uint16_t gifoie_timing[6] = { 5000, 6000, 7000, 8000, 9000, 10000 };
-static const uint16_t gizonde_timing[6] = { 1000, 900, 700, 700, 700, 700 };
-static const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
-static const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
-static const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
+const uint16_t gifoie_timing[6] = { 5000, 6000, 7000, 8000, 9000, 10000 };
+const uint16_t gizonde_timing[6] = { 1000, 900, 700, 700, 700, 700 };
+const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
+const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
+const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 
-static void handle_bb_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
+void handle_bb_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
     uint32_t obj_type;
 
     /* What type of object was hit? */
@@ -291,7 +291,7 @@ int check_aoe_timer(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     return 0;
 }
 
-static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* pkt) {
+int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
 
@@ -373,7 +373,7 @@ static int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_p
     return rv;
 }
 
-static int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt) {
+int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Don't send the message if they have the protection flag on. */
@@ -387,7 +387,7 @@ static int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
+int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t enemy_id2, enemy_id, dmg;
     game_enemy_t* en;
@@ -437,7 +437,7 @@ static int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
+int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t pkt_size = pkt->hdr.pkt_len;
     uint8_t size = pkt->shdr.size;
@@ -485,7 +485,7 @@ static int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt)
 }
 
 /* TODO */
-static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
+int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something that
@@ -529,7 +529,7 @@ static int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
+int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
     uint64_t now = get_ms_time();
     //SYSTEMTIME aoetime;
     //GetLocalTime(&aoetime);
@@ -566,7 +566,7 @@ static int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_condition_t* pkt) {
+int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -581,7 +581,7 @@ static int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_conditi
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
+int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_dragon_act_t tr;
@@ -617,7 +617,7 @@ static int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     return 0;
 }
 
-static int handle_bb_set_area_1F(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt) {
+int handle_bb_set_area_1F(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -647,7 +647,7 @@ static int handle_bb_set_area_1F(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_set_area_20(ship_client_t* c, subcmd_bb_set_area_20_t* pkt) {
+int handle_bb_set_area_20(ship_client_t* c, subcmd_bb_set_area_20_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -684,7 +684,7 @@ static int handle_bb_set_area_20(ship_client_t* c, subcmd_bb_set_area_20_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_inter_level_warp(ship_client_t* c, subcmd_bb_inter_level_warp_t* pkt) {
+int handle_bb_inter_level_warp(ship_client_t* c, subcmd_bb_inter_level_warp_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -706,7 +706,7 @@ static int handle_bb_inter_level_warp(ship_client_t* c, subcmd_bb_inter_level_wa
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
+int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i, rv;
 
@@ -729,7 +729,7 @@ static int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_finish_load(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_finish_load(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i, rv;
 
@@ -752,7 +752,7 @@ static int handle_bb_finish_load(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return rv;
 }
 
-static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pkt) {
+int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
@@ -779,7 +779,7 @@ static int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
+int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t /*inv, */item_id = pkt->item_id, found_item = 0/*, found_slot = 0, j = 0, slot[4] = { 0 }*/;
     int i = 0;
@@ -815,7 +815,7 @@ static int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
+int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t inv, i, isframe = 0;
 
@@ -874,7 +874,7 @@ static int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
+int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int num;
 
@@ -910,7 +910,7 @@ send_pkt:
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
+int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t item_id = pkt->item_id, mag_id = pkt->mag_id;
 
@@ -946,7 +946,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
+int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1;
     uint32_t tmp, tmp2;
@@ -1052,7 +1052,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
+int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1, isframe = 0;
     uint32_t i, inv;
@@ -1152,7 +1152,7 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
+int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1181,7 +1181,7 @@ static int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) {
+int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -1196,7 +1196,7 @@ static int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
+int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t type = LE16(pkt->hdr.pkt_type);
 
@@ -1224,7 +1224,7 @@ static int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
+int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1247,7 +1247,7 @@ static int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -1263,7 +1263,7 @@ static int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_set_pos(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
+int handle_bb_set_pos(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
@@ -1280,7 +1280,7 @@ static int handle_bb_set_pos(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
+int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
@@ -1299,7 +1299,7 @@ static int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
+int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1326,7 +1326,7 @@ static int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
+int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1356,7 +1356,7 @@ static int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) {
+int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1378,7 +1378,7 @@ static int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
+int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1398,7 +1398,7 @@ static int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt)
     return send_lobby_mod_stat(l, c, SUBCMD60_STAT_HPUP, 2000);
 }
 
-static int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
+int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i;
 
@@ -1432,7 +1432,7 @@ static int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
+int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1453,7 +1453,7 @@ static int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
+int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->shdr.client_id != c->client_id) {
@@ -1465,7 +1465,7 @@ static int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
+int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1486,7 +1486,7 @@ static int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
+int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We don't care about these in lobbies. */
@@ -1508,7 +1508,7 @@ static int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
+int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1559,7 +1559,7 @@ static int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
+int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != c->client_id) {
@@ -1576,7 +1576,7 @@ static int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt) {
+int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1599,7 +1599,7 @@ static int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_ground_item_t* pkt) {
+int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_ground_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
 
@@ -1638,7 +1638,7 @@ static int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_gro
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
+int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1676,7 +1676,7 @@ static int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1702,7 +1702,7 @@ static int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, pkt, 0);
 }
 
-static int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
+int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1723,7 +1723,7 @@ static int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
+int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     subcmd_word_select_t gc = { 0 };
 
     /* Don't send the message if they have the protection flag on. */
@@ -1745,7 +1745,7 @@ static int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt)
     return word_select_send_gc(c, &gc);
 }
 
-static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
+int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t flag = pkt->flag;
     uint16_t checked = pkt->checked;
@@ -1824,7 +1824,7 @@ static int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     return rv;
 }
 
-static int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t* pkt) {
+int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1845,7 +1845,7 @@ static int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
+inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
     int i;
 
     if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
@@ -1859,7 +1859,7 @@ static inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
     return -1;
 }
 
-static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
+int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t val = LE32(pkt->value);
     int done = 0, idx;
@@ -1974,7 +1974,7 @@ static int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     return 0;
 }
 
-static int handle_bb_gogo_ball(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
+int handle_bb_gogo_ball(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
@@ -1989,7 +1989,7 @@ static int handle_bb_gogo_ball(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int ch, ch2;
     ship_client_t* lc = { 0 };
@@ -2062,7 +2062,7 @@ static int handle_bb_battle_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return 0;
 }
 
-static int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     int i;
     lobby_t* l = c->cur_lobby;
     subcmd_pc_grave_t pc = { { 0 } };
@@ -2219,7 +2219,7 @@ static int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt
     return 0;
 }
 
-static int handle_bb_game_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_game_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2236,7 +2236,7 @@ static int handle_bb_game_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return 0;
 }
 
-static int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
+int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2258,7 +2258,7 @@ static int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pk
     return send_lobby_arrows(l);
 }
 
-static int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt) {
+int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2279,7 +2279,7 @@ static int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt)
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
+int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2302,7 +2302,7 @@ static int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pk
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_set_technique_level_override_t* pkt) {
+int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_set_technique_level_override_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2327,7 +2327,7 @@ static int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_se
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_switch_activated_t* pkt) {
+int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2350,7 +2350,7 @@ static int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_sw
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
+int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->shdr.client_id != c->client_id) {
@@ -2362,7 +2362,7 @@ static int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
     int rv = 0;
@@ -2407,7 +2407,7 @@ static int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
+int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t i;
 
@@ -2465,7 +2465,7 @@ static int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
+int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1;
     uint32_t i, meseta, amt;
@@ -2527,7 +2527,7 @@ static int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_sp
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
+int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
     inventory_t sorted = { 0 };
     size_t x = 0;
@@ -2571,7 +2571,7 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     return 0;
 }
 
-static int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2600,7 +2600,7 @@ static int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
+int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
     lobby_t* l = c->cur_lobby;
     pmt_weapon_bb_t tmp_wp = { 0 };
     game_enemy_t* en;
@@ -2719,7 +2719,7 @@ static int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
 }
 
 /* 从怪物获取的经验倍率未进行调整 */
-static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
+int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t mid;
     uint32_t bp, exp_amount;
@@ -2786,7 +2786,7 @@ static int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
     return client_give_exp(c, exp_amount);
 }
 
-static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
+int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
     int found = 0;
@@ -2844,7 +2844,7 @@ static int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
+int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t quest_offset = pkt->quest_offset;
 

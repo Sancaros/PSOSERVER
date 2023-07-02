@@ -373,15 +373,22 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "guildcard, slot, item_count, hpmats_used, tpmats_used, language, inv_check_num"
+        "guildcard, slot, "
+        "item_count, hpmats_used, tpmats_used, language, inv_check_num, "
+        "inventory"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
-        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "'"
-        ")",
+        "'%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "', '%" PRIu8 "','%" PRIu32 "', '"
+        /*")"*/,
         CHARACTER_INVENTORY,
         gc, slot,
         inv->item_count, inv->hpmats_used, inv->tpmats_used, inv->language, inv_crc32
     );
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)inv,
+        sizeof(inventory_t));
+
+    strcat(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery))
         db_update_inv_param(inv, gc, slot);

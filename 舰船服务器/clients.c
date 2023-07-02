@@ -409,12 +409,8 @@ void client_destroy_connection(ship_client_t *c,
                                   c->cur_block->b, c->pl->v1.character.dress_data.guildcard_string);
     }
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
-        uint16_t bbname[BB_CHARACTER_NAME_LENGTH + 1];
-
-        memcpy(bbname, &c->bb_pl->character.name, BB_CHARACTER_NAME_LENGTH);
-        bbname[BB_CHARACTER_NAME_LENGTH] = 0;
         shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
-                                     c->cur_block->b, bbname);
+                                     c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
     }
 
     ship_dec_clients(ship);

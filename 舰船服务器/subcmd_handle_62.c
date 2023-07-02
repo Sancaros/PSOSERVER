@@ -369,80 +369,6 @@ int sub62_70_bb(ship_client_t* c, ship_client_t* d,
             }
         }
     }
-    else {
-        //pkt->guildcard = c->guildcard;
-
-        //// Check techniques...检查魔法,如果是机器人就不该有魔法
-        //if (!(c->equip_flags & EQUIP_FLAGS_DROID)) {
-        //    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        //        //if (pkt->techniques[i] == 0xFF)
-        //            //pkt->techniques[i] = 0x00;
-
-        //        if (pkt->techniques[i] > max_tech_level[i].max_lvl[ch_class])
-        //            rv = -1;
-
-        //        if (rv) {
-        //            ERR_LOG("GC %u 不该有 Lv%d.%s 魔法! 正常值 Lv%d.%s", pkt->guildcard,
-        //                pkt->techniques[i], max_tech_level[i].tech_name, 
-        //                max_tech_level[i].max_lvl[ch_class], max_tech_level[i].tech_name);
-
-        //            /* 规范化数据包的魔法等级 */
-        //            //pkt->techniques[i] = max_tech_level[i].max_lvl[ch_class];
-        //            rv = 0;
-        //        }
-        //    }
-        //}
-
-        ////for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
-        ////    // 学会所有技能 TODO 增加作弊开关
-        ////    //c->bb_pl->character.techniques[i] = max_tech_level[i].max_lvl[ch_class];
-        ////    pkt->techniques[i] = c->bb_pl->character.techniques[i];
-        ////}
-
-        //// 检测玩家角色结构
-        //pkt->dress_data = c->bb_pl->character.dress_data;
-
-        //memcpy(&pkt->name[0], &c->bb_pl->character.name[0], sizeof(c->bb_pl->character.name));
-
-        //// Prevent crashing with NPC skins... 防止NPC皮肤崩溃
-        //if (c->bb_pl->character.dress_data.v2flags) {
-        //    pkt->dress_data.v2flags = 0x00;
-        //    pkt->dress_data.version = 0x00;
-        //    pkt->dress_data.v1flags = LE32(0x00000000);
-        //    pkt->dress_data.costume = LE16(0x0000);
-        //    pkt->dress_data.skin = LE16(0x0000);
-        //}
-
-        ///* 检测人物基础数值 */
-        //pkt->stats.atp = c->bb_pl->character.disp.stats.atp;
-        //pkt->stats.mst = c->bb_pl->character.disp.stats.mst;
-        //pkt->stats.evp = c->bb_pl->character.disp.stats.evp;
-        //pkt->stats.hp = c->bb_pl->character.disp.stats.hp;
-        //pkt->stats.dfp = c->bb_pl->character.disp.stats.dfp;
-        //pkt->stats.ata = c->bb_pl->character.disp.stats.ata;
-        //pkt->stats.lck = c->bb_pl->character.disp.stats.lck;
-
-        //for (i = 0; i < 10; i++)
-        //    pkt->opt_flag[i] = c->bb_pl->character.disp.opt_flag[i];
-
-        //pkt->level = c->bb_pl->character.disp.level;
-        //pkt->exp = c->bb_pl->character.disp.exp;
-        //pkt->meseta = c->bb_pl->character.disp.meseta;
-
-
-        //// Could check inventory here 查看背包
-        //pkt->inv.item_count = c->bb_pl->inv.item_count;
-
-        //for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        //    memcpy(&pkt->inv.iitems[i], &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
-
-        //for (i = 0; i < sizeof(uint32_t); i++)
-        //    memset(&pkt->unused[i], 0, sizeof(uint32_t));
-
-        //pkt->shdr.size = pkt->hdr.pkt_len / 4;
-    }
-
-    //printf("%" PRIu32 " - %" PRIu32 "  %s \n", c->guildcard, pkt->guildcard, pkt->dress_data.guildcard_string);
 
     return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
 }
@@ -1050,8 +976,8 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
-    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, sizeof(pkt->inviter_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
@@ -1102,8 +1028,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
-    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, sizeof(pkt->inviter_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
@@ -1161,8 +1087,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
-    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);
@@ -1195,8 +1121,8 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
-    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);
