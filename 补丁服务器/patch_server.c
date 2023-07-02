@@ -528,21 +528,31 @@ static int read_from_client(patch_client_t* c) {
         sz = (pkt_sz & 0x0003) ? (pkt_sz & 0xFFFC) + 4 : pkt_sz;
 
         /* Allocate space for the packet */
-        if (!(c->recvbuf = (unsigned char*)malloc(sz))) {
+        c->recvbuf = (unsigned char*)malloc(sz);
+
+        if (!c->recvbuf) {
             ERR_LOG("接收数据内存分配错误: %s", strerror(errno));
             return -1;
         }
 
-        c->pkt_sz = pkt_sz;
-        memcpy(c->recvbuf, &tmp_hdr, 4);
-        c->pkt_cur = 4;
+        if (sizeof(c->recvbuf) >= sizeof(tmp_hdr)) {
+            c->pkt_sz = pkt_sz;
 
-        /* If this packet is only a header, short-circuit and process it now. */
-        if (pkt_sz == 4)
-            goto process;
+            memcpy(c->recvbuf, &tmp_hdr, 4);
+            c->pkt_cur = 4;
 
-        /* Return now, so we don't end up sleeping in the recv below. */
-        return 0;
+            /* If this packet is only a header, short-circuit and process it now. */
+            if (pkt_sz == 4)
+                goto process;
+
+            /* Return now, so we don't end up sleeping in the recv below. */
+            return 0;
+        }
+        else {
+            ERR_LOG("c->recvbuf内存分配错误: %s", strerror(errno));
+            return -1;
+        }
+
     }
 
     /* See if the rest of the packet is here... */

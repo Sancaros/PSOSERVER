@@ -173,7 +173,7 @@ err:
 
 static int handle_colors(xmlNode *n, uint32_t *valid) {
     xmlChar *colors;
-    char *lasts, *tok;
+    char *lasts = NULL, *tok;
     int i;
 
     /* Attempt to grab the color list */
@@ -201,7 +201,7 @@ static int handle_colors(xmlNode *n, uint32_t *valid) {
 
         /* If we didn't find the color, die */
         if(i == NUM_COLORS) {
-            ERR_LOG("Invalid color: %s", tok);
+            ERR_LOG("ÎÞÐ§ÑÕÉ«: %s", tok);
             xmlFree(colors);
             return -1;
         }
@@ -218,7 +218,7 @@ static int handle_colors(xmlNode *n, uint32_t *valid) {
 
 static int handle_attributes(xmlNode *n, uint64_t *valid) {
     xmlChar *attr;
-    char *lasts, *tok;
+    char *lasts = NULL, *tok;
     int i;
 
     /* Attempt to grab the attribute list */

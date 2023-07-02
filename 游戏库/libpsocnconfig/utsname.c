@@ -202,7 +202,7 @@ int win_uname(struct win_utsname* __sys__) {
 	win_getrelease(__sys__);
 	win_getwinversion(__sys__);
 	win_getprocessor(__sys__);
-	if (SOCKET_ERROR == gethostname(__sys__->nodename, 256)) {
+	if (SOCKET_ERROR == gethostname(__sys__->nodename, 65)) {
 		return 1;
 	}
 	strcpy(__sys__->sysname, platform);

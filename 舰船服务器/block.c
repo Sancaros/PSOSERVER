@@ -211,7 +211,7 @@ static void* block_thd(void* d) {
             if (srv_time > it->last_message + 90) {
                 if (it->bb_pl) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_WLENGTH);
+                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
@@ -480,7 +480,7 @@ static void* block_thd(void* d) {
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->bb_pl && it->guildcard) {
                     istrncpy16_raw(ic_utf16_to_gbk, nm,
-                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_WLENGTH);
+                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl && it->guildcard) {
@@ -2433,7 +2433,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             memset(tmp, 0, 32);
             memcpy(tmp, passwd, passwd_len);
             istrncpy16(ic_utf16_to_ascii, passwd_cmp, (uint16_t*)tmp, 16);
-            passwd_cmp[17] = 0x00;
+            passwd_cmp[16] = 0x00;
         }
         else {
             if (passwd_len > 0x10) {

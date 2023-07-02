@@ -217,7 +217,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 /* 赋予名称颜色代码 */
                 guild.data.guild_name[0] = 0x0009;
                 guild.data.guild_name[1] = 0x0045;
-                memcpy(&guild.data.guild_name, "公会数据错误", sizeof(guild.data.guild_name) - 4);
+                memcpy(&guild.data.guild_name, L"公会数据错误", 14);
 
                 guild.data.guild_rank = 0; // ?? 应该是排行榜未完成的参数了
 

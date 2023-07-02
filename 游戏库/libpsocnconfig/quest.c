@@ -70,7 +70,7 @@ static int handle_short(xmlNode *n, psocn_quest_t *q) {
     /* Grab the short description from the node */
     if((desc = xmlNodeListGetString(n->doc, n->children, 1))) {
         strncpy(q->desc, convert_enc("utf-8", "gbk", (const char*)desc), 127);
-        q->desc[128] = '\0';
+        q->desc[127] = '\0';
         xmlFree(desc);
     }
 
@@ -274,7 +274,7 @@ static int handle_syncregs(xmlNode *n, psocn_quest_t *q) {
     xmlChar *def, *list;
     int rv = 0, cnt, ne;
     uint8_t *sr = NULL;
-    char *tmp, *tok;
+    char *tmp = NULL, *tok;
     unsigned long val;
     void *p;
 
@@ -497,7 +497,7 @@ static int handle_quest(xmlNode *n, psocn_quest_category_t *c) {
     unsigned long ld = 0, sd = 0, sc = 0, privs = 0, hidden_fl = 0;
     long event_num;
     psocn_quest_t *q;
-    char *lasts, *token;
+    char *lasts = NULL, *token;
     int event_list = 0;
 
     /* Grab the attributes we're expecting */
@@ -867,7 +867,7 @@ static int handle_description(xmlNode *n, psocn_quest_category_t *c) {
 
 static int handle_category(xmlNode *n, psocn_quest_list_t *l) {
     xmlChar *name, *type, *eps, *priv;
-    char *token, *lasts;
+    char *token, *lasts = NULL;
     int rv = 0;
     uint32_t type_num;
     uint32_t episodes = PSOCN_QUEST_EP1 | PSOCN_QUEST_EP2 |
@@ -1143,7 +1143,9 @@ void psocn_quests_destroy(psocn_quest_list_t *list) {
         cat = &list->cats[i];
 
         for(j = 0; j < cat->quest_count; ++j) {
-            ref_release(cat->quests[j]);
+            if (cat->quests[j] != NULL) {
+                ref_release(cat->quests[j]);
+            }
         }
 
         /* Free the list of quests. */

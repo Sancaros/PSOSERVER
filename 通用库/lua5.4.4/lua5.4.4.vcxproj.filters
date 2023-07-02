@@ -15,6 +15,92 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\lapi.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lauxlib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lcode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lctype.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ldebug.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ldo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lfunc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lgc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ljumptab.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\llex.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\llimits.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lmem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lobject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lopcodes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lopnames.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lparser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lprefix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lstate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lstring.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ltable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ltests.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ltm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lua.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\luaconf.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lualib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lundump.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lvm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lzio.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="src\lapi.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -96,6 +182,9 @@
     <ClCompile Include="src\ltablib.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\ltests.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="src\ltm.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -111,91 +200,5 @@
     <ClCompile Include="src\lzio.c">
       <Filter>源文件</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\lua.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lzio.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lvm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lundump.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lualib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\luaconf.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lua.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ltm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ltable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lstring.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lstate.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lprefix.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lparser.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lopnames.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lopcodes.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lobject.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lmem.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\llimits.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\llex.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ljumptab.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lgc.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lfunc.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ldo.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ldebug.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lctype.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lcode.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lauxlib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lapi.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

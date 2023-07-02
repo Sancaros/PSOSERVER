@@ -183,7 +183,7 @@ ret_err:
 }
 
 pso_error_t pso_afs_write_close(pso_afs_write_t* a) {
-    uint8_t buf[48];
+    uint8_t buf[48] = { 0 };
     uint32_t len;
     int i;
 
