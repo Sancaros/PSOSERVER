@@ -115,7 +115,31 @@ typedef struct item_data { // 0x14 bytes
     };
 } PACKED item_t;
 
-typedef struct psocn_iitem { // c bytes  
+// PSO V2 stored some extra data in the character structs in a format that I'm
+// sure Sega thought was very clever for backward compatibility, but for us is
+// just plain annoying. Specifically, they used the third and fourth bytes of
+// the InventoryItem struct to store some things not present in V1. The game
+// stores arrays of bytes striped across these structures. In newserv, we call
+// those fields extension_data. They contain:
+//   items[0].extension_data1 through items[19].extension_data1:
+//       Extended technique levels. The values in the v1_technique_levels array
+//       only go up to 14 (tech level 15); if the player has a technique above
+//       level 15, the corresponding extension_data1 field holds the remaining
+//       levels (so a level 20 tech would have 14 in v1_technique_levels and 5
+//       in the corresponding item's extension_data1 field).
+//   items[0].extension_data2 through items[3].extension_data2:
+//       The value known as unknown_a1 in the PSOGCCharacterFile::Character
+//       struct. See SaveFileFormats.hh.
+//   items[4].extension_data2 through items[7].extension_data2:
+//       The timestamp when the character was last saved, in seconds since
+//       January 1, 2000. Stored little-endian, so items[4] contains the LSB.
+//   items[8].extension_data2 through items[12].extension_data2:
+//       Number of power materials, mind materials, evade materials, def
+//       materials, and luck materials (respectively) used by the player.
+//   items[13].extension_data2 through items[15].extension_data2:
+//       Unknown. These are not an array, but do appear to be related.
+
+typedef struct psocn_iitem { // 0x1c bytes  
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
     uint16_t tech;  //是否鉴定
     uint32_t flags;// 0x00000008 = 已装备
