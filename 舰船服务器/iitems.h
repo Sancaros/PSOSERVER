@@ -25,14 +25,44 @@
 #include "clients.h"
 #include "shop.h"
 
-/* 修复玩家背包数据 */
-void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////物品操作
+
 /* 初始化物品数据 */
 void clear_item(item_t* item);
+/* 生成物品ID */
+uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
+
+uint32_t primary_identifier(item_t* i);
+
+/* 堆叠物检测 */
+bool is_stackable(const item_t* item);
+size_t stack_size(const item_t* item);
+size_t max_stack_size(const item_t* item);
+size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
+//
+//// TODO: Eliminate duplication between this function and the parallel function
+//// in PlayerBank
+//size_t stack_size_for_item(item_t item);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////玩家背包操作
+
 /* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem);
+
+/* 修复玩家背包数据 */
+void fix_up_pl_iitem(lobby_t* l, ship_client_t* c);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////银行背包操作
+
 /* 初始化银行物品数据 */
 void clear_bitem(bitem_t* bitem);
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////游戏房间操作
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
@@ -40,13 +70,6 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item);
 iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
 
 int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
-
-/* 生成物品ID */
-uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
-
-// TODO: Eliminate duplication between this function and the parallel function
-// in PlayerBank
-size_t stack_size_for_item(item_t item);
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_iitem_slot(inventory_t* inv, uint32_t item_id);
@@ -85,5 +108,7 @@ void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
 void clean_up_inv(inventory_t* inv);
+void sort_client_inv(inventory_t* inv);
+void clean_up_bank(psocn_bank_t* bank);
 
 #endif /* !IITEMS_H */

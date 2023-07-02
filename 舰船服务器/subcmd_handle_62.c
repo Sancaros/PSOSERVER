@@ -555,7 +555,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
 
     /* 如果是堆叠物品 */
-    if (pkt->num_bought <= stack_size_for_item(ii.data)) {
+    if (pkt->num_bought <= max_stack_size(&ii.data)) {
         ii.data.data_b[5] = pkt->num_bought;
     }
     else {
@@ -903,7 +903,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-            stack = stack_size_for_item(iitem.data);
+            stack = is_stackable(&iitem.data);
 
             if (!stack && pkt->item_amount > 1) {
                 ERR_LOG("GC %" PRIu32 " banking multiple of "

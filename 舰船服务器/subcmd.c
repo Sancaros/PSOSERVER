@@ -959,7 +959,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         goto send_pkt;
 
     /* See if its a stackable item, since we have to treat them differently. */
-    if(stack_size_for_item(pkt->data)) {
+    if(is_stackable(&pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
@@ -1395,7 +1395,7 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
     ic = LE32(pkt->data.data_l[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
-    if(stack_size_for_item(pkt->data)) {
+    if(is_stackable(&pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
@@ -3079,8 +3079,8 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.data.item.data2_l = LE32(item[3]);
     gen.data.item2 = LE32(0x00000002);
 
-    gen.data.item.item_id = LE32(l->item_next_lobby_id);
-    ++l->item_next_lobby_id;
+    gen.data.item.item_id = LE32(l->item_lobby_id);
+    ++l->item_lobby_id;
 
     /* Send the packet to every client in the lobby. */
     for(i = 0; i < l->max_clients; ++i) {

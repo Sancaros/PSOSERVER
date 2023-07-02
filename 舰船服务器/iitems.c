@@ -30,6 +30,121 @@
 #include "rtdata.h"
 #include "mag_bb.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////物品操作
+
+/* 初始化物品数据 */
+void clear_item(item_t* item) {
+    item->data_l[0] = 0;
+    item->data_l[1] = 0;
+    item->data_l[2] = 0;
+    item->item_id = EMPTY_STRING;
+    item->data2_l = 0;
+}
+
+/* 生成物品ID */
+uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
+    if (client_id < l->max_clients) {
+        return l->item_player_id[client_id]++;
+    }
+
+    return l->item_lobby_id++;
+}
+
+uint32_t primary_identifier(item_t* i) {
+    // The game treats any item starting with 04 as Meseta, and ignores the rest
+    // of data1 (the value is in data2)
+    switch (i->data_b[0]) 
+    {
+    case ITEM_TYPE_MESETA:
+        return 0x040000;
+
+    case ITEM_TYPE_TOOL:
+        if (i->data_b[1] == ITEM_SUBTYPE_DISK) {
+            return 0x030200;// Tech disk (data1[2] is level, so omit it)
+        }
+        break;
+
+    case ITEM_TYPE_MAG:
+        return 0x020000 | (i->data_b[1] << 8); // Mag
+
+    }
+
+    return (i->data_b[0] << 16) | (i->data_b[1] << 8) | i->data_b[2];
+}
+
+bool is_stackable(const item_t* item) {
+    return max_stack_size(item) > 1;
+}
+
+size_t stack_size(const item_t* item) {
+    if (max_stack_size_for_item(item->data_b[0], item->data_b[1]) > 1) {
+        return item->data_b[5];
+    }
+    return 1;
+}
+
+size_t max_stack_size(const item_t* item) {
+    return max_stack_size_for_item(item->data_b[0], item->data_b[1]);
+}
+
+size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
+
+    switch (data0) 
+    {
+    case ITEM_TYPE_MESETA:
+        return 999999;
+
+    case ITEM_TYPE_TOOL:
+
+        switch (data1)
+        {
+            /* 支持大量堆叠 */
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+        case ITEM_SUBTYPE_SOL_ATOMIZER:
+        case ITEM_SUBTYPE_MOON_ATOMIZER:
+        case ITEM_SUBTYPE_STAR_ATOMIZER:
+        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_TELEPIPE:
+        case ITEM_SUBTYPE_TRAP_VISION:
+        case ITEM_SUBTYPE_GRINDER:
+        case ITEM_SUBTYPE_MATERIAL:
+        case ITEM_SUBTYPE_MAG_CELL1:
+        case ITEM_SUBTYPE_MONSTER_LIMBS:
+        case ITEM_SUBTYPE_MAG_CELL2:
+        case ITEM_SUBTYPE_ADD_SLOT:
+        case ITEM_SUBTYPE_PHOTON:
+            return 99;
+
+        case ITEM_SUBTYPE_DISK:
+            return 1;
+
+
+        default:
+            return 10;
+        }
+
+        break;
+
+    default:
+        break;
+    }
+
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////玩家背包操作
+
+/* 初始化玩家背包数据 */
+void clear_iitem(iitem_t* iitem) {
+    iitem->present = LE16(0xFF);
+    iitem->tech = 0;
+    iitem->flags = 0;
+    clear_item(&iitem->data);
+}
+
 /* 修复玩家背包数据 */
 void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     uint32_t id;
@@ -59,22 +174,8 @@ void fix_up_pl_iitem(lobby_t* l, ship_client_t* c) {
     }
 }
 
-/* 初始化玩家背包物品数据 */
-void clear_item(item_t* item) {
-    item->data_l[0] = 0;
-    item->data_l[1] = 0;
-    item->data_l[2] = 0;
-    item->item_id = EMPTY_STRING;
-    item->data2_l = 0;
-}
-
-/* 初始化玩家背包数据 */
-void clear_iitem(iitem_t* iitem) {
-    iitem->present = LE16(0xFF);
-    iitem->tech = 0;
-    iitem->flags = 0;
-    clear_item(&iitem->data);
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////银行背包操作
 
 /* 初始化银行背包数据 */
 void clear_bitem(bitem_t* bitem) {
@@ -82,6 +183,9 @@ void clear_bitem(bitem_t* bitem) {
     bitem->show_flags = 0;
     bitem->amount = 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////游戏房间操作
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
@@ -92,7 +196,9 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    if (!(item = (lobby_item_t*)malloc(sizeof(lobby_item_t))))
+    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
+
+    if (!item)
         return NULL;
 
     memset(item, 0, sizeof(lobby_item_t));
@@ -101,11 +207,14 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     item->d.data.data_l[0] = LE32(new_item->data_l[0]);
     item->d.data.data_l[1] = LE32(new_item->data_l[1]);
     item->d.data.data_l[2] = LE32(new_item->data_l[2]);
-    item->d.data.item_id = LE32(l->item_next_lobby_id);
+    item->d.data.item_id = LE32(l->item_lobby_id);
     item->d.data.data2_l = LE32(new_item->data2_l);
 
+
+    print_iitem_data(&item->d, 0, l->version);
+
     /* Increment the item ID, add it to the queue, and return the new item */
-    ++l->item_next_lobby_id;
+    ++l->item_lobby_id;
     TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
     return &item->d;
 }
@@ -154,76 +263,6 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
         }
 
         i = tmp;
-    }
-
-    return 1;
-}
-
-/* 生成物品ID */
-uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
-    if (client_id < l->max_clients) {
-        return l->item_player_id[client_id]++;
-    }
-
-    return l->item_next_lobby_id++;
-}
-
-uint32_t primary_identifier(item_t* i) {
-    // The game treats any item starting with 04 as Meseta, and ignores the rest
-    // of data1 (the value is in data2)
-    switch (i->data_b[0])
-    {
-    case ITEM_TYPE_MESETA:
-        return 0x00040000;
-
-    case ITEM_TYPE_MAG:
-        return 0x00020000 | (i->data_b[1] << 8); // Mag
-
-    case ITEM_TYPE_TOOL:
-        if(i->data_b[1] == ITEM_SUBTYPE_DISK)
-            return 0x00030200; // Tech disk (data1[2] is level, so omit it)
-
-    default:
-        return (i->data_b[0] << 16) | (i->data_b[1] << 8) | i->data_b[2];
-    }
-}
-
-size_t stack_size_for_item(item_t item) {
-
-    switch (item.data_b[0])
-    {
-    case ITEM_TYPE_MESETA:
-        return 999999;
-
-    case ITEM_TYPE_TOOL:
-
-        switch (item.data_b[1])
-        {
-            /* 支持大量堆叠 */
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
-        case ITEM_SUBTYPE_SOL_ATOMIZER:
-        case ITEM_SUBTYPE_MOON_ATOMIZER:
-        case ITEM_SUBTYPE_STAR_ATOMIZER:
-        case ITEM_SUBTYPE_ANTI:
-        case ITEM_SUBTYPE_TELEPIPE:
-        case ITEM_SUBTYPE_TRAP_VISION:
-        case ITEM_SUBTYPE_GRINDER:
-        case ITEM_SUBTYPE_MATERIAL:
-        case ITEM_SUBTYPE_MAG_CELL1:
-        case ITEM_SUBTYPE_MONSTER_LIMBS:
-        case ITEM_SUBTYPE_MAG_CELL2:
-        case ITEM_SUBTYPE_ADD_SLOT:
-        case ITEM_SUBTYPE_PHOTON:
-            return 99;
-
-        case ITEM_SUBTYPE_DISK:
-            return 1;
-
-
-        default:
-            return 10;
-        }
     }
 
     return 1;
@@ -333,7 +372,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(stack_size_for_item(inv[i].data) && amt != EMPTY_STRING) {
+    if(is_stackable(&inv[i].data) && amt != EMPTY_STRING) {
         tmp = inv[i].data.data_b[5];
 
         if(amt < tmp) {
@@ -349,7 +388,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
     return 1;
 }
 
-/* 背包物品操作 */
+/* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
     uint32_t count = LE32(c->bb_pl->bank.item_count), i;
@@ -377,7 +416,7 @@ int item_deposit_to_bank(ship_client_t *c, bitem_t *it) {
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(stack_size_for_item(it->data)) {
+    if(is_stackable(&it->data)) {
         /* Look for anything that matches this item in the inventory. */
         for(i = 0; i < count; ++i) {
             if(c->bb_pl->bank.bitems[i].data.data_l[0] == it->data.data_l[0]) {
@@ -419,7 +458,7 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
 
     /* Check if the item is stackable, since we may have to do some stuff
        differently... */
-    if(stack_size_for_item(it->data)) {
+    if(is_stackable(&it->data)) {
         if(amt < it->data.data_b[5]) {
             it->data.data_b[5] -= amt;
             it->amount = LE16(it->data.data_b[5]);
@@ -745,7 +784,7 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
         return -1;
 
     // 处理堆叠物品
-    size_t combine_max = stack_size_for_item(iitem->data);
+    size_t combine_max = max_stack_size(&iitem->data);
     if (combine_max > 1) {
         //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
         size_t y;
@@ -799,7 +838,7 @@ iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amoun
         // then create a new item and reduce the amount of the existing stack. Note
         // that passing amount == 0 means to remove the entire stack, so this only
         // applies if amount is nonzero.
-        if (amount && (stack_size_for_item(inventory_item.data) > 1) &&
+        if (amount && (max_stack_size(&inventory_item.data) > 1) &&
             (amount < inventory_item.data.data_b[5])) {
             ret = inventory_item;
             ret.data.data_b[5] = amount;
@@ -846,6 +885,15 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
 
         c->bb_pl->inv.item_count += add_count;
         c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+
+        clean_up_inv(&c->bb_pl->inv);
+
+        for (int i = 0; i < c->bb_pl->inv.item_count; ++i) {
+            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
+        }
+
+        //fix_up_pl_iitem(c->cur_lobby, c);
+
         return 0;
 
         /* 即使程序不会这么走 我还是写一个默认 */
@@ -1076,22 +1124,59 @@ void fix_equip_item(inventory_t* inv) {
 
 /* 清理背包物品 */
 void clean_up_inv(inventory_t* inv) {
-    iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };
-    unsigned ch, ch2 = 0;
+    uint8_t i, j = 0;
 
-    memset(&sort_data[0], 0, sizeof(iitem_t) * MAX_PLAYER_INV_ITEMS);
+    iitem_t* new_data = (iitem_t*)malloc(sizeof(iitem_t) * inv->item_count);
 
-    ch2 = 0;
+    if (!new_data) {
+        ERR_LOG("无法更新背包物品ID,申请内存失败");
+        return;
+    }
 
-    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
-        if (inv->iitems[ch].present)
-            sort_data[ch2++] = inv->iitems[ch];
+    for (i = 0; i < inv->item_count; i++)
+        if (inv->iitems[i].present)
+            new_data[j++] = inv->iitems[i];
 
-    inv->item_count = ch2;
+    inv->item_count = j;
 
-    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
-        inv->iitems[ch] = sort_data[ch];
+    for (i = 0; i < inv->item_count; i++)
+        inv->iitems[i] = new_data[i];
+
+    ERR_LOG("更新背包物品完成");
+
+    /* 释放掉内存 */
+    free_safe(new_data);
 }
+
+/* 修正玩家背包物品ID数据 */
+void reset_item_id(lobby_t* l, ship_client_t* c) {
+    uint32_t id;
+    int i;
+
+    if (c->version == CLIENT_VERSION_BB) {
+        /* 在新房间中修正玩家背包ID */
+        id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
+
+        for (i = 0; i < c->bb_pl->inv.item_count; ++i, ++id) {
+            c->bb_pl->inv.iitems[i].data.item_id = LE32(id);
+        }
+
+        --id;
+        l->item_player_id[c->client_id] = id;
+    }
+    else {
+        /* Fix up the inventory for their new lobby */
+        id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
+
+        for (i = 0; i < c->item_count; ++i, ++id) {
+            c->iitems[i].data.item_id = LE32(id);
+        }
+
+        --id;
+        l->item_player_id[c->client_id] = id;
+    }
+}
+
 
 void sort_client_inv(inventory_t* inv) {
     iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };
@@ -1127,23 +1212,26 @@ void sort_client_inv(inventory_t* inv) {
 }
 
 void clean_up_bank(psocn_bank_t* bank) {
-    bitem_t bank_data[MAX_PLAYER_BANK_ITEMS] = { 0 };
-    unsigned ch, ch2 = 0;
+    uint32_t i, j = 0;
 
-    memset(&bank_data[0], 0, sizeof(bitem_t) * MAX_PLAYER_BANK_ITEMS);
+    bitem_t* bank_data = (bitem_t*)malloc(sizeof(bitem_t) * bank->item_count);
 
-    for (ch2 = 0; ch2 < MAX_PLAYER_BANK_ITEMS; ch2++)
-        bank_data[ch2].data.item_id = 0xFFFFFFFF;
+    if (!bank_data) {
+        ERR_LOG("无法更新银行物品ID,申请内存失败");
+        return;
+    }
 
-    ch2 = 0;
+    for (i = 0; i < bank->item_count; i++)
+        if (bank->bitems[i].data.item_id != 0xFFFFFFFF)
+            bank_data[j++] = bank->bitems[i]; 
 
-    for (ch = 0; ch < MAX_PLAYER_BANK_ITEMS; ch++)
-        if (bank->bitems[ch].data.item_id != 0xFFFFFFFF)
-            bank_data[ch2++] = bank->bitems[ch]; 
+    bank->item_count = j;
 
-    bank->item_count = ch2;
+    for (i = 0; i < bank->item_count; i++)
+        bank->bitems[i] = bank_data[i];
 
-    for (ch = 0; ch < MAX_PLAYER_BANK_ITEMS; ch++)
-        bank->bitems[ch] = bank_data[ch];
+    ERR_LOG("更新银行物品完成");
 
+    /* 释放掉内存 */
+    free_safe(bank_data);
 }

@@ -1537,6 +1537,7 @@ static void dumpinv_internal(ship_client_t *c) {
             BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("背包物品数量 %u", c->bb_pl->inv.item_count);
 
         for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
@@ -1544,6 +1545,7 @@ static void dumpinv_internal(ship_client_t *c) {
         ITEM_LOG("------------------------------------------------------------");
     }
 }
+
 /* 用法: /dumpinv [lobby/clientid/guildcard] */
 static int handle_dumpinv(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;

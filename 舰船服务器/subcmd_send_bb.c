@@ -678,7 +678,6 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
     uint32_t ch, ch2;
     int found_item = -1;
     lobby_t* l = c->cur_lobby;
-    size_t stackable = 0;
     uint32_t delete_item = 0;
     uint32_t stack_count;
     uint32_t compare_item1 = 0;
@@ -700,9 +699,8 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
         // Found the item?
         if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->inv.iitems[ch].data.item_id)) {
             if (c->bb_pl->inv.iitems[ch].data.data_b[0] == ITEM_SUBTYPE_UNIT)
-                stackable = stack_size_for_item(c->bb_pl->inv.iitems[ch].data);
 
-            if (stackable > 1) {
+            if (is_stackable(&c->bb_pl->inv.iitems[ch].data)) {
                 if (!count)
                     count = 1;
 

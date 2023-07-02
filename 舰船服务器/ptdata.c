@@ -2027,7 +2027,7 @@ static int generate_tool_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if(stack_size_for_item(tmp_item)) {
+    if(is_stackable(&tmp_item)) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2070,7 +2070,7 @@ static int generate_tool_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if(stack_size_for_item(tmp_item)) {
+    if(is_stackable(&tmp_item)) {
 #ifdef DEBUG
         if(l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2113,7 +2113,7 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
     /* If its a stackable item, make sure to give it a quantity of 1 */
-    if (stack_size_for_item(tmp_item)) {
+    if (is_stackable(&tmp_item)) {
 #ifdef DEBUG
         if (l->flags & LOBBY_FLAG_DBG_SDROPS)
             ITEM_LOG("Item is stackable. Setting quantity to 1.");
@@ -2272,7 +2272,6 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
     c->new_item.data_l[0] = item[0];
     c->new_item.data_l[1] = item[1];
     c->new_item.data_l[2] = item[2];
-    c->new_item.item_id = generate_item_id(l, c->client_id);
     c->new_item.data2_l = item[3];
 
     //print_item_data(&c->new_item, c->version);
@@ -2479,7 +2478,7 @@ int pt_generate_v2_drop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -2702,7 +2701,7 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
             item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(stack_size_for_item(tmp_item))
+            if(is_stackable(&tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -2790,7 +2789,7 @@ int pt_generate_v2_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3095,7 +3094,7 @@ int pt_generate_gc_drop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3383,7 +3382,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
             item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(stack_size_for_item(tmp_item))
+            if(is_stackable(&tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -3486,7 +3485,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -3803,7 +3802,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 
@@ -4084,7 +4083,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
             item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
             /* If its a stackable item, make sure to give it a quantity of 1 */
-            if(stack_size_for_item(tmp_item))
+            if(is_stackable(&tmp_item))
                 item[1] = (1 << 8);
 
             /* This will make the meseta boxes for Vol Opt work... */
@@ -4168,7 +4167,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
                 item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
 
-                if(stack_size_for_item(tmp_item))
+                if(is_stackable(&tmp_item))
                     item[1] = (1 << 8);
                 break;
 

@@ -215,7 +215,7 @@ static int handle_bb_warp_item(ship_client_t* c, subcmd_bb_warp_item_t* pkt) {
     }
 
     if (backup_item.data.item_id) {
-        stack = stack_size_for_item(backup_item.data);
+        stack = is_stackable(&backup_item.data);
 
         //if (!stack && pkt->item_amount > 1) {
         //    ERR_LOG("GC %" PRIu32 " banking multiple of "

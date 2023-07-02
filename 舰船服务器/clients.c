@@ -1625,7 +1625,7 @@ static int client_dropItem_lua(lua_State *l) {
         }
 
         /* Do some basic checks of the item... */
-        if(stack_size_for_item(item) && !(item.data_l[1] & 0x0000FF00)) {
+        if(is_stackable(&item) && !(item.data_l[1] & 0x0000FF00)) {
             /* If the item is stackable and doesn't have a quantity, give one
                of it. */
             item.data_l[1] |= (1 << 8);
@@ -1645,10 +1645,10 @@ static int client_dropItem_lua(lua_State *l) {
         p2.data.data_l[0] = LE32(item.data_l[0]);
         p2.data.data_l[1] = LE32(item.data_l[1]);
         p2.data.data_l[2] = LE32(item.data_l[2]);
-        p2.data.item_id = LE32(lb->item_next_lobby_id);
+        p2.data.item_id = LE32(lb->item_lobby_id);
         p2.data.data2_l = LE32(item.data2_l);
         p2.two = LE32(0x00000002);
-        ++lb->item_next_lobby_id;
+        ++lb->item_lobby_id;
 
         lobby_send_pkt_dc(lb, NULL, (dc_pkt_hdr_t *)&p2, 0);
         lua_pushinteger(l, 0);

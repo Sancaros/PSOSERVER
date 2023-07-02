@@ -1115,8 +1115,8 @@ static int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
 
     /* If the item isn't found, then punt the user from the ship. */
     if (found == -1) {
-        ERR_LOG("GC %" PRIu32 " 掉落了无效的物品 ID!",
-            c->guildcard);
+        ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
+            c->guildcard, c->bb_pl->inv.iitems[i].data.item_id, pkt->item_id);
         return -1;
     }
 
