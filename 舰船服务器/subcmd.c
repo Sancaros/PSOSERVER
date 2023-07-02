@@ -2980,11 +2980,11 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_drop_stack(c, (subcmd_drop_stack_t *)pkt);
             break;
 
-        case SUBCMD60_TALK_NPC:
+        case SUBCMD60_SELECT_MENU:
             rv = handle_talk_npc(c, (subcmd_talk_npc_t *)pkt);
             break;
 
-        case SUBCMD60_DONE_NPC:
+        case SUBCMD60_SELECT_DONE:
             rv = handle_done_talk_npc(c, (subcmd_end_talk_to_npc_t*)pkt);
             break;
 

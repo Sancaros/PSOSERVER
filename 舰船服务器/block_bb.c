@@ -2925,14 +2925,14 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return bb_set_guild_text(c, (bb_guildcard_set_txt_pkt*)pkt);
 
     default:
-        DBG_LOG("BB未知数据! 指令 0x%04X", type);
-        UNK_CPD(type, c->version, (uint8_t*)pkt);
-        //if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
-        //    len)) {
-        //    DBG_LOG("BB未知数据! 指令 0x%04X", type);
-        //    display_packet((unsigned char*)pkt, len);
-        //    return -3;
-        //}
+        //DBG_LOG("BB未知数据! 指令 0x%04X", type);
+        //UNK_CPD(type, c->version, (uint8_t*)pkt);
+        if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
+            len)) {
+            DBG_LOG("BB未知数据! 指令 0x%04X", type);
+            display_packet((unsigned char*)pkt, len);
+            return -3;
+        }
         return 0;
     }
 }

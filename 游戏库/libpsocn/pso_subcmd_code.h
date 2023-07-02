@@ -130,8 +130,8 @@
 #define SUBCMD60_DELETE_ITEM                   0x29    /* Selling, deposit in bank, etc */
 #define SUBCMD60_DROP_ITEM                     0x2A    /* Drop full stack or non-stack item */
 #define SUBCMD60_TAKE_ITEM                     0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
-#define SUBCMD60_TALK_NPC                      0x2C    /* Maybe this is talking to an NPC? */
-#define SUBCMD60_DONE_NPC                      0x2D    /* SUBCMD60_DONE_NPC Shows up when you're done with an NPC */
+#define SUBCMD60_SELECT_MENU                   0x2C    /* 选择菜单 */
+#define SUBCMD60_SELECT_DONE                   0x2D    /* 选择完成 */
 #define SUBCMD60_UNKNOW_2E                     0x2E
 #define SUBCMD60_HIT_BY_ENEMY                  0x2F
 #define SUBCMD60_LEVEL_UP                      0x30

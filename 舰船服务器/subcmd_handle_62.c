@@ -312,9 +312,10 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
             src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
         }
         else {
-            iitem_data.flags = 0;
-            iitem_data.present = LE16(1);
+            iitem_data.present = LE16(0x0001);
             iitem_data.tech = 0;
+            iitem_data.flags = 0;
+            
 
             /* Add the item to the client's inventory. */
             pick_count = add_item_to_client(src, &iitem_data);

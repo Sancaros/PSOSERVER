@@ -1355,6 +1355,14 @@ typedef struct bb_quest_file {
 // inventory sent by the client only includes items that would not disappear if
 // the client crashes! Essentially, it reflects the saved state of the player's
 // character rather than the live state.
+// 61 (C->S): 玩家数据
+// 内部名称：SndCharaDataV2（DCv1中的SndCharaData）
+// 有关此命令格式的信息，请参见Player.hh中的PSOPlayerData结构。
+// header.flag指定了格式版本，与游戏的主要版本相关（但不完全相同）。
+// 例如，在DC v1上，格式版本为01，在PSO PC上为02，在PSO GC、XB和BB上为03，在Episode 3上为04。
+// 加入游戏时，客户端将物品ID顺序分配为（0x00010000 +（0x00200000 * lobby_client_id）+ x）。
+// 因此，例如，Player 3的第8个物品的ID将变为0x00610007。玩家上次所在游戏的物品ID将出现在他们的库存中。
+// 注意：如果在接收到该命令时，客户端正在游戏中，则客户端发送的库存仅包括在客户端崩溃时不会消失的物品！实际上，它反映了玩家角色的保存状态，而不是实时状态。
 
 // 62: Target command
 // Internal name: SndPsoData2

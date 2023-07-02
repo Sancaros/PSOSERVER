@@ -912,11 +912,11 @@ int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         /* 0x2A 此函数正常载入 */
     case SUBCMD60_DROP_ITEM:
 
-        /* 0x2C 与NPC交谈 */
-    case SUBCMD60_TALK_NPC:
+        /* 0x2C 选择菜单 */
+    case SUBCMD60_SELECT_MENU:
 
-        /* 0x2D 与NPC交谈完成 */
-    case SUBCMD60_DONE_NPC:
+        /* 0x2D 选择完成 */
+    case SUBCMD60_SELECT_DONE:
 
         /* 0x2F 被敌人攻击 */
     case SUBCMD60_HIT_BY_ENEMY:

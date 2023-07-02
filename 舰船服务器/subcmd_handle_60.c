@@ -949,7 +949,7 @@ static int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
 static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1;
-    uint32_t i, tmp, tmp2;
+    uint32_t tmp, tmp2;
     iitem_t item_data;
     iitem_t* it;
 
@@ -979,12 +979,7 @@ static int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pk
 
     if (pkt->item_id != 0xFFFFFFFF) {
         /* 查找用户库存中的物品. */
-        for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            if (c->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-                found = i;
-                break;
-            }
-        }
+        found = find_iitem_slot(&c->bb_pl->inv, pkt->item_id);
 
         /* 如果找不到该物品，则将用户从船上推下. */
         if (found == -1) {
@@ -2554,15 +2549,12 @@ static int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
         return -1;
     }
 
-    memset(&sorted, 0, sizeof(inventory_t));
-
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
-            sorted.iitems[x].data.data_b[1] = 0xFF;
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            size_t index = find_iitem_slot(&c->bb_pl->inv, pkt->item_ids[x]);
+            int index = find_iitem_slot(&c->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = c->bb_pl->inv.iitems[index];
         }
     }

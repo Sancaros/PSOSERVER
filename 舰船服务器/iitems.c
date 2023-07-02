@@ -139,7 +139,7 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
-    iitem->present = LE16(0xFF);
+    iitem->present = LE16(0x00FF);
     iitem->tech = 0;
     iitem->flags = 0;
     clear_item(&iitem->data);
@@ -269,7 +269,7 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_slot(inventory_t* inv, uint32_t item_id) {
+int find_iitem_slot(inventory_t* inv, uint32_t item_id) {
     for (size_t x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
@@ -504,7 +504,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     pmt_weapon_bb_t tmp_wp = { 0 };
     pmt_guard_bb_t tmp_guard = { 0 };
     uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
-    size_t i = 0;
+    int i = 0;
     item_t found_item = { 0 };
 
     i = find_iitem_slot(&c->bb_pl->inv, item_id);
@@ -512,6 +512,12 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);
 #endif // DEBUG
+
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (i == -1) {
+        ERR_LOG("GC %" PRIu32 " 掉落无效的堆叠物品!", c->guildcard);
+        return -1;
+    }
 
     found_item = c->bb_pl->inv.iitems[i].data;
 
@@ -886,7 +892,7 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
         c->bb_pl->inv.item_count += add_count;
         c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
-        clean_up_inv(&c->bb_pl->inv);
+        /*clean_up_inv(&c->bb_pl->inv);*/
 
         for (int i = 0; i < c->bb_pl->inv.item_count; ++i) {
             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);

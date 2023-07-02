@@ -72,7 +72,7 @@ iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
 int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_slot(inventory_t* inv, uint32_t item_id);
+int find_iitem_slot(inventory_t* inv, uint32_t item_id);
 size_t find_equipped_weapon(inventory_t* inv);
 size_t find_equipped_armor(inventory_t* inv);
 size_t find_equipped_mag(inventory_t* inv);
