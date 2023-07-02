@@ -2283,6 +2283,15 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     void* result;
     char** row;
 
+    /* 更新BB公会排行榜 */
+    if (db_update_bb_guild_ranks(&conn)) {
+        SQLERR_LOG("更新公会排行榜失败");
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
     sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
         "lastchar_blob, guild_points_personal_donation, "
         "%s.guild_points_rank, guild_points_rest, "
@@ -2427,6 +2436,15 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+
+    /* 更新BB公会排行榜 */
+    if (db_update_bb_guild_ranks(&conn)) {
+        SQLERR_LOG("更新公会排行榜失败");
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
 
     if (len != sizeof(bb_guild_rank_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);

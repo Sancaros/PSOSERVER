@@ -440,3 +440,37 @@ int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc) {
 
     return 0;
 }
+
+int db_update_bb_guild_ranks(psocn_dbconn_t* conn) {
+
+    /* 在mysql中初始化一个rank变量 */
+    if (psocn_db_real_query(conn, "SET @rank := 0")) {
+        SQLERR_LOG("无法清空 %s 公会排行榜数据!", CLIENTS_GUILD);
+        SQLERR_LOG("%s", psocn_db_error(conn));
+        return -1;
+    }
+
+    /* 执行更新排行榜语句 */
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "UPDATE %s AS cg"
+        " JOIN ( SELECT "
+        "guild_id, @rank := @rank + 1 AS new_rank"
+        " FROM "
+        "%s"
+        " ORDER BY guild_points_rank DESC ) AS ranks ON "
+        "cg.guild_id = ranks.guild_id"
+        " SET "
+        "cg.guild_rank = ranks.new_rank"
+        , CLIENTS_GUILD
+        , CLIENTS_GUILD
+    );
+
+    if (psocn_db_real_query(conn, myquery)) {
+        SQLERR_LOG("无法重新排序 %s 公会排行榜数据!", CLIENTS_GUILD);
+        SQLERR_LOG("%s", psocn_db_error(conn));
+        return -1;
+    }
+
+    return 0;
+}

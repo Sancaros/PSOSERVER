@@ -225,6 +225,9 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id);
 /* 解散BB角色公会 */
 int db_dissolve_bb_guild(uint32_t guild_id);
 
+/* 更新BB公会排行榜 */
+int db_update_bb_guild_ranks(psocn_dbconn_t* conn);
+
 ///////////////////////////////////////////////////////////
 
 /* 更新BB角色选项数据 */

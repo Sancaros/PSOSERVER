@@ -12493,8 +12493,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             if ((l->clients_slot[i]) && (l->clients[i]) && (l->clients[i]->version >= CLIENT_VERSION_GC)) {
                 c2 = l->clients[i];
 
-                DBG_LOG("%u %d", c2->bb_guild->data.guild_owner_gc, l->clients[i]->version);
-
                 lbs->entries[num].guild_owner_gc = c2->bb_guild->data.guild_owner_gc;
                 lbs->entries[num].guild_id = c2->bb_guild->data.guild_id;
                 lbs->entries[num].guild_points_rank = c2->bb_guild->data.guild_points_rank;
