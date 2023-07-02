@@ -536,11 +536,11 @@ typedef struct subcmd_bb_Unknown_6x1B {
 //[2023年06月12日 00:56:44:427] 截获(4909): subcmd-bb.c 4909 行 BB_REDIRECT6_LENGTH - 客户端至服务器指令 指令 0x0060 未处 理. (数据如下)
 //[2023年06月12日 00:56:44:450] 截获(4909):
 //( 00000000 )   0C 00 60 00 00 00 00 00  1C 01 01 00             ..`.........
-// 0x1C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x1C {
+// 0x1C: 删除NPC (指令生效范围; 仅限游戏; 不支持 Episode 3)
+typedef struct subcmd_bb_destory_npc {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x1C_t;
+} PACKED subcmd_bb_destory_npc_t;
 
 // 0x1D: Set position (existing clients send when a new client joins a lobby/game)
 // Packet used to update other people when a player warps to another area
