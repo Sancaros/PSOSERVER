@@ -325,15 +325,10 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     l->block = block;
 
     if (version == CLIENT_VERSION_BB) {
+        for (size_t x = 0; x < 4; x++) {
+            l->item_player_id[x] = (0x00200000 * x) + 0x00010000;
+        }
         l->item_lobby_id = 0x00810000;
-        //l->item_player_id[0] = 0x00010000; //初始化4名玩家物品ID
-        //l->item_player_id[1] = 0x00210000;
-        //l->item_player_id[2] = 0x00410000;
-        //l->item_player_id[3] = 0x00610000;
-        //l->bitem_player_id[0] = 0x00010000;
-        //l->bitem_player_id[1] = 0x00210000;
-        //l->bitem_player_id[2] = 0x00410000;
-        //l->bitem_player_id[3] = 0x00610000;
     }
     else
         l->item_lobby_id = 0xF0000000;
