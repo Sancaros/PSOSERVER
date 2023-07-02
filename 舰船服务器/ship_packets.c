@@ -12372,51 +12372,6 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     return 0;
 }
 
-/* 构建公会完整数据包 */
-uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
-    uint8_t* sendbuf = get_sendbuf(); 
-    bb_full_guild_data_pkt* pkt = (bb_full_guild_data_pkt*)sendbuf;
-    int len = sizeof(bb_full_guild_data_pkt);
-
-    memset(pkt, 0, len);
-
-    /* 填充数据头 */
-    pkt->hdr.pkt_len = LE16(len);
-    pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
-    pkt->hdr.flags = LE32(0x00000001);
-
-    /* 填充剩余数据 */
-    pkt->entries.guild_owner_gc = c->guildcard;
-    pkt->entries.guild_id = c->bb_guild->data.guild_id;
-    pkt->entries.guild_points_rank = c->bb_guild->data.guild_points_rank;
-    pkt->entries.guild_points_rest = c->bb_guild->data.guild_points_rest;
-    pkt->entries.guild_priv_level = c->bb_guild->data.guild_priv_level;
-    memcpy(&pkt->entries.guild_name[0], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
-    pkt->entries.guild_rank = c->bb_guild->data.guild_rank;
-    pkt->entries.client_guildcard = c->guildcard;
-    pkt->entries.client_id = c->client_id;
-    memcpy(&pkt->entries.char_name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    for (int i = 0; i < 8; i++)
-        pkt->entries.guild_reward[i] = c->bb_guild->data.guild_reward[i];
-    memcpy(&pkt->entries.guild_flag[0], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
-
-    return sendbuf;
-
-    //sprintf(&sendbuf[0x00], "\x64\x08\xEA\x15\x01");
-    //memset(&sendbuf[0x05], 0, 3);
-
-    //*(unsigned*)&sendbuf[0x08] = c->guildcard;
-    //*(unsigned*)&sendbuf[0x0C] = c->bb_guild->data.guild_id;
-    //*(unsigned*)&sendbuf[0x18] = c->bb_guild->data.guild_priv_level;
-    //memcpy(&sendbuf[0x1C], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
-    //sprintf(&sendbuf[0x38], "\x84\x6C\x98");
-    //*(unsigned*)&sendbuf[0x3C] = c->guildcard;
-    //sendbuf[0x40] = c->client_id;
-    //memcpy(&sendbuf[0x44], &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    //memcpy(&sendbuf[0x64], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
-    //return &sendbuf[0];
-}
-
 /* 用于 0x00EA BB公会 指令*/
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     uint8_t* sendbuf = get_sendbuf();
@@ -12598,7 +12553,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         /* 15EA */
         /* 构建完整公会数据包 并发送*/
     case BB_GUILD_FULL_DATA:
-        return send_bb_guild_data(c, NULL);
+        return send_bb_lobby_guild_data(c, NULL);
 
         /* 18EA 公会点数情报 */
     case BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO:
@@ -12922,7 +12877,35 @@ int send_bb_ex_item_done(ship_client_t* c, uint32_t done) {
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
-int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
+/* 构建公会完整数据包 */
+uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_full_guild_data_pkt* pkt = (bb_full_guild_data_pkt*)sendbuf;
+
+    /* 填充剩余数据 */
+    pkt->entries.guild_owner_gc = c->guildcard;
+    pkt->entries.guild_id = c->bb_guild->data.guild_id;
+    pkt->entries.guild_points_rank = c->bb_guild->data.guild_points_rank;
+    pkt->entries.guild_points_rest = c->bb_guild->data.guild_points_rest;
+    pkt->entries.guild_priv_level = c->bb_guild->data.guild_priv_level;
+    memcpy(&pkt->entries.guild_name[0], &c->bb_guild->data.guild_name[0], sizeof(c->bb_guild->data.guild_name));
+    pkt->entries.guild_rank = c->bb_guild->data.guild_rank;
+    pkt->entries.client_guildcard = c->guildcard;
+    pkt->entries.client_id = c->client_id;
+    memcpy(&pkt->entries.char_name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    for (int i = 0; i < 8; i++)
+        pkt->entries.guild_reward[i] = c->bb_guild->data.guild_reward[i];
+    memcpy(&pkt->entries.guild_flag[0], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
+
+    /* 填充数据头 */
+    pkt->hdr.pkt_len = LE16(sizeof(bb_full_guild_data_pkt));
+    pkt->hdr.pkt_type = BB_GUILD_FULL_DATA;
+    pkt->hdr.flags = LE32(0x00000001);
+
+    return (uint8_t*)pkt;
+}
+
+int send_bb_lobby_guild_data(ship_client_t* c, ship_client_t* nosend) {
     lobby_t* l = c->cur_lobby;
     int  i = 0, rv = 0;
 
@@ -12941,6 +12924,40 @@ int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend) {
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
             rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
             rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+        }
+    }
+
+    return rv;
+}
+
+/* 构建公会初始化数据包 */
+uint8_t* build_guild_NULL_initialzation_data_pkt(ship_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
+
+    *(uint32_t*)&sendbuf[0x0C] = c->guildcard;
+    sendbuf[0x00] = 0x0038 + sizeof(bb_pkt_hdr_t);
+    *(uint16_t*)&sendbuf[0x02] = BB_GUILD_INITIALIZATION_DATA;
+
+    return sendbuf;
+}
+
+int send_bb_lobby_guild_NULL_initialzation_data(ship_client_t* c, ship_client_t* nosend) {
+    lobby_t* l = c->cur_lobby;
+    int  i = 0, rv = 0;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l) {
+        ERR_LOG("玩家GC %u 未处于大厅中", c->guildcard);
+        return rv;
+    }
+
+    /* 将房间中的玩家公会数据发送至新进入的客户端 */
+    for (i = 0; i < l->max_clients; ++i) {
+        if ((l->clients[i]) &&
+            (l->clients[i] != nosend) &&
+            (l->clients[i]->version == CLIENT_VERSION_BB)
+            ) {
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_NULL_initialzation_data_pkt(c));
         }
     }
 

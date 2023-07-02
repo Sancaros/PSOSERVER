@@ -2865,16 +2865,28 @@ typedef struct subcmd_bb_guild_ex_item {
 } PACKED subcmd_bb_guild_ex_item_t;
 
 // 0xCD: subcmd_bb_guild_master_trans1
+typedef struct subcmd_bb_guild_master_trans1 {
+    bb_pkt_hdr_t hdr;//8 + 4 + 4 + 4 + 48 + 32 = 100 hdr.flags = client_id_target
+    params_hdr_t shdr;
+    uint32_t client_id_sender;
+    uint32_t trans_cmd;
+    uint16_t master_name[0x000C];
+    uint8_t unknow1[24];
+    uint16_t guild_name[0x000E];
+    uint8_t unknow2[0]; /* ???????? 未知 00 00 E3 23*/
+} PACKED subcmd_bb_guild_master_trans1_t;
+
 // 0xCE: subcmd_bb_guild_master_trans2
-typedef struct subcmd_bb_guild_master_trans {
+typedef struct subcmd_bb_guild_master_trans2 {
     bb_pkt_hdr_t hdr;//8 + 4 + 4 + 4 + 48 + 32 = 100
     params_hdr_t shdr;
     uint32_t traget_guildcard;
     uint32_t trans_cmd;
-    uint16_t master_name[0x0018];
+    uint16_t master_name[0x000C];
+    uint8_t unknow1[24];
     uint16_t guild_name[0x000E];
-    uint32_t unknow; /* ???????? 未知 00 00 E3 23*/
-} PACKED subcmd_bb_guild_master_trans_t;
+    uint8_t unknow2[0]; /* ???????? 未知 00 00 E3 23*/
+} PACKED subcmd_bb_guild_master_trans2_t;
 
 //[2023年05月02日 13:30:08:506] 调试(subcmd-bb.c 5292): 暂未完成 0x60: 0xCF
 //

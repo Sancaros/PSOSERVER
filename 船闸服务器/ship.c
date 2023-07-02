@@ -1742,12 +1742,53 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t i = 0, num_mates, guild_id = pkt->fw_flags;
+    void* result;
+    char** row;
 
-    if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
-        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    sprintf_s(myquery, _countof(myquery), "SELECT "
+        "%s.guildcard, %s.guild_priv_level, "
+        "lastchar_blob, "
+        "%s.guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+        "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
+        " FROM "
+        "%s"
+        " INNER JOIN "
+        "%s"
+        " ON "
+        "%s.guild_id = %s.guild_id"
+        " WHERE "
+        "%s.guild_id = '%" PRIu32 "' ORDER BY guild_priv_level DESC"
+        , AUTH_ACCOUNT, AUTH_ACCOUNT
+        , CLIENTS_GUILD
+        , AUTH_ACCOUNT
+        , CLIENTS_GUILD
+        , AUTH_ACCOUNT, CLIENTS_GUILD
+        , CLIENTS_GUILD, guild_id
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
         return 0;
     }
+
+    result = psocn_db_result_store(&conn);
+    num_mates = (uint32_t)psocn_db_result_rows(result);
+
+
+    for (i = 0; i < num_mates; i++) {
+        row = psocn_db_result_fetch(result);
+
+        sender = (uint32_t)strtoul(row[0], NULL, 0);
+
+        if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+            send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            return 0;
+        }
+    }
+
+    psocn_db_result_free(result);
 
     return 0;
 }
@@ -1825,7 +1866,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     g_data->hdr.pkt_len = LE16((uint16_t)size);
     g_data->hdr.pkt_type = LE16(BB_GUILD_UNK_09EA);
-    g_data->hdr.flags = 0x00000000;
+    g_data->hdr.flags = num_mates;
 
     return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
 
@@ -2068,18 +2109,21 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
     );
     psocn_db_real_query(&conn, myquery);
 
-    if (guild_priv_level == 0x00000040) {  // 会长转让
+    if (guild_priv_level == BB_GUILD_PRIV_LEVEL_MASTER) {  // 会长转让
+
+        /* 将原会长的数据库公会权限降级为管理员 */
         sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
             "guild_priv_level = '%u'"
             " WHERE "
             "guildcard = '%u' AND guild_id = '%u'"
             , AUTH_ACCOUNT
-            , 0x00000030
+            , BB_GUILD_PRIV_LEVEL_ADMIN
             , sender, guild_id
         );
 
         psocn_db_real_query(&conn, myquery);
 
+        /* 将原公会数据库公会所有人改为新的会长的GC */
         sprintf_s(myquery, _countof(myquery), "UPDATE %s SET "
             "guildcard = '%u'"
             " WHERE "

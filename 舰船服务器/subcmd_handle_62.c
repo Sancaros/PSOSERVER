@@ -1145,11 +1145,11 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_guild_master_trans_t* pkt) {
+    subcmd_bb_guild_master_trans1_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
     uint32_t trans_cmd = pkt->trans_cmd;
-    uint32_t target_guildcard = pkt->traget_guildcard;
+    uint32_t client_id_sender = pkt->client_id_sender;
     char guild_name_text[24];
     char master_name_text[24];
 
@@ -1163,10 +1163,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
     istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
 
-#ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);
-#endif // DEBUG
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", src->guildcard);
@@ -1180,13 +1178,14 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_guild_master_trans_t* pkt) {
+    subcmd_bb_guild_master_trans2_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
     uint8_t type = pkt->shdr.type;
     uint32_t trans_cmd = pkt->trans_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
     char guild_name_text[24];
     char master_name_text[24];
+    dest->guild_master_exfer = 0;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
@@ -1198,10 +1197,8 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, sizeof(pkt->guild_name) - 4);
     istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, sizeof(pkt->master_name) - 4);
 
-#ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);
-#endif // DEBUG
 
     switch (trans_cmd)
     {
@@ -1212,19 +1209,16 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 公会转移成功 TODO 通知其他会员 */
     case 0x02:
-        dest->guild_master_exfer = 0;
         send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4会长已变更."), master_name_text, guild_name_text);
         break;
 
         /* 对方拒绝成为会长 */
     case 0x03:
-        dest->guild_master_exfer = 0;
         send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4对方拒绝成为会长."), master_name_text, guild_name_text);
         break;
 
         /* 公会转移失败 给双方返回错误信息 */
     case 0x04:
-        dest->guild_master_exfer = 0;
         send_msg(src, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(src, "\tE\tC4公会转移失败."), master_name_text, guild_name_text);
         break;
 

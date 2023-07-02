@@ -290,9 +290,6 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
     uint16_t enemy_id, uint16_t enemy_id2,
     uint16_t damage, uint32_t flags);
 
-/* 用于构建完整公会数据 */
-uint8_t* build_guild_full_data_pkt(ship_client_t* c);
-
 /* 用于 0x00EA BB公会 指令*/
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code);
 
@@ -309,8 +306,17 @@ int send_bb_quest_state(ship_client_t* c);
 
 int send_bb_ex_item_done(ship_client_t* c, uint32_t done);
 
+/* 用于构建完整公会数据 */
+uint8_t* build_guild_full_data_pkt(ship_client_t* c);
+
 /* 将房间中的玩家公会数据发送至新进入的客户端 */
-int send_bb_guild_data(ship_client_t* c, ship_client_t* nosend);
+int send_bb_lobby_guild_data(ship_client_t* c, ship_client_t* nosend);
+
+/* 用于构建完整公会数据 */
+uint8_t* build_guild_NULL_initialzation_data_pkt(ship_client_t* c);
+
+/* 将房间中的玩家公会初始数据发送至新进入的客户端 */
+int send_bb_lobby_guild_NULL_initialzation_data(ship_client_t* c, ship_client_t* nosend);
 
 /* Send BB lobby rare monster data to a client. */
 int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes);

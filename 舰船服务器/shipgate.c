@@ -679,7 +679,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
 #endif // DEBUG
 
-    DBG_LOG("G->S 指令0x%04X %d %d %d", type, sender_gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
+    DBG_LOG("G->S 指令0x%04X %d %d 公会ID %u", type, sender_gc, ntohl(pkt->guildcard), pkt->fw_flags);
 
     //这是从船闸返回来的公会数据包
 
@@ -744,7 +744,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         bb_guild_member_remove_pkt* remove_pkt = (bb_guild_member_remove_pkt*)pkt->pkt;
 
                         if (dest->guildcard == remove_pkt->target_guildcard) {
-
+                            //ERR_LOG("BB_GUILD_MEMBER_REMOVE %u", remove_pkt->target_guildcard);
                             memset(&dest->bb_guild->data.guild_owner_gc, 0, sizeof(bb_guild_t));
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
@@ -763,7 +763,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_CHAT:
                         bb_guild_member_chat_pkt* chat_pkt = (bb_guild_member_chat_pkt*)pkt->pkt;
 
-                        if (dest->bb_guild->data.guild_id == chat_pkt->guild_id)
+                        /* TODO */
+                        //DBG_LOG("%u id %u", dest->guildcard, dest->bb_guild->data.guild_id);
+
+                        if (dest->guildcard == sender_gc)
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
 
                         break;
@@ -854,13 +857,11 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
 
                         if (dest->guildcard == promote_pkt->target_guildcard) {
-#ifdef DEBUG
-                            DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            display_packet((uint8_t*)g, len);
-#endif // DEBUG
+                            DBG_LOG("BB_GUILD_MEMBER_PROMOTE %d %d", dest->guildcard, dest->guild_master_exfer);
+                            //display_packet((uint8_t*)g, len);
 
-                            send_msg(dest, MSG_BOX_TYPE, "%s",
-                                __(dest, "\tE您的公会权限已被提升."));
+                            send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
+                            send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
                         }
                         break;
 

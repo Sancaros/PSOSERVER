@@ -385,8 +385,6 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
-    DBG_LOG("客户端 %d 0x%02X 指令: 0x%02X", dnum, hdr_type, type);
-
     pthread_mutex_lock(&l->mutex);
 
     /* Find the destination. */
@@ -397,6 +395,8 @@ int subcmd_bb_handle_one(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
     }
+
+    DBG_LOG("客户端 %d GC %u 0x%02X 指令: 0x%02X", dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
     //subcmd_bb_626Dsize_check(c, pkt);
 
@@ -591,8 +591,6 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     if (!l)
         return 0;
 
-    DBG_LOG("客户端 %d 0x%02X 指令: 0x%02X", dnum, hdr_type, type);
-
     pthread_mutex_lock(&l->mutex);
 
     /* Find the destination. */
@@ -603,6 +601,8 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
     }
+
+    DBG_LOG("客户端 %d GC %u 0x%02X 指令: 0x%02X", dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
     //subcmd_bb_626Dsize_check(c, pkt);
 

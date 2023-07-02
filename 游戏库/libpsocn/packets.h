@@ -4001,10 +4001,7 @@ typedef struct bb_guild_unk_06EA {
 // 07EA (C->S): ¹«»áÁÄÌì
 typedef struct bb_guild_member_chat {
     bb_pkt_hdr_t hdr;                                            /* 0x0000 8 */
-    //uint32_t guild_id;                                         /* 0x0008 4 */
     uint16_t name[BB_CHARACTER_NAME_LENGTH];                     /* 0x000C 24 */
-    uint32_t guildcard;
-    uint32_t guild_id;
     // It seems there are no real limits on the message length, other than the
     // overall command length limit of 0x7C00 bytes.
     uint8_t chat[];
