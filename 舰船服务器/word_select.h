@@ -21,5 +21,6 @@
 int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt);
 int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt);
 int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt);
+int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt);
 
 #endif /* !WORD_SELECT_H */

@@ -2820,7 +2820,14 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
 
     pthread_mutex_lock(&l->mutex);
 
-    DBG_LOG("0x60 ЦёБо: 0x%02X", type);
+#ifdef DEBUG
+
+    DBG_LOG("0x%02X ЦёБо: 0x%02X", pkt->hdr.dc.pkt_type, type);
+    DBG_LOG("c version %d", c->version);
+
+    display_packet(pkt, pkt->hdr.dc.pkt_len);
+
+#endif // DEBUG
 
     /* If there's a burst going on in the lobby, delay most packets */
     if(l->flags & LOBBY_FLAG_BURSTING) {

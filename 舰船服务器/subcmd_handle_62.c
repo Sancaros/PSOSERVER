@@ -63,12 +63,14 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         memset(&dc, 0, sizeof(dc));
 
         /* Convert the name (UTF-16 -> ASCII). */
-        memset(&dc.name, '-', 16);
-        in = 48;
-        out = 24;
-        inptr = (char*)&src->pl->bb.character.name;
-        outptr = dc.name;
-        iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
+        //memset(&dc.name, '-', 16);
+        //in = 48;
+        //out = 24;
+        //inptr = (char*)&src->pl->bb.character.name;
+        //outptr = dc.name;
+        //iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
+
+        istrncpy16_raw(ic_utf16_to_ascii, dc.name, &src->pl->bb.character.name, 24, 12);
 
         /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
         in = 176;
@@ -77,10 +79,12 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         outptr = dc.guildcard_desc;
 
         if (src->bb_pl->guildcard_desc[1] == LE16('J')) {
-            iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
+            istrncpy16_raw(ic_utf16_to_sjis, dc.guildcard_desc, &src->bb_pl->guildcard_desc, 88, 88);
+            //iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
         }
         else {
-            iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
+            istrncpy16_raw(ic_utf16_to_8859, dc.guildcard_desc, &src->bb_pl->guildcard_desc, 88, 88);
+            //iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
         }
 
         /* Copy the rest over. */
@@ -116,7 +120,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         memset(&pc, 0, sizeof(pc));
 
         /* First the name and text... */
-        memcpy(pc.name, &src->pl->bb.character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+        memcpy(pc.name, &src->pl->bb.character.name.name_tag, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
         memcpy(pc.guildcard_desc, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
 
         /* Copy the rest over. */
@@ -1379,7 +1383,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
 #endif // DEBUG
 
-    l->subcmd62_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -1390,7 +1394,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
             //send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
 
-            rv |= l->subcmd62_handle(c, dest, pkt);
+            rv |= l->subcmd_handle(c, dest, pkt);
             break;
 
         default:
@@ -1408,7 +1412,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             return rv;
         }
 
-        if (l->subcmd62_handle == NULL) {
+        if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
             display_packet(pkt, len);
@@ -1417,7 +1421,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         }
         else
-            rv = l->subcmd62_handle(c, dest, pkt);
+            rv = l->subcmd_handle(c, dest, pkt);
     }
 
     pthread_mutex_unlock(&l->mutex);

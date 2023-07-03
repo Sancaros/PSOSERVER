@@ -1752,8 +1752,6 @@ int sub60_72_bb(ship_client_t* c, ship_client_t* dest, subcmd_bb_pkt_t* pkt) {
 }
 
 int sub60_74_bb(ship_client_t* c, ship_client_t* dest, subcmd_bb_word_select_t* pkt) {
-    subcmd_word_select_t gc = { 0 };
-
     /* Don't send the message if they have the protection flag on. */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
         return send_txt(c, __(c, "\tE\tC7您必须登录后才可以进行操作."));
@@ -1764,13 +1762,9 @@ int sub60_74_bb(ship_client_t* c, ship_client_t* dest, subcmd_bb_word_select_t* 
         return 0;
     }
 
-    memcpy(&gc, pkt, sizeof(subcmd_word_select_t) - sizeof(dc_pkt_hdr_t));
-    gc.client_id_gc = (uint8_t)pkt->shdr.client_id;
-    gc.hdr.pkt_type = (uint8_t)(LE16(pkt->hdr.pkt_type));
-    gc.hdr.flags = (uint8_t)pkt->hdr.flags;
-    gc.hdr.pkt_len = LE16((LE16(pkt->hdr.pkt_len) - 4));
+    display_packet(pkt, pkt->hdr.pkt_len);
 
-    return word_select_send_gc(c, &gc);
+    return word_select_send_bb(c, pkt);
 }
 
 int sub60_75_bb(ship_client_t* c, ship_client_t* dest, subcmd_bb_set_flag_t* pkt) {
@@ -3068,7 +3062,7 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     subcmd_bb_60size_check(c, pkt);
 
-    l->subcmd60_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -3079,7 +3073,7 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_BURST_DONE:
             /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
         case SUBCMD60_GAME_MODE:
-            rv = l->subcmd60_handle(c, dest, pkt);
+            rv = l->subcmd_handle(c, dest, pkt);
             break;
 
         default:
@@ -3091,7 +3085,7 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return rv;
     }
 
-    if (l->subcmd60_handle == NULL) {
+    if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
         DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
         display_packet(pkt, pkt->hdr.pkt_len);
@@ -3101,7 +3095,7 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return rv;
     }
 
-    rv = l->subcmd60_handle(c, dest, pkt);
+    rv = l->subcmd_handle(c, dest, pkt);
 
     pthread_mutex_unlock(&l->mutex);
     return rv;

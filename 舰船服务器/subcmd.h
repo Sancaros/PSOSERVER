@@ -1796,6 +1796,13 @@ typedef struct subcmd_bb_warp_ship {
     uint32_t area;
 } PACKED subcmd_bb_warp_ship_t;
 
+
+typedef struct word_select {
+    uint16_t num_words;
+    uint16_t ws_type;
+    uint16_t words[12];
+} PACKED word_select_t;
+
 // 0x74: Word select
 // Packet used for word select
 typedef struct subcmd_word_select {
@@ -1804,9 +1811,7 @@ typedef struct subcmd_word_select {
     uint8_t size;
     uint8_t client_id;
     uint8_t client_id_gc;
-    uint16_t num_words;
-    uint16_t ws_type;
-    uint16_t words[12];
+    word_select_t data;
 } PACKED subcmd_word_select_t;
 
 // 0x74: Word select
@@ -1816,7 +1821,7 @@ typedef struct subcmd_bb_word_select {
     client_id_hdr_t shdr;
     uint16_t num_words;
     uint16_t ws_type;
-    uint16_t words[12];
+    word_select_t data;
 } PACKED subcmd_bb_word_select_t;
 
 // 0x75: Phase setup (指令生效范围; 仅限游戏)

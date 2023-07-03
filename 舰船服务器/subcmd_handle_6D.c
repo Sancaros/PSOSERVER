@@ -128,7 +128,7 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     //subcmd_bb_626Dsize_check(c, pkt);
 
-    l->subcmd6D_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -140,7 +140,7 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
         case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
         case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
-            rv = l->subcmd6D_handle(c, dest, pkt);
+            rv = l->subcmd_handle(c, dest, pkt);
             break;
 
         default:
@@ -151,14 +151,14 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     }
     else {
 
-        if (l->subcmd6D_handle == NULL) {
+        if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
             display_packet(pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
             rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         }else
-            rv = l->subcmd6D_handle(c, dest, pkt);
+            rv = l->subcmd_handle(c, dest, pkt);
     }
 
     pthread_mutex_unlock(&l->mutex);

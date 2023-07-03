@@ -575,7 +575,7 @@ int client_process_pkt(ship_client_t *c) {
            Quite possibly, malicious. Boot the user and log it. */
         if(pkt_sz < hsz) {
             if(c->guildcard)
-                ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据!", c->guildcard);
+                ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据 0x%02X 0x%02X!", c->guildcard, pkt_sz, hsz);
             else
                 ERR_LOG("从未知客户端处接收到无效长度数据包.");
 

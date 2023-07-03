@@ -2960,7 +2960,6 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
     pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;
     int rv;
 
-
     if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
         c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
         c->version == CLIENT_VERSION_XBOX) {
@@ -2969,6 +2968,8 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         flags = dc->flags;
     }
     else {
+        //display_packet(pkt, pc->pkt_len);
+
         type = pc->pkt_type;
         len = LE16(pc->pkt_len);
         flags = pc->flags;
