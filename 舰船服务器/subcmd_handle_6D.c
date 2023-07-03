@@ -43,6 +43,37 @@
 
 #include "subcmd_handle.h"
 
+int sub6D_70_bb2(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_burst_pldata_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
+    iitem_t* item;
+    int i, rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* 扫描库存并在发送之前修复所有mag. */
+
+
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+
+    return send_pkt_bb(d, (bb_pkt_hdr_t*)pkt);
+}
 
 int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -69,26 +100,27 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return 0;
     }
 
-    DBG_LOG("客户端 %d GC %u 0x%02X 指令: 0x%02X", dnum, l->clients[dnum]->guildcard, hdr_type, type);
+    DBG_LOG("GC %u 目标客户端-> %d GC %u 0x%02X 指令: 0x%02X",c->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
     //subcmd_bb_626Dsize_check(c, pkt);
 
-    l->subcmd6D_handle = subcmd62_get_handler(type, c->version);
+    l->subcmd6D_handle = subcmd_get_handler(hdr_type, type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
+
         switch (type) {
         case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
         case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
         case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
         case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
-            if (l->flags & LOBBY_FLAG_QUESTING)
-                rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
+            //if (l->flags & LOBBY_FLAG_QUESTING)
+            //    rv = lobby_enqueue_burst_bb(l, c, (bb_pkt_hdr_t*)pkt);
 
-            /* Fall through... */
-            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-            break;
+            ///* Fall through... */
+            //rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            //break;
 
         case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
             rv = l->subcmd6D_handle(c, dest, pkt);
@@ -99,21 +131,18 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
 
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
     }
+    else {
 
-    if (l->subcmd6D_handle == NULL) {
+        if (l->subcmd6D_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-        display_packet(pkt, len);
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
+            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        }else
+            rv = l->subcmd6D_handle(c, dest, pkt);
     }
-
-    rv = l->subcmd6D_handle(c, dest, pkt);
 
     pthread_mutex_unlock(&l->mutex);
     return rv;

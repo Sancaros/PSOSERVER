@@ -3018,7 +3018,7 @@ subcmd60_handle_func_t subcmd60_handle = {
 
 // 使用函数指针直接调用相应的处理函数
 subcmd60_handle_t subcmd60_get_handler(int cmd_type, int version) {
-    for (int i = 0; i < _countof(subcmd60_handle); ++i) {
+    for (int i = 0; i < _countof(subcmd60_handle); i++) {
         if (subcmd60_handle[i].cmd_type == cmd_type) {
 
             switch (version)
@@ -3039,7 +3039,7 @@ subcmd60_handle_t subcmd60_get_handler(int cmd_type, int version) {
         }
     }
 
-    ERR_LOG("subcmd60_get_handler 未完成对 0x62 0x%02X 版本 %d 的处理", cmd_type, version);
+    ERR_LOG("subcmd60_get_handler 未完成对 0x60 0x%02X 版本 %d 的处理", cmd_type, version);
 
     return NULL;
 }

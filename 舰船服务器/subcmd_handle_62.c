@@ -334,14 +334,30 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
 }
 
-int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_send_quest_data1_t* pkt) {
-    lobby_t* l = dest->cur_lobby;
+int sub6D_6D_6B_6C_6E_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
 
-    return send_bb_quest_data1(dest, &pkt->quest_data1);
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst_bb(l, src, (bb_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
 }
 
-int sub62_70_bb(ship_client_t* c, ship_client_t* d,
+int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = dest->cur_lobby;
+
+    send_bb_quest_data1(dest, &src->bb_pl->quest_data1);
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub6D_70_bb(ship_client_t* c, ship_client_t* d,
     subcmd_bb_burst_pldata_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t ch_class = c->bb_pl->character.dress_data.ch_class;
@@ -1340,12 +1356,12 @@ int sub62_DF_bb(ship_client_t* c, ship_client_t* dest,
 }
 
 // 定义函数指针数组
-subcmd62_handle_func_t subcmd62_handle = {
+subcmd_handle_func_t subcmd62_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
     { SUBCMD62_GUILDCARD                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_06_bb },
     { SUBCMD62_PICK_UP                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_5A_bb },
     { SUBCMD62_BURST5                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_6F_bb },
-    { SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_70_bb },
+    //{ SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_70_bb },
     { SUBCMD62_BURST6                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_71_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
@@ -1364,10 +1380,20 @@ subcmd62_handle_func_t subcmd62_handle = {
     { SUBCMD62_QUEST_ONEPERSON_SET_EX_PC , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
 };
 
-// 使用函数指针直接调用相应的处理函数
-subcmd62_handle_t subcmd62_get_handler(int cmd_type, int version) {
-    for (int i = 0; i < _countof(subcmd62_handle); ++i) {
-        if (subcmd62_handle[i].cmd_type == cmd_type) {
+// 定义函数指针数组
+subcmd_handle_func_t subcmd6D_handler[] = {
+    //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD6D_BURST1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST4                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+};
+
+subcmd_handle_t subcmd_search_handler(subcmd_handle_func_t* handler, size_t max_src, int subcmd_type, int version) {
+
+    for (size_t i = 0; i < max_src; i++) {
+        if (handler[i].subcmd_type == subcmd_type) {
 
             switch (version)
             {
@@ -1375,19 +1401,41 @@ subcmd62_handle_t subcmd62_get_handler(int cmd_type, int version) {
             case CLIENT_VERSION_DCV2:
             case CLIENT_VERSION_PC:
             case CLIENT_VERSION_GC:
-                return subcmd62_handle[i].dc;
+                return handler[i].dc;
 
             case CLIENT_VERSION_EP3:
             case CLIENT_VERSION_XBOX:
                 break;
 
             case CLIENT_VERSION_BB:
-                return subcmd62_handle[i].bb;
+                return handler[i].bb;
             }
         }
     }
 
-    ERR_LOG("subcmd62_get_handler 未完成对 0x62 0x%02X 版本 %d 的处理", cmd_type, version);
+    ERR_LOG("subcmd_get_handler 未完成对 "
+        "0x%02X 版本 %d 的处理", subcmd_type, version);
+
+    return NULL;
+}
+
+// 使用函数指针直接调用相应的处理函数
+subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
+    size_t count = 0;
+
+    switch (cmd_type)
+    {
+    case GAME_COMMAND0_TYPE:
+        break;
+
+    case GAME_COMMAND2_TYPE:
+        count = _countof(subcmd62_handler);
+        return subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
+
+    case GAME_COMMANDD_TYPE:
+        count = _countof(subcmd6D_handler);
+        return subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
+    }
 
     return NULL;
 }
@@ -1420,17 +1468,18 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     DBG_LOG("客户端 %d GC %u 0x%02X 指令: 0x%02X", dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
-    l->subcmd62_handle = subcmd62_get_handler(type, c->version);
+    l->subcmd62_handle = subcmd_get_handler(hdr_type, type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
         rv = 0;
+
         switch (type) {
         case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
         case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
-            send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
+            //send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
 
-            rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            rv |= l->subcmd62_handle(c, dest, pkt);
             break;
 
         default:
@@ -1438,30 +1487,27 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
         }
 
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
     }
+    else {
+        switch (type) {
+        case SUBCMD62_ITEMREQ:
+        case SUBCMD62_BITEMREQ:
+            rv = l->dropfunc(c, l, pkt);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
 
-    switch (type) {
-    case SUBCMD62_ITEMREQ:
-    case SUBCMD62_BITEMREQ:
-        rv = l->dropfunc(c, l, pkt);
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
-    }
-
-    if (l->subcmd62_handle == NULL) {
+        if (l->subcmd62_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-        display_packet(pkt, len);
-        //UNK_CSPD(type, c->version, pkt);
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, len);
+            //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
+            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        }
+        else
+            rv = l->subcmd62_handle(c, dest, pkt);
     }
-
-    rv = l->subcmd62_handle(c, dest, pkt);
 
     pthread_mutex_unlock(&l->mutex);
     return rv;
