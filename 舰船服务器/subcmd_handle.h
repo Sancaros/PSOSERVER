@@ -19,19 +19,6 @@
 #define SUBCMD_HANDLE_H
 
 // 定义函数指针的类型
-typedef int (*subcmd60_handle_t)(ship_client_t*, void*);
-
-typedef struct subcmd60_handle_func {
-    int cmd_type;
-    subcmd60_handle_t dc;
-    subcmd60_handle_t gc;
-    subcmd60_handle_t ep3;
-    subcmd60_handle_t xb;
-    subcmd60_handle_t pc;
-    subcmd60_handle_t bb;
-} subcmd60_handle_func_t[];
-
-// 定义函数指针的类型
 typedef int (*subcmd_handle_t)(ship_client_t* src, ship_client_t* dst, void* pkt);
 
 typedef struct subcmd_handle_func {
@@ -42,7 +29,7 @@ typedef struct subcmd_handle_func {
     subcmd_handle_t xb;
     subcmd_handle_t pc;
     subcmd_handle_t bb;
-} subcmd_handle_func_t[];
+} subcmd_handle_func_t;
 
 // 使用函数指针直接调用相应的处理函数
 subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version);

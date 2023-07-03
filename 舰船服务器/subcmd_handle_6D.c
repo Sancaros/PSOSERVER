@@ -43,6 +43,62 @@
 
 #include "subcmd_handle.h"
 
+int sub6D_6D_6B_6C_6E_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst_bb(l, src, (bb_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_burst_pldata_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint8_t ch_class = src->bb_pl->character.dress_data.ch_class;
+    iitem_t* item;
+    int i, rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", src->guildcard);
+        return -1;
+    }
+
+    if ((src->version == CLIENT_VERSION_XBOX && dest->version == CLIENT_VERSION_GC) ||
+        (dest->version == CLIENT_VERSION_XBOX && src->version == CLIENT_VERSION_GC)) {
+        /* 扫描库存并在发送之前修复所有mag. */
+
+
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* 如果项目是mag,那么我们必须交换数据的最后一个dword.否则,颜色和统计数据会变得一团糟 */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+// 定义函数指针数组
+subcmd_handle_func_t subcmd6D_handler[] = {
+    //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD6D_BURST1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST4                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
+    { SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_70_bb },
+};
+
 int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* dest;
