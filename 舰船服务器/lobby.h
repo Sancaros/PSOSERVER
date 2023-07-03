@@ -174,6 +174,7 @@ struct lobby {
     int (*dropfunc)(ship_client_t *c, struct lobby *l, void *req);
     int (*subcmd60_handle)(ship_client_t*, void*);
     int (*subcmd62_handle)(ship_client_t* src, ship_client_t* dst, void* pkt);
+    int (*subcmd6D_handle)(ship_client_t* src, ship_client_t* dst, void* pkt);
 
     uint8_t q_flags;
     uint8_t q_shortflag_reg;

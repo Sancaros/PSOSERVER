@@ -3063,9 +3063,9 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     pthread_mutex_lock(&l->mutex);
 
-    l->subcmd60_handle = subcmd60_get_handler(type, c->version);
-
     subcmd_bb_60size_check(c, pkt);
+
+    l->subcmd60_handle = subcmd60_get_handler(type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -3088,14 +3088,15 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return rv;
     }
 
+    if (l->subcmd60_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-    if (l->subcmd60_handle == NULL && rv == -1) {
         DBG_LOG("Î´Öª 0x%02X Ö¸Áî: 0x%02X", hdr_type, type);
         display_packet(pkt, pkt->hdr.pkt_len);
-        //UNK_CSPD(type, c->version, pkt);
-        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
-    }
 #endif /* BB_LOG_UNKNOWN_SUBS */
+        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+    }
 
     rv = l->subcmd60_handle(c, pkt);
 

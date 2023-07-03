@@ -73,7 +73,7 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     //subcmd_bb_626Dsize_check(c, pkt);
 
-    subcmd62_handle_t func = subcmd62_get_handler(type, c->version);
+    l->subcmd6D_handle = subcmd62_get_handler(type, c->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -91,7 +91,7 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             break;
 
         case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
-            rv = func(c, dest, pkt);
+            rv = l->subcmd6D_handle(c, dest, pkt);
             break;
 
         default:
@@ -103,14 +103,17 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return rv;
     }
 
+    if (l->subcmd6D_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-    if (l->subcmd62_handle == NULL && rv == -1) {
         DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
         display_packet(pkt, len);
-        //UNK_CSPD(type, c->version, pkt);
-        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-    }
 #endif /* BB_LOG_UNKNOWN_SUBS */
+        rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+    }
+
+    rv = l->subcmd6D_handle(c, dest, pkt);
 
     pthread_mutex_unlock(&l->mutex);
     return rv;

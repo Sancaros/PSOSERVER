@@ -2752,7 +2752,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* 0x0062 98*/
     case GAME_COMMAND2_TYPE:
         /* 0x006C 108*/
-    case GAME_COMMANDC_TYPE:
+    case GAME_COMMANDC_TYPE: //需要分离出来
         return subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x006D 109*/

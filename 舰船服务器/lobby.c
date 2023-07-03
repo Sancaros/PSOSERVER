@@ -1801,8 +1801,13 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
                 break;
 
             case GAME_COMMAND2_TYPE:
-            case GAME_COMMANDD_TYPE:
                 if (subcmd_bb_handle_62(i->src, (subcmd_bb_pkt_t*)i->pkt)) {
+                    rv = -1;
+                }
+                break;
+
+            case GAME_COMMANDD_TYPE:
+                if (subcmd_bb_handle_6D(i->src, (subcmd_bb_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
                 break;
