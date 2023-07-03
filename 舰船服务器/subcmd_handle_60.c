@@ -2989,7 +2989,6 @@ subcmd60_handle_func_t subcmd60_handle = {
     //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
     { SUBCMD60_CHAIR_CREATE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
-    { SUBCMD62_CHAIR_STATE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
     { SUBCMD60_CHAIR_TURN             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
     //cmd_type B0 - BF                  DC           GC           EP3          XBOX         PC           BB
