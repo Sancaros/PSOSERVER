@@ -2472,16 +2472,16 @@ typedef struct subcmd_bb_Unknown_6xAD {
     uint8_t unknown_a1[0x40];
 } PACKED subcmd_bb_Unknown_6xAD_t;
 
-// 0xAE: 设置大厅椅子状态 (sent by existing clients at join time)
+// 0xAE: 发送大厅椅子状态 (sent by existing clients at join time)
 // 该副指令不支持 DC, PC, GC 测试版.
-typedef struct subcmd_bb_set_lobby_chair_state {
+typedef struct subcmd_bb_send_lobby_chair_state {
     bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
-    uint16_t unknown_a1;
-    uint16_t unknown_a2;
-    uint32_t unknown_a3;
-    uint32_t unknown_a4;
-} PACKED subcmd_bb_set_lobby_chair_state_t;
+    client_id_hdr_t shdr;    //client_id 是数据包来源的客户端
+    uint16_t act_id;         //0x0036 0x0037 是椅子状态flags
+    uint16_t unused;         //0x0000
+    uint32_t angle;          //所在的横向坐标？？
+    uint32_t face;           //面对的方向 4字节的位置
+} PACKED subcmd_bb_send_lobby_chair_state_t;
 
 // 0xAF: 座椅状态 转动椅子后得到的数据包 (不支持 PC or GC Trial Edition)
 typedef struct subcmd_bb_turn_lobby_chair {

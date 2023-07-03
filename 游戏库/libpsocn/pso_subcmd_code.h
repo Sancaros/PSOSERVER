@@ -279,7 +279,7 @@
 #define SUBCMD60_CHAIR_CREATE                  0xAB   // 生成大厅座椅
 #define SUBCMD60_UNKNOW_AC                     0xAC
 #define SUBCMD60_UNKNOW_AD                     0xAD   // Olga Flow phase 2 subordinate boss actions
-#define SUBCMD60_CHAIR_STATE                   0xAE   // 向新进入大厅的玩家发送座椅状态
+#define SUBCMD62_CHAIR_STATE                   0xAE   // 向新进入大厅的玩家发送座椅状态
 #define SUBCMD60_CHAIR_TURN                    0xAF   // 旋转椅子朝向
 #define SUBCMD60_CHAIR_MOVE                    0xB0   // 移动椅子
 #define SUBCMD60_UNKNOW_B5                     0xB5   // BB shop request process_subcommand_open_shop_bb_or_unknown_ep3

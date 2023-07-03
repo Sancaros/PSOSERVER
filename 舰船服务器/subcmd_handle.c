@@ -336,7 +336,6 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 
 int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = dest->cur_lobby;
 
     send_bb_quest_data1(dest, &src->bb_pl->quest_data1);
 
@@ -345,7 +344,6 @@ int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
 
 int sub62_71_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
@@ -374,6 +372,21 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("GC %u -> %u", src->guildcard, dest->guildcard);
 
     display_packet(pkt, pkt->hdr.pkt_len);
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_send_lobby_chair_state_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = -1;
+
+    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
+            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return rv;
+    }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
@@ -1317,6 +1330,7 @@ subcmd_handle_func_t subcmd62_handler = {
     { SUBCMD62_BURST5                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_6F_bb },
     { SUBCMD62_BURST6                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_71_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
+    { SUBCMD62_CHAIR_STATE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_AE_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
     { SUBCMD62_SHOP_BUY                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B7_bb },
     { SUBCMD62_TEKKING                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B8_bb },
@@ -1416,14 +1430,12 @@ subcmd_handle_t subcmd_search_handler(
         }
     }
 
-    ERR_LOG("subcmd_get_handler 未完成对 "
-        "0x%02X 版本 %d 的处理", subcmd_type, version);
-
     return NULL;
 }
 
 // 使用函数指针直接调用相应的处理函数
 subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
+    subcmd_handle_t func = { 0 };
     size_t count = 0;
 
     switch (cmd_type)
@@ -1433,12 +1445,18 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
 
     case GAME_COMMAND2_TYPE:
         count = _countof(subcmd62_handler);
-        return subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
+        func = subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
+        break;
 
     case GAME_COMMANDD_TYPE:
         count = _countof(subcmd6D_handler);
-        return subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
+        func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
+        break;
     }
 
-    return NULL;
+    if(!func)
+        ERR_LOG("subcmd_get_handler 未完成对 "
+            "0x%02X 0x%02X 版本 %d 的处理", cmd_type, subcmd_type, version);
+
+    return func;
 }

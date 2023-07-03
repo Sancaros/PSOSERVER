@@ -2390,7 +2390,7 @@ int sub60_A1_bb(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_AB_AE_AF_B0_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_AB_AF_B0_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
     int rv = 0;
@@ -2409,13 +2409,6 @@ int sub60_AB_AE_AF_B0_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     case SUBCMD60_CHAIR_CREATE:
         subcmd_bb_create_lobby_chair_t* pktab = (subcmd_bb_create_lobby_chair_t*)pkt;
         //DBG_LOG("SUBCMD60_CHAIR_CREATE %u %u ", pktab->unknown_a1, pktab->unknown_a2);
-
-        break;
-
-        /* 0xAE */
-    case SUBCMD60_CHAIR_STATE:
-        subcmd_bb_set_lobby_chair_state_t* pktae = (subcmd_bb_set_lobby_chair_state_t*)pkt;
-        //DBG_LOG("SUBCMD60_CHAIR_STATE %u %u %u %u", pktae->unknown_a1, pktae->unknown_a2, pktae->unknown_a3, pktae->unknown_a4);
 
         break;
 
@@ -2995,12 +2988,12 @@ subcmd60_handle_func_t subcmd60_handle = {
 
     //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
-    { SUBCMD60_CHAIR_CREATE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
-    { SUBCMD60_CHAIR_STATE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
-    { SUBCMD60_CHAIR_TURN             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+    { SUBCMD60_CHAIR_CREATE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    { SUBCMD62_CHAIR_STATE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    { SUBCMD60_CHAIR_TURN             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
     //cmd_type B0 - BF                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_CHAIR_MOVE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+    { SUBCMD60_CHAIR_MOVE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
     //cmd_type C0 - CF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SELL_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },

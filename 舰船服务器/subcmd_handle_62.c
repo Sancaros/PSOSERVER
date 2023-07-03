@@ -69,7 +69,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         return 0;
     }
 
-    DBG_LOG("客户端 %d GC %u 0x%02X 指令: 0x%02X", dnum, l->clients[dnum]->guildcard, hdr_type, type);
+    DBG_LOG("src %d GC%u dest %d GC%u 0x%02X 指令: 0x%02X", c->client_id, c->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
     l->subcmd62_handle = subcmd_get_handler(hdr_type, type, c->version);
 
