@@ -114,6 +114,9 @@
     <ClCompile Include="subcmd_handle_6D.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="subcmd_handle.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">

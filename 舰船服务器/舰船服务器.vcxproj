@@ -40,6 +40,7 @@
     <ClCompile Include="ship_packets.c" />
     <ClCompile Include="ship_server.c" />
     <ClCompile Include="smutdata.c" />
+    <ClCompile Include="subcmd_handle.c" />
     <ClCompile Include="subcmd_handle_6D.c" />
     <ClCompile Include="subcmd_handle_60.c" />
     <ClCompile Include="subcmd_handle_62.c" />
