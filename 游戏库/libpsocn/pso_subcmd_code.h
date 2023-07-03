@@ -227,7 +227,7 @@
 #define SUBCMD60_GOGO_BALL                     0x79
 #define SUBCMD60_UNKNOW_7A                     0x7A
 #define SUBCMD60_UNKNOW_7B                     0x7B
-#define SUBCMD60_CMODE_GRAVE                   0x7C
+#define SUBCMD60_GAME_MODE                     0x7C
 #define SUBCMD60_UNKNOW_7D                     0x7D
 #define SUBCMD60_UNKNOW_7E                     0x7E
 #define SUBCMD60_UNKNOW_7F                     0x7F
@@ -244,7 +244,7 @@
 #define SUBCMD60_UNKNOW_CH_8A                  0x8A
 #define SUBCMD60_UNKNOW_8B                     0x8B
 #define SUBCMD60_UNKNOW_8C                     0x8C
-#define SUBCMD60_SET_TECH_LEVEL_OVERRIDE       0x8D //释放法术 TODO 未完成法术有效性分析
+#define SUBCMD60_OVERRIDE_TECH_LEVEL           0x8D //释放法术 TODO 未完成法术有效性分析
 #define SUBCMD60_UNKNOW_8E                     0x8E
 #define SUBCMD60_UNKNOW_8F                     0x8F
 #define SUBCMD60_UNKNOW_90                     0x90
@@ -295,7 +295,7 @@
 #define SUBCMD60_JUKEBOX                       0xBF    /* Episode III - Change background music */
 #define SUBCMD60_GIVE_EXP                      0xBF    /* Blue Burst - give experience points */
 #define SUBCMD60_SELL_ITEM                     0xC0
-#define SUBCMD60_DROP_SPLIT_STACKED_ITEM       0xC3    /* Blue Burst - Drop part of stack coords */
+#define SUBCMD60_DROP_SPLIT_ITEM       0xC3    /* Blue Burst - Drop part of stack coords */
 #define SUBCMD60_SORT_INV                      0xC4    /* Blue Burst - Sort inventory */
 #define SUBCMD60_MEDIC                         0xC5    /* Blue Burst - Use the medical center */
 #define SUBCMD60_STEAL_EXP                     0xC6

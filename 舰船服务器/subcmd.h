@@ -1895,7 +1895,7 @@ typedef struct subcmd_bb_Unknown_6x7B {
 //( 00000130 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 //( 00000140 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 // 0x7C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-// SUBCMD60_CMODE_GRAVE
+// SUBCMD60_GAME_MODE
 typedef struct subcmd_bb_Unknown_6x7C {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -3011,36 +3011,55 @@ typedef struct subcmd_bb_quest_oneperson_set_ex_pc {
 
 #undef PACKED
 
-/* Handle a 0x62/0x6D packet. */
-int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_bb_handle_one(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+int subcmd_send_pos(ship_client_t* dst, ship_client_t* src);
 
-/* Handle BB 0x6D packet. */
-int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+/////////////////////////////////////////////////////////////////////////////
+////DC NTE
 
-/* Handle a 0x60 packet. */
-int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_bb_handle_bcast(ship_client_t* c, subcmd_bb_pkt_t* pkt);
-int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
+/* 处理 DC NTE 0x60 来自客户端的数据包. */
+int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt);
 
-/* Handle an 0xC9/0xCB packet from Episode 3. */
-int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
-
-int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req, const uint32_t item[4]);
-
-int subcmd_send_pos(ship_client_t *dst, ship_client_t *src);
-
-/* Send a broadcast subcommand to the whole lobby. */
-int subcmd_send_lobby_dc(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                         int ignore_check);
-int subcmd_send_lobby_bb(lobby_t *l, ship_client_t *c, subcmd_bb_pkt_t *pkt,
-                         int ignore_check);
-int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                            int ignore_check);
+int subcmd_send_lobby_dcnte(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,
+    int ignore_check);
 
 /* Stuff dealing with the Dreamcast Network Trial edition */
-int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt);
-int subcmd_translate_bb_to_nte(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt);
+int subcmd_translate_nte_to_dc(ship_client_t* c, subcmd_pkt_t* pkt);
+int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+
+/////////////////////////////////////////////////////////////////////////////
+////DC GC PC V1 V2
+
+/* 处理 DC GC PC V1 V2 0x62/0x6D 来自客户端的数据包. */
+int subcmd_handle_one(ship_client_t* c, subcmd_pkt_t* pkt);
+
+/* 处理 DC GC PC V1 V2 0x6D 来自客户端的数据包. */
+int subcmd_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt);
+
+/* Send a broadcast subcommand to the whole lobby. */
+int subcmd_send_lobby_dc(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,
+    int ignore_check);
+
+int subcmd_send_lobby_item(lobby_t* l, subcmd_itemreq_t* req, const uint32_t item[4]);
+
+/////////////////////////////////////////////////////////////////////////////
+////Blue Burst
+
+/* 处理 BB 0x62 来自客户端的数据包. */
+int subcmd_bb_handle_62(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+
+/* 处理 BB 0x6D 来自客户端的数据包. */
+int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+
+/* 处理 BB 0x60 来自客户端的数据包. */
+int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+
+int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt,
+    int ignore_check);
+/////////////////////////////////////////////////////////////////////////////
+////Episode 3
+
+/* 处理 EP3 0xC9/0xCB 来自客户端的数据包. */
+int subcmd_handle_ep3_bcast(ship_client_t *c, subcmd_pkt_t *pkt);
 
 #endif /* !SUBCMD60_H */

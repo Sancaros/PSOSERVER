@@ -964,7 +964,7 @@ static int handle_guild_request(login_client_t *c) {
 
         gc = (uint32_t)strtoul(row[0], NULL, 0);
         c->gc_data->entries[i].data.guildcard = LE32(gc);
-        memcpy(&c->gc_data->entries[i].data.name, row[1], MIN(48, lengths[1]));
+        memcpy(c->gc_data->entries[i].data.name, row[1], MIN(48, lengths[1]));
         memcpy(c->gc_data->entries[i].data.guild_name, row[2], MIN(32, lengths[2]));
         memcpy(c->gc_data->entries[i].data.guildcard_desc, row[3], MIN(176, lengths[3]));
         memcpy(c->gc_data->entries[i].comment, row[7], MIN(176, lengths[7]));
@@ -1378,4 +1378,3 @@ int load_bb_char_data(void) {
 
     return 0;
 }
-

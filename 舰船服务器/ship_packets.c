@@ -12398,8 +12398,6 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     DBG_LOG("send_bb_guild_cmd 向GC %u 发送指令 0x%04X", c->guildcard, cmd_code);
 #endif // DEBUG
 
-    DBG_LOG("send_bb_guild_cmd 向GC %u 发送指令 0x%04X", c->guildcard, cmd_code);
-
     switch (cmd_code)
     {
         /* 02EA */

@@ -41,7 +41,7 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
-#include "subcmd_handle_62.h"
+#include "subcmd_handle.h"
 
 int sub62_06_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gcsend_t* pkt) {
@@ -1071,6 +1071,81 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
+int sub62_C9_bb(ship_client_t* c, ship_client_t* dest, 
+    subcmd_bb_quest_reward_meseta_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    int meseta;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务美赛塔奖励!",
+            c->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    meseta = pkt->amount;
+
+    if (meseta < 0) {
+        meseta = -meseta;
+
+        if (meseta > (int)c->bb_pl->character.disp.meseta) {
+            c->bb_pl->character.disp.meseta = 0;
+        }
+        else
+            c->bb_pl->character.disp.meseta -= meseta;
+
+        return 0;
+
+    }
+    else {
+        iitem_t ii;
+        memset(&ii, 0, sizeof(iitem_t));
+        ii.data.data_b[0] = ITEM_TYPE_MESETA;
+        ii.data.data2_l = meseta;
+        ii.data.item_id = generate_item_id(l, 0xFF);
+
+        if (add_item_to_client(c, &ii) == -1) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                c->guildcard);
+            return -1;
+        }
+
+        return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 0);
+    }
+}
+
+int sub62_CA_bb(ship_client_t* c, ship_client_t* dest, 
+    subcmd_bb_quest_reward_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+
+    iitem_t ii;
+    memset(&ii, 0, sizeof(iitem_t));
+    ii.data = pkt->item_data;
+    ii.data.item_id = generate_item_id(l, 0xFF);
+
+    if (add_item_to_client(c, &ii) == -1) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+            c->guildcard);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb_create_inv_item(c, ii.data, 0);
+}
+
 int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_master_trans1_t* pkt) {
     uint16_t len = pkt->hdr.pkt_len;
@@ -1157,6 +1232,113 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
+int sub62_D6_bb(ship_client_t* c, ship_client_t* dest, 
+    subcmd_bb_warp_item_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t iitem_count, found, i, stack;
+    uint32_t wrap_id;
+    iitem_t backup_item;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    memset(&backup_item, 0, sizeof(iitem_t));
+    wrap_id = *(uint32_t*)&pkt->data[0x0C];
+
+    for (i = 0; i < c->bb_pl->inv.item_count; i++) {
+        if (c->bb_pl->inv.iitems[i].data.item_id == wrap_id) {
+            memcpy(&backup_item, &c->bb_pl->inv.iitems[i], sizeof(iitem_t));
+            break;
+        }
+    }
+
+    if (backup_item.data.item_id) {
+        stack = is_stackable(&backup_item.data);
+
+        //if (!stack && pkt->item_amount > 1) {
+        //    ERR_LOG("GC %" PRIu32 " banking multiple of "
+        //        "a non-stackable item!", c->guildcard);
+        //    return -1;
+        //}
+
+        iitem_count = c->bb_pl->inv.item_count;
+
+        if ((found = item_remove_from_inv(c->bb_pl->inv.iitems, iitem_count,
+            backup_item.data.item_id, 1)) < 1) {
+            ERR_LOG("无法从玩家背包中移除物品!");
+            return -1;
+        }
+
+        if (found < 0 || found > 1) {
+            ERR_LOG("GC %u Error removing item from inventory for "
+                "banking!", c->guildcard);
+            return -1;
+        }
+
+        c->bb_pl->inv.item_count = (iitem_count -= found);
+
+        if (backup_item.data.data_b[0] == 0x02)
+            backup_item.data.data2_b[2] |= 0x40; // Wrap a mag
+        else
+            backup_item.data.data_b[4] |= 0x40; // Wrap other
+
+        /* 将物品新增至背包. */
+        found = add_item_to_client(c, &backup_item);
+
+        if (found == -1)
+            return 0;
+    }
+    else {
+        ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
+            c->guildcard, wrap_id);
+        return -1;
+    }
+
+    return 0;
+}
+
+int sub62_DF_bb(ship_client_t* c, ship_client_t* dest, 
+    subcmd_bb_quest_oneperson_set_ex_pc_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    uint32_t iitem_count, found;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
+        iitem_t tmp_iitem;
+        iitem_count = c->bb_pl->inv.item_count;
+
+        memset(&tmp_iitem, 0, sizeof(iitem_t));
+        tmp_iitem.data.data_b[0] = 0x03;
+        tmp_iitem.data.data_b[1] = 0x10;
+        tmp_iitem.data.data_b[2] = 0x02;
+
+        found = item_remove_from_inv(c->bb_pl->inv.iitems, iitem_count, 0, 1);
+
+        if (found < 0 || found > 1) {
+            ERR_LOG("GC %u Error handle_bb_quest_oneperson_set_ex_pc!", c->guildcard);
+            return -1;
+        }
+
+        c->bb_pl->inv.item_count = (iitem_count -= found);
+        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
+
+        if (!found) {
+            l->drops_disabled = 1;
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
 // 定义函数指针数组
 subcmd62_handle_func_t subcmd62_handle = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
@@ -1174,8 +1356,12 @@ subcmd62_handle_func_t subcmd62_handle = {
     { SUBCMD62_BANK_ACTION               , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BD_bb },
     { SUBCMD62_GUILD_INVITE1             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C1_bb },
     { SUBCMD62_GUILD_INVITE2             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C2_bb },
+    { SUBCMD62_QUEST_REWARD_MESETA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C9_bb },
+    { SUBCMD62_QUEST_REWARD_ITEM         , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CA_bb },
     { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
     { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
+    { SUBCMD62_WARP_ITEM                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
+    { SUBCMD62_QUEST_ONEPERSON_SET_EX_PC , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
 };
 
 // 使用函数指针直接调用相应的处理函数
@@ -1189,18 +1375,19 @@ subcmd62_handle_t subcmd62_get_handler(int cmd_type, int version) {
             case CLIENT_VERSION_DCV2:
             case CLIENT_VERSION_PC:
             case CLIENT_VERSION_GC:
+                return subcmd62_handle[i].dc;
+
             case CLIENT_VERSION_EP3:
             case CLIENT_VERSION_XBOX:
-                return subcmd62_handle[i].dc;
+                break;
 
             case CLIENT_VERSION_BB:
                 return subcmd62_handle[i].bb;
-
-            default:
-                ERR_LOG("subcmd62_get_handler 未完成对 0x62 0x%02X 版本 %d 的处理", cmd_type, version);
-                break;
             }
         }
     }
+
+    ERR_LOG("subcmd62_get_handler 未完成对 0x62 0x%02X 版本 %d 的处理", cmd_type, version);
+
     return NULL;
 }

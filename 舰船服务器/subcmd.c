@@ -1509,7 +1509,7 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             pc.hdr.pkt_len = LE16(0x00E4);
 
-            pc.shdr.type = SUBCMD60_CMODE_GRAVE;
+            pc.shdr.type = SUBCMD60_GAME_MODE;
             pc.shdr.size = 0x38;
             pc.shdr.client_id = dc.shdr.client_id;
             pc.client_id2 = dc.client_id2;
@@ -1566,7 +1566,7 @@ static int handle_cmode_grave(ship_client_t *c, subcmd_pkt_t *pkt) {
             dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dc.hdr.pkt_len = LE16(0x00AC);
 
-            dc.shdr.type = SUBCMD60_CMODE_GRAVE;
+            dc.shdr.type = SUBCMD60_GAME_MODE;
             dc.shdr.size = 0x2A;
             dc.shdr.client_id = pc.shdr.client_id;
             dc.client_id2 = pc.client_id2;
@@ -2838,7 +2838,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
                 rv = handle_set_pos(c, (subcmd_set_pos_t *)pkt);
                 break;
 
-            case SUBCMD60_CMODE_GRAVE:
+            case SUBCMD60_GAME_MODE:
                 rv = handle_cmode_grave(c, pkt);
                 break;
 
@@ -2914,7 +2914,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_symbol_chat(c, (subcmd_symbol_chat_t *)pkt);
             break;
 
-        case SUBCMD60_CMODE_GRAVE:
+        case SUBCMD60_GAME_MODE:
             rv = handle_cmode_grave(c, pkt);
             break;
 

@@ -41,9 +41,25 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 
-#include "subcmd_handle_60.h"
+#include "subcmd_handle.h"
 
-int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_unimplement_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    DBG_LOG("未处理指令 0x%02X", pkt->hdr.pkt_type);
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_check_client_id_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -60,7 +76,7 @@ int handle_bb_cmd_check_client_id(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_cmd_check_lobby(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_check_lobby_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -125,15 +141,6 @@ void update_bb_qpos(ship_client_t* c, lobby_t* l) {
         send_sync_register(l->clients[3], r + 3, (uint32_t)c->cur_area);
     }
 }
-
-#define BARTA_TIMING 1500
-#define GIBARTA_TIMING 2200
-
-const uint16_t gifoie_timing[6] = { 5000, 6000, 7000, 8000, 9000, 10000 };
-const uint16_t gizonde_timing[6] = { 1000, 900, 700, 700, 700, 700 };
-const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
-const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
-const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 
 void handle_bb_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
     uint32_t obj_type;
@@ -200,6 +207,15 @@ void handle_bb_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
         DBG_LOG("Unknown object type hit: %04" PRIx16 "", bid);
     }
 }
+
+#define BARTA_TIMING 1500
+#define GIBARTA_TIMING 2200
+
+const uint16_t gifoie_timing[6] = { 5000, 6000, 7000, 8000, 9000, 10000 };
+const uint16_t gizonde_timing[6] = { 1000, 900, 700, 700, 700, 700 };
+const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
+const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
+const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 
 int check_aoe_timer(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
@@ -291,7 +307,7 @@ int check_aoe_timer(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     return 0;
 }
 
-int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* pkt) {
+int sub60_05_bb(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
 
@@ -373,7 +389,7 @@ int handle_bb_switch_changed(ship_client_t* c, subcmd_bb_switch_changed_pkt_t* p
     return rv;
 }
 
-int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt) {
+int sub60_07_bb(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Don't send the message if they have the protection flag on. */
@@ -387,7 +403,7 @@ int handle_bb_symbol_chat(ship_client_t* c, subcmd_bb_symbol_chat_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
+int sub60_0A_bb(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t enemy_id2, enemy_id, dmg;
     game_enemy_t* en;
@@ -437,7 +453,7 @@ int handle_bb_mhit(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
+int sub60_46_bb(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t pkt_size = pkt->hdr.pkt_len;
     uint8_t size = pkt->shdr.size;
@@ -485,7 +501,7 @@ int handle_bb_objhit_phys(ship_client_t* c, subcmd_bb_objhit_phys_t* pkt) {
 }
 
 /* TODO */
-int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
+int sub60_47_bb(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something that
@@ -529,7 +545,7 @@ int handle_bb_objhit_tech(ship_client_t* c, subcmd_bb_objhit_tech_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
+int sub60_0B_bb(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
     uint64_t now = get_ms_time();
     //SYSTEMTIME aoetime;
     //GetLocalTime(&aoetime);
@@ -566,7 +582,7 @@ int handle_bb_objhit(ship_client_t* c, subcmd_bb_bhit_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_condition_t* pkt) {
+int sub60_0C_bb(ship_client_t* c, subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -581,7 +597,7 @@ int handle_bb_condition(ship_client_t* c, subcmd_bb_add_or_remove_condition_t* p
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
+int sub60_12_bb(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
     subcmd_bb_dragon_act_t tr;
@@ -617,7 +633,7 @@ int handle_bb_dragon_act(ship_client_t* c, subcmd_bb_dragon_act_t* pkt) {
     return 0;
 }
 
-int handle_bb_set_area_1F(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt) {
+int sub60_1F_bb(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -647,7 +663,7 @@ int handle_bb_set_area_1F(ship_client_t* c, subcmd_bb_set_area_1F_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_set_area_20(ship_client_t* c, subcmd_bb_set_area_20_t* pkt) {
+int sub60_20_bb(ship_client_t* c, subcmd_bb_set_area_20_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -684,7 +700,7 @@ int handle_bb_set_area_20(ship_client_t* c, subcmd_bb_set_area_20_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_inter_level_warp(ship_client_t* c, subcmd_bb_inter_level_warp_t* pkt) {
+int sub60_21_bb(ship_client_t* c, subcmd_bb_inter_level_warp_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
@@ -706,7 +722,7 @@ int handle_bb_inter_level_warp(ship_client_t* c, subcmd_bb_inter_level_warp_t* p
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
+int sub60_22_bb(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i, rv;
 
@@ -729,7 +745,7 @@ int handle_bb_load_22(ship_client_t* c, subcmd_bb_set_player_visibility_6x22_6x2
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_finish_load(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_23_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i, rv;
 
@@ -752,7 +768,7 @@ int handle_bb_finish_load(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return rv;
 }
 
-int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pkt) {
+int sub60_24_bb(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
@@ -779,7 +795,7 @@ int handle_bb_set_pos_0x24(ship_client_t* c, subcmd_bb_set_pos_0x24_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
+int sub60_25_bb(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t /*inv, */item_id = pkt->item_id, found_item = 0/*, found_slot = 0, j = 0, slot[4] = { 0 }*/;
     int i = 0;
@@ -815,7 +831,7 @@ int handle_bb_equip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
+int sub60_26_bb(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t inv, i, isframe = 0;
 
@@ -874,7 +890,7 @@ int handle_bb_unequip(ship_client_t* c, subcmd_bb_equip_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_use_item(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
+int sub60_27_bb(ship_client_t* c, subcmd_bb_use_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int num;
 
@@ -910,7 +926,7 @@ send_pkt:
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
+int sub60_28_bb(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t item_id = pkt->item_id, mag_id = pkt->mag_id;
 
@@ -946,7 +962,7 @@ int handle_bb_feed_mag(ship_client_t* c, subcmd_bb_feed_mag_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
+int sub60_29_bb(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1;
     uint32_t tmp, tmp2;
@@ -1052,7 +1068,7 @@ int handle_bb_destroy_item(ship_client_t* c, subcmd_bb_destroy_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
+int sub60_2A_bb(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1, isframe = 0;
     uint32_t i, inv;
@@ -1152,7 +1168,7 @@ int handle_bb_drop_item(ship_client_t* c, subcmd_bb_drop_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
+int sub60_2C_bb(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1181,7 +1197,7 @@ int handle_bb_talk_npc(ship_client_t* c, subcmd_bb_talk_npc_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) {
+int sub60_2D_bb(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -1196,7 +1212,7 @@ int handle_bb_done_talk_npc(ship_client_t* c, subcmd_bb_end_talk_to_npc_t* pkt) 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
+int sub60_2F_bb(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t type = LE16(pkt->hdr.pkt_type);
 
@@ -1224,7 +1240,7 @@ int handle_bb_hit_by_enemy(ship_client_t* c, subcmd_bb_hit_by_enemy_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
+int sub60_3A_bb(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1247,7 +1263,7 @@ int handle_bb_cmd_3a(ship_client_t* c, subcmd_bb_cmd_3a_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_3B_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -1263,7 +1279,7 @@ int handle_bb_load_3b(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_set_pos(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
+int sub60_3E_3F_bb(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
@@ -1280,7 +1296,7 @@ int handle_bb_set_pos(ship_client_t* c, subcmd_bb_set_pos_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
+int sub60_40_42_bb(ship_client_t* c, subcmd_bb_move_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
@@ -1299,7 +1315,7 @@ int handle_bb_move(ship_client_t* c, subcmd_bb_move_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
+int sub60_43_44_45_bb(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1326,7 +1342,7 @@ int handle_bb_normal_attack(ship_client_t* c, subcmd_bb_natk_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
+int sub60_48_bb(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1356,7 +1372,7 @@ int handle_bb_used_tech(ship_client_t* c, subcmd_bb_used_tech_t* pkt) {
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) {
+int sub60_4A_bb(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1378,7 +1394,7 @@ int handle_bb_defense_damage(ship_client_t* c, subcmd_bb_defense_damage_t* pkt) 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
+int sub60_4B_4C_bb(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1398,7 +1414,7 @@ int handle_bb_take_damage(ship_client_t* c, subcmd_bb_take_damage_t* pkt) {
     return send_lobby_mod_stat(l, c, SUBCMD60_STAT_HPUP, 2000);
 }
 
-int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
+int sub60_4D_bb(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int i;
 
@@ -1432,7 +1448,7 @@ int handle_bb_death_sync(ship_client_t* c, subcmd_bb_death_sync_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
+int sub60_4E_bb(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1453,7 +1469,7 @@ int handle_bb_cmd_4e(ship_client_t* c, subcmd_bb_cmd_4e_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
+int sub60_4F_bb(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->shdr.client_id != c->client_id) {
@@ -1465,7 +1481,7 @@ int handle_bb_player_saved(ship_client_t* c, subcmd_bb_player_saved_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
+int sub60_50_bb(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1486,7 +1502,7 @@ int handle_bb_switch_req(ship_client_t* c, subcmd_bb_switch_req_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
+int sub60_52_bb(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We don't care about these in lobbies. */
@@ -1508,7 +1524,7 @@ int handle_bb_menu_req(ship_client_t* c, subcmd_bb_menu_req_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
+int sub60_55_bb(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1559,7 +1575,7 @@ int handle_bb_map_warp_55(ship_client_t* c, subcmd_bb_map_warp_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
+int sub60_58_bb(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != c->client_id) {
@@ -1576,7 +1592,7 @@ int handle_bb_lobby_act(ship_client_t* c, subcmd_bb_lobby_act_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt) {
+int sub60_61_bb(ship_client_t* c, subcmd_bb_levelup_req_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1599,7 +1615,7 @@ int handle_bb_level_up_req(ship_client_t* c, subcmd_bb_levelup_req_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_ground_item_t* pkt) {
+int sub60_63_bb(ship_client_t* c, subcmd_bb_destory_ground_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
 
@@ -1638,7 +1654,7 @@ int handle_bb_destroy_ground_item(ship_client_t* c, subcmd_bb_destory_ground_ite
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
+int sub60_68_bb(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1676,7 +1692,7 @@ int handle_bb_create_pipe(ship_client_t* c, subcmd_bb_pipe_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_69_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1702,7 +1718,7 @@ int handle_bb_spawn_npc(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, pkt, 0);
 }
 
-int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
+int sub60_6A_bb(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1723,7 +1739,19 @@ int handle_bb_subcmd_6a(ship_client_t* c, subcmd_bb_Unknown_6x6A_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
+int sub60_72_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            c->guildcard);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_74_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     subcmd_word_select_t gc = { 0 };
 
     /* Don't send the message if they have the protection flag on. */
@@ -1745,7 +1773,7 @@ int handle_bb_word_select(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     return word_select_send_gc(c, &gc);
 }
 
-int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
+int sub60_75_bb(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t flag = pkt->flag;
     uint16_t checked = pkt->checked;
@@ -1824,7 +1852,7 @@ int handle_bb_set_flag(ship_client_t* c, subcmd_bb_set_flag_t* pkt) {
     return rv;
 }
 
-int handle_bb_killed_monster(ship_client_t* c, subcmd_bb_killed_monster_t* pkt) {
+int sub60_76_bb(ship_client_t* c, subcmd_bb_killed_monster_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1859,7 +1887,7 @@ inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
     return -1;
 }
 
-int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
+int sub60_77_bb(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t val = LE32(pkt->value);
     int done = 0, idx;
@@ -1974,7 +2002,7 @@ int handle_bb_sync_reg(ship_client_t* c, subcmd_bb_sync_reg_t* pkt) {
     return 0;
 }
 
-int handle_bb_gogo_ball(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
+int sub60_79_bb(ship_client_t* c, subcmd_bb_gogo_ball_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
@@ -2081,7 +2109,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
         pc.hdr.pkt_len = LE16(0x00E4);
 
-        pc.shdr.type = SUBCMD60_CMODE_GRAVE;
+        pc.shdr.type = SUBCMD60_GAME_MODE;
         pc.shdr.size = 0x38;
         pc.shdr.client_id = dc.shdr.client_id;
         pc.client_id2 = dc.client_id2;
@@ -2138,7 +2166,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
         dc.hdr.pkt_len = LE16(0x00AC);
 
-        dc.shdr.type = SUBCMD60_CMODE_GRAVE;
+        dc.shdr.type = SUBCMD60_GAME_MODE;
         dc.shdr.size = 0x2A;
         dc.shdr.client_id = pc.shdr.client_id;
         dc.client_id2 = pc.client_id2;
@@ -2219,7 +2247,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return 0;
 }
 
-int handle_bb_game_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_7C_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2236,7 +2264,7 @@ int handle_bb_game_mode(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return 0;
 }
 
-int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
+int sub60_88_bb(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2258,7 +2286,7 @@ int handle_bb_arrow_change(ship_client_t* c, subcmd_bb_arrow_change_t* pkt) {
     return send_lobby_arrows(l);
 }
 
-int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt) {
+int sub60_89_bb(ship_client_t* c, subcmd_bb_player_died_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2279,7 +2307,7 @@ int handle_bb_player_died(ship_client_t* c, subcmd_bb_player_died_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
+int sub60_8A_bb(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2302,7 +2330,7 @@ int handle_bb_Unknown_6x8A(ship_client_t* c, subcmd_bb_Unknown_6x8A_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_set_technique_level_override_t* pkt) {
+int sub60_8D_bb(ship_client_t* c, subcmd_bb_set_technique_level_override_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2327,7 +2355,7 @@ int handle_bb_set_technique_level_override(ship_client_t* c, subcmd_bb_set_techn
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_switch_activated_t* pkt) {
+int sub60_93_bb(ship_client_t* c, subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2350,7 +2378,7 @@ int handle_bb_timed_switch_activated(ship_client_t* c, subcmd_bb_timed_switch_ac
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
+int sub60_A1_bb(ship_client_t* c, subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     if (pkt->shdr.client_id != c->client_id) {
@@ -2362,7 +2390,7 @@ int handle_bb_save_player_act(ship_client_t* c, subcmd_bb_save_player_act_t* pkt
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_AB_AE_AF_B0_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = c->cur_lobby;
     int rv = 0;
@@ -2407,7 +2435,7 @@ int handle_bb_lobby_chair(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
+int sub60_C0_bb(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint8_t i;
 
@@ -2465,7 +2493,7 @@ int handle_bb_sell_item(ship_client_t* c, subcmd_bb_sell_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
+int sub60_c3_bb(ship_client_t* c, subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int found = -1;
     uint32_t i, meseta, amt;
@@ -2527,7 +2555,7 @@ int handle_bb_drop_split_stacked_item(ship_client_t* c, subcmd_bb_drop_split_sta
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
+int sub60_C4_bb(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = c->cur_lobby;
     inventory_t sorted = { 0 };
     size_t x = 0;
@@ -2571,7 +2599,7 @@ int handle_bb_sort_inv(ship_client_t* c, subcmd_bb_sort_inv_t* pkt) {
     return 0;
 }
 
-int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+int sub60_C5_bb(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2600,7 +2628,7 @@ int handle_bb_medic(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
+int sub60_C6_bb(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
     lobby_t* l = c->cur_lobby;
     pmt_weapon_bb_t tmp_wp = { 0 };
     game_enemy_t* en;
@@ -2719,7 +2747,7 @@ int handle_bb_steal_exp(ship_client_t* c, subcmd_bb_steal_exp_t* pkt) {
 }
 
 /* 从怪物获取的经验倍率未进行调整 */
-int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
+int sub60_C8_bb(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint16_t mid;
     uint32_t bp, exp_amount;
@@ -2786,7 +2814,7 @@ int handle_bb_req_exp(ship_client_t* c, subcmd_bb_req_exp_t* pkt) {
     return client_give_exp(c, exp_amount);
 }
 
-int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
+int sub60_CC_bb(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
     int found = 0;
@@ -2844,7 +2872,7 @@ int handle_bb_guild_ex_item(ship_client_t* c, subcmd_bb_guild_ex_item_t* pkt) {
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
+int sub60_D2_bb(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     uint32_t quest_offset = pkt->quest_offset;
 
@@ -2879,272 +2907,198 @@ int handle_bb_gallon_area(ship_client_t* c, subcmd_bb_gallon_area_pkt_t* pkt) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
 // 定义函数指针数组
-subcmd60_handle_t subcmd60_bb_handle[0x100] = {
-    /* 60指令 0x00 */ NULL,
-    /* 60指令 0x01 */ NULL,
-    /* 60指令 0x02 */ NULL,
-    /* 60指令 0x03 */ NULL,
-    /* 60指令 0x04 */ NULL,
-    /* 60指令 0x05 */ handle_bb_switch_changed,
-    /* 60指令 0x06 */ NULL,
-    /* 60指令 0x07 */ handle_bb_symbol_chat,
-    /* 60指令 0x08 */ NULL,
-    /* 60指令 0x09 */ NULL,
-    /* 60指令 0x0A */ handle_bb_mhit,
-    /* 60指令 0x0B */ handle_bb_objhit,
-    /* 60指令 0x0C */ handle_bb_condition,
-    /* 60指令 0x0D */ handle_bb_condition,
-    /* 60指令 0x0E */ NULL,
-    /* 60指令 0x0F */ NULL,
-    /* 60指令 0x10 */ NULL,
-    /* 60指令 0x11 */ NULL,
-    /* 60指令 0x12 */ handle_bb_dragon_act,
-    /* 60指令 0x13 */ NULL,
-    /* 60指令 0x14 */ NULL,
-    /* 60指令 0x15 */ NULL,
-    /* 60指令 0x16 */ NULL,
-    /* 60指令 0x17 */ NULL,
-    /* 60指令 0x18 */ NULL,
-    /* 60指令 0x19 */ NULL,
-    /* 60指令 0x1A */ NULL,
-    /* 60指令 0x1B */ NULL,
-    /* 60指令 0x1C */ NULL,
-    /* 60指令 0x1D */ NULL,
-    /* 60指令 0x1E */ NULL,
-    /* 60指令 0x1F */ handle_bb_set_area_1F,
-    /* 60指令 0x20 */ handle_bb_set_area_20,
-    /* 60指令 0x21 */ handle_bb_inter_level_warp,
-    /* 60指令 0x22 */ handle_bb_load_22,
-    /* 60指令 0x23 */ handle_bb_finish_load,
-    /* 60指令 0x24 */ handle_bb_set_pos_0x24,
-    /* 60指令 0x25 */ handle_bb_equip,
-    /* 60指令 0x26 */ handle_bb_unequip,
-    /* 60指令 0x27 */ handle_bb_use_item,
-    /* 60指令 0x28 */ handle_bb_feed_mag,
-    /* 60指令 0x29 */ handle_bb_destroy_item,
-    /* 60指令 0x2A */ handle_bb_drop_item,
-    /* 60指令 0x2B */ NULL,
-    /* 60指令 0x2C */ handle_bb_talk_npc,
-    /* 60指令 0x2D */ handle_bb_done_talk_npc,
-    /* 60指令 0x2E */ NULL,
-    /* 60指令 0x2F */ handle_bb_hit_by_enemy,
-    /* 60指令 0x30 */ NULL,
-    /* 60指令 0x31 */ handle_bb_cmd_check_client_id,
-    /* 60指令 0x32 */ handle_bb_cmd_check_client_id,
-    /* 60指令 0x33 */ NULL,
-    /* 60指令 0x34 */ NULL,
-    /* 60指令 0x35 */ NULL,
-    /* 60指令 0x36 */ NULL,
-    /* 60指令 0x37 */ NULL,
-    /* 60指令 0x38 */ NULL,
-    /* 60指令 0x39 */ NULL,
-    /* 60指令 0x3A */ handle_bb_cmd_3a,
-    /* 60指令 0x3B */ handle_bb_load_3b,
-    /* 60指令 0x3C */ NULL,
-    /* 60指令 0x3D */ NULL,
-    /* 60指令 0x3E */ handle_bb_set_pos,
-    /* 60指令 0x3F */ handle_bb_set_pos,
-    /* 60指令 0x40 */ handle_bb_move,
-    /* 60指令 0x41 */ NULL,
-    /* 60指令 0x42 */ handle_bb_move,
-    /* 60指令 0x43 */ handle_bb_normal_attack,
-    /* 60指令 0x44 */ handle_bb_normal_attack,
-    /* 60指令 0x45 */ handle_bb_normal_attack,
-    /* 60指令 0x46 */ handle_bb_objhit_phys,
-    /* 60指令 0x47 */ handle_bb_objhit_tech,
-    /* 60指令 0x48 */ handle_bb_used_tech,
-    /* 60指令 0x49 */ NULL,
-    /* 60指令 0x4A */ handle_bb_defense_damage,
-    /* 60指令 0x4B */ handle_bb_take_damage,
-    /* 60指令 0x4C */ handle_bb_take_damage,
-    /* 60指令 0x4D */ handle_bb_death_sync,
-    /* 60指令 0x4E */ handle_bb_cmd_4e,
-    /* 60指令 0x4F */ handle_bb_player_saved,
-    /* 60指令 0x50 */ handle_bb_switch_req,
-    /* 60指令 0x51 */ NULL,
-    /* 60指令 0x52 */ handle_bb_menu_req,
-    /* 60指令 0x53 */ NULL,
-    /* 60指令 0x54 */ NULL,
-    /* 60指令 0x55 */ handle_bb_map_warp_55,
-    /* 60指令 0x56 */ NULL,
-    /* 60指令 0x57 */ NULL,
-    /* 60指令 0x58 */ handle_bb_lobby_act,
-    /* 60指令 0x59 */ NULL,
-    /* 60指令 0x5A */ NULL,
-    /* 60指令 0x5B */ NULL,
-    /* 60指令 0x5C */ NULL,
-    /* 60指令 0x5D */ NULL,
-    /* 60指令 0x5E */ NULL,
-    /* 60指令 0x5F */ NULL,
-    /* 60指令 0x60 */ NULL,
-    /* 60指令 0x61 */ handle_bb_level_up_req,
-    /* 60指令 0x62 */ NULL,
-    /* 60指令 0x63 */ handle_bb_destroy_ground_item,
-    /* 60指令 0x64 */ NULL,
-    /* 60指令 0x65 */ NULL,
-    /* 60指令 0x66 */ NULL,
-    /* 60指令 0x67 */ handle_bb_cmd_check_lobby,
-    /* 60指令 0x68 */ handle_bb_create_pipe,
-    /* 60指令 0x69 */ handle_bb_spawn_npc,
-    /* 60指令 0x6A */ handle_bb_subcmd_6a,
-    /* 60指令 0x6B */ NULL,
-    /* 60指令 0x6C */ NULL,
-    /* 60指令 0x6D */ NULL,
-    /* 60指令 0x6E */ NULL,
-    /* 60指令 0x6F */ NULL,
-    /* 60指令 0x70 */ NULL,
-    /* 60指令 0x71 */ NULL,
-    /* 60指令 0x72 */ NULL,
-    /* 60指令 0x73 */ NULL,
-    /* 60指令 0x74 */ handle_bb_word_select,
-    /* 60指令 0x75 */ handle_bb_set_flag,
-    /* 60指令 0x76 */ handle_bb_killed_monster,
-    /* 60指令 0x77 */ handle_bb_sync_reg,
-    /* 60指令 0x78 */ NULL,
-    /* 60指令 0x79 */ handle_bb_gogo_ball,
-    /* 60指令 0x7A */ NULL,
-    /* 60指令 0x7B */ NULL,
-    /* 60指令 0x7C */ handle_bb_game_mode,
-    /* 60指令 0x7D */ NULL,
-    /* 60指令 0x7E */ NULL,
-    /* 60指令 0x7F */ NULL,
-    /* 60指令 0x80 */ NULL,
-    /* 60指令 0x81 */ NULL,
-    /* 60指令 0x82 */ NULL,
-    /* 60指令 0x83 */ NULL,
-    /* 60指令 0x84 */ NULL,
-    /* 60指令 0x85 */ NULL,
-    /* 60指令 0x86 */ NULL,
-    /* 60指令 0x87 */ NULL,
-    /* 60指令 0x88 */ handle_bb_arrow_change,
-    /* 60指令 0x89 */ handle_bb_player_died,
-    /* 60指令 0x8A */ handle_bb_Unknown_6x8A,
-    /* 60指令 0x8B */ NULL,
-    /* 60指令 0x8C */ NULL,
-    /* 60指令 0x8D */ handle_bb_set_technique_level_override,
-    /* 60指令 0x8E */ NULL,
-    /* 60指令 0x8F */ NULL,
-    /* 60指令 0x90 */ NULL,
-    /* 60指令 0x91 */ NULL,
-    /* 60指令 0x92 */ NULL,
-    /* 60指令 0x93 */ handle_bb_timed_switch_activated,
-    /* 60指令 0x94 */ NULL,
-    /* 60指令 0x95 */ NULL,
-    /* 60指令 0x96 */ NULL,
-    /* 60指令 0x97 */ NULL,
-    /* 60指令 0x98 */ NULL,
-    /* 60指令 0x99 */ NULL,
-    /* 60指令 0x9A */ NULL,
-    /* 60指令 0x9B */ NULL,
-    /* 60指令 0x9C */ NULL,
-    /* 60指令 0x9D */ NULL,
-    /* 60指令 0x9E */ NULL,
-    /* 60指令 0x9F */ NULL,
-    /* 60指令 0xA0 */ NULL,
-    /* 60指令 0xA1 */ handle_bb_save_player_act,
-    /* 60指令 0xA2 */ NULL,
-    /* 60指令 0xA3 */ NULL,
-    /* 60指令 0xA4 */ NULL,
-    /* 60指令 0xA5 */ NULL,
-    /* 60指令 0xA6 */ NULL,
-    /* 60指令 0xA7 */ NULL,
-    /* 60指令 0xA8 */ NULL,
-    /* 60指令 0xA9 */ NULL,
-    /* 60指令 0xAA */ NULL,
-    /* 60指令 0xAB */ handle_bb_lobby_chair,
-    /* 60指令 0xAC */ NULL,
-    /* 60指令 0xAD */ NULL,
-    /* 60指令 0xAE */ handle_bb_lobby_chair,
-    /* 60指令 0xAF */ handle_bb_lobby_chair,
-    /* 60指令 0xB0 */ handle_bb_lobby_chair,
-    /* 60指令 0xB1 */ NULL,
-    /* 60指令 0xB2 */ NULL,
-    /* 60指令 0xB3 */ NULL,
-    /* 60指令 0xB4 */ NULL,
-    /* 60指令 0xB5 */ NULL,
-    /* 60指令 0xB6 */ NULL,
-    /* 60指令 0xB7 */ NULL,
-    /* 60指令 0xB8 */ NULL,
-    /* 60指令 0xB9 */ NULL,
-    /* 60指令 0xBA */ NULL,
-    /* 60指令 0xBB */ NULL,
-    /* 60指令 0xBC */ NULL,
-    /* 60指令 0xBD */ NULL,
-    /* 60指令 0xBE */ NULL,
-    /* 60指令 0xBF */ NULL,
-    /* 60指令 0xC0 */ handle_bb_sell_item,
-    /* 60指令 0xC1 */ NULL,
-    /* 60指令 0xC2 */ NULL,
-    /* 60指令 0xC3 */ handle_bb_drop_split_stacked_item,
-    /* 60指令 0xC4 */ handle_bb_sort_inv,
-    /* 60指令 0xC5 */ handle_bb_medic,
-    /* 60指令 0xC6 */ handle_bb_steal_exp,
-    /* 60指令 0xC7 */ NULL,
-    /* 60指令 0xC8 */ handle_bb_req_exp,
-    /* 60指令 0xC9 */ NULL,
-    /* 60指令 0xCA */ NULL,
-    /* 60指令 0xCB */ NULL,
-    /* 60指令 0xCC */ handle_bb_guild_ex_item,
-    /* 60指令 0xCD */ NULL,
-    /* 60指令 0xCE */ NULL,
-    /* 60指令 0xCF */ NULL,
-    /* 60指令 0xD0 */ NULL,
-    /* 60指令 0xD1 */ NULL,
-    /* 60指令 0xD2 */ handle_bb_gallon_area,
-    /* 60指令 0xD3 */ NULL,
-    /* 60指令 0xD4 */ NULL,
-    /* 60指令 0xD5 */ NULL,
-    /* 60指令 0xD6 */ NULL,
-    /* 60指令 0xD7 */ NULL,
-    /* 60指令 0xD8 */ NULL,
-    /* 60指令 0xD9 */ NULL,
-    /* 60指令 0xDA */ NULL,
-    /* 60指令 0xDB */ NULL,
-    /* 60指令 0xDC */ NULL,
-    /* 60指令 0xDD */ NULL,
-    /* 60指令 0xDE */ NULL,
-    /* 60指令 0xDF */ NULL,
-    /* 60指令 0xE0 */ NULL,
-    /* 60指令 0xE1 */ NULL,
-    /* 60指令 0xE2 */ NULL,
-    /* 60指令 0xE3 */ NULL,
-    /* 60指令 0xE4 */ NULL,
-    /* 60指令 0xE5 */ NULL,
-    /* 60指令 0xE6 */ NULL,
-    /* 60指令 0xE7 */ NULL,
-    /* 60指令 0xE8 */ NULL,
-    /* 60指令 0xE9 */ NULL,
-    /* 60指令 0xEA */ NULL,
-    /* 60指令 0xEB */ NULL,
-    /* 60指令 0xEC */ NULL,
-    /* 60指令 0xED */ NULL,
-    /* 60指令 0xEE */ NULL,
-    /* 60指令 0xEF */ NULL,
-    /* 60指令 0xF0 */ NULL,
-    /* 60指令 0xF1 */ NULL,
-    /* 60指令 0xF2 */ NULL,
-    /* 60指令 0xF3 */ NULL,
-    /* 60指令 0xF4 */ NULL,
-    /* 60指令 0xF5 */ NULL,
-    /* 60指令 0xF6 */ NULL,
-    /* 60指令 0xF7 */ NULL,
-    /* 60指令 0xF8 */ NULL,
-    /* 60指令 0xF9 */ NULL,
-    /* 60指令 0xFA */ NULL,
-    /* 60指令 0xFB */ NULL,
-    /* 60指令 0xFC */ NULL,
-    /* 60指令 0xFD */ NULL,
-    /* 60指令 0xFE */ NULL,
-    /* 60指令 0xFF */ NULL,
+subcmd60_handle_func_t subcmd60_handle = {
+    //cmd_type 00 - 0F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SWITCH_CHANGED         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_05_bb },
+    { SUBCMD60_SYMBOL_CHAT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_07_bb },
+    { SUBCMD60_HIT_MONSTER            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0A_bb },
+    { SUBCMD60_HIT_OBJ                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0B_bb },
+    { SUBCMD60_CONDITION_ADD          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
+    { SUBCMD60_CONDITION_REMOVE       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
+
+    //cmd_type 10 - 1F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_DRAGON_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_12_bb },
+    { SUBCMD60_SET_AREA_1F            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1F_bb },
+
+    //cmd_type 20 - 2F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SET_AREA_20            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_20_bb },
+    { SUBCMD60_INTER_LEVEL_WARP       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_21_bb },
+    { SUBCMD60_LOAD_22                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_22_bb },
+    { SUBCMD60_FINISH_LOAD            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_23_bb },
+    { SUBCMD60_SET_POS_24             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_24_bb },
+    { SUBCMD60_EQUIP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },
+    { SUBCMD60_REMOVE_EQUIP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },
+    { SUBCMD60_USE_ITEM               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },
+    { SUBCMD60_FEED_MAG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
+    { SUBCMD60_DELETE_ITEM            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },
+    { SUBCMD60_DROP_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },
+    { SUBCMD60_SELECT_MENU            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2C_bb },
+    { SUBCMD60_SELECT_DONE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2D_bb },
+    { SUBCMD60_HIT_BY_ENEMY           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },
+
+    //cmd_type 30 - 3F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_MEDIC_REQ              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
+    { SUBCMD60_MEDIC_DONE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
+    { SUBCMD60_UNKNOW_3A              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
+    { SUBCMD60_LOAD_3B                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3B_bb },
+    { SUBCMD60_SET_POS_3E             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
+    { SUBCMD60_SET_POS_3F             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
+
+    //cmd_type 40 - 4F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_MOVE_SLOW              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
+    { SUBCMD60_MOVE_FAST              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
+    { SUBCMD60_ATTACK1                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_ATTACK2                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_ATTACK3                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_OBJHIT_PHYS            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_46_bb },
+    { SUBCMD60_OBJHIT_TECH            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_47_bb },
+    { SUBCMD60_USED_TECH              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_48_bb },
+    { SUBCMD60_DEFENSE_DAMAGE         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4A_bb },
+    { SUBCMD60_TAKE_DAMAGE1           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
+    { SUBCMD60_TAKE_DAMAGE2           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
+    { SUBCMD60_DEATH_SYNC             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4D_bb },
+    { SUBCMD60_UNKNOW_4E              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4E_bb },
+    { SUBCMD60_PLAYER_SAVED           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4F_bb },
+
+    //cmd_type 50 - 5F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SWITCH_REQ             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
+    { SUBCMD60_MENU_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_52_bb },
+    { SUBCMD60_WARP_55                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
+    { SUBCMD60_LOBBY_ACTION           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_58_bb },
+
+    //cmd_type 60 - 6F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_LEVEL_UP_REQ           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
+    { SUBCMD60_DESTROY_GROUND_ITEM    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
+    { SUBCMD60_CREATE_ENEMY_SET       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_lobby_bb },
+    { SUBCMD60_CREATE_PIPE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
+    { SUBCMD60_SPAWN_NPC              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },
+    { SUBCMD60_UNKNOW_6A              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
+
+    //cmd_type 70 - 7F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_BURST_DONE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_72_bb },
+    { SUBCMD60_WORD_SELECT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_74_bb },
+    { SUBCMD60_SET_FLAG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_75_bb },
+    { SUBCMD60_KILL_MONSTER           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
+    { SUBCMD60_SYNC_REG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
+    { SUBCMD60_GOGO_BALL              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
+    { SUBCMD60_GAME_MODE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
+
+    //cmd_type 80 - 8F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_ARROW_CHANGE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
+    { SUBCMD60_PLAYER_DIED            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
+    { SUBCMD60_UNKNOW_CH_8A           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
+    { SUBCMD60_OVERRIDE_TECH_LEVEL    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
+
+    //cmd_type 90 - 9F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_TIMED_SWITCH_ACTIVATED , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
+
+    //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
+    { SUBCMD60_CHAIR_CREATE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+    { SUBCMD60_CHAIR_STATE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+    { SUBCMD60_CHAIR_TURN             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+
+    //cmd_type B0 - BF                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_CHAIR_MOVE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AE_AF_B0_bb },
+
+    //cmd_type C0 - CF                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SELL_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
+    { SUBCMD60_DROP_SPLIT_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_c3_bb },
+    { SUBCMD60_SORT_INV               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },
+    { SUBCMD60_MEDIC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
+    { SUBCMD60_STEAL_EXP              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },
+    { SUBCMD60_EXP_REQ                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
+    { SUBCMD60_GUILD_EX_ITEM          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
+
+    //cmd_type D0 - DF                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_GALLON_AREA            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
+    { SUBCMD60_EX_ITEM_MK             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_unimplement_bb },
 };
+
+// 使用函数指针直接调用相应的处理函数
+subcmd60_handle_t subcmd60_get_handler(int cmd_type, int version) {
+    for (int i = 0; i < _countof(subcmd60_handle); ++i) {
+        if (subcmd60_handle[i].cmd_type == cmd_type) {
+
+            switch (version)
+            {
+            case CLIENT_VERSION_DCV1:
+            case CLIENT_VERSION_DCV2:
+            case CLIENT_VERSION_PC:
+            case CLIENT_VERSION_GC:
+                return subcmd60_handle[i].dc;
+
+            case CLIENT_VERSION_EP3:
+            case CLIENT_VERSION_XBOX:
+                break;
+
+            case CLIENT_VERSION_BB:
+                return subcmd60_handle[i].bb;
+            }
+        }
+    }
+
+    ERR_LOG("subcmd60_get_handler 未完成对 0x62 0x%02X 版本 %d 的处理", cmd_type, version);
+
+    return NULL;
+}
+
+/* 处理BB 0x60 数据包. */
+int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    uint16_t hdr_type = pkt->hdr.pkt_type;
+    uint8_t type = pkt->type;
+    lobby_t* l = c->cur_lobby;
+    int rv = 0, sent = 1, i = 0;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l)
+        return 0;
+
+#ifdef DEBUG_60
+
+    DBG_LOG("玩家 0x%02X 指令: 0x%X", hdr_type, type);
+
+#endif // DEBUG_60
+
+    pthread_mutex_lock(&l->mutex);
+
+    l->subcmd60_handle = subcmd60_get_handler(type, c->version);
+
+    subcmd_bb_60size_check(c, pkt);
+
+    /* If there's a burst going on in the lobby, delay most packets */
+    if (l->flags & LOBBY_FLAG_BURSTING) {
+        switch (type) {
+        case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
+        case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
+        case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
+        case SUBCMD60_BURST_DONE:
+            /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
+        case SUBCMD60_GAME_MODE:
+            rv = l->subcmd60_handle(c, pkt);
+            break;
+
+        default:
+            DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+            rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
+        }
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+    }
+
+#ifdef BB_LOG_UNKNOWN_SUBS
+    if (l->subcmd60_handle == NULL && rv == -1) {
+        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+        display_packet(pkt, pkt->hdr.pkt_len);
+        //UNK_CSPD(type, c->version, pkt);
+        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+#endif /* BB_LOG_UNKNOWN_SUBS */
+
+    rv = l->subcmd60_handle(c, pkt);
+
+    pthread_mutex_unlock(&l->mutex);
+    return rv;
+}
