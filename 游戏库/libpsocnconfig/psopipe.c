@@ -1,58 +1,71 @@
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
 
-#include "WinSock_Defines.h"
+#pragma comment(lib, "ws2_32.lib")
+
 #include "psopipe.h"
-#include "f_logs.h"
-int pipe(int fildes[2])
-{
-    int tcp1, tcp2;
-    struct sockaddr_in name;
-    memset(&name, 0, sizeof(name));
-    name.sin_family = PF_INET;
-    name.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    int namelen = sizeof(name);
-    tcp1 = tcp2 = -1;
 
-    int tcp = socket(PF_INET, SOCK_STREAM, 0);
-    if (tcp == -1) {
+int pipe(int fildes[2]) {
+    int tcp1 = -1, tcp2 = -1;
+    struct sockaddr_in name;
+    int namelen = sizeof(name);
+
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        return -1;
+    }
+
+    SOCKET tcp = socket(AF_INET, SOCK_STREAM, 0);
+    if (tcp == INVALID_SOCKET) {
         goto clean;
     }
-    if (bind(tcp, (struct sockaddr*)&name, namelen) == -1) {
+
+    memset(&name, 0, sizeof(name));
+    name.sin_family = AF_INET;
+    name.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    if (bind(tcp, (struct sockaddr*)&name, namelen) == SOCKET_ERROR) {
         goto clean;
     }
-    if (listen(tcp, 5) == -1) {
+
+    if (listen(tcp, 5) == SOCKET_ERROR) {
         goto clean;
     }
-    if (getsockname(tcp, (struct sockaddr*)&name, &namelen) == -1) {
+
+    if (getsockname(tcp, (struct sockaddr*)&name, &namelen) == SOCKET_ERROR) {
         goto clean;
     }
-    tcp1 = socket(PF_INET, SOCK_STREAM, 0);
-    if (tcp1 == -1) {
+
+    tcp1 = socket(AF_INET, SOCK_STREAM, 0);
+    if (tcp1 == INVALID_SOCKET) {
         goto clean;
     }
-    if (-1 == connect(tcp1, (struct sockaddr*)&name, namelen)) {
+
+    if (connect(tcp1, (struct sockaddr*)&name, namelen) == SOCKET_ERROR) {
         goto clean;
     }
 
     tcp2 = accept(tcp, (struct sockaddr*)&name, &namelen);
-    if (tcp2 == -1) {
+    if (tcp2 == INVALID_SOCKET) {
         goto clean;
     }
-    if (closesocket(tcp) == -1) {
-        goto clean;
-    }
+
+    closesocket(tcp);
     fildes[0] = tcp1;
     fildes[1] = tcp2;
     return 0;
+
 clean:
-    if (tcp != -1) {
+    if (tcp != INVALID_SOCKET) {
         closesocket(tcp);
     }
-    if (tcp2 != -1) {
+    if (tcp2 != INVALID_SOCKET) {
         closesocket(tcp2);
     }
-    if (tcp1 != -1) {
+    if (tcp1 != INVALID_SOCKET) {
         closesocket(tcp1);
     }
+    WSACleanup();
     return -1;
 }
-

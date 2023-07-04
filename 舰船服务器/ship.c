@@ -298,7 +298,7 @@ static void* ship_thd(void* d) {
         if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* Clear anything written to the pipe */
             if (FD_ISSET(s->pipes[1], &readfds)) {
-                fread(&len, 1, 1, (FILE*)s->pipes[1]);
+                recv(s->pipes[1], &len, 1, 0);
             }
 
             for (i = 0; i < numsocks; ++i) {
@@ -1065,7 +1065,8 @@ void ship_server_stop(ship_t* s) {
     s->run = 0;
 
     /* Send a byte to the pipe so that we actually break out of the select. */
-    fwrite("\xFF", 1, 1, (FILE*)s->pipes[0]);
+    const char* data = "\xFF";
+    send(s->pipes[0], data, strlen(data), 0);
 
     /* Wait for it to die. */
     pthread_join(s->thd, NULL);
@@ -1077,7 +1078,8 @@ void ship_server_shutdown(ship_t* s, time_t when) {
 
         /* Send a byte to the pipe so that we actually break out of the select
            and put a probably more sane amount in the timeout there */
-        fwrite("\xFF", 1, 1, (FILE*)s->pipes[0]);
+        const char* data = "\xFF";
+        send(s->pipes[0], data, strlen(data), 0);
     }
 }
 

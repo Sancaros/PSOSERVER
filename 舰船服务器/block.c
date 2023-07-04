@@ -286,7 +286,7 @@ static void* block_thd(void* d) {
         /* Wait for some activity... */
         if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             if (FD_ISSET(b->pipes[1], &readfds)) {
-                fread(&len, 1, 1, (FILE*)b->pipes[1]);
+                recv(b->pipes[1], &len, 1, 0);
             }
 
             for (i = 0; i < numsocks; ++i) {
@@ -736,7 +736,8 @@ void block_server_stop(block_t* b) {
     b->run = 0;
 
     /* Send a byte to the pipe so that we actually break out of the select. */
-    fwrite("\xFF", 1, 1, (FILE*)b->pipes[0]);
+    const char* data = "\xFF";
+    send(b->pipes[0], data, strlen(data), 0);
 
     /* Wait for it to die. */
     pthread_join(b->thd, NULL);
