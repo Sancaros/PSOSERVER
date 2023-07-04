@@ -1449,7 +1449,7 @@ static int bb_process_trade(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
         return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE未找到需要交易的玩家."));
 
-    /* Find the destination. */
+    /* 搜索目标客户端. */
     if (!c2) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
             c->guildcard);
@@ -1533,7 +1533,7 @@ static int bb_process_trade_error(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
     memset(&c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
     send_simple(c, TRADE_4_TYPE, 0);
 
-    /* Find the destination. */
+    /* 搜索目标客户端. */
     c2 = l->clients[other_client_id];
     if (!c2) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",

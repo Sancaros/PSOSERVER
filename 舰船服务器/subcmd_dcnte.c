@@ -81,7 +81,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
     lobby_t *l = c->cur_lobby;
     int rv, sent = 1, i;
 
-    /* Ignore these if the client isn't in a lobby. */
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if(!l)
         return 0;
 

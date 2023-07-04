@@ -221,14 +221,14 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
 // 定义函数指针数组
 subcmd_handle_func_t subcmd6D_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD6D_BURST1                    , sub6D_6D_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6D_bb },
-    { SUBCMD6D_BURST2                    , sub6D_6B_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6B_bb },
-    { SUBCMD6D_BURST3                    , sub6D_6C_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6C_bb },
-    { SUBCMD6D_BURST4                    , sub6D_6E_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6E_bb },
-    { SUBCMD6D_BURST_PLDATA              , sub6D_70_dc, NULL,        NULL,        NULL,        NULL,        sub6D_70_bb },
+    { SUBCMD6D_BURST1                    , sub6D_6D_dc, sub6D_6D_dc, sub6D_6D_dc, sub6D_6D_dc, sub6D_6D_dc, sub6D_6D_bb },
+    { SUBCMD6D_BURST2                    , sub6D_6B_dc, sub6D_6B_dc, sub6D_6B_dc, sub6D_6B_dc, sub6D_6B_dc, sub6D_6B_bb },
+    { SUBCMD6D_BURST3                    , sub6D_6C_dc, sub6D_6C_dc, sub6D_6C_dc, sub6D_6C_dc, sub6D_6C_dc, sub6D_6C_bb },
+    { SUBCMD6D_BURST4                    , sub6D_6E_dc, sub6D_6E_dc, sub6D_6E_dc, sub6D_6E_dc, sub6D_6E_dc, sub6D_6E_bb },
+    { SUBCMD6D_BURST_PLDATA              , sub6D_70_dc, sub6D_70_dc, sub6D_70_dc, sub6D_70_dc, sub6D_70_dc, sub6D_70_bb },
 };
 
-/* 处理DC 0x6D 数据包. */
+/* 处理 DC GC PC V1 V2 0x6D 来自客户端的数据包. */
 int subcmd_handle_6D(ship_client_t* c, subcmd_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* dest;
@@ -242,10 +242,10 @@ int subcmd_handle_6D(ship_client_t* c, subcmd_pkt_t* pkt) {
 
     pthread_mutex_lock(&l->mutex);
 
-    /* Find the destination. */
+    /* 搜索目标客户端. */
     dest = l->clients[pkt->hdr.dc.flags];
 
-    /* The destination is now offline, don't bother sending it. */
+    /* 目标客户端已离线，将不再发送数据包. */
     if (!dest) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
@@ -301,16 +301,16 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     int rv = -1;
     uint32_t dnum = LE32(pkt->hdr.flags);
 
-    /* Ignore these if the client isn't in a lobby. */
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if (!l)
         return 0;
 
     pthread_mutex_lock(&l->mutex);
 
-    /* Find the destination. */
+    /* 搜索目标客户端. */
     dest = l->clients[dnum];
 
-    /* The destination is now offline, don't bother sending it. */
+    /* 目标客户端已离线，将不再发送数据包. */
     if (!dest) {
         pthread_mutex_unlock(&l->mutex);
         return 0;

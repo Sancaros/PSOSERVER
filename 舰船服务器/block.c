@@ -2708,7 +2708,7 @@ static int process_trade(ship_client_t* c, gc_trade_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* dest;
 
-    /* Find the destination. */
+    /* 搜索目标客户端. */
     dest = l->clients[pkt->who];
 
     send_simple(dest, TRADE_1_TYPE, 0);

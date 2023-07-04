@@ -1824,7 +1824,7 @@ int handle_gol_dragon_act(ship_client_t* c, subcmd_gol_dragon_act_t* pkt) {
     return 0;
 }
 
-/* 处理DC 0x60 数据包. */
+/* 处理 DC GC PC V1 V2 0x60 来自客户端的数据包. */
 int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
     uint8_t type = pkt->type;
     lobby_t *l = c->cur_lobby;
@@ -1834,7 +1834,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
     if(c->version == CLIENT_VERSION_DCV1 && (c->flags & CLIENT_FLAG_IS_NTE))
         return subcmd_dcnte_handle_bcast(c, pkt);
 
-    /* Ignore these if the client isn't in a lobby. */
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if(!l)
         return 0;
 
@@ -2025,9 +2025,9 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
 
         default:
 #ifdef LOG_UNKNOWN_SUBS
-            //DBG_LOG("未知 0x60 指令: 0x%02X", type);
-            UNK_CSPD(type, c->version, pkt);
-            //display_packet((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
+            //UNK_CSPD(type, c->version, pkt);
+            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
             break;
