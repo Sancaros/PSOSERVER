@@ -198,8 +198,8 @@
 #define SUBCMD60_UNKNOW_5C                     0x5C
 #define SUBCMD60_DROP_STACK                    0x5D
 #define SUBCMD60_BUY                           0x5E
-#define SUBCMD60_BOX_ENEMY_ITEM_DROP           0x5F // Drop item from box/enemy
-#define SUBCMD60_ENEMY_ITEM_DROP_REQ           0x60 // Request for item drop (handled by the server on BB)
+#define SUBCMD60_ITEM_DROP_BOX_ENEMY           0x5F // Drop item from box/enemy
+#define SUBCMD60_ITEM_DROP_REQ_ENEMY           0x60 // Request for item drop (handled by the server on BB)
 #define SUBCMD60_LEVEL_UP_REQ                  0x61
 #define SUBCMD60_UNKNOW_62                     0x62
 #define SUBCMD60_DESTROY_GROUND_ITEM           0x63    /* Sent when game inventory is full */

@@ -249,7 +249,7 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     gen.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
 
@@ -329,7 +329,7 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_
     gen.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
 
@@ -366,7 +366,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     gen.hdr.pkt_len = LE16(0x0030);
 
     /* 填充副指令数据 */
-    gen.shdr.type = SUBCMD60_ENEMY_ITEM_DROP_REQ;
+    gen.shdr.type = SUBCMD60_ITEM_DROP_REQ_ENEMY;
     gen.shdr.size = 0x06;
     gen.shdr.unused = 0x0000;
 

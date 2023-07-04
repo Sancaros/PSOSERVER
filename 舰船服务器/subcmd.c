@@ -1997,7 +1997,7 @@ int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_take_damage(c, (subcmd_take_damage_t *)pkt);
             break;
 
-        case SUBCMD60_BOX_ENEMY_ITEM_DROP:
+        case SUBCMD60_ITEM_DROP_BOX_ENEMY:
             rv = handle_itemdrop(c, (subcmd_itemgen_t *)pkt);
             break;
 
@@ -2192,7 +2192,7 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
     gen.data.area = req->area;

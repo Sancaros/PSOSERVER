@@ -43,22 +43,22 @@
 
 #include "subcmd_handle.h"
 
-int sub62_06_dc(ship_client_t* s, ship_client_t* d,
+int sub62_06_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_dc_gcsend_t* pkt) {
 
     ERR_LOG(
         "handle_dc_gcsend %d 类型 = %d 版本识别 = %d",
-        d->sock, pkt->hdr.pkt_type, d->version);
+        dest->sock, pkt->hdr.pkt_type, dest->version);
 
     /* Make sure the recipient is not ignoring the sender... */
-    if (client_has_ignored(d, s->guildcard))
+    if (client_has_ignored(dest, src->guildcard))
         return 0;
 
     /* This differs based on the destination client's version. */
-    switch (d->version) {
+    switch (dest->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
@@ -86,7 +86,7 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
         gc.section = pkt->section;
         gc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
 
     case CLIENT_VERSION_XBOX:
@@ -115,7 +115,7 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
         xb.section = pkt->section;
         xb.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
 
     case CLIENT_VERSION_PC:
@@ -127,9 +127,9 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
 
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
            support them. */
-        if ((d->flags & CLIENT_FLAG_IS_NTE)) {
-            if (s)
-                return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
+        if ((dest->flags & CLIENT_FLAG_IS_NTE)) {
+            if (src)
+                return send_txt(src, "%s", __(src, "\tE\tC7Cannot send Guild\n"
                     "Card to that user."));
             else
                 return 0;
@@ -172,7 +172,7 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
         pc.section = pkt->section;
         pc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
 
     case CLIENT_VERSION_BB:
@@ -209,7 +209,7 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
-        bb.hdr.flags = LE32(d->client_id);
+        bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
@@ -219,29 +219,29 @@ int sub62_06_dc(ship_client_t* s, ship_client_t* d,
         bb.section = pkt->section;
         bb.ch_class = pkt->ch_class;
 
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     }
 
     return 0;
 }
 
-int sub62_06_pc(ship_client_t* s, ship_client_t* d, 
+int sub62_06_pc(ship_client_t* src, ship_client_t* dest, 
     subcmd_pc_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
-    if (client_has_ignored(d, s->guildcard))
+    if (client_has_ignored(dest, src->guildcard))
         return 0;
 
         /* This differs based on the destination client's version. */
-    switch (d->version) {
+    switch (dest->version) {
     case CLIENT_VERSION_PC:
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
            support them. */
-        if ((d->flags & CLIENT_FLAG_IS_NTE))
-            return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
+        if ((dest->flags & CLIENT_FLAG_IS_NTE))
+            return send_txt(src, "%s", __(src, "\tE\tC7无法发送GC至该玩家."));
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
@@ -289,7 +289,7 @@ int sub62_06_pc(ship_client_t* s, ship_client_t* d,
         dc.ch_class = pkt->ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
     }
 
     case CLIENT_VERSION_GC:
@@ -337,7 +337,7 @@ int sub62_06_pc(ship_client_t* s, ship_client_t* d,
         gc.section = pkt->section;
         gc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
 
     case CLIENT_VERSION_XBOX:
@@ -385,7 +385,7 @@ int sub62_06_pc(ship_client_t* s, ship_client_t* d,
         xb.section = pkt->section;
         xb.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
 
     case CLIENT_VERSION_BB:
@@ -396,7 +396,7 @@ int sub62_06_pc(ship_client_t* s, ship_client_t* d,
         memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
-        bb.hdr.flags = LE32(d->client_id);
+        bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
@@ -410,25 +410,25 @@ int sub62_06_pc(ship_client_t* s, ship_client_t* d,
         bb.section = pkt->section;
         bb.ch_class = pkt->ch_class;
 
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     }
 
     return 0;
 }
 
-int sub62_06_gc(ship_client_t* s, ship_client_t* d, 
+int sub62_06_gc(ship_client_t* src, ship_client_t* dest, 
     subcmd_gc_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
-    if (client_has_ignored(d, s->guildcard))
+    if (client_has_ignored(dest, src->guildcard))
         return 0;
 
         /* This differs based on the destination client's version. */
-    switch (d->version) {
+    switch (dest->version) {
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
@@ -457,7 +457,7 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
         dc.ch_class = pkt->ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
     }
 
     case CLIENT_VERSION_XBOX:
@@ -486,7 +486,7 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
         xb.section = pkt->section;
         xb.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&xb);
     }
 
     case CLIENT_VERSION_PC:
@@ -498,8 +498,8 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
 
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
            support them. */
-        if ((d->flags & CLIENT_FLAG_IS_NTE))
-            return send_txt(s, "%s", __(s, "\tE\tC无法发送GC至该玩家."));
+        if ((dest->flags & CLIENT_FLAG_IS_NTE))
+            return send_txt(src, "%s", __(src, "\tE\tC无法发送GC至该玩家."));
 
         memset(&pc, 0, sizeof(pc));
 
@@ -538,7 +538,7 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
         pc.section = pkt->section;
         pc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
 
     case CLIENT_VERSION_BB:
@@ -575,7 +575,7 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
-        bb.hdr.flags = LE32(d->client_id);
+        bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
@@ -585,24 +585,24 @@ int sub62_06_gc(ship_client_t* s, ship_client_t* d,
         bb.section = pkt->section;
         bb.ch_class = pkt->ch_class;
 
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     }
 
     return 0;
 }
 
-int sub62_06_xb(ship_client_t* s, ship_client_t* d, 
+int sub62_06_xb(ship_client_t* src, ship_client_t* dest, 
     subcmd_xb_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
-    if (client_has_ignored(d, s->guildcard))
+    if (client_has_ignored(dest, src->guildcard))
         return 0;
 
     /* This differs based on the destination client's version. */
-    switch (d->version) {
+    switch (dest->version) {
     case CLIENT_VERSION_XBOX:
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
@@ -631,7 +631,7 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
         dc.ch_class = pkt->ch_class;
         dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
     }
 
     case CLIENT_VERSION_GC:
@@ -660,7 +660,7 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
         gc.section = pkt->section;
         gc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&gc);
     }
 
     case CLIENT_VERSION_PC:
@@ -672,9 +672,9 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
 
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
            support them. */
-        if ((d->flags & CLIENT_FLAG_IS_NTE)) {
-            if (s)
-                return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
+        if ((dest->flags & CLIENT_FLAG_IS_NTE)) {
+            if (src)
+                return send_txt(src, "%s", __(src, "\tE\tC7无法发送GC至该玩家."));
             else
                 return 0;
         }
@@ -716,7 +716,7 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
         pc.section = pkt->section;
         pc.ch_class = pkt->ch_class;
 
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&pc);
     }
 
     case CLIENT_VERSION_BB:
@@ -753,7 +753,7 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
         bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
-        bb.hdr.flags = LE32(d->client_id);
+        bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
         bb.shdr.unused = 0x0000;
@@ -763,7 +763,7 @@ int sub62_06_xb(ship_client_t* s, ship_client_t* d,
         bb.section = pkt->section;
         bb.ch_class = pkt->ch_class;
 
-        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     }
 
@@ -994,15 +994,15 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub62_5A_dc(ship_client_t* c, ship_client_t* d,
+int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pick_up_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " picked up item in lobby!",
-            c->guildcard);
+            src->guildcard);
         return -1;
     }
 
@@ -1011,19 +1011,19 @@ int sub62_5A_dc(ship_client_t* c, ship_client_t* d,
     if (pkt->shdr.size != 0x03)
         return -1;
 
-    if (c->cur_area != pkt->area) {
+    if (src->cur_area != pkt->area) {
         ERR_LOG("GC %" PRIu32 " picked up item in area they are "
-            "not currently in!", c->guildcard);
+            "not currently in!", src->guildcard);
     }
 
     /* Clear the list of dropped items. */
-    if (c->cur_area == 0) {
-        memset(c->p2_drops, 0, sizeof(c->p2_drops));
-        c->p2_drops_max = 0;
+    if (src->cur_area == 0) {
+        memset(src->p2_drops, 0, sizeof(src->p2_drops));
+        src->p2_drops_max = 0;
     }
 
     /* Maybe do more in the future with inventory tracking? */
-    return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 }
 
 int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
@@ -1097,17 +1097,18 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
 }
 
-static int handle_gm_itemreq(ship_client_t* c, subcmd_itemreq_t* req) {
+static int handle_itemreq_gm(ship_client_t* src, 
+    subcmd_itemreq_t* req) {
     subcmd_itemgen_t gen = { 0 };
     int r = LE16(req->request_id);
     int i;
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
     /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
-    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
     gen.shdr.size = 0x0B;
     gen.shdr.unused = 0x0000;
     gen.data.area = req->area;
@@ -1117,10 +1118,10 @@ static int handle_gm_itemreq(ship_client_t* c, subcmd_itemreq_t* req) {
     gen.data.z = req->z;
     gen.data.unk1 = LE16(0x00000010);
 
-    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
-    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
-    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
-    gen.data.item.data2_l = LE32(c->new_item.data2_l);
+    gen.data.item.data_l[0] = LE32(src->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(src->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(src->new_item.data_l[2]);
+    gen.data.item.data2_l = LE32(src->new_item.data2_l);
     gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
@@ -1134,15 +1135,16 @@ static int handle_gm_itemreq(ship_client_t* c, subcmd_itemreq_t* req) {
     }
 
     /* Clear this out. */
-    clear_item(&c->new_item);
+    clear_item(&src->new_item);
 
     return 0;
 }
 
-static int handle_quest_itemreq(ship_client_t* c, subcmd_itemreq_t* req, ship_client_t* dest) {
+static int handle_itemreq_quest(ship_client_t* src, ship_client_t* dest,
+    subcmd_itemreq_t* req) {
     uint32_t mid = LE16(req->request_id);
     uint32_t pti = req->pt_index;
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
     uint32_t qdrop = 0xFFFFFFFF;
 
     if (pti != 0x30 && l->mids)
@@ -1174,33 +1176,33 @@ static int handle_quest_itemreq(ship_client_t* c, subcmd_itemreq_t* req, ship_cl
     return send_pkt_dc(dest, (dc_pkt_hdr_t*)req);
 }
 
-int sub62_60_dc(ship_client_t* c, ship_client_t* d,
+int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
-    if (c->new_item.data_l[0] && 
+    if (src->new_item.data_l[0] && 
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        return  handle_gm_itemreq(c, (subcmd_itemreq_t*)pkt);
+        return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
     else if (l->dropfunc && 
         (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
-        return  l->dropfunc(c, l, pkt);
+        return  l->dropfunc(src, l, pkt);
     }
     else if ((l->num_mtypes || l->num_mids) &&
         (l->flags & LOBBY_FLAG_QUESTING)) {
-        return handle_quest_itemreq(c, (subcmd_itemreq_t*)pkt, d);
+        return handle_itemreq_quest(src, dest, (subcmd_itemreq_t*)pkt);
     }
     else {
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
     }
 }
 
-int sub62_60_bb(ship_client_t* c, ship_client_t* d,
+int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
 
-    return l->dropfunc(c, l, pkt);
+    return l->dropfunc(src, l, pkt);
 }
 
 int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
@@ -1230,33 +1232,33 @@ int sub62_71_dc(ship_client_t* src, ship_client_t* dest,
     return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 }
 
-int sub62_A2_dc(ship_client_t* c, ship_client_t* d,
+int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
-    if (c->new_item.data_l[0] &&
+    if (src->new_item.data_l[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        return  handle_gm_itemreq(c, (subcmd_itemreq_t*)pkt);
+        return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
     else if (l->dropfunc &&
         (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
-        return  l->dropfunc(c, l, pkt);
+        return  l->dropfunc(src, l, pkt);
     }
     else if ((l->num_mtypes || l->num_mids) &&
         (l->flags & LOBBY_FLAG_QUESTING)) {
-        return handle_quest_itemreq(c, (subcmd_itemreq_t*)pkt, d);
+        return handle_itemreq_quest(src, dest, (subcmd_itemreq_t*)pkt);
     }
     else {
-        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
     }
 }
 
-int sub62_A2_bb(ship_client_t* c, ship_client_t* d,
+int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
 
-    return l->dropfunc(c, l, pkt);
+    return l->dropfunc(src, l, pkt);
 }
 
 int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
