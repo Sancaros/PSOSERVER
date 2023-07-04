@@ -305,19 +305,11 @@ void fprint_packet(FILE *fp, const unsigned char *pkt, int len, int rec) {
 }
 
 int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
-    //struct timeval rawtime;
-    //struct tm cooked;
     char filename[64];
     char text[0x91];
     FILE *fp;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
-
-    /* Get the timestamp */
-    //gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
 
     /* Figure out the name of the file we'll be writing to. */
     sprintf(filename, "Bugs/%u.%02u.%02u.%02u.%02u.%02u.%03u-%d",
@@ -349,8 +341,6 @@ int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 }
 
 int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
-    //struct timeval rawtime;
-    //struct tm cooked;
     char filename[64];
     char text[0x91] = { 0 };
     FILE *fp;
@@ -359,12 +349,6 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     size_t in, out;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
-
-    /* Get the timestamp */
-   // gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
 
     /* Figure out the name of the file we'll be writing to. */
     sprintf(filename, "Bugs/%u.%02u.%02u.%02u.%02u.%02u.%03u-%d",
@@ -401,8 +385,6 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 }
 
 int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
-    //struct timeval rawtime;
-    //struct tm cooked;
     char filename[64];
     char text[0x200] = { 0 }, name[0x40] = { 0 };
     FILE *fp;
@@ -411,12 +393,6 @@ int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     size_t in, out;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
-
-    /* Get the timestamp */
-   // gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
 
     /* Figure out the name of the file we'll be writing to. */
     sprintf(filename, "Bugs/%u.%02u.%02u.%02u.%02u.%02u.%03u-%d",
@@ -472,12 +448,6 @@ int pkt_log_start(ship_client_t *i) {
         return -1;
     }
 
-    /* Get the timestamp */
-    //gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
-
     /* Figure out the name of the file we'll be writing to */
     if(i->guildcard) {
         sprintf(str, "logs/%u.%02u.%02u.%02u.%02u.%02u.%03u-%d",
@@ -504,7 +474,7 @@ int pkt_log_start(ship_client_t *i) {
     ctime_s(str, sizeof(str), &now);
     str[strlen(str) - 1] = 0;
 
-    fprintf(fp, "[%s] Packet 日志开始\n", str);
+    fprintf(fp, "[%s] 数据包 日志开始\n", str);
     i->logfile = fp;
 
     /* We're done, so clean up */
@@ -540,8 +510,6 @@ int pkt_log_stop(ship_client_t *i) {
 
 /* Begin logging the specified team */
 int team_log_start(lobby_t *i) {
-    //struct timeval rawtime;
-    //struct tm cooked;
     char str[128];
     FILE *fp;
     time_t now;
@@ -554,12 +522,6 @@ int team_log_start(lobby_t *i) {
         pthread_mutex_unlock(&i->mutex);
         return -1;
     }
-
-    /* Get the timestamp */
-    //gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
 
     /* Figure out the name of the file we'll be writing to */
     sprintf(str, "logs/team/%u.%02u.%02u.%02u.%02u.%02u.%03u-%d",

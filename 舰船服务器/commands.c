@@ -3286,8 +3286,6 @@ static int handle_info(ship_client_t *c, const char *params) {
     /* Don't let certain versions even try... */
     if(c->version == CLIENT_VERSION_EP3)
         return send_txt(c, "%s", __(c, "\tE\tC7Episode III 不支持该指令."));
-    else if(c->version == CLIENT_VERSION_BB)
-        return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
     else if(c->version == CLIENT_VERSION_DCV1 &&
             (c->flags & CLIENT_FLAG_IS_NTE))
         return send_txt(c, "%s", __(c, "\tE\tC7DC NTE 不支持该指令."));
