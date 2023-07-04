@@ -43,6 +43,85 @@
 
 #include "subcmd_handle.h"
 
+static int handle_itemreq_gm(ship_client_t* src,
+    subcmd_itemreq_t* req) {
+    subcmd_itemgen_t gen = { 0 };
+    int r = LE16(req->request_id);
+    int i;
+    lobby_t* l = src->cur_lobby;
+
+    /* 填充数据并准备发送. */
+    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.flags = 0;
+    gen.hdr.pkt_len = LE16(0x30);
+    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
+    gen.shdr.size = 0x0B;
+    gen.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = 0x02;
+    gen.data.request_id = req->request_id;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE16(0x00000010);
+
+    gen.data.item.data_l[0] = LE32(src->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(src->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(src->new_item.data_l[2]);
+    gen.data.item.data2_l = LE32(src->new_item.data2_l);
+    gen.data.item2 = LE32(0x00000002);
+
+    /* Obviously not "right", but it works though, so we'll go with it. */
+    gen.data.item.item_id = LE32((r | 0x06010100));
+
+    /* Send the packet to every client in the lobby. */
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]) {
+            send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&gen);
+        }
+    }
+
+    /* Clear this out. */
+    clear_item(&src->new_item);
+
+    return 0;
+}
+
+static int handle_itemreq_quest(ship_client_t* src, ship_client_t* dest,
+    subcmd_itemreq_t* req) {
+    uint32_t mid = LE16(req->request_id);
+    uint32_t pti = req->pt_index;
+    lobby_t* l = src->cur_lobby;
+    uint32_t qdrop = 0xFFFFFFFF;
+
+    if (pti != 0x30 && l->mids)
+        qdrop = quest_search_enemy_list(mid, l->mids, l->num_mids, 0);
+    if (qdrop == 0xFFFFFFFF && l->mtypes)
+        qdrop = quest_search_enemy_list(pti, l->mtypes, l->num_mtypes, 0);
+
+    /* If we found something, the version matters here. Basically, we only care
+       about the none option on DC/PC, as rares do not drop in quests. On GC,
+       we have to block drops on all options other than free, since we have no
+       control over the drop once we send it to the leader. */
+    if (qdrop != PSOCN_QUEST_ENDROP_FREE && qdrop != 0xFFFFFFFF) {
+        switch (l->version) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            if (qdrop == PSOCN_QUEST_ENDROP_NONE)
+                return 0;
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            return 0;
+        }
+    }
+
+    /* If we haven't handled it, we're not supposed to, so send it on to the
+       leader. */
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)req);
+}
+
 int sub62_06_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_dc_gcsend_t* pkt) {
 
@@ -1095,85 +1174,6 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, 1);
 
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
-}
-
-static int handle_itemreq_gm(ship_client_t* src, 
-    subcmd_itemreq_t* req) {
-    subcmd_itemgen_t gen = { 0 };
-    int r = LE16(req->request_id);
-    int i;
-    lobby_t* l = src->cur_lobby;
-
-    /* 填充数据并准备发送. */
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    gen.hdr.flags = 0;
-    gen.hdr.pkt_len = LE16(0x30);
-    gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
-    gen.shdr.size = 0x0B;
-    gen.shdr.unused = 0x0000;
-    gen.data.area = req->area;
-    gen.data.from_enemy = 0x02;
-    gen.data.request_id = req->request_id;
-    gen.data.x = req->x;
-    gen.data.z = req->z;
-    gen.data.unk1 = LE16(0x00000010);
-
-    gen.data.item.data_l[0] = LE32(src->new_item.data_l[0]);
-    gen.data.item.data_l[1] = LE32(src->new_item.data_l[1]);
-    gen.data.item.data_l[2] = LE32(src->new_item.data_l[2]);
-    gen.data.item.data2_l = LE32(src->new_item.data2_l);
-    gen.data.item2 = LE32(0x00000002);
-
-    /* Obviously not "right", but it works though, so we'll go with it. */
-    gen.data.item.item_id = LE32((r | 0x06010100));
-
-    /* Send the packet to every client in the lobby. */
-    for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i]) {
-            send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&gen);
-        }
-    }
-
-    /* Clear this out. */
-    clear_item(&src->new_item);
-
-    return 0;
-}
-
-static int handle_itemreq_quest(ship_client_t* src, ship_client_t* dest,
-    subcmd_itemreq_t* req) {
-    uint32_t mid = LE16(req->request_id);
-    uint32_t pti = req->pt_index;
-    lobby_t* l = src->cur_lobby;
-    uint32_t qdrop = 0xFFFFFFFF;
-
-    if (pti != 0x30 && l->mids)
-        qdrop = quest_search_enemy_list(mid, l->mids, l->num_mids, 0);
-    if (qdrop == 0xFFFFFFFF && l->mtypes)
-        qdrop = quest_search_enemy_list(pti, l->mtypes, l->num_mtypes, 0);
-
-    /* If we found something, the version matters here. Basically, we only care
-       about the none option on DC/PC, as rares do not drop in quests. On GC,
-       we have to block drops on all options other than free, since we have no
-       control over the drop once we send it to the leader. */
-    if (qdrop != PSOCN_QUEST_ENDROP_FREE && qdrop != 0xFFFFFFFF) {
-        switch (l->version) {
-        case CLIENT_VERSION_DCV1:
-        case CLIENT_VERSION_DCV2:
-        case CLIENT_VERSION_PC:
-            if (qdrop == PSOCN_QUEST_ENDROP_NONE)
-                return 0;
-            break;
-
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX:
-            return 0;
-        }
-    }
-
-    /* If we haven't handled it, we're not supposed to, so send it on to the
-       leader. */
-    return send_pkt_dc(dest, (dc_pkt_hdr_t*)req);
 }
 
 int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
@@ -2261,6 +2261,65 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_WARP_ITEM                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_ONEPERSON_SET_EX_PC , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
 };
+
+/* 处理DC 0x62 数据包. */
+int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    ship_client_t* dest;
+    uint16_t hdr_type = pkt->hdr.dc.pkt_type;
+    uint8_t type = pkt->type;
+    int rv = -1;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l)
+        return 0;
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Find the destination. */
+    dest = l->clients[pkt->hdr.dc.flags];
+
+    /* The destination is now offline, don't bother sending it. */
+    if (!dest) {
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
+    }
+
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
+
+    /* If there's a burst going on in the lobby, delay most packets */
+    if (l->flags & LOBBY_FLAG_BURSTING) {
+        rv = 0;
+
+        switch (type) {
+        case SUBCMD62_BURST5:
+        case SUBCMD62_BURST6:
+            rv |= l->subcmd_handle(c, dest, pkt);
+            break;
+
+        default:
+            rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t*)pkt);
+        }
+
+    }
+    else {
+
+        if (l->subcmd_handle == NULL) {
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
+            //UNK_CSPD(type, c->version, pkt);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+        }
+        else
+            rv = l->subcmd_handle(c, dest, pkt);
+    }
+
+
+    pthread_mutex_unlock(&l->mutex);
+    return rv;
+}
 
 /* 处理BB 0x62 数据包. */
 int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {

@@ -43,7 +43,21 @@
 
 #include "subcmd_handle.h"
 
-int sub6D_6D_6B_6C_6E_bb(ship_client_t* src, ship_client_t* dest,
+int sub6D_6D_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst(l, src, (dc_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
@@ -55,6 +69,121 @@ int sub6D_6D_6B_6C_6E_bb(ship_client_t* src, ship_client_t* dest,
     rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 
     return rv;
+}
+
+int sub6D_6B_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst(l, src, (dc_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6B_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst_bb(l, src, (bb_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6C_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst(l, src, (dc_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6C_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst_bb(l, src, (bb_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6E_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst(l, src, (dc_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_6E_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (l->flags & LOBBY_FLAG_QUESTING)
+        rv = lobby_enqueue_burst_bb(l, src, (bb_pkt_hdr_t*)pkt);
+
+    /* Fall through... */
+    rv |= send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+
+    return rv;
+}
+
+int sub6D_70_dc(ship_client_t* c, ship_client_t* d,
+    subcmd_burst_pldata_t* pkt) {
+    int i;
+    iitem_t* item;
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
+            "lobby!\n", c->guildcard);
+        return -1;
+    }
+
+    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
+        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
+        /* Scan the inventory and fix any mags before sending it along. */
+        for (i = 0; i < pkt->inv.item_count; ++i) {
+            item = &pkt->inv.iitems[i];
+
+            /* If the item is a mag, then we have to swap the last dword of the
+                data. Otherwise colors and stats get messed up. */
+            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
+                item->data.data2_l = SWAP32(item->data.data2_l);
+            }
+        }
+    }
+
+    return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
 }
 
 int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
@@ -92,13 +221,76 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
 // 定义函数指针数组
 subcmd_handle_func_t subcmd6D_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD6D_BURST1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
-    { SUBCMD6D_BURST2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
-    { SUBCMD6D_BURST3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
-    { SUBCMD6D_BURST4                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_6D_6B_6C_6E_bb },
-    { SUBCMD6D_BURST_PLDATA              , NULL,        NULL,        NULL,        NULL,        NULL,        sub6D_70_bb },
+    { SUBCMD6D_BURST1                    , sub6D_6D_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6D_bb },
+    { SUBCMD6D_BURST2                    , sub6D_6B_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6B_bb },
+    { SUBCMD6D_BURST3                    , sub6D_6C_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6C_bb },
+    { SUBCMD6D_BURST4                    , sub6D_6E_dc, NULL,        NULL,        NULL,        NULL,        sub6D_6E_bb },
+    { SUBCMD6D_BURST_PLDATA              , sub6D_70_dc, NULL,        NULL,        NULL,        NULL,        sub6D_70_bb },
 };
 
+/* 处理DC 0x6D 数据包. */
+int subcmd_handle_6D(ship_client_t* c, subcmd_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    ship_client_t* dest;
+    uint16_t hdr_type = pkt->hdr.dc.pkt_type;
+    uint8_t type = pkt->type;
+    int rv = -1;
+
+    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+    if (!l)
+        return 0;
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Find the destination. */
+    dest = l->clients[pkt->hdr.dc.flags];
+
+    /* The destination is now offline, don't bother sending it. */
+    if (!dest) {
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
+    }
+
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
+
+    /* If there's a burst going on in the lobby, delay most packets */
+    if (l->flags & LOBBY_FLAG_BURSTING) {
+        rv = 0;
+
+        switch (type) {
+        case SUBCMD6D_BURST1:
+        case SUBCMD6D_BURST2:
+        case SUBCMD6D_BURST3:
+        case SUBCMD6D_BURST4:
+        case SUBCMD6D_BURST_PLDATA:
+            rv |= l->subcmd_handle(c, dest, pkt);
+            break;
+
+        default:
+            rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t*)pkt);
+        }
+
+    }
+    else {
+
+        if (l->subcmd_handle == NULL) {
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
+            //UNK_CSPD(type, c->version, pkt);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+        }
+        else
+            rv = l->subcmd_handle(c, dest, pkt);
+    }
+
+
+    pthread_mutex_unlock(&l->mutex);
+    return rv;
+}
+
+/* 处理BB 0x6D 数据包. */
 int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     lobby_t* l = c->cur_lobby;
     ship_client_t* dest;

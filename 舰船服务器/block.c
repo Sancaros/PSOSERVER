@@ -2991,11 +2991,13 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return dc_process_char(c, (dc_char_data_pkt*)pkt);
 
     case GAME_COMMAND0_TYPE:
-        return subcmd_handle_bcast(c, (subcmd_pkt_t*)pkt);
+        return subcmd_handle_60(c, (subcmd_pkt_t*)pkt);
 
     case GAME_COMMAND2_TYPE:
+        return subcmd_handle_62(c, (subcmd_pkt_t*)pkt);
+
     case GAME_COMMANDD_TYPE:
-        return subcmd_handle_one(c, (subcmd_pkt_t*)pkt);
+        return subcmd_handle_6D(c, (subcmd_pkt_t*)pkt);
 
     case LOBBY_CHANGE_TYPE:
         return dc_process_change_lobby(c, (dc_select_pkt*)pkt);

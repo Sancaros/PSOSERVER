@@ -3066,11 +3066,14 @@ int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 /////////////////////////////////////////////////////////////////////////////
 ////DC GC PC V1 V2
 
-/* 处理 DC GC PC V1 V2 0x62/0x6D 来自客户端的数据包. */
-int subcmd_handle_one(ship_client_t* c, subcmd_pkt_t* pkt);
+/* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */
+int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt);
 
 /* 处理 DC GC PC V1 V2 0x6D 来自客户端的数据包. */
-int subcmd_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt);
+int subcmd_handle_6D(ship_client_t* c, subcmd_pkt_t* pkt);
+
+/* 处理 DC GC PC V1 V2 0x60 来自客户端的数据包. */
+int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt);
 
 /* Send a broadcast subcommand to the whole lobby. */
 int subcmd_send_lobby_dc(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,

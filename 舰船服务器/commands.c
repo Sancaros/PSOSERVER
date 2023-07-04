@@ -1827,7 +1827,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
 
     /* Send the packet to everyone, including the person sending the request. */
     send_pkt_dc(c, (dc_pkt_hdr_t *)p);
-    return subcmd_handle_bcast(c, p);
+    return subcmd_handle_60(c, p);
 }
 
 /* 用法: /ll */
@@ -2005,7 +2005,7 @@ static int handle_npc(ship_client_t *c, const char *params) {
 
     /* Send the packet to everyone, including the person sending the request. */
     send_pkt_dc(c, (dc_pkt_hdr_t *)p);
-    return subcmd_handle_bcast(c, p);
+    return subcmd_handle_60(c, p);
 }
 
 /* 用法: /stfu guildcard */

@@ -1752,37 +1752,6 @@ static int handle_done_talk_npc(ship_client_t *c, subcmd_end_talk_to_npc_t *pkt)
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-int handle_burst_pldata(ship_client_t* c, ship_client_t* d,
-    subcmd_burst_pldata_t* pkt) {
-    int i;
-    iitem_t* item;
-    lobby_t* l = c->cur_lobby;
-
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
-            "lobby!\n", c->guildcard);
-        return -1;
-    }
-
-    if ((c->version == CLIENT_VERSION_XBOX && d->version == CLIENT_VERSION_GC) ||
-        (d->version == CLIENT_VERSION_XBOX && c->version == CLIENT_VERSION_GC)) {
-        /* Scan the inventory and fix any mags before sending it along. */
-        for (i = 0; i < pkt->inv.item_count; ++i) {
-            item = &pkt->inv.iitems[i];
-
-            /* If the item is a mag, then we have to swap the last dword of the
-                data. Otherwise colors and stats get messed up. */
-            if (item->data.data_b[0] == ITEM_TYPE_MAG) {
-                item->data.data2_l = SWAP32(item->data.data2_l);
-            }
-        }
-    }
-
-    return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
-}
-
 int handle_dragon_act(ship_client_t* c, subcmd_dragon_act_t* pkt) {
     lobby_t* l = c->cur_lobby;
     int v = c->version, i;
@@ -1855,79 +1824,8 @@ int handle_gol_dragon_act(ship_client_t* c, subcmd_gol_dragon_act_t* pkt) {
     return 0;
 }
 
-/* 处理DC 0x62/0x6D 数据包. */
-int subcmd_handle_one(ship_client_t *c, subcmd_pkt_t *pkt) {
-    lobby_t *l = c->cur_lobby;
-    ship_client_t *dest;
-    uint16_t hdr_type = pkt->hdr.dc.pkt_type;
-    uint8_t type = pkt->type;
-    int rv = -1;
-
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if(!l)
-        return 0;
-
-    pthread_mutex_lock(&l->mutex);
-
-    /* Find the destination. */
-    dest = l->clients[pkt->hdr.dc.flags];
-
-    /* The destination is now offline, don't bother sending it. */
-    if(!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
-
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
-
-    /* If there's a burst going on in the lobby, delay most packets */
-    if(l->flags & LOBBY_FLAG_BURSTING) {
-        rv = 0;
-
-        switch(type) {
-            case SUBCMD6D_BURST1:
-            case SUBCMD6D_BURST2:
-            case SUBCMD6D_BURST3:
-            case SUBCMD6D_BURST4:
-                if(l->flags & LOBBY_FLAG_QUESTING)
-                    rv = lobby_enqueue_burst(l, c, (dc_pkt_hdr_t *)pkt);
-                /* Fall through... */
-
-            case SUBCMD62_BURST5:
-            case SUBCMD62_BURST6:
-                rv |= l->subcmd_handle(c, dest, pkt);
-                break;
-
-            case SUBCMD6D_BURST_PLDATA:
-                rv = handle_burst_pldata(c, dest, (subcmd_burst_pldata_t*)pkt);
-                break;
-
-            default:
-                rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t *)pkt);
-        }
-
-    }
-    else {
-
-        if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
-            //UNK_CSPD(type, c->version, pkt);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
-        }
-        else
-            rv = l->subcmd_handle(c, dest, pkt);
-    }
-
-
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
-}
-
 /* 处理DC 0x60 数据包. */
-int subcmd_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
+int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
     uint8_t type = pkt->type;
     lobby_t *l = c->cur_lobby;
     int rv, sent = 1, i;
