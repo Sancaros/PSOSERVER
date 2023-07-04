@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<!DOCTYPE psocn_database_config PUBLIC "-//Psocn//DTD Global Configuration 0.1//EN"
-  "http://www.phantasystaronline.cn:88/server/dtd/psocn_database_config.dtd">
-
-<psocn_database_config>
-	<database type="mysql" host="localhost" user="" pass="" db="psoserver" port="3306" auto_reconnect="true" char_set="utf8mb4" show_setting="1"></database>
-</psocn_database_config>

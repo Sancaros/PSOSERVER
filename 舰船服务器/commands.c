@@ -44,7 +44,7 @@
 #include "rtdata.h"
 #include "scripts.h"
 
-int handle_dc_gcsend(ship_client_t *s, ship_client_t *d,
+extern int sub62_06_dc(ship_client_t *s, ship_client_t *d,
                      subcmd_dc_gcsend_t *pkt);
 
 typedef struct command {
@@ -744,7 +744,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
                          "'错误报告' 玩家并上报\n"
                          "一个BUG."));
 
-    return handle_dc_gcsend(NULL, c, &gcpkt);
+    return sub62_06_dc(NULL, c, &gcpkt);
 }
 
 /* 用法 /clinfo client_id */
@@ -1342,7 +1342,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     gcpkt.padding[0] = gcpkt.padding[1] = gcpkt.padding[2] = 0;
 
     /* Send the packet */
-    return handle_dc_gcsend(NULL, c, &gcpkt);
+    return sub62_06_dc(NULL, c, &gcpkt);
 }
 
 /* 用法: /invuln [off] */

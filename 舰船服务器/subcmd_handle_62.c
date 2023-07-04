@@ -43,6 +43,733 @@
 
 #include "subcmd_handle.h"
 
+int sub62_06_dc(ship_client_t* s, ship_client_t* d,
+    subcmd_dc_gcsend_t* pkt) {
+
+    ERR_LOG(
+        "handle_dc_gcsend %d 类型 = %d 版本识别 = %d",
+        d->sock, pkt->hdr.pkt_type, d->version);
+
+    /* Make sure the recipient is not ignoring the sender... */
+    if (client_has_ignored(d, s->guildcard))
+        return 0;
+
+    /* This differs based on the destination client's version. */
+    switch (d->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    {
+        subcmd_gc_gcsend_t gc;
+
+        memset(&gc, 0, sizeof(gc));
+
+        /* Copy the name and text over. */
+        memcpy(gc.name, pkt->name, 24);
+        memcpy(gc.guildcard_desc, pkt->guildcard_desc, 88);
+
+        /* Copy the rest over. */
+        gc.hdr.pkt_type = pkt->hdr.pkt_type;
+        gc.hdr.flags = pkt->hdr.flags;
+        gc.hdr.pkt_len = LE16(0x0098);
+        gc.shdr.type = pkt->shdr.type;
+        gc.shdr.size = 0x25;
+        gc.shdr.unused = 0x0000;
+        gc.player_tag = pkt->player_tag;
+        gc.guildcard = pkt->guildcard;
+        gc.padding = 0;
+        gc.disable_udp = 1;
+        gc.language = pkt->language;
+        gc.section = pkt->section;
+        gc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+    }
+
+    case CLIENT_VERSION_XBOX:
+    {
+        subcmd_xb_gcsend_t xb;
+        uint32_t guildcard = LE32(pkt->guildcard);
+
+        memset(&xb, 0, sizeof(xb));
+
+        /* Copy the name and text over. */
+        memcpy(xb.name, pkt->name, 24);
+        memcpy(xb.guildcard_desc, pkt->guildcard_desc, 88);
+
+        /* Copy the rest over. */
+        xb.hdr.pkt_type = pkt->hdr.pkt_type;
+        xb.hdr.flags = pkt->hdr.flags;
+        xb.hdr.pkt_len = LE16(0x0234);
+        xb.shdr.type = pkt->shdr.type;
+        xb.shdr.size = 0x8C;
+        xb.shdr.unused = LE16(0xFB0D);
+        xb.player_tag = pkt->player_tag;
+        xb.guildcard = pkt->guildcard;
+        xb.xbl_userid = LE64(guildcard);
+        xb.disable_udp = 1;
+        xb.language = pkt->language;
+        xb.section = pkt->section;
+        xb.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+    }
+
+    case CLIENT_VERSION_PC:
+    {
+        subcmd_pc_gcsend_t pc;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        /* Don't allow guild cards to be sent to PC NTE, as it doesn't
+           support them. */
+        if ((d->flags & CLIENT_FLAG_IS_NTE)) {
+            if (s)
+                return send_txt(s, "%s", __(s, "\tE\tC7Cannot send Guild\n"
+                    "Card to that user."));
+            else
+                return 0;
+        }
+
+        memset(&pc, 0, sizeof(pc));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        in = 24;
+        out = 48;
+        inptr = pkt->name;
+        outptr = (char*)pc.name;
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)pc.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        pc.hdr.pkt_type = pkt->hdr.pkt_type;
+        pc.hdr.flags = pkt->hdr.flags;
+        pc.hdr.pkt_len = LE16(0x00F8);
+        pc.shdr.type = pkt->shdr.type;
+        pc.shdr.size = 0x3D;
+        pc.shdr.unused = 0x0000;
+        pc.player_tag = pkt->player_tag;
+        pc.guildcard = pkt->guildcard;
+        pc.padding = 0;
+        pc.disable_udp = 1;
+        pc.language = pkt->language;
+        pc.section = pkt->section;
+        pc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+    }
+
+    case CLIENT_VERSION_BB:
+    {
+        subcmd_bb_gcsend_t bb;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        bb.name[0] = LE16('\t');
+        bb.name[1] = LE16('E');
+        in = 24;
+        out = 44;
+        inptr = pkt->name;
+        outptr = (char*)&bb.name[2];
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)bb.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        bb.hdr.pkt_len = LE16(0x0114);
+        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.flags = LE32(d->client_id);
+        bb.shdr.type = SUBCMD62_GUILDCARD;
+        bb.shdr.size = 0x43;
+        bb.shdr.unused = 0x0000;
+        bb.guildcard = pkt->guildcard;
+        bb.disable_udp = 1;
+        bb.language = pkt->language;
+        bb.section = pkt->section;
+        bb.ch_class = pkt->ch_class;
+
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+    }
+    }
+
+    return 0;
+}
+
+int sub62_06_pc(ship_client_t* s, ship_client_t* d, 
+    subcmd_pc_gcsend_t* pkt) {
+
+    /* Make sure the recipient is not ignoring the sender... */
+    if (client_has_ignored(d, s->guildcard))
+        return 0;
+
+        /* This differs based on the destination client's version. */
+    switch (d->version) {
+    case CLIENT_VERSION_PC:
+        /* Don't allow guild cards to be sent to PC NTE, as it doesn't
+           support them. */
+        if ((d->flags & CLIENT_FLAG_IS_NTE))
+            return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    {
+        subcmd_dc_gcsend_t dc;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&dc, 0, sizeof(dc));
+
+        /* Convert the name (UTF-16 -> ASCII). */
+        in = 48;
+        out = 24;
+        inptr = (char*)pkt->name;
+        outptr = dc.name;
+        iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
+        in = 176;
+        out = 88;
+        inptr = (char*)pkt->guildcard_desc;
+        outptr = dc.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == LE16('J')) {
+            iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        dc.hdr.pkt_type = pkt->hdr.pkt_type;
+        dc.hdr.flags = pkt->hdr.flags;
+        dc.hdr.pkt_len = LE16(0x0088);
+        dc.shdr.type = pkt->shdr.type;
+        dc.shdr.size = 0x21;
+        dc.shdr.unused = 0x0000;
+        dc.player_tag = pkt->player_tag;
+        dc.guildcard = pkt->guildcard;
+        dc.unused2 = 0;
+        dc.disable_udp = 1;
+        dc.language = pkt->language;
+        dc.section = pkt->section;
+        dc.ch_class = pkt->ch_class;
+        dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+    }
+
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    {
+        subcmd_gc_gcsend_t gc;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&gc, 0, sizeof(gc));
+
+        /* Convert the name (UTF-16 -> ASCII). */
+        in = 48;
+        out = 24;
+        inptr = (char*)pkt->name;
+        outptr = gc.name;
+        iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
+        in = 176;
+        out = 88;
+        inptr = (char*)pkt->guildcard_desc;
+        outptr = gc.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == LE16('J')) {
+            iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        gc.hdr.pkt_type = pkt->hdr.pkt_type;
+        gc.hdr.flags = pkt->hdr.flags;
+        gc.hdr.pkt_len = LE16(0x0098);
+        gc.shdr.type = pkt->shdr.type;
+        gc.shdr.size = 0x25;
+        gc.shdr.unused = 0x0000;
+        gc.player_tag = pkt->player_tag;
+        gc.guildcard = pkt->guildcard;
+        gc.padding = 0;
+        gc.disable_udp = 1;
+        gc.language = pkt->language;
+        gc.section = pkt->section;
+        gc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+    }
+
+    case CLIENT_VERSION_XBOX:
+    {
+        subcmd_xb_gcsend_t xb;
+        uint32_t guildcard = LE32(pkt->guildcard);
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&xb, 0, sizeof(xb));
+
+        /* Convert the name (UTF-16 -> ASCII). */
+        in = 48;
+        out = 24;
+        inptr = (char*)pkt->name;
+        outptr = xb.name;
+        iconv(ic_utf16_to_ascii, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (UTF-16 -> ISO-8859-1 or SHIFT-JIS). */
+        in = 176;
+        out = 512;
+        inptr = (char*)pkt->guildcard_desc;
+        outptr = xb.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == LE16('J')) {
+            iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        xb.hdr.pkt_type = pkt->hdr.pkt_type;
+        xb.hdr.flags = pkt->hdr.flags;
+        xb.hdr.pkt_len = LE16(0x0234);
+        xb.shdr.type = pkt->shdr.type;
+        xb.shdr.size = 0x8C;
+        xb.shdr.unused = LE16(0xFB0D);
+        xb.player_tag = pkt->player_tag;
+        xb.guildcard = pkt->guildcard;
+        xb.xbl_userid = LE64(guildcard);
+        xb.disable_udp = 1;
+        xb.language = pkt->language;
+        xb.section = pkt->section;
+        xb.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+    }
+
+    case CLIENT_VERSION_BB:
+    {
+        subcmd_bb_gcsend_t bb;
+
+        /* 填充数据并准备发送.. */
+        memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
+        bb.hdr.pkt_len = LE16(0x0114);
+        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.flags = LE32(d->client_id);
+        bb.shdr.type = SUBCMD62_GUILDCARD;
+        bb.shdr.size = 0x43;
+        bb.shdr.unused = 0x0000;
+        bb.guildcard = pkt->guildcard;
+        bb.name[0] = LE16('\t');
+        bb.name[1] = LE16('E');
+        memcpy(&bb.name[2], pkt->name, 28);
+        memcpy(bb.guildcard_desc, pkt->guildcard_desc, 176);
+        bb.disable_udp = 1;
+        bb.language = pkt->language;
+        bb.section = pkt->section;
+        bb.ch_class = pkt->ch_class;
+
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+    }
+    }
+
+    return 0;
+}
+
+int sub62_06_gc(ship_client_t* s, ship_client_t* d, 
+    subcmd_gc_gcsend_t* pkt) {
+
+    /* Make sure the recipient is not ignoring the sender... */
+    if (client_has_ignored(d, s->guildcard))
+        return 0;
+
+        /* This differs based on the destination client's version. */
+    switch (d->version) {
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    {
+        subcmd_dc_gcsend_t dc;
+
+        memset(&dc, 0, sizeof(dc));
+
+        /* Copy the name and text over. */
+        memcpy(dc.name, pkt->name, 24);
+        memcpy(dc.guildcard_desc, pkt->guildcard_desc, 88);
+
+        /* Copy the rest over. */
+        dc.hdr.pkt_type = pkt->hdr.pkt_type;
+        dc.hdr.flags = pkt->hdr.flags;
+        dc.hdr.pkt_len = LE16(0x0088);
+        dc.shdr.type = pkt->shdr.type;
+        dc.shdr.size = 0x21;
+        dc.shdr.unused = 0x0000;
+        dc.player_tag = pkt->player_tag;
+        dc.guildcard = pkt->guildcard;
+        dc.unused2 = 0;
+        dc.disable_udp = 1;
+        dc.language = pkt->language;
+        dc.section = pkt->section;
+        dc.ch_class = pkt->ch_class;
+        dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+    }
+
+    case CLIENT_VERSION_XBOX:
+    {
+        subcmd_xb_gcsend_t xb;
+        uint32_t guildcard = LE32(pkt->guildcard);
+
+        memset(&xb, 0, sizeof(xb));
+
+        /* Copy the name and text over. */
+        memcpy(xb.name, pkt->name, 24);
+        memcpy(xb.guildcard_desc, pkt->guildcard_desc, 104);
+
+        /* Copy the rest over. */
+        xb.hdr.pkt_type = pkt->hdr.pkt_type;
+        xb.hdr.flags = pkt->hdr.flags;
+        xb.hdr.pkt_len = LE16(0x0234);
+        xb.shdr.type = pkt->shdr.type;
+        xb.shdr.size = 0x8C;
+        xb.shdr.unused = LE16(0xFB0D);
+        xb.player_tag = pkt->player_tag;
+        xb.guildcard = pkt->guildcard;
+        xb.xbl_userid = LE64(guildcard);
+        xb.disable_udp = 1;
+        xb.language = pkt->language;
+        xb.section = pkt->section;
+        xb.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&xb);
+    }
+
+    case CLIENT_VERSION_PC:
+    {
+        subcmd_pc_gcsend_t pc;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        /* Don't allow guild cards to be sent to PC NTE, as it doesn't
+           support them. */
+        if ((d->flags & CLIENT_FLAG_IS_NTE))
+            return send_txt(s, "%s", __(s, "\tE\tC无法发送GC至该玩家."));
+
+        memset(&pc, 0, sizeof(pc));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        in = 24;
+        out = 48;
+        inptr = pkt->name;
+        outptr = (char*)pc.name;
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)pc.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        pc.hdr.pkt_type = pkt->hdr.pkt_type;
+        pc.hdr.flags = pkt->hdr.flags;
+        pc.hdr.pkt_len = LE16(0x00F8);
+        pc.shdr.type = pkt->shdr.type;
+        pc.shdr.size = 0x3D;
+        pc.shdr.unused = 0x0000;
+        pc.player_tag = pkt->player_tag;
+        pc.guildcard = pkt->guildcard;
+        pc.padding = 0;
+        pc.disable_udp = 1;
+        pc.language = pkt->language;
+        pc.section = pkt->section;
+        pc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+    }
+
+    case CLIENT_VERSION_BB:
+    {
+        subcmd_bb_gcsend_t bb;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        bb.name[0] = LE16('\t');
+        bb.name[1] = LE16('E');
+        in = 24;
+        out = 44;
+        inptr = pkt->name;
+        outptr = (char*)&bb.name[2];
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)bb.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        bb.hdr.pkt_len = LE16(0x0114);
+        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.flags = LE32(d->client_id);
+        bb.shdr.type = SUBCMD62_GUILDCARD;
+        bb.shdr.size = 0x43;
+        bb.shdr.unused = 0x0000;
+        bb.guildcard = pkt->guildcard;
+        bb.disable_udp = 1;
+        bb.language = pkt->language;
+        bb.section = pkt->section;
+        bb.ch_class = pkt->ch_class;
+
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+    }
+    }
+
+    return 0;
+}
+
+int sub62_06_xb(ship_client_t* s, ship_client_t* d, 
+    subcmd_xb_gcsend_t* pkt) {
+
+    /* Make sure the recipient is not ignoring the sender... */
+    if (client_has_ignored(d, s->guildcard))
+        return 0;
+
+    /* This differs based on the destination client's version. */
+    switch (d->version) {
+    case CLIENT_VERSION_XBOX:
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    {
+        subcmd_dc_gcsend_t dc;
+
+        memset(&dc, 0, sizeof(dc));
+
+        /* Copy the name and text over. */
+        memcpy(dc.name, pkt->name, 24);
+        memcpy(dc.guildcard_desc, pkt->guildcard_desc, 88);
+
+        /* Copy the rest over. */
+        dc.hdr.pkt_type = pkt->hdr.pkt_type;
+        dc.hdr.flags = pkt->hdr.flags;
+        dc.hdr.pkt_len = LE16(0x0088);
+        dc.shdr.type = pkt->shdr.type;
+        dc.shdr.size = 0x21;
+        dc.shdr.unused = 0x0000;
+        dc.player_tag = pkt->player_tag;
+        dc.guildcard = pkt->guildcard;
+        dc.unused2 = 0;
+        dc.disable_udp = 1;
+        dc.language = pkt->language;
+        dc.section = pkt->section;
+        dc.ch_class = pkt->ch_class;
+        dc.padding[0] = dc.padding[1] = dc.padding[2] = 0;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&dc);
+    }
+
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    {
+        subcmd_gc_gcsend_t gc;
+
+        memset(&gc, 0, sizeof(gc));
+
+        /* Copy the name and text over. */
+        memcpy(gc.name, pkt->name, 24);
+        memcpy(gc.guildcard_desc, pkt->guildcard_desc, 88);
+
+        /* Copy the rest over. */
+        gc.hdr.pkt_type = pkt->hdr.pkt_type;
+        gc.hdr.flags = pkt->hdr.flags;
+        gc.hdr.pkt_len = LE16(0x0098);
+        gc.shdr.type = pkt->shdr.type;
+        gc.shdr.size = 0x25;
+        gc.shdr.unused = 0x0000;
+        gc.player_tag = pkt->player_tag;
+        gc.guildcard = pkt->guildcard;
+        gc.padding = 0;
+        gc.disable_udp = 1;
+        gc.language = pkt->language;
+        gc.section = pkt->section;
+        gc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&gc);
+    }
+
+    case CLIENT_VERSION_PC:
+    {
+        subcmd_pc_gcsend_t pc;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        /* Don't allow guild cards to be sent to PC NTE, as it doesn't
+           support them. */
+        if ((d->flags & CLIENT_FLAG_IS_NTE)) {
+            if (s)
+                return send_txt(s, "%s", __(s, "\tE\tC7无法发送GC至该玩家."));
+            else
+                return 0;
+        }
+
+        memset(&pc, 0, sizeof(pc));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        in = 24;
+        out = 48;
+        inptr = pkt->name;
+        outptr = (char*)pc.name;
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)pc.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        pc.hdr.pkt_type = pkt->hdr.pkt_type;
+        pc.hdr.flags = pkt->hdr.flags;
+        pc.hdr.pkt_len = LE16(0x00F8);
+        pc.shdr.type = pkt->shdr.type;
+        pc.shdr.size = 0x3D;
+        pc.shdr.unused = 0x0000;
+        pc.player_tag = pkt->player_tag;
+        pc.guildcard = pkt->guildcard;
+        pc.padding = 0;
+        pc.disable_udp = 1;
+        pc.language = pkt->language;
+        pc.section = pkt->section;
+        pc.ch_class = pkt->ch_class;
+
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)&pc);
+    }
+
+    case CLIENT_VERSION_BB:
+    {
+        subcmd_bb_gcsend_t bb;
+        size_t in, out;
+        char* inptr;
+        char* outptr;
+
+        memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
+
+        /* Convert the name (ASCII -> UTF-16). */
+        bb.name[0] = LE16('\t');
+        bb.name[1] = LE16('E');
+        in = 24;
+        out = 44;
+        inptr = pkt->name;
+        outptr = (char*)&bb.name[2];
+        iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+
+        /* Convert the text (ISO-8859-1 or SHIFT-JIS -> UTF-16). */
+        in = 88;
+        out = 176;
+        inptr = pkt->guildcard_desc;
+        outptr = (char*)bb.guildcard_desc;
+
+        if (pkt->guildcard_desc[1] == 'J') {
+            iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
+        }
+        else {
+            iconv(ic_8859_to_utf16, &inptr, &in, &outptr, &out);
+        }
+
+        /* Copy the rest over. */
+        bb.hdr.pkt_len = LE16(0x0114);
+        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.flags = LE32(d->client_id);
+        bb.shdr.type = SUBCMD62_GUILDCARD;
+        bb.shdr.size = 0x43;
+        bb.shdr.unused = 0x0000;
+        bb.guildcard = pkt->guildcard;
+        bb.disable_udp = 1;
+        bb.language = pkt->language;
+        bb.section = pkt->section;
+        bb.ch_class = pkt->ch_class;
+
+        return send_pkt_bb(d, (bb_pkt_hdr_t*)&bb);
+    }
+    }
+
+    return 0;
+}
+
 int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gcsend_t* pkt) {
     size_t in, out;
@@ -267,6 +994,38 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
+int sub62_5A_dc(ship_client_t* c, ship_client_t* d,
+    subcmd_pick_up_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " picked up item in lobby!",
+            c->guildcard);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->shdr.size != 0x03)
+        return -1;
+
+    if (c->cur_area != pkt->area) {
+        ERR_LOG("GC %" PRIu32 " picked up item in area they are "
+            "not currently in!", c->guildcard);
+    }
+
+    /* Clear the list of dropped items. */
+    if (c->cur_area == 0) {
+        memset(c->p2_drops, 0, sizeof(c->p2_drops));
+        c->p2_drops_max = 0;
+    }
+
+    /* Maybe do more in the future with inventory tracking? */
+    return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+}
+
 int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -338,18 +1097,166 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
 }
 
+static int handle_gm_itemreq(ship_client_t* c, subcmd_itemreq_t* req) {
+    subcmd_itemgen_t gen = { 0 };
+    int r = LE16(req->request_id);
+    int i;
+    lobby_t* l = c->cur_lobby;
+
+    /* 填充数据并准备发送. */
+    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.flags = 0;
+    gen.hdr.pkt_len = LE16(0x30);
+    gen.shdr.type = SUBCMD60_BOX_ENEMY_ITEM_DROP;
+    gen.shdr.size = 0x0B;
+    gen.shdr.unused = 0x0000;
+    gen.data.area = req->area;
+    gen.data.from_enemy = 0x02;
+    gen.data.request_id = req->request_id;
+    gen.data.x = req->x;
+    gen.data.z = req->z;
+    gen.data.unk1 = LE16(0x00000010);
+
+    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
+    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
+    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
+    gen.data.item.data2_l = LE32(c->new_item.data2_l);
+    gen.data.item2 = LE32(0x00000002);
+
+    /* Obviously not "right", but it works though, so we'll go with it. */
+    gen.data.item.item_id = LE32((r | 0x06010100));
+
+    /* Send the packet to every client in the lobby. */
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]) {
+            send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&gen);
+        }
+    }
+
+    /* Clear this out. */
+    clear_item(&c->new_item);
+
+    return 0;
+}
+
+static int handle_quest_itemreq(ship_client_t* c, subcmd_itemreq_t* req, ship_client_t* dest) {
+    uint32_t mid = LE16(req->request_id);
+    uint32_t pti = req->pt_index;
+    lobby_t* l = c->cur_lobby;
+    uint32_t qdrop = 0xFFFFFFFF;
+
+    if (pti != 0x30 && l->mids)
+        qdrop = quest_search_enemy_list(mid, l->mids, l->num_mids, 0);
+    if (qdrop == 0xFFFFFFFF && l->mtypes)
+        qdrop = quest_search_enemy_list(pti, l->mtypes, l->num_mtypes, 0);
+
+    /* If we found something, the version matters here. Basically, we only care
+       about the none option on DC/PC, as rares do not drop in quests. On GC,
+       we have to block drops on all options other than free, since we have no
+       control over the drop once we send it to the leader. */
+    if (qdrop != PSOCN_QUEST_ENDROP_FREE && qdrop != 0xFFFFFFFF) {
+        switch (l->version) {
+        case CLIENT_VERSION_DCV1:
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            if (qdrop == PSOCN_QUEST_ENDROP_NONE)
+                return 0;
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            return 0;
+        }
+    }
+
+    /* If we haven't handled it, we're not supposed to, so send it on to the
+       leader. */
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)req);
+}
+
+int sub62_60_dc(ship_client_t* c, ship_client_t* d,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (c->new_item.data_l[0] && 
+        !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+        return  handle_gm_itemreq(c, (subcmd_itemreq_t*)pkt);
+    }
+    else if (l->dropfunc && 
+        (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
+        return  l->dropfunc(c, l, pkt);
+    }
+    else if ((l->num_mtypes || l->num_mids) &&
+        (l->flags & LOBBY_FLAG_QUESTING)) {
+        return handle_quest_itemreq(c, (subcmd_itemreq_t*)pkt, d);
+    }
+    else {
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+    }
+}
+
+int sub62_60_bb(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+
+    return l->dropfunc(c, l, pkt);
+}
+
 int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
 
-    send_bb_quest_data1(dest, src->bb_pl->quest_data1);
+    if(dest->version == CLIENT_VERSION_BB)
+        send_bb_quest_data1(dest, src->bb_pl->quest_data1);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_6F_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
 }
 
 int sub62_71_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_71_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+}
+
+int sub62_A2_dc(ship_client_t* c, ship_client_t* d,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+    if (c->new_item.data_l[0] &&
+        !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+        return  handle_gm_itemreq(c, (subcmd_itemreq_t*)pkt);
+    }
+    else if (l->dropfunc &&
+        (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
+        return  l->dropfunc(c, l, pkt);
+    }
+    else if ((l->num_mtypes || l->num_mids) &&
+        (l->flags & LOBBY_FLAG_QUESTING)) {
+        return handle_quest_itemreq(c, (subcmd_itemreq_t*)pkt, d);
+    }
+    else {
+        return send_pkt_dc(d, (dc_pkt_hdr_t*)pkt);
+    }
+}
+
+int sub62_A2_bb(ship_client_t* c, ship_client_t* d,
+    subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+
+
+    return l->dropfunc(c, l, pkt);
 }
 
 int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
@@ -1329,10 +2236,12 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 // 定义函数指针数组
 subcmd_handle_func_t subcmd62_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD62_GUILDCARD                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_06_bb },
-    { SUBCMD62_PICK_UP                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_5A_bb },
-    { SUBCMD62_BURST5                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_6F_bb },
-    { SUBCMD62_BURST6                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_71_bb },
+    { SUBCMD62_GUILDCARD                 , sub62_06_dc, sub62_06_gc, NULL,        sub62_06_xb, sub62_06_pc, sub62_06_bb },
+    { SUBCMD62_PICK_UP                   , sub62_5A_dc, NULL,        NULL,        NULL,        NULL,        sub62_5A_bb },
+    { SUBCMD62_ITEMREQ                   , sub62_60_dc, NULL,        NULL,        NULL,        NULL,        sub62_60_bb },
+    { SUBCMD62_BURST5                    , sub62_6F_dc, NULL,        NULL,        NULL,        NULL,        sub62_6F_bb },
+    { SUBCMD62_BURST6                    , sub62_71_dc, NULL,        NULL,        NULL,        NULL,        sub62_71_bb },
+    { SUBCMD62_BITEMREQ                  , sub62_A2_dc, NULL,        NULL,        NULL,        NULL,        sub62_A2_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
     { SUBCMD62_CHAIR_STATE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_AE_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
@@ -1392,7 +2301,6 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         switch (type) {
         case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
         case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
-            //send_bb_quest_data1(dest, &c->bb_pl->quest_data1);
 
             rv |= l->subcmd_handle(c, dest, pkt);
             break;
@@ -1404,13 +2312,6 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     }
     else {
-        switch (type) {
-        case SUBCMD62_ITEMREQ:
-        case SUBCMD62_BITEMREQ:
-            rv = l->dropfunc(c, l, pkt);
-            pthread_mutex_unlock(&l->mutex);
-            return rv;
-        }
 
         if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS

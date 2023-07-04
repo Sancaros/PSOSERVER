@@ -60,13 +60,19 @@ subcmd_handle_t subcmd_search_handler(
             {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
-            case CLIENT_VERSION_PC:
-            case CLIENT_VERSION_GC:
                 return handler[i].dc;
 
+            case CLIENT_VERSION_PC:
+                return handler[i].pc;
+
+            case CLIENT_VERSION_GC:
+                return handler[i].gc;
+
             case CLIENT_VERSION_EP3:
+                return handler[i].ep3;
+
             case CLIENT_VERSION_XBOX:
-                break;
+                return handler[i].xb;
 
             case CLIENT_VERSION_BB:
                 return handler[i].bb;
