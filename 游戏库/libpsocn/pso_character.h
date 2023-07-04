@@ -541,11 +541,17 @@ typedef struct psocn_bb_guildcard {
 
 static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
 
-typedef struct psocn_quest_data1 {
-    uint32_t quest_guildcard;
-    uint8_t data[0x0200];                  // 玩家任务数据表1
-    uint32_t quest_flags;
-} PACKED psocn_quest_data1_t;
+//typedef struct psocn_quest_data1 {
+//    union quest_data1
+//    {
+//        struct {
+//            uint32_t quest_guildcard;
+//            uint8_t data[0x0200];                  // 玩家任务数据表1
+//            uint32_t quest_flags;
+//        } part;
+//        uint8_t data[0x208];
+//    };
+//} PACKED psocn_quest_data1_t;
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
@@ -553,7 +559,7 @@ typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                    // 玩家数据表               OK
     char guildcard_string[16];                    // not saved
     uint32_t option_flags;                        // account
-    psocn_quest_data1_t quest_data1;              // 玩家任务数据表1          TODO
+    uint8_t quest_data1[0x208];                   // 玩家任务数据表1          TODO
     psocn_bank_t bank;                            // 玩家银行数据表           OK
     psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分         OK
     uint32_t unk2;                                // not saved
@@ -572,13 +578,13 @@ typedef struct psocn_bb_full_char {
 } PACKED psocn_bb_full_char_t;
 
 static int bb_c_fullsize = sizeof(psocn_bb_full_char_t);
-static int bb_c_fullsize2 = 0x399C;
+static int bb_c_fullsize2 = 0x39A0;
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
     inventory_t inv;
     psocn_bb_char_t character;
-    psocn_quest_data1_t quest_data1;
+    uint8_t quest_data1[0x208];
     psocn_bank_t bank;
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172

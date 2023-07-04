@@ -2763,7 +2763,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_quest_data1(&char_data->quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_quest_data1(char_data->quest_data1, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3050,7 +3050,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     }
 
     /* 从数据库中获取玩家角色的QUEST_DATA1数据 */
-    if (db_get_char_quest_data1(gc, slot, &bb_data->quest_data1, 0)) {
+    if (db_get_char_quest_data1(gc, slot, bb_data->quest_data1, 0)) {
         //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据", gc, slot);
     }

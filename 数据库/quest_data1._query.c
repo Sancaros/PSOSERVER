@@ -44,8 +44,8 @@ static int db_del_char_quest_data1(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_updata_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot) {
-    size_t len = sizeof(psocn_quest_data1_t);
+static int db_updata_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) {
+    size_t len = 0x208;
     memset(myquery, 0, sizeof(myquery));
 
     /*sprintf(myquery, "UPDATE %s SET"
@@ -57,24 +57,23 @@ static int db_updata_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, 
         , gc, slot
     );*/
 
-    sprintf(myquery, "UPDATE %s SET"
-        " quest_guildcard = '%" PRIu32 "', quest_flags = '%" PRIu32 "'"
-        " WHERE "
-        "guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'"
-        , TABLE1
-        , quest_data1->quest_guildcard, quest_data1->quest_flags
-        , gc, slot
-    );
+    //sprintf(myquery, "UPDATE %s SET"
+    //    " quest_guildcard = '%" PRIu32 "', quest_flags = '%" PRIu32 "'"
+    //    " WHERE "
+    //    "guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'"
+    //    , TABLE1
+    //    , quest_data1->quest_guildcard, quest_data1->quest_flags
+    //    , gc, slot
+    //);
 
     sprintf(myquery, "UPDATE %s SET "
-        "quest_guildcard = '%" PRIu32 "', quest_flags = '%" PRIu32 "', data = '",
+        "data = '",
         TABLE1
-        , quest_data1->quest_guildcard, quest_data1->quest_flags
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)&quest_data1->data,
-        sizeof(quest_data1->data));
+        (char*)quest_data1,
+        len);
 
     sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
         "slot = '%" PRIu8 "'", gc, slot);
@@ -90,21 +89,21 @@ static int db_updata_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, 
     return 0;
 }
 
-int db_insert_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot) {
+int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s "
-        "(guildcard, slot, quest_guildcard, quest_flags, data)"
+        "(guildcard, slot, data)"
         " VALUES "
-        "('%" PRIu32 "', '%" PRIu8 "', '%" PRIu32 "', '%" PRIu32 "', '"
+        "('%" PRIu32 "', '%" PRIu8 "', '"
         ,
         TABLE1
-        , gc, slot, quest_data1->quest_guildcard, quest_data1->quest_flags
+        , gc, slot
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)&quest_data1->data,
-        sizeof(quest_data1->data));
+        (char*)quest_data1,
+        0x208);
 
     strcat(myquery, "')");
 
@@ -118,8 +117,8 @@ int db_insert_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, ui
     return 0;
 }
 
-int db_update_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, uint8_t slot, uint32_t flag) {
-    size_t len = sizeof(psocn_quest_data1_t);
+int db_update_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot, uint32_t flag) {
+    size_t len = 0x208;
     memset(myquery, 0, sizeof(myquery));
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
@@ -144,15 +143,15 @@ int db_update_char_quest_data1(psocn_quest_data1_t* quest_data1, uint32_t gc, ui
 }
 
 /* 获取玩家QUEST_DATA1数据数据项 */
-int db_get_char_quest_data1(uint32_t gc, uint8_t slot, psocn_quest_data1_t* quest_data1, int check) {
+int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int check) {
     void* result;
     char** row;
-    char* endptr;
+    //char* endptr;
 
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
+    sprintf(myquery, "SELECT data FROM %s WHERE guildcard = '%" PRIu32 "' "
         "AND slot = '%" PRIu8 "'", TABLE1, gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
@@ -177,18 +176,18 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, psocn_quest_data1_t* ques
         goto build;
     }
 
-    /* 获取二进制数据 */
-    int i = 2;
-    quest_data1->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 16);
-    i++;
-    memcpy(&quest_data1->data, row[i], sizeof(quest_data1->data));
-    i++;
-    quest_data1->quest_flags = (uint32_t)strtoul(row[i], &endptr, 16);
+    ///* 获取二进制数据 */
+    //int i = 2;
+    //quest_data1->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 16);
+    //i++;
+    memcpy(quest_data1, row[0], 0x208);
+    //i++;
+    //quest_data1->quest_flags = (uint32_t)strtoul(row[i], &endptr, 16);
 
-    if (*endptr != '\0') {
-        SQLERR_LOG("获取的数据 索引 %d 字符串读取有误", i);
-        // 转换失败，输入字符串中包含非十六进制字符
-    }
+    //if (*endptr != '\0') {
+    //    SQLERR_LOG("获取的数据 索引 %d 字符串读取有误", i);
+    //    // 转换失败，输入字符串中包含非十六进制字符
+    //}
 
     psocn_db_result_free(result);
 

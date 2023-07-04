@@ -341,7 +341,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
 
-    send_bb_quest_data1(dest, &src->bb_pl->quest_data1);
+    send_bb_quest_data1(dest, src->bb_pl->quest_data1);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
