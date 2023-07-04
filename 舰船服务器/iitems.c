@@ -388,6 +388,47 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
     return 1;
 }
 
+iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
+    iitem_t ret = { 0 };
+
+    if (item_id == 0xFFFFFFFF) {
+        if (amount <= src->bb_pl->character.disp.meseta) {
+            src->bb_pl->character.disp.meseta -= amount;
+        }
+        else if (allow_meseta_overdraft) {
+            src->bb_pl->character.disp.meseta = 0;
+        }
+        else {
+            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
+                src->guildcard);
+            return ret;
+        }
+        ret.data.data_b[0] = 0x04;
+        ret.data.data2_l = amount;
+        return ret;
+    }
+
+    size_t index = find_iitem_slot(&src->bb_pl->inv, item_id);
+    iitem_t* inventory_item = &src->bb_pl->inv.iitems[index];
+
+    if (amount && (inventory_item->data.data_b[5] > 1) && (amount < inventory_item->data.data_b[5])) {
+        ret = *inventory_item;
+        ret.data.data_b[5] = amount;
+        ret.data.item_id = 0xFFFFFFFF;
+        inventory_item->data.data_b[5] -= amount;
+        return ret;
+    }
+
+    ret = *inventory_item;
+    src->bb_pl->inv.item_count--;
+    for (size_t x = index; x < src->bb_pl->inv.item_count; x++) {
+        src->bb_pl->inv.iitems[x] = src->bb_pl->inv.iitems[x + 1];
+    }
+    //src->bb_pl->inv.iitems[src->bb_pl->inv.item_count] = (iitem_t){ 0 };
+    clear_iitem(&src->bb_pl->inv.iitems[src->bb_pl->inv.item_count]);
+    return ret;
+}
+
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
@@ -811,64 +852,6 @@ int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
     }
 
     return 1;
-}
-
-iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
-    iitem_t ret = { 0 };
-    bool is_meseta = false;
-    uint32_t meseta = 0;
-
-    // If we're removing meseta (signaled by an invalid item ID), then create a
-    // meseta item.
-    if (item_id == 0xFFFFFFFF) {
-        is_meseta = true;
-        meseta = c->bb_pl->character.disp.meseta;
-        if (amount <= meseta) {
-            meseta -= amount;
-        }
-        else if (allow_meseta_overdraft) {
-            meseta = 0;
-        }
-        else {
-            ERR_LOG("player does not have enough meseta");
-        }
-        ret.data.data_b[0] = 0x04;
-        ret.data.data2_l = amount;
-    }
-    else {
-        // Search for the item in the inventory.
-        size_t index = find_iitem_slot(&c->bb_pl->inv, item_id);
-        iitem_t inventory_item = c->bb_pl->inv.iitems[index];
-
-        // If the item is a combine item and are we removing less than we have of it,
-        // then create a new item and reduce the amount of the existing stack. Note
-        // that passing amount == 0 means to remove the entire stack, so this only
-        // applies if amount is nonzero.
-        if (amount && (max_stack_size(&inventory_item.data) > 1) &&
-            (amount < inventory_item.data.data_b[5])) {
-            ret = inventory_item;
-            ret.data.data_b[5] = amount;
-            ret.data.item_id = 0xFFFFFFFF;
-            inventory_item.data.data_b[5] -= amount;
-        }
-        else {
-            // If we get here, then it's not meseta, and either it's not a combine item or
-            // we're removing the entire stack. Delete the item from the inventory slot
-            // and return the deleted item.
-            ret = inventory_item;
-            c->bb_pl->inv.item_count--;
-            for (size_t x = index; x < c->bb_pl->inv.item_count; x++) {
-                c->bb_pl->inv.iitems[x] = c->bb_pl->inv.iitems[x + 1];
-            }
-            clear_iitem(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count]);
-        }
-    }
-
-    if (is_meseta) {
-        c->bb_pl->character.disp.meseta = meseta;
-    }
-
-    return ret;
 }
 
 int add_item_to_client(ship_client_t* c, iitem_t* iitem) {

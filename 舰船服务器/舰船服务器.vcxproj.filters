@@ -78,7 +78,7 @@
     <ClCompile Include="smutdata.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd.c">
+    <ClCompile Include="subcmd_handle_dcgcpcv1v2.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="subcmd_dcnte.c">
@@ -90,7 +90,7 @@
     <ClCompile Include="utils.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_bb.c">
+    <ClCompile Include="subcmd_bb_unused.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="block_bb.c">

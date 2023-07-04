@@ -80,7 +80,7 @@ size_t find_equipped_mag(inventory_t* inv);
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
-iitem_t item_remove_from_inv2(ship_client_t* c, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
+iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);

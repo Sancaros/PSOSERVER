@@ -21,6 +21,32 @@
 #include "iitems.h"
 #include "f_logs.h"
 
+// subcmd 直接发送指令至客户端
+/* 发送副指令数据包至房间 ignore_check 是否忽略客户端忽略的玩家 c 是否不发给自己*/
+int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int ignore_check) {
+    int i;
+
+    /* Send the packet to every connected client. */
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            /* If we're supposed to check the ignore list, and this client is on
+               it, don't send the packet
+               如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
+            if (ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
+                continue;
+            }
+
+            if (l->clients[i]->version != CLIENT_VERSION_DCV1 ||
+                !(l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+            else
+                subcmd_translate_bb_to_nte(l->clients[i], pkt);
+        }
+    }
+
+    return 0;
+}
+
 /* 0x5D SUBCMD60_DROP_STACK BB 掉落堆叠物品*/
 int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = c->cur_lobby;

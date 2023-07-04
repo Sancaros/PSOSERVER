@@ -102,6 +102,17 @@ typedef struct client_type {
     int hdr_size;
 } client_type_t;
 
+typedef struct bb_switch_changed {
+    uint8_t type; //subcmd ЦёБо
+    uint8_t size;
+    uint16_t object_id; // >= 0x4000, != 0xFFFF
+    uint8_t unk1[2];
+    uint16_t unk2;
+    uint8_t unk3[2];
+    uint8_t area;
+    uint8_t flags; // Bit field, with 2 lowest bits having meaning
+} bb_switch_changed_t;
+
 typedef struct client_options {
     // Options used on both game and proxy server
     bool switch_assist;

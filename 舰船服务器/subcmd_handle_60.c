@@ -100,6 +100,7 @@ int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     //    return -1;
     //}
 
+    DBG_LOG("玩家 0x%02X 指令: 0x%X", pkt->hdr.pkt_type, pkt->type);
     display_packet(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1027,14 +1028,14 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         /* 从客户端结构的库存中获取物品并设置拆分 */
-        item_data = src->iitems[found];
-        item_data.data.item_id = LE32((++l->item_player_id[src->client_id]));
+        item_data = src->bb_pl->inv.iitems[found];
+        item_data.data.item_id = generate_item_id(l, src->client_id);
         item_data.data.data_b[5] = (uint8_t)(LE32(pkt->amount));
     }
     else {
         item_data.data.data_l[0] = LE32(Item_Meseta);
         item_data.data.data_l[1] = item_data.data.data_l[2] = 0;
-        item_data.data.item_id = LE32((++l->item_player_id[src->client_id]));
+        item_data.data.item_id = generate_item_id(l, src->client_id);
         item_data.data.data2_l = pkt->amount;
     }
 
@@ -1204,8 +1205,8 @@ int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
        //    return -1;
        //}
 
-       /* 合理性检查... Make sure the size of the subcommand matches with what we
-          expect. Disconnect the client if not. */
+    /* 合理性检查... Make sure the size of the subcommand matches with what we 
+    expect. Disconnect the client if not. */
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
@@ -2544,7 +2545,7 @@ int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_c3_bb(ship_client_t* src, ship_client_t* dest, 
+int sub60_C3_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int found = -1;
@@ -3061,7 +3062,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type C0 - CF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SELL_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
-    { SUBCMD60_DROP_SPLIT_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_c3_bb },
+    { SUBCMD60_DROP_SPLIT_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C3_bb },
     { SUBCMD60_SORT_INV               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },
     { SUBCMD60_MEDIC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
     { SUBCMD60_STEAL_EXP              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },

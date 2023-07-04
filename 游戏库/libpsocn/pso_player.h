@@ -144,17 +144,6 @@ typedef struct bb_player {
     uint16_t autoreply[];
 } PACKED bb_player_t;
 
-typedef struct bb_switch_changed {
-    uint8_t type; //subcmd ЦёБо
-    uint8_t size;
-    uint16_t object_id; // >= 0x4000, != 0xFFFF
-    uint8_t unk1[2];
-    uint16_t unk2;
-    uint8_t unk3[2];
-    uint8_t area;
-    uint8_t flags; // Bit field, with 2 lowest bits having meaning
-} PACKED bb_switch_changed_t;
-
 #ifndef _WIN32
 #else
 #pragma pack()
