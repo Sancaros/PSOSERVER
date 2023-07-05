@@ -29,6 +29,7 @@
 #include "ptdata.h"
 #include "rtdata.h"
 #include "mag_bb.h"
+#include "max_tech_level.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////物品操作
@@ -132,6 +133,19 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
     }
 
     return 1;
+}
+
+bool is_common_consumable(uint32_t primary_identifier) {
+    if (primary_identifier == 0x030200) {
+        return false;
+    }
+    return (primary_identifier >= 0x030000) && (primary_identifier < 0x030A00);
+}
+
+void clear_after(item_t* this, size_t position, size_t count) {
+    for (size_t x = position; x < count; x++) {
+        this->data_b[x] = 0;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +283,7 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-int find_iitem_slot(inventory_t* inv, uint32_t item_id) {
+size_t find_iitem_slot(inventory_t* inv, uint32_t item_id) {
     for (size_t x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
@@ -280,6 +294,43 @@ int find_iitem_slot(inventory_t* inv, uint32_t item_id) {
     print_item_data(&inv->iitems->data, 5);
 
     return -1;
+}
+
+bool is_wrapped(item_t* this) {
+    switch (this->data_b[0]) {
+    case 0:
+    case 1:
+        return this->data_b[4] & 0x40;
+    case 2:
+        return this->data2_b[2] & 0x40;
+    case 3:
+        return !is_stackable(this) && (this->data_b[3] & 0x40);
+    case 4:
+        return false;
+    default:
+        ERR_LOG("invalid item data");
+    }
+}
+
+void unwrap(item_t* this) {
+    switch (this->data_b[0]) {
+    case 0:
+    case 1:
+        this->data_b[4] &= 0xBF;
+        break;
+    case 2:
+        this->data2_b[2] &= 0xBF;
+        break;
+    case 3:
+        if (!is_stackable(this)) {
+            this->data_b[3] &= 0xBF;
+        }
+        break;
+    case 4:
+        break;
+    default:
+        ERR_LOG("invalid item data");
+    }
 }
 
 /* 获取背包中目标物品所在槽位 */
@@ -424,12 +475,11 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
     for (size_t x = index; x < src->bb_pl->inv.item_count; x++) {
         src->bb_pl->inv.iitems[x] = src->bb_pl->inv.iitems[x + 1];
     }
-    //src->bb_pl->inv.iitems[src->bb_pl->inv.item_count] = (iitem_t){ 0 };
     clear_iitem(&src->bb_pl->inv.iitems[src->bb_pl->inv.item_count]);
     return ret;
 }
 
-uint32_t add_item(ship_client_t* src, iitem_t* item) {
+size_t add_item(ship_client_t* src, iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
@@ -472,6 +522,277 @@ uint32_t add_item(ship_client_t* src, iitem_t* item) {
     src->bb_pl->inv.item_count++;
     return 0;
 }
+
+size_t player_use_item(ship_client_t* src, size_t item_index) {
+    // On PC (and presumably DC), the client sends a 6x29 after this to delete the
+    // used item. On GC and later versions, this does not happen, so we should
+    // delete the item here.
+    bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
+
+    psocn_bb_db_char_t* player = src->bb_pl;
+    iitem_t item = player->inv.iitems[item_index];
+    uint32_t item_identifier = primary_identifier(&item.data);
+
+    iitem_t weapon = { 0 };
+    iitem_t armor = { 0 };
+    iitem_t mag = { 0 };
+
+    if (is_common_consumable(item_identifier)) { // Monomate, etc.
+        // Nothing to do (it should be deleted)
+
+    }
+    else if (item_identifier == 0x030200) { // Technique disk
+        uint8_t max_level = max_tech_level[item.data.data_b[4]].max_lvl[player->character.dress_data.ch_class];
+        if (item.data.data_b[2] > max_level) {
+            ERR_LOG("technique level too high");
+            return -1;
+        }
+        player->character.techniques[item.data.data_b[4]] = item.data.data_b[2];
+
+    }
+    else if ((item_identifier & 0xFFFF00) == 0x030A00) { // Grinder
+        if (item.data.data_b[2] > 2) {
+            ERR_LOG("incorrect grinder value");
+            return -2;
+        }
+        weapon = player->inv.iitems[find_equipped_weapon(&player->inv)];
+        pmt_weapon_bb_t weapon_def = { 0 };
+        if (pmt_lookup_weapon_bb(weapon.data.data_l[0], &weapon_def)) {
+            ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
+                src->guildcard);
+            return -3;
+        }
+
+        if (weapon.data.data_b[3] >= weapon_def.max_grind) {
+            ERR_LOG("weapon already at maximum grind");
+            return -4;
+        }
+        weapon.data.data_b[3] += (item.data.data_b[2] + 1);
+
+    }
+    else if ((item_identifier & 0xFFFF00) == 0x030B00) { // Material
+        switch (item.data.data_b[2]) {
+        case 0: // Power Material
+            src->bb_pl->character.disp.stats.atp += 2;
+            break;
+        case 1: // Mind Material
+            src->bb_pl->character.disp.stats.mst += 2;
+            break;
+        case 2: // Evade Material
+            src->bb_pl->character.disp.stats.evp += 2;
+            break;
+        case 3: // HP Material
+            src->bb_pl->inv.hpmats_used += 2;
+            break;
+        case 4: // TP Material
+            src->bb_pl->inv.tpmats_used += 2;
+            break;
+        case 5: // Def Material
+            src->bb_pl->character.disp.stats.dfp += 2;
+            break;
+        case 6: // Luck Material
+            src->bb_pl->character.disp.stats.lck += 2;
+            break;
+        default:
+            ERR_LOG("unknown material used");
+            return -5;
+        }
+
+    }
+    else if ((item_identifier & 0xFFFF00) == 0x030F00) { // AddSlot
+        armor = player->inv.iitems[find_equipped_armor(&player->inv)];
+        if (armor.data.data_b[5] >= 4) {
+            ERR_LOG("armor already at maximum slot count");
+            return -6;
+        }
+        armor.data.data_b[5]++;
+
+    }
+    else if (is_wrapped(&item.data)) {
+        // Unwrap present
+        unwrap(&item.data);
+        should_delete_item = false;
+
+    }
+    else if (item_identifier == 0x003300) {
+        // Unseal Sealed J-Sword => Tsumikiri J-Sword
+        item.data.data_b[1] = 0x32;
+        should_delete_item = false;
+
+    }
+    else if (item_identifier == 0x00AB00) {
+        // Unseal Lame d'Argent => Excalibur
+        item.data.data_b[1] = 0xAC;
+        should_delete_item = false;
+
+    }
+    else if (item_identifier == 0x01034D) {
+        // Unseal Limiter => Adept
+        item.data.data_b[2] = 0x4E;
+        should_delete_item = false;
+
+    }
+    else if (item_identifier == 0x01034F) {
+        // Unseal Swordsman Lore => Proof of Sword-Saint
+        item.data.data_b[2] = 0x50;
+        should_delete_item = false;
+
+    }
+    else if (item_identifier == 0x030C00) {
+        // Cell of MAG 502
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = (player->character.dress_data.section & 1) ? 0x1D : 0x21;
+
+    }
+    else if (item_identifier == 0x030C01) {
+        // Cell of MAG 213
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = (player->character.dress_data.section & 1) ? 0x27 : 0x22;
+
+    }
+    else if (item_identifier == 0x030C02) {
+        // Parts of RoboChao
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = 0x28;
+
+    }
+    else if (item_identifier == 0x030C03) {
+        // Heart of Opa Opa
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = 0x29;
+
+    }
+    else if (item_identifier == 0x030C04) {
+        // Heart of Pian
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = 0x2A;
+
+    }
+    else if (item_identifier == 0x030C05) {
+        // Heart of Chao
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.data_b[1] = 0x2B;
+
+    }
+    //else if ((item_identifier & 0xFFFF00) == 0x031500) {
+    //    // Christmas Present, etc. - use unwrap_table + probabilities therein
+    //    auto table = s->item_parameter_table->get_event_items(item.data.data_b[2]);
+    //    size_t sum = 0;
+    //    for (size_t z = 0; z < table.second; z++) {
+    //        sum += table.first[z].probability;
+    //    }
+    //    if (sum == 0) {
+    //        ERR_LOG("no unwrap results available for event");
+    //    }
+    //    size_t det = random_object<size_t>() % sum;
+    //    for (size_t z = 0; z < table.second; z++) {
+    //        const auto& entry = table.first[z];
+    //        if (det > entry.probability) {
+    //            det -= entry.probability;
+    //        }
+    //        else {
+    //            item.data.data2_l = 0;
+    //            item.data.data_b[0] = entry.item[0];
+    //            item.data.data_b[1] = entry.item[1];
+    //            item.data.data_b[2] = entry.item[2];
+    //            item.data.data_b.clear_after(3);
+    //            should_delete_item = false;
+
+    //            lobby_t l = src->cur_lobby;
+    //            send_create_inventory_item(l, c, item.data);
+    //            break;
+    //        }
+    //    }
+
+    //}
+    //else {
+    //    // Use item combinations table from ItemPMT
+    //    bool combo_applied = false;
+    //    for (size_t z = 0; z < player->inv.item_count; z++) {
+    //        iitem_t inv_item = player->inv.iitems[z];
+    //        if (!(inv_item.flags & 0x00000008)) {
+    //            continue;
+    //        }
+    //        try {
+    //            const auto& combo = s->item_parameter_table->get_item_combination(
+    //                item.data, inv_item.data);
+    //            if (combo.char_class != 0xFF && combo.char_class != player->character.dress_data.ch_class) {
+    //                ERR_LOG("item combination requires specific char_class");
+    //            }
+    //            if (combo.mag_level != 0xFF) {
+    //                if (inv_item.data.data_b[0] != 2) {
+    //                    ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+    //                }
+    //                if (inv_item.data.compute_mag_level() < combo.mag_level) {
+    //                    ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+    //                }
+    //            }
+    //            if (combo.grind != 0xFF) {
+    //                if (inv_item.data.data_b[0] != 0) {
+    //                    ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+    //                }
+    //                if (inv_item.data.data_b[3] < combo.grind) {
+    //                    ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+    //                }
+    //            }
+    //            if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
+    //                ERR_LOG("item combination applies with level requirement, but player level is too low");
+    //            }
+    //            // If we get here, then the combo applies
+    //            if (combo_applied) {
+    //                ERR_LOG("multiple combinations apply");
+    //            }
+    //            combo_applied = true;
+
+    //            inv_item.data.data_b[0] = combo.result_item[0];
+    //            inv_item.data.data_b[1] = combo.result_item[1];
+    //            inv_item.data.data_b[2] = combo.result_item[2];
+    //            inv_item.data.data_b[3] = 0; // Grind
+    //            inv_item.data.data_b[4] = 0; // Flags + special
+    //        }
+    //        catch (const out_of_range&) {
+    //        }
+    //    }
+
+    //    if (!combo_applied) {
+    //        ERR_LOG("no combinations apply");
+    //    }
+    //}
+
+    if (should_delete_item) {
+        // Allow overdrafting meseta if the client is not BB, since the server isn't
+        // informed when meseta is added or removed from the bank.
+        remove_item(src, item.data.item_id, 1, src->version != CLIENT_VERSION_BB);
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {

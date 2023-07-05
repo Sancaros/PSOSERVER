@@ -914,7 +914,7 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_27_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int num;
+    size_t index, err;
 
     /* We can't get these in default lobbies without someone messing with
        something that they shouldn't be... Disconnect anyone that tries. */
@@ -932,17 +932,13 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    /* 从玩家的背包中移除该物品. */
-    if ((num = item_remove_from_inv(src->bb_pl->inv.iitems, src->bb_pl->inv.item_count,
-        pkt->item_id, 1)) < 1) {
-        ERR_LOG("无法从玩家背包中移除物品!");
+    index = find_iitem_slot(&src->bb_pl->inv, pkt->item_id);
+
+    if ((err = player_use_item(src, index))) {
+        ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
+            src->guildcard, err);
         return -1;
     }
-
-    src->item_count -= num;
-    src->bb_pl->inv.item_count -= num;
-    src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
-
 
 send_pkt:
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
