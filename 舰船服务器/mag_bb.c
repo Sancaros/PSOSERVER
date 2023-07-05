@@ -132,14 +132,14 @@ ssize_t clamp(ssize_t value, ssize_t min, ssize_t max) {
 }
 
 void assign_mag_stats(item_t* item, magitemstat_t* mag) {
-	item->data_b[2] = level(mag);
+	item->data_b[2] = (uint8_t)level(mag);
 	item->data_b[3] = mag->photon_blasts;
 	item->data_w[2] = mag->def & 0x7FFE;
 	item->data_w[3] = mag->pow & 0x7FFE;
 	item->data_w[4] = mag->dex & 0x7FFE;
 	item->data_w[5] = mag->mind & 0x7FFE;
-	item->data2_b[0] = mag->synchro;
-	item->data2_b[1] = mag->iq;
+	item->data2_b[0] = (uint8_t)mag->synchro;
+	item->data2_b[1] = (uint8_t)mag->iq;
 	item->data2_b[2] = mag->flags;
 	item->data2_b[3] = mag->color;
 }
@@ -196,7 +196,7 @@ uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
 
 int mag_has_photon_blast_in_any_slot(const item_t* item, uint8_t pb_num) {
 	if (pb_num < 6) {
-		for (size_t slot = 0; slot < 3; slot++) {
+		for (uint8_t slot = 0; slot < 3; slot++) {
 			if (mag_photon_blast_for_slot(item, slot) == pb_num) {
 				return 1;
 			}
@@ -244,7 +244,7 @@ void add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 	}
 }
 
-uint8_t get_mag_feed_table_index(iitem_t* mag) {
+size_t get_mag_feed_table_index(iitem_t* mag) {
 
 	switch (mag->data.data_b[1])
 	{
@@ -497,7 +497,7 @@ magfeedresultslist_t mag_feed_table[MAG_MAX_FEED_TABLE][11 * 6] = {
 	}
 };
 
-magfeedresult_t get_mag_feed_result(uint8_t table_index, uint8_t item_index) {
+magfeedresult_t get_mag_feed_result(size_t table_index, size_t item_index) {
 	if (table_index >= 8) {
 		ERR_LOG("invalid mag feed table index");
 		printf("按任意键停止程序...\n");
@@ -572,17 +572,17 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 	iitem_t mag_item = player->inv.iitems[mag_item_index];
 
 	size_t result_index = find_result_index(primary_identifier(&fed_item.data));
-	uint8_t feed_table_index = get_mag_feed_table_index(&mag_item);
+	size_t feed_table_index = get_mag_feed_table_index(&mag_item);
 	magfeedresult_t feed_result = get_mag_feed_result(feed_table_index, result_index);
 
 	update_stat(&mag_item.data, 2, feed_result.def);
 	update_stat(&mag_item.data, 3, feed_result.pow);
 	update_stat(&mag_item.data, 4, feed_result.dex);
 	update_stat(&mag_item.data, 5, feed_result.mind);
-	mag_item.data.data2_b[0] = clamp((ssize_t)mag_item.data.data2_b[0] + feed_result.synchro, 0, 120);
-	mag_item.data.data2_b[1] = clamp((ssize_t)mag_item.data.data2_b[1] + feed_result.iq, 0, 200);
+	mag_item.data.data2_b[0] = (uint8_t)clamp((ssize_t)mag_item.data.data2_b[0] + feed_result.synchro, 0, 120);
+	mag_item.data.data2_b[1] = (uint8_t)clamp((ssize_t)mag_item.data.data2_b[1] + feed_result.iq, 0, 200);
 
-	uint8_t mag_level = compute_mag_level(&mag_item.data);
+	uint8_t mag_level = (uint8_t)compute_mag_level(&mag_item.data);
 	mag_item.data.data_b[2] = mag_level;
 	uint8_t evolution_number = get_evolution_number(&mag_item);
 	uint8_t mag_number = mag_item.data.data_b[1];
