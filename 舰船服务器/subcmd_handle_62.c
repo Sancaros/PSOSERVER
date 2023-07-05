@@ -1160,7 +1160,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 
 
             /* Add the item to the client's inventory. */
-            pick_count = add_item_to_client(src, &iitem_data);
+            pick_count = add_iitem(src, &iitem_data);
 
             if (pick_count == -1)
                 return 0;
@@ -1367,7 +1367,11 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("购买 %d 个物品 %02X %04X", pkt->num_bought, pkt->unknown_a1, pkt->shdr.unused);
+
+#endif // DEBUG
 
     /* 填充物品数据头 */
     ii.present = LE16(1);
@@ -1375,7 +1379,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     ii.flags = LE32(0);
 
     /* 填充物品数据 */
-    memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
+    //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
+    ii.data = src->game_data->shop_items[pkt->shop_item_index];
 
     /* 如果是堆叠物品 */
     if (pkt->num_bought <= max_stack_size(&ii.data)) {
@@ -1388,24 +1393,24 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
 
-    l->item_player_id[src->client_id] = pkt->new_inv_item_id;
-    ii.data.item_id = l->item_player_id[src->client_id]++;
+    ii.data.item_id = pkt->new_inv_item_id;
+
+#ifdef DEBUG
 
     print_iitem_data(&ii, 0, src->version);
 
-    found = add_item_to_client(src, &ii);
+#endif // DEBUG
+
+    uint32_t price = ii.data.data2_l * pkt->num_bought;
+    subcmd_send_bb_delete_meseta(src, price, 0);
+
+    found = add_iitem(src, &ii);
 
     if (found == -1) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
     }
-
-    //src->bb_pl->inv.item_count += found;
-    //src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
-
-    uint32_t price = ii.data.data2_l * pkt->num_bought;
-    subcmd_send_bb_delete_meseta(src, price, 0);
 
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);
 }
@@ -1575,7 +1580,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
 
-            if (add_item_to_client(src, id_result) == -1) {
+            if (add_iitem(src, id_result) == -1) {
                 ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                     src->guildcard);
                 return -1;
@@ -1832,7 +1837,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             ++l->item_lobby_id;
 
             /* 新增至玩家背包中... */
-            found = add_item_to_client(src, &iitem);
+            found = add_iitem(src, &iitem);
 
             if (found == -1) {
                 /* Uh oh... Guess we should put it back in the bank... */
@@ -2005,7 +2010,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         ii.data.data2_l = meseta;
         ii.data.item_id = generate_item_id(l, 0xFF);
 
-        if (add_item_to_client(src, &ii) == -1) {
+        if (add_iitem(src, &ii) == -1) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -1;
@@ -2032,7 +2037,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     ii.data = pkt->item_data;
     ii.data.item_id = generate_item_id(l, 0xFF);
 
-    if (add_item_to_client(src, &ii) == -1) {
+    if (add_iitem(src, &ii) == -1) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
@@ -2181,7 +2186,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
             backup_item.data.data_b[4] |= 0x40; // Wrap other
 
         /* 将物品新增至背包. */
-        found = add_item_to_client(src, &backup_item);
+        found = add_iitem(src, &backup_item);
 
         if (found == -1)
             return 0;

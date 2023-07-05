@@ -80,7 +80,7 @@ size_t find_equipped_mag(inventory_t* inv);
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
-size_t add_item(ship_client_t* src, iitem_t* item);
+size_t add_iitem(ship_client_t* src, iitem_t* item);
 size_t player_use_item(ship_client_t* src, size_t item_index);
 
 /* 蓝色脉冲银行管理 */
@@ -95,11 +95,11 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c);
 
-/* 增加背包物品 */
-int item_add_to_inv(ship_client_t* c, iitem_t* iitem);
-
-/* 增加物品至客户端 */
-int add_item_to_client(ship_client_t* c, iitem_t* iitem);
+///* 增加背包物品 */
+//int item_add_to_inv(ship_client_t* c, iitem_t* iitem);
+//
+///* 增加物品至客户端 */
+//int add_item_to_client(ship_client_t* c, iitem_t* iitem);
 
 //修复背包银行数据错误的物品代码
 void fix_inv_bank_item(item_t* i);

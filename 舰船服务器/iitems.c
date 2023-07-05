@@ -240,8 +240,11 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     item->d.data.item_id = LE32(l->item_lobby_id);
     item->d.data.data2_l = LE32(new_item->data2_l);
 
+#ifdef DEBUG
 
     print_iitem_data(&item->d, 0, l->version);
+
+#endif // DEBUG
 
     /* Increment the item ID, add it to the queue, and return the new item */
     ++l->item_lobby_id;
@@ -495,7 +498,7 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
     return ret;
 }
 
-size_t add_item(ship_client_t* src, iitem_t* item) {
+size_t add_iitem(ship_client_t* src, iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
@@ -1260,13 +1263,13 @@ int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
         c->bb_pl->inv.item_count += add_count;
         c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
 
-        /*clean_up_inv(&c->bb_pl->inv);*/
+#ifdef DEBUG
 
         for (int i = 0; i < c->bb_pl->inv.item_count; ++i) {
             print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
         }
 
-        //fix_up_pl_iitem(c->cur_lobby, c);
+#endif // DEBUG
 
         return 0;
 

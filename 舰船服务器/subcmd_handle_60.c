@@ -2490,7 +2490,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         iitem.data.item_id = generate_item_id(l, src->client_id);
     }
 
-    if (add_item(src, &iitem)) {
+    if (add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
             src->guildcard);
         return -1;
