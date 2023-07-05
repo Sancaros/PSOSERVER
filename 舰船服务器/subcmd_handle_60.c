@@ -929,9 +929,6 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x02)
         return -1;
 
-    if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
-        goto send_pkt;
-
     index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
     if ((err = player_use_item(src, index))) {
@@ -940,14 +937,13 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-send_pkt:
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 int sub60_28_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t item_id = pkt->item_id, mag_id = pkt->mag_id;
+    uint32_t item_id = pkt->fed_item_id, mag_id = pkt->mag_item_id;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -970,14 +966,13 @@ int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
         src->guildcard, item_id, mag_id);
 
-    if (mag_bb_feed(src, item_id, mag_id)) {
-        ERR_LOG("GC %" PRIu32 " 喂养玛古发生错误!",
-            src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
+    errno_t err = mag_bb_feed(src, pkt->mag_item_id, pkt->fed_item_id);
+
+    if (err) {
+        ERR_LOG("GC %" PRIu32 " 发送错误数据! 错误码 %d",
+            src->guildcard, err);
     }
 
-    /* Done, let everyone else know. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

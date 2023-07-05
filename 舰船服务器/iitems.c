@@ -90,50 +90,66 @@ size_t max_stack_size(const item_t* item) {
 }
 
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-
-    switch (data0) 
-    {
-    case ITEM_TYPE_MESETA:
+    if (data0 == ITEM_TYPE_MESETA) {
         return 999999;
-
-    case ITEM_TYPE_TOOL:
-
-        switch (data1)
-        {
-            /* 支持大量堆叠 */
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
-        case ITEM_SUBTYPE_SOL_ATOMIZER:
-        case ITEM_SUBTYPE_MOON_ATOMIZER:
-        case ITEM_SUBTYPE_STAR_ATOMIZER:
-        case ITEM_SUBTYPE_ANTI:
-        case ITEM_SUBTYPE_TELEPIPE:
-        case ITEM_SUBTYPE_TRAP_VISION:
-        case ITEM_SUBTYPE_GRINDER:
-        case ITEM_SUBTYPE_MATERIAL:
-        case ITEM_SUBTYPE_MAG_CELL1:
-        case ITEM_SUBTYPE_MONSTER_LIMBS:
-        case ITEM_SUBTYPE_MAG_CELL2:
-        case ITEM_SUBTYPE_ADD_SLOT:
-        case ITEM_SUBTYPE_PHOTON:
-            return 99;
-
-        case ITEM_SUBTYPE_DISK:
-            return 1;
-
-
-        default:
+    }
+    if (data0 == ITEM_TYPE_TOOL) {
+        if ((data1 < 9) && (data1 != ITEM_SUBTYPE_DISK)) {
             return 10;
         }
-
-        break;
-
-    default:
-        break;
+        else if (data1 == ITEM_SUBTYPE_PHOTON) {
+            return 99;
+        }
     }
-
     return 1;
 }
+
+// TODO 需要客户端支持各种堆叠
+//size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
+//
+//    switch (data0) 
+//    {
+//    case ITEM_TYPE_MESETA:
+//        return 999999;
+//
+//    case ITEM_TYPE_TOOL:
+//
+//        switch (data1)
+//        {
+//            /* 支持大量堆叠 */
+//        case ITEM_SUBTYPE_MATE:
+//        case ITEM_SUBTYPE_FLUID:
+//        case ITEM_SUBTYPE_SOL_ATOMIZER:
+//        case ITEM_SUBTYPE_MOON_ATOMIZER:
+//        case ITEM_SUBTYPE_STAR_ATOMIZER:
+//        case ITEM_SUBTYPE_ANTI:
+//        case ITEM_SUBTYPE_TELEPIPE:
+//        case ITEM_SUBTYPE_TRAP_VISION:
+//        case ITEM_SUBTYPE_GRINDER:
+//        case ITEM_SUBTYPE_MATERIAL:
+//        case ITEM_SUBTYPE_MAG_CELL1:
+//        case ITEM_SUBTYPE_MONSTER_LIMBS:
+//        case ITEM_SUBTYPE_MAG_CELL2:
+//        case ITEM_SUBTYPE_ADD_SLOT:
+//        case ITEM_SUBTYPE_PHOTON:
+//            return 99;
+//
+//        case ITEM_SUBTYPE_DISK:
+//            return 1;
+//
+//
+//        default:
+//            return 10;
+//        }
+//
+//        break;
+//
+//    default:
+//        break;
+//    }
+//
+//    return 1;
+//}
 
 bool is_common_consumable(uint32_t primary_identifier) {
     if (primary_identifier == 0x030200) {
@@ -674,6 +690,7 @@ size_t player_use_item(ship_client_t* src, size_t item_index) {
         mag.data.data_b[1] = 0x2B;
 
     }
+    /* TODO */
     //else if ((item_identifier & 0xFFFF00) == 0x031500) {
     //    // Christmas Present, etc. - use unwrap_table + probabilities therein
     //    auto table = s->item_parameter_table->get_event_items(item.data.data_b[2]);
@@ -1379,11 +1396,11 @@ void fix_inv_bank_item(item_t* i) {
         }
         break;
     case ITEM_TYPE_MAG:// 玛古
-        mag_t* playermag;
+        magitem_t* playermag;
         int16_t mag_def, mag_pow, mag_dex, mag_mind;
         int32_t total_levels;
 
-        playermag = (mag_t*)&i->data_b[0];
+        playermag = (magitem_t*)&i->data_b[0];
 
         if (playermag->synchro > 120)
             playermag->synchro = 120;
@@ -1394,11 +1411,11 @@ void fix_inv_bank_item(item_t* i) {
         if (playermag->IQ > 200)
             playermag->IQ = 200;
 
-        if ((playermag->defense < 0) || (playermag->power < 0) || (playermag->dex < 0) || (playermag->mind < 0))
+        if ((playermag->def < 0) || (playermag->pow < 0) || (playermag->dex < 0) || (playermag->mind < 0))
             total_levels = 201; // Auto fail if any stat is under 0...
         else {
-            mag_def = playermag->defense / 100;
-            mag_pow = playermag->power / 100;
+            mag_def = playermag->def / 100;
+            mag_pow = playermag->pow / 100;
             mag_dex = playermag->dex / 100;
             mag_mind = playermag->mind / 100;
             total_levels = mag_def + mag_pow + mag_dex + mag_mind;
@@ -1406,8 +1423,8 @@ void fix_inv_bank_item(item_t* i) {
 
         if ((total_levels > 200) || (playermag->level > 200)) {
             // 玛古修正失败,则初始化所有数据
-            playermag->defense = 500;
-            playermag->power = 0;
+            playermag->def = 500;
+            playermag->pow = 0;
             playermag->dex = 0;
             playermag->mind = 0;
             playermag->level = 5;

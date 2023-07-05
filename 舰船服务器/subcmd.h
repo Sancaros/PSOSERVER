@@ -701,8 +701,8 @@ typedef struct subcmd_bb_use_item {
 typedef struct subcmd_bb_feed_mag {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t mag_id;
-    uint32_t item_id;
+    uint32_t mag_item_id;
+    uint32_t fed_item_id;
 } PACKED subcmd_bb_feed_mag_t;
 
 // 0x29: Delete inventory item (via bank deposit / sale / feeding MAG)
