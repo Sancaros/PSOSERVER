@@ -1435,7 +1435,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
             return -2;
         }
 
-        tek_item_slot = find_iitem_slot(&src->bb_pl->inv, pkt->item_id);
+        tek_item_slot = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
         /* 获取鉴定物品的内存指针 */
         iitem_t* id_result = &(src->game_data->identify_result);

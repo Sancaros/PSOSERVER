@@ -877,7 +877,7 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     /* Find the item and remove the equip flag. */
     inv = src->bb_pl->inv.item_count;
 
-    i = find_iitem_slot(&src->bb_pl->inv, pkt->item_id);
+    i = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
     if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
         src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -932,7 +932,7 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    index = find_iitem_slot(&src->bb_pl->inv, pkt->item_id);
+    index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
@@ -2551,7 +2551,7 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            int index = find_iitem_slot(&src->bb_pl->inv, pkt->item_ids[x]);
+            int index = find_iitem_index(&src->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = src->bb_pl->inv.iitems[index];
         }
     }

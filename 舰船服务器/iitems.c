@@ -283,7 +283,7 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_slot(inventory_t* inv, uint32_t item_id) {
+size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
     for (size_t x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
@@ -459,7 +459,7 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
         return ret;
     }
 
-    size_t index = find_iitem_slot(&src->bb_pl->inv, item_id);
+    size_t index = find_iitem_index(&src->bb_pl->inv, item_id);
     iitem_t* inventory_item = &src->bb_pl->inv.iitems[index];
 
     if (amount && (inventory_item->data.data_b[5] > 1) && (amount < inventory_item->data.data_b[5])) {
@@ -942,7 +942,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     int i = 0;
     item_t found_item = { 0 };
 
-    i = find_iitem_slot(&c->bb_pl->inv, item_id);
+    i = find_iitem_index(&c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);

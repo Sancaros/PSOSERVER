@@ -739,7 +739,7 @@ int mag_bb_feed(ship_client_t* c, uint32_t item_id, uint32_t mag_id) {
 	int16_t mIQ, mDefense, mPower, mDex, mMind;
 
 	if (item_id != EMPTY_STRING) {
-		i = find_iitem_slot(&c->bb_pl->inv, item_id);
+		i = find_iitem_index(&c->bb_pl->inv, item_id);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID %u",
