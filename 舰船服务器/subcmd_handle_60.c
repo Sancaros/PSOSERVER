@@ -2483,7 +2483,6 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int found = -1;
-    uint32_t i;
     iitem_t iitem = { 0 };
     iitem_t* it;
 
@@ -2511,9 +2510,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         iitem.data.item_id = generate_item_id(l, src->client_id);
     }
 
-    i = add_item(src, &iitem);
-
-    if (i) {
+    if (add_item(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
             src->guildcard);
         return -1;
