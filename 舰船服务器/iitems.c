@@ -429,6 +429,50 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
     return ret;
 }
 
+uint32_t add_item(ship_client_t* src, iitem_t* item) {
+    uint32_t pid = primary_identifier(&item->data);
+
+    // 检查是否为meseta，如果是，则修改统计数据中的meseta值
+    if (pid == MESETA_IDENTIFIER) {
+        src->bb_pl->character.disp.meseta += item->data.data2_l;
+        if (src->bb_pl->character.disp.meseta > 999999) {
+            src->bb_pl->character.disp.meseta = 999999;
+        }
+        return 0;
+    }
+
+    // 处理可合并的物品
+    uint32_t combine_max = max_stack_size(&item->data);
+    if (combine_max > 1) {
+        // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
+        size_t y;
+        for (y = 0; y < src->bb_pl->inv.item_count; y++) {
+            if (primary_identifier(&src->bb_pl->inv.iitems[y].data) == primary_identifier(&item->data)) {
+                break;
+            }
+        }
+
+        // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
+        if (y < src->bb_pl->inv.item_count) {
+            src->bb_pl->inv.iitems[y].data.data_b[5] += item->data.data_b[5];
+            if (src->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
+                src->bb_pl->inv.iitems[y].data.data_b[5] = combine_max;
+            }
+            return 0;
+        }
+    }
+
+    // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
+    if (src->bb_pl->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("GC %" PRIu32 " 物品数量超出最大值",
+            src->guildcard);
+        return -1;
+    }
+    src->bb_pl->inv.iitems[src->bb_pl->inv.item_count] = *item;
+    src->bb_pl->inv.item_count++;
+    return 0;
+}
+
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);

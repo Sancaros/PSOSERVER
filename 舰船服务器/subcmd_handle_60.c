@@ -988,10 +988,7 @@ int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_29_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int found = -1;
-    uint32_t tmp, tmp2;
-    iitem_t item_data;
-    iitem_t* it;
+    iitem_t item_data = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1017,76 +1014,13 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    if (pkt->item_id != 0xFFFFFFFF) {
-        /* 查找用户库存中的物品. */
-        found = find_iitem_slot(&src->bb_pl->inv, pkt->item_id);
+    item_data = remove_item(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
-        /* 如果找不到该物品，则将用户从船上推下. */
-        if (found == -1) {
-            ERR_LOG("GC %" PRIu32 " 掉落无效的堆叠物品!", src->guildcard);
-            return -1;
-        }
-
-        /* 从客户端结构的库存中获取物品并设置拆分 */
-        item_data = src->bb_pl->inv.iitems[found];
-        item_data.data.item_id = generate_item_id(l, src->client_id);
-        item_data.data.data_b[5] = (uint8_t)(LE32(pkt->amount));
-    }
-    else {
-        item_data.data.data_l[0] = LE32(Item_Meseta);
-        item_data.data.data_l[1] = item_data.data.data_l[2] = 0;
-        item_data.data.item_id = generate_item_id(l, src->client_id);
-        item_data.data.data2_l = pkt->amount;
-    }
-
-    /* Make sure the item id and amount match the most recent 0xC3. */
-    if (pkt->item_id != src->drop_item_id || pkt->amount != src->drop_amt) {
-        ERR_LOG("GC %" PRIu32 " 掉了不同的堆叠物品!",
+    if (!&item_data) {
+        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
             src->guildcard);
-        ERR_LOG("pkt->item_id %d c->drop_item %d pkt->amount %d c->drop_amt %d",
-            pkt->item_id, src->drop_item_id, pkt->amount, src->drop_amt);
         return -1;
     }
-
-    /* We have the item... Add it to the lobby's inventory. */
-    if (!(it = lobby_add_item_locked(l, &item_data))) {
-        /* *Gulp* The lobby is probably toast... At least make sure this user is
-           still (mostly) safe... */
-        ERR_LOG("无法将物品添加至游戏房间!");
-        return -1;
-    }
-
-    if (pkt->item_id != 0xFFFFFFFF) {
-        /* 从玩家的背包中移除该物品. */
-        found = item_remove_from_inv(src->bb_pl->inv.iitems,
-            src->bb_pl->inv.item_count, pkt->item_id,
-            LE32(pkt->amount));
-        if (found < 0) {
-            ERR_LOG("无法从玩家背包中移除物品!");
-            return -1;
-        }
-
-        src->bb_pl->inv.item_count -= found;
-    }
-    else {
-        /* Remove the meseta from the character data */
-        tmp = LE32(pkt->amount);
-        tmp2 = LE32(src->bb_pl->character.disp.meseta);
-
-        if (tmp > tmp2) {
-            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
-                src->guildcard);
-            return -1;
-        }
-
-        src->bb_pl->character.disp.meseta = LE32(tmp2 - tmp);
-        src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
-    }
-
-    /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
-    然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
-    第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-    subcmd_send_bb_lobby_drop_stack(src, src->drop_area, src->drop_x, src->drop_z, it);
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2549,8 +2483,9 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int found = -1;
-    uint32_t i, meseta, amt;
+    uint32_t i;
     iitem_t iitem = { 0 };
+    iitem_t* it;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2570,42 +2505,29 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* Look for the item in the user's inventory. */
-    if (pkt->item_id != 0xFFFFFFFF) {
-        for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
-            if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-                found = i;
-                break;
-            }
-        }
+    iitem = remove_item(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
-        /* If the item isn't found, then punt the user from the ship. */
-        if (found == -1) {
-            ERR_LOG("GC %" PRIu32 " 掉落的物品ID无效!",
-                src->guildcard);
-            return -1;
-        }
-    }
-    else {
-        meseta = LE32(src->bb_pl->character.disp.meseta);
-        amt = LE32(pkt->amount);
-
-        if (meseta < amt) {
-            ERR_LOG("GC %" PRIu32 " 掉落太多美赛塔!\n",
-                src->guildcard);
-            return -1;
-        }
+    if (iitem.data.item_id == 0xFFFFFFFF) {
+        iitem.data.item_id = generate_item_id(l, src->client_id);
     }
 
-    /* We have the item... Record the information for use with the subcommand
-    0x29 that should follow. */
-    src->drop_x = pkt->x;
-    src->drop_z = pkt->z;
-    src->drop_area = pkt->area;
-    src->drop_item_id = pkt->item_id;
-    src->drop_amt = pkt->amount;
+    i = add_item(src, &iitem);
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    if (i) {
+        ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* We have the item... Add it to the lobby's inventory. */
+    if (!(it = lobby_add_item_locked(l, &iitem))) {
+        /* *Gulp* The lobby is probably toast... At least make sure this user is
+           still (mostly) safe... */
+        ERR_LOG("无法将物品添加至游戏房间!");
+        return -1;
+    }
+
+    return subcmd_send_bb_lobby_drop_stack(src, pkt->area, pkt->x, pkt->z, it);
 }
 
 int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 

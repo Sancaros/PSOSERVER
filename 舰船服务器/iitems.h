@@ -81,6 +81,7 @@ size_t find_equipped_mag(inventory_t* inv);
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt);
 iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
+uint32_t add_item(ship_client_t* src, iitem_t* item);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);

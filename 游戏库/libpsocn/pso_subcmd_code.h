@@ -295,7 +295,7 @@
 #define SUBCMD60_JUKEBOX                       0xBF    /* Episode III - Change background music */
 #define SUBCMD60_GIVE_EXP                      0xBF    /* Blue Burst - give experience points */
 #define SUBCMD60_SELL_ITEM                     0xC0
-#define SUBCMD60_DROP_SPLIT_ITEM       0xC3    /* Blue Burst - Drop part of stack coords */
+#define SUBCMD60_DROP_SPLIT_ITEM               0xC3    /* Blue Burst - Drop part of stack coords */
 #define SUBCMD60_SORT_INV                      0xC4    /* Blue Burst - Sort inventory */
 #define SUBCMD60_MEDIC                         0xC5    /* Blue Burst - Use the medical center */
 #define SUBCMD60_STEAL_EXP                     0xC6

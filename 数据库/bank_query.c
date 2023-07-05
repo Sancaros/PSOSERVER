@@ -168,7 +168,7 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "data_b8 = '%02X', data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', "
         "item_id = '%08X', "
         "data2_b0 = '%02X', data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', "
-        "amount = '%04X', show_flags = '%04X' "
+        "amount = '%04X', show_flags = '%04X', "
         "item_name = '%s'"
         " WHERE "
         "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
@@ -278,8 +278,17 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_BANK, gc, slot);
+    sprintf(myquery, "SELECT "
+        "item_count, meseta"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "'"
+        " AND "
+        "slot = '%u'", 
+        CHARACTER_BANK, 
+        gc, slot
+    );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
@@ -303,10 +312,8 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
         return -3;
     }
 
-    int i = 2;
-    bank->item_count = (uint32_t)strtoul(row[i], NULL, 16);
-    i++;
-    bank->meseta = (uint32_t)strtoul(row[i], NULL, 16);
+    bank->item_count = (uint32_t)strtoul(row[0], NULL, 16);
+    bank->meseta = (uint32_t)strtoul(row[1], NULL, 16);
 
     psocn_db_result_free(result);
 
@@ -321,7 +328,11 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE "
+    sprintf(myquery, "SELECT "
+        "*"
+        " FROM "
+        "%s"
+        " WHERE "
         "guildcard = '%" PRIu32 "' AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
         CHARACTER_BANK_ITEMS,
         gc, slot, item_index
@@ -445,7 +456,7 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
         }
     }
 
-    clean_up_char_bank(bank, gc, slot);
+    clean_up_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
 
     if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
         return -1;
@@ -457,19 +468,13 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint8_t db_item_count = 0;
     size_t i = 0, ic = bank->item_count;
 
-    //db_item_count = db_get_char_bank_item_count(gc, slot);
-
-    ///* 取目前最大的数量 */
-    //if (ic != db_item_count)
-    //    ic = db_item_count;
-
     if (ic > MAX_PLAYER_BANK_ITEMS)
-        ic = db_get_char_bank_item_count(gc, slot);;
+        ic = db_get_char_bank_item_count(gc, slot);
 
     bank->item_count = ic;
 
     if (db_update_bank_param(bank, gc, slot)) {
-        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
+        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
         goto build;
     }
 
@@ -477,13 +482,13 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     for (i; i < ic; i++) {
         if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
             if (db_update_bank_items(&bank->bitems[i], gc, slot, i)) {
-                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行物品数据", gc, slot, bank->item_count);
+                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行 %d 物品数据", gc, slot, bank->item_count);
                 return -1;
             }
         }
     }
 
-    clean_up_char_bank(bank, gc, slot);
+    clean_up_char_bank(bank, ic, MAX_PLAYER_BANK_ITEMS);
 
     if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;
@@ -506,12 +511,6 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
     uint32_t db_item_count = 0;
     size_t i = 0, ic = bank->item_count;
 
-    ///* 获取数据库中 银行物品的数量 用于对比 */
-    //db_item_count = db_get_char_bank_item_count(gc, slot);
-
-    //if (ic != db_item_count)
-    //    ic = db_item_count;
-
     if (ic > MAX_PLAYER_BANK_ITEMS)
         ic = db_get_char_bank_item_count(gc, slot);
 
@@ -527,7 +526,7 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
             break;
     }
 
-    clean_up_char_bank(bank, gc, slot);
+    clean_up_char_bank(bank, ic, MAX_PLAYER_BANK_ITEMS);
 
     if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;

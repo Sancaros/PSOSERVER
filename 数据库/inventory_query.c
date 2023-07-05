@@ -218,8 +218,18 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_INVENTORY, gc, slot);
+    sprintf(myquery, "SELECT "
+        "item_count, hpmats_used, tpmats_used, language"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "'"
+        " AND "
+        "slot = '%u'", 
+        CHARACTER_INVENTORY, 
+        gc, 
+        slot
+    );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
@@ -243,14 +253,10 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
         return -3;
     }
 
-    int i = 2;
-    inv->item_count = (uint8_t)strtoul(row[i], NULL, 16);
-    i++;
-    inv->hpmats_used = (uint8_t)strtoul(row[i], NULL, 16);
-    i++;
-    inv->tpmats_used = (uint8_t)strtoul(row[i], NULL, 16);
-    i++;
-    inv->language = (uint8_t)strtoul(row[i], NULL, 16);
+    inv->item_count = (uint8_t)strtoul(row[0], NULL, 16);
+    inv->hpmats_used = (uint8_t)strtoul(row[1], NULL, 16);
+    inv->tpmats_used = (uint8_t)strtoul(row[2], NULL, 16);
+    inv->language = (uint8_t)strtoul(row[3], NULL, 16);
 
     psocn_db_result_free(result);
 
@@ -265,7 +271,11 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE "
+    sprintf(myquery, "SELECT "
+        "*"
+        " FROM "
+        "%s"
+        " WHERE "
         "guildcard = '%" PRIu32 "' AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
         CHARACTER_INVENTORY_ITEMS,
         gc, slot, item_index
@@ -413,13 +423,6 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     size_t i = 0;
     uint8_t ic = inv->item_count;
 
-    ///* 获取数据库中 背包物品的数量 用于对比 */
-    //db_item_count = db_get_char_inv_item_count(gc, slot);
-
-    ///* 取目前最大的数量 */
-    //if (ic != db_item_count)
-    //    ic = db_item_count;
-
     if (ic > MAX_PLAYER_INV_ITEMS)
         ic = db_get_char_inv_item_count(gc, slot);
 
@@ -454,19 +457,13 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
     size_t i = 0;
     uint8_t ic = inv->item_count;
 
-    ///* 获取数据库中 背包物品的数量 用于对比 */
-    //db_item_count = db_get_char_inv_item_count(gc, slot);
-
-    //if (ic != db_item_count)
-    //    ic = db_item_count;
-
     if (ic > MAX_PLAYER_INV_ITEMS)
         ic = db_get_char_inv_item_count(gc, slot);
 
     inv->item_count = ic;
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {
-        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
+        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
         goto build;
     }
 
