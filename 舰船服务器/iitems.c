@@ -785,32 +785,6 @@ size_t player_use_item(ship_client_t* src, size_t item_index) {
     return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);

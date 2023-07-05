@@ -1105,14 +1105,8 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* 从玩家的背包中移除该物品. */
-    if (item_remove_from_inv(src->bb_pl->inv.iitems, src->bb_pl->inv.item_count,
-        pkt->item_id, EMPTY_STRING) < 1) {
-        ERR_LOG("无法从玩家背包中移除物品!");
-        return -1;
-    }
-
-    --src->bb_pl->inv.item_count;
+    /* TODO 可以打印丢出的物品信息 */
+    remove_item(src, pkt->item_id, 0, src->version != CLIENT_VERSION_BB);
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1378,7 +1372,6 @@ int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_4D_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int i;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -1395,17 +1388,13 @@ int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    src->game_data->death = 1;
+    inventory_t inventory = src->bb_pl->inv;
+    size_t mag_index = find_equipped_mag(&inventory);
 
-    for (i = 0; i < src->bb_pl->inv.item_count; i++) {
-        if ((src->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_MAG) &&
-            (src->bb_pl->inv.iitems[i].flags & LE32(0x00000008))) {
-            if (src->bb_pl->inv.iitems[i].data.data2_b[0] >= 5)
-                src->bb_pl->inv.iitems[i].data.data2_b[0] -= 5;
-            else
-                src->bb_pl->inv.iitems[i].data.data2_b[0] = 0;
-        }
-    }
+    item_t mag = inventory.iitems[mag_index].data;
+    mag.data2_b[0] = MAX((mag.data2_b[0] - 5), 0);
+
+    src->game_data->death = 1;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

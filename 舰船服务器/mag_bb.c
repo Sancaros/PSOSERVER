@@ -796,28 +796,7 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 	//}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//玛古同步概率的代码
+/* MAG 增加光子爆发参数*/
 void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb) {
 	int32_t pb_exists = 0;
 	uint8_t pbv;
@@ -872,7 +851,7 @@ void mag_bb_add_pb(uint8_t* flags, uint8_t* blasts, uint8_t pb) {
 	}
 }
 
-//玛古的代码
+/* MAG 增加变量参数*/
 int32_t mag_bb_alignment(magitem_t* m) {
 	int32_t v1, v2, v3, v4, v5, v6;
 
@@ -912,6 +891,7 @@ int32_t mag_bb_alignment(magitem_t* m) {
 	return v4;
 }
 
+/* MAG 特殊进化函数 */
 int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	uint8_t oldType;
 	int16_t mDefense, mPower, mDex, mMind;
@@ -1041,6 +1021,7 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type,
 	return (int32_t)(oldType != m->mtype);
 }
 
+/* MAG 50级进化函数 */
 void mag_bb_lv50_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	int32_t v10, v11, v12, v13;
 
@@ -1377,7 +1358,8 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 	}
 }
 
-void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class){
+/* MAG 35级进化函数 */
+void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	int32_t Alignment = mag_bb_alignment(m);
 
 	if (evolution_class > 3) // Don't bother to check if a special mag.
@@ -1460,6 +1442,7 @@ void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 	}
 }
 
+/* MAG 10级进化函数 */
 void mag_bb_lv10_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	switch (type)
 	{
@@ -1487,6 +1470,7 @@ void mag_bb_lv10_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32
 	}
 }
 
+/* MAG 进化检测函数 */
 void mag_bb_check_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	if ((m->level < 10) || (m->level >= 35)) {
 		if ((m->level < 35) || (m->level >= 50)) {
@@ -1511,7 +1495,7 @@ void mag_bb_check_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int3
 	}
 }
 
-//喂养玛古
+/* MAG 喂养函数 */
 int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) {
 	lobby_t* l = src->cur_lobby;
 
