@@ -1171,9 +1171,9 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
-    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, 1);
+    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, true);
 
-    return subcmd_send_bb_pick_item(src, pkt->area, iitem_data.data.item_id);
+    return subcmd_send_bb_del_map_item(src, pkt->area, iitem_data.data.item_id);
 }
 
 int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
@@ -1407,7 +1407,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t price = ii.data.data2_l * pkt->num_bought;
     subcmd_send_bb_delete_meseta(src, price, 0);
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);
 }
 
 int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
@@ -1541,7 +1541,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        for (i = 0; i < src->pl->bb.inv.item_count; i++)
+        for (i = 0; i < src->pl->bb.inv.item_count; ++i)
             if (src->pl->bb.inv.iitems[i].data.item_id == id_result->data.item_id) {
                 ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
                     src->guildcard);
@@ -1587,7 +1587,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
             src->drop_item_id = 0xFFFFFFFF;
             src->drop_amt = 0;
 
-            return subcmd_send_lobby_bb_create_inv_item(src, id_result->data, 0);
+            return subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
         }
 
     }
@@ -1744,7 +1744,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             src->bb_pl->inv.item_count = (iitem_count -= found);
-            src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
 
             /* Fill in the bank item. */
             if (stack) {
@@ -1817,7 +1816,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             found = item_take_from_bank(src, pkt->item_id, pkt->item_amount, &bitem);
 
             if (found < 0) {
-                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品! 错误码 %d", src->guildcard, found);
                 return -1;
             }
 
@@ -1828,9 +1827,9 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             ic[0] = iitem.data.data_l[0] = bitem.data.data_l[0];
             ic[1] = iitem.data.data_l[1] = bitem.data.data_l[1];
             ic[2] = iitem.data.data_l[2] = bitem.data.data_l[2];
-            iitem.data.item_id = LE32(l->bitem_player_id[src->client_id]);
+            iitem.data.item_id = LE32(l->item_lobby_id);
             iitem.data.data2_l = bitem.data.data2_l;
-            ++l->bitem_player_id[src->client_id];
+            ++l->item_lobby_id;
 
             /* 新增至玩家背包中... */
             found = add_item_to_client(src, &iitem);
@@ -1845,7 +1844,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             //src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
 
             /* 发送至房间中的客户端. */
-            return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1);
+            return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, true);
         }
 
     default:
@@ -2012,7 +2011,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 0);
+        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, true);
     }
 }
 
@@ -2039,7 +2038,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 0);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, true);
 }
 
 int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
@@ -2144,7 +2143,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     memset(&backup_item, 0, sizeof(iitem_t));
     wrap_id = *(uint32_t*)&pkt->data[0x0C];
 
-    for (i = 0; i < src->bb_pl->inv.item_count; i++) {
+    for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
         if (src->bb_pl->inv.iitems[i].data.item_id == wrap_id) {
             memcpy(&backup_item, &src->bb_pl->inv.iitems[i], sizeof(iitem_t));
             break;

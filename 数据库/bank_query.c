@@ -69,7 +69,7 @@ static int db_cleanup_bank_items(uint32_t gc, uint8_t slot) {
 }
 
 static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
-    char item_name_text[32];
+    char item_name_text[64];
 
     istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
 
@@ -156,7 +156,7 @@ uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
 }
 
 static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
-    char item_name_text[256];
+    char item_name_text[64];
 
     istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
 
@@ -182,9 +182,9 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         item_name_text,
         gc, slot, item_index
     );
-
+        
     if (psocn_db_real_query(&conn, myquery)) {
-        //SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+        SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
         return -1;
     }
 
@@ -477,7 +477,7 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     for (i; i < ic; i++) {
         if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
             if (db_update_bank_items(&bank->bitems[i], gc, slot, i)) {
-                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行物品数据", gc, slot);
+                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行物品数据", gc, slot, bank->item_count);
                 return -1;
             }
         }

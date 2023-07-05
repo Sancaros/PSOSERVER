@@ -84,7 +84,7 @@ int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, fl
 }
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
-int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t area, uint32_t item_id) {
+int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_id) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_map_item_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_destroy_map_item_t);
@@ -132,8 +132,8 @@ int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
 }
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 发送给大厅玩家物品 用于SHOP类型的获取 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop) {
-    lobby_t* l = c->cur_lobby;
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool send_to_src) {
+    lobby_t* l = src->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
 
     if (!l)
@@ -147,16 +147,16 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_CREATE_ITEM;
     pkt.shdr.size = 0x07;
-    pkt.shdr.client_id = c->client_id;
+    pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
     pkt.item = item;
     pkt.unused2 = 0;
 
-    if (shop)
-        return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&pkt, 0);
-    else
+    if (send_to_src)
         return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
+    else
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */

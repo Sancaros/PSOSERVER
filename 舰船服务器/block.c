@@ -286,7 +286,7 @@ static void* block_thd(void* d) {
         /* Wait for some activity... */
         if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             if (FD_ISSET(b->pipes[1], &readfds)) {
-                recv(b->pipes[1], &len, 1, 0);
+                recv(b->pipes[1], (char*)&len, 1, 0);
             }
 
             for (i = 0; i < numsocks; ++i) {

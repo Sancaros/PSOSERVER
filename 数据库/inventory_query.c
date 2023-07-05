@@ -70,7 +70,7 @@ static int db_update_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 }
 
 static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
-    char item_name_text[256];
+    char item_name_text[64];
 
     istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
 
@@ -98,7 +98,7 @@ static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        //SQLERR_LOG("psocn_db_real_query() Ê§°Ü: %s", psocn_db_error(&conn));
+        SQLERR_LOG("psocn_db_real_query() Ê§°Ü: %s", psocn_db_error(&conn));
         return -1;
     }
 

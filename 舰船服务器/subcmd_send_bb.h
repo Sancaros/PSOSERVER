@@ -28,13 +28,13 @@ int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
-int subcmd_send_bb_pick_item(ship_client_t* c, uint32_t area, uint32_t item_id);
+int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_id);
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 单人获得物品 */
 int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item);
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 发送给大厅玩家物品 用于SHOP类型的获取 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* c, item_t item, int shop);
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool send_to_src);
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
 int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item);

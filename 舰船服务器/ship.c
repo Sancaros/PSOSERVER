@@ -298,7 +298,7 @@ static void* ship_thd(void* d) {
         if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* Clear anything written to the pipe */
             if (FD_ISSET(s->pipes[1], &readfds)) {
-                recv(s->pipes[1], &len, 1, 0);
+                recv(s->pipes[1], (char*)&len, 1, 0);
             }
 
             for (i = 0; i < numsocks; ++i) {

@@ -515,14 +515,43 @@ int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
         }
     }
 
-    /* Move the rest of the items down to take over the place that the item in
-       question used to occupy. */
-    memmove(c->bb_pl->bank.bitems + i, c->bb_pl->bank.bitems + i + 1,
-            (count - i - 1) * sizeof(bitem_t));
-    --count;
-    c->bb_pl->bank.item_count = LE32(count);
+    if (c->bb_pl != NULL && c->bb_pl->bank.bitems != NULL) {
+        if (count > 0 && i >= 0 && i < count) {
+            // 确保索引 i 在有效范围内（0 到 count-1）
 
-    return 1;
+            if (i <= count - 1) {
+                // 计算要移动的字节数
+                size_t bytesToMove = (count - i - 1) * sizeof(bitem_t);
+
+                memmove(c->bb_pl->bank.bitems + i, c->bb_pl->bank.bitems + i + 1, bytesToMove);
+
+                // 更新相关变量或进行其他操作
+                --count;
+                c->bb_pl->bank.item_count = LE32(count);
+
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+        else {
+            return -2;
+            // i 超出有效范围，进行错误处理
+        }
+    }
+    else {
+        return -3;
+        // 指针为空，进行错误处理
+    }
+    ///* Move the rest of the items down to take over the place that the item in
+    //   question used to occupy. */
+    //memmove(c->bb_pl->bank.bitems + i, c->bb_pl->bank.bitems + i + 1,
+    //        (count - i - 1) * sizeof(bitem_t));
+    //--count;
+    //c->bb_pl->bank.item_count = LE32(count);
+
+    //return 1;
 }
 
 //检查装备穿戴标记item_equip_flags
