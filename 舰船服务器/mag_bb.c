@@ -912,7 +912,7 @@ int32_t mag_bb_alignment(magitem_t* m) {
 	return v4;
 }
 
-int32_t mag_bb_special_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
+int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	uint8_t oldType;
 	int16_t mDefense, mPower, mDex, mMind;
 
@@ -925,7 +925,7 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, 
 		mDex = m->dex / 100;
 		mMind = m->mind / 100;
 
-		switch (sectionID)
+		switch (section_id)
 		{
 		case ID_Viridia:
 		case ID_Bluefull:
@@ -1041,12 +1041,12 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, 
 	return (int32_t)(oldType != m->mtype);
 }
 
-void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
+void mag_bb_lv50_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	int32_t v10, v11, v12, v13;
 
 	int32_t Alignment = mag_bb_alignment(m);
 
-	if (EvolutionClass > 3) // Don't bother to check if a special mag.
+	if (evolution_class > 3) // Don't bother to check if a special mag.
 		return;
 
 	v10 = m->pow / 100;
@@ -1062,7 +1062,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 	case CLASS_HUCASEAL:
 		if (Alignment & 0x108)
 		{
-			if (sectionID & 1)
+			if (section_id & 1)
 			{
 				if (v12 > v11)
 				{
@@ -1093,7 +1093,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 		{
 			if (Alignment & 0x10)
 			{
-				if (sectionID & 1)
+				if (section_id & 1)
 				{
 					if (v10 > v12)
 					{
@@ -1124,7 +1124,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 			{
 				if (Alignment & 0x20)
 				{
-					if (sectionID & 1)
+					if (section_id & 1)
 					{
 						if (v11 > v10)
 						{
@@ -1160,7 +1160,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 	case CLASS_RAMARL:
 		if (Alignment & 0x110)
 		{
-			if (sectionID & 1)
+			if (section_id & 1)
 			{
 				if (v10 > v12)
 				{
@@ -1191,7 +1191,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 		{
 			if (Alignment & 0x08)
 			{
-				if (sectionID & 1)
+				if (section_id & 1)
 				{
 					if (v12 > v11)
 					{
@@ -1222,7 +1222,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 			{
 				if (Alignment & 0x20)
 				{
-					if (sectionID & 1)
+					if (section_id & 1)
 					{
 						if (v11 > v10)
 						{
@@ -1265,7 +1265,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 			}
 			else
 			{
-				if (sectionID & 1)
+				if (section_id & 1)
 				{
 					if (v11 > v10)
 					{
@@ -1304,7 +1304,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 				}
 				else
 				{
-					if (sectionID & 1)
+					if (section_id & 1)
 					{
 						if (v12 > v11)
 						{
@@ -1343,7 +1343,7 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 					}
 					else
 					{
-						if (sectionID & 1)
+						if (section_id & 1)
 						{
 							if (v10 > v12)
 							{
@@ -1377,10 +1377,10 @@ void mag_bb_lv50_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 	}
 }
 
-void mag_bb_lv35_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass){
+void mag_bb_lv35_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class){
 	int32_t Alignment = mag_bb_alignment(m);
 
-	if (EvolutionClass > 3) // Don't bother to check if a special mag.
+	if (evolution_class > 3) // Don't bother to check if a special mag.
 		return;
 
 	switch (type)
@@ -1460,7 +1460,7 @@ void mag_bb_lv35_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 	}
 }
 
-void mag_bb_lv10_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
+void mag_bb_lv10_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	switch (type)
 	{
 	case CLASS_HUMAR:
@@ -1487,27 +1487,27 @@ void mag_bb_lv10_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_
 	}
 }
 
-void mag_bb_check_evolution(magitem_t* m, uint8_t sectionID, uint8_t type, int32_t EvolutionClass) {
+void mag_bb_check_evolution(magitem_t* m, uint8_t section_id, uint8_t type, int32_t evolution_class) {
 	if ((m->level < 10) || (m->level >= 35)) {
 		if ((m->level < 35) || (m->level >= 50)) {
 			if (m->level >= 50) {
 				// Divisible by 5 with no remainder.
 				if (!(m->level % 5)) {
-					if (EvolutionClass <= 3) {
-						if (!mag_bb_special_evolution(m, sectionID, type, EvolutionClass))
-							mag_bb_lv50_evolution(m, sectionID, type, EvolutionClass);
+					if (evolution_class <= 3) {
+						if (!mag_bb_special_evolution(m, section_id, type, evolution_class))
+							mag_bb_lv50_evolution(m, section_id, type, evolution_class);
 					}
 				}
 			}
 		}
 		else {
-			if (EvolutionClass < 2)
-				mag_bb_lv35_evolution(m, sectionID, type, EvolutionClass);
+			if (evolution_class < 2)
+				mag_bb_lv35_evolution(m, section_id, type, evolution_class);
 		}
 	}
 	else {
-		if (EvolutionClass <= 0)
-			mag_bb_lv10_evolution(m, sectionID, type, EvolutionClass);
+		if (evolution_class <= 0)
+			mag_bb_lv10_evolution(m, section_id, type, evolution_class);
 	}
 }
 
@@ -1528,9 +1528,10 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 	item_t* feed_item = { 0 };
 	uint16_t* ft;
 	int16_t mag_iq, mag_def, mag_pow, mag_dex, mag_mind;
+	psocn_bb_db_char_t* player = src->bb_pl;
 
 	if (fed_item_id != EMPTY_STRING) {
-		i = find_iitem_index(&src->bb_pl->inv, fed_item_id);
+		i = find_iitem_index(&player->inv, fed_item_id);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID %u",
@@ -1538,9 +1539,9 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			return -2;
 		}
 
-		feed_item = &src->bb_pl->inv.iitems[i].data;
+		feed_item = &player->inv.iitems[i].data;
 
-		i = find_equipped_mag(&src->bb_pl->inv);
+		i = find_equipped_mag(&player->inv);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID %u",
@@ -1548,7 +1549,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			return -3;
 		}
 
-		mag = (magitem_t*)&src->bb_pl->inv.iitems[i].data;
+		mag = (magitem_t*)&player->inv.iitems[i].data;
 
 		if ((feed_item->data_b[0] == ITEM_TYPE_TOOL) &&
 			(feed_item->data_b[1] < ITEM_SUBTYPE_TELEPIPE) &&
@@ -1577,7 +1578,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 		remove_item(src, fed_item_id, 1, false);
 
 		// 重新扫描以更新磁指针（如果由于清理而更改） 
-		i = find_equipped_mag(&src->bb_pl->inv);
+		i = find_equipped_mag(&player->inv);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的玛古ID %u",
@@ -1585,7 +1586,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			return -4;
 		}
 
-		mag = (magitem_t*)&src->bb_pl->inv.iitems[i].data;
+		mag = (magitem_t*)&player->inv.iitems[i].data;
 
 		// Feed that mag (Updates to code by Lee from schtserv.com)
 		switch (mag->mtype)
@@ -1693,7 +1694,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			else
 				mag->level++; // Level up!
 			mag->def = ((mag->def / 100) * 100) + mag_def;
-			mag_bb_check_evolution(mag, src->pl->bb.character.dress_data.section, src->pl->bb.character.dress_data.ch_class, evolution_class);
+			mag_bb_check_evolution(mag, player->character.dress_data.section, player->character.dress_data.ch_class, evolution_class);
 		}
 		else
 			mag->def = ((mag->def / 100) * 100) + mag_def;
@@ -1712,7 +1713,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			else
 				mag->level++; // Level up!
 			mag->pow = ((mag->pow / 100) * 100) + mag_pow;
-			mag_bb_check_evolution(mag, src->pl->bb.character.dress_data.section, src->pl->bb.character.dress_data.ch_class, evolution_class);
+			mag_bb_check_evolution(mag, player->character.dress_data.section, player->character.dress_data.ch_class, evolution_class);
 		}
 		else
 			mag->pow = ((mag->pow / 100) * 100) + mag_pow;
@@ -1732,7 +1733,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			else
 				mag->level++; // Level up!
 			mag->dex = ((mag->dex / 100) * 100) + mag_dex;
-			mag_bb_check_evolution(mag, src->pl->bb.character.dress_data.section, src->pl->bb.character.dress_data.ch_class, evolution_class);
+			mag_bb_check_evolution(mag, player->character.dress_data.section, player->character.dress_data.ch_class, evolution_class);
 		}
 		else
 			mag->dex = ((mag->dex / 100) * 100) + mag_dex;
@@ -1752,7 +1753,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			else
 				mag->level++; // Level up!
 			mag->mind = ((mag->mind / 100) * 100) + mag_mind;
-			mag_bb_check_evolution(mag, src->pl->bb.character.dress_data.section, src->pl->bb.character.dress_data.ch_class, evolution_class);
+			mag_bb_check_evolution(mag, player->character.dress_data.section, player->character.dress_data.ch_class, evolution_class);
 		}
 		else
 			mag->mind = ((mag->mind / 100) * 100) + mag_mind;
