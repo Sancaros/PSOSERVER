@@ -748,7 +748,7 @@ typedef struct subcmd_bb_take_item {
 
 // 0x2C: Talk to NPC
 // Packet sent when talking to an NPC on Pioneer 2 (and other purposes).
-typedef struct subcmd_talk_npc {
+typedef struct subcmd_select_menu {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unk;           /* Always 0xFFFF for NPCs? */
@@ -756,11 +756,11 @@ typedef struct subcmd_talk_npc {
     float x;
     float z;
     float unused2;       /* Always zero? */
-} PACKED subcmd_talk_npc_t;
+} PACKED subcmd_select_menu_t;
 
 // 0x2C: Talk to NPC
 // Packet sent when talking to an NPC on Pioneer 2 (and other purposes).
-typedef struct subcmd_bb_talk_npc {
+typedef struct subcmd_bb_select_menu {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unk;           /* Always 0xFFFF for NPCs? */
@@ -768,19 +768,19 @@ typedef struct subcmd_bb_talk_npc {
     float x;
     float z;
     float unused2;          /* Always zero? */
-} PACKED subcmd_bb_talk_npc_t;
+} PACKED subcmd_bb_select_menu_t;
 
-// 0x2D: Done talking to NPC
-typedef struct subcmd_end_talk_to_npc {
+// 0x2D: Done Select
+typedef struct subcmd_select_done {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_end_talk_to_npc_t;
+} PACKED subcmd_select_done_t;
 
-// 0x2D: Done talking to NPC
-typedef struct subcmd_bb_end_talk_to_npc {
+// 0x2D: Done Select
+typedef struct subcmd_bb_select_done {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_end_talk_to_npc_t;
+} PACKED subcmd_bb_select_done_t;
 
 // 0x2E: Set and/or clear player flags
 typedef struct subcmd_set_or_clear_player_flags {
@@ -2976,11 +2976,13 @@ typedef struct subcmd_bb_black_paper_deal_photon_drop_exchange {
 // 0xE0: Black Paper's Deal rewards (BB; handled by server)
 // The client sends this when it executes an F95E quest opcode.
 // 00 - 07 -> 08 09 0A 0B -> 0C 0D 0E 0F 10 11 12 13 14 15 16 17
-// hdr        shdr           
+// hdr        shdr           area        x           z
 typedef struct subcmd_bb_black_paper_deal_reward {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint8_t data[12];
+    uint32_t area;
+    float x;
+    float z;
 } PACKED subcmd_bb_black_paper_deal_reward_t;
 
 // 0xE1: Invalid subcommand
@@ -3068,8 +3070,6 @@ int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 /* 处理 BB 0x60 来自客户端的数据包. */
 int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 
-int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt,
-    int ignore_check);
 /////////////////////////////////////////////////////////////////////////////
 ////Episode 3
 

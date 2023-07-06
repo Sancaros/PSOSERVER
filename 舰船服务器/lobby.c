@@ -1388,16 +1388,16 @@ int lobby_send_pkt_dcnte(lobby_t *l, ship_client_t *c, void *h, void *h2,
     return 0;
 }
 
-int lobby_send_pkt_dc(lobby_t *l, ship_client_t *c, void *h, int igcheck) {
+int lobby_send_pkt_dc(lobby_t *l, ship_client_t *src, void *h, int igcheck) {
     dc_pkt_hdr_t *hdr = (dc_pkt_hdr_t *)h;
     int i;
 
     /* 将数据包发送到每个连接的客户端. */
     for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] && l->clients[i] != c) {
+        if(l->clients[i] && l->clients[i] != src) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet. */
-            if(igcheck && client_has_ignored(l->clients[i], c->guildcard)) {
+            if(igcheck && client_has_ignored(l->clients[i], src->guildcard)) {
                 continue;
             }
 
@@ -1408,16 +1408,16 @@ int lobby_send_pkt_dc(lobby_t *l, ship_client_t *c, void *h, int igcheck) {
     return 0;
 }
 
-int lobby_send_pkt_bb(lobby_t *l, ship_client_t *c, void *h, int igcheck) {
+int lobby_send_pkt_bb(lobby_t *l, ship_client_t *src, void *h, int igcheck) {
     bb_pkt_hdr_t *hdr = (bb_pkt_hdr_t *)h;
     int i;
 
     /* 将数据包发送到每个连接的客户端. */
     for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] && l->clients[i] != c) {
+        if(l->clients[i] && l->clients[i] != src) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet. */
-            if(igcheck && client_has_ignored(l->clients[i], c->guildcard)) {
+            if(igcheck && client_has_ignored(l->clients[i], src->guildcard)) {
                 continue;
             }
 

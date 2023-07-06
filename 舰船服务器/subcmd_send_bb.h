@@ -23,9 +23,16 @@
 #include "subcmd.h"
 #include "ship_packets.h"
 
-/* 0x5D SUBCMD60_DROP_STACK BB 掉落堆叠物品*/
-int subcmd_send_lobby_drop_stack(ship_client_t* c, uint32_t area, float x,
-    float z, iitem_t* item);
+// subcmd 直接发送指令至客户端
+/* 发送副指令数据包至房间 ignore_check 是否忽略被拉入被忽略的玩家 */
+int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt,
+    int ignore_check);
+
+/* 0x5D SUBCMD60_DROP_STACK BB 单人掉落堆叠物品*/
+int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, iitem_t* item);
+
+/* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
+int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item);
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
 int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_id);

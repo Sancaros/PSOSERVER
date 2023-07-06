@@ -64,6 +64,9 @@
     <ClInclude Include="pso_items.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_items_black_paper_reward_list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

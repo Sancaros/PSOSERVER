@@ -40,6 +40,7 @@
 #include "shipgate.h"
 #include "quest_functions.h"
 #include "mag_bb.h"
+#include "pso_items_black_paper_reward_list.h"
 
 #include "subcmd_handle.h"
 
@@ -2192,6 +2193,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_reward_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    struct mt19937_state* rng = &l->block->rng;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2199,141 +2201,138 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    display_packet(pkt, pkt->hdr.pkt_len);
+
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
-        //uint32_t bp, bpl, new_item;
+        uint32_t bp, bp_list_count, new_item;
 
-        //if (client->rcv_pkt[0x0D] > 0x03)
-        //    bpl = 1;
-        //else
-        //    bpl = l->difficulty + 1;
+        if (pkt->area > 0x03)
+            bp_list_count = 1;
+        else
+            bp_list_count = l->difficulty + 1;
 
-        //for (bp = 0; bp < bpl; bp++) {
-        //    new_item = 0;
+        for (bp = 0; bp < bp_list_count; bp++) {
+            new_item = 0;
 
-        //    switch (client->rcv_pkt[0x0D])
-        //    {
-        //    case 0x00:
-        //        // bp1 dorphon route
-        //        switch (l->difficulty)
-        //        {
-        //        case 0x00:
-        //            new_item = bp_dorphon_normal[mt_lrand() % (sizeof(bp_dorphon_normal) / 4)];
-        //            break;
-        //        case 0x01:
-        //            new_item = bp_dorphon_hard[mt_lrand() % (sizeof(bp_dorphon_hard) / 4)];
-        //            break;
-        //        case 0x02:
-        //            new_item = bp_dorphon_vhard[mt_lrand() % (sizeof(bp_dorphon_vhard) / 4)];
-        //            break;
-        //        case 0x03:
-        //            new_item = bp_dorphon_ultimate[mt_lrand() % (sizeof(bp_dorphon_ultimate) / 4)];
-        //            break;
-        //        }
-        //        break;
-        //    case 0x01:
-        //        // bp1 rappy route
-        //        switch (l->difficulty)
-        //        {
-        //        case 0x00:
-        //            new_item = bp_rappy_normal[mt_lrand() % (sizeof(bp_rappy_normal) / 4)];
-        //            break;
-        //        case 0x01:
-        //            new_item = bp_rappy_hard[mt_lrand() % (sizeof(bp_rappy_hard) / 4)];
-        //            break;
-        //        case 0x02:
-        //            new_item = bp_rappy_vhard[mt_lrand() % (sizeof(bp_rappy_vhard) / 4)];
-        //            break;
-        //        case 0x03:
-        //            new_item = bp_rappy_ultimate[mt_lrand() % (sizeof(bp_rappy_ultimate) / 4)];
-        //            break;
-        //        }
-        //        break;
-        //    case 0x02:
-        //        // bp1 zu route
-        //        switch (l->difficulty)
-        //        {
-        //        case 0x00:
-        //            new_item = bp_zu_normal[mt_lrand() % (sizeof(bp_zu_normal) / 4)];
-        //            break;
-        //        case 0x01:
-        //            new_item = bp_zu_hard[mt_lrand() % (sizeof(bp_zu_hard) / 4)];
-        //            break;
-        //        case 0x02:
-        //            new_item = bp_zu_vhard[mt_lrand() % (sizeof(bp_zu_vhard) / 4)];
-        //            break;
-        //        case 0x03:
-        //            new_item = bp_zu_ultimate[mt_lrand() % (sizeof(bp_zu_ultimate) / 4)];
-        //            break;
-        //        }
-        //        break;
-        //    case 0x04:
-        //        // bp2
-        //        switch (l->difficulty)
-        //        {
-        //        case 0x00:
-        //            new_item = bp2_normal[mt_lrand() % (sizeof(bp2_normal) / 4)];
-        //            break;
-        //        case 0x01:
-        //            new_item = bp2_hard[mt_lrand() % (sizeof(bp2_hard) / 4)];
-        //            break;
-        //        case 0x02:
-        //            new_item = bp2_vhard[mt_lrand() % (sizeof(bp2_vhard) / 4)];
-        //            break;
-        //        case 0x03:
-        //            new_item = bp2_ultimate[mt_lrand() % (sizeof(bp2_ultimate) / 4)];
-        //            break;
-        //        }
-        //        break;
-        //    }
-        //    l->questE0 = 1;
+            switch (pkt->area)
+            {
+            case 0x00:
+                // bp1 dorphon route
+                switch (l->difficulty)
+                {
+                case GAME_TYPE_DIFFICULTY_NORMARL:
+                    new_item = bp_dorphon_normal[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_normal) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_HARD:
+                    new_item = bp_dorphon_hard[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_hard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                    new_item = bp_dorphon_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                    new_item = bp_dorphon_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
+                    break;
+                }
+                break;
+            case 0x01:
+                // bp1 rappy route
+                switch (l->difficulty)
+                {
+                case GAME_TYPE_DIFFICULTY_NORMARL:
+                    new_item = bp_rappy_normal[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_normal) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_HARD:
+                    new_item = bp_rappy_hard[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_hard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                    new_item = bp_rappy_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_vhard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                    new_item = bp_rappy_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
+                    break;
+                }
+                break;
+            case 0x02:
+                // bp1 zu route
+                switch (l->difficulty)
+                {
+                case GAME_TYPE_DIFFICULTY_NORMARL:
+                    new_item = bp_zu_normal[mt19937_genrand_int32(rng) % (sizeof(bp_zu_normal) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_HARD:
+                    new_item = bp_zu_hard[mt19937_genrand_int32(rng) % (sizeof(bp_zu_hard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                    new_item = bp_zu_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_zu_vhard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                    new_item = bp_zu_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_zu_ultimate) / 4)];
+                    break;
+                }
+                break;
+            case 0x04:
+                // bp2
+                switch (l->difficulty)
+                {
+                case GAME_TYPE_DIFFICULTY_NORMARL:
+                    new_item = bp2_normal[mt19937_genrand_int32(rng) % (sizeof(bp2_normal) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_HARD:
+                    new_item = bp2_hard[mt19937_genrand_int32(rng) % (sizeof(bp2_hard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                    new_item = bp2_vhard[mt19937_genrand_int32(rng) % (sizeof(bp2_vhard) / 4)];
+                    break;
+                case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                    new_item = bp2_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp2_ultimate) / 4)];
+                    break;
+                }
+                break;
+            }
 
+            l->questE0 = 1;
 
-        //    subcmd_send_lobby_drop_stack();
+            subcmd_bb_drop_stack_t bb = { 0 };
 
+            bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+            bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+            bb.hdr.flags = 0;
 
+            bb.shdr.type = SUBCMD60_DROP_STACK;
+            bb.shdr.size = 0x09;
+            bb.shdr.client_id = 0xFBFF;
 
+            bb.area = pkt->area;
+            bb.x = pkt->x;
+            bb.z = pkt->z;
 
+            bb.data.data_l[0] = new_item;
 
-        //    memset(&client->send_pkt[0x00], 0, 0x2C);
-        //    client->send_pkt[0x00] = 0x2C;
+            if (bb.data.item_id == 0xFFFFFFFF) {
+                bb.data.item_id = generate_item_id(l, EMPTY_STRING);
+            }
 
-        //    client->send_pkt[0x02] = GAME_COMMAND0_TYPE;
+            if (new_item == 0x04) {
+                //new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
+                new_item += mt19937_genrand_int32(rng) % 100;
+                bb.data.data2_l = new_item;
+            }
 
-        //    client->send_pkt[0x08] = SUBCMD60_DROP_STACK;
-        //    client->send_pkt[0x09] = 0x09;
+            if (new_item == 0x00)
+                bb.data.data_b[4] = 0x80;
 
-        //    client->send_pkt[0x0A] = 0xFF;
-        //    client->send_pkt[0x0B] = 0xFB;
+            iitem_t* litem = add_new_litem_locked(l, &bb.data, pkt->area, pkt->x, pkt->z);
 
-        //    memcpy(&client->send_pkt[0x0C], &client->rcv_pkt[0x0C], 12);
-        //    *(uint32_t*)&client->send_pkt[0x18] = new_item;
-        //    *(uint32_t*)&client->send_pkt[0x24] = l->itemID;
-        //    itemNum = Free_Game_Item(l);
-        //    if (l->gameItemCount < MAX_SAVED_ITEMS)
-        //        l->gameItemList[l->gameItemCount++] = itemNum;
-        //    memset(&l->gameItem[itemNum], 0, sizeof(GAME_ITEM));
-        //    *(uint32_t*)&l->gameItem[itemNum].item.item_data1[0] = new_item;
-        //    if (new_item == 0x04)
-        //    {
-        //        new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
-        //        new_item += mt_lrand() % 100;
-        //        *(uint32_t*)&client->send_pkt[0x28] = new_item;
-        //        *(uint32_t*)&l->gameItem[itemNum].item.item_data2[0] = new_item;
-        //    }
-        //    if (l->gameItem[itemNum].item.item_data1[0] == 0x00)
-        //    {
-        //        l->gameItem[itemNum].item.item_data1[4] = 0x80; // Untekked
-        //        client->send_pkt[0x1C] = 0x80;
-        //    }
-        //    l->gameItem[itemNum].item.item_id = l->itemID++;
-        //    server_cipher_ptr = &client->server_cipher;
-        //    send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
+            if (!litem) {
+                return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
+            }
 
-        //}
+            return subcmd_send_drop_stack(src, pkt->area, pkt->x, pkt->z, litem);
+        }
 
     }
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    return 0;
 }
 
 // 定义函数指针数组

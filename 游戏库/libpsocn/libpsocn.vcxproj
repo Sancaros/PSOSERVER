@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="pso_items_black_paper_reward_list.h" />
     <ClInclude Include="pso_cmd_code.h" />
     <ClInclude Include="packets.h" />
     <ClInclude Include="pso_items.h" />

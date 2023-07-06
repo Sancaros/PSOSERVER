@@ -1708,7 +1708,7 @@ static int handle_drop_stack(ship_client_t *c, subcmd_drop_stack_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
+static int handle_talk_npc(ship_client_t *c, subcmd_select_menu_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1733,7 +1733,7 @@ static int handle_talk_npc(ship_client_t *c, subcmd_talk_npc_t *pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t *)pkt, 0);
 }
 
-static int handle_done_talk_npc(ship_client_t *c, subcmd_end_talk_to_npc_t *pkt) {
+static int handle_done_talk_npc(ship_client_t *c, subcmd_select_done_t *pkt) {
     lobby_t *l = c->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2008,11 +2008,11 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
             break;
 
         case SUBCMD60_SELECT_MENU:
-            rv = handle_talk_npc(c, (subcmd_talk_npc_t *)pkt);
+            rv = handle_talk_npc(c, (subcmd_select_menu_t *)pkt);
             break;
 
         case SUBCMD60_SELECT_DONE:
-            rv = handle_done_talk_npc(c, (subcmd_end_talk_to_npc_t*)pkt);
+            rv = handle_done_talk_npc(c, (subcmd_select_done_t*)pkt);
             break;
 
         case SUBCMD60_DRAGON_ACT:

@@ -1034,7 +1034,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub60_2C_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_talk_npc_t* pkt) {
+    subcmd_bb_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1064,7 +1064,7 @@ int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub60_2D_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_end_talk_to_npc_t* pkt) {
+    subcmd_bb_select_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -2642,8 +2642,6 @@ int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_C3_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int found = -1;
-    iitem_t iitem = { 0 };
     iitem_t* it;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2664,7 +2662,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
+    iitem_t iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
     if (&iitem == NULL) {
         ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
@@ -2690,7 +2688,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_drop_stack(src, pkt->area, pkt->x, pkt->z, it);
+    return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it);
 }
 
 int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 
