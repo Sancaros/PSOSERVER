@@ -480,10 +480,6 @@ int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->challenge || l->battle)
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 
-    //printf("wMilliseconds = %d\n", aoetime.wMilliseconds);
-
-    //printf("aoe_timer = %d now = %d\n", (uint32_t)c->aoe_timer, (uint32_t)now);
-
     /* We only care about these if the AoE timer is set on the sender. */
     if (src->aoe_timer < now)
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -973,9 +969,7 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_2A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int /*found = -1, */isframe = 0;
-    //uint32_t i, item_count;
-    inventory_t* inv = &src->bb_pl->inv;
+    int isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1002,11 +996,14 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge || l->battle) {
-        /* 数据包完成, 发送至游戏房间. */
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    ///* TODO 完成挑战模式的物品掉落 */
+    //if (l->challenge || l->battle) {
+    //    /* 数据包完成, 发送至游戏房间. */
+    //    display_packet(pkt, pkt->hdr.pkt_len);
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
+
+    inventory_t* inv = &src->bb_pl->inv;
 
     /* 在玩家背包中查找物品. */
     size_t index = find_iitem(inv, pkt->item_id);

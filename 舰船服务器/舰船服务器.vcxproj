@@ -22,6 +22,7 @@
     <ClCompile Include="admin.c" />
     <ClCompile Include="bans.c" />
     <ClCompile Include="block.c" />
+    <ClCompile Include="challenge_handle.c" />
     <ClCompile Include="clients.c" />
     <ClCompile Include="commands.c" />
     <ClCompile Include="gm.c" />
@@ -58,6 +59,7 @@
     <ClInclude Include="admin.h" />
     <ClInclude Include="bans.h" />
     <ClInclude Include="block.h" />
+    <ClInclude Include="challenge_handle.h" />
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="gm.h" />

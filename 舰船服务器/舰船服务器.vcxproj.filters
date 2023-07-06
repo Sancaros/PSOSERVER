@@ -117,6 +117,9 @@
     <ClCompile Include="subcmd_handle.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="challenge_handle.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -219,6 +222,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="subcmd_handle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="challenge_handle.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
