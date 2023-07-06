@@ -452,53 +452,21 @@ typedef struct subcmd_bb_dragon_act {
 } PACKED subcmd_bb_dragon_act_t;
 
 // 0x13: De Rol Le boss actions (不支持 Episode 3)
-//(00000000)   10 00 60 00 00 00 00 00  13 02 34 11 0C 00 06 00
-//[2023年06月21日 10:36:32:954] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:32:990] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 03 00 01 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:39:788] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:39:816] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 18 00 02 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:42:721] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:42:763] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 06 00 03 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:49:854] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:49:889] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1E 00 03 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:49:923] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:49:960] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 11 00 04 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:50:008] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:50:044] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1E 00 04 00 ..`.......4.....
-//
-//[2023年06月21日 10:36:53:287] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:36:53:344] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 1F 00 04 00 ..`.......4.....
-//
-//[2023年06月21日 10:37:01:620] 截获(4951): subcmd-bb.c 4951 行 QUEST_CHUNK_TYPE - 客户端至服务器指令 指令 0x0060 未处理. (数据如下)
-//[2023年06月21日 10:37:01:659] 截获(4951):
-//( 00000000 )   10 00 60 00 00 00 00 00  13 02 34 11 20 00 04 00 ..`.......4. ...
-typedef struct subcmd_bb_DeRolLeBoss_act {
+typedef struct subcmd_bb_de_rolLe_boss_act {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
-    uint16_t unknown_a2;              /* 有点像攻击类型 */
-    uint16_t unknown_a3;              /* 按顺序 从 1 一直数下去 */
-} PACKED subcmd_bb_DeRolLeBoss_act;
+    uint16_t action;              /* 有点像攻击类型 */
+    uint16_t stage;               /* 按顺序 从 1 一直数下去 */
+} PACKED subcmd_bb_de_rolLe_boss_act_t;
 
 // 0x14: De Rol Le boss special actions (指令生效范围; 仅限游戏; 不支持 Episode 3)
-typedef struct subcmd_bb_DeRolLeBoss_sact {
+typedef struct subcmd_bb_de_rolLe_boss_sact {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
-    uint16_t unknown_a2;              /* 有点像攻击类型 */
-    uint16_t unknown_a3;              /* 按顺序 从 1 一直数下去 与 0x13 重叠*/
+    uint16_t action;              /* 有点像攻击类型 */
+    uint16_t stage;               /* 按顺序 从 1 一直数下去 与 0x13 重叠*/
     uint32_t unused;
-} PACKED subcmd_bb_DeRolLeBoss_sact;
+} PACKED subcmd_bb_de_rolLe_boss_sact_t;
 
 // 0x15: Vol Opt boss actions (不支持 Episode 3)
 typedef struct subcmd_bb_VolOptBossActions_6x15 {
@@ -1414,12 +1382,16 @@ typedef struct subcmd_bb_destory_ground_item {
 // 0x65: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
-// 0x66: Use star atomizer
-typedef struct subcmd_bb_UseStarAtomizer_6x66 {
+//[2023年07月06日 14:40 : 19 : 691] 错误(subcmd_handle.c 0111) : subcmd_get_handler 未完成对 0x60 0x66 版本 5 的处理
+//[2023年07月06日 14:40 : 19 : 707] 调试(subcmd_handle_60.c 3061) : 未知 0x60 指令 : 0x66
+//(00000000)   14 00 60 00 00 00 00 00   66 03 7B 00 00 00 FF FF  ..`.....f.{...
+//(00000010)   7E 15 FF FF                                     ~.
+// 0x66: 使用星之粉
+typedef struct subcmd_bb_use_star_atomizer {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t target_client_ids[4];
-} PACKED subcmd_bb_UseStarAtomizer_6x66_t;
+} PACKED subcmd_bb_use_star_atomizer_t;
 
 // 0x67: 生成怪物设置 还需要完成一个数据包发送给每个玩家
 typedef struct subcmd_bb_create_enemy_set {

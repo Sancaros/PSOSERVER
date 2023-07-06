@@ -463,7 +463,7 @@ int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
     inv->item_count = ic;
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
+        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
         goto build;
     }
 

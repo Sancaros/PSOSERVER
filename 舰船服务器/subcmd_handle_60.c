@@ -552,6 +552,52 @@ int sub60_12_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
+int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_de_rolLe_boss_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    send_txt(src, "%s\n动作:0x%02X\n阶段:0x%02X.", __(src, "\tE\tC6DR BOSS"), pkt->action, pkt->stage);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_de_rolLe_boss_sact_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        return -1;
+    }
+
+    //if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        //return -1;
+   // }
+
+        send_txt(src, "%s\n动作:0x%02X\n阶段:0x%02X\n特殊:0x%04X.", __(src, "\tE\tC6DR BOSS2"), pkt->action, pkt->stage, pkt->unused);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_1F_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_area_1F_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1662,6 +1708,30 @@ int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
         //forward_subcommand(l, c, command, flag, data);
         DBG_LOG("开启物品追踪");
     }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_use_star_atomizer_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅激活游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 用于通知其他玩家此区域生成了什么怪物 */
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3044,6 +3114,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 10 - 1F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_DRAGON_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_12_bb },
+    { SUBCMD60_ACTION_DE_ROl_LE       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_13_bb },
+    { SUBCMD60_ACTION_DE_ROl_LE2      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_14_bb },
     { SUBCMD60_SET_AREA_1F            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1F_bb },
 
     //cmd_type 20 - 2F                  DC           GC           EP3          XBOX         PC           BB
@@ -3097,6 +3169,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 60 - 6F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP_REQ           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
     { SUBCMD60_DESTROY_GROUND_ITEM    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
+    { SUBCMD60_USE_STAR_ATOMIZER      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
     { SUBCMD60_CREATE_ENEMY_SET       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
     { SUBCMD60_CREATE_PIPE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
     { SUBCMD60_SPAWN_NPC              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },

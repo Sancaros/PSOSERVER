@@ -205,7 +205,7 @@
 #define SUBCMD60_DESTROY_GROUND_ITEM           0x63    /* Sent when game inventory is full */
 #define SUBCMD60_UNKNOW_64                     0x64
 #define SUBCMD60_UNKNOW_65                     0x65
-#define SUBCMD60_UNKNOW_66                     0x66
+#define SUBCMD60_USE_STAR_ATOMIZER             0x66
 #define SUBCMD60_CREATE_ENEMY_SET              0x67 // Create enemy set
 #define SUBCMD60_CREATE_PIPE                   0x68
 #define SUBCMD60_SPAWN_NPC                     0x69
