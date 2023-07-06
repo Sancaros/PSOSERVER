@@ -284,7 +284,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         tmp_meseta.data.data2_l = count;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        meseta = lobby_add_item_locked(l, &tmp_meseta);
+        meseta = add_litem_locked(l, &tmp_meseta);
         if (!meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!\n");

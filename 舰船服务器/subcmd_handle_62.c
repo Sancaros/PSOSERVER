@@ -1546,17 +1546,6 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-        //for (i = 0; i < l->item_count; i++) {
-        //    uint32_t item_index = l->item_list[i];
-        //    if (l->item_id_to_lobby_item[item_index].inv_item.data.item_id == id_result->data.item_id) {
-        //        memset(&l->item_id_to_lobby_item[item_index], 0, sizeof(fitem_t));
-        //        l->item_list[i] = EMPTY_STRING;
-        //        break;
-        //    }
-        //}
-
-        //cleanup_lobby_item(l);
-
         /* 尝试从大厅物品栏中移除... */
         found = lobby_remove_item_locked(l, pkt->item_id, id_result);
         if (found < 0) {
@@ -1740,16 +1729,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-            //found = item_remove_from_inv(src->bb_pl->inv.iitems, iitem_count,
-            //    pkt->item_id, pkt->item_amount);
-
-            //if (found < 0 || found > 1) {
-            //    ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
-            //    return -1;
-            //}
-
-            //src->bb_pl->inv.item_count = (iitem_count -= found);
-
             iitem = remove_iitem(src, pkt->item_id, pkt->item_amount, src->version != CLIENT_VERSION_BB);
 
             if (&iitem == NULL) {
@@ -1773,12 +1752,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             bitem.data.item_id = iitem.data.item_id;
             bitem.data.data2_l = iitem.data.data2_l;
 
-            ///* 存入! */
-            //if (item_deposit_to_bank(src, &bitem) < 0) {
-            //    ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
-            //    return -1;
-            //}
-
+            /* 存入! */
             if (!add_bitem(src, &bitem)) {
                 ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
                 return -1;
@@ -1818,13 +1792,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             /* 尝试从银行中取出物品. */
-            //found = item_take_from_bank(src, pkt->item_id, pkt->item_amount, &bitem);
-
-            //if (found < 0) {
-            //    ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品! 错误码 %d", src->guildcard, found);
-            //    return -1;
-            //}
-
             bitem = remove_bitem(src, pkt->item_id, pkt->item_amount);
 
             if (&bitem == NULL) {

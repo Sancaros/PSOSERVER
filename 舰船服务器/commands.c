@@ -566,7 +566,7 @@ static int handle_makeitem(ship_client_t* src, const char* params) {
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        iitem = lobby_add_new_item_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+        iitem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!iitem) {
             pthread_mutex_unlock(&l->mutex);
@@ -1576,7 +1576,7 @@ static int handle_dumpinv(ship_client_t* c, const char* params) {
             l->lobby_id);
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            print_item_data(&j->d.data, c->version);
+            print_item_data(&j->data.data, c->version);
             //SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
             //    LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
             //    LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),

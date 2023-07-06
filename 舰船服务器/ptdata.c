@@ -2277,7 +2277,7 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
     //print_item_data(&c->new_item, c->version);
 
     pthread_mutex_lock(&c->mutex);
-    it = lobby_add_new_item_locked(l, &c->new_item, req->area, req->x, req->z);
+    it = add_new_litem_locked(l, &c->new_item, req->area, req->x, req->z);
     rv = subcmd_send_bb_lobby_item(l, req, it);
     pthread_mutex_unlock(&c->mutex);
 

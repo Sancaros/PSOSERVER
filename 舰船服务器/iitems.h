@@ -40,10 +40,6 @@ bool is_stackable(const item_t* item);
 size_t stack_size(const item_t* item);
 size_t max_stack_size(const item_t* item);
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
-//
-//// TODO: Eliminate duplication between this function and the parallel function
-//// in PlayerBank
-//size_t stack_size_for_item(item_t item);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////玩家背包操作
@@ -66,10 +62,10 @@ void clear_bitem(bitem_t* bitem);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
-iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
+iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
+iitem_t* add_litem_locked(lobby_t* l, iitem_t* item);
 
-int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
+int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_iitem(inventory_t* inv, uint32_t item_id);
@@ -87,21 +83,12 @@ int player_use_item(ship_client_t* src, size_t item_index);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);
-int item_deposit_to_bank(ship_client_t *c, bitem_t *it);
-int item_take_from_bank(ship_client_t *c, uint32_t item_id, uint8_t amt,
-                        bitem_t *rv);
 
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
 int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c);
-
-///* 增加背包物品 */
-//int item_add_to_inv(ship_client_t* c, iitem_t* iitem);
-//
-///* 增加物品至客户端 */
-//int add_item_to_client(ship_client_t* c, iitem_t* iitem);
 
 //修复背包银行数据错误的物品代码
 void fix_inv_bank_item(item_t* i);
