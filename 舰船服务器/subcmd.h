@@ -946,11 +946,11 @@ typedef struct subcmd_bb_Unknown_6x3A {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_Unknown_6x3A_t;
 
-// 0x3A: Unknown (指令生效范围; 仅限游戏)
-typedef struct subcmd_bb_cmd_3a {
+// 0x3A: 通知其他玩家该玩家离开了游戏 (指令生效范围; 仅限游戏)
+typedef struct subcmd_bb_game_client_leave {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_cmd_3a_t;
+} PACKED subcmd_bb_game_client_leave_t;
 
 // 0x3B: Unknown (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_Unknown_6x3B {
@@ -1024,7 +1024,7 @@ typedef struct subcmd_bb_natk {
 typedef struct enemy_entry {
     uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
     uint16_t unused;
-} enemy_entry_t;
+} target_entry_t;
 
 // 0x46: Attack finished (sent after each of 43, 44, and 45)
 // Packet sent when an object is hit by a physical attack.
@@ -1032,7 +1032,7 @@ typedef struct subcmd_objhit_phys {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t hit_count;
-    enemy_entry_t objects[];
+    target_entry_t objects[];
 } PACKED subcmd_objhit_phys_t;
 
 // 0x46: Attack finished (sent after each of 43, 44, and 45)
@@ -1041,11 +1041,11 @@ typedef struct subcmd_bb_objhit_phys {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t hit_count;
-    enemy_entry_t objects[];
+    target_entry_t objects[];
 } PACKED subcmd_bb_objhit_phys_t;
 
 
-// 0x47: Cast technique
+// 0x47: 释放科技法术
 // Packet sent when an object is hit by a technique.
 typedef struct subcmd_objhit_tech {
     dc_pkt_hdr_t hdr;
@@ -1058,15 +1058,10 @@ typedef struct subcmd_objhit_tech {
     // never cleaned it up.
     uint8_t level;
     uint8_t hit_count;
-    enemy_entry_t objects[];
+    target_entry_t objects[];
 } PACKED subcmd_objhit_tech_t;
-//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
-//(00000010)   14 10 00 00                                         ....
-//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
-//(00000010)   14 10 00 00                                         ....
-//(00000000)   14 00 60 00 00 00 00 00  47 03 00 00 02 00 0E 01    ..`.....G.......
-//(00000010)   14 10 00 00                                         ....
-// 0x47: Cast technique
+
+// 0x47: 释放科技法术
 // Packet sent when an object is hit by a technique.
 typedef struct subcmd_bb_objhit_tech {
     bb_pkt_hdr_t hdr;
@@ -1078,10 +1073,10 @@ typedef struct subcmd_bb_objhit_tech {
     他们这样做可能是出于遗留的原因，从未清理过。*/
     uint8_t level;
     uint8_t target_count;
-    enemy_entry_t objects[];
+    target_entry_t objects[];
 } PACKED subcmd_bb_objhit_tech_t;
 
-// 0x48: Cast technique complete
+// 0x48: 释放科技法术 complete
 // Packet used after a client uses a tech.
 typedef struct subcmd_used_tech {
     dc_pkt_hdr_t hdr;
@@ -1090,7 +1085,7 @@ typedef struct subcmd_used_tech {
     uint16_t level;
 } PACKED subcmd_used_tech_t;
 
-// 0x48: Cast technique complete
+// 0x48: 释放科技法术 complete
 // Packet used after a client uses a tech.
 typedef struct subcmd_bb_used_tech {
     bb_pkt_hdr_t hdr;
@@ -1426,8 +1421,8 @@ typedef struct subcmd_bb_UseStarAtomizer_6x66 {
     uint16_t target_client_ids[4];
 } PACKED subcmd_bb_UseStarAtomizer_6x66_t;
 
-// 0x67: Create enemy set
-typedef struct subcmd_bb_CreateEnemySet_6x67 {
+// 0x67: 生成怪物设置 还需要完成一个数据包发送给每个玩家
+typedef struct subcmd_bb_create_enemy_set {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     // unused1 could be area; the client checks this againset a global but the
@@ -1435,7 +1430,7 @@ typedef struct subcmd_bb_CreateEnemySet_6x67 {
     uint32_t unused1;
     uint32_t unknown_a1;
     uint32_t unused2;
-} PACKED subcmd_bb_CreateEnemySet_6x67_t;
+} PACKED subcmd_bb_create_enemy_set_t;
 
 // 0x68: Telepipe/Ryuker
 // Packet sent to create a pipe. Most of this, I haven't bothered looking too much at...
@@ -1830,9 +1825,7 @@ typedef struct subcmd_set_flag {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t flag; // Must be < 0x400
-    uint16_t checked; // Must be 0 or 1
-    uint16_t difficulty;
-    uint16_t unused;
+    uint16_t action; // Must be 0 or 1
 } PACKED subcmd_set_flag_t;
 
 // 0x75: Phase setup (指令生效范围; 仅限游戏)
@@ -1840,7 +1833,7 @@ typedef struct subcmd_bb_set_flag {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t flag; // Must be < 0x400
-    uint16_t checked; // Must be 0 or 1
+    uint16_t action; // Must be 0 or 1
     uint16_t difficulty;
     uint16_t unused;
 } PACKED subcmd_bb_set_flag_t;
@@ -1931,12 +1924,13 @@ typedef struct subcmd_bb_Unknown_6x7B {
 //( 00000130 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 //( 00000140 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 // 0x7C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-// SUBCMD60_GAME_MODE
+// SUBCMD60_GAME_MODE 336字节 8 + 4 + 2 + 2 + 320（challenge data）
 typedef struct subcmd_bb_Unknown_6x7C {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
-    uint8_t unknown_a1[2];
+    uint16_t unknown_a0;
+    /* challenge_data */
     uint16_t unknown_a2;
     uint8_t unknown_a3[2];
     uint32_t unknown_a4[0x17];
@@ -1998,7 +1992,7 @@ typedef struct subcmd_bb_grave {
     client_id_hdr_t shdr;
     uint16_t client_id;
     uint16_t unk0;
-    uint8_t data[320];
+    uint8_t challenge_data[320];
 } PACKED subcmd_bb_grave_t;
 
 static int sdasd = sizeof(subcmd_bb_grave_t);
@@ -2022,13 +2016,13 @@ typedef struct subcmd_bb_Unknown_6x7F {
     uint8_t unknown_a1[0x20];
 } PACKED subcmd_bb_Unknown_6x7F_t;
 
-// 0x80: Trigger trap (不支持 Episode 3)
-typedef struct subcmd_bb_TriggerTrap_6x80 {
+// 0x80: 触发陷阱 (不支持 Episode 3)
+typedef struct subcmd_bb_trigger_trap {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED subcmd_bb_TriggerTrap_6x80_t;
+} PACKED subcmd_bb_trigger_trap_t;
 
 // 0x81: Unknown
 typedef struct subcmd_bb_Unknown_6x81 {
@@ -2042,13 +2036,13 @@ typedef struct subcmd_bb_Unknown_6x82 {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_Unknown_6x82_t;
 
-// 0x83: Place trap
-typedef struct subcmd_bb_PlaceTrap_6x83 {
+// 0x83: 放置陷阱
+typedef struct subcmd_bb_place_trap {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED subcmd_bb_PlaceTrap_6x83_t;
+} PACKED subcmd_bb_place_trap_t;
 
 // 0x84: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 typedef struct subcmd_bb_Unknown_6x84 {
@@ -2101,15 +2095,15 @@ typedef struct subcmd_bb_player_died {
 } PACKED subcmd_bb_player_died_t;
 
 // 0x8A: 挑战模式进入后触发 里面有客户端的ID (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x8A {
+typedef struct subcmd_bb_ch_game_select {
     bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
-    uint32_t unknown_a1; // Must be < 0x11
-} PACKED subcmd_bb_Unknown_6x8A_t;
+    params_hdr_t shdr;
+    uint32_t mode; // Must be < 0x11
+} PACKED subcmd_bb_ch_game_select_t;
 
 // 0x8B: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
-
+    
 // 0x8C: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 

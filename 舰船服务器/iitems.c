@@ -219,7 +219,7 @@ void clear_bitem(bitem_t* bitem) {
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
+iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
     lobby_item_t* item;
 
     /* 合理性检查... */
@@ -234,11 +234,19 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item) {
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
+    item->d.present = LE16(0x0001);
+    item->d.tech = LE16(0);
+    item->d.flags = LE32(0);
+
     item->d.data.data_l[0] = LE32(new_item->data_l[0]);
     item->d.data.data_l[1] = LE32(new_item->data_l[1]);
     item->d.data.data_l[2] = LE32(new_item->data_l[2]);
     item->d.data.item_id = LE32(l->item_lobby_id);
     item->d.data.data2_l = LE32(new_item->data2_l);
+
+    item->x = x;
+    item->z = z;
+    item->area = area;
 
 #ifdef DEBUG
 

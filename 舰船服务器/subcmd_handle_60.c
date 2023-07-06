@@ -85,7 +85,7 @@ int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅 %s 指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
@@ -458,100 +458,6 @@ int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
         en->last_client = src->client_id;
     }
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-}
-
-int sub60_46_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_objhit_phys_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    uint16_t pkt_size = pkt->hdr.pkt_len;
-    uint8_t size = pkt->shdr.size;
-    uint32_t hit_count = pkt->hit_count;
-    uint8_t i;
-
-    /* We can't get these in lobbies without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅攻击了实例!",
-            src->guildcard);
-        return -1;
-    }
-
-    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-    if (l->challenge || l->battle)
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
-    if (pkt->hdr.pkt_len == LE16(0x0010)) {
-        /* 对空气进行攻击 */
-        return 0;
-    }
-
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
-            src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
-    /* Check the type of the object that was hit. If there's no object data
-       loaded here, we pretty much have to bail now. */
-    if (!l->map_objs || !l->map_enemies)
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
-    /* Handle each thing that was hit */
-    for (i = 0; i < pkt->shdr.size - 2; ++i)
-        handle_bb_objhit_common(src, l, LE16(pkt->objects[i].obj_id));
-
-    /* We're not doing any more interesting parsing with this one for now, so
-       just send it along. */
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-}
-
-/* TODO */
-int sub60_47_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_objhit_tech_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-
-    /* We can't get these in lobbies without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅用法术攻击实例!",
-            src->guildcard);
-        return -1;
-    }
-
-    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-    if (l->challenge || l->battle)
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.client_id != src->client_id ||
-        pkt->technique_number > TECHNIQUE_MEGID ||
-        src->equip_flags & EQUIP_FLAGS_DROID
-        ) {
-        ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
-            src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
-            max_tech_level[pkt->technique_number].tech_name);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
-    //display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
-
-    //printf("ch_class %d techniques %d = %d max_lvl %d\n", c->pl->bb.character.dress_data.ch_class,
-    //    c->pl->bb.character.techniques[pkt->technique_number],
-    //    c->bb_pl->character.techniques[pkt->technique_number], 
-    //    max_tech_level[pkt->technique_number].max_lvl[c->pl->bb.character.dress_data.ch_class]);
-
-    //if (c->version <= CLIENT_VERSION_BB) {
-    check_aoe_timer(src, pkt);
-    //}
-
-    /* We're not doing any more interesting parsing with this one for now, so
-       just send it along. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -1082,7 +988,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* Clear the equipped flag.
-    清理已装备的标签*/
+    清理已装备的标签 */
     src->bb_pl->inv.iitems[found].flags &= LE32(0xFFFFFFF7);
 
     /* Unequip any units, if the item was equipped and a frame.
@@ -1097,7 +1003,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* We have the item... Add it to the lobby's inventory.
-    我们有这个物品…把它添加到大厅的背包中*/
+    我们有这个物品…把它添加到大厅的背包中 */
     if (!lobby_add_item_locked(l, &src->bb_pl->inv.iitems[found])) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
@@ -1187,8 +1093,33 @@ int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_photon_blast_ready_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
+            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x000c) || pkt->shdr.size != 0x01) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_3A_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_cmd_3a_t* pkt) {
+    subcmd_bb_game_client_leave_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -1206,7 +1137,8 @@ int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    /* 这是一个用于通知其他玩家 该玩家离开了游戏  TODO*/
+    //display_packet(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1290,6 +1222,94 @@ int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
         if ((l->flags & LOBBY_TYPE_GAME))
             update_bb_qpos(src, l);
     }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_objhit_phys_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint16_t pkt_size = pkt->hdr.pkt_len;
+    uint8_t size = pkt->shdr.size;
+    uint32_t hit_count = pkt->hit_count;
+    uint8_t i;
+
+    /* We can't get these in lobbies without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅攻击了实例!",
+            src->guildcard);
+        return -1;
+    }
+
+    ///* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+    //if (l->challenge || l->battle)
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    if (pkt->hdr.pkt_len == LE16(0x0010)) {
+        /* 对空气进行攻击 */
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
+            src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* Check the type of the object that was hit. If there's no object data
+       loaded here, we pretty much have to bail now. */
+    if (!l->map_objs || !l->map_enemies)
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    /* Handle each thing that was hit */
+    for (i = 0; i < pkt->shdr.size - 2; ++i)
+        handle_bb_objhit_common(src, l, LE16(pkt->objects[i].obj_id));
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_objhit_tech_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅用法术攻击实例!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+    if (l->challenge || l->battle)
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    if (pkt->shdr.client_id != src->client_id ||
+        pkt->technique_number > TECHNIQUE_MEGID ||
+        src->equip_flags & EQUIP_FLAGS_DROID
+        ) {
+        ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
+            src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
+            max_tech_level[pkt->technique_number].tech_name);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    size_t allowed_count = MIN(pkt->shdr.size - 2, 10);
+
+    if (pkt->target_count > allowed_count) {
+        ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
+            src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
+            max_tech_level[pkt->technique_number].tech_name);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    check_aoe_timer(src, pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1479,6 +1499,39 @@ int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x53_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || 
+        pkt->shdr.size != 0x01 || 
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月06日 13:23:16:910] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+//[2023年07月06日 13:23:16:927] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+//[2023年07月06日 13:23:25:808] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+//[2023年07月06日 13:23:25:832] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+//[2023年07月06日 13:23:34:356] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+//[2023年07月06日 13:23:34:374] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+//[2023年07月06日 13:23:40:484] 错误(iitems.c 0428): 未从背包中找已装备的玛古
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_55_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_map_warp_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1613,6 +1666,30 @@ int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_create_enemy_set_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅激活游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 用于通知其他玩家此区域生成了什么怪物 */
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_68_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pipe_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1734,8 +1811,8 @@ int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_75_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint16_t flag = pkt->flag;
-    uint16_t checked = pkt->checked;
+    uint16_t flag_index = pkt->flag;
+    uint16_t action = pkt->action;
     uint16_t difficulty = pkt->difficulty;
     int rv = 0;
 
@@ -1756,59 +1833,26 @@ int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令! flag = 0x%02X checked = 0x%02X episode = 0x%02X difficulty = 0x%02X",
-        src->guildcard, flag, checked, l->episode, difficulty);
-
-    if (!checked) {
-        if (flag < 0x400)
-            src->bb_pl->quest_data1[((uint32_t)l->difficulty * 0x80) + (flag >> 3)] |= 1 << (7 - (flag & 0x07));
+    if (flag_index >= 0x400) {
+        return 0;
     }
 
-    bool should_send_boss_drop_req = false;
-    if (difficulty == l->difficulty) {
-        if ((l->episode == GAME_TYPE_EPISODE_1) && (src->cur_area == 0x0E)) {
-            // 在正常情况下，黑暗佛没有第三阶段，所以在第二阶段结束后发送掉落请求
-            // 其他困难模式则在第三阶段结束后发送
-            if (((l->difficulty == 0) && (flag == 0x00000035)) ||
-                ((l->difficulty != 0) && (flag == 0x00000037))) {
-                should_send_boss_drop_req = true;
-            }
-        }
-        else if ((l->episode == GAME_TYPE_EPISODE_2) && (flag == 0x00000057) && (src->cur_area == 0x0D)) {
-            should_send_boss_drop_req = true;
-        }
+    DBG_LOG("GC %" PRIu32 " 触发SET_FLAG指令! flag = 0x%02X action = 0x%02X episode = 0x%02X difficulty = 0x%02X",
+        src->guildcard, flag_index, action, l->episode, difficulty);
+
+    // The client explicitly checks for both 0 and 1 - any other value means no
+    // operation is performed.
+    size_t bit_index = (difficulty << 10) + flag_index;
+    size_t byte_index = bit_index >> 3;
+    uint8_t mask = 0x80 >> (bit_index & 7);
+    if (action == 0) {
+        src->bb_pl->quest_data1[byte_index] |= mask;
+    }
+    else if (action == 1) {
+        src->bb_pl->quest_data1[byte_index] &= (~mask);
     }
 
-    if (should_send_boss_drop_req) {
-        ship_client_t* s = l->clients[l->leader_id];
-        if (s) {
-            subcmd_bb_itemreq_t bd = { 0 };
-
-            /* 填充数据头 */
-            bd.hdr.pkt_len = LE16(sizeof(subcmd_bb_itemreq_t));
-            bd.hdr.pkt_type = GAME_COMMAND2_TYPE;
-            bd.hdr.flags = 0x00000000;
-            bd.shdr.type = SUBCMD62_ITEMREQ;
-            bd.shdr.size = 0x06;
-            bd.shdr.unused = 0x0000;
-
-            /* 填充数据 */
-            bd.area = (uint8_t)src->cur_area;
-            bd.pt_index = (uint8_t)((l->episode == GAME_TYPE_EPISODE_2) ? 0x4E : 0x2F);
-            bd.request_id = LE16(0x0B4F);
-            bd.x = (l->episode == 2) ? -9999.0f : 10160.58984375f;
-            bd.z = 0;
-            bd.unk1 = LE16(0x0002);
-            bd.unk2 = LE16(0x0000);
-            bd.unk3 = LE32(0xE0AEDC01);
-
-            return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-        }
-    }
-
-    rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
-    return rv;
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 int sub60_76_bb(ship_client_t* src, ship_client_t* dest, 
@@ -2182,7 +2226,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
 
     case CLIENT_VERSION_BB:
         memcpy(&bb, pkt, sizeof(subcmd_bb_grave_t));
-        display_packet((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
+        //display_packet((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
         break;
 
     default:
@@ -2227,6 +2271,63 @@ int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
         handle_bb_challenge_mode_grave(src, pkt);
 
     return 0;
+}
+
+int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_trigger_trap_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) ||
+        pkt->shdr.size != 0x02 ||
+        src->client_id != pkt->shdr.client_id
+        ) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+//[2023年07月06日 13:21:25:848] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x80 版本 5 的处理
+//[2023年07月06日 13:21:25:865] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x80
+//( 00000000 )   10 00 60 00 00 00 00 00   80 02 FC 47 50 00 02 00  ..`.....�.麲P...
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_place_trap_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || 
+        pkt->shdr.size != 0x02 || 
+        src->client_id != pkt->shdr.client_id
+        ) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月06日 13:21:22:702] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x83 版本 5 的处理
+//[2023年07月06日 13:21:22:717] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x83
+//( 00000000 )   10 00 60 00 00 00 00 00   83 02 00 00 03 00 14 00  ..`.....?......
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 int sub60_88_bb(ship_client_t* src, ship_client_t* dest, 
@@ -2275,7 +2376,7 @@ int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub60_8A_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_Unknown_6x8A_t* pkt) {
+    subcmd_bb_ch_game_select_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2286,12 +2387,14 @@ int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        //return -1;
+        return -1;
     }
+
+    src->mode = pkt->mode;
 
     UDONE_CSPD(pkt->hdr.pkt_type, src->version, pkt);
 
@@ -2314,7 +2417,7 @@ int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        //return -1;
+        return -1;
     }
 
     /*uint8_t tmp_level = pkt->level_upgrade;
@@ -2340,10 +2443,74 @@ int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        //return -1;
+        return -1;
     }
 
     display_packet(pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_9A_bb(ship_client_t* src, ship_client_t* dest, 
+    subcmd_bb_update_player_stat_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+//[2023年07月06日 12:31:43:857] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9A 版本 5 的处理
+//[2023年07月06日 12:31:43:869] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9A
+//( 00000000 )   10 00 60 00 00 00 00 00   9A 02 00 00 00 00 03 0D  ..`.....?......
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x9C_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+//[2023年07月06日 13:15:14:214] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+//[2023年07月06日 13:15:14:233] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 F0 10 10 00 00 00  ..`.....??....
+//[2023年07月06日 13:15:14:306] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+//[2023年07月06日 13:15:14:322] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 EF 10 10 00 00 00  ..`.....??....
+//[2023年07月06日 13:16:38:651] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+//[2023年07月06日 13:16:38:666] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 12 11 10 00 00 00  ..`.....?......
+//[2023年07月06日 13:16:39:680] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+//[2023年07月06日 13:16:39:696] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 13 11 10 00 00 00  ..`.....?......
+//[2023年07月06日 13:16:42:718] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+//[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2898,7 +3065,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 30 - 3F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_MEDIC_REQ              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
     { SUBCMD60_MEDIC_DONE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
-    { SUBCMD60_UNKNOW_3A              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
+    { SUBCMD60_PB_BLAST_READY         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
+    { SUBCMD60_GAME_CLIENT_LEAVE      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
     { SUBCMD60_LOAD_3B                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3B_bb },
     { SUBCMD60_SET_POS_3E             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
     { SUBCMD60_SET_POS_3F             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
@@ -2922,13 +3090,14 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 50 - 5F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SWITCH_REQ             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
     { SUBCMD60_MENU_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_52_bb },
+    { SUBCMD60_UNKNOW_53              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
     { SUBCMD60_WARP_55                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
     { SUBCMD60_LOBBY_ACTION           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_58_bb },
 
     //cmd_type 60 - 6F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP_REQ           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
     { SUBCMD60_DESTROY_GROUND_ITEM    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
-    { SUBCMD60_CREATE_ENEMY_SET       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_lobby_bb },
+    { SUBCMD60_CREATE_ENEMY_SET       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
     { SUBCMD60_CREATE_PIPE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
     { SUBCMD60_SPAWN_NPC              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },
     { SUBCMD60_UNKNOW_6A              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
@@ -2943,13 +3112,17 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_GAME_MODE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
 
     //cmd_type 80 - 8F                  DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_TRIGGER_TRAP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
+    { SUBCMD60_PLACE_TRAP             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
     { SUBCMD60_ARROW_CHANGE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
     { SUBCMD60_PLAYER_DIED            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
-    { SUBCMD60_UNKNOW_CH_8A           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
+    //{ SUBCMD60_UNKNOW_CH_8A           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
     { SUBCMD60_OVERRIDE_TECH_LEVEL    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
 
     //cmd_type 90 - 9F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TIMED_SWITCH_ACTIVATED , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
+    { SUBCMD60_CHANGE_STAT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
+    { SUBCMD60_UNKNOW_9C              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
 
     //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
@@ -3002,8 +3175,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
 //}
 
 /* 处理BB 0x60 数据包. */
-int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
     ship_client_t* dest;
     uint16_t len = pkt->hdr.pkt_len;
     uint16_t hdr_type = pkt->hdr.pkt_type;
@@ -3031,9 +3204,9 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
     }
 
-    subcmd_bb_60size_check(c, pkt);
+    subcmd_bb_60size_check(src, pkt);
 
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -3044,12 +3217,12 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_BURST_DONE:
             /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
         case SUBCMD60_GAME_MODE:
-            rv = l->subcmd_handle(c, dest, pkt);
+            rv = l->subcmd_handle(src, dest, pkt);
             break;
 
         default:
             DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
-            rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
+            rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
         }
 
         pthread_mutex_unlock(&l->mutex);
@@ -3061,12 +3234,12 @@ int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
         display_packet(pkt, pkt->hdr.pkt_len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-        rv = subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+        rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
         pthread_mutex_unlock(&l->mutex);
         return rv;
     }
 
-    rv = l->subcmd_handle(c, dest, pkt);
+    rv = l->subcmd_handle(src, dest, pkt);
 
     pthread_mutex_unlock(&l->mutex);
     return rv;

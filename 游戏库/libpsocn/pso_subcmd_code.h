@@ -145,8 +145,8 @@
 #define SUBCMD60_UNKNOW_36                     0x36
 #define SUBCMD60_UNKNOW_37                     0x37
 #define SUBCMD60_UNKNOW_38                     0x38
-#define SUBCMD60_UNKNOW_39                     0x39
-#define SUBCMD60_UNKNOW_3A                     0x3A
+#define SUBCMD60_PB_BLAST_READY                0x39
+#define SUBCMD60_GAME_CLIENT_LEAVE             0x3A
 
 #define SUBCMD60_LOAD_3B                       0x3B    /* Something with loading to a map... */
 
@@ -231,10 +231,10 @@
 #define SUBCMD60_UNKNOW_7D                     0x7D
 #define SUBCMD60_UNKNOW_7E                     0x7E
 #define SUBCMD60_UNKNOW_7F                     0x7F
-#define SUBCMD60_UNKNOW_80                     0x80
+#define SUBCMD60_TRIGGER_TRAP                  0x80
 #define SUBCMD60_UNKNOW_81                     0x81
 #define SUBCMD60_UNKNOW_82                     0x82
-#define SUBCMD60_UNKNOW_83                     0x83
+#define SUBCMD60_PLACE_TRAP                    0x83
 #define SUBCMD60_UNKNOW_84                     0x84
 #define SUBCMD60_UNKNOW_85                     0x85
 #define SUBCMD60_UNKNOW_86                     0x86

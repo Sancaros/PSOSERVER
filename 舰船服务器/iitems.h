@@ -66,7 +66,7 @@ void clear_bitem(bitem_t* bitem);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item);
+iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
 iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
 
 int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);

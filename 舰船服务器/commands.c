@@ -566,7 +566,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        iitem = lobby_add_new_item_locked(l, &c->new_item);
+        iitem = lobby_add_new_item_locked(l, &c->new_item, c->cur_area, c->x, c->z);
 
         if (!iitem) {
             pthread_mutex_unlock(&l->mutex);
@@ -581,6 +581,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
     dc.hdr.flags = 0;
+
     dc.shdr.type = SUBCMD60_DROP_STACK;
     dc.shdr.size = 0x0A;
     dc.shdr.client_id = c->client_id;
@@ -589,6 +590,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = 0;
+
     bb.shdr.type = SUBCMD60_DROP_STACK;
     bb.shdr.size = 0x09;
     bb.shdr.client_id = c->client_id;
@@ -598,7 +600,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     bb.x = dc.x = c->x;
     bb.z = dc.z = c->z;
     bb.data = dc.data = c->new_item;
-    bb.data.item_id = dc.data.item_id = LE32((l->item_player_id[c->client_id] - 1));
+    bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
     bb.two = dc.two = LE32(0x00000002);
 
     /* Clear the set item */

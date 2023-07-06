@@ -2267,8 +2267,8 @@ subcmd_handle_func_t subcmd62_handler[] = {
 };
 
 /* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */
-int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
     ship_client_t* dest;
     uint16_t hdr_type = pkt->hdr.dc.pkt_type;
     uint8_t type = pkt->type;
@@ -2289,7 +2289,7 @@ int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
         return 0;
     }
 
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -2298,11 +2298,11 @@ int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
         switch (type) {
         case SUBCMD62_BURST5:
         case SUBCMD62_BURST6:
-            rv |= l->subcmd_handle(c, dest, pkt);
+            rv |= l->subcmd_handle(src, dest, pkt);
             break;
 
         default:
-            rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t*)pkt);
+            rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
         }
 
     }
@@ -2317,7 +2317,7 @@ int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
         }
         else
-            rv = l->subcmd_handle(c, dest, pkt);
+            rv = l->subcmd_handle(src, dest, pkt);
     }
 
 
@@ -2326,8 +2326,8 @@ int subcmd_handle_62(ship_client_t* c, subcmd_pkt_t* pkt) {
 }
 
 /* 处理BB 0x62 数据包. */
-int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = c->cur_lobby;
+int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
     ship_client_t* dest;
     uint16_t len = pkt->hdr.pkt_len;
     uint16_t hdr_type = pkt->hdr.pkt_type;
@@ -2357,7 +2357,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
 #endif // DEBUG
 
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, c->version);
+    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
     /* If there's a burst going on in the lobby, delay most packets */
     if (l->flags & LOBBY_FLAG_BURSTING) {
@@ -2367,12 +2367,12 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
         case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
 
-            rv |= l->subcmd_handle(c, dest, pkt);
+            rv |= l->subcmd_handle(src, dest, pkt);
             break;
 
         default:
             DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
-            rv = lobby_enqueue_pkt_bb(l, c, (bb_pkt_hdr_t*)pkt);
+            rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
         }
 
     }
@@ -2387,7 +2387,7 @@ int subcmd_bb_handle_62(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
         }
         else
-            rv = l->subcmd_handle(c, dest, pkt);
+            rv = l->subcmd_handle(src, dest, pkt);
     }
 
     pthread_mutex_unlock(&l->mutex);

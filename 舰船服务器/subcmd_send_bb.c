@@ -23,16 +23,22 @@
 
 // subcmd 直接发送指令至客户端
 /* 发送副指令数据包至房间 ignore_check 是否忽略客户端忽略的玩家 c 是否不发给自己*/
-int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* c, subcmd_bb_pkt_t* pkt, int ignore_check) {
+int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, int ignore_check) {
     int i;
+
+    if (!l) {
+        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
+            src->guildcard);
+        return 0;
+    }
 
     /* Send the packet to every connected client. */
     for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients[i] != c) {
+        if (l->clients[i] && l->clients[i] != src) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet
                如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
-            if (ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
+            if (ignore_check && client_has_ignored(l->clients[i], src->guildcard)) {
                 continue;
             }
 
