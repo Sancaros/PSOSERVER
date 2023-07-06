@@ -476,10 +476,6 @@ int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-    if (l->challenge || l->battle)
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
     /* We only care about these if the AoE timer is set on the sender. */
     if (src->aoe_timer < now)
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -948,12 +944,6 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    ///* TODO 完成挑战模式的物品掉落 */
-    //if (l->challenge || l->battle) {
-    //    /* 数据包完成, 发送至游戏房间. */
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    //}
-
     item_data = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
     if (&item_data == NULL) {
@@ -995,13 +985,6 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
-    ///* TODO 完成挑战模式的物品掉落 */
-    //if (l->challenge || l->battle) {
-    //    /* 数据包完成, 发送至游戏房间. */
-    //    display_packet(pkt, pkt->hdr.pkt_len);
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    //}
 
     inventory_t* inv = &src->bb_pl->inv;
 
@@ -1274,10 +1257,6 @@ int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    ///* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-    //if (l->challenge || l->battle)
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-
     if (pkt->hdr.pkt_len == LE16(0x0010)) {
         /* 对空气进行攻击 */
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1315,10 +1294,6 @@ int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         return -1;
     }
-
-    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-    if (l->challenge || l->battle)
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 
     if (pkt->shdr.client_id != src->client_id ||
         pkt->technique_number > TECHNIQUE_MEGID ||
@@ -3009,33 +2984,18 @@ int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge) {
-        send_msg(src, MSG1_TYPE, "%s", __(src, "\t挑战模式不支持转换物品!"));
-        /* 数据包完成, 发送至游戏房间. */
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
-
     if (ex_item_id == EMPTY_STRING) {
         DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
-    /* 从玩家的背包中移除该物品. */
-    found = item_remove_from_inv(src->bb_pl->inv.iitems,
-        src->bb_pl->inv.item_count, ex_item_id,
-        LE32(ex_amount));
+    iitem_t item = remove_iitem(src, pkt->ex_item_id, pkt->ex_amount, src->version != CLIENT_VERSION_BB);
 
-    if (found < 0) {
-        ERR_LOG("无法从玩家背包中移除物品!");
+    if (&item == NULL) {
+        ERR_LOG("无法从玩家背包中移除 %d ID 0x%04X 物品!", pkt->ex_amount, pkt->ex_item_id);
         return -1;
     }
-
-    send_msg(src, MSG1_TYPE, "%s", __(src, "\t物品转换成功!"));
-
-    src->bb_pl->inv.item_count -= found;
-    src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

@@ -2091,11 +2091,6 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     game_objs_t *newob;
     ssize_t amt;
 
-    /* Cowardly refuse to do this on challenge or battle mode
-     胆小鬼：在挑战或战斗模式下拒绝这样做 . */
-    if(l->challenge || l->battle)
-        return 0;
-
     fn = (char*)malloc(sizeof(dlen) + 40);
 
     /* Unset this, in case something screws up. */

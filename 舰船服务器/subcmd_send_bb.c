@@ -84,37 +84,17 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, uint32_t area, float x, flo
     bb.area = LE32(src->cur_area);
     bb.x = dc.x = src->x;
     bb.z = dc.z = src->z;
-    bb.data = dc.data = item->data;
-    //bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
+
+    bb.data.data_l[0] = dc.data.data_l[0] = item->data.data_l[0];
+    bb.data.data_l[1] = dc.data.data_l[1] = item->data.data_l[1];
+    bb.data.data_l[2] = dc.data.data_l[2] = item->data.data_l[2];
+    bb.data.item_id = dc.data.item_id = item->data.item_id;
+    bb.data.data2_l = dc.data.data2_l = item->data.data2_l;
+
     bb.two = dc.two = LE32(0x00000002);
 
     if (src->version == CLIENT_VERSION_GC)
         dc.data.data2_l = SWAP32(item->data.data2_l);
-
-    /* 填充数据并准备发送.. */
-    //pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    //pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    //pkt.hdr.flags = 0;
-
-    ///* 填充副指令数据 */
-    //pkt.shdr.type = SUBCMD60_DROP_STACK;
-    //pkt.shdr.size = 0x09;
-    //pkt.shdr.client_id = src->client_id;
-
-    ///* 填充剩余数据 */
-    //pkt.area = area;
-    //pkt.x = x;
-    //pkt.z = z;
-    //pkt.data.data_l[0] = item->data.data_l[0];
-    //pkt.data.data_l[1] = item->data.data_l[1];
-    //pkt.data.data_l[2] = item->data.data_l[2];
-    //pkt.data.item_id = item->data.item_id;
-    //pkt.data.data2_l = item->data.data2_l;
-
-    //if (src->version == CLIENT_VERSION_GC)
-    //    pkt.data.data2_l = SWAP32(item->data.data2_l);
-
-    //pkt.two = 0x00000000;
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:

@@ -122,7 +122,8 @@ struct lobby {
 
     uint32_t govorlab;
 
-    uint32_t drops_disabled;
+    bool drops_disabled;
+    bool questE0;
 
     uint32_t exp_mult;
 

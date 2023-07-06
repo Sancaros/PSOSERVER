@@ -69,6 +69,8 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_iitem(inventory_t* inv, uint32_t item_id);
+size_t find_bitem(psocn_bank_t* bank, uint32_t item_id);
+size_t find_iitem_id(inventory_t* inv, iitem_t* item);
 size_t find_equipped_weapon(inventory_t* inv);
 size_t find_equipped_armor(inventory_t* inv);
 size_t find_equipped_mag(inventory_t* inv);

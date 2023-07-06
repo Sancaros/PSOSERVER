@@ -52,26 +52,26 @@ size_t generate_item_id(lobby_t* l, size_t client_id) {
     return l->item_lobby_id++;
 }
 
-size_t primary_identifier(item_t* i) {
+size_t primary_identifier(item_t* item) {
     // The game treats any item starting with 04 as Meseta, and ignores the rest
     // of data1 (the value is in data2)
-    switch (i->data_b[0]) 
+    switch (item->data_b[0]) 
     {
     case ITEM_TYPE_MESETA:
         return 0x040000;
 
     case ITEM_TYPE_TOOL:
-        if (i->data_b[1] == ITEM_SUBTYPE_DISK) {
+        if (item->data_b[1] == ITEM_SUBTYPE_DISK) {
             return 0x030200;// Tech disk (data1[2] is level, so omit it)
         }
         break;
 
     case ITEM_TYPE_MAG:
-        return 0x020000 | (i->data_b[1] << 8); // Mag
+        return 0x020000 | (item->data_b[1] << 8); // Mag
 
     }
 
-    return (i->data_b[0] << 16) | (i->data_b[1] << 8) | i->data_b[2];
+    return (item->data_b[0] << 16) | (item->data_b[1] << 8) | item->data_b[2];
 }
 
 bool is_stackable(const item_t* item) {
@@ -219,7 +219,7 @@ void clear_bitem(bitem_t* bitem) {
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
+iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
     lobby_item_t* item;
 
     /* 合理性检查... */
@@ -234,15 +234,15 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, f
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    item->d.present = LE16(0x0001);
-    item->d.tech = LE16(0);
-    item->d.flags = LE32(0);
+    item->data.present = LE16(0x0001);
+    item->data.tech = LE16(0);
+    item->data.flags = LE32(0);
 
-    item->d.data.data_l[0] = LE32(new_item->data_l[0]);
-    item->d.data.data_l[1] = LE32(new_item->data_l[1]);
-    item->d.data.data_l[2] = LE32(new_item->data_l[2]);
-    item->d.data.item_id = LE32(l->item_lobby_id);
-    item->d.data.data2_l = LE32(new_item->data2_l);
+    item->data.data.data_l[0] = LE32(new_item->data_l[0]);
+    item->data.data.data_l[1] = LE32(new_item->data_l[1]);
+    item->data.data.data_l[2] = LE32(new_item->data_l[2]);
+    item->data.data.item_id = LE32(l->item_lobby_id);
+    item->data.data.data2_l = LE32(new_item->data2_l);
 
     item->x = x;
     item->z = z;
@@ -257,11 +257,11 @@ iitem_t* lobby_add_new_item_locked(lobby_t* l, item_t* new_item, uint8_t area, f
     /* Increment the item ID, add it to the queue, and return the new item */
     ++l->item_lobby_id;
     TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->d;
+    return &item->data;
 }
 
 /* 玩家丢出的 取出的 购买的物品 */
-iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* it) {
+iitem_t* add_litem_locked(lobby_t* l, iitem_t* it) {
     lobby_item_t* item;
 
     /* 合理性检查... */
@@ -276,14 +276,14 @@ iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* it) {
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    memcpy(&item->d, it, sizeof(iitem_t));
+    memcpy(&item->data, it, sizeof(iitem_t));
 
     /* Add it to the queue, and return the new item */
     TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->d;
+    return &item->data;
 }
 
-int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
+int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     lobby_item_t* i, * tmp;
 
     if (l->version != CLIENT_VERSION_BB)
@@ -296,8 +296,8 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     while (i) {
         tmp = TAILQ_NEXT(i, qentry);
 
-        if (i->d.data.item_id == item_id) {
-            memcpy(rv, &i->d, sizeof(iitem_t));
+        if (i->data.data.item_id == item_id) {
+            memcpy(rv, &i->data, sizeof(iitem_t));
             TAILQ_REMOVE(&l->item_queue, i, qentry);
             free_safe(i);
             return 0;
@@ -311,30 +311,57 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_iitem(inventory_t* inv, uint32_t item_id) {
-    for (size_t x = 0; x < inv->item_count; x++) {
+    size_t x;
+
+    for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
         }
     }
 
     ERR_LOG("未从背包中找到ID %u 物品", item_id);
-    print_item_data(&inv->iitems->data, 5);
+    for (x = 0; x < inv->item_count; ++x) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
 
     return -1;
 }
 
 size_t find_bitem(psocn_bank_t* bank, uint32_t item_id) {
-    for (size_t x = 0; x < bank->item_count; x++) {
+    size_t x;
+
+    for (x = 0; x < bank->item_count; x++) {
         if (bank->bitems[x].data.item_id == item_id) {
             return x;
         }
     }
 
     ERR_LOG("未从银行中找到ID %u 物品", item_id);
-    print_item_data(&bank->bitems->data, 5);
+    for (x = 0; x < bank->item_count; ++x) {
+        print_bitem_data(&bank->bitems[x], x, 5);
+    }
 
     return -1;
 }
+
+size_t find_iitem_id(inventory_t* inv, iitem_t* item) {
+    uint32_t pid = primary_identifier(&item->data);
+    size_t x;
+
+    for (x = 0; x < inv->item_count; x++) {
+        if (primary_identifier(&inv->iitems[x].data) == pid) {
+            return primary_identifier(&inv->iitems[x].data);
+        }
+    }
+
+    ERR_LOG("未从背包中找到ID 0x0%04X 物品", pid);
+    for (x = 0; x < inv->item_count; ++x) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+    return -1;
+}
+
 
 
 bool is_wrapped(item_t* this) {
@@ -903,6 +930,22 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     return 0;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
@@ -1204,89 +1247,6 @@ int item_class_tag_equip_flag(ship_client_t* c) {
     }
 
     return 0;
-}
-
-/* 新增背包物品 */
-int item_add_to_inv(ship_client_t* c, iitem_t* iitem) {
-    uint32_t pid = primary_identifier(&iitem->data);
-
-    // 比较烦的就是, 美赛塔只保存在 disp_data, not in the inventory struct. If the
-    // item is meseta, we have to modify disp instead.
-    if (pid == MESETA_IDENTIFIER) {
-        c->bb_pl->character.disp.meseta += iitem->data.data2_l;
-        if (c->bb_pl->character.disp.meseta > 999999) {
-            c->bb_pl->character.disp.meseta = 999999;
-        }
-        return 0;
-    }
-
-    // 如果我们到了这里, then it's not meseta and not a combine item, so it needs to
-    // go into an empty inventory slot
-    if (c->bb_pl->inv.item_count >= 30)
-        return -1;
-
-    // 处理堆叠物品
-    size_t combine_max = max_stack_size(&iitem->data);
-    if (combine_max > 1) {
-        //如果玩家的库存中已经有一堆相同的物品,则获取物品索引 
-        size_t y;
-        for (y = 0; y < c->bb_pl->inv.item_count; y++) {
-            if (primary_identifier(&c->bb_pl->inv.iitems[y].data) == primary_identifier(&iitem->data)) {
-                break;
-            }
-        }
-
-        // 如果已经发现存在同类型堆叠物品, 则将其添加至相同物品槽位
-        if (y < c->bb_pl->inv.item_count) {
-            c->bb_pl->inv.iitems[y].data.data_b[5] += iitem->data.data_b[5];
-            if (c->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
-                c->bb_pl->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
-            }
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-int add_item_to_client(ship_client_t* c, iitem_t* iitem) {
-    int add_count = -1;
-
-    add_count = item_add_to_inv(c, iitem);
-
-    switch (add_count)
-    {
-        /* 背包空间不足时 返回 -1 */
-    case -1:
-        return -1;
-
-    case 0:
-        /* 如果背包中有堆叠的 则直接新增到堆叠中 包括美赛塔*/
-        return 0;
-
-    case 1:
-        memcpy(&c->bb_pl->inv.iitems[c->bb_pl->inv.item_count], iitem, sizeof(iitem_t));
-
-        c->bb_pl->inv.item_count += add_count;
-        c->pl->bb.inv.item_count = c->bb_pl->inv.item_count;
-
-#ifdef DEBUG
-
-        for (int i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
-        }
-
-#endif // DEBUG
-
-        return 0;
-
-        /* 即使程序不会这么走 我还是写一个默认 */
-    default:
-        ERR_LOG("GC %" PRIu32 " add_item_to_client 逻辑错误!",
-            c->guildcard);
-        return -1;
-    }
-
 }
 
 //修复背包银行数据错误的物品代码

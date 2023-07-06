@@ -1131,7 +1131,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 尝试从大厅物品栏中移除... */
-    pick_count = lobby_remove_item_locked(l, pkt->item_id, &iitem_data);
+    pick_count = remove_litem_locked(l, pkt->item_id, &iitem_data);
     if (pick_count < 0) {
         return -1;
     }
@@ -1547,7 +1547,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
             }
 
         /* 尝试从大厅物品栏中移除... */
-        found = lobby_remove_item_locked(l, pkt->item_id, id_result);
+        found = remove_litem_locked(l, pkt->item_id, id_result);
         if (found < 0) {
             /* 未找到需要移除的物品... */
             ERR_LOG("GC %" PRIu32 " 鉴定的物品不存在!",
@@ -2164,13 +2164,12 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return 0;
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
 int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_quest_oneperson_set_ex_pc_t* pkt) {
+    subcmd_bb_black_paper_deal_photon_drop_exchange_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t iitem_count, found;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2179,31 +2178,162 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
-        iitem_t tmp_iitem;
-        iitem_count = src->bb_pl->inv.item_count;
-
-        memset(&tmp_iitem, 0, sizeof(iitem_t));
-        tmp_iitem.data.data_b[0] = 0x03;
-        tmp_iitem.data.data_b[1] = 0x10;
-        tmp_iitem.data.data_b[2] = 0x02;
-
-        found = item_remove_from_inv(src->bb_pl->inv.iitems, iitem_count, 0, 1);
-
-        if (found < 0 || found > 1) {
-            ERR_LOG("GC %u Error handle_bb_quest_oneperson_set_ex_pc!", src->guildcard);
-            return -1;
-        }
-
-        src->bb_pl->inv.item_count = (iitem_count -= found);
-        src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
-
-        if (!found) {
-            l->drops_disabled = 1;
-            return -1;
-        }
+        iitem_t ex_pc = { 0 };
+        ex_pc.data.data_l[0] = BBItem_Photon_Crystal;
+        size_t item_id = find_iitem_id(&src->bb_pl->inv, &ex_pc);
+        iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
+        if(&item == NULL)
+            l->drops_disabled = true;
     }
 
-    return 0;
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_black_paper_deal_reward_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
+        //uint32_t bp, bpl, new_item;
+
+        //if (client->rcv_pkt[0x0D] > 0x03)
+        //    bpl = 1;
+        //else
+        //    bpl = l->difficulty + 1;
+
+        //for (bp = 0; bp < bpl; bp++) {
+        //    new_item = 0;
+
+        //    switch (client->rcv_pkt[0x0D])
+        //    {
+        //    case 0x00:
+        //        // bp1 dorphon route
+        //        switch (l->difficulty)
+        //        {
+        //        case 0x00:
+        //            new_item = bp_dorphon_normal[mt_lrand() % (sizeof(bp_dorphon_normal) / 4)];
+        //            break;
+        //        case 0x01:
+        //            new_item = bp_dorphon_hard[mt_lrand() % (sizeof(bp_dorphon_hard) / 4)];
+        //            break;
+        //        case 0x02:
+        //            new_item = bp_dorphon_vhard[mt_lrand() % (sizeof(bp_dorphon_vhard) / 4)];
+        //            break;
+        //        case 0x03:
+        //            new_item = bp_dorphon_ultimate[mt_lrand() % (sizeof(bp_dorphon_ultimate) / 4)];
+        //            break;
+        //        }
+        //        break;
+        //    case 0x01:
+        //        // bp1 rappy route
+        //        switch (l->difficulty)
+        //        {
+        //        case 0x00:
+        //            new_item = bp_rappy_normal[mt_lrand() % (sizeof(bp_rappy_normal) / 4)];
+        //            break;
+        //        case 0x01:
+        //            new_item = bp_rappy_hard[mt_lrand() % (sizeof(bp_rappy_hard) / 4)];
+        //            break;
+        //        case 0x02:
+        //            new_item = bp_rappy_vhard[mt_lrand() % (sizeof(bp_rappy_vhard) / 4)];
+        //            break;
+        //        case 0x03:
+        //            new_item = bp_rappy_ultimate[mt_lrand() % (sizeof(bp_rappy_ultimate) / 4)];
+        //            break;
+        //        }
+        //        break;
+        //    case 0x02:
+        //        // bp1 zu route
+        //        switch (l->difficulty)
+        //        {
+        //        case 0x00:
+        //            new_item = bp_zu_normal[mt_lrand() % (sizeof(bp_zu_normal) / 4)];
+        //            break;
+        //        case 0x01:
+        //            new_item = bp_zu_hard[mt_lrand() % (sizeof(bp_zu_hard) / 4)];
+        //            break;
+        //        case 0x02:
+        //            new_item = bp_zu_vhard[mt_lrand() % (sizeof(bp_zu_vhard) / 4)];
+        //            break;
+        //        case 0x03:
+        //            new_item = bp_zu_ultimate[mt_lrand() % (sizeof(bp_zu_ultimate) / 4)];
+        //            break;
+        //        }
+        //        break;
+        //    case 0x04:
+        //        // bp2
+        //        switch (l->difficulty)
+        //        {
+        //        case 0x00:
+        //            new_item = bp2_normal[mt_lrand() % (sizeof(bp2_normal) / 4)];
+        //            break;
+        //        case 0x01:
+        //            new_item = bp2_hard[mt_lrand() % (sizeof(bp2_hard) / 4)];
+        //            break;
+        //        case 0x02:
+        //            new_item = bp2_vhard[mt_lrand() % (sizeof(bp2_vhard) / 4)];
+        //            break;
+        //        case 0x03:
+        //            new_item = bp2_ultimate[mt_lrand() % (sizeof(bp2_ultimate) / 4)];
+        //            break;
+        //        }
+        //        break;
+        //    }
+        //    l->questE0 = 1;
+
+
+        //    subcmd_send_lobby_drop_stack();
+
+
+
+
+
+        //    memset(&client->send_pkt[0x00], 0, 0x2C);
+        //    client->send_pkt[0x00] = 0x2C;
+
+        //    client->send_pkt[0x02] = GAME_COMMAND0_TYPE;
+
+        //    client->send_pkt[0x08] = SUBCMD60_DROP_STACK;
+        //    client->send_pkt[0x09] = 0x09;
+
+        //    client->send_pkt[0x0A] = 0xFF;
+        //    client->send_pkt[0x0B] = 0xFB;
+
+        //    memcpy(&client->send_pkt[0x0C], &client->rcv_pkt[0x0C], 12);
+        //    *(uint32_t*)&client->send_pkt[0x18] = new_item;
+        //    *(uint32_t*)&client->send_pkt[0x24] = l->itemID;
+        //    itemNum = Free_Game_Item(l);
+        //    if (l->gameItemCount < MAX_SAVED_ITEMS)
+        //        l->gameItemList[l->gameItemCount++] = itemNum;
+        //    memset(&l->gameItem[itemNum], 0, sizeof(GAME_ITEM));
+        //    *(uint32_t*)&l->gameItem[itemNum].item.item_data1[0] = new_item;
+        //    if (new_item == 0x04)
+        //    {
+        //        new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
+        //        new_item += mt_lrand() % 100;
+        //        *(uint32_t*)&client->send_pkt[0x28] = new_item;
+        //        *(uint32_t*)&l->gameItem[itemNum].item.item_data2[0] = new_item;
+        //    }
+        //    if (l->gameItem[itemNum].item.item_data1[0] == 0x00)
+        //    {
+        //        l->gameItem[itemNum].item.item_data1[4] = 0x80; // Untekked
+        //        client->send_pkt[0x1C] = 0x80;
+        //    }
+        //    l->gameItem[itemNum].item.item_id = l->itemID++;
+        //    server_cipher_ptr = &client->server_cipher;
+        //    send_bb_pkt(SHIP_SERVER, client, &client->send_pkt[0x00], 0x2C);
+
+        //}
+
+    }
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
 // 定义函数指针数组
@@ -2230,7 +2360,8 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
     { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
     { SUBCMD62_WARP_ITEM                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
-    { SUBCMD62_QUEST_ONEPERSON_SET_EX_PC , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
+    { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
+    { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },
 };
 
 /* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */

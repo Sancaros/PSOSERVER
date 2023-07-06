@@ -2967,13 +2967,22 @@ typedef struct subcmd_bb_set_exp_rate {
 
 // 0xDE: Invalid subcommand
 // 0xDF: Invalid subcommand
-typedef struct subcmd_bb_quest_oneperson_set_ex_pc {
+typedef struct subcmd_bb_black_paper_deal_photon_drop_exchange {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
+    client_id_hdr_t shdr;
     uint8_t data[0];
-} PACKED subcmd_bb_quest_oneperson_set_ex_pc_t;
+} PACKED subcmd_bb_black_paper_deal_photon_drop_exchange_t;
 
-// 0xE0: Invalid subcommand
+// 0xE0: Black Paper's Deal rewards (BB; handled by server)
+// The client sends this when it executes an F95E quest opcode.
+// 00 - 07 -> 08 09 0A 0B -> 0C 0D 0E 0F 10 11 12 13 14 15 16 17
+// hdr        shdr           
+typedef struct subcmd_bb_black_paper_deal_reward {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t data[12];
+} PACKED subcmd_bb_black_paper_deal_reward_t;
+
 // 0xE1: Invalid subcommand
 // 0xE2: Invalid subcommand
 // 0xE3: Unknown
