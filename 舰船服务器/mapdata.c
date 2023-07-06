@@ -155,25 +155,21 @@ typedef struct quest_dat_hdr {
     uint8_t data[];
 } quest_dat_hdr_t;
 
-static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char *fn, const char *file) {
-    FILE *fp;
+static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char* fn, const char* file) {
+    FILE* fp;
     const size_t sz = 0x60 * sizeof(bb_battle_param_t);
-    //uint32_t battle_checksum;
-    //size_t check_num;
     char buf[128] = { 0 };
-    //int i = 0;
-    sprintf_s(&buf[0], sizeof(buf), "%s%s", fn, file);
+    sprintf(buf, "%s%s", fn, file);
 
-    if(!(fp = fopen(&buf[0], "rb"))) {
-        ERR_LOG("无法打开 %s 并读取: %s", &buf[0],
-              strerror(errno));
+    if (!(fp = fopen(buf, "rb"))) {
+        ERR_LOG("无法打开 %s 并读取: %s", buf, strerror(errno));
         return 1;
     }
 
     /* Read each difficulty in... */
     for (int difficulty = 0; difficulty < 4; difficulty++) {
         if (fread(dst[difficulty], 1, sz, fp) != sz) {
-            ERR_LOG("无法读取来自 %s 的数据: %s", &buf[0], strerror(errno));
+            ERR_LOG("无法读取来自 %s 的数据: %s", buf, strerror(errno));
             return 1;
         }
 
@@ -182,77 +178,12 @@ static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char *fn, co
         //    printf("0x%08X %s check_num %d difficulty %d 文件校对: 0x%08X\n", Battle_Param_Checksum[difficulty][i].sum, &buf[0], check_num, difficulty, battle_checksum);
         //    //printf("警告: 战斗参数文件 %s 已被修改.\n", &buf[0]);
         //}
-        //i ++;
+        //i++;
     }
 
     fclose(fp);
     return 0;
 }
-//
-//static int read_bb_level_data(const char *fn) {
-//    uint8_t *buf;
-//    int decsize;
-//    int i;
-//
-//#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-//    int i, j;
-//#endif
-//
-//    /* Read in the file and decompress it. */
-//    if((decsize = pso_prs_decompress_file(fn, &buf)) < 0) {
-//        ERR_LOG("无法读取等级参数 %s: %s", fn, strerror(-decsize));
-//        return -1;
-//    }
-//
-//    memcpy(&bb_char_stats, buf, sizeof(bb_level_table_t));
-//
-//#if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-//    /* Swap all the exp values */
-//    for(j = 0; j < MAX_PLAYER_CLASS_BB; ++j) {
-//        for(i = 0; i < MAX_PLAYER_LEVEL; ++i) {
-//            bb_char_stats.levels[j][i].exp = LE32(bb_char_stats.levels[j][i].exp);
-//        }
-//    }
-//#endif
-//
-//#ifdef DEBUG
-//    //[2023年02月08日 13:45:14:010] 设置(1337): 读取 Blue Burst 升级数据表...
-////[2023年02月08日 13:52:48:814] 调试(mapdata.c 0235): start_stats_index 0
-////[2023年02月08日 13:52:48:823] 调试(mapdata.c 0235): start_stats_index 14
-////[2023年02月08日 13:52:48:833] 调试(mapdata.c 0235): start_stats_index 28
-////[2023年02月08日 13:52:48:842] 调试(mapdata.c 0235): start_stats_index 42
-////[2023年02月08日 13:52:48:851] 调试(mapdata.c 0235): start_stats_index 56
-////[2023年02月08日 13:52:48:860] 调试(mapdata.c 0235): start_stats_index 70
-////[2023年02月08日 13:52:48:870] 调试(mapdata.c 0235): start_stats_index 84
-////[2023年02月08日 13:52:48:879] 调试(mapdata.c 0235): start_stats_index 98
-////[2023年02月08日 13:52:48:887] 调试(mapdata.c 0235): start_stats_index 112
-////[2023年02月08日 13:52:48:896] 调试(mapdata.c 0235): start_stats_index 126
-////[2023年02月08日 13:52:48:905] 调试(mapdata.c 0235): start_stats_index 140
-////[2023年02月08日 13:52:48:915] 调试(mapdata.c 0235): start_stats_index 154
-////[2023年02月08日 13:45:14:023] 调试(mapdata.c 0224): unk 0
-////[2023年02月08日 13:45:14:030] 调试(mapdata.c 0224): unk E
-////[2023年02月08日 13:45:14:037] 调试(mapdata.c 0224): unk 1C
-////[2023年02月08日 13:45:14:044] 调试(mapdata.c 0224): unk 2A
-////[2023年02月08日 13:45:14:053] 调试(mapdata.c 0224): unk 38
-////[2023年02月08日 13:45:14:060] 调试(mapdata.c 0224): unk 46
-////[2023年02月08日 13:45:14:069] 调试(mapdata.c 0224): unk 54
-////[2023年02月08日 13:45:14:076] 调试(mapdata.c 0224): unk 62
-////[2023年02月08日 13:45:14:082] 调试(mapdata.c 0224): unk 70
-////[2023年02月08日 13:45:14:089] 调试(mapdata.c 0224): unk 7E
-////[2023年02月08日 13:45:14:098] 调试(mapdata.c 0224): unk 8C
-////[2023年02月08日 13:45:14:107] 调试(mapdata.c 0224): unk 9A
-//    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
-//        DBG_LOG("start_stats_index %d", bb_char_stats.start_stats_index[i]);
-//    }
-//
-//#endif // DEBUG
-//
-//
-//    /* Clean up... */
-//    free_safe(buf);
-//
-//    return 0;
-//}
 
 static int read_v2_level_data(const char *fn) {
     uint8_t *buf;
@@ -1271,7 +1202,7 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
 
 static int read_bb_map_files(char* fn) {
     int srv, i, j, k;
-    for (i = 0; i < 2;i++) {
+    for (i = 0; i < 2;++i) {
         //printf("k = %d \n", k);
         for (j = 0; j < 3; ++j) {                            /* 章节 */
             for (k = 0; k < 16 && k <= max_area[j]; ++k) {   /* 区域 */

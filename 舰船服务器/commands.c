@@ -538,15 +538,15 @@ static int handle_item4(ship_client_t *c, const char *params) {
 }
 
 /* 用法: /makeitem */
-static int handle_makeitem(ship_client_t* c, const char* params) {
-    lobby_t* l = c->cur_lobby;
+static int handle_makeitem(ship_client_t* src, const char* params) {
+    lobby_t* l = src->cur_lobby;
     iitem_t* iitem;
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
 
     /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
 
     pthread_mutex_lock(&l->mutex);
@@ -554,27 +554,27 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
-    if (!c->new_item.data_l[0]) {
+    if (!src->new_item.data_l[0]) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s\n%s", __(c, "\tE\tC7请先输入物品的ID."), 
-            __(c, "\tE\tC7/item code1,code2,code3,code4."));
+        return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
+            __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        iitem = lobby_add_new_item_locked(l, &c->new_item, c->cur_area, c->x, c->z);
+        iitem = lobby_add_new_item_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!iitem) {
             pthread_mutex_unlock(&l->mutex);
-            return send_txt(c, "%s", __(c, "\tE\tC7新物品空间不足."));
+            return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }
     }
     else {
-        ++l->item_player_id[c->client_id];
+        ++l->item_player_id[src->client_id];
     }
 
     /* Generate the packet to drop the item */
@@ -584,7 +584,7 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
 
     dc.shdr.type = SUBCMD60_DROP_STACK;
     dc.shdr.size = 0x0A;
-    dc.shdr.client_id = c->client_id;
+    dc.shdr.client_id = src->client_id;
 
 
     bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
@@ -593,23 +593,23 @@ static int handle_makeitem(ship_client_t* c, const char* params) {
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
     bb.shdr.size = 0x09;
-    bb.shdr.client_id = c->client_id;
+    bb.shdr.client_id = src->client_id;
 
-    dc.area = LE16(c->cur_area);
-    bb.area = LE32(c->cur_area);
-    bb.x = dc.x = c->x;
-    bb.z = dc.z = c->z;
-    bb.data = dc.data = c->new_item;
+    dc.area = LE16(src->cur_area);
+    bb.area = LE32(src->cur_area);
+    bb.x = dc.x = src->x;
+    bb.z = dc.z = src->z;
+    bb.data = dc.data = src->new_item;
     bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
     bb.two = dc.two = LE32(0x00000002);
 
     /* Clear the set item */
-    clear_item(&c->new_item);
+    clear_item(&src->new_item);
 
     /* Send the packet to everyone in the lobby */
     pthread_mutex_unlock(&l->mutex);
 
-    switch (c->version) {
+    switch (src->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:
     case CLIENT_VERSION_PC:

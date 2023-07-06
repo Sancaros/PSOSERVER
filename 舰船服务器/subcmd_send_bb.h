@@ -24,7 +24,7 @@
 #include "ship_packets.h"
 
 /* 0x5D SUBCMD60_DROP_STACK BB 掉落堆叠物品*/
-int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x,
+int subcmd_send_lobby_drop_stack(ship_client_t* c, uint32_t area, float x,
     float z, iitem_t* item);
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */

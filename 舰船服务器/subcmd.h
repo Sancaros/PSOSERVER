@@ -2734,7 +2734,7 @@ typedef struct subcmd_bb_sell_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t item_id;
-    uint32_t sell_num;
+    uint32_t sell_amount;
 } PACKED subcmd_bb_sell_item_t;
 
 // 0xC1: subcmd_bb_guild_invite1

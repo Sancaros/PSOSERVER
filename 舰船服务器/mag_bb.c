@@ -1515,7 +1515,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 	psocn_bb_db_char_t* player = src->bb_pl;
 
 	if (fed_item_id != EMPTY_STRING) {
-		i = find_iitem_index(&player->inv, fed_item_id);
+		i = find_iitem(&player->inv, fed_item_id);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID %u",
@@ -1559,7 +1559,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			}
 		}
 
-		remove_item(src, fed_item_id, 1, false);
+		remove_iitem(src, fed_item_id, 1, false);
 
 		// 重新扫描以更新磁指针（如果由于清理而更改） 
 		i = find_equipped_mag(&player->inv);

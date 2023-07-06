@@ -44,15 +44,15 @@ void clear_item(item_t* item) {
 }
 
 /* 生成物品ID */
-uint32_t generate_item_id(lobby_t* l, uint8_t client_id) {
-    if (client_id < l->max_clients) {
+size_t generate_item_id(lobby_t* l, size_t client_id) {
+    if (client_id < (size_t)l->max_clients) {
         return l->item_player_id[client_id]++;
     }
 
     return l->item_lobby_id++;
 }
 
-uint32_t primary_identifier(item_t* i) {
+size_t primary_identifier(item_t* i) {
     // The game treats any item starting with 04 as Meseta, and ignores the rest
     // of data1 (the value is in data2)
     switch (i->data_b[0]) 
@@ -310,7 +310,7 @@ int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
+size_t find_iitem(inventory_t* inv, uint32_t item_id) {
     for (size_t x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id == item_id) {
             return x;
@@ -322,6 +322,20 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
 
     return -1;
 }
+
+size_t find_bitem(psocn_bank_t* bank, uint32_t item_id) {
+    for (size_t x = 0; x < bank->item_count; x++) {
+        if (bank->bitems[x].data.item_id == item_id) {
+            return x;
+        }
+    }
+
+    ERR_LOG("未从银行中找到ID %u 物品", item_id);
+    print_item_data(&bank->bitems->data, 5);
+
+    return -1;
+}
+
 
 bool is_wrapped(item_t* this) {
     switch (this->data_b[0]) {
@@ -466,15 +480,17 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
     return 1;
 }
 
-iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft) {
+iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, 
+    bool allow_meseta_overdraft) {
     iitem_t ret = { 0 };
+    psocn_bb_db_char_t* player = src->bb_pl;
 
     if (item_id == 0xFFFFFFFF) {
-        if (amount <= src->bb_pl->character.disp.meseta) {
-            src->bb_pl->character.disp.meseta -= amount;
+        if (amount <= player->character.disp.meseta) {
+            player->character.disp.meseta -= amount;
         }
         else if (allow_meseta_overdraft) {
-            src->bb_pl->character.disp.meseta = 0;
+            player->character.disp.meseta = 0;
         }
         else {
             ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
@@ -486,8 +502,8 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
         return ret;
     }
 
-    size_t index = find_iitem_index(&src->bb_pl->inv, item_id);
-    iitem_t* inventory_item = &src->bb_pl->inv.iitems[index];
+    size_t index = find_iitem(&player->inv, item_id);
+    iitem_t* inventory_item = &player->inv.iitems[index];
 
     if (amount && (inventory_item->data.data_b[5] > 1) && (amount < inventory_item->data.data_b[5])) {
         ret = *inventory_item;
@@ -498,59 +514,150 @@ iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool 
     }
 
     ret = *inventory_item;
-    src->bb_pl->inv.item_count--;
-    for (size_t x = index; x < src->bb_pl->inv.item_count; x++) {
-        src->bb_pl->inv.iitems[x] = src->bb_pl->inv.iitems[x + 1];
+    player->inv.item_count--;
+    for (size_t x = index; x < player->inv.item_count; x++) {
+        player->inv.iitems[x] = player->inv.iitems[x + 1];
     }
-    clear_iitem(&src->bb_pl->inv.iitems[src->bb_pl->inv.item_count]);
+    clear_iitem(&player->inv.iitems[player->inv.item_count]);
     return ret;
 }
 
-size_t add_iitem(ship_client_t* src, iitem_t* item) {
+bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
+    bitem_t ret = { 0 };
+    psocn_bank_t* bank = &src->bb_pl->bank;
+    
+    // 检查是否超出美赛塔数量
+    if (item_id == 0xFFFFFFFF) {
+        if (amount > bank->meseta) {
+            ERR_LOG("GC %" PRIu32 " 移除的美赛塔超出所拥有的",
+                src->guildcard);
+            return ret;
+        }
+        ret.data.data_b[0] = 0x04;
+        ret.data.data2_l = amount;
+        bank->meseta -= amount;
+        return ret;
+    }
+
+    // 查找银行物品的索引
+    size_t index = find_bitem(bank, item_id);
+    if (index == bank->item_count) {
+        ERR_LOG("GC %" PRIu32 " 银行物品索引超出限制",
+            src->guildcard);
+        return ret;
+    }
+
+    bitem_t* bank_item = &bank->bitems[index];
+
+    // 检查是否超出物品可堆叠的数量
+    if (amount && (stack_size(&bank_item->data) > 1) &&
+        (amount < bank_item->data.data_b[5])) {
+        ret = *bank_item;
+        ret.data.data_b[5] = amount;
+        ret.amount = amount;
+        bank_item->data.data_b[5] -= amount;
+        bank_item->amount -= amount;
+        return ret;
+    }
+
+    ret = *bank_item;
+
+    // 移除银行物品
+    bank->item_count--;
+    for (size_t x = index; x < bank->item_count; x++) {
+        bank->bitems[x] = bank->bitems[x + 1];
+    }
+    clear_bitem(&bank->bitems[bank->item_count]);
+    return ret;
+}
+
+bool add_iitem(ship_client_t* src, iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
+    psocn_bb_db_char_t* player = src->bb_pl;
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        src->bb_pl->character.disp.meseta += item->data.data2_l;
-        if (src->bb_pl->character.disp.meseta > 999999) {
-            src->bb_pl->character.disp.meseta = 999999;
+        player->character.disp.meseta += item->data.data2_l;
+        if (player->character.disp.meseta > 999999) {
+            player->character.disp.meseta = 999999;
         }
-        return 0;
+        return true;
     }
 
     // 处理可合并的物品
-    uint32_t combine_max = max_stack_size(&item->data);
+    size_t combine_max = max_stack_size(&item->data);
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
-        for (y = 0; y < src->bb_pl->inv.item_count; y++) {
-            if (primary_identifier(&src->bb_pl->inv.iitems[y].data) == primary_identifier(&item->data)) {
+        for (y = 0; y < player->inv.item_count; y++) {
+            if (primary_identifier(&player->inv.iitems[y].data) == pid) {
                 break;
             }
         }
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
-        if (y < src->bb_pl->inv.item_count) {
-            src->bb_pl->inv.iitems[y].data.data_b[5] += item->data.data_b[5];
-            if (src->bb_pl->inv.iitems[y].data.data_b[5] > combine_max) {
-                src->bb_pl->inv.iitems[y].data.data_b[5] = combine_max;
+        if (y < player->inv.item_count) {
+            player->inv.iitems[y].data.data_b[5] += item->data.data_b[5];
+            if (player->inv.iitems[y].data.data_b[5] > (uint8_t)combine_max) {
+                player->inv.iitems[y].data.data_b[5] = (uint8_t)combine_max;
             }
-            return 0;
+            return true;
         }
     }
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
-    if (src->bb_pl->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 物品数量超出最大值",
+    if (player->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值",
             src->guildcard);
-        return -1;
+        return false;
     }
-    src->bb_pl->inv.iitems[src->bb_pl->inv.item_count] = *item;
-    src->bb_pl->inv.item_count++;
-    return 0;
+    player->inv.iitems[player->inv.item_count] = *item;
+    player->inv.item_count++;
+    return true;
 }
 
-size_t player_use_item(ship_client_t* src, size_t item_index) {
+bool add_bitem(ship_client_t* src, bitem_t* item) {
+    uint32_t pid = primary_identifier(&item->data);
+    psocn_bank_t* bank = &src->bb_pl->bank;
+
+    if (pid == MESETA_IDENTIFIER) {
+        bank->meseta += item->data.data2_l;
+        if (bank->meseta > 999999) {
+            bank->meseta = 999999;
+        }
+        return true;
+    }
+    
+    size_t combine_max = max_stack_size(&item->data);
+    if (combine_max > 1) {
+        size_t y;
+        for (y = 0; y < bank->item_count; y++) {
+            if (primary_identifier(&bank->bitems[y].data) == pid) {
+                break;
+            }
+        }
+
+        if (y < bank->item_count) {
+            bank->bitems[y].data.data_b[5] += item->data.data_b[5];
+            if (bank->bitems[y].data.data_b[5] > (uint8_t)combine_max) {
+                bank->bitems[y].data.data_b[5] = (uint8_t)combine_max;
+            }
+            bank->bitems[y].amount = bank->bitems[y].data.data_b[5];
+            return true;
+        }
+    }
+
+    if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
+        ERR_LOG("GC %" PRIu32 " 银行物品数量超出最大值",
+            src->guildcard);
+        return false;
+    }
+    bank->bitems[bank->item_count] = *item;
+    bank->item_count++;
+    return true;
+}
+
+int player_use_item(ship_client_t* src, size_t item_index) {
     // On PC (and presumably DC), the client sends a 6x29 after this to delete the
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
@@ -790,7 +897,7 @@ size_t player_use_item(ship_client_t* src, size_t item_index) {
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
-        remove_item(src, item.data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        remove_iitem(src, item.data.item_id, 1, src->version != CLIENT_VERSION_BB);
     }
 
     return 0;
@@ -944,7 +1051,7 @@ int item_check_equip_flags(ship_client_t* c, uint32_t item_id) {
     int i = 0;
     item_t found_item = { 0 };
 
-    i = find_iitem_index(&c->bb_pl->inv, item_id);
+    i = find_iitem(&c->bb_pl->inv, item_id);
 #ifdef DEBUG
     DBG_LOG("识别槽位 %d 背包物品ID %d 数据物品ID %d", i, c->bb_pl->inv.iitems[i].data.item_id, item_id);
     print_item_data(&c->bb_pl->inv.iitems[i].data, c->version);

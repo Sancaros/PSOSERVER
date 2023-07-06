@@ -1160,13 +1160,8 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 
 
             /* Add the item to the client's inventory. */
-            pick_count = add_iitem(src, &iitem_data);
-
-            if (pick_count == -1)
+            if (!add_iitem(src, &iitem_data))
                 return 0;
-
-            //src->bb_pl->inv.item_count += pick_count;
-            //src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
         }
     }
 
@@ -1401,16 +1396,14 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    uint32_t price = ii.data.data2_l * pkt->num_bought;
-    subcmd_send_bb_delete_meseta(src, price, 0);
-
-    found = add_iitem(src, &ii);
-
-    if (found == -1) {
+    if (!add_iitem(src, &ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
     }
+
+    uint32_t price = ii.data.data2_l * pkt->num_bought;
+    subcmd_send_bb_delete_meseta(src, price, 0);
 
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);
 }
@@ -1440,7 +1433,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
             return -2;
         }
 
-        tek_item_slot = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+        tek_item_slot = find_iitem(&src->bb_pl->inv, pkt->item_id);
 
         /* 获取鉴定物品的内存指针 */
         iitem_t* id_result = &(src->game_data->identify_result);
@@ -1580,7 +1573,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
 
-            if (add_iitem(src, id_result) == -1) {
+            if (!add_iitem(src, id_result)) {
                 ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                     src->guildcard);
                 return -1;
@@ -1648,7 +1641,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     uint32_t item_id;
     uint32_t amt, bank, iitem_count, i;
-    int found = -1, stack, isframe = 0;
+    int found = -1, isframe = 0;
+    bool is_stack;
     iitem_t iitem = { 0 };
     bitem_t bitem = { 0 };
     uint32_t ic[3] = { 0 };
@@ -1685,15 +1679,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* Make sure they aren't trying to do something naughty... */
             if (amt > iitem_count) {
-                ERR_LOG("GC %" PRIu32 " depositing more "
-                    "meseta than they have!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!", src->guildcard);
                 return -1;
             }
 
             bank = LE32(src->bb_pl->bank.meseta);
             if (amt + bank > 999999) {
-                ERR_LOG("GC %" PRIu32 " depositing too much "
-                    "money at the bank!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出限制!", src->guildcard);
                 return -1;
             }
 
@@ -1705,7 +1697,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
         else {
-            /* Look for the item in the user's inventory. */
+            /* 在玩家背包中查找物品. */
             iitem_count = src->bb_pl->inv.item_count;
             for (i = 0; i < iitem_count; ++i) {
                 if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
@@ -1726,32 +1718,47 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* If the item isn't found, then punt the user from the ship. */
             if (found == -1) {
-                ERR_LOG("GC %" PRIu32 " banked item that "
-                    "they do not have!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 存入的物品不存在!", src->guildcard);
                 return -1;
             }
 
-            stack = is_stackable(&iitem.data);
+            /* Unequip any units, if the item was equipped and a frame. */
+            if (isframe) {
+                for (i = 0; i < iitem_count; ++i) {
+                    iitem = src->bb_pl->inv.iitems[i];
+                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
+                        iitem.data.data_b[1] == ITEM_SUBTYPE_UNIT) {
+                        src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+                    }
+                }
+            }
 
-            if (!stack && pkt->item_amount > 1) {
-                ERR_LOG("GC %" PRIu32 " banking multiple of "
-                    "a non-stackable item!", src->guildcard);
+            is_stack = is_stackable(&iitem.data);
+
+            if (!is_stack && pkt->item_amount > 1) {
+                ERR_LOG("GC %" PRIu32 " 存入了多个非堆叠的物品!", src->guildcard);
                 return -1;
             }
 
-            found = item_remove_from_inv(src->bb_pl->inv.iitems, iitem_count,
-                pkt->item_id, pkt->item_amount);
+            //found = item_remove_from_inv(src->bb_pl->inv.iitems, iitem_count,
+            //    pkt->item_id, pkt->item_amount);
 
-            if (found < 0 || found > 1) {
-                ERR_LOG("GC %u Error removing item from inventory for "
-                    "banking!", src->guildcard);
+            //if (found < 0 || found > 1) {
+            //    ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
+            //    return -1;
+            //}
+
+            //src->bb_pl->inv.item_count = (iitem_count -= found);
+
+            iitem = remove_iitem(src, pkt->item_id, pkt->item_amount, src->version != CLIENT_VERSION_BB);
+
+            if (&iitem == NULL) {
+                ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
                 return -1;
             }
-
-            src->bb_pl->inv.item_count = (iitem_count -= found);
 
             /* Fill in the bank item. */
-            if (stack) {
+            if (is_stack) {
                 iitem.data.data_b[5] = pkt->item_amount;
                 bitem.amount = LE16(pkt->item_amount);
             }
@@ -1766,21 +1773,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             bitem.data.item_id = iitem.data.item_id;
             bitem.data.data2_l = iitem.data.data2_l;
 
-            /* Unequip any units, if the item was equipped and a frame. */
-            if (isframe) {
-                for (i = 0; i < iitem_count; ++i) {
-                    iitem = src->bb_pl->inv.iitems[i];
-                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
-                        iitem.data.data_b[1] == ITEM_SUBTYPE_UNIT) {
-                        src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
-                    }
-                }
-            }
+            ///* 存入! */
+            //if (item_deposit_to_bank(src, &bitem) < 0) {
+            //    ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
+            //    return -1;
+            //}
 
-            /* 存入! */
-            if (item_deposit_to_bank(src, &bitem) < 0) {
-                ERR_LOG("Error depositing to bank for guildcard %"
-                    PRIu32 "!", src->guildcard);
+            if (!add_bitem(src, &bitem)) {
+                ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
                 return -1;
             }
 
@@ -1818,10 +1818,17 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             /* 尝试从银行中取出物品. */
-            found = item_take_from_bank(src, pkt->item_id, pkt->item_amount, &bitem);
+            //found = item_take_from_bank(src, pkt->item_id, pkt->item_amount, &bitem);
 
-            if (found < 0) {
-                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品! 错误码 %d", src->guildcard, found);
+            //if (found < 0) {
+            //    ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品! 错误码 %d", src->guildcard, found);
+            //    return -1;
+            //}
+
+            bitem = remove_bitem(src, pkt->item_id, pkt->item_amount);
+
+            if (&bitem == NULL) {
+                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
                 return -1;
             }
 
@@ -1837,16 +1844,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             ++l->item_lobby_id;
 
             /* 新增至玩家背包中... */
-            found = add_iitem(src, &iitem);
-
-            if (found == -1) {
+            if (!add_iitem(src, &iitem)) {
                 /* Uh oh... Guess we should put it back in the bank... */
-                item_deposit_to_bank(src, &bitem);
+                add_bitem(src, &bitem);
                 return -1;
             }
-
-            //src->bb_pl->inv.item_count += found;
-            //src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
 
             /* 发送至房间中的客户端. */
             return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, true);
@@ -2010,7 +2012,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         ii.data.data2_l = meseta;
         ii.data.item_id = generate_item_id(l, 0xFF);
 
-        if (add_iitem(src, &ii) == -1) {
+        if (!add_iitem(src, &ii)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -1;
@@ -2037,7 +2039,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     ii.data = pkt->item_data;
     ii.data.item_id = generate_item_id(l, 0xFF);
 
-    if (add_iitem(src, &ii) == -1) {
+    if (!add_iitem(src, &ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
@@ -2186,9 +2188,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
             backup_item.data.data_b[4] |= 0x40; // Wrap other
 
         /* 将物品新增至背包. */
-        found = add_iitem(src, &backup_item);
-
-        if (found == -1)
+        if (!add_iitem(src, &backup_item))
             return 0;
     }
     else {

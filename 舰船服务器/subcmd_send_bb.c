@@ -54,39 +54,84 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, i
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 掉落堆叠物品*/
-int subcmd_send_bb_lobby_drop_stack(ship_client_t* c, uint32_t area, float x, float z, iitem_t* item) {
-    lobby_t* l = c->cur_lobby;
-    subcmd_bb_drop_stack_t pkt = { 0 };
+int subcmd_send_lobby_drop_stack(ship_client_t* src, uint32_t area, float x, float z, iitem_t* item) {
+    lobby_t* l = src->cur_lobby;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送.. */
-    pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    pkt.hdr.flags = 0;
+    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
 
-    /* 填充副指令数据 */
-    pkt.shdr.type = SUBCMD60_DROP_STACK;
-    pkt.shdr.size = 0x09;
-    pkt.shdr.client_id = c->client_id;
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = src->client_id;
 
-    /* 填充剩余数据 */
-    pkt.area = area;
-    pkt.x = x;
-    pkt.z = z;
-    pkt.data.data_l[0] = item->data.data_l[0];
-    pkt.data.data_l[1] = item->data.data_l[1];
-    pkt.data.data_l[2] = item->data.data_l[2];
-    pkt.data.item_id = item->data.item_id;
-    pkt.data.data2_l = item->data.data2_l;
 
-    if (c->version == CLIENT_VERSION_GC)
-        pkt.data.data2_l = SWAP32(item->data.data2_l);
+    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.flags = 0;
 
-    pkt.two = 0x00000000;
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x09;
+    bb.shdr.client_id = src->client_id;
 
-    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
+    dc.area = LE16(src->cur_area);
+    bb.area = LE32(src->cur_area);
+    bb.x = dc.x = src->x;
+    bb.z = dc.z = src->z;
+    bb.data = dc.data = item->data;
+    //bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
+    bb.two = dc.two = LE32(0x00000002);
+
+    if (src->version == CLIENT_VERSION_GC)
+        dc.data.data2_l = SWAP32(item->data.data2_l);
+
+    /* 填充数据并准备发送.. */
+    //pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    //pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    //pkt.hdr.flags = 0;
+
+    ///* 填充副指令数据 */
+    //pkt.shdr.type = SUBCMD60_DROP_STACK;
+    //pkt.shdr.size = 0x09;
+    //pkt.shdr.client_id = src->client_id;
+
+    ///* 填充剩余数据 */
+    //pkt.area = area;
+    //pkt.x = x;
+    //pkt.z = z;
+    //pkt.data.data_l[0] = item->data.data_l[0];
+    //pkt.data.data_l[1] = item->data.data_l[1];
+    //pkt.data.data_l[2] = item->data.data_l[2];
+    //pkt.data.item_id = item->data.item_id;
+    //pkt.data.data2_l = item->data.data2_l;
+
+    //if (src->version == CLIENT_VERSION_GC)
+    //    pkt.data.data2_l = SWAP32(item->data.data2_l);
+
+    //pkt.two = 0x00000000;
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
+
+    case CLIENT_VERSION_BB:
+        return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
+
+    default:
+        return 0;
+    }
+    //return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
@@ -261,7 +306,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_bb_lobby_drop_stack(c, c->drop_area, c->x, c->z, meseta))
+        if (subcmd_send_lobby_drop_stack(c, c->drop_area, c->x, c->z, meseta))
             return -1;
     }
 

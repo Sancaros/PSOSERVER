@@ -31,9 +31,9 @@
 /* 初始化物品数据 */
 void clear_item(item_t* item);
 /* 生成物品ID */
-uint32_t generate_item_id(lobby_t* l, uint8_t client_id);
+size_t generate_item_id(lobby_t* l, size_t client_id);
 
-uint32_t primary_identifier(item_t* i);
+size_t primary_identifier(item_t* i);
 
 /* 堆叠物检测 */
 bool is_stackable(const item_t* item);
@@ -72,16 +72,18 @@ iitem_t* lobby_add_item_locked(lobby_t* l, iitem_t* item);
 int lobby_remove_item_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_index(inventory_t* inv, uint32_t item_id);
+size_t find_iitem(inventory_t* inv, uint32_t item_id);
 size_t find_equipped_weapon(inventory_t* inv);
 size_t find_equipped_armor(inventory_t* inv);
 size_t find_equipped_mag(inventory_t* inv);
 
 /* 移除背包物品操作 */
 int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
-iitem_t remove_item(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
-size_t add_iitem(ship_client_t* src, iitem_t* item);
-size_t player_use_item(ship_client_t* src, size_t item_index);
+iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
+bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount);
+bool add_iitem(ship_client_t* src, iitem_t* item);
+bool add_bitem(ship_client_t* src, bitem_t* item);
+int player_use_item(ship_client_t* src, size_t item_index);
 
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);

@@ -829,7 +829,7 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     /* Find the item and remove the equip flag. */
     inv = src->bb_pl->inv.item_count;
 
-    i = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    i = find_iitem(&src->bb_pl->inv, pkt->item_id);
 
     if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
         src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -866,7 +866,8 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_27_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    size_t index, err;
+    size_t index;
+    errno_t err;
 
     /* We can't get these in default lobbies without someone messing with
        something that they shouldn't be... Disconnect anyone that tries. */
@@ -881,7 +882,7 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x02)
         return -1;
 
-    index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    index = find_iitem(&src->bb_pl->inv, pkt->item_id);
 
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
@@ -951,15 +952,15 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* TODO 完成挑战模式的物品掉落 */
-    if (l->challenge || l->battle) {
-        /* 数据包完成, 发送至游戏房间. */
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    ///* TODO 完成挑战模式的物品掉落 */
+    //if (l->challenge || l->battle) {
+    //    /* 数据包完成, 发送至游戏房间. */
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
-    item_data = remove_item(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
+    item_data = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
-    if (!&item_data) {
+    if (&item_data == NULL) {
         ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
             src->guildcard);
         return -1;
@@ -972,8 +973,9 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_2A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int found = -1, isframe = 0;
-    uint32_t i, inv;
+    int /*found = -1, */isframe = 0;
+    //uint32_t i, item_count;
+    inventory_t* inv = &src->bb_pl->inv;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1006,51 +1008,38 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    /* Look for the item in the user's inventory. */
-    inv = src->bb_pl->inv.item_count;
-
-    for (i = 0; i < inv; ++i) {
-        if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-            found = i;
-
-            /* If it is an equipped frame, we need to unequip all the units
-               that are attached to it.
-               如果它是一个装备好的护甲，我们需要取消与它相连的所有装备的插件 */
-            if (src->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
-                src->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_FRAME &&
-                (src->bb_pl->inv.iitems[i].flags & LE32(0x00000008))) {
-                isframe = 1;
-            }
-
-            break;
-        }
-    }
+    /* 在玩家背包中查找物品. */
+    size_t index = find_iitem(inv, pkt->item_id);
 
     /* If the item isn't found, then punt the user from the ship. */
-    if (found == -1) {
+    if (index == -1) {
         ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
-            src->guildcard, src->bb_pl->inv.iitems[i].data.item_id, pkt->item_id);
+            src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
         return -1;
     }
 
-    /* Clear the equipped flag.
-    清理已装备的标签 */
-    src->bb_pl->inv.iitems[found].flags &= LE32(0xFFFFFFF7);
+    if (inv->iitems[index].data.data_b[0] == ITEM_TYPE_GUARD &&
+        inv->iitems[index].data.data_b[1] == ITEM_SUBTYPE_FRAME &&
+        (inv->iitems[index].flags & LE32(0x00000008))) {
+        isframe = 1;
+    }
 
-    /* Unequip any units, if the item was equipped and a frame.
-    卸掉所有已插入在这件装备的插件*/
+    /* 清理已装备的标签 */
+    inv->iitems[index].flags &= LE32(0xFFFFFFF7);
+
+    /* 卸掉所有已插入在这件装备的插件 */
     if (isframe) {
-        for (i = 0; i < inv; ++i) {
-            if (src->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
-                src->bb_pl->inv.iitems[i].data.data_b[1] == ITEM_SUBTYPE_UNIT) {
-                src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+        for (int i = 0; i < inv->item_count; ++i) {
+            if (inv->iitems[i].data.data_b[0] == ITEM_TYPE_GUARD &&
+                inv->iitems[i].data.data_b[1] == ITEM_SUBTYPE_UNIT) {
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
     }
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中 */
-    if (!lobby_add_item_locked(l, &src->bb_pl->inv.iitems[found])) {
+    if (!lobby_add_item_locked(l, &inv->iitems[index])) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
@@ -1058,7 +1047,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* TODO 可以打印丢出的物品信息 */
-    remove_item(src, pkt->item_id, 0, src->version != CLIENT_VERSION_BB);
+    remove_iitem(src, pkt->item_id, 0, src->version != CLIENT_VERSION_BB);
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2640,7 +2629,7 @@ int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_C0_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint8_t i;
+    size_t i;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -2652,45 +2641,27 @@ int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 || pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || 
+        pkt->shdr.size != 0x03 || 
+        pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
-    for (i = 0; i < src->bb_pl->inv.item_count; i++) {
-        /* Look for the item in question. */
-        if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
+    i = find_iitem(&src->bb_pl->inv, pkt->item_id);
 
-            if ((pkt->sell_num > 1) && (src->bb_pl->inv.iitems[i].data.data_b[0] != 0x03)) {
-                DBG_LOG("handle_bb_sell_item %d 0x%02X", pkt->sell_num, src->bb_pl->inv.iitems[i].data.data_b[0]);
-                return -1;
-            }
-            else
-            {
-                uint32_t shop_price = get_bb_shop_price(&src->bb_pl->inv.iitems[i]) * pkt->sell_num;
+    uint32_t shop_price = get_bb_shop_price(&src->bb_pl->inv.iitems[i]) * pkt->sell_amount;
 
-                /* 从玩家的背包中移除该物品. */
-                if (item_remove_from_inv(src->bb_pl->inv.iitems, src->bb_pl->inv.item_count,
-                    pkt->item_id, 0xFFFFFFFF) < 1) {
-                    ERR_LOG("无法从玩家GC %u 背包中移除ID %u 物品!", src->guildcard, pkt->item_id);
-                    return -1;
-                }
+    src->bb_pl->character.disp.meseta = MIN(
+        src->bb_pl->character.disp.meseta + shop_price, 999999);
 
-                --src->bb_pl->inv.item_count;
-                src->pl->bb.inv.item_count = src->bb_pl->inv.item_count;
-
-                src->bb_pl->character.disp.meseta += shop_price;
-
-                if (src->bb_pl->character.disp.meseta > 999999)
-                    src->bb_pl->character.disp.meseta = 999999;
-
-                src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
-            }
-
-            return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-        }
+    iitem_t item = remove_iitem(src, pkt->item_id, pkt->sell_amount, src->version != CLIENT_VERSION_BB);
+    if (&item == NULL) {
+        src->bb_pl->character.disp.meseta -= shop_price;
+        ERR_LOG("出售 %d ID 0x%04X 失败", pkt->sell_amount, pkt->item_id);
+        return -1;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2721,13 +2692,19 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem = remove_item(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
+    iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
-    if (iitem.data.item_id == 0xFFFFFFFF) {
-        iitem.data.item_id = generate_item_id(l, src->client_id);
+    if (&iitem == NULL) {
+        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
+            src->guildcard);
+        return -1;
     }
 
-    if (add_iitem(src, &iitem)) {
+    if (iitem.data.item_id == 0xFFFFFFFF) {
+        iitem.data.item_id = generate_item_id(l, EMPTY_STRING);
+    }
+
+    if (!add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
             src->guildcard);
         return -1;
@@ -2741,7 +2718,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_bb_lobby_drop_stack(src, pkt->area, pkt->x, pkt->z, it);
+    return subcmd_send_lobby_drop_stack(src, pkt->area, pkt->x, pkt->z, it);
 }
 
 int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 
@@ -2772,7 +2749,7 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            int index = find_iitem_index(&src->bb_pl->inv, pkt->item_ids[x]);
+            int index = find_iitem(&src->bb_pl->inv, pkt->item_ids[x]);
             sorted.iitems[x] = src->bb_pl->inv.iitems[index];
         }
     }
