@@ -76,10 +76,10 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
     bb.shdr.size = 0x09;
     bb.shdr.client_id = src->client_id;
 
-    dc.area = LE16(src->cur_area);
-    bb.area = LE32(src->cur_area);
-    bb.x = dc.x = src->x;
-    bb.z = dc.z = src->z;
+    dc.area = LE16(area);
+    bb.area = LE32(area);
+    bb.x = dc.x = x;
+    bb.z = dc.z = z;
 
     bb.data.data_l[0] = dc.data.data_l[0] = item->data.data_l[0];
     bb.data.data_l[1] = dc.data.data_l[1] = item->data.data_l[1];
@@ -112,6 +112,10 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
 int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = src->cur_lobby;
+    uint32_t drop_area = area;
+    float drop_x = x;
+    float drop_z = z;
+    iitem_t* drop_item = item;
 
     if (!l) {
         ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
@@ -127,7 +131,7 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint
                 continue;
             }
 
-            subcmd_send_drop_stack(l->clients[i], area, x, z, item);
+            subcmd_send_drop_stack(l->clients[i], drop_area, drop_x, drop_z, drop_item);
         }
     }
 
