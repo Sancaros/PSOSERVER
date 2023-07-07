@@ -34,6 +34,32 @@
 #include "lobby.h"
 #include "clients.h"
 
+void print_entry(const bb_battle_param_t* entry) {
+    printf("atp: %u\n", entry->atp);
+    printf("psv: %u\n", entry->psv);
+    printf("evp: %u\n", entry->evp);
+    printf("hp: %u\n", entry->hp);
+    printf("dfp: %u\n", entry->dfp);
+    printf("ata: %u\n", entry->ata);
+    printf("lck: %u\n", entry->lck);
+    printf("esp: %u\n", entry->esp);
+    printf("esp: %u\n", entry->dfp_range);
+    printf("esp: %u\n", entry->evp_range);
+    printf("esp: %u\n", entry->shield);
+    printf("experience: %u\n", entry->exp);
+    printf("difficulty: %u\n", entry->difficulty);
+}
+
+void print_table(const bb_battle_param_table* table) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 0x60; j++) {
+            printf("Difficulty: %d, Entry: %d\n", i, j);
+            print_entry(&(table->difficulty[i][j]));
+            printf("\n");
+        }
+    }
+}
+
 /* Enemy battle parameters. The array is organized in the following levels:
    multi/single player, episode, difficulty, entry.*/
 typedef struct battle_param_checksum {
@@ -83,37 +109,12 @@ typedef struct battle_param_entry_files {
 
 const battle_param_entry_files_t battle_params_emtry_files[NUM_BPEntry][5] = {
     {"BattleParamEntry_on.dat"    , 0, 0, 0, 374, 0xB8A2D950},
-    //{"BattleParamEntry_on2.dat"   , 0, 0, 0, 374, 0xB8A2D950},
     {"BattleParamEntry_lab_on.dat", 0, 1, 0, 374, 0x4D4059CF},
     {"BattleParamEntry_ep4_on.dat", 0, 2, 0, 332, 0x42BF9716},
     {"BattleParamEntry.dat"       , 1, 0, 0, 374, 0x8FEF1FFE},
     {"BattleParamEntry_lab.dat"   , 1, 1, 0, 374, 0x3DC217F5},
     {"BattleParamEntry_ep4.dat"   , 1, 2, 0, 332, 0x50841167}
 };
-//difficulty 0 文件校对: 906b2d15
-//difficulty 1 文件校对 : 845a960e
-//difficulty 2 文件校对 : d0934eb6
-//difficulty 3 文件校对 : bc5eb946
-//difficulty 0 文件校对 : ca3abc5f
-//difficulty 1 文件校对 : c6baa768
-//difficulty 2 文件校对 : 178df3c5
-//difficulty 3 文件校对 : d16feb80
-//difficulty 0 文件校对 : d53e105b
-//difficulty 1 文件校对 : 6cc95d17
-//difficulty 2 文件校对 : d6046110
-//difficulty 3 文件校对 : 9d5325d7
-//difficulty 0 文件校对 : 67ecaee0
-//difficulty 1 文件校对 : dd8831ed
-//difficulty 2 文件校对 : a0ce7d8f
-//difficulty 3 文件校对 : f59c8220
-//difficulty 0 文件校对 : a9bfeea7
-//difficulty 1 文件校对 : daff38de
-//difficulty 2 文件校对 : 939fd4e7
-//difficulty 3 文件校对 : 22687177
-//difficulty 0 文件校对 : 0a3d38c5
-//difficulty 1 文件校对 : 1ccf3789
-//difficulty 2 文件校对 : 3c2f1e06
-//difficulty 3 文件校对 : 2e836fd8
 
 // online/offline, episode, difficulty, entry_num
 static bb_battle_param_t battle_params[2][3][4][0x60];
@@ -155,7 +156,7 @@ typedef struct quest_dat_hdr {
     uint8_t data[];
 } quest_dat_hdr_t;
 
-static int read_bb_param_file(bb_battle_param_t dst[4][0x60], const char* fn, const char* file) {
+static int read_bb_battle_param_file(bb_battle_param_t dst[4][0x60], const char* fn, const char* file) {
     FILE* fp;
     const size_t sz = 0x60 * sizeof(bb_battle_param_t);
     char buf[128] = { 0 };
@@ -1271,7 +1272,7 @@ int bb_read_params(psocn_ship_t *cfg) {
         //strcpy(&buf[i][0], path);
         //strcat(&buf[i][0], battle_params_emtry_files[i][0].file);
         //printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
-        rv += read_bb_param_file(battle_params[j][k], path,
+        rv += read_bb_battle_param_file(battle_params[j][k], path,
             battle_params_emtry_files[i][0].file/*,
             battle_params_emtry_files[i][0].check_sum.entry_num,
             battle_params_emtry_files[i][0].check_sum.sum*/);

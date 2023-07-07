@@ -96,7 +96,11 @@
     <ClCompile Include="pso_message.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pso_player.c" />
-    <ClCompile Include="pso_StringReader.c" />
+    <ClCompile Include="pso_player.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_StringReader.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

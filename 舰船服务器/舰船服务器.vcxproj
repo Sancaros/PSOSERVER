@@ -25,6 +25,7 @@
     <ClCompile Include="challenge_handle.c" />
     <ClCompile Include="clients.c" />
     <ClCompile Include="commands.c" />
+    <ClCompile Include="enemy_type.c" />
     <ClCompile Include="gm.c" />
     <ClCompile Include="iitems.c" />
     <ClCompile Include="list.c" />
@@ -62,6 +63,7 @@
     <ClInclude Include="challenge_handle.h" />
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />
+    <ClInclude Include="enemy_type.h" />
     <ClInclude Include="gm.h" />
     <ClInclude Include="iitems.h" />
     <ClInclude Include="lobby.h" />

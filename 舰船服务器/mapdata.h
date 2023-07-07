@@ -55,6 +55,10 @@ typedef struct bb_battle_param {
     uint32_t difficulty;    // дя╤х
 } PACKED bb_battle_param_t;
 
+typedef struct {
+    bb_battle_param_t difficulty[4][0x60];
+} bb_battle_param_table;
+
 /* Enemy data in the map files. This the same as the ENEMY_ENTRY struct from
    newserv. */
 typedef struct map_enemy {
@@ -89,6 +93,17 @@ typedef struct map_object {
         uint32_t dword[6];
     };
 } PACKED map_object_t;
+
+typedef struct rare_enemy_rates {
+    uint32_t hildeblue; // HILDEBEAR -> HILDEBLUE
+    uint32_t rappy; // RAG_RAPPY -> {AL_RAPPY or seasonal rappies}; SAND_RAPPY -> DEL_RAPPY
+    uint32_t nar_lily; // POISON_LILY -> NAR_LILY
+    uint32_t pouilly_slime; // POFUILLY_SLIME -> POUILLY_SLIME
+    uint32_t merissa_aa; // MERISSA_A -> MERISSA_AA
+    uint32_t pazuzu; // ZU -> PAZUZU (and _ALT variants)
+    uint32_t dorphon_eclair; // DORPHON -> DORPHON_ECLAIR
+    uint32_t kondrieu; // {SAINT_MILLION, SHAMBERTIN} -> KONDRIEU
+} PACKED rare_enemy_rates_t;
 
 #ifndef _WIN32
 #else

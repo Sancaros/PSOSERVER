@@ -15,12 +15,68 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef PSO_HAVE_TEXT
-#define PSO_HAVE_TEXT
-
-#include "pso_text.h"
 #include <stdbool.h>
 #include <ctype.h>
+
+#include "f_logs.h"
+
+#include "pso_text.h"
+
+void write_data(write_data_func func, const void* data, size_t len) {
+    func(data, len);
+}
+
+Buffer* create_buffer(size_t len) {
+    Buffer* buffer = (Buffer*)malloc(sizeof(Buffer));
+    if (buffer == NULL) {
+        return NULL;
+    }
+    buffer->data = (uint8_t*)malloc(len);
+    if (buffer->data == NULL) {
+        free_safe(buffer);
+        return NULL;
+    }
+    buffer->len = len;
+    return buffer;
+}
+
+void destroy_buffer(Buffer* buffer) {
+    if (buffer != NULL) {
+        free_safe(buffer->data);
+        free_safe(buffer);
+    }
+}
+
+char* string_vprintf(const char* fmt, va_list va) {
+    char* result = NULL;
+    int size = _vscprintf(fmt, va);
+    result = (char*)malloc((size + 1) * sizeof(char));
+    vsprintf_s(result, size + 1, fmt, va);
+    return result;
+}
+
+wchar_t* wstring_vprintf(const wchar_t* fmt, va_list va) {
+    size_t size = _vscwprintf(fmt, va);
+    wchar_t* result = (wchar_t*)malloc((size + 1) * sizeof(wchar_t));
+    vswprintf_s(result, size + 1, fmt, va);
+    return result;
+}
+
+char* string_printf(const char* fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+    char* ret = string_vprintf(fmt, va);
+    va_end(va);
+    return ret;
+}
+
+wchar_t* wstring_printf(const wchar_t* fmt, ...) {
+    va_list va;
+    va_start(va, fmt);
+    wchar_t* ret = wstring_vprintf(fmt, va);
+    va_end(va);
+    return ret;
+}
 
 uint8_t hexToByte(char* hs)
 {
@@ -239,6 +295,3 @@ char* tolower_c(const char* s) {
 
     return ret;
 }
-
-
-#endif /* !PSO_HAVE_TEXT */
