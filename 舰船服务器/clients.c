@@ -953,75 +953,75 @@ int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
     return 0;
 }
 
-static int check_char_v1(ship_client_t *c, player_t *pl) {
+static int check_char_v1(ship_client_t *src, player_t *pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if(c->pl->v1.character.dress_data.model != pl->v1.character.dress_data.model)
+    if(src->pl->v1.character.dress_data.model != pl->v1.character.dress_data.model)
         return -10;
 
-    if(c->pl->v1.character.dress_data.section != pl->v1.character.dress_data.section)
+    if(src->pl->v1.character.dress_data.section != pl->v1.character.dress_data.section)
         return -11;
 
-    if(c->pl->v1.character.dress_data.ch_class != pl->v1.character.dress_data.ch_class)
+    if(src->pl->v1.character.dress_data.ch_class != pl->v1.character.dress_data.ch_class)
         return -12;
 
-    if(c->pl->v1.character.dress_data.costume != pl->v1.character.dress_data.costume)
+    if(src->pl->v1.character.dress_data.costume != pl->v1.character.dress_data.costume)
         return -13;
 
-    if(c->pl->v1.character.dress_data.skin != pl->v1.character.dress_data.skin)
+    if(src->pl->v1.character.dress_data.skin != pl->v1.character.dress_data.skin)
         return -14;
 
-    if(c->pl->v1.character.dress_data.face != pl->v1.character.dress_data.face)
+    if(src->pl->v1.character.dress_data.face != pl->v1.character.dress_data.face)
         return -15;
 
-    if(c->pl->v1.character.dress_data.head != pl->v1.character.dress_data.head)
+    if(src->pl->v1.character.dress_data.head != pl->v1.character.dress_data.head)
         return -16;
 
-    if(c->pl->v1.character.dress_data.hair != pl->v1.character.dress_data.hair)
+    if(src->pl->v1.character.dress_data.hair != pl->v1.character.dress_data.hair)
         return -17;
 
-    if(c->pl->v1.character.dress_data.hair_r != pl->v1.character.dress_data.hair_r)
+    if(src->pl->v1.character.dress_data.hair_r != pl->v1.character.dress_data.hair_r)
         return -18;
 
-    if(c->pl->v1.character.dress_data.hair_g != pl->v1.character.dress_data.hair_g)
+    if(src->pl->v1.character.dress_data.hair_g != pl->v1.character.dress_data.hair_g)
         return -19;
 
-    if(c->pl->v1.character.dress_data.hair_b != pl->v1.character.dress_data.hair_b)
+    if(src->pl->v1.character.dress_data.hair_b != pl->v1.character.dress_data.hair_b)
         return -20;
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
        ordering or whatnot). */
-    f1.f = c->pl->v1.character.dress_data.prop_x;
+    f1.f = src->pl->v1.character.dress_data.prop_x;
     f2.f = pl->v1.character.dress_data.prop_x;
     if(f1.b != f2.b)
         return -21;
 
-    f1.f = c->pl->v1.character.dress_data.prop_y;
+    f1.f = src->pl->v1.character.dress_data.prop_y;
     f2.f = pl->v1.character.dress_data.prop_y;
     if(f1.b != f2.b)
         return -22;
 
-    if(memcmp(c->pl->v1.character.dress_data.guildcard_string, pl->v1.character.dress_data.guildcard_string, 16))
+    if(memcmp(src->pl->v1.character.dress_data.guildcard_string, pl->v1.character.dress_data.guildcard_string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if(c->pl->v1.inv.hpmats_used > pl->v1.inv.hpmats_used)
+    if(src->pl->v1.inv.hpmats_used > pl->v1.inv.hpmats_used)
         return -24;
 
-    if(c->pl->v1.inv.tpmats_used > pl->v1.inv.tpmats_used)
+    if(src->pl->v1.inv.tpmats_used > pl->v1.inv.tpmats_used)
         return -25;
 
-    if(LE32(c->pl->v1.character.disp.exp) > LE32(pl->v1.character.disp.exp))
+    if(LE32(src->pl->v1.character.disp.exp) > LE32(pl->v1.character.disp.exp))
         return -26;
 
     /* Why is the level 32-bits?... */
-    if(LE32(c->pl->v1.character.disp.level) > LE32(pl->v1.character.disp.level))
+    if(LE32(src->pl->v1.character.disp.level) > LE32(pl->v1.character.disp.level))
         return -27;
 
     /* Other stats omitted for now... */
@@ -1030,63 +1030,129 @@ static int check_char_v1(ship_client_t *c, player_t *pl) {
     return 0;
 }
 
-static int check_char_v2(ship_client_t *c, player_t *pl) {
-    return check_char_v1(c, pl);
+static int check_char_v2(ship_client_t *src, player_t *pl) {
+    return check_char_v1(src, pl);
 }
 
-static int check_char_pc(ship_client_t *c, player_t *pl) {
-    return check_char_v1(c, pl);
+static int check_char_pc(ship_client_t *src, player_t *pl) {
+    return check_char_v1(src, pl);
 }
 
-static int check_char_gc(ship_client_t *c, player_t *pl) {
+static int check_char_gc(ship_client_t *src, player_t *pl) {
     return 0;
 }
 
-static int check_char_xbox(ship_client_t *c, player_t *pl) {
+static int check_char_xbox(ship_client_t *src, player_t *pl) {
     return 0;
 }
 
-static int check_char_bb(ship_client_t* c, player_t* pl) {
+static int check_char_bb(ship_client_t* src, player_t* pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
-    psocn_dress_data_t dress_data1 = c->pl->bb.character.dress_data;
+    psocn_dress_data_t dress_data1 = src->pl->bb.character.dress_data;
     psocn_dress_data_t dress_data2 = pl->bb.character.dress_data;
-    psocn_disp_char_t disp1 = c->pl->bb.character.disp;
+    psocn_disp_char_t disp1 = src->pl->bb.character.disp;
     psocn_disp_char_t disp2 = pl->bb.character.disp;
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
     if (dress_data1.model != dress_data2.model)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误model %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.model, dress_data2.model);
+        dress_data1.model = dress_data2.model;
         return -10;
+    }
 
     if (dress_data1.section != dress_data2.section)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误section %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.section, dress_data2.section);
+        dress_data1.section = dress_data2.section;
         return -11;
+    }
 
     if (dress_data1.ch_class != dress_data2.ch_class)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误ch_class %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.ch_class, dress_data2.ch_class);
+        dress_data1.ch_class = dress_data2.ch_class;
         return -12;
+    }
 
     if (dress_data1.costume != dress_data2.costume)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误costume %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.costume, dress_data2.costume);
+        dress_data1.costume = dress_data2.costume;
         return -13;
+    }
 
     if (dress_data1.skin != dress_data2.skin)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误skin %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.skin, dress_data2.skin);
+        dress_data1.skin = dress_data2.skin;
         return -14;
+    }
 
     if (dress_data1.face != dress_data2.face)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误face %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.face, dress_data2.face);
+        dress_data1.face = dress_data2.face;
         return -15;
+    }
 
     if (dress_data1.head != dress_data2.head)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误head %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.head, dress_data2.head);
+        dress_data1.head = dress_data2.head;
         return -16;
+    }
 
     if (dress_data1.hair != dress_data2.hair)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误hair %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.hair, dress_data2.hair);
+        dress_data1.hair = dress_data2.hair;
         return -17;
+    }
 
     if (dress_data1.hair_r != dress_data2.hair_r)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误hair_r %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.hair_r, dress_data2.hair_r);
+        dress_data1.hair_r = dress_data2.hair_r;
         return -18;
+    }
 
     if (dress_data1.hair_g != dress_data2.hair_g)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误hair_g %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.hair_g, dress_data2.hair_g);
+        dress_data1.hair_g = dress_data2.hair_g;
         return -19;
+    }
 
     if (dress_data1.hair_b != dress_data2.hair_b)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误hair_b %d %d", ship->cfg->name, src->cur_block->b,
+            src->guildcard, dress_data1.hair_b, dress_data2.hair_b);
+        dress_data1.hair_b = dress_data2.hair_b;
         return -20;
+    }
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
        they're some special value like NaN or Inf (potentially because of byte
@@ -1094,12 +1160,24 @@ static int check_char_bb(ship_client_t* c, player_t* pl) {
     f1.f = dress_data1.prop_x;
     f2.f = dress_data2.prop_x;
     if (f1.b != f2.b)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误b %u %u", ship->cfg->name, src->cur_block->b,
+            src->guildcard, f1.b, f2.b);
+        f1.b = f2.b;
         return -21;
+    }
 
     f1.f = dress_data1.prop_y;
     f2.f = dress_data2.prop_y;
     if (f1.b != f2.b)
+    {
+        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
+            " 错误b %u %u", ship->cfg->name, src->cur_block->b,
+            src->guildcard, f1.b, f2.b);
+        f1.b = f2.b;
         return -22;
+    }
 
     if (memcmp(dress_data1.guildcard_string, dress_data2.guildcard_string, 16))
         return -23;
@@ -1108,10 +1186,10 @@ static int check_char_bb(ship_client_t* c, player_t* pl) {
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if (c->pl->bb.inv.hpmats_used > pl->bb.inv.hpmats_used)
+    if (src->pl->bb.inv.hpmats_used > pl->bb.inv.hpmats_used)
         return -24;
 
-    if (c->pl->bb.inv.tpmats_used > pl->bb.inv.tpmats_used)
+    if (src->pl->bb.inv.tpmats_used > pl->bb.inv.tpmats_used)
         return -25;
 
     if (LE32(disp1.exp) > LE32(disp2.exp))
