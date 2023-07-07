@@ -19,16 +19,15 @@
 #define BB_MAX_TECH_H
 
 //19 个科技类别 12个 职业 完成结构数据读取
-#define BB_MAX_TECH_LEVEL 19
 
 typedef struct bb_max_tech_level {
     char tech_name[12];
     uint8_t max_lvl[MAX_PLAYER_CLASS_BB];
 } bb_max_tech_level_t;
 
-bb_max_tech_level_t max_tech_level[BB_MAX_TECH_LEVEL];
+bb_max_tech_level_t max_tech_level[MAX_TECH_LEVEL];
 //
-//static old_bb_max_tech_level_t old_max_tech_level[BB_MAX_TECH_LEVEL] = {
+//static old_bb_max_tech_level_t old_max_tech_level[MAX_TECH_LEVEL] = {
 //    //{"Foie",     15,  20,   0,    15,   0,    0,    30,   30,   30,   0,    30,   20 },
 //    {"Foie",     0x0F, 0x14, 0x00, 0x0F, 0x00, 0x00, 0x1E, 0x1E, 0x1E, 0x00, 0x1E, 0x14 },
 //

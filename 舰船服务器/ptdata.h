@@ -34,6 +34,223 @@
 #define BOX_TYPE_MESETA     5
 #define BOX_TYPE_NOTHING    6
 
+#ifdef PACKED
+#undef PACKED
+#endif
+
+#ifndef _WIN32
+#define PACKED __attribute__((packed))
+#else
+#define PACKED __declspec(align(1))
+#pragma pack(push, 1) 
+#endif
+
+struct CountAndOffset {
+    uint32_t count;
+    uint32_t offset;
+} PACKED;
+
+struct ItemBase {
+    uint32_t id;
+    uint16_t type;
+    uint16_t skin;
+    uint32_t team_points;
+} PACKED;
+
+struct ArmorOrShield {
+    struct ItemBase base;
+    uint16_t dfp;
+    uint16_t evp;
+    uint8_t block_particle;
+    uint8_t block_effect;
+    uint8_t item_class;
+    uint8_t unknown_a1;
+    uint8_t required_level;
+    uint8_t efr;
+    uint8_t eth;
+    uint8_t eic;
+    uint8_t edk;
+    uint8_t elt;
+    uint8_t dfp_range;
+    uint8_t evp_range;
+    uint8_t stat_boost;
+    uint8_t tech_boost;
+    uint16_t unknown_a2;
+} PACKED;
+
+struct Unit {
+    struct ItemBase base;
+    uint16_t stat;
+    uint16_t stat_amount;
+    int16_t modifier_amount;
+    uint8_t unused[2];
+} PACKED;
+
+struct Mag {
+    struct ItemBase base;
+    uint16_t feed_table;
+    uint8_t photon_blast;
+    uint8_t activation;
+    uint8_t on_pb_full;
+    uint8_t on_low_hp;
+    uint8_t on_death;
+    uint8_t on_boss;
+    uint8_t on_pb_full_flag;
+    uint8_t on_low_hp_flag;
+    uint8_t on_death_flag;
+    uint8_t on_boss_flag;
+    uint8_t item_class;
+    uint8_t unused[3];
+} PACKED;
+
+struct Tool {
+    struct ItemBase base;
+    uint16_t amount;
+    uint16_t tech;
+    int32_t cost;
+    uint8_t item_flag;
+    uint8_t unused[3];
+} PACKED;
+
+struct Weapon {
+    struct ItemBase base;
+    uint8_t item_class;
+    uint8_t unknown_a0;
+    uint16_t atp_min;
+    uint16_t atp_max;
+    uint16_t atp_required;
+    uint16_t mst_required;
+    uint16_t ata_required;
+    uint16_t mst;
+    uint8_t max_grind;
+    uint8_t photon;
+    uint8_t special;
+    uint8_t ata;
+    uint8_t stat_boost;
+    uint8_t projectile;
+    int8_t trail1_x;
+    int8_t trail1_y;
+    int8_t trail2_x;
+    int8_t trail2_y;
+    int8_t color;
+    uint8_t unknown_a1;
+    uint8_t unknown_a2;
+    uint8_t unknown_a3;
+    uint8_t unknown_a4;
+    uint8_t unknown_a5;
+    uint8_t tech_boost;
+    uint8_t combo_type;
+} PACKED;
+
+struct MagFeedResult {
+    int8_t def;
+    int8_t pow;
+    int8_t dex;
+    int8_t mind;
+    int8_t iq;
+    int8_t synchro;
+    uint8_t unused[2];
+} PACKED;
+
+struct MagFeedResultsList {
+    struct MagFeedResult results[11];
+} PACKED;
+
+struct MagFeedResultsListOffsets {
+    uint32_t offsets[8]; // Offsets of MagFeedResultsList structs
+} PACKED;
+
+struct ItemStarValue {
+    uint8_t num_stars;
+} PACKED;
+
+struct Special {
+    uint16_t type;
+    uint16_t amount;
+} PACKED;
+
+struct StatBoost {
+    uint8_t stat1;
+    uint8_t stat2;
+    uint16_t amount1;
+    uint16_t amount2;
+} PACKED;
+
+struct MaxTechniqueLevels {
+    // Indexed as [tech_num][char_class]
+    uint8_t max_level[MAX_TECH_LEVEL][MAX_PLAYER_CLASS_BB];
+} PACKED;
+
+struct ItemCombination {
+    uint8_t used_item[3];
+    uint8_t equipped_item[3];
+    uint8_t result_item[3];
+    uint8_t mag_level;
+    uint8_t grind;
+    uint8_t level;
+    uint8_t char_class;
+    uint8_t unused[3];
+} PACKED;
+
+struct TechniqueBoost {
+    uint32_t tech1;
+    float boost1;
+    uint32_t tech2;
+    float boost2;
+    uint32_t tech3;
+    float boost3;
+} PACKED;
+
+struct EventItem {
+    uint8_t item[3];
+    uint8_t probability;
+} PACKED;
+
+struct UnsealableItem {
+    uint8_t item[3];
+    uint8_t unused;
+} PACKED;
+
+struct NonWeaponSaleDivisors {
+    float armor_divisor;
+    float shield_divisor;
+    float unit_divisor;
+    float mag_divisor;
+} PACKED;
+
+struct TableOffsets {
+    /* 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
+    /* 04 / 1478C */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
+    /* 08 / 1479C */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
+    /* 0C / 147AC */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
+    /* 10 / 147A4 */ uint32_t mag_table; // -> {count, offset -> [Mag]}
+    /* 14 / 0F4B8 */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
+    /* 18 / 0DE7C */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
+    /* 1C / 0E194 */ uint32_t weapon_range_table; // -> ???
+    /* 20 / 0F5A8 */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
+    /* 24 / 0F83C */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
+    /* 28 / 1502C */ uint32_t mag_feed_table; // -> MagFeedResultsTable
+    /* 2C / 0FB0C */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
+    /* 30 / 0FE3C */ uint32_t special_data_table; // -> [Special]
+    /* 34 / 0FEE0 */ uint32_t weapon_effect_table; // -> [16-byte structs]
+    /* 38 / 1275C */ uint32_t stat_boost_table; // -> [StatBoost]
+    /* 3C / 11C80 */ uint32_t shield_effect_table; // -> [8-byte structs]
+    /* 40 / 12894 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
+    /* 44 / 14FF4 */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
+    /* 48 / 12754 */ uint32_t unknown_a1;
+    /* 4C / 14278 */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
+    /* 50 / 15014 */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
+    /* 54 / 1501C */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
+    /* 58 / 15024 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
+} PACKED;
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
+
 /* Clean (non-packed) version of the v3 ItemPT entry structure. */
 typedef struct pt_v3_entry {
     int8_t weapon_ratio[12];                /* 0x0000 */
@@ -150,5 +367,10 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r);
    This function only works for PSOBB. */
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r);
 int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
+
+/* Generate an item drop from the PT data. This version uses the v3 PT data set.
+   This function only works for PSOBB PSO2 style. */
+int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r);
+int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r);
 
 #endif /* !PTDATA_H */

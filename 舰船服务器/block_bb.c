@@ -366,6 +366,8 @@ static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t ite
 
 static int bb_process_game_drop_set(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
+    l->drop_pso2 = false;
+    l->drop_psocn = false;
 
     if (l) {
         switch (item_id) {
@@ -376,12 +378,14 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t menu_id, uint32_t
 
         case 1:
             DBG_LOG("PSO2掉落模式");
+            l->drop_pso2 = true;
             break;
 
         case 2:
             //l->v2 = 0;
             //l->version = CLIENT_VERSION_DCV1;
             DBG_LOG("随机掉落模式");
+            l->drop_psocn = true;
             break;
 
         default:

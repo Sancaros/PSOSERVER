@@ -20,6 +20,7 @@
 
 #include "pso_text.h"
 #include <stdbool.h>
+#include <ctype.h>
 
 uint8_t hexToByte(char* hs)
 {
@@ -221,6 +222,22 @@ int tx_read_string_data(char* buffer, unsigned long length, void* data, unsigned
         }
     }
     return size;
+}
+
+/* 实现字符的小写转换 */
+char* tolower_c(const char* s) {
+    size_t length = strlen(s);
+    char* ret = (char*)malloc((length + 1) * sizeof(char)); // 分配足够的空间来存储转换后的字符串（包括结尾的空字符）
+    if (ret == NULL) {
+        return NULL; // 内存分配失败，返回空指针
+    }
+
+    for (size_t i = 0; i < length; i++) {
+        ret[i] = tolower(s[i]); // 将每个字符转换为小写形式
+    }
+    ret[length] = '\0'; // 在字符串末尾添加空字符
+
+    return ret;
 }
 
 

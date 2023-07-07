@@ -5546,7 +5546,7 @@ int send_player_max_tech_level_table_bb(ship_t* c) {
     bb_max_tech_level_t*bb_max_tech_level = { 0 };
     int i;
 
-    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * BB_MAX_TECH_LEVEL);
+    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_TECH_LEVEL);
 
     if (!bb_max_tech_level)
         return 0;

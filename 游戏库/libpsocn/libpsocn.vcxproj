@@ -38,6 +38,7 @@
     <ClInclude Include="pso_timer.h" />
     <ClInclude Include="pso_text.h" />
     <ClInclude Include="max_tech_level.h" />
+    <ClInclude Include="pso_StringReader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_items.c" />
@@ -45,6 +46,7 @@
     <ClCompile Include="pso_message.c" />
     <ClCompile Include="pso_ping.c" />
     <ClCompile Include="pso_player.c" />
+    <ClCompile Include="pso_StringReader.c" />
     <ClCompile Include="pso_version.c" />
     <ClCompile Include="pso_cmd_name.c" />
     <ClCompile Include="pso_timer.c" />

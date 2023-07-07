@@ -482,13 +482,13 @@ static int handle_login(ship_client_t *c, const char *params) {
 }
 
 /* 用法 /item item1,item2,item3,item4 */
-static int handle_item(ship_client_t *c, const char *params) {
+static int handle_item(ship_client_t *src, const char *params) {
     uint32_t item[4] = {0, 0, 0, 0};
     int count;
 
     /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
-        return send_msg(c, TEXT_MSG_TYPE, "%s", __(c, "\tE\tC7权限不足."));
+    if(!LOCAL_GM(src)) {
+        return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
     }
 
     /* Copy over the item data. */
@@ -496,45 +496,45 @@ static int handle_item(ship_client_t *c, const char *params) {
         &item[3]);
 
     if(count == EOF || count == 0) {
-        return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
+        return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
-    clear_item(&c->new_item);
+    clear_item(&src->new_item);
 
     /* Copy over the item data. */
-    c->new_item.data_l[0] = SWAP32(item[0]);
-    c->new_item.data_l[1] = SWAP32(item[1]);
-    c->new_item.data_l[2] = SWAP32(item[2]);
-    c->new_item.data2_l = SWAP32(item[3]);
+    src->new_item.data_l[0] = SWAP32(item[0]);
+    src->new_item.data_l[1] = SWAP32(item[1]);
+    src->new_item.data_l[2] = SWAP32(item[2]);
+    src->new_item.data2_l = SWAP32(item[3]);
 
-    print_item_data(&c->new_item, c->version);
+    print_item_data(&src->new_item, src->version);
 
-    return send_txt(c, "%s %s %s",
-        __(c, "\tE\tC8物品:"),
-        item_get_name(&c->new_item, c->version),
-        __(c, "\tE\tC6 new_item 设置成功."));
+    return send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version),
+        __(src, "\tE\tC6 new_item 设置成功."));
 }
 
 /* 用法 /item4 item4 */
-static int handle_item4(ship_client_t *c, const char *params) {
+static int handle_item4(ship_client_t *src, const char *params) {
     uint32_t item;
     int count;
 
     /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    if(!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
 
     /* Copy over the item data. */
     count = sscanf(params, "%X", &item);
 
     if(count == EOF || count == 0) {
-        return send_txt(c, "%s", __(c, "\tE\tC7无效物品代码."));
+        return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
-    c->new_item.data2_l = LE32(item);
+    src->new_item.data2_l = LE32(item);
 
-    return send_txt(c, "%s", __(c, "\tE\tC7next_item 设置成功."));
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item 设置成功."));
 }
 
 /* 用法: /makeitem */
@@ -3689,6 +3689,126 @@ static int handle_clean(ship_client_t* c, const char* params) {
     }
 
     return send_txt(c, "%s", __(c, "\tE\tC6清空指令不正确\n参数为[inv/bank]."));
+}
+
+/* 用法: /pso2 item1,item2,item3,item4*/
+static int handle_pso2(ship_client_t* src, const char* params) {
+    lobby_t* l = src->cur_lobby;
+    iitem_t* iitem;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
+    uint32_t item[4] = { 0, 0, 0, 0 };
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X,%X,%X,%X", &item[0], &item[1], &item[2],
+        &item[3]);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
+    }
+
+    clear_item(&src->new_item);
+
+    /* Copy over the item data. */
+    src->new_item.data_l[0] = SWAP32(item[0]);
+    src->new_item.data_l[1] = SWAP32(item[1]);
+    src->new_item.data_l[2] = SWAP32(item[2]);
+    src->new_item.data2_l = SWAP32(item[3]);
+
+    print_item_data(&src->new_item, src->version);
+
+    send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version),
+        __(src, "\tE\tC6 new_item 设置成功."));
+
+    pthread_mutex_lock(&l->mutex);
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Make sure there's something set with /item */
+    if (!src->new_item.data_l[0]) {
+        pthread_mutex_unlock(&l->mutex);
+        return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
+            __(src, "\tE\tC7/item code1,code2,code3,code4."));
+    }
+
+    /* If we're on Blue Burst, add the item to the lobby's inventory first. */
+    if (l->version == CLIENT_VERSION_BB) {
+        iitem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+
+        if (!iitem) {
+            pthread_mutex_unlock(&l->mutex);
+            return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
+        }
+    }
+    else {
+        ++l->item_player_id[src->client_id];
+    }
+
+    /* Generate the packet to drop the item */
+    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
+
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = src->client_id;
+
+
+    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.flags = 0;
+
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x09;
+    bb.shdr.client_id = src->client_id;
+
+    dc.area = LE16(src->cur_area);
+    bb.area = LE32(src->cur_area);
+    bb.x = dc.x = src->x;
+    bb.z = dc.z = src->z;
+    bb.data = dc.data = src->new_item;
+    bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
+    bb.two = dc.two = LE32(0x00000002);
+
+    /* Clear the set item */
+    clear_item(&src->new_item);
+
+    /* Send the packet to everyone in the lobby */
+    pthread_mutex_unlock(&l->mutex);
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
+
+    case CLIENT_VERSION_BB:
+        return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
+
+    default:
+        return 0;
+    }
 }
 
 static command_t cmds[] = {

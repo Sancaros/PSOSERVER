@@ -161,7 +161,7 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, uint8_t tech_data[20], int
 
     if (row != NULL) {
         int i2 = 2;
-        for (int i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+        for (int i = 0; i < MAX_TECH_LEVEL; i++) {
             tech_data[i] = (uint8_t)strtoul(row[i2], NULL, 16);
             i2++;
         }

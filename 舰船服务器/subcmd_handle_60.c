@@ -2317,9 +2317,7 @@ int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) ||
-        pkt->shdr.size != 0x02 ||
-        src->client_id != pkt->shdr.client_id
-        ) {
+        pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);

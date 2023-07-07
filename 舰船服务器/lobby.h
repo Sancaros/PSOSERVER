@@ -122,6 +122,8 @@ struct lobby {
 
     uint32_t govorlab;
 
+    bool drop_pso2;
+    bool drop_psocn;
     bool drops_disabled;
     bool questE0;
 
@@ -172,7 +174,7 @@ struct lobby {
     qenemy_t *mids;
     psocn_limits_t *limits_list;
 
-    int (*dropfunc)(ship_client_t *c, struct lobby *l, void *req);
+    int (*dropfunc)(ship_client_t* src, struct lobby *l, void *req);
     int (*subcmd_handle)(ship_client_t* src, ship_client_t* dst, void* pkt);
 
     uint8_t q_flags;
@@ -248,6 +250,8 @@ TAILQ_HEAD(lobby_queue, lobby);
 #define LOBBY_FLAG_SINGLEPLAYER 0x00000400
 #define LOBBY_FLAG_EP3          0x00000800
 #define LOBBY_FLAG_SERVER_DROPS 0x00001000
+#define LOBBY_FLAG_PSO2_DROPS   0x00001002
+#define LOBBY_FLAG_PSOCN_DROPS  0x00001004
 #define LOBBY_FLAG_DBG_SDROPS   0x00002000
 #define LOBBY_FLAG_NTE          0x00004000
 #define LOBBY_FLAG_HAS_NPC      0x00008000

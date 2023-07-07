@@ -171,6 +171,16 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
                     rt_bb_enabled() && !l->battle && !l->challenge) {
                     l->dropfunc = pt_generate_bb_drop;
                     l->flags |= LOBBY_FLAG_SERVER_DROPS;
+
+                    if (l->drop_pso2) {
+                        l->dropfunc = pt_generate_bb_pso2_drop;
+                        l->flags |= LOBBY_FLAG_PSO2_DROPS;
+                    }
+
+                    if (l->drop_psocn) {
+                        l->dropfunc = pt_generate_bb_pso2_drop;
+                        l->flags |= LOBBY_FLAG_PSOCN_DROPS;
+                    }
                 }
                 return;
 
@@ -182,6 +192,16 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
     if (l->version == CLIENT_VERSION_BB) {
         l->dropfunc = pt_generate_bb_drop;
         l->flags |= LOBBY_FLAG_SERVER_DROPS;
+
+        if (l->drop_pso2) {
+            l->dropfunc = pt_generate_bb_pso2_drop;
+            l->flags |= LOBBY_FLAG_PSO2_DROPS;
+        }
+
+        if (l->drop_psocn) {
+            l->dropfunc = pt_generate_bb_pso2_drop;
+            l->flags |= LOBBY_FLAG_PSOCN_DROPS;
+        }
         return;
     }
 

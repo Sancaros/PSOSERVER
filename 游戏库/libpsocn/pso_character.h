@@ -34,6 +34,7 @@
 #define MAX_PLAYER_INV_ITEMS            30
 #define MAX_PLAYER_CLASS_DC             9
 #define MAX_PLAYER_CLASS_BB             12
+#define MAX_TECH_LEVEL                  19
 #define MAX_TRADE_ITEMS                 200
 
 #ifdef PACKED

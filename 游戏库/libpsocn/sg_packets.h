@@ -583,7 +583,7 @@ typedef struct shipgate_ubl_add {
 /* 用于传输玩家职业最大法术数据表 */
 typedef struct shipgate_max_tech_lvl_bb {
     shipgate_hdr_t hdr;
-    bb_max_tech_level_t data[BB_MAX_TECH_LEVEL];
+    bb_max_tech_level_t data[MAX_TECH_LEVEL];
 } PACKED shipgate_max_tech_lvl_bb_pkt;
 
 /* 用于传输玩家职业等级数值数据表 */

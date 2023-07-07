@@ -29,3 +29,6 @@ int char_add_color_tag(char* a);
 int wchar_add_color_tag(wchar_t* a);
 
 int add_color_tag(void* str);
+
+/* 实现字符的小写转换 */
+char* tolower_c(const char* s);

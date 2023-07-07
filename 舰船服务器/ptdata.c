@@ -2255,10 +2255,14 @@ ok:
     return subcmd_send_lobby_item(l, req, item);
 }
 
-static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
+/* 大厅掉落发送数据包 */
+static int check_and_send_bb_lobby(ship_client_t *dest, lobby_t *l, uint32_t item[4],
                              int area, subcmd_bb_itemreq_t *req, int csr) {
     int rv;
     iitem_t *it;
+
+    if (!l)
+        return 0;
 
     /* See it is cool to drop "semi-rare" items. */
     if(csr) {
@@ -2269,17 +2273,51 @@ static int check_and_send_bb(ship_client_t *c, lobby_t *l, uint32_t item[4],
             return 0;
     }
 
-    c->new_item.data_l[0] = item[0];
-    c->new_item.data_l[1] = item[1];
-    c->new_item.data_l[2] = item[2];
-    c->new_item.data2_l = item[3];
+    dest->new_item.data_l[0] = item[0];
+    dest->new_item.data_l[1] = item[1];
+    dest->new_item.data_l[2] = item[2];
+    dest->new_item.data2_l = item[3];
 
     //print_item_data(&c->new_item, c->version);
 
-    pthread_mutex_lock(&c->mutex);
-    it = add_new_litem_locked(l, &c->new_item, req->area, req->x, req->z);
-    rv = subcmd_send_bb_lobby_item(l, req, it);
-    pthread_mutex_unlock(&c->mutex);
+    pthread_mutex_lock(&dest->mutex);
+    it = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+    rv = subcmd_send_bb_lobby_drop_item(dest, NULL, req, it);
+    pthread_mutex_unlock(&dest->mutex);
+
+    return rv;
+}
+
+/* 单独掉落发送数据 */
+static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
+    int area, subcmd_bb_itemreq_t* req, int csr) {
+    int rv;
+    iitem_t* it;
+    lobby_t* l = dest->cur_lobby;
+
+    if (!l)
+        return 0;
+
+    /* See it is cool to drop "semi-rare" items. */
+    if (csr) {
+        if (pmt_lookup_stars_bb(item[0]) >= 9)
+            /* We aren't supposed to drop rares, and this item qualifies
+               as one (according to Sega's rules), so don't drop it
+               我们不应该掉落这些稀有品，而且这件物品符合世嘉规则，所以不要掉落它. */
+            return 0;
+    }
+
+    dest->new_item.data_l[0] = item[0];
+    dest->new_item.data_l[1] = item[1];
+    dest->new_item.data_l[2] = item[2];
+    dest->new_item.data2_l = item[3];
+
+    print_item_data(&dest->new_item, dest->version);
+
+    pthread_mutex_lock(&dest->mutex);
+    it = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+    rv = subcmd_send_bb_drop_item(dest, req, it);
+    pthread_mutex_unlock(&dest->mutex);
 
     return rv;
 }
@@ -3573,14 +3611,14 @@ generate_meseta:
     return 0;
 }
 
-int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
+int pt_generate_bb_drop(ship_client_t *src, lobby_t *l, void *r) {
     subcmd_bb_itemreq_t *req = (subcmd_bb_itemreq_t *)r;
     int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
     pt_bb_entry_t*ent;
     uint32_t rnd;
     uint32_t item[4] = { 0 };
     int area, do_rare = 1;
-    struct mt19937_state *rng = &c->cur_block->rng;
+    struct mt19937_state *rng = &src->cur_block->rng;
     uint16_t mid;
     game_enemy_t *enemy;
     int csr = 0;
@@ -3619,10 +3657,10 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
 
     /* If the PT index is 0x30, this is a box, not an enemy! */
     if(req->pt_index == 0x30)
-        return pt_generate_bb_boxdrop(c, l, r);
+        return pt_generate_bb_boxdrop(src, l, r);
 
     /* Figure out the area we'll be worried with */
-    area = c->cur_area;
+    area = src->cur_area;
 
     switch(l->episode) {
         case GAME_TYPE_NORMAL:
@@ -3630,7 +3668,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
         {
             switch (area) {
             case 0:
-                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", c->guildcard);
+                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
                 return -1;
 
                 /* Gal Gryphon -> SeaSide Daytime */
@@ -3670,7 +3708,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
         {
             switch (area) {
             case 0:
-                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", c->guildcard);
+                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
                 return -1;
 
                 /* Gal Gryphon -> SeaSide Daytime */
@@ -3708,7 +3746,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
 
         case GAME_TYPE_EPISODE_4:
             if (area == 0) {
-                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", c->guildcard);
+                ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
                 return -1;
             }
 
@@ -3723,7 +3761,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     /* Make sure the enemy's id is sane... */
     mid = LE16(req->request_id);
     if(mid > l->map_enemies->count) {
-        ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", c->guildcard, mid,
+        ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", src->guildcard, mid,
               l->map_enemies->count, l->qid);
         return -1;
     }
@@ -3751,9 +3789,9 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
     }
 
     /* See if the user is lucky today... */
-    if(do_rare && (item[0] = rt_generate_bb_rare(c, l, req->pt_index, 0))) {
+    if(do_rare && (item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0))) {
 
-        ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", c->guildcard, item[0] & 0xFF);
+        ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
 
         switch(item[0] & 0xFF) {
             case ITEM_TYPE_WEAPON:
@@ -3811,7 +3849,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                 return 0;
         }
 
-        return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+        return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
     }
     
     /* Figure out what type to drop... */
@@ -3829,7 +3867,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                         return 0;
                     }
 
-                    return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+                    return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
 
                 case BOX_TYPE_ARMOR:
                     /* Drop an armor */
@@ -3837,7 +3875,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                         return 0;
                     }
 
-                    return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+                    return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
 
                 case BOX_TYPE_SHIELD:
                     /* Drop a shield */
@@ -3845,7 +3883,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                         return 0;
                     }
 
-                    return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+                    return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
 
                 case BOX_TYPE_UNIT:
                     /* Drop a unit */
@@ -3853,7 +3891,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                         return 0;
                     }
 
-                    return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+                    return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
 
                 case -1:
                     /* This shouldn't happen, but if it does, don't drop
@@ -3875,7 +3913,7 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                 return 0;
             }
 
-            return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+            return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
 
         case 2:
             /* Drop meseta */
@@ -3885,14 +3923,14 @@ int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r) {
                 return 0;
             }
 
-            return check_and_send_bb(c, l, item, c->cur_area, req, csr);
+            return check_and_send_bb_lobby(src, l, item, src->cur_area, req, csr);
     }
 
     /* Shouldn't ever get here... */
     return 0;
 }
 
-int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
+int pt_generate_bb_boxdrop(ship_client_t *src, lobby_t *l, void *r) {
     subcmd_bb_bitemreq_t *req = (subcmd_bb_bitemreq_t *)r;
     int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
     pt_bb_entry_t *ent;
@@ -3903,7 +3941,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     int area, do_rare = 1;
     uint32_t item[4] = { 0 };
     float f1, f2;
-    struct mt19937_state *rng = &c->cur_block->rng;
+    struct mt19937_state *rng = &src->cur_block->rng;
     int csr = 0;
     uint8_t game_type = 0;
 
@@ -3943,7 +3981,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     obj_id = LE16(req->request_id);
     if(obj_id > l->map_objs->count) {
         ITEM_LOG("GC %u 请求的箱子掉落无效",
-              c->guildcard);
+              src->guildcard);
         return -1;
     }
 
@@ -3955,7 +3993,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     obj = &gobj->data;
 
     /* Figure out the area we'll be worried with */
-    area = c->cur_area;
+    area = src->cur_area;
 
     switch (l->episode) {
     case GAME_TYPE_NORMAL:
@@ -3963,7 +4001,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     {
         switch (area) {
         case 0:
-            ITEM_LOG("GC %u 在先驱者2号请求敌箱子落", c->guildcard);
+            ITEM_LOG("GC %u 在先驱者2号请求敌箱子落", src->guildcard);
             return -1;
 
             /* Gal Gryphon -> SeaSide Daytime */
@@ -4002,7 +4040,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     {
         switch (area) {
         case 0:
-            ITEM_LOG("GC %u 在先驱者2号请求箱子掉落", c->guildcard);
+            ITEM_LOG("GC %u 在先驱者2号请求箱子掉落", src->guildcard);
             return -1;
 
             /* Gal Gryphon -> SeaSide Daytime */
@@ -4039,7 +4077,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
 
     case GAME_TYPE_EPISODE_4:
         if (area == 0) {
-            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", c->guildcard);
+            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
             return -1;
         }
 
@@ -4092,7 +4130,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 item[3] = t1 * 10;
             }
 
-            return check_and_send_bb(c, l, item, c->cur_area,
+            return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                      (subcmd_bb_itemreq_t *)req, csr);
         }
 
@@ -4117,7 +4155,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
     }
 
     /* See if the user is lucky today... */
-    if(do_rare && (item[0] = rt_generate_bb_rare(c, l, -1, area + 1))) {
+    if(do_rare && (item[0] = rt_generate_bb_rare(src, l, -1, area + 1))) {
         switch(item[0] & 0xFF) {
             case ITEM_TYPE_WEAPON:
                 /* Weapon -- add percentages and (potentially) grind values and
@@ -4177,7 +4215,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r) {
                 return 0;
         }
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
 
@@ -4190,7 +4228,7 @@ generate_weapon:
         if(generate_weapon_bb(ent, area, item, rng, 0, 1, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
     else if((rnd -= ent->box_drop[BOX_TYPE_ARMOR][area]) > 100) {
@@ -4199,7 +4237,7 @@ generate_armor:
         if(generate_armor_bb(ent, area, item, rng, 0, 1, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
     else if((rnd -= ent->box_drop[BOX_TYPE_SHIELD][area]) > 100) {
@@ -4207,7 +4245,7 @@ generate_armor:
         if(generate_shield_bb(ent, area, item, rng, 0, 1, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
     else if((rnd -= ent->box_drop[BOX_TYPE_UNIT][area]) > 100) {
@@ -4215,7 +4253,7 @@ generate_armor:
         if(pmt_random_unit_bb(ent->unit_level[area], item, rng, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
     else if((rnd -= ent->box_drop[BOX_TYPE_TOOL][area]) > 100) {
@@ -4224,7 +4262,7 @@ generate_tool:
         if(generate_tool_bb(ent, area, item, rng, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
     else if((rnd -= ent->box_drop[BOX_TYPE_MESETA][area]) > 100) {
@@ -4234,10 +4272,697 @@ generate_meseta:
                            item, rng, l))
             return 0;
 
-        return check_and_send_bb(c, l, item, c->cur_area,
+        return check_and_send_bb_lobby(src, l, item, src->cur_area,
                                  (subcmd_bb_itemreq_t *)req, csr);
     }
 
     /* You get nothing! */
     return 0;
 }
+
+int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, void* r) {
+    subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
+    pt_bb_entry_t* ent;
+    uint32_t rnd;
+    uint32_t item[4] = { 0 };
+    int area, do_rare = 1;
+    struct mt19937_state* rng = &src->cur_block->rng;
+    uint16_t mid;
+    game_enemy_t* enemy;
+    int csr = 0;
+    uint8_t game_type = 0;
+
+    //EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+
+    switch (l->episode)
+    {
+    case GAME_TYPE_EPISODE_1:
+        if (l->challenge)
+            game_type = 2;
+        else
+            game_type = 0;
+        break;
+    case GAME_TYPE_EPISODE_2:
+        if (l->challenge)
+            game_type = 3;
+        else
+            game_type = 1;
+        break;
+    case GAME_TYPE_EPISODE_4:
+        game_type = 4;
+        break;
+    default:
+        game_type = 0;
+        break;
+    }
+
+    ent = &bb_ptdata[game_type][l->difficulty][section];
+    //ent = &bb_ptdata[l->episode - 1][l->difficulty][section];
+
+    /* Make sure the PT index in the packet is sane */
+    //if(req->pt_index > 0x33)
+    //    return -1;
+
+    /* If the PT index is 0x30, this is a box, not an enemy! */
+    if (req->pt_index == 0x30)
+        return pt_generate_bb_pso2_boxdrop(src, l, section, r);
+
+    /* Figure out the area we'll be worried with */
+    area = src->cur_area;
+
+    switch (l->episode) {
+    case GAME_TYPE_NORMAL:
+    case GAME_TYPE_EPISODE_1:
+    {
+        switch (area) {
+        case 0:
+            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
+            return -1;
+
+            /* Gal Gryphon -> SeaSide Daytime */
+        case 11:
+            area = 3;
+            break;
+
+            /* Olga Flow -> SeaBed Upper Levels */
+        case 12:
+            area = 6;
+            break;
+
+            /* Barba Ray -> VR Space Ship Alpha */
+        case 13:
+            area = 8;
+            break;
+
+            /* Gol Dragon -> Jungle North */
+        case 14:
+            area = 10;
+            break;
+
+        default:
+            /* Everything after Dark Falz -> Ruins 3 */
+            if (area > 14)
+                area = 10;
+            else
+                area = 1;// unknown area
+
+            break;
+
+        }
+    }
+    break;
+
+    case GAME_TYPE_EPISODE_2:
+    {
+        switch (area) {
+        case 0:
+            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
+            return -1;
+
+            /* Gal Gryphon -> SeaSide Daytime */
+        case 12:
+            area = 9;
+            break;
+
+            /* Olga Flow -> SeaBed Upper Levels */
+        case 13:
+            area = 10;
+            break;
+
+            /* Barba Ray -> VR Space Ship Alpha */
+        case 14:
+            area = 3;
+            break;
+
+            /* Gol Dragon -> Jungle North */
+        case 15:
+            area = 6;
+            break;
+
+        default:
+            /* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
+            if (area > 10)
+                area = 10;
+            else
+                area = 10; // tower
+
+            break;
+
+        }
+    }
+    break;
+
+    case GAME_TYPE_EPISODE_4:
+        if (area == 0) {
+            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
+            return -1;
+        }
+
+        area = 1;
+
+        break;
+    }
+
+    /* Subtract one, since we want the index in the box_drop array */
+    --area;
+
+    /* Make sure the enemy's id is sane... */
+    mid = LE16(req->request_id);
+    if (mid > l->map_enemies->count) {
+        ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", src->guildcard, mid,
+            l->map_enemies->count, l->qid);
+        return -1;
+    }
+
+    /* Grab the map enemy to make sure it hasn't already dropped something. */
+    enemy = &l->map_enemies->enemies[mid];
+    if (enemy->drop_done)
+        return 0;
+
+    enemy->drop_done = 1;
+
+    /* See if the enemy is going to drop anything at all this time... */
+    rnd = mt19937_genrand_int32(rng) % 100;
+
+    if ((int8_t)rnd >= ent->enemy_dar[req->pt_index])
+        /* Nope. You get nothing! */
+        return 0;
+
+    /* See if we'll do a rare roll. */
+    if (l->qid) {
+        if (!(ship->cfg->local_flags & PSOCN_SHIP_QUEST_RARES))
+            do_rare = 0;
+        if (!(ship->cfg->local_flags & PSOCN_SHIP_QUEST_SRARES))
+            csr = 1;
+    }
+
+    /* See if the user is lucky today... */
+    if (do_rare && (item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0))) {
+
+        ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
+
+        switch (item[0] & 0xFF) {
+        case ITEM_TYPE_WEAPON:
+            /* Weapon -- add percentages and (potentially) grind values and
+               such... */
+            if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+                return 0;
+            break;
+
+        case ITEM_TYPE_GUARD:
+            /* Armor/Shield/Unit */
+            switch ((item[0] >> 8) & 0xFF) {
+            case ITEM_SUBTYPE_FRAME:
+                /* Armor -- Add DFP/EVP boosts and slots */
+                if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+                    return 0;
+                break;
+
+            case ITEM_SUBTYPE_BARRIER:
+                /* Shield -- Add DFP/EVP boosts */
+                if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+                    return 0;
+                break;
+
+            case ITEM_SUBTYPE_UNIT:
+                /* Unit -- Nothing to do here */
+                break;
+
+            default:
+                ITEM_LOG("ItemRT 生成无效物品: %08X", item[0]);
+                return 0;
+            }
+            break;
+
+        case ITEM_TYPE_MAG:
+            /* Mag -- Give it 5 DFP and 40% Synchro and an unset color */
+            item[0] = 0x00050002;
+            item[1] = 0x000001F4;
+            item[2] = 0x00000000;
+            item[3] = 0xFF000028;
+            break;
+
+        case ITEM_TYPE_TOOL:
+            /* Tool -- Give it a quantity of 1 if its stackable. */
+            item[1] = item[2] = item[3] = 0;
+
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+            if (is_stackable(&tmp_item))
+                item[1] = (1 << 8);
+            break;
+
+        default:
+            ITEM_LOG("ItemRT 生成无效物品: %08X", item[0]);
+            return 0;
+        }
+
+        return check_and_send_bb(src, item, src->cur_area, req, csr);
+    }
+
+    /* Figure out what type to drop... */
+    rnd = mt19937_genrand_int32(rng) % 3;
+
+    //ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
+
+    switch (rnd) {
+    case 0:
+        /* Drop the enemy's designated type of item. */
+        switch (ent->enemy_drop[req->pt_index]) {
+        case BOX_TYPE_WEAPON:
+            /* Drop a weapon */
+            if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
+                return 0;
+            }
+
+            return check_and_send_bb(src, item, src->cur_area, req, csr);
+
+        case BOX_TYPE_ARMOR:
+            /* Drop an armor */
+            if (generate_armor_bb(ent, area, item, rng, 0, 1, l)) {
+                return 0;
+            }
+
+            return check_and_send_bb(src, item, src->cur_area, req, csr);
+
+        case BOX_TYPE_SHIELD:
+            /* Drop a shield */
+            if (generate_shield_bb(ent, area, item, rng, 0, 1, l)) {
+                return 0;
+            }
+
+            return check_and_send_bb(src, item, src->cur_area, req, csr);
+
+        case BOX_TYPE_UNIT:
+            /* Drop a unit */
+            if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l)) {
+                return 0;
+            }
+
+            return check_and_send_bb(src, item, src->cur_area, req, csr);
+
+        case -1:
+            /* This shouldn't happen, but if it does, don't drop
+               anything at all. */
+            return 0;
+
+        default:
+            ITEM_LOG("Unknown/Invalid enemy drop (%d) for index "
+                "%d", ent->enemy_drop[req->pt_index],
+                req->pt_index);
+            return 0;
+        }
+
+        break;
+
+    case 1:
+        /* Drop a tool */
+        if (generate_tool_bb(ent, area, item, rng, l)) {
+            return 0;
+        }
+
+        return check_and_send_bb(src, item, src->cur_area, req, csr);
+
+    case 2:
+        /* Drop meseta */
+        if (generate_meseta(ent->enemy_meseta[req->pt_index][0],
+            ent->enemy_meseta[req->pt_index][1],
+            item, rng, l)) {
+            return 0;
+        }
+
+        return check_and_send_bb(src, item, src->cur_area, req, csr);
+    }
+
+    /* Shouldn't ever get here... */
+    return 0;
+}
+
+int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r) {
+    subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)r;
+    pt_bb_entry_t* ent;
+    uint16_t obj_id;
+    game_object_t* gobj;
+    map_object_t* obj;
+    uint32_t rnd, t1, t2;
+    int area, do_rare = 1;
+    uint32_t item[4] = { 0 };
+    float f1, f2;
+    struct mt19937_state* rng = &src->cur_block->rng;
+    int csr = 0;
+    uint8_t game_type = 0;
+
+    //EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+
+    switch (l->episode)
+    {
+    case GAME_TYPE_EPISODE_1:
+        if (l->challenge)
+            game_type = 2;
+        else
+            game_type = 0;
+        break;
+    case GAME_TYPE_EPISODE_2:
+        if (l->challenge)
+            game_type = 3;
+        else
+            game_type = 1;
+        break;
+    case GAME_TYPE_EPISODE_4:
+        game_type = 4;
+        break;
+    default:
+        game_type = 0;
+        break;
+    }
+
+    ent = &bb_ptdata[game_type][l->difficulty][section];
+
+    //ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
+
+    /* Make sure this is actually a box drop... */
+    if (req->pt_index != 0x30)
+        return -1;
+
+    /* Grab the object ID and make sure its sane, then grab the object itself */
+    obj_id = LE16(req->request_id);
+    if (obj_id > l->map_objs->count) {
+        ITEM_LOG("GC %u 请求的箱子掉落无效",
+            src->guildcard);
+        return -1;
+    }
+
+    /* Don't bother if the box has already been opened */
+    gobj = &l->map_objs->objs[obj_id];
+    if (gobj->flags & 0x00000001)
+        return 0;
+
+    obj = &gobj->data;
+
+    /* Figure out the area we'll be worried with */
+    area = src->cur_area;
+
+    switch (l->episode) {
+    case GAME_TYPE_NORMAL:
+    case GAME_TYPE_EPISODE_1:
+    {
+        switch (area) {
+        case 0:
+            ITEM_LOG("GC %u 在先驱者2号请求敌箱子落", src->guildcard);
+            return -1;
+
+            /* Gal Gryphon -> SeaSide Daytime */
+        case 11:
+            area = 3;
+            break;
+
+            /* Olga Flow -> SeaBed Upper Levels */
+        case 12:
+            area = 6;
+            break;
+
+            /* Barba Ray -> VR Space Ship Alpha */
+        case 13:
+            area = 8;
+            break;
+
+            /* Gol Dragon -> Jungle North */
+        case 14:
+            area = 10;
+            break;
+
+        default:
+            /* Everything after Dark Falz -> Ruins 3 */
+            if (area > 14)
+                area = 10;
+            else
+                area = 1;
+            break;
+
+        }
+    }
+    break;
+
+    case GAME_TYPE_EPISODE_2:
+    {
+        switch (area) {
+        case 0:
+            ITEM_LOG("GC %u 在先驱者2号请求箱子掉落", src->guildcard);
+            return -1;
+
+            /* Gal Gryphon -> SeaSide Daytime */
+        case 12:
+            area = 9;
+            break;
+
+            /* Olga Flow -> SeaBed Upper Levels */
+        case 13:
+            area = 10;
+            break;
+
+            /* Barba Ray -> VR Space Ship Alpha */
+        case 14:
+            area = 3;
+            break;
+
+            /* Gol Dragon -> Jungle North */
+        case 15:
+            area = 6;
+            break;
+
+        default:
+            /* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
+            if (area > 10)
+                area = 10;
+            else
+                area = 1;
+            break;
+
+        }
+    }
+    break;
+
+    case GAME_TYPE_EPISODE_4:
+        if (area == 0) {
+            ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
+            return -1;
+        }
+
+        /* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
+        if (area > 10)
+            area = 10;
+        else
+            area = 10;
+
+        break;
+    }
+
+    /* Subtract one, since we want the index in the box_drop array */
+    --area;
+
+    /* Mark the box as spent now... */
+    gobj->flags |= 0x00000001;
+
+    /* See if we'll do a rare roll. */
+    if (l->qid) {
+        if (!(ship->cfg->local_flags & PSOCN_SHIP_QUEST_RARES))
+            do_rare = 0;
+        if (!(ship->cfg->local_flags & PSOCN_SHIP_QUEST_SRARES))
+            csr = 1;
+    }
+
+    /* See if the object is fixed-type box */
+    t1 = LE32(obj->dword[0]);
+    memcpy(&f1, &t1, sizeof(float));
+    if ((obj->skin == LE32(0x00000092) || obj->skin == LE32(0x00000161)) &&
+        f1 < 1.0f + EPSILON && f1 > 1.0f - EPSILON) {
+        /* See if it is a fully-fixed item */
+        t2 = LE32(obj->dword[1]);
+        memcpy(&f2, &t2, sizeof(float));
+
+        if (f2 < 1.0f + EPSILON && f2 > 1.0f - EPSILON) {
+            /* Drop the requested item */
+            item[0] = ntohl(obj->dword[2]);
+            item[1] = item[2] = item[3] = 0;
+
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+            /* If its a stackable item, make sure to give it a quantity of 1 */
+            if (is_stackable(&tmp_item))
+                item[1] = (1 << 8);
+
+            /* This will make the meseta boxes for Vol Opt work... */
+            if (item[0] == 0x00000004) {
+                t1 = LE32(obj->dword[3]) >> 16;
+                item[3] = t1 * 10;
+            }
+
+            return check_and_send_bb(src, item, src->cur_area,
+                (subcmd_bb_itemreq_t*)req, csr);
+        }
+
+        t1 = ntohl(obj->dword[2]);
+        switch (t1 & 0xFF) {
+        case ITEM_TYPE_WEAPON:
+            goto generate_weapon;
+
+        case ITEM_TYPE_GUARD:
+            goto generate_armor;
+
+        case ITEM_TYPE_TOOL:
+            goto generate_tool;
+
+        case ITEM_TYPE_MESETA:
+            goto generate_meseta;
+
+        default:
+            ITEM_LOG("Invalid type detected from fixed-type box!");
+            return 0;
+        }
+    }
+
+    /* See if the user is lucky today... */
+    if (do_rare && (item[0] = rt_generate_bb_rare(src, l, -1, area + 1))) {
+        switch (item[0] & 0xFF) {
+        case ITEM_TYPE_WEAPON:
+            /* Weapon -- add percentages and (potentially) grind values and
+               such... */
+            if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+                return 0;
+            break;
+
+        case ITEM_TYPE_GUARD:
+            /* Armor/Shield/Unit */
+            switch ((item[0] >> 8) & 0xFF) {
+            case ITEM_SUBTYPE_FRAME:
+                /* Armor -- Add DFP/EVP boosts and slots */
+                if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+                    return 0;
+                break;
+
+            case ITEM_SUBTYPE_BARRIER:
+                /* Shield -- Add DFP/EVP boosts */
+                if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+                    return 0;
+                break;
+
+            case ITEM_SUBTYPE_UNIT:
+                /* Unit -- Nothing to do here */
+                break;
+
+            default:
+                ITEM_LOG("ItemRT generated an invalid item: "
+                    "%08X", item[0]);
+                return 0;
+            }
+
+            break;
+
+        case ITEM_TYPE_MAG:
+            /* Mag -- Give it 5 DFP and 40% Synchro and an unset color */
+            item[0] = 0x00050002;
+            item[1] = 0x000001F4;
+            item[2] = 0x00000000;
+            item[3] = 0xFF000028;
+            break;
+
+        case ITEM_TYPE_TOOL:
+            /* Tool -- Give it a quantity of 1 if its stackable. */
+            item[1] = item[2] = item[3] = 0;
+
+            item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+
+            if (is_stackable(&tmp_item))
+                item[1] = (1 << 8);
+            break;
+
+        default:
+            ITEM_LOG("ItemRT generated an invalid item: %08X",
+                item[0]);
+            return 0;
+        }
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+
+    /* Generate an item, according to the PT data */
+    rnd = mt19937_genrand_int32(rng) % 100;
+
+    if ((rnd -= ent->box_drop[BOX_TYPE_WEAPON][area]) > 100) {
+    generate_weapon:
+        /* Generate a weapon */
+        if (generate_weapon_bb(ent, area, item, rng, 0, 1, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+    else if ((rnd -= ent->box_drop[BOX_TYPE_ARMOR][area]) > 100) {
+    generate_armor:
+        /* Generate an armor */
+        if (generate_armor_bb(ent, area, item, rng, 0, 1, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+    else if ((rnd -= ent->box_drop[BOX_TYPE_SHIELD][area]) > 100) {
+        /* Generate a shield */
+        if (generate_shield_bb(ent, area, item, rng, 0, 1, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+    else if ((rnd -= ent->box_drop[BOX_TYPE_UNIT][area]) > 100) {
+        /* Generate a unit */
+        if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+    else if ((rnd -= ent->box_drop[BOX_TYPE_TOOL][area]) > 100) {
+    generate_tool:
+        /* Generate a tool */
+        if (generate_tool_bb(ent, area, item, rng, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+    else if ((rnd -= ent->box_drop[BOX_TYPE_MESETA][area]) > 100) {
+    generate_meseta:
+        /* Generate money! */
+        if (generate_meseta(ent->box_meseta[area][0], ent->box_meseta[area][1],
+            item, rng, l))
+            return 0;
+
+        return check_and_send_bb(src, item, src->cur_area,
+            (subcmd_bb_itemreq_t*)req, csr);
+    }
+
+    /* You get nothing! */
+    return 0;
+}
+
+int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r) {
+
+    for (int i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]) {
+            /* If we're supposed to check the ignore list, and this client is on
+               it, don't send the packet. */
+            if (client_has_ignored(l->clients[i], src->guildcard)) {
+                continue;
+            }
+
+            DBG_LOG("%d", l->clients[i]->bb_pl->character.dress_data.section);
+
+            pt_generate_bb_pso2_drop_style(l->clients[i], l, l->clients[i]->bb_pl->character.dress_data.section, r);
+        }
+    }
+
+    return 0;
+}
+

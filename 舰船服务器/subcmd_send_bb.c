@@ -112,10 +112,6 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
 int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item) {
     lobby_t* l = src->cur_lobby;
-    uint32_t drop_area = area;
-    float drop_x = x;
-    float drop_z = z;
-    iitem_t* drop_item = item;
 
     if (!l) {
         ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
@@ -131,68 +127,11 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint
                 continue;
             }
 
-            subcmd_send_drop_stack(l->clients[i], drop_area, drop_x, drop_z, drop_item);
+            subcmd_send_drop_stack(l->clients[i], area, x, z, item);
         }
     }
 
     return 0;
-
-
-
-
-    //subcmd_drop_stack_t dc = { 0 };
-    //subcmd_bb_drop_stack_t bb = { 0 };
-
-    ///* 填充数据并准备发送.. */
-    //dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    //dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
-    //dc.hdr.flags = 0;
-
-    //dc.shdr.type = SUBCMD60_DROP_STACK;
-    //dc.shdr.size = 0x0A;
-    //dc.shdr.client_id = src->client_id;
-
-
-    //bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    //bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    //bb.hdr.flags = 0;
-
-    //bb.shdr.type = SUBCMD60_DROP_STACK;
-    //bb.shdr.size = 0x09;
-    //bb.shdr.client_id = src->client_id;
-
-    //dc.area = LE16(src->cur_area);
-    //bb.area = LE32(src->cur_area);
-    //bb.x = dc.x = src->x;
-    //bb.z = dc.z = src->z;
-
-    //bb.data.data_l[0] = dc.data.data_l[0] = item->data.data_l[0];
-    //bb.data.data_l[1] = dc.data.data_l[1] = item->data.data_l[1];
-    //bb.data.data_l[2] = dc.data.data_l[2] = item->data.data_l[2];
-    //bb.data.item_id = dc.data.item_id = item->data.item_id;
-    //bb.data.data2_l = dc.data.data2_l = item->data.data2_l;
-
-    //bb.two = dc.two = LE32(0x00000002);
-
-    //if (src->version == CLIENT_VERSION_GC)
-    //    dc.data.data2_l = SWAP32(item->data.data2_l);
-
-    //switch (src->version) {
-    //case CLIENT_VERSION_DCV1:
-    //case CLIENT_VERSION_DCV2:
-    //case CLIENT_VERSION_PC:
-    //case CLIENT_VERSION_GC:
-    //case CLIENT_VERSION_EP3:
-    //case CLIENT_VERSION_XBOX:
-    //    return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
-
-    //case CLIENT_VERSION_BB:
-    //    return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
-
-    //default:
-    //    return 0;
-    //}
-    //return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
@@ -456,8 +395,8 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)req);
 }
 
-/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP 怪物掉落物品 */
+int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -487,7 +426,33 @@ int subcmd_send_bb_lobby_item(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_
     gen.data.item.item_id = LE32(item->data.item_id);
 
     /* Send the packet to every client in the lobby. */
-    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)&gen);
+}
+
+/* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
+int subcmd_send_bb_lobby_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+    subcmd_bb_itemgen_t gen = { 0 };
+    uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
+    lobby_t* l = src->cur_lobby;
+
+    if (!l) {
+        ERR_LOG("不在一个有效的大厅中!");
+        return -1;
+    }
+
+    for (int i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != nosend) {
+            /* If we're supposed to check the ignore list, and this client is on
+               it, don't send the packet. */
+            if (client_has_ignored(l->clients[i], src->guildcard)) {
+                continue;
+            }
+
+            subcmd_send_bb_drop_item(l->clients[i], req, item);
+        }
+    }
+
+    return 0;
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */

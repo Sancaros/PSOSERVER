@@ -67,6 +67,9 @@
     <ClInclude Include="pso_items_black_paper_reward_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_StringReader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -94,5 +97,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_player.c" />
+    <ClCompile Include="pso_StringReader.c" />
   </ItemGroup>
 </Project>

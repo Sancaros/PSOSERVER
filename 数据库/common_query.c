@@ -31,7 +31,7 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
     int i, j;
     long long row_count;
 
-    for (i = 0; i < BB_MAX_TECH_LEVEL; i++) {
+    for (i = 0; i < MAX_TECH_LEVEL; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
             sprintf(query, "SELECT * FROM %s WHERE id = '%" PRIu32 "'",
                 PLAYER_MAX_TECH_LEVEL_TABLE_BB, i);

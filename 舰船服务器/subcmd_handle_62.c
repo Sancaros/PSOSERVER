@@ -41,6 +41,7 @@
 #include "quest_functions.h"
 #include "mag_bb.h"
 #include "pso_items_black_paper_reward_list.h"
+#include "ptdata.h"
 
 #include "subcmd_handle.h"
 
@@ -1197,6 +1198,37 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
+    //if (l->drop_pso2) {
+    //    for (int i = 0; i < l->max_clients; ++i) {
+    //        if (l->clients[i]) {
+    //            /* If we're supposed to check the ignore list, and this client is on
+    //               it, don't send the packet. */
+    //            if (client_has_ignored(l->clients[i], src->guildcard)) {
+    //                continue;
+    //            }
+
+    //            l->dropfunc_pso2(l->clients[i], l, l->clients[i]->bb_pl->character.dress_data.section, pkt);
+    //        }
+    //    }
+
+    //    return 0;
+    //}
+
+    //if (l->drop_psocn) {
+    //    for (int i = 0; i < l->max_clients; ++i) {
+    //        if (l->clients[i]) {
+    //            /* If we're supposed to check the ignore list, and this client is on
+    //               it, don't send the packet. */
+    //            if (client_has_ignored(l->clients[i], src->guildcard)) {
+    //                continue;
+    //            }
+
+    //            l->dropfunc_psocn(l->clients[i], l, l->clients[i]->bb_pl->character.dress_data.section, pkt);
+    //        }
+    //    }
+
+    //    return 0;
+    //}
 
     return l->dropfunc(src, l, pkt);
 }
@@ -1252,9 +1284,21 @@ int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
 int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)pkt;
 
+    DBG_LOG("%d %d", src->pl->bb.character.dress_data.section, src->bb_pl->character.dress_data.section);
 
-    return l->dropfunc(src, l, pkt);
+    if (l->drop_pso2) {
+        l->dropfunc = pt_generate_bb_pso2_drop;
+    }
+
+    if (l->drop_psocn) {
+        l->dropfunc = pt_generate_bb_pso2_drop;
+    }
+
+    printf("%d\n", l->drop_pso2);
+
+    return l->dropfunc(src, l, req);
 }
 
 int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,

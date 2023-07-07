@@ -30,6 +30,7 @@
 #include "mapdata.h"
 #include "ship.h"
 #include "packets.h"
+#include "pso_StringReader.h"
 
 uint32_t quest_search_enemy_list(uint32_t id, qenemy_t *list, int len, int sd) {
     int i;

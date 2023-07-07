@@ -22,6 +22,18 @@
 #  define PSOBBCN_LINKAGE_TYPE_STR "¶¯Ì¬¿â"
 #endif
 
+#if (SIZE_MAX == 0xFF)
+#define SIZE_T_BITS 8
+#elif (SIZE_MAX == 0xFFFF)
+#define SIZE_T_BITS 16
+#elif (SIZE_MAX == 0xFFFFFFFF)
+#define SIZE_T_BITS 32
+#elif (SIZE_MAX == 0xFFFFFFFFFFFFFFFF)
+#define SIZE_T_BITS 64
+#else
+#error SIZE_MAX is not a recognized value
+#endif
+
 #define STR(s)     #s
 #define VERSION(a,b,c)  STR(a)"."STR(b)"."STR(c)" - "__DATE__" - "__TIME__ 
 
