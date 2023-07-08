@@ -377,7 +377,7 @@ bool is_wrapped(item_t* this) {
         return false;
     }
 
-    ERR_LOG("invalid item data");
+    ERR_LOG("无效物品数据 0x%02X", this->data_b[0]);
     return false;
 }
 
