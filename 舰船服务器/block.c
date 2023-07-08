@@ -215,7 +215,7 @@ static void* block_thd(void* d) {
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
                 else if (it->pl) {
-                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.dress_data.guildcard_string,
+                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.dress_data.guildcard_str.string,
                         it->guildcard);
                 }
 
@@ -484,7 +484,7 @@ static void* block_thd(void* d) {
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
                 else if (it->pl && it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.dress_data.guildcard_string,
+                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.dress_data.guildcard_str.string,
                         it->guildcard);
                 }
 #ifdef DEBUG
@@ -960,7 +960,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     /* Try to backup their character data */
@@ -1433,7 +1433,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     pthread_mutex_lock(&c->mutex);
 
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->v1.character.dress_data.guildcard_string[0]) {
+    if (c->pl->v1.character.dress_data.guildcard_str.string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -1507,7 +1507,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     }
 
     /* Copy out the inventory data */
-    memcpy(c->iitems, c->pl->v1.inv.iitems, sizeof(iitem_t) * 30);
+    memcpy(c->iitems, c->pl->v1.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
     c->item_count = (int)c->pl->v1.inv.item_count;
 
     /* Renumber the inventory data so we know what's going on later */
@@ -1552,7 +1552,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
             /* Notify the shipgate */
             shipgate_send_block_login(&ship->sg, 1, c->guildcard,
-                c->cur_block->b, c->pl->v1.character.dress_data.guildcard_string);
+                c->cur_block->b, c->pl->v1.character.dress_data.guildcard_str.string);
 
             if (c->cur_lobby)
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
@@ -3218,7 +3218,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         return process_ep3_command(c, pkt);
 
     case EP3_SERVER_DATA_TYPE:
-        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_string,
+        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
             c->guildcard);
         display_packet((unsigned char*)pkt, len);
         return 0;

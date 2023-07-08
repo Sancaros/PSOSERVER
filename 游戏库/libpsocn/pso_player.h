@@ -164,4 +164,3 @@ typedef union {
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
 
 #endif /* !PLAYER_H */
-

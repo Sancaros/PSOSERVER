@@ -166,13 +166,13 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     /* 备份临时数据 TODO BB版本未完成 */
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
-        if (shipgate_send_cbkup(&ship->sg, &c->game_info, &c->bb_pl, sizeof(psocn_bb_db_char_t))) {
+        if (shipgate_send_cbkup(&ship->sg, &c->game_info, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR)) {
             DBG_LOG("备份临时数据 版本 %d", c->version);
             return rv;
         }
@@ -869,7 +869,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
        TODO: This should probably be more thorough and done as part of the
        client_check_character() function. */
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->bb.character.dress_data.guildcard_string[0]) {
+    if (c->pl->bb.character.dress_data.guildcard_str.string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -910,7 +910,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */
-    memcpy(c->iitems, c->pl->bb.inv.iitems, sizeof(iitem_t) * 30);
+    memcpy(c->iitems, c->pl->bb.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
     c->item_count = (int)c->pl->bb.inv.item_count;
 
     /* 重新对库存数据进行编号, 以便后期进行数据交换 */
@@ -975,7 +975,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
                 ERR_LOG("shipgate_send_lobby_chg 错误");
         }
 
-        if (send_bb_quest_data1(c, c->bb_pl->quest_data1)) {
+        if (send_bb_quest_data1(c)) {
             pthread_mutex_unlock(&c->mutex);
             return -2;
         }
@@ -1585,7 +1585,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     if (c->version != CLIENT_VERSION_BB)
         return -1;
 
-    if (!c->bb_pl || len > BB_FULL_CHARACTER_DATA_LENGTH) {
+    if (!c->bb_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
         return -1;
     }
 
@@ -1613,15 +1613,15 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         printf("C->S数据来源 %d 字节\n", len);
         display_packet(&pkt, len);
         printf("原数据\n");
-        display_packet(c->bb_pl, sizeof(psocn_bb_full_char_t));
+        display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
 #endif // DEBUG
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_pl->inv, &char_data.inv, sizeof(inventory_t));
-        memcpy(&c->bb_pl->character, &char_data.character, sizeof(psocn_bb_char_t));
+        memcpy(&c->bb_pl->inv, &char_data.inv, PSOCN_STLENGTH_INV);
+        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
         memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
-        memcpy(&c->bb_pl->bank, &char_data.bank, sizeof(psocn_bank_t));
+        memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
         memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
         memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
@@ -1629,7 +1629,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
         memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
         /////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_guild->data, &char_data.guild_data, sizeof(bb_guild_t));
+        memcpy(&c->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
 
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -1637,13 +1637,13 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, sizeof(c->bb_opts->symbol_chats));
         memcpy(c->bb_opts->shortcuts, char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
         memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
-        memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, sizeof(bb_key_config_t));
+        memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
 
         c->game_data->db_save_done = 1;
 #ifdef DEBUG
         DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-        display_packet((uint8_t*)&char_data, sizeof(psocn_bb_full_char_t));
+        display_packet((uint8_t*)&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
     }
 
@@ -1848,7 +1848,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c2);
 
                     /* 初始化新会员的公会数据包 */
-                    memset(&c2->bb_guild->data, 0, sizeof(bb_guild_t));
+                    memset(&c2->bb_guild->data, 0, PSOCN_STLENGTH_BB_GUILD);
 
                     c2->bb_guild->data.guild_owner_gc = c->bb_guild->data.guild_owner_gc;
                     c2->bb_guild->data.guild_id = c->bb_guild->data.guild_id;
@@ -2125,9 +2125,6 @@ static int process_bb_guild_dissolve(ship_client_t* c, bb_guild_dissolve_pkt* pk
 
         shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
         send_bb_guild_cmd(c, BB_GUILD_DISSOLVE);
-        //memset(c->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
-        //send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-        //send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
     }
 
     //display_packet((uint8_t*)pkt, len);

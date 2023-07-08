@@ -329,7 +329,7 @@ int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.guildcard_str.string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -373,7 +373,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.dress_data.guildcard_string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.guildcard_str.string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -789,11 +789,11 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     /* Technically, if we wanted to allow any sort of cross-play in games, we'd
        potentially have to do more work here on the inventory. But, for just
        coexisting in the lobby, this will do. */
-    memcpy(buf, &s->pl->v1.inv, sizeof(inventory_t));
+    memcpy(buf, &s->pl->v1.inv, PSOCN_STLENGTH_INV);
 
     /* Copy the character data now... */
-    c = (psocn_bb_char_t *)(buf + sizeof(inventory_t));
-    memset(c, 0, sizeof(psocn_bb_char_t));
+    c = (psocn_bb_char_t *)(buf + PSOCN_STLENGTH_INV);
+    memset(c, 0, PSOCN_STLENGTH_BB_CHAR);
     c->disp.stats.atp = sp->character.disp.stats.atp;
     c->disp.stats.mst = sp->character.disp.stats.mst;
     c->disp.stats.evp = sp->character.disp.stats.evp;
@@ -811,27 +811,19 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.opt_flag8 = sp->character.disp.opt_flag8;
     c->disp.opt_flag9 = sp->character.disp.opt_flag9;
     c->disp.opt_flag10 = sp->character.disp.opt_flag10;
-    //for (int i = 0; i < 10;i++) {
-    //    c->disp.opt_flag[i] = sp->character.disp.opt_flag[i];
-    //}
-    //c->disp.unk1 = sp->unk1;
-    //c->disp.unk2[0] = sp->unk2[0];
-    //c->disp.unk2[1] = sp->unk2[1];
     c->disp.level = sp->character.disp.level;
     c->disp.exp = sp->character.disp.exp;
     c->disp.meseta = sp->character.disp.meseta;
 
-    memcpy(c->dress_data.guildcard_string, sp->character.dress_data.guildcard_string, sizeof(sp->character.dress_data.guildcard_string));
-    //strcpy(c->dress_data.guildcard_string, "         0");
+    memcpy(c->dress_data.guildcard_str.string, sp->character.dress_data.guildcard_str.string, sizeof(sp->character.dress_data.guildcard_str.string));
+    memcpy(c->dress_data.unk1, sp->character.dress_data.unk1, sizeof(c->dress_data.unk1));
 
-    c->dress_data.dress_unk1 = sp->character.dress_data.dress_unk1;
-    c->dress_data.dress_unk2 = sp->character.dress_data.dress_unk2;
     c->dress_data.name_color_b = sp->character.dress_data.name_color_b;
     c->dress_data.name_color_g = sp->character.dress_data.name_color_g;
     c->dress_data.name_color_r = sp->character.dress_data.name_color_r;
     c->dress_data.name_color_transparency = sp->character.dress_data.name_color_transparency;
     c->dress_data.model = sp->character.dress_data.model;
-    memcpy(c->dress_data.dress_unk3, sp->character.dress_data.dress_unk3, sizeof(sp->character.dress_data.dress_unk3));
+    memcpy(c->dress_data.unk3, sp->character.dress_data.unk3, sizeof(sp->character.dress_data.unk3));
     c->dress_data.create_code = sp->character.dress_data.create_code;
     c->dress_data.name_color_checksum = sp->character.dress_data.name_color_checksum;
     c->dress_data.section = sp->character.dress_data.section;
@@ -857,7 +849,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name.name_tag2 = LE16('J');
 
     for(i = 0; i < BB_CHARACTER_CHAR_NAME_LENGTH; ++i) {
-        c->name.char_name[i] = LE16(sp->character.dress_data.guildcard_string[i]);
+        c->name.char_name[i] = LE16(sp->character.dress_data.guildcard_str.string[i]);
     }
 }
 
@@ -870,7 +862,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     /* Technically, if we wanted to allow any sort of cross-play in games, we'd
        potentially have to do more work here on the inventory. But, for just
        coexisting in the lobby, this will do. */
-    memcpy(buf, &s->pl->bb.inv, sizeof(inventory_t));
+    memcpy(buf, &s->pl->bb.inv, PSOCN_STLENGTH_INV);
 
     /* Copy the character data now... */
     c->character.disp.stats.atp = sp->disp.stats.atp;
@@ -891,27 +883,21 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.opt_flag8 = sp->disp.opt_flag8;
     c->character.disp.opt_flag9 = sp->disp.opt_flag9;
     c->character.disp.opt_flag10 = sp->disp.opt_flag10;
-    //for (int i = 0; i < 10; i++) {
-    //    c->character.disp.opt_flag[i] = sp->disp.opt_flag[i];
-    //}
-    //c->character.unk1 = sp->disp.unk1;
-    //c->character.unk2[0] = sp->disp.unk2[0];
-    //c->character.unk2[1] = sp->disp.unk2[1];
+
     c->character.disp.level = sp->disp.level;
     c->character.disp.exp = sp->disp.exp;
     c->character.disp.meseta = sp->disp.meseta;
 
-    //strcpy(c->character.dress_data.guildcard_string, "---");
-    memcpy(c->character.dress_data.guildcard_string, sp->dress_data.guildcard_string, sizeof(sp->dress_data.guildcard_string));
+    memcpy(c->character.dress_data.guildcard_str.string, sp->dress_data.guildcard_str.string, sizeof(sp->dress_data.guildcard_str.string));
 
-    c->character.dress_data.dress_unk1 = sp->dress_data.dress_unk1;
-    c->character.dress_data.dress_unk2 = sp->dress_data.dress_unk2;
+    memcpy(c->character.dress_data.unk1, sp->dress_data.unk1, sizeof(c->character.dress_data.unk1));
+
     c->character.dress_data.name_color_b = sp->dress_data.name_color_b;
     c->character.dress_data.name_color_g = sp->dress_data.name_color_g;
     c->character.dress_data.name_color_r = sp->dress_data.name_color_r;
     c->character.dress_data.name_color_transparency = sp->dress_data.name_color_transparency;
     c->character.dress_data.model = sp->dress_data.model;
-    memcpy(c->character.dress_data.dress_unk3, sp->dress_data.dress_unk3, sizeof(sp->dress_data.dress_unk3));
+    memcpy(c->character.dress_data.unk3, sp->dress_data.unk3, sizeof(sp->dress_data.unk3));
     c->character.dress_data.create_code = sp->dress_data.create_code;
     c->character.dress_data.name_color_checksum = sp->dress_data.name_color_checksum;
     c->character.dress_data.section = sp->dress_data.section;
@@ -933,7 +919,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(c->character.techniques, sp->techniques, sizeof(sp->techniques));
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_str.string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
 }
 
 void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {
@@ -1040,10 +1026,10 @@ void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {
 
         case CLIENT_VERSION_BB:
             /* Both clients are Blue Burst -- Copy the data over. */
-            memcpy(bp, &s->pl->bb.inv, sizeof(inventory_t));
-            bp += sizeof(inventory_t);
+            memcpy(bp, &s->pl->bb.inv, PSOCN_STLENGTH_INV);
+            bp += PSOCN_STLENGTH_INV;
             memcpy(bp, &s->pl->bb.character,
-                sizeof(psocn_bb_char_t));
+                PSOCN_STLENGTH_BB_CHAR);
             break;
         }
 

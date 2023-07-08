@@ -488,7 +488,7 @@ psocn_bb_db_char_t *db_uncompress_char_data(unsigned long* len, char** row, uint
     int sz;
     uLong sz2, csz;
 
-    char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
+    char_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
     if (!char_data) {
         ERR_LOG("无法分配角色数据内存空间");
@@ -512,7 +512,7 @@ psocn_bb_db_char_t *db_uncompress_char_data(unsigned long* len, char** row, uint
     }
     else {
 
-        if (len[0] != sizeof(psocn_bb_db_char_t)) {
+        if (len[0] != PSOCN_STLENGTH_BB_DB_CHAR) {
             ERR_LOG("无效(未知)角色数据,长度不一致!");
             //psocn_db_result_free(result);
             free(char_data);
@@ -568,7 +568,7 @@ psocn_bb_db_char_t *db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
     uint32_t data_size;
     void* result;
 
-    char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
+    char_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
     if (!char_data) {
         ERR_LOG("无法分配角色数据内存空间");
@@ -686,7 +686,7 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
 
     /* Is it a Blue Burst character or not? */
     if (data_len > 1056) {
-        data_len = sizeof(psocn_bb_db_char_t);
+        data_len = PSOCN_STLENGTH_BB_DB_CHAR;
     }
     else {
         data_len = 1052;
@@ -754,7 +754,7 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
         slot, ipstr, timestamp);
     psocn_db_escape_str(&conn, myquery + strlen(myquery),
         (char*)char_data,
-        sizeof(psocn_bb_db_char_t));
+        PSOCN_STLENGTH_BB_DB_CHAR);
     strcat(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
@@ -770,7 +770,7 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
 
 /* 角色备份功能 */
 int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
-    static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
+    static char query[PSOCN_STLENGTH_BB_DB_CHAR * 2 + 256];
     psocn_bb_db_char_t *char_data;
     uint32_t data_size;
     unsigned long* len;
@@ -817,7 +817,7 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
                 , gc, slot, row[2]);
             psocn_db_escape_str(&conn, query + strlen(query),
                 (char*)char_data,
-                sizeof(psocn_bb_db_char_t));
+                PSOCN_STLENGTH_BB_DB_CHAR);
             strcat(query, "')");
 
             if (psocn_db_real_query(&conn, query)) {
@@ -836,7 +836,7 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
 
 /* 删除角色数据 */
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
-    static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
+    static char query[PSOCN_STLENGTH_BB_DB_CHAR * 2 + 256];
 
     sprintf(query, "DELETE FROM %s WHERE (guildcard="
         "'%" PRIu32 "') AND (slot='%" PRIu8 "')", CHARACTER, gc,
@@ -853,26 +853,10 @@ int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-int db_updata_bb_char_create_code(uint32_t code,
-    uint32_t gc, uint8_t slot) {
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET create_code = '%d' "
-        "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
-        CHARACTER_DRESS, code,
-        gc, slot);
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法更新角色更衣室数据表 %s (GC %" PRIu32 ", "
-            "槽位 %" PRIu8 "):\n%s", CHARACTER_DRESS, gc, slot,
-            psocn_db_error(&conn));
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 更新玩家基础数据至数据库 */
 int db_update_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot, uint32_t flag) {
-    static char query[sizeof(psocn_disp_char_t) * 2 + 256];
+    static char query[PSOCN_STLENGTH_DISP * 2 + 256];
     const char* tbl = CHARACTER_DISP;
 
     if (flag & PSOCN_DB_SAVE_CHAR) {

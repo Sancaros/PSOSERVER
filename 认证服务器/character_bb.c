@@ -41,6 +41,7 @@
 #include <f_logs.h>
 #include <f_iconv.h>
 #include <pso_version.h>
+#include <pso_packet_length.h>
 
 #include <PRS.h>
 
@@ -620,7 +621,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
     //DBG_LOG("handle_update_char 标签 %d", flags);
 
-    char_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
+    char_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
     if (!char_data) {
         ERR_LOG("无法分配角色数据内存空间");
@@ -637,13 +638,13 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
     case PSOCN_DB_SAVE_CHAR:
 
-        //if (db_upload_temp_data(&default_full_chars, sizeof(psocn_bb_full_char_t))) {
+        //if (db_upload_temp_data(&default_full_chars, BB_FULL_CHAR_LENGTH)) {
 
         //    ERR_LOG("上传完整角色 数据失败!");
         //    return -1;
         //}
         //for (int j = 0; j < 12; j++) {
-        //    if (db_upload_temp_data(&default_chars[j], sizeof(psocn_bb_db_char_t))) {
+        //    if (db_upload_temp_data(&default_chars[j], PSOCN_STLENGTH_BB_DB_CHAR)) {
 
         //        ERR_LOG("上传完整角色 数据失败!");
         //        return -1;
@@ -655,7 +656,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
 
         /* 复制一份缓冲默认角色数据 根据选取的角色职业定义 */
-        memcpy(char_data, &default_chars[ch_class], sizeof(psocn_bb_db_char_t));
+        memcpy(char_data, &default_chars[ch_class], PSOCN_STLENGTH_BB_DB_CHAR);
 
         /* 复制初始角色数值 */
         memcpy(&char_data->character.disp.stats, &bb_char_stats.start_stats[ch_class], sizeof(psocn_pl_stats_t));
@@ -800,7 +801,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
-        if (db_compress_char_data(char_data, sizeof(psocn_bb_db_char_t), c->guildcard, pkt->slot)) {
+        if (db_compress_char_data(char_data, PSOCN_STLENGTH_BB_DB_CHAR, c->guildcard, pkt->slot)) {
             SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
                 "槽位 %" PRIu8 "):%s", CHARACTER, c->guildcard, pkt->slot,
                 psocn_db_error(&conn));
@@ -900,7 +901,7 @@ static int handle_checksum(login_client_t *c, bb_checksum_pkt *pkt) {
     uint32_t ack_checksum = 1;
 
     if (!c->gc_data) {
-        c->gc_data = (bb_guildcard_data_t*)malloc(sizeof(bb_guildcard_data_t));
+        c->gc_data = (bb_guildcard_data_t*)malloc(PSOCN_STLENGTH_BB_GC_DATA);
 
         if (!c->gc_data) {
             ERR_LOG("无法分配GC数据的内存空间");
@@ -909,7 +910,7 @@ static int handle_checksum(login_client_t *c, bb_checksum_pkt *pkt) {
         }
     }
 
-    ack_checksum = psocn_crc32((uint8_t*)c->gc_data, sizeof(bb_guildcard_data_t));
+    ack_checksum = psocn_crc32((uint8_t*)c->gc_data, PSOCN_STLENGTH_BB_GC_DATA);
 
     //DBG_LOG("ack_checksum = %d %d", ack_checksum, pkt->checksum);
 
@@ -928,7 +929,7 @@ static int handle_guild_request(login_client_t *c) {
     uint32_t gc;
 
     if(!c->gc_data) {
-        c->gc_data = (bb_guildcard_data_t *)malloc(sizeof(bb_guildcard_data_t));
+        c->gc_data = (bb_guildcard_data_t *)malloc(PSOCN_STLENGTH_BB_GC_DATA);
 
         if(!c->gc_data) {
             /* XXXX: Should send an error message to the user */
@@ -937,7 +938,7 @@ static int handle_guild_request(login_client_t *c) {
     }
 
     /* Clear it out */
-    memset(c->gc_data, 0, sizeof(bb_guildcard_data_t));
+    memset(c->gc_data, 0, PSOCN_STLENGTH_BB_GC_DATA);
 
     /* Query the DB for the user's guildcard data */
     sprintf(query, "SELECT friend_gc, name, guild_name, text, language, "
@@ -971,7 +972,7 @@ static int handle_guild_request(login_client_t *c) {
         c->gc_data->entries[i].data.present = 1;
         c->gc_data->entries[i].data.language = (uint8_t)strtoul(row[4], NULL, 0);
         c->gc_data->entries[i].data.section = (uint8_t)strtoul(row[5], NULL, 0);
-        c->gc_data->entries[i].data.ch_class = (uint8_t)strtoul(row[6], NULL, 0);
+        c->gc_data->entries[i].data.char_class = (uint8_t)strtoul(row[6], NULL, 0);
 
         ++i;
     }
@@ -1012,7 +1013,7 @@ static int handle_guild_request(login_client_t *c) {
         c->gc_data->black_list[i].present = 1;
         c->gc_data->black_list[i].language = (uint8_t)strtoul(row[4], NULL, 0);
         c->gc_data->black_list[i].section = (uint8_t)strtoul(row[5], NULL, 0);
-        c->gc_data->black_list[i].ch_class = (uint8_t)strtoul(row[6], NULL, 0);
+        c->gc_data->black_list[i].char_class = (uint8_t)strtoul(row[6], NULL, 0);
 
         ++i;
     }
@@ -1021,7 +1022,7 @@ static int handle_guild_request(login_client_t *c) {
     psocn_db_result_free(result);
 
     /* Calculate the checksum, and send the header */
-    checksum = psocn_crc32((uint8_t *)c->gc_data, sizeof(bb_guildcard_data_t));
+    checksum = psocn_crc32((uint8_t *)c->gc_data, PSOCN_STLENGTH_BB_GC_DATA);
 
     return send_bb_guild_header(c, checksum);
 }
@@ -1307,7 +1308,7 @@ int load_bb_char_data(void) {
 
     /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
-        memset(&default_chars[i], 0, sizeof(psocn_bb_db_char_t));//必须初始化为0
+        memset(&default_chars[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
 
         cur = &default_chars[i];
 
@@ -1357,7 +1358,7 @@ int load_bb_char_data(void) {
     /* 跳过数据头 长度 0x399C 14748*/
     fseek(fp, sizeof(bb_pkt_hdr_t), SEEK_SET);
 
-    if (!fread(&default_full_chars, 1, sizeof(psocn_bb_full_char_t), fp))
+    if (!fread(&default_full_chars, 1, BB_FULL_CHAR_LENGTH, fp))
     {
         ERR_LOG("读取 %s 数据失败!", file);
         //return -1;

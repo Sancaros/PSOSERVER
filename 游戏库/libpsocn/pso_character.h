@@ -22,18 +22,13 @@
 #include <time.h>
 #include <stdint.h>
 
-#define BB_CHARACTER_NAME_LENGTH            0x000C //完整的玩家名称结构长度 含tag        12双字节
-#define BB_CHARACTER_CHAR_NAME_LENGTH       0x000A //定义双字节的玩家名称长度            10双字节
-#define BB_CHARACTER_CHAR_NAME_WLENGTH      0x0014 //用于单字节拷贝玩家名称不带tag的长度 20字节
-#define BB_CHARACTER_CHAR_TAG_NAME_WLENGTH  0x0018 //用于单字节拷贝玩家名称带tag的长度   24字节
+#include "pso_struct_length.h"
+#include "pso_struct_item.h"
+#include "pso_struct_challenge.h"
+#include "pso_struct_level_stats.h"
 
-#define PC_CHARACTER_NAME_LENGTH       0x0010
-
-#define MAX_PLAYER_LEVEL                200
 #define MAX_PLAYER_BANK_ITEMS           200
 #define MAX_PLAYER_INV_ITEMS            30
-#define MAX_PLAYER_CLASS_DC             9
-#define MAX_PLAYER_CLASS_BB             12
 #define MAX_TECH_LEVEL                  19
 #define MAX_TRADE_ITEMS                 200
 
@@ -55,167 +50,44 @@ typedef struct dress_flag {
     time_t flagtime;
 } PACKED dress_flag_t;
 
-typedef struct item_data { // 0x14 bytes
-    // 这是一个关于物品格式的参考注释，用于解释不同类型物品的数据格式。
-    // 以下是各种物品类型及其相应的数据格式：
-    // 武器（Weapon）  ：00ZZZZGG SS00AABB AABBAABB 00000000
-    // 
-    // 防具（Armor）   ：0101ZZ00 FFTTDDDD EEEE0000 00000000
-    // 
-    // 盾牌（Shield）  ：0102ZZ00 FFTTDDDD EEEE0000 00000000
-    // 
-    // 插件（Unit）    ：0103ZZ00 FF0000RR RR000000 00000000
-    // 
-    // 玛古（Mag）     ：02ZZLLWW HHHHIIII JJJJKKKK YYQQPPVV
-    // 
-    // 工具（Tool）    ：03ZZZZFF 00CC0000 00000000 00000000
-    // 
-    // 梅塞塔（Meseta）：04000000 00000000 00000000 MMMMMMMM
-    // 
-    // 在上述格式中，每个大写字母代表一个特定的属性或数值字段。
-    // 例如，
-    // A 表示属性类型（对于 S 级物品，则表示自定义名称），
-    // B 表示属性数量（对于 S 级物品，则表示自定义名称），
-    // C 表示堆叠大小（对于工具类物品），
-    // D 表示防御加成，
-    // E 表示闪避加成，
-    // F 表示标志位（40 表示存在；对于工具类物品而言，如果物品可堆叠，则此字段未使用），
-    // G 表示武器打磨等级，
-    // H 表示玛古防御力，
-    // I 表示玛古攻击力，
-    // J 表示玛古敏捷度，
-    // K 表示玛古力量，
-    // L 表示玛古等级，
-    // M 表示梅塞塔数量，
-    // P 表示玛古标志位（40 表示存在，04 表示拥有左侧 PB，02 表示拥有右侧 PB，01 表示拥有中心 PB），
-    // Q 表示玛古智力，
-    // R 表示单位修饰符（小端序），
-    // S 表示武器标志位（80 表示未鉴定，40 表示存在），
-    // T 表示插槽数量，
-    // V 表示玛古颜色，
-    // W 表示光子爆发，
-    // Y 表示玛古同步，
-    // Z 表示物品 ID。
-    // 请注意：PSO GC 版本在处理玛古物品时会错误地对 data2 进行字节交换（byteswaps），
-    // 即使该物品实际上是小端序。
-    // 这导致它与其他版本的 PSO（即所有其他版本）不兼容。
-    // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
-
-    union {
-        uint8_t data_b[12];//字节
-        uint16_t data_w[6];//宽字节
-        uint32_t data_l[3];//32位数值
-    };
-
-    uint32_t item_id;
-
-    union {
-        uint8_t data2_b[4];
-        uint16_t data2_w[2];
-        uint32_t data2_l;
-    };
-} PACKED item_t;
-
-// PSO V2 stored some extra data in the character structs in a format that I'm
-// sure Sega thought was very clever for backward compatibility, but for us is
-// just plain annoying. Specifically, they used the third and fourth bytes of
-// the InventoryItem struct to store some things not present in V1. The game
-// stores arrays of bytes striped across these structures. In newserv, we call
-// those fields extension_data. They contain:
-//   items[0].extension_data1 through items[19].extension_data1:
-//       Extended technique levels. The values in the v1_technique_levels array
-//       only go up to 14 (tech level 15); if the player has a technique above
-//       level 15, the corresponding extension_data1 field holds the remaining
-//       levels (so a level 20 tech would have 14 in v1_technique_levels and 5
-//       in the corresponding item's extension_data1 field).
-//   items[0].extension_data2 through items[3].extension_data2:
-//       The value known as unknown_a1 in the PSOGCCharacterFile::Character
-//       struct. See SaveFileFormats.hh.
-//   items[4].extension_data2 through items[7].extension_data2:
-//       The timestamp when the character was last saved, in seconds since
-//       January 1, 2000. Stored little-endian, so items[4] contains the LSB.
-//   items[8].extension_data2 through items[12].extension_data2:
-//       Number of power materials, mind materials, evade materials, def
-//       materials, and luck materials (respectively) used by the player.
-//   items[13].extension_data2 through items[15].extension_data2:
-//       Unknown. These are not an array, but do appear to be related.
-
-typedef struct psocn_iitem { // 0x1c bytes  
-    uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
-    uint16_t tech;  //是否鉴定
-    uint32_t flags;// 0x00000008 = 已装备
-    item_t data;
-} PACKED iitem_t;
-
-typedef struct psocn_inventory {
-    uint8_t item_count;
-    uint8_t hpmats_used;
-    uint8_t tpmats_used;
-    uint8_t language;
-    iitem_t iitems[30];
-} PACKED inventory_t;
-
-typedef struct psocn_bitem { // 0x18 bytes
-    item_t data;
-    uint16_t amount;
-    uint16_t show_flags; //是否显示
-} PACKED bitem_t;
-
-typedef struct psocn_bank {
-    uint32_t item_count;
-    uint32_t meseta;
-    bitem_t bitems[200];
-} PACKED psocn_bank_t;
-
-typedef struct psocn_pl_stats {
-    uint16_t atp;//力量 初始3点 然后 1 : 1 增加
-    uint16_t mst;//精神力 1 : 1
-    uint16_t evp;//闪避力 1 : 1
-    uint16_t hp;//初始血量 不知道如何计算的 按理说 应该是 1点+2血
-    uint16_t dfp;//防御力 1 : 1
-    uint16_t ata;//命中率 计算 = 数据库ata / 5
-    uint16_t lck;//运气 1 : 1
-} PACKED psocn_pl_stats_t;
-
-typedef struct psocn_lvl_stats {
-    uint8_t atp;
-    uint8_t mst;
-    uint8_t evp;
-    uint8_t hp;
-    uint8_t dfp;
-    uint8_t ata;
-    uint8_t lck;
-    uint8_t tp;
+/* 角色信息数据结构 */
+typedef struct psocn_disp_char {
+    psocn_pl_stats_t stats;
+    //TODO 这是什么参数
+    uint8_t opt_flag1;
+    uint8_t opt_flag2;
+    uint8_t opt_flag3;
+    uint8_t opt_flag4;
+    uint8_t opt_flag5;
+    uint8_t opt_flag6;
+    uint8_t opt_flag7;
+    uint8_t opt_flag8;
+    uint8_t opt_flag9;
+    uint8_t opt_flag10;
+    uint32_t level;
     uint32_t exp;
-} PACKED psocn_lvl_stats_t;
+    uint32_t meseta;
+} PACKED psocn_disp_char_t;
 
-/* Level-up information table from PlyLevelTbl.prs */
-typedef struct bb_level_table {
-    psocn_pl_stats_t start_stats[MAX_PLAYER_CLASS_BB];
-    uint32_t start_stats_index[MAX_PLAYER_CLASS_BB]; /* 应该是的 暂时不知 但是和索引有关系吧 */
-    psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_BB][MAX_PLAYER_LEVEL];
-} PACKED bb_level_table_t;
+/* 10字节 字符串 GC 含空格 16 字节 */
+typedef struct psocn_guildcard_string {
+    union guildcard_ {
+        /* 仅用于数据库存取 分解 */
+        struct {
+            uint16_t str[5];
+            uint16_t slot1;
+            uint16_t slot2;
+            uint16_t slot3;
+        };
 
-/* PSOv2 level-up information table from PlayerTable.prs */
-typedef struct v2_level_table {
-    psocn_lvl_stats_t levels[MAX_PLAYER_CLASS_DC][MAX_PLAYER_LEVEL];
-} PACKED v2_level_table_t;
-
-/* Player levelup data */
-extern bb_level_table_t bb_char_stats;
-extern v2_level_table_t v2_char_stats;
-
-///* 10字节 字符串 GC 含空格 16 字节 */
-//typedef struct psocn_guildcard_string {
-//    uint8_t space_tag[2];
-//    char guildcard_str[14];
-//    //uint8_t unk[6]; /* 00 30 00 30 00 32 ????? TODO*/
-//} PACKED psocn_guildcard_string_t;
+        char string[16];
+    };
+} PACKED psocn_guildcard_string_t;
 
 typedef struct psocn_dress_data {
-    char guildcard_string[16];            /* GC号的文本形态  psocn_guildcard_string_t */
-    uint32_t dress_unk1;
-    uint32_t dress_unk2;
+    psocn_guildcard_string_t guildcard_str;
+
+    uint8_t unk1[8]; // 0x382-0x38F; 898 - 911 14 整数  // Same as E5 unknown2 和E5指令的 未知函数 2 一样
 
     //玩家名称颜色
     uint8_t name_color_b; // ARGB8888
@@ -225,7 +97,7 @@ typedef struct psocn_dress_data {
 
     //皮肤模型
     uint16_t model;
-    uint8_t dress_unk3[10];
+    uint8_t unk3[10];
     uint32_t create_code;
     uint32_t name_color_checksum;
 
@@ -246,25 +118,6 @@ typedef struct psocn_dress_data {
     float prop_x;
     float prop_y;
 } PACKED psocn_dress_data_t;
-
-/* 角色信息数据结构 */
-typedef struct psocn_disp_char {
-    psocn_pl_stats_t stats;
-    //TODO 这是什么参数
-    uint8_t opt_flag1;
-    uint8_t opt_flag2;
-    uint8_t opt_flag3;
-    uint8_t opt_flag4;
-    uint8_t opt_flag5;
-    uint8_t opt_flag6;
-    uint8_t opt_flag7;
-    uint8_t opt_flag8;
-    uint8_t opt_flag9;
-    uint8_t opt_flag10;
-    uint32_t level;
-    uint32_t exp;
-    uint32_t meseta;
-} PACKED psocn_disp_char_t;
 
 /* BB 客户端 玩家名称结构 24字节 */
 typedef struct psocn_bb_char_name {
@@ -309,17 +162,6 @@ typedef struct psocn_bb_key_config {
     uint8_t key_config[0x016C];           // 0114
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
-//
-//typedef struct psocn_bb_guild_rewards {
-//    uint8_t guild_reward0;
-//    uint8_t guild_reward1;
-//    uint8_t guild_reward2;
-//    uint8_t guild_reward3;
-//    uint8_t guild_reward4;
-//    uint8_t guild_reward5;
-//    uint8_t guild_reward6;
-//    uint8_t guild_reward7;
-//} PACKED psocn_bb_guild_rewards_t;
 
 /* BB公会数据结构 TODO 2108字节 无法整除8倍数 缺8位 会导致数据无法传输 */
 typedef struct psocn_bb_guild {
@@ -356,203 +198,30 @@ typedef struct psocn_bb_db_guild {
     bb_guild_t data;
 } PACKED psocn_bb_db_guild_t;
 
-static int guild_size = sizeof(psocn_bb_db_guild_t);
-
-
-//   client_id  32       /        unk1  32       /          times[0]     /      times[1]
-//0x00, 0x00, 0x06, 0x00, 0x03, 0x00, 0x01, 0x00, 0x07, 0x00, 0x04, 0x00, 0x02, 0x00, 0x08, 0x00,
-//          times[2]     /        times[3]       /          times[4]     /      times[5]
-//0x05, 0x00, 0x09, 0x00, 0x12, 0x00, 0x0F, 0x00, 0x10, 0x00, 0x11, 0x00, 0x0D, 0x00, 0x0A, 0x00,
-//          times[6]     /        times[7]       /          times[8]     /    times_ep2[0] 32
-//0x0B, 0x00, 0x0C, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//        times_ep2[1]   /      times_ep2[2]     /       times_ep2[3]    /    times_ep2[4]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//                                             unk2[36]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 16
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 32
-//          36           /         grave_unk4    /     grave_deaths      /     grave_deaths
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// grave_coords_time[0]  / grave_coords_time[1]  /  grave_coords_time[2] /  grave_coords_time[3]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// grave_coords_time[4]  / grave_team[20]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//                                               / grave_message[48]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 8
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 24
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 40
-//                                               / unk3[24]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 8
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 24
-//  string[12]                                                           / unk4[24]
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 4
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 20
-//                       /      battle[0]        /      battle[1]        /      battle[2]        /       
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//      battle[3]        /      battle[4]        /      battle[5]        /      battle[6]        /
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-// 
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 16
-//0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  32
-
-/* BB挑战模式数据结构 TODO 未完成 结构大小348 数据344*/
-typedef struct psocn_bb_c_rank_data {
-    uint32_t client_id;
-    union {
-        uint8_t all[0x0158];
-        struct {
-            uint32_t unk1;          /* Flip the words for dc/pc! */
-            uint32_t times[9];
-            uint32_t times_ep2[5];
-            uint8_t unk2[0x24];     /* Probably corresponds to unk2 dc/pc */
-            uint32_t grave_unk4;
-            uint32_t grave_deaths;
-            uint32_t grave_coords_time[5];
-            char grave_team[20];
-            char grave_message[48];
-            uint8_t unk3[24];
-            char string[12];
-            uint8_t unk4[24];
-            uint32_t battle[7];
-        } part;
-    } c_rank;
-} PACKED psocn_bb_c_rank_data_t;
-
-static int bb_c_size = sizeof(psocn_bb_c_rank_data_t);
-
-typedef struct psocn_v2_c_rank_data {
-    uint32_t client_id;
-    union {
-        uint8_t all[0xB8];
-        struct {
-            uint32_t unk1;
-            char string[0x0C];
-            uint8_t unk2[0x24];
-            uint16_t grave_unk4;
-            uint16_t grave_deaths;
-            uint32_t grave_coords_time[5];
-            char grave_team[20];
-            char grave_message[24];
-            uint32_t times[9];
-            uint32_t battle[7];
-        } part;
-    } c_rank;
-} PACKED psocn_v2_c_rank_data_t;
-
-static int v2_c_size = sizeof(psocn_v2_c_rank_data_t);
-
-typedef struct psocn_pc_c_rank_data {
-    uint32_t client_id;
-    union {
-        uint8_t all[0xF0];
-        struct {
-            uint32_t unk1;
-            uint16_t string[0x0C];
-            uint8_t unk2[0x24];
-            uint16_t grave_unk4;
-            uint16_t grave_deaths;
-            uint32_t grave_coords_time[5];
-            uint16_t grave_team[20];
-            uint16_t grave_message[24];
-            uint32_t times[9];
-            uint32_t battle[7];
-        } part;
-    } c_rank;
-} PACKED psocn_pc_c_rank_data_t;
-
-static int pc_c_size = sizeof(psocn_pc_c_rank_data_t);
-
-typedef struct psocn_v3_c_rank_data {
-    uint32_t client_id;
-    union {
-        uint8_t all[0x0118];
-        struct {
-            uint32_t unk1;          /* Flip the words for dc/pc! */
-            uint32_t times[9];
-            uint32_t times_ep2[5];
-            uint8_t unk2[0x24];     /* Probably corresponds to unk2 dc/pc */
-            uint32_t grave_unk4;
-            uint32_t grave_deaths;
-            uint32_t grave_coords_time[5];
-            char grave_team[20];
-            char grave_message[48];
-            uint8_t unk3[24];
-            char string[12];
-            uint8_t unk4[24];
-            uint32_t battle[7];
-        } part;
-    } c_rank;
-} PACKED psocn_v3_c_rank_data_t;
-
-static int v3_c_size = sizeof(psocn_v3_c_rank_data_t);
-
 // V3 GC 数据 TODO 144
 typedef struct psocn_v3_guild_card {
     uint32_t player_tag;
     uint32_t guildcard;
     char name[24];
-    char guildcard_desc[0x006C];
+    char guildcard_desc[108];
     uint8_t present; // 1 表示该GC存在
     uint8_t language;
     uint8_t section;
     uint8_t ch_class;
 } PACKED psocn_v3_guild_card_t;
 
-//         psocn_bb_guildcard_t
-//         guildcard   psocn_bb_char_name_t 24字节
-//                     name_tag      char_name 20字节
-//( 1 )    DF 2A B7 00 09 00 42 00   31 00 31 00 31 00 31 00  ??..B.1.1.1.1.
-//                                               unknow_name 24字节
-//( 2 )    31 00 31 00 31 00 31 00   31 00 31 00 00 00 00 00  1.1.1.1.1.1.....
-//( 3 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//                     guild_name 24字节
-//( 4 )    00 00 00 00 09 00 42 00   4A 55 4A 55 4A 55 4A 55  ......B.JUJUJUJU
-//                                               guildcard_desc 176字节
-//( 5 )    4A 55 4A 55 4A 55 4A 55   4A 55 4A 55 00 00 00 00  JUJUJUJUJUJU....
-//( 6 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 7 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 8 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 9 )    00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 10 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 11 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 12 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 13 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 14 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 15 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//( 16 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
-//                     present language section ch_class
-//( 17 )   00 00 00 00 01 00 05 00
-// 
 // BB GC 数据 TODO 264 + 120 = 384
 // 19C0 - 19C7
 typedef struct psocn_bb_guildcard {
     uint32_t guildcard;                 /* 4   32位 GC  */
     uint16_t name[24];                  /* 48  玩家名称 */
     uint16_t guild_name[16];            /* 32  公会名称 */
-    uint16_t guildcard_desc[0x0058];    /* 176 玩家描述 */
+    uint16_t guildcard_desc[88];    /* 176 玩家描述 */
     uint8_t present;                    /* 1   占位符 0x01 表示存在 */
     uint8_t language;                   /* 1   语言 0 -8 */
     uint8_t section;                    /* 1   颜色ID */
-    uint8_t ch_class;                   /* 1   人物职业 */
+    uint8_t char_class;                   /* 1   人物职业 */
 } PACKED psocn_bb_guildcard_t;
-
-static int bb_c_gcsize = sizeof(psocn_bb_guildcard_t);
-
-//typedef struct psocn_quest_data1 {
-//    union quest_data1
-//    {
-//        struct {
-//            uint32_t quest_guildcard;
-//            uint8_t data[0x0200];                  // 玩家任务数据表1
-//            uint32_t quest_flags;
-//        } part;
-//        uint8_t data[0x208];
-//    };
-//} PACKED psocn_quest_data1_t;
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
@@ -578,9 +247,6 @@ typedef struct psocn_bb_full_char {
     bb_guild_t guild_data;                        // GUILD数据表              OK
 } PACKED psocn_bb_full_char_t;
 
-static int bb_c_fullsize = sizeof(psocn_bb_full_char_t);
-static int bb_c_fullsize2 = 0x39A0;
-
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
     inventory_t inv;
@@ -594,8 +260,6 @@ typedef struct psocn_bb_db_char {
     uint8_t tech_menu[0x0028];
     uint8_t quest_data2[0x0058];
 } PACKED psocn_bb_db_char_t;
-
-static int bb_c_dbsize = sizeof(psocn_bb_db_char_t);
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
@@ -625,8 +289,6 @@ typedef struct psocn_bb_db_opts {
     uint8_t symbol_chats[0x04E0];//1248
     uint16_t guild_name[0x0010];//16
 } PACKED psocn_bb_db_opts_t;
-
-static int opt_size = sizeof(psocn_bb_db_opts_t);
 
 #ifndef _WIN32
 #else

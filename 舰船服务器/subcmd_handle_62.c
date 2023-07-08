@@ -1237,7 +1237,7 @@ int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
 
     if(dest->version == CLIENT_VERSION_BB)
-        send_bb_quest_data1(dest, src->bb_pl->quest_data1);
+        send_bb_quest_data1(dest);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
@@ -1359,8 +1359,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&src->game_data->shop_items[i], 0, sizeof(item_t));
-        memset(&item_data, 0, sizeof(item_t));
+        memset(&src->game_data->shop_items[i], 0, PSOCN_STLENGTH_ITEM);
+        memset(&item_data, 0, PSOCN_STLENGTH_ITEM);
 
         switch (shop_type) {
         case BB_SHOPTYPE_TOOL:// 工具商店
@@ -1382,7 +1382,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
         item_data.item_id = generate_item_id(l, src->client_id);
 
-        memcpy(&src->game_data->shop_items[i], &item_data, sizeof(item_t));
+        memcpy(&src->game_data->shop_items[i], &item_data, PSOCN_STLENGTH_ITEM);
     }
 
     return subcmd_bb_send_shop(src, shop_type, num_items);
@@ -1419,7 +1419,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     ii.flags = LE32(0);
 
     /* 填充物品数据 */
-    //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], sizeof(item_t));
+    //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], PSOCN_STLENGTH_ITEM);
     ii.data = src->game_data->shop_items[pkt->shop_item_index];
 
     /* 如果是堆叠物品 */
@@ -1614,7 +1614,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 初始化临时鉴定的物品数据 */
-            memset(&src->game_data->identify_result, 0, sizeof(iitem_t));
+            memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
 
             src->drop_item_id = 0xFFFFFFFF;
             src->drop_amt = 0;
@@ -1634,7 +1634,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bank_inv_t* pkt = (subcmd_bb_bank_inv_t*)sendbuf;
     uint32_t num_items = LE32(src->bb_pl->bank.item_count);
     uint16_t size = sizeof(subcmd_bb_bank_inv_t) + num_items *
-        sizeof(bitem_t);
+        PSOCN_STLENGTH_BITEM;
     block_t* b = src->cur_block;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1665,7 +1665,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     pkt->shdr.unused = 0x0000;
     pkt->size = LE32(size);
     pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
-    memcpy(&pkt->item_count, &src->bb_pl->bank, sizeof(psocn_bank_t));
+    memcpy(&pkt->item_count, &src->bb_pl->bank, PSOCN_STLENGTH_BANK);
 
     return crypt_send(src, (int)size, sendbuf);
 }
@@ -2019,7 +2019,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         iitem_t ii;
-        memset(&ii, 0, sizeof(iitem_t));
+        memset(&ii, 0, PSOCN_STLENGTH_IITEM);
         ii.data.data_b[0] = ITEM_TYPE_MESETA;
         ii.data.data2_l = meseta;
         ii.data.item_id = generate_item_id(l, 0xFF);
@@ -2047,7 +2047,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     iitem_t ii;
-    memset(&ii, 0, sizeof(iitem_t));
+    memset(&ii, 0, PSOCN_STLENGTH_IITEM);
     ii.data = pkt->item_data;
     ii.data.item_id = generate_item_id(l, 0xFF);
 
@@ -2159,12 +2159,12 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    memset(&backup_item, 0, sizeof(iitem_t));
+    memset(&backup_item, 0, PSOCN_STLENGTH_IITEM);
     wrap_id = *(uint32_t*)&pkt->data[0x0C];
 
     for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
         if (src->bb_pl->inv.iitems[i].data.item_id == wrap_id) {
-            memcpy(&backup_item, &src->bb_pl->inv.iitems[i], sizeof(iitem_t));
+            memcpy(&backup_item, &src->bb_pl->inv.iitems[i], PSOCN_STLENGTH_IITEM);
             break;
         }
     }

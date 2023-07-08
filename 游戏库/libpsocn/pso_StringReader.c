@@ -269,7 +269,7 @@ char* StringReader_read(StringReader* reader, size_t size, int advance) {
     return NULL;
 }
 
-char* StringReader_all(const StringReader* reader) {
+char* StringReader_all(StringReader* reader) {
     return StringReader_read(reader, reader->length - reader->offset, 1);
 }
 

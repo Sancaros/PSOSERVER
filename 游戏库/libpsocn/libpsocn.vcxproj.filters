@@ -70,6 +70,21 @@
     <ClInclude Include="pso_StringReader.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_struct_length.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_packet_length.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_struct_item.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_struct_challenge.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pso_struct_level_stats.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

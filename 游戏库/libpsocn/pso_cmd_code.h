@@ -279,52 +279,6 @@
 #define BB_SCROLL_MSG_TYPE              0x00EE  //顶部公告数据包
 #define CLIENT_UNKNOW_F0                0x00F0
 
-//////////////////////////////////////////////////数据包长度
-#define DC_WELCOME_LENGTH               0x004C
-#define BB_WELCOME_LENGTH               0x00C8
-#define BB_SECURITY_LENGTH              0x0044
-#define DC_REDIRECT_LENGTH              0x000C
-#define BB_REDIRECT_LENGTH              0x0010
-#define DC_REDIRECT6_LENGTH             0x0018
-#define BB_REDIRECT6_LENGTH             0x001C
-#define DC_TIMESTAMP_LENGTH             0x0020
-#define BB_TIMESTAMP_LENGTH             0x0024
-#define DC_LOBBY_LIST_LENGTH            0x00C4
-#define EP3_LOBBY_LIST_LENGTH           0x0100
-#define BB_LOBBY_LIST_LENGTH            0x00C8
-#define DC_CHAR_DATA_LENGTH             0x0420
-#define DC_LOBBY_LEAVE_LENGTH           0x0008
-#define BB_LOBBY_LEAVE_LENGTH           0x000C
-#define DC_GUILD_REPLY_LENGTH           0x00C4
-#define PC_GUILD_REPLY_LENGTH           0x0128
-#define BB_GUILD_REPLY_LENGTH           0x0130
-#define DC_GUILD_REPLY6_LENGTH          0x00D0
-#define PC_GUILD_REPLY6_LENGTH          0x0134
-#define BB_GUILD_REPLY6_LENGTH          0x013C
-#define DC_GAME_JOIN_LENGTH             0x0110
-#define GC_GAME_JOIN_LENGTH             0x0114
-#define EP3_GAME_JOIN_LENGTH            0x1184
-#define DC_QUEST_INFO_LENGTH            0x0128
-#define PC_QUEST_INFO_LENGTH            0x024C
-#define BB_QUEST_INFO_LENGTH            0x0250
-#define DC_QUEST_FILE_LENGTH            0x003C
-#define BB_QUEST_FILE_LENGTH            0x0058
-#define DC_QUEST_CHUNK_LENGTH           0x0418
-#define BB_QUEST_CHUNK_LENGTH           0x041C
-#define DC_SIMPLE_MAIL_LENGTH           0x0220
-#define PC_SIMPLE_MAIL_LENGTH           0x0430
-#define BB_SIMPLE_MAIL_LENGTH           0x045C
-#define BB_OPTION_CONFIG_LENGTH         0x0AF8
-
-//数据包大小 14748
-#define BB_FULL_CHARACTER_LENGTH        0x399C //T端长度
-
-//数据包大小 14748
-#define BB_FULL_CHARACTER_DATA_LENGTH   0x399C
-
-#define DC_PATCH_HEADER_LENGTH          0x0014
-#define DC_PATCH_FOOTER_LENGTH          0x0018
-
 /* Responses to login packets... */
 /* DC 网络测试版数据包 - Responses to Packet 0x88. */
 #define LOGIN_88_NEW_USER                   0

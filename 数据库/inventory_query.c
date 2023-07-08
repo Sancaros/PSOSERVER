@@ -24,7 +24,7 @@
 extern psocn_dbconn_t conn;
 
 static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -49,7 +49,7 @@ static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 }
 
 static int db_update_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
@@ -376,7 +376,7 @@ void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 
 /* 新增玩家背包数据至数据库 */
 int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, sizeof(inventory_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
     size_t i = 0;
 
     memset(myquery, 0, sizeof(myquery));
@@ -396,7 +396,7 @@ int db_insert_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)inv,
-        sizeof(inventory_t));
+        PSOCN_STLENGTH_INV);
 
     strcat(myquery, "')");
 

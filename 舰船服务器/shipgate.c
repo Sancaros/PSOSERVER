@@ -34,6 +34,7 @@
 #include <psoconfig.h>
 #include <debug.h>
 #include <f_checksum.h>
+#include <pso_packet_length.h>
 
 #include <zlib.h>
 
@@ -449,7 +450,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
 
         /* Copy the name */
         for (i = 0; i < 16; ++i) {
-            p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.dress_data.guildcard_string[i]);
+            p.pcmaildata.pcname[i] = LE16(s->pl->v1.character.dress_data.guildcard_str.string[i]);
         }
 
         /* Copy the message */
@@ -476,7 +477,7 @@ static void handle_mail_autoreply(shipgate_conn_t* c, ship_client_t* s,
         p.dcmaildata.gc_dest = LE32(dest);
 
         /* Copy the name and message */
-        memcpy(p.dcmaildata.dcname, s->pl->v1.character.dress_data.guildcard_string, 16);
+        memcpy(p.dcmaildata.dcname, s->pl->v1.character.dress_data.guildcard_str.string, 16);
         memcpy(p.dcmaildata.stuff, s->autoreply, s->autoreply_len);
 
         /* Send it */
@@ -701,7 +702,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
                             bb_guild_t* guild = (bb_guild_t*)g->data;
 
-                            memcpy(&dest->bb_guild->data, guild, sizeof(bb_guild_t));
+                            memcpy(&dest->bb_guild->data, guild, PSOCN_STLENGTH_BB_GUILD);
                             send_bb_guild_cmd(dest, BB_GUILD_UNK_02EA);
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
@@ -723,7 +724,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
                             /*bb_guild_t* guild = (bb_guild_t*)g->data;
 
-                            memcpy(&dest->bb_guild->data, guild, sizeof(bb_guild_t));*/
+                            memcpy(&dest->bb_guild->data, guild, PSOCN_STLENGTH_BB_GUILD);*/
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
@@ -745,7 +746,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                         if (dest->guildcard == remove_pkt->target_guildcard) {
                             //ERR_LOG("BB_GUILD_MEMBER_REMOVE %u", remove_pkt->target_guildcard);
-                            memset(&dest->bb_guild->data.guild_owner_gc, 0, sizeof(bb_guild_t));
+                            memset(&dest->bb_guild->data.guild_owner_gc, 0, PSOCN_STLENGTH_BB_GUILD);
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -845,7 +846,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                         if (dest->bb_guild->data.guild_id == guild_id) {
                             send_msg(dest, MSG_BOX_TYPE, "%s %u", __(dest, "\tE\tC4公会已被解散!"), dest->bb_guild->data.guild_id);
-                            memset(dest->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+                            memset(dest->bb_guild, 0, PSOCN_STLENGTH_BB_GUILD);
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -2230,10 +2231,10 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
 #endif // DEBUG
 
             /* 复制角色选项数据 */
-            memcpy(i->bb_opts, &pkt->opts, sizeof(psocn_bb_db_opts_t));
+            memcpy(i->bb_opts, &pkt->opts, PSOCN_STLENGTH_BB_DB_OPTS);
 
             /* 复制角色公会数据 */
-            memcpy(i->bb_guild, &pkt->guild, sizeof(psocn_bb_db_guild_t));
+            memcpy(i->bb_guild, &pkt->guild, PSOCN_STLENGTH_BB_GUILD);
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
@@ -2910,7 +2911,6 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
     }
 
     bb_char_stats = pkt->data;
-    //memcpy(&bb_char_stats, &pkt->data, sizeof(bb_level_table_t));
 
     for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
         if (bb_char_stats.start_stats_index[i] != i * 14) {
@@ -3765,7 +3765,7 @@ int shipgate_send_clients(shipgate_conn_t* c) {
 
                 /* Only do this if we have enough info to actually have sent
                    the block login before */
-                if (cl->pl->v1.character.dress_data.guildcard_string[0]) {
+                if (cl->pl->v1.character.dress_data.guildcard_str.string[0]) {
                     l = cl->cur_lobby;
 
                     /* Fill in what we have */
@@ -3773,8 +3773,8 @@ int shipgate_send_clients(shipgate_conn_t* c) {
                     pkt->entries[count].dlobby = htonl(cl->lobby_id);
 
                     if (cl->version != CLIENT_VERSION_BB) {
-                        strncpy(pkt->entries[count].ch_name, cl->pl->v1.character.dress_data.guildcard_string,
-                            32);
+                        strncpy(pkt->entries[count].ch_name, cl->pl->v1.character.dress_data.guildcard_str.string,
+                            16);
                     }
                     else {
                         memcpy(pkt->entries[count].ch_name,
@@ -3990,10 +3990,10 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->block = htonl(cl->cur_block->b);
 
     /* 填充选项数据 */
-    memcpy(&pkt->opts, cl->bb_opts, sizeof(psocn_bb_db_opts_t));
+    memcpy(&pkt->opts, cl->bb_opts, PSOCN_STLENGTH_BB_DB_OPTS);
 
     /* 填充公会数据 */
-    memcpy(&pkt->guild, cl->bb_guild, sizeof(psocn_bb_db_guild_t));
+    memcpy(&pkt->guild, cl->bb_guild, PSOCN_STLENGTH_BB_GUILD);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

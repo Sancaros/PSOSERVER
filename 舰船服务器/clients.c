@@ -165,7 +165,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         if(version == CLIENT_VERSION_BB) {
             rv->bb_pl =
-                (psocn_bb_db_char_t *)malloc(sizeof(psocn_bb_db_char_t));
+                (psocn_bb_db_char_t *)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
             if(!rv->bb_pl) {
                 perror("malloc");
@@ -177,9 +177,9 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
-            memset(rv->bb_pl, 0, sizeof(psocn_bb_db_char_t));
+            memset(rv->bb_pl, 0, PSOCN_STLENGTH_BB_DB_CHAR);
             rv->bb_opts =
-                (psocn_bb_db_opts_t *)malloc(sizeof(psocn_bb_db_opts_t));
+                (psocn_bb_db_opts_t *)malloc(PSOCN_STLENGTH_BB_DB_OPTS);
 
             if(!rv->bb_opts) {
                 perror("malloc");
@@ -192,9 +192,9 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
-            memset(rv->bb_opts, 0, sizeof(psocn_bb_db_opts_t));
+            memset(rv->bb_opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
             rv->bb_guild =
-                (psocn_bb_db_guild_t *)malloc(sizeof(psocn_bb_db_guild_t));
+                (psocn_bb_db_guild_t *)malloc(PSOCN_STLENGTH_BB_GUILD);
 
             if (!rv->bb_guild) {
                 perror("malloc");
@@ -208,7 +208,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
-            memset(rv->bb_guild, 0, sizeof(psocn_bb_db_guild_t));
+            memset(rv->bb_guild, 0, PSOCN_STLENGTH_BB_GUILD);
         }
         else if(version == CLIENT_VERSION_XBOX) {
 
@@ -389,7 +389,7 @@ void client_destroy_connection(ship_client_t *c,
 
         /* 将玩家数据存入数据库 */
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                            c->bb_pl, sizeof(psocn_bb_db_char_t),
+                            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
                             c->cur_block->b);
 
         /* 将玩家选项数据存入数据库 */
@@ -404,9 +404,9 @@ void client_destroy_connection(ship_client_t *c,
 #endif
 
     /* If the user was on a block, notify the shipgate */
-    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.guildcard_string[0]) {
+    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.guildcard_str.string[0]) {
         shipgate_send_block_login(&ship->sg, 0, c->guildcard,
-                                  c->cur_block->b, c->pl->v1.character.dress_data.guildcard_string);
+                                  c->cur_block->b, c->pl->v1.character.dress_data.guildcard_str.string);
     }
     else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
         shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
@@ -494,7 +494,7 @@ void client_send_bb_data(ship_client_t* c) {
 
        //DBG_LOG("每隔5秒保存(GC %u:%d)玩家", c->guildcard, c->sec_data.slot);
        /*shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-            c->bb_pl, sizeof(psocn_bb_db_char_t),
+            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
             c->cur_block->b);*/
 
        /*shipgate_send_bb_opts(&ship->sg, c);*/
@@ -1004,7 +1004,7 @@ static int check_char_v1(ship_client_t *src, player_t *pl) {
     if(f1.b != f2.b)
         return -22;
 
-    if(memcmp(src->pl->v1.character.dress_data.guildcard_string, pl->v1.character.dress_data.guildcard_string, 16))
+    if(memcmp(src->pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.dress_data.guildcard_str.string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
@@ -1179,7 +1179,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
         return -22;
     }
 
-    if (memcmp(dress_data1.guildcard_string, dress_data2.guildcard_string, 16))
+    if (memcmp(dress_data1.guildcard_str.string, dress_data2.guildcard_str.string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
@@ -1560,7 +1560,7 @@ static int client_name_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
 
         if(c->pl)
-            lua_pushstring(l, c->pl->v1.character.dress_data.guildcard_string);
+            lua_pushstring(l, c->pl->v1.character.dress_data.guildcard_str.string);
         else
             lua_pushnil(l);
     }

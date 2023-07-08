@@ -70,7 +70,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     char** row;
     psocn_bb_db_opts_t opts;
 
-    memset(&opts, 0, sizeof(psocn_bb_db_opts_t));
+    memset(&opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
 
     memset(myquery, 0, sizeof(myquery));
 

@@ -24,7 +24,7 @@
 extern psocn_dbconn_t conn;
 
 static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -192,7 +192,7 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
 }
 
 static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     memset(myquery, 0, sizeof(myquery));
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
@@ -429,7 +429,7 @@ void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
 
 /* 新增玩家银行银行数据至数据库 */
 int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, sizeof(psocn_bank_t));
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     size_t i = 0;
 
     memset(myquery, 0, sizeof(myquery));

@@ -30,6 +30,7 @@
 #endif
 
 #include <sg_packets.h>
+#include <pso_packet_length.h>
 
 #include <gnutls/gnutls.h>
 

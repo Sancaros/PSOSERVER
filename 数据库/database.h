@@ -139,6 +139,27 @@ typedef struct psocn_dbconn {
     void* conndata;
 } psocn_dbconn_t;
 
+// 参数类型枚举
+typedef enum {
+    PARAM_TYPE_UINT8,
+    PARAM_TYPE_UINT16,
+    PARAM_TYPE_UINT32,
+    PARAM_TYPE_FLOAT,
+    PARAM_TYPE_CHAR,
+    PARAM_TYPE_WCHAR,
+    PARAM_TYPE_STRING,
+    PARAM_TYPE_STRUCT,
+    PARAM_TYPE_BLOB,
+    PARAM_TYPE_UNKNOWN
+} psocn_param_type_t;
+
+// 数据库参数结构体
+typedef struct {
+    psocn_param_type_t type;  // 参数类型（MYSQL_TYPE_*）
+    void* value;            // 参数值的指针
+    unsigned long length;   // 参数值的长度
+} psocn_db_param_t;
+
 extern int psocn_db_open(psocn_dbconfig_t* dbcfg,
     psocn_dbconn_t* conn);
 extern void psocn_db_close(psocn_dbconn_t* conn);
@@ -167,6 +188,35 @@ extern const char* psocn_db_error(psocn_dbconn_t* conn);
 
 extern int psocn_db_commit(psocn_dbconn_t* conn);
 extern unsigned long long psocn_db_affected_rows(psocn_dbconn_t* conn);
+
+/// <参数化查询>
+/// //////////////////////////////////////////////////////////////////////////////////////////
+/// </参数化查询>
+
+int psocn_db_stmt_query(psocn_dbconn_t* conn, MYSQL_STMT* stmt, const char* str, unsigned long length, MYSQL_BIND* params);
+int psocn_db_squery(psocn_dbconn_t* conn, const char* str, MYSQL_BIND* params);
+int psocn_db_real_squery(psocn_dbconn_t* conn, const char* str, MYSQL_BIND* params);
+char** psocn_db_result_sfetch(void* result, int num_fields);
+
+// 销毁参数对象
+extern void psocn_destroy_db_param(psocn_db_param_t* param);
+extern int psocn_set_db_param_value(psocn_db_param_t* param, psocn_param_type_t type, void* value, size_t length);
+
+extern void psocn_set_uint8_param(psocn_db_param_t* param, uint8_t value);
+extern void psocn_set_uint16_param(psocn_db_param_t* param, uint16_t value);
+extern void psocn_set_uint32_param(psocn_db_param_t* param, uint32_t value);
+extern void psocn_set_float_param(psocn_db_param_t* param, float value);
+extern void psocn_set_char_param(psocn_db_param_t* param, char value);
+extern void psocn_set_wchar_param(psocn_db_param_t* param, wchar_t* value);
+extern void psocn_set_string_param(psocn_db_param_t* param, const char* value);
+extern void psocn_set_struct_param(psocn_db_param_t* param, void* value, size_t size);
+extern void psocn_set_blob_param(psocn_db_param_t* param, void* value, size_t size);
+extern void psocn_set_unknown_param(psocn_db_param_t* param, void* value, size_t size);
+
+// 输出参数值
+extern void psocn_output_param_value(const psocn_db_param_t* param);
+
+extern int psocn_db_param_query(psocn_dbconn_t* conn, const char* query, const psocn_db_param_t* params, int param_count);
 
 #include "database_query.h"
 

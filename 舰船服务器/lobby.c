@@ -1644,7 +1644,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             pl = l->clients[i]->pl;
 
             len += snprintf(msg + len, 511 - len, "%s µÈ¼¶ L%d\n  %s    \n  ÓïÑÔ: %s\n",
-                            pl->v1.character.dress_data.guildcard_string, pl->v1.character.disp.level + 1,
+                            pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.disp.level + 1,
                             pso_class[pl->v1.character.dress_data.ch_class].cn_name,
                             mini_language_codes_cn[pl->v1.inv.language]);
         }

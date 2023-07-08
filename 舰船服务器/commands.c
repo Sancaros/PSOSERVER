@@ -776,7 +776,7 @@ static int handle_clinfo(ship_client_t *c, const char *params) {
     /* Fill in the client's info. */
     my_ntop(&cl->ip_addr, ip);
     return send_txt(c, "\tE\tC7名称: %s\nIP: %s\nGC: %u\n%s Lv.%d",
-                    cl->pl->v1.character.dress_data.guildcard_string, ip, cl->guildcard,
+                    cl->pl->v1.character.dress_data.guildcard_str.string, ip, cl->guildcard,
                     pso_class[cl->pl->v1.character.dress_data.ch_class].cn_name, cl->pl->v1.character.disp.level + 1);
 }
 
@@ -1526,7 +1526,7 @@ static void dumpinv_internal(ship_client_t *c) {
 
     if(v != CLIENT_VERSION_BB) {
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家 %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_string,
+        ITEM_LOG("玩家 %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_str.string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
@@ -1853,7 +1853,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
         for(i = 0; i < l->max_clients; i += 2) {
             if((c2 = l->clients[i])) {
                 len += snprintf(str + len, 511 - len, "%d: %s (%" PRIu32 ")   ",
-                                i, c2->pl->v1.character.dress_data.guildcard_string, c2->guildcard);
+                                i, c2->pl->v1.character.dress_data.guildcard_str.string, c2->guildcard);
             }
             else {
                 len += snprintf(str + len, 511 - len, "%d: None   ", i);
@@ -1862,7 +1862,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
             if((i + 1) < l->max_clients) {
                 if((c2 = l->clients[i + 1])) {
                     len += snprintf(str + len, 511 - len, "%d: %s (%" PRIu32
-                                    ")\n", i + 1, c2->pl->v1.character.dress_data.guildcard_string,
+                                    ")\n", i + 1, c2->pl->v1.character.dress_data.guildcard_str.string,
                                     c2->guildcard);
                 }
                 else {
@@ -1875,7 +1875,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
         for(i = 0; i < l->max_clients; i += 2) {
             if((c2 = l->clients[i])) {
                 len += snprintf(str + len, 511 - len, "%d: %s   ", i,
-                                c2->pl->v1.character.dress_data.guildcard_string);
+                                c2->pl->v1.character.dress_data.guildcard_str.string);
             }
             else {
                 len += snprintf(str + len, 511 - len, "%d: None   ", i);
@@ -1884,7 +1884,7 @@ static int handle_ll(ship_client_t *c, const char *params) {
             if((i + 1) < l->max_clients) {
                 if((c2 = l->clients[i + 1])) {
                     len += snprintf(str + len, 511 - len, "%d: %s\n", i + 1,
-                                    c2->pl->v1.character.dress_data.guildcard_string);
+                                    c2->pl->v1.character.dress_data.guildcard_str.string);
                 }
                 else {
                     len += snprintf(str + len, 511 - len, "%d: None\n", i + 1);
@@ -2107,7 +2107,7 @@ static int handle_ignore(ship_client_t *c, const char *params) {
             c->ignore_list[i] = cl->guildcard;
             pthread_mutex_unlock(&l->mutex);
             return send_txt(c, "%s %s\n%s %d", __(c, "\tE\tC7Ignoring"),
-                            cl->pl->v1.character.dress_data.guildcard_string, __(c, "Entry"), i);
+                            cl->pl->v1.character.dress_data.guildcard_str.string, __(c, "Entry"), i);
         }
     }
 
@@ -2745,12 +2745,12 @@ static int handle_restorebk(ship_client_t *c, const char *params) {
     if(c->version == CLIENT_VERSION_BB) {
         //return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
         /* Send the request to the shipgate. */
-        strncpy((char*)c->game_info.name, c->pl->bb.character.dress_data.guildcard_string, sizeof(c->game_info.name));
+        strncpy((char*)c->game_info.name, c->pl->bb.character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
         c->game_info.name[31] = 0;
 
     }
     else {
-        strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_string, sizeof(c->game_info.name));
+        strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
         c->game_info.name[31] = 0;
     }
 
@@ -3659,10 +3659,10 @@ static int handle_clean(ship_client_t* c, const char* params) {
     if (*params) {
         if (!strcmp(params, "inv")) {
 
-            int size = sizeof(c->bb_pl->inv.iitems) / sizeof(iitem_t);
+            int size = sizeof(c->bb_pl->inv.iitems) / PSOCN_STLENGTH_IITEM;
 
             for (int i = 0; i < size; i++) {
-                memset(&c->bb_pl->inv.iitems[i], 0, sizeof(iitem_t));
+                memset(&c->bb_pl->inv.iitems[i], 0, PSOCN_STLENGTH_IITEM);
             }
 
             c->bb_pl->inv.item_count = 0;
@@ -3673,10 +3673,10 @@ static int handle_clean(ship_client_t* c, const char* params) {
 
         if (!strcmp(params, "bank")) {
 
-            int size = sizeof(c->bb_pl->bank.bitems) / sizeof(bitem_t);
+            int size = sizeof(c->bb_pl->bank.bitems) / PSOCN_STLENGTH_BITEM;
 
             for (int i = 0; i < size; i++) {
-                memset(&c->bb_pl->bank.bitems[i], 0, sizeof(iitem_t));
+                memset(&c->bb_pl->bank.bitems[i], 0, PSOCN_STLENGTH_IITEM);
             }
 
             c->bb_pl->bank.item_count = 0;

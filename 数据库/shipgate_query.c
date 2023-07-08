@@ -248,7 +248,7 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
 
 /* 更新玩家基础数据至数据库 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag) {
-    static char query[sizeof(psocn_bb_db_char_t) * 2 + 256];
+    static char query[PSOCN_STLENGTH_BB_DB_CHAR * 2 + 256];
     char name[64];
     char class_name[64];
 

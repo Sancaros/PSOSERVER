@@ -1317,7 +1317,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
         "section_id=VALUES(section_id), class=VALUES(class)", CLIENTS_GUILDCARDS, sender,
         fr_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
-        gc->gc_data.ch_class);
+        gc->gc_data.char_class);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法新增GC好友 (%" PRIu32 ": %" PRIu32
@@ -1423,7 +1423,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         "name=VALUES(name), text=VALUES(text), language=VALUES(language), "
         "section_id=VALUES(section_id), class=VALUES(class)", CHARACTER_BLACKLIST, sender,
         bl_gc, name, guild_name, text, gc->gc_data.language, gc->gc_data.section,
-        gc->gc_data.ch_class);
+        gc->gc_data.char_class);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法新增黑名单实例 (%" PRIu32 ": %" PRIu32
@@ -2703,7 +2703,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
 
-    //display_packet(&pkt->data[0], sizeof(psocn_bb_db_char_t));
+    //display_packet(&pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
 
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
@@ -2953,7 +2953,7 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 
     /* Is it a Blue Burst character or not? */
     if (len > 1056) {
-        len = sizeof(psocn_bb_db_char_t);
+        len = PSOCN_STLENGTH_BB_DB_CHAR;
     }
     else {
         len = 1052;
@@ -3007,7 +3007,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
 
-    psocn_bb_db_char_t* bb_data = (psocn_bb_db_char_t*)malloc(sizeof(psocn_bb_db_char_t));
+    psocn_bb_db_char_t* bb_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
     if (!bb_data) {
         ERR_LOG("无法分配角色数据的内存空间");
@@ -3018,7 +3018,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
         return 0;
     }
 
-    memset(bb_data, 0, sizeof(psocn_bb_db_char_t));
+    memset(bb_data, 0, PSOCN_STLENGTH_BB_DB_CHAR);
 
     bb_data = db_get_uncompress_char_data(gc, slot);
 
@@ -3056,7 +3056,7 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
     }
 
     /* 将数据发回舰船. */
-    rv = send_cdata(c, gc, slot, bb_data, sizeof(psocn_bb_db_char_t), 0);
+    rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
 
     /* 清理内存并结束 */
     free_safe(bb_data);

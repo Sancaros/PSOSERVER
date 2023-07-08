@@ -35,6 +35,7 @@
 
 #include <pso_cmd_code.h>
 #include <pso_menu.h>
+#include <pso_packet_length.h>
 
 #include "auth_packets.h"
 #include "patch_stubs.h"
@@ -2086,10 +2087,10 @@ int send_bb_option_reply(login_client_t *c, bb_key_config_t keys, bb_guild_t gui
     pkt->hdr.pkt_type = LE16(BB_OPTION_CONFIG_TYPE);
 
     /* 复制角色键位数据 */
-    memcpy(&pkt->key_cfg, &keys, sizeof(bb_key_config_t));
+    memcpy(&pkt->key_cfg, &keys, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
     /* 复制角色公会数据 */
-    memcpy(&pkt->guild_data, &guild_data, sizeof(bb_guild_t));
+    memcpy(&pkt->guild_data, &guild_data, PSOCN_STLENGTH_BB_GUILD);
 
     /* 将数据包发送出去 */
     return crypt_send(c, sizeof(bb_opt_config_pkt));
@@ -2140,7 +2141,7 @@ int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
     pkt->hdr.pkt_len = LE16(sizeof(bb_guildcard_hdr_pkt));
     pkt->hdr.pkt_type = LE16(BB_GUILDCARD_HEADER_TYPE);
     pkt->one = 1;
-    pkt->len = LE16(sizeof(bb_guildcard_data_t));
+    pkt->len = LE16(PSOCN_STLENGTH_BB_GC_DATA);
     pkt->checksum = LE32(checksum);
 
     /* 加密并发送 */
@@ -2151,11 +2152,11 @@ int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
 int send_bb_guildcard_chunk(login_client_t *c, uint32_t chunk_index) {
     bb_guildcard_chunk_pkt *pkt = (bb_guildcard_chunk_pkt *)sendbuf;
     uint32_t offset = (chunk_index * 0x6800);
-    uint16_t size = sizeof(bb_guildcard_data_t) - offset;
+    uint16_t size = PSOCN_STLENGTH_BB_GC_DATA - offset;
     uint8_t *ptr = ((uint8_t *)c->gc_data) + offset;
 
     /* 合理性检查... */
-    if(offset > sizeof(bb_guildcard_data_t)) {
+    if(offset > PSOCN_STLENGTH_BB_GC_DATA) {
         return -1;
     }
 
@@ -2192,10 +2193,9 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     
     //DBG_LOG("更新角色更衣室");
 
-    memcpy(&c->dress_data.guildcard_string, &mc->dress_data.guildcard_string, sizeof(mc->dress_data.guildcard_string));
+    memcpy(c->dress_data.guildcard_str.string, mc->dress_data.guildcard_str.string, sizeof(mc->dress_data.guildcard_str.string));
 
-    c->dress_data.dress_unk1 = mc->dress_data.dress_unk1;
-    c->dress_data.dress_unk2 = mc->dress_data.dress_unk2;
+    memcpy(c->dress_data.unk1, mc->dress_data.unk1, sizeof(mc->dress_data.unk1));
 
     c->dress_data.name_color_b = mc->dress_data.name_color_b;
     c->dress_data.name_color_g = mc->dress_data.name_color_g;
@@ -2204,7 +2204,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     c->dress_data.model = mc->dress_data.model;
 
     for (int i = 0; i < 10; ++i) {
-        c->dress_data.dress_unk3[i] = mc->dress_data.dress_unk3[i];
+        c->dress_data.unk3[i] = mc->dress_data.unk3[i];
     }
 
     c->dress_data.create_code = mc->dress_data.create_code;
@@ -2245,7 +2245,7 @@ int send_bb_char_preview(login_client_t *c, const psocn_bb_mini_char_t *mc,
     pkt->flags = 0;
 
     /* Copy in the character data */
-    memcpy(&pkt->data, mc, sizeof(psocn_bb_mini_char_t));
+    memcpy(&pkt->data, mc, PSOCN_STLENGTH_BB_MINI_CHAR);
 
     return crypt_send(c, sizeof(bb_char_preview_pkt));
 }

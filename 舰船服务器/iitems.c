@@ -276,7 +276,7 @@ iitem_t* add_litem_locked(lobby_t* l, iitem_t* it) {
     memset(item, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    memcpy(&item->data, it, sizeof(iitem_t));
+    memcpy(&item->data, it, PSOCN_STLENGTH_IITEM);
 
     /* Add it to the queue, and return the new item */
     TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
@@ -289,7 +289,7 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     if (l->version != CLIENT_VERSION_BB)
         return -1;
 
-    memset(rv, 0, sizeof(iitem_t));
+    memset(rv, 0, PSOCN_STLENGTH_IITEM);
     rv->data.data_l[0] = LE32(Item_NoSuchItem);
 
     i = TAILQ_FIRST(&l->item_queue);
@@ -297,7 +297,7 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
         tmp = TAILQ_NEXT(i, qentry);
 
         if (i->data.data.item_id == item_id) {
-            memcpy(rv, &i->data, sizeof(iitem_t));
+            memcpy(rv, &i->data, PSOCN_STLENGTH_IITEM);
             TAILQ_REMOVE(&l->item_queue, i, qentry);
             free_safe(i);
             return 0;
@@ -366,18 +366,19 @@ size_t find_iitem_id(inventory_t* inv, iitem_t* item) {
 
 bool is_wrapped(item_t* this) {
     switch (this->data_b[0]) {
-    case 0:
-    case 1:
+    case ITEM_TYPE_WEAPON:
+    case ITEM_TYPE_GUARD:
         return this->data_b[4] & 0x40;
-    case 2:
+    case ITEM_TYPE_MAG:
         return this->data2_b[2] & 0x40;
-    case 3:
+    case ITEM_TYPE_TOOL:
         return !is_stackable(this) && (this->data_b[3] & 0x40);
-    case 4:
+    case ITEM_TYPE_MESETA:
         return false;
-    default:
-        ERR_LOG("invalid item data");
     }
+
+    ERR_LOG("invalid item data");
+    return false;
 }
 
 void unwrap(item_t* this) {
@@ -503,7 +504,7 @@ int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
 
     /* Move the rest of the items down to take over the place that the item in
        question used to occupy. */
-    memmove(inv + i, inv + i + 1, (inv_count - i - 1) * sizeof(iitem_t));
+    memmove(inv + i, inv + i + 1, (inv_count - i - 1) * PSOCN_STLENGTH_IITEM);
     return 1;
 }
 
@@ -958,7 +959,7 @@ void cleanup_bb_bank(ship_client_t *c) {
 
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_BANK_ITEMS; ++i) {
-        memset(&c->bb_pl->bank.bitems[i], 0, sizeof(bitem_t));
+        memset(&c->bb_pl->bank.bitems[i], 0, PSOCN_STLENGTH_BITEM);
         c->bb_pl->bank.bitems[i].data.item_id = EMPTY_STRING;
     }
 }
@@ -1470,7 +1471,7 @@ void fix_equip_item(inventory_t* inv) {
 void clean_up_inv(inventory_t* inv) {
     uint8_t i, j = 0;
 
-    iitem_t* new_data = (iitem_t*)malloc(sizeof(iitem_t) * inv->item_count);
+    iitem_t* new_data = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
 
     if (!new_data) {
         ERR_LOG("无法更新背包物品ID,申请内存失败");
@@ -1528,7 +1529,7 @@ void sort_client_inv(inventory_t* inv) {
 
     ch2 = 0x0C;
 
-    memset(&sort_data[0], 0, sizeof(iitem_t) * MAX_PLAYER_INV_ITEMS);
+    memset(&sort_data[0], 0, PSOCN_STLENGTH_IITEM * MAX_PLAYER_INV_ITEMS);
 
     for (ch4 = 0; ch4 < MAX_PLAYER_INV_ITEMS; ch4++) {
         sort_data[ch4].data.data_b[1] = 0xFF;
@@ -1558,7 +1559,7 @@ void sort_client_inv(inventory_t* inv) {
 void clean_up_bank(psocn_bank_t* bank) {
     uint32_t i, j = 0;
 
-    bitem_t* bank_data = (bitem_t*)malloc(sizeof(bitem_t) * bank->item_count);
+    bitem_t* bank_data = (bitem_t*)malloc(PSOCN_STLENGTH_BITEM * bank->item_count);
 
     if (!bank_data) {
         ERR_LOG("无法更新银行物品ID,申请内存失败");

@@ -124,7 +124,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     psocn_bb_db_guild_t guild;
     uint32_t guild_id, guild_priv_level;
 
-    memset(&guild, 0, sizeof(psocn_bb_db_guild_t));
+    memset(&guild, 0, PSOCN_STLENGTH_BB_GUILD);
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -285,7 +285,7 @@ int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, u
     uint32_t guild_exists = 0, guild_id;
     char guild_name_text[24];
 
-    g_data = (bb_guild_t*)malloc(sizeof(bb_guild_t));
+    g_data = (bb_guild_t*)malloc(PSOCN_STLENGTH_BB_GUILD);
 
     if (!g_data) {
         ERR_LOG("无法分配公会数据的内存空间");

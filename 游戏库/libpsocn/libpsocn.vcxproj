@@ -25,7 +25,12 @@
     <ClInclude Include="pso_items.h" />
     <ClInclude Include="pso_menu.h" />
     <ClInclude Include="pso_message.h" />
+    <ClInclude Include="pso_packet_length.h" />
     <ClInclude Include="pso_ping.h" />
+    <ClInclude Include="pso_struct_challenge.h" />
+    <ClInclude Include="pso_struct_item.h" />
+    <ClInclude Include="pso_struct_length.h" />
+    <ClInclude Include="pso_struct_level_stats.h" />
     <ClInclude Include="pso_version.h" />
     <ClInclude Include="sg_packets.h" />
     <ClInclude Include="sg_packetlist.h" />
