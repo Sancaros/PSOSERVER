@@ -717,8 +717,6 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return send_msg(c, MSG1_TYPE, "%s",
             __(c, "\tE\tC4菜单错误, 请联系管理员."));
     }
-
-    //return -1;
 }
 
 static int bb_process_ping(ship_client_t* c) {
@@ -1903,7 +1901,7 @@ static int process_bb_guild_unk_04EA(ship_client_t* c, bb_guild_unk_04EA_pkt* pk
     if (len != sizeof(bb_guild_unk_04EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -1922,7 +1920,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
     if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     if (c->bb_guild->data.guild_id <= 0) {
@@ -1979,7 +1977,7 @@ static int process_bb_guild_06EA(ship_client_t* c, bb_guild_unk_06EA_pkt* pkt) {
     if (len != sizeof(bb_guild_unk_06EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2019,7 +2017,7 @@ static int process_bb_guild_unk_09EA(ship_client_t* c, bb_guild_unk_09EA_pkt* pk
     if (len != sizeof(bb_guild_unk_09EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2034,7 +2032,7 @@ static int process_bb_guild_unk_0AEA(ship_client_t* c, bb_guild_unk_0AEA_pkt* pk
     if (len != sizeof(bb_guild_unk_0AEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2048,7 +2046,7 @@ static int process_bb_guild_unk_0BEA(ship_client_t* c, bb_guild_unk_0BEA_pkt* pk
     if (len != sizeof(bb_guild_unk_0BEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2063,7 +2061,7 @@ static int process_bb_guild_unk_0CEA(ship_client_t* c, bb_guild_unk_0CEA_pkt* pk
     if (len != sizeof(bb_guild_unk_0CEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2218,7 +2216,7 @@ static int handle_bb_guild_initialization_data(ship_client_t* c, bb_guild_unk_12
     if (len != sizeof(bb_guild_unk_12EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2275,7 +2273,7 @@ static int process_bb_guild_unk_16EA(ship_client_t* c, bb_guild_unk_16EA_pkt* pk
     if (len != sizeof(bb_guild_unk_16EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2289,7 +2287,7 @@ static int process_bb_guild_unk_17EA(ship_client_t* c, bb_guild_unk_17EA_pkt* pk
     if (len != sizeof(bb_guild_unk_17EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2319,7 +2317,7 @@ static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_
     if (len != sizeof(bb_guild_privilege_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2334,7 +2332,7 @@ static int process_bb_guild_buy_special_item(ship_client_t* c, bb_guild_buy_spec
     //if (len != sizeof(bb_guild_buy_special_item_pkt)) {
     //    ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
     //    display_packet((uint8_t*)pkt, len);
-    //    //return -1;
+    //    return -1;
     //}
 
     display_packet((uint8_t*)pkt, len);
@@ -2349,7 +2347,7 @@ static int process_bb_guild_unk_1BEA(ship_client_t* c, bb_guild_unk_1BEA_pkt* pk
     if (len != sizeof(bb_guild_unk_1BEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
@@ -2382,7 +2380,7 @@ static int process_bb_guild_unk_1DEA(ship_client_t* c, bb_guild_unk_1DEA_pkt* pk
     if (len != sizeof(bb_guild_unk_1DEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
         display_packet((uint8_t*)pkt, len);
-        //return -1;
+        return -1;
     }
 
     display_packet((uint8_t*)pkt, len);
