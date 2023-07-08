@@ -23,6 +23,7 @@
     <ClInclude Include="pso_cmd_code.h" />
     <ClInclude Include="packets.h" />
     <ClInclude Include="pso_items.h" />
+    <ClInclude Include="pso_item_list.h" />
     <ClInclude Include="pso_menu.h" />
     <ClInclude Include="pso_message.h" />
     <ClInclude Include="pso_packet_length.h" />

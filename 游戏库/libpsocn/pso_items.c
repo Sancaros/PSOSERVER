@@ -16,6 +16,7 @@
 */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <f_logs.h>

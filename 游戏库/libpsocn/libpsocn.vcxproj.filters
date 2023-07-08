@@ -85,6 +85,9 @@
     <ClInclude Include="pso_struct_level_stats.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_item_list.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
