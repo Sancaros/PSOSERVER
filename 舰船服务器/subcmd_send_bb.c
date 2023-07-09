@@ -211,9 +211,14 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool s
 }
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
-int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
+int subcmd_send_bb_create_tekk_item(ship_client_t* src) {
     subcmd_bb_tekk_identify_result_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_tekk_identify_result_t);
+
+    if (src->version != CLIENT_VERSION_BB) {
+        ERR_LOG("cannot send item identify result to non-BB client");
+        return -1;
+    }
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
@@ -223,12 +228,12 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* c, item_t item) {
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD62_TEKKED_RESULT;
     pkt.shdr.size = pkt_size / 4;
-    pkt.shdr.client_id = c->client_id;
+    pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    pkt.item = item;
+    pkt.item = src->game_data->identify_result.data;
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+    return send_pkt_bb(src, (bb_pkt_hdr_t*)&pkt);
 }
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */

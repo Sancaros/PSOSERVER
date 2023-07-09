@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <windows.h>
+#include <wincrypt.h>
 
 #include <f_logs.h>
 
@@ -947,8 +949,6 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
     return 0;
 }
-
-
 
 
 

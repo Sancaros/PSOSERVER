@@ -1457,113 +1457,89 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
-    subcmd_bb_tekk_identify_result_t i_res = { 0 };
-    uint32_t titem_index = 0, attrib = 0;
-    uint8_t percent_mod = 0;
+    uint32_t id_item_index = 0, attrib = 0;
+    char percent_mod = 0;
 
-    if (src->version == CLIENT_VERSION_BB) {
-        if (src->bb_pl->character.disp.meseta < 100)
-            return 0;
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
 
-        if (l->type == LOBBY_TYPE_LOBBY) {
-            ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-                src->guildcard);
-            return -1;
-        }
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -2;
+    }
 
-        if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
-                src->guildcard);
-            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-            return -2;
-        }
+    if (src->bb_pl->character.disp.meseta < 100)
+        return 0;
 
-        titem_index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    id_item_index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
-        /* 获取鉴定物品的内存指针 */
-        iitem_t* tek_result = &(src->game_data->identify_result);
+    if (src->bb_pl->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
+        ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
+            src->guildcard);
+        return -3;
+    }
 
-        /* 获取背包鉴定物品所在位置的数据 */
-        tek_result->data = src->bb_pl->inv.iitems[titem_index].data;
+    subcmd_send_bb_delete_meseta(src, 100, 0);
+    iitem_t* id_result = &src->bb_pl->inv.iitems[id_item_index];
+    attrib = id_result->data.datab[4] & ~(0x80);
 
-        if (src->game_data->gm_debug)
-            print_iitem_data(tek_result, titem_index, src->version);
+    src->game_data->identify_result = *id_result;
 
-        if (tek_result->data.datab[0] != ITEM_TYPE_WEAPON) {
-            ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
-                src->guildcard);
-            return -3;
-        }
-
-        // 技能属性提取和随机数处理
-        attrib = tek_result->data.datab[4] & ~(0x80);
-
-        if (attrib < 0x29) {
-            tek_result->data.datab[4] = tekker_attributes[(attrib * 3) + 1];
-            uint32_t mt_result_1 = mt19937_genrand_int32(&b->rng) % 100;
-            if (mt_result_1 > 70)
-                tek_result->data.datab[4] += mt_result_1 % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
-        }
-        else
-            tek_result->data.datab[4] = 0;
-
-        // 百分比修正处理
-        uint32_t mt_result_2 = mt19937_genrand_int32(&b->rng) % 10;
-
-        switch (mt_result_2)
-        {
-        case 0:
-        case 1:
-            percent_mod = -10;
-            break;
-        case 2:
-        case 3:
-            percent_mod = -5;
-            break;
-        case 4:
-        case 5:
-            percent_mod = 5;
-            break;
-        case 6:
-        case 7:
-            percent_mod = 10;
-            break;
-        }
-
-        // 各属性值修正处理
-        if (!(tek_result->data.datab[6] & 128) && (tek_result->data.datab[7] > 0))
-            tek_result->data.datab[7] += percent_mod;
-
-        if (!(tek_result->data.datab[8] & 128) && (tek_result->data.datab[9] > 0))
-            tek_result->data.datab[9] += percent_mod;
-
-        if (!(tek_result->data.datab[10] & 128) && (tek_result->data.datab[11] > 0))
-            tek_result->data.datab[11] += percent_mod;
-
-        if (!tek_result->data.item_id) {
-            ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
-                src->guildcard);
-            return -4;
-        }
-
-        if (tek_result->data.item_id != pkt->item_id) {
-            ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
-                src->guildcard);
-            return -5;
-        }
-
-        subcmd_send_bb_delete_meseta(src, 100, 0);
-
-        src->drop_item_id = tek_result->data.item_id;
-        src->drop_amt = 1;
-
-        print_item_data(&tek_result->data, src->version);
-
-        return subcmd_send_bb_create_tekk_item(src, tek_result->data);
+    // 技能属性提取和随机数处理
+    if (attrib < 0x29) {
+        src->game_data->identify_result.data.datab[4] = tekker_attributes[(attrib * 3) + 1];
+        if ((mt19937_genrand_int32(&b->rng) % 100) > 70)
+            src->game_data->identify_result.data.datab[4] += mt19937_genrand_int32(&b->rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
     }
     else
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+        src->game_data->identify_result.data.datab[4] = 0;
 
+    // 百分比修正处理
+    uint32_t mt_result_2 = mt19937_genrand_int32(&b->rng) % 10;
+
+    if ((mt_result_2 > 0) && (mt_result_2 <= 7)) {
+        if (mt_result_2 > 5) {
+            percent_mod = mt19937_genrand_int32(&b->rng) % mt_result_2;
+        }
+        else if (mt_result_2 <= 5) {
+            percent_mod -= mt19937_genrand_int32(&b->rng) % mt_result_2;
+        }
+    }
+
+    // 各属性值修正处理
+    if (!(id_result->data.datab[6] & 128) && (id_result->data.datab[7] > 0))
+        (char)src->game_data->identify_result.data.datab[7] += percent_mod;
+
+    if (!(id_result->data.datab[8] & 128) && (id_result->data.datab[9] > 0))
+        (char)src->game_data->identify_result.data.datab[9] += percent_mod;
+
+    if (!(id_result->data.datab[10] & 128) && (id_result->data.datab[11] > 0))
+        (char)src->game_data->identify_result.data.datab[11] += percent_mod;
+
+    if (!id_result->data.item_id) {
+        ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
+            src->guildcard);
+        return -4;
+    }
+
+    if (id_result->data.item_id != pkt->item_id) {
+        ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
+            src->guildcard);
+        return -5;
+    }
+
+    src->drop_item_id = id_result->data.item_id;
+    src->drop_amt = 1;
+
+    if (src->game_data->gm_debug)
+        print_item_data(&id_result->data, src->version);
+
+    return subcmd_send_bb_create_tekk_item(src);
 }
 
 int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
@@ -1572,64 +1548,33 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t i = 0;
     int found = -1;
 
-    if (src->version == CLIENT_VERSION_BB) {
-
-        iitem_t* id_result = &(src->game_data->identify_result);
-
-        if (!id_result->data.item_id) {
-            ERR_LOG("no identify result present");
-            return -1;
-        }
-
-        if (id_result->data.item_id != pkt->item_id) {
-            ERR_LOG("identify_result.data.item_id != pkt->item_id");
-            return -1;
-        }
-
-        for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
-            if (src->bb_pl->inv.iitems[i].data.item_id == id_result->data.item_id) {
-                ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
-                    src->guildcard);
-                return -1;
-            }
-        }
-
-        ///* 尝试从大厅物品栏中移除... */
-        //found = remove_litem_locked(l, pkt->item_id, id_result);
-        //if (found < 0) {
-        //    /* 未找到需要移除的物品... */
-        //    ERR_LOG("GC %" PRIu32 " 鉴定的物品不存在!",
-        //        src->guildcard);
-        //    return -1;
-        //}
-        //else if (found > 0) {
-        //    /* 假设别人已经捡到了, 就忽略它... */
-        //    ERR_LOG("GC %" PRIu32 " 鉴定的物品已被拾取!",
-        //        src->guildcard);
-        //    return 0;
-        //}
-        //else {
-
-        //}
-
-
-        if (!add_iitem(src, id_result)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                src->guildcard);
-            return -1;
-        }
-
-        /* 初始化临时鉴定的物品数据 */
-        memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
-
-        src->drop_item_id = 0xFFFFFFFF;
-        src->drop_amt = 0;
-
-        return subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
-
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
     }
-    else
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    iitem_t* id_result = &src->game_data->identify_result;
+
+    if (!id_result->data.item_id) {
+        ERR_LOG("未获取到鉴定结果");
+        return -1;
+    }
+
+    if (id_result->data.item_id != pkt->item_id) {
+        ERR_LOG("鉴定结果 item_id != 数据包 item_id");
+        return -1;
+    }
+
+    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
+
+    /* 初始化临时鉴定的物品数据 */
+    memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
+
+    src->drop_item_id = 0xFFFFFFFF;
+    src->drop_amt = 0;
+
+    return 0;
 }
 
 int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
