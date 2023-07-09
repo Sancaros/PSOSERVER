@@ -158,7 +158,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
                 release(c->limits);
         }
 
-        fix_up_pl_iitem(l, c);
+        regenerate_lobby_item_id(l, c);
     }
 
     c->game_info.guildcard = c->guildcard;

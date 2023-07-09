@@ -76,13 +76,13 @@ uint16_t level(magitemstat_t* this) {
 }
 
 uint16_t compute_mag_level(const item_t* item) {
-	return (item->data_w[2] / 100) + (item->data_w[3] / 100) + (item->data_w[4] / 100) + (item->data_w[5] / 100);
+	return (item->dataw[2] / 100) + (item->dataw[3] / 100) + (item->dataw[4] / 100) + (item->dataw[5] / 100);
 }
 
 uint16_t compute_mag_strength_flags(const item_t* item) {
-	uint16_t pow = item->data_w[3] / 100;
-	uint16_t dex = item->data_w[4] / 100;
-	uint16_t mind = item->data_w[5] / 100;
+	uint16_t pow = item->dataw[3] / 100;
+	uint16_t dex = item->dataw[4] / 100;
+	uint16_t mind = item->dataw[5] / 100;
 	uint16_t ret = 0;
 
 	if ((dex < pow) && (mind < pow)) {
@@ -106,7 +106,7 @@ uint16_t compute_mag_strength_flags(const item_t* item) {
 }
 
 void update_stat(item_t* data, size_t which, int8_t delta) {
-	uint16_t existing_stat = data->data_w[which] % 100;
+	uint16_t existing_stat = data->dataw[which] % 100;
 
 	if ((delta > 0) || ((delta < 0) && (-delta < existing_stat))) {
 		uint16_t level = compute_mag_level(data);
@@ -117,7 +117,7 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 		if ((level == 200) && ((99 - existing_stat) < delta)) {
 			delta = 99 - existing_stat;
 		}
-		data->data_w[which] += delta;
+		data->dataw[which] += delta;
 	}
 }
 
@@ -132,28 +132,28 @@ ssize_t clamp(ssize_t value, ssize_t min, ssize_t max) {
 }
 
 void assign_mag_stats(item_t* item, magitemstat_t* mag) {
-	item->data_b[2] = (uint8_t)level(mag);
-	item->data_b[3] = mag->photon_blasts;
-	item->data_w[2] = mag->def & 0x7FFE;
-	item->data_w[3] = mag->pow & 0x7FFE;
-	item->data_w[4] = mag->dex & 0x7FFE;
-	item->data_w[5] = mag->mind & 0x7FFE;
-	item->data2_b[0] = (uint8_t)mag->synchro;
-	item->data2_b[1] = (uint8_t)mag->iq;
-	item->data2_b[2] = mag->flags;
-	item->data2_b[3] = mag->color;
+	item->datab[2] = (uint8_t)level(mag);
+	item->datab[3] = mag->photon_blasts;
+	item->dataw[2] = mag->def & 0x7FFE;
+	item->dataw[3] = mag->pow & 0x7FFE;
+	item->dataw[4] = mag->dex & 0x7FFE;
+	item->dataw[5] = mag->mind & 0x7FFE;
+	item->data2b[0] = (uint8_t)mag->synchro;
+	item->data2b[1] = (uint8_t)mag->iq;
+	item->data2b[2] = mag->flags;
+	item->data2b[3] = mag->color;
 }
 
 void clear_mag_stats(item_t* item) {
-	if (item->data_b[0] == 2) {
-		item->data_b[1] = '\0';
+	if (item->datab[0] == 2) {
+		item->datab[1] = '\0';
 		assign_mag_stats(item, &(magitemstat_t) { 0 });
 	}
 }
 
 uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
-	uint8_t flags = item->data2_b[2];
-	uint8_t pb_nums = item->data_b[3];
+	uint8_t flags = item->data2b[2];
+	uint8_t pb_nums = item->datab[3];
 
 	if (slot == 0) { // Center
 		return (flags & 1) ? (pb_nums & 0x07) : 0xFF;
@@ -213,8 +213,8 @@ void add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 		return;
 	}
 
-	uint8_t* flags = &(item->data2_b[2]);
-	uint8_t* pb_nums = &(item->data_b[3]);
+	uint8_t* flags = &(item->data2b[2]);
+	uint8_t* pb_nums = &(item->datab[3]);
 
 	if (!(*flags & 1)) { // Center
 		*pb_nums |= pb_num;
@@ -246,7 +246,7 @@ void add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 
 size_t get_mag_feed_table_index(iitem_t* mag) {
 
-	switch (mag->data.data_b[1])
+	switch (mag->data.datab[1])
 	{
 	case Mag_Mag:
 		return 0;
@@ -315,7 +315,7 @@ size_t get_mag_feed_table_index(iitem_t* mag) {
 
 int get_evolution_number(iitem_t* mag) {
 
-	switch (mag->data.data_b[1])
+	switch (mag->data.datab[1])
 	{
 	case Mag_Mag:
 		return 0;
@@ -579,13 +579,13 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 	update_stat(&mag_item.data, 3, feed_result.pow);
 	update_stat(&mag_item.data, 4, feed_result.dex);
 	update_stat(&mag_item.data, 5, feed_result.mind);
-	mag_item.data.data2_b[0] = (uint8_t)clamp((ssize_t)mag_item.data.data2_b[0] + feed_result.synchro, 0, 120);
-	mag_item.data.data2_b[1] = (uint8_t)clamp((ssize_t)mag_item.data.data2_b[1] + feed_result.iq, 0, 200);
+	mag_item.data.data2b[0] = (uint8_t)clamp((ssize_t)mag_item.data.data2b[0] + feed_result.synchro, 0, 120);
+	mag_item.data.data2b[1] = (uint8_t)clamp((ssize_t)mag_item.data.data2b[1] + feed_result.iq, 0, 200);
 
 	uint8_t mag_level = (uint8_t)compute_mag_level(&mag_item.data);
-	mag_item.data.data_b[2] = mag_level;
+	mag_item.data.datab[2] = mag_level;
 	uint8_t evolution_number = get_evolution_number(&mag_item);
-	uint8_t mag_number = mag_item.data.data_b[1];
+	uint8_t mag_number = mag_item.data.datab[1];
 
 	// Note: Sega really did just hardcode all these rules into the client. There
 	// is no data file describing these evolutions, unfortunately.
@@ -601,19 +601,19 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 			case 1: // HUnewearl
 			case 2: // HUcast
 			case 9: // HUcaseal
-				mag_item.data.data_b[1] = 0x01; // Varuna
+				mag_item.data.datab[1] = 0x01; // Varuna
 				break;
 			case 3: // RAmar
 			case 11: // RAmarl
 			case 4: // RAcast
 			case 5: // RAcaseal
-				mag_item.data.data_b[1] = 0x0D; // Kalki
+				mag_item.data.datab[1] = 0x0D; // Kalki
 				break;
 			case 10: // FOmar
 			case 6: // FOmarl
 			case 7: // FOnewm
 			case 8: // FOnewearl
-				mag_item.data.data_b[1] = 0x19; // Vritra
+				mag_item.data.datab[1] = 0x19; // Vritra
 				break;
 			default:
 				ERR_LOG("invalid character class");
@@ -626,35 +626,35 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 			uint16_t flags = compute_mag_strength_flags(&mag_item.data);
 			if (mag_number == 0x0D) {
 				if ((flags & 0x110) == 0) {
-					mag_item.data.data_b[1] = 0x02;
+					mag_item.data.datab[1] = 0x02;
 				}
 				else if (flags & 8) {
-					mag_item.data.data_b[1] = 0x03;
+					mag_item.data.datab[1] = 0x03;
 				}
 				else if (flags & 0x20) {
-					mag_item.data.data_b[1] = 0x0B;
+					mag_item.data.datab[1] = 0x0B;
 				}
 			}
 			else if (mag_number == 1) {
 				if (flags & 0x108) {
-					mag_item.data.data_b[1] = 0x0E;
+					mag_item.data.datab[1] = 0x0E;
 				}
 				else if (flags & 0x10) {
-					mag_item.data.data_b[1] = 0x0F;
+					mag_item.data.datab[1] = 0x0F;
 				}
 				else if (flags & 0x20) {
-					mag_item.data.data_b[1] = 0x04;
+					mag_item.data.datab[1] = 0x04;
 				}
 			}
 			else if (mag_number == 0x19) {
 				if (flags & 0x120) {
-					mag_item.data.data_b[1] = 0x1A;
+					mag_item.data.datab[1] = 0x1A;
 				}
 				else if (flags & 8) {
-					mag_item.data.data_b[1] = 0x1B;
+					mag_item.data.datab[1] = 0x1B;
 				}
 				else if (flags & 0x10) {
-					mag_item.data.data_b[1] = 0x14;
+					mag_item.data.datab[1] = 0x14;
 				}
 			}
 		}
@@ -665,10 +665,10 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 
 			if (mag_level >= 100) {
 				uint8_t section_id_group = player->character.dress_data.section % 3;
-				uint16_t def = mag_item.data.data_w[2] / 100;
-				uint16_t pow = mag_item.data.data_w[3] / 100;
-				uint16_t dex = mag_item.data.data_w[4] / 100;
-				uint16_t mind = mag_item.data.data_w[5] / 100;
+				uint16_t def = mag_item.data.dataw[2] / 100;
+				uint16_t pow = mag_item.data.dataw[3] / 100;
+				uint16_t dex = mag_item.data.dataw[4] / 100;
+				uint16_t mind = mag_item.data.dataw[5] / 100;
 				bool is_male = char_class_is_male(player->character.dress_data.ch_class);
 				size_t table_index = (is_male ? 0 : 1) + section_id_group * 2;
 
@@ -699,17 +699,17 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 							0x41, 0x3F, 0x41, 0x40, 0x41, 0x40, // Force
 					};
 					// clang-format on
-					mag_item.data.data_b[1] = result_table[table_index];
+					mag_item.data.datab[1] = result_table[table_index];
 				}
 			}
 
 			// If a special evolution did not occur, do a normal level 50 evolution
-			if (mag_number == mag_item.data.data_b[1]) {
+			if (mag_number == mag_item.data.datab[1]) {
 				uint16_t flags = compute_mag_strength_flags(&mag_item.data);
-				uint16_t def = mag_item.data.data_w[2] / 100;
-				uint16_t pow = mag_item.data.data_w[3] / 100;
-				uint16_t dex = mag_item.data.data_w[4] / 100;
-				uint16_t mind = mag_item.data.data_w[5] / 100;
+				uint16_t def = mag_item.data.dataw[2] / 100;
+				uint16_t pow = mag_item.data.dataw[3] / 100;
+				uint16_t dex = mag_item.data.dataw[4] / 100;
+				uint16_t mind = mag_item.data.dataw[5] / 100;
 
 				bool is_hunter = char_class_is_hunter(player->character.dress_data.ch_class);
 				bool is_ranger = char_class_is_ranger(player->character.dress_data.ch_class);
@@ -720,34 +720,34 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 
 				if (is_hunter) {
 					if (flags & 0x108) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((dex < mind) ? 0x08 : 0x06)
 							: ((dex < mind) ? 0x0C : 0x05);
 					}
 					else if (flags & 0x010) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((mind < pow) ? 0x12 : 0x10)
 							: ((mind < pow) ? 0x17 : 0x13);
 					}
 					else if (flags & 0x020) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((pow < dex) ? 0x16 : 0x24)
 							: ((pow < dex) ? 0x07 : 0x1E);
 					}
 				}
 				else if (is_ranger) {
 					if (flags & 0x110) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((mind < pow) ? 0x0A : 0x05)
 							: ((mind < pow) ? 0x0C : 0x06);
 					}
 					else if (flags & 0x008) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((dex < mind) ? 0x0A : 0x26)
 							: ((dex < mind) ? 0x0C : 0x06);
 					}
 					else if (flags & 0x020) {
-						mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+						mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 							? ((pow < dex) ? 0x18 : 0x1E)
 							: ((pow < dex) ? 0x08 : 0x05);
 					}
@@ -755,32 +755,32 @@ void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_
 				else if (is_force) {
 					if (flags & 0x120) {
 						if (def < 45) {
-							mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+							mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 								? ((pow < dex) ? 0x17 : 0x09)
 								: ((pow < dex) ? 0x1E : 0x1C);
 						}
 						else {
-							mag_item.data.data_b[1] = 0x24;
+							mag_item.data.datab[1] = 0x24;
 						}
 					}
 					else if (flags & 0x008) {
 						if (def < 45) {
-							mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+							mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 								? ((dex < mind) ? 0x1C : 0x20)
 								: ((dex < mind) ? 0x1F : 0x25);
 						}
 						else {
-							mag_item.data.data_b[1] = 0x23;
+							mag_item.data.datab[1] = 0x23;
 						}
 					}
 					else if (flags & 0x010) {
 						if (def < 45) {
-							mag_item.data.data_b[1] = (player->character.dress_data.section & 1)
+							mag_item.data.datab[1] = (player->character.dress_data.section & 1)
 								? ((mind < pow) ? 0x12 : 0x0C)
 								: ((mind < pow) ? 0x15 : 0x11);
 						}
 						else {
-							mag_item.data.data_b[1] = 0x24;
+							mag_item.data.datab[1] = 0x24;
 						}
 					}
 				}
@@ -1511,7 +1511,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 	psocn_bb_db_char_t* player = src->bb_pl;
 
 	if (fed_item_id != EMPTY_STRING) {
-		i = find_iitem(&player->inv, fed_item_id);
+		i = find_iitem_index(&player->inv, fed_item_id);
 
 		if (i == -1) {
 			ERR_LOG("GC %" PRIu32 "无法找到需要喂养的物品ID %u",
@@ -1531,26 +1531,26 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 
 		mag = (magitem_t*)&player->inv.iitems[i].data;
 
-		if ((feed_item->data_b[0] == ITEM_TYPE_TOOL) &&
-			(feed_item->data_b[1] < ITEM_SUBTYPE_TELEPIPE) &&
-			(feed_item->data_b[1] != ITEM_SUBTYPE_DISK) &&
-			(feed_item->data_b[5] > 0x00))
+		if ((feed_item->datab[0] == ITEM_TYPE_TOOL) &&
+			(feed_item->datab[1] < ITEM_SUBTYPE_TELEPIPE) &&
+			(feed_item->datab[1] != ITEM_SUBTYPE_DISK) &&
+			(feed_item->datab[5] > 0x00))
 		{
-			switch (feed_item->data_b[1])
+			switch (feed_item->datab[1])
 			{
 			case ITEM_SUBTYPE_MATE:
-				mt_index = feed_item->data_b[2];
+				mt_index = feed_item->datab[2];
 				break;
 			case ITEM_SUBTYPE_FLUID:
-				mt_index = 3 + feed_item->data_b[2];
+				mt_index = 3 + feed_item->datab[2];
 				break;
 			case ITEM_SUBTYPE_SOL_ATOMIZER:
 			case ITEM_SUBTYPE_MOON_ATOMIZER:
 			case ITEM_SUBTYPE_STAR_ATOMIZER:
-				mt_index = 5 + feed_item->data_b[1];
+				mt_index = 5 + feed_item->datab[1];
 				break;
 			case ITEM_SUBTYPE_ANTI:
-				mt_index = 6 + feed_item->data_b[2];
+				mt_index = 6 + feed_item->datab[2];
 				break;
 			}
 		}

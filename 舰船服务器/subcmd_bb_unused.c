@@ -95,7 +95,7 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, subcmd_bb_item
         return -1;
     }
     
-    if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+    if (c->new_item.datal[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
@@ -128,7 +128,7 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, subcmd_bb_bit
         return -1;
     }
 
-    if (c->new_item.data_l[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
+    if (c->new_item.datal[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {

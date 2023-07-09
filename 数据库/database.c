@@ -687,10 +687,10 @@ int psocn_db_param_query(psocn_dbconn_t* conn, const char* query, const psocn_db
         if (params[i].value) {
             bind_params[i].buffer = params[i].value;
             bind_params[i].buffer_length = params[i].length;
-            bind_params[i].is_null = 0;
+            bind_params[i].is_null = (my_bool*)0;
         }
         else {
-            bind_params[i].is_null = 1;
+            bind_params[i].is_null = (my_bool*)1;
         }
 
         if (mysql_stmt_bind_param(stmt, &bind_params[i])) {

@@ -108,9 +108,9 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
 
     /* Run the bank action script, if any. */
     if(script_execute(ScriptActionBankAction, c, SCRIPT_ARG_PTR, c,
-                      SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.data_l[0],
-                      SCRIPT_ARG_UINT32, pkt->data.data_l[1], SCRIPT_ARG_UINT32,
-                      pkt->data.data_l[2], SCRIPT_ARG_UINT32, pkt->data.data2_l,
+                      SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.datal[0],
+                      SCRIPT_ARG_UINT32, pkt->data.datal[1], SCRIPT_ARG_UINT32,
+                      pkt->data.datal[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
                       SCRIPT_ARG_UINT32, pkt->data.item_id, SCRIPT_ARG_END) < 0) {
         return -1;
     }
@@ -137,13 +137,13 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.data_l[0], &pkt->data.data_l[0], sizeof(uint32_t) * 5);
+        memcpy(&item.data.datal[0], &pkt->data.datal[0], sizeof(uint32_t) * 5);
 
         if(!psocn_limits_check_item(l->limits_list, &item, v)) {
             DBG_LOG("Potentially non-legit item in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(pkt->data.data_l[0]),
-                  LE32(pkt->data.data_l[1]), LE32(pkt->data.data_l[2]),
-                  LE32(pkt->data.data2_l));
+                  "%08x %08x %08x %08x", LE32(pkt->data.datal[0]),
+                  LE32(pkt->data.datal[1]), LE32(pkt->data.datal[2]),
+                  LE32(pkt->data.data2l));
 
             /* The item failed the check, so kick the user. */
             send_msg(c, MSG_BOX_TYPE, "%s\n\n%s\n%s",
@@ -159,7 +159,7 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
        actually legit, so make a note of the ID, add it to the inventory and
        forward the packet on. */
     l->item_player_id[c->client_id] = (uint16_t)LE32(pkt->data.item_id);
-    v = LE32(pkt->data.data_l[0]);
+    v = LE32(pkt->data.datal[0]);
 
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
@@ -169,14 +169,14 @@ static int handle_take_item(ship_client_t *c, subcmd_take_item_t *pkt) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data.data_l[0] == pkt->data.data_l[0]) {
-                c->iitems[i].data.data_l[1] += pkt->data.data_l[1];
+            if(c->iitems[i].data.datal[0] == pkt->data.datal[0]) {
+                c->iitems[i].data.datal[1] += pkt->data.datal[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count++].data.data_l[0], &pkt->data.data_l[0],
+    memcpy(&c->iitems[c->item_count++].data.datal[0], &pkt->data.datal[0],
            sizeof(uint32_t) * 5);
 
 send_pkt:
@@ -191,7 +191,7 @@ send_pkt:
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
         memcpy(&tr, pkt, sizeof(subcmd_take_item_t));
-        tr.data.data2_l = SWAP32(tr.data.data2_l);
+        tr.data.data2l = SWAP32(tr.data.data2l);
 
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != c) {
@@ -253,14 +253,14 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
         }
 
         /* Fill in the item structure so we can check it. */
-        memcpy(&item.data.data_l[0], &pkt->data.item.data_l[0], 5 * sizeof(uint32_t));
+        memcpy(&item.data.datal[0], &pkt->data.item.datal[0], 5 * sizeof(uint32_t));
 
         if (!psocn_limits_check_item(l->limits_list, &item, v)) {
             /* The item failed the check, deal with it. */
             DBG_LOG("Potentially non-legit item dropped in legit mode:\n"
-                "%08x %08x %08x %08x %08x", LE32(pkt->data.item.data_l[0]),
-                LE32(pkt->data.item.data_l[1]), LE32(pkt->data.item.data_l[2]),
-                LE32(pkt->data.item.data2_l), LE32(pkt->data.item2));
+                "%08x %08x %08x %08x %08x", LE32(pkt->data.item.datal[0]),
+                LE32(pkt->data.item.datal[1]), LE32(pkt->data.item.datal[2]),
+                LE32(pkt->data.item.data2l), LE32(pkt->data.item2));
 
             /* Grab the item name, if we can find it. */
             name = item_get_name((item_t*)&item.data, v);
@@ -305,7 +305,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
     }
 
     /* If we end up here, then the item is legit... */
-    v = LE32(pkt->data.item.data_l[0]) & 0xff;
+    v = LE32(pkt->data.item.datal[0]) & 0xff;
 
     /* If the item isn't a mag, or the client isn't Xbox or GC, then just
        send the packet away now. */
@@ -318,7 +318,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
         memcpy(&tr, pkt, sizeof(subcmd_itemgen_t));
-        tr.data.item.data2_l = SWAP32(tr.data.item.data2_l);
+        tr.data.item.data2l = SWAP32(tr.data.item.data2l);
 
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != c) {
@@ -598,23 +598,23 @@ static int handle_buy(ship_client_t *c, subcmd_buy_t *pkt) {
     if(!(c->flags & CLIENT_FLAG_TRACK_INVENTORY))
         goto send_pkt;
 
-    ic = LE32(pkt->data.data_l[0]);
+    ic = LE32(pkt->data.datal[0]);
 
     /* See if its a stackable item, since we have to treat them differently. */
     if(is_stackable(&pkt->data)) {
         /* Its stackable, so see if we have any in the inventory already */
         for(i = 0; i < c->item_count; ++i) {
             /* Found it, add what we're adding in */
-            if(c->iitems[i].data.data_l[0] == pkt->data.data_l[0]) {
-                c->iitems[i].data.data_l[1] += pkt->data.data_l[1];
+            if(c->iitems[i].data.datal[0] == pkt->data.datal[0]) {
+                c->iitems[i].data.datal[1] += pkt->data.datal[1];
                 goto send_pkt;
             }
         }
     }
 
-    memcpy(&c->iitems[c->item_count].data.data_l[0], &pkt->data.data_l[0],
+    memcpy(&c->iitems[c->item_count].data.datal[0], &pkt->data.datal[0],
            sizeof(uint32_t) * 4);
-    c->iitems[c->item_count++].data.data2_l = 0;
+    c->iitems[c->item_count++].data.data2l = 0;
 
 send_pkt:
     return subcmd_send_lobby_dc(c->cur_lobby, c, (subcmd_pkt_t *)pkt, 0);
@@ -2100,10 +2100,10 @@ int subcmd_send_lobby_item(lobby_t *l, subcmd_itemreq_t *req,
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.data_l[0] = LE32(item[0]);
-    gen.data.item.data_l[1] = LE32(item[1]);
-    gen.data.item.data_l[2] = LE32(item[2]);
-    gen.data.item.data2_l = LE32(item[3]);
+    gen.data.item.datal[0] = LE32(item[0]);
+    gen.data.item.datal[1] = LE32(item[1]);
+    gen.data.item.datal[2] = LE32(item[2]);
+    gen.data.item.data2l = LE32(item[3]);
     gen.data.item2 = LE32(0x00000002);
 
     gen.data.item.item_id = LE32(l->item_lobby_id);
@@ -2171,7 +2171,7 @@ int subcmd_send_pos(ship_client_t *dst, ship_client_t *src) {
 
         if(dst->version == CLIENT_VERSION_DCV1 &&
            (dst->flags & CLIENT_FLAG_IS_NTE))
-            dc.shdr.type = SUBCMD60_UNKNOW_1C;
+            dc.shdr.type = SUBCMD60_DESTORY_NPC;
         else
             dc.shdr.type = SUBCMD60_SET_AREA_20;
 

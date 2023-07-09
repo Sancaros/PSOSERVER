@@ -2199,10 +2199,10 @@ static int check_and_send(ship_client_t *c, lobby_t *l, uint32_t item[4],
         }
 
         /* Fill in the item structure so we can check it. */
-        iitem.data.data_l[0] = LE32(item[0]);
-        iitem.data.data_l[1] = LE32(item[1]);
-        iitem.data.data_l[2] = LE32(item[2]);
-        iitem.data.data2_l = LE32(item[3]);
+        iitem.data.datal[0] = LE32(item[0]);
+        iitem.data.datal[1] = LE32(item[1]);
+        iitem.data.datal[2] = LE32(item[2]);
+        iitem.data.data2l = LE32(item[3]);
 
         if(!psocn_limits_check_item(l->limits_list, &iitem, v)) {
             section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
@@ -2273,10 +2273,10 @@ static int check_and_send_bb_lobby(ship_client_t *dest, lobby_t *l, uint32_t ite
             return 0;
     }
 
-    dest->new_item.data_l[0] = item[0];
-    dest->new_item.data_l[1] = item[1];
-    dest->new_item.data_l[2] = item[2];
-    dest->new_item.data2_l = item[3];
+    dest->new_item.datal[0] = item[0];
+    dest->new_item.datal[1] = item[1];
+    dest->new_item.datal[2] = item[2];
+    dest->new_item.data2l = item[3];
 
     //print_item_data(&c->new_item, c->version);
 
@@ -2307,10 +2307,10 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
             return 0;
     }
 
-    dest->new_item.data_l[0] = item[0];
-    dest->new_item.data_l[1] = item[1];
-    dest->new_item.data_l[2] = item[2];
-    dest->new_item.data2_l = item[3];
+    dest->new_item.datal[0] = item[0];
+    dest->new_item.datal[1] = item[1];
+    dest->new_item.datal[2] = item[2];
+    dest->new_item.data2l = item[3];
 
     print_item_data(&dest->new_item, dest->version);
 

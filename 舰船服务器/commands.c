@@ -502,10 +502,10 @@ static int handle_item(ship_client_t *src, const char *params) {
     clear_item(&src->new_item);
 
     /* Copy over the item data. */
-    src->new_item.data_l[0] = SWAP32(item[0]);
-    src->new_item.data_l[1] = SWAP32(item[1]);
-    src->new_item.data_l[2] = SWAP32(item[2]);
-    src->new_item.data2_l = SWAP32(item[3]);
+    src->new_item.datal[0] = SWAP32(item[0]);
+    src->new_item.datal[1] = SWAP32(item[1]);
+    src->new_item.datal[2] = SWAP32(item[2]);
+    src->new_item.data2l = SWAP32(item[3]);
 
     print_item_data(&src->new_item, src->version);
 
@@ -532,7 +532,7 @@ static int handle_item4(ship_client_t *src, const char *params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
-    src->new_item.data2_l = LE32(item);
+    src->new_item.data2l = LE32(item);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item 设置成功."));
 }
@@ -558,7 +558,7 @@ static int handle_makeitem(ship_client_t* src, const char* params) {
     }
 
     /* Make sure there's something set with /item */
-    if (!src->new_item.data_l[0]) {
+    if (!src->new_item.datal[0]) {
         pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
@@ -966,9 +966,9 @@ static int handle_legit(ship_client_t *c, const char *params) {
 
         if(!irv) {
             SHIPS_LOG("Potentially non-legit item in legit mode:\n"
-                  "%08x %08x %08x %08x", LE32(item->data.data_l[0]),
-                  LE32(item->data.data_l[1]), LE32(item->data.data_l[2]),
-                  LE32(item->data.data2_l));
+                  "%08x %08x %08x %08x", LE32(item->data.datal[0]),
+                  LE32(item->data.datal[1]), LE32(item->data.datal[2]),
+                  LE32(item->data.data2l));
             pthread_rwlock_unlock(&ship->llock);
             return send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
                                            "check."));
@@ -3722,10 +3722,10 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     clear_item(&src->new_item);
 
     /* Copy over the item data. */
-    src->new_item.data_l[0] = SWAP32(item[0]);
-    src->new_item.data_l[1] = SWAP32(item[1]);
-    src->new_item.data_l[2] = SWAP32(item[2]);
-    src->new_item.data2_l = SWAP32(item[3]);
+    src->new_item.datal[0] = SWAP32(item[0]);
+    src->new_item.datal[1] = SWAP32(item[1]);
+    src->new_item.datal[2] = SWAP32(item[2]);
+    src->new_item.data2l = SWAP32(item[3]);
 
     print_item_data(&src->new_item, src->version);
 
@@ -3743,7 +3743,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     }
 
     /* Make sure there's something set with /item */
-    if (!src->new_item.data_l[0]) {
+    if (!src->new_item.datal[0]) {
         pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
             __(src, "\tE\tC7/item code1,code2,code3,code4."));

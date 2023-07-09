@@ -79,17 +79,17 @@ typedef struct item_data { // 0x14 bytes
     // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
 
     union {
-        uint8_t data_b[12];//字节
-        uint16_t data_w[6];//宽字节
-        uint32_t data_l[3];//32位数值
+        uint8_t datab[12];//字节
+        uint16_t dataw[6];//宽字节
+        uint32_t datal[3];//32位数值
     };
 
     uint32_t item_id;
 
     union {
-        uint8_t data2_b[4];
-        uint16_t data2_w[2];
-        uint32_t data2_l;
+        uint8_t data2b[4];
+        uint16_t data2w[2];
+        uint32_t data2l;
     };
 } PACKED item_t;
 

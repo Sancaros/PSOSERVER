@@ -66,10 +66,10 @@ static int handle_itemreq_gm(ship_client_t* src,
     gen.data.z = req->z;
     gen.data.unk1 = LE16(0x00000010);
 
-    gen.data.item.data_l[0] = LE32(src->new_item.data_l[0]);
-    gen.data.item.data_l[1] = LE32(src->new_item.data_l[1]);
-    gen.data.item.data_l[2] = LE32(src->new_item.data_l[2]);
-    gen.data.item.data2_l = LE32(src->new_item.data2_l);
+    gen.data.item.datal[0] = LE32(src->new_item.datal[0]);
+    gen.data.item.datal[1] = LE32(src->new_item.datal[1]);
+    gen.data.item.datal[2] = LE32(src->new_item.datal[2]);
+    gen.data.item.data2l = LE32(src->new_item.data2l);
     gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
@@ -1142,11 +1142,11 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
     else {
-        item = LE32(iitem_data.data.data_l[0]);
+        item = LE32(iitem_data.data.datal[0]);
 
         /* Is it meseta, or an item? */
         if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data.data2_l) + LE32(src->bb_pl->character.disp.meseta);
+            tmp = LE32(iitem_data.data.data2l) + LE32(src->bb_pl->character.disp.meseta);
 
             /* Cap at 999,999 meseta. */
             if (tmp > 999999)
@@ -1177,7 +1177,7 @@ int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (src->new_item.data_l[0] && 
+    if (src->new_item.datal[0] && 
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
@@ -1264,7 +1264,7 @@ int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (src->new_item.data_l[0] &&
+    if (src->new_item.datal[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
@@ -1286,7 +1286,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)pkt;
 
-    DBG_LOG("%d %d", src->pl->bb.character.dress_data.section, src->bb_pl->character.dress_data.section);
+    //DBG_LOG("%d %d", src->pl->bb.character.dress_data.section, src->bb_pl->character.dress_data.section);
 
     if (l->drop_pso2) {
         l->dropfunc = pt_generate_bb_pso2_drop;
@@ -1296,7 +1296,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         l->dropfunc = pt_generate_bb_pso2_drop;
     }
 
-    printf("%d\n", l->drop_pso2);
+    //printf("%d\n", l->drop_pso2);
 
     return l->dropfunc(src, l, req);
 }
@@ -1424,7 +1424,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 如果是堆叠物品 */
     if (pkt->num_bought <= max_stack_size(&ii.data)) {
-        ii.data.data_b[5] = pkt->num_bought;
+        ii.data.datab[5] = pkt->num_bought;
     }
     else {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
@@ -1447,7 +1447,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    uint32_t price = ii.data.data2_l * pkt->num_bought;
+    uint32_t price = ii.data.data2l * pkt->num_bought;
     subcmd_send_bb_delete_meseta(src, price, 0);
 
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);
@@ -1458,7 +1458,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
     subcmd_bb_tekk_identify_result_t i_res = { 0 };
-    uint32_t tek_item_slot = 0, attrib = 0;
+    uint32_t titem_index = 0, attrib = 0;
     uint8_t percent_mod = 0;
 
     if (src->version == CLIENT_VERSION_BB) {
@@ -1478,34 +1478,34 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
             return -2;
         }
 
-        tek_item_slot = find_iitem(&src->bb_pl->inv, pkt->item_id);
+        titem_index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
 
         /* 获取鉴定物品的内存指针 */
-        iitem_t* id_result = &(src->game_data->identify_result);
+        iitem_t* tek_result = &(src->game_data->identify_result);
 
         /* 获取背包鉴定物品所在位置的数据 */
-        id_result->data = src->bb_pl->inv.iitems[tek_item_slot].data;
+        tek_result->data = src->bb_pl->inv.iitems[titem_index].data;
 
         if (src->game_data->gm_debug)
-            print_iitem_data(id_result, tek_item_slot, src->version);
+            print_iitem_data(tek_result, titem_index, src->version);
 
-        if (id_result->data.data_b[0] != ITEM_TYPE_WEAPON) {
+        if (tek_result->data.datab[0] != ITEM_TYPE_WEAPON) {
             ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
                 src->guildcard);
             return -3;
         }
 
         // 技能属性提取和随机数处理
-        attrib = id_result->data.data_b[4] & ~(0x80);
+        attrib = tek_result->data.datab[4] & ~(0x80);
 
         if (attrib < 0x29) {
-            id_result->data.data_b[4] = tekker_attributes[(attrib * 3) + 1];
+            tek_result->data.datab[4] = tekker_attributes[(attrib * 3) + 1];
             uint32_t mt_result_1 = mt19937_genrand_int32(&b->rng) % 100;
             if (mt_result_1 > 70)
-                id_result->data.data_b[4] += mt_result_1 % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+                tek_result->data.datab[4] += mt_result_1 % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
         }
         else
-            id_result->data.data_b[4] = 0;
+            tek_result->data.datab[4] = 0;
 
         // 百分比修正处理
         uint32_t mt_result_2 = mt19937_genrand_int32(&b->rng) % 10;
@@ -1531,22 +1531,22 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         // 各属性值修正处理
-        if (!(id_result->data.data_b[6] & 128) && (id_result->data.data_b[7] > 0))
-            id_result->data.data_b[7] += percent_mod;
+        if (!(tek_result->data.datab[6] & 128) && (tek_result->data.datab[7] > 0))
+            tek_result->data.datab[7] += percent_mod;
 
-        if (!(id_result->data.data_b[8] & 128) && (id_result->data.data_b[9] > 0))
-            id_result->data.data_b[9] += percent_mod;
+        if (!(tek_result->data.datab[8] & 128) && (tek_result->data.datab[9] > 0))
+            tek_result->data.datab[9] += percent_mod;
 
-        if (!(id_result->data.data_b[10] & 128) && (id_result->data.data_b[11] > 0))
-            id_result->data.data_b[11] += percent_mod;
+        if (!(tek_result->data.datab[10] & 128) && (tek_result->data.datab[11] > 0))
+            tek_result->data.datab[11] += percent_mod;
 
-        if (!id_result->data.item_id) {
+        if (!tek_result->data.item_id) {
             ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
                 src->guildcard);
             return -4;
         }
 
-        if (id_result->data.item_id != pkt->item_id) {
+        if (tek_result->data.item_id != pkt->item_id) {
             ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
                 src->guildcard);
             return -5;
@@ -1554,10 +1554,12 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
         subcmd_send_bb_delete_meseta(src, 100, 0);
 
-        src->drop_item_id = id_result->data.item_id;
+        src->drop_item_id = tek_result->data.item_id;
         src->drop_amt = 1;
 
-        return subcmd_send_bb_create_tekk_item(src, id_result->data);
+        print_item_data(&tek_result->data, src->version);
+
+        return subcmd_send_bb_create_tekk_item(src, tek_result->data);
     }
     else
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1584,43 +1586,46 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        for (i = 0; i < src->pl->bb.inv.item_count; ++i)
-            if (src->pl->bb.inv.iitems[i].data.item_id == id_result->data.item_id) {
+        for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
+            if (src->bb_pl->inv.iitems[i].data.item_id == id_result->data.item_id) {
                 ERR_LOG("GC %" PRIu32 " 没有鉴定任何装备或该装备来自非法所得!",
                     src->guildcard);
                 return -1;
             }
+        }
 
-        /* 尝试从大厅物品栏中移除... */
-        found = remove_litem_locked(l, pkt->item_id, id_result);
-        if (found < 0) {
-            /* 未找到需要移除的物品... */
-            ERR_LOG("GC %" PRIu32 " 鉴定的物品不存在!",
+        ///* 尝试从大厅物品栏中移除... */
+        //found = remove_litem_locked(l, pkt->item_id, id_result);
+        //if (found < 0) {
+        //    /* 未找到需要移除的物品... */
+        //    ERR_LOG("GC %" PRIu32 " 鉴定的物品不存在!",
+        //        src->guildcard);
+        //    return -1;
+        //}
+        //else if (found > 0) {
+        //    /* 假设别人已经捡到了, 就忽略它... */
+        //    ERR_LOG("GC %" PRIu32 " 鉴定的物品已被拾取!",
+        //        src->guildcard);
+        //    return 0;
+        //}
+        //else {
+
+        //}
+
+
+        if (!add_iitem(src, id_result)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -1;
         }
-        else if (found > 0) {
-            /* 假设别人已经捡到了, 就忽略它... */
-            ERR_LOG("GC %" PRIu32 " 鉴定的物品已被拾取!",
-                src->guildcard);
-            return 0;
-        }
-        else {
 
-            if (!add_iitem(src, id_result)) {
-                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                    src->guildcard);
-                return -1;
-            }
+        /* 初始化临时鉴定的物品数据 */
+        memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
 
-            /* 初始化临时鉴定的物品数据 */
-            memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
+        src->drop_item_id = 0xFFFFFFFF;
+        src->drop_amt = 0;
 
-            src->drop_item_id = 0xFFFFFFFF;
-            src->drop_amt = 0;
-
-            return subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
-        }
+        return subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
 
     }
     else
@@ -1740,8 +1745,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
                     /* If it is an equipped frame, we need to unequip all
                        the units that are attached to it. */
-                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
-                        iitem.data.data_b[1] == ITEM_SUBTYPE_FRAME &&
+                    if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
+                        iitem.data.datab[1] == ITEM_SUBTYPE_FRAME &&
                         (iitem.flags & LE32(0x00000008))) {
                         isframe = 1;
                     }
@@ -1760,8 +1765,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             if (isframe) {
                 for (i = 0; i < iitem_count; ++i) {
                     iitem = src->bb_pl->inv.iitems[i];
-                    if (iitem.data.data_b[0] == ITEM_TYPE_GUARD &&
-                        iitem.data.data_b[1] == ITEM_SUBTYPE_UNIT) {
+                    if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
+                        iitem.data.datab[1] == ITEM_SUBTYPE_UNIT) {
                         src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
                     }
                 }
@@ -1783,7 +1788,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* Fill in the bank item. */
             if (is_stack) {
-                iitem.data.data_b[5] = pkt->item_amount;
+                iitem.data.datab[5] = pkt->item_amount;
                 bitem.amount = LE16(pkt->item_amount);
             }
             else {
@@ -1791,11 +1796,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             bitem.show_flags = LE16(1);
-            bitem.data.data_l[0] = iitem.data.data_l[0];
-            bitem.data.data_l[1] = iitem.data.data_l[1];
-            bitem.data.data_l[2] = iitem.data.data_l[2];
+            bitem.data.datal[0] = iitem.data.datal[0];
+            bitem.data.datal[1] = iitem.data.datal[1];
+            bitem.data.datal[2] = iitem.data.datal[2];
             bitem.data.item_id = iitem.data.item_id;
-            bitem.data.data2_l = iitem.data.data2_l;
+            bitem.data.data2l = iitem.data.data2l;
 
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
@@ -1848,11 +1853,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             iitem.present = LE16(0x0001);
             iitem.tech = LE16(0x0000);
             iitem.flags = LE32(0);
-            ic[0] = iitem.data.data_l[0] = bitem.data.data_l[0];
-            ic[1] = iitem.data.data_l[1] = bitem.data.data_l[1];
-            ic[2] = iitem.data.data_l[2] = bitem.data.data_l[2];
+            ic[0] = iitem.data.datal[0] = bitem.data.datal[0];
+            ic[1] = iitem.data.datal[1] = bitem.data.datal[1];
+            ic[2] = iitem.data.datal[2] = bitem.data.datal[2];
             iitem.data.item_id = LE32(l->item_lobby_id);
-            iitem.data.data2_l = bitem.data.data2_l;
+            iitem.data.data2l = bitem.data.data2l;
             ++l->item_lobby_id;
 
             /* 新增至玩家背包中... */
@@ -2020,8 +2025,8 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     else {
         iitem_t ii;
         memset(&ii, 0, PSOCN_STLENGTH_IITEM);
-        ii.data.data_b[0] = ITEM_TYPE_MESETA;
-        ii.data.data2_l = meseta;
+        ii.data.datab[0] = ITEM_TYPE_MESETA;
+        ii.data.data2l = meseta;
         ii.data.item_id = generate_item_id(l, 0xFF);
 
         if (!add_iitem(src, &ii)) {
@@ -2194,10 +2199,10 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
 
         src->bb_pl->inv.item_count = (iitem_count -= found);
 
-        if (backup_item.data.data_b[0] == 0x02)
-            backup_item.data.data2_b[2] |= 0x40; // Wrap a mag
+        if (backup_item.data.datab[0] == 0x02)
+            backup_item.data.data2b[2] |= 0x40; // Wrap a mag
         else
-            backup_item.data.data_b[4] |= 0x40; // Wrap other
+            backup_item.data.datab[4] |= 0x40; // Wrap other
 
         /* 将物品新增至背包. */
         if (!add_iitem(src, &backup_item))
@@ -2224,8 +2229,8 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
         iitem_t ex_pc = { 0 };
-        ex_pc.data.data_l[0] = BBItem_Photon_Crystal;
-        size_t item_id = find_iitem_id(&src->bb_pl->inv, &ex_pc);
+        ex_pc.data.datal[0] = BBItem_Photon_Crystal;
+        size_t item_id = find_iitem_stack_item_id(&src->bb_pl->inv, &ex_pc);
         iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
         if(&item == NULL)
             l->drops_disabled = true;
@@ -2350,7 +2355,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             bb.x = pkt->x;
             bb.z = pkt->z;
 
-            bb.data.data_l[0] = new_item;
+            bb.data.datal[0] = new_item;
 
             if (bb.data.item_id == 0xFFFFFFFF) {
                 bb.data.item_id = generate_item_id(l, EMPTY_STRING);
@@ -2359,11 +2364,11 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             if (new_item == 0x04) {
                 //new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
                 new_item += mt19937_genrand_int32(rng) % 100;
-                bb.data.data2_l = new_item;
+                bb.data.data2l = new_item;
             }
 
             if (new_item == 0x00)
-                bb.data.data_b[4] = 0x80;
+                bb.data.datab[4] = 0x80;
 
             iitem_t* litem = add_new_litem_locked(l, &bb.data, pkt->area, pkt->x, pkt->z);
 

@@ -85,33 +85,33 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
 
 /* 获取物品名称 */
 const char* item_get_name(item_t* item, int version) {
-    uint32_t code = item->data_b[0] | (item->data_b[1] << 8) |
-        (item->data_b[2] << 16);
+    uint32_t code = item->datab[0] | (item->datab[1] << 8) |
+        (item->datab[2] << 16);
 
     /* 获取相关物品参数对比 */
-    switch (item->data_b[0]) {
+    switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:  /* 武器 */
-        if (item->data_b[5]) {
-            code = (item->data_b[5] << 8);
+        if (item->datab[5]) {
+            code = (item->datab[5] << 8);
         }
         break;
 
     case ITEM_TYPE_GUARD:  /* 装甲 */
-        if (item->data_b[1] != ITEM_SUBTYPE_UNIT && item->data_b[3]) {
-            code = code | (item->data_b[3] << 16);
+        if (item->datab[1] != ITEM_SUBTYPE_UNIT && item->datab[3]) {
+            code = code | (item->datab[3] << 16);
         }
         //printf("数据1: %02X 数据3: %02X\n", item->item_data1[1], item->item_data1[3]);
         break;
 
     case ITEM_TYPE_MAG:  /* 玛古 */
-        if (item->data_b[1] == 0x00 && item->data_b[2] >= 0xC9) {
-            code = 0x02 | (((item->data_b[2] - 0xC9) + 0x2C) << 8);
+        if (item->datab[1] == 0x00 && item->datab[2] >= 0xC9) {
+            code = 0x02 | (((item->datab[2] - 0xC9) + 0x2C) << 8);
         }
         break;
 
     case ITEM_TYPE_TOOL: /* 物品 */
-        if (code == 0x060D03 && item->data_b[3]) {
-            code = 0x000E03 | ((item->data_b[3] - 1) << 16);
+        if (code == 0x060D03 && item->datab[3]) {
+            code = 0x000E03 | ((item->datab[3] - 1) << 16);
         }
         break;
 
@@ -134,10 +134,10 @@ void print_item_data(item_t* item, int version) {
     ITEM_LOG("物品:(ID %d / %08X) %s",
         item->item_id, item->item_id, item_get_name(item, version));
     ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-        item->data_b[0], item->data_b[1], item->data_b[2], item->data_b[3],
-        item->data_b[4], item->data_b[5], item->data_b[6], item->data_b[7],
-        item->data_b[8], item->data_b[9], item->data_b[10], item->data_b[11],
-        item->data2_b[0], item->data2_b[1], item->data2_b[2], item->data2_b[3]);
+        item->datab[0], item->datab[1], item->datab[2], item->datab[3],
+        item->datab[4], item->datab[5], item->datab[6], item->datab[7],
+        item->datab[8], item->datab[9], item->datab[10], item->datab[11],
+        item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
 }
 
 /* 打印背包物品数据 */
@@ -157,10 +157,10 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
         iitem->flags
     );
     ITEM_LOG("背包数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-        iitem->data.data_b[0], iitem->data.data_b[1], iitem->data.data_b[2], iitem->data.data_b[3],
-        iitem->data.data_b[4], iitem->data.data_b[5], iitem->data.data_b[6], iitem->data.data_b[7],
-        iitem->data.data_b[8], iitem->data.data_b[9], iitem->data.data_b[10], iitem->data.data_b[11],
-        iitem->data.data2_b[0], iitem->data.data2_b[1], iitem->data.data2_b[2], iitem->data.data2_b[3]);
+        iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
+        iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
+        iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
+        iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
 }
 
 /* 打印银行物品数据 */
@@ -178,10 +178,10 @@ void print_bitem_data(bitem_t* bitem, int item_index, int version) {
         bitem->show_flags
     );
     ITEM_LOG("银行数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
-        bitem->data.data_b[0], bitem->data.data_b[1], bitem->data.data_b[2], bitem->data.data_b[3],
-        bitem->data.data_b[4], bitem->data.data_b[5], bitem->data.data_b[6], bitem->data.data_b[7],
-        bitem->data.data_b[8], bitem->data.data_b[9], bitem->data.data_b[10], bitem->data.data_b[11],
-        bitem->data.data2_b[0], bitem->data.data2_b[1], bitem->data.data2_b[2], bitem->data.data2_b[3]);
+        bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
+        bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
+        bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
+        bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
 }
 
 void print_biitem_data(void* data, int item_index, int version, int inv, int err) {
@@ -210,10 +210,10 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 
             ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
                 inv_text,
-                iitem->data.data_b[0], iitem->data.data_b[1], iitem->data.data_b[2], iitem->data.data_b[3],
-                iitem->data.data_b[4], iitem->data.data_b[5], iitem->data.data_b[6], iitem->data.data_b[7],
-                iitem->data.data_b[8], iitem->data.data_b[9], iitem->data.data_b[10], iitem->data.data_b[11],
-                iitem->data.data2_b[0], iitem->data.data2_b[1], iitem->data.data2_b[2], iitem->data.data2_b[3]);
+                iitem->data.datab[0], iitem->data.datab[1], iitem->data.datab[2], iitem->data.datab[3],
+                iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
+                iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
+                iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
         }
         else {
             bitem_t* bitem = (bitem_t*)data;
@@ -234,10 +234,10 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 
             ITEM_LOG("%s数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
                 inv_text,
-                bitem->data.data_b[0], bitem->data.data_b[1], bitem->data.data_b[2], bitem->data.data_b[3],
-                bitem->data.data_b[4], bitem->data.data_b[5], bitem->data.data_b[6], bitem->data.data_b[7],
-                bitem->data.data_b[8], bitem->data.data_b[9], bitem->data.data_b[10], bitem->data.data_b[11],
-                bitem->data.data2_b[0], bitem->data.data2_b[1], bitem->data.data2_b[2], bitem->data.data2_b[3]);
+                bitem->data.datab[0], bitem->data.datab[1], bitem->data.datab[2], bitem->data.datab[3],
+                bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
+                bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
+                bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
         }
     }
 }

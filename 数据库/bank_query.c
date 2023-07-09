@@ -30,7 +30,8 @@ static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "guildcard, slot, item_count, meseta, bank_check_num"
+        "guildcard, slot, "
+        "item_count, meseta, bank_check_num"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
         "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "'"
@@ -95,11 +96,11 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "'%" PRIu32 "', '%" PRIu8 "'"
         ")",
         CHARACTER_BANK_ITEMS,
-        item->data.data_b[0], item->data.data_b[1], item->data.data_b[2], item->data.data_b[3],
-        item->data.data_b[4], item->data.data_b[5], item->data.data_b[6], item->data.data_b[7],
-        item->data.data_b[8], item->data.data_b[9], item->data.data_b[10], item->data.data_b[11],
+        item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
+        item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
+        item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
         item->data.item_id,
-        item->data.data2_b[0], item->data.data2_b[1], item->data.data2_b[2], item->data.data2_b[3],
+        item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item_index, item->amount, item->show_flags,
         item_name_text,
         gc, slot
@@ -173,11 +174,11 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         " WHERE "
         "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%d'",
         CHARACTER_BANK_ITEMS,
-        item->data.data_b[0], item->data.data_b[1], item->data.data_b[2], item->data.data_b[3],
-        item->data.data_b[4], item->data.data_b[5], item->data.data_b[6], item->data.data_b[7],
-        item->data.data_b[8], item->data.data_b[9], item->data.data_b[10], item->data.data_b[11],
+        item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
+        item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
+        item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
         item->data.item_id,
-        item->data.data2_b[0], item->data.data2_b[1], item->data.data2_b[2], item->data.data2_b[3],
+        item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item->amount, item->show_flags,
         item_name_text,
         gc, slot, item_index
@@ -367,41 +368,41 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     item->show_flags = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    item->data.data_b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data_b[11] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
 
     item->data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    item->data.data2_b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data2b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2_b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data2b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2_b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data2b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2_b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+    item->data.data2b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
 
     if (*endptr != '\0') {
         SQLERR_LOG("获取的物品数据 索引 %d 字符串读取有误", item_index);
@@ -416,11 +417,11 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
 void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
-        bank->bitems[item_index].data.data_l[0] = 0;
-        bank->bitems[item_index].data.data_l[1] = 0;
-        bank->bitems[item_index].data.data_l[2] = 0;
+        bank->bitems[item_index].data.datal[0] = 0;
+        bank->bitems[item_index].data.datal[1] = 0;
+        bank->bitems[item_index].data.datal[2] = 0;
         bank->bitems[item_index].data.item_id = 0xFFFFFFFF;
-        bank->bitems[item_index].data.data2_l = 0;
+        bank->bitems[item_index].data.data2l = 0;
 
         bank->bitems[item_index].amount = 0;
         bank->bitems[item_index].show_flags = LE16(0x0000);

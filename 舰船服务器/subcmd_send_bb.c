@@ -81,16 +81,16 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
     bb.x = dc.x = x;
     bb.z = dc.z = z;
 
-    bb.data.data_l[0] = dc.data.data_l[0] = item->data.data_l[0];
-    bb.data.data_l[1] = dc.data.data_l[1] = item->data.data_l[1];
-    bb.data.data_l[2] = dc.data.data_l[2] = item->data.data_l[2];
+    bb.data.datal[0] = dc.data.datal[0] = item->data.datal[0];
+    bb.data.datal[1] = dc.data.datal[1] = item->data.datal[1];
+    bb.data.datal[2] = dc.data.datal[2] = item->data.datal[2];
     bb.data.item_id = dc.data.item_id = item->data.item_id;
-    bb.data.data2_l = dc.data.data2_l = item->data.data2_l;
+    bb.data.data2l = dc.data.data2l = item->data.data2l;
 
     bb.two = dc.two = LE32(0x00000002);
 
     if (src->version == CLIENT_VERSION_GC)
-        dc.data.data2_l = SWAP32(item->data.data2_l);
+        dc.data.data2l = SWAP32(item->data.data2l);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
@@ -278,10 +278,10 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         c->bb_pl->character.disp.meseta -= count;
 
     if (drop) {
-        tmp_meseta.data.data_l[0] = LE32(Item_Meseta);
-        tmp_meseta.data.data_l[1] = tmp_meseta.data.data_l[2] = 0;
+        tmp_meseta.data.datal[0] = LE32(Item_Meseta);
+        tmp_meseta.data.datal[1] = tmp_meseta.data.datal[2] = 0;
         tmp_meseta.data.item_id = LE32((++l->item_player_id[c->client_id]));
-        tmp_meseta.data.data2_l = count;
+        tmp_meseta.data.data2l = count;
 
         /* 当获得物品... 将其新增入房间物品背包. */
         meseta = add_litem_locked(l, &tmp_meseta);
@@ -338,10 +338,10 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     gen.data.z = req->z;
     gen.data.unk1 = LE32(0x00000010);
 
-    gen.data.item.data_l[0] = LE32(c->new_item.data_l[0]);
-    gen.data.item.data_l[1] = LE32(c->new_item.data_l[1]);
-    gen.data.item.data_l[2] = LE32(c->new_item.data_l[2]);
-    gen.data.item.data2_l = LE32(c->new_item.data2_l);
+    gen.data.item.datal[0] = LE32(c->new_item.datal[0]);
+    gen.data.item.datal[1] = LE32(c->new_item.datal[1]);
+    gen.data.item.datal[2] = LE32(c->new_item.datal[2]);
+    gen.data.item.data2l = LE32(c->new_item.data2l);
     gen.data.item2 = LE32(0x00000002);
 
     /* Obviously not "right", but it works though, so we'll go with it. */
@@ -418,10 +418,10 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.data_l[0] = LE32(item->data.data_l[0]);
-    gen.data.item.data_l[1] = LE32(item->data.data_l[1]);
-    gen.data.item.data_l[2] = LE32(item->data.data_l[2]);
-    gen.data.item.data2_l = LE32(item->data.data2_l);
+    gen.data.item.datal[0] = LE32(item->data.datal[0]);
+    gen.data.item.datal[1] = LE32(item->data.datal[1]);
+    gen.data.item.datal[2] = LE32(item->data.datal[2]);
+    gen.data.item.data2l = LE32(item->data.data2l);
 
     gen.data.item.item_id = LE32(item->data.item_id);
 
@@ -481,10 +481,10 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
 
-    gen.data.item.data_l[0] = LE32(item->data.data_l[0]);
-    gen.data.item.data_l[1] = LE32(item->data.data_l[1]);
-    gen.data.item.data_l[2] = LE32(item->data.data_l[2]);
-    gen.data.item.data2_l = LE32(item->data.data2_l);
+    gen.data.item.datal[0] = LE32(item->data.datal[0]);
+    gen.data.item.datal[1] = LE32(item->data.datal[1]);
+    gen.data.item.datal[2] = LE32(item->data.datal[2]);
+    gen.data.item.data2l = LE32(item->data.data2l);
 
     gen.data.item.item_id = LE32(item->data.item_id);
 
@@ -603,21 +603,21 @@ int subcmd_send_bb_level(ship_client_t* c) {
     /* 增加MAG的升级奖励. */
     for (i = 0; i < c->bb_pl->inv.item_count; ++i) {
         if ((c->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-            c->bb_pl->inv.iitems[i].data.data_b[0] == ITEM_TYPE_MAG) {
+            c->bb_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
             base = LE16(pkt.dfp);
-            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[2]) / 100;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.dataw[2]) / 100;
             pkt.dfp = LE16((base + mag));
 
             base = LE16(pkt.atp);
-            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[3]) / 50;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.dataw[3]) / 50;
             pkt.atp = LE16((base + mag));
 
             base = LE16(pkt.ata);
-            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[4]) / 200;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.dataw[4]) / 200;
             pkt.ata = LE16((base + mag));
 
             base = LE16(pkt.mst);
-            mag = LE16(c->bb_pl->inv.iitems[i].data.data_w[5]) / 50;
+            mag = LE16(c->bb_pl->inv.iitems[i].data.dataw[5]) / 50;
             pkt.mst = LE16((base + mag));
 
             break;
@@ -792,22 +792,22 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
     if (!l)
         return -1;
 
-    memcpy(&compare_item1, &i->data.data_b[0], 3);
+    memcpy(&compare_item1, &i->data.datab[0], 3);
     if (i->data.item_id)
         compare_id = i->data.item_id;
     for (ch = 0; ch < c->bb_pl->inv.item_count; ch++) {
-        memcpy(&compare_item2, &c->bb_pl->inv.iitems[ch].data.data_b[0], 3);
+        memcpy(&compare_item2, &c->bb_pl->inv.iitems[ch].data.datab[0], 3);
         if (!i->data.item_id)
             compare_id = c->bb_pl->inv.iitems[ch].data.item_id;
         // Found the item?
         if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->inv.iitems[ch].data.item_id)) {
-            if (c->bb_pl->inv.iitems[ch].data.data_b[0] == ITEM_SUBTYPE_UNIT)
+            if (c->bb_pl->inv.iitems[ch].data.datab[0] == ITEM_SUBTYPE_UNIT)
 
             if (is_stackable(&c->bb_pl->inv.iitems[ch].data)) {
                 if (!count)
                     count = 1;
 
-                stack_count = c->bb_pl->inv.iitems[ch].data.data_b[5];
+                stack_count = c->bb_pl->inv.iitems[ch].data.datab[5];
                 if (!stack_count)
                     stack_count = 1;
 
@@ -816,7 +816,7 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
 
                 stack_count -= count;
 
-                c->bb_pl->inv.iitems[ch].data.data_b[5] = (uint8_t)stack_count;
+                c->bb_pl->inv.iitems[ch].data.datab[5] = (uint8_t)stack_count;
 
                 if (!stack_count)
                     delete_item = 1;
@@ -827,15 +827,15 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
             subcmd_send_bb_destroy_item(c, c->bb_pl->inv.iitems[ch].data.item_id, (uint8_t)count);
 
             if (delete_item) {
-                if (c->bb_pl->inv.iitems[ch].data.data_b[0] == ITEM_TYPE_GUARD) {
+                if (c->bb_pl->inv.iitems[ch].data.datab[0] == ITEM_TYPE_GUARD) {
                     // equipped armor, remove slot items
-                    if ((c->bb_pl->inv.iitems[ch].data.data_b[1] == ITEM_SUBTYPE_FRAME) &&
+                    if ((c->bb_pl->inv.iitems[ch].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
                         (c->bb_pl->inv.iitems[ch].flags & LE32(0x00000008))) {
                         for (ch2 = 0; ch2 < c->bb_pl->inv.item_count; ch2++)
-                            if ((c->bb_pl->inv.iitems[ch2].data.data_b[0] == ITEM_TYPE_GUARD) &&
-                                (c->bb_pl->inv.iitems[ch2].data.data_b[1] != ITEM_SUBTYPE_BARRIER) &&
+                            if ((c->bb_pl->inv.iitems[ch2].data.datab[0] == ITEM_TYPE_GUARD) &&
+                                (c->bb_pl->inv.iitems[ch2].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
                                 (c->bb_pl->inv.iitems[ch2].flags & LE32(0x00000008))) {
-                                c->bb_pl->inv.iitems[ch2].data.data_b[4] = 0x00;
+                                c->bb_pl->inv.iitems[ch2].data.datab[4] = 0x00;
                                 c->bb_pl->inv.iitems[ch2].flags &= LE32(0xFFFFFFF7);
                             }
                     }
