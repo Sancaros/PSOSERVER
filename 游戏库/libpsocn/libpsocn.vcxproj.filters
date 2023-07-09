@@ -88,6 +88,9 @@
     <ClInclude Include="pso_item_list.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_itemcreator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -120,5 +123,6 @@
     <ClCompile Include="pso_StringReader.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="pso_itemcreator.c" />
   </ItemGroup>
 </Project>
