@@ -243,6 +243,14 @@ void* psocn_db_result_store(psocn_dbconn_t* conn) {
     return (void*)mysql_store_result((MYSQL*)conn->conndata);
 }
 
+void* psocn_db_result_use(psocn_dbconn_t* conn) {
+    if (!conn || !conn->conndata) {
+        return NULL;
+    }
+
+    return (void*)mysql_use_result((MYSQL*)conn->conndata);
+}
+    
 void psocn_db_result_free(void* result) {
     if (!result) {
         return;

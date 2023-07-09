@@ -171,7 +171,7 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "amount = '%04X', show_flags = '%04X', "
         "item_name = '%s'"
         " WHERE "
-        "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
+        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%d'",
         CHARACTER_BANK_ITEMS,
         item->data.data_b[0], item->data.data_b[1], item->data.data_b[2], item->data.data_b[3],
         item->data.data_b[4], item->data.data_b[5], item->data.data_b[6], item->data.data_b[7],
@@ -198,7 +198,7 @@ static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
         "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "'"
         " WHERE "
-        "(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "')",
+        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
         CHARACTER_BANK,
         bank->item_count, bank->meseta, inv_crc32,
         gc, slot
@@ -333,7 +333,7 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
         " FROM "
         "%s"
         " WHERE "
-        "guildcard = '%" PRIu32 "' AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
+        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%d'",
         CHARACTER_BANK_ITEMS,
         gc, slot, item_index
     );
@@ -416,14 +416,14 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
 void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
-        bank->bitems[item_index].amount = 0;
-        bank->bitems[item_index].show_flags = LE16(0x0000);
-
         bank->bitems[item_index].data.data_l[0] = 0;
         bank->bitems[item_index].data.data_l[1] = 0;
         bank->bitems[item_index].data.data_l[2] = 0;
         bank->bitems[item_index].data.item_id = 0xFFFFFFFF;
         bank->bitems[item_index].data.data2_l = 0;
+
+        bank->bitems[item_index].amount = 0;
+        bank->bitems[item_index].show_flags = LE16(0x0000);
     }
 }
 
@@ -465,7 +465,6 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 }
 
 int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
-    uint8_t db_item_count = 0;
     size_t i = 0, ic = bank->item_count;
 
     if (ic > MAX_PLAYER_BANK_ITEMS)
@@ -475,7 +474,15 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     if (db_update_bank_param(bank, gc, slot)) {
         SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        goto build;
+
+        db_insert_bank_param(bank, gc, slot);
+
+        for (i = 0; i < ic; i++) {
+            if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+                break;
+        }
+
+        return 0;
     }
 
     // 遍历银行数据，插入到数据库中
@@ -494,21 +501,10 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
         return -1;
 
     return 0;
-
-build:
-    db_insert_bank_param(bank, gc, slot);
-
-    for (i = 0; i < ic; i++) {
-        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
-            break;
-    }
-
-    return 0;
 }
 
 /* 获取玩家角色银行数据数据项 */
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
-    uint32_t db_item_count = 0;
     size_t i = 0, ic = bank->item_count;
 
     if (ic > MAX_PLAYER_BANK_ITEMS)
@@ -518,10 +514,17 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
 
     if (db_get_char_bank_param(gc, slot, bank, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        goto build;
+        db_insert_bank_param(bank, gc, slot);
+
+        for (i = 0; i < ic; i++) {
+            if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+                break;
+        }
+
+        return 0;
     }
 
-    for (i; i < ic; i++) {
+    for (i = 0; i < ic; i++) {
         if (db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 0))
             break;
     }
@@ -532,17 +535,6 @@ int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
         return -1;
 
     return 0;
-
-build:
-    db_insert_bank_param(bank, gc, slot);
-
-    for (i = 0; i < ic; i++) {
-        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
-            break;
-    }
-
-    return 0;
-
 }
 
 /* 优先获取银行数据checkum */

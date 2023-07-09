@@ -358,11 +358,79 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
     return 0;
 }
 
+static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv) {
+    void* result;
+    char** row;
+    char* endptr;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT "
+        "*"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
+        CHARACTER_INVENTORY_ITEMS,
+        gc, slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_use(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    int k = 0;
+
+    while ((row = psocn_db_result_fetch(result)) != NULL) {
+        if ((uint16_t)strtoul(row[4], &endptr, 16) != 0) {
+            inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 16);
+            inv->iitems[k].tech = (uint16_t)strtoul(row[5], &endptr, 16);
+            inv->iitems[k].flags = (uint32_t)strtoul(row[6], &endptr, 16);
+
+            inv->iitems[k].data.data_b[0] = (uint8_t)strtoul(row[7], &endptr, 16);
+            inv->iitems[k].data.data_b[1] = (uint8_t)strtoul(row[8], &endptr, 16);
+            inv->iitems[k].data.data_b[2] = (uint8_t)strtoul(row[9], &endptr, 16);
+            inv->iitems[k].data.data_b[3] = (uint8_t)strtoul(row[10], &endptr, 16);
+            inv->iitems[k].data.data_b[4] = (uint8_t)strtoul(row[11], &endptr, 16);
+            inv->iitems[k].data.data_b[5] = (uint8_t)strtoul(row[12], &endptr, 16);
+            inv->iitems[k].data.data_b[6] = (uint8_t)strtoul(row[13], &endptr, 16);
+            inv->iitems[k].data.data_b[7] = (uint8_t)strtoul(row[14], &endptr, 16);
+            inv->iitems[k].data.data_b[8] = (uint8_t)strtoul(row[15], &endptr, 16);
+            inv->iitems[k].data.data_b[9] = (uint8_t)strtoul(row[16], &endptr, 16);
+            inv->iitems[k].data.data_b[10] = (uint8_t)strtoul(row[17], &endptr, 16);
+            inv->iitems[k].data.data_b[11] = (uint8_t)strtoul(row[18], &endptr, 16);
+
+            inv->iitems[k].data.item_id = (uint32_t)strtoul(row[19], &endptr, 16);
+
+            inv->iitems[k].data.data2_b[0] = (uint8_t)strtoul(row[20], &endptr, 16);
+            inv->iitems[k].data.data2_b[1] = (uint8_t)strtoul(row[21], &endptr, 16);
+            inv->iitems[k].data.data2_b[2] = (uint8_t)strtoul(row[22], &endptr, 16);
+            inv->iitems[k].data.data2_b[3] = (uint8_t)strtoul(row[23], &endptr, 16);
+
+            k++;
+        }else
+            break;
+    }
+
+    psocn_db_result_free(result);
+
+    return k;
+}
+
 void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
-        //clear_iitem(&inv->iitems[item_index]);
 
-        inv->iitems[item_index].present = LE16(0xFF);
+        inv->iitems[item_index].present = LE16(0x00FF);
         inv->iitems[item_index].tech = 0;
         inv->iitems[item_index].flags = 0;
 
@@ -453,39 +521,28 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
-    uint8_t db_item_count = 0;
+    uint8_t j = 0;
     size_t i = 0;
-    uint8_t ic = inv->item_count;
-
-    if (ic > MAX_PLAYER_INV_ITEMS)
-        ic = db_get_char_inv_item_count(gc, slot);
-
-    inv->item_count = ic;
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
-        goto build;
+        db_insert_inv_param(inv, gc, slot);
+
+        for (i = 0; i < inv->item_count; i++) {
+            if(inv->iitems[i].present)
+                if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
+                    break;
+        }
+
+        return 0;
     }
 
-    for (i = 0; i < ic; i++) {
-        if (db_get_char_inv_items(gc, slot, &inv->iitems[i], i, 0))
-            break;
-    }
+    inv->item_count = db_get_char_inv_itemdata(gc, slot, inv);
 
-    clean_up_char_inv(inv, ic, MAX_PLAYER_INV_ITEMS);
+    clean_up_char_inv(inv, inv->item_count, MAX_PLAYER_INV_ITEMS);
 
-    if (db_del_inv_items(gc, slot, ic, MAX_PLAYER_INV_ITEMS))
+    if (db_del_inv_items(gc, slot, inv->item_count, MAX_PLAYER_INV_ITEMS))
         return -1;
-
-    return 0;
-
-build:
-    db_insert_inv_param(inv, gc, slot);
-
-    for (i = 0; i < ic; i++) {
-        if (db_insert_inv_items(&inv->iitems[i], gc, slot, i))
-            break;
-    }
 
     return 0;
 }
@@ -567,3 +624,4 @@ uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
 
     return inv_crc32;
 }
+
