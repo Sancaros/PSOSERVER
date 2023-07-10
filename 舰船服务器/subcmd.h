@@ -2788,7 +2788,7 @@ typedef struct subcmd_bb_steal_exp {
 typedef struct subcmd_bb_charge_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t mst;
+    uint32_t meseta_amount;
 } PACKED subcmd_bb_charge_act_t;
 
 
