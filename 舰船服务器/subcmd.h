@@ -1762,7 +1762,6 @@ typedef struct subcmd_bb_warp_ship {
     uint32_t area;
 } PACKED subcmd_bb_warp_ship_t;
 
-
 typedef struct word_select {
     uint16_t num_words;
     uint16_t ws_type;
@@ -1785,8 +1784,6 @@ typedef struct subcmd_word_select {
 typedef struct subcmd_bb_word_select {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t num_words;
-    uint16_t ws_type;
     word_select_t data;
 } PACKED subcmd_bb_word_select_t;
 

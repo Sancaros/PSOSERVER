@@ -2398,9 +2398,6 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     DBG_LOG("舰仓:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 #endif // DEBUG_GUILD
 
-    uint16_t len = LE16(hdr->pkt_len);
-    DBG_LOG("舰仓:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
-
     switch (type) {
     case BB_GUILD_CREATE:
         return process_bb_guild_create(c, (bb_guild_create_pkt*)pkt);
@@ -2688,7 +2685,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         }
 
         c->flags |= CLIENT_FLAG_GOT_05;
-        //c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
 
         /* 0x0006 6*/

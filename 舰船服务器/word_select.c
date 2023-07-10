@@ -75,8 +75,8 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = pkt->client_id;
-    bb.num_words = pkt->data.num_words;
-    bb.ws_type = pkt->data.ws_type;
+    bb.data.num_words = pkt->data.num_words;
+    bb.data.ws_type = pkt->data.ws_type;
 
     /* No versions other than PSODC sport the lovely LIST ALL menu. Oh well, I
        guess I can't go around saying "HELL HELL HELL" to everyone. */
@@ -236,8 +236,8 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = pkt->client_id;
-    bb.num_words = pkt->data.num_words;
-    bb.ws_type = pkt->data.ws_type;
+    bb.data.num_words = pkt->data.num_words;
+    bb.data.ws_type = pkt->data.ws_type;
 
     for(i = 0; i < 8; ++i) {
         pcw = LE16(pkt->data.words[i]);
@@ -396,8 +396,8 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = client_id;
-    bb.num_words = pkt->data.num_words;
-    bb.ws_type = pkt->data.ws_type;
+    bb.data.num_words = pkt->data.num_words;
+    bb.data.ws_type = pkt->data.ws_type;
 
     for(i = 0; i < 8; ++i) {
         gcw = LE16(pkt->data.words[i]);
@@ -525,8 +525,8 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     pc.size = 0x08;
     pc.client_id = client_id;
     pc.client_id_gc = 0;
-    pc.data.num_words = pkt->num_words;
-    pc.data.ws_type = pkt->ws_type;
+    pc.data.num_words = pkt->data.num_words;
+    pc.data.ws_type = pkt->data.ws_type;
 
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
@@ -535,8 +535,8 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     dc.size = 0x08;
     dc.client_id = client_id;
     dc.client_id_gc = 0;
-    dc.data.num_words = pkt->num_words;
-    dc.data.ws_type = pkt->ws_type;
+    dc.data.num_words = pkt->data.num_words;
+    dc.data.ws_type = pkt->data.ws_type;
 
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
@@ -544,15 +544,15 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     bb.shdr.type = SUBCMD60_WORD_SELECT;
     bb.shdr.size = 0x08;
     bb.shdr.client_id = client_id;
-    bb.num_words = pkt->num_words;
-    bb.ws_type = pkt->ws_type;
+    bb.data.num_words = pkt->data.num_words;
+    bb.data.ws_type = pkt->data.ws_type;
 
     for (i = 0; i < 8; ++i) {
         gcw = LE16(pkt->data.words[i]);
 
         /* Make sure each word is valid */
         if (gcw > WORD_SELECT_BB_MAX && gcw != 0xFFFF) {
-            return send_txt(c, __(c, "\tE\tC7Invalid word select."));
+            return send_txt(c, __(c, "\tE\tC7ÎÞÐ§¿ì½ÝÓï."));
         }
 
         /* Grab the words from the map */

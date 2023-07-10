@@ -10671,20 +10671,20 @@ static void copy_c_rank_gc(gc_c_rank_update_pkt *pkt, int entry,
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].times,
-                   s->pl->v2.chal_data.c_rank.part.times, 9 * sizeof(uint32_t));
+                   s->pl->v2.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle,
                    s->pl->v2.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].unk3, s->pl->v2.chal_data.c_rank.part.unk2,
+            memcpy(pkt->entries[entry].unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 8, s->pl->v2.chal_data.c_rank.part.unk2,
+            memcpy(pkt->entries[entry].unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 4, s->pl->v2.chal_data.c_rank.part.unk2 + 8,
+            memcpy(pkt->entries[entry].unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
                    sizeof(uint32_t));
             memcpy(pkt->entries[entry].unk3 + 12,
-                   s->pl->v2.chal_data.c_rank.part.unk2 + 8, sizeof(uint32_t));
+                   s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_PC:
@@ -10702,21 +10702,21 @@ static void copy_c_rank_gc(gc_c_rank_update_pkt *pkt, int entry,
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times,
+            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
                    9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle, s->pl->pc.chal_data.c_rank.part.battle,
                    7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].unk3, s->pl->pc.chal_data.c_rank.part.unk2,
+            memcpy(pkt->entries[entry].unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 8, s->pl->pc.chal_data.c_rank.part.unk2,
+            memcpy(pkt->entries[entry].unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 4, s->pl->pc.chal_data.c_rank.part.unk2 + 8,
+            memcpy(pkt->entries[entry].unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
                    sizeof(uint32_t));
             memcpy(pkt->entries[entry].unk3 + 12,
-                   s->pl->pc.chal_data.c_rank.part.unk2 + 8, sizeof(uint32_t));
+                   s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_BB:
@@ -10751,7 +10751,7 @@ static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
 
             /* This is a bit hackish.... */
             pkt->entries[entry].unk1 = s->pl->pc.chal_data.c_rank.part.unk1;
-            memcpy(pkt->entries[entry].unk2, s->pl->pc.chal_data.c_rank.part.unk2, 0x24);
+            memcpy(pkt->entries[entry].unk2, s->pl->pc.chal_data.c_rank.part.times_ep1_online, 0x24);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
@@ -10760,7 +10760,7 @@ static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times,
+            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
                    9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle, s->pl->pc.chal_data.c_rank.part.battle,
                    7 * sizeof(uint32_t));
@@ -10814,7 +10814,7 @@ static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].times,
-                   s->pl->v3.chal_data.c_rank.part.times, 9 * sizeof(uint32_t));
+                   s->pl->v3.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle,
                    s->pl->v3.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
 
@@ -10857,7 +10857,7 @@ static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
 
             /* This is a bit hackish.... */
             pkt->entries[entry].unk1 = s->pl->v2.chal_data.c_rank.part.unk1;
-            memcpy(pkt->entries[entry].unk2, s->pl->v2.chal_data.c_rank.part.unk2, 0x24);
+            memcpy(pkt->entries[entry].unk2, s->pl->v2.chal_data.c_rank.part.times_ep1_online, 0x24);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
@@ -10866,7 +10866,7 @@ static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->v2.chal_data.c_rank.part.times,
+            memcpy(pkt->entries[entry].times, s->pl->v2.chal_data.c_rank.part.times_ep1_offline,
                    9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle, s->pl->v2.chal_data.c_rank.part.battle,
                    7 * sizeof(uint32_t));
@@ -10922,7 +10922,7 @@ static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].times,
-                   s->pl->v3.chal_data.c_rank.part.times, 9 * sizeof(uint32_t));
+                   s->pl->v3.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].battle,
                    s->pl->v3.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
 
@@ -10962,7 +10962,7 @@ static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
 
         memset(pkt->entries[entry].c_rank.all, 0, 0x0158);
 
-        pkt->entries[entry].c_rank.part.unk1 = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
+        pkt->entries[entry].c_rank.part.title_color = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
             (s->pl->v2.chal_data.c_rank.part.unk1 << 16);
 
         /* Copy the rank over. */
@@ -10970,21 +10970,21 @@ static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
             0x0C);
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].c_rank.part.times,
-            s->pl->v2.chal_data.c_rank.part.times, 9 * sizeof(uint32_t));
+        memcpy(pkt->entries[entry].c_rank.part.times_ep1_online,
+            s->pl->v2.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
         memcpy(pkt->entries[entry].c_rank.part.battle,
             s->pl->v2.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->v2.chal_data.c_rank.part.unk2,
+        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->v2.chal_data.c_rank.part.unk2,
+        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->v2.chal_data.c_rank.part.unk2 + 8,
+        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
             sizeof(uint32_t));
         memcpy(pkt->entries[entry].c_rank.part.unk3 + 12,
-            s->pl->v2.chal_data.c_rank.part.unk2 + 8, sizeof(uint32_t));
+            s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_PC:
@@ -10992,7 +10992,7 @@ static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
 
         memset(pkt->entries[entry].c_rank.all, 0, 0x0158);
 
-        pkt->entries[entry].c_rank.part.unk1 = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
+        pkt->entries[entry].c_rank.part.title_color = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
             (s->pl->pc.chal_data.c_rank.part.unk1 << 16);
 
         /* Copy the rank over. */
@@ -11002,21 +11002,21 @@ static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
         }
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].c_rank.part.times, s->pl->pc.chal_data.c_rank.part.times,
+        memcpy(pkt->entries[entry].c_rank.part.times_ep1_offline, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
             9 * sizeof(uint32_t));
         memcpy(pkt->entries[entry].c_rank.part.battle, s->pl->pc.chal_data.c_rank.part.battle,
             7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->pc.chal_data.c_rank.part.unk2,
+        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->pc.chal_data.c_rank.part.unk2,
+        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->pc.chal_data.c_rank.part.unk2 + 8,
+        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
             sizeof(uint32_t));
         memcpy(pkt->entries[entry].c_rank.part.unk3 + 12,
-            s->pl->pc.chal_data.c_rank.part.unk2 + 8, sizeof(uint32_t));
+            s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_BB:
