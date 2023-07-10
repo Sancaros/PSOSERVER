@@ -2780,15 +2780,15 @@ typedef struct subcmd_bb_medical_center_used {
 typedef struct subcmd_bb_steal_exp {
     bb_pkt_hdr_t hdr;
     enemy_id_hdr_t shdr;
-    uint8_t data[0];
+    uint16_t enemy_id;
+    uint16_t unknown_a1;
 } PACKED subcmd_bb_steal_exp_t;
 
 // 0xC7: SUBCMD60_CHARGE_ACT (handled by the server on BB)
 typedef struct subcmd_bb_charge_act {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
+    client_id_hdr_t shdr;
     uint32_t mst;
-    uint8_t data[0];
 } PACKED subcmd_bb_charge_act_t;
 
 

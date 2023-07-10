@@ -2903,7 +2903,7 @@ int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " used medical center in lobby!",
+        ERR_LOG("GC %" PRIu32 " 在大厅使用医疗中心!",
             src->guildcard);
         return -1;
     }
@@ -2912,7 +2912,7 @@ int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 ||
         pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " sent bad medic message!",
+        ERR_LOG("GC %" PRIu32 " 发送错误的医疗中心数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
@@ -2931,7 +2931,6 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     pmt_weapon_bb_t tmp_wp = { 0 };
     game_enemy_t* en;
-    subcmd_bb_steal_exp_t* pk = (subcmd_bb_steal_exp_t*)pkt;
     uint32_t exp_percent = 0;
     uint32_t exp_to_add;
     uint8_t special = 0;
@@ -2945,7 +2944,7 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    mid = LE16(pk->shdr.enemy_id);
+    mid = LE16(pkt->shdr.enemy_id);
     mid &= 0xFFF;
 
     if (mid < 0xB50) {
@@ -2997,7 +2996,7 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
 
         if (exp_percent) {
             /* Make sure the enemy is in range. */
-            mid = LE16(pk->shdr.enemy_id);
+            mid = LE16(pkt->shdr.enemy_id);
             //DBG_LOG("怪物编号原值 %02X %02X", mid, pkt->enemy_id2);
             mid &= 0xFFF;
             //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
@@ -3042,6 +3041,42 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             return client_give_exp(src, exp_amount);
         }
     }
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_charge_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅使用医疗中心!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    //if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 ||
+    //    pkt->shdr.client_id != src->client_id) {
+    //    ERR_LOG("GC %" PRIu32 " 发送错误的医疗中心数据包!",
+    //        src->guildcard);
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+
+    psocn_disp_char_t* disp = &src->bb_pl->character.disp;
+    if (pkt->meseta_amount > disp->meseta) {
+        disp->meseta = 0;
+    }
+    else {
+        disp->meseta -= pkt->meseta_amount;
+    }
+
+    /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -3309,6 +3344,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SORT_INV               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },
     { SUBCMD60_MEDIC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
     { SUBCMD60_STEAL_EXP              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },
+    { SUBCMD60_CHARGE_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
     { SUBCMD60_EXP_REQ                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
     { SUBCMD60_GUILD_EX_ITEM          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
 
