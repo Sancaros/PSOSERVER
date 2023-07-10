@@ -2897,7 +2897,7 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub60_C5_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_medical_center_used_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -2910,8 +2910,8 @@ int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->size != 0x01 ||
-        pkt->data[0] != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 ||
+        pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " sent bad medic message!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);

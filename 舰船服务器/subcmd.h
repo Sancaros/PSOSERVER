@@ -2771,6 +2771,10 @@ typedef struct subcmd_bb_sort_inv {
 } PACKED subcmd_bb_sort_inv_t;
 
 // 0xC5: Medical center used
+typedef struct subcmd_bb_medical_center_used {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+} PACKED subcmd_bb_medical_center_used_t;
 
 // 0xC6: BB steal exp subcommand
 typedef struct subcmd_bb_steal_exp {
