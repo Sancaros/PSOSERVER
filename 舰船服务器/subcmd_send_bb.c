@@ -497,6 +497,32 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 }
 
+/* 0xBC SUBCMD60_BANK_INV BB 玩家银行 */
+int subcmd_send_bb_bank(ship_client_t* src) {
+    uint8_t* sendbuf = get_sendbuf();
+    subcmd_bb_bank_inv_t* pkt = (subcmd_bb_bank_inv_t*)sendbuf;
+    uint32_t num_items = LE32(src->bb_pl->bank.item_count);
+    uint16_t size = sizeof(subcmd_bb_bank_inv_t) + num_items *
+        PSOCN_STLENGTH_BITEM;
+    block_t* b = src->cur_block;
+
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_len = LE16(size);
+    pkt->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
+    pkt->hdr.flags = 0;
+
+    pkt->shdr.type = SUBCMD60_BANK_INV;
+    pkt->shdr.size = pkt->shdr.size;
+    pkt->shdr.unused = 0x0000;
+
+    pkt->size = LE32(size);
+    pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
+
+    memcpy(&pkt->item_count, &src->bb_pl->bank, PSOCN_STLENGTH_BANK);
+
+    return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
+}
+
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount) {
     lobby_t* l = c->cur_lobby;

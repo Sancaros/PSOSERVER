@@ -67,6 +67,9 @@ int subcmd_send_bb_lobby_drop_item(ship_client_t* src, ship_client_t* nosend, su
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
+/* 0xBC SUBCMD60_BANK_INV BB 玩家银行 */
+int subcmd_send_bb_bank(ship_client_t* src);
+
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
 int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount);
 

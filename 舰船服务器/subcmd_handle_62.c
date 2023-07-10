@@ -1580,12 +1580,6 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bank_open_t* req) {
     lobby_t* l = src->cur_lobby;
-    uint8_t* sendbuf = get_sendbuf();
-    subcmd_bb_bank_inv_t* pkt = (subcmd_bb_bank_inv_t*)sendbuf;
-    uint32_t num_items = LE32(src->bb_pl->bank.item_count);
-    uint16_t size = sizeof(subcmd_bb_bank_inv_t) + num_items *
-        PSOCN_STLENGTH_BITEM;
-    block_t* b = src->cur_block;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1606,18 +1600,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     /* Clean up the user's bank first... */
     cleanup_bb_bank(src);
 
-    /* 填充数据并准备发送 */
-    pkt->hdr.pkt_len = LE16(size);
-    pkt->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
-    pkt->hdr.flags = 0;
-    pkt->shdr.type = SUBCMD60_BANK_INV;
-    pkt->shdr.size = pkt->shdr.size;
-    pkt->shdr.unused = 0x0000;
-    pkt->size = LE32(size);
-    pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
-    memcpy(&pkt->item_count, &src->bb_pl->bank, PSOCN_STLENGTH_BANK);
-
-    return crypt_send(src, (int)size, sendbuf);
+    return subcmd_send_bb_bank(src);
 }
 
 int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
