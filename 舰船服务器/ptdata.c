@@ -1434,7 +1434,7 @@ static int generate_armor_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
        apply... */
     if(!bb) {
         if(pmt_lookup_guard_gc(item[0], &gcg)) {
-            ITEM_LOG("ItemPMT.prs 文件版本 GameCube 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
+            ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
             return -2;
         }
 

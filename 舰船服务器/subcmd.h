@@ -1765,7 +1765,9 @@ typedef struct subcmd_bb_warp_ship {
 typedef struct word_select {
     uint16_t num_words;
     uint16_t ws_type;
-    uint16_t words[12];
+    uint16_t words[8];
+    uint32_t unused1;
+    uint32_t unused2;
 } PACKED word_select_t;
 
 // 0x74: Word select

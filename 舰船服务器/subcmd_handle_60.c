@@ -1981,8 +1981,18 @@ int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     if ((src->flags & CLIENT_FLAG_STFU)) {
         return 0;
     }
-
-    display_packet(pkt, pkt->hdr.pkt_len);
+//( 00000000 )   28 00 60 00 00 00 00 00   
+//                     74 08 00 00
+//                     02 00 01 00  (.`.....t.......
+//( 00000010 )   46 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  F.?
+//( 00000020 )   00 00 00 00 00 00 00 00                           ........
+//
+//( 00000000 )   28 00 60 00 00 00 00 00   
+//                      74 08 00 00 
+//                      01 00 01 00  (.`.....t.......
+//( 00000010 )   49 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  I.?
+//( 00000020 )   00 00 00 00 00 00 00 00   
+    //display_packet(pkt, pkt->hdr.pkt_len);
 
     return word_select_send_bb(src, pkt);
 }
