@@ -819,13 +819,13 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
 
                 case CLIENT_VERSION_BB:
                     for (i = 0; i < 9; ++i) {
-                        if (c->pl->bb.chal_data.c_rank.part.times_ep1_online[i] == 0) {
+                        if (c->pl->bb.chal_data.crank.times_ep1_online[i] == 0) {
                             break;
                         }
                     }
 
                     for (k = 0; k < 5; ++k) {
-                        if (c->pl->bb.chal_data.c_rank.part.times_ep2_online[k] == 0)
+                        if (c->pl->bb.chal_data.crank.times_ep2_online[k] == 0)
                             break;
                     }
 

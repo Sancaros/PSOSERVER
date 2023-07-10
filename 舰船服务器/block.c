@@ -1472,7 +1472,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     else if (version == 2 && c->version == CLIENT_VERSION_DCV2) {
         memcpy(c->pl, &pkt->data, sizeof(v2_player_t));
         c->infoboard = NULL;
-        c->c_rank = c->pl->v2.chal_data.c_rank.all;
+        c->c_rank = c->pl->v2.chal_data.c_rank.data;
     }
     else if (version == 2 && c->version == CLIENT_VERSION_PC) {
         if (pkt->data.pc.autoreply[0]) {
@@ -1483,7 +1483,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
         memcpy(c->pl, &pkt->data, sizeof(pc_player_t));
         c->infoboard = NULL;
-        c->c_rank = c->pl->pc.chal_data.c_rank.all;
+        c->c_rank = c->pl->pc.chal_data.c_rank.data;
         memcpy(c->blacklist, c->pl->pc.blacklist, 30 * sizeof(uint32_t));
     }
     else if (version == 3) {
@@ -1495,14 +1495,14 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
         memcpy(c->pl, &pkt->data, sizeof(v3_player_t));
         c->infoboard = c->pl->v3.infoboard;
-        c->c_rank = c->pl->v3.chal_data.c_rank.all;
+        c->c_rank = c->pl->v3.chal_data.c_rank.data;
         memcpy(c->blacklist, c->pl->v3.blacklist, 30 * sizeof(uint32_t));
     }
     else if (version == 4) {
         /* XXXX: Not right, but work with it for now. */
         memcpy(c->pl, &pkt->data, sizeof(v3_player_t));
         c->infoboard = c->pl->v3.infoboard;
-        c->c_rank = c->pl->v3.chal_data.c_rank.all;
+        c->c_rank = c->pl->v3.chal_data.c_rank.data;
         memcpy(c->blacklist, c->pl->v3.blacklist, 30 * sizeof(uint32_t));
     }
 

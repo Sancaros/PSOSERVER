@@ -394,18 +394,18 @@ typedef struct bb_welcome {
 //    // 但 le_uint16_t 可能是一个布尔值，表示玩家是否存在（例如，在大厅数据结构中）。
 //    // 出于历史和简单性的原因，newserv 将这三个字段合并为一个字段，
 //    // 当玩家存在时，其取值为0x00010000，没有玩家存在时为零。
-//    le_uint32_t player_tag = 0x00010000;
-//    le_uint32_t guild_card_number = 0;
+//    uint32_t player_tag = 0x00010000;
+//    uint32_t guild_card_number = 0;
 //    // ClientConfig 结构描述了 newserv 如何使用这个命令；
 //    // 其他服务器可能不会以相同的格式使用接下来的 0x20 或 0x28 字节（或者可能根本不使用）。
 //    // cfg 字段对客户端来说是不透明的；它将在下一个 9E 命令中原样返回内容（或者通过 9F 请求返回）。
 //    ClientConfigT cfg;
-//} __packed__;
+//} PACKED;
 //
 //struct S_UpdateClientConfig_DC_PC_V3_04 : S_UpdateClientConfig<ClientConfig> {
-//} __packed__;
+//} PACKED;
 //struct S_UpdateClientConfig_BB_04 : S_UpdateClientConfig<ClientConfigBB> {
-//} __packed__;
+//} PACKED;
 
 // 05: 断开连接
 // 内部名称: SndLogout
@@ -771,40 +771,40 @@ struct S_LegacyJoinGame_XB_0E {
 // used!
 //
 //struct C_MenuSelection_10_Flag00 {
-//  le_uint32_t menu_id = 0;
-//  le_uint32_t item_id = 0;
-//} __packed__;
+//  uint32_t menu_id = 0;
+//  uint32_t item_id = 0;
+//} PACKED;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag01 {
 //  C_MenuSelection_10_Flag00 basic_cmd;
 //  ptext<CharT, 0x10> unknown_a1;
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_DC_V3_10_Flag01 : C_MenuSelection_10_Flag01<char> {
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_PC_BB_10_Flag01 : C_MenuSelection_10_Flag01<char16_t> {
-//} __packed__;
+//} PACKED;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag02 {
 //  C_MenuSelection_10_Flag00 basic_cmd;
 //  ptext<CharT, 0x10> password;
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_DC_V3_10_Flag02 : C_MenuSelection_10_Flag02<char> {
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_PC_BB_10_Flag02 : C_MenuSelection_10_Flag02<char16_t> {
-//} __packed__;
+//} PACKED;
 //
 //template <typename CharT>
 //struct C_MenuSelection_10_Flag03 {
 //  C_MenuSelection_10_Flag00 basic_cmd;
 //  ptext<CharT, 0x10> unknown_a1;
 //  ptext<CharT, 0x10> password;
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_DC_V3_10_Flag03 : C_MenuSelection_10_Flag03<char> {
-//} __packed__;
+//} PACKED;
 //struct C_MenuSelection_PC_BB_10_Flag03 : C_MenuSelection_10_Flag03<char16_t> {
-//} __packed__;
+//} PACKED;
 
 // 11 (S->C): Ship info
 // Internal name: RcvMessage
@@ -1209,30 +1209,30 @@ typedef struct bb_guild_reply6 {
 //    // a given piece of content with the same type in each file's A6 command.
 //    uint8_t type = 0;
 //    ptext<char, 0x11> filename;
-//    le_uint32_t file_size = 0;
-//} __packed__;
+//    uint32_t file_size = 0;
+//} PACKED;
 //
 //struct S_OpenFile_PC_V3_44_A6 {
 //    ptext<char, 0x22> name; // Should begin with "PSO/"
 //    le_uint16_t type = 0;
 //    ptext<char, 0x10> filename;
-//    le_uint32_t file_size = 0;
-//} __packed__;
+//    uint32_t file_size = 0;
+//} PACKED;
 //
 //// Curiously, PSO XB expects an extra 0x18 bytes at the end of this command, but
 //// those extra bytes are unused, and the client does not fail if they're
 //// omitted.
 //struct S_OpenFile_XB_44_A6 : S_OpenFile_PC_V3_44_A6 {
 //    parray<uint8_t, 0x18> unused2;
-//} __packed__;
+//} PACKED;
 //
 //struct S_OpenFile_BB_44_A6 {
 //    parray<uint8_t, 0x22> unused;
 //    le_uint16_t type = 0;
 //    ptext<char, 0x10> filename;
-//    le_uint32_t file_size = 0;
+//    uint32_t file_size = 0;
 //    ptext<char, 0x18> name;
-//} __packed__;
+//} PACKED;
 
 
 // 44 (S->C): Open file for download
@@ -1302,7 +1302,7 @@ typedef struct bb_quest_file {
 // > 0xFF so the flag is essentially meaningless)
 //struct C_OpenFileConfirmation_44_A6 {
 //    ptext<char, 0x10> filename;
-//} __packed__;
+//} PACKED;
 
 // 45: 无效或未解析指令
 // 46: 无效或未解析指令
@@ -1363,6 +1363,101 @@ typedef struct bb_quest_file {
 // 加入游戏时，客户端将物品ID顺序分配为（0x00010000 +（0x00200000 * lobby_client_id）+ x）。
 // 因此，例如，Player 3的第8个物品的ID将变为0x00610007。玩家上次所在游戏的物品ID将出现在他们的库存中。
 // 注意：如果在接收到该命令时，客户端正在游戏中，则客户端发送的库存仅包括在客户端崩溃时不会消失的物品！实际上，它反映了玩家角色的保存状态，而不是实时状态。
+
+//struct PlayerRecordsEntry_DC {
+//    /* 00 */ uint32_t client_id;
+//    /* 04 */ dc_c_rank_records_t challenge;
+//    /* A4 */ battle_records_t battle;
+//    /* BC */
+//} PACKED;
+//
+//struct PlayerRecordsEntry_PC {
+//    /* 00 */ uint32_t client_id;
+//    /* 04 */ pc_c_rank_records_t challenge;
+//    /* DC */ battle_records_t battle;
+//    /* F4 */
+//} PACKED;
+//
+//struct PlayerRecordsEntry_V3 {
+//    /* 0000 */ uint32_t client_id;
+//    /* 0004 */ PlayerRecordsV3_Challenge<false> challenge;
+//    /* 0104 */ battle_records_t battle;
+//    /* 011C */
+//} PACKED;
+//
+//struct PlayerRecordsEntry_BB {
+//    /* 0000 */ uint32_t client_id;
+//    /* 0004 */ PlayerRecordsBB_Challenge challenge;
+//    /* 0144 */ battle_records_t battle;
+//    /* 015C */
+//} PACKED;
+
+//struct C_CharacterData_DCv1_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataDCPCV3 disp;
+//    /* 041C */
+//} PACKED;
+//
+//struct C_CharacterData_DCv2_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataDCPCV3 disp;
+//    /* 041C */ PlayerRecordsEntry_DC records;
+//    /* 04D8 */ ChoiceSearchConfig<le_uint16_t> choice_search_config;
+//    /* 04F0 */
+//} PACKED;
+//
+//struct C_CharacterData_PC_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataDCPCV3 disp;
+//    /* 041C */ PlayerRecordsEntry_PC records;
+//    /* 0510 */ ChoiceSearchConfig<le_uint16_t> choice_search_config;
+//    /* 0528 */ parray<uint32_t, 0x1E> blocked_senders;
+//    /* 05A0 */ uint32_t auto_reply_enabled;
+//    // The auto-reply message can be up to 0x200 characters. If it's shorter than
+//    // that, the client truncates the command after the first null value (rounded
+//    // up to the next 4-byte boundary).
+//    /* 05A4 */ char16_t auto_reply[0];
+//} PACKED;
+//
+//struct C_CharacterData_V3_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataDCPCV3 disp;
+//    /* 041C */ PlayerRecordsEntry_V3 records;
+//    /* 0538 */ ChoiceSearchConfig<le_uint16_t> choice_search_config;
+//    /* 0550 */ ptext<char, 0xAC> info_board;
+//    /* 05FC */ parray<uint32_t, 0x1E> blocked_senders;
+//    /* 0674 */ uint32_t auto_reply_enabled;
+//    // The auto-reply message can be up to 0x200 bytes. If it's shorter than that,
+//    // the client truncates the command after the first zero byte (rounded up to
+//    // the next 4-byte boundary).
+//    /* 0678 */ char auto_reply[0];
+//} PACKED;
+//
+//struct C_CharacterData_GC_Ep3_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataDCPCV3 disp;
+//    /* 041C */ PlayerRecordsEntry_V3 records;
+//    /* 0538 */ ChoiceSearchConfig<le_uint16_t> choice_search_config;
+//    /* 0550 */ ptext<char, 0xAC> info_board;
+//    /* 05FC */ parray<uint32_t, 0x1E> blocked_senders;
+//    /* 0674 */ uint32_t auto_reply_enabled;
+//    /* 0678 */ ptext<char, 0xAC> auto_reply;
+//    /* 0724 */ Episode3::PlayerConfig ep3_config;
+//    /* 2A74 */
+//} PACKED;
+//
+//struct C_CharacterData_BB_61_98 {
+//    /* 0000 */ inventory_t inv;
+//    /* 034C */ PlayerDispDataBB disp;
+//    /* 04DC */ PlayerRecordsEntry_BB records;
+//    /* 0638 */ ChoiceSearchConfig<le_uint16_t> choice_search_config;
+//    /* 0650 */ ptext<char16_t, 0xAC> info_board;
+//    /* 07A8 */ parray<uint32_t, 0x1E> blocked_senders;
+//    /* 0820 */ uint32_t auto_reply_enabled;
+//    // Like on V3, the client truncates the command if the auto reply message is
+//    // shorter than 0x200 bytes.
+//    /* 082C */ char16_t auto_reply[0];
+//} PACKED;
 
 // 62: Target command
 // Internal name: SndPsoData2
@@ -1572,10 +1667,16 @@ typedef struct dcnte_lobby_join {
 } PACKED dcnte_lobby_join_pkt;
 
 // 65 (S->C): Add player to game
+// Internal name: RcvBurstGame
 // When a player joins an existing game, the joining player receives a 64
 // command (described above), and the players already in the game receive a 65
 // command containing only the joining player's data.
-// Header flag = entry count (always 1 for 65 and 68; up to 0x0C for 67)
+
+
+
+
+
+
 // 67 (S->C): Join lobby
 // This is sent to the joining player; the other players receive a 68 instead.
 // Same format as 65 command, but used for lobbies instead of games.
@@ -2849,11 +2950,11 @@ typedef struct patch_return {
 //    ItemIDT parent_category_id = 0; // 0 for top-level categories
 //    ItemIDT category_id = 0;
 //    ptext<CharT, 0x1C> text;
-//} __packed__;
+//} PACKED;
 
-//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<le_uint32_t, char> { } __packed__;
-//struct S_ChoiceSearchEntry_V3_C0 : S_ChoiceSearchEntry<le_uint16_t, char> { } __packed__;
-//struct S_ChoiceSearchEntry_PC_BB_C0 : S_ChoiceSearchEntry<le_uint16_t, char16_t> { } __packed__;
+//struct S_ChoiceSearchEntry_DC_C0 : S_ChoiceSearchEntry<uint32_t, char> { } PACKED;
+//struct S_ChoiceSearchEntry_V3_C0 : S_ChoiceSearchEntry<le_uint16_t, char> { } PACKED;
+//struct S_ChoiceSearchEntry_PC_BB_C0 : S_ChoiceSearchEntry<le_uint16_t, char16_t> { } PACKED;
 
 typedef struct dc_cs_entry {
     dc_pkt_hdr_t hdr;

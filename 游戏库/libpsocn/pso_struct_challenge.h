@@ -32,37 +32,15 @@
 #pragma pack(push, 1) 
 #endif
 
-/* 256 */
-typedef struct {
-    uint16_t title_color;
-    uint8_t unknown_u0[2];
-    uint32_t times_ep1_online[9];
-    uint32_t times_ep2_online[5];
-    uint32_t times_ep1_offline[9];
-    uint8_t unknown_g3[4];
-    uint16_t grave_deaths;
-    uint8_t unknown_u4[2];
-    uint32_t grave_coords_time[5];
-    char grave_team[0x14];
-    char grave_message[0x20];
-    uint8_t unknown_m5[4];
-    uint32_t unknown_t6[9];
-    char rank_title[0x0C];
-    uint8_t unknown_l7[0x1C];
-} PlayerRecordsV3_Challenge_t;
-
-static int dsadasda4 = sizeof(PlayerRecordsV3_Challenge_t);
-
-typedef struct PlayerRecords_Battle {
-    uint16_t place_counts[4];
-    uint16_t disconnect_count;
-    uint8_t unknown_a1[0x0E];
-} PlayerRecords_Battle_t;
-
-static int dsadasda6 = sizeof(PlayerRecords_Battle_t);
+/* 24 */
+typedef struct battle_records {
+    uint16_t place_counts[4];//8
+    uint16_t disconnect_count;//2
+    uint8_t unknown_a1[0x0E];//14
+} PACKED battle_records_t;
 
 /* 320 */
-typedef struct {
+typedef struct bb_challenge_records {
     uint16_t title_color;
     uint8_t unknown_u0[2];
     uint32_t times_ep1_online[9];
@@ -78,23 +56,22 @@ typedef struct {
     uint16_t string[18];
     uint16_t rank_title[12];
     uint32_t battle[7];
-} PlayerRecordsBB_Challenge_t;
-
-static int dsadasda5 = sizeof(PlayerRecordsBB_Challenge_t);
+} PACKED bb_challenge_records_t;
 
 /* BB挑战模式数据结构 TODO 未完成 结构大小348 数据344*/
 typedef struct psocn_bb_c_rank_data {
     uint32_t client_id;
-    union {
-        uint8_t all[0x0158];
-        PlayerRecordsBB_Challenge_t part;
-    } c_rank;
+    union bb_c_rank_data {
+        uint8_t data[344];
+        struct record_data {
+            bb_challenge_records_t crank;
+            battle_records_t battle;
+        };
+    };
 } PACKED psocn_bb_c_rank_data_t;
 
-static int bb_c_size = sizeof(psocn_bb_c_rank_data_t);
-
 /* 160 */
-typedef struct {
+typedef struct dc_challenge_records {
     uint16_t title_color;
     uint8_t unknown_u0[2];
     char rank_title[0x0C];
@@ -106,14 +83,13 @@ typedef struct {
     char grave_message[0x18];
     uint32_t times_ep1_offline[9];
     uint8_t unknown_l4[4];
-} PlayerRecordsDC_Challenge_t;
+} PACKED dc_challenge_records_t;
 
-static int dsadasda2 = sizeof(PlayerRecordsDC_Challenge_t);
-
+/* 188 */
 typedef struct psocn_v2_c_rank_data {
     uint32_t client_id;
     union {
-        uint8_t all[0xB8];
+        uint8_t data[184];
         struct {
             uint32_t unk1;
             char string[0x0C];
@@ -132,7 +108,7 @@ typedef struct psocn_v2_c_rank_data {
 static int v2_c_size = sizeof(psocn_v2_c_rank_data_t);
 
 /* 216 */
-typedef struct {
+typedef struct pc_challenge_records {
     uint16_t title_color;
     uint8_t unknown_u0[2];
     uint16_t rank_title[0x0C];
@@ -144,14 +120,12 @@ typedef struct {
     uint16_t grave_message[0x18];
     uint32_t times_ep1_offline[9];
     uint8_t unknown_l4[4];
-} PlayerRecordsPC_Challenge_t;
-
-static int dsadasda3 = sizeof(PlayerRecordsPC_Challenge_t);
+} PACKED pc_challenge_records_t;
 
 typedef struct psocn_pc_c_rank_data {
     uint32_t client_id;
     union {
-        uint8_t all[0xF0];
+        uint8_t data[0xF0];
         struct {
             uint32_t unk1;
             uint16_t string[0x0C];
@@ -169,10 +143,29 @@ typedef struct psocn_pc_c_rank_data {
 
 static int pc_c_size = sizeof(psocn_pc_c_rank_data_t);
 
+/* 256 */
+typedef struct v3_challenge_records {
+    uint16_t title_color;
+    uint8_t unknown_u0[2];
+    uint32_t times_ep1_online[9];
+    uint32_t times_ep2_online[5];
+    uint32_t times_ep1_offline[9];
+    uint8_t unknown_g3[4];
+    uint16_t grave_deaths;
+    uint8_t unknown_u4[2];
+    uint32_t grave_coords_time[5];
+    char grave_team[0x14];
+    char grave_message[0x20];
+    uint8_t unknown_m5[4];
+    uint32_t unknown_t6[9];
+    char rank_title[0x0C];
+    uint8_t unknown_l7[0x1C];
+} PACKED v3_challenge_records_t;
+
 typedef struct psocn_v3_c_rank_data {
     uint32_t client_id;
     union {
-        uint8_t all[0x0118];
+        uint8_t data[0x0118];
         struct {
             uint32_t unk1;          /* Flip the words for dc/pc! */
             uint32_t times_ep1_offline[9];

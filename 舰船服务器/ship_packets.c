@@ -10954,80 +10954,80 @@ static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
         pkt->entries[entry].client_id = LE32(s->client_id);
-        memcpy(pkt->entries[entry].c_rank.all, s->c_rank, 0x0158);
+        memcpy(pkt->entries[entry].data, s->c_rank, 0x0158);
         break;
 
     case CLIENT_VERSION_DCV2:
         pkt->entries[entry].client_id = LE32(s->client_id);
 
-        memset(pkt->entries[entry].c_rank.all, 0, 0x0158);
+        memset(pkt->entries[entry].data, 0, 0x0158);
 
-        pkt->entries[entry].c_rank.part.title_color = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
+        pkt->entries[entry].crank.title_color = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
             (s->pl->v2.chal_data.c_rank.part.unk1 << 16);
 
         /* Copy the rank over. */
-        memcpy(pkt->entries[entry].c_rank.part.string, s->pl->v2.chal_data.c_rank.part.string,
+        memcpy(pkt->entries[entry].crank.string, s->pl->v2.chal_data.c_rank.part.string,
             0x0C);
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].crank.times_ep1_online,
             s->pl->v2.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.battle,
+        memcpy(pkt->entries[entry].crank.battle,
             s->pl->v2.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].crank.unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].crank.unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].crank.unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 12,
+        memcpy(pkt->entries[entry].crank.unk3 + 12,
             s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_PC:
         pkt->entries[entry].client_id = LE32(s->client_id);
 
-        memset(pkt->entries[entry].c_rank.all, 0, 0x0158);
+        memset(pkt->entries[entry].data, 0, 0x0158);
 
-        pkt->entries[entry].c_rank.part.title_color = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
+        pkt->entries[entry].crank.title_color = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
             (s->pl->pc.chal_data.c_rank.part.unk1 << 16);
 
         /* Copy the rank over. */
         for (j = 0; j < 0x0C; ++j) {
-            pkt->entries[entry].c_rank.part.string[j] =
+            pkt->entries[entry].crank.string[j] =
                 (char)LE16(s->pl->pc.chal_data.c_rank.part.string[j]);
         }
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].c_rank.part.times_ep1_offline, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
+        memcpy(pkt->entries[entry].crank.times_ep1_offline, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
             9 * sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.battle, s->pl->pc.chal_data.c_rank.part.battle,
+        memcpy(pkt->entries[entry].crank.battle, s->pl->pc.chal_data.c_rank.part.battle,
             7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].c_rank.part.unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].crank.unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].crank.unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].crank.unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].c_rank.part.unk3 + 12,
+        memcpy(pkt->entries[entry].crank.unk3 + 12,
             s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_BB:
         //DBG_LOG("copy_c_rank_bb");
         pkt->entries[entry].client_id = LE32(s->client_id);
-        memcpy(pkt->entries[entry].c_rank.all, s->c_rank, 0x0158);
+        memcpy(pkt->entries[entry].data, s->c_rank, 0x0158);
         break;
 
     default:
         pkt->entries[entry].client_id = LE32(s->client_id);
-        memset(pkt->entries[entry].c_rank.all, 0, 0x0158);
+        memset(pkt->entries[entry].data, 0, 0x0158);
     }
 }
 
