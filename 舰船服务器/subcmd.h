@@ -2156,14 +2156,14 @@ typedef struct subcmd_bb_Unknown_6x95 {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 // 0x97: Unknown (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x97 {
+typedef struct subcmd_bb_ch_game_cancel {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t unused1;
-    uint32_t unknown_a1; // Must be 0 or 1
+    uint32_t mode; // Must be 0 or 1
     uint32_t unused2;
     uint32_t unused3;
-} PACKED subcmd_bb_Unknown_6x97_t;
+} PACKED subcmd_bb_ch_game_cancel_t;
 
 // 0x98: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -2219,12 +2219,13 @@ typedef struct subcmd_bb_Unknown_6x9C {
     uint32_t unknown_a1;
 } PACKED subcmd_bb_Unknown_6x9C_t;
 
-// 0x9D: Unknown (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x9D {
+// 0x9D: 挑战模式结束 移除玩家模式flag (不支持 Episode 3)
+typedef struct subcmd_bb_ch_game_failure {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint32_t client_id2;
-} PACKED subcmd_bb_Unknown_6x9D_t;
+    uint16_t client_id;
+    uint16_t unk;
+} PACKED subcmd_bb_ch_game_failure_t;
 
 // 0x9E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -3064,13 +3065,14 @@ int subcmd_send_lobby_item(lobby_t* l, subcmd_itemreq_t* req, const uint32_t ite
 ////Blue Burst
 
 /* 处理 BB 0x62 来自客户端的数据包. */
-int subcmd_bb_handle_62(ship_client_t *c, subcmd_bb_pkt_t *pkt);
+int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t *pkt);
 
 /* 处理 BB 0x6D 来自客户端的数据包. */
-int subcmd_bb_handle_6D(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt);
 
 /* 处理 BB 0x60 来自客户端的数据包. */
-int subcmd_bb_handle_60(ship_client_t* c, subcmd_bb_pkt_t* pkt);
+int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt);
+int subcmd_bb_handle_60_mode(ship_client_t* src, subcmd_bb_pkt_t* pkt);
 
 /////////////////////////////////////////////////////////////////////////////
 ////Episode 3

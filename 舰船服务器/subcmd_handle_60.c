@@ -1047,9 +1047,6 @@ int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
-    //    src->guildcard, item_id, mag_id);
-
     errno_t err = mag_bb_feed(src, pkt->mag_item_id, pkt->fed_item_id);
 
     if (err) {
@@ -2587,8 +2584,6 @@ int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
 
     src->mode = pkt->mode;
 
-    UDONE_CSPD(pkt->hdr.pkt_type, src->version, pkt);
-
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -2638,6 +2633,39 @@ int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     display_packet(pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_ch_game_cancel_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //src->mode = pkt->mode;
+
+    ///* Send the packet to every connected client. */
+    //for (int i = 0; i < l->max_clients; ++i) {
+    //    if (l->clients[i] && l->clients[i] != src) {
+    //        l->clients[i]->mode = pkt->mode;
+    //    }
+    //}
+
+    //UDONE_CSPD(pkt->hdr.pkt_type, src->version, pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2702,6 +2730,28 @@ int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
 //[2023年07月06日 13:16:42:718] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
 //[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
 //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_ch_game_failure_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3320,13 +3370,15 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_PLACE_TRAP             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
     { SUBCMD60_ARROW_CHANGE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
     { SUBCMD60_PLAYER_DIED            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
-    //{ SUBCMD60_UNKNOW_CH_8A           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
+    { SUBCMD60_CH_GAME_SELECT         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
     { SUBCMD60_OVERRIDE_TECH_LEVEL    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
 
     //cmd_type 90 - 9F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TIMED_SWITCH_ACTIVATED , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
+    { SUBCMD60_CH_GAME_CANCEL         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
     { SUBCMD60_CHANGE_STAT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
     { SUBCMD60_UNKNOW_9C              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
+    { SUBCMD60_CH_GAME_FINISHED       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9D_bb },
 
     //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
@@ -3395,7 +3447,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
 #ifdef DEBUG_60
 
-    DBG_LOG("玩家 0x%02X 指令: 0x%X", hdr_type, type);
+    DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
 
 #endif // DEBUG_60
 
@@ -3407,6 +3459,8 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
     /* 目标客户端已离线，将不再发送数据包. */
     if (!dest) {
         DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
     }
 
     subcmd_bb_60size_check(src, pkt);

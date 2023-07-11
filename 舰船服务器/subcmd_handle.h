@@ -33,5 +33,6 @@ typedef struct subcmd_handle_func {
 
 // 使用函数指针直接调用相应的处理函数
 subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version);
+subcmd_handle_t subcmd_get_handler_mode(int cmd_type, int subcmd_type, int version);
 
 #endif /* !SUBCMD_HANDLE_H */

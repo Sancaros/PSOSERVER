@@ -123,6 +123,9 @@
     <ClCompile Include="records.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="subcmd_handle_mode.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">

@@ -241,7 +241,7 @@
 #define SUBCMD60_UNKNOW_87                     0x87
 #define SUBCMD60_ARROW_CHANGE                  0x88
 #define SUBCMD60_PLAYER_DIED                   0x89
-#define SUBCMD60_UNKNOW_CH_8A                  0x8A
+#define SUBCMD60_CH_GAME_SELECT                0x8A
 #define SUBCMD60_UNKNOW_8B                     0x8B
 #define SUBCMD60_UNKNOW_8C                     0x8C
 #define SUBCMD60_OVERRIDE_TECH_LEVEL           0x8D //释放法术 TODO 未完成法术有效性分析
@@ -254,7 +254,7 @@
 #define SUBCMD60_WARP                          0x94
 #define SUBCMD60_UNKNOW_95                     0x95
 #define SUBCMD60_UNKNOW_96                     0x96
-#define SUBCMD60_UNKNOW_97                     0x97
+#define SUBCMD60_CH_GAME_CANCEL                0x97
 #define SUBCMD60_UNKNOW_98                     0x98
 #define SUBCMD60_UNKNOW_99                     0x99
 /////////////////////////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 #define SUBCMD60_UNKNOW_9B                     0x9B
 #define SUBCMD60_UNKNOW_9C                     0x9C
-#define SUBCMD60_UNKNOW_9D                     0x9D
+#define SUBCMD60_CH_GAME_FINISHED                     0x9D
 #define SUBCMD60_UNKNOW_9E                     0x9E
 #define SUBCMD60_GAL_GRYPHON_ACT               0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
 #define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */

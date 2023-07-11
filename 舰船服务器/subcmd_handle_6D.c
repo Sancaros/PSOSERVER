@@ -315,8 +315,11 @@ int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         pthread_mutex_unlock(&l->mutex);
         return 0;
     }
+#ifdef DEBUG
 
-    DBG_LOG("GC %u 目标客户端-> %d GC %u 0x%02X 指令: 0x%02X",src->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
+    DBG_LOG("GC %u 目标客户端-> %d GC %u 0x%02X 指令: 0x%02X", src->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
+
+#endif // DEBUG
 
     //subcmd_bb_626Dsize_check(c, pkt);
 

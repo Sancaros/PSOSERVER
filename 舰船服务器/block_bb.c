@@ -169,6 +169,8 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
+    c->mode = 0;
+
     /* 备份临时数据 TODO BB版本未完成 */
     if (c->version != CLIENT_VERSION_BB &&
         (c->flags & CLIENT_FLAG_AUTO_BACKUP)) {
@@ -905,6 +907,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     c->infoboard = (char*)c->pl->bb.infoboard;
     c->records.bb = c->pl->bb.records_data;
+    c->records.bb.challenge.title_color = 0x7C00;//TODO 这里需要一个判断 判断玩家头衔等级 并分配颜色
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */
@@ -2497,6 +2500,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 static int process_bb_challenge_01DF(ship_client_t* c, bb_challenge_01df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    lobby_t* l = c->cur_lobby;
 
     if (len != LE16(0x000C)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2504,7 +2508,16 @@ static int process_bb_challenge_01DF(ship_client_t* c, bb_challenge_01df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("挑战模式开始 目标GC %u", c->guildcard);
+
+    /* Send the packet to every connected client. */
+    for (int i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
+            l->clients[i]->mode = c->mode;
+            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", l->clients[i]->guildcard, l->clients[i]->mode);
+
+        }
+    }
 
     display_packet((uint8_t*)pkt, len);
     return 0;
@@ -2740,6 +2753,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0060 96*/
     case GAME_COMMAND0_TYPE:
+        if(c->mode)
+            return subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
+
         return subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
 
         /* 0x0061 97*/

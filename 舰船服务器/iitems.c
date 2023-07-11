@@ -319,9 +319,9 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
     }
 
     ERR_LOG("未从背包中找到ID %u 物品", item_id);
-    for (x = 0; x < inv->item_count; x++) {
-        print_iitem_data(&inv->iitems[x], x, 5);
-    }
+    //for (x = 0; x < inv->item_count; x++) {
+    //    print_iitem_data(&inv->iitems[x], x, 5);
+    //}
 
     return -1;
 }
@@ -355,9 +355,9 @@ size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item) {
     }
 
     ERR_LOG("未从背包中找到ID 0x0%04X 物品", pid);
-    for (x = 0; x < inv->item_count; x++) {
-        print_iitem_data(&inv->iitems[x], x, 5);
-    }
+    //for (x = 0; x < inv->item_count; x++) {
+    //    print_iitem_data(&inv->iitems[x], x, 5);
+    //}
 
     return -1;
 }
@@ -373,9 +373,9 @@ size_t find_iitem_pid(inventory_t* inv, iitem_t* item) {
     }
 
     ERR_LOG("未从背包中找到ID 0x0%04X 物品", pid);
-    for (x = 0; x < inv->item_count; x++) {
-        print_iitem_data(&inv->iitems[x], x, 5);
-    }
+    //for (x = 0; x < inv->item_count; x++) {
+    //    print_iitem_data(&inv->iitems[x], x, 5);
+    //}
 
     return -1;
 }
