@@ -2985,12 +2985,14 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+
     if (src->mode) {
         send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
             "挑战模式和对战模式."));
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return 0;
     }
+
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {

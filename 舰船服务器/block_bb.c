@@ -2624,7 +2624,13 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
 
-    DBG_LOG("挑战指令 0x % 04X % s % u字节", type, c_cmd_name(type, 0), len);
+#ifdef DEBUG
+
+    DBG_LOG("挑战指令 0x%04X %s %u字节", type, c_cmd_name(type, 0), len);
+
+#endif // DEBUG
+
+    DBG_LOG("挑战指令 0x%04X %s %u字节", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_CHALLENGE_01DF:
