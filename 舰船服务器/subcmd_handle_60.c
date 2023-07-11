@@ -3458,7 +3458,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
     /* 目标客户端已离线，将不再发送数据包. */
     if (!dest) {
-        DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
+        //DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
         pthread_mutex_unlock(&l->mutex);
         return 0;
     }

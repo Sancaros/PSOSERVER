@@ -2930,7 +2930,27 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
             "挑战模式和对战模式."));
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+        iitem_t ciitem = {0};//需要一个临时的背包？
+
+
+
+        if (ciitem.data.item_id == 0xFFFFFFFF) {
+            ciitem.data.item_id = generate_item_id(l, EMPTY_STRING);
+        }
+
+        /* We have the item... Add it to the lobby's inventory. */
+        if (!(it = add_litem_locked(l, &ciitem))) {
+            /* *Gulp* The lobby is probably toast... At least make sure this user is
+               still (mostly) safe... */
+            ERR_LOG("无法将物品添加至游戏房间!");
+            return -1;
+        }
+
+
+
+        return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it);
+
     }
 
     iitem_t iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
