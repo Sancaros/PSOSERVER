@@ -271,7 +271,7 @@ typedef struct psocn_bb_db_char {
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172
     uint16_t infoboard[0x00AC];//172
-    bb_challenge_records_t challenge_data;
+    bb_challenge_records_t challenge;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;

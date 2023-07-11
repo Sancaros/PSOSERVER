@@ -130,7 +130,7 @@ void convert_dc_to_bb_challenge(const dc_challenge_records_t* rec_dc, bb_challen
 void convert_bb_to_dc_challenge(const bb_challenge_records_t* rec_bb, dc_challenge_records_t* rec_dc) {
     rec_dc->title_color = rec_bb->title_color;
     memcpy(rec_dc->unknown_u0, rec_bb->unknown_u0, sizeof(rec_dc->unknown_u0));
-    char* decrypted_rank_title = decrypt_challenge_rank_text(rec_bb->rank_title, sizeof(rec_bb->rank_title) / sizeof(uint16_t));
+    char* decrypted_rank_title = decrypt_challenge_rank_text((char*)rec_bb->rank_title, sizeof(rec_bb->rank_title) / sizeof(uint16_t));
     memcpy(rec_dc->rank_title, encrypt_challenge_rank_text(decrypted_rank_title, strlen(decrypted_rank_title)), sizeof(rec_dc->rank_title));
     free(decrypted_rank_title);
     memcpy(rec_dc->times_ep1_online, rec_bb->times_ep1_online, sizeof(rec_dc->times_ep1_online));

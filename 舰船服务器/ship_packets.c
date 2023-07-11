@@ -10663,29 +10663,29 @@ static void copy_record_to_gc(gc_records_update_pkt *pkt, int entry,
 
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_V3_RECORDS_DATA);
 
-            pkt->entries[entry].challenge.title_color = (src->pl->v2.records_data.challenge.title_color >> 8) |
-                (src->pl->v2.records_data.challenge.title_color << 8);
+            pkt->entries[entry].challenge.title_color = (src->pl->v2.records.challenge.title_color >> 8) |
+                (src->pl->v2.records.challenge.title_color << 8);
 
             /* Copy the rank over. */
-            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v2.records_data.challenge.rank_title,
+            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v2.records.challenge.rank_title,
                    0x0C);
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].challenge.times_ep1_offline,
-                   src->pl->v2.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+                   src->pl->v2.records.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].challenge.battle,
-                   src->pl->v2.records_data.challenge.battle, 7 * sizeof(uint32_t));
+                   src->pl->v2.records.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records_data.challenge.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(&pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->v2.records_data.challenge.times_ep1_online,
+            memcpy(&pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->v2.records.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(&pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->v2.records_data.challenge.times_ep1_online[2],
+            memcpy(&pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->v2.records.challenge.times_ep1_online[2],
                    sizeof(uint32_t));
             memcpy(&pkt->entries[entry].challenge.times_ep1_online[4],
-                src->pl->v2.records_data.challenge.times_ep1_online[2], sizeof(uint32_t));
+                src->pl->v2.records.challenge.times_ep1_online[2], sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_PC:
@@ -10693,31 +10693,31 @@ static void copy_record_to_gc(gc_records_update_pkt *pkt, int entry,
 
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_V3_RECORDS_DATA);
 
-            pkt->entries[entry].challenge.title_color = (src->pl->pc.records_data.challenge.title_color >> 8) |
-                (src->pl->pc.records_data.challenge.title_color << 8);
+            pkt->entries[entry].challenge.title_color = (src->pl->pc.records.challenge.title_color >> 8) |
+                (src->pl->pc.records.challenge.title_color << 8);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
                 pkt->entries[entry].challenge.rank_title[j] =
-                    (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
+                    (char)LE16(src->pl->pc.records.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records_data.challenge.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->pc.records_data.challenge.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->pc.records.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->pc.records_data.challenge.times_ep1_online[2],
+            memcpy(pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->pc.records.challenge.times_ep1_online[2],
                    sizeof(uint32_t));
             memcpy(pkt->entries[entry].challenge.times_ep1_online[4],
-                   src->pl->pc.records_data.challenge.times_ep1_online[2], sizeof(uint32_t));
+                   src->pl->pc.records.challenge.times_ep1_online[2], sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_BB:
@@ -10751,33 +10751,33 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_DC_RECORDS_DATA);
 
             /* This is a bit hackish.... */
-            pkt->entries[entry].challenge.title_color = src->pl->pc.records_data.challenge.title_color;
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records_data.challenge.times_ep1_online, 9);
+            pkt->entries[entry].challenge.title_color = src->pl->pc.records.challenge.title_color;
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records.challenge.times_ep1_online, 9);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
                 pkt->entries[entry].challenge.rank_title[j] =
-                    (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
+                    (char)LE16(src->pl->pc.records.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
             memcpy(&pkt->entries[entry].challenge.grave_unk4,
-                   &src->pl->pc.records_data.challenge.grave_unk4, 24);
+                   &src->pl->pc.records.challenge.grave_unk4, 24);
 
             /* Convert the team name */
             in = 40;
             out = 20;
-            inptr = (char *)src->pl->pc.records_data.challenge.grave_team;
+            inptr = (char *)src->pl->pc.records.challenge.grave_team;
             outptr = pkt->entries[entry].challenge.grave_team;
 
-            if(src->pl->pc.records_data.challenge.grave_team[1] == LE16('J')) {
+            if(src->pl->pc.records.challenge.grave_team[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10787,10 +10787,10 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
             /* Convert the message */
             in = 48;
             out = 24;
-            inptr = (char *)src->pl->pc.records_data.challenge.grave_message;
+            inptr = (char *)src->pl->pc.records.challenge.grave_message;
             outptr = pkt->entries[entry].challenge.grave_message;
 
-            if(src->pl->pc.records_data.challenge.grave_message[1] == LE16('J')) {
+            if(src->pl->pc.records.challenge.grave_message[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10806,23 +10806,23 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
 
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_DC_RECORDS_DATA);
 
-            pkt->entries[entry].challenge.title_color = (src->pl->v3.records_data.challenge.title_color >> 8) |
-                (src->pl->v3.records_data.challenge.title_color << 8);
+            pkt->entries[entry].challenge.title_color = (src->pl->v3.records.challenge.title_color >> 8) |
+                (src->pl->v3.records.challenge.title_color << 8);
 
             /* Copy the rank over. */
-            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v3.records_data.challenge.rank_title,
+            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v3.records.challenge.rank_title,
                    0x0C);
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].challenge.times_ep1_offline,
-                   src->pl->v3.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+                   src->pl->v3.records.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].challenge.battle,
-                   src->pl->v3.records_data.challenge.battle, 7 * sizeof(uint32_t));
+                   src->pl->v3.records.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records_data.challenge.unknown_m5,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records.challenge.unknown_m5,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records_data.challenge.unknown_m5 + 4,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records.challenge.unknown_m5 + 4,
                    sizeof(uint32_t));
             break;
 
@@ -10857,33 +10857,33 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_PC_RECORDS_DATA);
 
             /* This is a bit hackish.... */
-            pkt->entries[entry].challenge.title_color = src->pl->v2.records_data.challenge.title_color;
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records_data.challenge.times_ep1_online, 9);
+            pkt->entries[entry].challenge.title_color = src->pl->v2.records.challenge.title_color;
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records.challenge.times_ep1_online, 9);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
                 pkt->entries[entry].challenge.rank_title[j] =
-                    LE16(src->pl->v2.records_data.challenge.rank_title[j]);
+                    LE16(src->pl->v2.records.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->v2.records_data.challenge.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->v2.records.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.battle, src->pl->v2.records_data.challenge.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->v2.records.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
             memcpy(&pkt->entries[entry].challenge.grave_unk4,
-                   &src->pl->v2.records_data.challenge.grave_unk4, 24);
+                   &src->pl->v2.records.challenge.grave_unk4, 24);
 
             /* Convert the team name */
             in = 20;
             out = 40;
-            inptr = src->pl->v2.records_data.challenge.grave_team;
+            inptr = src->pl->v2.records.challenge.grave_team;
             outptr = (char *)pkt->entries[entry].challenge.grave_team;
 
-            if(src->pl->v2.records_data.challenge.grave_team[1] == 'J') {
+            if(src->pl->v2.records.challenge.grave_team[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10893,10 +10893,10 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
             /* Convert the message */
             in = 24;
             out = 48;
-            inptr = src->pl->v2.records_data.challenge.grave_message;
+            inptr = src->pl->v2.records.challenge.grave_message;
             outptr = (char *)pkt->entries[entry].challenge.grave_message;
 
-            if(src->pl->v2.records_data.challenge.grave_message[1] == 'J') {
+            if(src->pl->v2.records.challenge.grave_message[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10912,25 +10912,25 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
 
             memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_PC_RECORDS_DATA);
 
-            pkt->entries[entry].challenge.title_color = (src->pl->v3.records_data.challenge.title_color >> 8) |
-                (src->pl->v3.records_data.challenge.title_color << 8);
+            pkt->entries[entry].challenge.title_color = (src->pl->v3.records.challenge.title_color >> 8) |
+                (src->pl->v3.records.challenge.title_color << 8);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
                 pkt->entries[entry].challenge.rank_title[j] =
-                    LE16(src->pl->v3.records_data.challenge.rank_title[j]);
+                    LE16(src->pl->v3.records.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
             memcpy(pkt->entries[entry].challenge.times_ep1_offline,
-                   src->pl->v3.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+                   src->pl->v3.records.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
             memcpy(pkt->entries[entry].challenge.battle,
-                   src->pl->v3.records_data.challenge.battle, 7 * sizeof(uint32_t));
+                   src->pl->v3.records.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... */
-            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records_data.challenge.unknown_m5,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records.challenge.unknown_m5,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records_data.challenge.unknown_m5 + 4,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records.challenge.unknown_m5 + 4,
                    sizeof(uint32_t));
             break;
 
@@ -10963,29 +10963,29 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
 
         memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_BB_RECORDS_DATA);
 
-        pkt->entries[entry].challenge.title_color = (src->pl->v2.records_data.challenge.title_color >> 16) |
-            (src->pl->v2.records_data.challenge.title_color << 16);
+        pkt->entries[entry].challenge.title_color = (src->pl->v2.records.challenge.title_color >> 16) |
+            (src->pl->v2.records.challenge.title_color << 16);
 
         /* Copy the rank over. */
-        memcpy(pkt->entries[entry].challenge.string, src->pl->v2.records_data.challenge.rank_title,
+        memcpy(pkt->entries[entry].challenge.string, src->pl->v2.records.challenge.rank_title,
             0x0C);
 
         /* Copy the times for the levels and battle stuff over... */
         memcpy(pkt->entries[entry].challenge.times_ep1_online,
-            src->pl->v2.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+            src->pl->v2.records.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
         memcpy(pkt->entries[entry].challenge.battle,
-            src->pl->v2.records_data.challenge.battle, 7 * sizeof(uint32_t));
+            src->pl->v2.records.challenge.battle, 7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].challenge.unk3, src->pl->v2.records_data.challenge.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3, src->pl->v2.records.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->v2.records_data.challenge.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->v2.records.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->v2.records_data.challenge.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->v2.records.challenge.times_ep1_online + 8,
             sizeof(uint32_t));
         memcpy(pkt->entries[entry].challenge.unk3 + 12,
-            src->pl->v2.records_data.challenge.times_ep1_online + 8, sizeof(uint32_t));
+            src->pl->v2.records.challenge.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_PC:
@@ -10993,30 +10993,30 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
 
         memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_BB_RECORDS_DATA);
 
-        pkt->entries[entry].challenge.title_color = src->pl->pc.records_data.challenge.title_color;
+        pkt->entries[entry].challenge.title_color = src->pl->pc.records.challenge.title_color;
 
         /* Copy the rank over. */
         for (j = 0; j < 0x0C; ++j) {
             pkt->entries[entry].challenge.string[j] =
-                (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
+                (char)LE16(src->pl->pc.records.challenge.rank_title[j]);
         }
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
+        memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records.challenge.times_ep1_offline,
             9 * sizeof(uint32_t));
-        memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
+        memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records.challenge.battle,
             7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].challenge.unk3, src->pl->pc.records_data.challenge.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3, src->pl->pc.records.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->pc.records_data.challenge.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->pc.records.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->pc.records_data.challenge.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->pc.records.challenge.times_ep1_online + 8,
             sizeof(uint32_t));
         memcpy(pkt->entries[entry].challenge.unk3 + 12,
-            src->pl->pc.records_data.challenge.times_ep1_online + 8, sizeof(uint32_t));
+            src->pl->pc.records.challenge.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_BB:
@@ -11528,7 +11528,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));
     memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(c->bb_pl->autoreply));
     memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(c->bb_pl->infoboard));
-    memcpy(&pkt->data.challenge_data, &c->bb_pl->challenge_data, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+    memcpy(&pkt->data.challenge_data, &c->bb_pl->challenge, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(c->bb_pl->tech_menu));
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
