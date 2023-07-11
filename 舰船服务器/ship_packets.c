@@ -11528,7 +11528,7 @@ int send_bb_full_char(ship_client_t *c) {
     memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));
     memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(c->bb_pl->autoreply));
     memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(c->bb_pl->infoboard));
-    memcpy(pkt->data.challenge_data, c->bb_pl->challenge_data, sizeof(c->bb_pl->challenge_data));
+    memcpy(&pkt->data.challenge_data, &c->bb_pl->challenge_data, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(c->bb_pl->tech_menu));
     memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);

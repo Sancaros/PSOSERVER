@@ -261,7 +261,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
             "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_RECORDS_CHALLENGE, gc, slot
         , name, class_name, char_data->character.dress_data.version);
 
-        psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
+        psocn_db_escape_str(&conn, query + strlen(query), (char*)&char_data->challenge_data,
             sizeof(char_data->challenge_data));
 
         strcat(query, "')");
@@ -290,7 +290,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
             "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_RECORDS_CHALLENGE, gc, slot
             , name, class_name, char_data->character.dress_data.version);
 
-        psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
+        psocn_db_escape_str(&conn, query + strlen(query), (char*)&char_data->challenge_data,
             sizeof(char_data->challenge_data));
 
         strcat(query, "')");

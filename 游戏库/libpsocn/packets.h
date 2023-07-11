@@ -4465,7 +4465,7 @@ typedef struct bb_options_update_pad_config {
 // 06ED
 typedef struct bb_options_update_tech_menu {
     bb_pkt_hdr_t hdr;
-    uint8_t tech_menu[0x28];
+    uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
 } PACKED bb_options_update_tech_menu_pkt;
 
 // 07ED
@@ -4477,8 +4477,8 @@ typedef struct bb_options_update_customize {
 // 08ED
 typedef struct bb_options_update_challenge_battle_config {
     bb_pkt_hdr_t hdr;
-    uint8_t challenge_battle_config[0x140];
-} PACKED bb_options_update_challenge_battle_config_pkt;
+    bb_challenge_records_t challenge;
+} PACKED bb_options_update_challenge_records_pkt;
 
 // EE: Trade cards (Episode 3)
 // This command has different forms depending on the header.flag value; the flag

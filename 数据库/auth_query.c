@@ -60,7 +60,7 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
     strcat(myquery, "', quest_data1 = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data1,
-        520);
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
 
     strcat(myquery, "', bank = '");
 
@@ -90,12 +90,12 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
     strcat(myquery, "', tech_menu = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech_menu,
-        40);
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
     strcat(myquery, "', quest_data2 = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data2,
-        88);
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `index` = %d", index);
 
@@ -147,19 +147,19 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
 
     memcpy((char*)&data->inv, row[0], PSOCN_STLENGTH_INV);
     memcpy((char*)&data->character, row[1], PSOCN_STLENGTH_BB_CHAR);
-    memcpy((char*)&data->quest_data1, row[2], 520);
+    memcpy((char*)&data->quest_data1, row[2], PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
     memcpy((char*)&data->bank, row[3], PSOCN_STLENGTH_BANK);
     memcpy((char*)&data->guildcard_desc, row[4], 88);
     memcpy((char*)&data->autoreply, row[5], 172);
     memcpy((char*)&data->infoboard, row[6], 172);
     memcpy((char*)&data->challenge_data, row[7], PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-    memcpy((char*)&data->tech_menu, row[8], 40);
-    memcpy((char*)&data->quest_data2, row[9], 88);
+    memcpy((char*)&data->tech_menu, row[8], PSOCN_STLENGTH_BB_DB_TECH_MENU);
+    memcpy((char*)&data->quest_data2, row[9], PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
     return 0;
 }
 
-int db_upload_character_default(psocn_bb_db_char_t* data, int index, char* class_name) {
+int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class_name) {
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -184,7 +184,7 @@ int db_upload_character_default(psocn_bb_db_char_t* data, int index, char* class
     strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data1,
-        520);
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
 
     strcat(myquery, "', '");
 
@@ -214,83 +214,14 @@ int db_upload_character_default(psocn_bb_db_char_t* data, int index, char* class
     strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech_menu,
-        40);
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
 
     strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data2,
-        88);
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
     strcat(myquery, "')");
-
-
-    DBG_LOG("%s", class_name);
-
-    //DBG_LOG("%s", class_name);
-
-    //char inv[PSOCN_STLENGTH_INV] = { 0 };
-    //char character[PSOCN_STLENGTH_BB_CHAR] = { 0 };
-    //char quest_data1[520] = { 0 };
-    //char bank[PSOCN_STLENGTH_BANK] = { 0 };
-    //char guildcard_desc[88] = { 0 };
-    //char autoreply[172] = { 0 };
-    //char infoboard[172] = { 0 };
-    //char challenge_data[PSOCN_STLENGTH_BB_CHALLENGE_RECORDS] = { 0 };
-    //char tech_menu[40] = { 0 };
-    //char quest_data2[88] = { 0 };
-
-    //DBG_LOG("%s", class_name);
-
-    //psocn_db_escape_str(&conn, inv, (char*)&data->inv,
-    //    PSOCN_STLENGTH_INV);
-
-    //DBG_LOG("%s", class_name);
-
-    //psocn_db_escape_str(&conn, character, (char*)&data->character,
-    //    PSOCN_STLENGTH_BB_CHAR);
-
-    //psocn_db_escape_str(&conn, quest_data1, (char*)&data->quest_data1,
-    //    520);
-
-    //psocn_db_escape_str(&conn, bank, (char*)&data->bank,
-    //    PSOCN_STLENGTH_BANK);
-
-    //psocn_db_escape_str(&conn, guildcard_desc, (char*)&data->guildcard_desc,
-    //    88);
-
-    //psocn_db_escape_str(&conn, autoreply, (char*)&data->autoreply,
-    //    172);
-
-    //psocn_db_escape_str(&conn, infoboard, (char*)&data->infoboard,
-    //    172);
-
-    //psocn_db_escape_str(&conn, challenge_data, (char*)&data->challenge_data,
-    //    PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-
-    //psocn_db_escape_str(&conn, tech_menu, (char*)&data->tech_menu,
-    //    40);
-
-    //psocn_db_escape_str(&conn, quest_data2, (char*)&data->quest_data2,
-    //    88);
-
-    //free_safe(data);
-
-    //memset(myquery, 0, sizeof(myquery));
-
-    //snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-    //    "class_name, "
-    //    "inv, character, quest_data1, bank, guildcard_desc, "
-    //    "autoreply, infoboard, challenge_data, tech_menu, quest_data2"
-    //    ") VALUES ("
-    //    "'%s', "
-    //    "'%s', '%s', '%s', '%s', '%s', "
-    //    "'%s', '%s', '%s', '%s', '%s'"
-    //    ")",
-    //    CHARACTER_DEFAULT,
-    //    class_name,
-    //    inv, character, quest_data1, bank, guildcard_desc, 
-    //    autoreply, infoboard, challenge_data, tech_menu, quest_data2
-    //);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法插入数据");

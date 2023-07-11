@@ -1621,21 +1621,21 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         /////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_pl->inv, &char_data.inv, PSOCN_STLENGTH_INV);
         memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-        memcpy(c->bb_pl->quest_data1, char_data.quest_data1, sizeof(c->bb_pl->quest_data1));
+        memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
         memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
         memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
         memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
-        memcpy(c->bb_pl->challenge_data, char_data.challenge_data, sizeof(c->bb_pl->challenge_data));
-        memcpy(c->bb_pl->tech_menu, char_data.tech_menu, sizeof(c->bb_pl->tech_menu));
-        memcpy(c->bb_pl->quest_data2, char_data.quest_data2, sizeof(c->bb_pl->quest_data2));
+        memcpy(&c->bb_pl->challenge_data, &char_data.challenge_data, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+        memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
         /////////////////////////////////////////////////////////////////////////////////////
         memcpy(&c->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
 
 
         /////////////////////////////////////////////////////////////////////////////////////
         c->bb_opts->option_flags = char_data.option_flags;
-        memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, sizeof(c->bb_opts->symbol_chats));
+        memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
         memcpy(c->bb_opts->shortcuts, char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
         memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
@@ -1738,15 +1738,15 @@ static int bb_process_config(ship_client_t* c, bb_options_update_customize_pkt* 
     return 0;
 }
 
-static int bb_process_ch_mode_config(ship_client_t* c, bb_options_update_challenge_battle_config_pkt* pkt) {
+static int bb_process_challenge_records(ship_client_t* c, bb_options_update_challenge_records_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
-    if (len != sizeof(bb_options_update_challenge_battle_config_pkt)) {
+    if (len != sizeof(bb_options_update_challenge_records_pkt)) {
         ERR_LOG("无效 BB 挑战模式更新数据包 (数据大小:%d)", len);
         return -1;
     }
 
-    memcpy(c->bb_pl->challenge_data, pkt->challenge_battle_config, sizeof(pkt->challenge_battle_config));
+    memcpy(&c->bb_pl->challenge_data, &pkt->challenge, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     return 0;
 }
 
@@ -2914,7 +2914,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x08ED 2285*/
     case BB_UPDATE_C_MODE_CONFIG:
-        return bb_process_ch_mode_config(c, (bb_options_update_challenge_battle_config_pkt*)pkt);
+        return bb_process_challenge_records(c, (bb_options_update_challenge_records_pkt*)pkt);
 
         /* 0x04E8 1256*/
     case BB_ADD_GUILDCARD_TYPE:

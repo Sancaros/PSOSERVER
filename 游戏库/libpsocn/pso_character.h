@@ -240,40 +240,40 @@ typedef struct psocn_bb_guildcard {
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
-    inventory_t inv;                              // 玩家数据表
-    psocn_bb_char_t character;                    // 玩家数据表               OK
-    char guildcard_string[16];                    // not saved
-    uint32_t option_flags;                        // account
-    uint8_t quest_data1[0x208];                   // 玩家任务数据表1          TODO
-    psocn_bank_t bank;                            // 玩家银行数据表           OK
-    psocn_bb_guildcard_t gc_data;                 // 玩家GC数据表部分         OK
-    uint32_t unk2;                                // not saved
-    uint8_t symbol_chats[0x04E0];                 // 选项数据表
-    uint8_t shortcuts[0x0A40];                    // 选项数据表
-    uint16_t autoreply[0x00AC];                   // 玩家数据表
-    uint16_t infoboard[0x00AC];                   // 玩家数据表
-    uint8_t unk3[0x001C];                         // not saved
-    uint8_t challenge_data[0x0140];               // 玩家挑战数据表           OK
-    uint8_t tech_menu[0x0028];                    // 玩家法术栏数据表         OK
-    uint8_t unk4[0x002C];                         // not saved
-    uint8_t quest_data2[0x0058];                  // 玩家任务数据表2
-    uint8_t unk1[276];                            // 276 - 264 = 12
-    bb_key_config_t key_cfg;                      // 选项数据表               OK
-    bb_guild_t guild_data;                        // GUILD数据表              OK
+    inventory_t inv;                                                         // 玩家数据表
+    psocn_bb_char_t character;                                               // 玩家数据表               OK
+    char guildcard_string[16];                                               // not saved
+    uint32_t option_flags;                                                   // account
+    uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          TODO
+    psocn_bank_t bank;                                                       // 玩家银行数据表           OK
+    psocn_bb_guildcard_t gc_data;                                            // 玩家GC数据表部分         OK
+    uint32_t unk2;                                                           // not saved
+    uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
+    uint8_t shortcuts[0x0A40];                                               // 选项数据表
+    uint16_t autoreply[0x00AC];                                              // 玩家数据表
+    uint16_t infoboard[0x00AC];                                              // 玩家数据表
+    uint8_t unk3[0x001C];                                                    // not saved
+    bb_challenge_records_t challenge_data;                                   // 玩家挑战数据表           OK
+    uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
+    uint8_t unk4[0x002C];                                                    // not saved
+    uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];                   // 玩家任务数据表2
+    uint8_t unk1[276];                                                       // 276 - 264 = 12
+    bb_key_config_t key_cfg;                                                 // 选项数据表               OK
+    bb_guild_t guild_data;                                                   // GUILD数据表              OK
 } PACKED psocn_bb_full_char_t;
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
     inventory_t inv;
     psocn_bb_char_t character;
-    uint8_t quest_data1[0x208];
+    uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];
     psocn_bank_t bank;
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172
     uint16_t infoboard[0x00AC];//172
-    uint8_t challenge_data[0x0140];
-    uint8_t tech_menu[0x0028];
-    uint8_t quest_data2[0x0058];
+    bb_challenge_records_t challenge_data;
+    uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
+    uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;
 
 // BB GC 数据单独实例文件 TODO 
@@ -301,7 +301,7 @@ typedef struct psocn_bb_db_opts {
     bb_key_config_t key_cfg; //420                          /* 键位设置数据 */
     uint32_t option_flags;
     uint8_t shortcuts[0x0A40];//2624
-    uint8_t symbol_chats[0x04E0];//1248
+    uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];//1248
     uint16_t guild_name[0x0010];//16
 } PACKED psocn_bb_db_opts_t;
 
