@@ -1297,76 +1297,86 @@ void cleanup_param_data(void) {
 }
 
 int load_bb_char_data(void) {
-    FILE* fp;
+    //FILE* fp;
     long templen = 0, len = 0;
-    errno_t err = 0;
+    //errno_t err = 0;
     int i;
-    char file[64];
-    psocn_bb_db_char_t* cur = { 0 };
+    //char file[64];
+    //psocn_bb_db_char_t* cur = { 0 };
 
-    const char* path = "System\\Player\\character";
+    //const char* path = "System\\Player\\character";
 
     /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
         memset(&default_chars[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
 
-        cur = &default_chars[i];
+        //cur = &default_chars[i];
 
-        sprintf(file, "%s\\%s", path, pso_class[i].class_file);
+        //sprintf(file, "%s\\%s", path, pso_class[i].class_file);
 
-        err = fopen_s(&fp , file, "rb");
+        //err = fopen_s(&fp , file, "rb");
 
-        if (err) {
-            ERR_LOG("初始 %s 角色数据文件不存在",
-                pso_class[i].class_file);
-            return -1;
-        }
+        //if (err) {
+        //    ERR_LOG("初始 %s 角色数据文件不存在",
+        //        pso_class[i].class_file);
+        //    return -1;
+        //}
 
         /* Skip over the parts we don't care about, then read in the data. */
-        fseek(fp, 0, SEEK_END);
-        templen = ftell(fp);
-        fseek(fp, 0x40 + sizeof(psocn_bb_mini_char_t), SEEK_SET);
-        fread(cur->autoreply, 1, 344, fp);
-        fread(&cur->bank, 1, sizeof(psocn_bank_t), fp);
-        fread(cur->challenge_data, 1, 320, fp);
-        fread(&cur->character, 1, sizeof(psocn_bb_char_t), fp);
-        fread(cur->guildcard_desc, 1, 176, fp);
-        fread(cur->infoboard, 1, 344, fp);
-        fread(&cur->inv, 1, sizeof(inventory_t), fp);
-        fread(cur->quest_data1, 1, 520, fp);
-        fread(cur->quest_data2, 1, 88, fp);
-        fread(cur->tech_menu, 1, 40, fp);
-        fclose(fp);
-        len += templen;
+        //fseek(fp, 0, SEEK_END);
+        //templen = ftell(fp);
+        //fseek(fp, 0x40 + sizeof(psocn_bb_mini_char_t), SEEK_SET);
+        //fread(cur->autoreply, 1, 344, fp);
+        //fread(&cur->bank, 1, sizeof(psocn_bank_t), fp);
+        //fread(cur->challenge_data, 1, 320, fp);
+        //fread(&cur->character, 1, sizeof(psocn_bb_char_t), fp);
+        //fread(cur->guildcard_desc, 1, 176, fp);
+        //fread(cur->infoboard, 1, 344, fp);
+        //fread(&cur->inv, 1, sizeof(inventory_t), fp);
+        //fread(cur->quest_data1, 1, 520, fp);
+        //fread(cur->quest_data2, 1, 88, fp);
+        //fread(cur->tech_menu, 1, 40, fp);
+        //fclose(fp);
+
+        if (db_get_character_default(&default_chars[i], i)) {
+            ERR_LOG("无法读取 Blue Burst 角色初始数据表");
+            return -2;
+        }
+
+        len += PSOCN_STLENGTH_BB_DB_CHAR;
+
+        //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
+
+        //db_update_character_default(cur, i);
     }
 
     AUTH_LOG("读取初始角色数据文件 %d 个, 共 %d 字节.", i, len);
 
-    /* 加载角色完整数据 */
+    ///* 加载角色完整数据 */
 
-    sprintf(file, "%s\\%s", path, &pso_class[CLASS_FULL_CHAR].class_file);
+    //sprintf(file, "%s\\%s", path, &pso_class[CLASS_FULL_CHAR].class_file);
 
-    err = fopen_s(&fp, file, "rb");
-    if (err)
-    {
-        ERR_LOG("文件 %s 缺失!", file);
-        //return -1;
-    }
+    //err = fopen_s(&fp, file, "rb");
+    //if (err)
+    //{
+    //    ERR_LOG("文件 %s 缺失!", file);
+    //    //return -1;
+    //}
 
-    fseek(fp, 0, SEEK_END);
-    len = ftell(fp);
-    /* 跳过数据头 长度 0x399C 14748*/
-    fseek(fp, sizeof(bb_pkt_hdr_t), SEEK_SET);
+    //fseek(fp, 0, SEEK_END);
+    //len = ftell(fp);
+    ///* 跳过数据头 长度 0x399C 14748*/
+    //fseek(fp, sizeof(bb_pkt_hdr_t), SEEK_SET);
 
-    if (!fread(&default_full_chars, 1, BB_FULL_CHAR_LENGTH, fp))
-    {
-        ERR_LOG("读取 %s 数据失败!", file);
-        //return -1;
-    }
+    //if (!fread(&default_full_chars, 1, BB_FULL_CHAR_LENGTH, fp))
+    //{
+    //    ERR_LOG("读取 %s 数据失败!", file);
+    //    //return -1;
+    //}
 
-    AUTH_LOG("读取完整角色数据表,共 %d 字节.", len);
+    //AUTH_LOG("读取完整角色数据表,共 %d 字节.", len);
 
-    fclose(fp);
+    //fclose(fp);
 
     /* 加载角色等级初始数据 */
     if (read_player_level_table_bb(&bb_char_stats)) {

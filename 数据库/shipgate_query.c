@@ -258,7 +258,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
         sprintf(query, "INSERT INTO %s(guildcard, slot, name, class_name, version, data) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_CHALLENGE, gc, slot
+            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_RECORDS_CHALLENGE, gc, slot
         , name, class_name, char_data->character.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
@@ -268,26 +268,26 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_RECORDS_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             return 0;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
         sprintf(query, "DELETE FROM %s WHERE guildcard="
-            "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_CHALLENGE, gc,
+            "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER_RECORDS_CHALLENGE, gc,
             slot);
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
+                PRIu32 ", 槽位 %" PRIu8 "):\n%s", CHARACTER_RECORDS_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             /* XXXX: 未完成给客户端发送一个错误信息 */
             return -1;
         }
 
         sprintf(query, "INSERT INTO %s(guildcard, slot, name, class_name, version, data) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_CHALLENGE, gc, slot
+            "VALUES ('%" PRIu32 "', '%" PRIu8 "', '%s', '%s', '%" PRIu8 "', '", CHARACTER_RECORDS_CHALLENGE, gc, slot
             , name, class_name, char_data->character.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)char_data->challenge_data,
@@ -297,7 +297,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
 
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", CHARACTER_CHALLENGE, gc, slot,
+                "槽位 %" PRIu8 "):\n%s", CHARACTER_RECORDS_CHALLENGE, gc, slot,
                 psocn_db_error(&conn));
             return 0;
         }

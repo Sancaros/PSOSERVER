@@ -2933,6 +2933,8 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
 
         iitem_t ciitem = {0};//需要一个临时的背包？
 
+        display_packet(src->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
+
 
 
         if (ciitem.data.item_id == 0xFFFFFFFF) {
