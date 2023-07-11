@@ -785,7 +785,7 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
                 case CLIENT_VERSION_DCV2:
                     k = 0;
                     for(i = 0; i < 9; ++i) {
-                        if(c->pl->v2.chal_data.c_rank.part.times_ep1_offline[i] == 0) {
+                        if(c->pl->v2.records_data.challenge.times_ep1_offline[i] == 0) {
                             break;
                         }
                     }
@@ -795,7 +795,7 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
                 case CLIENT_VERSION_PC:
                     k = 0;
                     for(i = 0; i < 9; ++i) {
-                        if(c->pl->pc.chal_data.c_rank.part.times_ep1_offline[i] == 0) {
+                        if(c->pl->pc.records_data.challenge.times_ep1_offline[i] == 0) {
                             break;
                         }
                     }
@@ -805,13 +805,13 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
                 case CLIENT_VERSION_GC:
                 case CLIENT_VERSION_XBOX:
                     for(i = 0; i < 9; ++i) {
-                        if(c->pl->v3.chal_data.c_rank.part.times_ep1_offline[i] == 0) {
+                        if(c->pl->v3.records_data.challenge.times_ep1_online[i] == 0) {
                             break;
                         }
                     }
 
                     for(k = 0; k < 5; ++k) {
-                        if(c->pl->v3.chal_data.c_rank.part.times_ep2_offline[k] == 0)
+                        if(c->pl->v3.records_data.challenge.times_ep2_online[k] == 0)
                             break;
                     }
 
@@ -819,13 +819,13 @@ static uint8_t lobby_find_max_challenge(lobby_t *l) {
 
                 case CLIENT_VERSION_BB:
                     for (i = 0; i < 9; ++i) {
-                        if (c->pl->bb.chal_data.crank.times_ep1_online[i] == 0) {
+                        if (c->pl->bb.records_data.challenge.times_ep1_online[i] == 0) {
                             break;
                         }
                     }
 
                     for (k = 0; k < 5; ++k) {
-                        if (c->pl->bb.chal_data.crank.times_ep2_online[k] == 0)
+                        if (c->pl->bb.records_data.challenge.times_ep2_online[k] == 0)
                             break;
                     }
 

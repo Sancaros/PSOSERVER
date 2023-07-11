@@ -161,7 +161,7 @@
 #define CHOICE_SETTING_TYPE             0x00C2
 #define CHOICE_SEARCH_TYPE              0x00C3
 #define CHOICE_REPLY_TYPE               0x00C4
-#define C_RANK_TYPE                     0x00C5
+#define RECORDS_TYPE                    0x00C5
 #define BLACKLIST_TYPE                  0x00C6
 #define AUTOREPLY_SET_TYPE              0x00C7
 #define AUTOREPLY_CLEAR_TYPE            0x00C8

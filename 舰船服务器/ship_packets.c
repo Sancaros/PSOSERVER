@@ -39,6 +39,7 @@
 #include "quests.h"
 #include "admin.h"
 #include "items.h"
+#include "records.h"
 
 extern char ship_host4[32];
 extern char ship_host6[128];
@@ -2103,7 +2104,7 @@ int send_lobby_add_player(lobby_t *l, ship_client_t *c) {
 
     /* Send the C-Rank of this new character. */
     if(l->type == LOBBY_TYPE_LOBBY) {
-        send_c_rank_update(c, l);
+        send_records_update(c, l);
     }
 
     for(i = 0; i < l->max_clients; ++i) {
@@ -10645,138 +10646,138 @@ int send_infoboard(ship_client_t *c, lobby_t *l) {
 }
 
 /* Utilities for C-Rank stuff... */
-static void copy_c_rank_gc(gc_c_rank_update_pkt *pkt, int entry,
-                           ship_client_t *s) {
+static void copy_record_to_gc(gc_records_update_pkt *pkt, int entry,
+                           ship_client_t *src) {
     int j;
 
-    switch(s->version) {
+    switch(src->version) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0x0118);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_DCV2:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0x0118);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_V3_RECORDS_DATA);
 
-            pkt->entries[entry].unk1 = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
-                (s->pl->v2.chal_data.c_rank.part.unk1 << 16);
+            pkt->entries[entry].challenge.title_color = (src->pl->v2.records_data.challenge.title_color >> 8) |
+                (src->pl->v2.records_data.challenge.title_color << 8);
 
             /* Copy the rank over. */
-            memcpy(pkt->entries[entry].string, s->pl->v2.chal_data.c_rank.part.string,
+            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v2.records_data.challenge.rank_title,
                    0x0C);
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times,
-                   s->pl->v2.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle,
-                   s->pl->v2.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline,
+                   src->pl->v2.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.battle,
+                   src->pl->v2.records_data.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records_data.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+            memcpy(&pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->v2.records_data.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
+            memcpy(&pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->v2.records_data.challenge.times_ep1_online[2],
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 12,
-                   s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
+            memcpy(&pkt->entries[entry].challenge.times_ep1_online[4],
+                src->pl->v2.records_data.challenge.times_ep1_online[2], sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_PC:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0x0118);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_V3_RECORDS_DATA);
 
-            pkt->entries[entry].unk1 = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
-                (s->pl->pc.chal_data.c_rank.part.unk1 << 16);
+            pkt->entries[entry].challenge.title_color = (src->pl->pc.records_data.challenge.title_color >> 8) |
+                (src->pl->pc.records_data.challenge.title_color << 8);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
-                pkt->entries[entry].string[j] =
-                    (char)LE16(s->pl->pc.chal_data.c_rank.part.string[j]);
+                pkt->entries[entry].challenge.rank_title[j] =
+                    (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle, s->pl->pc.chal_data.c_rank.part.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... This also apparently
                has something to do with the length of the string... */
-            memcpy(pkt->entries[entry].unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records_data.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online[2], &src->pl->pc.records_data.challenge.times_ep1_online,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online[3], &src->pl->pc.records_data.challenge.times_ep1_online[2],
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk3 + 12,
-                   s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.times_ep1_online[4],
+                   src->pl->pc.records_data.challenge.times_ep1_online[2], sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_gc");
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0x0118);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
             break;
 
         default:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memset(pkt->entries[entry].c_rank, 0, 0x0118);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_V3_RECORDS_DATA);
     }
 }
 
-static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
-                           ship_client_t *s) {
+static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
+                           ship_client_t *src) {
     int j;
     size_t in, out;
     char *inptr;
     char *outptr;
 
-    switch(s->version) {
+    switch(src->version) {
         case CLIENT_VERSION_DCV2:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0xB8);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.v2.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_PC:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0xB8);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_DC_RECORDS_DATA);
 
             /* This is a bit hackish.... */
-            pkt->entries[entry].unk1 = s->pl->pc.chal_data.c_rank.part.unk1;
-            memcpy(pkt->entries[entry].unk2, s->pl->pc.chal_data.c_rank.part.times_ep1_online, 0x24);
+            pkt->entries[entry].challenge.title_color = src->pl->pc.records_data.challenge.title_color;
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->pc.records_data.challenge.times_ep1_online, 9);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
-                pkt->entries[entry].string[j] =
-                    (char)LE16(s->pl->pc.chal_data.c_rank.part.string[j]);
+                pkt->entries[entry].challenge.rank_title[j] =
+                    (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle, s->pl->pc.chal_data.c_rank.part.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
-            memcpy(&pkt->entries[entry].grave_unk4,
-                   &s->pl->pc.chal_data.c_rank.part.grave_unk4, 24);
+            memcpy(&pkt->entries[entry].challenge.grave_unk4,
+                   &src->pl->pc.records_data.challenge.grave_unk4, 24);
 
             /* Convert the team name */
             in = 40;
             out = 20;
-            inptr = (char *)s->pl->pc.chal_data.c_rank.part.grave_team;
-            outptr = pkt->entries[entry].grave_team;
+            inptr = (char *)src->pl->pc.records_data.challenge.grave_team;
+            outptr = pkt->entries[entry].challenge.grave_team;
 
-            if(s->pl->pc.chal_data.c_rank.part.grave_team[1] == LE16('J')) {
+            if(src->pl->pc.records_data.challenge.grave_team[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10786,10 +10787,10 @@ static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
             /* Convert the message */
             in = 48;
             out = 24;
-            inptr = (char *)s->pl->pc.chal_data.c_rank.part.grave_message;
-            outptr = pkt->entries[entry].grave_message;
+            inptr = (char *)src->pl->pc.records_data.challenge.grave_message;
+            outptr = pkt->entries[entry].challenge.grave_message;
 
-            if(s->pl->pc.chal_data.c_rank.part.grave_message[1] == LE16('J')) {
+            if(src->pl->pc.records_data.challenge.grave_message[1] == LE16('J')) {
                 iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10801,88 +10802,88 @@ static void copy_c_rank_dc(dc_c_rank_update_pkt *pkt, int entry,
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0xB8);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_DC_RECORDS_DATA);
 
-            pkt->entries[entry].unk1 = (s->pl->v3.chal_data.c_rank.part.unk1 >> 16) |
-                (s->pl->v3.chal_data.c_rank.part.unk1 << 16);
+            pkt->entries[entry].challenge.title_color = (src->pl->v3.records_data.challenge.title_color >> 8) |
+                (src->pl->v3.records_data.challenge.title_color << 8);
 
             /* Copy the rank over. */
-            memcpy(pkt->entries[entry].string, s->pl->v3.chal_data.c_rank.part.string,
+            memcpy(pkt->entries[entry].challenge.rank_title, src->pl->v3.records_data.challenge.rank_title,
                    0x0C);
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times,
-                   s->pl->v3.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle,
-                   s->pl->v3.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline,
+                   src->pl->v3.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.battle,
+                   src->pl->v3.records_data.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... */
-            memcpy(pkt->entries[entry].unk2, s->pl->v3.chal_data.c_rank.part.unk3,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records_data.challenge.unknown_m5,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk2 + 8, s->pl->v3.chal_data.c_rank.part.unk3 + 4,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records_data.challenge.unknown_m5 + 4,
                    sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_dc");
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0xB8);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
             break;
 
         default:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memset(pkt->entries[entry].c_rank, 0, 0xB8);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_DC_RECORDS_DATA);
     }
 }
 
-static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
-                           ship_client_t *s) {
+static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
+                           ship_client_t *src) {
     int j;
     size_t in, out;
     char *inptr;
     char *outptr;
 
-    switch(s->version) {
+    switch(src->version) {
         case CLIENT_VERSION_PC:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0xF0);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_DCV2:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0xF0);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_PC_RECORDS_DATA);
 
             /* This is a bit hackish.... */
-            pkt->entries[entry].unk1 = s->pl->v2.chal_data.c_rank.part.unk1;
-            memcpy(pkt->entries[entry].unk2, s->pl->v2.chal_data.c_rank.part.times_ep1_online, 0x24);
+            pkt->entries[entry].challenge.title_color = src->pl->v2.records_data.challenge.title_color;
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v2.records_data.challenge.times_ep1_online, 9);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
-                pkt->entries[entry].string[j] =
-                    LE16(s->pl->v2.chal_data.c_rank.part.string[j]);
+                pkt->entries[entry].challenge.rank_title[j] =
+                    LE16(src->pl->v2.records_data.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times, s->pl->v2.chal_data.c_rank.part.times_ep1_offline,
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->v2.records_data.challenge.times_ep1_offline,
                    9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle, s->pl->v2.chal_data.c_rank.part.battle,
+            memcpy(pkt->entries[entry].challenge.battle, src->pl->v2.records_data.challenge.battle,
                    7 * sizeof(uint32_t));
 
             /* Deal with the grave data... */
             /* Copy over the simple stuff... */
-            memcpy(&pkt->entries[entry].grave_unk4,
-                   &s->pl->v2.chal_data.c_rank.part.grave_unk4, 24);
+            memcpy(&pkt->entries[entry].challenge.grave_unk4,
+                   &src->pl->v2.records_data.challenge.grave_unk4, 24);
 
             /* Convert the team name */
             in = 20;
             out = 40;
-            inptr = s->pl->v2.chal_data.c_rank.part.grave_team;
-            outptr = (char *)pkt->entries[entry].grave_team;
+            inptr = src->pl->v2.records_data.challenge.grave_team;
+            outptr = (char *)pkt->entries[entry].challenge.grave_team;
 
-            if(s->pl->v2.chal_data.c_rank.part.grave_team[1] == 'J') {
+            if(src->pl->v2.records_data.challenge.grave_team[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10892,10 +10893,10 @@ static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
             /* Convert the message */
             in = 24;
             out = 48;
-            inptr = s->pl->v2.chal_data.c_rank.part.grave_message;
-            outptr = (char *)pkt->entries[entry].grave_message;
+            inptr = src->pl->v2.records_data.challenge.grave_message;
+            outptr = (char *)pkt->entries[entry].challenge.grave_message;
 
-            if(s->pl->v2.chal_data.c_rank.part.grave_message[1] == 'J') {
+            if(src->pl->v2.records_data.challenge.grave_message[1] == 'J') {
                 iconv(ic_sjis_to_utf16, &inptr, &in, &outptr, &out);
             }
             else {
@@ -10907,136 +10908,135 @@ static void copy_c_rank_pc(pc_c_rank_update_pkt *pkt, int entry,
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            pkt->entries[entry].client_id = LE32(s->client_id);
+            pkt->entries[entry].client_id = LE32(src->client_id);
 
-            memset(pkt->entries[entry].c_rank, 0, 0xF0);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_PC_RECORDS_DATA);
 
-            pkt->entries[entry].unk1 = (s->pl->v3.chal_data.c_rank.part.unk1 >> 16) |
-                (s->pl->v3.chal_data.c_rank.part.unk1 << 16);
+            pkt->entries[entry].challenge.title_color = (src->pl->v3.records_data.challenge.title_color >> 8) |
+                (src->pl->v3.records_data.challenge.title_color << 8);
 
             /* Copy the rank over. */
             for(j = 0; j < 0x0C; ++j) {
-                pkt->entries[entry].string[j] =
-                    LE16(s->pl->v3.chal_data.c_rank.part.string[j]);
+                pkt->entries[entry].challenge.rank_title[j] =
+                    LE16(src->pl->v3.records_data.challenge.rank_title[j]);
             }
 
             /* Copy the times for the levels and battle stuff over... */
-            memcpy(pkt->entries[entry].times,
-                   s->pl->v3.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
-            memcpy(pkt->entries[entry].battle,
-                   s->pl->v3.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.times_ep1_offline,
+                   src->pl->v3.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+            memcpy(pkt->entries[entry].challenge.battle,
+                   src->pl->v3.records_data.challenge.battle, 7 * sizeof(uint32_t));
 
             /* Copy over the color-related information... */
-            memcpy(pkt->entries[entry].unk2, s->pl->v3.chal_data.c_rank.part.unk3,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online, src->pl->v3.records_data.challenge.unknown_m5,
                    sizeof(uint32_t));
-            memcpy(pkt->entries[entry].unk2 + 8, s->pl->v3.chal_data.c_rank.part.unk3 + 4,
+            memcpy(pkt->entries[entry].challenge.times_ep1_online + 8, src->pl->v3.records_data.challenge.unknown_m5 + 4,
                    sizeof(uint32_t));
             break;
 
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_pc");
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memcpy(pkt->entries[entry].c_rank, s->c_rank, 0xF0);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memcpy(&pkt->entries[entry].challenge, &src->records.pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
             break;
 
         default:
-            pkt->entries[entry].client_id = LE32(s->client_id);
-            memset(pkt->entries[entry].c_rank, 0, 0xF0);
+            pkt->entries[entry].client_id = LE32(src->client_id);
+            memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_PC_RECORDS_DATA);
     }
 }
 
-static void copy_c_rank_bb(bb_c_rank_update_pkt* pkt, int entry,
-    ship_client_t* s) {
+static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
+                           ship_client_t* src) {
     int j;
 
-    switch (s->version) {
+    switch (src->version) {
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
-        pkt->entries[entry].client_id = LE32(s->client_id);
-        memcpy(pkt->entries[entry].data, s->c_rank, 0x0158);
+        pkt->entries[entry].client_id = LE32(src->client_id);
+        memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
         break;
 
     case CLIENT_VERSION_DCV2:
-        pkt->entries[entry].client_id = LE32(s->client_id);
+        pkt->entries[entry].client_id = LE32(src->client_id);
 
-        memset(pkt->entries[entry].data, 0, 0x0158);
+        memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_BB_RECORDS_DATA);
 
-        pkt->entries[entry].crank.title_color = (s->pl->v2.chal_data.c_rank.part.unk1 >> 16) |
-            (s->pl->v2.chal_data.c_rank.part.unk1 << 16);
+        pkt->entries[entry].challenge.title_color = (src->pl->v2.records_data.challenge.title_color >> 16) |
+            (src->pl->v2.records_data.challenge.title_color << 16);
 
         /* Copy the rank over. */
-        memcpy(pkt->entries[entry].crank.string, s->pl->v2.chal_data.c_rank.part.string,
+        memcpy(pkt->entries[entry].challenge.string, src->pl->v2.records_data.challenge.rank_title,
             0x0C);
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].crank.times_ep1_online,
-            s->pl->v2.chal_data.c_rank.part.times_ep1_offline, 9 * sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.battle,
-            s->pl->v2.chal_data.c_rank.part.battle, 7 * sizeof(uint32_t));
+        memcpy(pkt->entries[entry].challenge.times_ep1_online,
+            src->pl->v2.records_data.challenge.times_ep1_offline, 9 * sizeof(uint32_t));
+        memcpy(pkt->entries[entry].challenge.battle,
+            src->pl->v2.records_data.challenge.battle, 7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].crank.unk3, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3, src->pl->v2.records_data.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 8, s->pl->v2.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->v2.records_data.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 4, s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->v2.records_data.challenge.times_ep1_online + 8,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 12,
-            s->pl->v2.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
+        memcpy(pkt->entries[entry].challenge.unk3 + 12,
+            src->pl->v2.records_data.challenge.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_PC:
-        pkt->entries[entry].client_id = LE32(s->client_id);
+        pkt->entries[entry].client_id = LE32(src->client_id);
 
-        memset(pkt->entries[entry].data, 0, 0x0158);
+        memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_BB_RECORDS_DATA);
 
-        pkt->entries[entry].crank.title_color = (s->pl->pc.chal_data.c_rank.part.unk1 >> 16) |
-            (s->pl->pc.chal_data.c_rank.part.unk1 << 16);
+        pkt->entries[entry].challenge.title_color = src->pl->pc.records_data.challenge.title_color;
 
         /* Copy the rank over. */
         for (j = 0; j < 0x0C; ++j) {
-            pkt->entries[entry].crank.string[j] =
-                (char)LE16(s->pl->pc.chal_data.c_rank.part.string[j]);
+            pkt->entries[entry].challenge.string[j] =
+                (char)LE16(src->pl->pc.records_data.challenge.rank_title[j]);
         }
 
         /* Copy the times for the levels and battle stuff over... */
-        memcpy(pkt->entries[entry].crank.times_ep1_offline, s->pl->pc.chal_data.c_rank.part.times_ep1_offline,
+        memcpy(pkt->entries[entry].challenge.times_ep1_offline, src->pl->pc.records_data.challenge.times_ep1_offline,
             9 * sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.battle, s->pl->pc.chal_data.c_rank.part.battle,
+        memcpy(pkt->entries[entry].challenge.battle, src->pl->pc.records_data.challenge.battle,
             7 * sizeof(uint32_t));
 
         /* Copy over the color-related information... This also apparently
            has something to do with the length of the string... */
-        memcpy(pkt->entries[entry].crank.unk3, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3, src->pl->pc.records_data.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 8, s->pl->pc.chal_data.c_rank.part.times_ep1_online,
+        memcpy(pkt->entries[entry].challenge.unk3 + 8, src->pl->pc.records_data.challenge.times_ep1_online,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 4, s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8,
+        memcpy(pkt->entries[entry].challenge.unk3 + 4, src->pl->pc.records_data.challenge.times_ep1_online + 8,
             sizeof(uint32_t));
-        memcpy(pkt->entries[entry].crank.unk3 + 12,
-            s->pl->pc.chal_data.c_rank.part.times_ep1_online + 8, sizeof(uint32_t));
+        memcpy(pkt->entries[entry].challenge.unk3 + 12,
+            src->pl->pc.records_data.challenge.times_ep1_online + 8, sizeof(uint32_t));
         break;
 
     case CLIENT_VERSION_BB:
         //DBG_LOG("copy_c_rank_bb");
-        pkt->entries[entry].client_id = LE32(s->client_id);
-        memcpy(pkt->entries[entry].data, s->c_rank, 0x0158);
+        pkt->entries[entry].client_id = LE32(src->client_id);
+        memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
         break;
 
     default:
-        pkt->entries[entry].client_id = LE32(s->client_id);
-        memset(pkt->entries[entry].data, 0, 0x0158);
+        pkt->entries[entry].client_id = LE32(src->client_id);
+        memset(&pkt->entries[entry].challenge, 0, PSOCN_STLENGTH_BB_RECORDS_DATA);
     }
 }
 
 /* Send the lobby's C-Rank data to the client. */
-static int send_gc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
+static int send_gc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
-    gc_c_rank_update_pkt *pkt = (gc_c_rank_update_pkt *)sendbuf;
-    int entries = 0, size = 4;
+    gc_records_update_pkt *pkt = (gc_records_update_pkt *)sendbuf;
+    int entries = 0, size = client_type[dest->version]->hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11050,27 +11050,27 @@ static int send_gc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
             pthread_mutex_lock(&c2->mutex);
 
             /* Copy over this character's data... */
-            copy_c_rank_gc(pkt, entries, c2);
+            copy_record_to_gc(pkt, entries, c2);
             ++entries;
-            size += 0x011C;
+            size += PSOCN_STLENGTH_V3_RECORDS;
 
             pthread_mutex_unlock(&c2->mutex);
         }
     }
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
 
-    return crypt_send(c, size, sendbuf);
+    return crypt_send(dest, size, sendbuf);
 }
 
-static int send_dc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
+static int send_dc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
-    dc_c_rank_update_pkt *pkt = (dc_c_rank_update_pkt *)sendbuf;
-    int entries = 0, size = 4;
+    dc_records_update_pkt *pkt = (dc_records_update_pkt *)sendbuf;
+    int entries = 0, size = client_type[dest->version]->hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11084,27 +11084,27 @@ static int send_dc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
             pthread_mutex_lock(&c2->mutex);
 
             /* Copy this character's data... */
-            copy_c_rank_dc(pkt, entries, c2);
+            copy_record_to_dc(pkt, entries, c2);
             ++entries;
-            size += 0xBC;
+            size += PSOCN_STLENGTH_DC_RECORDS;
 
             pthread_mutex_unlock(&c2->mutex);
         }
     }
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
 
-    return crypt_send(c, size, sendbuf);
+    return crypt_send(dest, size, sendbuf);
 }
 
-static int send_pc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
+static int send_pc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
-    pc_c_rank_update_pkt *pkt = (pc_c_rank_update_pkt *)sendbuf;
-    int entries = 0, size = 4;
+    pc_records_update_pkt *pkt = (pc_records_update_pkt *)sendbuf;
+    int entries = 0, size = client_type[dest->version]->hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11118,27 +11118,27 @@ static int send_pc_lobby_c_rank(ship_client_t *c, lobby_t *l) {
             pthread_mutex_lock(&c2->mutex);
 
             /* Copy over this character's data... */
-            copy_c_rank_pc(pkt, entries, c2);
+            copy_record_to_pc(pkt, entries, c2);
             ++entries;
-            size += 0xF4;
+            size += PSOCN_STLENGTH_PC_RECORDS;
 
             pthread_mutex_unlock(&c2->mutex);
         }
     }
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
 
-    return crypt_send(c, size, sendbuf);
+    return crypt_send(dest, size, sendbuf);
 }
 
-static int send_bb_lobby_c_rank(ship_client_t* c, lobby_t* l) {
+static int send_bb_lobby_c_rank(ship_client_t* dest, lobby_t* l) {
     int i;
     uint8_t* sendbuf = get_sendbuf();
-    bb_c_rank_update_pkt* pkt = (bb_c_rank_update_pkt*)sendbuf;
-    int entries = 0, size = sizeof(bb_pkt_hdr_t);
+    bb_records_update_pkt* pkt = (bb_records_update_pkt*)sendbuf;
+    int entries = 0, size = client_type[dest->version]->hdr_size;
     ship_client_t* c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11152,37 +11152,37 @@ static int send_bb_lobby_c_rank(ship_client_t* c, lobby_t* l) {
             pthread_mutex_lock(&c2->mutex);
 
             /* Copy over this character's data... */
-            copy_c_rank_bb(pkt, entries, c2);
+            copy_record_to_bb(pkt, entries, c2);
             ++entries;
-            size += 0x015C;
+            size += PSOCN_STLENGTH_BB_RECORDS;
 
             pthread_mutex_unlock(&c2->mutex);
         }
     }
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = entries;
     pkt->hdr.pkt_len = LE16(size);
 
-    return crypt_send(c, size, sendbuf);
+    return crypt_send(dest, size, sendbuf);
 }
 
-int send_lobby_c_rank(ship_client_t *c, lobby_t *l) {
-    switch(c->version) {
+int send_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
+    switch(dest->version) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            return send_gc_lobby_c_rank(c, l);
+            return send_gc_lobby_c_rank(dest, l);
 
         case CLIENT_VERSION_DCV2:
-            return send_dc_lobby_c_rank(c, l);
+            return send_dc_lobby_c_rank(dest, l);
 
         case CLIENT_VERSION_PC:
-            return send_pc_lobby_c_rank(c, l);
+            return send_pc_lobby_c_rank(dest, l);
 
         case CLIENT_VERSION_BB:
-            return send_bb_lobby_c_rank(c, l);
+            return send_bb_lobby_c_rank(dest, l);
     }
 
     /* Don't send to unsupporting clients. */
@@ -11190,9 +11190,9 @@ int send_lobby_c_rank(ship_client_t *c, lobby_t *l) {
 }
 
 /* Send a C-Rank update for a single client to the whole lobby. */
-static int send_gc_c_rank_update(ship_client_t *d, ship_client_t *s) {
+static int send_gc_records_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
-    gc_c_rank_update_pkt *pkt = (gc_c_rank_update_pkt *)sendbuf;
+    gc_records_update_pkt *pkt = (gc_records_update_pkt *)sendbuf;
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -11200,19 +11200,19 @@ static int send_gc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     }
 
     /* Copy the data. */
-    copy_c_rank_gc(pkt, 0, s);
+    copy_record_to_gc(pkt, 0, s);
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0120);
 
     return crypt_send(d, 0x0120, sendbuf);
 }
 
-static int send_dc_c_rank_update(ship_client_t *d, ship_client_t *s) {
+static int send_dc_records_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
-    dc_c_rank_update_pkt *pkt = (dc_c_rank_update_pkt *)sendbuf;
+    dc_records_update_pkt *pkt = (dc_records_update_pkt *)sendbuf;
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -11220,19 +11220,19 @@ static int send_dc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     }
 
     /* Copy the data. */
-    copy_c_rank_dc(pkt, 0, s);
+    copy_record_to_dc(pkt, 0, s);
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0xC0);
 
     return crypt_send(d, 0xC0, sendbuf);
 }
 
-static int send_pc_c_rank_update(ship_client_t *d, ship_client_t *s) {
+static int send_pc_records_update(ship_client_t *d, ship_client_t *s) {
     uint8_t *sendbuf = get_sendbuf();
-    pc_c_rank_update_pkt *pkt = (pc_c_rank_update_pkt *)sendbuf;
+    pc_records_update_pkt *pkt = (pc_records_update_pkt *)sendbuf;
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -11240,19 +11240,19 @@ static int send_pc_c_rank_update(ship_client_t *d, ship_client_t *s) {
     }
 
     /* Copy the data. */
-    copy_c_rank_pc(pkt, 0, s);
+    copy_record_to_pc(pkt, 0, s);
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0xF8);
 
     return crypt_send(d, 0xF8, sendbuf);
 }
 
-static int send_bb_c_rank_update(ship_client_t* d, ship_client_t* s) {
+static int send_bb_records_update(ship_client_t* d, ship_client_t* s) {
     uint8_t* sendbuf = get_sendbuf();
-    bb_c_rank_update_pkt* pkt = (bb_c_rank_update_pkt*)sendbuf;
+    bb_records_update_pkt* pkt = (bb_records_update_pkt*)sendbuf;
 
     /* 确认已获得数据发送缓冲 */
     if (!sendbuf) {
@@ -11260,17 +11260,17 @@ static int send_bb_c_rank_update(ship_client_t* d, ship_client_t* s) {
     }
 
     /* Copy the data. */
-    copy_c_rank_bb(pkt, 0, s);
+    copy_record_to_bb(pkt, 0, s);
 
     /* 填充数据头. */
-    pkt->hdr.pkt_type = C_RANK_TYPE;
+    pkt->hdr.pkt_type = RECORDS_TYPE;
     pkt->hdr.flags = 1;
     pkt->hdr.pkt_len = LE16(0x0160);
 
     return crypt_send(d, 0x0160, sendbuf);
 }
 
-int send_c_rank_update(ship_client_t *c, lobby_t *l) {
+int send_records_update(ship_client_t *c, lobby_t *l) {
     int i;
 
     for(i = 0; i < l->max_clients; ++i) {
@@ -11282,19 +11282,19 @@ int send_c_rank_update(ship_client_t *c, lobby_t *l) {
                 case CLIENT_VERSION_GC:
                 case CLIENT_VERSION_EP3:
                 case CLIENT_VERSION_XBOX:
-                    send_gc_c_rank_update(l->clients[i], c);
+                    send_gc_records_update(l->clients[i], c);
                     break;
 
                 case CLIENT_VERSION_DCV2:
-                    send_dc_c_rank_update(l->clients[i], c);
+                    send_dc_records_update(l->clients[i], c);
                     break;
 
                 case CLIENT_VERSION_PC:
-                    send_pc_c_rank_update(l->clients[i], c);
+                    send_pc_records_update(l->clients[i], c);
                     break;
 
                 case CLIENT_VERSION_BB:
-                    send_bb_c_rank_update(l->clients[i], c);
+                    send_bb_records_update(l->clients[i], c);
                     break;
             }
 

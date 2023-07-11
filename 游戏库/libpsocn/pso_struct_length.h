@@ -52,6 +52,27 @@
 
 /////////////////////////////////////////////////////////////////////////
 /////
+
+#define PSOCN_STLENGTH_BATTLE_RECORDS       24
+
+#define PSOCN_STLENGTH_DC_RECORDS           188
+#define PSOCN_STLENGTH_DC_RECORDS_DATA      184 /* 不含client_id */
+#define PSOCN_STLENGTH_DC_CHALLENGE_RECORDS 160
+
+#define PSOCN_STLENGTH_PC_RECORDS           244
+#define PSOCN_STLENGTH_PC_RECORDS_DATA      240 /* 不含client_id */
+#define PSOCN_STLENGTH_PC_CHALLENGE_RECORDS 216
+
+#define PSOCN_STLENGTH_V3_RECORDS           284
+#define PSOCN_STLENGTH_V3_RECORDS_DATA      280 /* 不含client_id */
+#define PSOCN_STLENGTH_V3_CHALLENGE_RECORDS 256
+
+#define PSOCN_STLENGTH_BB_RECORDS           348
+#define PSOCN_STLENGTH_BB_RECORDS_DATA      344 /* 不含client_id */
+#define PSOCN_STLENGTH_BB_CHALLENGE_RECORDS 320
+
+/////////////////////////////////////////////////////////////////////////
+/////
 #define PC_CHARACTER_NAME_LENGTH            16
 
 

@@ -236,7 +236,7 @@ int send_infoboard(ship_client_t *c, lobby_t *l);
 int send_lobby_c_rank(ship_client_t *c, lobby_t *l);
 
 /* Send a C-Rank update for a single client to the whole lobby. */
-int send_c_rank_update(ship_client_t *c, lobby_t *l);
+int send_records_update(ship_client_t *c, lobby_t *l);
 
 /* This is a special case of the information select menu for PSOPC. This allows
    the user to pick to make a V1 compatible game or not. */

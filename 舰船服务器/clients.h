@@ -197,7 +197,6 @@ struct ship_client {
     client_options_t options;
 
     uint8_t equip_flags;
-    //uint32_t next_item[4];
     item_t new_item;
     iitem_t iitems[30];
 
@@ -214,7 +213,7 @@ struct ship_client {
     FILE *logfile;
 
     char *infoboard;                    /* Points into the player struct. */
-    uint8_t *c_rank;                    /* Points into the player struct. */
+    record_data_t records;              /* 指向玩家挑战/对战结构体的指针. */
     lobby_t *create_lobby;
 
     uint32_t *next_maps;

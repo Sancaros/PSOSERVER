@@ -117,10 +117,10 @@
     <ClCompile Include="subcmd_handle.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="challenge_handle.c">
+    <ClCompile Include="enemy_type.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="enemy_type.c">
+    <ClCompile Include="records.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -227,7 +227,7 @@
     <ClInclude Include="subcmd_handle.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="challenge_handle.h">
+    <ClInclude Include="records.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="enemy_type.h">

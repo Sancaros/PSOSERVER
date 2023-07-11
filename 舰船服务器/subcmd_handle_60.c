@@ -3051,22 +3051,20 @@ int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅使用医疗中心!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
             src->guildcard);
         return -1;
     }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    //if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 ||
-    //    pkt->shdr.client_id != src->client_id) {
-    //    ERR_LOG("GC %" PRIu32 " 发送错误的医疗中心数据包!",
-    //        src->guildcard);
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
-
-    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
     psocn_disp_char_t* disp = &src->bb_pl->character.disp;
     if (pkt->meseta_amount > disp->meseta) {

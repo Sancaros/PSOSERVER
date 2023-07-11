@@ -1672,7 +1672,89 @@ typedef struct dcnte_lobby_join {
 // command (described above), and the players already in the game receive a 65
 // command containing only the joining player's data.
 
-
+//typedef struct {
+//    uint8_t client_id;
+//    uint8_t leader_id;
+//    uint8_t disable_udp;
+//    uint8_t unused;
+//} LobbyFlags_DCNTE;
+//
+//typedef struct {
+//    uint8_t client_id;
+//    uint8_t leader_id;
+//    uint8_t disable_udp;
+//    uint8_t lobby_number;
+//    uint8_t block_number;
+//    uint8_t unknown_a1;
+//    uint8_t event;
+//    uint8_t unknown_a2;
+//    uint32_t unused;
+//} LobbyFlags;
+//
+//typedef struct {
+//    LobbyFlags lobby_flags;
+//
+//    struct {
+//        PlayerLobbyDataDCGC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entry;
+//
+//    struct {
+//        PlayerLobbyDataDCGC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entries[12];
+//} S_JoinLobby_DCNTE_65_67_68;
+//
+//typedef struct {
+//    LobbyFlags lobby_flags;
+//
+//    struct {
+//        PlayerLobbyDataPC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entry;
+//
+//    struct {
+//        PlayerLobbyDataPC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entries[12];
+//} S_JoinLobby_PC_65_67_68;
+//
+//typedef struct {
+//    LobbyFlags lobby_flags;
+//
+//    struct {
+//        PlayerLobbyDataDCGC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entry;
+//
+//    struct {
+//        PlayerLobbyDataDCGC lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entries[12];
+//} S_JoinLobby_DC_GC_65_67_68_Ep3_EB;
+//
+//typedef struct {
+//    LobbyFlags lobby_flags;
+//    uint32_t unknown_a4[6];
+//
+//    struct {
+//        PlayerLobbyDataXB lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entry;
+//
+//    struct {
+//        PlayerLobbyDataXB lobby_data;
+//        PlayerInventory inventory;
+//        PlayerDispDataDCPCV3 disp;
+//    } entries[12];
+//} S_JoinLobby_XB_65_67_68;
 
 
 
@@ -3067,91 +3149,32 @@ typedef struct bb_cs_entry {
 //    parray<uint8_t, 0x58> unused2;
 //} PACKED;
 
-// C5 (S->C): Challenge rank update (V3/BB)
-// header.flag = entry count
+// C5 (S->C): Player records update (DCv2 and later versions)
+// Internal name: RcvChallengeData
+// Command is a list of PlayerRecordsEntry structures; header.flag specifies
+// the entry count.
 // The server sends this command when a player joins a lobby to update the
 // challenge mode records of all the present players.
-// Entry format is PlayerChallengeDataV3 or PlayerChallengeDataBB.
-// newserv currently doesn't send this command at all because the V3 and
-// BB formats aren't fully documented.
-// TODO: Figure out where the text is in those formats, write appropriate
-// conversion functions, and implement the command. Don't forget to overwrite
-// the client_id field in each entry before sending.
 /* 舰船发送至客户端 C-Rank 数据包结构 */
-typedef struct dc_c_rank_update {
+typedef struct dc_records_update {
     dc_pkt_hdr_t hdr;
-    struct {
-        uint32_t client_id;
-        union {
-            uint8_t c_rank[0xB8];
-            struct {
-                uint32_t unk1;
-                char string[0x0C];
-                uint8_t unk2[0x24];
-                uint16_t grave_unk4;
-                uint16_t grave_deaths;
-                uint32_t grave_coords_time[5];
-                char grave_team[20];
-                char grave_message[24];
-                uint32_t times[9];
-                uint32_t battle[7];
-            };
-        };
-    } entries[0];
-} PACKED dc_c_rank_update_pkt;
+    psocn_dc_records_data_t entries[0];
+} PACKED dc_records_update_pkt;
 
-typedef struct pc_c_rank_update {
+typedef struct pc_records_update {
     pc_pkt_hdr_t hdr;
-    struct {
-        uint32_t client_id;
-        union {
-            uint8_t c_rank[0xF0];
-            struct {
-                uint32_t unk1;
-                uint16_t string[0x0C];
-                uint8_t unk2[0x24];
-                uint16_t grave_unk4;
-                uint16_t grave_deaths;
-                uint32_t grave_coords_time[5];
-                uint16_t grave_team[20];
-                uint16_t grave_message[24];
-                uint32_t times[9];
-                uint32_t battle[7];
-            };
-        };
-    } entries[0];
-} PACKED pc_c_rank_update_pkt;
+    psocn_pc_records_data_t entries[0];
+} PACKED pc_records_update_pkt;
 
-// 288
-typedef struct gc_c_rank_update {
-    dc_pkt_hdr_t hdr; // 4
-    struct {
-        uint32_t client_id; // 4
-        union {
-            uint8_t c_rank[0x0118]; // 280
-            struct {
-                uint32_t unk1;          /* Flip the words for dc/pc! */
-                uint32_t times[9];
-                uint32_t times_ep2[5];
-                uint8_t unk2[0x24];     /* Probably corresponds to unk2 dc/pc */
-                uint32_t grave_unk4;
-                uint32_t grave_deaths;
-                uint32_t grave_coords_time[5];
-                char grave_team[20];
-                char grave_message[48];
-                uint8_t unk3[24];
-                char string[12];
-                uint8_t unk4[24];
-                uint32_t battle[7];
-            };
-        };
-    } entries[0];
-} PACKED gc_c_rank_update_pkt;
+typedef struct gc_records_update {
+    dc_pkt_hdr_t hdr;
+    psocn_v3_records_data_t entries[0];
+} PACKED gc_records_update_pkt;
 
-typedef struct bb_c_rank_update {
+typedef struct bb_records_update {
     bb_pkt_hdr_t hdr;
-    psocn_bb_c_rank_data_t entries[0];
-} PACKED bb_c_rank_update_pkt;
+    psocn_bb_records_data_t entries[0];
+} PACKED bb_records_update_pkt;
 
 // C6 (C->S): Set blocked senders list (V3/BB)
 // The command always contains the same number of entries, even if the entries

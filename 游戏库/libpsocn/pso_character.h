@@ -24,7 +24,7 @@
 
 #include "pso_struct_length.h"
 #include "pso_struct_item.h"
-#include "pso_struct_challenge.h"
+#include "pso_struct_records.h"
 #include "pso_struct_level_stats.h"
 
 #define MAX_PLAYER_BANK_ITEMS           200

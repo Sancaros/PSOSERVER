@@ -129,7 +129,7 @@ static cmd_map_st c_cmd_names[] = {
     { CHOICE_SETTING_TYPE, "CHOICE_SETTING_TYPE", "客户端至服务器指令" },
     { CHOICE_SEARCH_TYPE, "CHOICE_SEARCH_TYPE", "客户端至服务器指令" },
     { CHOICE_REPLY_TYPE, "CHOICE_REPLY_TYPE", "客户端至服务器指令" },
-    { C_RANK_TYPE, "C_RANK_TYPE", "客户端至服务器指令" },
+    { RECORDS_TYPE, "C_RANK_TYPE", "客户端至服务器指令" },
     { BLACKLIST_TYPE, "BLACKLIST_TYPE", "客户端至服务器指令" },
     { AUTOREPLY_SET_TYPE, "AUTOREPLY_SET_TYPE", "客户端至服务器指令" },
     { AUTOREPLY_CLEAR_TYPE, "AUTOREPLY_CLEAR_TYPE", "客户端至服务器指令" },

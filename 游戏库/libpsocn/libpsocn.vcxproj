@@ -29,7 +29,7 @@
     <ClInclude Include="pso_message.h" />
     <ClInclude Include="pso_packet_length.h" />
     <ClInclude Include="pso_ping.h" />
-    <ClInclude Include="pso_struct_challenge.h" />
+    <ClInclude Include="pso_struct_records.h" />
     <ClInclude Include="pso_struct_item.h" />
     <ClInclude Include="pso_struct_length.h" />
     <ClInclude Include="pso_struct_level_stats.h" />

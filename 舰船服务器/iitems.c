@@ -91,67 +91,64 @@ size_t max_stack_size(const item_t* item) {
     return max_stack_size_for_item(item->datab[0], item->datab[1]);
 }
 
-size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-    if (data0 == ITEM_TYPE_MESETA) {
-        return 999999;
-    }
-    if (data0 == ITEM_TYPE_TOOL) {
-        if ((data1 < 9) && (data1 != ITEM_SUBTYPE_DISK)) {
-            return 10;
-        }
-        else if (data1 == ITEM_SUBTYPE_PHOTON) {
-            return 99;
-        }
-    }
-    return 1;
-}
-
-// TODO 需要客户端支持各种堆叠
 //size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-//
-//    switch (data0) 
-//    {
-//    case ITEM_TYPE_MESETA:
+//    if (data0 == ITEM_TYPE_MESETA) {
 //        return 999999;
-//
-//    case ITEM_TYPE_TOOL:
-//
-//        switch (data1)
-//        {
-//            /* 支持大量堆叠 */
-//        case ITEM_SUBTYPE_MATE:
-//        case ITEM_SUBTYPE_FLUID:
-//        case ITEM_SUBTYPE_SOL_ATOMIZER:
-//        case ITEM_SUBTYPE_MOON_ATOMIZER:
-//        case ITEM_SUBTYPE_STAR_ATOMIZER:
-//        case ITEM_SUBTYPE_ANTI:
-//        case ITEM_SUBTYPE_TELEPIPE:
-//        case ITEM_SUBTYPE_TRAP_VISION:
-//        case ITEM_SUBTYPE_GRINDER:
-//        case ITEM_SUBTYPE_MATERIAL:
-//        case ITEM_SUBTYPE_MAG_CELL1:
-//        case ITEM_SUBTYPE_MONSTER_LIMBS:
-//        case ITEM_SUBTYPE_MAG_CELL2:
-//        case ITEM_SUBTYPE_ADD_SLOT:
-//        case ITEM_SUBTYPE_PHOTON:
-//            return 99;
-//
-//        case ITEM_SUBTYPE_DISK:
-//            return 1;
-//
-//
-//        default:
+//    }
+//    if (data0 == ITEM_TYPE_TOOL) {
+//        if ((data1 < 9) && (data1 != ITEM_SUBTYPE_DISK)) {
 //            return 10;
 //        }
-//
-//        break;
-//
-//    default:
-//        break;
+//        else if (data1 == ITEM_SUBTYPE_PHOTON) {
+//            return 99;
+//        }
 //    }
-//
 //    return 1;
 //}
+
+// TODO 需要客户端支持各种堆叠
+size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
+
+    switch (data0) 
+    {
+    case ITEM_TYPE_MESETA:
+        return 999999;
+
+    case ITEM_TYPE_TOOL:
+
+        switch (data1)
+        {
+            /* 支持大量堆叠 */
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+        case ITEM_SUBTYPE_SOL_ATOMIZER:
+        case ITEM_SUBTYPE_MOON_ATOMIZER:
+        case ITEM_SUBTYPE_STAR_ATOMIZER:
+        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_TELEPIPE:
+        case ITEM_SUBTYPE_TRAP_VISION:
+        case ITEM_SUBTYPE_GRINDER:
+        case ITEM_SUBTYPE_MATERIAL:
+        case ITEM_SUBTYPE_MAG_CELL1:
+        case ITEM_SUBTYPE_MONSTER_LIMBS:
+        case ITEM_SUBTYPE_MAG_CELL2:
+        case ITEM_SUBTYPE_ADD_SLOT:
+        case ITEM_SUBTYPE_PHOTON:
+            return 99;
+
+        case ITEM_SUBTYPE_DISK:
+            return 1;
+
+
+        default:
+            return 10;
+        }
+
+        break;
+    }
+
+    return 1;
+}
 
 bool is_common_consumable(uint32_t primary_identifier) {
     if (primary_identifier == 0x030200) {

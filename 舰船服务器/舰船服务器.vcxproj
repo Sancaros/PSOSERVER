@@ -22,7 +22,6 @@
     <ClCompile Include="admin.c" />
     <ClCompile Include="bans.c" />
     <ClCompile Include="block.c" />
-    <ClCompile Include="challenge_handle.c" />
     <ClCompile Include="clients.c" />
     <ClCompile Include="commands.c" />
     <ClCompile Include="enemy_type.c" />
@@ -35,6 +34,7 @@
     <ClCompile Include="ptdata.c" />
     <ClCompile Include="quests.c" />
     <ClCompile Include="quest_functions.c" />
+    <ClCompile Include="records.c" />
     <ClCompile Include="rtdata.c" />
     <ClCompile Include="scripts.c" />
     <ClCompile Include="ship.c" />
@@ -60,7 +60,7 @@
     <ClInclude Include="admin.h" />
     <ClInclude Include="bans.h" />
     <ClInclude Include="block.h" />
-    <ClInclude Include="challenge_handle.h" />
+    <ClInclude Include="records.h" />
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="enemy_type.h" />

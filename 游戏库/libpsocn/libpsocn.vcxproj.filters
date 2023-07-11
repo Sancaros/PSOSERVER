@@ -79,7 +79,7 @@
     <ClInclude Include="pso_struct_item.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="pso_struct_challenge.h">
+    <ClInclude Include="pso_struct_records.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pso_struct_level_stats.h">
