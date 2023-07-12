@@ -933,15 +933,15 @@ int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount) {
         return -1;
 
     /* No need if they've already maxed out. */
-    if (dest->mode_pl->disp.level >= 199)
+    if (dest->mode_pl->bb.disp.level >= 199)
         return 0;
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(dest->mode_pl->disp.exp);
+    exp_total = LE32(dest->mode_pl->bb.disp.exp);
     exp_total += exp_amount;
-    dest->mode_pl->disp.exp = LE32(exp_total);
-    cl = dest->mode_pl->dress_data.ch_class;
-    level = LE32(dest->mode_pl->disp.level);
+    dest->mode_pl->bb.disp.exp = LE32(exp_total);
+    cl = dest->mode_pl->bb.dress_data.ch_class;
+    level = LE32(dest->mode_pl->bb.disp.level);
 
     /* Send the packet telling them they've gotten experience. */
     if (subcmd_send_bb_exp(dest, exp_amount, dest->mode))
@@ -953,14 +953,14 @@ int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount) {
 
         if (exp_total >= ent->exp) {
             need_lvlup = 1;
-            give_stats(&dest->mode_pl->disp.stats, ent);
+            give_stats(&dest->mode_pl->bb.disp.stats, ent);
             ++level;
         }
     } while (exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
 
     /* If they got any level ups, send out the packet that says so. */
     if (need_lvlup) {
-        dest->mode_pl->disp.level = LE32(level);
+        dest->mode_pl->bb.disp.level = LE32(level);
         if (subcmd_send_bb_level(dest, dest->mode))
             return -1;
     }
@@ -979,24 +979,24 @@ int client_give_mode_level(ship_client_t* dest, uint32_t level_req) {
         return -1;
 
     /* No need if they've already at that level. */
-    if (dest->mode_pl->disp.level >= level_req)
+    if (dest->mode_pl->bb.disp.level >= level_req)
         return 0;
 
     /* Grab the entry for that level... */
-    cl = dest->mode_pl->dress_data.ch_class;
+    cl = dest->mode_pl->bb.dress_data.ch_class;
     ent = &bb_char_stats.levels[cl][level_req];
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(dest->mode_pl->disp.exp);
+    exp_total = LE32(dest->mode_pl->bb.disp.exp);
     exp_gained = ent->exp - exp_total;
-    dest->mode_pl->disp.exp = LE32(ent->exp);
+    dest->mode_pl->bb.disp.exp = LE32(ent->exp);
 
     /* Send the packet telling them they've gotten experience. */
     if (subcmd_send_bb_exp(dest, exp_gained, dest->mode))
         return -1;
 
     /* Send the level-up packet. */
-    dest->mode_pl->disp.level = LE32(level_req);
+    dest->mode_pl->bb.disp.level = LE32(level_req);
     if (subcmd_send_bb_level(dest, dest->mode))
         return -1;
 
@@ -1116,10 +1116,10 @@ static int check_char_v1(ship_client_t *src, player_t *pl) {
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if(src->pl->v1.inv.hpmats_used > pl->v1.inv.hpmats_used)
+    if(src->pl->v1.character.inv.hpmats_used > pl->v1.character.inv.hpmats_used)
         return -24;
 
-    if(src->pl->v1.inv.tpmats_used > pl->v1.inv.tpmats_used)
+    if(src->pl->v1.character.inv.tpmats_used > pl->v1.character.inv.tpmats_used)
         return -25;
 
     if(LE32(src->pl->v1.character.disp.exp) > LE32(pl->v1.character.disp.exp))
@@ -1291,10 +1291,10 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if (src->pl->bb.inv.hpmats_used > pl->bb.inv.hpmats_used)
+    if (src->pl->bb.character.inv.hpmats_used > pl->bb.character.inv.hpmats_used)
         return -24;
 
-    if (src->pl->bb.inv.tpmats_used > pl->bb.inv.tpmats_used)
+    if (src->pl->bb.character.inv.tpmats_used > pl->bb.character.inv.tpmats_used)
         return -25;
 
     if (LE32(disp1.exp) > LE32(disp2.exp))
@@ -1403,8 +1403,8 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
     }
 
     /* Make sure the player qualifies for legit mode... */
-    for(j = 0; j < c->pl->v1.inv.item_count; ++j) {
-        item = (iitem_t *)&c->pl->v1.inv.iitems[j];
+    for(j = 0; j < c->pl->v1.character.inv.item_count; ++j) {
+        item = (iitem_t *)&c->pl->v1.character.inv.iitems[j];
         irv = psocn_limits_check_item(limits, item, v);
 
         if(!irv) {
@@ -1870,7 +1870,7 @@ static int client_numItems_lua(lua_State *l) {
             return 1;
         }
 
-        lua_pushinteger(l, c->pl->v1.inv.item_count);
+        lua_pushinteger(l, c->pl->v1.character.inv.item_count);
     }
     else {
         lua_pushinteger(l, -1);
@@ -1894,7 +1894,7 @@ static int client_item_lua(lua_State *l) {
         }
 
         /* Make sure the index is sane */
-        if(index < 0 || index >= c->pl->v1.inv.item_count) {
+        if(index < 0 || index >= c->pl->v1.character.inv.item_count) {
             lua_pushnil(l);
             return 1;
         }
@@ -1902,16 +1902,16 @@ static int client_item_lua(lua_State *l) {
         /* Create a table and put all 4 dwords of item data in it. */
         lua_newtable(l);
         lua_pushinteger(l, 1);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.datal[0]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[0]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.datal[1]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[1]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.datal[2]);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.datal[2]);
         lua_settable(l, -3);
         lua_pushinteger(l, 2);
-        lua_pushinteger(l, c->pl->v1.inv.iitems[index].data.data2l);
+        lua_pushinteger(l, c->pl->v1.character.inv.iitems[index].data.data2l);
         lua_settable(l, -3);
     }
     else {
@@ -1976,8 +1976,8 @@ static int client_hasItem_lua(lua_State *l) {
         c = (ship_client_t *)lua_touserdata(l, 1);
         ic = lua_tointeger(l, 2);
 
-        for(i = 0; i < c->pl->v1.inv.item_count; ++i) {
-            item = (iitem_t *)&c->pl->v1.inv.iitems[i];
+        for(i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
+            item = (iitem_t *)&c->pl->v1.character.inv.iitems[i];
             val = item->data.datal[0];
 
             /* Grab the real item type, if its a v2 item.

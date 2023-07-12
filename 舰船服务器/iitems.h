@@ -89,7 +89,7 @@ void cleanup_bb_bank(ship_client_t *c);
 
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
-int item_check_equip_flags(ship_client_t* c, uint32_t item_id);
+int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_flags, inventory_t* inv, uint32_t item_id);
 /* 给客户端标记可穿戴职业装备的标签 */
 int item_class_tag_equip_flag(ship_client_t* c);
 

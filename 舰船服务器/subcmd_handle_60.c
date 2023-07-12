@@ -236,7 +236,7 @@ int check_aoe_timer(ship_client_t* src,
     }
 
     if (src->version >= CLIENT_VERSION_DCV2)
-        tech_level += src->pl->bb.inv.iitems[pkt->technique_number].tech;
+        tech_level += src->pl->bb.character.inv.iitems[pkt->technique_number].tech;
 
     if (tech_level < pkt->level) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
@@ -900,7 +900,7 @@ int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
 int sub60_25_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t /*inv, */item_id = pkt->item_id, found_item = 0/*, found_slot = 0, j = 0, slot[4] = { 0 }*/;
+    uint32_t item_id = pkt->item_id, equip_resault = 0;
     int i = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -921,10 +921,11 @@ int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    found_item = item_check_equip_flags(src, item_id);
+    equip_resault = item_check_equip_flags(src->guildcard, src->bb_pl->character.disp.level, 
+        src->equip_flags, &src->bb_pl->character.inv, item_id);
 
     /* 是否存在物品背包中? */
-    if (!found_item) {
+    if (!equip_resault) {
         ERR_LOG("GC %" PRIu32 " 装备了未存在的物品数据!",
             src->guildcard);
         return -1;
@@ -958,17 +959,17 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* Find the item and remove the equip flag. */
-    inv = src->bb_pl->inv.item_count;
+    inv = src->bb_pl->character.inv.item_count;
 
-    i = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    i = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
 
-    if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-        src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+    if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
+        src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
 
         /* If its a frame, we have to make sure to unequip any units that
            may be equipped as well. */
-        if (src->bb_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-            src->bb_pl->inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
+        if (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+            src->bb_pl->character.inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
             isframe = 1;
         }
     }
@@ -983,9 +984,9 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     /* Clear any units if we unequipped a frame. */
     if (isframe) {
         for (i = 0; i < inv; ++i) {
-            if (src->bb_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                src->bb_pl->inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+            if (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+                src->bb_pl->character.inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
+                src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
     }
@@ -1013,7 +1014,7 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x02)
         return -1;
 
-    index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
 
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
@@ -1122,7 +1123,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->inv;
+    inventory_t* inv = &src->bb_pl->character.inv;
 
     /* 在玩家背包中查找物品. */
     size_t index = find_iitem_index(inv, pkt->item_id);
@@ -1560,7 +1561,7 @@ int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t inventory = src->bb_pl->inv;
+    inventory_t inventory = src->bb_pl->character.inv;
     size_t mag_index = find_equipped_mag(&inventory);
 
     item_t mag = inventory.iitems[mag_index].data;
@@ -2242,10 +2243,10 @@ int handle_bb_battle_mode(ship_client_t* src,
                         memcpy(&lc->pl->bb.character, lc->game_data->char_backup, sizeof(lc->pl->bb.character));
 
                     if (lc->mode == 0x02) {
-                        for (ch2 = 0; ch2 < lc->pl->bb.inv.item_count; ch2++)
+                        for (ch2 = 0; ch2 < lc->pl->bb.character.inv.item_count; ch2++)
                         {
-                            if (lc->pl->bb.inv.iitems[ch2].data.datab[0] == 0x02)
-                                lc->pl->bb.inv.iitems[ch2].present = 0;
+                            if (lc->pl->bb.character.inv.iitems[ch2].data.datab[0] == 0x02)
+                                lc->pl->bb.character.inv.iitems[ch2].present = 0;
                         }
                         //CleanUpInventory(lc);
                         lc->pl->bb.character.disp.meseta = 0;
@@ -2254,7 +2255,7 @@ int handle_bb_battle_mode(ship_client_t* src,
                 case 0x03:
                     // Wipe items and reset level.
                     for (ch2 = 0; ch2 < 30; ch2++)
-                        lc->pl->bb.inv.iitems[ch2].present = 0;
+                        lc->pl->bb.character.inv.iitems[ch2].present = 0;
                     //CleanUpInventory(lc);
 
                     uint8_t ch_class = lc->pl->bb.character.dress_data.ch_class;
@@ -2901,9 +2902,9 @@ int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    i = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    i = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
 
-    uint32_t shop_price = get_bb_shop_price(&src->bb_pl->inv.iitems[i]) * pkt->sell_amount;
+    uint32_t shop_price = get_bb_shop_price(&src->bb_pl->character.inv.iitems[i]) * pkt->sell_amount;
 
     src->bb_pl->character.disp.meseta = MIN(
         src->bb_pl->character.disp.meseta + shop_price, 999999);
@@ -2998,18 +2999,18 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            int index = find_iitem_index(&src->bb_pl->inv, pkt->item_ids[x]);
-            sorted.iitems[x] = src->bb_pl->inv.iitems[index];
+            int index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_ids[x]);
+            sorted.iitems[x] = src->bb_pl->character.inv.iitems[index];
         }
     }
 
-    sorted.item_count = src->bb_pl->inv.item_count;
-    sorted.hpmats_used = src->bb_pl->inv.hpmats_used;
-    sorted.tpmats_used = src->bb_pl->inv.tpmats_used;
-    sorted.language = src->bb_pl->inv.language;
+    sorted.item_count = src->bb_pl->character.inv.item_count;
+    sorted.hpmats_used = src->bb_pl->character.inv.hpmats_used;
+    sorted.tpmats_used = src->bb_pl->character.inv.tpmats_used;
+    sorted.language = src->bb_pl->character.inv.language;
 
-    src->bb_pl->inv = sorted;
-    src->pl->bb.inv = sorted;
+    src->bb_pl->character.inv = sorted;
+    src->pl->bb.character.inv = sorted;
 
     /* Nobody else really needs to care about this one... */
     return 0;
@@ -3067,19 +3068,19 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     mid &= 0xFFF;
 
     if (mid < 0xB50) {
-        for (i = 0; i < src->bb_pl->inv.item_count; i++) {
-            if ((src->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-                (src->bb_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
-                if ((src->bb_pl->inv.iitems[i].data.datab[1] < 0x0A) &&
-                    (src->bb_pl->inv.iitems[i].data.datab[2] < 0x05)) {
-                    special = (src->bb_pl->inv.iitems[i].data.datab[4] & 0x1F);
+        for (i = 0; i < src->bb_pl->character.inv.item_count; i++) {
+            if ((src->bb_pl->character.inv.iitems[i].flags & LE32(0x00000008)) &&
+                (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
+                if ((src->bb_pl->character.inv.iitems[i].data.datab[1] < 0x0A) &&
+                    (src->bb_pl->character.inv.iitems[i].data.datab[2] < 0x05)) {
+                    special = (src->bb_pl->character.inv.iitems[i].data.datab[4] & 0x1F);
                 }
                 else {
-                    if ((src->bb_pl->inv.iitems[i].data.datab[1] < 0x0D) &&
-                        (src->bb_pl->inv.iitems[i].data.datab[2] < 0x04))
-                        special = (src->bb_pl->inv.iitems[i].data.datab[4] & 0x1F);
+                    if ((src->bb_pl->character.inv.iitems[i].data.datab[1] < 0x0D) &&
+                        (src->bb_pl->character.inv.iitems[i].data.datab[2] < 0x04))
+                        special = (src->bb_pl->character.inv.iitems[i].data.datab[4] & 0x1F);
                     else {
-                        if (pmt_lookup_weapon_bb(src->bb_pl->inv.iitems[i].data.datal[0], &tmp_wp)) {
+                        if (pmt_lookup_weapon_bb(src->bb_pl->character.inv.iitems[i].data.datal[0], &tmp_wp)) {
                             ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                                 src->guildcard);
                             return -1;

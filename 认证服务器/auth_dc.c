@@ -1444,8 +1444,8 @@ static int handle_char_data(login_client_t *c, dc_char_data_pkt *pkt) {
     }
 
     /* Look through each item */
-    for(j = 0; j < pl->v1.inv.item_count && rv; ++j) {
-        item = (iitem_t *)&pl->v1.inv.iitems[j];
+    for(j = 0; j < pl->v1.character.inv.item_count && rv; ++j) {
+        item = (iitem_t *)&pl->v1.character.inv.iitems[j];
         rv = psocn_limits_check_item(limits, item, v);
     }
 

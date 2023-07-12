@@ -770,8 +770,8 @@ static void convert_gcxb_to_xbgc(ship_client_t* s, void* buf) {
     /* Copy everything over first, then look at the inventory. */
     memcpy(buf, &s->pl->v1, sizeof(v1_player_t));
 
-    for (i = 0; i < d->inv.item_count; ++i) {
-        item = (iitem_t*)&d->inv.iitems[i];
+    for (i = 0; i < d->character.inv.item_count; ++i) {
+        item = (iitem_t*)&d->character.inv.iitems[i];
 
         /* If the item is a mag, then we have to swap the last dword of the item
            data. Otherwise colors and stats get messed up. */
@@ -789,11 +789,13 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     /* Technically, if we wanted to allow any sort of cross-play in games, we'd
        potentially have to do more work here on the inventory. But, for just
        coexisting in the lobby, this will do. */
-    memcpy(buf, &s->pl->v1.inv, PSOCN_STLENGTH_INV);
+    //memcpy(buf, &sp->character.inv, PSOCN_STLENGTH_INV);
 
     /* Copy the character data now... */
-    c = (psocn_bb_char_t *)(buf + PSOCN_STLENGTH_INV);
-    memset(c, 0, PSOCN_STLENGTH_BB_CHAR);
+    c = (psocn_bb_char_t *)(buf/* + PSOCN_STLENGTH_INV*/);
+    memset(c, 0, PSOCN_STLENGTH_BB_CHAR2);
+
+    memcpy(&c->inv, &sp->character.inv, PSOCN_STLENGTH_INV);
     c->disp.stats.atp = sp->character.disp.stats.atp;
     c->disp.stats.mst = sp->character.disp.stats.mst;
     c->disp.stats.evp = sp->character.disp.stats.evp;
@@ -862,7 +864,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     /* Technically, if we wanted to allow any sort of cross-play in games, we'd
        potentially have to do more work here on the inventory. But, for just
        coexisting in the lobby, this will do. */
-    memcpy(buf, &s->pl->bb.inv, PSOCN_STLENGTH_INV);
+    memcpy(&c->character.inv, &sp->inv, PSOCN_STLENGTH_INV);
 
     /* Copy the character data now... */
     c->character.disp.stats.atp = sp->disp.stats.atp;
@@ -1026,10 +1028,10 @@ void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {
 
         case CLIENT_VERSION_BB:
             /* Both clients are Blue Burst -- Copy the data over. */
-            memcpy(bp, &s->pl->bb.inv, PSOCN_STLENGTH_INV);
-            bp += PSOCN_STLENGTH_INV;
+            //memcpy(bp, &s->pl->bb.character.inv, PSOCN_STLENGTH_INV);
+            //bp += PSOCN_STLENGTH_INV;
             memcpy(bp, &s->pl->bb.character,
-                PSOCN_STLENGTH_BB_CHAR);
+                PSOCN_STLENGTH_BB_CHAR2);
             break;
         }
 

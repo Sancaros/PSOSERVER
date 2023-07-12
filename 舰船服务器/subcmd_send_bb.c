@@ -624,32 +624,32 @@ int subcmd_send_bb_level(ship_client_t* dest, int mode) {
 
     if (mode) {
         /* 填充人物基础数据. 均为 little-endian 字符串. */
-        pkt.atp = dest->mode_pl->disp.stats.atp;
-        pkt.mst = dest->mode_pl->disp.stats.mst;
-        pkt.evp = dest->mode_pl->disp.stats.evp;
-        pkt.hp = dest->mode_pl->disp.stats.hp;
-        pkt.dfp = dest->mode_pl->disp.stats.dfp;
-        pkt.ata = dest->mode_pl->disp.stats.ata;
-        pkt.level = dest->mode_pl->disp.level;
+        pkt.atp = dest->mode_pl->bb.disp.stats.atp;
+        pkt.mst = dest->mode_pl->bb.disp.stats.mst;
+        pkt.evp = dest->mode_pl->bb.disp.stats.evp;
+        pkt.hp = dest->mode_pl->bb.disp.stats.hp;
+        pkt.dfp = dest->mode_pl->bb.disp.stats.dfp;
+        pkt.ata = dest->mode_pl->bb.disp.stats.ata;
+        pkt.level = dest->mode_pl->bb.disp.level;
 
         /* 增加MAG的升级奖励. */
-        for (i = 0; i < dest->mode_pl->inv.item_count; ++i) {
-            if ((dest->mode_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-                dest->mode_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+        for (i = 0; i < dest->mode_pl->bb.inv.item_count; ++i) {
+            if ((dest->mode_pl->bb.inv.iitems[i].flags & LE32(0x00000008)) &&
+                dest->mode_pl->bb.inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
                 base = LE16(pkt.dfp);
-                mag = LE16(dest->mode_pl->inv.iitems[i].data.dataw[2]) / 100;
+                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[2]) / 100;
                 pkt.dfp = LE16((base + mag));
 
                 base = LE16(pkt.atp);
-                mag = LE16(dest->mode_pl->inv.iitems[i].data.dataw[3]) / 50;
+                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[3]) / 50;
                 pkt.atp = LE16((base + mag));
 
                 base = LE16(pkt.ata);
-                mag = LE16(dest->mode_pl->inv.iitems[i].data.dataw[4]) / 200;
+                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[4]) / 200;
                 pkt.ata = LE16((base + mag));
 
                 base = LE16(pkt.mst);
-                mag = LE16(dest->mode_pl->inv.iitems[i].data.dataw[5]) / 50;
+                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[5]) / 50;
                 pkt.mst = LE16((base + mag));
 
                 break;
@@ -667,23 +667,23 @@ int subcmd_send_bb_level(ship_client_t* dest, int mode) {
         pkt.level = dest->bb_pl->character.disp.level;
 
         /* 增加MAG的升级奖励. */
-        for (i = 0; i < dest->bb_pl->inv.item_count; ++i) {
-            if ((dest->bb_pl->inv.iitems[i].flags & LE32(0x00000008)) &&
-                dest->bb_pl->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+        for (i = 0; i < dest->bb_pl->character.inv.item_count; ++i) {
+            if ((dest->bb_pl->character.inv.iitems[i].flags & LE32(0x00000008)) &&
+                dest->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
                 base = LE16(pkt.dfp);
-                mag = LE16(dest->bb_pl->inv.iitems[i].data.dataw[2]) / 100;
+                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[2]) / 100;
                 pkt.dfp = LE16((base + mag));
 
                 base = LE16(pkt.atp);
-                mag = LE16(dest->bb_pl->inv.iitems[i].data.dataw[3]) / 50;
+                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[3]) / 50;
                 pkt.atp = LE16((base + mag));
 
                 base = LE16(pkt.ata);
-                mag = LE16(dest->bb_pl->inv.iitems[i].data.dataw[4]) / 200;
+                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[4]) / 200;
                 pkt.ata = LE16((base + mag));
 
                 base = LE16(pkt.mst);
-                mag = LE16(dest->bb_pl->inv.iitems[i].data.dataw[5]) / 50;
+                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[5]) / 50;
                 pkt.mst = LE16((base + mag));
 
                 break;
@@ -863,19 +863,19 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
     memcpy(&compare_item1, &i->data.datab[0], 3);
     if (i->data.item_id)
         compare_id = i->data.item_id;
-    for (ch = 0; ch < c->bb_pl->inv.item_count; ch++) {
-        memcpy(&compare_item2, &c->bb_pl->inv.iitems[ch].data.datab[0], 3);
+    for (ch = 0; ch < c->bb_pl->character.inv.item_count; ch++) {
+        memcpy(&compare_item2, &c->bb_pl->character.inv.iitems[ch].data.datab[0], 3);
         if (!i->data.item_id)
-            compare_id = c->bb_pl->inv.iitems[ch].data.item_id;
+            compare_id = c->bb_pl->character.inv.iitems[ch].data.item_id;
         // Found the item?
-        if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->inv.iitems[ch].data.item_id)) {
-            if (c->bb_pl->inv.iitems[ch].data.datab[0] == ITEM_SUBTYPE_UNIT)
+        if ((compare_item1 == compare_item2) && (compare_id == c->bb_pl->character.inv.iitems[ch].data.item_id)) {
+            if (c->bb_pl->character.inv.iitems[ch].data.datab[0] == ITEM_SUBTYPE_UNIT)
 
-            if (is_stackable(&c->bb_pl->inv.iitems[ch].data)) {
+            if (is_stackable(&c->bb_pl->character.inv.iitems[ch].data)) {
                 if (!count)
                     count = 1;
 
-                stack_count = c->bb_pl->inv.iitems[ch].data.datab[5];
+                stack_count = c->bb_pl->character.inv.iitems[ch].data.datab[5];
                 if (!stack_count)
                     stack_count = 1;
 
@@ -884,7 +884,7 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
 
                 stack_count -= count;
 
-                c->bb_pl->inv.iitems[ch].data.datab[5] = (uint8_t)stack_count;
+                c->bb_pl->character.inv.iitems[ch].data.datab[5] = (uint8_t)stack_count;
 
                 if (!stack_count)
                     delete_item = 1;
@@ -892,23 +892,23 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
             else
                 delete_item = 1;
 
-            subcmd_send_bb_destroy_item(c, c->bb_pl->inv.iitems[ch].data.item_id, (uint8_t)count);
+            subcmd_send_bb_destroy_item(c, c->bb_pl->character.inv.iitems[ch].data.item_id, (uint8_t)count);
 
             if (delete_item) {
-                if (c->bb_pl->inv.iitems[ch].data.datab[0] == ITEM_TYPE_GUARD) {
+                if (c->bb_pl->character.inv.iitems[ch].data.datab[0] == ITEM_TYPE_GUARD) {
                     // equipped armor, remove slot items
-                    if ((c->bb_pl->inv.iitems[ch].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
-                        (c->bb_pl->inv.iitems[ch].flags & LE32(0x00000008))) {
-                        for (ch2 = 0; ch2 < c->bb_pl->inv.item_count; ch2++)
-                            if ((c->bb_pl->inv.iitems[ch2].data.datab[0] == ITEM_TYPE_GUARD) &&
-                                (c->bb_pl->inv.iitems[ch2].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
-                                (c->bb_pl->inv.iitems[ch2].flags & LE32(0x00000008))) {
-                                c->bb_pl->inv.iitems[ch2].data.datab[4] = 0x00;
-                                c->bb_pl->inv.iitems[ch2].flags &= LE32(0xFFFFFFF7);
+                    if ((c->bb_pl->character.inv.iitems[ch].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
+                        (c->bb_pl->character.inv.iitems[ch].flags & LE32(0x00000008))) {
+                        for (ch2 = 0; ch2 < c->bb_pl->character.inv.item_count; ch2++)
+                            if ((c->bb_pl->character.inv.iitems[ch2].data.datab[0] == ITEM_TYPE_GUARD) &&
+                                (c->bb_pl->character.inv.iitems[ch2].data.datab[1] != ITEM_SUBTYPE_BARRIER) &&
+                                (c->bb_pl->character.inv.iitems[ch2].flags & LE32(0x00000008))) {
+                                c->bb_pl->character.inv.iitems[ch2].data.datab[4] = 0x00;
+                                c->bb_pl->character.inv.iitems[ch2].flags &= LE32(0xFFFFFFF7);
                             }
                     }
                 }
-                c->bb_pl->inv.iitems[ch].present = LE16(0);
+                c->bb_pl->character.inv.iitems[ch].present = LE16(0);
             }
             found_item = ch;
             break;
@@ -920,7 +920,7 @@ int subcmd_bb_del_inv_item(iitem_t* i, uint32_t count, ship_client_t* c) {
         return found_item;
     }
     else
-        clean_up_inv(&c->bb_pl->inv);
+        clean_up_inv(&c->bb_pl->character.inv);
 
     return found_item;
 

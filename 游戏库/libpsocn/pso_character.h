@@ -155,6 +155,7 @@ typedef struct psocn_bb_mini_char {
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 /* 400字节 玩家外观描述数值数据*/
 typedef struct psocn_bb_char {
+    inventory_t inv;
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
     psocn_bb_char_name_t name;
@@ -166,6 +167,7 @@ typedef struct psocn_bb_char {
 
 /* v1v2v3pc 玩家数据结构 208字节 */
 typedef struct psocn_v1v2v3pc_char {
+    inventory_t inv;
     psocn_disp_char_t disp;
     psocn_dress_data_t dress_data;
     uint8_t config[0x48];
@@ -240,7 +242,7 @@ typedef struct psocn_bb_guildcard {
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
-    inventory_t inv;                                                         // 玩家数据表
+    //inventory_t inv;                                                         // 玩家数据表
     psocn_bb_char_t character;                                               // 玩家数据表               OK
     char guildcard_string[16];                                               // not saved
     uint32_t option_flags;                                                   // account
@@ -268,7 +270,7 @@ typedef struct psocn_bb_full_char {
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
-    inventory_t inv;
+    //inventory_t inv;
     psocn_bb_char_t character;
     uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];
     psocn_bank_t bank;
@@ -313,10 +315,13 @@ typedef struct psocn_bb_db_opts {
 } PACKED psocn_bb_db_opts_t;
 
 /* 模式专用角色数据 inv 模式背包 disp 模式角色数值 dress_data 模式专用外观 */
-typedef struct psocn_mode_char {
-    inventory_t inv;
-    psocn_disp_char_t disp;
-    psocn_dress_data_t dress_data;
+typedef union psocn_mode_char {
+    psocn_v1v2v3pc_char_t nobb;
+    psocn_bb_char_t bb;
+    //inventory_t inv;
+    //psocn_disp_char_t disp;
+    //psocn_dress_data_t dress_data;
+    //uint8_t techniques[0x14]; //20 /* 默认 FF 为空*/
 } PACKED psocn_mode_char_t;
 
 #ifndef _WIN32

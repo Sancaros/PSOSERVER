@@ -1476,16 +1476,16 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (src->bb_pl->character.disp.meseta < 100)
         return 0;
 
-    id_item_index = find_iitem_index(&src->bb_pl->inv, pkt->item_id);
+    id_item_index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
 
-    if (src->bb_pl->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
+    if (src->bb_pl->character.inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
             src->guildcard);
         return -3;
     }
 
     subcmd_send_bb_delete_meseta(src, 100, 0);
-    iitem_t* id_result = &src->bb_pl->inv.iitems[id_item_index];
+    iitem_t* id_result = &src->bb_pl->character.inv.iitems[id_item_index];
     attrib = id_result->data.datab[4] & ~(0x80);
 
     src->game_data->identify_result = *id_result;
@@ -1665,10 +1665,10 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             /* 在玩家背包中查找物品. */
-            iitem_count = src->bb_pl->inv.item_count;
+            iitem_count = src->bb_pl->character.inv.item_count;
             for (i = 0; i < iitem_count; ++i) {
-                if (src->bb_pl->inv.iitems[i].data.item_id == pkt->item_id) {
-                    iitem = src->bb_pl->inv.iitems[i];
+                if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
+                    iitem = src->bb_pl->character.inv.iitems[i];
                     found = i;
 
                     /* If it is an equipped frame, we need to unequip all
@@ -1692,10 +1692,10 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* Unequip any units, if the item was equipped and a frame. */
             if (isframe) {
                 for (i = 0; i < iitem_count; ++i) {
-                    iitem = src->bb_pl->inv.iitems[i];
+                    iitem = src->bb_pl->character.inv.iitems[i];
                     if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
                         iitem.data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                        src->bb_pl->inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+                        src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
                     }
                 }
             }
@@ -2096,7 +2096,7 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
             uint16_t target_lv;
 
             ship_client_t* lClient = l->clients[pkt->shdr.client_id];
-            target_lv = lClient->mode_pl->disp.level;
+            target_lv = lClient->mode_pl->bb.disp.level;
             target_lv += pkt->num_levels;
 
             if (target_lv > 199)
@@ -2112,8 +2112,6 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t iitem_count, found, i, stack;
-    uint32_t wrap_id;
     iitem_t backup_item;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2123,53 +2121,24 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     memset(&backup_item, 0, PSOCN_STLENGTH_IITEM);
-    wrap_id = pkt->item_data.item_id;
 
-    for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
-        if (src->bb_pl->inv.iitems[i].data.item_id == wrap_id) {
-            memcpy(&backup_item, &src->bb_pl->inv.iitems[i], PSOCN_STLENGTH_IITEM);
-            break;
-        }
-    }
+    backup_item = remove_iitem(src, pkt->item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
-    if (backup_item.data.item_id) {
-        stack = is_stackable(&backup_item.data);
-
-        //if (!stack && pkt->item_amount > 1) {
-        //    ERR_LOG("GC %" PRIu32 " banking multiple of "
-        //        "a non-stackable item!", c->guildcard);
-        //    return -1;
-        //}
-
-        iitem_count = src->bb_pl->inv.item_count;
-
-        if ((found = item_remove_from_inv(src->bb_pl->inv.iitems, iitem_count,
-            backup_item.data.item_id, 1)) < 1) {
-            ERR_LOG("无法从玩家背包中移除物品!");
-            return -1;
-        }
-
-        if (found < 0 || found > 1) {
-            ERR_LOG("GC %u Error removing item from inventory for "
-                "banking!", src->guildcard);
-            return -1;
-        }
-
-        src->bb_pl->inv.item_count = (iitem_count -= found);
-
-        if (backup_item.data.datab[0] == 0x02)
-            backup_item.data.data2b[2] |= 0x40; // Wrap a mag
-        else
-            backup_item.data.datab[4] |= 0x40; // Wrap other
-
-        /* 将物品新增至背包. */
-        if (!add_iitem(src, &backup_item))
-            return 0;
-    }
-    else {
+    if (&backup_item == NULL) {
         ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
-            src->guildcard, wrap_id);
+            src->guildcard, pkt->item_data.item_id);
         return -1;
+    }
+
+    if (backup_item.data.datab[0] == 0x02)
+        backup_item.data.data2b[2] |= 0x40; // Wrap a mag
+    else
+        backup_item.data.datab[4] |= 0x40; // Wrap other
+
+    /* 将物品新增至背包. */
+    if (!add_iitem(dest, &backup_item)) {
+        add_iitem(src, &backup_item);
+        return send_txt(src, __(src, "\tE\tC4传送物品失败"));
     }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
@@ -2188,7 +2157,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
         iitem_t ex_pc = { 0 };
         ex_pc.data.datal[0] = BBItem_Photon_Crystal;
-        size_t item_id = find_iitem_stack_item_id(&src->bb_pl->inv, &ex_pc);
+        size_t item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &ex_pc);
         iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
         if(&item == NULL)
             l->drops_disabled = true;

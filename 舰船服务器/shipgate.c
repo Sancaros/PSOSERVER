@@ -1362,8 +1362,8 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         memcpy(c->pl, pkt->data, clen);
 
                         ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->pl->bb.inv.item_count; ++i) {
-                            print_iitem_data(&c->pl->bb.inv.iitems[i], i, c->version);
+                        for (i = 0; i < c->pl->bb.character.inv.item_count; ++i) {
+                            print_iitem_data(&c->pl->bb.character.inv.iitems[i], i, c->version);
                         }
                         
                         send_lobby_join(c, c->cur_lobby);
@@ -1374,15 +1374,15 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
-                            if (c->bb_pl->inv.iitems[i].present) {
-                                fix_inv_bank_item(&c->bb_pl->inv.iitems[i].data);
-                                c->bb_pl->inv.iitems[i].data.item_id = EMPTY_STRING;
+                            if (c->bb_pl->character.inv.iitems[i].present) {
+                                fix_inv_bank_item(&c->bb_pl->character.inv.iitems[i].data);
+                                c->bb_pl->character.inv.iitems[i].data.item_id = EMPTY_STRING;
                             }
                             else
-                                clear_iitem(&c->bb_pl->inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
+                                clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
                         }
 
-                        fix_equip_item(&c->bb_pl->inv);
+                        fix_equip_item(&c->bb_pl->character.inv);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {

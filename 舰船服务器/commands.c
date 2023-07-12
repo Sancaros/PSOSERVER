@@ -960,8 +960,8 @@ static int handle_legit(ship_client_t *c, const char *params) {
     limits = ship->def_limits;
 
     /* Make sure the player qualifies for legit mode... */
-    for(j = 0; j < c->pl->v1.inv.item_count; ++j) {
-        item = (iitem_t *)&c->pl->v1.inv.iitems[j];
+    for(j = 0; j < c->pl->v1.character.inv.item_count; ++j) {
+        item = (iitem_t *)&c->pl->v1.character.inv.iitems[j];
         irv = psocn_limits_check_item(limits, item, v);
 
         if(!irv) {
@@ -1534,15 +1534,26 @@ static void dumpinv_internal(ship_client_t *c) {
         }
         ITEM_LOG("------------------------------------------------------------");
     }
-    else {
+    else if(c->mode){
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
-        ITEM_LOG("背包物品数量 %u", c->bb_pl->inv.item_count);
+        ITEM_LOG("背包物品数量 %u", c->mode_pl->bb.inv.item_count);
 
-        for(i = 0; i < c->bb_pl->inv.item_count; ++i) {
-            print_iitem_data(&c->bb_pl->inv.iitems[i], i, c->version);
+        for(i = 0; i < c->mode_pl->bb.inv.item_count; ++i) {
+            print_iitem_data(&c->mode_pl->bb.inv.iitems[i], i, c->version);
+        }
+        ITEM_LOG("------------------------------------------------------------");
+    } else {
+        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
+            BB_CHARACTER_CHAR_NAME_WLENGTH);
+        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("背包物品数量 %u", c->bb_pl->character.inv.item_count);
+
+        for (i = 0; i < c->bb_pl->character.inv.item_count; ++i) {
+            print_iitem_data(&c->bb_pl->character.inv.iitems[i], i, c->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
@@ -3659,14 +3670,14 @@ static int handle_clean(ship_client_t* c, const char* params) {
     if (*params) {
         if (!strcmp(params, "inv")) {
 
-            int size = sizeof(c->bb_pl->inv.iitems) / PSOCN_STLENGTH_IITEM;
+            int size = sizeof(c->bb_pl->character.inv.iitems) / PSOCN_STLENGTH_IITEM;
 
             for (int i = 0; i < size; i++) {
-                memset(&c->bb_pl->inv.iitems[i], 0, PSOCN_STLENGTH_IITEM);
+                memset(&c->bb_pl->character.inv.iitems[i], 0, PSOCN_STLENGTH_IITEM);
             }
 
-            c->bb_pl->inv.item_count = 0;
-            c->pl->bb.inv = c->bb_pl->inv;
+            c->bb_pl->character.inv.item_count = 0;
+            c->pl->bb.character.inv = c->bb_pl->character.inv;
 
             return send_txt(c, "%s", __(c, "\tE\tC4背包数据已清空."));
         }

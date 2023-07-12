@@ -1507,8 +1507,8 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     }
 
     /* Copy out the inventory data */
-    memcpy(c->iitems, c->pl->v1.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
-    c->item_count = (int)c->pl->v1.inv.item_count;
+    memcpy(c->iitems, c->pl->v1.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
+    c->item_count = (int)c->pl->v1.character.inv.item_count;
 
     /* Renumber the inventory data so we know what's going on later */
     for (i = 0; i < c->item_count; ++i) {

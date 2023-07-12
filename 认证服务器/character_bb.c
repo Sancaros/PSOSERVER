@@ -701,7 +701,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
         }
 
         /* 获取玩家角色背包数据数据项 */
-        if (db_insert_char_inv(&char_data->inv, c->guildcard, pkt->slot)) {
+        if (db_insert_char_inv(&char_data->character.inv, c->guildcard, pkt->slot)) {
             SQLERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */

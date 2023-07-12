@@ -1314,7 +1314,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
     }
 
     if(c->version >= CLIENT_VERSION_DCV2)
-        tech_level += c->pl->v1.inv.iitems[pkt->tech].tech;
+        tech_level += c->pl->v1.character.inv.iitems[pkt->tech].tech;
 
     if(tech_level < pkt->level) {
         /* This might happen if the user learns a new tech in a team. Until we

@@ -49,13 +49,13 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
     snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
         "update_time = NOW(), inventory = '", CHARACTER_DEFAULT);
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character.inv,
         PSOCN_STLENGTH_INV);
 
-    strcat(myquery, "', `character` = '");
+    strcat(myquery, "', `character2` = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character,
-        PSOCN_STLENGTH_BB_CHAR);
+        PSOCN_STLENGTH_BB_CHAR2);
 
     strcat(myquery, "', quest_data1 = '");
 
@@ -115,7 +115,7 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
     memset(myquery, 0, sizeof(myquery));
 
     snprintf(myquery, sizeof(myquery), "SELECT "
-        "inventory, `character`, quest_data1, bank, guildcard_desc, "
+        "inventory, `character2`, quest_data1, bank, guildcard_desc, "
         "autoreply, infoboard, challenge_data, tech_menu, quest_data2 "
         "FROM %s "
         "WHERE `index` = %d", CHARACTER_DEFAULT, index);
@@ -145,8 +145,9 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
         return -1;
     }
 
-    memcpy((char*)&data->inv, row[0], PSOCN_STLENGTH_INV);
-    memcpy((char*)&data->character, row[1], PSOCN_STLENGTH_BB_CHAR);
+    //memcpy((char*)&data->character.inv, row[0], PSOCN_STLENGTH_INV);
+    //memcpy((char*)&data->character, row[1], PSOCN_STLENGTH_BB_CHAR);
+    memcpy((char*)&data->character, row[1], PSOCN_STLENGTH_BB_CHAR2);
     memcpy((char*)&data->quest_data1, row[2], PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
     memcpy((char*)&data->bank, row[3], PSOCN_STLENGTH_BANK);
     memcpy((char*)&data->guildcard_desc, row[4], 88);
@@ -165,7 +166,7 @@ int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class
 
     snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
         "`index`, class_name, "
-        "inventory, `character`, quest_data1, bank, guildcard_desc, "
+        "inventory, `character2`, quest_data1, bank, guildcard_desc, "
         "autoreply, infoboard, challenge_data, tech_menu, quest_data2"
         ") VALUES ("
         "'%d', '%s', '",
@@ -173,13 +174,13 @@ int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class
         index, class_name
     );
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->inv,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character.inv,
         PSOCN_STLENGTH_INV);
 
     strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character,
-        PSOCN_STLENGTH_BB_CHAR);
+        PSOCN_STLENGTH_BB_CHAR2);
 
     strcat(myquery, "', '");
 

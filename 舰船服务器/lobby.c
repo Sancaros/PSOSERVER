@@ -1646,7 +1646,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             len += snprintf(msg + len, 511 - len, "%s µÈ¼¶ L%d\n  %s    \n  ÓïÑÔ: %s\n",
                             pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.disp.level + 1,
                             pso_class[pl->v1.character.dress_data.ch_class].cn_name,
-                            mini_language_codes_cn[pl->v1.inv.language]);
+                            mini_language_codes_cn[pl->v1.character.inv.language]);
         }
     }
 
@@ -1668,8 +1668,8 @@ int lobby_check_player_legit(lobby_t *l, ship_t *s, player_t *pl, uint32_t v) {
     }
 
     /* Look through each item */
-    for(j = 0; j < pl->v1.inv.item_count; ++j) {
-        item = (iitem_t *)&pl->v1.inv.iitems[j];
+    for(j = 0; j < pl->v1.character.inv.item_count; ++j) {
+        item = (iitem_t *)&pl->v1.character.inv.iitems[j];
         irv = psocn_limits_check_item(l->limits_list, item, v);
 
         if(!irv) {

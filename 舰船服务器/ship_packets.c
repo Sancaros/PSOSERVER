@@ -1314,7 +1314,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
            for the time being... */
         if(!(l->clients[i]->flags & CLIENT_FLAG_IS_NTE) ||
            l->clients[i]->version != CLIENT_VERSION_DCV1)
-            memset(&pkt->entries[pls].data.inv, 0, PSOCN_STLENGTH_INV);
+            memset(&pkt->entries[pls].data.character.inv, 0, PSOCN_STLENGTH_INV);
 
         ++pls;
         pkt_size += 1084;
@@ -1600,11 +1600,11 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
                      l->clients[i]->pl->v1.character.dress_data.guildcard_str.string, 32);
         }
 
-        make_disp_data(l->clients[i], c, &pkt->entries[pls].inv);
+        make_disp_data(l->clients[i], c, &pkt->entries[pls].data.inv);
 
         ++pls;
-        pkt_size += sizeof(bb_player_hdr_t) + PSOCN_STLENGTH_INV +
-            PSOCN_STLENGTH_BB_CHAR;
+        pkt_size += sizeof(bb_player_hdr_t)/* + PSOCN_STLENGTH_INV*/ +
+            PSOCN_STLENGTH_BB_CHAR2;
     }
 
     /* Fill in the rest of it. */
@@ -1856,7 +1856,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
        the time being... */
     if(!(nc->flags & CLIENT_FLAG_IS_NTE) ||
        nc->version != CLIENT_VERSION_DCV1)
-        memset(&pkt->entries[0].data.inv, 0, PSOCN_STLENGTH_INV);
+        memset(&pkt->entries[0].data.character.inv, 0, PSOCN_STLENGTH_INV);
 
     /* 加密并发送 */
     return crypt_send(c, 0x0444, sendbuf);
@@ -2090,9 +2090,9 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
                  nc->pl->v1.character.dress_data.guildcard_str.string, 32);
     }
 
-    make_disp_data(nc, c, &pkt->entries[0].inv);
-    pkt_size += sizeof(bb_player_hdr_t) + PSOCN_STLENGTH_INV +
-        PSOCN_STLENGTH_BB_CHAR;
+    make_disp_data(nc, c, &pkt->entries[0].data.inv);
+    pkt_size += sizeof(bb_player_hdr_t)/* + PSOCN_STLENGTH_INV*/ +
+        PSOCN_STLENGTH_BB_CHAR2;
     pkt->hdr.pkt_len = LE16(pkt_size);
 
     /* 加密并发送 */
@@ -11506,9 +11506,10 @@ int send_bb_full_char(ship_client_t *c) {
 
     /* Fill in all the parts of it... */
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(&pkt->data.inv, &c->bb_pl->inv, PSOCN_STLENGTH_INV);
+    //memcpy(&pkt->data.inv, &c->bb_pl->inv, PSOCN_STLENGTH_INV);
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(&pkt->data.character, &c->bb_pl->character, PSOCN_STLENGTH_BB_CHAR);
+    //memcpy(&pkt->data.character, &c->bb_pl->character, PSOCN_STLENGTH_BB_CHAR);
+    memcpy(&pkt->data.character, &c->bb_pl->character, PSOCN_STLENGTH_BB_CHAR2);
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.option_flags = c->bb_opts->option_flags;
     ///////////////////////////////////////////////////////////////////////////////////////

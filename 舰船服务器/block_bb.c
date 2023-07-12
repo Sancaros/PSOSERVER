@@ -911,8 +911,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */
-    memcpy(c->iitems, c->pl->bb.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
-    c->item_count = (int)c->pl->bb.inv.item_count;
+    memcpy(c->iitems, c->pl->bb.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
+    c->item_count = (int)c->pl->bb.character.inv.item_count;
 
     /* 重新对库存数据进行编号, 以便后期进行数据交换 */
     for (i = 0; i < c->item_count; ++i) {
@@ -1597,15 +1597,15 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     }
 
     /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-    for (int i = 0; i < char_data.inv.item_count;i++) {
-        if (char_data.inv.iitems[i].present == LE16(0x0002)) {
-            char_data.inv.iitems[i].present = LE16(0x0001);
-            char_data.inv.iitems[i].flags = LE32(0x00000008);
+    for (int i = 0; i < char_data.character.inv.item_count;i++) {
+        if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
+            char_data.character.inv.iitems[i].present = LE16(0x0001);
+            char_data.character.inv.iitems[i].flags = LE32(0x00000008);
         }else {
-            char_data.inv.iitems[i].present = LE16(0x0001);
-            char_data.inv.iitems[i].flags = LE32(0x00000000);
+            char_data.character.inv.iitems[i].present = LE16(0x0001);
+            char_data.character.inv.iitems[i].flags = LE32(0x00000000);
         }
-        char_data.inv.iitems[i].data.item_id = EMPTY_STRING;
+        char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
     }
 
     if (!c->game_data->db_save_done) {
@@ -1619,8 +1619,9 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
-        memcpy(&c->bb_pl->inv, &char_data.inv, PSOCN_STLENGTH_INV);
-        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
+        //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
+        //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
+        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
         memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
         memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));

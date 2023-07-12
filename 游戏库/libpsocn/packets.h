@@ -1845,7 +1845,7 @@ typedef struct bb_lobby_join {
     uint8_t unknown_a3[4];
     struct {
         bb_player_hdr_t hdr;
-        inventory_t inv;
+        //inventory_t inv;
         psocn_bb_char_t data;
     } entries[0];
 } PACKED bb_lobby_join_pkt;
