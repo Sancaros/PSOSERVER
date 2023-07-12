@@ -251,8 +251,11 @@ typedef struct psocn_bb_full_char {
     uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
     uint8_t shortcuts[0x0A40];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
-    uint16_t infoboard[0x00AC];                                              // 玩家数据表
-    psocn_bb_records_data_t records;
+    uint16_t infoboard[0x00AC];
+    uint32_t client_id;
+    battle_records_t battle;
+    bb_challenge_records_t challenge;
+    //psocn_bb_records_data_t records;                                         // 玩家数据表
     //uint8_t unk3[0x001C];                                                    // not saved
     //bb_challenge_records_t challenge;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
@@ -272,8 +275,8 @@ typedef struct psocn_bb_db_char {
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172
     uint16_t infoboard[0x00AC];//172
-    psocn_bb_records_data_t records;
-    //bb_challenge_records_t challenge;
+    //psocn_bb_records_data_t records;
+    bb_challenge_records_t challenge;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;

@@ -521,7 +521,6 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 
 /* 获取玩家角色背包数据数据项 */
 int db_get_char_inv(uint32_t gc, uint8_t slot, inventory_t* inv, int check) {
-    uint8_t j = 0;
     size_t i = 0;
 
     if (db_get_char_inv_param(gc, slot, inv, 0)) {

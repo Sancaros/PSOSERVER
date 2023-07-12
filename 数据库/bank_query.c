@@ -414,6 +414,75 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     return 0;
 }
 
+static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
+    void* result;
+    char** row;
+    char* endptr;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT "
+        "*"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
+        CHARACTER_BANK_ITEMS,
+        gc, slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_use(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    int k = 0;
+
+    while ((row = psocn_db_result_fetch(result)) != NULL) {
+        if ((uint16_t)strtoul(row[5], &endptr, 16) != 0) {
+            bank->bitems[k].amount = (uint16_t)strtoul(row[4], &endptr, 16);
+            bank->bitems[k].show_flags = (uint16_t)strtoul(row[5], &endptr, 16);
+
+            bank->bitems[k].data.datab[0] = (uint8_t)strtoul(row[6], &endptr, 16);
+            bank->bitems[k].data.datab[1] = (uint8_t)strtoul(row[7], &endptr, 16);
+            bank->bitems[k].data.datab[2] = (uint8_t)strtoul(row[8], &endptr, 16);
+            bank->bitems[k].data.datab[3] = (uint8_t)strtoul(row[9], &endptr, 16);
+            bank->bitems[k].data.datab[4] = (uint8_t)strtoul(row[10], &endptr, 16);
+            bank->bitems[k].data.datab[5] = (uint8_t)strtoul(row[11], &endptr, 16);
+            bank->bitems[k].data.datab[6] = (uint8_t)strtoul(row[12], &endptr, 16);
+            bank->bitems[k].data.datab[7] = (uint8_t)strtoul(row[13], &endptr, 16);
+            bank->bitems[k].data.datab[8] = (uint8_t)strtoul(row[14], &endptr, 16);
+            bank->bitems[k].data.datab[9] = (uint8_t)strtoul(row[15], &endptr, 16);
+            bank->bitems[k].data.datab[10] = (uint8_t)strtoul(row[16], &endptr, 16);
+            bank->bitems[k].data.datab[11] = (uint8_t)strtoul(row[17], &endptr, 16);
+
+            bank->bitems[k].data.item_id = (uint32_t)strtoul(row[18], &endptr, 16);
+
+            bank->bitems[k].data.data2b[0] = (uint8_t)strtoul(row[19], &endptr, 16);
+            bank->bitems[k].data.data2b[1] = (uint8_t)strtoul(row[20], &endptr, 16);
+            bank->bitems[k].data.data2b[2] = (uint8_t)strtoul(row[21], &endptr, 16);
+            bank->bitems[k].data.data2b[3] = (uint8_t)strtoul(row[22], &endptr, 16);
+
+            k++;
+        }
+        else
+            break;
+    }
+
+    psocn_db_result_free(result);
+
+    return k;
+}
+
 void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
@@ -506,33 +575,26 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
 /* 获取玩家角色银行数据数据项 */
 int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
-    size_t i = 0, ic = bank->item_count;
-
-    if (ic > MAX_PLAYER_BANK_ITEMS)
-        ic = db_get_char_bank_item_count(gc, slot);
-
-    bank->item_count = ic;
+    size_t i = 0;
 
     if (db_get_char_bank_param(gc, slot, bank, 0)) {
         //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
         db_insert_bank_param(bank, gc, slot);
 
-        for (i = 0; i < ic; i++) {
-            if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
-                break;
+        for (i = 0; i < bank->item_count; i++) {
+            if(bank->bitems[i].show_flags)
+                if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+                    break;
         }
 
         return 0;
     }
 
-    for (i = 0; i < ic; i++) {
-        if (db_get_char_bank_items(gc, slot, &bank->bitems[i], i, 0))
-            break;
-    }
+    bank->item_count = db_get_char_bank_itemdata(gc, slot, bank);
 
-    clean_up_char_bank(bank, ic, MAX_PLAYER_BANK_ITEMS);
+    clean_up_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
 
-    if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
+    if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
         return -1;
 
     return 0;
