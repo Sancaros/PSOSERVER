@@ -3310,6 +3310,28 @@ int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_start_battle_mode_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l->battle) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x003C) || pkt->shdr.size != 0x0D) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_D2_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3467,6 +3489,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_CHARGE_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
     { SUBCMD60_EXP_REQ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
     { SUBCMD60_GUILD_EX_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
+    { SUBCMD60_START_BATTLE_MODE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CF_bb },
 
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },

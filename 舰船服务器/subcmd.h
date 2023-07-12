@@ -2901,21 +2901,27 @@ typedef struct subcmd_bb_guild_master_trans2 {
 //( 00000010 )   01 00 00 00 00 01 01 00  03 05 05 05 05 01 05 01    ................
 //( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
 //( 00000030 )   0A 00 00 00 01 00 00 00  0A 00 00 00                ............
-// 0xCF: 对战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
-typedef struct subcmd_bb_battle_mode {
+//[2023年07月12日 20:08:10:017] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0xCF
+//( 00000000 )   3C 00 60 00 00 00 00 00   CF 0D 76 00 00 00 00 00  <.`.....?v.....
+//( 00000010 )   01 00 00 00 00 01 01 00   03 05 05 05 05 01 05 01  ................
+//( 00000020 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 00000030 )   0A 00 00 00 01 00 00 00   0A 00 00 00             ............
+// 0xCF: 初始化对战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
+typedef struct subcmd_bb_start_battle_mode {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
-    uint8_t data[0];
-} PACKED subcmd_bb_battle_mode_t;
+    uint32_t unknown_a1[11];
+    uint32_t unknown_a2;
+} PACKED subcmd_bb_start_battle_mode_t;
 
 // 0xD0: Battle mode level up (BB; handled by server)
 // Requests the client to be leveled up by num_levels levels. The server should
 // respond with a 6x30 command.
-struct G_BattleModeLevelUp_BB_6xD0 {
+typedef struct subcmd_bb_battle_mode_level_up {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t num_levels;
-} PACKED;
+} PACKED subcmd_bb_battle_mode_level_up_t;
 
 // 0xD1: Challenge mode grave (BB; handled by server)
 struct G_ChallengeModeGrave_BB_6xD1 {

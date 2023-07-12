@@ -312,6 +312,13 @@ typedef struct psocn_bb_db_opts {
     uint16_t guild_name[0x0010];//16
 } PACKED psocn_bb_db_opts_t;
 
+/* 模式专用角色数据 inv 模式背包 disp 模式角色数值 dress_data 模式专用外观 */
+typedef struct psocn_mode_char {
+    inventory_t inv;
+    psocn_disp_char_t disp;
+    psocn_dress_data_t dress_data;
+} PACKED psocn_mode_char_t;
+
 #ifndef _WIN32
 #else
 #pragma pack()

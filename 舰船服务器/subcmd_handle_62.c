@@ -2079,6 +2079,36 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
+int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_battle_mode_level_up_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if ((l->battle) && (l->flags && LOBBY_FLAG_QUESTING))
+    {
+        if ((pkt->shdr.client_id < 4) && (l->clients[pkt->shdr.client_id]))
+        {
+            uint16_t target_lv;
+
+            ship_client_t* lClient = l->clients[pkt->shdr.client_id];
+            target_lv = lClient->bb_pl->character.disp.level;
+            target_lv += pkt->num_levels;
+
+            if (target_lv > 199)
+                target_lv = 199;
+
+            client_give_level(lClient, target_lv);
+        }
+    }
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2335,6 +2365,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_QUEST_REWARD_ITEM         , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CA_bb },
     { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
     { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
+    { SUBCMD62_BATTLE_CHAR_LEVEL_FIX     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D0_bb },
     { SUBCMD62_WARP_ITEM                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
     { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },

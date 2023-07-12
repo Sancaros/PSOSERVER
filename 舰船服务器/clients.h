@@ -213,9 +213,9 @@ struct ship_client {
 
     char *infoboard;                    /* Points into the player struct. */
 
+    int mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
     record_data_t records;              /* 指向玩家挑战/对战结构体的指针. */
-    int mode; // 通常为0 只有在挑战模式和对战模式才会发生改变
-    inventory_t* mode_inv;
+    psocn_mode_char_t* bb_mode_pl;
 
     lobby_t *create_lobby;
 
