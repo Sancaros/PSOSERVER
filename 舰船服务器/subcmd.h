@@ -114,6 +114,7 @@ typedef struct subcmd_bb_switch_changed {
     bb_switch_changed_t data;
 } PACKED subcmd_bb_switch_changed_pkt_t;
 
+// 0x06: Send guild card
 typedef struct G_SendGuildCard_DC {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
@@ -1893,9 +1894,9 @@ typedef struct subcmd_bb_Unknown_6x7B {
 //( 00000120 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 //( 00000130 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
 //( 00000140 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00 ................
-// 0x7C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
+// 0x7C: Set challenge mode data (指令生效范围; 仅限游戏; 不支持 Episode 3)
 // SUBCMD60_GAME_MODE 336字节 8 + 4 + 2 + 2 + 320（challenge data）
-typedef struct subcmd_bb_Unknown_6x7C {
+typedef struct subcmd_bb_set_challenge_mode_data {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
@@ -1917,7 +1918,7 @@ typedef struct subcmd_bb_Unknown_6x7C {
         uint32_t unknown_a1;
         uint32_t unknown_a2;
     } PACKED entries[3];
-} PACKED subcmd_bb_Unknown_6x7C_t;
+} PACKED subcmd_bb_set_challenge_mode_data_t;
 
 /* Packet used for grave data in C-Mode (Dreamcast) */
 typedef struct subcmd_dc_grave {
@@ -1967,14 +1968,15 @@ typedef struct subcmd_bb_grave {
 
 static int sdasd = sizeof(subcmd_bb_grave_t);
 
-// 0x7D: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x7D {
+// 0x7D: 设置对战模数据 (指令生效范围; 仅限游戏; 不支持 Episode 3)
+typedef struct subcmd_bb_set_battle_mode_data {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1; // Must be < 7; used in jump table
     uint8_t unused[3];
-    uint32_t unknown_a2[4];
-} PACKED subcmd_bb_Unknown_6x7D_t;
+    uint32_t unknown_a2;
+    uint32_t unknown_a3[3];
+} PACKED subcmd_bb_set_battle_mode_data_t;
 
 // 0x7E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -2899,76 +2901,157 @@ typedef struct subcmd_bb_guild_master_trans2 {
 //( 00000010 )   01 00 00 00 00 01 01 00  03 05 05 05 05 01 05 01    ................
 //( 00000020 )   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00    ................
 //( 00000030 )   0A 00 00 00 01 00 00 00  0A 00 00 00                ............
-// 0xCF: 挑战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
+// 0xCF: 对战模式 (指令生效范围; 仅限游戏; handled by the server on BB)
 typedef struct subcmd_bb_battle_mode {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
     uint8_t data[0];
 } PACKED subcmd_bb_battle_mode_t;
 
-// 0xD0: Invalid subcommand
-// 0xD1: Invalid subcommand
+// 0xD0: Battle mode level up (BB; handled by server)
+// Requests the client to be leveled up by num_levels levels. The server should
+// respond with a 6x30 command.
+struct G_BattleModeLevelUp_BB_6xD0 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t num_levels;
+} PACKED;
 
-// 0xD2: subcmd_bb_gallon_area
+// 0xD1: Challenge mode grave (BB; handled by server)
+struct G_ChallengeModeGrave_BB_6xD1 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t unknown_a1;
+    uint16_t unknown_a2;
+    uint32_t unknown_a3;
+    uint32_t unknown_a4;
+    uint32_t unknown_a5;
+} PACKED;
+
+
+// 0xD2: Set quest data 2 (BB)
+// Writes 4 bytes to the 32-bit field specified by index.
 typedef struct subcmd_bb_gallon_area {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t quest_offset;
-    uint8_t data[0];
+    uint32_t value;
 } PACKED subcmd_bb_gallon_area_pkt_t;
 
 // 0xD3: Invalid subcommand
+
 // 0xD4: Unknown
 typedef struct subcmd_bb_UNKNOW_0xD4 {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
+    unused_hdr_t shdr;
+    uint16_t action;    // Must be in [0, 4]
+    uint8_t unknown_a1; // Must be in [0, 15]
+    uint8_t unused;
 } PACKED subcmd_bb_UNKNOW_0xD4_t;
 
-// 0xD5: Invalid subcommand
+// 0xD5: Exchange item in quest (BB; handled by server)
+// The client sends this when it executes an F953 quest opcode.
+struct G_ExchangeItemInQuest_BB_6xD5 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    item_t unknown_a1; // Only data1[0]-[2] are used
+    item_t unknown_a2; // Only data1[0]-[2] are used
+    uint16_t unknown_a3;
+    uint16_t unknown_a4;
+} PACKED;
 
-// 0xD6: warp item subcommand
+// 0xD6: Wrap item (BB; handled by server)
 typedef struct subcmd_bb_warp_item {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
-    uint8_t data[0];
+    item_t item_data;
+    uint8_t unknown_a1;
+    uint8_t unused[3];
 } PACKED subcmd_bb_warp_item_t;
 
-// 0xD7: Invalid subcommand
-// 0xD8: Invalid subcommand
+// 0xD7: Paganini Photon Drop exchange (BB; handled by server)
+// The client sends this when it executes an F955 quest opcode.
+struct G_PaganiniPhotonDropExchange_BB_6xD7 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    item_t unknown_a1; // Only data1[0]-[2] are used
+    uint16_t request_id;
+    uint16_t unknown_a3;
+} PACKED;
+
+// 0xD8: Add S-rank weapon special (BB; handled by server)
+// The client sends this when it executes an F956 quest opcode.
+struct G_AddSRankWeaponSpecial_BB_6xD8 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    item_t unknown_a1; // Only data1[0]-[2] are used
+    uint32_t unknown_a2;
+    uint32_t unknown_a3;
+    uint16_t unknown_a4;
+    uint16_t unknown_a5;
+} PACKED;
 
 // 0xD9: Momoka Item Exchange  Momoka物品交换
-typedef struct subcmd_bb_UNKNOW_0xD9 {
+typedef struct subcmd_bb_MomokaItemExchange_BB_6xD9 {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
-} PACKED subcmd_bb_UNKNOW_0xD9_t;
+    client_id_hdr_t shdr;
+    item_t unknown_a1;
+    item_t unknown_a2;
+    uint32_t unknown_a3;
+    uint32_t unknown_a4;
+    uint16_t unknown_a5;
+    uint16_t unknown_a6;
+} PACKED subcmd_bb_MomokaItemExchange_BB_6xD9_t;
 
-// 0xDA: Invalid subcommand
+// 0xDA: Upgrade weapon attribute (BB; handled by server)
+// The client sends this when it executes an F957 or F958 quest opcode.
+struct G_UpgradeWeaponAttribute_BB_6xDA {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    item_t unknown_a1; // Only data1[0]-[2] are used
+    uint32_t item_id;
+    uint32_t attribute;
+    uint32_t unknown_a4; // 0 or 1
+    uint32_t unknown_a5;
+    uint16_t request_id;
+    uint16_t unknown_a7;
+} PACKED;
 
-// 0xDB: Unknown 24字节
+// 0xDB: Exchange item in quest (BB)
 typedef struct subcmd_bb_UNKNOW_0xDB {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
     uint32_t item_id;
     uint32_t amount;
-    uint8_t data[0];
+    uint32_t unknown_a3;
 } PACKED subcmd_bb_UNKNOW_0xDB_t;
 
-// 0xDC: Unknown
+// 0xDC: Saint-Million boss actions (BB)
 typedef struct subcmd_bb_UNKNOW_0xDC {
     bb_pkt_hdr_t hdr;
-    params_hdr_t shdr;
-    uint8_t data[0];
+    unused_hdr_t shdr;
+    uint16_t unknown_a1;
+    uint16_t unknown_a2;
 } PACKED subcmd_bb_UNKNOW_0xDC_t;
 
-// 0xDD: Unknown
+// 0xDD:  Set EXP multiplier (BB)
+// header.param specifies the EXP multiplier. It is 1-based, so the value 2
+// means all EXP is doubled, for example.
 typedef struct subcmd_bb_set_exp_rate {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
 } PACKED subcmd_bb_set_exp_rate_t;
 
-// 0xDE: Invalid subcommand
+// 0xDE: Good Luck quest (BB; handled by server)
+// The client sends this when it executes an F95C quest opcode.
+struct G_GoodLuckQuestActions_BB_6xDE {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t unknown_a1;
+    uint8_t unknown_a2;
+    uint16_t unknown_a3;
+} PACKED;
+
 // 0xDF: Invalid subcommand
 typedef struct subcmd_bb_black_paper_deal_photon_drop_exchange {
     bb_pkt_hdr_t hdr;
@@ -2988,9 +3071,34 @@ typedef struct subcmd_bb_black_paper_deal_reward {
     float z;
 } PACKED subcmd_bb_black_paper_deal_reward_t;
 
-// 0xE1: Invalid subcommand
-// 0xE2: Invalid subcommand
-// 0xE3: Unknown
+// 0xE1: Gallon's Plan quest (BB; handled by server)
+// The client sends this when it executes an F95F quest opcode.
+struct G_GallonsPlanQuestActions_BB_6xE1 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t unknown_a1;
+    uint8_t unknown_a2;
+    uint8_t unknown_a3;
+    uint8_t unused;
+    uint16_t unknown_a4;
+    uint16_t unknown_a5;
+} PACKED;
+
+// 0xE2: Coren actions (BB)
+// The client sends this when it executes an F960 quest opcode.
+struct G_CorenActions_BB_6xE2 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t unknown_a1[12]; // TODO: There might be uint16_ts and uint32_ts in here.
+} PACKED;
+
+// 0xE3: Coren actions result (BB)
+struct G_CorenActionsResult_BB_6xE3 {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    item_t item_data;
+} PACKED;
+
 // 0xE4: Invalid subcommand
 // 0xE5: Invalid subcommand
 // 0xE6: Invalid subcommand

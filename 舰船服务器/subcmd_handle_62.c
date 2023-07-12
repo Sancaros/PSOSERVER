@@ -2093,7 +2093,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     memset(&backup_item, 0, PSOCN_STLENGTH_IITEM);
-    wrap_id = *(uint32_t*)&pkt->data[0x0C];
+    wrap_id = pkt->item_data.item_id;
 
     for (i = 0; i < src->bb_pl->inv.item_count; ++i) {
         if (src->bb_pl->inv.iitems[i].data.item_id == wrap_id) {

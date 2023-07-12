@@ -2359,7 +2359,7 @@ static int handle_bb_challenge_mode_grave(ship_client_t* src,
         pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
         pc.hdr.pkt_len = LE16(0x00E4);
 
-        pc.shdr.type = SUBCMD60_GAME_MODE;
+        pc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
         pc.shdr.size = 0x38;
         pc.shdr.client_id = dc.shdr.client_id;
         pc.client_id2 = dc.client_id2;
@@ -2416,7 +2416,7 @@ static int handle_bb_challenge_mode_grave(ship_client_t* src,
         dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
         dc.hdr.pkt_len = LE16(0x00AC);
 
-        dc.shdr.type = SUBCMD60_GAME_MODE;
+        dc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
         dc.shdr.size = 0x2A;
         dc.shdr.client_id = pc.shdr.client_id;
         dc.client_id2 = pc.client_id2;
@@ -3360,7 +3360,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000010 )   9A D7 00 00                                         ....
     if (quest_offset < 23) {
         quest_offset *= 4;
-        *(uint32_t*)&src->bb_pl->quest_data2[quest_offset] = *(uint32_t*)&pkt->data[0];
+        *(uint32_t*)&src->bb_pl->quest_data2[quest_offset] = pkt->value;
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
@@ -3453,7 +3453,7 @@ subcmd_handle_func_t subcmdmode_handler[] = {
     { SUBCMD60_KILL_MONSTER           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
     { SUBCMD60_SYNC_REG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
-    { SUBCMD60_GAME_MODE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
+    { SUBCMD60_SET_C_GAME_MODE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
 
     //cmd_type 80 - 8F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
@@ -3533,7 +3533,7 @@ int subcmd_bb_handle_60_mode(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
         case SUBCMD60_BURST_DONE:
             /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
-        case SUBCMD60_GAME_MODE:
+        case SUBCMD60_SET_C_GAME_MODE:
             rv = l->subcmd_handle(src, dest, pkt);
             break;
 
