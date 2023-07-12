@@ -84,7 +84,7 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index) {
 
     strcat(myquery, "', challenge_data = '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->challenge,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->records.challenge,
         PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
     strcat(myquery, "', tech_menu = '");
@@ -152,7 +152,7 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
     memcpy((char*)&data->guildcard_desc, row[4], 88);
     memcpy((char*)&data->autoreply, row[5], 172);
     memcpy((char*)&data->infoboard, row[6], 172);
-    memcpy((char*)&data->challenge, row[7], PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+    memcpy((char*)&data->records.challenge, row[7], PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     memcpy((char*)&data->tech_menu, row[8], PSOCN_STLENGTH_BB_DB_TECH_MENU);
     memcpy((char*)&data->quest_data2, row[9], PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
 
@@ -208,7 +208,7 @@ int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class
 
     strcat(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->challenge,
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->records.challenge,
         PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
     strcat(myquery, "', '");

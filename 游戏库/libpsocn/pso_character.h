@@ -252,8 +252,9 @@ typedef struct psocn_bb_full_char {
     uint8_t shortcuts[0x0A40];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];                                              // 玩家数据表
-    uint8_t unk3[0x001C];                                                    // not saved
-    bb_challenge_records_t challenge_data;                                   // 玩家挑战数据表           OK
+    psocn_bb_records_data_t records;
+    //uint8_t unk3[0x001C];                                                    // not saved
+    //bb_challenge_records_t challenge;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
     uint8_t unk4[0x002C];                                                    // not saved
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];                   // 玩家任务数据表2
@@ -271,10 +272,13 @@ typedef struct psocn_bb_db_char {
     uint16_t guildcard_desc[0x0058];//88
     uint16_t autoreply[0x00AC];//172
     uint16_t infoboard[0x00AC];//172
-    bb_challenge_records_t challenge;
+    psocn_bb_records_data_t records;
+    //bb_challenge_records_t challenge;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;
+
+static int ds123a = sizeof(psocn_bb_db_char_t);
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
