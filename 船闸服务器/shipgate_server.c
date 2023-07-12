@@ -1010,10 +1010,14 @@ restart:
 
     init_scripts();
 
-    load_guild_default_flag("System\\guild\\默认公会标志.flag");
-
     /* Clean up the DB now that we've done everything else that might fail... */
     open_db();
+
+    if (load_guild_default_flag("System\\guild\\默认公会标志.flag"))
+        ERR_EXIT("无法读取默认公会标志数据");
+
+    if (load_bb_default_char_data())
+        ERR_EXIT("无法读取初始玩家数据");
 
     SGATE_LOG("%s启动完成.", server_name[SGATE_SERVER].name);
     SGATE_LOG("程序运行中...");

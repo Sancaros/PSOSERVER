@@ -1027,8 +1027,10 @@ int send_player_level_table_bb(ship_t* c) {
 
     bb_level_tb = (bb_level_table_t*)malloc(sizeof(bb_level_table_t));
 
-    if (!bb_level_tb)
-        return 0;
+    if (!bb_level_tb) {
+        ERR_LOG("给 bb_level_tb 分配内存失败!");
+        return -1;
+    }
 
     if (read_player_level_table_bb(bb_level_tb)) {
         ERR_LOG("无法读取 Blue Burst 等级数据表");

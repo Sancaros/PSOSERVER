@@ -60,7 +60,7 @@ static bb_param_hdr_pkt *param_hdr = NULL;
 static bb_param_chunk_pkt **param_chunks = NULL;
 static int num_param_chunks = 0;
 static psocn_bb_full_char_t default_full_chars;
-static psocn_bb_db_char_t default_chars[12];
+static psocn_bb_default_char_t default_chars;
 static bb_level_table_t bb_char_stats;
 static dress_flag_t dress_flags[MAX_DRESS_FLAGS];
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
@@ -656,7 +656,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
 
         /* 复制一份缓冲默认角色数据 根据选取的角色职业定义 */
-        memcpy(char_data, &default_chars[ch_class], PSOCN_STLENGTH_BB_DB_CHAR);
+        memcpy(char_data, &default_chars.ch_class[ch_class], PSOCN_STLENGTH_BB_DB_CHAR);
 
         /* 复制初始角色数值 */
         memcpy(&char_data->character.disp.stats, &bb_char_stats.start_stats[ch_class], sizeof(psocn_pl_stats_t));
@@ -1240,7 +1240,7 @@ int load_param_data(void) {
     param_chunks = (bb_param_chunk_pkt **)malloc(sizeof(bb_param_chunk_pkt *) *
                                                  num_param_chunks);
     if(!param_chunks) {
-        ERR_LOG("Couldn't make param chunk array: %s",
+        ERR_LOG("无法生成参数区块数组: %s",
               strerror(errno));
         free(rawbuf);
         return -4;
@@ -1260,7 +1260,7 @@ int load_param_data(void) {
         param_chunks[i] = (bb_param_chunk_pkt *)malloc(len);
 
         if(!param_chunks[i]) {
-            ERR_LOG("Couldn't make chunk: %s", strerror(errno));
+            ERR_LOG("无法生成参数区块: %s", strerror(errno));
             free(rawbuf);
             return -5;
         }
@@ -1302,9 +1302,9 @@ int load_bb_char_data(void) {
 
     /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
-        memset(&default_chars[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
+        memset(&default_chars.ch_class[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
 
-        if (db_get_character_default(&default_chars[i], i)) {
+        if (db_get_character_default(&default_chars.ch_class[i], i)) {
             ERR_LOG("无法读取 Blue Burst 角色初始数据表");
             return -2;
         }
@@ -1314,7 +1314,7 @@ int load_bb_char_data(void) {
         //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
     }
 
-    AUTH_LOG("读取初始角色数据文件 %d 个, 共 %d 字节.", i, len);
+    AUTH_LOG("读取 %d 个职业初始角色数据, 共 %d 字节.", i, len);
 
     /* 加载角色等级初始数据 */
     if (read_player_level_table_bb(&bb_char_stats)) {

@@ -242,7 +242,6 @@ typedef struct psocn_bb_guildcard {
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
-    //inventory_t inv;                                                         // 玩家数据表
     psocn_bb_char_t character;                                               // 玩家数据表               OK
     char guildcard_string[16];                                               // not saved
     uint32_t option_flags;                                                   // account
@@ -270,7 +269,6 @@ typedef struct psocn_bb_full_char {
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {
-    //inventory_t inv;
     psocn_bb_char_t character;
     uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];
     psocn_bank_t bank;
@@ -284,6 +282,10 @@ typedef struct psocn_bb_db_char {
 } PACKED psocn_bb_db_char_t;
 
 static int ds123a = sizeof(psocn_bb_db_char_t);
+
+typedef struct psocn_bb_default_char {
+    psocn_bb_db_char_t ch_class[12];
+} PACKED psocn_bb_default_char_t;
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {
