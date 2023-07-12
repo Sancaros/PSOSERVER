@@ -152,4 +152,10 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data);
 /* 发送BB职业等级数据至舰船 */
 int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data);
 
+/* 加载 BB 职业最大法术值 */
+int send_player_max_tech_level_table_bb(ship_t* c);
+
+/* 加载 BB 基础/等级数据 */
+int send_player_level_table_bb(ship_t* c);
+
 #endif /* !SHIPGATE_H */

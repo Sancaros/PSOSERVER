@@ -59,5 +59,8 @@
     <ClCompile Include="guild_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="character_default_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

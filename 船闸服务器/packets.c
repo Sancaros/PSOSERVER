@@ -26,6 +26,7 @@
 #include <debug.h>
 #include <f_checksum.h>
 #include <f_iconv.h>
+#include <database.h>
 
 #include "version.h"
 #include "shipgate.h"
@@ -998,4 +999,45 @@ int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data) {
 
     /* 加密并发送 */
     return send_crypt(c, len);
+}
+
+int send_player_max_tech_level_table_bb(ship_t* c) {
+    bb_max_tech_level_t* bb_max_tech_level = { 0 };
+    int i;
+
+    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_TECH_LEVEL);
+
+    if (!bb_max_tech_level)
+        return 0;
+
+    if (read_player_max_tech_level_table_bb(bb_max_tech_level)) {
+        ERR_LOG("无法读取 Blue Burst 法术等级数据表");
+        return -2;
+    }
+
+    i = send_max_tech_lvl_bb(c, bb_max_tech_level);
+    free_safe(bb_max_tech_level);
+
+    return i;
+}
+
+int send_player_level_table_bb(ship_t* c) {
+    bb_level_table_t* bb_level_tb = { 0 };
+    int i;
+
+    bb_level_tb = (bb_level_table_t*)malloc(sizeof(bb_level_table_t));
+
+    if (!bb_level_tb)
+        return 0;
+
+    if (read_player_level_table_bb(bb_level_tb)) {
+        ERR_LOG("无法读取 Blue Burst 等级数据表");
+        return -2;
+    }
+
+    i = send_pl_lvl_data_bb(c, bb_level_tb);
+
+    free_safe(bb_level_tb);
+
+    return i;
 }
