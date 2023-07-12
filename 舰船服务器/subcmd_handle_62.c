@@ -2102,7 +2102,7 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
             if (target_lv > 199)
                 target_lv = 199;
 
-            client_give_level(lClient, target_lv);
+            client_give_mode_level(lClient, target_lv);
         }
     }
 
