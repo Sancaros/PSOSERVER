@@ -2096,7 +2096,7 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
             uint16_t target_lv;
 
             ship_client_t* lClient = l->clients[pkt->shdr.client_id];
-            target_lv = lClient->bb_pl->character.disp.level;
+            target_lv = lClient->mode_pl->disp.level;
             target_lv += pkt->num_levels;
 
             if (target_lv > 199)

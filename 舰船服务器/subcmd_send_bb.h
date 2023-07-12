@@ -71,13 +71,13 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
 int subcmd_send_bb_bank(ship_client_t* src);
 
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
-int subcmd_send_bb_exp(ship_client_t* c, uint32_t exp_amount);
+int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount, int mode);
 
 /* 0xDD SUBCMD60_SET_EXP_RATE BB 设置游戏经验倍率 */
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
-int subcmd_send_bb_level(ship_client_t* c);
+int subcmd_send_bb_level(ship_client_t* dest, int mode);
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
 int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items);

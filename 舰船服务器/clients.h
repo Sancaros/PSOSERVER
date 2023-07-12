@@ -215,7 +215,7 @@ struct ship_client {
 
     int mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
     record_data_t records;              /* 指向玩家挑战/对战结构体的指针. */
-    psocn_mode_char_t* bb_mode_pl;
+    psocn_mode_char_t* mode_pl;
 
     lobby_t *create_lobby;
 
@@ -455,13 +455,19 @@ int client_has_ignored(ship_client_t *c, uint32_t gc);
 void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
                            const char *ship, uint32_t block, const char *nick);
 
-/* Give a Blue Burst client some experience. */
+/* 给予Blue Burst客户端经验. */
 int client_give_exp(ship_client_t *c, uint32_t exp_amount);
 
-/* Give a Blue Burst client some free level ups. */
+/* 给予Blue Burst客户端等级提升. */
 int client_give_level(ship_client_t *c, uint32_t level_req);
 
-/* Give a PSOv2 client some free level ups. */
+/* 给予模式玩家客户端经验. */
+int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount);
+
+/* 给予模式玩家客户端等级提升. */
+int client_give_mode_level(ship_client_t* dest, uint32_t level_req);
+
+/* 给予PSOv2客户端等级提升. */
 int client_give_level_v2(ship_client_t *c, uint32_t level_req);
 
 /* Check if a client's newly sent character data looks corrupted. */

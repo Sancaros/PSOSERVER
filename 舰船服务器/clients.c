@@ -163,6 +163,21 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         memset(rv->game_data, 0, sizeof(client_game_data_t));
 
+        rv->mode_pl =
+            (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
+
+        if (!rv->mode_pl) {
+            perror("malloc");
+            free_safe(rv->pl);
+            free_safe(rv->enemy_kills);
+            free_safe(rv->game_data);
+            free_safe(rv);
+            closesocket(sock);
+            return NULL;
+        }
+
+        memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
+
         if(version == CLIENT_VERSION_BB) {
             rv->bb_pl =
                 (psocn_bb_db_char_t *)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
@@ -172,6 +187,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -186,6 +202,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
                 free_safe(rv->bb_pl);
                 free_safe(rv);
                 closesocket(sock);
@@ -201,6 +218,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
                 free_safe(rv->bb_pl);
                 free_safe(rv->bb_opts);
                 free_safe(rv);
@@ -219,6 +237,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -458,6 +477,10 @@ void client_destroy_connection(ship_client_t *c,
 
     if (c->game_data) {
         free_safe(c->game_data);
+    }
+
+    if (c->mode_pl) {
+        free_safe(c->mode_pl);
     }
 
     if(c->bb_pl) {
@@ -791,55 +814,55 @@ void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
     }
 }
 
-static void give_stats(ship_client_t *c, psocn_lvl_stats_t *ent) {
+static void give_stats(psocn_pl_stats_t *dest, psocn_lvl_stats_t *ent) {
     uint16_t tmp;
 
-    tmp = LE16(c->bb_pl->character.disp.stats.atp) + ent->atp;
-    c->bb_pl->character.disp.stats.atp = LE16(tmp);
+    tmp = LE16(dest->atp) + ent->atp;
+    dest->atp = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.mst) + ent->mst;
-    c->bb_pl->character.disp.stats.mst = LE16(tmp);
+    tmp = LE16(dest->mst) + ent->mst;
+    dest->mst = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.evp) + ent->evp;
-    c->bb_pl->character.disp.stats.evp = LE16(tmp);
+    tmp = LE16(dest->evp) + ent->evp;
+    dest->evp = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.hp) + ent->hp;
-    c->bb_pl->character.disp.stats.hp = LE16(tmp);
+    tmp = LE16(dest->hp) + ent->hp;
+    dest->hp = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.dfp) + ent->dfp;
-    c->bb_pl->character.disp.stats.dfp = LE16(tmp);
+    tmp = LE16(dest->dfp) + ent->dfp;
+    dest->dfp = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.ata) + ent->ata;
-    c->bb_pl->character.disp.stats.ata = LE16(tmp);
+    tmp = LE16(dest->ata) + ent->ata;
+    dest->ata = LE16(tmp);
 
-    tmp = LE16(c->bb_pl->character.disp.stats.lck) + ent->lck;
-    c->bb_pl->character.disp.stats.lck = LE16(tmp);
+    tmp = LE16(dest->lck) + ent->lck;
+    dest->lck = LE16(tmp);
 }
 
-/* Give a Blue Burst client some experience. */
-int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
+/* 给予Blue Burst客户端经验. */
+int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
     uint32_t exp_total;
     psocn_lvl_stats_t *ent;
     int need_lvlup = 0;
     int cl;
     uint32_t level;
 
-    if(c->version != CLIENT_VERSION_BB || !c->bb_pl)
+    if(dest->version != CLIENT_VERSION_BB || !dest->bb_pl)
         return -1;
 
     /* No need if they've already maxed out. */
-    if(c->bb_pl->character.disp.level >= 199)
+    if(dest->bb_pl->character.disp.level >= 199)
         return 0;
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(c->bb_pl->character.disp.exp);
+    exp_total = LE32(dest->bb_pl->character.disp.exp);
     exp_total += exp_amount;
-    c->bb_pl->character.disp.exp = LE32(exp_total);
-    cl = c->bb_pl->character.dress_data.ch_class;
-    level = LE32(c->bb_pl->character.disp.level);
+    dest->bb_pl->character.disp.exp = LE32(exp_total);
+    cl = dest->bb_pl->character.dress_data.ch_class;
+    level = LE32(dest->bb_pl->character.disp.level);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(c, exp_amount))
+    if(subcmd_send_bb_exp(dest, exp_amount, dest->mode))
         return -1;
 
     /* See if they got any level ups. */
@@ -848,22 +871,22 @@ int client_give_exp(ship_client_t *c, uint32_t exp_amount) {
 
         if(exp_total >= ent->exp) {
             need_lvlup = 1;
-            give_stats(c, ent);
+            give_stats(&dest->bb_pl->character.disp.stats, ent);
             ++level;
         }
     } while(exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
 
     /* If they got any level ups, send out the packet that says so. */
     if(need_lvlup) {
-        c->bb_pl->character.disp.level = LE32(level);
-        if(subcmd_send_bb_level(c))
+        dest->bb_pl->character.disp.level = LE32(level);
+        if(subcmd_send_bb_level(dest, dest->mode))
             return -1;
     }
 
     return 0;
 }
 
-/* Give a Blue Burst client some free level ups. */
+/* 给予Blue Burst客户端等级提升. */
 int client_give_level(ship_client_t *c, uint32_t level_req) {
     uint32_t exp_total;
     psocn_lvl_stats_t *ent;
@@ -887,12 +910,94 @@ int client_give_level(ship_client_t *c, uint32_t level_req) {
     c->bb_pl->character.disp.exp = LE32(ent->exp);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(c, exp_gained))
+    if(subcmd_send_bb_exp(c, exp_gained, c->mode))
         return -1;
 
     /* Send the level-up packet. */
     c->bb_pl->character.disp.level = LE32(level_req);
-    if(subcmd_send_bb_level(c))
+    if(subcmd_send_bb_level(c, c->mode))
+        return -1;
+
+    return 0;
+}
+
+/* 给予模式玩家客户端经验. */
+int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount) {
+    uint32_t exp_total;
+    psocn_lvl_stats_t* ent;
+    int need_lvlup = 0;
+    int cl;
+    uint32_t level;
+
+    if (dest->version != CLIENT_VERSION_BB || !dest->mode_pl)
+        return -1;
+
+    /* No need if they've already maxed out. */
+    if (dest->mode_pl->disp.level >= 199)
+        return 0;
+
+    /* Add in the experience to their total so far. */
+    exp_total = LE32(dest->mode_pl->disp.exp);
+    exp_total += exp_amount;
+    dest->mode_pl->disp.exp = LE32(exp_total);
+    cl = dest->mode_pl->dress_data.ch_class;
+    level = LE32(dest->mode_pl->disp.level);
+
+    /* Send the packet telling them they've gotten experience. */
+    if (subcmd_send_bb_exp(dest, exp_amount, dest->mode))
+        return -1;
+
+    /* See if they got any level ups. */
+    do {
+        ent = &bb_char_stats.levels[cl][level + 1];
+
+        if (exp_total >= ent->exp) {
+            need_lvlup = 1;
+            give_stats(&dest->mode_pl->disp.stats, ent);
+            ++level;
+        }
+    } while (exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
+
+    /* If they got any level ups, send out the packet that says so. */
+    if (need_lvlup) {
+        dest->mode_pl->disp.level = LE32(level);
+        if (subcmd_send_bb_level(dest, dest->mode))
+            return -1;
+    }
+
+    return 0;
+}
+
+/* 给予模式玩家客户端等级提升. */
+int client_give_mode_level(ship_client_t* dest, uint32_t level_req) {
+    uint32_t exp_total;
+    psocn_lvl_stats_t* ent;
+    int cl;
+    uint32_t exp_gained;
+
+    if (dest->version != CLIENT_VERSION_BB || !dest->mode_pl || level_req > 199)
+        return -1;
+
+    /* No need if they've already at that level. */
+    if (dest->mode_pl->disp.level >= level_req)
+        return 0;
+
+    /* Grab the entry for that level... */
+    cl = dest->mode_pl->dress_data.ch_class;
+    ent = &bb_char_stats.levels[cl][level_req];
+
+    /* Add in the experience to their total so far. */
+    exp_total = LE32(dest->mode_pl->disp.exp);
+    exp_gained = ent->exp - exp_total;
+    dest->mode_pl->disp.exp = LE32(ent->exp);
+
+    /* Send the packet telling them they've gotten experience. */
+    if (subcmd_send_bb_exp(dest, exp_gained, dest->mode))
+        return -1;
+
+    /* Send the level-up packet. */
+    dest->mode_pl->disp.level = LE32(level_req);
+    if (subcmd_send_bb_level(dest, dest->mode))
         return -1;
 
     return 0;
@@ -922,7 +1027,7 @@ static void give_stats_v2(ship_client_t *c, psocn_lvl_stats_t *ent) {
     c->pl->v1.character.disp.exp = LE32(ent->exp);
 }
 
-/* Give a PSOv2 client some free level ups. */
+/* 给予PSOv2客户端等级提升. */
 int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
     psocn_lvl_stats_t *ent;
     int cl, i;
