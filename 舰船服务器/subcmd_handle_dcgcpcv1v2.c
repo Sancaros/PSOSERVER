@@ -563,7 +563,7 @@ static int handle_delete_inv(ship_client_t *c, subcmd_destroy_item_t *pkt) {
     /* Ignore meseta */
     if(pkt->item_id != 0xFFFFFFFF) {
         /* Remove the item from the user's inventory */
-        num = item_remove_from_inv(c->iitems, c->item_count, pkt->item_id,
+        num = remove_iitem_v1(c->iitems, c->item_count, pkt->item_id,
                                    LE32(pkt->amount));
         if(num < 0) {
             ERR_LOG("Couldn't remove item from inventory!\n");
@@ -641,7 +641,7 @@ static int handle_use_item(ship_client_t *c, subcmd_use_item_t *pkt) {
         goto send_pkt;
 
     /* Remove the item from the user's inventory */
-    num = item_remove_from_inv(c->iitems, c->item_count, pkt->item_id, 1);
+    num = remove_iitem_v1(c->iitems, c->item_count, pkt->item_id, 1);
     if(num < 0)
         ERR_LOG("Couldn't remove item from inventory!\n");
     else

@@ -489,7 +489,7 @@ size_t find_equipped_mag(inventory_t* inv) {
 }
 
 /* 移除背包物品操作 */
-int item_remove_from_inv(iitem_t *inv, int inv_count, uint32_t item_id,
+int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt) {
     int i;
     uint32_t tmp;
