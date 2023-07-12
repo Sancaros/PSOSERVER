@@ -5171,6 +5171,8 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
         send_player_max_tech_level_table_bb(c);
 
         send_player_level_table_bb(c);
+
+        send_default_char_data_bb(c, &default_chars);
     }
 
     return rv;

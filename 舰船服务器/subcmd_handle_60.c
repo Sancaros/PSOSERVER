@@ -43,6 +43,10 @@
 
 #include "subcmd_handle.h"
 
+/* Player levelup data */
+extern bb_level_table_t bb_char_stats;
+extern v2_level_table_t v2_char_stats;
+
 int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;

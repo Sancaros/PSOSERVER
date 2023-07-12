@@ -1043,3 +1043,24 @@ int send_player_level_table_bb(ship_t* c) {
 
     return i;
 }
+
+int send_default_char_data_bb(ship_t* c, psocn_bb_default_char_t* data) {
+    shipgate_default_char_data_bb_pkt* pkt = (shipgate_default_char_data_bb_pkt*)sendbuf;
+    uint16_t len = sizeof(shipgate_default_char_data_bb_pkt);
+
+    /* Make sure we don't try to send to a ship that won't know what to do with
+       the packet. */
+    if (c->proto_ver < 19)
+        return 0;
+
+    /* Swap that which we need to do */
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BB_DEFAULT_PL_DATA);
+    pkt->hdr.pkt_len = htons(len);
+    pkt->hdr.flags = SHDR_RESPONSE;
+
+    memcpy(&pkt->data, data, sizeof(pkt->data));
+
+    /* ¼ÓÃÜ²¢·¢ËÍ */
+    return send_crypt(c, len);
+}
+

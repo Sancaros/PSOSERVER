@@ -48,6 +48,10 @@
 #include <lauxlib.h>
 #endif
 
+/* Player levelup data */
+extern bb_level_table_t bb_char_stats;
+extern v2_level_table_t v2_char_stats;
+
 #ifdef UNUSED
 #undef UNUSED
 #endif

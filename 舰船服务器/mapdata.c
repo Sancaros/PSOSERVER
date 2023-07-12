@@ -34,6 +34,10 @@
 #include "lobby.h"
 #include "clients.h"
 
+/* Player levelup data */
+extern bb_level_table_t bb_char_stats;
+extern v2_level_table_t v2_char_stats;
+
 void print_entry(const bb_battle_param_t* entry) {
     printf("atp: %u\n", entry->atp);
     printf("psv: %u\n", entry->psv);

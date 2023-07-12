@@ -20,53 +20,54 @@
 #define SHDR_FAILURE        0x4000      /* Failure to complete request 16384 */
 
 /* Types for the pkt_type field of shipgate_hdr_t */
-#define SHDR_TYPE_DC        0x0001      /* A decrypted Dreamcast game packet 1 */
-#define SHDR_TYPE_BB        0x0002      /* A decrypted Blue Burst game packet 2 */
-#define SHDR_TYPE_PC        0x0003      /* A decrypted PCv2 game packet 3 */
-#define SHDR_TYPE_GC        0x0004      /* A decrypted Gamecube game packet 4 */
-#define SHDR_TYPE_EP3       0x0005      /* A decrypted Episode 3 packet 5 */
-#define SHDR_TYPE_XBOX      0x0006      /* A decrypted Xbox game packet 6 */
+#define SHDR_TYPE_DC                  0x0001      /* A decrypted Dreamcast game packet 1 */
+#define SHDR_TYPE_BB                  0x0002      /* A decrypted Blue Burst game packet 2 */
+#define SHDR_TYPE_PC                  0x0003      /* A decrypted PCv2 game packet 3 */
+#define SHDR_TYPE_GC                  0x0004      /* A decrypted Gamecube game packet 4 */
+#define SHDR_TYPE_EP3                 0x0005      /* A decrypted Episode 3 packet 5 */
+#define SHDR_TYPE_XBOX                0x0006      /* A decrypted Xbox game packet 6 */
 /* 0x0007 - 0x000F reserved */
-#define SHDR_TYPE_LOGIN     0x0010      /* Shipgate hello packet 16 */
-#define SHDR_TYPE_COUNT     0x0011      /* A Client/Game Count update 17 */
-#define SHDR_TYPE_SSTATUS   0x0012      /* A Ship has come up or gone down 18 */
-#define SHDR_TYPE_PING      0x0013      /* A Ping packet, enough said 19 */
-#define SHDR_TYPE_CDATA     0x0014      /* Character data 20 */
-#define SHDR_TYPE_CREQ      0x0015      /* Request saved character data 21 */
-#define SHDR_TYPE_USRLOGIN  0x0016      /* User login request 22 */
-#define SHDR_TYPE_GCBAN     0x0017      /* Guildcard ban 23 */
-#define SHDR_TYPE_IPBAN     0x0018      /* IP ban 24 */
-#define SHDR_TYPE_BLKLOGIN  0x0019      /* User logs into a block 25 */
-#define SHDR_TYPE_BLKLOGOUT 0x001A      /* User logs off a block 26 */
-#define SHDR_TYPE_FRLOGIN   0x001B      /* A user's friend logs onto a block 27 */
-#define SHDR_TYPE_FRLOGOUT  0x001C      /* A user's friend logs off a block 28 */
-#define SHDR_TYPE_ADDFRIEND 0x001D      /* Add a friend to a user's list 29 */
-#define SHDR_TYPE_DELFRIEND 0x001E      /* Remove a friend from a user's list 30 */
-#define SHDR_TYPE_LOBBYCHG  0x001F      /* A user changes lobbies 31 */
-#define SHDR_TYPE_BCLIENTS  0x0020      /* A bulk transfer of client info 32 */
-#define SHDR_TYPE_KICK      0x0021      /* A kick request 33 */
-#define SHDR_TYPE_FRLIST    0x0022      /* Friend list request/reply 34 */
-#define SHDR_TYPE_GLOBALMSG 0x0023      /* A Global message packet 35 */
-#define SHDR_TYPE_USEROPT   0x0024      /* A user's options -- sent on login 36 */
-#define SHDR_TYPE_LOGIN6    0x0025      /* A ship login (potentially IPv6) 37 */
-#define SHDR_TYPE_BBOPTS    0x0026      /* A user's Blue Burst options 38 */
-#define SHDR_TYPE_BBOPT_REQ 0x0027      /* Request Blue Burst options 39 */
-#define SHDR_TYPE_CBKUP     0x0028      /* A character data backup packet 40 */
-#define SHDR_TYPE_MKILL     0x0029      /* Monster kill update 41 */
-#define SHDR_TYPE_TLOGIN    0x002A      /* Token-based login request 42 */
-#define SHDR_TYPE_SCHUNK    0x002B      /* Script chunk 43 */
-#define SHDR_TYPE_SDATA     0x002C      /* Script data 44 */
-#define SHDR_TYPE_SSET      0x002D      /* Script set 45 */
-#define SHDR_TYPE_QFLAG_SET 0x002E      /* Set quest flag 46 */
-#define SHDR_TYPE_QFLAG_GET 0x002F      /* Read quest flag 47 */
-#define SHDR_TYPE_SHIP_CTL  0x0030      /* Ship control packet 48 */
-#define SHDR_TYPE_UBLOCKS   0x0031      /* User blocklist 49 */
-#define SHDR_TYPE_UBL_ADD   0x0032      /* User blocklist add 50 */
-#define SHDR_TYPE_BBMAXTECH 0x0033      /* Blue Burst max tech level table data 51 */
-#define SHDR_TYPE_BBLVLDATA 0x0034      /* Blue Burst player level data 52 */
-//#define SHDR_TYPE_BBGUILD_REQ 0x0034      /* Request Blue Burst guild data 52 */
-#define SHDR_TYPE_CHECK_PLONLINE 0x0035      /* Check player online 53 */
-#define SHDR_TYPE_8000      0x8000      /* 0x8000 51 */
+#define SHDR_TYPE_LOGIN               0x0010      /* Shipgate hello packet 16 */
+#define SHDR_TYPE_COUNT               0x0011      /* A Client/Game Count update 17 */
+#define SHDR_TYPE_SSTATUS             0x0012      /* A Ship has come up or gone down 18 */
+#define SHDR_TYPE_PING                0x0013      /* A Ping packet, enough said 19 */
+#define SHDR_TYPE_CDATA               0x0014      /* Character data 20 */
+#define SHDR_TYPE_CREQ                0x0015      /* Request saved character data 21 */
+#define SHDR_TYPE_USRLOGIN            0x0016      /* User login request 22 */
+#define SHDR_TYPE_GCBAN               0x0017      /* Guildcard ban 23 */
+#define SHDR_TYPE_IPBAN               0x0018      /* IP ban 24 */
+#define SHDR_TYPE_BLKLOGIN            0x0019      /* User logs into a block 25 */
+#define SHDR_TYPE_BLKLOGOUT           0x001A      /* User logs off a block 26 */
+#define SHDR_TYPE_FRLOGIN             0x001B      /* A user's friend logs onto a block 27 */
+#define SHDR_TYPE_FRLOGOUT            0x001C      /* A user's friend logs off a block 28 */
+#define SHDR_TYPE_ADDFRIEND           0x001D      /* Add a friend to a user's list 29 */
+#define SHDR_TYPE_DELFRIEND           0x001E      /* Remove a friend from a user's list 30 */
+#define SHDR_TYPE_LOBBYCHG            0x001F      /* A user changes lobbies 31 */
+#define SHDR_TYPE_BCLIENTS            0x0020      /* A bulk transfer of client info 32 */
+#define SHDR_TYPE_KICK                0x0021      /* A kick request 33 */
+#define SHDR_TYPE_FRLIST              0x0022      /* Friend list request/reply 34 */
+#define SHDR_TYPE_GLOBALMSG           0x0023      /* A Global message packet 35 */
+#define SHDR_TYPE_USEROPT             0x0024      /* A user's options -- sent on login 36 */
+#define SHDR_TYPE_LOGIN6              0x0025      /* A ship login (potentially IPv6) 37 */
+#define SHDR_TYPE_BBOPTS              0x0026      /* A user's Blue Burst options 38 */
+#define SHDR_TYPE_BBOPT_REQ           0x0027      /* Request Blue Burst options 39 */
+#define SHDR_TYPE_CBKUP               0x0028      /* A character data backup packet 40 */
+#define SHDR_TYPE_MKILL               0x0029      /* Monster kill update 41 */
+#define SHDR_TYPE_TLOGIN              0x002A      /* Token-based login request 42 */
+#define SHDR_TYPE_SCHUNK              0x002B      /* Script chunk 43 */
+#define SHDR_TYPE_SDATA               0x002C      /* Script data 44 */
+#define SHDR_TYPE_SSET                0x002D      /* Script set 45 */
+#define SHDR_TYPE_QFLAG_SET           0x002E      /* Set quest flag 46 */
+#define SHDR_TYPE_QFLAG_GET           0x002F      /* Read quest flag 47 */
+#define SHDR_TYPE_SHIP_CTL            0x0030      /* Ship control packet 48 */
+#define SHDR_TYPE_UBLOCKS             0x0031      /* User blocklist 49 */
+#define SHDR_TYPE_UBL_ADD             0x0032      /* User blocklist add 50 */
+#define SHDR_TYPE_BBMAXTECH           0x0033      /* Blue Burst max tech level table data 51 */
+#define SHDR_TYPE_BBLVLDATA           0x0034      /* Blue Burst player level data 52 */
+//#define SHDR_TYPE_BBGUILD_REQ         0x0034      /* Request Blue Burst guild data 52 */
+#define SHDR_TYPE_CHECK_PLONLINE      0x0035      /* Check player online 53 */
+#define SHDR_TYPE_BB_DEFAULT_PL_DATA  0x0036      /* Blue Burst player default data 54 */
+#define SHDR_TYPE_8000                0x8000      /* 0x8000 51 */
 
 /* Flags that can be set in the login packet */
 #define LOGIN_FLAG_GMONLY   0x00000001  /* Only Global GMs are allowed */
