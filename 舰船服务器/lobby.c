@@ -168,7 +168,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
 
             case CLIENT_VERSION_BB:
                 if (pt_bb_enabled() && map_have_bb_maps() && pmt_bb_enabled() &&
-                    rt_bb_enabled() && !l->battle && !l->challenge) {
+                    rt_bb_enabled()/* && !l->battle && !l->challenge*/) {
                     l->dropfunc = pt_generate_bb_drop;
                     l->flags |= LOBBY_FLAG_SERVER_DROPS;
 

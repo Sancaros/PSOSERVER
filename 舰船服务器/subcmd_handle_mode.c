@@ -1610,7 +1610,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         inv = &src->mode_pl->bb.inv;
 
-    size_t mag_index = find_equipped_mag(&inv);
+    size_t mag_index = find_equipped_mag(inv);
 
     item_t mag = inv->iitems[mag_index].data;
     mag.data2b[0] = MAX((mag.data2b[0] - 5), 0);
