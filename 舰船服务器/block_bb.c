@@ -1629,7 +1629,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
         memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
         memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
-        memcpy(&c->bb_pl->challenge, &char_data.challenge, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        memcpy(&c->bb_pl->challenge, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
         memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
         memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
         /////////////////////////////////////////////////////////////////////////////////////

@@ -1940,7 +1940,7 @@ int map_have_bb_maps(void) {
 
 static void parse_quest_objects(const uint8_t *data, uint32_t len,
                                 uint32_t *obj_cnt,
-                                const quest_dat_hdr_t *ptrs[3][17]) {
+                                const quest_dat_hdr_t *ptrs[2][17]) {
     const quest_dat_hdr_t *hdr = (const quest_dat_hdr_t *)data;
     uint32_t ptr = 0;
     uint32_t obj_count = 0;
@@ -1979,7 +1979,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                         int episode) {
     int i, alt;
     uint32_t index, area, objects, j;
-    const quest_dat_hdr_t *ptrs[3][17] = { { 0 } };
+    const quest_dat_hdr_t *ptrs[2][17] = { { 0 } };
     game_enemies_t tmp_en;
     FILE *fp;
     const quest_dat_hdr_t *hdr;

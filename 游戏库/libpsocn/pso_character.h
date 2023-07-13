@@ -253,12 +253,9 @@ typedef struct psocn_bb_full_char {
     uint8_t shortcuts[0x0A40];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];
-    uint32_t client_id;
-    battle_records_t battle;
-    bb_challenge_records_t challenge;
-    //psocn_bb_records_data_t records;                                         // 玩家数据表
-    //uint8_t unk3[0x001C];                                                    // not saved
-    //bb_challenge_records_t challenge;                                        // 玩家挑战数据表           OK
+    battle_records_t b_records;
+    uint8_t unk3[4];
+    bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK
     uint8_t unk4[0x002C];                                                    // not saved
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];                   // 玩家任务数据表2
