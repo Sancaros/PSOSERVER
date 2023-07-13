@@ -2535,6 +2535,10 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             memcpy(&dest->mode_pl->bb, &default_mode_char.char_class[char_class], PSOCN_STLENGTH_BB_CHAR2);
 
             /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
+            //if (initialize_cmode_iitem(dest)) {
+            //    ERR_LOG("初始化 GC %u 背包出现错误", dest->guildcard);
+            //    return -1;
+            //}
 
             /* 初始化 背包物品ID */
             regenerate_lobby_item_id(l, dest);

@@ -962,7 +962,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     return 0;
 }
 
-int initialize_mode_iitem(ship_client_t* dest) {
+int initialize_cmode_iitem(ship_client_t* dest) {
     size_t x;
     lobby_t* l = dest->cur_lobby;
 

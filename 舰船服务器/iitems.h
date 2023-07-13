@@ -84,6 +84,9 @@ bool add_iitem(ship_client_t* src, iitem_t* item);
 bool add_bitem(ship_client_t* src, bitem_t* item);
 int player_use_item(ship_client_t* src, size_t item_index);
 
+/* 挑战模式专用 */
+int initialize_cmode_iitem(ship_client_t* dest);
+
 /* 蓝色脉冲银行管理 */
 void cleanup_bb_bank(ship_client_t *c);
 

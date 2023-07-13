@@ -1526,7 +1526,7 @@ static void dumpinv_internal(ship_client_t *c) {
 
     if(v != CLIENT_VERSION_BB) {
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家 %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_str.string,
+        ITEM_LOG("玩家: %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_str.string,
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
@@ -1534,33 +1534,29 @@ static void dumpinv_internal(ship_client_t *c) {
         }
         ITEM_LOG("------------------------------------------------------------");
     }
-    else if(c->mode){
+    else {
+        psocn_bb_char_t* player = &c->bb_pl->character;
+
+        if (c->mode)
+            player = &c->mode_pl->bb;
+
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
-        ITEM_LOG("背包物品数量 %u", c->mode_pl->bb.inv.item_count);
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
+        ITEM_LOG("背包物品数量: %u", player->inv.item_count);
 
-        for(i = 0; i < c->mode_pl->bb.inv.item_count; ++i) {
-            print_iitem_data(&c->mode_pl->bb.inv.iitems[i], i, c->version);
-        }
-        ITEM_LOG("------------------------------------------------------------");
-    } else {
-        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_CHAR_NAME_WLENGTH);
-        ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家 %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
-        ITEM_LOG("背包物品数量 %u", c->bb_pl->character.inv.item_count);
-
-        for (i = 0; i < c->bb_pl->character.inv.item_count; ++i) {
-            print_iitem_data(&c->bb_pl->character.inv.iitems[i], i, c->version);
+        for (i = 0; i < player->inv.item_count; ++i) {
+            print_iitem_data(&player->inv.iitems[i], i, c->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
+    
 }
 
-/* 用法: /dumpinv [lobby/clientid/guildcard] */
-static int handle_dumpinv(ship_client_t* c, const char* params) {
+/* 用法: /dbginv [l/client_id/guildcard] */
+static int handle_dbginv(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;
     lobby_item_t* j;
     int do_lobby;
@@ -1571,7 +1567,7 @@ static int handle_dumpinv(ship_client_t* c, const char* params) {
         return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
     }
 
-    do_lobby = params && !strcmp(params, "lobby");
+    do_lobby = params && !strcmp(params, "l");
 
     /* If the arguments say "lobby", then dump the lobby's inventory. */
     if (do_lobby) {
@@ -1651,10 +1647,14 @@ static void dumpbank_internal(ship_client_t* c) {
     int v = c->version;
 
     if (v == CLIENT_VERSION_BB) {
+        psocn_bb_char_t* player = &c->bb_pl->character;
+
         istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
             BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
+        ITEM_LOG("银行物品数量: %u", c->bb_pl->bank.item_count);
 
         for (i = 0; i < c->bb_pl->bank.item_count; ++i) {
             print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
@@ -1665,8 +1665,8 @@ static void dumpbank_internal(ship_client_t* c) {
     }
 }
 
-/* 用法: /dumpbank [clientid/guildcard] */
-static int handle_dumpbank(ship_client_t *c, const char *params) {
+/* 用法: /dbgbank [clientid/guildcard] */
+static int handle_dbgbank(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
     uint32_t client;
 
@@ -3865,8 +3865,8 @@ static command_t cmds[] = {
     { "inftp"    , handle_inftp     },
     { "smite"    , handle_smite     },
     { "teleport" , handle_teleport  },
-    { "dumpinv"  , handle_dumpinv   },
-    { "dumpbank" , handle_dumpbank  },
+    { "dbginv"   , handle_dbginv    },
+    { "dbgbank"  , handle_dbgbank   },
     { "showdcpc" , handle_showdcpc  },
     { "allowgc"  , handle_allowgc   },
     { "ws"       , handle_ws        },
