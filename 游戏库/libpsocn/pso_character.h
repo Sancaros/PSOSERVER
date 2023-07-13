@@ -273,7 +273,7 @@ typedef struct psocn_bb_db_char {
     uint16_t autoreply[0x00AC];//172
     uint16_t infoboard[0x00AC];//172
     //psocn_bb_records_data_t records;
-    bb_challenge_records_t challenge;
+    bb_challenge_records_t c_records;
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;
