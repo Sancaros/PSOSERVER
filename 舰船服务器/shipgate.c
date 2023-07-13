@@ -65,6 +65,8 @@ extern uint8_t ship_ip6[16];
 bb_level_table_t bb_char_stats;
 v2_level_table_t v2_char_stats;
 
+psocn_bb_mode_char_t default_mode_char;
+
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
     int ret;
     LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
@@ -2887,9 +2889,10 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
         }
     }
 
-    CONFIG_LOG("接收 Blue Burst 玩家 %d 个职业 %d 个法术最大等级数据", j, i);
 
 #ifdef DEBUG
+    CONFIG_LOG("接收 Blue Burst 玩家 %d 个职业 %d 个法术最大等级数据", j, i);
+
     DBG_LOG("刷新BB职业最大法术数据");
     for (i = 0; i < MAX_TECH_LEVEL; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
@@ -2902,7 +2905,7 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
 }
 
 static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* pkt) {
-    uint32_t i, j;
+    uint32_t i;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
     if (!&pkt->data) {
@@ -2919,12 +2922,19 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
         }
     }
 
+#ifdef DEBUG
+
+    int j;
+
     for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
         for (i = 0; i < MAX_PLAYER_LEVEL; i++) {
             //DBG_LOG("职业 %d 等级 %d ATP数值 %d", j, i, bb_char_stats.levels[j][i].atp);
         }
         CONFIG_LOG("接收 Blue Burst 职业 %s %d 等级数据", pso_class[j].cn_name, i);
     }
+
+#endif // DEBUG
+
 
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
     /* Swap all the exp values */
@@ -2966,6 +2976,50 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
     }
 
 #endif // DEBUG
+
+    return 0;
+}
+
+static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_default_mode_char_data_bb_pkt* pkt) {
+    uint32_t i;
+
+    /* TODO 需增加加密传输认证,防止黑客行为 */
+    if (!&pkt->data) {
+        ERR_LOG("舰船接收职业初始数据失败, 请检查函数错误");
+        return -1;
+    }
+
+    default_mode_char = pkt->data;
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        if (default_mode_char.char_class[i].dress_data.ch_class != i) {
+            ERR_LOG("舰船接收角色初始数据索引错误, 请检查函数错误");
+            return -1;
+        }
+#ifdef DEBUG
+
+        CONFIG_LOG("接收 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_mode_char.char_class[i].dress_data.ch_class].cn_name, i);
+        display_packet(&default_mode_char.char_class[i].techniques, 20);
+
+#endif // DEBUG
+
+    }
+
+#ifdef DEBUG
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+
+        //ERR_LOG("舰船接收职业初始数据数据索引错误, 请检查函数错误 %u", default_chars.ch_class[i].character.dress_data.ch_class);
+        //display_packet(&default_chars.ch_class[i].character.inv, PSOCN_STLENGTH_INV);
+
+        CONFIG_LOG("接收 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_mode_char.char_class[i].dress_data.ch_class].cn_name, i);
+
+        display_packet(&default_mode_char.char_class[i].dress_data, PSOCN_STLENGTH_DRESS);
+
+    }
+
+#endif // DEBUG
+
 
     return 0;
 }
@@ -3120,6 +3174,9 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
         case SHDR_TYPE_BBLVLDATA:
             return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
+
+        case SHDR_TYPE_BB_DEFAULT_PL_DATA:
+            return handle_default_mode_char_data_bb(conn, (shipgate_default_mode_char_data_bb_pkt*)pkt);
 
         case SHDR_TYPE_CBKUP:
             if (!(flags & SHDR_RESPONSE)) {

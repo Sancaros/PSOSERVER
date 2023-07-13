@@ -165,6 +165,8 @@ int db_update_character_default(psocn_bb_db_char_t* data, int index);
 
 int db_get_character_default(psocn_bb_db_char_t* data, int index);
 
+int db_get_character_mode(psocn_bb_mode_char_t* data);
+
 int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class_name);
 
 /* 获取BB角色选项数据 */

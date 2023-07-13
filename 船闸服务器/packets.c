@@ -31,6 +31,7 @@
 #include "version.h"
 #include "shipgate.h"
 #include "ship.h"
+#include <pso_pack.h>
 
 static uint8_t sendbuf[65536];
 
@@ -1044,9 +1045,9 @@ int send_player_level_table_bb(ship_t* c) {
     return i;
 }
 
-int send_default_char_data_bb(ship_t* c, psocn_bb_default_char_t* data) {
-    shipgate_default_char_data_bb_pkt* pkt = (shipgate_default_char_data_bb_pkt*)sendbuf;
-    uint16_t len = sizeof(shipgate_default_char_data_bb_pkt);
+int send_def_mode_char_data_bb(ship_t* c, psocn_bb_mode_char_t* data) {
+    shipgate_default_mode_char_data_bb_pkt* pkt = (shipgate_default_mode_char_data_bb_pkt*)sendbuf;
+    uint16_t len = sizeof(psocn_bb_mode_char_t) + sizeof(shipgate_hdr_t);
 
     /* Make sure we don't try to send to a ship that won't know what to do with
        the packet. */
@@ -1058,9 +1059,35 @@ int send_default_char_data_bb(ship_t* c, psocn_bb_default_char_t* data) {
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(&pkt->data, data, sizeof(pkt->data));
+    memcpy(&pkt->data, data, sizeof(psocn_bb_mode_char_t));
 
     /* 加密并发送 */
     return send_crypt(c, len);
 }
 
+int send_default_mode_char_data_bb(ship_t* c) {
+    int i, len = 0;
+
+    psocn_bb_mode_char_t mode_chars = { 0 };
+
+    memset(&mode_chars, 0, sizeof(psocn_bb_mode_char_t));
+
+    if (db_get_character_mode(&mode_chars)) {
+        ERR_LOG("舰闸获取职业初始数据错误, 请检查函数错误");
+        return -1;
+    }
+
+#ifdef DEBUG
+
+    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
+        SGATE_LOG("发送 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[mode_chars.char_class[i].dress_data.ch_class].cn_name, i);
+
+        //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
+    }
+
+#endif // DEBUG
+
+    i = send_def_mode_char_data_bb(c, &mode_chars);
+
+    return i;
+}

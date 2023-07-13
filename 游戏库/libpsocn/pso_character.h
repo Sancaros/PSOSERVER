@@ -281,11 +281,17 @@ typedef struct psocn_bb_db_char {
     uint8_t quest_data2[PSOCN_STLENGTH_BB_DB_QUEST_DATA2];
 } PACKED psocn_bb_db_char_t;
 
-static int ds123a = sizeof(psocn_bb_db_char_t);
-
 typedef struct psocn_bb_default_char {
-    psocn_bb_db_char_t ch_class[12];
+    psocn_bb_db_char_t char_class[MAX_PLAYER_CLASS_BB];
 } PACKED psocn_bb_default_char_t;
+
+typedef struct psocn_bb_mode_char {
+    psocn_bb_char_t char_class[MAX_PLAYER_CLASS_BB];
+} PACKED psocn_bb_mode_char_t;
+
+// 11760 980
+
+static int ds123a = sizeof(psocn_bb_mode_char_t);
 
 // BB GC 数据单独实例文件 TODO 
 typedef struct psocn_bb_guild_card_entry {

@@ -656,7 +656,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
 
 
         /* 复制一份缓冲默认角色数据 根据选取的角色职业定义 */
-        memcpy(char_data, &default_chars.ch_class[ch_class], PSOCN_STLENGTH_BB_DB_CHAR);
+        memcpy(char_data, &default_chars.char_class[ch_class], PSOCN_STLENGTH_BB_DB_CHAR);
 
         /* 复制初始角色数值 */
         memcpy(&char_data->character.disp.stats, &bb_char_stats.start_stats[ch_class], sizeof(psocn_pl_stats_t));
@@ -1302,12 +1302,14 @@ int load_bb_char_data(void) {
 
     /* 加载newserv角色数据文件 */
     for (i = 0; i < 12; ++i) {
-        memset(&default_chars.ch_class[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
+        memset(&default_chars.char_class[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
 
-        if (db_get_character_default(&default_chars.ch_class[i], i)) {
+        if (db_get_character_default(&default_chars.char_class[i], i)) {
             ERR_LOG("无法读取 Blue Burst 角色初始数据表");
             return -2;
         }
+
+        //DBG_LOG("获取 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_chars.ch_class[i].character.dress_data.ch_class].cn_name, i);
 
         len += PSOCN_STLENGTH_BB_DB_CHAR;
 

@@ -81,7 +81,7 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
     return 0;
 }
 
-/* */
+/* 读取BB玩家等级列表 */
 int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
     char query[256];
     void* result;

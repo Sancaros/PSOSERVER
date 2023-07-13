@@ -134,9 +134,6 @@ int handle_pkt(ship_t *s);
 /* 加载初始公会默认标志数据 */
 int load_guild_default_flag(char* file);
 
-/* 加载初始玩家数据 */
-int load_bb_default_char_data(void);
-
 /* IDs for the ship_metadata table */
 #define SHIP_METADATA_VER_VERSION       1
 #define SHIP_METADATA_VER_FLAGS         2

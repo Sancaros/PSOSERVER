@@ -27,6 +27,7 @@
     <ClInclude Include="pso_item_list.h" />
     <ClInclude Include="pso_menu.h" />
     <ClInclude Include="pso_message.h" />
+    <ClInclude Include="pso_pack.h" />
     <ClInclude Include="pso_packet_length.h" />
     <ClInclude Include="pso_ping.h" />
     <ClInclude Include="pso_struct_records.h" />
@@ -52,6 +53,7 @@
     <ClCompile Include="pso_items.c" />
     <ClCompile Include="pso_menu.c" />
     <ClCompile Include="pso_message.c" />
+    <ClCompile Include="pso_pack.c" />
     <ClCompile Include="pso_ping.c" />
     <ClCompile Include="pso_player.c" />
     <ClCompile Include="pso_StringReader.c" />
@@ -136,7 +138,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>..\..\游戏库\libpsocnconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\通用库\zlib-win-build;..\..\游戏库\libpsocnconfig;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>

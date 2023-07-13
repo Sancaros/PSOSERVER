@@ -138,6 +138,44 @@ int db_get_character_default(psocn_bb_db_char_t* data, int index) {
     return 0;
 }
 
+int db_get_character_mode(psocn_bb_mode_char_t* data) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    snprintf(myquery, sizeof(myquery), "SELECT "
+        "`character2`"
+        " FROM %s", CHARACTER_DEFAULT);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法获取数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    if ((result = psocn_db_result_use(&conn)) == NULL) {
+        SQLERR_LOG("无法获取查询结果");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    int i = 0;
+
+    while ((row = psocn_db_result_fetch(result)) != NULL) {
+        memcpy((char*)&data->char_class[i], row[0], PSOCN_STLENGTH_BB_CHAR2);
+
+        i++;
+        if ( i > 11) {
+            break;
+        }
+    }
+
+    psocn_db_result_free(result);
+
+    return 0;
+}
+
 int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class_name) {
 
     memset(myquery, 0, sizeof(myquery));

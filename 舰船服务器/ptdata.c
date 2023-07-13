@@ -2312,7 +2312,7 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
     dest->new_item.datal[2] = item[2];
     dest->new_item.data2l = item[3];
 
-    print_item_data(&dest->new_item, dest->version);
+    //print_item_data(&dest->new_item, dest->version);
 
     pthread_mutex_lock(&dest->mutex);
     it = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
@@ -4957,7 +4957,7 @@ int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r) {
                 continue;
             }
 
-            DBG_LOG("%d", l->clients[i]->bb_pl->character.dress_data.section);
+            //DBG_LOG("%d", l->clients[i]->bb_pl->character.dress_data.section);
 
             pt_generate_bb_pso2_drop_style(l->clients[i], l, l->clients[i]->bb_pl->character.dress_data.section, r);
         }

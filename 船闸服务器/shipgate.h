@@ -159,6 +159,6 @@ int send_player_max_tech_level_table_bb(ship_t* c);
 int send_player_level_table_bb(ship_t* c);
 
 /* 向舰船发送基础玩家数据 */
-int send_default_char_data_bb(ship_t* c, psocn_bb_default_char_t* data);
+int send_default_mode_char_data_bb(ship_t* c);
 
 #endif /* !SHIPGATE_H */

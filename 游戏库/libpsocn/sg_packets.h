@@ -595,8 +595,8 @@ typedef struct shipgate_pl_level_bb {
 /* 用于传输玩家职业等级数值数据表 */
 typedef struct shipgate_default_char_data_bb {
     shipgate_hdr_t hdr;
-    psocn_bb_default_char_t data;
-} PACKED shipgate_default_char_data_bb_pkt;
+    psocn_bb_mode_char_t data;
+} PACKED shipgate_default_mode_char_data_bb_pkt;
 
 /* 用于查询玩家是否在线 */
 typedef struct shipgate_check_plonline {

@@ -86,8 +86,8 @@ static uint8_t recvbuf[65536];
 static uint8_t default_guild_flag[2048];
 static uint8_t default_guild_flag_slashes[4098];
 
-/* 默认玩家数据 */
-static psocn_bb_default_char_t default_chars;
+///* 默认玩家数据 */
+//static psocn_bb_default_char_t default_chars;
 
 /* Find a ship by its id */
 static ship_t* find_ship(uint16_t id) {
@@ -5172,7 +5172,7 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
 
         send_player_level_table_bb(c);
 
-        send_default_char_data_bb(c, &default_chars);
+        send_default_mode_char_data_bb(c);
     }
 
     return rv;
@@ -5328,7 +5328,8 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return 0;
 
     default:
-        UNK_SPD(type,(uint8_t*)pkt);
+        DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+        display_packet((unsigned char*)pkt, length);
         return -3;
     }
 }
@@ -5533,28 +5534,6 @@ int load_guild_default_flag(char* file) {
     psocn_db_escape_str(&conn, &default_guild_flag_slashes[0], &default_guild_flag[0], sizeof(default_guild_flag));
 
     SGATE_LOG("读取初始角色公会图标文件 共 %d 字节.", len);
-
-    return 0;
-}
-
-int load_bb_default_char_data(void) {
-    int i, len = 0;
-
-    /* 加载newserv角色数据文件 */
-    for (i = 0; i < 12; ++i) {
-        memset(&default_chars.ch_class[i], 0, PSOCN_STLENGTH_BB_DB_CHAR);//必须初始化为0
-
-        if (db_get_character_default(&default_chars.ch_class[i], i)) {
-            ERR_LOG("无法读取 Blue Burst 角色初始数据表");
-            return -2;
-        }
-
-        len += PSOCN_STLENGTH_BB_DB_CHAR;
-
-        //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
-    }
-
-    SGATE_LOG("读取 %d 个职业初始角色数据, 共 %d 字节.", i, len);
 
     return 0;
 }
