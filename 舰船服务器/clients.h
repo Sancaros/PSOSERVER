@@ -456,19 +456,13 @@ void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
                            const char *ship, uint32_t block, const char *nick);
 
 /* 给予Blue Burst客户端经验. */
-int client_give_exp(ship_client_t *c, uint32_t exp_amount);
+int client_give_exp(ship_client_t *dest, uint32_t exp_amount);
 
 /* 给予Blue Burst客户端等级提升. */
-int client_give_level(ship_client_t *c, uint32_t level_req);
-
-/* 给予模式玩家客户端经验. */
-int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount);
-
-/* 给予模式玩家客户端等级提升. */
-int client_give_mode_level(ship_client_t* dest, uint32_t level_req);
+int client_give_level(ship_client_t *dest, uint32_t level_req);
 
 /* 给予PSOv2客户端等级提升. */
-int client_give_level_v2(ship_client_t *c, uint32_t level_req);
+int client_give_level_v2(ship_client_t *dest, uint32_t level_req);
 
 /* Check if a client's newly sent character data looks corrupted. */
 int client_check_character(ship_client_t *c, void *pl, uint8_t ver);

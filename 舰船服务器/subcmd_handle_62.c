@@ -1142,18 +1142,26 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
     else {
+
+        psocn_bb_char_t* player = &src->bb_pl->character;
+
+        if (src->mode)
+            player = &src->mode_pl->bb;
+
         item = LE32(iitem_data.data.datal[0]);
 
         /* Is it meseta, or an item? */
         if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data.data2l) + LE32(src->bb_pl->character.disp.meseta);
+            tmp = LE32(iitem_data.data.data2l) + LE32(player->disp.meseta);
 
             /* Cap at 999,999 meseta. */
             if (tmp > 999999)
                 tmp = 999999;
 
-            src->bb_pl->character.disp.meseta = LE32(tmp);
-            src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
+            player->disp.meseta = LE32(tmp);
+
+            if (!src->mode)
+                src->pl->bb.character.disp.meseta = player->disp.meseta;
         }
         else {
             iitem_data.present = LE16(0x0001);
@@ -2102,7 +2110,7 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
             if (target_lv > 199)
                 target_lv = 199;
 
-            client_give_mode_level(lClient, target_lv);
+            client_give_level(lClient, target_lv);
         }
     }
 

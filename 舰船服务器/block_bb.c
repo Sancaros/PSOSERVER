@@ -57,6 +57,8 @@ extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 extern time_t srv_time;
 
+extern psocn_bb_mode_char_t default_mode_char;
+
 /* Process a chat packet from a Blue Burst client. */
 static int bb_join_game(ship_client_t* c, lobby_t* l) {
     int rv;
@@ -2498,10 +2500,10 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
 }
 
 /* BB挑战模式功能 */
-static int process_bb_challenge_01DF(ship_client_t* c, bb_challenge_01df_pkt* pkt) {
+static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    lobby_t* l = c->cur_lobby;
+    lobby_t* l = src->cur_lobby;
 
     if (len != LE16(0x000C)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2509,13 +2511,28 @@ static int process_bb_challenge_01DF(ship_client_t* c, bb_challenge_01df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("挑战模式开始 目标GC %u", c->guildcard);
+    //DBG_LOG("挑战模式开始 目标GC %u", src->guildcard);
+
+    if (src->version == CLIENT_VERSION_BB) {
+        for (size_t x = 0; x < 4; x++) {
+            l->item_player_id[x] = (0x00200000 * x) + 0x00010000;
+        }
+        l->item_lobby_id = 0x00810000;
+    }
+    else
+        l->item_lobby_id = 0xF0000000;
 
     /* Send the packet to every connected client. */
     for (int i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients[i] != c) {
-            l->clients[i]->mode = c->mode;
+        if (l->clients[i]) {
+            l->clients[i]->mode = src->mode;
             DBG_LOG("挑战模式开始 目标GC %u 模式 %d", l->clients[i]->guildcard, l->clients[i]->mode);
+
+            uint8_t char_class = l->clients[i]->bb_pl->character.dress_data.ch_class;
+
+            memcpy(&l->clients[i]->mode_pl->bb, &default_mode_char.char_class[char_class], PSOCN_STLENGTH_BB_CHAR2);
+
+            regenerate_lobby_item_id(l, l->clients[i]);
 
         }
     }

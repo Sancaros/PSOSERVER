@@ -179,12 +179,17 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     uint32_t id;
     int i;
 
+    inventory_t* inv = &c->bb_pl->character.inv;
+
+    if(c->mode)
+        inv = &c->mode_pl->bb.inv;
+
     if (c->version == CLIENT_VERSION_BB) {
         /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
 
-        for (i = 0; i < c->bb_pl->character.inv.item_count; ++i, ++id) {
-            c->bb_pl->character.inv.iitems[i].data.item_id = LE32(id);
+        for (i = 0; i < inv->item_count; ++i, ++id) {
+            inv->iitems[i].data.item_id = LE32(id);
         }
 
         --id;
@@ -527,12 +532,10 @@ int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id,
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, 
     bool allow_meseta_overdraft) {
     iitem_t ret = { 0 };
-    psocn_bb_char_t* character = { 0 };
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
         character = &src->mode_pl->bb;
-    else
-        character = &src->bb_pl->character;
 
     if (item_id == 0xFFFFFFFF) {
         if (amount <= character->disp.meseta) {
@@ -622,13 +625,16 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
 
 bool add_iitem(ship_client_t* src, iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    psocn_bb_db_char_t* player = src->bb_pl;
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        player->character.disp.meseta += item->data.data2l;
-        if (player->character.disp.meseta > 999999) {
-            player->character.disp.meseta = 999999;
+        player->disp.meseta += item->data.data2l;
+        if (player->disp.meseta > 999999) {
+            player->disp.meseta = 999999;
         }
         return true;
     }
@@ -638,30 +644,30 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
-        for (y = 0; y < player->character.inv.item_count; y++) {
-            if (primary_identifier(&player->character.inv.iitems[y].data) == pid) {
+        for (y = 0; y < player->inv.item_count; y++) {
+            if (primary_identifier(&player->inv.iitems[y].data) == pid) {
                 break;
             }
         }
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
-        if (y < player->character.inv.item_count) {
-            player->character.inv.iitems[y].data.datab[5] += item->data.datab[5];
-            if (player->character.inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
-                player->character.inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
+        if (y < player->inv.item_count) {
+            player->inv.iitems[y].data.datab[5] += item->data.datab[5];
+            if (player->inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
+                player->inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
             }
             return true;
         }
     }
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
-    if (player->character.inv.item_count >= MAX_PLAYER_INV_ITEMS) {
+    if (player->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
         ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值",
             src->guildcard);
         return false;
     }
-    player->character.inv.iitems[player->character.inv.item_count] = *item;
-    player->character.inv.item_count++;
+    player->inv.iitems[player->inv.item_count] = *item;
+    player->inv.item_count++;
     return true;
 }
 
@@ -712,8 +718,12 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     // delete the item here.
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
 
-    psocn_bb_db_char_t* player = src->bb_pl;
-    iitem_t item = player->character.inv.iitems[item_index];
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
+
+    iitem_t item = player->inv.iitems[item_index];
     uint32_t item_identifier = primary_identifier(&item.data);
 
     iitem_t weapon = { 0 };
@@ -725,12 +735,12 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
     }
     else if (item_identifier == 0x030200) { // Technique disk
-        uint8_t max_level = max_tech_level[item.data.datab[4]].max_lvl[player->character.dress_data.ch_class];
+        uint8_t max_level = max_tech_level[item.data.datab[4]].max_lvl[player->dress_data.ch_class];
         if (item.data.datab[2] > max_level) {
             ERR_LOG("technique level too high");
             return -1;
         }
-        player->character.techniques[item.data.datab[4]] = item.data.datab[2];
+        player->techniques[item.data.datab[4]] = item.data.datab[2];
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030A00) { // Grinder
@@ -738,7 +748,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             ERR_LOG("incorrect grinder value");
             return -2;
         }
-        weapon = player->character.inv.iitems[find_equipped_weapon(&player->character.inv)];
+        weapon = player->inv.iitems[find_equipped_weapon(&player->inv)];
         pmt_weapon_bb_t weapon_def = { 0 };
         if (pmt_lookup_weapon_bb(weapon.data.datal[0], &weapon_def)) {
             ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
@@ -756,25 +766,25 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     else if ((item_identifier & 0xFFFF00) == 0x030B00) { // Material
         switch (item.data.datab[2]) {
         case 0: // Power Material
-            src->bb_pl->character.disp.stats.atp += 2;
+            player->disp.stats.atp += 2;
             break;
         case 1: // Mind Material
-            src->bb_pl->character.disp.stats.mst += 2;
+            player->disp.stats.mst += 2;
             break;
         case 2: // Evade Material
-            src->bb_pl->character.disp.stats.evp += 2;
+            player->disp.stats.evp += 2;
             break;
         case 3: // HP Material
-            src->bb_pl->character.inv.hpmats_used += 2;
+            player->inv.hpmats_used += 2;
             break;
         case 4: // TP Material
-            src->bb_pl->character.inv.tpmats_used += 2;
+            player->inv.tpmats_used += 2;
             break;
         case 5: // Def Material
-            src->bb_pl->character.disp.stats.dfp += 2;
+            player->disp.stats.dfp += 2;
             break;
         case 6: // Luck Material
-            src->bb_pl->character.disp.stats.lck += 2;
+            player->disp.stats.lck += 2;
             break;
         default:
             ERR_LOG("unknown material used");
@@ -783,7 +793,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030F00) { // AddSlot
-        armor = player->character.inv.iitems[find_equipped_armor(&player->character.inv)];
+        armor = player->inv.iitems[find_equipped_armor(&player->inv)];
         if (armor.data.datab[5] >= 4) {
             ERR_LOG("armor already at maximum slot count");
             return -6;
@@ -823,37 +833,37 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     }
     else if (item_identifier == 0x030C00) {
         // Cell of MAG 502
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
-        mag.data.datab[1] = (player->character.dress_data.section & 1) ? 0x1D : 0x21;
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.datab[1] = (player->dress_data.section & 1) ? 0x1D : 0x21;
 
     }
     else if (item_identifier == 0x030C01) {
         // Cell of MAG 213
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
-        mag.data.datab[1] = (player->character.dress_data.section & 1) ? 0x27 : 0x22;
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag.data.datab[1] = (player->dress_data.section & 1) ? 0x27 : 0x22;
 
     }
     else if (item_identifier == 0x030C02) {
         // Parts of RoboChao
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
         mag.data.datab[1] = 0x28;
 
     }
     else if (item_identifier == 0x030C03) {
         // Heart of Opa Opa
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
         mag.data.datab[1] = 0x29;
 
     }
     else if (item_identifier == 0x030C04) {
         // Heart of Pian
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
         mag.data.datab[1] = 0x2A;
 
     }
     else if (item_identifier == 0x030C05) {
         // Heart of Chao
-        mag = player->character.inv.iitems[find_equipped_mag(&player->character.inv)];
+        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
         mag.data.datab[1] = 0x2B;
 
     }
@@ -900,7 +910,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     //        try {
     //            const auto& combo = s->item_parameter_table->get_item_combination(
     //                item.data, inv_item.data);
-    //            if (combo.char_class != 0xFF && combo.char_class != player->character.dress_data.ch_class) {
+    //            if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
     //                ERR_LOG("item combination requires specific char_class");
     //            }
     //            if (combo.mag_level != 0xFF) {

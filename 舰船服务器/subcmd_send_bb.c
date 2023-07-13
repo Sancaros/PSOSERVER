@@ -524,7 +524,7 @@ int subcmd_send_bb_bank(ship_client_t* src) {
 }
 
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
-int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount, int mode) {
+int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_exp_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_exp_t);
@@ -602,7 +602,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
 }
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
-int subcmd_send_bb_level(ship_client_t* dest, int mode) {
+int subcmd_send_bb_level(ship_client_t* dest) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_level_up_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_level_up_t);
@@ -622,75 +622,43 @@ int subcmd_send_bb_level(ship_client_t* dest, int mode) {
     pkt.shdr.size = 0x05;
     pkt.shdr.client_id = dest->client_id;
 
-    if (mode) {
-        /* 填充人物基础数据. 均为 little-endian 字符串. */
-        pkt.atp = dest->mode_pl->bb.disp.stats.atp;
-        pkt.mst = dest->mode_pl->bb.disp.stats.mst;
-        pkt.evp = dest->mode_pl->bb.disp.stats.evp;
-        pkt.hp = dest->mode_pl->bb.disp.stats.hp;
-        pkt.dfp = dest->mode_pl->bb.disp.stats.dfp;
-        pkt.ata = dest->mode_pl->bb.disp.stats.ata;
-        pkt.level = dest->mode_pl->bb.disp.level;
+    psocn_bb_char_t* player = &dest->bb_pl->character;
 
-        /* 增加MAG的升级奖励. */
-        for (i = 0; i < dest->mode_pl->bb.inv.item_count; ++i) {
-            if ((dest->mode_pl->bb.inv.iitems[i].flags & LE32(0x00000008)) &&
-                dest->mode_pl->bb.inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
-                base = LE16(pkt.dfp);
-                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[2]) / 100;
-                pkt.dfp = LE16((base + mag));
+    if(dest->mode)
+        player = &dest->mode_pl->bb;
 
-                base = LE16(pkt.atp);
-                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[3]) / 50;
-                pkt.atp = LE16((base + mag));
+    /* 填充人物基础数据. 均为 little-endian 字符串. */
+    pkt.atp = player->disp.stats.atp;
+    pkt.mst = player->disp.stats.mst;
+    pkt.evp = player->disp.stats.evp;
+    pkt.hp = player->disp.stats.hp;
+    pkt.dfp = player->disp.stats.dfp;
+    pkt.ata = player->disp.stats.ata;
+    pkt.level = player->disp.level;
 
-                base = LE16(pkt.ata);
-                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[4]) / 200;
-                pkt.ata = LE16((base + mag));
+    /* 增加MAG的升级奖励. */
+    for (i = 0; i < player->inv.item_count; ++i) {
+        if ((player->inv.iitems[i].flags & LE32(0x00000008)) &&
+            player->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+            base = LE16(pkt.dfp);
+            mag = LE16(player->inv.iitems[i].data.dataw[2]) / 100;
+            pkt.dfp = LE16((base + mag));
 
-                base = LE16(pkt.mst);
-                mag = LE16(dest->mode_pl->bb.inv.iitems[i].data.dataw[5]) / 50;
-                pkt.mst = LE16((base + mag));
+            base = LE16(pkt.atp);
+            mag = LE16(player->inv.iitems[i].data.dataw[3]) / 50;
+            pkt.atp = LE16((base + mag));
 
-                break;
-            }
+            base = LE16(pkt.ata);
+            mag = LE16(player->inv.iitems[i].data.dataw[4]) / 200;
+            pkt.ata = LE16((base + mag));
+
+            base = LE16(pkt.mst);
+            mag = LE16(player->inv.iitems[i].data.dataw[5]) / 50;
+            pkt.mst = LE16((base + mag));
+
+            break;
         }
     }
-    else {
-        /* 填充人物基础数据. 均为 little-endian 字符串. */
-        pkt.atp = dest->bb_pl->character.disp.stats.atp;
-        pkt.mst = dest->bb_pl->character.disp.stats.mst;
-        pkt.evp = dest->bb_pl->character.disp.stats.evp;
-        pkt.hp = dest->bb_pl->character.disp.stats.hp;
-        pkt.dfp = dest->bb_pl->character.disp.stats.dfp;
-        pkt.ata = dest->bb_pl->character.disp.stats.ata;
-        pkt.level = dest->bb_pl->character.disp.level;
-
-        /* 增加MAG的升级奖励. */
-        for (i = 0; i < dest->bb_pl->character.inv.item_count; ++i) {
-            if ((dest->bb_pl->character.inv.iitems[i].flags & LE32(0x00000008)) &&
-                dest->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
-                base = LE16(pkt.dfp);
-                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[2]) / 100;
-                pkt.dfp = LE16((base + mag));
-
-                base = LE16(pkt.atp);
-                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[3]) / 50;
-                pkt.atp = LE16((base + mag));
-
-                base = LE16(pkt.ata);
-                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[4]) / 200;
-                pkt.ata = LE16((base + mag));
-
-                base = LE16(pkt.mst);
-                mag = LE16(dest->bb_pl->character.inv.iitems[i].data.dataw[5]) / 50;
-                pkt.mst = LE16((base + mag));
-
-                break;
-            }
-        }
-    }
-    
 
     return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }

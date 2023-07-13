@@ -851,22 +851,29 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
     int cl;
     uint32_t level;
 
-    if(dest->version != CLIENT_VERSION_BB || !dest->bb_pl)
+    if (dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl)) {
+        ERR_LOG("GC %u 角色不存在或版本不为BB", dest->guildcard);
         return -1;
+    }
+
+    psocn_bb_char_t* player = &dest->bb_pl->character;
+
+    if(dest->mode)
+        player = &dest->mode_pl->bb;
 
     /* No need if they've already maxed out. */
-    if(dest->bb_pl->character.disp.level >= 199)
+    if(player->disp.level >= 199)
         return 0;
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(dest->bb_pl->character.disp.exp);
+    exp_total = LE32(player->disp.exp);
     exp_total += exp_amount;
-    dest->bb_pl->character.disp.exp = LE32(exp_total);
-    cl = dest->bb_pl->character.dress_data.ch_class;
-    level = LE32(dest->bb_pl->character.disp.level);
+    player->disp.exp = LE32(exp_total);
+    cl = player->dress_data.ch_class;
+    level = LE32(player->disp.level);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(dest, exp_amount, dest->mode))
+    if(subcmd_send_bb_exp(dest, exp_amount))
         return -1;
 
     /* See if they got any level ups. */
@@ -875,15 +882,15 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
 
         if(exp_total >= ent->exp) {
             need_lvlup = 1;
-            give_stats(&dest->bb_pl->character.disp.stats, ent);
+            give_stats(&player->disp.stats, ent);
             ++level;
         }
     } while(exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
 
     /* If they got any level ups, send out the packet that says so. */
     if(need_lvlup) {
-        dest->bb_pl->character.disp.level = LE32(level);
-        if(subcmd_send_bb_level(dest, dest->mode))
+        player->disp.level = LE32(level);
+        if(subcmd_send_bb_level(dest))
             return -1;
     }
 
@@ -891,173 +898,96 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
 }
 
 /* 给予Blue Burst客户端等级提升. */
-int client_give_level(ship_client_t *c, uint32_t level_req) {
+int client_give_level(ship_client_t *dest, uint32_t level_req) {
     uint32_t exp_total;
     psocn_lvl_stats_t *ent;
     int cl;
     uint32_t exp_gained;
 
-    if(c->version != CLIENT_VERSION_BB || !c->bb_pl || level_req > 199)
+    if(dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl) || level_req > 199)
         return -1;
 
+    psocn_bb_char_t* player = &dest->bb_pl->character;
+
+    if (dest->mode)
+        player = &dest->mode_pl->bb;
+
     /* No need if they've already at that level. */
-    if(c->bb_pl->character.disp.level >= level_req)
+    if(player->disp.level >= level_req)
         return 0;
 
     /* Grab the entry for that level... */
-    cl = c->bb_pl->character.dress_data.ch_class;
+    cl = player->dress_data.ch_class;
     ent = &bb_char_stats.levels[cl][level_req];
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(c->bb_pl->character.disp.exp);
+    exp_total = LE32(player->disp.exp);
     exp_gained = ent->exp - exp_total;
-    c->bb_pl->character.disp.exp = LE32(ent->exp);
+    player->disp.exp = LE32(ent->exp);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(c, exp_gained, c->mode))
+    if(subcmd_send_bb_exp(dest, exp_gained))
         return -1;
 
     /* Send the level-up packet. */
-    c->bb_pl->character.disp.level = LE32(level_req);
-    if(subcmd_send_bb_level(c, c->mode))
+    player->disp.level = LE32(level_req);
+    if(subcmd_send_bb_level(dest))
         return -1;
 
     return 0;
 }
 
-/* 给予模式玩家客户端经验. */
-int client_give_mode_exp(ship_client_t* dest, uint32_t exp_amount) {
-    uint32_t exp_total;
-    psocn_lvl_stats_t* ent;
-    int need_lvlup = 0;
-    int cl;
-    uint32_t level;
-
-    if (dest->version != CLIENT_VERSION_BB || !dest->mode_pl)
-        return -1;
-
-    /* No need if they've already maxed out. */
-    if (dest->mode_pl->bb.disp.level >= 199)
-        return 0;
-
-    /* Add in the experience to their total so far. */
-    exp_total = LE32(dest->mode_pl->bb.disp.exp);
-    exp_total += exp_amount;
-    dest->mode_pl->bb.disp.exp = LE32(exp_total);
-    cl = dest->mode_pl->bb.dress_data.ch_class;
-    level = LE32(dest->mode_pl->bb.disp.level);
-
-    /* Send the packet telling them they've gotten experience. */
-    if (subcmd_send_bb_exp(dest, exp_amount, dest->mode))
-        return -1;
-
-    /* See if they got any level ups. */
-    do {
-        ent = &bb_char_stats.levels[cl][level + 1];
-
-        if (exp_total >= ent->exp) {
-            need_lvlup = 1;
-            give_stats(&dest->mode_pl->bb.disp.stats, ent);
-            ++level;
-        }
-    } while (exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
-
-    /* If they got any level ups, send out the packet that says so. */
-    if (need_lvlup) {
-        dest->mode_pl->bb.disp.level = LE32(level);
-        if (subcmd_send_bb_level(dest, dest->mode))
-            return -1;
-    }
-
-    return 0;
-}
-
-/* 给予模式玩家客户端等级提升. */
-int client_give_mode_level(ship_client_t* dest, uint32_t level_req) {
-    uint32_t exp_total;
-    psocn_lvl_stats_t* ent;
-    int cl;
-    uint32_t exp_gained;
-
-    if (dest->version != CLIENT_VERSION_BB || !dest->mode_pl || level_req > 199)
-        return -1;
-
-    /* No need if they've already at that level. */
-    if (dest->mode_pl->bb.disp.level >= level_req)
-        return 0;
-
-    /* Grab the entry for that level... */
-    cl = dest->mode_pl->bb.dress_data.ch_class;
-    ent = &bb_char_stats.levels[cl][level_req];
-
-    /* Add in the experience to their total so far. */
-    exp_total = LE32(dest->mode_pl->bb.disp.exp);
-    exp_gained = ent->exp - exp_total;
-    dest->mode_pl->bb.disp.exp = LE32(ent->exp);
-
-    /* Send the packet telling them they've gotten experience. */
-    if (subcmd_send_bb_exp(dest, exp_gained, dest->mode))
-        return -1;
-
-    /* Send the level-up packet. */
-    dest->mode_pl->bb.disp.level = LE32(level_req);
-    if (subcmd_send_bb_level(dest, dest->mode))
-        return -1;
-
-    return 0;
-}
-
-static void give_stats_v2(ship_client_t *c, psocn_lvl_stats_t *ent) {
+static void give_stats_v2(psocn_disp_char_t* disp, psocn_lvl_stats_t *ent) {
     uint16_t tmp;
 
-    tmp = LE16(c->pl->v1.character.disp.stats.atp) + ent->atp;
-    c->pl->v1.character.disp.stats.atp = LE16(tmp);
+    tmp = LE16(disp->stats.atp) + ent->atp;
+    disp->stats.atp = LE16(tmp);
 
-    tmp = LE16(c->pl->v1.character.disp.stats.mst) + ent->mst;
-    c->pl->v1.character.disp.stats.mst = LE16(tmp);
+    tmp = LE16(disp->stats.mst) + ent->mst;
+    disp->stats.mst = LE16(tmp);
 
-    tmp = LE16(c->pl->v1.character.disp.stats.evp) + ent->evp;
-    c->pl->v1.character.disp.stats.evp = LE16(tmp);
+    tmp = LE16(disp->stats.evp) + ent->evp;
+    disp->stats.evp = LE16(tmp);
 
-    tmp = LE16(c->pl->v1.character.disp.stats.hp) + ent->hp;
-    c->pl->v1.character.disp.stats.hp = LE16(tmp);
+    tmp = LE16(disp->stats.hp) + ent->hp;
+    disp->stats.hp = LE16(tmp);
 
-    tmp = LE16(c->pl->v1.character.disp.stats.dfp) + ent->dfp;
-    c->pl->v1.character.disp.stats.dfp = LE16(tmp);
+    tmp = LE16(disp->stats.dfp) + ent->dfp;
+    disp->stats.dfp = LE16(tmp);
 
-    tmp = LE16(c->pl->v1.character.disp.stats.ata) + ent->ata;
-    c->pl->v1.character.disp.stats.ata = LE16(tmp);
+    tmp = LE16(disp->stats.ata) + ent->ata;
+    disp->stats.ata = LE16(tmp);
 
-    c->pl->v1.character.disp.exp = LE32(ent->exp);
+    disp->exp = LE32(ent->exp);
 }
 
 /* 给予PSOv2客户端等级提升. */
-int client_give_level_v2(ship_client_t *c, uint32_t level_req) {
+int client_give_level_v2(ship_client_t *dest, uint32_t level_req) {
     psocn_lvl_stats_t *ent;
     int cl, i;
 
-    if(c->version != CLIENT_VERSION_DCV2 && c->version != CLIENT_VERSION_PC)
+    if(dest->version != CLIENT_VERSION_DCV2 && dest->version != CLIENT_VERSION_PC)
         return -1;
 
-    if(!c->pl || level_req > (MAX_PLAYER_LEVEL - 1))
+    if(!dest->pl || level_req > (MAX_PLAYER_LEVEL - 1))
         return -1;
 
     /* No need if they've already at that level. */
-    if(c->pl->v1.character.disp.level >= level_req)
+    if(dest->pl->v1.character.disp.level >= level_req)
         return 0;
 
     /* Give all the stat boosts for the intervening levels... */
-    cl = c->pl->v1.character.dress_data.ch_class;
+    cl = dest->pl->v1.character.dress_data.ch_class;
 
-    for(i = c->pl->v1.character.disp.level + 1; i <= (int)level_req; ++i) {
+    for(i = dest->pl->v1.character.disp.level + 1; i <= (int)level_req; ++i) {
         ent = &v2_char_stats.levels[cl][i];
-        give_stats_v2(c, ent);
+        give_stats_v2(&dest->pl->v1.character.disp, ent);
     }
 
-    c->pl->v1.character.disp.level = LE32(level_req);
+    dest->pl->v1.character.disp.level = LE32(level_req);
 
     /* Reload them into the lobby. */
-    send_lobby_join(c, c->cur_lobby);
+    send_lobby_join(dest, dest->cur_lobby);
 
     return 0;
 }

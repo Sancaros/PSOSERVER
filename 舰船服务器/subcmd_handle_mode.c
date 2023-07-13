@@ -944,7 +944,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t inv, i, isframe = 0;
+    uint32_t item_count, i, isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -964,31 +964,29 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    inventory_t* inv = &src->bb_pl->character.inv;
+
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
 
     /* Find the item and remove the equip flag. */
-    inv = src->bb_pl->character.inv.item_count;
+    item_count = inv->item_count;
 
-    i = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
+    i = find_iitem_index(inv, pkt->item_id);
 
-    if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
-        src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+    if (inv->iitems[i].data.item_id == pkt->item_id) {
+        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
 
         /* If its a frame, we have to make sure to unequip any units that
            may be equipped as well. */
-        if (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-            src->bb_pl->character.inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
+        if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+            inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
             isframe = 1;
         }
     }
 
     /* Did we find something to equip? */
-    if (i >= inv) {
+    if (i >= item_count) {
         ERR_LOG("GC %" PRIu32 " 卸除了未存在的物品数据!",
             src->guildcard);
         return -1;
@@ -996,10 +994,10 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Clear any units if we unequipped a frame. */
     if (isframe) {
-        for (i = 0; i < inv; ++i) {
-            if (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                src->bb_pl->character.inv.iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+        for (i = 0; i < item_count; ++i) {
+            if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+                inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
     }
@@ -1027,14 +1025,12 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x02)
         return -1;
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    inventory_t* inv = &src->bb_pl->character.inv;
 
-    index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
+
+    index = find_iitem_index(inv, pkt->item_id);
 
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
@@ -1068,12 +1064,12 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //if (src->mode) {
+    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
+    //        "挑战模式和对战模式."));
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     //DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
     //    src->guildcard, item_id, mag_id);
@@ -1111,12 +1107,12 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //if (src->mode) {
+    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
+    //        "挑战模式和对战模式."));
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     item_data = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
@@ -1160,14 +1156,17 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    //if (src->mode) {
+    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
+    //        "挑战模式和对战模式."));
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    //}
 
     inventory_t* inv = &src->bb_pl->character.inv;
+
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
 
     /* 在玩家背包中查找物品. */
     size_t index = find_iitem_index(inv, pkt->item_id);
@@ -1176,6 +1175,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     if (index == -1) {
         ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
             src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
+        //display_packet(pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1605,17 +1605,14 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    }
+    inventory_t* inv = &src->bb_pl->character.inv;
 
-    inventory_t inventory = src->bb_pl->character.inv;
-    size_t mag_index = find_equipped_mag(&inventory);
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
 
-    item_t mag = inventory.iitems[mag_index].data;
+    size_t mag_index = find_equipped_mag(&inv);
+
+    item_t mag = inv->iitems[mag_index].data;
     mag.data2b[0] = MAX((mag.data2b[0] - 5), 0);
 
     src->game_data->death = 1;
@@ -2886,16 +2883,21 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    i = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
+    psocn_bb_char_t* player = &src->bb_pl->character;
 
-    uint32_t shop_price = get_bb_shop_price(&src->bb_pl->character.inv.iitems[i]) * pkt->sell_amount;
+    if(src->mode)
+        player = &src->mode_pl->bb;
 
-    src->bb_pl->character.disp.meseta = MIN(
-        src->bb_pl->character.disp.meseta + shop_price, 999999);
+    i = find_iitem_index(&player->inv, pkt->item_id);
+
+    uint32_t shop_price = get_bb_shop_price(&player->inv.iitems[i]) * pkt->sell_amount;
+
+    player->disp.meseta = MIN(
+        player->disp.meseta + shop_price, 999999);
 
     iitem_t item = remove_iitem(src, pkt->item_id, pkt->sell_amount, src->version != CLIENT_VERSION_BB);
     if (&item == NULL) {
-        src->bb_pl->character.disp.meseta -= shop_price;
+        player->disp.meseta -= shop_price;
         ERR_LOG("出售 %d ID 0x%04X 失败", pkt->sell_amount, pkt->item_id);
         return -1;
     }
@@ -3007,30 +3009,30 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return 0;
-    }
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
             sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
-            int index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_ids[x]);
-            sorted.iitems[x] = src->bb_pl->character.inv.iitems[index];
+            int index = find_iitem_index(&player->inv, pkt->item_ids[x]);
+            sorted.iitems[x] = player->inv.iitems[index];
         }
     }
 
-    sorted.item_count = src->bb_pl->character.inv.item_count;
-    sorted.hpmats_used = src->bb_pl->character.inv.hpmats_used;
-    sorted.tpmats_used = src->bb_pl->character.inv.tpmats_used;
-    sorted.language = src->bb_pl->character.inv.language;
+    sorted.item_count = player->inv.item_count;
+    sorted.hpmats_used = player->inv.hpmats_used;
+    sorted.tpmats_used = player->inv.tpmats_used;
+    sorted.language = player->inv.language;
 
-    src->bb_pl->character.inv = sorted;
-    src->pl->bb.character.inv = sorted;
+    player->inv = sorted;
+
+    if(!src->mode)
+        src->pl->bb.character.inv = sorted;
 
     /* Nobody else really needs to care about this one... */
     return 0;
@@ -3058,9 +3060,16 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
+
     /* Subtract 10 meseta from the client. */
-    src->bb_pl->character.disp.meseta -= 10;
-    src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
+    player->disp.meseta -= 10;
+
+    if (!src->mode)
+        src->pl->bb.character.disp.meseta = player->disp.meseta;
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3084,23 +3093,28 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
+
     mid = LE16(pkt->shdr.enemy_id);
     mid &= 0xFFF;
 
     if (mid < 0xB50) {
-        for (i = 0; i < src->bb_pl->character.inv.item_count; i++) {
-            if ((src->bb_pl->character.inv.iitems[i].flags & LE32(0x00000008)) &&
-                (src->bb_pl->character.inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
-                if ((src->bb_pl->character.inv.iitems[i].data.datab[1] < 0x0A) &&
-                    (src->bb_pl->character.inv.iitems[i].data.datab[2] < 0x05)) {
-                    special = (src->bb_pl->character.inv.iitems[i].data.datab[4] & 0x1F);
+        for (i = 0; i < player->inv.item_count; i++) {
+            if ((player->inv.iitems[i].flags & LE32(0x00000008)) &&
+                (player->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
+                if ((player->inv.iitems[i].data.datab[1] < 0x0A) &&
+                    (player->inv.iitems[i].data.datab[2] < 0x05)) {
+                    special = (player->inv.iitems[i].data.datab[4] & 0x1F);
                 }
                 else {
-                    if ((src->bb_pl->character.inv.iitems[i].data.datab[1] < 0x0D) &&
-                        (src->bb_pl->character.inv.iitems[i].data.datab[2] < 0x04))
-                        special = (src->bb_pl->character.inv.iitems[i].data.datab[4] & 0x1F);
+                    if ((player->inv.iitems[i].data.datab[1] < 0x0D) &&
+                        (player->inv.iitems[i].data.datab[2] < 0x04))
+                        special = (player->inv.iitems[i].data.datab[4] & 0x1F);
                     else {
-                        if (pmt_lookup_weapon_bb(src->bb_pl->character.inv.iitems[i].data.datal[0], &tmp_wp)) {
+                        if (pmt_lookup_weapon_bb(player->inv.iitems[i].data.datal[0], &tmp_wp)) {
                             ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                                 src->guildcard);
                             return -1;
@@ -3207,6 +3221,10 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     psocn_disp_char_t* disp = &src->bb_pl->character.disp;
+
+    if(src->mode)
+        disp = &src->mode_pl->bb.disp;
+
     if (pkt->meseta_amount > disp->meseta) {
         disp->meseta = 0;
     }
@@ -3453,7 +3471,7 @@ subcmd_handle_func_t subcmdmode_handler[] = {
     { SUBCMD60_KILL_MONSTER           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
     { SUBCMD60_SYNC_REG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
-    { SUBCMD60_SET_C_GAME_MODE              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
+    { SUBCMD60_SET_C_GAME_MODE        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
 
     //cmd_type 80 - 8F                  DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
