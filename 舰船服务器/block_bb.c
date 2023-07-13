@@ -2511,8 +2511,7 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
         return -1;
     }
 
-    //DBG_LOG("挑战模式开始 目标GC %u", src->guildcard);
-
+    /* 初始化挑战模式的物品ID */
     if (src->version == CLIENT_VERSION_BB) {
         for (size_t x = 0; x < 4; x++) {
             l->item_player_id[x] = (0x00200000 * x) + 0x00010000;
@@ -2525,14 +2524,39 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
     /* Send the packet to every connected client. */
     for (int i = 0; i < l->max_clients; ++i) {
         if (l->clients[i]) {
-            l->clients[i]->mode = src->mode;
-            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", l->clients[i]->guildcard, l->clients[i]->mode);
+            ship_client_t* dest = l->clients[i];
+            dest->mode = src->mode;
+            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", dest->guildcard, dest->mode);
 
-            uint8_t char_class = l->clients[i]->bb_pl->character.dress_data.ch_class;
+            /* 获取真实角色的职业 TODO 可以开发随机角色挑战模式 */
+            uint8_t char_class = dest->bb_pl->character.dress_data.ch_class;
 
-            memcpy(&l->clients[i]->mode_pl->bb, &default_mode_char.char_class[char_class], PSOCN_STLENGTH_BB_CHAR2);
+            /* 初始化 角色数据 */
+            memcpy(&dest->mode_pl->bb, &default_mode_char.char_class[char_class], PSOCN_STLENGTH_BB_CHAR2);
 
-            regenerate_lobby_item_id(l, l->clients[i]);
+            /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
+
+            /* 初始化 背包物品ID */
+            regenerate_lobby_item_id(l, dest);
+
+            /* 给角色新增一个替身娃娃 */
+            iitem_t iitem = { 0 };
+
+            iitem.present = LE16(0x0001);
+            iitem.tech = LE16(0x0000);
+            iitem.flags = LE32(0x00000000);
+
+            iitem.data.datab[0] = 0x03;
+            iitem.data.datab[1] = 0x09;
+            iitem.data.datab[4] = 0x01;
+
+            iitem.data.item_id = generate_item_id(l, dest->client_id);
+
+            if (!add_iitem(dest, &iitem)) {
+                ERR_LOG("GC %" PRIu32 " 新增替身娃娃物品失败!",
+                    dest->guildcard);
+                return -1;
+            }
 
         }
     }

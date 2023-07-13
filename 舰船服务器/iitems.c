@@ -962,7 +962,57 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     return 0;
 }
 
+int initialize_mode_iitem(ship_client_t* dest) {
+    size_t x;
+    lobby_t* l = dest->cur_lobby;
 
+    psocn_bb_char_t* player = &dest->mode_pl->bb;
+
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
+        clear_iitem(&dest->mode_pl->bb.inv.iitems[x]);
+    }
+
+    switch (l->episode)
+    {
+    case GAME_TYPE_EPISODE_1:
+        switch (player->dress_data.ch_class) {
+        case CLASS_HUMAR: // 人类男猎人
+        case CLASS_HUNEWEARL: // 新人类女猎人
+        case CLASS_HUCAST: // 机器人男猎人
+        case CLASS_RAMAR: // 人类男枪手
+        case CLASS_RACAST: // 机器人男枪手
+        case CLASS_RACASEAL: // 机器人女枪手
+        case CLASS_FOMARL: // 人类女法师
+        case CLASS_FONEWM: // 新人类男法师
+        case CLASS_FONEWEARL: // 新人类女法师
+        case CLASS_HUCASEAL: // 机器人女猎人
+        case CLASS_FOMAR: // 人类男法师
+        case CLASS_RAMARL: // 人类女枪手
+            break;
+        default:
+            ERR_LOG("无效角色职业");
+            return -2;
+        }
+
+
+        switch (l->challenge)
+        {
+        default:
+            break;
+        }
+        break;
+
+    case GAME_TYPE_EPISODE_2:
+        break;
+
+    default:
+        ERR_LOG("未知挑战模式章节 %d", l->episode);
+        return -1;
+    }
+
+
+    return 0;
+}
 
 
 
