@@ -245,7 +245,7 @@ extern int32_t script_log_console_show;
                         (unsigned int)(EXP)>(unsigned int)0x00000000 && \
                         (unsigned int)(EXP)<(unsigned int)0xFFFFFFFF ){\
                             free((EXP));\
-                        }else if((EXP)!=0){\
+                        }else if((EXP)!=NULL){\
                             flog(__LINE__, \
                             error_log_console_show, \
                             ERR_LOG, "%s:%dĞĞ:FREE_ERROR:%s ÄÚ´æ 0x%08x", \
