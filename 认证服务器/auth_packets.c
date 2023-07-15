@@ -45,7 +45,7 @@ extern psocn_config_t *cfg;
 extern psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
-uint8_t sendbuf[65536];
+//uint8_t sendbuf[65536];
 
 static void ascii_to_utf16(const char *in, uint16_t *out, int maxlen) {
     while(*in && maxlen) {
@@ -58,8 +58,24 @@ static void ascii_to_utf16(const char *in, uint16_t *out, int maxlen) {
     }
 }
 
+/* 获取当前线程的 sendbuf 线程特定数据. */
+uint8_t* get_sendbuf() {
+    uint8_t* sendbuf = (uint8_t*)malloc(65536);
+
+    /* If we haven't initialized the sendbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!sendbuf) {
+        perror("malloc");
+        return NULL;
+    }
+
+    memset(sendbuf, 0, 65536);
+
+    return sendbuf;
+}
+
 /* Send a raw packet away. */
-static int send_raw(login_client_t *c, int len) {
+static int send_raw(login_client_t *c, int len, uint8_t* sendbuf) {
     ssize_t rv, total = 0;
     void *tmp;
 
@@ -67,6 +83,9 @@ static int send_raw(login_client_t *c, int len) {
     if(!c->sendbuf_cur) {
         while(total < len) {
             rv = send(c->sock, sendbuf + total, len - total, 0);
+
+            if (sendbuf)
+                free_safe(sendbuf);
 
             if(rv == SOCKET_ERROR && errno != EAGAIN) {
                 return -1;
@@ -111,7 +130,7 @@ static int send_raw(login_client_t *c, int len) {
 }
 
 /* 加密并发送一个数据包. */
-static int crypt_send(login_client_t *c, int len) {
+static int crypt_send(login_client_t *c, int len, uint8_t* sendbuf) {
     /* Expand it to be a multiple of 8/4 bytes long */
     while(len & (client_type[c->type].hdr_size - 1)) {
         sendbuf[len++] = 0;
@@ -120,11 +139,12 @@ static int crypt_send(login_client_t *c, int len) {
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, sendbuf, len, 1);
 
-    return send_raw(c, len);
+    return send_raw(c, len, sendbuf);
 }
 
 /* Send a Dreamcast/PC Welcome packet to the given client. */
 int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_welcome_pkt *pkt = (dc_welcome_pkt *)sendbuf;
 
     /* Scrub the buffer */
@@ -153,12 +173,13 @@ int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect) {
     pkt->cvect = LE32(cvect);
 
     /* 将数据包发送出去 */
-    return send_raw(c, DC_WELCOME_LENGTH);
+    return send_raw(c, DC_WELCOME_LENGTH, sendbuf);
 }
 
 /* Send a Blue Burst Welcome packet to the given client. */
 int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
                     const uint8_t cvect[48]) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_welcome_pkt *pkt = (bb_welcome_pkt *)sendbuf;
 
     /* Scrub the buffer */
@@ -179,11 +200,12 @@ int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
     memcpy(pkt->client_key, cvect, 48);
 
     /* 将数据包发送出去 */
-    return send_raw(c, BB_WELCOME_LENGTH);
+    return send_raw(c, BB_WELCOME_LENGTH, sendbuf);
 }
 
 static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_msg_box_pkt* pkt = (dc_msg_box_pkt*)sendbuf;
     int size = 4;
     iconv_t ic;
@@ -273,11 +295,12 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
                            va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_msg_box_pkt *pkt = (bb_msg_box_pkt *)sendbuf;
     int size = 8;
     iconv_t ic;
@@ -341,7 +364,7 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     pkt->hdr.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 int send_large_msg(login_client_t *c/*, const char msg[]*/, const char* fmt, ...) {
@@ -373,6 +396,7 @@ int send_large_msg(login_client_t *c/*, const char msg[]*/, const char* fmt, ...
 /* Send the Dreamcast security packet to the given client. */
 int send_dc_security(login_client_t *c, uint32_t gc, const void *data,
                      int data_len) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_security_pkt *pkt = (dc_security_pkt *)sendbuf;
 
     /* Wipe the packet */
@@ -399,12 +423,13 @@ int send_dc_security(login_client_t *c, uint32_t gc, const void *data,
         memcpy(pkt->security_data, data, data_len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, 0x0C + data_len);
+    return crypt_send(c, 0x0C + data_len, sendbuf);
 }
 
 /* Send a Blue Burst security packet to the given client. */
 int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
                      uint32_t guild_id, const void *data, int data_len) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_security_pkt *pkt = (bb_security_pkt *)sendbuf;
 
     //DBG_LOG("send_bb_security %d", data_len);
@@ -435,11 +460,12 @@ int send_bb_security(login_client_t *c, uint32_t gc, uint32_t err,
     //display_packet((uint8_t*)pkt, BB_SECURITY_LENGTH);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, BB_SECURITY_LENGTH);
+    return crypt_send(c, BB_SECURITY_LENGTH, sendbuf);
 }
 
 /* Send a redirect packet to the given client. */
 static int send_redirect_bb(login_client_t *c, in_addr_t ip, uint16_t port) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_redirect_pkt *pkt = (bb_redirect_pkt *)sendbuf;
 
     /* Wipe the packet */
@@ -454,10 +480,11 @@ static int send_redirect_bb(login_client_t *c, in_addr_t ip, uint16_t port) {
     pkt->port = LE16(port);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, BB_REDIRECT_LENGTH);
+    return crypt_send(c, BB_REDIRECT_LENGTH, sendbuf);
 }
 
 static int send_redirect_dc(login_client_t *c, in_addr_t ip, uint16_t port) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_redirect_pkt *pkt = (dc_redirect_pkt *)sendbuf;
 
     /* Wipe the packet */
@@ -480,7 +507,7 @@ static int send_redirect_dc(login_client_t *c, in_addr_t ip, uint16_t port) {
     pkt->port = LE16(port);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, DC_REDIRECT_LENGTH);
+    return crypt_send(c, DC_REDIRECT_LENGTH, sendbuf);
 }
 
 int send_redirect(login_client_t *c, in_addr_t ip, uint16_t port) {
@@ -506,6 +533,7 @@ int send_redirect(login_client_t *c, in_addr_t ip, uint16_t port) {
 /* Send a redirect packet (IPv6) to the given client. */
 static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
                              uint16_t port) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_redirect6_pkt *pkt = (dc_redirect6_pkt *)sendbuf;
 
     /* Wipe the packet */
@@ -530,7 +558,7 @@ static int send_redirect6_dc(login_client_t *c, const uint8_t ip[16],
     pkt->port = LE16(port);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, DC_REDIRECT6_LENGTH);
+    return crypt_send(c, DC_REDIRECT6_LENGTH, sendbuf);
 }
 
 int send_redirect6(login_client_t *c, const uint8_t ip[16], uint16_t port) {
@@ -553,6 +581,7 @@ int send_redirect6(login_client_t *c, const uint8_t ip[16], uint16_t port) {
    clients that might end up there. This must be sent before encryption is set
    up! */
 static int send_selective_redirect_ipv4(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_redirect_pkt *pkt = (dc_redirect_pkt *)sendbuf;
     dc_pkt_hdr_t *hdr2 = (dc_pkt_hdr_t *)(sendbuf + 0x19);
     in_addr_t addr = cfg->srvcfg.server_ip;
@@ -574,7 +603,7 @@ static int send_selective_redirect_ipv4(login_client_t *c) {
     hdr2->pkt_len = LE16(0x0097);
 
     /* 加密并发送 */
-    return send_raw(c, 0xB0);
+    return send_raw(c, 0xB0, sendbuf);
 }
 
 int send_selective_redirect(login_client_t *c) {
@@ -590,6 +619,7 @@ int send_selective_redirect(login_client_t *c) {
 
 /* Send a timestamp packet to the given client. */
 static int send_timestamp_dc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
 	dc_timestamp_pkt* pkt = (dc_timestamp_pkt*)sendbuf;
 	SYSTEMTIME rawtime;
 
@@ -622,10 +652,11 @@ static int send_timestamp_dc(login_client_t *c) {
 		rawtime.wMilliseconds);
 
 	/* 将数据包发送出去 */
-	return crypt_send(c, DC_TIMESTAMP_LENGTH);
+	return crypt_send(c, DC_TIMESTAMP_LENGTH, sendbuf);
 }
 
 static int send_timestamp_bb(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_timestamp_pkt* pkt = (bb_timestamp_pkt*)sendbuf;
     /*struct timeval rawtime;
     struct tm cooked;*/
@@ -652,7 +683,7 @@ static int send_timestamp_bb(login_client_t *c) {
         rawtime.wMilliseconds);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, BB_TIMESTAMP_LENGTH);
+    return crypt_send(c, BB_TIMESTAMP_LENGTH, sendbuf);
 }
 
 int send_timestamp(login_client_t *c) {
@@ -676,6 +707,7 @@ int send_timestamp(login_client_t *c) {
 /* Send the initial menu to clients, with the options of "Ship Select" and
    "Download". */
 static int send_initial_menu_dc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x22;
     uint32_t v = c->ext_version & CLIENT_EXTVER_DC_VER_MASK;
@@ -698,10 +730,11 @@ static int send_initial_menu_dc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_initial_menu_pc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     pc_ship_list_pkt* pkt = (pc_ship_list_pkt*)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
@@ -723,10 +756,11 @@ static int send_initial_menu_pc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 发送数据 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_initial_menu_gc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
@@ -748,10 +782,11 @@ static int send_initial_menu_gc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_initial_menu_xbox(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
@@ -773,10 +808,11 @@ static int send_initial_menu_xbox(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_initial_menu_bb(login_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_ship_list_pkt* pkt = (bb_ship_list_pkt*)sendbuf;
     uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
 
@@ -798,7 +834,7 @@ static int send_initial_menu_bb(login_client_t* c) {
     pkt->hdr.flags = count - 1;
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_initial_menu(login_client_t *c) {
@@ -836,6 +872,7 @@ int send_menu(login_client_t* c, uint32_t type) {
 
 /* Send the list of ships to the client. */
 static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     char no_ship_msg[] = "No Ships";
     char query[256];
@@ -1034,7 +1071,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     pkt->hdr.flags = (uint8_t)(num_ships - 1);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 
 out:
     return i;
@@ -1042,6 +1079,7 @@ out:
 
 /* Send the list of ships to the client. */
 static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
+    uint8_t* sendbuf = get_sendbuf();
     pc_ship_list_pkt* pkt = (pc_ship_list_pkt*)sendbuf;
     char no_ship_msg[] = "未找到舰船";
     char query[256] = { 0 }, tmp[18] = { 0 }, tmp2[3] = { 0 };
@@ -1226,13 +1264,14 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
     pkt->hdr.flags = (uint8_t)(num_ships - 1);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 
 out:
     return i;
 }
 
 static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_ship_list_pkt *pkt = (bb_ship_list_pkt *)sendbuf;
     char no_ship_msg[] = "未找到舰船";
     char query[256] = { 0 }, tmp[18] = { 0 }, tmp2[3] = { 0 };
@@ -1418,7 +1457,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
     pkt->hdr.flags = LE32((num_ships - 1));
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 
 out:
     return i;
@@ -1447,6 +1486,7 @@ int send_ship_list(login_client_t *c, uint16_t menu_code) {
 
 static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
     va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_info_reply_pkt *pkt = (dc_info_reply_pkt *)sendbuf;
     int len;
     iconv_t ic;
@@ -1532,11 +1572,12 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
                               va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_info_reply_pkt* pkt = (bb_info_reply_pkt*)sendbuf;
     int len;
     char tm[4096];
@@ -1594,7 +1635,7 @@ static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_info_reply(login_client_t *c, const char* fmt, ...) {
@@ -1646,6 +1687,7 @@ int send_scroll_msg(login_client_t *c, const char* fmt, ...) {
 
 /* Send a simple (header-only) packet to the client */
 static int send_simple_dc(login_client_t *c, int type, int flags) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_pkt_hdr_t *pkt = (dc_pkt_hdr_t *)sendbuf;
 
     /* 填充数据头 */
@@ -1654,10 +1696,11 @@ static int send_simple_dc(login_client_t *c, int type, int flags) {
     pkt->pkt_len = LE16(4);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, 4);
+    return crypt_send(c, 4, sendbuf);
 }
 
 static int send_simple_pc(login_client_t *c, int type, int flags) {
+    uint8_t* sendbuf = get_sendbuf();
     pc_pkt_hdr_t *pkt = (pc_pkt_hdr_t *)sendbuf;
 
     /* 填充数据头 */
@@ -1666,7 +1709,7 @@ static int send_simple_pc(login_client_t *c, int type, int flags) {
     pkt->pkt_len = LE16(4);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, 4);
+    return crypt_send(c, 4, sendbuf);
 }
 
 int send_simple(login_client_t *c, int type, int flags) {
@@ -1689,6 +1732,7 @@ int send_simple(login_client_t *c, int type, int flags) {
 /* Send the list of quests in a category to the client. */
 static int send_dc_quest_list(login_client_t *c,
                               psocn_quest_category_t *l, uint32_t ver) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
     iconv_t ic;
@@ -1752,11 +1796,12 @@ static int send_dc_quest_list(login_client_t *c,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_pc_quest_list(login_client_t *c,
                               psocn_quest_category_t *l) {
+    uint8_t* sendbuf = get_sendbuf();
     pc_quest_list_pkt *pkt = (pc_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
     iconv_t ic;
@@ -1810,11 +1855,12 @@ static int send_pc_quest_list(login_client_t *c,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_gc_quest_list(login_client_t *c,
                               psocn_quest_category_t *l) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
     iconv_t ic;
@@ -1874,11 +1920,12 @@ static int send_gc_quest_list(login_client_t *c,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_xbox_quest_list(login_client_t *c,
                                 psocn_quest_category_t *l) {
+    uint8_t* sendbuf = get_sendbuf();
     xb_quest_list_pkt *pkt = (xb_quest_list_pkt *)sendbuf;
     int i, len = 0x04, entries = 0;
     iconv_t ic;
@@ -1938,7 +1985,7 @@ static int send_xbox_quest_list(login_client_t *c,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_quest_list(login_client_t *c, psocn_quest_category_t *l) {
@@ -1964,6 +2011,7 @@ int send_quest_list(login_client_t *c, psocn_quest_category_t *l) {
 /* Send a quest to a client. This only supports the .qst format that Qedit spits
    out by default (Download quest format). */
 int send_quest(login_client_t *c, psocn_quest_t *q) {
+    uint8_t* sendbuf = get_sendbuf();
     char filename[256];
     FILE *fp;
     long len;
@@ -2004,7 +2052,7 @@ int send_quest(login_client_t *c, psocn_quest_t *q) {
         }
 
         /* Send this chunk away. */
-        if(crypt_send(c, read)) {
+        if(crypt_send(c, read, sendbuf)) {
             fclose(fp);
             return -3;
         }
@@ -2019,6 +2067,7 @@ int send_quest(login_client_t *c, psocn_quest_t *q) {
 
 /* Send an Episode 3 rank update to a client. */
 int send_ep3_rank_update(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     ep3_rank_update_pkt *pkt = (ep3_rank_update_pkt *)sendbuf;
 
     /* XXXX: Need to actually do something with this in the future */
@@ -2029,11 +2078,12 @@ int send_ep3_rank_update(login_client_t *c) {
     pkt->max_meseta = LE32(0x00FFFFFF);
     pkt->jukebox = LE32(0xFFFFFFFF);
 
-    return crypt_send(c, 0x0020);
+    return crypt_send(c, 0x0020, sendbuf);
 }
 
 /* Send the Episode 3 card list to a client. */
 int send_ep3_card_update(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     ep3_card_update_pkt *pkt = (ep3_card_update_pkt *)sendbuf;
     FILE *fp;
     long size;
@@ -2072,11 +2122,12 @@ int send_ep3_card_update(login_client_t *c) {
     fread(pkt->data, 1, size, fp);
 
     /* 加密并发送 */
-    return crypt_send(c, pkt_len);
+    return crypt_send(c, pkt_len, sendbuf);
 }
 
 /* Send a Blue Burst option reply to the client. */
 int send_bb_option_reply(login_client_t *c, bb_key_config_t keys, bb_guild_t guild_data) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_opt_config_pkt *pkt = (bb_opt_config_pkt *)sendbuf;
 
     /* Clear it out first */
@@ -2093,11 +2144,12 @@ int send_bb_option_reply(login_client_t *c, bb_key_config_t keys, bb_guild_t gui
     memcpy(&pkt->guild_data, &guild_data, PSOCN_STLENGTH_BB_GUILD);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, sizeof(bb_opt_config_pkt));
+    return crypt_send(c, sizeof(bb_opt_config_pkt), sendbuf);
 }
 
 /* Send a Blue Burst character acknowledgement to the client. */
 int send_bb_char_ack(login_client_t *c, uint8_t slot, uint8_t code) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_char_ack_pkt *pkt = (bb_char_ack_pkt *)sendbuf;
 
     /* Clear it out first */
@@ -2110,11 +2162,12 @@ int send_bb_char_ack(login_client_t *c, uint8_t slot, uint8_t code) {
     pkt->code = code;
 
     /* 加密并发送 */
-    return crypt_send(c, sizeof(bb_char_ack_pkt));
+    return crypt_send(c, sizeof(bb_char_ack_pkt), sendbuf);
 }
 
 /* Send a Blue Burst checksum acknowledgement to the client. */
 int send_bb_checksum_ack(login_client_t *c, uint32_t ack) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_checksum_ack_pkt *pkt = (bb_checksum_ack_pkt *)sendbuf;
 
     /* Clear it out first */
@@ -2127,11 +2180,12 @@ int send_bb_checksum_ack(login_client_t *c, uint32_t ack) {
     pkt->needs_update = LE32(ack);
 
     /* 加密并发送 */
-    return crypt_send(c, sizeof(bb_checksum_ack_pkt));
+    return crypt_send(c, sizeof(bb_checksum_ack_pkt), sendbuf);
 }
 
 /* Send a Blue Burst guildcard header packet. */
 int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_guildcard_hdr_pkt *pkt = (bb_guildcard_hdr_pkt *)sendbuf;
 
     /* Clear it out first */
@@ -2145,11 +2199,12 @@ int send_bb_guild_header(login_client_t *c, uint32_t checksum) {
     pkt->checksum = LE32(checksum);
 
     /* 加密并发送 */
-    return crypt_send(c, sizeof(bb_guildcard_hdr_pkt));
+    return crypt_send(c, sizeof(bb_guildcard_hdr_pkt), sendbuf);
 }
 
 /* Send a Blue Burst guildcard chunk packet. */
 int send_bb_guildcard_chunk(login_client_t *c, uint32_t chunk_index) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_guildcard_chunk_pkt *pkt = (bb_guildcard_chunk_pkt *)sendbuf;
     uint32_t offset = (chunk_index * 0x6800);
     uint16_t size = PSOCN_STLENGTH_BB_GC_DATA - offset;
@@ -2175,18 +2230,19 @@ int send_bb_guildcard_chunk(login_client_t *c, uint32_t chunk_index) {
     memcpy(pkt->data, ptr, size);
 
     /* 加密并发送 */
-    return crypt_send(c, size + 0x10);
+    return crypt_send(c, size + 0x10, sendbuf);
 }
 
 /* Send a prepared Blue Burst packet. */
 int send_bb_pkt(login_client_t *c, bb_pkt_hdr_t *hdr) {
+    uint8_t* sendbuf = get_sendbuf();
     uint16_t len = LE16(hdr->pkt_len);
 
     /* Copy it into our buffer */
     memcpy(sendbuf, hdr, len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
@@ -2233,6 +2289,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
 /* Send a Blue Burst character preview packet. */
 int send_bb_char_preview(login_client_t *c, const psocn_bb_mini_char_t *mc,
                          uint8_t slot) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_char_preview_pkt *pkt = (bb_char_preview_pkt *)sendbuf;
 
     /* 填充数据头 */
@@ -2247,11 +2304,12 @@ int send_bb_char_preview(login_client_t *c, const psocn_bb_mini_char_t *mc,
     /* Copy in the character data */
     memcpy(&pkt->data, mc, PSOCN_STLENGTH_BB_MINI_CHAR);
 
-    return crypt_send(c, sizeof(bb_char_preview_pkt));
+    return crypt_send(c, sizeof(bb_char_preview_pkt), sendbuf);
 }
 
 /* Send the content of the "Information" menu. */
 static int send_gc_info_list(login_client_t *c, uint32_t ver) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_block_list_pkt *pkt = (dc_block_list_pkt *)sendbuf;
     int i, len = 0x20, entries = 1;
     uint32_t lang = (1 << c->language_code);
@@ -2317,11 +2375,12 @@ static int send_gc_info_list(login_client_t *c, uint32_t ver) {
     pkt->hdr.flags = (uint8_t)(entries);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 /* Send the content of the "Information" menu. */
 static int send_bb_info_list(login_client_t* c, uint32_t ver) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_block_list_pkt* pkt = (bb_block_list_pkt*)sendbuf;
     int i, len = 0x100, entries = 0;
     uint32_t lang = (1 << c->language_code);
@@ -2386,7 +2445,7 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
     pkt->hdr.flags = (uint8_t)(entries);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_info_list(login_client_t *c) {
@@ -2412,6 +2471,7 @@ int send_info_list(login_client_t *c) {
 /* Send a message to the client. */
 static int send_gc_message_box(login_client_t *c, const char *fmt,
                                va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_msg_box_pkt *pkt = (dc_msg_box_pkt *)sendbuf;
     int len;
 
@@ -2442,12 +2502,13 @@ static int send_gc_message_box(login_client_t *c, const char *fmt,
     pkt->hdr.dc.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 /* Send a message to the client. */
 static int send_bb_message_box(login_client_t* c, const char* fmt,
     va_list args) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_msg_box_pkt* pkt = (bb_msg_box_pkt*)sendbuf;
     int len;
 
@@ -2478,7 +2539,7 @@ static int send_bb_message_box(login_client_t* c, const char* fmt,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_message_box(login_client_t *c, const char *fmt, ...) {
@@ -2614,7 +2675,7 @@ int send_info_file(login_client_t* c, uint32_t entry) {
 
 static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     va_list args) {
-    //uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sendbuf();
     dc_chat_pkt* pkt = (dc_chat_pkt*)sendbuf;
     int len;
     iconv_t ic;
@@ -2701,12 +2762,12 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     }
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     va_list args) {
-    //uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sendbuf();
     bb_chat_pkt* pkt = (bb_chat_pkt*)sendbuf;
     int len;
     char tm[4096];
@@ -2761,7 +2822,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     pkt->hdr.pkt_len = LE16(len);
 
     /* 加密并发送 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 /* Send a text message to the client (i.e, for stuff related to commands). */
@@ -2795,6 +2856,7 @@ int send_msg(login_client_t* c, uint16_t type, const char* fmt, ...) {
 
 /* Send the GM operations menu to the user. */
 static int send_gm_menu_dc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     int len = 0x04, count = 0;
 
@@ -2848,10 +2910,11 @@ static int send_gm_menu_dc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_gm_menu_pc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     pc_ship_list_pkt *pkt = (pc_ship_list_pkt *)sendbuf;
     int len = 0x04, count = 0;
 
@@ -2905,10 +2968,11 @@ static int send_gm_menu_pc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_gm_menu_bb(login_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
     bb_ship_list_pkt* pkt = (bb_ship_list_pkt*)sendbuf;
     int len = 0x04, count = 0;
 
@@ -2962,7 +3026,7 @@ static int send_gm_menu_bb(login_client_t* c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_gm_menu(login_client_t *c) {
@@ -3064,6 +3128,7 @@ int send_motd(login_client_t *c) {
 }
 
 int send_quest_description(login_client_t *c, psocn_quest_t *q) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_msg_box_pkt *pkt = (dc_msg_box_pkt *)sendbuf;
     int size = 4;
     iconv_t ic;
@@ -3123,10 +3188,11 @@ int send_quest_description(login_client_t *c, psocn_quest_t *q) {
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 int send_dc_version_detect(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     patch_send_footer *ftr;
@@ -3163,10 +3229,11 @@ int send_dc_version_detect(login_client_t *c) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 static int send_gc_real_version_detect(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     patch_send_footer *ftr;
@@ -3197,10 +3264,11 @@ static int send_gc_real_version_detect(login_client_t *c) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 static int send_gc_patch_cache_invalidate(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     patch_send_footer *ftr;
@@ -3231,7 +3299,7 @@ static int send_gc_patch_cache_invalidate(login_client_t *c) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 int send_gc_version_detect(login_client_t *c) {
@@ -3252,6 +3320,7 @@ int send_gc_version_detect(login_client_t *c) {
 }
 
 int send_single_patch_dc(login_client_t *c, const patchset_t *p) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     uint16_t code_len;
@@ -3311,7 +3380,7 @@ int send_single_patch_dc(login_client_t *c, const patchset_t *p) {
         pkt->hdr.dc.pkt_len = LE16(size);
 
         /* 将数据包发送出去 */
-        if((rv = crypt_send(c, size)) < 0) {
+        if((rv = crypt_send(c, size, sendbuf)) < 0) {
             if(pf)
                 patch_file_free(pf);
             return rv;
@@ -3322,6 +3391,7 @@ int send_single_patch_dc(login_client_t *c, const patchset_t *p) {
 }
 
 static int send_single_patch_gc_inval(login_client_t *c, const patchset_t *p) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     uint16_t code_len = 64;
@@ -3368,7 +3438,7 @@ static int send_single_patch_gc_inval(login_client_t *c, const patchset_t *p) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    crypt_send(c, size);
+    crypt_send(c, size, sendbuf);
 
     /* Fill in the information before the patch data, for real this time. */
     code_len = patch_stub_gc_len;
@@ -3405,10 +3475,11 @@ static int send_single_patch_gc_inval(login_client_t *c, const patchset_t *p) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 static int send_single_patch_gc_noinv(login_client_t *c, const patchset_t *p) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
     uint16_t size;
     uint16_t code_len = patch_stub_gc_len;
@@ -3459,7 +3530,7 @@ static int send_single_patch_gc_noinv(login_client_t *c, const patchset_t *p) {
     pkt->hdr.dc.pkt_len = LE16(size);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size);
+    return crypt_send(c, size, sendbuf);
 }
 
 int send_single_patch_gc(login_client_t *c, const patchset_t *p) {
@@ -3480,6 +3551,7 @@ int send_single_patch_gc(login_client_t *c, const patchset_t *p) {
 }
 
 static int send_patch_menu_dcgc(login_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
     int len = 0x04, count = 0;
     uint32_t i, j;
@@ -3542,7 +3614,7 @@ static int send_patch_menu_dcgc(login_client_t *c) {
     pkt->hdr.pkt_len = LE16(len);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, len);
+    return crypt_send(c, len, sendbuf);
 }
 
 int send_patch_menu(login_client_t *c) {
@@ -3581,6 +3653,7 @@ int send_patch_menu(login_client_t *c) {
 }
 
 static int send_crc_check_pc(login_client_t *c, uint32_t st, uint32_t count) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_pkt *pkt = (patch_send_pkt *)sendbuf;
 
     /* Fill in the request to CRC data... */
@@ -3595,7 +3668,7 @@ static int send_crc_check_pc(login_client_t *c, uint32_t st, uint32_t count) {
     pkt->hdr.pc.pkt_len = LE16(DC_PATCH_HEADER_LENGTH);
 
     /* 将数据包发送出去 */
-    return crypt_send(c, DC_PATCH_HEADER_LENGTH);
+    return crypt_send(c, DC_PATCH_HEADER_LENGTH, sendbuf);
 }
 
 int send_crc_check(login_client_t *c, uint32_t start, uint32_t count) {

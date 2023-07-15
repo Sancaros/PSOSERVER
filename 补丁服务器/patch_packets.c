@@ -29,8 +29,6 @@
 
 #define CHUNK_MAX 24576
 
-//static uint8_t sendbuf[65536];
-
 /* 获取当前线程的 sendbuf 线程特定数据. */
 uint8_t* get_sendbuf() {
     uint8_t* sendbuf = (uint8_t*)malloc(65536);
@@ -104,71 +102,6 @@ static int send_raw(patch_client_t* c, int len, uint8_t* sendbuf) {
 
     return 0;
 }
-//
-///* Send a raw packet away. */
-//static int send_raw(patch_client_t *c, int len) {
-//    ssize_t rv, total = 0;
-//    void *tmp;
-//
-//    /* Keep trying until the whole thing's sent. */
-//    if(!c->sendbuf_cur) {
-//        while(total < len) {
-//            rv = send(c->sock, (PCHAR)(sendbuf + total), len - total, 0);
-//
-//            if(rv == SOCKET_ERROR && errno != EAGAIN) {
-//                return -1;
-//            }
-//            else if(rv == SOCKET_ERROR) {
-//                break;
-//            }
-//
-//            total += rv;
-//        }
-//    }
-//
-//    rv = len - total;
-//
-//    if(rv) {
-//        /* Move out any already transferred data. */
-//        if(c->sendbuf_start) {
-//            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-//                    c->sendbuf_cur - c->sendbuf_start);
-//            c->sendbuf_cur -= c->sendbuf_start;
-//        }
-//
-//        /* See if we need to reallocate the buffer. */
-//        if(c->sendbuf_cur + rv > c->sendbuf_size) {
-//            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-//
-//            /* If we can't allocate the space, bail. */
-//            if(tmp == NULL) {
-//                return -1;
-//            }
-//
-//            c->sendbuf_size = c->sendbuf_cur + rv;
-//            c->sendbuf = (unsigned char *)tmp;
-//        }
-//
-//        /* Copy what's left of the packet into the output buffer. */
-//        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-//        c->sendbuf_cur += rv;
-//    }
-//
-//    return 0;
-//}
-
-///* 加密并发送一个数据包. */
-//static int crypt_send(patch_client_t* c, int len) {
-//    /* Expand it to be a multiple of 8/4 bytes long */
-//    while (len & (hdr_sizes[c->type] - 1)) {
-//        sendbuf[len++] = 0;
-//    }
-//
-//    /* Encrypt the packet */
-//    CRYPT_CryptData(&c->server_cipher, sendbuf, len, 1);
-//
-//    return send_raw(c, len);
-//}
 
 /* 加密并发送一个数据包. */
 static int crypt_send(patch_client_t* c, int len, uint8_t* sendbuf) {
