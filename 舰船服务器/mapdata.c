@@ -222,6 +222,59 @@ static int read_v2_level_data(const char *fn) {
     return 0;
 }
 
+typedef struct {
+    uint32_t hildeblue;
+    uint32_t rappy;
+    uint32_t nar_lily;
+    uint32_t pouilly_slime;
+    uint32_t merissa_aa;
+    uint32_t pazuzu;
+    uint32_t dorphon_eclair;
+    uint32_t kondrieu;
+} RareEnemyRates;
+
+RareEnemyRates default_rare_rates = {
+    // All 1/512 except Kondrieu, which is 1/10
+    .hildeblue = 0x00800000,
+    .rappy = 0x00800000,
+    .nar_lily = 0x00800000,
+    .pouilly_slime = 0x00800000,
+    .merissa_aa = 0x00800000,
+    .pazuzu = 0x00800000,
+    .dorphon_eclair = 0x00800000,
+    .kondrieu = 0x1999999A
+};
+
+bool check_rare(bool default_is_rare, uint32_t rare_rate, int* rare_enemy_indexes, size_t enemy_size) {
+    if (default_is_rare) {
+        return true;
+    }
+    if ((*rare_enemy_indexes < 0x10) && ((uint32_t)rand() < rare_rate)) {
+        rare_enemy_indexes[(*rare_enemy_indexes)++] = enemy_size;
+        return true;
+    }
+    return false;
+}
+
+bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, size_t enemy_size) {
+    if (!rare_rates) {
+        rare_rates = &default_rare_rates;
+    }
+
+    bool is_rare = false;
+    is_rare = 
+        check_rare(false, rare_rates->hildeblue, rare_enemy_indexes, enemy_size) || 
+        check_rare(false, rare_rates->rappy, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->nar_lily, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->pouilly_slime, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->merissa_aa, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->pazuzu, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->dorphon_eclair, rare_enemy_indexes, enemy_size) ||
+        check_rare(false, rare_rates->kondrieu, rare_enemy_indexes, enemy_size);
+
+    return is_rare;
+}
+
 /* 3个章节 32个地图*/
 static const uint32_t maps[3][0x20] = {
     {1,1,1,5,1,5,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
@@ -1679,35 +1732,6 @@ int v2_load_game_enemies(lobby_t *l) {
         osets[i >> 1] = &objs->data[index];
     }
 
-    ///* Allocate space for the enemy set and the enemies therein. */
-    //if(!(en = (game_enemies_t *)malloc(sizeof(game_enemies_t)))) {
-    //    ERR_LOG("Error allocating enemy set: %s", strerror(errno));
-    //    return -2;
-    //}
-
-    //if(!(en->enemies = (game_enemy_t *)malloc(sizeof(game_enemy_t) *
-    //                                          enemies))) {
-    //    ERR_LOG("Error allocating enemies: %s", strerror(errno));
-    //    free_safe(en);
-    //    return -3;
-    //}
-
-    ///* Allocate space for the object set and the objects therein. */
-    //if(!(ob = (game_objs_t *)malloc(sizeof(game_objs_t)))) {
-    //    ERR_LOG("Error allocating object set: %s", strerror(errno));
-    //    free_safe(en->enemies);
-    //    free_safe(en);
-    //    return -4;
-    //}
-
-    //if(!(ob->objs = (game_object_t *)malloc(sizeof(game_object_t) * objects))) {
-    //    ERR_LOG("Error allocating objects: %s", strerror(errno));
-    //    free_safe(ob);
-    //    free_safe(en->enemies);
-    //    free_safe(en);
-    //    return -5;
-    //}
-
     /* Allocate space for the enemy set and the enemies therein. */
     if (!(en = (game_enemies_t*)malloc(sizeof(game_enemies_t)))) {
         ERR_LOG("分配敌人设置内存错误: %s", strerror(errno));
@@ -1804,35 +1828,6 @@ int gc_load_game_enemies(lobby_t *l) {
         sets[i >> 1] = &maps->data[index];
         osets[i >> 1] = &objs->data[index];
     }
-
-    ///* Allocate space for the enemy set and the enemies therein. */
-    //if(!(en = (game_enemies_t *)malloc(sizeof(game_enemies_t)))) {
-    //    ERR_LOG("Error allocating enemy set: %s", strerror(errno));
-    //    return -2;
-    //}
-
-    //if(!(en->enemies = (game_enemy_t *)malloc(sizeof(game_enemy_t) *
-    //                                          enemies))) {
-    //    ERR_LOG("Error allocating enemies: %s", strerror(errno));
-    //    free_safe(en);
-    //    return -3;
-    //}
-
-    ///* Allocate space for the object set and the objects therein. */
-    //if(!(ob = (game_objs_t *)malloc(sizeof(game_objs_t)))) {
-    //    ERR_LOG("Error allocating object set: %s", strerror(errno));
-    //    free_safe(en->enemies);
-    //    free_safe(en);
-    //    return -4;
-    //}
-
-    //if(!(ob->objs = (game_object_t *)malloc(sizeof(game_object_t) * objects))) {
-    //    ERR_LOG("Error allocating objects: %s", strerror(errno));
-    //    free_safe(ob);
-    //    free_safe(en->enemies);
-    //    free_safe(en);
-    //    return -5;
-    //}
 
     /* Allocate space for the enemy set and the enemies therein. */
     if (!(en = (game_enemies_t*)malloc(sizeof(game_enemies_t)))) {
@@ -1947,7 +1942,7 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
 
     while(ptr < len) {
 
-        DBG_LOG("%d", hdr->obj_type);
+        DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
 
         switch(LE32(hdr->obj_type)) {
             case 0x01:                      /* Objects */

@@ -530,6 +530,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
 
     l->rand_seed = mt19937_genrand_int32(&block->rng);
 
+    /* 对战模式 挑战模式 无设置掉落 */
     if(!chal && !battle)
         lobby_setup_drops(c, l, psocn_crc32((uint8_t *)l->name, 16));
 
