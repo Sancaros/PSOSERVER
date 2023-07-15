@@ -179,6 +179,26 @@ static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c);
 
 bool needrelese = false;
 
+int check_size_v(size_t size, size_t min_size, size_t max_size) {
+    int result = 0;
+
+    if (size < min_size) {
+        ERR_LOG("指令数据包太小 (期待值 0x%zX 字节, 实际值 0x%zX 字节)",
+            min_size, size);
+        result = -1;
+    }
+    else if (max_size < min_size) {
+        max_size = min_size;
+    }
+    else if (size > max_size) {
+        ERR_LOG("指令数据包太大 (期待值 0x%zX 字节, 实际值 0x%zX 字节)",
+            max_size, size);
+        result = 1;
+    }
+
+    return result;
+}
+
 /* Send a raw packet away. */
 static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
     ssize_t rv, total = 0;
@@ -12139,24 +12159,6 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
     }
 
     return send_msg(c, MSG_BOX_TYPE, "%s", string);
-}
-
-int check_size_v(size_t size, size_t min_size, size_t max_size) {
-    if (size < min_size) {
-        ERR_LOG("指令数据包太小 (最小应为 0x%zX 字节, 当前 0x%zX 字节)",
-            min_size, size);
-        return -1;
-    }
-    if (max_size < min_size) {
-        max_size = min_size;
-    }
-    if (size > max_size) {
-        ERR_LOG("指令数据包过大 (最大应为 0x%zX 字节, 当前 0x%zX 字节)",
-            max_size, size);
-        return -1;
-    }
-
-    return 0;
 }
 
 int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {

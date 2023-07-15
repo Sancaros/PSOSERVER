@@ -70,6 +70,9 @@ const static char bb_welcome_copyright[] =
 
 const static char anti_copyright[] = "This server is in no way affiliated, sponsored, or supported by SEGA Enterprises or SONICTEAM. The preceding message exists only in order to remain compatible with programs that expect it.";
 
+/* 检查数据包大小. */
+int check_size_v(size_t size, size_t min_size, size_t max_size);
+
 /* 加密并发送一个数据包. */
 int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf);
 

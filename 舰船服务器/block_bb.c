@@ -1662,102 +1662,101 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     return 0;
 }
 
-/* Process a Blue Burst options update */
-static int bb_process_opt_flags(ship_client_t* c, bb_options_update_option_pkt* pkt) {
+static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+    size_t pkt_size = len - sizeof(bb_pkt_hdr_t);
+    int result = 0;
 
-    if (len != sizeof(bb_options_update_option_pkt)) {
-        ERR_LOG("BB选项设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
+    switch (type)
+    {
+        /* 0x01ED 493*/
+    case BB_UPDATE_OPTION_FLAGS:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->option), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        c->bb_opts->option_flags = pkt->option;
+        c->option_flags = c->bb_opts->option_flags;
+        break;
+
+        /* 0x02ED 749*/
+    case BB_UPDATE_SYMBOL_CHAT:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->symbol_chats), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, sizeof(pkt->symbol_chats));
+        break;
+
+        /* 0x03ED 1005*/
+    case BB_UPDATE_SHORTCUTS:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->shortcuts), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->shortcuts, pkt->shortcuts, sizeof(pkt->shortcuts));
+        break;
+
+        /* 0x04ED 1261*/
+    case BB_UPDATE_KEY_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->key_config), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->key_cfg.key_config, pkt->key_config, sizeof(pkt->key_config));
+        break;
+
+        /* 0x05ED 1517*/
+    case BB_UPDATE_JOYSTICK_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->joystick_config), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_opts->key_cfg.joystick_config, pkt->joystick_config, sizeof(pkt->joystick_config));
+        break;
+
+        /* 0x06ED 1773*/
+    case BB_UPDATE_TECH_MENU:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->tech_menu), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_pl->tech_menu, pkt->tech_menu, sizeof(pkt->tech_menu));
+        break;
+
+        /* 0x07ED 2029*/
+    case BB_UPDATE_CONFIG:
+        if ((result = check_size_v(pkt_size, sizeof(pkt->customize), 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(c->bb_pl->character.config, pkt->customize, sizeof(pkt->customize));
+        break;
+
+        /* 0x08ED 2285*/
+    case BB_UPDATE_C_MODE_CONFIG:
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS, 0))) {
+            ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
+            return result;
+        }
+
+        memcpy(&c->bb_pl->c_records, &pkt->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        break;
+
+    default:
+        DBG_LOG("BB未知数据! 指令 0x%04X", type);
+        display_packet((unsigned char*)pkt, len);
+        break;
     }
 
-    c->bb_opts->option_flags = pkt->option;
-    c->option_flags = c->bb_opts->option_flags;
-
-    return 0;
-}
-
-static int bb_process_symbols(ship_client_t* c, bb_options_update_symbol_chats_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_symbol_chats_pkt)) {
-        ERR_LOG("BB表情设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, sizeof(pkt->symbol_chats));
-    return 0;
-}
-
-static int bb_process_shortcuts(ship_client_t* c, bb_options_update_chat_shortcuts_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_chat_shortcuts_pkt)) {
-        ERR_LOG("BB聊天快捷方式更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_opts->shortcuts, pkt->chat_shortcuts, sizeof(pkt->chat_shortcuts));
-    return 0;
-}
-
-static int bb_process_keys(ship_client_t* c, bb_options_update_key_config_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_key_config_pkt)) {
-        ERR_LOG("BB键位设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_opts->key_cfg.key_config, pkt->key_config, sizeof(pkt->key_config));
-    return 0;
-}
-
-static int bb_process_pad(ship_client_t* c, bb_options_update_pad_config_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_pad_config_pkt)) {
-        ERR_LOG("BB键盘设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_opts->key_cfg.joystick_config, pkt->pad_config, sizeof(pkt->pad_config));
-    return 0;
-}
-
-static int bb_process_techs(ship_client_t* c, bb_options_update_tech_menu_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_tech_menu_pkt)) {
-        ERR_LOG("BB法术设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_pl->tech_menu, pkt->tech_menu, sizeof(pkt->tech_menu));
-    return 0;
-}
-
-static int bb_process_config(ship_client_t* c, bb_options_update_customize_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_customize_pkt)) {
-        ERR_LOG("BB设置更新的数据大小无效 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(c->bb_pl->character.config, pkt->customize, sizeof(pkt->customize));
-    return 0;
-}
-
-static int bb_process_challenge_records(ship_client_t* c, bb_options_update_challenge_records_pkt* pkt) {
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-
-    if (len != sizeof(bb_options_update_challenge_records_pkt)) {
-        ERR_LOG("无效 BB 挑战模式更新数据包 (数据大小:%d)", len);
-        return -1;
-    }
-
-    memcpy(&c->bb_pl->c_records, &pkt->challenge, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
     return 0;
 }
 
@@ -2933,42 +2932,25 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x00E7 231*/
     case BB_FULL_CHARACTER_TYPE:
-        //UDONE_CPD(type,pkt);
-        //display_packet((unsigned char*)pkt, len);
-        /* Ignore for now... */
         return bb_process_full_char(c, (bb_full_char_pkt*)pkt);
 
         /* 0x01ED 493*/
     case BB_UPDATE_OPTION_FLAGS:
-        return bb_process_opt_flags(c, (bb_options_update_option_pkt*)pkt);
-
         /* 0x02ED 749*/
     case BB_UPDATE_SYMBOL_CHAT:
-        return bb_process_symbols(c, (bb_options_update_symbol_chats_pkt*)pkt);
-
         /* 0x03ED 1005*/
     case BB_UPDATE_SHORTCUTS:
-        return bb_process_shortcuts(c, (bb_options_update_chat_shortcuts_pkt*)pkt);
-
         /* 0x04ED 1261*/
     case BB_UPDATE_KEY_CONFIG:
-        return bb_process_keys(c, (bb_options_update_key_config_pkt*)pkt);
-
         /* 0x05ED 1517*/
-    case BB_UPDATE_PAD_CONFIG:
-        return bb_process_pad(c, (bb_options_update_pad_config_pkt*)pkt);
-
+    case BB_UPDATE_JOYSTICK_CONFIG:
         /* 0x06ED 1773*/
     case BB_UPDATE_TECH_MENU:
-        return bb_process_techs(c, (bb_options_update_tech_menu_pkt*)pkt);
-
         /* 0x07ED 2029*/
     case BB_UPDATE_CONFIG:
-        return bb_process_config(c, (bb_options_update_customize_pkt*)pkt);
-
         /* 0x08ED 2285*/
     case BB_UPDATE_C_MODE_CONFIG:
-        return bb_process_challenge_records(c, (bb_options_update_challenge_records_pkt*)pkt);
+        return bb_process_options(c, (bb_options_config_update_pkt*)pkt);
 
         /* 0x04E8 1256*/
     case BB_ADD_GUILDCARD_TYPE:

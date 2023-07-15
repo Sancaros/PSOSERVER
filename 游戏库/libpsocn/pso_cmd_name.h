@@ -218,7 +218,7 @@ static cmd_map_st c_cmd_names[] = {
     { BB_UPDATE_SYMBOL_CHAT, "BB_UPDATE_SYMBOL_CHAT", "客户端至服务器指令" },
     { BB_UPDATE_SHORTCUTS, "BB_UPDATE_SHORTCUTS", "客户端至服务器指令" },
     { BB_UPDATE_KEY_CONFIG, "BB_UPDATE_KEY_CONFIG", "客户端至服务器指令" },
-    { BB_UPDATE_PAD_CONFIG, "BB_UPDATE_PAD_CONFIG", "客户端至服务器指令" },
+    { BB_UPDATE_JOYSTICK_CONFIG, "BB_UPDATE_PAD_CONFIG", "客户端至服务器指令" },
     { BB_UPDATE_TECH_MENU, "BB_UPDATE_TECH_MENU", "客户端至服务器指令" },
     { BB_UPDATE_CONFIG, "BB_UPDATE_CONFIG", "客户端至服务器指令" },
     { BB_UPDATE_C_MODE_CONFIG, "BB_UPDATE_C_MODE_CONFIG", "来自1.0 BB服务端" },

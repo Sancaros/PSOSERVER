@@ -4431,53 +4431,20 @@ typedef struct bb_options_update {
     uint8_t data[];
 } PACKED bb_options_update_pkt;
 
-// 01ED
-typedef struct bb_options_update_option {
+// XXED ED数据包集合
+typedef struct bb_options_config_update {
     bb_pkt_hdr_t hdr;
-    uint32_t option;
-} PACKED bb_options_update_option_pkt;
-
-// 02ED
-typedef struct bb_options_update_symbol_chats {
-    bb_pkt_hdr_t hdr;
-    uint8_t symbol_chats[0x4E0];
-} PACKED bb_options_update_symbol_chats_pkt;
-
-// 03ED
-typedef struct bb_options_update_chat_shortcuts {
-    bb_pkt_hdr_t hdr;
-    uint8_t chat_shortcuts[0xA40];
-} PACKED bb_options_update_chat_shortcuts_pkt;
-
-// 04ED
-typedef struct bb_options_update_key_config {
-    bb_pkt_hdr_t hdr;
-    uint8_t key_config[0x16C];
-} PACKED bb_options_update_key_config_pkt;
-
-// 05ED
-typedef struct bb_options_update_pad_config {
-    bb_pkt_hdr_t hdr;
-    uint8_t pad_config[0x38];
-} PACKED bb_options_update_pad_config_pkt;
-
-// 06ED
-typedef struct bb_options_update_tech_menu {
-    bb_pkt_hdr_t hdr;
-    uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
-} PACKED bb_options_update_tech_menu_pkt;
-
-// 07ED
-typedef struct bb_options_update_customize {
-    bb_pkt_hdr_t hdr;
-    uint8_t customize[0xE8];
-} PACKED bb_options_update_customize_pkt;
-
-// 08ED
-typedef struct bb_options_update_challenge_battle_config {
-    bb_pkt_hdr_t hdr;
-    bb_challenge_records_t challenge;
-} PACKED bb_options_update_challenge_records_pkt;
+    union options {
+        uint32_t option;
+        uint8_t symbol_chats[0x4E0];
+        uint8_t shortcuts[0xA40];
+        uint8_t key_config[0x16C];
+        uint8_t joystick_config[0x38];
+        uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];
+        uint8_t customize[0xE8];
+        bb_challenge_records_t c_records;
+    };
+} PACKED bb_options_config_update_pkt;
 
 // EE: Trade cards (Episode 3)
 // This command has different forms depending on the header.flag value; the flag

@@ -271,7 +271,7 @@
 #define BB_UPDATE_SYMBOL_CHAT           0x02ED
 #define BB_UPDATE_SHORTCUTS             0x03ED
 #define BB_UPDATE_KEY_CONFIG            0x04ED
-#define BB_UPDATE_PAD_CONFIG            0x05ED
+#define BB_UPDATE_JOYSTICK_CONFIG       0x05ED
 #define BB_UPDATE_TECH_MENU             0x06ED
 #define BB_UPDATE_CONFIG                0x07ED
 #define BB_UPDATE_C_MODE_CONFIG         0x08ED  //来自1.0 BB服务端
