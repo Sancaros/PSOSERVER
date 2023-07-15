@@ -34,6 +34,9 @@
 #include <f_logs.h>
 #include <pso_ping.h>
 
+/* ²¹¶¡ÐÅÏ¢°åÄÚ´æ´æ´¢ */
+static uint16_t patch_welcom_msg[2048];
+
 /* Create a new connection, storing it in the list of clients. */
 patch_client_t* create_connection(int sock, int type,
     struct sockaddr* ip, socklen_t size) {
@@ -282,12 +285,12 @@ static int handle_patch_login(patch_client_t* c) {
     }
 
 patch:
-    memset(patch_welcom_msg, 0, sizeof(patch_welcom_msg));
+    //memset(&patch_welcom_msg[0], 0, sizeof(patch_welcom_msg));
 
     psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
-    msglen = psocn_web_server_loadfile(Welcome_Files[0], patch_welcom_msg);
+    msglen = psocn_web_server_loadfile2(Welcome_Files[0], &patch_welcom_msg[0]);
 
-    if (send_message(c, (uint16_t*)patch_welcom_msg, (uint16_t)msglen))
+    if (send_message(c, &patch_welcom_msg[0], (uint16_t)msglen))
         //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size))
         return -2;
 

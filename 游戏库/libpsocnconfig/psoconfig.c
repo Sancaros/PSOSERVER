@@ -1021,6 +1021,8 @@ int psocn_web_server_loadfile(const char* onlinefile, char* dest) {
 
     uint8_t msgdata[4096] = { 0 };
 
+    memset(dest, 0, 4096);
+
     size_t len = 0;
     errno_t err = fopen_s(&fp, onlinefile, "rb");
     if (err)
@@ -1051,7 +1053,48 @@ int psocn_web_server_loadfile(const char* onlinefile, char* dest) {
 
         return len;
     }
-    return 0;
+}
+
+int psocn_web_server_loadfile2(const char* onlinefile, uint16_t* dest) {
+    int32_t filesize, ch2;
+    uint16_t* w;
+    uint16_t* w2;
+    FILE* fp = { 0 };
+
+    uint8_t msgdata[4096] = { 0 };
+
+    memset(dest, 0, 2048);
+
+    size_t len = 0;
+    errno_t err = fopen_s(&fp, onlinefile, "rb");
+    if (err)
+        ERR_EXIT("文件缺失了.请确保它在 %s 文件夹中", onlinefile);
+    else {
+        fseek(fp, 0, SEEK_END);
+        filesize = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        if (filesize > 4096)
+            filesize = 4096;
+        fread(&msgdata[0], 1, filesize, fp);
+        fclose(fp);
+        w = (uint16_t*)&msgdata[0];
+        w2 = dest;
+        for (ch2 = 0; ch2 < (filesize / 2); ch2++)
+        {
+            if (*w == 0x0024)
+                *w = 0x0009;
+            if (*w != 0x000D)
+            {
+                *(w2++) = *w;
+                len += 2;
+            }
+            w++;
+        }
+
+        *w2 = 0x0000;
+
+        return len;
+    }
 }
 
 int psocn_web_server_getfile(void* HostName, int32_t port, char* file, const char* onlinefile) 

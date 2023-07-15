@@ -379,6 +379,8 @@ extern void psocn_free_ship_config(psocn_ship_t* cfg);
 
 extern int psocn_web_server_loadfile(const char* onlinefile, char* dest);
 
+extern int psocn_web_server_loadfile2(const char* onlinefile, uint16_t* dest);
+
 extern int psocn_web_server_getfile(void* HostName, int32_t port, char* file, const char* onlinefile);
 
 #endif /* !PSOCN_CONFIG_H */

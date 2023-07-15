@@ -63,6 +63,9 @@ static psocn_bb_full_char_t default_full_chars;
 static psocn_bb_default_char_t default_chars;
 static bb_level_table_t bb_char_stats;
 static dress_flag_t dress_flags[MAX_DRESS_FLAGS];
+/* 认证信息板内存存储 */
+static char login_welcom_msg[4096];
+
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
 static int handle_ignored_pkt(login_client_t* c, const char* cmd, void* pkt, int codeline) {
@@ -285,7 +288,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     GetLocalTime(&rawtime);
     char timestamp[28];
 
-    memset(&login_welcom_msg[0], 0, sizeof(login_welcom_msg));
     psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.login_welcom_file, Welcome_Files[1]);
     psocn_web_server_loadfile(Welcome_Files[1], &login_welcom_msg[0]);
 

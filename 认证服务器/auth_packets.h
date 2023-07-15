@@ -41,9 +41,6 @@ const static char login_dc_welcome_copyright[] =
 
 const static char anti_copyright[] = "This server is in no way affiliated, sponsored, or supported by SEGA Enterprises or SONICTEAM. The preceding message exists only in order to remain compatible with programs that expect it.";
 
-/* 认证信息板内存存储 */
-static char login_welcom_msg[4096];
-
 /* Send a Dreamcast Welcome packet to the given client. */
 int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect);
 
