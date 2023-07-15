@@ -32,7 +32,7 @@
     <ClCompile Include="guild_query.c" />
     <ClCompile Include="inventory_query.c" />
     <ClCompile Include="option_query.c" />
-    <ClCompile Include="quest_data1._query.c" />
+    <ClCompile Include="quest_data1_query.c" />
     <ClCompile Include="shipgate_query.c" />
     <ClCompile Include="common_query.c" />
     <ClCompile Include="techniques_query.c" />

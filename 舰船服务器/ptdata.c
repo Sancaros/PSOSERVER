@@ -477,7 +477,7 @@ int pt_read_bb(const char* fn/*, int bb*/) {
     uint32_t hnd;
     const size_t sz = sizeof(fpt_bb_entry_t);
     pso_error_t err;
-    int rv = 0, i, j, k, l, m;
+    int rv = 0, 章节, 难度, 颜色, l, m;
     fpt_bb_entry_t* buf;
     pt_bb_entry_t* ent;
 
@@ -501,13 +501,13 @@ int pt_read_bb(const char* fn/*, int bb*/) {
     }
 
     /* Now, parse each entry... */
-    for (i = 0; i < 5; ++i) {
-        for (j = 0; j < 4; ++j) {
-            for (k = 0; k < 10; ++k) {
+    for (章节 = 0; 章节 < 5; ++章节) {
+        for (难度 = 0; 难度 < 4; ++难度) {
+            for (颜色 = 0; 颜色 < 10; ++颜色) {
                 /* Figure out the name of the file in the archive that we're
                    looking for... */
-                snprintf(filename, 32, "ItemPT%s%c%d.rel", episodes[i],
-                    difficulties[j], k);
+                snprintf(filename, 32, "ItemPT%s%c%d.rel", episodes[章节],
+                    difficulties[难度], 颜色);
 
                 //printf("%s \n", filename);
 
@@ -535,10 +535,7 @@ int pt_read_bb(const char* fn/*, int bb*/) {
                 }
 
                 /* Dump it into our nicer (not packed) structure. */
-                //if (bb)
-                    ent = &bb_ptdata[i][j][k];
-                //else
-                    //ent = &gc_ptdata[i][j][k];
+                ent = &bb_ptdata[章节][难度][颜色];
 
                 memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
                 memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
@@ -601,10 +598,7 @@ int pt_read_bb(const char* fn/*, int bb*/) {
         }
     }
 
-    //if (bb)
-        have_bbpt = 1;
-    //else
-        //have_gcpt = 1;
+    have_bbpt = 1;
 
 out:
     pso_gsl_read_close(a);
@@ -710,8 +704,8 @@ int pt_bb_enabled(void) {
 static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
                               struct mt19937_state *rng, int picked, int v1,
                               lobby_t *l) {
-    uint32_t rnd, upcts = 0, ratio = 0, wchance = 0;
-    int i, j = 0, k, warea = 0, npcts = 0;
+    uint32_t rnd, upcts = 0;
+    int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
     int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
     uint8_t *item_b = (uint8_t *)item;
     int semirare = 0, rare = 0;
@@ -777,8 +771,7 @@ static int generate_weapon_v2(pt_v2_entry_t *ent, int area, uint32_t item[4],
     /* Roll the dice! */
     rnd = mt19937_genrand_int32(rng) % wchance;
     for(i = 0; i < j; ++i) {
-        ratio = rnd -= ent->weapon_ratio[wtypes[i]];
-        if(ratio > wchance) {
+        if((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
             item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
             /* Save off the grind pattern to use... */
@@ -858,7 +851,7 @@ already_picked:
        to this weapon, or if its rare and we need to set the flag. */
     if(!semirare && ent->element_ranking[area]) {
         rnd = mt19937_genrand_int32(rng) % 100;
-        if((int8_t)rnd < ent->element_probability[area]) {
+        if(rnd < (uint32_t)ent->element_probability[area]) {
             rnd = mt19937_genrand_int32(rng) %
                 attr_count[ent->element_ranking[area] - 1];
             item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
@@ -874,8 +867,8 @@ already_picked:
 static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
                               struct mt19937_state *rng, int picked, int bb,
                               lobby_t *l) {
-    uint32_t rnd, upcts = 0, ratio = 0, wchance = 0;
-    int i, j = 0, k, warea = 0, npcts = 0;
+    uint32_t rnd, upcts = 0;
+    int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
     int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
     uint8_t *item_b = (uint8_t *)item;
     int semirare = 0, rare = 0;
@@ -944,8 +937,7 @@ static int generate_weapon_v3(pt_v3_entry_t *ent, int area, uint32_t item[4],
     /* Roll the dice! */
     rnd = mt19937_genrand_int32(rng) % wchance;
     for(i = 0; i < j; ++i) {
-        ratio = rnd -= ent->weapon_ratio[wtypes[i]];
-        if(ratio > wchance) {
+        if((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
             item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
             /* Save off the grind pattern to use... */
@@ -1025,7 +1017,7 @@ already_picked:
        to this weapon, or if its rare and we need to set the flag. */
     if(!semirare && ent->element_ranking[area]) {
         rnd = mt19937_genrand_int32(rng) % 100;
-        if((int8_t)rnd < ent->element_probability[area]) {
+        if(rnd < (uint32_t)ent->element_probability[area]) {
             rnd = mt19937_genrand_int32(rng) %
                 attr_count[ent->element_ranking[area] - 1];
             item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
@@ -1041,8 +1033,8 @@ already_picked:
 static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     struct mt19937_state* rng, int picked, int bb,
     lobby_t* l) {
-    uint32_t rnd, upcts = 0, ratio = 0, wchance = 0;
-    int i, j = 0, k, warea = 0, npcts = 0;
+    uint32_t rnd, upcts = 0;
+    int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
     int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
     uint8_t* item_b = (uint8_t*)item;
     int semirare = 0, rare = 0;
@@ -1113,8 +1105,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
     /* Roll the dice! */
     rnd = mt19937_genrand_int32(rng) % wchance;
     for (i = 0; i < j; ++i) {
-        ratio = rnd -= ent->weapon_ratio[wtypes[i]];
-        if (ratio > wchance) {
+        if ((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
             item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
             /* Save off the grind pattern to use... */
@@ -1195,7 +1186,7 @@ already_picked:
        to this weapon, or if its rare and we need to set the flag. */
     if (!semirare && ent->element_ranking[area]) {
         rnd = mt19937_genrand_int32(rng) % 100;
-        if ((int8_t)rnd < ent->element_probability[area]) {
+        if (rnd < (uint32_t)ent->element_probability[area]) {
             rnd = mt19937_genrand_int32(rng) %
                 attr_count[ent->element_ranking[area] - 1];
             item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
@@ -3899,7 +3890,7 @@ int pt_generate_bb_drop(ship_client_t *src, lobby_t *l, void *r) {
                     return 0;
 
                 default:
-                    ITEM_LOG("Unknown/Invalid enemy drop (%d) for index "
+                    ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
                           "%d", ent->enemy_drop[req->pt_index],
                           req->pt_index);
                     return 0;
@@ -4567,7 +4558,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
             return 0;
 
         default:
-            ITEM_LOG("Unknown/Invalid enemy drop (%d) for index "
+            ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
                 "%d", ent->enemy_drop[req->pt_index],
                 req->pt_index);
             return 0;
