@@ -1249,6 +1249,33 @@ int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_photon_blast_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
+            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月15日 20:40 : 25 : 447] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x37 版本 5 的处理
+//[2023年07月15日 20:40 : 25 : 463] 调试(subcmd_handle_60.c 3591) : 未知 0x60 指令 : 0x37
+//(00000000)   10 00 60 00 00 00 00 00   37 02 00 00 64 00 00 00  ..`.....7...d...
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_ready_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1264,7 +1291,7 @@ int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x000c) || pkt->shdr.size != 0x01) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1493,6 +1520,39 @@ int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_subtract_PB_energy_6x49_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 || src->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    size_t allowed_count = MIN(pkt->shdr.size - 3, 14);
+
+    if (pkt->entry_count > allowed_count) {
+        ERR_LOG("无效 subtract PB energy 指令");
+    }
+
+//[2023年07月15日 20:40:23:414] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x49 版本 5 的处理
+//[2023年07月15日 20:40:23:426] 调试(subcmd_handle_60.c 3591): 未知 0x60 指令: 0x49
+//( 00000000 )   14 00 60 00 00 00 00 00   49 03 00 00 00 00 00 00  ..`.....I.......
+//( 00000010 )   64 00 00 00                                     d...
+    /* This aught to do it... */
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int sub60_4A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1523,6 +1583,8 @@ int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
+            src->guildcard);
         return -1;
     }
 
@@ -3414,6 +3476,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 30 - 3F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_MEDIC_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
     { SUBCMD60_MEDIC_DONE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
+    { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },
     { SUBCMD60_PB_BLAST_READY             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
     { SUBCMD60_GAME_CLIENT_LEAVE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
     { SUBCMD60_LOAD_3B                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3B_bb },
@@ -3429,6 +3492,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_OBJHIT_PHYS                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_46_bb },
     { SUBCMD60_OBJHIT_TECH                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_47_bb },
     { SUBCMD60_USED_TECH                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_48_bb },
+    { SUBCMD60_SUBTRACT_PB_ENERGY         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_49_bb },
     { SUBCMD60_DEFENSE_DAMAGE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4A_bb },
     { SUBCMD60_TAKE_DAMAGE1               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
     { SUBCMD60_TAKE_DAMAGE2               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },

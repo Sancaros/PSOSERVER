@@ -143,7 +143,7 @@
 // 6x35: Invalid subcommand
 #define SUBCMD60_UNKNOW_35                     0x35
 #define SUBCMD60_UNKNOW_36                     0x36
-#define SUBCMD60_UNKNOW_37                     0x37
+#define SUBCMD60_PB_BLAST                      0x37
 #define SUBCMD60_UNKNOW_38                     0x38
 #define SUBCMD60_PB_BLAST_READY                0x39
 #define SUBCMD60_GAME_CLIENT_LEAVE             0x3A
@@ -170,7 +170,7 @@
 #define SUBCMD60_OBJHIT_PHYS                   0x46
 #define SUBCMD60_OBJHIT_TECH                   0x47
 #define SUBCMD60_USED_TECH                     0x48
-#define SUBCMD60_UNKNOW_49                     0x49
+#define SUBCMD60_SUBTRACT_PB_ENERGY            0x49
 #define SUBCMD60_DEFENSE_DAMAGE                0x4A //受到攻击并防御了
 #define SUBCMD60_TAKE_DAMAGE1                  0x4B
 #define SUBCMD60_TAKE_DAMAGE2                  0x4C

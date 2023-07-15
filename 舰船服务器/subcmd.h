@@ -878,7 +878,7 @@ struct subcmd_RevivePlayer_6x33 {
 // This subcommand is completely ignored (at least, by PSO GC).
 
 
-// 0x37: Photon blast
+// 0x37: Photon blast 光子爆发
 typedef struct subcmd_photon_blast {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -886,11 +886,11 @@ typedef struct subcmd_photon_blast {
     uint16_t unused;
 } PACKED subcmd_photon_blast_t;
 
-// 0x37: Photon blast
+// 0x37: Photon blast 光子爆发
 typedef struct subcmd_bb_photon_blast {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unknown_a1;
+    uint16_t unknown_a1; //可能是flags
     uint16_t unused;
 } PACKED subcmd_bb_photon_blast_t;
 
