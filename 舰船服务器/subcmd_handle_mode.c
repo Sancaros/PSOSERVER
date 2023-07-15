@@ -1269,7 +1269,7 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1540,7 +1540,7 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_subtract_PB_energy_6x49_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2559,7 +2559,7 @@ static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_battle_mode_data_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2642,7 +2642,7 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_HitDestructibleObject_6x86_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3455,7 +3455,7 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_start_battle_mode_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
