@@ -2033,8 +2033,8 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
 
     /* Save our position, as we don't know in advance how many parsed enemies
        we will have... */
-    offs = (off_t)_ftelli64(fp);
-    _fseeki64(fp, 4, SEEK_CUR);
+    offs = (off_t)ftell(fp);
+    fseek(fp, 4, SEEK_CUR);
     //CONFIG_LOG("敌人数据位置: %" PRIx64 "", (uint64_t)offs);
     index = 0;
 
@@ -2071,7 +2071,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     }
 
     /* Go back and write the amount of enemies we have. */
-    _fseeki64(fp, offs, SEEK_SET);
+    fseek(fp, offs, SEEK_SET);
     //CONFIG_LOG("敌人数量: %" PRIu32 "", index);
     index = LE32(index);
 

@@ -233,11 +233,11 @@ typedef struct psocn_bb_guildcard {
     uint32_t guildcard;                 /* 4   32位 GC  */
     uint16_t name[24];                  /* 48  玩家名称 */
     uint16_t guild_name[16];            /* 32  公会名称 */
-    uint16_t guildcard_desc[88];    /* 176 玩家描述 */
+    uint16_t guildcard_desc[88];        /* 176 玩家描述 */
     uint8_t present;                    /* 1   占位符 0x01 表示存在 */
     uint8_t language;                   /* 1   语言 0 -8 */
     uint8_t section;                    /* 1   颜色ID */
-    uint8_t char_class;                   /* 1   人物职业 */
+    uint8_t char_class;                 /* 1   人物职业 */
 } PACKED psocn_bb_guildcard_t;
 
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/

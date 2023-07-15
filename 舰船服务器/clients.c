@@ -182,6 +182,22 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
 
+        rv->records =
+            (record_data_t*)malloc(sizeof(record_data_t));
+
+        if (!rv->records) {
+            perror("malloc");
+            free_safe(rv->pl);
+            free_safe(rv->enemy_kills);
+            free_safe(rv->game_data);
+            free_safe(rv->mode_pl);
+            free_safe(rv);
+            closesocket(sock);
+            return NULL;
+        }
+
+        memset(rv->records, 0, sizeof(record_data_t));
+
         if(version == CLIENT_VERSION_BB) {
             rv->bb_pl =
                 (psocn_bb_db_char_t *)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
@@ -192,6 +208,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
                 free_safe(rv->mode_pl);
+                free_safe(rv->records);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -207,6 +224,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
                 free_safe(rv->mode_pl);
+                free_safe(rv->records);
                 free_safe(rv->bb_pl);
                 free_safe(rv);
                 closesocket(sock);
@@ -223,6 +241,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
                 free_safe(rv->mode_pl);
+                free_safe(rv->records);
                 free_safe(rv->bb_pl);
                 free_safe(rv->bb_opts);
                 free_safe(rv);
@@ -242,6 +261,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->enemy_kills);
                 free_safe(rv->game_data);
                 free_safe(rv->mode_pl);
+                free_safe(rv->records);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
@@ -485,6 +505,10 @@ void client_destroy_connection(ship_client_t *c,
 
     if (c->mode_pl) {
         free_safe(c->mode_pl);
+    }
+
+    if (c->records) {
+        free_safe(c->records);
     }
 
     if(c->bb_pl) {

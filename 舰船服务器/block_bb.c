@@ -916,8 +916,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     c->infoboard = (char*)c->pl->bb.infoboard;
-    c->records.bb = c->pl->bb.records;
-    c->records.bb.challenge.title_color = 0x7C00;//TODO 这里需要一个判断 判断玩家头衔等级 并分配颜色
+    c->records->bb = c->pl->bb.records;
+    c->records->bb.challenge.title_color = 0x7C00;//TODO 这里需要一个判断 判断玩家头衔等级 并分配颜色
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */
@@ -1763,11 +1763,22 @@ static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pk
 static int bb_set_guild_text(ship_client_t* c, bb_guildcard_set_txt_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     size_t data_len = sizeof(bb_guildcard_set_txt_pkt);
+    //size_t max_count = 105;
 
     if (len != sizeof(bb_guildcard_set_txt_pkt)) {
         ERR_LOG("无效 BB GC 文本描述更新数据包大小 (%d 数据大小:%d)", len, data_len);
         return -1;
     }
+
+    //bb_guildcard_set_txt_pkt* new_gc = check_size_t<GuildCardBB>(data);
+    //psocn_bb_guildcard_t* gcf = c->bb_pl.;
+    //for (size_t z = 0; z < max_count; z++) {
+    //    if (gcf.entries[z].data.guild_card_number == new_gc.guild_card_number) {
+    //        gcf.entries[z].data = new_gc;
+    //        c->log.info("Updated guild card %" PRIu32 " at position %zu",
+    //            new_gc.guild_card_number.load(), z);
+    //    }
+    //}
 
     memcpy(c->bb_pl->guildcard_desc, pkt->gc_data.guildcard_desc, sizeof(bb_guildcard_set_txt_pkt));
     return 0;

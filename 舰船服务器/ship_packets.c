@@ -6978,8 +6978,11 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(QUEST_LIST_TYPE);
 
+    /* 搜索3个章节 1 2 4*/
     for(k = 0; k < 3; ++k) {
+        /* 搜索任务清单*/
         for(i = 0; i < cat->quest_count; ++i) {
+            //DBG_LOG("%d 个", cat->quest_count);
             if(l->challenge) {
                 /*  跳过第1集：我们没有资格参加的挑战任务 Skip episode 1 challenge quests we're not qualified for. */
                 if(i < 9 && i >= max)
@@ -10683,7 +10686,7 @@ static void copy_record_to_gc(gc_records_update_pkt *pkt, int entry,
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_DCV2:
@@ -10751,7 +10754,7 @@ static void copy_record_to_gc(gc_records_update_pkt *pkt, int entry,
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_gc");
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->v3.challenge, PSOCN_STLENGTH_V3_RECORDS_DATA);
             break;
 
         default:
@@ -10770,7 +10773,7 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
     switch(src->version) {
         case CLIENT_VERSION_DCV2:
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.v2.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->v2.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_PC:
@@ -10857,7 +10860,7 @@ static void copy_record_to_dc(dc_records_update_pkt *pkt, int entry,
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_dc");
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->bb.challenge, PSOCN_STLENGTH_DC_RECORDS_DATA);
             break;
 
         default:
@@ -10876,7 +10879,7 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
     switch(src->version) {
         case CLIENT_VERSION_PC:
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
             break;
 
         case CLIENT_VERSION_DCV2:
@@ -10965,7 +10968,7 @@ static void copy_record_to_pc(pc_records_update_pkt *pkt, int entry,
         case CLIENT_VERSION_BB:
             //DBG_LOG("copy_c_rank_pc");
             pkt->entries[entry].client_id = LE32(src->client_id);
-            memcpy(&pkt->entries[entry].challenge, &src->records.pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
+            memcpy(&pkt->entries[entry].challenge, &src->records->pc.challenge, PSOCN_STLENGTH_PC_RECORDS_DATA);
             break;
 
         default:
@@ -10983,7 +10986,7 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
         pkt->entries[entry].client_id = LE32(src->client_id);
-        memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
+        memcpy(&pkt->entries[entry].challenge, &src->records->bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
         break;
 
     case CLIENT_VERSION_DCV2:
@@ -11050,7 +11053,7 @@ static void copy_record_to_bb(bb_records_update_pkt* pkt, int entry,
     case CLIENT_VERSION_BB:
         //DBG_LOG("copy_c_rank_bb");
         pkt->entries[entry].client_id = LE32(src->client_id);
-        memcpy(&pkt->entries[entry].challenge, &src->records.bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
+        memcpy(&pkt->entries[entry].challenge, &src->records->bb.challenge, PSOCN_STLENGTH_BB_RECORDS_DATA);
         break;
 
     default:

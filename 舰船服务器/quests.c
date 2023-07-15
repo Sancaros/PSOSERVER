@@ -195,9 +195,9 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
         return NULL;
     }
 
-    _fseeki64(fp, 0, SEEK_END);
-    sz = (off_t)_ftelli64(fp);
-    _fseeki64(fp, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_END);
+    sz = (off_t)ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
     if(!(buf = (uint8_t *)malloc(sz))) {
         QERR_LOG("无法分配内存去读取 dat : %s",
@@ -462,9 +462,9 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
         return NULL;
     }
 
-    _fseeki64(fp, 0, SEEK_END);
-    sz = (off_t)_ftelli64(fp);
-    _fseeki64(fp, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_END);
+    sz = (off_t)ftell(fp);
+    fseek(fp, 0, SEEK_SET);
 
     /* Make sure the file's size is sane. */
     if(sz < 120) {
@@ -577,7 +577,6 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
         free_safe(mdir);
         return -1;
     }
-
 
     for (j = 0; j < CLIENT_VERSION_ALL; ++j) {
         sprintf(mdir, "%s/.mapcache/%s", dir, client_type[j]->ver_name);
