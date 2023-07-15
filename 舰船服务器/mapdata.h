@@ -159,6 +159,140 @@ typedef struct parsed_objects {
     game_objs_t* data;
 } parsed_objs_t;
 
+/* 地图索引结构 来自newserv */
+typedef struct AreaMapFileIndex {
+    const char* name_token;
+    uint32_t variation1_values[3];
+    uint32_t variation2_values[5];
+} AreaMapFileIndex;
+
+// 索引方式为 [章节][是否单机][区域], 章节为0-2对应 1 2 3章节
+static const AreaMapFileIndex map_file_info[3][2][17] = {
+    {
+        // 章节 1
+        {
+            // 在线
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 1, 2, 3, 4}},
+            {"forest02", {0}, {0, 1, 2, 3, 4}},
+            {"cave01", {0, 1, 2}, {0, 1}},
+            {"cave02", {0, 1, 2}, {0, 1}},
+            {"cave03", {0, 1, 2}, {0, 1}},
+            {"machine01", {0, 1, 2}, {0, 1}},
+            {"machine02", {0, 1, 2}, {0, 1}},
+            {"ancient01", {0, 1, 2}, {0, 1}},
+            {"ancient02", {0, 1, 2}, {0, 1}},
+            {"ancient03", {0, 1, 2}, {0, 1}},
+            {"boss01", {0}, {0}},
+            {"boss02", {0}, {0}},
+            {"boss03", {0}, {0}},
+            {"boss04", {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // 单人
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 2, 4}},
+            {"forest02", {0}, {0, 3, 4}},
+            {"cave01", {0, 1, 2}, {0}},
+            {"cave02", {0, 1, 2}, {0}},
+            {"cave03", {0, 1, 2}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+    {
+        // 章节 2
+        {
+            // 在线
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0, 1}},
+            {"seabed02", {0, 1}, {0, 1}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+        {
+            // 单人
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0}},
+            {"seabed02", {0, 1}, {0}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+    },
+    {
+        // 章节 4
+        {
+            // 在线
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // 单人
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+};
+
 #undef PACKED
 
 /* Object types */
@@ -196,5 +330,13 @@ int map_have_bb_maps(void);
 int load_quest_enemies(lobby_t* l, uint32_t qid, int ver);
 int cache_quest_enemies(const char* ofn, const uint8_t* dat, uint32_t sz,
     int episode);
+
+void generate_variations(
+    uint32_t variations[0x20],
+    uint32_t episode,
+    bool is_solo);
+
+char* map_filenames_for_variation(
+    uint32_t episode, int is_solo, uint8_t area, uint32_t var1, uint32_t var2);
 
 #endif /* !MAPDATA_H */
