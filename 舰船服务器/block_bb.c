@@ -858,6 +858,14 @@ static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
     return rv;
 }
 
+static int bb_process_confirm_open_file(ship_client_t* c, bb_pkt_hdr_t* pkt) {
+    uint16_t type = LE16(pkt->pkt_type);
+    uint16_t len = LE16(pkt->pkt_len);
+    uint32_t flags = LE32(pkt->flags);
+
+
+}
+
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);

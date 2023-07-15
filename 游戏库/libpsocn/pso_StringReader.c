@@ -1,5 +1,5 @@
 /*
-	梦幻之星中国 文本读取
+	梦幻之星中国 字符串读取器
 	版权 (C) 2022, 2023 Sancaros
 
 	This program is free software: you can redistribute it and/or modify
@@ -202,6 +202,7 @@ void StringReader_setData(StringReader* reader, const char* data, size_t length,
     reader->offset = offset;
 }
 
+/* 字符串读取器 读到哪个节点了 */
 size_t StringReader_where(const StringReader* reader) {
     return reader->offset;
 }

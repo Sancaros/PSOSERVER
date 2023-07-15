@@ -1349,7 +1349,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LOBBY_JOIN_TYPE;
     pkt->leader_id = l->leader_id;
-    pkt->disable_udp = 0;
+    pkt->disable_udp = 1;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = LE16(l->block->b);
     pkt->event = LE16(event);
@@ -1567,7 +1567,7 @@ static int send_bb_lobby_join(ship_client_t *c, lobby_t *l) {
     /* Fill in the basics. */
     pkt->hdr.pkt_type = LE16(LOBBY_JOIN_TYPE);
     pkt->leader_id = l->leader_id;
-    pkt->disable_udp = 0x01;
+    pkt->disable_udp = 1;
     pkt->lobby_num = l->lobby_id - 1;
     pkt->block_num = l->block->b;
     pkt->unknown_a1 = 0;
@@ -2066,11 +2066,11 @@ static int send_bb_lobby_add_player(lobby_t *l, ship_client_t *c,
     pkt->lobby_num = (l->type == LOBBY_TYPE_LOBBY) ? l->lobby_id - 1 : 0xFF;
 
     if(l->type == LOBBY_TYPE_LOBBY) {
-        pkt->block_num = l->block->b;
+        pkt->block_num = LE16(l->block->b);
     }
     else {
-        pkt->block_num = 0x0001;
-        pkt->event = 0x0001;
+        pkt->block_num = LE16(0x0001);
+        pkt->event = LE16(0x0001);
     }
 
     /* Copy the player's data into the packet. */
@@ -2192,7 +2192,7 @@ static int send_bb_lobby_leave(lobby_t *l, ship_client_t *c, int client_id) {
 
     pkt->client_id = client_id;
     pkt->leader_id = l->leader_id;
-    pkt->disable_udp = 1; /* 2023.2.1 需确认是否正确*/
+    pkt->disable_udp = 0; /* 2023.2.1 需确认是否正确*/
 
     /* 加密并发送 */
     return crypt_send(c, BB_LOBBY_LEAVE_LENGTH, sendbuf);

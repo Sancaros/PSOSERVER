@@ -1296,13 +1296,12 @@ typedef struct bb_quest_file {
 
 // 44 (C->S): Confirm open file (V3/BB)
 // Client sends this in response to each 44 sent by the server.
-
 // header.flag = quest number (sort of - seems like the client just echoes
 // whatever the server sent in its header.flag field. Also quest numbers can be
 // > 0xFF so the flag is essentially meaningless)
-//struct C_OpenFileConfirmation_44_A6 {
-//    ptext<char, 0x10> filename;
-//} PACKED;
+typedef struct C_OpenFileConfirmation_44_A6 {
+    char filename[0x10];
+} PACKED C_OpenFileConfirmation_44_A6_t;
 
 // 45: 无效或未解析指令
 // 46: 无效或未解析指令

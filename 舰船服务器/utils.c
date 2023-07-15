@@ -228,6 +228,7 @@ void fprint_packet(FILE *fp, const unsigned char *pkt, int len, int rec) {
     const unsigned char *pos = pkt, *row = pkt;
     int line = 0, type = 0;
     time_t now;
+	time(&now);
     char tstr[26];
 
     if(rec != -1) {
@@ -485,6 +486,7 @@ int pkt_log_start(ship_client_t *i) {
 /* Stop logging the specified client's packets */
 int pkt_log_stop(ship_client_t *i) {
     time_t now;
+	time(&now);
     char str[64];
 
     pthread_mutex_lock(&i->mutex);
@@ -1085,15 +1087,16 @@ void update_lobby_event(void) {
 }
 
 uint64_t get_ms_time(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+    FILETIME ft;
+    ULARGE_INTEGER uli;
 
-    //return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    GetSystemTimeAsFileTime(&ft);
 
-    SYSTEMTIME aoetime;
-    GetLocalTime(&aoetime);
+    uli.LowPart = ft.dwLowDateTime;
+    uli.HighPart = ft.dwHighDateTime;
 
-    return (aoetime.wSecond * 1000) + aoetime.wMilliseconds;
+    // 将100纳秒转换为毫秒并返回
+    return uli.QuadPart / 10000ULL;
 }
 
 void memcpy_str(void * restrict d, const char * restrict s, size_t sz) {

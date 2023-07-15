@@ -355,8 +355,10 @@ int script_update_module(const char *filename) {
         return 0;
 
     /* Chop off the extension of the filename. */
-    if(!(modname = _strdup(filename)))
+    if(!(modname = _strdup(filename))) {
+        printf("Memory allocation error!\n");
         return -1;
+    }
 
     tmp = strrchr(modname, '.');
     if(tmp)
@@ -508,8 +510,14 @@ err:
 }
 
 void init_scripts(ship_t *s) {
-    long size = MAX_PATH;//pathconf(".", _PC_PATH_MAX);
+    TCHAR fullPath[MAX_PATH];
+    long size = GetFullPathName(".", MAX_PATH, fullPath, NULL);
     char *path_str, *script;
+
+    if (size == 0) {
+        SCRIPT_LOG("无法获取最大路径长度");
+        return;
+    }
 
     if(!(path_str = (char *)malloc(size))) {
         SCRIPT_LOG("内存不足, 程序退出!");

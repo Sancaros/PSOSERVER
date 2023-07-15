@@ -28,6 +28,7 @@
     <ClInclude Include="src\PRSD-common.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="QST-decomp.c" />
     <ClCompile Include="src\AFS-read.c" />
     <ClCompile Include="src\AFS-write.c" />
     <ClCompile Include="src\error.c" />

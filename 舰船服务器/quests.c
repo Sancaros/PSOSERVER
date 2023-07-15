@@ -195,9 +195,9 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
         return NULL;
     }
 
-    fseek(fp, 0, SEEK_END);
-    sz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    _fseeki64(fp, 0, SEEK_END);
+    sz = _ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
 
     if(!(buf = (uint8_t *)malloc(sz))) {
         QERR_LOG("无法分配内存去读取 dat : %s",
@@ -301,7 +301,7 @@ static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
     char *cptr;
     uint32_t clen;
 
-    while(ptr < (uint32_t)sz) {
+    while(ptr < sz) {
         ck = (const dc_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
@@ -405,7 +405,7 @@ static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
     char *cptr;
     uint32_t clen;
 
-    while(ptr < (uint32_t)sz) {
+    while(ptr < sz) {
         ck = (const bb_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
@@ -462,9 +462,9 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
         return NULL;
     }
 
-    fseek(fp, 0, SEEK_END);
-    sz = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    _fseeki64(fp, 0, SEEK_END);
+    sz = _ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
 
     /* Make sure the file's size is sane. */
     if(sz < 120) {
@@ -571,7 +571,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
 
     /* Make sure we have all the directories we'll need. */
     sprintf(mdir, "%s/.mapcache", dir);
-    if(_mkdir(mdir) && errno != EEXIST) {
+    if(_mkdir(mdir) != 0 && errno != EEXIST) {
         QERR_LOG("创建地图缓存文件夹错误: %s",
               strerror(errno));
         free_safe(mdir);
