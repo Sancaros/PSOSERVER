@@ -22,28 +22,50 @@
 #include <WinSock_Defines.h>
 
 #include <f_checksum.h>
+#include <f_logs.h>
 
 #include "patch_server.h"
 #include "patch_packets.h"
 
 #define CHUNK_MAX 24576
 
-static uint8_t sendbuf[65536];
+//static uint8_t sendbuf[65536];
+
+/* 获取当前线程的 sendbuf 线程特定数据. */
+uint8_t* get_sendbuf() {
+    uint8_t* sendbuf = (uint8_t*)malloc(65536);
+
+    /* If we haven't initialized the sendbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!sendbuf) {
+        perror("malloc");
+        return NULL;
+    }
+
+    memset(sendbuf, 0, 65536);
+
+    return sendbuf;
+}
 
 /* Send a raw packet away. */
-static int send_raw(patch_client_t *c, int len) {
+static int send_raw(patch_client_t* c, int len, uint8_t* sendbuf) {
     ssize_t rv, total = 0;
-    void *tmp;
+    void* tmp;
 
     /* Keep trying until the whole thing's sent. */
-    if(!c->sendbuf_cur) {
-        while(total < len) {
-            rv = send(c->sock, (PCHAR)(sendbuf + total), len - total, 0);
+    if (!c->sendbuf_cur) {
+        while (total < len) {
+            rv = send(c->sock, sendbuf + total, len - total, 0);
 
-            if(rv == SOCKET_ERROR && errno != EAGAIN) {
-                return -1;
+            if (sendbuf)
+                free_safe(sendbuf);
+
+            //ERR_LOG("舰船数据端口 %d 发送数据 = %d 字节 版本识别 = %d", c->sock, rv, c->version);
+
+            if (rv == SOCKET_ERROR && errno != EAGAIN) {
+                return SOCKET_ERROR;
             }
-            else if(rv == SOCKET_ERROR) {
+            else if (rv == SOCKET_ERROR) {
                 break;
             }
 
@@ -53,25 +75,26 @@ static int send_raw(patch_client_t *c, int len) {
 
     rv = len - total;
 
-    if(rv) {
+    if (rv) {
         /* Move out any already transferred data. */
-        if(c->sendbuf_start) {
+        if (c->sendbuf_start) {
             memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                    c->sendbuf_cur - c->sendbuf_start);
+                c->sendbuf_cur - c->sendbuf_start);
             c->sendbuf_cur -= c->sendbuf_start;
+            c->sendbuf_start = 0;
         }
 
         /* See if we need to reallocate the buffer. */
-        if(c->sendbuf_cur + rv > c->sendbuf_size) {
+        if (c->sendbuf_cur + rv > c->sendbuf_size) {
             tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
 
             /* If we can't allocate the space, bail. */
-            if(tmp == NULL) {
+            if (tmp == NULL) {
                 return -1;
             }
 
             c->sendbuf_size = c->sendbuf_cur + rv;
-            c->sendbuf = (unsigned char *)tmp;
+            c->sendbuf = (unsigned char*)tmp;
         }
 
         /* Copy what's left of the packet into the output buffer. */
@@ -81,37 +104,111 @@ static int send_raw(patch_client_t *c, int len) {
 
     return 0;
 }
+//
+///* Send a raw packet away. */
+//static int send_raw(patch_client_t *c, int len) {
+//    ssize_t rv, total = 0;
+//    void *tmp;
+//
+//    /* Keep trying until the whole thing's sent. */
+//    if(!c->sendbuf_cur) {
+//        while(total < len) {
+//            rv = send(c->sock, (PCHAR)(sendbuf + total), len - total, 0);
+//
+//            if(rv == SOCKET_ERROR && errno != EAGAIN) {
+//                return -1;
+//            }
+//            else if(rv == SOCKET_ERROR) {
+//                break;
+//            }
+//
+//            total += rv;
+//        }
+//    }
+//
+//    rv = len - total;
+//
+//    if(rv) {
+//        /* Move out any already transferred data. */
+//        if(c->sendbuf_start) {
+//            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+//                    c->sendbuf_cur - c->sendbuf_start);
+//            c->sendbuf_cur -= c->sendbuf_start;
+//        }
+//
+//        /* See if we need to reallocate the buffer. */
+//        if(c->sendbuf_cur + rv > c->sendbuf_size) {
+//            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+//
+//            /* If we can't allocate the space, bail. */
+//            if(tmp == NULL) {
+//                return -1;
+//            }
+//
+//            c->sendbuf_size = c->sendbuf_cur + rv;
+//            c->sendbuf = (unsigned char *)tmp;
+//        }
+//
+//        /* Copy what's left of the packet into the output buffer. */
+//        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+//        c->sendbuf_cur += rv;
+//    }
+//
+//    return 0;
+//}
+
+///* 加密并发送一个数据包. */
+//static int crypt_send(patch_client_t* c, int len) {
+//    /* Expand it to be a multiple of 8/4 bytes long */
+//    while (len & (hdr_sizes[c->type] - 1)) {
+//        sendbuf[len++] = 0;
+//    }
+//
+//    /* Encrypt the packet */
+//    CRYPT_CryptData(&c->server_cipher, sendbuf, len, 1);
+//
+//    return send_raw(c, len);
+//}
 
 /* 加密并发送一个数据包. */
-static int crypt_send(patch_client_t* c, int len) {
+static int crypt_send(patch_client_t* c, int len, uint8_t* sendbuf) {
     /* Expand it to be a multiple of 8/4 bytes long */
-    while (len & (hdr_sizes[c->type] - 1)) {
+    while (len & (hdr_sizes[c->type] - 1))
         sendbuf[len++] = 0;
-    }
+
+#ifdef DEBUG
+    DBG_LOG("舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
+        sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);
+    display_packet(sendbuf, len);
+#endif // DEBUG
 
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, sendbuf, len, 1);
 
-    return send_raw(c, len);
+    return send_raw(c, len, sendbuf);
 }
 
 /* Send a simple "header-only" packet to the given client. */
 int send_simple(patch_client_t *c, uint16_t type) {
+    uint8_t* sendbuf = get_sendbuf();
     pkt_header_t *pkt = (pkt_header_t *)sendbuf;
 
     /* 填充数据头 */
     pkt->pkt_len = LE16(PACKET_HEADER_LENGTH);
     pkt->pkt_type = LE16(type);
 
+    //return crypt_send(c, PACKET_HEADER_LENGTH, sendbuf);
+
     /* Encrypt the packet */
     CRYPT_CryptData(&c->server_cipher, pkt, PACKET_HEADER_LENGTH, 1);
 
     /* 将数据包发送出去 */
-    return send_raw(c, PACKET_HEADER_LENGTH);
+    return send_raw(c, PACKET_HEADER_LENGTH, sendbuf);
 }
 
 /* Send a Welcome packet to the given client. */
 int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_welcome_pkt *pkt = (patch_welcome_pkt *)sendbuf;
 
     /* Scrub the buffer */
@@ -129,11 +226,12 @@ int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect) {
     pkt->client_vector = LE32(cvect);
 
     /* 将数据包发送出去 */
-    return send_raw(c, PATCH_WELCOME_LENGTH);
+    return send_raw(c, PATCH_WELCOME_LENGTH, sendbuf);
 }
 
 /* Send the packet containing the textual welcome message to the client. */
 int send_message(patch_client_t *c, uint16_t *msg, uint16_t size) {
+    uint8_t* sendbuf = get_sendbuf();
     pkt_header_t *pkt = (pkt_header_t *)sendbuf;
     uint16_t s = size + PACKET_HEADER_LENGTH;
 
@@ -154,12 +252,13 @@ int send_message(patch_client_t *c, uint16_t *msg, uint16_t size) {
     CRYPT_CryptData(&c->server_cipher, pkt, s, 1);
 
     /* 将数据包发送出去 */
-    return send_raw(c, s);
+    return send_raw(c, s, sendbuf);
 }
 
 /* Send the data server redirect packet to the given client.
    IP and port MUST both be in network byte-order. */
 int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_redirect_pkt *pkt = (patch_redirect_pkt *)sendbuf;
 
     /* Wipe the packet */
@@ -176,7 +275,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_REDIRECT_LENGTH, 1);
 
     /* 将数据包发送出去 */
-    return send_raw(c, PATCH_REDIRECT_LENGTH);
+    return send_raw(c, PATCH_REDIRECT_LENGTH, sendbuf);
 }
 
 #ifdef PSOCN_ENABLE_IPV6
@@ -204,6 +303,7 @@ int send_redirect6(patch_client_t *c, const uint8_t ip[16], uint16_t port) {
 
 /* Send a change directory packet ot the given client. */
 int send_chdir(patch_client_t *c, const char dir[]) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_chdir_pkt *pkt = (patch_chdir_pkt *)sendbuf;
 
     /* Make sure the directory name will fit. */
@@ -221,11 +321,12 @@ int send_chdir(patch_client_t *c, const char dir[]) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_SET_DIRECTORY_LENGTH, 1);
 
     /* 将数据包发送出去. */
-    return send_raw(c, PATCH_SET_DIRECTORY_LENGTH);
+    return send_raw(c, PATCH_SET_DIRECTORY_LENGTH, sendbuf);
 }
 
 /* Send a file information packet to the given client. */
 int send_file_info(patch_client_t *c, uint32_t idx, const char fn[]) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_file_info_pkt *pkt = (patch_file_info_pkt *)sendbuf;
 
     /* Make sure the filename will fit. */
@@ -244,11 +345,12 @@ int send_file_info(patch_client_t *c, uint32_t idx, const char fn[]) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_INFO_LENGTH, 1);
 
     /* 将数据包发送出去. */
-    return send_raw(c, PATCH_FILE_INFO_LENGTH);
+    return send_raw(c, PATCH_FILE_INFO_LENGTH, sendbuf);
 }
 
 /* Send a file-send information packet to the given client. */
 int send_send_info(patch_client_t *c, uint32_t size, uint32_t files) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_send_info_pkt *pkt = (patch_send_info_pkt *)sendbuf;
 
     /* 填充数据头 and copy the data. */
@@ -261,11 +363,12 @@ int send_send_info(patch_client_t *c, uint32_t size, uint32_t files) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_SEND_INFO_LENGTH, 1);
 
     /* 将数据包发送出去. */
-    return send_raw(c, PATCH_SEND_INFO_LENGTH);
+    return send_raw(c, PATCH_SEND_INFO_LENGTH, sendbuf);
 }
 
 /* Send a file send packet to the given client. */
 int send_file_send(patch_client_t *c, uint32_t size, const char fn[]) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_file_send_pkt *pkt = (patch_file_send_pkt *)sendbuf;
 
     /* Make sure the file name's length is short enough. */
@@ -285,11 +388,12 @@ int send_file_send(patch_client_t *c, uint32_t size, const char fn[]) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_SEND_LENGTH, 1);
 
     /* 将数据包发送出去. */
-    return send_raw(c, PATCH_FILE_SEND_LENGTH);
+    return send_raw(c, PATCH_FILE_SEND_LENGTH, sendbuf);
 }
 
 /* Send a part of a file to the given client (dividing it into chunks). */
 int send_file_chunk(patch_client_t *c, const char fn[], const char dir[]) {
+    uint8_t* sendbuf = get_sendbuf();
     char realfn[256 + 2];
     FILE *fp;
     uint32_t sz;
@@ -338,7 +442,7 @@ int send_file_chunk(patch_client_t *c, const char fn[], const char dir[]) {
     CRYPT_CryptData(&c->server_cipher, pkt, len, 1);
 
     /* Send the chunk away. */
-    if(send_raw(c, len)) {
+    if(send_raw(c, len, sendbuf)) {
         fclose(fp);
         return -2;
     }
@@ -358,6 +462,7 @@ int send_file_chunk(patch_client_t *c, const char fn[], const char dir[]) {
 
 /* Send a file done packet to the given client. */
 int send_file_done(patch_client_t *c) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_file_done_pkt *pkt = (patch_file_done_pkt *)sendbuf;
 
     /* 填充数据头. */
@@ -369,5 +474,5 @@ int send_file_done(patch_client_t *c) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_FILE_DONE_LENGTH, 1);
 
     /* 将数据包发送出去. */
-    return send_raw(c, PATCH_FILE_DONE_LENGTH);
+    return send_raw(c, PATCH_FILE_DONE_LENGTH, sendbuf);
 }
