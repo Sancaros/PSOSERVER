@@ -865,6 +865,8 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
     if(player->disp.level >= 199)
         return 0;
 
+    DBG_LOG("%d", player->disp.level);
+
     /* Add in the experience to their total so far. */
     exp_total = LE32(player->disp.exp);
     exp_total += exp_amount;
@@ -915,6 +917,8 @@ int client_give_level(ship_client_t *dest, uint32_t level_req) {
     /* No need if they've already at that level. */
     if(player->disp.level >= level_req)
         return 0;
+
+    DBG_LOG("%d %d", player->disp.level, level_req);
 
     /* Grab the entry for that level... */
     cl = player->dress_data.ch_class;

@@ -1548,6 +1548,14 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    //id_result->data.item_id = generate_item_id(l, src->client_id);
+
+    if (!add_iitem(src, id_result)) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+            src->guildcard);
+        return -1;
+    }
+
     subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
 
     /* 初始化临时鉴定的物品数据 */

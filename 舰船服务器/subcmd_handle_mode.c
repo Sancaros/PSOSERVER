@@ -927,8 +927,13 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    equip_resault = item_check_equip_flags(src->guildcard, src->mode_pl->bb.disp.level,
-        src->equip_flags, &src->mode_pl->bb.inv, item_id);
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
+
+    equip_resault = item_check_equip_flags(src->guildcard, player->disp.level,
+        src->equip_flags, &player->inv, item_id);
 
     /* 是否存在物品背包中? */
     if (!equip_resault) {
@@ -1064,16 +1069,6 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (src->mode) {
-    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-    //        "挑战模式和对战模式."));
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    //}
-
-    //DBG_LOG("GC %" PRIu32 " 使用物品ID 0x%04X 喂养玛古 ID 0x%04X!",
-    //    src->guildcard, item_id, mag_id);
-
     errno_t err = mag_bb_feed(src, pkt->mag_item_id, pkt->fed_item_id);
 
     if (err) {
@@ -1106,13 +1101,6 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
-    //if (src->mode) {
-    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-    //        "挑战模式和对战模式."));
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    //}
 
     item_data = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
@@ -1156,13 +1144,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (src->mode) {
-    //    send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-    //        "挑战模式和对战模式."));
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    //}
-
     inventory_t* inv = &src->bb_pl->character.inv;
 
     if (src->mode)
@@ -1175,7 +1156,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     if (index == -1) {
         ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
             src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
-        //display_packet(pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1289,6 +1269,33 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_photon_blast_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
+            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月15日 20:40 : 25 : 447] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x37 版本 5 的处理
+//[2023年07月15日 20:40 : 25 : 463] 调试(subcmd_handle_60.c 3591) : 未知 0x60 指令 : 0x37
+//(00000000)   10 00 60 00 00 00 00 00   37 02 00 00 64 00 00 00  ..`.....7...d...
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_ready_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1304,7 +1311,7 @@ static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x000c) || pkt->shdr.size != 0x01) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1533,6 +1540,39 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_subtract_PB_energy_6x49_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 || src->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    size_t allowed_count = MIN(pkt->shdr.size - 3, 14);
+
+    if (pkt->entry_count > allowed_count) {
+        ERR_LOG("无效 subtract PB energy 指令");
+    }
+
+//[2023年07月15日 20:40:23:414] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x49 版本 5 的处理
+//[2023年07月15日 20:40:23:426] 调试(subcmd_handle_60.c 3591): 未知 0x60 指令: 0x49
+//( 00000000 )   14 00 60 00 00 00 00 00   49 03 00 00 00 00 00 00  ..`.....I.......
+//( 00000010 )   64 00 00 00                                     d...
+    /* This aught to do it... */
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1563,6 +1603,8 @@ static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
+            src->guildcard);
         return -1;
     }
 
@@ -2504,12 +2546,45 @@ static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if ((l->battle) && (src->mode))
+    if (src->mode) {
+        DBG_LOG("GC %" PRIu32 " 触发游戏指令 sub60_7C_bb !",
+            src->guildcard);
+    }
+
+    if (l->battle)
         handle_bb_battle_mode(src, pkt);
-    else
+    else if (l->challenge)
         handle_bb_challenge_mode_grave(src, pkt);
 
     return 0;
+}
+
+int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_set_battle_mode_data_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0020) ||
+        pkt->shdr.size != 0x06) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月12日 20:08:18:088] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
+//[2023年07月12日 20:08:18:091] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
+//( 00000000 )   20 00 60 00 00 00 00 00   7D 06 00 00 04 00 FF FF   .`.....}.....
+//( 00000010 )   01 00 00 00 FF FF FF FF   FF FF FF FF FF FF FF FF  ....
+//[2023年07月12日 20:08:18:113] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
+//[2023年07月12日 20:08:18:115] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
+//( 00000000 )   20 00 60 00 00 00 00 00   7D 06 00 00 04 00 FF FF   .`.....}.....
+//( 00000010 )   00 00 00 00 FF FF FF FF   FF FF FF FF FF FF FF FF  ....
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
@@ -2563,6 +2638,37 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年07月06日 13:21:22:702] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x83 版本 5 的处理
     //[2023年07月06日 13:21:22:717] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x83
     //( 00000000 )   10 00 60 00 00 00 00 00   83 02 00 00 03 00 14 00  ..`.....?......
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_HitDestructibleObject_6x86_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0018) ||
+        pkt->shdr.size != 0x04) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年07月12日 20:08:29:962] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
+//[2023年07月12日 20:08:29:978] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
+//( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
+//( 00000010 )   FB 00 00 00 00 00 05 00                           ?......
+//[2023年07月12日 20:08:32:368] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
+//[2023年07月12日 20:08:32:386] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
+//( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
+//( 00000010 )   FB 00 00 00 00 00 04 00                           ?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3349,6 +3455,28 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_start_battle_mode_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l->battle) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x003C) || pkt->shdr.size != 0x0D) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3387,128 +3515,132 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
 
 // 定义函数指针数组
 subcmd_handle_func_t subcmdmode_handler[] = {
-    //cmd_type 00 - 0F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SWITCH_CHANGED         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_05_bb },
-    { SUBCMD60_SYMBOL_CHAT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_07_bb },
-    { SUBCMD60_HIT_MONSTER            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0A_bb },
-    { SUBCMD60_HIT_OBJ                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0B_bb },
-    { SUBCMD60_CONDITION_ADD          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
-    { SUBCMD60_CONDITION_REMOVE       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
+    //cmd_type 00 - 0F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SWITCH_CHANGED             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_05_bb },
+    { SUBCMD60_SYMBOL_CHAT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_07_bb },
+    { SUBCMD60_HIT_MONSTER                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0A_bb },
+    { SUBCMD60_HIT_OBJ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0B_bb },
+    { SUBCMD60_CONDITION_ADD              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
+    { SUBCMD60_CONDITION_REMOVE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
 
-    //cmd_type 10 - 1F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_DRAGON_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_12_bb },
-    { SUBCMD60_ACTION_DE_ROl_LE       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_13_bb },
-    { SUBCMD60_ACTION_DE_ROl_LE2      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_14_bb },
-    { SUBCMD60_ACTION_VOL_OPT         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_15_bb },
-    { SUBCMD60_ACTION_VOL_OPT2        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_16_bb },
-    { SUBCMD60_TELEPORT               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_17_bb },
-    { SUBCMD60_UNKNOW_18              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_18_bb },
-    { SUBCMD60_ACTION_DARK_FALZ       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_19_bb },
-    { SUBCMD60_DESTORY_NPC            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1C_bb },
-    { SUBCMD60_SET_AREA_1F            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1F_bb },
+    //cmd_type 10 - 1F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_DRAGON_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_12_bb },
+    { SUBCMD60_ACTION_DE_ROl_LE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_13_bb },
+    { SUBCMD60_ACTION_DE_ROl_LE2          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_14_bb },
+    { SUBCMD60_ACTION_VOL_OPT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_15_bb },
+    { SUBCMD60_ACTION_VOL_OPT2            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_16_bb },
+    { SUBCMD60_TELEPORT                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_17_bb },
+    { SUBCMD60_UNKNOW_18                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_18_bb },
+    { SUBCMD60_ACTION_DARK_FALZ           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_19_bb },
+    { SUBCMD60_DESTORY_NPC                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1C_bb },
+    { SUBCMD60_SET_AREA_1F                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1F_bb },
 
-    //cmd_type 20 - 2F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SET_AREA_20            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_20_bb },
-    { SUBCMD60_INTER_LEVEL_WARP       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_21_bb },
-    { SUBCMD60_LOAD_22                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_22_bb },
-    { SUBCMD60_FINISH_LOAD            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_23_bb },
-    { SUBCMD60_SET_POS_24             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_24_bb },
-    { SUBCMD60_EQUIP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },//
-    { SUBCMD60_REMOVE_EQUIP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },//
-    { SUBCMD60_USE_ITEM               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },//
-    { SUBCMD60_FEED_MAG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },//
-    { SUBCMD60_DELETE_ITEM            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },//
-    { SUBCMD60_DROP_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },//
-    { SUBCMD60_SELECT_MENU            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2C_bb },
-    { SUBCMD60_SELECT_DONE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2D_bb },
-    { SUBCMD60_HIT_BY_ENEMY           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },
+    //cmd_type 20 - 2F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SET_AREA_20                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_20_bb },
+    { SUBCMD60_INTER_LEVEL_WARP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_21_bb },
+    { SUBCMD60_LOAD_22                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_22_bb },
+    { SUBCMD60_FINISH_LOAD                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_23_bb },
+    { SUBCMD60_SET_POS_24                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_24_bb },
+    { SUBCMD60_EQUIP                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },
+    { SUBCMD60_REMOVE_EQUIP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },
+    { SUBCMD60_USE_ITEM                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },
+    { SUBCMD60_FEED_MAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
+    { SUBCMD60_DELETE_ITEM                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },
+    { SUBCMD60_DROP_ITEM                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },
+    { SUBCMD60_SELECT_MENU                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2C_bb },
+    { SUBCMD60_SELECT_DONE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2D_bb },
+    { SUBCMD60_HIT_BY_ENEMY               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },
 
-    //cmd_type 30 - 3F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_MEDIC_REQ              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
-    { SUBCMD60_MEDIC_DONE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
-    { SUBCMD60_PB_BLAST_READY         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
-    { SUBCMD60_GAME_CLIENT_LEAVE      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
-    { SUBCMD60_LOAD_3B                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3B_bb },
-    { SUBCMD60_SET_POS_3E             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
-    { SUBCMD60_SET_POS_3F             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
+    //cmd_type 30 - 3F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_MEDIC_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
+    { SUBCMD60_MEDIC_DONE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
+    { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },
+    { SUBCMD60_PB_BLAST_READY             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
+    { SUBCMD60_GAME_CLIENT_LEAVE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3A_bb },
+    { SUBCMD60_LOAD_3B                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3B_bb },
+    { SUBCMD60_SET_POS_3E                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
+    { SUBCMD60_SET_POS_3F                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_3E_3F_bb },
 
-    //cmd_type 40 - 4F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_MOVE_SLOW              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
-    { SUBCMD60_MOVE_FAST              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
-    { SUBCMD60_ATTACK1                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
-    { SUBCMD60_ATTACK2                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
-    { SUBCMD60_ATTACK3                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
-    { SUBCMD60_OBJHIT_PHYS            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_46_bb },
-    { SUBCMD60_OBJHIT_TECH            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_47_bb },
-    { SUBCMD60_USED_TECH              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_48_bb },
-    { SUBCMD60_DEFENSE_DAMAGE         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4A_bb },
-    { SUBCMD60_TAKE_DAMAGE1           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
-    { SUBCMD60_TAKE_DAMAGE2           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
-    { SUBCMD60_DEATH_SYNC             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4D_bb },//
-    { SUBCMD60_UNKNOW_4E              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4E_bb },
-    { SUBCMD60_PLAYER_SAVED           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4F_bb },
+    //cmd_type 40 - 4F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_MOVE_SLOW                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
+    { SUBCMD60_MOVE_FAST                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_42_bb },
+    { SUBCMD60_ATTACK1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_ATTACK2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_ATTACK3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_44_45_bb },
+    { SUBCMD60_OBJHIT_PHYS                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_46_bb },
+    { SUBCMD60_OBJHIT_TECH                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_47_bb },
+    { SUBCMD60_USED_TECH                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_48_bb },
+    { SUBCMD60_SUBTRACT_PB_ENERGY         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_49_bb },
+    { SUBCMD60_DEFENSE_DAMAGE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4A_bb },
+    { SUBCMD60_TAKE_DAMAGE1               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
+    { SUBCMD60_TAKE_DAMAGE2               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4B_4C_bb },
+    { SUBCMD60_DEATH_SYNC                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4D_bb },
+    { SUBCMD60_UNKNOW_4E                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4E_bb },
+    { SUBCMD60_PLAYER_SAVED               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4F_bb },
 
-    //cmd_type 50 - 5F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SWITCH_REQ             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
-    { SUBCMD60_MENU_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_52_bb },
-    { SUBCMD60_UNKNOW_53              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
-    { SUBCMD60_WARP_55                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
-    { SUBCMD60_LOBBY_ACTION           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_58_bb },
+    //cmd_type 50 - 5F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SWITCH_REQ                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
+    { SUBCMD60_MENU_REQ                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_52_bb },
+    { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
+    { SUBCMD60_WARP_55                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
+    { SUBCMD60_LOBBY_ACTION               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_58_bb },
 
-    //cmd_type 60 - 6F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_LEVEL_UP_REQ           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
-    { SUBCMD60_DESTROY_GROUND_ITEM    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
-    { SUBCMD60_USE_STAR_ATOMIZER      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
-    { SUBCMD60_CREATE_ENEMY_SET       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
-    { SUBCMD60_CREATE_PIPE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
-    { SUBCMD60_SPAWN_NPC              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },
-    { SUBCMD60_UNKNOW_6A              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
+    //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
+    { SUBCMD60_DESTROY_GROUND_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
+    { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
+    { SUBCMD60_CREATE_ENEMY_SET           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
+    { SUBCMD60_CREATE_PIPE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
+    { SUBCMD60_SPAWN_NPC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },
+    { SUBCMD60_UNKNOW_6A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
 
-    //cmd_type 70 - 7F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_BURST_DONE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_72_bb },
-    { SUBCMD60_WORD_SELECT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_74_bb },
-    { SUBCMD60_SET_FLAG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_75_bb },
-    { SUBCMD60_KILL_MONSTER           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
-    { SUBCMD60_SYNC_REG               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
-    { SUBCMD60_GOGO_BALL              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
-    { SUBCMD60_SET_C_GAME_MODE        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
+    //cmd_type 70 - 7F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_BURST_DONE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_72_bb },
+    { SUBCMD60_WORD_SELECT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_74_bb },
+    { SUBCMD60_SET_FLAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_75_bb },
+    { SUBCMD60_KILL_MONSTER               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
+    { SUBCMD60_SYNC_REG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
+    { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
+    { SUBCMD60_SET_C_GAME_MODE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
 
-    //cmd_type 80 - 8F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_TRIGGER_TRAP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
-    { SUBCMD60_PLACE_TRAP             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
-    { SUBCMD60_ARROW_CHANGE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
-    { SUBCMD60_PLAYER_DIED            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
-    { SUBCMD60_CH_GAME_SELECT         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
-    { SUBCMD60_OVERRIDE_TECH_LEVEL    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
+    //cmd_type 80 - 8F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
+    { SUBCMD60_PLACE_TRAP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
+    { SUBCMD60_HIT_DESTRUCTIBLE_OBJECT    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_86_bb },
+    { SUBCMD60_ARROW_CHANGE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
+    { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
+    { SUBCMD60_CH_GAME_SELECT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
+    { SUBCMD60_OVERRIDE_TECH_LEVEL        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
 
-    //cmd_type 90 - 9F                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_TIMED_SWITCH_ACTIVATED , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
-    { SUBCMD60_CH_GAME_CANCEL         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
-    { SUBCMD60_CHANGE_STAT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
-    { SUBCMD60_UNKNOW_9C              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
-    { SUBCMD60_CH_GAME_FINISHED       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9D_bb },
+    //cmd_type 90 - 9F                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_TIMED_SWITCH_ACTIVATED     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
+    { SUBCMD60_CH_GAME_CANCEL             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
+    { SUBCMD60_CHANGE_STAT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
+    { SUBCMD60_UNKNOW_9C                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
+    { SUBCMD60_CH_GAME_FINISHED           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9D_bb },
 
-    //cmd_type A0 - AF                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SAVE_PLAYER_ACT        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
-    { SUBCMD60_CHAIR_CREATE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
-    { SUBCMD60_CHAIR_TURN             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    //cmd_type A0 - AF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SAVE_PLAYER_ACT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
+    { SUBCMD60_CHAIR_CREATE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    { SUBCMD60_CHAIR_TURN                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
-    //cmd_type B0 - BF                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_CHAIR_MOVE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    //cmd_type B0 - BF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_CHAIR_MOVE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
-    //cmd_type C0 - CF                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SELL_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
-    { SUBCMD60_DROP_SPLIT_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C3_bb },//
-    { SUBCMD60_SORT_INV               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },//
-    { SUBCMD60_MEDIC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
-    { SUBCMD60_STEAL_EXP              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },
-    { SUBCMD60_CHARGE_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
-    { SUBCMD60_EXP_REQ                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
-    { SUBCMD60_GUILD_EX_ITEM          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
+    //cmd_type C0 - CF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_SELL_ITEM                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
+    { SUBCMD60_DROP_SPLIT_ITEM            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C3_bb },
+    { SUBCMD60_SORT_INV                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },
+    { SUBCMD60_MEDIC                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
+    { SUBCMD60_STEAL_EXP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },
+    { SUBCMD60_CHARGE_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
+    { SUBCMD60_EXP_REQ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
+    { SUBCMD60_GUILD_EX_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
+    { SUBCMD60_START_BATTLE_MODE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CF_bb },
 
-    //cmd_type D0 - DF                  DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_GALLON_AREA            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
-    { SUBCMD60_EX_ITEM_MK             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_unimplement_bb },
+    //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
+    { SUBCMD60_EX_ITEM_MK                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_unimplement_bb },
 };
 
 /* 处理BB 0x60 数据包. */
