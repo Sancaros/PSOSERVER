@@ -465,7 +465,7 @@ int client_give_level(ship_client_t *dest, uint32_t level_req);
 int client_give_level_v2(ship_client_t *dest, uint32_t level_req);
 
 /* Check if a client's newly sent character data looks corrupted. */
-int client_check_character(ship_client_t *c, void *pl, uint8_t ver);
+int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver);
 
 /* Run a legit check on a given client. */
 int client_legit_check(ship_client_t *c, psocn_limits_t *limits);

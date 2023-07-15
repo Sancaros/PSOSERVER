@@ -2038,7 +2038,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
 
     /* Save our position, as we don't know in advance how many parsed enemies
        we will have... */
-    offs = _ftelli64(fp);
+    offs = (off_t)_ftelli64(fp);
     _fseeki64(fp, 4, SEEK_CUR);
     //CONFIG_LOG("敌人数据位置: %" PRIx64 "", (uint64_t)offs);
     index = 0;
@@ -2324,4 +2324,225 @@ done:
     l->flags = flags;
 
     return 0;
+}
+
+typedef struct AreaMapFileIndex {
+    const char* name_token;
+    uint32_t variation1_values[3];
+    uint32_t variation2_values[5];
+} AreaMapFileIndex;
+
+// These are indexed as [episode][is_solo][area], where episode is 0-2
+static const AreaMapFileIndex map_file_info[3][2][17] = {
+    {
+        // Episode 1
+        {
+            // Non-solo
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 1, 2, 3, 4}},
+            {"forest02", {0}, {0, 1, 2, 3, 4}},
+            {"cave01", {0, 1, 2}, {0, 1}},
+            {"cave02", {0, 1, 2}, {0, 1}},
+            {"cave03", {0, 1, 2}, {0, 1}},
+            {"machine01", {0, 1, 2}, {0, 1}},
+            {"machine02", {0, 1, 2}, {0, 1}},
+            {"ancient01", {0, 1, 2}, {0, 1}},
+            {"ancient02", {0, 1, 2}, {0, 1}},
+            {"ancient03", {0, 1, 2}, {0, 1}},
+            {"boss01", {0}, {0}},
+            {"boss02", {0}, {0}},
+            {"boss03", {0}, {0}},
+            {"boss04", {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // Solo
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 2, 4}},
+            {"forest02", {0}, {0, 3, 4}},
+            {"cave01", {0, 1, 2}, {0}},
+            {"cave02", {0, 1, 2}, {0}},
+            {"cave03", {0, 1, 2}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+    {
+        // Episode 2
+        {
+            // Non-solo
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0, 1}},
+            {"seabed02", {0, 1}, {0, 1}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+        {
+            // Solo
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0}},
+            {"seabed02", {0, 1}, {0}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+    },
+    {
+        // Episode 4
+        {
+            // Non-solo
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // Solo
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+};
+
+const AreaMapFileIndex(*map_file_info_for_episode(uint32_t ep))[2][17]{
+    switch (ep) {
+        case GAME_TYPE_EPISODE_1:
+            return &map_file_info[0];
+        case GAME_TYPE_EPISODE_2:
+            return &map_file_info[1];
+        case GAME_TYPE_EPISODE_4:
+            return &map_file_info[2];
+    }
+
+    ERR_LOG("无效章节");
+    // 处理无效参数的其他错误处理措施
+    return NULL;
+}
+
+void generate_variations(
+    uint32_t variations[0x20],
+    uint32_t episode,
+    bool is_solo) {
+    const AreaMapFileIndex(*ep_index)[2][17] = map_file_info_for_episode(episode);
+    for (size_t z = 0; z < 0x10; z++) {
+        const AreaMapFileIndex* a = NULL;
+        if (is_solo) {
+            a = &(*ep_index)[1][z];
+        }
+        if (!a || !a->name_token) {
+            a = &(*ep_index)[0][z];
+        }
+        if (!a->name_token) {
+            variations[z * 2 + 0] = 0;
+            variations[z * 2 + 1] = 0;
+        }
+        else {
+            variations[z * 2 + 0] = (ARRAY_SIZE(a->variation1_values) < 2) ? 0 : (rand() % ARRAY_SIZE(a->variation1_values));
+            variations[z * 2 + 1] = (ARRAY_SIZE(a->variation2_values) < 2) ? 0 : (rand() % ARRAY_SIZE(a->variation2_values));
+        }
+    }
+}
+
+char* map_filenames_for_variation(
+    uint32_t episode, int is_solo, uint8_t area, uint32_t var1, uint32_t var2) {
+    const AreaMapFileIndex(*ep_index)[2][17] = map_file_info_for_episode(episode);
+    const AreaMapFileIndex* a = NULL;
+    char* ret = NULL;
+
+    if (is_solo) {
+        a = &((*ep_index)[1][area]);
+    }
+    if (!a || !a->name_token) {
+        a = &((*ep_index)[0][area]);
+    }
+    if (!a->name_token) {
+        return NULL;
+    }
+
+    char filename[256];
+    sprintf(filename, "map_%s", a->name_token);
+
+    if (a->variation1_values) {
+        sprintf(filename + strlen(filename), "_%02X", a->variation1_values[var1]);
+    }
+    if (a->variation2_values) {
+        sprintf(filename + strlen(filename), "_%02X", a->variation2_values[var2]);
+    }
+
+    if (is_solo) {
+        char suffix1[10];
+        char suffix2[10];
+        sprintf(suffix1, "_offe.dat");
+        sprintf(suffix2, "e_s.dat");
+
+        ret = (char*)malloc(strlen(filename) + strlen(suffix1) + strlen(suffix2) + 1);
+
+        if (ret)
+            sprintf(ret, "%s%s,%s%s", filename, suffix1, filename, suffix2);
+    }
+    else {
+        char suffix[10];
+        sprintf(suffix, "e.dat");
+
+        ret = (char*)malloc(strlen(filename) + strlen(suffix) + 1);
+        if (ret)
+            sprintf(ret, "%s%s", filename, suffix);
+    }
+
+    return ret;
 }

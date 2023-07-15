@@ -1241,7 +1241,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     return 0;
 }
 
-int client_check_character(ship_client_t *c, void *pl, uint8_t ver) {
+int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver) {
 
     /*DBG_LOG("%s(%d): client_check_character for GC %" PRIu32
         " 版本 = %d", ship->cfg->name, c->cur_block->b,
@@ -1255,7 +1255,7 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver) {
                     /* XXXX */
                     return 0;
                 else
-                    return check_char_v1(c, (player_t*)pl);
+                    return check_char_v1(c, pl);
             }
             else
                 /* This shouldn't happen... */
@@ -1263,10 +1263,10 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver) {
 
         case CLIENT_VERSION_PC:
             if(c->version == CLIENT_VERSION_DCV2)
-                return check_char_v2(c, (player_t*)pl);
+                return check_char_v2(c, pl);
             else if(c->version == CLIENT_VERSION_PC) {
                 if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                    return check_char_pc(c, (player_t*)pl);
+                    return check_char_pc(c, pl);
                 else
                     /* XXXX */
                     return 0;
@@ -1277,9 +1277,9 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver) {
 
         case CLIENT_VERSION_GC:
             if(c->version == CLIENT_VERSION_GC)
-                return check_char_gc(c, (player_t*)pl);
+                return check_char_gc(c, pl);
             else if(c->version == CLIENT_VERSION_XBOX)
-                return check_char_xbox(c, (player_t*)pl);
+                return check_char_xbox(c, pl);
             else if(c->version == CLIENT_VERSION_EP3)
                 /* XXXX */
                 return 0;
@@ -1296,7 +1296,7 @@ int client_check_character(ship_client_t *c, void *pl, uint8_t ver) {
                 return -1;
 
         case CLIENT_VERSION_BB:
-            return check_char_bb(c, (player_t*)pl);
+            return check_char_bb(c, pl);
 
         default:
             ERR_LOG("角色数据检测: 未知版本 %d",

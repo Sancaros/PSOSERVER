@@ -196,7 +196,7 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
     }
 
     _fseeki64(fp, 0, SEEK_END);
-    sz = _ftelli64(fp);
+    sz = (off_t)_ftelli64(fp);
     _fseeki64(fp, 0, SEEK_SET);
 
     if(!(buf = (uint8_t *)malloc(sz))) {
@@ -301,7 +301,7 @@ static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
     char *cptr;
     uint32_t clen;
 
-    while(ptr < sz) {
+    while(ptr < (uint32_t)sz) {
         ck = (const dc_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
@@ -405,7 +405,7 @@ static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
     char *cptr;
     uint32_t clen;
 
-    while(ptr < sz) {
+    while(ptr < (uint32_t)sz) {
         ck = (const bb_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
@@ -463,7 +463,7 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
     }
 
     _fseeki64(fp, 0, SEEK_END);
-    sz = _ftelli64(fp);
+    sz = (off_t)_ftelli64(fp);
     _fseeki64(fp, 0, SEEK_SET);
 
     /* Make sure the file's size is sane. */
@@ -588,38 +588,6 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
             return -1;
         }
     }
-
-    //sprintf(mdir, "%s/.mapcache/v1", dir);
-    //if(_mkdir(mdir) && errno != EEXIST) {
-    //    QERR_LOG("创建地图缓存文件夹错误: %s",
-    //          strerror(errno));
-    //    free_safe(mdir);
-    //    return -1;
-    //}
-
-    //sprintf(mdir, "%s/.mapcache/v2", dir);
-    //if(_mkdir(mdir) && errno != EEXIST) {
-    //    QERR_LOG("创建地图缓存文件夹错误: %s",
-    //          strerror(errno));
-    //    free_safe(mdir);
-    //    return -1;
-    //}
-
-    //sprintf(mdir, "%s/.mapcache/gc", dir);
-    //if(_mkdir(mdir) && errno != EEXIST) {
-    //    QERR_LOG("创建地图缓存文件夹错误: %s",
-    //          strerror(errno));
-    //    free_safe(mdir);
-    //    return -1;
-    //}
-
-    //sprintf(mdir, "%s/.mapcache/bb", dir);
-    //if(_mkdir(mdir) && errno != EEXIST) {
-    //    QERR_LOG("创建地图缓存文件夹错误: %s",
-    //          strerror(errno));
-    //    free_safe(mdir);
-    //    return -1;
-    //}
 
     TAILQ_FOREACH(i, map, qentry) {
         /* Process it. */

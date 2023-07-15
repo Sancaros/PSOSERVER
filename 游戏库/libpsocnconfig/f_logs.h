@@ -162,6 +162,9 @@ extern int32_t script_log_console_show;
 /* 三目运算 对比 a b 的值 返回最小的值 相等则返回 b */
 #define MIN(a, b) (a < b ? a : b)
 
+/* 计算数组的元素数量 */
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
 #define PRINT_IP_FORMAT "%u.%u.%u.%u"
 #define PRINT_HIP(x)\
        ((x >> 0) & 0xFF),\
