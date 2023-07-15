@@ -177,6 +177,8 @@ static gm_opt_t gm_opts[] = {
 static int send_dc_lobby_arrows(lobby_t *l, ship_client_t *c);
 static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c);
 
+bool needrelese = false;
+
 /* Send a raw packet away. */
 static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
     ssize_t rv, total = 0;
@@ -186,9 +188,6 @@ static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
     if(!c->sendbuf_cur) {
         while(total < len) {
             rv = send(c->sock, sendbuf + total, len - total, 0);
-
-            if (sendbuf)
-                free_safe(sendbuf);
 
             //ERR_LOG("舰船数据端口 %d 发送数据 = %d 字节 版本识别 = %d", c->sock, rv, c->version);
 
@@ -231,6 +230,9 @@ static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
         memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
         c->sendbuf_cur += rv;
     }
+
+    if (sendbuf && needrelese)
+        free_safe(sendbuf);
 
     return 0;
 }
@@ -279,7 +281,10 @@ uint8_t *get_sendbuf() {
         }
 
         memset(sendbuf, 0, 65536);
-    }
+
+        needrelese = true;
+    }else
+        needrelese = false;
 
     return sendbuf;
 }

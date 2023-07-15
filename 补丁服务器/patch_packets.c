@@ -55,9 +55,6 @@ static int send_raw(patch_client_t* c, int len, uint8_t* sendbuf) {
         while (total < len) {
             rv = send(c->sock, sendbuf + total, len - total, 0);
 
-            if (sendbuf)
-                free_safe(sendbuf);
-
             //ERR_LOG("舰船数据端口 %d 发送数据 = %d 字节 版本识别 = %d", c->sock, rv, c->version);
 
             if (rv == SOCKET_ERROR && errno != EAGAIN) {
@@ -99,6 +96,9 @@ static int send_raw(patch_client_t* c, int len, uint8_t* sendbuf) {
         memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
         c->sendbuf_cur += rv;
     }
+
+    if (sendbuf)
+        free_safe(sendbuf);
 
     return 0;
 }

@@ -45,8 +45,6 @@ extern psocn_config_t *cfg;
 extern psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
-//uint8_t sendbuf[65536];
-
 static void ascii_to_utf16(const char *in, uint16_t *out, int maxlen) {
     while(*in && maxlen) {
         *out++ = LE16(*in++);
@@ -83,9 +81,6 @@ static int send_raw(login_client_t *c, int len, uint8_t* sendbuf) {
     if(!c->sendbuf_cur) {
         while(total < len) {
             rv = send(c->sock, sendbuf + total, len - total, 0);
-
-            if (sendbuf)
-                free_safe(sendbuf);
 
             if(rv == SOCKET_ERROR && errno != EAGAIN) {
                 return -1;
@@ -125,6 +120,9 @@ static int send_raw(login_client_t *c, int len, uint8_t* sendbuf) {
         memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
         c->sendbuf_cur += rv;
     }
+
+    if (sendbuf)
+        free_safe(sendbuf);
 
     return 0;
 }

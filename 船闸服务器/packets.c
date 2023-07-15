@@ -33,7 +33,29 @@
 #include "ship.h"
 #include <pso_pack.h>
 
-static uint8_t sendbuf[65536];
+//static uint8_t sendbuf[65536];
+void safeFree(void** ptr) {
+    if (ptr != NULL && *ptr != NULL) {
+        free(*ptr);
+        *ptr = NULL;
+    }
+}
+
+/* 获取当前线程的 sendbuf 线程特定数据. */
+uint8_t* get_sendbuf() {
+    uint8_t* sendbuf = (uint8_t*)malloc(65536);
+
+    /* If we haven't initialized the sendbuf pointer yet for this thread, then
+       we need to do that now. */
+    if (!sendbuf) {
+        perror("malloc");
+        return NULL;
+    }
+
+    memset(sendbuf, 0, 65536);
+
+    return sendbuf;
+}
 
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
     int ret;
@@ -43,7 +65,7 @@ static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 }
 
 /* Send a raw packet away. */
-static int send_raw(ship_t* c, int len) {
+static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
     ssize_t rv, total = 0;
     void* tmp;
 
@@ -94,11 +116,14 @@ static int send_raw(ship_t* c, int len) {
         c->sendbuf_cur += rv;
     }
 
+    if (sendbuf)
+        free_safe(sendbuf);
+
     return 0;
 }
 
 /* Encrypt a packet, and send it away. */
-static int send_crypt(ship_t* c, int len) {
+static int send_crypt(ship_t* c, int len, uint8_t* sendbuf) {
     /* Make sure its at least a header in length. */
     if (len < 8) {
         ERR_LOG(
@@ -106,11 +131,12 @@ static int send_crypt(ship_t* c, int len) {
         return -1;
     }
 
-    return send_raw(c, len);
+    return send_raw(c, len, sendbuf);
 }
 
 int forward_dreamcast(ship_t* c, dc_pkt_hdr_t* dc, uint32_t sender,
     uint32_t gc, uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int dc_len = LE16(dc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + dc_len;
@@ -138,11 +164,12 @@ int forward_dreamcast(ship_t* c, dc_pkt_hdr_t* dc, uint32_t sender,
     memcpy(pkt->pkt, dc, dc_len);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, full_len);
+    return send_crypt(c, full_len, sendbuf);
 }
 
 int forward_pc(ship_t* c, dc_pkt_hdr_t* pc, uint32_t sender, uint32_t gc,
     uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int pc_len = LE16(pc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + pc_len;
@@ -170,11 +197,12 @@ int forward_pc(ship_t* c, dc_pkt_hdr_t* pc, uint32_t sender, uint32_t gc,
     memcpy(pkt->pkt, pc, pc_len);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, full_len);
+    return send_crypt(c, full_len, sendbuf);
 }
 
 int forward_bb(ship_t* c, bb_pkt_hdr_t* bb, uint32_t sender, uint32_t gc,
     uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int bb_len = LE16(bb->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + bb_len;
@@ -202,11 +230,12 @@ int forward_bb(ship_t* c, bb_pkt_hdr_t* bb, uint32_t sender, uint32_t gc,
     memcpy(pkt->pkt, bb, bb_len);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, full_len);
+    return send_crypt(c, full_len, sendbuf);
 }
 
 /* Send a welcome packet to the given ship. */
 int send_welcome(ship_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_login_pkt* pkt = (shipgate_login_pkt*)sendbuf;
 
     /* Scrub the buffer */
@@ -230,10 +259,11 @@ int send_welcome(ship_t* c) {
     memcpy(pkt->gate_nonce, c->gate_nonce, 4);
 
     /* 将数据包发送出去 */
-    return send_raw(c, sizeof(shipgate_login_pkt));
+    return send_raw(c, sizeof(shipgate_login_pkt), sendbuf);
 }
 
 int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_ship_status6_pkt* pkt = (shipgate_ship_status6_pkt*)sendbuf;
 
     /* If the ship hasn't finished logging in yet, don't send this. */
@@ -267,11 +297,12 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
     pkt->privileges = htonl(o->privileges);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, sizeof(shipgate_ship_status6_pkt));
+    return send_crypt(c, sizeof(shipgate_ship_status6_pkt), sendbuf);
 }
 
 /* Send a ping packet to a client. */
 int send_ping(ship_t* c, int reply) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_ping_t* pkt = (shipgate_ping_t*)sendbuf;
 
     /* 填充数据头. */
@@ -288,12 +319,13 @@ int send_ping(ship_t* c, int reply) {
         pkt->hdr.flags = 0;
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_ping_t));
+    return send_crypt(c, sizeof(shipgate_ping_t), sendbuf);
 }
 
 /* Send the ship a character data restore. */
 int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
 
     /* 填充数据头. */
@@ -310,12 +342,13 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     memcpy(pkt->data, cdata, sz);
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_char_data_pkt) + sz);
+    return send_crypt(c, sizeof(shipgate_char_data_pkt) + sz, sendbuf);
 }
 
 /* Send a reply to a user login request. */
 int send_usrloginreply(ship_t* c, uint32_t gc, uint32_t block, int good,
     uint32_t p) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_usrlogin_reply_pkt* pkt = (shipgate_usrlogin_reply_pkt*)sendbuf;
     uint16_t flags = good ? SHDR_RESPONSE : SHDR_FAILURE;
 
@@ -340,11 +373,12 @@ int send_usrloginreply(ship_t* c, uint32_t gc, uint32_t block, int good,
     else
         pkt->priv = htonl(p);
 
-    return send_crypt(c, sizeof(shipgate_usrlogin_reply_pkt));
+    return send_crypt(c, sizeof(shipgate_usrlogin_reply_pkt), sendbuf);
 }
 
 /* Send a client/game update packet. */
 int send_counts(ship_t* c, uint32_t ship_id, uint16_t clients, uint16_t games) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_cnt_pkt* pkt = (shipgate_cnt_pkt*)sendbuf;
 
     /* Clear the packet first */
@@ -361,12 +395,13 @@ int send_counts(ship_t* c, uint32_t ship_id, uint16_t clients, uint16_t games) {
     pkt->games = htons(games);
     pkt->ship_id = htonl(ship_id);
 
-    return send_crypt(c, sizeof(shipgate_cnt_pkt));
+    return send_crypt(c, sizeof(shipgate_cnt_pkt), sendbuf);
 }
 
 /* Send an error packet to a ship */
 int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
     const uint8_t* data, int data_sz) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_error_pkt* pkt = (shipgate_error_pkt*)sendbuf;
     uint16_t sz;
 
@@ -388,7 +423,7 @@ int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
     pkt->error_code = htonl(err);
     memcpy(pkt->data, data, data_sz);
 
-    return send_crypt(c, sz);
+    return send_crypt(c, sz, sendbuf);
 }
 
 /* Send a packet to tell a client that a friend has logged on or off */
@@ -396,6 +431,7 @@ int send_friend_message(ship_t* c, int on, uint32_t dest_gc,
     uint32_t dest_block, uint32_t friend_gc,
     uint32_t friend_block, uint32_t friend_ship,
     const char* friend_name, const char* nickname) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_friend_login_4_pkt* pkt = (shipgate_friend_login_4_pkt*)sendbuf;
 
     /* Clear the packet */
@@ -422,12 +458,13 @@ int send_friend_message(ship_t* c, int on, uint32_t dest_gc,
         memset(pkt->friend_nick, 0, 32);
     }
 
-    return send_crypt(c, sizeof(shipgate_friend_login_4_pkt));
+    return send_crypt(c, sizeof(shipgate_friend_login_4_pkt), sendbuf);
 }
 
 /* Send a kick packet */
 int send_kick(ship_t* c, uint32_t requester, uint32_t user, uint32_t block,
     const char* reason) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_kick_pkt* pkt = (shipgate_kick_pkt*)sendbuf;
 
     /* Scrub the buffer */
@@ -448,12 +485,13 @@ int send_kick(ship_t* c, uint32_t requester, uint32_t user, uint32_t block,
         strncpy(pkt->reason, reason, 64);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, sizeof(shipgate_kick_pkt));
+    return send_crypt(c, sizeof(shipgate_kick_pkt), sendbuf);
 }
 
 /* Send a portion of a user's friendlist to the user */
 int send_friendlist(ship_t* c, uint32_t requester, uint32_t block,
     int count, const friendlist_data_t* entries) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_friend_list_pkt* pkt = (shipgate_friend_list_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_friend_list_pkt) +
         sizeof(friendlist_data_t) * count;
@@ -472,12 +510,13 @@ int send_friendlist(ship_t* c, uint32_t requester, uint32_t block,
     memcpy(pkt->entries, entries, sizeof(friendlist_data_t) * count);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 /* Send a global message packet to a ship */
 int send_global_msg(ship_t* c, uint32_t requester, const char* text,
     uint16_t text_len) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_global_msg_pkt* pkt = (shipgate_global_msg_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_global_msg_pkt) + text_len;
 
@@ -493,11 +532,12 @@ int send_global_msg(ship_t* c, uint32_t requester, const char* text,
     memcpy(pkt->text, text, len);
 
     /* 将数据包发送出去 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 /* Begin an options packet */
 void* user_options_begin(uint32_t guildcard, uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
 
     /* 填充数据头 */
@@ -519,6 +559,7 @@ void* user_options_begin(uint32_t guildcard, uint32_t block) {
 /* Append an option value to the options packet */
 void* user_options_append(void* p, uint32_t opt, uint32_t len,
     const uint8_t* data) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
     shipgate_user_opt_t* o = (shipgate_user_opt_t*)p;
     int padding = 8 - (len & 7);
@@ -543,6 +584,7 @@ void* user_options_append(void* p, uint32_t opt, uint32_t len,
 
 /* Finish off a user options packet and send it along */
 int send_user_options(ship_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
     uint16_t len = pkt->hdr.pkt_len;
 
@@ -555,12 +597,13 @@ int send_user_options(ship_t* c) {
     pkt->count = htonl(pkt->count);
 
     /* 加密并发送 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 /* 发送客户端 Blue Burst 选项数据 */
 int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
     memset(pkt, 0, sizeof(shipgate_bb_opts_pkt));
@@ -581,7 +624,7 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
 
     /* 将数据包发送出去 */
-    return send_crypt(c, sizeof(shipgate_bb_opts_pkt));
+    return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);
 }
 
 /* Send a system-generated simple mail message. */
@@ -620,6 +663,7 @@ int send_simple_mail(ship_t* c, uint32_t gc, uint32_t block, uint32_t sender,
 /* Send a chunk of scripting code to a ship. */
 int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
     uint8_t type, uint32_t file_len, uint32_t crc) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     FILE* fp;
 
@@ -661,13 +705,14 @@ int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
 
         fclose(fp);
         /* 加密并发送 */
-        return send_crypt(c, file_len + sizeof(shipgate_schunk_pkt));
+        return send_crypt(c, file_len + sizeof(shipgate_schunk_pkt), sendbuf);
     }
 }
 
 /* Send a packet to check if a particular script is in its current form on a
    ship. */
 int send_script_check(ship_t* c, ship_script_t* scr) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     uint8_t type = scr->module ? SCHUNK_TYPE_MODULE : SCHUNK_TYPE_SCRIPT;
 
@@ -688,11 +733,12 @@ int send_script_check(ship_t* c, ship_script_t* scr) {
         pkt->action = htonl(scr->event);
 
     /* 加密并发送 */
-    return send_crypt(c, sizeof(shipgate_schunk_pkt));
+    return send_crypt(c, sizeof(shipgate_schunk_pkt), sendbuf);
 }
 
 /* Send a packet to send a script to the a ship. */
 int send_script(ship_t* c, ship_script_t* scr) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     FILE* fp;
     uint16_t pkt_len;
@@ -738,12 +784,13 @@ int send_script(ship_t* c, ship_script_t* scr) {
 
         fclose(fp);
         /* 加密并发送 */
-        return send_crypt(c, pkt_len);
+        return send_crypt(c, pkt_len, sendbuf);
     }
 
 }
 
 int send_sset(ship_t* c, uint32_t action, ship_script_t* scr) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_sset_pkt* pkt = (shipgate_sset_pkt*)sendbuf;
 
     /* Don't try to send these to a ship that won't know what to do with them */
@@ -764,12 +811,13 @@ int send_sset(ship_t* c, uint32_t action, ship_script_t* scr) {
         strncpy(pkt->filename, scr->remote_fn, 32);
 
     /* 加密并发送 */
-    return send_crypt(c, sizeof(shipgate_sset_pkt));
+    return send_crypt(c, sizeof(shipgate_sset_pkt), sendbuf);
 }
 
 /* Send a script data packet */
 int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
     const uint8_t* data, uint32_t len) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_sdata_pkt* pkt = (shipgate_sdata_pkt*)sendbuf;
     uint16_t pkt_len;
 
@@ -798,12 +846,13 @@ int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
     memcpy(pkt->data, data, len);
 
     /* 加密并发送. */
-    return send_crypt(c, pkt_len);
+    return send_crypt(c, pkt_len, sendbuf);
 }
 
 /* Send a quest flag response */
 int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
     uint32_t fid, uint32_t qid, uint32_t value, uint32_t ctl) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_qflag_pkt* pkt = (shipgate_qflag_pkt*)sendbuf;
 
     /* Don't try to send these to a ship that won't know what to do with them */
@@ -823,11 +872,12 @@ int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
     pkt->value = htonl(value);
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_qflag_pkt));
+    return send_crypt(c, sizeof(shipgate_qflag_pkt), sendbuf);
 }
 
 /* Send a simple ship control request */
 int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_shipctl_pkt* pkt = (shipgate_shipctl_pkt*)sendbuf;
 
     /* This packet doesn't exist until protocol 19. */
@@ -843,11 +893,12 @@ int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
     pkt->acc = htonl(acc);
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_shipctl_pkt));
+    return send_crypt(c, sizeof(shipgate_shipctl_pkt), sendbuf);
 }
 
 /* Send a shutdown/restart request */
 int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_sctl_shutdown_pkt* pkt = (shipgate_sctl_shutdown_pkt*)sendbuf;
 
     /* This packet doesn't exist until protocol 19. */
@@ -868,11 +919,12 @@ int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
     pkt->when = htonl(when);
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_sctl_shutdown_pkt));
+    return send_crypt(c, sizeof(shipgate_sctl_shutdown_pkt), sendbuf);
 }
 
 /* Begin an blocklist packet */
 void user_blocklist_begin(uint32_t guildcard, uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
 
     /* 填充数据头 */
@@ -890,6 +942,7 @@ void user_blocklist_begin(uint32_t guildcard, uint32_t block) {
 
 /* Append a value to the blocklist packet */
 void user_blocklist_append(uint32_t gc, uint32_t flags) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
     uint32_t i = pkt->count;
 
@@ -904,6 +957,7 @@ void user_blocklist_append(uint32_t gc, uint32_t flags) {
 
 /* Finish off a user blocklist packet and send it along */
 int send_user_blocklist(ship_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
     uint16_t len = pkt->hdr.pkt_len;
 
@@ -921,11 +975,12 @@ int send_user_blocklist(ship_t* c) {
     pkt->count = htonl(pkt->count);
 
     /* 加密并发送 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 int send_user_error(ship_t* c, uint16_t pkt_type, uint32_t err_code,
     uint32_t gc, uint32_t block, const char* message) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_user_err_pkt* pkt = (shipgate_user_err_pkt*)sendbuf;
     uint16_t len = (uint16_t)(message ? strlen(message) : 0);
     uint16_t fl = err_code != ERR_NO_ERROR ? SHDR_FAILURE : 0;
@@ -952,10 +1007,11 @@ int send_user_error(ship_t* c, uint16_t pkt_type, uint32_t err_code,
     else
         strcpy(pkt->message, "NO MSG");
 
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_max_tech_lvl_bb_pkt* pkt = (shipgate_max_tech_lvl_bb_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_max_tech_lvl_bb_pkt);
 
@@ -969,7 +1025,7 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(pkt->data, data, sizeof(pkt->data));
+    memcpy(pkt->data, data, sizeof(bb_max_tech_level_t) * MAX_TECH_LEVEL);
 
 #ifdef DEBUG
     DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
@@ -977,10 +1033,11 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
 #endif // DEBUG
 
     /* 加密并发送 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_pl_level_bb_pkt* pkt = (shipgate_pl_level_bb_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_pl_level_bb_pkt);
 
@@ -994,12 +1051,12 @@ int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data) {
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(&pkt->data, data, sizeof(pkt->data));
+    memcpy(&pkt->data, data, sizeof(bb_level_table_t));
 
     //DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
 
     /* 加密并发送 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 int send_player_max_tech_level_table_bb(ship_t* c) {
@@ -1046,6 +1103,7 @@ int send_player_level_table_bb(ship_t* c) {
 }
 
 int send_def_mode_char_data_bb(ship_t* c, psocn_bb_mode_char_t* data) {
+    uint8_t* sendbuf = get_sendbuf();
     shipgate_default_mode_char_data_bb_pkt* pkt = (shipgate_default_mode_char_data_bb_pkt*)sendbuf;
     uint16_t len = sizeof(psocn_bb_mode_char_t) + sizeof(shipgate_hdr_t);
 
@@ -1062,7 +1120,7 @@ int send_def_mode_char_data_bb(ship_t* c, psocn_bb_mode_char_t* data) {
     memcpy(&pkt->data, data, sizeof(psocn_bb_mode_char_t));
 
     /* 加密并发送 */
-    return send_crypt(c, len);
+    return send_crypt(c, len, sendbuf);
 }
 
 int send_default_mode_char_data_bb(ship_t* c) {

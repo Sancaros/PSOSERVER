@@ -1942,7 +1942,7 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
 
     while(ptr < len) {
 
-        DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
+        //DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
 
         switch(LE32(hdr->obj_type)) {
             case 0x01:                      /* Objects */
