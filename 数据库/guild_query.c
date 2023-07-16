@@ -142,8 +142,8 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
         result = psocn_db_result_store(&conn);
         if (psocn_db_result_rows(result)) {
             row = psocn_db_result_fetch(result);
-            guild_id = (uint32_t)strtoul(row[0], NULL, 0);
-            guild_priv_level = (uint32_t)strtoul(row[1], NULL, 0);
+            guild_id = (uint32_t)strtoul(row[0], NULL, 10);
+            guild_priv_level = (uint32_t)strtoul(row[1], NULL, 10);
             psocn_db_result_free(result);
         }
         else {
@@ -180,10 +180,10 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 /* 查找是否有数据 */
                 if (psocn_db_result_rows(result)) {
                     row = psocn_db_result_fetch(result);
-                    guild.data.guild_owner_gc = (uint32_t)strtoul(row[0], NULL, 0);
-                    guild.data.guild_id = (uint32_t)strtoul(row[1], NULL, 0);
-                    guild.data.guild_points_rank = (uint32_t)strtoul(row[2], NULL, 0);
-                    guild.data.guild_points_rest = (uint32_t)strtoul(row[3], NULL, 0);
+                    guild.data.guild_owner_gc = (uint32_t)strtoul(row[0], NULL, 10);
+                    guild.data.guild_id = (uint32_t)strtoul(row[1], NULL, 10);
+                    guild.data.guild_points_rank = (uint32_t)strtoul(row[2], NULL, 10);
+                    guild.data.guild_points_rest = (uint32_t)strtoul(row[3], NULL, 10);
                     guild.data.guild_priv_level = guild_priv_level;
                     /* 赋予名称颜色代码 */
                     guild.data.guild_name[0] = 0x0009;
@@ -191,17 +191,17 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                     memcpy(&guild.data.guild_name, row[4], sizeof(guild.data.guild_name) - 4);
 
                     /* TODO 公会等级未实现 */
-                    guild.data.guild_rank = (uint32_t)strtoul(row[5], NULL, 0);
+                    guild.data.guild_rank = (uint32_t)strtoul(row[5], NULL, 10);
 
                     memcpy(&guild.data.guild_flag, row[6], sizeof(guild.data.guild_flag));
-                    guild.data.guild_reward[0] = (uint8_t)strtoul(row[7], NULL, 0);
-                    guild.data.guild_reward[1] = (uint8_t)strtoul(row[8], NULL, 0);
-                    guild.data.guild_reward[2] = (uint8_t)strtoul(row[9], NULL, 0);
-                    guild.data.guild_reward[3] = (uint8_t)strtoul(row[10], NULL, 0);
-                    guild.data.guild_reward[4] = (uint8_t)strtoul(row[11], NULL, 0);
-                    guild.data.guild_reward[5] = (uint8_t)strtoul(row[12], NULL, 0);
-                    guild.data.guild_reward[6] = (uint8_t)strtoul(row[13], NULL, 0);
-                    guild.data.guild_reward[7] = (uint8_t)strtoul(row[14], NULL, 0);
+                    guild.data.guild_reward[0] = (uint8_t)strtoul(row[7], NULL, 10);
+                    guild.data.guild_reward[1] = (uint8_t)strtoul(row[8], NULL, 10);
+                    guild.data.guild_reward[2] = (uint8_t)strtoul(row[9], NULL, 10);
+                    guild.data.guild_reward[3] = (uint8_t)strtoul(row[10], NULL, 10);
+                    guild.data.guild_reward[4] = (uint8_t)strtoul(row[11], NULL, 10);
+                    guild.data.guild_reward[5] = (uint8_t)strtoul(row[12], NULL, 10);
+                    guild.data.guild_reward[6] = (uint8_t)strtoul(row[13], NULL, 10);
+                    guild.data.guild_reward[7] = (uint8_t)strtoul(row[14], NULL, 10);
 
                 }
 

@@ -87,7 +87,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             row = psocn_db_result_fetch(result);
             memcpy(&opts.key_cfg.key_config, row[0], sizeof(opts.key_cfg.key_config));
             memcpy(&opts.key_cfg.joystick_config, row[1], sizeof(opts.key_cfg.joystick_config));
-            opts.option_flags = (uint32_t)strtoul(row[2], NULL, 0);
+            opts.option_flags = (uint32_t)strtoul(row[2], NULL, 10);
             memcpy(&opts.shortcuts, row[3], PSOCN_STLENGTH_BB_DB_SHORTCUTS);
             memcpy(&opts.symbol_chats, row[4], PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
             memcpy(&opts.guild_name, row[5], sizeof(opts.guild_name));

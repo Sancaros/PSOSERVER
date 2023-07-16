@@ -245,7 +245,7 @@ typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                                               // 玩家数据表               OK
     char guildcard_string[16];                                               // not saved
     uint32_t option_flags;                                                   // account
-    uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          TODO
+    uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          OK
     psocn_bank_t bank;                                                       // 玩家银行数据表           OK
     psocn_bb_guildcard_t gc_data;                                            // 玩家GC数据表部分         OK
     uint32_t unk2;                                                           // not saved
@@ -253,7 +253,7 @@ typedef struct psocn_bb_full_char {
     uint8_t shortcuts[0x0A40];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];
-    battle_records_t b_records;
+    battle_records_t b_records;                                              // 玩家对战数据表           TODO
     uint8_t unk3[4];
     bb_challenge_records_t c_records;                                        // 玩家挑战数据表           OK
     uint8_t tech_menu[PSOCN_STLENGTH_BB_DB_TECH_MENU];                       // 玩家法术栏数据表         OK

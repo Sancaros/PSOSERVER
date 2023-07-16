@@ -129,7 +129,7 @@ int psocn_db_open(psocn_dbconfig_t* dbcfg, psocn_dbconn_t* conn) {
         return -1;
     }
 
-    uint32_t show_set = (uint32_t)strtoul(dbcfg->show_setting, NULL, 0);
+    uint32_t show_set = (uint32_t)strtoul(dbcfg->show_setting, NULL, 10);
 
     /* ÉèÖÃÊı¾İ¿â */
     if (show_set) {

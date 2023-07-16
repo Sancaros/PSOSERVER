@@ -270,7 +270,7 @@ static int handle_checksum(xmlNode* n, patch_file_entry_t* f) {
     /* Grab the long description from the node */
     if ((csum = xmlNodeListGetString(n->doc, n->children, 1))) {
         errno = 0;
-        f->checksum = (uint32_t)strtoul((char*)csum, NULL, 0);
+        f->checksum = (uint32_t)strtoul((char*)csum, NULL, 16);
 
         if (errno) {
             ERR_LOG("在线修补程序的校验无效 行 %hu: %s",
@@ -316,7 +316,7 @@ static int handle_entry(xmlNode* n, patch_file_entry_t* ent, int cksum) {
         }
 
         errno = 0;
-        ent->client_checksum = (uint32_t)strtoul((char*)checksum, NULL, 0);
+        ent->client_checksum = (uint32_t)strtoul((char*)checksum, NULL, 16);
 
         if (errno) {
             ERR_LOG("在线修补程序的校验和无效 行 %hu: %s",

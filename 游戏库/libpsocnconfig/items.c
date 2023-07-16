@@ -703,7 +703,7 @@ static int handle_item(xmlNode *n, psocn_limits_t *l, int swap) {
 
     /* Attempt to parse out the code from the string */
     errno = 0;
-    code = (uint32_t)strtoul((char *)code_str, NULL, 0);
+    code = (uint32_t)strtoul((char *)code_str, NULL, 16);
     if(errno) {
         ERR_LOG("Invalid item code: %s", (char *)code_str);
         xmlFree(code_str);

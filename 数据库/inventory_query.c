@@ -253,10 +253,10 @@ static int db_get_char_inv_param(uint32_t gc, uint8_t slot, inventory_t* inv, in
         return -3;
     }
 
-    inv->item_count = (uint8_t)strtoul(row[0], NULL, 0);
-    inv->hpmats_used = (uint8_t)strtoul(row[1], NULL, 0);
-    inv->tpmats_used = (uint8_t)strtoul(row[2], NULL, 0);
-    inv->language = (uint8_t)strtoul(row[3], NULL, 0);
+    inv->item_count = (uint8_t)strtoul(row[0], NULL, 10);
+    inv->hpmats_used = (uint8_t)strtoul(row[1], NULL, 10);
+    inv->tpmats_used = (uint8_t)strtoul(row[2], NULL, 10);
+    inv->language = (uint8_t)strtoul(row[3], NULL, 10);
 
     psocn_db_result_free(result);
 
@@ -305,48 +305,48 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
 
     /* 获取物品的二进制数据 */
     int i = 4;
-    item->present = (uint16_t)strtoul(row[i], &endptr, 0);
+    item->present = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->tech = (uint16_t)strtoul(row[i], &endptr, 0);
+    item->tech = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->flags = (uint32_t)strtoul(row[i], &endptr, 0);
-    i++;
-
-    item->data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 0);
-    i++;
-    item->data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 0);
+    item->flags = (uint32_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    item->data.item_id = (uint32_t)strtoul(row[i], &endptr, 0);
+    item->data.datab[0] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[1] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[3] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[4] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[5] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[6] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[7] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[8] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[9] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[10] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.datab[11] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
 
-    item->data.data2b[0] = (uint8_t)strtoul(row[i], &endptr, 0);
+    item->data.item_id = (uint32_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2b[1] = (uint8_t)strtoul(row[i], &endptr, 0);
+
+    item->data.data2b[0] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2b[2] = (uint8_t)strtoul(row[i], &endptr, 0);
+    item->data.data2b[1] = (uint8_t)strtoul(row[i], &endptr, 16);
     i++;
-    item->data.data2b[3] = (uint8_t)strtoul(row[i], &endptr, 0);
+    item->data.data2b[2] = (uint8_t)strtoul(row[i], &endptr, 16);
+    i++;
+    item->data.data2b[3] = (uint8_t)strtoul(row[i], &endptr, 16);
 
     if (*endptr != '\0') {
         SQLERR_LOG("获取的物品数据 索引 %d 字符串读取有误", item_index);
@@ -393,29 +393,29 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 
     while ((row = psocn_db_result_fetch(result)) != NULL) {
         if ((uint16_t)strtoul(row[4], &endptr, 16) != 0) {
-            inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 0);
-            inv->iitems[k].tech = (uint16_t)strtoul(row[5], &endptr, 0);
-            inv->iitems[k].flags = (uint32_t)strtoul(row[6], &endptr, 0);
+            inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 16);
+            inv->iitems[k].tech = (uint16_t)strtoul(row[5], &endptr, 16);
+            inv->iitems[k].flags = (uint32_t)strtoul(row[6], &endptr, 16);
 
-            inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[7], &endptr, 0);
-            inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[8], &endptr, 0);
-            inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[9], &endptr, 0);
-            inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[10], &endptr, 0);
-            inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[11], &endptr, 0);
-            inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[12], &endptr, 0);
-            inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[13], &endptr, 0);
-            inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[14], &endptr, 0);
-            inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[15], &endptr, 0);
-            inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[16], &endptr, 0);
-            inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[17], &endptr, 0);
-            inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[18], &endptr, 0);
+            inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[7], &endptr, 16);
+            inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[8], &endptr, 16);
+            inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[9], &endptr, 16);
+            inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[10], &endptr, 16);
+            inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[11], &endptr, 16);
+            inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[12], &endptr, 16);
+            inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[13], &endptr, 16);
+            inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[14], &endptr, 16);
+            inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[15], &endptr, 16);
+            inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[16], &endptr, 16);
+            inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[17], &endptr, 16);
+            inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[18], &endptr, 16);
 
-            inv->iitems[k].data.item_id = (uint32_t)strtoul(row[19], &endptr, 0);
+            inv->iitems[k].data.item_id = (uint32_t)strtoul(row[19], &endptr, 16);
 
-            inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[20], &endptr, 0);
-            inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[21], &endptr, 0);
-            inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[22], &endptr, 0);
-            inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[23], &endptr, 0);
+            inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[20], &endptr, 16);
+            inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[21], &endptr, 16);
+            inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[22], &endptr, 16);
+            inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[23], &endptr, 16);
 
             k++;
         }else
@@ -578,7 +578,7 @@ uint8_t db_get_char_inv_item_count(uint32_t gc, uint8_t slot) {
         return 0;
     }
 
-    item_count = (uint8_t)strtoul(row[0], NULL, 0);
+    item_count = (uint8_t)strtoul(row[0], NULL, 10);
 
     psocn_db_result_free(result);
 
@@ -617,7 +617,7 @@ uint32_t db_get_char_inv_checkum(uint32_t gc, uint8_t slot) {
         return -3;
     }
 
-    inv_crc32 = (uint32_t)strtoul(row[0], NULL, 0);
+    inv_crc32 = (uint32_t)strtoul(row[0], NULL, 10);
 
     psocn_db_result_free(result);
 

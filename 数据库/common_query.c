@@ -71,7 +71,7 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
 
             memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
             bb_max_tech_level[i].tech_name[11] = 0x00;
-            bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 0);
+            bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 10);
             //DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
 
             psocn_db_result_free(result);
@@ -126,14 +126,14 @@ int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
             return -1;
         }
 
-        bb_char_stats->start_stats[i].atp = (uint16_t)strtoul(row[4], NULL, 0);
-        bb_char_stats->start_stats[i].mst = (uint16_t)strtoul(row[5], NULL, 0);
-        bb_char_stats->start_stats[i].evp = (uint16_t)strtoul(row[6], NULL, 0);
-        bb_char_stats->start_stats[i].hp = (uint16_t)strtoul(row[7], NULL, 0);
-        bb_char_stats->start_stats[i].dfp = (uint16_t)strtoul(row[8], NULL, 0);
-        bb_char_stats->start_stats[i].ata = (uint16_t)strtoul(row[9], NULL, 0);
-        bb_char_stats->start_stats[i].lck = (uint16_t)strtoul(row[10], NULL, 0);
-        bb_char_stats->start_stats_index[i] = (uint32_t)strtoul(row[3], NULL, 0);
+        bb_char_stats->start_stats[i].atp = (uint16_t)strtoul(row[4], NULL, 10);
+        bb_char_stats->start_stats[i].mst = (uint16_t)strtoul(row[5], NULL, 10);
+        bb_char_stats->start_stats[i].evp = (uint16_t)strtoul(row[6], NULL, 10);
+        bb_char_stats->start_stats[i].hp = (uint16_t)strtoul(row[7], NULL, 10);
+        bb_char_stats->start_stats[i].dfp = (uint16_t)strtoul(row[8], NULL, 10);
+        bb_char_stats->start_stats[i].ata = (uint16_t)strtoul(row[9], NULL, 10);
+        bb_char_stats->start_stats[i].lck = (uint16_t)strtoul(row[10], NULL, 10);
+        bb_char_stats->start_stats_index[i] = (uint32_t)strtoul(row[3], NULL, 10);
         //DBG_LOG("ATP数值 %d", bb_char_stats->start_stats[i].atp);
 
         psocn_db_next_result_free(&conn, result);
@@ -177,15 +177,15 @@ int read_player_level_table_bb(bb_level_table_t* bb_char_stats) {
                 return -1;
             }
 
-            bb_char_stats->levels[j][i].atp = (uint8_t)strtoul(row[3], NULL, 0);
-            bb_char_stats->levels[j][i].mst = (uint8_t)strtoul(row[4], NULL, 0);
-            bb_char_stats->levels[j][i].evp = (uint8_t)strtoul(row[5], NULL, 0);
-            bb_char_stats->levels[j][i].hp = (uint8_t)strtoul(row[6], NULL, 0);
-            bb_char_stats->levels[j][i].dfp = (uint8_t)strtoul(row[7], NULL, 0);
-            bb_char_stats->levels[j][i].ata = (uint8_t)strtoul(row[8], NULL, 0);
-            bb_char_stats->levels[j][i].lck = (uint8_t)strtoul(row[9], NULL, 0);
-            bb_char_stats->levels[j][i].tp = (uint8_t)strtoul(row[10], NULL, 0);
-            bb_char_stats->levels[j][i].exp = (uint32_t)strtoul(row[2], NULL, 0);
+            bb_char_stats->levels[j][i].atp = (uint8_t)strtoul(row[3], NULL, 10);
+            bb_char_stats->levels[j][i].mst = (uint8_t)strtoul(row[4], NULL, 10);
+            bb_char_stats->levels[j][i].evp = (uint8_t)strtoul(row[5], NULL, 10);
+            bb_char_stats->levels[j][i].hp = (uint8_t)strtoul(row[6], NULL, 10);
+            bb_char_stats->levels[j][i].dfp = (uint8_t)strtoul(row[7], NULL, 10);
+            bb_char_stats->levels[j][i].ata = (uint8_t)strtoul(row[8], NULL, 10);
+            bb_char_stats->levels[j][i].lck = (uint8_t)strtoul(row[9], NULL, 10);
+            bb_char_stats->levels[j][i].tp = (uint8_t)strtoul(row[10], NULL, 10);
+            bb_char_stats->levels[j][i].exp = (uint32_t)strtoul(row[2], NULL, 10);
 
             //DBG_LOG("职业 %d 等级 %d 经验数值 %d", j, i, bb_char_stats->levels[j][i].exp);
 
@@ -611,7 +611,7 @@ psocn_bb_db_char_t *db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
         goto err;
     }
 
-    data_size = (uint32_t)strtoul(row[1], NULL, 0);
+    data_size = (uint32_t)strtoul(row[1], NULL, 10);
 
     char_data = db_uncompress_char_data(len, row, data_size);
 
@@ -806,7 +806,7 @@ int db_backup_bb_char_data(uint32_t gc, uint8_t slot) {
                 return 0;
             }
 
-            data_size = (uint32_t)strtoul(row[1], NULL, 0);
+            data_size = (uint32_t)strtoul(row[1], NULL, 10);
 
             char_data = db_uncompress_char_data(len, row, data_size);
 
