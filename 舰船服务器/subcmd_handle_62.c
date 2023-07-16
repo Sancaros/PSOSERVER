@@ -1405,14 +1405,16 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     ii.data = src->game_data->shop_items[pkt->shop_item_index];
 
     /* 如果是堆叠物品 */
-    if (pkt->num_bought <= max_stack_size(&ii.data)) {
-        ii.data.datab[5] = pkt->num_bought;
-    }
-    else {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
-            src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return 0;
+    if (is_stackable(&ii.data)) {
+        if (pkt->num_bought <= max_stack_size(&ii.data)) {
+            ii.data.datab[5] = pkt->num_bought;
+        }
+        else {
+            ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
+                src->guildcard);
+            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            return -1;
+        }
     }
 
     ii.data.item_id = pkt->new_inv_item_id;

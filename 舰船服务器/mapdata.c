@@ -2101,6 +2101,13 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     game_objs_t *newob;
     ssize_t amt;
 
+    /* Cowardly refuse to do this on challenge or battle mode. */
+    if (l->challenge || l->battle) {
+
+        //DBG_LOG("不处理挑战模式对战模式的怪物");
+        return 0;
+    }
+
     fn = (char*)malloc(sizeof(dlen) + 40);
 
     /* Unset this, in case something screws up. */

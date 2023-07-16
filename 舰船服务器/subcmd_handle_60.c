@@ -1074,6 +1074,7 @@ int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     if (err) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据! 错误码 %d",
             src->guildcard, err);
+        return -1;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2551,6 +2552,10 @@ int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
     }
 
+    DBG_LOG("GC %u", src->guildcard);
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
     if (l->battle)
         handle_bb_battle_mode(src, pkt);
     else if (l->challenge)
@@ -2576,6 +2581,11 @@ int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
+
+    DBG_LOG("GC %u", src->guildcard);
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
 //[2023年07月12日 20:08:18:088] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
 //[2023年07月12日 20:08:18:091] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
 //( 00000000 )   20 00 60 00 00 00 00 00   7D 06 00 00 04 00 FF FF   .`.....}.....
@@ -3125,7 +3135,9 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
-            sorted.iitems[x].data.item_id = 0xFFFFFFFF;
+            clear_iitem(&sorted.iitems[x]);
+            //sorted.iitems[x].present = LE16(0xFF00);
+            //sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
             int index = find_iitem_index(&player->inv, pkt->item_ids[x]);
@@ -3605,6 +3617,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SYNC_REG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
     { SUBCMD60_SET_C_GAME_MODE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
+    { SUBCMD60_SET_BATTLE_MODE_DATA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7D_bb },
 
     //cmd_type 80 - 8F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },

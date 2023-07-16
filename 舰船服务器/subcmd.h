@@ -1972,10 +1972,11 @@ static int sdasd = sizeof(subcmd_bb_grave_t);
 typedef struct subcmd_bb_set_battle_mode_data {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
-    uint8_t unknown_a1; // Must be < 7; used in jump table
+    uint8_t unknown_a1;        // Must be < 7; used in jump table
     uint8_t unused[3];
-    uint32_t unknown_a2;
-    uint32_t unknown_a3[3];
+    uint32_t target_client_id;  //数据包发送对象
+    uint32_t unknown_a2;        //0x00000000
+    uint32_t unknown_a3[2];
 } PACKED subcmd_bb_set_battle_mode_data_t;
 
 // 0x7E: Unknown (不支持 Episode 3)

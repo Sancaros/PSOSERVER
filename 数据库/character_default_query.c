@@ -163,7 +163,7 @@ int db_get_character_mode(psocn_bb_mode_char_t* data) {
     int i = 0;
 
     while ((row = psocn_db_result_fetch(result)) != NULL) {
-        memcpy((char*)&data->char_class[i], row[0], PSOCN_STLENGTH_BB_CHAR2);
+        memcpy((char*)&data->cdata[i], row[0], PSOCN_STLENGTH_BB_CHAR2);
 
         i++;
         if ( i > 11) {

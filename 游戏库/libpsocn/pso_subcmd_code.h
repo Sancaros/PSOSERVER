@@ -227,8 +227,8 @@
 #define SUBCMD60_GOGO_BALL                     0x79
 #define SUBCMD60_UNKNOW_7A                     0x7A
 #define SUBCMD60_UNKNOW_7B                     0x7B
-#define SUBCMD60_SET_C_GAME_MODE                     0x7C
-#define SUBCMD60_UNKNOW_7D                     0x7D
+#define SUBCMD60_SET_C_GAME_MODE               0x7C
+#define SUBCMD60_SET_BATTLE_MODE_DATA                     0x7D
 #define SUBCMD60_UNKNOW_7E                     0x7E
 #define SUBCMD60_UNKNOW_7F                     0x7F
 #define SUBCMD60_TRIGGER_TRAP                  0x80

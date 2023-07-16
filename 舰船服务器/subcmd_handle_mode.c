@@ -3122,7 +3122,8 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
-            sorted.iitems[x].data.item_id = 0xFFFFFFFF;
+            clear_iitem(&sorted.iitems[x]);
+            //sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
             int index = find_iitem_index(&player->inv, pkt->item_ids[x]);

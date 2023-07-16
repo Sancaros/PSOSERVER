@@ -1511,18 +1511,17 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 	if (!l || l->type != LOBBY_TYPE_GAME)
 		return -1;
 
-	uint32_t i, mt_index;
+	uint32_t i, mt_index = 0;
 	int32_t evolution_class = 0;
 	magitem_t* mag = { 0 };
 	item_t* feed_item = { 0 };
 	uint16_t* ft;
 	int16_t mag_iq, mag_def, mag_pow, mag_dex, mag_mind;
-	psocn_bb_char_t* character = { 0 };
+
+	psocn_bb_char_t* character = &src->bb_pl->character;
 
 	if (src->mode)
 		character = &src->mode_pl->bb;
-	else
-		character = &src->bb_pl->character;
 
 	if (fed_item_id != EMPTY_STRING) {
 		i = find_iitem_index(&character->inv, fed_item_id);

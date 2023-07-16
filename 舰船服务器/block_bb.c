@@ -915,6 +915,8 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 
     /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
+    /* 初始化 模式角色数据 */
+    memcpy(&c->mode_pl->bb, &default_mode_char.cdata[c->pl->bb.character.dress_data.ch_class], PSOCN_STLENGTH_BB_CHAR2);
     c->infoboard = (char*)c->pl->bb.infoboard;
     c->records->bb = c->pl->bb.records;
     c->records->bb.challenge.title_color = 0x7C00;//TODO 这里需要一个判断 判断玩家头衔等级 并分配颜色
@@ -2549,8 +2551,8 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             /* 获取真实角色的职业 TODO 可以开发随机角色挑战模式 */
             uint8_t char_class = dest->bb_pl->character.dress_data.ch_class;
 
-            /* 初始化 角色数据 */
-            memcpy(&dest->mode_pl->bb, &default_mode_char.char_class[char_class], PSOCN_STLENGTH_BB_CHAR2);
+            /* 初始化 模式角色数据 */
+            memcpy(&dest->mode_pl->bb, &default_mode_char.cdata[char_class], PSOCN_STLENGTH_BB_CHAR2);
 
             /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
             //if (initialize_cmode_iitem(dest)) {

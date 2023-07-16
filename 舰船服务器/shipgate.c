@@ -2992,7 +2992,7 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_defa
     default_mode_char = pkt->data;
 
     for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
-        if (default_mode_char.char_class[i].dress_data.ch_class != i) {
+        if (default_mode_char.cdata[i].dress_data.ch_class != i) {
             ERR_LOG("舰船接收角色初始数据索引错误, 请检查函数错误");
             return -1;
         }

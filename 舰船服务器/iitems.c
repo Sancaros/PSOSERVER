@@ -168,7 +168,7 @@ void clear_after(item_t* this, size_t position, size_t count) {
 
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
-    iitem->present = LE16(0x00FF);
+    iitem->present = LE16(0xFF00);
     iitem->tech = 0;
     iitem->flags = 0;
     clear_item(&iitem->data);
@@ -341,9 +341,9 @@ size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id) {
     }
 
     ERR_LOG("未从银行中找到ID %u 物品", item_id);
-    for (x = 0; x < bank->item_count; x++) {
-        print_bitem_data(&bank->bitems[x], x, 5);
-    }
+    //for (x = 0; x < bank->item_count; x++) {
+    //    print_bitem_data(&bank->bitems[x], x, 5);
+    //}
 
     return -1;
 }
