@@ -487,9 +487,11 @@ static void* ship_thd(void* d) {
                     s->sg.sock = SOCKET_ERROR;
 
                     if (rv < -1) {
-                        ERR_LOG("%s: 与船闸连接出错1, 断开!",
+                        ERR_LOG("%s: 与船闸连接出错1, 尝试重新对接!",
                             s->cfg->name);
-                        s->run = 0;
+                        shipgate_connect(s, &s->sg);
+
+                        //s->run = 0;
                     }
                 }
             }
@@ -508,6 +510,7 @@ static void* ship_thd(void* d) {
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错2, 断开!",
                             s->cfg->name);
+                        shipgate_connect(s, &s->sg);
                     }
                 }
             }

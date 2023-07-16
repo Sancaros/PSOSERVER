@@ -1304,31 +1304,51 @@ static int read_gc_map_files(char* fn) {
     return 0;
 }
 
-int bb_read_params(psocn_ship_t *cfg) {
+int bb_read_params2(psocn_ship_t* cfg) {
     int rv = 0;
-    char path[32];
-
-    CONFIG_LOG("读取 Blue Burst 参数文件");
+    long sz;
+    char* buf, * path;
 
     /* Make sure we have a directory set... */
-    if(!cfg->bb_param_dir || !cfg->bb_map_dir) {
+    if (!cfg->bb_param_dir || !cfg->bb_map_dir) {
         ERR_LOG("未找到 Blue Burst 参数文件 且/或 map 路径设置!"
-              "关闭 Blue Burst 版本支持.");
+            "关闭 Blue Burst 版本支持.");
         return 1;
     }
 
-    /*printf("读取 Blue Burst 参数文件 行%d \n",__LINE__);*/
+    /* Save the current working directory, so we can do this a bit easier. */
+    sz = GetCurrentDirectory(0, NULL);
+    if (!(buf = malloc(sz))) {
+        ERR_LOG("Error allocating memory: %s\n", strerror(errno));
+        return -1;
+    }
 
-    sprintf_s(path, sizeof(path), "System\\Battle\\bb\\");
+    if (!(path = _getcwd(buf, (size_t)sz))) {
+        ERR_LOG("Error getting current dir: %s\n", strerror(errno));
+        free(buf);
+        return -1;
+    }
+
+    if (_chdir(cfg->bb_param_dir)) {
+        ERR_LOG("Error changing to Blue Burst param dir: %s\n",
+            strerror(errno));
+        free(buf);
+        return 1;
+    }
 
     /* Attempt to read all the files. */
-    CONFIG_LOG("读取 Blue Burst 战斗参数数据...");
-
-    int i = 0, j= 0, k = 0;
-    for (i; i < NUM_BPEntry;i++) {
+    DBG_LOG("Loading Blue Burst battle parameter data...\n");
+    //rv = read_param_file(battle_params[0][0], "BattleParamEntry_on.dat");
+    //rv += read_param_file(battle_params[0][1], "BattleParamEntry_lab_on.dat");
+    //rv += read_param_file(battle_params[0][2], "BattleParamEntry_ep4_on.dat");
+    //rv += read_param_file(battle_params[1][0], "BattleParamEntry.dat");
+    //rv += read_param_file(battle_params[1][1], "BattleParamEntry_lab.dat");
+    //rv += read_param_file(battle_params[1][2], "BattleParamEntry_ep4.dat");
+    int i = 0, j = 0, k = 0;
+    for (i; i < NUM_BPEntry; i++) {
         //strcpy(&buf[i][0], path);
         //strcat(&buf[i][0], battle_params_emtry_files[i][0].file);
-        //printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
+        printf("%s %s  %d %d\n", path, battle_params_emtry_files[i][0].file, j, k);
         rv += read_bb_battle_param_file(battle_params[j][k], path,
             battle_params_emtry_files[i][0].file/*,
             battle_params_emtry_files[i][0].check_sum.entry_num,
@@ -1342,8 +1362,85 @@ int bb_read_params(psocn_ship_t *cfg) {
     }
 
     /* Try to read the levelup data */
-    //CONFIG_LOG("读取 Blue Burst 升级数据表...");
-    //rv += read_bb_level_data("System\\Battle\\bb\\PlyLevelTbl.prs");
+    //DBG_LOG("Loading Blue Burst levelup table...\n");
+    //rv += read_bb_level_data("PlyLevelTbl.prs");
+
+    /* Change back to the original directory. */
+    if (_chdir(path)) {
+        ERR_LOG("Cannot change back to original dir: %s\n",
+            strerror(errno));
+        free(buf);
+        return -1;
+    }
+
+    /* Bail out early, if appropriate. */
+    if (rv) {
+        goto bail;
+    }
+
+    /* Next, try to read the map data */
+    if (_chdir(cfg->bb_map_dir)) {
+        ERR_LOG("Error changing to Blue Burst param dir: %s\n",
+            strerror(errno));
+        free(buf);
+        return 1;
+    }
+
+    DBG_LOG("Loading Blue Burst Map Enemy Data...\n");
+    rv = read_bb_map_files(cfg->bb_map_dir);
+
+    /* Change back to the original directory */
+    if (_chdir(path)) {
+        ERR_LOG("Cannot change back to original dir: %s\n",
+            strerror(errno));
+        free(buf);
+        return -1;
+    }
+
+bail:
+    if (rv) {
+        ERR_LOG("Error reading Blue Burst data, disabling Blue Burst "
+            "support!\n");
+    }
+    else {
+        have_bb_maps = 1;
+    }
+
+    /* Clean up and return. */
+    free(buf);
+    return rv;
+}
+
+int bb_read_params(psocn_ship_t *cfg) {
+    int rv = 0;
+    CONFIG_LOG("读取 Blue Burst 参数文件");
+
+    /* Make sure we have a directory set... */
+    if(!cfg->bb_param_dir || !cfg->bb_map_dir) {
+        ERR_LOG("未找到 Blue Burst 参数文件 且/或 map 路径设置!"
+              "关闭 Blue Burst 版本支持.");
+        return 1;
+    }
+
+    /* Attempt to read all the files. */
+    CONFIG_LOG("读取 Blue Burst 战斗参数数据...");
+
+    int i = 0, j= 0, k = 0;
+    for (i; i < NUM_BPEntry;i++) {
+#ifdef DEBUG
+        printf("%s %s  %d %d\n", cfg->bb_param_dir, battle_params_emtry_files[i][0].file, j, k);
+#endif // DEBUG
+        rv += read_bb_battle_param_file(battle_params[j][k], cfg->bb_param_dir,
+            battle_params_emtry_files[i][0].file/*,
+            battle_params_emtry_files[i][0].check_sum.entry_num,
+            battle_params_emtry_files[i][0].check_sum.sum*/);
+        if (j < 1 && i >= 2)
+            j++;
+        if (k < 2)
+            k++;
+        if (i == 2)
+            k = 0;
+    }
 
     /* Bail out early, if appropriate. */
     if(rv) {

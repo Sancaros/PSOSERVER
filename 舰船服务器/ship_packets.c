@@ -9261,98 +9261,101 @@ int send_ship_list(ship_client_t *c, ship_t *s, uint16_t menu_code) {
 }
 
 /* Send a warp command to the client. */
-static int send_dc_warp(ship_client_t *c, uint8_t area) {
+static int send_dc_warp(ship_client_t *c, uint8_t area, bool lobby) {
     uint8_t *sendbuf = get_sendbuf();
-    dc_pkt_hdr_t *pkt = (dc_pkt_hdr_t *)sendbuf;
+    subcmd_dc_warp_ship_t* pkt = (subcmd_dc_warp_ship_t*)sendbuf;
+    uint16_t len = sizeof(subcmd_pc_warp_ship_t);
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
     /* Fill in the basics. */
-    pkt->pkt_type = GAME_COMMAND2_TYPE;
-    pkt->flags = c->client_id;
-    pkt->pkt_len = LE16(0x000C);
+    pkt->hdr.pkt_type = GAME_COMMAND2_TYPE;
+    pkt->hdr.flags = c->client_id;
+    pkt->hdr.pkt_len = LE16(len);
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[4] = SUBCMD60_WARP;
-    sendbuf[5] = 0x02;
-    sendbuf[6] = c->client_id;
-    sendbuf[7] = 0x00;
-    sendbuf[8] = area;
-    sendbuf[9] = 0x00;
-    sendbuf[10] = 0x00;
-    sendbuf[11] = 0x00;
+    if (lobby)
+        pkt->shdr.type = SUBCMD60_WARP_LOBBY;
+    else
+        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+    pkt->shdr.size = 0x02;
+    pkt->shdr.client_id = c->client_id;
 
-    return crypt_send(c, 12, sendbuf);
+    pkt->area = LE32(area);
+
+    return crypt_send(c, len, sendbuf);
 }
 
-static int send_pc_warp(ship_client_t *c, uint8_t area) {
+static int send_pc_warp(ship_client_t *c, uint8_t area, bool lobby) {
     uint8_t *sendbuf = get_sendbuf();
-    pc_pkt_hdr_t *pkt = (pc_pkt_hdr_t *)sendbuf;
+    subcmd_pc_warp_ship_t* pkt = (subcmd_pc_warp_ship_t*)sendbuf;
+    uint16_t len = sizeof(subcmd_pc_warp_ship_t);
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
     /* Fill in the basics. */
-    pkt->pkt_type = GAME_COMMAND2_TYPE;
-    pkt->flags = c->client_id;
-    pkt->pkt_len = LE16(0x000C);
+    pkt->hdr.pkt_len = LE16(len);
+    pkt->hdr.pkt_type = GAME_COMMAND2_TYPE;
+    pkt->hdr.flags = c->client_id;
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[4] = SUBCMD60_WARP;
-    sendbuf[5] = 0x02;
-    sendbuf[6] = c->client_id;
-    sendbuf[7] = 0x00;
-    sendbuf[8] = area;
-    sendbuf[9] = 0x00;
-    sendbuf[10] = 0x00;
-    sendbuf[11] = 0x00;
+    if (lobby)
+        pkt->shdr.type = SUBCMD60_WARP_LOBBY;
+    else
+        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+    pkt->shdr.size = 0x02;
+    pkt->shdr.client_id = c->client_id;
 
-    return crypt_send(c, 12, sendbuf);
+    pkt->area = LE32(area);
+
+    return crypt_send(c, len, sendbuf);
 }
 
-static int send_bb_warp(ship_client_t *c, uint8_t area) {
+static int send_bb_warp(ship_client_t *c, uint8_t area, bool lobby) {
     uint8_t *sendbuf = get_sendbuf();
-    bb_pkt_hdr_t *pkt = (bb_pkt_hdr_t *)sendbuf;
+    subcmd_bb_warp_ship_t*pkt = (subcmd_bb_warp_ship_t*)sendbuf;
+    uint16_t len = sizeof(subcmd_bb_warp_ship_t);
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
         return -1;
 
     /* Fill in the basics. */
-    pkt->pkt_type = LE16(GAME_COMMAND2_TYPE);
-    pkt->flags = c->client_id;
-    pkt->pkt_len = LE16(0x0010);
+    pkt->hdr.pkt_len = LE16(len);
+    pkt->hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+    pkt->hdr.flags = c->client_id;
 
     /* Fill in the stuff that will make us warp. */
-    sendbuf[8] = SUBCMD60_WARP;
-    sendbuf[9] = 0x02;
-    sendbuf[10] = c->client_id;
-    sendbuf[11] = 0x00;
-    sendbuf[12] = area;
-    sendbuf[13] = 0x00;
-    sendbuf[14] = 0x00;
-    sendbuf[15] = 0x00;
+    if(lobby)
+        pkt->shdr.type = SUBCMD60_WARP_LOBBY;
+    else
+        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+    pkt->shdr.size = 0x02;
+    pkt->shdr.client_id= c->client_id;
 
-    return crypt_send(c, 16, sendbuf);
+    pkt->area = LE32(area);
+
+    return crypt_send(c, len, sendbuf);
 }
 
-int send_warp(ship_client_t *c, uint8_t area) {
+int send_warp(ship_client_t *c, uint8_t area, bool lobby) {
     /* Call the appropriate function. */
     switch(c->version) {
         case CLIENT_VERSION_DCV2:
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            return send_dc_warp(c, area);
+            return send_dc_warp(c, area, lobby);
 
         case CLIENT_VERSION_PC:
-            return send_pc_warp(c, area);
+            return send_pc_warp(c, area, lobby);
 
         case CLIENT_VERSION_BB:
-            return send_bb_warp(c, area);
+            return send_bb_warp(c, area, lobby);
     }
 
     return -1;
@@ -9371,15 +9374,15 @@ int send_lobby_warp(lobby_t *l, uint8_t area) {
                 case CLIENT_VERSION_GC:
                 case CLIENT_VERSION_EP3:
                 case CLIENT_VERSION_XBOX:
-                    send_dc_warp(l->clients[i], area);
+                    send_dc_warp(l->clients[i], area, true);
                     break;
 
                 case CLIENT_VERSION_PC:
-                    send_pc_warp(l->clients[i], area);
+                    send_pc_warp(l->clients[i], area, true);
                     break;
 
                 case CLIENT_VERSION_BB:
-                    send_bb_warp(l->clients[i], area);
+                    send_bb_warp(l->clients[i], area, true);
                     break;
             }
 
@@ -12952,5 +12955,88 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
     pkt->hdr.flags = 0;
 
     return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);
+}
+
+int send_error_client_return_to_ship(ship_client_t* c) {
+
+    /* See if the user picked a Ship List item */
+    //if (item_id == 0) {
+    //    return send_ship_list(c, ship, (uint16_t)(menu_id >> 8));
+    //}
+    //c->flags |= CLIENT_FLAG_DISCONNECTED;
+    //pthread_mutex_lock(&c->mutex);
+    //lobby_remove_player(c);
+
+    pthread_mutex_lock(&c->mutex);
+    lobby_remove_player(c);
+
+    /* If the client isn't in a lobby already, then add them to the first
+    available default lobby 如果客户机不在大厅中，则将其添加到第一个可用的默认大厅中. */
+    if (!c->cur_lobby) {
+        DBG_LOG("断开连接");
+        if (lobby_add_to_any(c, c->lobby_req)) {
+            pthread_mutex_unlock(&c->mutex);
+            return -1;
+        }
+
+        if (send_lobby_join(c, c->cur_lobby)) {
+            pthread_mutex_unlock(&c->mutex);
+            return -2;
+        }
+
+        if (send_lobby_add_player(c->cur_lobby, c)) {
+            pthread_mutex_unlock(&c->mutex);
+            return -3;
+        }
+
+        /* Do a few things that should only be done once per session... */
+        if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
+
+            /* Notify the shipgate */
+            shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard, c->sec_data.slot,
+                c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
+
+            if (c->cur_lobby)
+                shipgate_send_lobby_chg(&ship->sg, c->guildcard,
+                    c->cur_lobby->lobby_id, c->cur_lobby->name);
+            else
+                ERR_LOG("shipgate_send_lobby_chg 错误");
+
+            c->flags |= CLIENT_FLAG_SENT_MOTD;
+        }
+        else {
+            if (c->cur_lobby)
+                shipgate_send_lobby_chg(&ship->sg, c->guildcard,
+                    c->cur_lobby->lobby_id, c->cur_lobby->name);
+            else
+                ERR_LOG("shipgate_send_lobby_chg 错误");
+        }
+
+        if (send_bb_quest_data1(c)) {
+            pthread_mutex_unlock(&c->mutex);
+            return -2;
+        }
+
+        if (c->cur_lobby) {
+            /* 这里无法给自己发数据 */
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+        }
+        else
+            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
+
+        DBG_LOG("断开连接");
+        /* Send a ping so we know when they're done loading in. This is useful
+           for sending the MOTD as well as enforcing always-legit mode. */
+        send_simple(c, PING_TYPE, 0);
+
+    }
+
+    pthread_mutex_unlock(&c->mutex);
+
+    DBG_LOG("断开连接");
+    send_warp(c, 0, false);
+
+    return 0;
 }
 

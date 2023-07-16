@@ -2742,10 +2742,10 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     display_packet((unsigned char*)pkt, len);
 
 
-    DBG_LOG("舰仓:BB指令 0x%04X %s GC %u",
-        type, c_cmd_name(type, 0), c->guildcard);
-
 #endif // DEBUG
+    if(type != GAME_COMMAND0_TYPE)
+        DBG_LOG("舰仓:BB指令 0x%04X %s GC %u",
+            type, c_cmd_name(type, 0), c->guildcard);
 
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {
@@ -2825,10 +2825,21 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0060 96*/
     case GAME_COMMAND0_TYPE:
-        if(c->mode)
-            return subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
+        int rv = 0;
+        if (c->mode) {
 
-        return subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
+            rv = subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
+            if (rv)
+                return send_error_client_return_to_ship(c);
+            return 0;
+        }
+
+
+        rv =  subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
+        if (rv)
+            return send_error_client_return_to_ship(c);
+
+        return 0;
 
         /* 0x0061 97*/
     case CHAR_DATA_TYPE:

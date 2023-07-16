@@ -80,20 +80,55 @@ static int handle_gmdebug(ship_client_t* c, const char* params) {
     }
 }
 
+/* 用法: /swarp area */
+static int handle_shipwarp(ship_client_t* c, const char* params) {
+    unsigned long area;
+    lobby_t* l = c->cur_lobby;
+
+    /* Make sure the requester is a GM. */
+    //if (!LOCAL_GM(c)) {
+    //    return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    //}
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    //if (l->type != LOBBY_TYPE_GAME) {
+    //    return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+    //}
+
+    return send_error_client_return_to_ship(c);
+
+    /* Figure out the floor requested */
+    errno = 0;
+    area = strtoul(params, NULL, 10);
+
+    if (errno) {
+        /* Send a message saying invalid area */
+        return send_txt(c, "%s", __(c, "\tE\tC7无效区域."));
+    }
+
+    if (area > 17) {
+        /* Area too large, give up */
+        return send_txt(c, "%s", __(c, "\tE\tC7无效区域."));
+    }
+    send_warp(c, (uint8_t)area, false);
+    /* Send the person to the requested place */
+    return send_warp(c, (uint8_t)area, false);
+}
+
 /* 用法: /warp area */
 static int handle_warp(ship_client_t *c, const char *params) {
     unsigned long area;
     lobby_t *l = c->cur_lobby;
 
-    /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
-    }
+    ///* Make sure the requester is a GM. */
+    //if(!LOCAL_GM(c)) {
+    //    return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    //}
 
-    /* Make sure that the requester is in a team, not a lobby. */
-    if(l->type != LOBBY_TYPE_GAME) {
-        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
-    }
+    ///* Make sure that the requester is in a team, not a lobby. */
+    //if(l->type != LOBBY_TYPE_GAME) {
+    //    return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+    //}
 
     /* Figure out the floor requested */
     errno = 0;
@@ -110,7 +145,7 @@ static int handle_warp(ship_client_t *c, const char *params) {
     }
 
     /* Send the person to the requested place */
-    return send_warp(c, (uint8_t)area);
+    return send_warp(c, (uint8_t)area, true);
 }
 
 /* 用法: /warpall area */
@@ -1493,7 +1528,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
     /* See if we need to warp first */
     if(c2->cur_area != c->cur_area) {
         /* Send the person to the other user's area */
-        return send_warp(c, (uint8_t)c2->cur_area);
+        return send_warp(c, (uint8_t)c2->cur_area, true);
     }
     else {
         /* Now, set up the teleport packet */
@@ -3824,6 +3859,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
 
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug   },
+    { "swarp"    , handle_shipwarp  },
     { "warp"     , handle_warp      },
     { "kill"     , handle_kill      },
     { "minlvl"   , handle_min_level },

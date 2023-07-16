@@ -206,7 +206,7 @@ int send_arrows(ship_client_t *c, lobby_t *l);
 int send_ship_list(ship_client_t *c, ship_t *s, uint16_t menu_code);
 
 /* Send a warp command to the client. */
-int send_warp(ship_client_t *c, uint8_t area);
+int send_warp(ship_client_t* c, uint8_t area, bool lobby);
 
 /* Send a warp command to a whole lobby (DCv2 and higher only). */
 int send_lobby_warp(lobby_t *l, uint8_t area);
@@ -323,5 +323,7 @@ int send_bb_lobby_guild_NULL_initialzation_data(ship_client_t* c, ship_client_t*
 
 /* Send BB lobby rare monster data to a client. */
 int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes);
+
+int send_error_client_return_to_ship(ship_client_t* c);
 
 #endif /* !SHIP_PACKETS_H */

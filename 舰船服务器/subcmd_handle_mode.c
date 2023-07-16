@@ -1350,15 +1350,16 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
-            src->guildcard);
-        return -1;
+    //if (l->type == LOBBY_TYPE_LOBBY) {
+    //    ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+    //        src->guildcard);
+    //    return -1;
+    //}
+
+    if (l->type == LOBBY_TYPE_GAME) {
+        subcmd_send_bb_set_exp_rate(src, 3000);
+        src->need_save_data = 1;
     }
-
-    subcmd_send_bb_set_exp_rate(src, 3000);
-
-    src->need_save_data = 1;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

@@ -559,14 +559,6 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     if (!l)
         return -1;
 
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            c->guildcard);
-        return -1;
-    }
-
     if (c->game_data->expboost <= 0)
         c->game_data->expboost = 1;
 

@@ -218,7 +218,7 @@
 #define SUBCMD60_UNKNOW_70                     0x70
 #define SUBCMD60_UNKNOW_71                     0x71
 #define SUBCMD60_BURST_DONE                    0x72
-#define SUBCMD60_UNKNOW_73                     0x73
+#define SUBCMD60_WARP_SHIP                     0x73
 #define SUBCMD60_WORD_SELECT                   0x74
 #define SUBCMD60_SET_FLAG                      0x75
 #define SUBCMD60_KILL_MONSTER                  0x76    /* A monster was killed. */
@@ -228,7 +228,7 @@
 #define SUBCMD60_UNKNOW_7A                     0x7A
 #define SUBCMD60_UNKNOW_7B                     0x7B
 #define SUBCMD60_SET_C_GAME_MODE               0x7C
-#define SUBCMD60_SET_BATTLE_MODE_DATA                     0x7D
+#define SUBCMD60_SET_BATTLE_MODE_DATA          0x7D
 #define SUBCMD60_UNKNOW_7E                     0x7E
 #define SUBCMD60_UNKNOW_7F                     0x7F
 #define SUBCMD60_TRIGGER_TRAP                  0x80
@@ -237,7 +237,7 @@
 #define SUBCMD60_PLACE_TRAP                    0x83
 #define SUBCMD60_UNKNOW_84                     0x84
 #define SUBCMD60_UNKNOW_85                     0x85
-#define SUBCMD60_HIT_DESTRUCTIBLE_OBJECT                     0x86
+#define SUBCMD60_HIT_DESTRUCTIBLE_OBJECT       0x86
 #define SUBCMD60_UNKNOW_87                     0x87
 #define SUBCMD60_ARROW_CHANGE                  0x88
 #define SUBCMD60_PLAYER_DIED                   0x89
@@ -251,7 +251,7 @@
 #define SUBCMD60_UNKNOW_91                     0x91
 #define SUBCMD60_UNKNOW_92                     0x92
 #define SUBCMD60_TIMED_SWITCH_ACTIVATED        0x93
-#define SUBCMD60_WARP                          0x94
+#define SUBCMD60_WARP_LOBBY                    0x94
 #define SUBCMD60_UNKNOW_95                     0x95
 #define SUBCMD60_UNKNOW_96                     0x96
 #define SUBCMD60_CH_GAME_CANCEL                0x97

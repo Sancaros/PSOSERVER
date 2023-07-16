@@ -153,6 +153,7 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
 static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     int sock = SOCKET_ERROR, irv;
     //unsigned int peer_status;
+    ship_client_t* it, *ittmp;
     miniship_t* i, * tmp;
     struct addrinfo hints;
     struct addrinfo* server, * j;
@@ -184,6 +185,8 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
         /* Clear it first. */
         memset(rv, 0, sizeof(shipgate_conn_t));
     }
+
+reconnet:
 
     SHIPS_LOG("%s: 搜寻船闸 (%s)...", s->cfg->name,
         s->cfg->shipgate_host);
@@ -239,7 +242,28 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     /* Did we connect? */
     if (sock == SOCKET_ERROR) {
         ERR_LOG("无法连接至船闸!");
-        return -1;
+        /* 通知每一个客户端 舰闸掉线了. */
+        //TAILQ_FOREACH(it, s->clients, qentry) {
+        //    /* Check if this connection was trying to send us something. */
+
+        //    DBG_LOG("GC %u", it->guildcard);
+        //}
+        //it = TAILQ_FIRST(s->clients);
+        //DBG_LOG("GC %u", it->guildcard);
+        //while (it) {
+        //    DBG_LOG("GC %u", it->guildcard);
+        //    ittmp = TAILQ_NEXT(it, qentry);
+
+        //    if (it->guildcard)
+        //        send_txt(it, __(it, "\tE\tC4舰船脱离，请尽快联系管理员恢复！"));
+        //    //if (it->flags & CLIENT_FLAG_DISCONNECTED) {
+        //    //    client_destroy_connection(it, s->clients);
+        //    //}
+
+        //    it = ittmp;
+        //}
+        goto reconnet;
+        //return -1;
     }
 
     /* Set up the TLS session */

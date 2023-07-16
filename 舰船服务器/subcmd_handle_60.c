@@ -1351,15 +1351,16 @@ int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
-            src->guildcard);
-        return -1;
+    //if (l->type == LOBBY_TYPE_LOBBY) {
+    //    ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+    //        src->guildcard);
+    //    return -1;
+    //}
+
+    if (l->type == LOBBY_TYPE_GAME) {
+        subcmd_send_bb_set_exp_rate(src, 3000);
+        src->need_save_data = 1;
     }
-
-    subcmd_send_bb_set_exp_rate(src, 3000);
-
-    src->need_save_data = 1;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2096,17 +2097,17 @@ int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    if (!l || l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
-            src->guildcard);
-        return -1;
-    }
+    //if (!l || l->type != LOBBY_TYPE_GAME) {
+    //    ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
+    //        src->guildcard);
+    //    return -1;
+    //}
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
-            src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -3706,6 +3707,9 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
     DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
 
 #endif // DEBUG_60
+
+
+    DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
 
     pthread_mutex_lock(&l->mutex);
 

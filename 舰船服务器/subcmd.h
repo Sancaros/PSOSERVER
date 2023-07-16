@@ -1757,6 +1757,20 @@ typedef struct subcmd_bb_end_burst {
 } PACKED subcmd_bb_end_burst_t;
 
 // 0x73: warp packet 舰船传送数据包
+typedef struct subcmd_dc_warp_ship {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t area;
+} PACKED subcmd_dc_warp_ship_t;
+
+// 0x73: warp packet 舰船传送数据包
+typedef struct subcmd_pc_warp_ship {
+    pc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t area;
+} PACKED subcmd_pc_warp_ship_t;
+
+// 0x73: warp packet 舰船传送数据包
 typedef struct subcmd_bb_warp_ship {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
