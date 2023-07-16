@@ -3670,34 +3670,6 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
     { SUBCMD60_EX_ITEM_MK                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_unimplement_bb },
 };
-//
-//// 使用函数指针直接调用相应的处理函数
-//subcmd60_handle_t subcmd60_get_handler(int cmd_type, int version) {
-//    for (int i = 0; i < _countof(subcmd60_handle); i++) {
-//        if (subcmd60_handle[i].cmd_type == cmd_type) {
-//
-//            switch (version)
-//            {
-//            case CLIENT_VERSION_DCV1:
-//            case CLIENT_VERSION_DCV2:
-//            case CLIENT_VERSION_PC:
-//            case CLIENT_VERSION_GC:
-//                return subcmd60_handle[i].dc;
-//
-//            case CLIENT_VERSION_EP3:
-//            case CLIENT_VERSION_XBOX:
-//                break;
-//
-//            case CLIENT_VERSION_BB:
-//                return subcmd60_handle[i].bb;
-//            }
-//        }
-//    }
-//
-//    ERR_LOG("subcmd60_get_handler 未完成对 0x60 0x%02X 版本 %d 的处理", cmd_type, version);
-//
-//    return NULL;
-//}
 
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
@@ -3718,6 +3690,9 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
     DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
 
 #endif // DEBUG_60
+
+    if(src->mode)
+        DBG_LOG("GC %u CH 0x%04X 60指令: 0x%02X", src->guildcard, hdr_type, type);
 
     pthread_mutex_lock(&l->mutex);
 

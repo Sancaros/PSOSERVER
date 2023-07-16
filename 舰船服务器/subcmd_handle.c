@@ -113,33 +113,3 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
 
     return func;
 }
-
-// 使用函数指针直接调用相应的处理函数
-subcmd_handle_t subcmd_get_handler_mode(int cmd_type, int subcmd_type, int version) {
-    subcmd_handle_t func = { 0 };
-    size_t count = 0;
-
-    switch (cmd_type)
-    {
-    case GAME_COMMAND0_TYPE:
-        count = _countof(subcmdmode_handler);
-        func = subcmd_search_handler(subcmdmode_handler, count, subcmd_type, version);
-        break;
-
-    case GAME_COMMAND2_TYPE:
-        count = _countof(subcmd62_handler);
-        func = subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
-        break;
-
-    case GAME_COMMANDD_TYPE:
-        count = _countof(subcmd6D_handler);
-        func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
-        break;
-    }
-
-    if (!func)
-        ERR_LOG("subcmd_get_handler 未完成对 "
-            "0x%02X 0x%02X 版本 %d 的处理", cmd_type, subcmd_type, version);
-
-    return func;
-}

@@ -48,7 +48,6 @@
     <ClCompile Include="subcmd_handle_62.c" />
     <ClCompile Include="subcmd_dcnte.c" />
     <ClCompile Include="subcmd_handle_dcgcpcv1v2.c" />
-    <ClCompile Include="subcmd_handle_mode.c" />
     <ClCompile Include="utils.c" />
     <ClCompile Include="word_select.c" />
     <ClCompile Include="subcmd_bb_unused.c" />
