@@ -1191,7 +1191,7 @@ static void handle_objhit_common(ship_client_t *c, lobby_t *l, uint16_t bid) {
             return;
 
         /* Now, see if we care about the type of the object that was hit. */
-        obj_type = l->map_objs->objs[bid].data.skin & 0xFFFF;
+        obj_type = l->map_objs->objs[bid].data.base_type & 0xFFFF;
 
         /* We'll probably want to do a bit more with this at some point, but
            for now this will do. */

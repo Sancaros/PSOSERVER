@@ -183,7 +183,7 @@ void handle_bb_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid) {
             return;
 
         /* Now, see if we care about the type of the object that was hit. */
-        obj_type = l->map_objs->objs[bid].data.skin & 0xFFFF;
+        obj_type = l->map_objs->objs[bid].data.base_type & 0xFFFF;
 
         /* We'll probably want to do a bit more with this at some point, but
            for now this will do. */
@@ -3712,7 +3712,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
 #endif // DEBUG_60
 
-    //if(src->mode)
+    if(src->mode)
         DBG_LOG("GC %u CH 0x%04X 60ЦёБо: 0x%02X", src->guildcard, hdr_type, type);
 
     pthread_mutex_lock(&l->mutex);

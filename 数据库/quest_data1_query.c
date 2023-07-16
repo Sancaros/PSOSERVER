@@ -178,11 +178,11 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
 
     ///* 获取二进制数据 */
     //int i = 2;
-    //quest_data1->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 16);
+    //quest_data1->quest_guildcard = (uint32_t)strtoul(row[i], &endptr, 0);
     //i++;
     memcpy(quest_data1, row[0], 0x208);
     //i++;
-    //quest_data1->quest_flags = (uint32_t)strtoul(row[i], &endptr, 16);
+    //quest_data1->quest_flags = (uint32_t)strtoul(row[i], &endptr, 0);
 
     //if (*endptr != '\0') {
     //    SQLERR_LOG("获取的数据 索引 %d 字符串读取有误", i);

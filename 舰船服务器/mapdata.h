@@ -59,33 +59,89 @@ typedef struct {
     bb_battle_param_t difficulty[4][0x60];
 } bb_battle_param_table;
 
-/* Enemy data in the map files. This the same as the ENEMY_ENTRY struct from
-   newserv. */
+/* 地图文件中的敌人数据与newserv中的ENEMY_ENTRY结构相同. 72字节 */
 typedef struct map_enemy {
-    uint32_t base;// 4 怪物的种类ID
-    uint16_t reserved0;
-    uint16_t num_clones;//变种数值
-    uint32_t reserved[10];
-	float rareratio; // 4 怪物稀有率
-    float reserved12;
-    uint32_t reserved13;
-    uint32_t exp;// 4 该怪物可获取的经验值
-    uint32_t skin;// 4 检测相同类型怪物是否有皮肤 0 1
-    uint32_t rt_index;// 4 随机掉落索引地址
+    /* 00 */ uint16_t base_type;
+    /* 02 */ uint16_t unknown_a0; // Overwritten by client at load time
+    /* 04 */ uint16_t enemy_index; // Overwritten by client at load time
+    /* 06 */ uint16_t num_children;
+    union reserves {
+        uint32_t reserved[10];
+        struct {
+            /* 08 */ uint16_t area;
+            /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
+            /* 0C */ uint16_t section;
+            /* 0E */ uint16_t wave_number;
+            /* 10 */ uint32_t wave_number2;
+            /* 14 */ float x;
+            /* 18 */ float y;
+            /* 1C */ float z;
+            /* 20 */ uint32_t x_angle;
+            /* 24 */ uint32_t y_angle;
+            /* 28 */ uint32_t z_angle;
+            /* 2C */ uint32_t unknown_a3;
+        };
+    };
+    /* 30 */ float rareratio; // 4 怪物稀有率
+    /* 34 */ float reserved12;
+    /* 38 */ uint32_t reserved13;
+    /* 3C */ uint32_t exp;// 4 该怪物可获取的经验值
+    /* 40 */ uint32_t skin;// 4 检测相同类型怪物是否有皮肤 0 1
+    /* 44 */ uint32_t rt_index;// 4 随机掉落索引地址
+    /* 48 */
 } PACKED map_enemy_t;
 
-/* Object data in the map object files. */
+typedef struct EnemyEntry {
+    /* 00 */ uint16_t base_type;
+    /* 02 */ uint16_t unknown_a0; // Overwritten by client at load time
+
+    /* 04 */ uint16_t enemy_index; // Overwritten by client at load time
+    /* 06 */ uint16_t num_children;
+    /* 08 */ uint16_t area;
+    /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
+    /* 0C */ uint16_t section;
+    /* 0E */ uint16_t wave_number;
+    /* 10 */ uint32_t wave_number2;
+    /* 14 */ float x;
+    /* 18 */ float y;
+    /* 1C */ float z;
+    /* 20 */ uint32_t x_angle;
+    /* 24 */ uint32_t y_angle;
+    /* 28 */ uint32_t z_angle;
+    /* 2C */ uint32_t unknown_a3;
+    /* 30 */ uint32_t unknown_a4;   //rareratio
+    /* 34 */ uint32_t unknown_a5;  //reserved12
+    /* 38 */ uint32_t unknown_a6; //reserved13
+    /* 3C */ uint32_t exp;
+    /* 40 */ uint32_t skin;
+    /* 44 */ uint32_t rt_index;
+    /* 48 */
+
+    //string str() const {
+    //    return string_printf("EnemyEntry(base_type=%hX, a0=%hX, enemy_index=%hX, num_children=%hX, area=%hX, entity_id=%hX, section=%hX, wave_number=%hX, wave_number2=%" PRIX32 ", x=%g, y=%g, z=%g, x_angle=%" PRIX32 ", y_angle=%" PRIX32 ", z_angle=%" PRIX32 ", a3=%" PRIX32 ", a4=%" PRIX32 ", a5=%" PRIX32 ", a6=%" PRIX32 ", a7=%" PRIX32 ", skin=%" PRIX32 ", a8=%" PRIX32 ")",
+    //        this->base_type.load(), this->unknown_a0.load(), this->enemy_index.load(), this->num_children.load(), this->area.load(),
+    //        this->entity_id.load(), this->section.load(), this->wave_number.load(),
+    //        this->wave_number2.load(), this->x.load(), this->y.load(), this->z.load(), this->x_angle.load(),
+    //        this->y_angle.load(), this->z_angle.load(), this->unknown_a3.load(), this->unknown_a4.load(),
+    //        this->unknown_a5.load(), this->unknown_a6.load(), this->unknown_a7.load(), this->skin.load(),
+    //        this->unknown_a8.load());
+    //}
+} PACKED EnemyEntry_t;
+
+static int dsasadsada = sizeof(map_enemy_t);
+
+/* 地图对象文件中的物体数据. 68字节 */
 typedef struct map_object {
-    uint32_t skin;
+    uint32_t base_type;
     uint32_t unk1;
     uint32_t unk2;
     uint32_t obj_id;
     float x;
     float y;
     float z;
-    uint32_t rpl;
-    uint32_t rotation;
-    uint32_t unk3;
+    uint32_t x_angle;
+    uint32_t y_angle;
+    uint32_t z_angle;
     uint32_t unk4;
     /* Everything beyond this point depends on the object type. */
     union {
@@ -93,6 +149,39 @@ typedef struct map_object {
         uint32_t dword[6];
     };
 } PACKED map_object_t;
+
+typedef struct ObjectEntry {
+    /* 00 */ uint16_t base_type;
+    /* 02 */ uint16_t unknown_a1;
+    /* 04 */ uint32_t unknown_a2;
+    /* 08 */ uint16_t id;
+    /* 0A */ uint16_t group;
+    /* 0C */ uint16_t section;
+    /* 0E */ uint16_t unknown_a3;
+    /* 10 */ float x;
+    /* 14 */ float y;
+    /* 18 */ float z;
+    /* 1C */ uint32_t x_angle;
+    /* 20 */ uint32_t y_angle;
+    /* 24 */ uint32_t z_angle;
+    /* 28 */ uint32_t unknown_a4;
+    /* 2C */ uint32_t unknown_a5;
+    /* 30 */ uint32_t unknown_a6;
+    /* 34 */ uint32_t unknown_a7;
+    /* 38 */ uint32_t unknown_a8;
+    /* 3C */ uint32_t unknown_a9;
+    /* 40 */ uint32_t unknown_a10;
+    /* 44 */
+
+    //string str() const {
+    //    return string_printf("ObjectEntry(base_type=%hX, a1=%hX, a2=%" PRIX32 ", id=%hX, group=%hX, section=%hX, a3=%hX, x=%g, y=%g, z=%g, x_angle=%" PRIX32 ", y_angle=%" PRIX32 ", z_angle=%" PRIX32 ", a3=%" PRIX32 ", a4=%" PRIX32 ", a5=%" PRIX32 ", a6=%" PRIX32 ", a7=%" PRIX32 ", a8=%" PRIX32 ", a9=%" PRIX32 ")",
+    //        this->base_type.load(), this->unknown_a1.load(), this->unknown_a2.load(), this->id.load(), this->group.load(),
+    //        this->section.load(), this->unknown_a3.load(), this->x.load(), this->y.load(), this->z.load(), this->x_angle.load(),
+    //        this->y_angle.load(), this->z_angle.load(), this->unknown_a3.load(), this->unknown_a4.load(),
+    //        this->unknown_a5.load(), this->unknown_a6.load(), this->unknown_a7.load(), this->unknown_a8.load(),
+    //        this->unknown_a9.load());
+    //}
+} PACKED ObjectEntry_t;
 
 typedef struct rare_enemy_rates {
     uint32_t hildeblue; // HILDEBEAR -> HILDEBLUE

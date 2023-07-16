@@ -29,6 +29,7 @@
 #include <f_logs.h>
 #include <f_checksum.h>
 #include <PRS.h>
+#include <pso_StringReader.h>
 
 #include "mapdata.h"
 #include "lobby.h"
@@ -310,10 +311,10 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
 
     /* Parse each enemy. */
     for(i = 0; i < en_ct; ++i) {
-        n_clones = en[i].num_clones;
+        n_clones = en[i].num_children;
         gen[count].area = area;
 
-        switch(en[i].base) {
+        switch(en[i].base_type) {
             case 0x0040:    /* Hildebear & Hildetorr */
                 acc = en[i].skin & 0x01;
                 gen[count].bp_entry = 0x49 + acc;
@@ -2036,21 +2037,23 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
     const quest_dat_hdr_t *hdr = (const quest_dat_hdr_t *)data;
     uint32_t ptr = 0;
     uint32_t obj_count = 0;
+    uint32_t enemy_count = 0;
 
     while(ptr < len) {
 
         //DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
 
         switch(LE32(hdr->obj_type)) {
-            case 0x01:                      /* Objects */
+            case 0x01:                      /* 实例 */
                 ptrs[0][LE32(hdr->area)] = hdr;
                 obj_count += LE32(hdr->size) / sizeof(map_object_t);
                 ptr += hdr->next_hdr;
                 hdr = (const quest_dat_hdr_t *)(data + ptr);
                 break;
 
-            case 0x02:                      /* Enemies */
+            case 0x02:                      /* 敌人 */
                 ptrs[1][LE32(hdr->area)] = hdr;
+                enemy_count += LE32(hdr->size) / sizeof(map_enemy_t);
                 ptr += hdr->next_hdr;
                 hdr = (const quest_dat_hdr_t *)(data + ptr);
                 break;
@@ -2068,11 +2071,13 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
                 break;
 
             default:
-                /* Padding at the end of the file... */
+                /* 在文件末尾填充数据... */
                 ptr = len;
                 break;
         }
     }
+
+    DBG_LOG("敌人 %d", enemy_count);
 
     *obj_cnt = obj_count;
 }
@@ -2087,20 +2092,19 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     const quest_dat_hdr_t *hdr;
     off_t offs = { 0 };
 
-    /* Open the cache file... */
+    /* 打开缓存文件... */
     if(!(fp = fopen(ofn, "wb"))) {
         ERR_LOG("无法打开缓存文件 \"%s\" 并写入: %s", ofn,
               strerror(errno));
         return -1;
     }
 
-    /* Figure out the total number of enemies that the quest has... */
+    /* 弄清楚该任务中敌人的总数... */
     parse_quest_objects(dat, sz, &objects, ptrs);
     //CONFIG_LOG("缓存文件: %s", ofn);
     //CONFIG_LOG("对象数量: %" PRIu32 "", objects);
 
-    /* Write out the objects in exactly the same form that they'll be needed
-       when loaded later on. */
+    /* 按照稍后加载时需要的确切形式写出这些对象. */
     objects = LE32(objects);
     if(fwrite(&objects, 1, 4, fp) != 4) {
         ERR_LOG("无法写入缓存文件 \"%s\": %s", ofn,
@@ -2109,7 +2113,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
         return -2;
     }
 
-    /* Run through each area and write them in order. */
+    /* 遍历每个区域并按顺序将它们编写出来. */
     for(i = 0; i < 17; ++i) {
         if((hdr = ptrs[0][i])) {
             sz = LE32(hdr->size);
@@ -2128,14 +2132,13 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
         }
     }
 
-    /* Save our position, as we don't know in advance how many parsed enemies
-       we will have... */
+    /* 保存我们的位置, 因为我们事先不知道我们将有多少解析的敌人... */
     offs = (off_t)ftell(fp);
     fseek(fp, 4, SEEK_CUR);
     //CONFIG_LOG("敌人数据位置: %" PRIx64 "", (uint64_t)offs);
     index = 0;
 
-    /* Copy in the enemy data. */
+    /* 复制敌人数据. */
     for(i = 0; i < 17; ++i) {
         if((hdr = ptrs[1][i])) {
             /* XXXX: Ugly! */
@@ -2167,7 +2170,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
         }
     }
 
-    /* Go back and write the amount of enemies we have. */
+    /* 返回并写下我们拥有的敌人数量. */
     fseek(fp, offs, SEEK_SET);
     //CONFIG_LOG("敌人数量: %" PRIu32 "", index);
     index = LE32(index);
@@ -2179,7 +2182,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
         return -6;
     }
 
-    /* We're done with the cache file now, so clean up and return. */
+    /* 现在我们已经完成了缓存文件的操作, 请进行清理并返回. */
     fclose(fp);
     return 0;
 }
@@ -2424,6 +2427,70 @@ done:
 
     return 0;
 }
+
+#ifdef PACKED
+#undef PACKED
+#endif
+
+#ifndef _WIN32
+#define PACKED __attribute__((packed))
+#else
+#define PACKED __declspec(align(1))
+#pragma pack(push, 1) 
+#endif
+
+struct DATSectionHeader {
+    uint32_t type; // 1 = objects, 2 = enemies. There are other types too
+    uint32_t section_size; // Includes this header
+    uint32_t area;
+    uint32_t data_size;
+} PACKED;
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
+
+//void add_enemies_from_quest_data(
+//    int episode,
+//    uint8_t difficulty,
+//    uint8_t event,
+//    const void* data,
+//    size_t size) {
+//
+//    StringReader r;
+//    r.data = data;
+//    r.size = size;
+//    r.offset = 0;
+//
+//    while (r.offset < r.size) {
+//
+//        struct DATSectionHeader header;
+//        memcpy(&header, (char*)r.data + r.offset, sizeof(header));
+//        r.offset += sizeof(header);
+//
+//        if (header.type == 0 && header.section_size == 0) {
+//            break;
+//        }
+//        if (header.section_size < sizeof(header)) {
+//            printf("quest layout has invalid section header at offset 0x%zX\n", r.offset - sizeof(header));
+//            break;
+//        }
+//        if (header.type == 2) {
+//            if (header.data_size % sizeof(map_enemy_t)) {
+//                printf("quest layout enemy section size is not a multiple of enemy entry size\n");
+//                break;
+//            }
+//            add_enemies_from_map_data(episode, difficulty, event, (char*)r.data + r.offset, header.data_size);
+//            r.offset += header.section_size - sizeof(header);
+//        }
+//        else {
+//            r.offset += header.section_size - sizeof(header);
+//        }
+//    }
+//}
 
 const AreaMapFileIndex(*map_file_info_for_episode(uint32_t ep))[2][17]{
     switch (ep) {
