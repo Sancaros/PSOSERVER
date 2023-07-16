@@ -38,29 +38,28 @@ struct pso_gsl_read {
     uint32_t flags;
 };
 
-pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
-    pso_error_t* err) {
-    pso_gsl_read_t* rv;
+pso_gsl_read_t *pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags, pso_error_t *err) {
+    pso_gsl_read_t *rv;
     pso_error_t erv = PSOARCHIVE_EFATAL;
     uint32_t i, allocd = 256, offset, size, maxfiles;
     uint8_t buf[48];
-    void* tmp;
+    void *tmp;
 
     /* Allocate our archive handle... */
-    if (!(rv = (pso_gsl_read_t*)malloc(sizeof(pso_gsl_read_t)))) {
+    if (!(rv = (pso_gsl_read_t *)malloc(sizeof(pso_gsl_read_t)))) {
         erv = PSOARCHIVE_EMEM;
         goto ret_err;
     }
 
     /* Allocate some file handles... */
-    rv->files = (struct gsl_file*)malloc(sizeof(struct gsl_file) * 256);
+    rv->files = (struct gsl_file *)malloc(sizeof(struct gsl_file) * 256);
     if (!rv->files) {
         erv = PSOARCHIVE_EMEM;
         goto ret_handle;
     }
 
     /* Read the first header in... */
-    if (fread(buf, 1, 48, fd) != 48) {
+    if (fread(buf, sizeof(uint8_t), 48, fd) != 48) {
         erv = PSOARCHIVE_NOARCHIVE;
         goto ret_files;
     }
@@ -75,7 +74,7 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
     if (!(flags & GSL_ENDIANNESS)) {
         /* Guess big endian first. */
         offset = (buf[35]) | (buf[34] << 8) | (buf[33] << 16) | (buf[32] << 24);
-        size = (buf[39]) | (buf[38] << 8) | (buf[37] << 16) | (buf[36] << 24);
+        size = (buf[39]) | (buf[38] << 8) | ( buf[37] << 16) | (buf[36] << 24);
 
         flags |= PSO_GSL_BIG_ENDIAN;
 
@@ -84,9 +83,8 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
         if (offset > len || offset * 2048 > len || size > len) {
             offset = (buf[35] << 24) | (buf[34] << 16) | (buf[33] << 8) |
                 (buf[32]);
-            size = (buf[39] << 24) | (buf[38] << 16) | (buf[37] << 8) |
+            size = (buf[39] << 24) | (buf[38] << 16) | ( buf[37] << 8) |
                 (buf[36]);
-            flags &= ~PSO_GSL_BIG_ENDIAN;
             flags |= PSO_GSL_LITTLE_ENDIAN;
 
             if (offset * 2048 > len || size > len) {
@@ -97,11 +95,11 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
     }
     else if ((flags & PSO_GSL_BIG_ENDIAN)) {
         offset = (buf[35]) | (buf[34] << 8) | (buf[33] << 16) | (buf[32] << 24);
-        size = (buf[39]) | (buf[38] << 8) | (buf[37] << 16) | (buf[36] << 24);
+        size = (buf[39]) | (buf[38] << 8) | ( buf[37] << 16) | (buf[36] << 24);
     }
     else /* if((flags & PSO_GSL_LITTLE_ENDIAN)) */ {
         offset = (buf[35] << 24) | (buf[34] << 16) | (buf[33] << 8) | (buf[32]);
-        size = (buf[39] << 24) | (buf[38] << 16) | (buf[37] << 8) | (buf[36]);
+        size = (buf[39] << 24) | (buf[38] << 16) | ( buf[37] << 8) | (buf[36]);
     }
 
     memcpy(rv->files[0].filename, buf, 32);
@@ -112,7 +110,7 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
     /* Read the headers for each file... */
     for (i = 1; i < maxfiles; ++i) {
         /* Read in the header... */
-        if (fread(buf, 1, 48, fd) != 48) {
+        if (fread(buf, sizeof(uint8_t), 48, fd) != 48) {
             erv = PSOARCHIVE_EIO;
             goto ret_files;
         }
@@ -125,13 +123,13 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
         if ((flags & PSO_GSL_BIG_ENDIAN)) {
             offset = (buf[35]) | (buf[34] << 8) | (buf[33] << 16) |
                 (buf[32] << 24);
-            size = (buf[39]) | (buf[38] << 8) | (buf[37] << 16) |
+            size = (buf[39]) | (buf[38] << 8) | ( buf[37] << 16) |
                 (buf[36] << 24);
         }
         else /* if((flags & PSO_GSL_LITTLE_ENDIAN)) */ {
             offset = (buf[35] << 24) | (buf[34] << 16) | (buf[33] << 8) |
                 (buf[32]);
-            size = (buf[39] << 24) | (buf[38] << 16) | (buf[37] << 8) |
+            size = (buf[39] << 24) | (buf[38] << 16) | ( buf[37] << 8) |
                 (buf[36]);
         }
 
@@ -144,14 +142,14 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
                 goto ret_files;
             }
 
-            rv->files = (struct gsl_file*)tmp;
+            rv->files = (struct gsl_file *)tmp;
         }
 
         memcpy(rv->files[i].filename, buf, 32);
         rv->files[i].offset = offset * 2048;
         rv->files[i].size = size;
 
-        /* 合理性检查... */
+        /* Sanity check... */
         if (rv->files[i].offset + rv->files[i].size > len) {
             erv = PSOARCHIVE_ERANGE;
             goto ret_files;
@@ -167,7 +165,7 @@ pso_gsl_read_t* pso_gsl_read_open_fd(FILE* fd, uint32_t len, uint32_t flags,
         /* Don't fail if we can't do the realloc... It'll just waste a bit of
            memory... Won't really hurt anything, though... */
         if ((tmp = realloc(rv->files, i * sizeof(struct gsl_file))))
-            rv->files = (struct gsl_file*)tmp;
+            rv->files = (struct gsl_file *)tmp;
 
     }
 
@@ -188,53 +186,53 @@ ret_err:
     return NULL;
 }
 
-pso_gsl_read_t* pso_gsl_read_open(const char* fn, uint32_t flags,
-    pso_error_t* err) {
-    FILE* fd;
+pso_gsl_read_t *pso_gsl_read_open(const char *fn, uint32_t flags, pso_error_t *err) {
+    FILE *fd;  // 更改数据类型为 FILE*
     off_t total;
     pso_error_t erv = PSOARCHIVE_EFATAL;
     pso_gsl_read_t *rv;
 
     /* Open the file... */
-    if (!(fd = fopen(fn, "rb"))) {
+    if(!(fd = fopen(fn, "rb"))) {  // 使用 fopen 函数打开文件
         erv = PSOARCHIVE_EFILE;
         goto ret_err;
     }
 
     /* Figure out how long the file is. */
-    if (fseek(fd, 0, SEEK_END)) {
+    if(fseek(fd, 0, SEEK_END) != 0) {  // 使用 fseek 定位到文件末尾
         erv = PSOARCHIVE_EIO;
         goto ret_file;
     }
 
-    /* Figure out how long the file is. */
-    if ((total = ftell(fd)) == (off_t)-1) {
+    if((total = ftell(fd)) == -1) {  // 使用 ftell 获取文件大小
         erv = PSOARCHIVE_EIO;
         goto ret_file;
     }
 
-    if (fseek(fd, 0, SEEK_SET)) {
+    if(fseek(fd, 0, SEEK_SET) != 0) {  // 将文件指针定位到文件开头
         erv = PSOARCHIVE_EIO;
         goto ret_file;
     }
 
-    if ((rv = pso_gsl_read_open_fd(fd, (uint32_t)total, flags, err)))
+    if((rv = pso_gsl_read_open_fd(fd, (uint32_t)total, flags, err))) {  // 使用 fileno 获取文件描述符，并传递给 pso_gsl_read_open_fd 函数
         return rv;
+    }
 
-    /* 如果我们到了这里, the pso_gsl_read_open_fd() function encountered an error.
+    /* If we get here, the pso_gsl_read_open_fd() function encountered an error.
        Clean up the file descriptor and return NULL. The error code is already
        set in err, if applicable. */
-    fclose(fd);
+    fclose(fd);  // 关闭文件
     return NULL;
 
 ret_file:
-    fclose(fd);
+    fclose(fd);  // 关闭文件
 ret_err:
-    if (err)
+    if(err)
         *err = erv;
 
     return NULL;
 }
+
 
 pso_error_t pso_gsl_read_close(pso_gsl_read_t* a) {
     if (!a || a->fd < 0 || !a->files)

@@ -1686,6 +1686,7 @@ static int handle_usrlogin_err(shipgate_conn_t* conn,
     uint16_t flags = ntohs(pkt->base.hdr.flags);
     uint32_t gc = ntohl(pkt->guildcard);
     uint32_t block = ntohl(pkt->block);
+    uint32_t j;
     ship_t* s = conn->ship;
     block_t* b;
     ship_client_t* i;
@@ -1697,23 +1698,27 @@ static int handle_usrlogin_err(shipgate_conn_t* conn,
     }
 
     /* Check the block number first. */
-    if((int)block > s->cfg->blocks) {
+    if(block > (uint32_t)s->cfg->blocks) {
         return 0;
     }
 
-    b = s->blocks[block - 1];
-    pthread_rwlock_rdlock(&b->lock);
+    for (j = 0; j < s->cfg->blocks; ++j) {
+        if (s->blocks[j]) {
+            b = s->blocks[j];
+            pthread_rwlock_rdlock(&b->lock);
 
-    /* Find the requested client. */
-    TAILQ_FOREACH(i, b->clients, qentry) {
-        if (i->guildcard == gc) {
-            /* XXXX: Maybe send specific error messages sometime later? */
-            send_txt(i, "%s", __(i, "\tE\tC7µÇÂ¼Ê§°Ü~Çë¼ì²éÄúÊäÈëµÄÐÅÏ¢."));
-            break;
+            /* Find the requested client. */
+            TAILQ_FOREACH(i, b->clients, qentry) {
+                if (i->guildcard == gc) {
+                    /* XXXX: Maybe send specific error messages sometime later? */
+                    send_txt(i, "%s", __(i, "\tE\tC7µÇÂ¼Ê§°Ü~Çë¼ì²éÄúÊäÈëµÄÐÅÏ¢."));
+                    break;
+                }
+            }
+            pthread_rwlock_unlock(&b->lock);
         }
     }
 
-    pthread_rwlock_unlock(&b->lock);
     return rv;
 }
 
