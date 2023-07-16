@@ -76,6 +76,11 @@ typedef struct client_trade_item {
     item_t items[0x20];
 } client_trade_item_t;
 
+typedef struct client_error {
+    errno_t error_cmd_type;
+    errno_t error_subcmd_type;
+} client_error_t;
+
 typedef struct client_game_data {
     uint32_t serial_number;
     bool should_save;
@@ -92,6 +97,8 @@ typedef struct client_game_data {
     int gm_debug;
 
     int db_save_done;
+
+    client_error_t err;
 
     void* char_backup; //用于临时备份角色
 } client_game_data_t;

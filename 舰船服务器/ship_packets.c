@@ -3583,7 +3583,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
         ic = ic_gbk_to_utf16;
     }
 
-    in = strlen(tm) + 1;
+    //in = strlen(tm) + 1;
 
     /* Convert the message to the appropriate encoding. */
     out = 65520;
@@ -3640,7 +3640,6 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     /* Clear the packet header */
-    memset(tm, 0, sizeof(tm));
     memset(pkt, 0, sizeof(bb_chat_pkt));
 
     /* Do the formatting */
@@ -3658,7 +3657,6 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     /* Convert the message to the appropriate encoding. */
-    in = strlen(tm) + 1;
     out = 65520;
     inptr = tm;
     outptr = (char *)pkt->msg;
@@ -12957,86 +12955,30 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
     return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);
 }
 
-int send_error_client_return_to_ship(ship_client_t* c) {
+int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16_t subcmd_type) {
+    lobby_t* l = c->cur_lobby;
 
-    /* See if the user picked a Ship List item */
-    //if (item_id == 0) {
-    //    return send_ship_list(c, ship, (uint16_t)(menu_id >> 8));
-    //}
-    //c->flags |= CLIENT_FLAG_DISCONNECTED;
-    //pthread_mutex_lock(&c->mutex);
-    //lobby_remove_player(c);
+    if (l->flags & LOBBY_FLAG_QUESTING) {
 
-    pthread_mutex_lock(&c->mutex);
-    lobby_remove_player(c);
+        pthread_mutex_lock(&c->mutex);
+        send_warp(c, 1, false);
+        pthread_mutex_unlock(&c->mutex);
 
-    /* If the client isn't in a lobby already, then add them to the first
-    available default lobby 如果客户机不在大厅中，则将其添加到第一个可用的默认大厅中. */
-    if (!c->cur_lobby) {
-        DBG_LOG("断开连接");
-        if (lobby_add_to_any(c, c->lobby_req)) {
-            pthread_mutex_unlock(&c->mutex);
-            return -1;
-        }
+        c->game_data->err.error_cmd_type = cmd_type;
+        c->game_data->err.error_subcmd_type = subcmd_type;
 
-        if (send_lobby_join(c, c->cur_lobby)) {
-            pthread_mutex_unlock(&c->mutex);
-            return -2;
-        }
+        //DBG_LOG("0x%zX 0x%zX", c->game_data->err.error_cmd_type, c->game_data->err.error_subcmd_type);
 
-        if (send_lobby_add_player(c->cur_lobby, c)) {
-            pthread_mutex_unlock(&c->mutex);
-            return -3;
-        }
-
-        /* Do a few things that should only be done once per session... */
-        if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
-
-            /* Notify the shipgate */
-            shipgate_send_block_login_bb(&ship->sg, 1, c->guildcard, c->sec_data.slot,
-                c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
-
-            if (c->cur_lobby)
-                shipgate_send_lobby_chg(&ship->sg, c->guildcard,
-                    c->cur_lobby->lobby_id, c->cur_lobby->name);
-            else
-                ERR_LOG("shipgate_send_lobby_chg 错误");
-
-            c->flags |= CLIENT_FLAG_SENT_MOTD;
-        }
-        else {
-            if (c->cur_lobby)
-                shipgate_send_lobby_chg(&ship->sg, c->guildcard,
-                    c->cur_lobby->lobby_id, c->cur_lobby->name);
-            else
-                ERR_LOG("shipgate_send_lobby_chg 错误");
-        }
-
-        if (send_bb_quest_data1(c)) {
-            pthread_mutex_unlock(&c->mutex);
-            return -2;
-        }
-
-        if (c->cur_lobby) {
-            /* 这里无法给自己发数据 */
-            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-        }
-        else
-            ERR_LOG("大厅玩家数量 %d %d", c->cur_lobby->max_clients, c->cur_lobby->num_clients);
-
-        DBG_LOG("断开连接");
-        /* Send a ping so we know when they're done loading in. This is useful
-           for sending the MOTD as well as enforcing always-legit mode. */
-        send_simple(c, PING_TYPE, 0);
-
+        return 0;
     }
-
-    pthread_mutex_unlock(&c->mutex);
-
-    DBG_LOG("断开连接");
-    send_warp(c, 0, false);
-
-    return 0;
+    else {
+        send_msg(c, BB_SCROLL_MSG_TYPE,
+            "%s 错误指令:0x%zX 副指令:0x%zX",
+            __(c, "\tE\tC6非任务指令出错,请联系管理员处理!"), 
+            cmd_type, 
+            subcmd_type
+        );
+        return -1;
+    }
 }
 

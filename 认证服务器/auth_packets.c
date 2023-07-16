@@ -2722,7 +2722,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
         ic = ic_gbk_to_utf16;
     }
 
-    in = strlen(tm) + 1;
+    //in = strlen(tm) + 1;
 
     /* Convert the message to the appropriate encoding. */
     out = 65520;

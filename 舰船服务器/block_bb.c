@@ -2732,20 +2732,17 @@ typedef void (*process_command_t)(ship_t s, ship_client_t* c,
 
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
+    subcmd_bb_pkt_t* err_pkt = (subcmd_bb_pkt_t*)pkt;
     uint16_t type = LE16(hdr->pkt_type);
     uint16_t len = LE16(hdr->pkt_len);
     uint32_t flags = LE32(hdr->flags);
+    errno_t err = 0;
 
 #ifdef DEBUG
     DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
         type, c_cmd_name(type, 0), len, flags, c->guildcard);
     display_packet((unsigned char*)pkt, len);
-
-
 #endif // DEBUG
-    if(type != GAME_COMMAND0_TYPE)
-        DBG_LOG("舰仓:BB指令 0x%04X %s GC %u",
-            type, c_cmd_name(type, 0), c->guildcard);
 
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {
@@ -2825,19 +2822,22 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0060 96*/
     case GAME_COMMAND0_TYPE:
-        int rv = 0;
         if (c->mode) {
 
-            rv = subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
-            if (rv)
-                return send_error_client_return_to_ship(c);
+            err = subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
+            if (err) {
+                ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+                return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+            }
+
             return 0;
         }
 
-
-        rv =  subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
-        if (rv)
-            return send_error_client_return_to_ship(c);
+        err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
+        if (err) {
+            ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+            return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+        }
 
         return 0;
 
@@ -2849,11 +2849,21 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     case GAME_COMMAND2_TYPE:
         /* 0x006C 108*/
     case GAME_COMMANDC_TYPE: //需要分离出来
-        return subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
+        err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
+        if (err) {
+            ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+            return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+        }
+        return 0;
 
         /* 0x006D 109*/
     case GAME_COMMANDD_TYPE:
-        return subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
+        err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
+        if (err) {
+            ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+            return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+        }
+        return 0;
 
         /* 0x006F 111*/
     case DONE_BURSTING_TYPE:

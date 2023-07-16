@@ -510,6 +510,17 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    if (pkt->condition_type)
+        if (src->game_data->err.error_cmd_type) {
+            send_msg(src, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(src, "\tE\tC6数据出错,请联系管理员处理!"),
+                src->game_data->err.error_cmd_type,
+                src->game_data->err.error_subcmd_type
+            );
+            memset(&src->game_data->err, 0, sizeof(client_error_t));
+        }
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

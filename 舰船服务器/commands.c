@@ -86,16 +86,14 @@ static int handle_shipwarp(ship_client_t* c, const char* params) {
     lobby_t* l = c->cur_lobby;
 
     /* Make sure the requester is a GM. */
-    //if (!LOCAL_GM(c)) {
-    //    return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
-    //}
+    if (!LOCAL_GM(c)) {
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
 
     /* Make sure that the requester is in a team, not a lobby. */
-    //if (l->type != LOBBY_TYPE_GAME) {
-    //    return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
-    //}
-
-    return send_error_client_return_to_ship(c);
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+    }
 
     /* Figure out the floor requested */
     errno = 0;
@@ -110,7 +108,7 @@ static int handle_shipwarp(ship_client_t* c, const char* params) {
         /* Area too large, give up */
         return send_txt(c, "%s", __(c, "\tE\tC7无效区域."));
     }
-    send_warp(c, (uint8_t)area, false);
+
     /* Send the person to the requested place */
     return send_warp(c, (uint8_t)area, false);
 }
@@ -121,14 +119,14 @@ static int handle_warp(ship_client_t *c, const char *params) {
     lobby_t *l = c->cur_lobby;
 
     ///* Make sure the requester is a GM. */
-    //if(!LOCAL_GM(c)) {
-    //    return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
-    //}
+    if(!LOCAL_GM(c)) {
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
 
-    ///* Make sure that the requester is in a team, not a lobby. */
-    //if(l->type != LOBBY_TYPE_GAME) {
-    //    return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
-    //}
+    /* Make sure that the requester is in a team, not a lobby. */
+    if(l->type != LOBBY_TYPE_GAME) {
+        return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
+    }
 
     /* Figure out the floor requested */
     errno = 0;

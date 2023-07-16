@@ -153,7 +153,6 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
 static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     int sock = SOCKET_ERROR, irv;
     //unsigned int peer_status;
-    ship_client_t* it, *ittmp;
     miniship_t* i, * tmp;
     struct addrinfo hints;
     struct addrinfo* server, * j;
