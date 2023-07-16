@@ -384,6 +384,8 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang);
 
 void lobby_print_info(lobby_t *l, FILE *fp);
 
+void lobby_print_info2(ship_client_t* src);
+
 #ifdef ENABLE_LUA
 #include <lua.h>
 int lobby_register_lua(lua_State *l);

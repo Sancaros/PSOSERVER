@@ -510,17 +510,41 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if(pkt->condition_type)
+    if (!pkt->condition_type)
+        DBG_LOG("sub60_0C_bb 0x%zX", pkt->condition_type);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_add_or_remove_condition_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
+            src->guildcard, pkt->hdr.pkt_type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (pkt->condition_type) {
+
         if (src->game_data->err.error_cmd_type) {
-            send_msg(src, BB_SCROLL_MSG_TYPE, 
-                "%s 错误指令:0x%zX 副指令:0x%zX", 
-                __(src, "\tE\tC6数据出错,请联系管理员处理!"), 
-                src->game_data->err.error_cmd_type, 
+            send_msg(src, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(src, "\tE\tC6数据出错,请联系管理员处理!"),
+                src->game_data->err.error_cmd_type,
                 src->game_data->err.error_subcmd_type
             );
             memset(&src->game_data->err, 0, sizeof(client_error_t));
         }
 
+        if (l->flags & LOBBY_TYPE_GAME) {
+            lobby_print_info2(src);
+        }
+    }
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -1371,6 +1395,7 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_GAME) {
         subcmd_send_bb_set_exp_rate(src, 3000);
         src->need_save_data = 1;
+        lobby_print_info2(src);
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2564,10 +2589,6 @@ static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
     }
 
-    DBG_LOG("GC %u", src->guildcard);
-
-    display_packet(pkt, pkt->hdr.pkt_len);
-
     if (l->battle)
         handle_bb_battle_mode(src, pkt);
     else if (l->challenge)
@@ -3548,7 +3569,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_HIT_MONSTER                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0A_bb },
     { SUBCMD60_HIT_OBJ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0B_bb },
     { SUBCMD60_CONDITION_ADD              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
-    { SUBCMD60_CONDITION_REMOVE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
+    { SUBCMD60_CONDITION_REMOVE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0D_bb },
 
     //cmd_type 10 - 1F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_DRAGON_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_12_bb },
@@ -3691,7 +3712,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
 #endif // DEBUG_60
 
-    if(src->mode)
+    //if(src->mode)
         DBG_LOG("GC %u CH 0x%04X 60指令: 0x%02X", src->guildcard, hdr_type, type);
 
     pthread_mutex_lock(&l->mutex);

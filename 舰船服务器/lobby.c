@@ -260,6 +260,34 @@ void lobby_print_info(lobby_t *l, FILE *fp) {
     }
 }
 
+void lobby_print_info2(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+    int i;
+
+    send_msg(src, TEXT_MSG_TYPE, "名称: %s", l->name);
+    send_msg(src, TEXT_MSG_TYPE, "标志: %08" PRIx32 "", l->flags);
+    send_msg(src, TEXT_MSG_TYPE, "版本: %d (v2: %d)", l->version,
+        (int)l->v2);
+    send_msg(src, TEXT_MSG_TYPE, "对战/挑战: %d/%d",
+        (int)l->battle, (int)l->challenge);
+    send_msg(src, TEXT_MSG_TYPE, "难度: %d", (int)l->difficulty);
+    //send_msg(src, TEXT_MSG_TYPE, "敌人: %p", l->map_enemies);
+    //send_msg(src, TEXT_MSG_TYPE, "实例: %p", l->map_objs);
+
+    if (l->qid)
+        send_msg(src, TEXT_MSG_TYPE, "任务 ID: %" PRIu32 "", l->qid);
+
+#ifdef ENABLE_LUA
+    send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
+#endif /* ENABLE_LUA */
+
+    //send_msg(src, TEXT_MSG_TYPE, "当前地图:");
+    //for (i = 0; i < 0x10; ++i) {
+    //    send_msg(src, TEXT_MSG_TYPE, "  %d: %d %d", i, (int)l->maps[i << 1],
+    //        (int)l->maps[(i << 1) + 1]);
+    //}
+}
+
 lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                            uint8_t difficulty, uint8_t battle, uint8_t chal,
                            uint8_t v2, int version, uint8_t section,

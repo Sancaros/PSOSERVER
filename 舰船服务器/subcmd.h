@@ -1977,7 +1977,7 @@ typedef struct subcmd_bb_grave {
     client_id_hdr_t shdr;
     uint16_t client_id;
     uint16_t unk0;
-    uint8_t challenge_data[320];
+    bb_challenge_records_t c_records;
 } PACKED subcmd_bb_grave_t;
 
 static int sdasd = sizeof(subcmd_bb_grave_t);
