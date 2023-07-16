@@ -201,7 +201,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
         , name, class_name, char_data->character.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)&char_data->c_records,
-            sizeof(char_data->c_records));
+            PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
         strcat(query, "')");
 
@@ -230,7 +230,7 @@ int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
             , name, class_name, char_data->character.dress_data.version);
 
         psocn_db_escape_str(&conn, query + strlen(query), (char*)&char_data->c_records,
-            sizeof(char_data->c_records));
+            PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
 
         strcat(query, "')");
 

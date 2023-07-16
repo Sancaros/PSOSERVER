@@ -42,7 +42,7 @@
 #define PSOCN_STLENGTH_BB_MINI_CHAR         124
 #define PSOCN_STLENGTH_BB_FULL_CHAR         14744
 //#define PSOCN_STLENGTH_BB_DB_CHAR           7912
-#define PSOCN_STLENGTH_BB_DB_CHAR           7884
+#define PSOCN_STLENGTH_BB_DB_CHAR           7908
 
 //#define PSOCN_STLENGTH_BB_CHAR              400 + 844
 #define PSOCN_STLENGTH_BB_CHAR2             1244
@@ -55,6 +55,9 @@
 #define PSOCN_STLENGTH_BB_DB_QUEST_DATA2    88
 #define PSOCN_STLENGTH_BB_DB_TECH_MENU      40
 #define PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS   1248
+#define PSOCN_STLENGTH_BB_DB_SHORTCUTS      2624
+#define PSOCN_STLENGTH_BB_DB_AUTOREPLY      344
+#define PSOCN_STLENGTH_BB_DB_INFOBOARD      344
 
 /////////////////////////////////////////////////////////////////////////
 /////

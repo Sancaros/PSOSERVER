@@ -41,12 +41,12 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     strcat(myquery, "', shortcuts = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.shortcuts,
-        sizeof(opts.shortcuts));
+        PSOCN_STLENGTH_BB_DB_SHORTCUTS);
 
     strcat(myquery, "', symbol_chats = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&opts.symbol_chats,
-        sizeof(opts.symbol_chats));
+        PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
     strcat(myquery, "', guild_name = '");
 
@@ -88,15 +88,15 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             memcpy(&opts.key_cfg.key_config, row[0], sizeof(opts.key_cfg.key_config));
             memcpy(&opts.key_cfg.joystick_config, row[1], sizeof(opts.key_cfg.joystick_config));
             opts.option_flags = (uint32_t)strtoul(row[2], NULL, 0);
-            memcpy(&opts.shortcuts, row[3], sizeof(opts.shortcuts));
-            memcpy(&opts.symbol_chats, row[4], sizeof(opts.symbol_chats));
+            memcpy(&opts.shortcuts, row[3], PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+            memcpy(&opts.symbol_chats, row[4], PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
             memcpy(&opts.guild_name, row[5], sizeof(opts.guild_name));
         }
         else {
             /* Initialize to defaults */
             memcpy(&opts.key_cfg.key_config, default_key_config, sizeof(default_key_config));
             memcpy(&opts.key_cfg.joystick_config, default_joystick_config, sizeof(default_joystick_config));
-            memcpy(&opts.symbol_chats, default_symbolchats, sizeof(default_symbolchats));
+            memcpy(&opts.symbol_chats, default_symbolchats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
             sprintf(myquery, "INSERT INTO %s (guildcard, key_config, joystick_config, symbol_chats)"
                 " VALUES ('%" PRIu32"', '", CLIENTS_OPTION_BLUEBURST, gc);
@@ -112,7 +112,7 @@ psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
             strcat(myquery, "', '");
 
             psocn_db_escape_str(&conn, myquery + strlen(myquery),
-                (char*)&opts.symbol_chats, sizeof(opts.symbol_chats));
+                (char*)&opts.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
 
             strcat(myquery, "')");
 

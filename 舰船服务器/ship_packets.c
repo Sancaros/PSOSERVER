@@ -11545,7 +11545,7 @@ int send_bb_full_char(ship_client_t *c) {
     ///////////////////////////////////////////////////////////////////////////////////////
     pkt->data.option_flags = c->bb_opts->option_flags;
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, 0x208);
+    memcpy(pkt->data.quest_data1, c->bb_pl->quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
     ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(&pkt->data.bank, &c->bb_pl->bank, PSOCN_STLENGTH_BANK);
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -11557,13 +11557,14 @@ int send_bb_full_char(ship_client_t *c) {
     pkt->data.gc_data.language = c->language_code;
     pkt->data.gc_data.char_class = c->bb_pl->character.dress_data.ch_class;
     ///////////////////////////////////////////////////////////////////////////////////////
-    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, sizeof(c->bb_opts->symbol_chats));
-    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, sizeof(c->bb_opts->shortcuts));
-    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, sizeof(c->bb_pl->autoreply));
-    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, sizeof(c->bb_pl->infoboard));
+    memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+    memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+    memcpy(pkt->data.autoreply, c->bb_pl->autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+    memcpy(pkt->data.infoboard, c->bb_pl->infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+    memcpy(&pkt->data.b_records, &c->bb_pl->b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
     memcpy(&pkt->data.c_records, &c->bb_pl->c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, sizeof(c->bb_pl->tech_menu));
-    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, sizeof(c->bb_pl->quest_data2));
+    memcpy(pkt->data.tech_menu, c->bb_pl->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+    memcpy(pkt->data.quest_data2, c->bb_pl->quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
     memcpy(&pkt->data.key_cfg, &c->bb_opts->key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
     ///////////////////////////////////////////////////////////////////////////////////////
     /* 复制完整的公会数据 从首个元素开始 复制 2108字节 */

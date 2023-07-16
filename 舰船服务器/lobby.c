@@ -262,7 +262,7 @@ void lobby_print_info(lobby_t *l, FILE *fp) {
 
 void lobby_print_info2(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
-    int i;
+    //int i;
 
     send_msg(src, TEXT_MSG_TYPE, "Ãû³Æ: %s", l->name);
     send_msg(src, TEXT_MSG_TYPE, "±êÖ¾: %08" PRIx32 "", l->flags);

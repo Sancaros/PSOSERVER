@@ -1637,8 +1637,9 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
         memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc_data.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-        memcpy(c->bb_pl->autoreply, char_data.autoreply, sizeof(c->bb_pl->autoreply));
-        memcpy(c->bb_pl->infoboard, char_data.infoboard, sizeof(c->bb_pl->infoboard));
+        memcpy(c->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+        memcpy(c->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+        memcpy(&c->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
         memcpy(&c->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
         memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
         memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
@@ -1649,7 +1650,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         /////////////////////////////////////////////////////////////////////////////////////
         c->bb_opts->option_flags = char_data.option_flags;
         memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-        memcpy(c->bb_opts->shortcuts, char_data.shortcuts, sizeof(c->bb_opts->shortcuts));
+        memcpy(c->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
         memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
@@ -1685,22 +1686,22 @@ static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pk
 
         /* 0x02ED 749*/
     case BB_UPDATE_SYMBOL_CHAT:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->symbol_chats), 0))) {
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS, 0))) {
             ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
             return result;
         }
 
-        memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, sizeof(pkt->symbol_chats));
+        memcpy(c->bb_opts->symbol_chats, pkt->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
         break;
 
         /* 0x03ED 1005*/
     case BB_UPDATE_SHORTCUTS:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->shortcuts), 0))) {
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_SHORTCUTS, 0))) {
             ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
             return result;
         }
 
-        memcpy(c->bb_opts->shortcuts, pkt->shortcuts, sizeof(pkt->shortcuts));
+        memcpy(c->bb_opts->shortcuts, pkt->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
         break;
 
         /* 0x04ED 1261*/
@@ -1725,12 +1726,12 @@ static int bb_process_options(ship_client_t* c, bb_options_config_update_pkt* pk
 
         /* 0x06ED 1773*/
     case BB_UPDATE_TECH_MENU:
-        if ((result = check_size_v(pkt_size, sizeof(pkt->tech_menu), 0))) {
+        if ((result = check_size_v(pkt_size, PSOCN_STLENGTH_BB_DB_TECH_MENU, 0))) {
             ERR_LOG("无效 BB 选项更新数据包 (数据大小:%d)", len);
             return result;
         }
 
-        memcpy(c->bb_pl->tech_menu, pkt->tech_menu, sizeof(pkt->tech_menu));
+        memcpy(c->bb_pl->tech_menu, pkt->tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
         break;
 
         /* 0x07ED 2029*/
