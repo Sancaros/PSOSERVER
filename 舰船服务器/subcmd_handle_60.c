@@ -49,7 +49,7 @@ extern v2_level_table_t v2_char_stats;
 
 extern psocn_bb_mode_char_t default_mode_char;
 
-int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -66,7 +66,7 @@ int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -84,7 +84,7 @@ int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -318,7 +318,7 @@ int check_aoe_timer(ship_client_t* src,
     return 0;
 }
 
-int sub60_05_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_05_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_switch_changed_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
@@ -401,7 +401,7 @@ int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     return rv;
 }
 
-int sub60_07_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_07_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_symbol_chat_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -416,7 +416,7 @@ int sub60_07_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-int sub60_0A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_mhit_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t enemy_id2, enemy_id, dmg;
@@ -467,7 +467,7 @@ int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_0B_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0B_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_bhit_pkt_t* pkt) {
     uint64_t now = get_ms_time();
     //SYSTEMTIME aoetime;
@@ -497,7 +497,7 @@ int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_0C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -524,7 +524,7 @@ int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_12_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_12_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int v = src->version, i;
@@ -561,7 +561,7 @@ int sub60_12_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_de_rolLe_boss_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -584,7 +584,7 @@ int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_de_rolLe_boss_sact_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -608,7 +608,7 @@ int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_VolOptBossActions_6x15_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -632,7 +632,7 @@ int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_VolOptBossActions_6x16_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -656,7 +656,7 @@ int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_teleport_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -677,7 +677,7 @@ int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_dragon_special_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -701,7 +701,7 @@ int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_DarkFalzActions_6x19_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -725,7 +725,7 @@ int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destory_npc_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -746,7 +746,7 @@ int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_1F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_1F_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_area_1F_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -777,7 +777,7 @@ int sub60_1F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_20_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_20_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_area_20_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -815,7 +815,7 @@ int sub60_20_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_21_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_21_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_inter_level_warp_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -838,7 +838,7 @@ int sub60_21_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_22_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_22_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
@@ -862,7 +862,7 @@ int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_23_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_23_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
@@ -886,7 +886,7 @@ int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
     return rv;
 }
 
-int sub60_24_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_24_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_pos_0x24_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -914,7 +914,7 @@ int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_25_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_25_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id, equip_resault = 0;
@@ -957,7 +957,7 @@ int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_26_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_26_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_count, i, isframe = 0;
@@ -1022,7 +1022,7 @@ int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_27_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_27_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     size_t index;
@@ -1057,7 +1057,7 @@ int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_28_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_28_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->fed_item_id, mag_id = pkt->mag_item_id;
@@ -1091,7 +1091,7 @@ int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_29_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_29_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t item_data = { 0 };
@@ -1126,7 +1126,7 @@ int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_2A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int isframe = 0;
@@ -1206,7 +1206,7 @@ int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_2C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1236,7 +1236,7 @@ int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_2D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_select_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1252,7 +1252,7 @@ int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_2F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t type = LE16(pkt->hdr.pkt_type);
@@ -1281,7 +1281,7 @@ int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1308,7 +1308,7 @@ int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_ready_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1333,7 +1333,7 @@ int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_3A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_game_client_leave_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1358,7 +1358,7 @@ int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_3B_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1376,7 +1376,7 @@ int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1394,7 +1394,7 @@ int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1414,7 +1414,7 @@ int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_natk_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1442,7 +1442,7 @@ int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_objhit_phys_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t pkt_size = pkt->hdr.pkt_len;
@@ -1484,7 +1484,7 @@ int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1522,7 +1522,7 @@ int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_48_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_48_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1553,7 +1553,7 @@ int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_subtract_PB_energy_6x49_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1586,7 +1586,7 @@ int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_4A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1609,7 +1609,7 @@ int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_take_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1641,7 +1641,7 @@ int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_4D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1675,7 +1675,7 @@ int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_4E_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_cmd_4e_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1697,7 +1697,7 @@ int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_4F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_player_saved_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1710,7 +1710,7 @@ int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_50_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_50_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_switch_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1732,7 +1732,7 @@ int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_52_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_52_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1755,7 +1755,7 @@ int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_Unknown_6x53_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1788,7 +1788,7 @@ int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_55_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_55_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_map_warp_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1840,7 +1840,7 @@ int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_58_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_58_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1858,7 +1858,7 @@ int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_61_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_61_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_levelup_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1882,7 +1882,7 @@ int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_63_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_63_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_destory_ground_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
@@ -1922,7 +1922,7 @@ int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_star_atomizer_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1946,7 +1946,7 @@ int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_create_enemy_set_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1970,7 +1970,7 @@ int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_68_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_68_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pipe_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2009,7 +2009,7 @@ int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_69_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_69_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2036,7 +2036,7 @@ int sub60_69_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, pkt, 0);
 }
 
-int sub60_6A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_6A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_Unknown_6x6A_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2058,7 +2058,7 @@ int sub60_6A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_72_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_72_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2071,7 +2071,7 @@ int sub60_72_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_74_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_74_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_word_select_t* pkt) {
     /* Don't send the message if they have the protection flag on. */
     if (src->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -2098,7 +2098,7 @@ int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     return word_select_send_bb(src, pkt);
 }
 
-int sub60_75_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_75_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t flag_index = pkt->flag;
@@ -2149,7 +2149,7 @@ int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_76_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_76_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_killed_monster_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2185,7 +2185,7 @@ inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
     return -1;
 }
 
-int sub60_77_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_77_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t val = LE32(pkt->value);
@@ -2301,7 +2301,7 @@ int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub60_79_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_79_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gogo_ball_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2549,7 +2549,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
     return 0;
 }
 
-int sub60_7C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2576,7 +2576,7 @@ int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_battle_mode_data_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2609,7 +2609,7 @@ int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_trigger_trap_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2636,7 +2636,7 @@ int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_place_trap_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2664,7 +2664,7 @@ int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_HitDestructibleObject_6x86_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2695,7 +2695,7 @@ int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_88_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_88_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2718,7 +2718,7 @@ int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
     return send_lobby_arrows(l);
 }
 
-int sub60_89_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_89_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_player_died_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2740,7 +2740,7 @@ int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_8A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_ch_game_select_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2764,7 +2764,7 @@ int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_8D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_set_technique_level_override_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2790,7 +2790,7 @@ int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_93_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_93_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2819,7 +2819,7 @@ int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_ch_game_cancel_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2852,7 +2852,7 @@ int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_9A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_update_player_stat_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2878,7 +2878,7 @@ int sub60_9A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_Unknown_6x9C_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2916,7 +2916,7 @@ int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_ch_game_failure_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2938,7 +2938,7 @@ int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_A1_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2951,7 +2951,7 @@ int sub60_A1_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = src->cur_lobby;
@@ -2990,7 +2990,7 @@ int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_C0_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     size_t i;
@@ -3036,7 +3036,7 @@ int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_C3_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t* it;
@@ -3117,7 +3117,7 @@ int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it);
 }
 
-int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = src->cur_lobby;
     inventory_t sorted = { 0 };
@@ -3171,7 +3171,7 @@ int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub60_C5_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_medical_center_used_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3208,7 +3208,7 @@ int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_C6_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_steal_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
     pmt_weapon_bb_t tmp_wp = { 0 };
@@ -3331,7 +3331,7 @@ int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_charge_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3370,7 +3370,7 @@ int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 /* 从怪物获取的经验倍率未进行调整 */
-int sub60_C8_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t mid;
@@ -3438,7 +3438,7 @@ int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     return client_give_exp(src, exp_amount);
 }
 
-int sub60_CC_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
@@ -3482,7 +3482,7 @@ int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
+static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_start_battle_mode_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3504,7 +3504,7 @@ int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int sub60_D2_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t quest_offset = pkt->quest_offset;
