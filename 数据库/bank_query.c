@@ -28,6 +28,9 @@ static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     memset(myquery, 0, sizeof(myquery));
 
+    if (bank->meseta > 999999)
+        bank->meseta = 999999;
+
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
         "guildcard, slot, "
@@ -196,6 +199,9 @@ static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     memset(myquery, 0, sizeof(myquery));
 
+    if (bank->meseta > 999999)
+        bank->meseta = 999999;
+
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
         "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "'"
         " WHERE "
@@ -315,6 +321,9 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
 
     bank->item_count = (uint32_t)strtoul(row[0], NULL, 16);
     bank->meseta = (uint32_t)strtoul(row[1], NULL, 16);
+
+    if (bank->meseta > 999999)
+        bank->meseta = 999999;
 
     psocn_db_result_free(result);
 

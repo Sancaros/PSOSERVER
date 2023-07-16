@@ -185,67 +185,6 @@ char* db_get_char_raw_data(uint32_t gc, uint8_t slot, int check) {
     return row[0];
 }
 
-int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int check) {
-    void* result;
-    char** row;
-
-    memset(myquery, 0, sizeof(myquery));
-
-    /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT * FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_DISP, gc, slot);
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -2;
-    }
-
-    if ((row = psocn_db_result_fetch(result)) == NULL) {
-        psocn_db_result_free(result);
-        if (check) {
-            SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
-            SQLERR_LOG("%s", psocn_db_error(&conn));
-        }
-        return -3;
-    }
-
-    /* 获取玩家角色7项基本数值 */
-    data->stats.atp = (uint16_t)strtoul(row[2], NULL, 0);
-    data->stats.mst = (uint16_t)strtoul(row[3], NULL, 0);
-    data->stats.evp = (uint16_t)strtoul(row[4], NULL, 0);
-    data->stats.hp = (uint16_t)strtoul(row[5], NULL, 0);
-    data->stats.dfp = (uint16_t)strtoul(row[6], NULL, 0);
-    data->stats.ata = (uint16_t)strtoul(row[7], NULL, 0);
-    data->stats.lck = (uint16_t)strtoul(row[8], NULL, 0);
-
-    data->opt_flag1 = (uint8_t)strtoul(row[9], NULL, 0);
-    data->opt_flag2 = (uint8_t)strtoul(row[10], NULL, 0);
-    data->opt_flag3 = (uint8_t)strtoul(row[11], NULL, 0);
-    data->opt_flag4 = (uint8_t)strtoul(row[12], NULL, 0);
-    data->opt_flag5 = (uint8_t)strtoul(row[13], NULL, 0);
-    data->opt_flag6 = (uint8_t)strtoul(row[14], NULL, 0);
-    data->opt_flag7 = (uint8_t)strtoul(row[15], NULL, 0);
-    data->opt_flag8 = (uint8_t)strtoul(row[16], NULL, 0);
-    data->opt_flag9 = (uint8_t)strtoul(row[17], NULL, 0);
-    data->opt_flag10 = (uint8_t)strtoul(row[18], NULL, 0);
-
-    data->level = (uint32_t)strtoul(row[19], NULL, 0) - 1;
-    data->exp = (uint32_t)strtoul(row[20], NULL, 0);
-    data->meseta = (uint32_t)strtoul(row[21], NULL, 0);
-
-    psocn_db_result_free(result);
-
-    return 0;
-}
-
 /* 更新玩家基础数据至数据库 */
 int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag) {
     static char query[PSOCN_STLENGTH_BB_DB_CHAR * 2 + 256];
