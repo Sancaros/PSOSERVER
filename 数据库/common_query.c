@@ -514,8 +514,6 @@ psocn_bb_db_char_t *db_uncompress_char_data(unsigned long* len, char** row, uint
 
         if (len[0] != PSOCN_STLENGTH_BB_DB_CHAR) {
             ERR_LOG("无效(未知)角色数据,长度不一致!");
-            //psocn_db_result_free(result);
-            free(char_data);
         }else
             memcpy(char_data, row[0], len[0]);
     }
@@ -620,7 +618,7 @@ psocn_bb_db_char_t *db_get_uncompress_char_data(uint32_t gc, uint8_t slot) {
     return char_data;
 
 err:
-    free(char_data);
+    //free_safe(char_data);
     return NULL;
 }
 

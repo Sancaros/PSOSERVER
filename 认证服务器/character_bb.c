@@ -570,7 +570,7 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
                 return -3;
             }
 
-            free(char_data);
+            free_safe(char_data);
 
             rv = send_bb_char_preview(c, &mc, pkt->slot);
         }
