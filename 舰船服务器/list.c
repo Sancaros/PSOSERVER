@@ -342,7 +342,7 @@ int send_player_list(ship_client_t *c, const char *params) {
             tok = strtok_s(NULL, " ", &lasts);
 
             errno = 0;
-            first = (int)strtol(tok, NULL, 0);
+            first = (int)strtol(tok, NULL, 10);
             if(errno) {
                 free_safe(tmp);
                 return send_txt(c, "%s", __(c, "\tE\tC7Invalid page given."));
@@ -363,7 +363,7 @@ int send_player_list(ship_client_t *c, const char *params) {
             tok = strtok_s(NULL, " ", &lasts);
 
             errno = 0;
-            minlvl = (int)strtol(tok, NULL, 0) - 1;
+            minlvl = (int)strtol(tok, NULL, 10) - 1;
             if(errno) {
                 free_safe(tmp);
                 return send_txt(c, "%s",
@@ -374,7 +374,7 @@ int send_player_list(ship_client_t *c, const char *params) {
             tok = strtok_s(NULL, " ", &lasts);
 
             errno = 0;
-            maxlvl = (int)strtol(tok, NULL, 0) - 1;
+            maxlvl = (int)strtol(tok, NULL, 10) - 1;
             if(errno) {
                 free_safe(tmp);
                 return send_txt(c, "%s",
@@ -385,7 +385,7 @@ int send_player_list(ship_client_t *c, const char *params) {
             tok = strtok_s(NULL, " ", &lasts);
 
             errno = 0;
-            minlvl = maxlvl = (int)strtol(tok, NULL, 0) - 1;
+            minlvl = maxlvl = (int)strtol(tok, NULL, 10) - 1;
             if(errno) {
                 free_safe(tmp);
                 return send_txt(c, "%s", __(c, "\tE\tC7Invalid level given."));

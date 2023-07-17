@@ -2949,7 +2949,6 @@ struct G_ChallengeModeGrave_BB_6xD1 {
     uint32_t unknown_a5;
 } PACKED;
 
-
 // 0xD2: Set quest data 2 (BB)
 // Writes 4 bytes to the 32-bit field specified by index.
 typedef struct subcmd_bb_gallon_area {

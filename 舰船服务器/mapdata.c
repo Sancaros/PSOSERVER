@@ -2218,7 +2218,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
         ver = CLIENT_VERSION_DCV2;
 
     /* Figure out where we're looking... */
-    sprintf(fn, "%s/.mapcache/%s/%08x", ship->cfg->quests_dir,
+    sprintf(fn, "%s\\.mapcache\\%s\\%08x", ship->cfg->quests_dir,
         client_type[ver]->ver_name, qid);
 
     if(!(fp = fopen(fn, "rb"))) {

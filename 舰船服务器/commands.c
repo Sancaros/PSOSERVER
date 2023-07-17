@@ -3358,7 +3358,7 @@ static int handle_quest(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7只在游戏房间中有效."));
 
     if(l->flags & LOBBY_FLAG_BURSTING)
-        return send_txt(c, "%s", __(c, "\tE\tC4Please wait a moment."));
+        return send_txt(c, "%s", __(c, "\tE\tC4跃迁中,请稍后再试."));
 
     if(!(str = _strdup(params)))
         return send_txt(c, "%s", __(c, "\tE\tC7内部服务器错误."));
@@ -3368,11 +3368,11 @@ static int handle_quest(ship_client_t *c, const char *params) {
 
     /* Attempt to parse out the quest id... */
     errno = 0;
-    quest_id = (uint32_t)strtoul(qid, NULL, 0);
+    quest_id = (uint32_t)strtoul(qid, NULL, 10);
 
     if(errno) {
         free_safe(str);
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid quest id."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效任务ID."));
     }
 
     /* Done with this... */
@@ -3388,7 +3388,7 @@ static int handle_quest(ship_client_t *c, const char *params) {
 
            /* If the quest isn't found, bail out now. */
            if(!e) {
-               rv = send_txt(c, __(c, "\tE\tC7Invalid quest id."));
+               rv = send_txt(c, __(c, "\tE\tC7无效任务ID."));
                pthread_rwlock_unlock(&ship->qlock);
                return rv;
            }

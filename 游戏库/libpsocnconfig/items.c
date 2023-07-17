@@ -345,7 +345,7 @@ static int handle_max(xmlNode *n, int *max, int *min) {
     /* Grab the attributes */
     if((val = xmlGetProp(n, XC"max"))) {
         errno = 0;
-        *max = (int)strtol((char *)val, NULL, 0);
+        *max = (int)strtol((char *)val, NULL, 10);
 
         if(errno) {
             ERR_LOG("Invalid value for max: %s", (char *)max);
@@ -357,7 +357,7 @@ static int handle_max(xmlNode *n, int *max, int *min) {
 
     if((val = xmlGetProp(n, XC"min"))) {
         errno = 0;
-        *min = (int)strtol((char *)val, NULL, 0);
+        *min = (int)strtol((char *)val, NULL, 10);
 
         if(errno) {
             ERR_LOG("Invalid value for min: %s", (char *)min);
@@ -400,7 +400,7 @@ static int handle_max_ver(xmlNode *n, int *max, int *min, int *ver) {
     /* Grab the attributes */
     if((val = xmlGetProp(n, XC"max"))) {
         errno = 0;
-        *max = (int)strtol((char *)val, NULL, 0);
+        *max = (int)strtol((char *)val, NULL, 10);
 
         if(errno) {
             ERR_LOG("Invalid value for max: %s", (char *)max);
@@ -412,7 +412,7 @@ static int handle_max_ver(xmlNode *n, int *max, int *min, int *ver) {
 
     if((val = xmlGetProp(n, XC"min"))) {
         errno = 0;
-        *min = (int)strtol((char *)val, NULL, 0);
+        *min = (int)strtol((char *)val, NULL, 10);
 
         if(errno) {
             ERR_LOG("Invalid value for min: %s", (char *)min);

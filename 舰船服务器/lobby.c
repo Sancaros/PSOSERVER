@@ -2181,6 +2181,10 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
             fdebug(l->logfp, DBG_LOGS, "实例数组: %p\n", l->map_objs);
         }
 
+        send_msg(c, TEXT_MSG_TYPE, "读取任务 ID %" PRIu32 "", qid);
+        send_msg(c, TEXT_MSG_TYPE, "敌人数组: %p", l->map_enemies);
+        send_msg(c, TEXT_MSG_TYPE, "实例数组: %p", l->map_objs);
+
         /* Figure out any information we need about the quest for dealing with
            register shenanigans. */
         for(rv = 0; rv < CLIENT_LANG_ALL; ++rv) {

@@ -55,6 +55,8 @@ quest_map_elem_t *quest_lookup(quest_map_t *map, uint32_t qid) {
         }
     }
 
+    DBG_LOG("quest_lookup err QID = %d", qid);
+
     return NULL;
 }
 
@@ -274,6 +276,8 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             /* Check the first file to see if it is the dat. */
             strncpy(fn, bbhdr->filename, 16);
             fn[16] = 0;
+
+            DBG_LOG("检测文件头 %s", fn);
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
                 return LE32(bbhdr->length);
@@ -570,7 +574,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
     mdir = (char*)malloc(sizeof(dlen) + 20);
 
     /* Make sure we have all the directories we'll need. */
-    sprintf(mdir, "%s/.mapcache", dir);
+    sprintf(mdir, "%s\\.mapcache", dir);
     if(_mkdir(mdir) != 0 && errno != EEXIST) {
         QERR_LOG("创建地图缓存文件夹错误: %s",
               strerror(errno));
@@ -579,7 +583,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
     }
 
     for (j = 0; j < CLIENT_VERSION_ALL; ++j) {
-        sprintf(mdir, "%s/.mapcache/%s", dir, client_type[j]->ver_name);
+        sprintf(mdir, "%s\\.mapcache\\%s", dir, client_type[j]->ver_name);
         if (_mkdir(mdir) && errno != EEXIST) {
             QERR_LOG("创建地图缓存文件夹错误: %s",
                 strerror(errno));
@@ -617,10 +621,12 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
                         return -1;
                     }
 
-                    sprintf(fn1, "%s/%s/%s/%s_%s.%s", dir, client_type[j]->ver_name,
+                    sprintf(fn1, "%s\\%s\\%s\\%s_%s.%s", dir, client_type[j]->ver_name,
                             language_codes[k], q->prefix, language_codes[k], exts[q->format]);
-                    sprintf(fn2, "%s/.mapcache/%s/%08x", dir, client_type[j]->ver_name,
+                    sprintf(fn2, "%s\\.mapcache\\%s\\%08x", dir, client_type[j]->ver_name,
                             q->qid);
+
+                    DBG_LOG("%s  -  %s format %d", fn1, fn2, q->format);
 
                     if(check_cache_age(fn1, fn2)) {
                         QERR_LOG("任务缓存 %s 语言 %s %d 需要更新!",
