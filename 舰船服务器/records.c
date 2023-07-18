@@ -27,6 +27,10 @@
 
 #define MAX_RANK_TITLE_LENGTH 100
 
+uint16_t encode_xrgb1555(uint32_t xrgb8888) {
+    return ((xrgb8888 >> 9) & 0x7C00) | ((xrgb8888 >> 6) & 0x03E0) | ((xrgb8888 >> 3) & 0x001F);
+}
+
 uint32_t encrypt_challenge_time(uint16_t value) {
     uint8_t available_bits[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 

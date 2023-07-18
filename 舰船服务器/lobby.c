@@ -2089,8 +2089,7 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
             return rv;
         }
 
-        /* See if the quest we've found has a before quest load script
-           defined... */
+        /* 检查所找到的任务是否有定义了"前置任务加载脚本"... */
         for(rv = 0; rv < CLIENT_LANG_ALL; ++rv) {
             if((qs = e->qptr[l->version][rv])) {
                 if(qs->onload_script_file && !qs->beforeload_script_file) {
@@ -2101,15 +2100,15 @@ int lobby_setup_quest(lobby_t *l, ship_client_t *c, uint32_t qid, int lang) {
                     /* TODO 完成任务脚本分析*/
                     //rv = script_execute_file(qs->beforeload_script_file, l);
 
-                    /* If the script returns a negative number, don't load the
-                       quest. */
-                    if(rv < 0) {
-                        l->flags &= ~LOBBY_FLAG_QUESTSEL;
-                        pthread_mutex_unlock(&l->mutex);
-                        pthread_rwlock_unlock(&ship->qlock);
-                        return 0;
-                    }
-                    else if(rv > 0) {
+                    ///* 如果脚本返回一个负数, 不加载任务. */
+                    //if(rv < 0) {
+                    //    l->flags &= ~LOBBY_FLAG_QUESTSEL;
+                    //    pthread_mutex_unlock(&l->mutex);
+                    //    pthread_rwlock_unlock(&ship->qlock);
+                    //    return 0;
+                    //}
+                    //else 
+                        if(rv > 0) {
                         qid = (uint32_t)rv;
                         rv = 0;
 

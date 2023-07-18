@@ -2077,7 +2077,7 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
         }
     }
 
-    DBG_LOG("敌人 %d", enemy_count);
+    //DBG_LOG("敌人数量 %d", enemy_count);
 
     *obj_cnt = obj_count;
 }
@@ -2133,8 +2133,8 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     }
 
     /* 保存我们的位置, 因为我们事先不知道我们将有多少解析的敌人... */
-    offs = (off_t)ftell(fp);
-    fseek(fp, 4, SEEK_CUR);
+    offs = (off_t)_ftelli64(fp);
+    _fseeki64(fp, 4, SEEK_CUR);
     //CONFIG_LOG("敌人数据位置: %" PRIx64 "", (uint64_t)offs);
     index = 0;
 
@@ -2171,7 +2171,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     }
 
     /* 返回并写下我们拥有的敌人数量. */
-    fseek(fp, offs, SEEK_SET);
+    _fseeki64(fp, offs, SEEK_SET);
     //CONFIG_LOG("敌人数量: %" PRIu32 "", index);
     index = LE32(index);
 
@@ -2203,7 +2203,6 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
 
     /* Cowardly refuse to do this on challenge or battle mode. */
     if (l->challenge || l->battle) {
-
         //DBG_LOG("不处理挑战模式对战模式的怪物");
         return 0;
     }

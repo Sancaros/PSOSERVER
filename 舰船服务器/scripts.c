@@ -519,12 +519,13 @@ void init_scripts(ship_t *s) {
         return;
     }
 
-    if(!(path_str = (char *)malloc(size))) {
+    if(!(path_str = (char *)malloc(size + 1))) {
         SCRIPT_LOG("内存不足, 程序退出!");
         return;
     }
-    else if(!_getcwd(path_str, size)) {
+    else if(!_getcwd(path_str, size + 1)) {
         SCRIPT_LOG("无法保存路径,本地包无法工作!");
+        return;
     }
 
     /* Not that this should happen, but just in case... */

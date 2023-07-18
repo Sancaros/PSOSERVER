@@ -49,6 +49,7 @@
 #include "admin.h"
 #include "smutdata.h"
 #include "iitems.h"
+#include "records.h"
 
 extern int enable_ipv6;
 extern char ship_host4[32];
@@ -473,7 +474,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     uint8_t* bp = (uint8_t*)pkt + 0x10;
     uint16_t len = LE16(pkt->hdr.pkt_len) - 0x10;
 
-    //DBG_LOG("bb_process_menu指令: 0x%08X item_id %d", menu_id & 0xFF, item_id);
+    DBG_LOG("bb_process_menu指令: 0x%08X 0x%zX item_id %d", menu_id & 0xFF, menu_id, item_id);
 
     //return process_menu(c, menu_id, item_id, bp + 0x10, len);
 
@@ -866,6 +867,7 @@ static int bb_process_confirm_open_file(ship_client_t* c, bb_pkt_hdr_t* pkt) {
 
 }
 
+/* 0x0061 输出完整玩家角色*/
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
@@ -918,8 +920,11 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     /* 初始化 模式角色数据 */
     memcpy(&c->mode_pl->bb, &default_mode_char.cdata[c->pl->bb.character.dress_data.ch_class], PSOCN_STLENGTH_BB_CHAR2);
     c->infoboard = (char*)c->pl->bb.infoboard;
-    c->records->bb = c->pl->bb.records;
-    c->records->bb.challenge.title_color = 0x7C00;//TODO 这里需要一个判断 判断玩家头衔等级 并分配颜色
+    if (!&c->pl->bb.records) {
+        c->records->bb = c->pl->bb.records;
+        c->records->bb.challenge.title_color = encode_xrgb1555(c->pl->bb.records.challenge.title_color);
+        //c->records->bb.challenge.rank_title = encrypt_challenge_rank_text()
+    }
     memcpy(c->blacklist, c->pl->bb.blacklist, 30 * sizeof(uint32_t));
 
     /* 将背包数据复制至玩家数据结构中 */

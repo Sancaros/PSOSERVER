@@ -8174,10 +8174,10 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     /* Figure out what file we're going to send. */
     if(!v1 || (q->versions & PSOCN_QUEST_V1)) {
         if(c->version != CLIENT_VERSION_XBOX)
-            snprintf(filename, 256, "%s/%s/%s/%s_%s.qst", ship->cfg->quests_dir,
+            snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst", ship->cfg->quests_dir,
                 client_type[c->version]->ver_name, language_codes[lang], q->prefix, language_codes[lang]);
         else
-            snprintf(filename, 256, "%s/%s/%s/%s_%s.qst", ship->cfg->quests_dir,
+            snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst", ship->cfg->quests_dir,
                 client_type[CLIENT_VERSION_GC]->ver_name, language_codes[lang],
                      q->prefix, language_codes[lang]);
     }
@@ -8185,7 +8185,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         switch(c->version) {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
-                snprintf(filename, 256, "%s/%s/%s/%s_%s.qst",
+                snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst",
                          ship->cfg->quests_dir,
                          client_type[CLIENT_VERSION_DCV1]->ver_name,
                          language_codes[lang], q->prefix, language_codes[lang]);
@@ -8193,29 +8193,21 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             case CLIENT_VERSION_PC:
             case CLIENT_VERSION_GC:
-                snprintf(filename, 256, "%s/%s/%s/%sv1_%s.qst",
+                snprintf(filename, 256, "%s\\%s\\%s\\%sv1_%s.qst",
                          ship->cfg->quests_dir, client_type[c->version]->ver_name,
                          language_codes[lang], q->prefix, language_codes[lang]);
                 break;
 
-            case CLIENT_VERSION_EP3:
-                break;
-
-            case CLIENT_VERSION_BB:
-                snprintf(filename, 256, "%s/%s/%s/quest%s_%s.qst",
-                    ship->cfg->quests_dir,
-                    client_type[c->version]->ver_name, language_codes[lang],
-                    q->prefix, language_codes[lang]);
-                break;
-
             case CLIENT_VERSION_XBOX:
-                snprintf(filename, 256, "%s/%s/%s/%sv1_%s.qst",
+                snprintf(filename, 256, "%s\\%s\\%s\\%sv1_%s.qst",
                          ship->cfg->quests_dir,
                          client_type[CLIENT_VERSION_GC]->ver_name, language_codes[lang],
                          q->prefix, language_codes[lang]);
                 break;
         }
     }
+    //System\quests\bb\cn\quest204_cn.qst quest204 5 0 31
+    DBG_LOG("%s %s %d %d %d", filename, q->prefix, c->version, v1, q->versions);
 
     fp = fopen(filename, "rb");
 

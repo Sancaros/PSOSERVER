@@ -55,7 +55,7 @@ quest_map_elem_t *quest_lookup(quest_map_t *map, uint32_t qid) {
         }
     }
 
-    DBG_LOG("quest_lookup err QID = %d", qid);
+    //DBG_LOG("quest_lookup 错误 QID = %d", qid);
 
     return NULL;
 }
@@ -197,9 +197,9 @@ static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
         return NULL;
     }
 
-    fseek(fp, 0, SEEK_END);
-    sz = (off_t)ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    _fseeki64(fp, 0, SEEK_END);
+    sz = (off_t)_ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
 
     if(!(buf = (uint8_t *)malloc(sz))) {
         QERR_LOG("无法分配内存去读取 dat : %s",
@@ -277,7 +277,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             strncpy(fn, bbhdr->filename, 16);
             fn[16] = 0;
 
-            DBG_LOG("检测文件头 %s", fn);
+            //DBG_LOG("检测文件头 %s", fn);
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
                 return LE32(bbhdr->length);
@@ -466,9 +466,9 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
         return NULL;
     }
 
-    fseek(fp, 0, SEEK_END);
-    sz = (off_t)ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+    _fseeki64(fp, 0, SEEK_END);
+    sz = (off_t)_ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
 
     /* Make sure the file's size is sane. */
     if(sz < 120) {
@@ -626,7 +626,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
                     sprintf(fn2, "%s\\.mapcache\\%s\\%08x", dir, client_type[j]->ver_name,
                             q->qid);
 
-                    DBG_LOG("%s  -  %s format %d", fn1, fn2, q->format);
+                    //DBG_LOG("%s  -  %s 后缀 %s", fn1, fn2, exts[q->format]);
 
                     if(check_cache_age(fn1, fn2)) {
                         QERR_LOG("任务缓存 %s 语言 %s %d 需要更新!",

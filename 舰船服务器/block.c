@@ -48,6 +48,7 @@
 #include "admin.h"
 #include "smutdata.h"
 #include "iitems.h"
+#include "records.h"
 
 extern int enable_ipv6;
 extern char ship_host4[32];
@@ -1483,7 +1484,10 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
         memcpy(c->pl, &pkt->data, sizeof(pc_player_t));
         c->infoboard = NULL;
-        c->records->pc = c->pl->pc.records;
+        if (!&c->pl->pc.records) {
+            c->records->pc = c->pl->pc.records;
+            c->records->pc.challenge.title_color = encode_xrgb1555(c->pl->pc.records.challenge.title_color);
+        }
         memcpy(c->blacklist, c->pl->pc.blacklist, 30 * sizeof(uint32_t));
     }
     else if (version == 3) {
@@ -1495,14 +1499,20 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
         memcpy(c->pl, &pkt->data, sizeof(v3_player_t));
         c->infoboard = c->pl->v3.infoboard;
-        c->records->v3 = c->pl->v3.records;
+        if (!&c->pl->v3.records) {
+            c->records->v3 = c->pl->v3.records;
+            c->records->v3.challenge.title_color = encode_xrgb1555(c->pl->v3.records.challenge.title_color);
+        }
         memcpy(c->blacklist, c->pl->v3.blacklist, 30 * sizeof(uint32_t));
     }
     else if (version == 4) {
         /* XXXX: Not right, but work with it for now. */
         memcpy(c->pl, &pkt->data, sizeof(v3_player_t));
         c->infoboard = c->pl->v3.infoboard;
-        c->records->v3 = c->pl->v3.records;
+        if (!&c->pl->v3.records) {
+            c->records->v3 = c->pl->v3.records;
+            c->records->v3.challenge.title_color = encode_xrgb1555(c->pl->v3.records.challenge.title_color);
+        }
         memcpy(c->blacklist, c->pl->v3.blacklist, 30 * sizeof(uint32_t));
     }
 
