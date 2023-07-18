@@ -184,16 +184,16 @@ extern int32_t script_log_console_show;
 #endif
 
 #ifdef GNU
-#define filename(x) strrchr(x,'/')?strrchr(x,'/')+1:x
+#define logfilename(x) strrchr(x,'/')?strrchr(x,'/')+1:x
 #else
-#define filename(x) strrchr(x,'\\')?strrchr(x,'\\')+1:x
+#define logfilename(x) strrchr(x,'\\')?strrchr(x,'\\')+1:x
 #endif
 
 #define EMPTY_STRING 0xFFFFFFFF
 
-#define m_fun(args) fun(filename(__FILE__),__LINE__, args)
+#define m_fun(args) fun(logfilename(__FILE__),__LINE__, args)
 
-#define PRINT_LINE(FP,MSG)    fprintf(FP,"%s:%d %s\n",filename(__FILE__),__LINE__,MSG)
+#define PRINT_LINE(FP,MSG)    fprintf(FP,"%s:%d %s\n",logfilename(__FILE__),__LINE__,MSG)
 
 //#define ERR_EXIT(m) (perror(m),exit(EXIT_FAILURE))
 #define CODE_LINE(LINE) fprintf(LINE,"%d",__LINE__)
@@ -205,7 +205,7 @@ extern int32_t script_log_console_show;
 #define AUTH_LOG(...) flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__)
 #define SHIPS_LOG(...) flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__)
 #define BLOCK_LOG(...) flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__)
-#define ERR_LOG(...) flog_err(filename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
+#define ERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
 #define ERR_EXIT(...) \
     do { \
         ERR_LOG(__VA_ARGS__); \
@@ -215,26 +215,26 @@ extern int32_t script_log_console_show;
 #define LOBBY_LOG(...) flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__)
 #define SGATE_LOG(...) flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__)
 #define ITEM_LOG(...) flog(__LINE__, item_log_console_show, ITEM_LOG, __VA_ARGS__)
-#define SQLERR_LOG(...) flog_err(filename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
-#define QERR_LOG(...) flog_err(filename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
+#define SQLERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
+#define QERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
 #define GM_LOG(...) flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__)
-#define DBG_LOG(...) flog_debug(filename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
+#define DBG_LOG(...) flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
 #define FILE_LOG(...) flog(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__)
 #define HOST_LOG(...) flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__)
 
-#define UNK_CPD(CODE,VERSION,DATA) unk_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define ERR_CSPD(CODE,VERSION,DATA) err_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UNK_CPD(CODE,VERSION,DATA) unk_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
+#define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
+#define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
+#define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
+#define ERR_CSPD(CODE,VERSION,DATA) err_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
 
-#define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
-#define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, filename(__FILE__))
+#define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
+#define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
 
 #define DC_LOG(...) flog(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
 #define DSENT_LOG(...) flog(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__)
-#define TEST_LOG(...) flog_debug(filename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
-#define MERR_LOG(...) flog_err(filename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
+#define TEST_LOG(...) flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
+#define MERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
 #define CONFIG_LOG(...) flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
 #define SCRIPT_LOG(...) flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)
 #define LOG_LOG(...) flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__)
@@ -249,7 +249,7 @@ extern int32_t script_log_console_show;
                             flog(__LINE__, \
                             error_log_console_show, \
                             ERR_LOG, "%s:%dÐÐ:FREE_ERROR:%s ÄÚ´æ 0x%08x", \
-                            filename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
+                            logfilename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
                             free((EXP)); \
                         }
 

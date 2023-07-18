@@ -239,7 +239,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             fn[16] = 0;
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(dchdr->length);
+                return LE32(dchdr->file_size);
 
             /* Try the second file in the qst */
             dchdr = (const dc_quest_file_pkt *)(buf + 0x3C);
@@ -247,7 +247,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             fn[16] = 0;
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(dchdr->length);
+                return LE32(dchdr->file_size);
 
             /* Didn't find it, punt. */
             return 0;
@@ -259,7 +259,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             fn[16] = 0;
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(pchdr->length);
+                return LE32(pchdr->file_size);
 
             /* Try the second file in the qst */
             pchdr = (const pc_quest_file_pkt *)(buf + 0x3C);
@@ -267,7 +267,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             fn[16] = 0;
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(pchdr->length);
+                return LE32(pchdr->file_size);
 
             /* Didn't find it, punt. */
             return 0;
@@ -280,7 +280,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             //DBG_LOG("检测文件头 %s", fn);
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(bbhdr->length);
+                return LE32(bbhdr->file_size);
 
             /* Try the second file in the qst */
             bbhdr = (const bb_quest_file_pkt *)(buf + 0x58);
@@ -288,7 +288,7 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
             fn[16] = 0;
 
             if((ptr = strrchr(fn, '.')) && !strcmp(ptr, ".dat"))
-                return LE32(bbhdr->length);
+                return LE32(bbhdr->file_size);
 
             /* Didn't find it, punt. */
             return 0;
@@ -299,26 +299,26 @@ static uint32_t qst_dat_size(const uint8_t *buf, int ver) {
 
 static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                            uint32_t dsz) {
-    const dc_quest_chunk_pkt *ck;
+    const dc_quest_chunk_pkt *chunk;
     uint32_t ptr = 120, optr = 0;
     char fn[32];
     char *cptr;
     uint32_t clen;
 
     while(ptr < (uint32_t)sz) {
-        ck = (const dc_quest_chunk_pkt *)(buf + ptr);
+        chunk = (const dc_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
-        if(ck->hdr.dc.pkt_type != QUEST_CHUNK_TYPE ||
-           ck->hdr.dc.pkt_len != LE16(0x0418)) {
+        if(chunk->hdr.dc.pkt_type != QUEST_CHUNK_TYPE ||
+           chunk->hdr.dc.pkt_len != LE16(0x0418)) {
             QERR_LOG("未知或损坏的任务数据!");
             return -1;
         }
 
         /* Grab the vitals... */
-        strncpy(fn, ck->filename, 16);
+        strncpy(fn, chunk->data.filename, sizeof(chunk->data.filename));
         fn[16] = 0;
-        clen = LE32(ck->length);
+        clen = LE32(chunk->data.data_size);
         cptr = strrchr(fn, '.');
 
         /* 合理性检查... */
@@ -334,7 +334,7 @@ static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                 return -1;
             }
 
-            memcpy(rbuf + optr, ck->data, clen);
+            memcpy(rbuf + optr, chunk->data.data, clen);
             optr += clen;
         }
 
@@ -351,26 +351,26 @@ static int copy_dc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
 
 static int copy_pc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                            uint32_t dsz) {
-    const dc_quest_chunk_pkt *ck;
+    const dc_quest_chunk_pkt *chunk;
     uint32_t ptr = 120, optr = 0;
     char fn[32];
     char *cptr;
     uint32_t clen;
 
     while(ptr < (uint32_t)sz) {
-        ck = (const dc_quest_chunk_pkt *)(buf + ptr);
+        chunk = (const dc_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
-        if(ck->hdr.pc.pkt_type != QUEST_CHUNK_TYPE ||
-           ck->hdr.pc.pkt_len != LE16(0x0418)) {
+        if(chunk->hdr.pc.pkt_type != QUEST_CHUNK_TYPE ||
+           chunk->hdr.pc.pkt_len != LE16(0x0418)) {
             QERR_LOG("未知或损坏的任务数据!");
             return -1;
         }
 
         /* Grab the vitals... */
-        strncpy(fn, ck->filename, 16);
+        strncpy(fn, chunk->data.filename, sizeof(chunk->data.filename));
         fn[16] = 0;
-        clen = LE32(ck->length);
+        clen = LE32(chunk->data.data_size);
         cptr = strrchr(fn, '.');
 
         /* 合理性检查... */
@@ -386,7 +386,7 @@ static int copy_pc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                 return -1;
             }
 
-            memcpy(rbuf + optr, ck->data, clen);
+            memcpy(rbuf + optr, chunk->data.data, clen);
             optr += clen;
         }
 
@@ -403,26 +403,26 @@ static int copy_pc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
 
 static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                            uint32_t dsz) {
-    const bb_quest_chunk_pkt *ck;
+    const bb_quest_chunk_pkt *chunk;
     uint32_t ptr = 176, optr = 0;
     char fn[32];
     char *cptr;
     uint32_t clen;
 
     while(ptr < (uint32_t)sz) {
-        ck = (const bb_quest_chunk_pkt *)(buf + ptr);
+        chunk = (const bb_quest_chunk_pkt *)(buf + ptr);
 
         /* Check the chunk for validity. */
-        if(ck->hdr.pkt_type != LE16(QUEST_CHUNK_TYPE) ||
-           ck->hdr.pkt_len != LE16(0x041C)) {
+        if(chunk->hdr.pkt_type != LE16(QUEST_CHUNK_TYPE) ||
+           chunk->hdr.pkt_len != LE16(0x041C)) {
             QERR_LOG("未知或损坏的任务数据!");
             return -1;
         }
 
         /* Grab the vitals... */
-        strncpy(fn, ck->filename, 16);
+        strncpy(fn, chunk->data.filename, sizeof(chunk->data.filename));
         fn[16] = 0;
-        clen = LE32(ck->length);
+        clen = LE32(chunk->data.data_size);
         cptr = strrchr(fn, '.');
 
         /* 合理性检查... */
@@ -438,7 +438,7 @@ static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                 return -1;
             }
 
-            memcpy(rbuf + optr, ck->data, clen);
+            memcpy(rbuf + optr, chunk->data.data, clen);
             optr += clen;
         }
 

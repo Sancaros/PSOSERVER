@@ -7371,8 +7371,8 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x02; /* ??? */
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.dat", q->prefix);
-    file->length = LE32(datlen);
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+    file->file_size = LE32(datlen);
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s DAT文件数据头错误: %s", fn_base,
@@ -7390,8 +7390,8 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x02; /* ??? */
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.bin", q->prefix);
-    file->length = LE32(binlen);
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+    file->file_size = LE32(binlen);
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s BIN文件数据头错误: %s", fn_base,
@@ -7414,9 +7414,9 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, dat);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, dat);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7444,9 +7444,9 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, bin);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, bin);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7539,8 +7539,8 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x02; /* ??? */
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.dat", q->prefix);
-    file->length = LE32(datlen);
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+    file->file_size = LE32(datlen);
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s DAT文件数据头错误: %s", fn_base,
@@ -7558,8 +7558,8 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x02; /* ??? */
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.bin", q->prefix);
-    file->length = LE32(binlen);
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+    file->file_size = LE32(binlen);
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s BIN文件数据头错误: %s", fn_base,
@@ -7582,9 +7582,9 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, dat);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, dat);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7612,9 +7612,9 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, bin);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, bin);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7706,9 +7706,9 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.dat", q->prefix);
-    file->length = LE32(datlen);
-    file->flags = 0x0002;
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+    file->file_size = LE32(datlen);
+    file->type = 0x0002;
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s DAT文件数据头错误: %s", fn_base,
@@ -7726,9 +7726,9 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.pkt_type = QUEST_FILE_TYPE;
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
-    snprintf(file->filename, 16, "%-.11s.bin", q->prefix);
-    file->length = LE32(binlen);
-    file->flags = 0x0002;
+    snprintf(file->filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+    file->file_size = LE32(binlen);
+    file->type = 0x0002;
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s BIN文件数据头错误: %s", fn_base,
@@ -7751,9 +7751,9 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.pc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, dat);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, dat);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7781,9 +7781,9 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.pc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, bin);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, bin);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7881,8 +7881,8 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
     snprintf(file->filename, 16, "%-.11s.dat", q->prefix);
-    file->length = LE32(datlen);
-    file->flags = 0x0002;
+    file->file_size = LE32(datlen);
+    file->type = 0x0002;
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s DAT文件数据头错误: %s", fn_base,
@@ -7901,8 +7901,8 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(DC_QUEST_FILE_LENGTH);
     snprintf(file->filename, 16, "%-.11s.bin", q->prefix);
-    file->length = LE32(binlen);
-    file->flags = 0x0002;
+    file->file_size = LE32(binlen);
+    file->type = 0x0002;
 
     if(crypt_send(c, DC_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s BIN文件数据头错误: %s", fn_base,
@@ -7925,9 +7925,9 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, dat);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, dat);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -7955,9 +7955,9 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             chunk->hdr.dc.pkt_len = LE16(DC_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, bin);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, 16, "%-.11s.bin", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, bin);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if(crypt_send(c, DC_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -8055,8 +8055,8 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(BB_QUEST_FILE_LENGTH);
     snprintf(file->filename, 16, "%-.11s.dat", q->prefix);
-    file->length = LE32(datlen);
-    file->flags = 0x0002;
+    file->file_size = LE32(datlen);
+    file->type = 0x0002;
 
     if (crypt_send(c, BB_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s DAT文件数据头错误: %s", fn_base,
@@ -8075,8 +8075,8 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
     file->hdr.flags = 0x00;
     file->hdr.pkt_len = LE16(BB_QUEST_FILE_LENGTH);
     snprintf(file->filename, 16, "%-.11s.bin", q->prefix);
-    file->length = LE32(binlen);
-    file->flags = 0x0002;
+    file->file_size = LE32(binlen);
+    file->type = 0x0002;
 
     if (crypt_send(c, BB_QUEST_FILE_LENGTH, sendbuf)) {
         QERR_LOG("发送 %s BIN文件数据头错误: %s", fn_base,
@@ -8099,9 +8099,9 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             chunk->hdr.pkt_len = LE16(BB_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, sizeof(chunk->filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, dat);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, dat);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if (crypt_send(c, BB_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -8129,9 +8129,9 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             chunk->hdr.pkt_len = LE16(BB_QUEST_CHUNK_LENGTH);
 
             /* Fill in the rest */
-            snprintf(chunk->filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data, 1, 0x400, bin);
-            chunk->length = LE32(((uint32_t)amt));
+            snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
+            amt = fread(chunk->data.data, 1, 0x400, bin);
+            chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
             if (crypt_send(c, BB_QUEST_CHUNK_LENGTH, sendbuf)) {
@@ -12974,4 +12974,72 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
         return -1;
     }
 }
+//
+//int send_quest_file_chunk(ship_client_t* c, const char* filename, size_t chunk_index, const void* data, size_t size,
+//    bool is_download_quest) {
+//    if (size > 0x400) {
+//        ERR_LOG("quest file chunks must be 1KB or smaller");
+//        return -1;
+//    }
+//
+//    dc_quest_chunk_pkt dc = { 0 };
+//    bb_quest_chunk_pkt bb = { 0 };
+//
+//    uint16_t len_dc = sizeof(dc_quest_chunk_pkt);
+//    uint16_t len_bb = sizeof(bb_quest_chunk_pkt);
+//
+//    /* 填充数据头并准备发送 */
+//    pkt.hdr.pkt_len = sizeof(bb_send_quest_state_pkt);
+//    pkt.hdr.pkt_type = is_download_quest ? DL_QUEST_CHUNK_TYPE : QUEST_CHUNK_TYPE;
+//    pkt.hdr.flags = c->client_id;
+//
+//    quest_chunk_t cmd;
+//    cmd.filename = filename;
+//    memcpy(cmd.data.data(), data, size);
+//    if (size < 0x400) {
+//        memset(&cmd.data[size], 0, 0x400 - size);
+//    }
+//    cmd.data_size = size;
+//    return crypt_send(c, BB_QUEST_FILE_LENGTH, sendbuf);
+//
+//    //send_command_t(c, is_download_quest ? 0xA7 : 0x13, chunk_index, cmd);
+//}
+//
+//static void send_file_chunk(
+//    ship_client_t* c,
+//    const char* filename,
+//    size_t chunk_index,
+//    bool is_download_quest) {
+//    shared_ptr<const string> data;
+//    try {
+//        data = c->sending_files.at(filename);
+//    }
+//    catch (const out_of_range&) {
+//        return;
+//    }
+//
+//    size_t chunk_offset = chunk_index * 0x400;
+//    if (chunk_offset >= data->size()) {
+//        DBG_LOG("Done sending file %s", filename.c_str());
+//        c->sending_files.erase(filename);
+//    }
+//    else {
+//        const void* chunk_data = data->data() + (chunk_index * 0x400);
+//        size_t chunk_size = min<size_t>(data->size() - chunk_offset, 0x400);
+//        send_quest_file_chunk(c, filename, chunk_index, chunk_data, chunk_size, is_download_quest);
+//    }
+//}
+//
+//static void on_44_A6_V3_BB(ship_client_t* c,
+//    uint16_t command, uint32_t, const uint8_t* data) {
+//    const auto& cmd = check_size_t<C_OpenFileConfirmation_44_A6>(data);
+//    send_file_chunk(c, cmd.filename, 0, (command == 0xA6));
+//}
+//
+//static void on_13_A7_V3_BB(ship_client_t* c,
+//    uint16_t command, uint32_t flag, const uint8_t* data) {
+//    const auto& cmd = check_size_t<C_WriteFileConfirmation_V3_BB_13_A7>(data);
+//    send_file_chunk(c, cmd.filename, flag + 1, (command == 0xA7));
+//}
+//
 

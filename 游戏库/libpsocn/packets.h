@@ -843,11 +843,11 @@ typedef struct bb_info_reply {
 // currently sends them sequentially).
 
 // header.flag = file chunk index (start offset / 0x400)
-//struct S_WriteFile_13_A7 {
-//    ptext<char, 0x10> filename;
-//    parray<uint8_t, 0x400> data;
-//    uint32_t data_size;
-//} PACKED;
+typedef struct quest_chunk {
+    char filename[16];
+    char data[1024];
+    uint32_t data_size;
+} PACKED quest_chunk_t;
 
 /* The packet sent to actually send quest data */
 typedef struct dc_quest_chunk {
@@ -855,16 +855,12 @@ typedef struct dc_quest_chunk {
         dc_pkt_hdr_t dc;
         pc_pkt_hdr_t pc;
     } hdr;
-    char filename[16];
-    char data[1024];
-    uint32_t length;
+    quest_chunk_t data;
 } PACKED dc_quest_chunk_pkt;
 
 typedef struct bb_quest_chunk {
     bb_pkt_hdr_t hdr;
-    char filename[16];
-    char data[1024];
-    uint32_t length;
+    quest_chunk_t data;
 } PACKED bb_quest_chunk_pkt;
 
 // 13 (C->S): Confirm file write (V3/BB)
@@ -872,9 +868,18 @@ typedef struct bb_quest_chunk {
 // are only sent by V3 and BB - PSO DC and PC do not send these.
 
 // header.flag = file chunk index (same as in the 13/A7 sent by the server)
-//struct C_WriteFileConfirmation_V3_BB_13_A7 {
-//    ptext<char, 0x10> filename;
-//} PACKED;
+typedef struct dc_write_quest_file_confirmation {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
+    char filename[16];
+} PACKED dc_write_quest_file_confirmation_pkt;
+
+typedef struct bb_write_quest_file_confirmation {
+    bb_pkt_hdr_t hdr;
+    char filename[16];
+} PACKED bb_write_quest_file_confirmation_pkt;
 
 // 14 (S->C): Valid but ignored (all versions)
 // Internal name: RcvUpLoad
@@ -1244,11 +1249,21 @@ typedef struct bb_guild_reply6 {
    the pipe */
 typedef struct dc_quest_file {
     dc_pkt_hdr_t hdr;
-    char name[32];
-    uint8_t unused1[3];
-    char filename[16];
-    uint8_t unused2;
-    uint32_t length;
+    char name[34];// Should begin with "PSO/"
+  // The type field is only used for download quests (A6); it is ignored for
+  // online quests (44). The following values are valid for A6:
+  //   0 = download quest (client expects .bin and .dat files)
+  //   1 = download quest (client expects .bin, .dat, and .pvr files)
+  //   2 = GBA game (GC only; client expects .gba file only)
+  //   3 = Episode 3 download quest (Ep3 only; client expects .bin file only)
+  // There is a bug in the type logic: an A6 command always overwrites the
+  // current download type even if the filename doesn't end in .bin, .dat, .pvr,
+  // or .gba. This may lead to a resource exhaustion bug if exploited carefully,
+  // but I haven't verified this. Generally the server should send all files for
+  // a given piece of content with the same type in each file's A6 command.
+    uint8_t type;
+    char filename[17];
+    uint32_t file_size;
 } PACKED dc_quest_file_pkt;
 
 // 44 (S->C): Open file for download
@@ -1258,11 +1273,10 @@ typedef struct dc_quest_file {
 // filename ends in .bin or .dat.
 typedef struct pc_quest_file {
     pc_pkt_hdr_t hdr;
-    char name[32];
-    uint16_t unused;
-    uint16_t flags;
+    char name[34]; // Should begin with "PSO/"
+    uint16_t type;
     char filename[16];
-    uint32_t length;
+    uint32_t file_size;
 } PACKED pc_quest_file_pkt;
 
 // 44 (S->C): Open file for download
@@ -1272,12 +1286,25 @@ typedef struct pc_quest_file {
 // filename ends in .bin or .dat.
 typedef struct gc_quest_file {
     dc_pkt_hdr_t hdr;
-    char name[32];
-    uint16_t unused;
-    uint16_t flags;
+    char name[34]; // Should begin with "PSO/"
+    uint16_t type;
     char filename[16];
-    uint32_t length;
+    uint32_t file_size;
 } PACKED gc_quest_file_pkt;
+
+// 44 (S->C): Open file for download
+// Used for downloading online quests. For download quests (to be saved to the
+// memory card), use A6 instead.
+// Unlike the A6 command, the client will react to a 44 command only if the
+// filename ends in .bin or .dat.
+typedef struct xb_quest_file {
+    dc_pkt_hdr_t hdr;
+    char name[34]; // Should begin with "PSO/"
+    uint16_t type;
+    char filename[16];
+    uint32_t file_size;
+    uint8_t unused2[0x18];
+} PACKED xb_quest_file_pkt;
 
 // 44 (S->C): Open file for download
 // Used for downloading online quests. For download quests (to be saved to the
@@ -1286,11 +1313,10 @@ typedef struct gc_quest_file {
 // filename ends in .bin or .dat.
 typedef struct bb_quest_file {
     bb_pkt_hdr_t hdr;
-    char unused1[32];
-    uint16_t unused2;
-    uint16_t flags;
+    char unused1[34];
+    uint16_t type;
     char filename[16];
-    uint32_t length;
+    uint32_t file_size;
     char name[24];
 } PACKED bb_quest_file_pkt;
 
@@ -1299,9 +1325,18 @@ typedef struct bb_quest_file {
 // header.flag = quest number (sort of - seems like the client just echoes
 // whatever the server sent in its header.flag field. Also quest numbers can be
 // > 0xFF so the flag is essentially meaningless)
-typedef struct C_OpenFileConfirmation_44_A6 {
+typedef struct dc_open_quest_file_confirmation {
+    union {
+        dc_pkt_hdr_t dc;
+        pc_pkt_hdr_t pc;
+    } hdr;
     char filename[0x10];
-} PACKED C_OpenFileConfirmation_44_A6_t;
+} PACKED dc_open_quest_file_confirmation_pkt;
+
+typedef struct bb_open_quest_file_confirmation {
+    bb_pkt_hdr_t hdr;
+    char filename[0x10];
+} PACKED bb_open_quest_file_confirmation_pkt;
 
 // 45: 无效或未解析指令
 // 46: 无效或未解析指令

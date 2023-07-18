@@ -724,6 +724,15 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     }
 }
 
+static int bb_process_write_quest_file(ship_client_t* c, bb_write_quest_file_confirmation_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+
+    //DBG_LOG("bb_process_write_quest_file %s", pkt->filename);
+
+    return 0;
+}
+
 static int bb_process_ping(ship_client_t* c) {
     int rv;
     if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
@@ -857,6 +866,15 @@ static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {
     }
 
     return rv;
+}
+
+static int bb_process_open_quest_file(ship_client_t* c, bb_open_quest_file_confirmation_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+
+    //DBG_LOG("bb_process_open_quest_file %s", pkt->filename);
+
+    return 0;
 }
 
 static int bb_process_confirm_open_file(ship_client_t* c, bb_pkt_hdr_t* pkt) {
@@ -2797,11 +2815,12 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
         /* 0x0013 19*/
     case QUEST_CHUNK_TYPE:
+
         //display_packet((unsigned char*)pkt, len);
         /* Uhh... Ignore these for now, we've already sent it by the time we
            get this packet from the client.
            嗯…暂时忽略这些，当我们从客户端收到这个数据包时，我们已经发送了 */
-        return 0;
+        return bb_process_write_quest_file(c, (bb_write_quest_file_confirmation_pkt*)pkt);;
 
         /* 0x001D 29*/
     case PING_TYPE:
@@ -2824,7 +2843,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         /* Uhh... Ignore these for now, we've already sent it by the time we
            get this packet from the client.
            嗯…暂时忽略这些，当我们从客户端收到这个数据包时，我们已经发送了 */
-        return 0;
+        return bb_process_open_quest_file(c, (bb_open_quest_file_confirmation_pkt*)pkt);
 
         /* 0x0060 96*/
     case GAME_COMMAND0_TYPE:
