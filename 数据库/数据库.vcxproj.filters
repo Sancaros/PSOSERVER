@@ -65,5 +65,11 @@
     <ClCompile Include="disp_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="records_challenge_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="records_battle_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

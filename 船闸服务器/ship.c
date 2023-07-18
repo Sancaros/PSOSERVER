@@ -2757,7 +2757,16 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
-    if (db_update_char_challenge(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+    if (db_update_char_b_records(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
+        SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        return 0;
+    }
+
+    if (db_update_char_c_records(char_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         SQLERR_LOG("无法保存角色挑战数据 (%" PRIu32 ": %" PRIu8 ")", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
@@ -3027,7 +3036,6 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     /* 从数据库中获取玩家角色的背包数据 */
     if (db_get_char_inv(gc, slot, &bb_data->character.inv, 0)) {
-        //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据", gc, slot);
     }
 
@@ -3048,16 +3056,19 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
 
     /* 从数据库中获取玩家角色的银行数据 */
     if (db_get_char_bank(gc, slot, &bb_data->bank, 0)) {
-        //SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据", gc, slot);
     }
 
     /* 从数据库中获取玩家角色的QUEST_DATA1数据 */
     if (db_get_char_quest_data1(gc, slot, bb_data->quest_data1, 0)) {
-        //SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据,将重新读取角色总表插入分表并更新数据库", gc, slot);
         SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据", gc, slot);
     }
 
+    /* 从数据库中获取玩家角色的b_records数据 */
+    if (db_get_b_records(gc, slot, &bb_data->b_records)) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色b_records数据", gc, slot);
+    }
+    
     /* 将数据发回舰船. */
     rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
 

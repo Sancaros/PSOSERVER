@@ -1211,6 +1211,11 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
     }
 
+    if (l->battle) {
+        send_txt(src, __(src, "\tE\tC6暂未探明对战模式该掉什么东西."));
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    }
+
     return l->dropfunc(src, l, pkt);
 }
 

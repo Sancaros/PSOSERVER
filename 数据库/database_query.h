@@ -241,8 +241,6 @@ int db_update_bb_guild_ranks(psocn_dbconn_t* conn);
 /* 更新BB角色选项数据 */
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc);
 
-/* 更新BB角色挑战数据 */
-int db_update_char_challenge(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
 ///////////////////////////////////////////////////////
 /* 新增玩家QUEST_DATA1数据至数据库 */
 int db_insert_char_quest_data1(uint8_t* quest_data1, uint32_t gc, uint8_t slot);
@@ -258,6 +256,18 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
 int db_get_char_techniques(uint32_t gc, uint8_t slot, uint8_t tech_data[20], int check);
 
 int db_update_char_techniques(uint8_t tech_data[20], uint32_t gc, uint32_t slot, uint32_t flag);
+
+////////////////////////////////////////////////////////////////
+
+/* 更新BB角色对战数据 */
+int db_update_char_b_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
+
+////////////////////////////////////////////////////////////////
+
+/* 更新BB角色挑战数据 */
+int db_update_char_c_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
+
+int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records);
 
 
 

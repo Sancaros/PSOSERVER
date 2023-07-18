@@ -2598,7 +2598,7 @@ static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_set_battle_mode_data_t* pkt) {
+    subcmd_bb_sync_battle_mode_data_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2615,9 +2615,20 @@ static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    DBG_LOG("GC %u", src->guildcard);
+    send_msg(src, TEXT_MSG_TYPE, "%02X\n%02X\n%02X\n%02X\n%08X\n%08X\n%08X\n%08X"
+        , pkt->unknown_a1
+        , pkt->unused[0]
+        , pkt->unused[1]
+        , pkt->unused[2]
+        , pkt->target_client_id
+        , pkt->unknown_a2
+        , pkt->unknown_a3[0]
+        , pkt->unknown_a3[1]
+    );
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    //DBG_LOG("GC %u", src->guildcard);
+
+    //display_packet(pkt, pkt->hdr.pkt_len);
 
 //[2023年07月12日 20:08:18:088] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
 //[2023年07月12日 20:08:18:091] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
@@ -2811,6 +2822,30 @@ static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_8F_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_battle_player_hit_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    DBG_LOG("CID %d 攻击了 CID %d 伤害 %d", pkt->shdr.client_id, pkt->target_client_id, pkt->damage);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_93_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2895,6 +2930,33 @@ static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest,
 //[2023年07月06日 12:31:43:857] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9A 版本 5 的处理
 //[2023年07月06日 12:31:43:869] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9A
 //( 00000000 )   10 00 60 00 00 00 00 00   9A 02 00 00 00 00 03 0D  ..`.....?......
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_9B_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_battle_player_die_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    DBG_LOG("GC %u CID %d = %d Die %d", src->guildcard, src->client_id, pkt->shdr.client_id, pkt->die_count);
+
+    //[2023年07月18日 19:49 : 50 : 092] 调试(subcmd_handle_60.c 3757) : 未知 0x60 指令 : 0x9B
+    //(00000000)   10 00 60 00 00 00 00 00   9B 02 01 00 01 00 00 00  ..`..... ? ......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3650,7 +3712,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SYNC_REG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
     { SUBCMD60_SET_C_GAME_MODE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
-    { SUBCMD60_SET_BATTLE_MODE_DATA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7D_bb },
+    { SUBCMD60_SYNC_BATTLE_MODE_DATA      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7D_bb },
 
     //cmd_type 80 - 8F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
@@ -3660,11 +3722,13 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
     { SUBCMD60_CH_GAME_SELECT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
     { SUBCMD60_OVERRIDE_TECH_LEVEL        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
+    { SUBCMD60_BATTLE_MODE_PLAYER_HIT     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8F_bb },
 
     //cmd_type 90 - 9F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TIMED_SWITCH_ACTIVATED     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
     { SUBCMD60_CH_GAME_CANCEL             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
     { SUBCMD60_CHANGE_STAT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
+    { SUBCMD60_BATTLE_MODE_PLAYER_DIE     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9B_bb },
     { SUBCMD60_UNKNOW_9C                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
     { SUBCMD60_CH_GAME_FINISHED           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9D_bb },
 

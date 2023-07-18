@@ -228,7 +228,7 @@
 #define SUBCMD60_UNKNOW_7A                     0x7A
 #define SUBCMD60_UNKNOW_7B                     0x7B
 #define SUBCMD60_SET_C_GAME_MODE               0x7C
-#define SUBCMD60_SET_BATTLE_MODE_DATA          0x7D
+#define SUBCMD60_SYNC_BATTLE_MODE_DATA         0x7D
 #define SUBCMD60_UNKNOW_7E                     0x7E
 #define SUBCMD60_UNKNOW_7F                     0x7F
 #define SUBCMD60_TRIGGER_TRAP                  0x80
@@ -246,7 +246,7 @@
 #define SUBCMD60_UNKNOW_8C                     0x8C
 #define SUBCMD60_OVERRIDE_TECH_LEVEL           0x8D //释放法术 TODO 未完成法术有效性分析
 #define SUBCMD60_UNKNOW_8E                     0x8E
-#define SUBCMD60_UNKNOW_8F                     0x8F
+#define SUBCMD60_BATTLE_MODE_PLAYER_HIT        0x8F
 #define SUBCMD60_UNKNOW_90                     0x90
 #define SUBCMD60_UNKNOW_91                     0x91
 #define SUBCMD60_UNKNOW_92                     0x92
@@ -266,9 +266,9 @@
 #define SUBCMD60_STAT_HPUP                     3
 #define SUBCMD60_STAT_TPUP                     4
 /////////////////////////////////////////////////////////////////////////////////////
-#define SUBCMD60_UNKNOW_9B                     0x9B
+#define SUBCMD60_BATTLE_MODE_PLAYER_DIE        0x9B
 #define SUBCMD60_UNKNOW_9C                     0x9C
-#define SUBCMD60_CH_GAME_FINISHED                     0x9D
+#define SUBCMD60_CH_GAME_FINISHED              0x9D
 #define SUBCMD60_UNKNOW_9E                     0x9E
 #define SUBCMD60_GAL_GRYPHON_ACT               0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
 #define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */

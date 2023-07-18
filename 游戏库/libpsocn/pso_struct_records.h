@@ -36,7 +36,28 @@
 typedef struct battle_records {
     uint16_t place_counts[4];//8
     uint16_t disconnect_count;//2
-    uint8_t unknown_a1[0x0E];//14
+    union data
+    {
+        uint8_t unknown_a1[0x0E];//14
+        struct MyStruct
+        {
+            uint8_t  data0;
+            uint8_t  data1;
+            uint8_t  data2;
+            uint8_t  data3;
+            uint8_t  data4;
+            uint8_t  data5;
+            uint8_t  data6;
+            uint8_t  data7;
+            uint8_t  data8;
+            uint8_t  data9;
+            uint8_t  data10;
+            uint8_t  data11;
+            uint8_t  data12;
+            uint8_t  data13;
+        };
+
+    };
 } PACKED battle_records_t;
 
 #define PSOCN_STRUCT_BATTLE

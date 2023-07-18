@@ -1982,8 +1982,8 @@ typedef struct subcmd_bb_grave {
 
 static int sdasd = sizeof(subcmd_bb_grave_t);
 
-// 0x7D: 设置对战模数据 (指令生效范围; 仅限游戏; 不支持 Episode 3)
-typedef struct subcmd_bb_set_battle_mode_data {
+// 0x7D: 同步对战模数据 (指令生效范围; 仅限游戏; 不支持 Episode 3)
+typedef struct subcmd_bb_sync_battle_mode_data {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t unknown_a1;        // Must be < 7; used in jump table
@@ -1991,7 +1991,7 @@ typedef struct subcmd_bb_set_battle_mode_data {
     uint32_t target_client_id;  //数据包发送对象
     uint32_t unknown_a2;        //0x00000000
     uint32_t unknown_a3[2];
-} PACKED subcmd_bb_set_battle_mode_data_t;
+} PACKED subcmd_bb_sync_battle_mode_data_t;
 
 // 0x7E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
@@ -2106,13 +2106,13 @@ typedef struct subcmd_bb_set_technique_level_override {
 // 0x8E: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
 
-// 0x8F: Unknown (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x8F {
+// 0x8F: 对战模式玩家攻击 (不支持 Episode 3)
+typedef struct subcmd_bb_battle_player_hit {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t client_id2;
-    uint16_t unknown_a1;
-} PACKED subcmd_bb_Unknown_6x8F_t;
+    uint16_t target_client_id;
+    uint16_t damage; //damage???
+} PACKED subcmd_bb_battle_player_hit_t;
 
 // 0x90: Unknown (不支持 Episode 3)
 typedef struct subcmd_bb_Unknown_6x90 {
@@ -2221,13 +2221,12 @@ typedef struct subcmd_bb_update_player_stat {
     uint8_t amount;
 } PACKED subcmd_bb_update_player_stat_t;
 
-// 0x9B: Unknown
-typedef struct subcmd_bb_Unknown_6x9B {
+// 0x9B: battle player died count
+typedef struct subcmd_bb_battle_player_die {
     bb_pkt_hdr_t hdr;
-    unused_hdr_t shdr;
-    uint8_t unknown_a1;
-    uint8_t unused[3];
-} PACKED subcmd_bb_Unknown_6x9B_t;
+    client_id_hdr_t shdr;
+    uint32_t die_count;
+} PACKED subcmd_bb_battle_player_die_t;
 
 // 0x9C: Unknown (指令生效范围; 仅限游戏; 不支持 Episode 3)
 typedef struct subcmd_bb_Unknown_6x9C {
