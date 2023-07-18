@@ -206,7 +206,7 @@ typedef struct bb_challenge_records {
     uint16_t grave_message[32];
     uint8_t unk3[4];
     uint16_t string[18];
-    uint16_t rank_title[12];
+    uint16_t rank_title[12]; //³ÆºÅ
     uint32_t battle[7];
 } PACKED bb_challenge_records_t;
 

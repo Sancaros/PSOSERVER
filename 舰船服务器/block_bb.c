@@ -1614,6 +1614,7 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
     return 0;
 }
 
+/* 0x00E7 231*/
 static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     psocn_bb_full_char_t char_data = pkt->data;
