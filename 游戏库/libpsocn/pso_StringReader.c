@@ -15,13 +15,6 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <wchar.h>
-#include <string.h>
-
-#include "f_logs.h"
 #include "pso_StringReader.h"
 
 #define PHOSG_WINDOWS
@@ -184,25 +177,28 @@ size_t parse_size(const char* str) {
 //最后，我们销毁StringReader对象并释放之前分配的内存。
 StringReader* StringReader_init() {
     StringReader* reader = (StringReader*)malloc(sizeof(StringReader));
-    reader->data = NULL;
-    reader->length = 0;
-    reader->offset = 0;
+    if (reader != NULL) {
+        reader->data = NULL;
+        reader->length = 0;
+        reader->offset = 0;
+        pthread_mutex_init(&reader->mutex, NULL);  // 初始化互斥锁
+    }
     return reader;
 }
 
-// StringReader_destroy方法实现
 void StringReader_destroy(StringReader* reader) {
-    free_safe(reader);
+    pthread_mutex_destroy(&reader->mutex);  // 销毁互斥锁
+    free(reader);
 }
 
-// StringReader_setData方法实现
 void StringReader_setData(StringReader* reader, const char* data, size_t length, size_t offset) {
+    pthread_mutex_lock(&reader->mutex);  // 上锁
     reader->data = data;
     reader->length = length;
     reader->offset = offset;
+    pthread_mutex_unlock(&reader->mutex);  // 解锁
 }
 
-/* 字符串读取器 读到哪个节点了 */
 size_t StringReader_where(const StringReader* reader) {
     return reader->offset;
 }
@@ -256,16 +252,17 @@ const char* StringReader_peek(const StringReader* reader, size_t size) {
     return NULL;
 }
 
-// StringReader_read方法实现
 char* StringReader_read(StringReader* reader, size_t size, int advance) {
     if (reader->offset + size <= reader->length) {
         char* result = (char*)malloc(size + 1);
-        memcpy(result, reader->data + reader->offset, size);
-        result[size] = '\0';
-        if (advance) {
-            reader->offset += size;
+        if (result != NULL) {
+            memcpy(result, reader->data + reader->offset, size);
+            result[size] = '\0';
+            if (advance) {
+                reader->offset += size;
+            }
+            return result;
         }
-        return result;
     }
     return NULL;
 }
@@ -277,9 +274,11 @@ char* StringReader_all(StringReader* reader) {
 char* StringReader_sub(const StringReader* reader, size_t offset, size_t size) {
     if (reader->offset + offset + size <= reader->length) {
         char* result = (char*)malloc(size + 1);
-        memcpy(result, reader->data + reader->offset + offset, size);
-        result[size] = '\0';
-        return result;
+        if (result != NULL) {
+            memcpy(result, reader->data + reader->offset + offset, size);
+            result[size] = '\0';
+            return result;
+        }
     }
     return NULL;
 }
@@ -294,12 +293,14 @@ char* StringReader_get_line(StringReader* reader, int advance) {
     if (end != NULL) {
         size_t size = end - start;
         char* result = (char*)malloc(size + 1);
-        memcpy(result, start, size);
-        result[size] = '\0';
-        if (advance) {
-            reader->offset += size + 1;
+        if (result != NULL) {
+            memcpy(result, start, size);
+            result[size] = '\0';
+            if (advance) {
+                reader->offset += size + 1;
+            }
+            return result;
         }
-        return result;
     }
     return NULL;
 }
@@ -310,38 +311,14 @@ char* StringReader_get_cstr(StringReader* reader, int advance) {
     if (end != NULL) {
         size_t size = end - start;
         char* result = (char*)malloc(size + 1);
-        memcpy(result, start, size);
-        result[size] = '\0';
-        if (advance) {
-            reader->offset += size + 1;
+        if (result != NULL) {
+            memcpy(result, start, size);
+            result[size] = '\0';
+            if (advance) {
+                reader->offset += size + 1;
+            }
+            return result;
         }
-        return result;
     }
     return NULL;
 }
-//
-//int main() {
-//    const char* data = "Hello, World!";
-//    size_t length = strlen(data);
-//
-//    // 创建StringReader对象
-//    StringReader* reader = (StringReader*)malloc(sizeof(StringReader));
-//    StringReader_setData(reader, data, length, 0);
-//
-//    // 读取前5个字符
-//    char* str1 = StringReader_read(reader, 5, 1);
-//    printf("Read: %s\n", str1);  // 输出: Read: Hello
-//
-//    // 读取剩余的所有字符
-//    char* str2 = StringReader_read(reader, StringReader_remaining(reader), 1);
-//    printf("Read: %s\n", str2);  // 输出: Read: , World!
-//
-//    // 销毁StringReader对象
-//    StringReader_destroy(reader);
-//    free(str1);
-//    free(str2);
-//
-//    return 0;
-//}
-//Read: Hello
-//Read : , World!
