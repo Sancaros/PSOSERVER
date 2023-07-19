@@ -54,7 +54,7 @@ void load_program_info(const char* servername, const char* ver)
 		fprintf(stderr, "无法设置本地语言\n 已改为UT8编码语言");
 		setlocale(LC_CTYPE, "utf8");
 	}
-	printf("本地语言类型为 %s\n", localLanguage);
+	printf("本地语言类型为 %s\n\n", localLanguage);
 
 }
 

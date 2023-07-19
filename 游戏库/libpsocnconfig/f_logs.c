@@ -49,6 +49,7 @@ int32_t ships_log_console_show;
 int32_t blocks_log_console_show;
 int32_t lobbys_log_console_show;
 int32_t sgate_log_console_show;
+int32_t dns_log_console_show;
 
 int32_t login_log_console_show;
 int32_t item_log_console_show;
@@ -305,6 +306,11 @@ void load_log_config(void)
 				case SCRIPT_LOG:
 					// 控制台LOG显示开关
 					script_log_console_show = atoi(&config_data[0]);
+					break;
+
+				case DNS_LOG:
+					// 控制台LOG显示开关
+					dns_log_console_show = atoi(&config_data[0]);
 					break;
 
 				case LOG:

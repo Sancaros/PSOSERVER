@@ -53,6 +53,7 @@ enum Log_files_Num {
 	MONSTERID_ERR_LOG, //Ω¢¥¨
 	CONFIG_LOG, //Ω¢¥¨
 	SCRIPT_LOG,
+	DNS_LOG,
 	LOG,
 	LOG_FILES_MAX,
 };
@@ -87,6 +88,7 @@ static log_map_st log_header[] = {
 	{ MONSTERID_ERR_LOG, "π÷ŒÔ" }, //Ω¢¥¨
 	{ CONFIG_LOG, "…Ë÷√" }, //Ω¢¥¨
 	{ SCRIPT_LOG, "Ω≈±æ" },
+	{ DNS_LOG, "DNS" },
 	{ LOG, "»’÷æ" },
 	{ LOG_FILES_MAX, "Œ¥÷™»’÷æ¥ÌŒÛ" },
 };
@@ -101,6 +103,7 @@ extern int32_t ships_log_console_show;
 extern int32_t blocks_log_console_show;
 extern int32_t lobbys_log_console_show;
 extern int32_t sgate_log_console_show;
+extern int32_t dns_log_console_show;
 
 extern int32_t login_log_console_show;
 extern int32_t item_log_console_show;
@@ -205,6 +208,7 @@ extern int32_t script_log_console_show;
 #define AUTH_LOG(...) flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__)
 #define SHIPS_LOG(...) flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__)
 #define BLOCK_LOG(...) flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__)
+#define DNS_LOG(...) flog(__LINE__, dns_log_console_show, DNS_LOG, __VA_ARGS__)
 #define ERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
 #define ERR_EXIT(...) \
     do { \

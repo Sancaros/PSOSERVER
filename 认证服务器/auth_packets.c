@@ -3618,8 +3618,6 @@ static int send_patch_menu_dcgc(login_client_t *c) {
 int send_patch_menu(login_client_t *c) {
     uint32_t v;
 
-    DBG_LOG("11111111111111");
-
     switch(c->type) {
         case CLIENT_AUTH_GC:
             v = c->ext_version & CLIENT_EXTVER_GC_EP_MASK;

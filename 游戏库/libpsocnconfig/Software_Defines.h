@@ -41,6 +41,7 @@
 #define AUTH_SERVER  0x01
 #define SHIPS_SERVER 0x02
 #define SGATE_SERVER 0x03
+#define DNS_SERVER  0x04
 
 typedef struct server_map {
 	uint32_t serv_num;
@@ -52,6 +53,7 @@ static server_map_st server_name[] = {
 	{ AUTH_SERVER, "认证服务器" },
 	{ SHIPS_SERVER, "舰船服务器" },
 	{ SGATE_SERVER, "船闸服务器" },
+	{ DNS_SERVER, "DNS服务器" },
 };
 
 uint32_t server_name_num;

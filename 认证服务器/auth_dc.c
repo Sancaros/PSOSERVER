@@ -1598,7 +1598,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
         len = LE16(pc->pkt_len);
     }
 
-    //DBG_LOG("DCµÇÂ¼Ö¸Áî: 0x%04X %s c->ext_version %d c->type %d", type, c_cmd_name(type, 0), c->ext_version, c->type);
+    DBG_LOG("DCµÇÂ¼Ö¸Áî: 0x%04X %s c->ext_version %d c->type %d", type, c_cmd_name(type, 0), c->ext_version, c->type);
 
     switch(type) {
         case LOGIN_88_TYPE:

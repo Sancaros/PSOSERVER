@@ -15,8 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef LOGIN_H
-#define LOGIN_H
+#ifndef AUTH_H
+#define AUTH_H
 
 #include <queue.h>
 #include <WinSock_Defines.h>
@@ -280,4 +280,4 @@ extern mini18n_t langs[CLIENT_LANG_ALL];
 #define __(c, s) s
 #endif
 
-#endif /* !LOGIN_H */
+#endif /* !AUTH_H */

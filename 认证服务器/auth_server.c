@@ -92,23 +92,37 @@ psocn_srvsockets_t pc_sockets[NUM_AUTH_PC_SOCKS] = {
 
 psocn_srvsockets_t gc_sockets[NUM_AUTH_GC_SOCKS] = {
     { PF_INET , 9001 , 0, "GC认证端口-jp11"},
-    { PF_INET , 9100 , 1, "GC认证端口-us10"},
+    { PF_INET , 9002 , 1, "GC认证端口-jp3te"},
+    //{ PF_INET , 9003 , 2, "GC认证端口-jp3"},
+    { PF_INET , 9064 , 2, "GC认证端口-us12t1"},
+    { PF_INET , 9202 , 3, "GC认证端口-us12t2"},
+    //{ PF_INET , 9203 , 4, "GC认证端口-eu3"},
+    { PF_INET , 9100 , 4, "GC认证端口-us10"},
+    { PF_INET , 9103 , 5, "GC认证端口-us3"},
 #ifdef PSOCN_ENABLE_IPV6
-    { PF_INET6, 9001 , 0, "GC认证端口-jp11"},
-    { PF_INET6, 9100 , 1, "GC认证端口-us10"}
+    { PF_INET6 , 9001 , 0, "GC认证端口-jp11"},
+    { PF_INET6 , 9002 , 1, "GC认证端口-jp3te"},
+    //{ PF_INET6 , 9003 , 0, "GC认证端口-jp3"},
+    { PF_INET6 , 9064 , 2, "GC认证端口-us12t1"},
+    { PF_INET6 , 9202 , 3, "GC认证端口-us12t2"},
+    //{ PF_INET6 , 9203 , 4, "GC认证端口-eu3"},
+    { PF_INET6 , 9100 , 4, "GC认证端口-us10"},
+    { PF_INET6 , 9103 , 5, "GC认证端口-us3"},
+    //{ PF_INET6, 9001 , 0, "GC认证端口-jp11"},
+    //{ PF_INET6, 9100 , 1, "GC认证端口-us10"}
 #endif
 };
 
 psocn_srvsockets_t ep3_sockets[NUM_AUTH_EP3_SOCKS] = {
-    { PF_INET , 9103 , 0, "EP3认证端口-us3"},
-    { PF_INET , 9003 , 1, "EP3认证端口-jp3"},
-    { PF_INET , 9203 , 2, "EP3认证端口-eu3"},
-    { PF_INET , 9002 , 3, "EP3认证端口-jp3te"},
+    //{ PF_INET , 9103 , 0, "EP3认证端口-us3"},
+    { PF_INET , 9003 , 0, "EP3认证端口-jp3"},
+    { PF_INET , 9203 , 1, "EP3认证端口-eu3"},
+    { PF_INET , 9002 , 2, "EP3认证端口-jp3te"},
 #ifdef PSOCN_ENABLE_IPV6
-    { PF_INET6 , 9103 , 0, "EP3认证端口-us3"},
-    { PF_INET6 , 9003 , 1, "EP3认证端口-jp3"},
-    { PF_INET6 , 9203 , 2, "EP3认证端口-eu3"},
-    { PF_INET6 , 9002 , 3, "EP3认证端口-jp3te"}
+    //{ PF_INET6 , 9103 , 0, "EP3认证端口-us3"},
+    { PF_INET6 , 9003 , 0, "EP3认证端口-jp3"},
+    { PF_INET6 , 9203 , 1, "EP3认证端口-eu3"},
+    { PF_INET6 , 9002 , 2, "EP3认证端口-jp3te"}
 #endif
 };
 
@@ -407,7 +421,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
     //CONFIG_LOG("检测域名获取: %s", host4);
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(cfg->host4, "12000", &hints, &server)) {
@@ -598,7 +612,7 @@ static int update_addresses() {
     //CONFIG_LOG("检测域名获取: %s", host4);
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = PF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(cfg.host4, "12000", &hints, &server)) {
@@ -952,6 +966,9 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
 
 #endif // DEBUG
+                    my_ntop(&addr, ipstr);
+                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
+
                     if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
                                           gc_sockets[j].port)) {
                         closesocket(asock);
