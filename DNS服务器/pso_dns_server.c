@@ -15,6 +15,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*Note:
+    使用此服务器, 需确保服务器的53端口不被占用, 且开启UDP 53端口支持接入
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
