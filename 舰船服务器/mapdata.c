@@ -2285,8 +2285,8 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
                       sizeof(map_object_t), amt);
             }
 
-            CONFIG_LOG("任务 ID: %" PRIu32 " 版本: %d", qid, ver);
-            CONFIG_LOG("对象数量: %" PRIu32 "", cnt);
+            //CONFIG_LOG("任务 ID: %" PRIu32 " 版本: %d", qid, ver);
+            //CONFIG_LOG("对象数量: %" PRIu32 "", cnt);
             free_safe(newob->objs);
             free_safe(newob);
             free_safe(newen);

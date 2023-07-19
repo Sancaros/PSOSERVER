@@ -1394,6 +1394,11 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bb_char_t* player = &src->bb_pl->character;
+
+    if (src->mode)
+        player = &src->mode_pl->bb;
+
 #ifdef DEBUG
 
     DBG_LOG("购买 %d 个物品 %02X %04X", pkt->num_bought, pkt->unknown_a1, pkt->shdr.unused);
@@ -1437,6 +1442,18 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     uint32_t price = ii.data.data2l * pkt->num_bought;
+
+    if (player->disp.meseta < price) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
+            src->guildcard, pkt->shdr.type, player->disp.meseta, price);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    }
+
+    player->disp.meseta -= price;
+
+    if (!src->mode)
+        src->pl->bb.character.disp.meseta -= price;
+
     subcmd_send_bb_delete_meseta(src, price, 0);
 
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);

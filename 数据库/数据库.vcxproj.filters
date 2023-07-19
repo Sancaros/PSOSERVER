@@ -71,5 +71,8 @@
     <ClCompile Include="records_battle_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="character_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

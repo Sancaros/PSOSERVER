@@ -28,7 +28,7 @@ extern psocn_dbconn_t conn;
 //    uint8_t unknown_a1[0x0E];//14
 //} PACKED battle_records_t;
 
-int db_insert_battle_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot) {
+static int db_insert_battle_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot) {
     char name[64];
     char class_name[64];
 
@@ -180,6 +180,7 @@ int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records) {
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
+
         SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -3;

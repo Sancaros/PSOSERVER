@@ -43,31 +43,6 @@ int db_upload_temp_data(void* data, size_t size) {
     return 0;
 }
 
-int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot) {
-    //char query[256];
-
-    SYSTEMTIME rawtime;
-    GetLocalTime(&rawtime);
-    char timestamp[28];
-    sprintf(timestamp, "%u-%02u-%02u %02u:%02u:%02u",
-        rawtime.wYear, rawtime.wMonth, rawtime.wDay,
-        rawtime.wHour, rawtime.wMinute, rawtime.wSecond);
-
-    memset(myquery, 0, sizeof(myquery));
-
-    sprintf_s(myquery, _countof(myquery), "UPDATE %s SET ip = '%s', last_login_time = '%s'"
-        "WHERE guildcard = '%" PRIu32 "' AND slot = '%"PRIu8"'", CHARACTER, ipstr, timestamp, gc, slot);
-    if (psocn_db_real_query(&conn, myquery))
-    {
-        SQLERR_LOG("无法更新角色登录数据 (GC %" PRIu32 ", 槽位 %"
-            PRIu8 "):\n%s", gc, slot,
-            psocn_db_error(&conn));
-        return -1;
-    }
-
-    return 0;
-}
-
 int db_update_char_dressflag(uint32_t gc, uint32_t flags) {
 
     memset(myquery, 0, sizeof(myquery));
