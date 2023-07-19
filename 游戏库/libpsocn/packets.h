@@ -3495,22 +3495,21 @@ typedef bb_autoreply_set_pkt bb_write_info_pkt;
 // DB (C->S): Verify license (V3/BB)
 // Server should respond with a 9A command.
 // The packet to verify that a hunter's license has been procured.
-typedef struct login_gc_hlcheck {
+/* 224 字节 */
+typedef struct login_v3_hlcheck {
     dc_pkt_hdr_t hdr;
     uint8_t padding1[32];
-    char serial[8];
+    char serial_number1[8]; /* 序列号变成了16进制 */
     uint8_t padding2[8];
-    char access_key[12];
+    char access_key1[12];
     uint8_t padding3[12];
-    uint8_t version;
-    uint8_t padding4[3];
-    char serial2[8];
-    uint8_t padding5[40];
+    uint32_t sub_version;
+    char serial_number2[8];
+    uint8_t padding4[40];
     char access_key2[12];
-    uint8_t padding6[36];
-    char password[16];
-    uint8_t padding7[32];
-} PACKED gc_hlcheck_pkt;
+    uint8_t padding5[36];
+    char password[48]; /* 数据包传递明文密码 */
+} PACKED v3_hlcheck_pkt;
 
 /* The same as above, but for xbox. */
 typedef struct login_xb_hlcheck {

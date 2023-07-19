@@ -654,7 +654,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
 
 /* The next few functions look the same pretty much... All added for gamecube
    support. */
-static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
+static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
     uint32_t account, gc;
     char query[256], serial[32], access[32];
     void *result;
@@ -666,7 +666,7 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
 
     /* Check the version code of the connecting client since some clients seem
        to want to connect on wonky ports... */
-    switch(pkt->version) {
+    switch(pkt->sub_version) {
         case 0x30: /* Episode 1 & 2 (Japanese, v1.02) */
             c->type = CLIENT_AUTH_GC;
             c->ext_version |= CLIENT_EXTVER_GC_EP12 | CLIENT_EXTVER_GC_REG_JP;
@@ -728,12 +728,12 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
             break;
 
         default:
-            AUTH_LOG("未知版本代码: %02x", pkt->version);
+            AUTH_LOG("未知版本代码: %02x", pkt->sub_version);
             c->type = CLIENT_AUTH_GC;
     }
 
     /* Save the raw version code in the extended version field too... */
-    c->ext_version |= (pkt->version << 8);
+    c->ext_version |= (pkt->sub_version << 8);
 
     /* Make sure the user isn't IP banned. */
     if(banned == -1) {
@@ -745,8 +745,8 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
     }
 
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial, 8);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 12);
+    psocn_db_escape_str(&conn, serial, pkt->serial_number1, 8);
+    psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
         "serial_number='%s' AND access_key='%s'"
@@ -821,6 +821,8 @@ static int handle_gchlcheck(login_client_t *c, gc_hlcheck_pkt *pkt) {
             return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_OK);
         }
     }
+
+    AUTH_LOG("版本代码: %02x %s %s", pkt->sub_version, serial, access);
 
     psocn_db_result_free(result);
 
@@ -1685,7 +1687,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
         case GC_VERIFY_LICENSE_TYPE:
             /* XXXX: Why in the world do they duplicate so much data here? */
             if(c->type != CLIENT_AUTH_XBOX)
-                return handle_gchlcheck(c, (gc_hlcheck_pkt *)pkt);
+                return handle_gchlcheck(c, (v3_hlcheck_pkt *)pkt);
             else
                 return handle_xbhlcheck(c, (xb_hlcheck_pkt *)pkt);
 
