@@ -19,97 +19,7 @@
     使用此服务器, 需确保服务器的53端口不被占用, 且开启UDP 53端口支持接入
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <ctype.h>
-
-#if !defined(_WIN32) || defined(__CYGWIN__)
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <unistd.h>
-
-#ifndef _arch_dreamcast
-#include <pwd.h>
-#endif
-
-/* I hate you, Windows. I REALLY hate you. */
-typedef int SOCKET;
-#define INVALID_SOCKET -1
-
-#else
-#include <WinSock_Defines.h>
-#include <windows.h>
-#include <psoconfig.h>
-#include <f_logs.h>
-//#include <winsock2.h>
-//#include <ws2tcpip.h>
-
-typedef u_long in_addr_t;
-
-#ifdef _MSC_VER
-//#pragma comment(lib, "ws2_32.lib")
-
-#define MYWM_NOTIFYICON (WM_USER+2)
-int32_t program_hidden = 1;
-uint32_t window_hide_or_show = 1;
-HWND consoleHwnd;
-
-typedef int ssize_t;
-
-#endif
-
-#endif
-
 #include "pso_dns_server.h"
-
-/* If it hasn't been overridden at compile time, give a sane default for the
-   configuration directory. */
-#ifndef CONFIG_DIR
-#if defined(_WIN32) && !defined(__CYGWIN__)
-#define CONFIG_DIR "."
-#elif defined(_arch_dreamcast)
-#define CONFIG_DIR "/rd"
-#else
-#define CONFIG_DIR "/etc/sylverant"
-#endif
-#endif
-
-#ifndef CONFIG_FILE
-#define CONFIG_FILE "Config\\psocn_config_dns.conf"
-#endif
-
-#define SOCKET_ERR(err, s) if(err==-1){perror(s);closesocket(err);return(-1);}
-
-typedef struct dnsmsg {
-    uint16_t id;
-    uint16_t flags;
-    uint16_t qdcount;
-    uint16_t ancount;
-    uint16_t nscount;
-    uint16_t arcount;
-    uint8_t data[];
-} dnsmsg_t;
-
-#define QTYPE_A         1
-
-typedef struct host_info {
-    char* name;
-    in_addr_t addr;
-} host_info_t;
-
-/* Input and output packet buffers. */
-static uint8_t inbuf[1024];
-static uint8_t outbuf[1024];
-
-static dnsmsg_t* inmsg = (dnsmsg_t*)inbuf;
-static dnsmsg_t* outmsg = (dnsmsg_t*)outbuf;
-
-/* Read from the configuration. */
-static host_info_t* hosts;
-static int host_count;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 static WSADATA wsaData;
@@ -181,12 +91,115 @@ static int cmp_str(const char* s1, const char* s2) {
     }
 }
 
+int isStringEmpty(const char* str) {
+    return (strlen(str) == 0);
+}
+
+int isIPAddress(const char* hostname) {
+    struct sockaddr_in sa = { 0 };
+    return inet_pton(AF_INET, hostname, &(sa.sin_addr)) != 0;
+}
+
+int isIPv6Address(const char* hostname) {
+    struct sockaddr_in6 sa = { 0 };
+    return InetPton(AF_INET6, (PCWSTR)hostname, &(sa.sin6_addr)) == 1;
+}
+
+static int get_IPv4_from_hostname(const char* hostname, char* ipv4Address) {
+    struct addrinfo* result = NULL, * ptr = NULL, hints;
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_INET; // IPv4
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    int status = getaddrinfo(hostname, NULL, &hints, &result);
+    if (status != 0) {
+#ifdef DEBUG
+
+#ifdef _WIN32
+        fprintf(stderr, "getaddrinfo 失败 错误码: %d\n", WSAGetLastError());
+#else
+        fprintf(stderr, "getaddrinfo 失败 错误码: %s\n", gai_strerror(status));
+#endif
+
+#endif // DEBUG
+
+        WSACleanup();
+        return -1;
+    }
+
+    for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
+        struct sockaddr_in* sockaddr_ipv4 = (struct sockaddr_in*)ptr->ai_addr;
+        char* ip = inet_ntoa(sockaddr_ipv4->sin_addr);
+        strncpy(ipv4Address, ip, INET_ADDRSTRLEN);
+
+        break; // Use the first IPv4 address found
+    }
+
+    freeaddrinfo(result);
+
+    return 0;
+}
+
+int get_IPv6_from_hostname(const char* hostname, char* ipAddress, size_t ipAddressSize) {
+    struct addrinfo hints;
+    struct addrinfo* result, * p;
+    int status;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+
+    status = getaddrinfo(hostname, NULL, &hints, &result);
+    if (status != 0) {
+#ifdef DEBUG
+
+#ifdef _WIN32
+        fprintf(stderr, "getaddrinfo 失败 错误码: %d\n", WSAGetLastError());
+#else
+        fprintf(stderr, "getaddrinfo 失败 错误码: %s\n", gai_strerror(status));
+#endif
+
+#endif // DEBUG
+
+        return -1;
+    }
+
+    for (p = result; p != NULL; p = p->ai_next) {
+        void* addr;
+        char ip[INET6_ADDRSTRLEN];
+
+        if (p->ai_family == AF_INET6) {
+            // 获取 IPv6 地址
+            struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)p->ai_addr;
+            addr = &(ipv6->sin6_addr);
+        }
+        else {
+            continue;
+        }
+
+        // 将地址转换为可读的 IP 字符串
+        inet_ntop(p->ai_family, addr, ip, sizeof(ip));
+
+        // 复制 IP 地址到输出参数
+        strncpy(ipAddress, ip, ipAddressSize);
+        ipAddress[ipAddressSize - 1] = '\0';
+
+        break;
+    }
+
+    freeaddrinfo(result);
+
+    return 0;
+}
+
 static int read_config(const char* dir, const char* fn) {
     size_t dlen = strlen(dir), flen = strlen(fn);
     char* fullfn;
     FILE* fp;
     int entries = 0, lineno = 0;
-    char linebuf[1024], name[1024], ip[16];
+    char linebuf[1024], name[1024], host4[1024], host6[1024], ipv4[INET_ADDRSTRLEN], ipv6[INET6_ADDRSTRLEN];
     in_addr_t addr;
     void* tmp;
 
@@ -201,7 +214,7 @@ static int read_config(const char* dir, const char* fn) {
 
     /* Open the configuration file */
     if (!(fp = fopen(fullfn, "r"))) {
-        perror("read_config - open");
+        perror("read_config - 打开文件错误");
         fprintf(stderr, "Filename was %s\n", fullfn);
         return -1;
     }
@@ -209,7 +222,7 @@ static int read_config(const char* dir, const char* fn) {
     /* Allocate some space to start. We probably won't need this many entries,
        so we'll trim it later on. */
     if (!(hosts = (host_info_t*)malloc(sizeof(host_info_t) * 256))) {
-        perror("read_config - malloc");
+        perror("read_config - 分配内存错误");
         return -1;
     }
 
@@ -222,7 +235,7 @@ static int read_config(const char* dir, const char* fn) {
         ++lineno;
 
         if (linebuf[flen - 1] != '\n' && flen == 1023) {
-            fprintf(stderr, "Line %d too long in configuration!\n", lineno);
+            fprintf(stderr, "设置行 %d 数据太长,请检查该行的设置!\n", lineno);
             return -1;
         }
 
@@ -231,11 +244,33 @@ static int read_config(const char* dir, const char* fn) {
             continue;
 
         /* Attempt to parse the line... */
-        if (sscanf(linebuf, "%1023s %15s", name, ip) != 2)
+        if (sscanf(linebuf, "%1023s %1023s %1023s %15s", name, host4, host6, ipv4) != 4)
             continue;
 
+        if (!isStringEmpty(host4))
+            if (!isIPAddress(host4)) {
+                if (get_IPv4_from_hostname(host4, ipv4) == 0) {
+                    DNS_LOG("DNS行 %d 获取到 IPv4 地址为 %s: %s", lineno, host4, ipv4);
+                }
+                else {
+                    //fprintf(stderr, "从 %s 获取 IPv4 地址失败\n", host4);
+                }
+            }
+
+        if (!isStringEmpty(host6))
+            if (!isIPv6Address(host6)) {
+                if (get_IPv6_from_hostname(host6, ipv6, sizeof(ipv6)) == 0) {
+                    DNS_LOG("DNS行 %d 获取到 IPv6 地址为 %s: %s", lineno, host6, ipv6);
+                }
+                else {
+                    //fprintf(stderr, "从 %s 获取 IPv6 地址失败\n", host6);
+                }
+            }
+
+        //DBG_LOG("%s", ipv4);
+
         /* Make sure the IP looks sane. */
-        if (inet_pton(AF_INET, ip, &addr) != 1) {
+        if (inet_pton(AF_INET, ipv4, &addr) != 1) {
             perror("read_config - inet_pton");
             return -1;
         }
@@ -255,13 +290,33 @@ static int read_config(const char* dir, const char* fn) {
         /* Make space to store the hostname. */
         hosts[entries].name = (char*)malloc(strlen(name) + 1);
         if (!hosts[entries].name) {
-            perror("read_config - malloc 2");
+            perror("read_config - malloc name");
+            return -1;
+        }
+
+        /* Make space to store the hostname. */
+        hosts[entries].host4 = (char*)malloc(strlen(host4) + 1);
+        if (!hosts[entries].host4) {
+            perror("read_config - malloc host4");
+            return -1;
+        }
+
+        /* Make space to store the hostname. */
+        hosts[entries].host6 = (char*)malloc(strlen(host6) + 1);
+        if (!hosts[entries].host6) {
+            perror("read_config - malloc host6");
             return -1;
         }
 
         /* Fill in the entry and move on to the next one (if any). */
         strcpy(hosts[entries].name, name);
+        strcpy(hosts[entries].host4, host4);
+        strcpy(hosts[entries].host6, host6);
         hosts[entries].addr = addr;
+
+        //DNS_LOG("读取 DNS地址 %s", hosts[entries].name);
+        //DNS_LOG("读取 DNShost4 %s", hosts[entries].host4);
+        //DNS_LOG("读取 DNShost6 %s", hosts[entries].host6);
 
         ++entries;
     }
@@ -323,6 +378,7 @@ static host_info_t* find_host(const char* hostname) {
 static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     host_info_t* h) {
     in_addr_t a;
+    char ipv4[INET_ADDRSTRLEN];
 
     /* DNS specifies that any UDP messages over 512 bytes are truncated. We
        don't bother sending them at all, since we should never approach that
@@ -339,6 +395,20 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
 
     /* Subtract out the size of the header. */
     len -= sizeof(dnsmsg_t);
+
+    if (!isStringEmpty(h->host4))
+        if (!isIPAddress(h->host4)) {
+            if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
+                DNS_LOG("DNS行获取到 IPv4 地址为 %s: %s", h->host4, ipv4);
+                /* Make sure the IP looks sane. */
+                if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
+                    perror("read_config - inet_pton");
+                }
+            }
+            else {
+                //fprintf(stderr, "从 %s 获取 IPv4 地址失败\n", host4);
+            }
+        }
 
     /* Fill in the response. This is ugly, but it works. */
     a = ntohl(h->addr);
@@ -360,7 +430,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     outmsg->data[len++] = (uint8_t)a;
 
 
-    DNS_LOG("发送DNS信息");
+    DNS_LOG("发送DNS信息至端口: %d", sock);
 
     /* Send ther response. */
     sendto(sock, outbuf, len + sizeof(dnsmsg_t), 0, (struct sockaddr*)addr,
@@ -397,7 +467,7 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
         /* Make sure the length is sane. */
         if (len < i + partlen + 5) {
             /* Throw out the obvious bad packet. */
-            ERR_LOG("Throwing out bad packet.");
+            ERR_LOG("端口 %d 抛出坏数据包.", sock);
             return;
         }
 
@@ -406,7 +476,7 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
             /* Make sure the rest of the message is as we expect it. */
             if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
                 inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
-                ERR_LOG("Throwing out non IN A request.");
+                ERR_LOG("端口 %d 抛出非IN A请求.", sock);
             }
 
             hostbuf[hostlen - 1] = '\0';
@@ -595,7 +665,7 @@ int __cdecl main(int argc, char** argv) {
 
     /* Open the socket. We will probably need root for this on UNIX-like
        systems. */
-    if((sock = open_sock(53)) == INVALID_SOCKET) {
+    if((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
         getchar();
         exit(EXIT_FAILURE);
     }
