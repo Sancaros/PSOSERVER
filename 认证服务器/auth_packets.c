@@ -707,7 +707,7 @@ int send_timestamp(login_client_t *c) {
 static int send_initial_menu_dc(login_client_t *c) {
     uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
-    uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x22;
+    uint32_t count = 0, len = 0x20, len2 = 0x1C, len3 = 0x10;
     uint32_t v = c->ext_version & CLIENT_EXTVER_DC_VER_MASK;
 
     /* 初始化数据包 */
@@ -718,7 +718,7 @@ static int send_initial_menu_dc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_dc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_dc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_dc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_dc[count]->name, len3);
+        istrncpy(ic_gbk_to_8859, pkt->entries[count].name, pso_initial_menu_auth_dc[count]->name, len3);
         len += len2;
     }
 
@@ -760,7 +760,7 @@ static int send_initial_menu_pc(login_client_t *c) {
 static int send_initial_menu_gc(login_client_t *c) {
     uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
-    uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
+    uint32_t count = 0, len = 0x20, len2 = 0x1C, len3 = 0x10;
 
     /* 初始化数据包 */
     memset(pkt, 0, len);
@@ -770,7 +770,7 @@ static int send_initial_menu_gc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_gc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_gc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_gc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
+        istrncpy(ic_gbk_to_8859, pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
         len += len2;
     }
 
@@ -786,7 +786,7 @@ static int send_initial_menu_gc(login_client_t *c) {
 static int send_initial_menu_xbox(login_client_t *c) {
     uint8_t* sendbuf = get_sendbuf();
     dc_ship_list_pkt *pkt = (dc_ship_list_pkt *)sendbuf;
-    uint32_t count = 0, len = 0x100, len2 = 0x1C, len3 = 0x20;
+    uint32_t count = 0, len = 0x20, len2 = 0x1C, len3 = 0x10;
 
     /* 初始化数据包 */
     memset(pkt, 0, len);
@@ -796,7 +796,7 @@ static int send_initial_menu_xbox(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_gc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_gc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_gc[count]->flag);
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
+        istrncpy(ic_gbk_to_8859, (char*)pkt->entries[count].name, pso_initial_menu_auth_gc[count]->name, len3);
         len += len2;
     }
 
@@ -878,17 +878,14 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     void *result;
     char **row;
     uint32_t ship_id, players, priv;
-    int i, len = 0x20, gm_only, flags, ship_num;
+    int i, len = 0x20, menu_size = 0x1C, len3 = 0x10, gm_only, flags, ship_num;
     char tmp[3] = { (char)menu_code, (char)(menu_code >> 8), 0 };
 
     /* Clear the base packet */
     memset(pkt, 0, sizeof(dc_ship_list_pkt));
 
-    /* 填充数据头 */
-    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
-
     /* Fill in the "SHIP/cc" entry */
-    memset(&pkt->entries[0], 0, 0x1C);
+    memset(&pkt->entries[0], 0, menu_size);
     pkt->entries[0].menu_id = LE32(MENU_ID_DATABASE);
     pkt->entries[0].item_id = LE32(ITEM_ID_INIT_SHIP);
     pkt->entries[0].flags = LE16(0x0004);
@@ -951,7 +948,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
             continue;
 
         /* Clear out the ship information */
-        memset(&pkt->entries[num_ships], 0, 0x1C);
+        memset(&pkt->entries[num_ships], 0, menu_size);
 
         /* Grab info from the row */
         ship_id = (uint32_t)strtoul(row[0], NULL, 0);
@@ -973,7 +970,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
-        len += 0x1C;
+        len += menu_size;
     }
 
     psocn_db_result_free(result);
@@ -1019,7 +1016,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
             continue;
 
         /* Clear out the ship information */
-        memset(&pkt->entries[num_ships], 0, 0x1C);
+        memset(&pkt->entries[num_ships], 0, menu_size);
 
         /* Fill in what we have */
         pkt->entries[num_ships].menu_id = LE32((MENU_ID_SHIP | (ship_id << 8)));
@@ -1034,7 +1031,7 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
-        len += 0x1C;
+        len += menu_size;
     }
 
     psocn_db_result_free(result);
@@ -1042,29 +1039,33 @@ static int send_ship_list_dc(login_client_t *c, uint16_t menu_code) {
     /* Make sure we have at least one ship... */
     if(num_ships == 1) {
         /* Clear out the ship information */
-        memset(&pkt->entries[num_ships], 0, 0x1C);
+        memset(&pkt->entries[num_ships], 0, menu_size);
         pkt->entries[num_ships].menu_id = LE32(MENU_ID_LAST_SHIP);
         pkt->entries[num_ships].item_id = LE32(ITEM_ID_INIT_SHIP);
         pkt->entries[num_ships].flags = LE16(0x0000);
-        strcpy(pkt->entries[num_ships].name, no_ship_msg);
+        /* And convert to 8859 */
+        istrncpy(ic_gbk_to_8859, pkt->entries[num_ships].name, no_ship_msg, len3);
+        //strcpy(pkt->entries[num_ships].name, no_ship_msg);
 
         ++num_ships;
-        len += 0x1C;
+        len += menu_size;
     }else{
         /* Clear out the ship information */
-        memset(&pkt->entries[num_ships], 0, 0x2C);
+        memset(&pkt->entries[num_ships], 0, menu_size);
         pkt->entries[num_ships].menu_id = LE32(MENU_ID_LAST_SHIP);
         pkt->entries[num_ships].item_id = LE32(ITEM_ID_DISCONNECT);
         pkt->entries[num_ships].flags = LE16(0x0000);
 
-        /* And convert to UTF8 */
-        istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[num_ships].name, "断开连接", 0x22);
+        /* And convert to 8859 */
+        istrncpy(ic_gbk_to_8859, pkt->entries[num_ships].name, "DISCONNECT", len3);
 
         ++num_ships;
-        len += 0x1C;
+        len += menu_size;
     }
 
     /* Fill in the rest of the header */
+    /* 填充数据头 */
+    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(num_ships - 1);
 
@@ -1090,15 +1091,13 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
     /* Clear the base packet */
     memset(pkt, 0, sizeof(pc_ship_list_pkt));
 
-    /* 填充数据头 */
-    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
-
     /* Fill in the "SHIP/cc" entry */
     memset(&pkt->entries[num_ships], 0, 0x2C);
     pkt->entries[num_ships].menu_id = LE32(MENU_ID_DATABASE);
     pkt->entries[num_ships].item_id = LE32(ITEM_ID_INIT_SHIP);
     pkt->entries[num_ships].flags = LE16(0x0004);
-    memcpy(pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
+    //memcpy(pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
+    istrncpy(ic_gbk_to_utf8, (char*)pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
 
     if (menu_code) {
         pkt->entries[num_ships].name[5] = LE16((menu_code & 0x00FF));
@@ -1257,7 +1256,8 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
         len += 0x2C;
     }
 
-    /* Fill in the rest of the header */
+    /* 填充数据头 */
+    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = (uint8_t)(num_ships - 1);
 
@@ -1281,9 +1281,6 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
 
     /* Clear the base packet */
     memset(pkt, 0, sizeof(bb_ship_list_pkt));
-
-    /* 填充数据头 */
-    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
 
     /* Fill in the "SHIP/cc" entry */
     memset(&pkt->entries[0], 0, 0x2C);
@@ -1449,8 +1446,8 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
         len += 0x2C;
     }
 
-
-    /* Fill in the rest of the header */
+    /* 填充数据头 */
+    pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = LE32((num_ships - 1));
 

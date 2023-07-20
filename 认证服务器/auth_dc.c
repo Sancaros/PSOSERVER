@@ -1252,6 +1252,8 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
     else if(c->type < CLIENT_AUTH_DCNTE)
          l = &qlist[c->type][c->language_code];
 
+    DBG_LOG("menu_idFF 0x%zX menu_id 0x%zX item_id 0x%zX", menu_id & 0xFF, menu_id, item_id);
+
     switch(menu_id & 0xFF) {
         /* Initial menu */
         case MENU_ID_INITIAL:
@@ -1587,7 +1589,7 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
     pc_pkt_hdr_t *pc = (pc_pkt_hdr_t *)pkt;
     uint8_t type;
     uint16_t len;
-    int tmp;
+    int tmp = 0;
 
     if(c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
        c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
@@ -1600,7 +1602,11 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
         len = LE16(pc->pkt_len);
     }
 
+#ifdef DEBUG
+
     DBG_LOG("DCµÇÂ¼Ö¸Áî: 0x%04X %s c->ext_version %d c->type %d", type, c_cmd_name(type, 0), c->ext_version, c->type);
+
+#endif // DEBUG
 
     switch(type) {
         case LOGIN_88_TYPE:
@@ -1658,15 +1664,16 @@ int process_dclogin_packet(login_client_t *c, void *pkt) {
         case SHIP_LIST_TYPE:
             /* XXXX: I don't have anything here either, but thought I'd be
                funny anyway. */
-            tmp = send_motd(c);
+            /* TODO fix */
+            //tmp = send_motd(c);
 
-            if(!tmp) {
-                c->motd_wait = 1;
-                return 0;
-            }
-            else if(tmp < 0) {
-                return tmp;
-            }
+            //if(!tmp) {
+            //    c->motd_wait = 1;
+            //    return 0;
+            //}
+            //else if(tmp < 0) {
+            //    return tmp;
+            //}
 
             /* Don't send the initial menu to the PC NTE, as there's no good
                reason to send it quest files that it can't do anything useful

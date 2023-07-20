@@ -471,17 +471,28 @@ typedef struct bb_chat {
 // 但它没有被使用，这意味着在某些时候可能有一个单独的命令用于发送区块列表，
 // 但是它被废弃了。也许这个命令被用于 A1 命令，该命令在所有版本的 PSO（除了 DC NTE）中与 07 命令和 A0 命令相同。
 
+/* 28字节 */
+typedef struct dc_menu {
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t flags;
+    char name[0x12];
+} PACKED dc_menu_t;
+
+/* 44字节 */
+typedef struct v3_menu {
+    uint32_t menu_id;
+    uint32_t item_id;
+    uint16_t flags;
+    uint16_t name[0x11];
+} PACKED v3_menu_t;
+
 // 命令是一个包含多个条目的列表；header.flag 是条目的数量。
 // 第一个条目不包括在计数中，也不会出现在客户端上。
 // 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct dc_ship_list {
     dc_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        char name[0x12];
-    } entries[0];
+    dc_menu_t entries[0];
 } PACKED dc_ship_list_pkt;
 
 // 07 (S->C): 选择飞船菜单
@@ -497,12 +508,7 @@ typedef struct dc_ship_list {
 // 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct pc_ship_list {
     pc_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;
-        uint16_t name[0x11];
-    } entries[0];
+    v3_menu_t entries[0];
 } PACKED pc_ship_list_pkt;
 
 // 07 (S->C): 选择飞船菜单
@@ -518,12 +524,7 @@ typedef struct pc_ship_list {
 // 第一个条目的文本在客户端加入大厅时成为飞船的名称。
 typedef struct bb_ship_list {
     bb_pkt_hdr_t hdr;           /* The flags field says how many entries */
-    struct {
-        uint32_t menu_id;
-        uint32_t item_id;
-        uint16_t flags;         // Should be 0x0F04 this value, apparently
-        uint16_t name[0x11];
-    } entries[0];
+    v3_menu_t entries[0];
 } PACKED bb_ship_list_pkt;
 
 // 08 (C->S): Request game list

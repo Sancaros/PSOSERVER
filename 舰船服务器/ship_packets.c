@@ -773,7 +773,7 @@ int send_timestamp(ship_client_t *c) {
 static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     uint8_t *sendbuf = get_sendbuf();
     dc_block_list_pkt *pkt = (dc_block_list_pkt *)sendbuf;
-    int len = 0x20, entries = 1;
+    int len = 0x20, num_blocks = 1;
     uint32_t len2 = 0x1C, len3 = 0x10;
     uint32_t i;
 
@@ -785,52 +785,52 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     memset(pkt, 0, sizeof(dc_block_list_pkt));
 
     /* Fill in the ship name entry */
-    memset(&pkt->entries[entries], 0, len2);
-    pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[entries]->menu_id);
-    pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[entries]->item_id);
-    pkt->entries[entries].flags = LE16(pso_block_list_menu_last[entries]->flag);
-    istrncpy(ic_gbk_to_8859, (char*)pkt->entries[entries].name, s->cfg->name, len3);
-    ++entries;
+    memset(&pkt->entries[num_blocks], 0, len2);
+    pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last[num_blocks]->menu_id);
+    pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last[num_blocks]->item_id);
+    pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last[num_blocks]->flag);
+    istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, s->cfg->name, len3);
+    ++num_blocks;
 
     /* Add each block to the list. */
     for(i = 1; i <= s->cfg->blocks; ++i) {
         if(s->blocks[i - 1] && s->blocks[i - 1]->run) {
             /* Clear out the block information */
-            memset(&pkt->entries[entries], 0, len2);
+            memset(&pkt->entries[num_blocks], 0, len2);
 
             /* Fill in what we have */
-            pkt->entries[entries].menu_id = LE32(MENU_ID_BLOCK);
-            pkt->entries[entries].item_id = LE32(i);
-            pkt->entries[entries].flags = LE16(0x0000);
+            pkt->entries[num_blocks].menu_id = LE32(MENU_ID_BLOCK);
+            pkt->entries[num_blocks].item_id = LE32(i);
+            pkt->entries[num_blocks].flags = LE16(0x0000);
 
             /* Create the name string */
             char tmp[17];
-            sprintf_s(tmp, sizeof(tmp), "选择舰仓%01X%01X", (i / 10), (i % 10));
+            sprintf_s(tmp, sizeof(tmp), "BLOCK%01X%01X", (i / 10), (i % 10));
 
             /* Create the name string */
-            istrncpy(ic_gbk_to_8859, (char*)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, tmp,
                 len3);
 
             len += len2;
-            ++entries;
+            ++num_blocks;
         }
     }
 
     /* 填充菜单实例 */
     for (i = 1; i < _countof(pso_block_list_menu_last); ++i) {
-        memset(&pkt->entries[entries], 0, len2);
-        pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
-        pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
-        pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_8859, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
-        ++entries;
+        memset(&pkt->entries[num_blocks], 0, len2);
+        pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
+        pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last[i]->item_id);
+        pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last[i]->flag);
+        istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, pso_block_list_menu_last[i]->name, len3);
+        ++num_blocks;
         len += len2;
     }
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = BLOCK_LIST_TYPE;
     pkt->hdr.pkt_len = LE16(len);
-    pkt->hdr.flags = entries - 1;
+    pkt->hdr.flags = num_blocks - 1;
 
     /* 将数据包发送出去 */
     return crypt_send(c, len, sendbuf);
