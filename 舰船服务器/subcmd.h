@@ -1186,11 +1186,17 @@ typedef struct subcmd_bb_Unknown_6x57 {
 } PACKED subcmd_bb_Unknown_6x57_t;
 
 // 0x58: CTRL+W 触发 SUBCMD60_LOBBY_ACTION (指令生效范围; 仅限游戏)
+typedef struct subcmd_lobby_act {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t act_id;
+} PACKED subcmd_lobby_act_t;
+
+// 0x58: CTRL+W 触发 SUBCMD60_LOBBY_ACTION (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_lobby_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t act_id;
-    uint16_t unused;                 // 0x0000
+    uint32_t act_id;
 } PACKED subcmd_bb_lobby_act_t;
 
 // 0x59: 拾取必会删除地图物品数据结构
@@ -2457,6 +2463,16 @@ typedef struct subcmd_bb_Unknown_6xAD {
     // The first byte in this array seems to have a special meaning
     uint8_t unknown_a1[0x40];
 } PACKED subcmd_bb_Unknown_6xAD_t;
+
+// 0xAE: 发送大厅椅子状态 (sent by existing clients at join time)
+typedef struct subcmd_pc_send_lobby_chair_state {
+    pc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;    //client_id 是数据包来源的客户端
+    uint16_t act_id;         //0x0036 0x0037 是椅子状态flags
+    uint16_t unused;         //0x0000
+    uint32_t angle;          //所在的横向坐标？？
+    uint32_t face;           //面对的方向 4字节的位置
+} PACKED subcmd_pc_send_lobby_chair_state_t;
 
 // 0xAE: 发送大厅椅子状态 (sent by existing clients at join time)
 // 该副指令不支持 DC, PC, GC 测试版.

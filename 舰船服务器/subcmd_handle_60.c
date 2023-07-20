@@ -1865,6 +1865,24 @@ static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_58_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_lobby_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        //return -1;
+    }
+
+    DBG_LOG("DC 动作ID %d", pkt->act_id);
+
+    // pkt->act_id 大厅动作的对应ID
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_58_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1876,7 +1894,7 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    DBG_LOG("动作ID %d", pkt->act_id);
+    DBG_LOG("BB 动作ID %d", pkt->act_id);
 
     // pkt->act_id 大厅动作的对应ID
 
@@ -3716,7 +3734,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_MENU_REQ                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_52_bb },
     { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
     { SUBCMD60_WARP_55                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
-    { SUBCMD60_LOBBY_ACTION               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_58_bb },
+    { SUBCMD60_LOBBY_ACTION               , sub60_58_dc, sub60_58_dc, NULL,        sub60_58_dc, NULL,        sub60_58_bb },
 
     //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },

@@ -1878,6 +1878,12 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
     }
 
     switch(type) {
+    //case SUBCMD60_CONDITION_ADD:
+    //    break;
+
+    //case SUBCMD60_CONDITION_REMOVE:
+    //    break;
+
         case SUBCMD60_TAKE_ITEM:
             rv = handle_take_item(c, (subcmd_take_item_t *)pkt);
             break;
