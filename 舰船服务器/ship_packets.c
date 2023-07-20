@@ -5427,7 +5427,7 @@ uint32_t check_special_quest_type(lobby_t* l) {
 static int send_dc_quest_categories(ship_client_t *c, int lang) {
     uint8_t *sendbuf = get_sendbuf();
     dc_quest_list_pkt *pkt = (dc_quest_list_pkt *)sendbuf;
-    int i, len = 0x04, entries = 0;
+    int i, len = sizeof(dc_pkt_hdr_t), entries = 0;
     size_t in, out;
     char *inptr;
     char *outptr;

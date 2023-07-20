@@ -844,6 +844,7 @@ typedef struct bb_info_reply {
 // currently sends them sequentially).
 
 // header.flag = file chunk index (start offset / 0x400)
+/* 1044 byts*/
 typedef struct quest_chunk {
     char filename[16];
     char data[1024];
@@ -851,6 +852,7 @@ typedef struct quest_chunk {
 } PACKED quest_chunk_t;
 
 /* The packet sent to actually send quest data */
+/* 1048 byts*/
 typedef struct dc_quest_chunk {
     union {
         dc_pkt_hdr_t dc;
@@ -859,6 +861,7 @@ typedef struct dc_quest_chunk {
     quest_chunk_t data;
 } PACKED dc_quest_chunk_pkt;
 
+/* 1052 byts*/
 typedef struct bb_quest_chunk {
     bb_pkt_hdr_t hdr;
     quest_chunk_t data;

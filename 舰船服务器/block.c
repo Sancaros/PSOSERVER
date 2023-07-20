@@ -2989,7 +2989,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         dc->flags = flags;
     }
 
-    //DBG_LOG("舰仓：DC处理数据 指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
+    DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
 
     switch (type) {
     case LOGIN_8B_TYPE:

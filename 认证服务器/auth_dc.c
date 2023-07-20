@@ -1252,7 +1252,11 @@ static int handle_ship_select(login_client_t *c, dc_select_pkt *pkt) {
     else if(c->type < CLIENT_AUTH_DCNTE)
          l = &qlist[c->type][c->language_code];
 
+#ifdef DEBUG
+
     DBG_LOG("menu_idFF 0x%zX menu_id 0x%zX item_id 0x%zX", menu_id & 0xFF, menu_id, item_id);
+
+#endif // DEBUG
 
     switch(menu_id & 0xFF) {
         /* Initial menu */
