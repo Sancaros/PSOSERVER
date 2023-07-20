@@ -47,8 +47,12 @@ char ipbuf[32] = { 0 };
 #define LANGUAGE_CODE_COUNT     8
 
 static const char language_codes[LANGUAGE_CODE_COUNT][3] = {
-    "jp", "en", "de", "fr", "es", "cs", "ct", "kr"
+    "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
+
+//static const char language_codes[LANGUAGE_CODE_COUNT][3] = {
+//    "jp", "en", "de", "fr", "es", "cs", "ct", "kr"
+//};
 
 char* int2ipstr(const int ip)
 {

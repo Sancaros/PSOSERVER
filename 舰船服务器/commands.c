@@ -2524,6 +2524,12 @@ static int handle_qlang(ship_client_t *c, const char *params) {
         if(!strcmp(language_codes[i], params)) {
             c->q_lang = i;
 
+#ifdef DEBUG
+
+            DBG_LOG("ÓïÑÔ %d %d", c->q_lang, language_codes[i]);
+
+#endif // DEBUG
+
             shipgate_send_user_opt(&ship->sg, c->guildcard, c->cur_block->b,
                                    USER_OPT_QUEST_LANG, 1, &c->q_lang);
 

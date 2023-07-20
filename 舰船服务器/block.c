@@ -1010,7 +1010,8 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
     //c->language_code = CLIENT_LANG_JAPANESE;
     //c->q_lang = CLIENT_LANG_JAPANESE;
     c->language_code = pkt->language;
-    c->q_lang = pkt->language;
+    c->q_lang = 0; /* 初始化为默认任务语言 */
+    //c->q_lang = pkt->language;
     c->flags |= CLIENT_FLAG_IS_NTE;
 
     /* See if this person is a GM. */
@@ -1072,7 +1073,12 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
     /* Save what we care about in here. */
     c->guildcard = LE32(pkt->guildcard);
     c->language_code = pkt->language_code;
-    c->q_lang = pkt->language_code;
+    c->q_lang = 0; /* 初始化为默认任务语言 */
+    //c->q_lang = pkt->language_code;
+
+
+    DBG_LOG("语言 %d %d", c->q_lang, c->language_code);
+
     c->flags |= CLIENT_FLAG_GC_MSG_BOXES;
 
     /* See if this person is a GM. */
@@ -1187,7 +1193,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     /* Save what we care about in here. */
     c->guildcard = LE32(pkt->guildcard);
     c->language_code = pkt->language_code;
-    c->q_lang = pkt->language_code;
+    c->q_lang = 0; /* 初始化为默认任务语言 */
 
     if (c->version != CLIENT_VERSION_PC)
         c->version = CLIENT_VERSION_DCV2;
@@ -1303,7 +1309,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     /* Save what we care about in here. */
     c->guildcard = LE32(pkt->guildcard);
     c->language_code = pkt->language_code;
-    c->q_lang = pkt->language_code;
+    c->q_lang = 0; /* 初始化为默认任务语言 */
 
     /* See if this user can get message boxes properly... */
     switch (pkt->version) {
@@ -1391,7 +1397,8 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
     /* Save what we care about in here. */
     c->guildcard = LE32(pkt->guildcard);
     c->language_code = pkt->language_code;
-    c->q_lang = pkt->language_code;
+    c->q_lang = 0; /* 初始化为默认任务语言 */
+    //c->q_lang = pkt->language_code;
 
     /* See if this person is a GM. */
     c->privilege = is_gm(c->guildcard, ship);
@@ -2989,7 +2996,11 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         dc->flags = flags;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
+
+#endif // DEBUG
 
     switch (type) {
     case LOGIN_8B_TYPE:
