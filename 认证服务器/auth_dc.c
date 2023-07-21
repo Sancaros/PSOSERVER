@@ -743,15 +743,17 @@ static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
         send_ban_msg(c, banlen, query);
         return send_simple(c, LOGIN_9A_TYPE, LOGIN_DB_SUSPENDED);
     }
+    
+    uint32_t serial_number = strtoul(pkt->serial_number1, NULL, 16);
 
     /* Escape all the important strings. */
     psocn_db_escape_str(&conn, serial, pkt->serial_number1, 8);
     psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%s' AND access_key='%s'"
+        "serial_number='%d' AND access_key='%s'"
         , AUTH_ACCOUNT_GAMECUBE
-        , serial, access);
+        , serial_number, access);
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
@@ -822,7 +824,11 @@ static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
         }
     }
 
-    AUTH_LOG("版本代码: %02x %s %s", pkt->sub_version, serial, access);
+#ifdef DEBUG
+
+    ERR_LOG("版本代码: %02x %s %s", pkt->sub_version, serial, access);
+
+#endif // DEBUG
 
     psocn_db_result_free(result);
 
@@ -832,18 +838,28 @@ static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
 
 static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
     uint32_t account, gc;
-    char query[256], serial[32], access[32];
+    char query[256]/*, serial[32]*/, access[32];
     void *result;
     char **row;
     unsigned char hash[16];
     size_t i;
 
+    uint32_t serial_number = strtoul(pkt->serial_number, NULL, 16);
+
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial, 8);
+    //psocn_db_escape_str(&conn, serial, pkt->serial_number, 8);
     psocn_db_escape_str(&conn, access, pkt->access_key, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%s' AND access_key='%s'", AUTH_ACCOUNT_GAMECUBE, serial, access);
+        "serial_number='%d' AND access_key='%s'"
+        , AUTH_ACCOUNT_GAMECUBE
+        , serial_number, access);
+
+#ifdef DEBUG
+
+    AUTH_LOG("版本代码: %02x %d %s", pkt->version, serial_number, access);
+
+#endif // DEBUG
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {
@@ -917,20 +933,28 @@ static int handle_gcloginc(login_client_t *c, gc_login_9c_pkt *pkt) {
 
 static int handle_gclogine(login_client_t *c, gc_login_9e_pkt *pkt) {
     uint32_t gc, v;
-    char query[256], serial[32], access[32];
+    char query[256]/*, serial[32]*/, access[32];
     void *result;
     char **row;
 
     c->language_code = pkt->language_code;
 
+    uint32_t serial_number = strtoul(pkt->serial_number1, NULL, 16);
+
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial, 8);
-    psocn_db_escape_str(&conn, access, pkt->access_key, 12);
+    //psocn_db_escape_str(&conn, serial, pkt->serial_number1, 8);
+    psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
-        "serial_number='%s' AND access_key='%s'"
+        "serial_number='%d' AND access_key='%s'"
         , AUTH_ACCOUNT_GAMECUBE
-        , serial, access);
+        , serial_number, access);
+
+#ifdef DEBUG
+
+    AUTH_LOG("版本代码: %02x %d %s", pkt->version, serial_number, access);
+
+#endif // DEBUG
 
     /* If we can't query the database, fail. */
     if(psocn_db_real_query(&conn, query)) {

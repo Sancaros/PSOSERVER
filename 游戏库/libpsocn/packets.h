@@ -2476,7 +2476,7 @@ typedef struct gc_login_9c {
     uint8_t padding2[4];
     uint8_t language_code;
     uint8_t padding3[2];
-    char serial[8];
+    char serial_number[8];
     uint8_t padding4[40];
     char access_key[12];
     uint8_t padding5[36];
@@ -2578,11 +2578,11 @@ typedef struct gc_login_9e {
     uint8_t padding2[4];
     uint8_t language_code;
     uint8_t padding3[34];
-    char serial[8];
+    char serial_number1[8];
     uint8_t padding4[8];
-    char access_key[12];
+    char access_key1[12];
     uint8_t padding5[4];
-    char serial2[8];
+    char serial_number2[8];
     uint8_t padding6[40];
     char access_key2[12];
     uint8_t padding7[36];

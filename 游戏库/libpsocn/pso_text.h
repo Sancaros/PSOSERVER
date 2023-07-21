@@ -77,4 +77,6 @@ int add_color_tag(void* str);
 
 /* 实现字符的小写转换 */
 char* tolower_c(const char* s);
+
+void padToTenDigits(const char* str, char* padded_str);
 #endif /* !PSO_HAVE_TEXT */

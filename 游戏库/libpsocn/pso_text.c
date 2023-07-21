@@ -295,3 +295,18 @@ char* tolower_c(const char* s) {
 
     return ret;
 }
+
+void padToTenDigits(const char* str, char* padded_str) {
+    int str_len = strlen(str);
+
+    if (str_len < 10) {
+        int padding_count = 10 - str_len;
+        memset(padded_str, '0', padding_count);
+        padded_str[padding_count] = '\0';
+        strncpy_s(padded_str, sizeof(char) * 11, str, str_len);
+    }
+    else {
+        strncpy_s(padded_str, sizeof(char) * 11, str, 10);
+        padded_str[10] = '\0';
+    }
+}
