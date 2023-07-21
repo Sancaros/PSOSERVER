@@ -966,9 +966,6 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
 
 #endif // DEBUG
-                    my_ntop(&addr, ipstr);
-                    AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
-
                     if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
                                           gc_sockets[j].port)) {
                         closesocket(asock);
@@ -1178,9 +1175,9 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
 
                 if(i->guildcard) {
                     if(i->auth)
-                        AUTH_LOG("客户端 %" PRIu32 " (%s:%d) 进入跃迁轨道", i->guildcard, ipstr, i->sock);
+                        AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 进入跃迁轨道", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
                     else
-                        AUTH_LOG("客户端 %" PRIu32 " (%s:%d) 断开认证", i->guildcard, ipstr, i->sock);
+                        AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 断开认证", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
                 }
 #ifdef DEBUG
                 else {
@@ -1404,9 +1401,9 @@ void UnhookHandler() {
 }
 
 static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
-    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
-    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
-    int xbsocks[NUM_AUTH_XB_SOCKS]) {
+                           int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+                           int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+                           int xbsocks[NUM_AUTH_XB_SOCKS]) {
     int i;
 
     for (i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
@@ -1509,9 +1506,9 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
 }
 
 static void cleanup_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
-    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
-    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
-    int xbsocks[NUM_AUTH_XB_SOCKS]) {
+                            int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+                            int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+                            int xbsocks[NUM_AUTH_XB_SOCKS]) {
     int i;
 
     /* Clean up. */

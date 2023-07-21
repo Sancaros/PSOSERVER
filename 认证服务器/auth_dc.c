@@ -525,6 +525,8 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         psocn_db_escape_str(&conn, serial, pkt->serial_number, 8);
         psocn_db_escape_str(&conn, access, pkt->access_key, 8);
 
+        uint32_t serial_number = strtoul(pkt->serial_number, NULL, 16);
+        
         if(c->type != CLIENT_AUTH_PC) {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
                 "(dc_id='%s' OR dc_id IS NULL) AND serial_number='%s' AND "
@@ -536,9 +538,9 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
         }
         else {
             sprintf(query, "SELECT guildcard FROM %s WHERE "
-                "serial_number='%s' AND access_key='%s'"
+                "serial_number='%d' AND access_key='%s'"
                 , AUTH_ACCOUNT_PC
-                , serial, access);
+                , serial_number, access);
             c->ext_version = CLIENT_EXTVER_PC;
         }
 
@@ -656,7 +658,7 @@ static int handle_logina(login_client_t *c, dcv2_login_9a_pkt *pkt) {
    support. */
 static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
     uint32_t account, gc;
-    char query[256], serial[32], access[32];
+    char query[256]/*, serial[32]*/, access[32];
     void *result;
     char **row;
     time_t banlen;
@@ -747,7 +749,7 @@ static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
     uint32_t serial_number = strtoul(pkt->serial_number1, NULL, 16);
 
     /* Escape all the important strings. */
-    psocn_db_escape_str(&conn, serial, pkt->serial_number1, 8);
+    //psocn_db_escape_str(&conn, serial, pkt->serial_number1, 8);
     psocn_db_escape_str(&conn, access, pkt->access_key1, 12);
 
     sprintf(query, "SELECT guildcard FROM %s WHERE "
@@ -826,7 +828,7 @@ static int handle_gchlcheck(login_client_t *c, v3_hlcheck_pkt *pkt) {
 
 #ifdef DEBUG
 
-    ERR_LOG("版本代码: %02x %s %s", pkt->sub_version, serial, access);
+    ERR_LOG("版本代码: %02x %d %s", pkt->sub_version, serial_number, access);
 
 #endif // DEBUG
 
