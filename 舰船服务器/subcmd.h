@@ -2463,6 +2463,19 @@ typedef struct subcmd_bb_Unknown_6xAD {
     // The first byte in this array seems to have a special meaning
     uint8_t unknown_a1[0x40];
 } PACKED subcmd_bb_Unknown_6xAD_t;
+//[2023年07月22日 08:22 : 14 : 145] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x62 0xAE 版本 3 的处理
+//[2023年07月22日 08:22 : 14 : 145] 调试(subcmd_handle_62.c 2416) : 未知 0x62 指令 : 0xAE
+//(00000000)   62 03 14 00 AE 04 02 00   00 00 00 00 00 10 63 01  b... ? ........c.
+//(00000010)   00 00 00 00                                     ....
+// 0xAE: 发送大厅椅子状态 (sent by existing clients at join time)
+typedef struct subcmd_send_lobby_chair_state {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;    //client_id 是数据包来源的客户端
+    uint16_t act_id;         //0x0036 0x0037 是椅子状态flags
+    uint16_t unused;         //0x0000
+    uint32_t angle;          //所在的横向坐标？？
+    uint32_t face;           //面对的方向 4字节的位置
+} PACKED subcmd_send_lobby_chair_state_t;
 
 // 0xAE: 发送大厅椅子状态 (sent by existing clients at join time)
 typedef struct subcmd_pc_send_lobby_chair_state {

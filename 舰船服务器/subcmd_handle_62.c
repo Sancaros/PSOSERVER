@@ -1316,6 +1316,21 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
+int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_send_lobby_chair_state_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = -1;
+
+    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
+            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return rv;
+    }
+
+    return send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+}
+
 int sub62_AE_pc(ship_client_t* src, ship_client_t* dest,
     subcmd_pc_send_lobby_chair_state_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2350,7 +2365,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_BURST6                    , sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_bb },
     { SUBCMD62_BITEMREQ                  , sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
-    { SUBCMD62_CHAIR_STATE               , NULL,        NULL,        NULL,        NULL,        sub62_AE_pc, sub62_AE_bb },
+    { SUBCMD62_CHAIR_STATE               , sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_pc, sub62_AE_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
     { SUBCMD62_SHOP_BUY                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B7_bb },
     { SUBCMD62_TEKKING                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B8_bb },

@@ -179,6 +179,27 @@ static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c);
 
 bool needrelese = false;
 
+uint16_t pkt_size(const pkt_header_t* hdr, int version) {
+    switch (version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+        return hdr->dc.pkt_len;
+
+    case CLIENT_VERSION_PC:
+        return hdr->pc.pkt_len;
+
+    case CLIENT_VERSION_BB:
+        return hdr->bb.pkt_len;
+
+    default:
+        errno = EINVAL;
+        ERR_LOG("Î´ÖªÓÎÏ·°æ±¾");
+        return 0;
+    }
+}
+
 int check_size_v(size_t size, size_t min_size, size_t max_size) {
     int result = 0;
 

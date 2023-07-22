@@ -148,6 +148,8 @@ struct ship_client {
     pthread_mutex_t mutex;
     pkt_header_t pkt;
 
+    uint16_t(*pkt_size)(const pkt_header_t* hdr, int version);
+
     CRYPT_SETUP ckey;
     CRYPT_SETUP skey;
 

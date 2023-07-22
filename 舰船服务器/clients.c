@@ -383,6 +383,9 @@ ship_client_t *client_create_connection(int sock, int version, int type,
         TAILQ_INSERT_TAIL(clients, rv, qentry);
     }
 
+    /* 加载客户端其他函数 */
+    rv->pkt_size = pkt_size;
+
     ship_inc_clients(ship);
 
     return rv;

@@ -120,8 +120,6 @@ typedef struct bb_pkt_hdr {
 /* 客户端数据头联合结构 */
 typedef union pkt_header {
     dc_pkt_hdr_t dc;
-    dc_pkt_hdr_t gc;
-    dc_pkt_hdr_t xb;
     pc_pkt_hdr_t pc;
     bb_pkt_hdr_t bb;
 } pkt_header_t;

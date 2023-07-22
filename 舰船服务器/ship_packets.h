@@ -68,7 +68,12 @@ const static char dc_welcome_copyright[] =
 const static char bb_welcome_copyright[] =
     "Phantasy Star Online Blue Burst Game Server. Copyright 1999-2004 SONICTEAM.";
 
-const static char anti_copyright[] = "This server is in no way affiliated, sponsored, or supported by SEGA Enterprises or SONICTEAM. The preceding message exists only in order to remain compatible with programs that expect it.";
+const static char anti_copyright[] = "This server is in no way affiliated, sponsored, "
+"or supported by SEGA Enterprises or SONICTEAM. "
+"The preceding message exists only in order to remain compatible with programs that expect it.";
+
+/* 获取数据包大小 */
+uint16_t pkt_size(const pkt_header_t* hdr, int version);
 
 /* 检查数据包大小. */
 int check_size_v(size_t size, size_t min_size, size_t max_size);
