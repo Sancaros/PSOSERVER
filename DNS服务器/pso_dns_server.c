@@ -253,11 +253,11 @@ static int read_config(const char* dir, const char* fn) {
             if (!isIPAddress(host4)) {
                 if (get_IPv4_from_hostname(host4, ipv4) == 0) {
 #ifdef DEBUG
-                    DNS_LOG("DNS %d.%s 跳转 IPv4 地址为 %s: %s", lineno, name, host4, ipv4);
+                    DNS_LOG("DNS (%d)%s 跳转IPv4地址为 %s:%s", lineno, name, host4, ipv4);
 #endif // DEBUG
                 }
                 else {
-                    ERR_LOG("DNS %d.%s 跳转至IPv4域名 %s 失败", lineno, name, host4);
+                    ERR_LOG("DNS (%d)%s 跳转至IPv4域名 %s 失败", lineno, name, host4);
                 }
             }
 
@@ -265,11 +265,12 @@ static int read_config(const char* dir, const char* fn) {
             if (!isIPv6Address(host6)) {
                 if (get_IPv6_from_hostname(host6, ipv6, sizeof(ipv6)) == 0) {
 #ifdef DEBUG
-                    DNS_LOG("DNS行 %d.%s 跳转 IPv6 地址为 %s: %s", lineno, name, host6, ipv6);
+                    DNS_LOG("DNS行 (%d)%s 跳转IPv6地址为 %s:%s", lineno, name, host6, ipv6);
 #endif // DEBUG
                 }
                 else {
-                    ERR_LOG("DNS %d.%s 跳转至IPv6域名 %s 失败", lineno, name, host6);
+                    /* 还未完成支持 */
+                    //ERR_LOG("DNS (%d)%s 跳转至IPv6域名 %s 失败", lineno, name, host6);
                 }
             }
 
@@ -405,7 +406,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     if (!isStringEmpty(h->host4))
         if (!isIPAddress(h->host4)) {
             if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
-                DNS_LOG("DNS行 &d.%s 跳转 IPv4 地址为 %s: %s", h->host4, h->name, ipv4, host_line);
+                DNS_LOG("DNS (%d)%s 跳转IPv4地址为 %s:%s", host_line, h->name, h->host4, ipv4);
                 /* Make sure the IP looks sane. */
                 if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
                     ERR_LOG("read_config - inet_pton");

@@ -474,9 +474,11 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     uint8_t* bp = (uint8_t*)pkt + 0x10;
     uint16_t len = LE16(pkt->hdr.pkt_len) - 0x10;
 
+#ifdef DEBUG
+
     DBG_LOG("bb_process_menu÷∏¡Ó: 0x%08X 0x%zX item_id %d", menu_id & 0xFF, menu_id, item_id);
 
-    //return process_menu(c, menu_id, item_id, bp + 0x10, len);
+#endif // DEBUG
 
         /* Figure out what the client is selecting. */
     switch (menu_id & 0xFF) {
