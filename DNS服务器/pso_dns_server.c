@@ -205,7 +205,7 @@ static int read_config(const char* dir, const char* fn) {
 
     /* Curse you, Visual C++... */
     if (!(fullfn = (char*)malloc(dlen + flen + 2))) {
-        perror("malloc");
+        ERR_LOG("malloc");
         return -1;
     }
 
@@ -214,7 +214,7 @@ static int read_config(const char* dir, const char* fn) {
 
     /* Open the configuration file */
     if (!(fp = fopen(fullfn, "r"))) {
-        perror("read_config - 打开文件错误");
+        ERR_LOG("read_config - 打开文件错误");
         fprintf(stderr, "Filename was %s\n", fullfn);
         return -1;
     }
@@ -222,7 +222,7 @@ static int read_config(const char* dir, const char* fn) {
     /* Allocate some space to start. We probably won't need this many entries,
        so we'll trim it later on. */
     if (!(hosts = (host_info_t*)malloc(sizeof(host_info_t) * 256))) {
-        perror("read_config - 分配内存错误");
+        ERR_LOG("read_config - 分配内存错误");
         return -1;
     }
 
@@ -271,7 +271,7 @@ static int read_config(const char* dir, const char* fn) {
 
         /* Make sure the IP looks sane. */
         if (inet_pton(AF_INET, ipv4, &addr) != 1) {
-            perror("read_config - inet_pton");
+            ERR_LOG("read_config - inet_pton");
             return -1;
         }
 
@@ -279,7 +279,7 @@ static int read_config(const char* dir, const char* fn) {
         if (entries == host_count) {
             tmp = realloc(hosts, host_count * sizeof(host_info_t) * 2);
             if (!tmp) {
-                perror("read_config - realloc");
+                ERR_LOG("read_config - realloc");
                 return -1;
             }
 
@@ -290,21 +290,21 @@ static int read_config(const char* dir, const char* fn) {
         /* Make space to store the hostname. */
         hosts[entries].name = (char*)malloc(strlen(name) + 1);
         if (!hosts[entries].name) {
-            perror("read_config - malloc name");
+            ERR_LOG("read_config - malloc name");
             return -1;
         }
 
         /* Make space to store the hostname. */
         hosts[entries].host4 = (char*)malloc(strlen(host4) + 1);
         if (!hosts[entries].host4) {
-            perror("read_config - malloc host4");
+            ERR_LOG("read_config - malloc host4");
             return -1;
         }
 
         /* Make space to store the hostname. */
         hosts[entries].host6 = (char*)malloc(strlen(host6) + 1);
         if (!hosts[entries].host6) {
-            perror("read_config - malloc host6");
+            ERR_LOG("read_config - malloc host6");
             return -1;
         }
 
@@ -344,7 +344,7 @@ static SOCKET open_sock(uint16_t port) {
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
     if(sock == INVALID_SOCKET) {
-        perror("socket");
+        ERR_LOG("socket");
         return INVALID_SOCKET;
     }
 
@@ -355,7 +355,7 @@ static SOCKET open_sock(uint16_t port) {
     addr.sin_port = htons(port);
 
     if(bind(sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
-        perror("bind");
+        ERR_LOG("bind");
         close(sock);
         return INVALID_SOCKET;
     }
@@ -402,7 +402,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
                 DNS_LOG("DNS行获取到 IPv4 地址为 %s: %s", h->host4, ipv4);
                 /* Make sure the IP looks sane. */
                 if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
-                    perror("read_config - inet_pton");
+                    ERR_LOG("read_config - inet_pton");
                 }
             }
             else {
@@ -477,6 +477,8 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
             if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
                 inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
                 ERR_LOG("端口 %d 抛出非IN A请求.", sock);
+                close(sock);
+                return;
             }
 
             hostbuf[hostlen - 1] = '\0';
@@ -522,17 +524,17 @@ static int drop_privs(void) {
 
     /* Set privileges. */
     if (setgroups(1, &gid)) {
-        perror("setgroups");
+        ERR_LOG("setgroups");
         return -1;
     }
 
     if (setgid(gid)) {
-        perror("setgid");
+        ERR_LOG("setgid");
         return -1;
     }
 
     if (setuid(uid)) {
-        perror("setuid");
+        ERR_LOG("setuid");
         return -1;
     }
 
