@@ -21,6 +21,8 @@
 
 #include "pso_dns_server.h"
 
+int host_line = 0;
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
 static WSADATA wsaData;
 
@@ -102,7 +104,7 @@ int isIPAddress(const char* hostname) {
 
 int isIPv6Address(const char* hostname) {
     struct sockaddr_in6 sa = { 0 };
-    return InetPton(AF_INET6, (PCWSTR)hostname, &(sa.sin6_addr)) == 1;
+    return InetPton(AF_INET6, hostname, &(sa.sin6_addr)) == 1;
 }
 
 static int get_IPv4_from_hostname(const char* hostname, char* ipv4Address) {
@@ -250,24 +252,26 @@ static int read_config(const char* dir, const char* fn) {
         if (!isStringEmpty(host4))
             if (!isIPAddress(host4)) {
                 if (get_IPv4_from_hostname(host4, ipv4) == 0) {
-                    DNS_LOG("DNS行 %d 获取到 IPv4 地址为 %s: %s", lineno, host4, ipv4);
+#ifdef DEBUG
+                    DNS_LOG("DNS %d.%s 跳转 IPv4 地址为 %s: %s", lineno, name, host4, ipv4);
+#endif // DEBUG
                 }
                 else {
-                    //fprintf(stderr, "从 %s 获取 IPv4 地址失败\n", host4);
+                    ERR_LOG("DNS %d.%s 跳转至IPv4域名 %s 失败", lineno, name, host4);
                 }
             }
 
         if (!isStringEmpty(host6))
             if (!isIPv6Address(host6)) {
                 if (get_IPv6_from_hostname(host6, ipv6, sizeof(ipv6)) == 0) {
-                    DNS_LOG("DNS行 %d 获取到 IPv6 地址为 %s: %s", lineno, host6, ipv6);
+#ifdef DEBUG
+                    DNS_LOG("DNS行 %d.%s 跳转 IPv6 地址为 %s: %s", lineno, name, host6, ipv6);
+#endif // DEBUG
                 }
                 else {
-                    //fprintf(stderr, "从 %s 获取 IPv6 地址失败\n", host6);
+                    ERR_LOG("DNS %d.%s 跳转至IPv6域名 %s 失败", lineno, name, host6);
                 }
             }
-
-        //DBG_LOG("%s", ipv4);
 
         /* Make sure the IP looks sane. */
         if (inet_pton(AF_INET, ipv4, &addr) != 1) {
@@ -368,8 +372,10 @@ static host_info_t* find_host(const char* hostname) {
 
     /* Linear search through the list for the one we're looking for. */
     for (i = 0; i < host_count; ++i) {
-        if (!cmp_str(hosts[i].name, hostname))
+        if (!cmp_str(hosts[i].name, hostname)) {
+            host_line = i;
             return hosts + i;
+        }
     }
 
     return NULL;
@@ -399,7 +405,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     if (!isStringEmpty(h->host4))
         if (!isIPAddress(h->host4)) {
             if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
-                DNS_LOG("DNS行获取到 IPv4 地址为 %s: %s", h->host4, ipv4);
+                DNS_LOG("DNS行 &d.%s 跳转 IPv4 地址为 %s: %s", h->host4, h->name, ipv4, host_line);
                 /* Make sure the IP looks sane. */
                 if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
                     ERR_LOG("read_config - inet_pton");
@@ -468,6 +474,7 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
         if (len < i + partlen + 5) {
             /* Throw out the obvious bad packet. */
             ERR_LOG("端口 %d 抛出坏数据包.", sock);
+            close(sock);
             return;
         }
 
@@ -476,7 +483,7 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
             /* Make sure the rest of the message is as we expect it. */
             if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
                 inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
-                ERR_LOG("端口 %d 抛出非IN A请求.", sock);
+                //ERR_LOG("端口 %d 抛出非IN A请求.", sock);
                 close(sock);
                 return;
             }
@@ -618,25 +625,21 @@ static void initialization() {
     wc.hCursor = LoadCursor(hinst, IDC_ARROW);
     wc.hInstance = hinst;
     wc.lpfnWndProc = WndProc;
-    wc.lpszClassName = (LPCWSTR)"Sancaros";
+    wc.lpszClassName = "Sancaros";
     wc.style = CS_HREDRAW | CS_VREDRAW;
 
-    if (!RegisterClass(&wc))
-    {
-        ERR_LOG("注册类失败.");
-        exit(EXIT_FAILURE);
+    if (!RegisterClass(&wc)) {
+        ERR_EXIT("注册类失败.");
     }
 
-    hwndWindow = CreateWindow((LPCWSTR)"Sancaros", (LPCWSTR)"hidden window", WS_MINIMIZE, 1, 1, 1, 1,
+    hwndWindow = CreateWindow("Sancaros", "hidden window", WS_MINIMIZE, 1, 1, 1, 1,
         NULL,
         NULL,
         hinst,
         NULL);
 
-    if (!hwndWindow)
-    {
-        ERR_LOG("无法创建窗口.");
-        exit(EXIT_FAILURE);
+    if (!hwndWindow) {
+        ERR_EXIT("无法创建窗口.");
     }
 
     ShowWindow(hwndWindow, SW_HIDE);
@@ -648,7 +651,7 @@ static void initialization() {
 
 int __cdecl main(int argc, char** argv) {
     SOCKET sock;
-    struct sockaddr_in addr;
+    struct sockaddr_in addr = { 0 };
     socklen_t alen;
     ssize_t rlen;
 
@@ -661,7 +664,7 @@ int __cdecl main(int argc, char** argv) {
 #if defined(_WIN32) && !defined(__CYGWIN__)
 	if(init_wsa()) {
         getchar();
-		exit(EXIT_FAILURE);
+        ERR_EXIT("WSAStartup 错误...");
 	}
 #endif
 
@@ -669,12 +672,12 @@ int __cdecl main(int argc, char** argv) {
        systems. */
     if((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
         getchar();
-        exit(EXIT_FAILURE);
+        ERR_EXIT("open_sock 错误");
     }
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
     if (drop_privs()) {
-        exit(EXIT_FAILURE);
+        ERR_EXIT("drop_privs 错误");
     }
 
     /* Daemonize. */
@@ -684,7 +687,7 @@ int __cdecl main(int argc, char** argv) {
     /* Read in the configuration. */
     if(read_config(CONFIG_DIR, CONFIG_FILE)) {
         getchar();
-        exit(EXIT_FAILURE);
+        ERR_EXIT("read_config 错误");
     }
 
     DNS_LOG("DNS服务器启动完成");

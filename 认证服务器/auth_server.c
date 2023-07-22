@@ -1573,17 +1573,17 @@ restart:
 
     /* 获取地址 */
     if (setup_addresses(srvcfg))
-        exit(EXIT_FAILURE);
+        ERR_EXIT("setup_addresses 错误");
 
     /* 获取设置的端口 */
     if (setup_ports(srvcfg))
-        exit(EXIT_FAILURE);
+        ERR_EXIT("setup_ports 错误");
 
     db_update_auth_server_list(srvcfg);
 
     /* Initialize all the iconv contexts we'll need */
     if (init_iconv())
-        exit(EXIT_FAILURE);
+        ERR_EXIT("init_iconv 错误");
 
     /* Init mini18n if we have it. */
     init_i18n();
