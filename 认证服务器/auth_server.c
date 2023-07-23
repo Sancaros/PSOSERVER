@@ -39,6 +39,7 @@
 #include <f_iconv.h>
 #include <f_checksum.h>
 #include <pso_ping.h>
+#include <pso_crash_handle.h>
 
 #include <database.h>
 #include <encryption.h>
@@ -63,13 +64,13 @@ uint32_t window_hide_or_show = 1;
 HWND consoleHwnd;
 
 /* Stuff read from the config files */
-psocn_config_t *cfg;
-psocn_srvconfig_t *srvcfg;
-psocn_dbconfig_t *dbcfg;
+psocn_config_t* cfg;
+psocn_srvconfig_t* srvcfg;
+psocn_dbconfig_t* dbcfg;
 psocn_dbconn_t conn;
-psocn_limits_t *limits = NULL;
-patch_list_t *patches_v2 = NULL;
-patch_list_t *patches_gc = NULL;
+psocn_limits_t* limits = NULL;
+patch_list_t* patches_v2 = NULL;
+patch_list_t* patches_gc = NULL;
 extern time_t srv_time;
 
 psocn_srvsockets_t dc_sockets[NUM_AUTH_DC_SOCKS] = {
@@ -156,53 +157,70 @@ psocn_srvsockets_t bb_sockets[NUM_AUTH_BB_SOCKS] = {
 psocn_quest_list_t qlist[CLIENT_AUTH_VERSION_COUNT][CLIENT_LANG_ALL];
 volatile sig_atomic_t shutting_down = 0;
 
-static const char *config_file = NULL;
-static const char *custom_dir = NULL;
+static const char* config_file = NULL;
+static const char* custom_dir = NULL;
 static int dont_daemonize = 0;
-static const char *runas_user = RUNAS_DEFAULT;
+static const char* runas_user = RUNAS_DEFAULT;
+
+//WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+static WSADATA winsock_data;
+
+static int init_wsa(void) {
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err) return -1;
+
+    return 0;
+}
 
 /* Print help to the user to stdout. */
-static void print_help(const char *bin) {
+static void print_help(const char* bin) {
     printf("帮助说明: %s [arguments]\n"
-           "-----------------------------------------------------------------\n"
-           "--version       Print version info and exit\n"
-           "--verbose       Log many messages that might help debug a problem\n"
-           "--quiet         Only log warning and error messages\n"
-           "--reallyquiet   Only log error messages\n"
-           "-C configfile   Use the specified configuration instead of the\n"
-           "                default one.\n"
-           "-D directory    Use the specified directory as the root\n"
-           "--nodaemon      Don't daemonize\n"
-           "-P filename     Use the specified name for the pid file to write\n"
-           "                instead of the default.\n"
-           "-U username     Run as the specified user instead of '%s'\n"
-           "--help          Print this help and exit\n\n"
-           "Note that if more than one verbosity level is specified, the last\n"
-           "one specified will be used. The default is --verbose.\n", bin,
-           RUNAS_DEFAULT);
+        "-----------------------------------------------------------------\n"
+        "--version       Print version info and exit\n"
+        "--verbose       Log many messages that might help debug a problem\n"
+        "--quiet         Only log warning and error messages\n"
+        "--reallyquiet   Only log error messages\n"
+        "-C configfile   Use the specified configuration instead of the\n"
+        "                default one.\n"
+        "-D directory    Use the specified directory as the root\n"
+        "--nodaemon      Don't daemonize\n"
+        "-P filename     Use the specified name for the pid file to write\n"
+        "                instead of the default.\n"
+        "-U username     Run as the specified user instead of '%s'\n"
+        "--help          Print this help and exit\n\n"
+        "Note that if more than one verbosity level is specified, the last\n"
+        "one specified will be used. The default is --verbose.\n", bin,
+        RUNAS_DEFAULT);
 }
 
 /* Parse any command-line arguments passed in. */
-static void parse_command_line(int argc, char *argv[]) {
+static void parse_command_line(int argc, char* argv[]) {
     int i;
 
-    for(i = 1; i < argc; ++i) {
-        if(!strcmp(argv[i], "--version")) {
+    for (i = 1; i < argc; ++i) {
+        if (!strcmp(argv[i], "--version")) {
             load_program_info(server_name[AUTH_SERVER].name, AUTH_SERVER_VERSION);
             exit(EXIT_SUCCESS);
         }
-        else if(!strcmp(argv[i], "--verbose")) {
+        else if (!strcmp(argv[i], "--verbose")) {
             debug_set_threshold(DBG_LOGS);
         }
-        else if(!strcmp(argv[i], "--quiet")) {
+        else if (!strcmp(argv[i], "--quiet")) {
             debug_set_threshold(DBG_WARN);
         }
-        else if(!strcmp(argv[i], "--reallyquiet")) {
+        else if (!strcmp(argv[i], "--reallyquiet")) {
             debug_set_threshold(DBG_ERROR);
         }
-        else if(!strcmp(argv[i], "-C")) {
+        else if (!strcmp(argv[i], "-C")) {
             /* Save the config file's name. */
-            if(i == argc - 1) {
+            if (i == argc - 1) {
                 printf("-C 缺少参数!\n\n");
                 print_help(argv[0]);
                 exit(EXIT_FAILURE);
@@ -210,9 +228,9 @@ static void parse_command_line(int argc, char *argv[]) {
 
             config_file = argv[++i];
         }
-        else if(!strcmp(argv[i], "-D")) {
+        else if (!strcmp(argv[i], "-D")) {
             /* Save the custom dir */
-            if(i == argc - 1) {
+            if (i == argc - 1) {
                 printf("-D 缺少参数!\n\n");
                 print_help(argv[0]);
                 exit(EXIT_FAILURE);
@@ -220,11 +238,11 @@ static void parse_command_line(int argc, char *argv[]) {
 
             custom_dir = argv[++i];
         }
-        else if(!strcmp(argv[i], "--nodaemon")) {
+        else if (!strcmp(argv[i], "--nodaemon")) {
             dont_daemonize = 1;
         }
-        else if(!strcmp(argv[i], "-U")) {
-            if(i == argc - 1) {
+        else if (!strcmp(argv[i], "-U")) {
+            if (i == argc - 1) {
                 printf("-U 缺少参数!\n\n");
                 print_help(argv[0]);
                 exit(EXIT_FAILURE);
@@ -232,7 +250,7 @@ static void parse_command_line(int argc, char *argv[]) {
 
             runas_user = argv[++i];
         }
-        else if(!strcmp(argv[i], "--help")) {
+        else if (!strcmp(argv[i], "--help")) {
             print_help(argv[0]);
             exit(EXIT_SUCCESS);
         }
@@ -438,7 +456,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
             //    return -1;
             //}
             //else
-                AUTH_LOG("    获取到 IPv4 地址: %s", ipstr);
+            AUTH_LOG("    获取到 IPv4 地址: %s", ipstr);
             cfg->server_ip = addr4->sin_addr.s_addr;
         }
         else if (j->ai_family == PF_INET6) {
@@ -449,7 +467,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
             //    //return -1;
             //}
             //else
-                AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
             memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
         }
     }
@@ -488,7 +506,7 @@ static int setup_addresses(psocn_srvconfig_t* cfg) {
             //    //return -1;
             //}
             //else
-                AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
+            AUTH_LOG("    获取到 IPv6 地址: %s", ipstr);
             memcpy(cfg->server_ip6, &addr6->sin6_addr, 16);
         }
     }
@@ -695,21 +713,21 @@ static int update_addresses() {
     return 0;
 }
 
-const void *my_ntop(struct sockaddr_storage *addr, char str[INET6_ADDRSTRLEN]) {
+const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]) {
     int family = addr->ss_family;
 
-    switch(family) {
-        case PF_INET:
-        {
-            struct sockaddr_in *a = (struct sockaddr_in *)addr;
-            return inet_ntop(family, &a->sin_addr, str, INET6_ADDRSTRLEN);
-        }
+    switch (family) {
+    case PF_INET:
+    {
+        struct sockaddr_in* a = (struct sockaddr_in*)addr;
+        return inet_ntop(family, &a->sin_addr, str, INET6_ADDRSTRLEN);
+    }
 
-        case PF_INET6:
-        {
-            struct sockaddr_in6 *a = (struct sockaddr_in6 *)addr;
-            return inet_ntop(family, &a->sin6_addr, str, INET6_ADDRSTRLEN);
-        }
+    case PF_INET6:
+    {
+        struct sockaddr_in6* a = (struct sockaddr_in6*)addr;
+        return inet_ntop(family, &a->sin6_addr, str, INET6_ADDRSTRLEN);
+    }
     }
 
     return NULL;
@@ -752,18 +770,12 @@ static void initialization() {
 
     load_log_config();
 
-    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
-    WSADATA winsock_data;
-
-    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
-    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
-
-    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
-    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
-    errno_t err = WSAStartup(sockVersion, &winsock_data);
-
-    if (err)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
+        getchar();
+    }
+#endif
 
     HWND consoleHwnd;
     WNDCLASS wc = { 0 };
@@ -779,10 +791,8 @@ static void initialization() {
     wc.lpszClassName = "Sancaros";
     wc.style = CS_HREDRAW | CS_VREDRAW;
 
-    if (!RegisterClass(&wc))
-    {
-        printf("注册类失败.\n");
-        exit(EXIT_FAILURE);
+    if (!RegisterClass(&wc)) {
+        ERR_EXIT("注册类失败.");
     }
 
     hwndWindow = CreateWindow("Sancaros", "hidden window", WS_MINIMIZE, 1, 1, 1, 1,
@@ -791,10 +801,8 @@ static void initialization() {
         hinst,
         NULL);
 
-    if (!hwndWindow)
-    {
-        printf("无法创建窗口.");
-        exit(EXIT_FAILURE);
+    if (!hwndWindow) {
+        ERR_EXIT("无法创建窗口.");
     }
 
     ShowWindow(hwndWindow, SW_HIDE);
@@ -802,20 +810,24 @@ static void initialization() {
     MoveWindow(consoleHwnd, 900, 0, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
+
+    // 设置崩溃处理函数
+    SetUnhandledExceptionFilter(crash_handler);
+
 }
 
 static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
-                       int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
-                       int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
-                       int xbsocks[NUM_AUTH_XB_SOCKS]) {
+    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+    int xbsocks[NUM_AUTH_XB_SOCKS]) {
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     struct timeval timeout = { 0 };
     socklen_t len;
     struct sockaddr_storage addr = { 0 };
-    struct sockaddr *addr_p = (struct sockaddr *)&addr;
+    struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     int nfds, asock, j, type, auth;
-    login_client_t *i, *tmp;
+    login_client_t* i, * tmp;
     ssize_t sent;
 
     int select_result = 0;
@@ -828,7 +840,7 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
     uint32_t client_count_ep3 = 0;
     uint32_t client_count_xbox = 0;
 
-    for(;;) {
+    for (;;) {
         /* Clear the fd_sets so we can use them. */
         FD_ZERO(&readfds);
         FD_ZERO(&writefds);
@@ -849,7 +861,7 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
             FD_SET(i->sock, &exceptfds);
 
             /* Only add to the writing fd_set if we have something to write. */
-            if(i->sendbuf_cur) {
+            if (i->sendbuf_cur) {
                 FD_SET(i->sock, &writefds);
             }
 
@@ -859,62 +871,62 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
 
         /* If we have a shutdown scheduled and nobody's connected, go ahead and
            do it. */
-        if(!client_count && shutting_down) {
+        if (!client_count && shutting_down) {
             AUTH_LOG("收到程序关闭信号.");
             return;
         }
 
         /* Add the listening sockets for incoming connections to the fd_set. */
-        for(j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
             FD_SET(dcsocks[j], &readfds);
             nfds = max(nfds, dcsocks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
             FD_SET(gcsocks[j], &readfds);
             nfds = max(nfds, gcsocks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
             FD_SET(ep3socks[j], &readfds);
             nfds = max(nfds, ep3socks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
             FD_SET(pcsocks[j], &readfds);
             nfds = max(nfds, pcsocks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
             FD_SET(bbsocks[j], &readfds);
             nfds = max(nfds, bbsocks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
             FD_SET(xbsocks[j], &readfds);
             nfds = max(nfds, xbsocks[j]);
         }
 
-        for(j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
+        for (j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
             FD_SET(websocks[j], &readfds);
             nfds = max(nfds, websocks[j]);
         }
 
-        if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
+        if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* See if we have an incoming client. */
-            for(j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
-                if(FD_ISSET(dcsocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_DC_SOCKS; ++j) {
+                if (FD_ISSET(dcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(dcsocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(dcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d DreamCast 客户端连接", ipstr, dc_sockets[j].port);
 #endif // DEBUG
-                    if(!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
-                                          dc_sockets[j].port)) {
+                    if (!create_connection(asock, CLIENT_AUTH_DC, addr_p, len,
+                        dc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -928,19 +940,19 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
-                if(FD_ISSET(pcsocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_PC_SOCKS; ++j) {
+                if (FD_ISSET(pcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(pcsocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(pcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d PC 客户端连接", ipstr, pc_sockets[j].port);
 #endif // DEBUG
-                    if(!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
-                                          pc_sockets[j].port)) {
+                    if (!create_connection(asock, CLIENT_AUTH_PC, addr_p, len,
+                        pc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -954,11 +966,11 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
-                if(FD_ISSET(gcsocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_GC_SOCKS; ++j) {
+                if (FD_ISSET(gcsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(gcsocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(gcsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 #ifdef DEBUG
@@ -966,8 +978,8 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     AUTH_LOG("允许 %s:%d GameCube 客户端连接", ipstr, gc_sockets[j].port);
 
 #endif // DEBUG
-                    if(!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
-                                          gc_sockets[j].port)) {
+                    if (!create_connection(asock, CLIENT_AUTH_GC, addr_p, len,
+                        gc_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -981,19 +993,19 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
-                if(FD_ISSET(ep3socks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_EP3_SOCKS; ++j) {
+                if (FD_ISSET(ep3socks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(ep3socks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(ep3socks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Episode 3 客户端连接", ipstr, ep3_sockets[j].port);
 #endif // DEBUG
-                    if(!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
-                                          len, ep3_sockets[j].port)) {
+                    if (!create_connection(asock, CLIENT_AUTH_EP3, addr_p,
+                        len, ep3_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -1007,15 +1019,15 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
-                if(FD_ISSET(bbsocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_BB_SOCKS; ++j) {
+                if (FD_ISSET(bbsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(bbsocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(bbsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 
-                    if(j & 1) {
+                    if (j & 1) {
                         type = CLIENT_AUTH_BB_CHARACTER;
                         auth = 1;
                     }
@@ -1027,8 +1039,8 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Blue Burst 客户端%s", ipstr, bb_sockets[auth].port, auth ? "登录" : "连接");
 #endif // DEBUG
-                    if(!create_connection(asock, type, addr_p, len,
-                                          bb_sockets[auth].port)) {
+                    if (!create_connection(asock, type, addr_p, len,
+                        bb_sockets[auth].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -1052,19 +1064,19 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
-                if(FD_ISSET(xbsocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_XB_SOCKS; ++j) {
+                if (FD_ISSET(xbsocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(xbsocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(xbsocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
 #ifdef DEBUG
                     my_ntop(&addr, ipstr);
                     AUTH_LOG("允许 %s:%d Xbox 客户端连接", ipstr, xb_sockets[j].port);
 #endif // DEBUG
-                    if(!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
-                                          len, xb_sockets[j].port)) {
+                    if (!create_connection(asock, CLIENT_AUTH_XBOX, addr_p,
+                        len, xb_sockets[j].port)) {
                         closesocket(asock);
                     }
                     else {
@@ -1078,11 +1090,11 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
             }
 
-            for(j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
-                if(FD_ISSET(websocks[j], &readfds)) {
+            for (j = 0; j < NUM_AUTH_WEB_SOCKS; ++j) {
+                if (FD_ISSET(websocks[j], &readfds)) {
                     len = sizeof(struct sockaddr_storage);
 
-                    if((asock = accept(websocks[j], addr_p, &len)) < 0) {
+                    if ((asock = accept(websocks[j], addr_p, &len)) < 0) {
                         perror("accept");
                     }
                     else {
@@ -1120,8 +1132,8 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
             /* Handle the client connections, if any. */
             TAILQ_FOREACH(i, &clients, qentry) {
                 /* Check if this connection was trying to send us something. */
-                if(FD_ISSET(i->sock, &readfds)) {
-                    if(read_from_client(i)) {
+                if (FD_ISSET(i->sock, &readfds)) {
+                    if (read_from_client(i)) {
                         i->disconnected = 1;
                     }
                 }
@@ -1132,15 +1144,15 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                 }
 
                 /* If we have anything to write, check if we can right now. */
-                if(FD_ISSET(i->sock, &writefds)) {
-                    if(i->sendbuf_cur) {
+                if (FD_ISSET(i->sock, &writefds)) {
+                    if (i->sendbuf_cur) {
                         sent = send(i->sock, (PCHAR)i->sendbuf + i->sendbuf_start,
-                                    i->sendbuf_cur - i->sendbuf_start, 0);
+                            i->sendbuf_cur - i->sendbuf_start, 0);
 
                         /* If we fail to send, and the error isn't EAGAIN,
                            bail. */
-                        if(sent == SOCKET_ERROR) {
-                            if(errno != EAGAIN) {
+                        if (sent == SOCKET_ERROR) {
+                            if (errno != EAGAIN) {
                                 i->disconnected = 1;
                             }
                         }
@@ -1148,7 +1160,7 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                             i->sendbuf_start += sent;
 
                             /* If we've sent everything, free the buffer. */
-                            if(i->sendbuf_start == i->sendbuf_cur) {
+                            if (i->sendbuf_start == i->sendbuf_cur) {
                                 free(i->sendbuf);
                                 i->sendbuf = NULL;
                                 i->sendbuf_cur = 0;
@@ -1159,7 +1171,8 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
                     }
                 }
             }
-        } else if (select_result == -1) {
+        }
+        else if (select_result == -1) {
             ERR_LOG("select 套接字 = -1");
         }
 
@@ -1167,14 +1180,14 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
            the middle of a TAILQ_FOREACH, and destroy_connection does indeed
            use TAILQ_REMOVE). */
         i = TAILQ_FIRST(&clients);
-        while(i) {
+        while (i) {
             tmp = TAILQ_NEXT(i, qentry);
 
-            if(i->disconnected) {
+            if (i->disconnected) {
                 my_ntop(&i->ip_addr, ipstr);
 
-                if(i->guildcard) {
-                    if(i->auth)
+                if (i->guildcard) {
+                    if (i->auth)
                         AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 进入跃迁轨道", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
                     else
                         AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 断开认证", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
@@ -1287,11 +1300,11 @@ static int open_sock(int family, uint16_t port) {
 }
 
 static void open_log(void) {
-    FILE *dbgfp;
+    FILE* dbgfp;
 
     errno_t err = fopen_s(&dbgfp, "Debug\\login_debug.log", "a");
 
-    if(err) {
+    if (err) {
         ERR_LOG("无法打开日志文件");
         perror("fopen");
         exit(EXIT_FAILURE);
@@ -1301,7 +1314,7 @@ static void open_log(void) {
 }
 
 static void reopen_log(void) {
-    FILE *dbgfp, *ofp;
+    FILE* dbgfp, * ofp;
 
     errno_t err = fopen_s(&dbgfp, "Debug\\login_debug.log", "a");
 
@@ -1401,9 +1414,9 @@ void UnhookHandler() {
 }
 
 static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
-                           int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
-                           int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
-                           int xbsocks[NUM_AUTH_XB_SOCKS]) {
+    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+    int xbsocks[NUM_AUTH_XB_SOCKS]) {
     int i;
 
     for (i = 0; i < NUM_AUTH_DC_SOCKS; ++i) {
@@ -1506,9 +1519,9 @@ static void listen_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_
 }
 
 static void cleanup_sockets(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_SOCKS],
-                            int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
-                            int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
-                            int xbsocks[NUM_AUTH_XB_SOCKS]) {
+    int gcsocks[NUM_AUTH_GC_SOCKS], int websocks[NUM_AUTH_WEB_SOCKS],
+    int ep3socks[NUM_AUTH_EP3_SOCKS], int bbsocks[NUM_AUTH_BB_SOCKS],
+    int xbsocks[NUM_AUTH_XB_SOCKS]) {
     int i;
 
     /* Clean up. */
@@ -1550,84 +1563,95 @@ int __cdecl main(int argc, char** argv) {
     int bbsocks[NUM_AUTH_BB_SOCKS] = { 0 };
     int xbsocks[NUM_AUTH_XB_SOCKS] = { 0 };
     int websocks[NUM_AUTH_WEB_SOCKS] = { 0 };
-    
+
     initialization();
 
-    server_name_num = AUTH_SERVER;
+    __try {
 
-    load_program_info(server_name[AUTH_SERVER].name, AUTH_SERVER_VERSION);
+        server_name_num = AUTH_SERVER;
 
-    parse_command_line(argc, argv);
+        load_program_info(server_name[AUTH_SERVER].name, AUTH_SERVER_VERSION);
 
-    cfg = load_config();
+        parse_command_line(argc, argv);
 
-    //dbcfg = load_db_config();
+        cfg = load_config();
 
-    open_log();
+        //dbcfg = load_db_config();
 
-restart:
-    shutting_down = 0;
-    load_patch_config();
+        open_log();
 
-    srvcfg = load_srv_config();
+    restart:
+        shutting_down = 0;
+        load_patch_config();
 
-    /* 获取地址 */
-    if (setup_addresses(srvcfg))
-        ERR_EXIT("setup_addresses 错误");
+        srvcfg = load_srv_config();
 
-    /* 获取设置的端口 */
-    if (setup_ports(srvcfg))
-        ERR_EXIT("setup_ports 错误");
+        /* 获取地址 */
+        if (setup_addresses(srvcfg))
+            ERR_EXIT("setup_addresses 错误");
 
-    db_update_auth_server_list(srvcfg);
+        /* 获取设置的端口 */
+        if (setup_ports(srvcfg))
+            ERR_EXIT("setup_ports 错误");
 
-    /* Initialize all the iconv contexts we'll need */
-    if (init_iconv())
-        ERR_EXIT("init_iconv 错误");
+        db_update_auth_server_list(srvcfg);
 
-    /* Init mini18n if we have it. */
-    init_i18n();
+        /* Initialize all the iconv contexts we'll need */
+        if (init_iconv())
+            ERR_EXIT("init_iconv 错误");
 
-    HookupHandler();
+        /* Init mini18n if we have it. */
+        init_i18n();
 
-    listen_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
+        HookupHandler();
 
-    AUTH_LOG("%s启动完成.", server_name[AUTH_SERVER].name);
-    AUTH_LOG("程序运行中...");
-    AUTH_LOG("请用 <Ctrl-C> 关闭程序.");
+        listen_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
-    /* Run the login server. */
-    run_server(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
+        AUTH_LOG("%s启动完成.", server_name[AUTH_SERVER].name);
+        AUTH_LOG("程序运行中...");
+        AUTH_LOG("请用 <Ctrl-C> 关闭程序.");
 
-    cleanup_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
+        /* Run the login server. */
+        run_server(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
-    WSACleanup();
+        cleanup_sockets(dcsocks, pcsocks, gcsocks, websocks, ep3socks, bbsocks, xbsocks);
 
-    psocn_db_close(&conn);
+        WSACleanup();
 
-    for(i = 0; i < CLIENT_AUTH_VERSION_COUNT; ++i) {
-        for(j = 0; j < CLIENT_LANG_ALL; ++j) {
-            psocn_quests_destroy(&qlist[i][j]);
+        psocn_db_close(&conn);
+
+        for (i = 0; i < CLIENT_AUTH_VERSION_COUNT; ++i) {
+            for (j = 0; j < CLIENT_LANG_ALL; ++j) {
+                psocn_quests_destroy(&qlist[i][j]);
+            }
         }
+
+        patch_list_free(patches_v2);
+        patches_v2 = NULL;
+
+        patch_list_free(patches_gc);
+        patches_gc = NULL;
+
+        psocn_free_config(cfg);
+        psocn_free_srv_config(srvcfg);
+        psocn_free_db_config(dbcfg);
+        cleanup_i18n();
+        cleanup_iconv();
+
+        /* Restart if we're supposed to be doing so. */
+        if (shutting_down == 2) {
+            load_config();
+            UnhookHandler();
+            goto restart;
+        }
+
     }
 
-    patch_list_free(patches_v2);
-    patches_v2 = NULL;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    patch_list_free(patches_gc);
-    patches_gc = NULL;
-
-    psocn_free_config(cfg);
-    psocn_free_srv_config(srvcfg);
-    psocn_free_db_config(dbcfg);
-	cleanup_i18n();
-    cleanup_iconv();
-
-    /* Restart if we're supposed to be doing so. */
-    if(shutting_down == 2) {
-        load_config();
-        UnhookHandler();
-        goto restart;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
 
     return 0;

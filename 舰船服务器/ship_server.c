@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <direct.h>
+#include <Windows.h>
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -42,12 +43,13 @@
 #include <mtwist.h>
 
 #include <gnutls/gnutls.h>
+#include <libxml/parser.h>
 
 #include <psoconfig.h>
 #include <f_logs.h>
 #include <debug.h>
 #include <f_iconv.h>
-#include <libxml/parser.h>
+#include <pso_crash_handle.h>
 
 #include "version.h"
 #include "ship.h"
@@ -74,10 +76,10 @@ uint32_t window_hide_or_show = 1;
 // 1024 lines which can carry 64 parameters each 1024行 每行可以存放64个参数
 uint32_t csv_lines = 0;
 // Release RAM from loaded CSV  从加载的CSV中释放RAM 
-char* csv_params[1024][64]; 
+char* csv_params[1024][64];
 
 /* The actual ship structures. */
-ship_t *ship;
+ship_t* ship;
 int enable_ipv6 = 1;
 int restart_on_shutdown = 0;
 char ship_host4[32];
@@ -91,104 +93,121 @@ gnutls_anon_client_credentials_t anoncred;
 gnutls_priority_t tls_prio;
 //static gnutls_dh_params_t dh_params;
 
-static const char *config_file = NULL;
-static const char *custom_dir = NULL;
+static const char* config_file = NULL;
+static const char* custom_dir = NULL;
 static int dont_daemonize = 0;
 static int check_only = 0;
-static const char *pidfile_name = NULL;
+static const char* pidfile_name = NULL;
 //static struct pidfh *pf = NULL;
-static const char *runas_user = RUNAS_DEFAULT;
+static const char* runas_user = RUNAS_DEFAULT;
+
+//WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+static WSADATA winsock_data;
+
+static int init_wsa(void) {
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err) return -1;
+
+    return 0;
+}
 
 /* Print help to the user to stdout. */
-static void print_help(const char *bin) {
+static void print_help(const char* bin) {
     printf("帮助说明: %s [arguments]\n"
-           "-----------------------------------------------------------------\n"
-           "--version       Print version info and exit\n"
-           "--verbose       Log many messages that might help debug a problem\n"
-           "--quiet         Only log warning and error messages\n"
-           "--reallyquiet   Only log error messages\n"
-           "-C configfile   Use the specified configuration instead of the\n"
-           "                default one.\n"
-           "-D directory    Use the specified directory as the root\n"
-           "--nodaemon      Don't daemonize\n"
+        "-----------------------------------------------------------------\n"
+        "--version       Print version info and exit\n"
+        "--verbose       Log many messages that might help debug a problem\n"
+        "--quiet         Only log warning and error messages\n"
+        "--reallyquiet   Only log error messages\n"
+        "-C configfile   Use the specified configuration instead of the\n"
+        "                default one.\n"
+        "-D directory    Use the specified directory as the root\n"
+        "--nodaemon      Don't daemonize\n"
 #ifdef PSOCN_ENABLE_IPV6
-           "--no-ipv6       Disable IPv6 support for incoming connections\n"
+        "--no-ipv6       Disable IPv6 support for incoming connections\n"
 #endif
-           "--check-config  Load and parse the configuration, but do not\n"
-           "                actually start the ship server. This implies the\n"
-           "                --nodaemon option as well.\n"
-           "-P filename     Use the specified name for the pid file to write\n"
-           "                instead of the default.\n"
-           "-U username     Run as the specified user instead of '%s'\n"
-           "--help          Print this help and exit\n\n"
-           "Note that if more than one verbosity level is specified, the last\n"
-           "one specified will be used. The default is --verbose.\n", bin,
-           RUNAS_DEFAULT);
+        "--check-config  Load and parse the configuration, but do not\n"
+        "                actually start the ship server. This implies the\n"
+        "                --nodaemon option as well.\n"
+        "-P filename     Use the specified name for the pid file to write\n"
+        "                instead of the default.\n"
+        "-U username     Run as the specified user instead of '%s'\n"
+        "--help          Print this help and exit\n\n"
+        "Note that if more than one verbosity level is specified, the last\n"
+        "one specified will be used. The default is --verbose.\n", bin,
+        RUNAS_DEFAULT);
 }
 
 /* Parse any command-line arguments passed in. */
-static void parse_command_line(int argc, char *argv[]) {
+static void parse_command_line(int argc, char* argv[]) {
     int i;
 
-    for(i = 1; i < argc; ++i) {
-        if(!strcmp(argv[i], "--version")) {
+    for (i = 1; i < argc; ++i) {
+        if (!strcmp(argv[i], "--version")) {
             load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
             exit(0);
         }
-        else if(!strcmp(argv[i], "--verbose")) {
+        else if (!strcmp(argv[i], "--verbose")) {
             debug_set_threshold(DBG_LOGS);
         }
-        else if(!strcmp(argv[i], "--quiet")) {
+        else if (!strcmp(argv[i], "--quiet")) {
             debug_set_threshold(DBG_WARN);
         }
-        else if(!strcmp(argv[i], "--reallyquiet")) {
+        else if (!strcmp(argv[i], "--reallyquiet")) {
             debug_set_threshold(DBG_ERROR);
         }
-        else if(!strcmp(argv[i], "-C")) {
+        else if (!strcmp(argv[i], "-C")) {
             /* Save the config file's name. */
-            if(i == argc - 1) {
+            if (i == argc - 1) {
                 print_help(argv[0]);
                 ERR_EXIT("-C 缺少参数!");
             }
 
             config_file = argv[++i];
         }
-        else if(!strcmp(argv[i], "-D")) {
+        else if (!strcmp(argv[i], "-D")) {
             /* Save the custom dir */
-            if(i == argc - 1) {
+            if (i == argc - 1) {
                 print_help(argv[0]);
                 ERR_EXIT("-D 缺少参数!");
             }
 
             custom_dir = argv[++i];
         }
-        else if(!strcmp(argv[i], "--nodaemon")) {
+        else if (!strcmp(argv[i], "--nodaemon")) {
             dont_daemonize = 1;
         }
-        else if(!strcmp(argv[i], "--no-ipv6")) {
+        else if (!strcmp(argv[i], "--no-ipv6")) {
             enable_ipv6 = 0;
         }
-        else if(!strcmp(argv[i], "--check-config")) {
+        else if (!strcmp(argv[i], "--check-config")) {
             check_only = 1;
             dont_daemonize = 1;
         }
-        else if(!strcmp(argv[i], "-P")) {
-            if(i == argc - 1) {
+        else if (!strcmp(argv[i], "-P")) {
+            if (i == argc - 1) {
                 print_help(argv[0]);
                 ERR_EXIT("-P 缺少参数!");
             }
 
             pidfile_name = argv[++i];
         }
-        else if(!strcmp(argv[i], "-U")) {
-            if(i == argc - 1) {
+        else if (!strcmp(argv[i], "-U")) {
+            if (i == argc - 1) {
                 print_help(argv[0]);
                 ERR_EXIT("-U 缺少参数!");
             }
 
             runas_user = argv[++i];
         }
-        else if(!strcmp(argv[i], "--help")) {
+        else if (!strcmp(argv[i], "--help")) {
             print_help(argv[0]);
             ERR_EXIT("Illegal command line argument: %s\n", argv[i]);
         }
@@ -200,10 +219,10 @@ static void parse_command_line(int argc, char *argv[]) {
 }
 
 /* Load the configuration file and print out parameters with DBG_LOG. */
-static psocn_ship_t *load_config(void) {
-    psocn_ship_t *cfg;
+static psocn_ship_t* load_config(void) {
+    psocn_ship_t* cfg;
 
-    if(psocn_read_ship_config(psocn_ship_cfg, &cfg))
+    if (psocn_read_ship_config(psocn_ship_cfg, &cfg))
         ERR_EXIT("无法读取设置文件 %s", psocn_ship_cfg);
 
     return cfg;
@@ -378,7 +397,7 @@ static int shipkey_init(psocn_ship_t* cfg) {
     return 0;
 }
 
-static void print_config(psocn_ship_t *cfg) {
+static void print_config(psocn_ship_t* cfg) {
     int i;
 
     /* Print out the configuration. */
@@ -392,7 +411,7 @@ static void print_config(psocn_ship_t *cfg) {
 
     CONFIG_LOG("舰船 IPv4 域名: %s", cfg->ship_host4);
 
-    if(cfg->ship_host6)
+    if (cfg->ship_host6)
         CONFIG_LOG("舰船 IPv6 域名: %s", cfg->ship_host6);
     else
         CONFIG_LOG("舰船 IPv6 域名: 自动设置或不存在");
@@ -402,87 +421,87 @@ static void print_config(psocn_ship_t *cfg) {
     CONFIG_LOG("默认大厅节日: %d", cfg->events[0].lobby_event);
     CONFIG_LOG("默认游戏节日: %d", cfg->events[0].game_event);
 
-    if(cfg->event_count != 1) {
-        for(i = 1; i < cfg->event_count; ++i) {
+    if (cfg->event_count != 1) {
+        for (i = 1; i < cfg->event_count; ++i) {
             CONFIG_LOG("节日 (%d-%d 至 %d-%d):",
-                  cfg->events[i].start_month, cfg->events[i].start_day,
-                  cfg->events[i].end_month, cfg->events[i].end_day);
+                cfg->events[i].start_month, cfg->events[i].start_day,
+                cfg->events[i].end_month, cfg->events[i].end_day);
             CONFIG_LOG("\t大厅: %d, 游戏: %d",
-                  cfg->events[i].lobby_event, cfg->events[i].game_event);
+                cfg->events[i].lobby_event, cfg->events[i].game_event);
         }
     }
 
-    if(cfg->menu_code)
+    if (cfg->menu_code)
         CONFIG_LOG("菜单: %c%c", (char)cfg->menu_code,
-              (char)(cfg->menu_code >> 8));
+            (char)(cfg->menu_code >> 8));
     else
         CONFIG_LOG("菜单: 主菜单");
 
-    if(cfg->v2_map_dir)
+    if (cfg->v2_map_dir)
         CONFIG_LOG("v2 地图路径: %s", cfg->v2_map_dir);
 
-    if(cfg->gc_map_dir)
+    if (cfg->gc_map_dir)
         CONFIG_LOG("GC 地图路径: %s", cfg->bb_map_dir);
 
-    if(cfg->bb_param_dir)
+    if (cfg->bb_param_dir)
         CONFIG_LOG("BB 参数路径: %s", cfg->bb_param_dir);
 
-    if(cfg->v2_param_dir)
+    if (cfg->v2_param_dir)
         CONFIG_LOG("v2 参数路径: %s", cfg->v2_param_dir);
 
-    if(cfg->bb_map_dir)
+    if (cfg->bb_map_dir)
         CONFIG_LOG("BB 地图路径: %s", cfg->bb_map_dir);
 
-    if(cfg->v2_ptdata_file)
+    if (cfg->v2_ptdata_file)
         CONFIG_LOG("v2 ItemPT 文件: %s", cfg->v2_ptdata_file);
 
-    if(cfg->gc_ptdata_file)
+    if (cfg->gc_ptdata_file)
         CONFIG_LOG("GC ItemPT 文件: %s", cfg->gc_ptdata_file);
 
-    if(cfg->bb_ptdata_file)
+    if (cfg->bb_ptdata_file)
         CONFIG_LOG("BB ItemPT 文件: %s", cfg->bb_ptdata_file);
 
-    if(cfg->v2_pmtdata_file)
+    if (cfg->v2_pmtdata_file)
         CONFIG_LOG("v2 ItemPMT 文件: %s", cfg->v2_pmtdata_file);
 
-    if(cfg->gc_pmtdata_file)
+    if (cfg->gc_pmtdata_file)
         CONFIG_LOG("GC ItemPMT 文件: %s", cfg->gc_pmtdata_file);
 
-    if(cfg->bb_pmtdata_file)
+    if (cfg->bb_pmtdata_file)
         CONFIG_LOG("BB ItemPMT 文件: %s", cfg->bb_pmtdata_file);
 
     CONFIG_LOG("装置 +/- 限制: v2: %s, GC: %s, BB: %s",
-          (cfg->local_flags & PSOCN_SHIP_PMT_LIMITV2) ? "true" : "false",
-          (cfg->local_flags & PSOCN_SHIP_PMT_LIMITGC) ? "true" : "false",
-          (cfg->local_flags & PSOCN_SHIP_PMT_LIMITBB) ? "true" : "false");
+        (cfg->local_flags & PSOCN_SHIP_PMT_LIMITV2) ? "true" : "false",
+        (cfg->local_flags & PSOCN_SHIP_PMT_LIMITGC) ? "true" : "false",
+        (cfg->local_flags & PSOCN_SHIP_PMT_LIMITBB) ? "true" : "false");
 
-    if(cfg->v2_rtdata_file)
+    if (cfg->v2_rtdata_file)
         CONFIG_LOG("v2 ItemRT 文件: %s", cfg->v2_rtdata_file);
 
-    if(cfg->gc_rtdata_file)
+    if (cfg->gc_rtdata_file)
         CONFIG_LOG("GC ItemRT 文件: %s", cfg->gc_rtdata_file);
 
-    if(cfg->bb_rtdata_file)
+    if (cfg->bb_rtdata_file)
         CONFIG_LOG("BB ItemRT 文件: %s", cfg->bb_rtdata_file);
 
-    if(cfg->v2_rtdata_file || cfg->gc_rtdata_file || cfg->bb_rtdata_file) {
+    if (cfg->v2_rtdata_file || cfg->gc_rtdata_file || cfg->bb_rtdata_file) {
         CONFIG_LOG("任务稀有掉落: %s",
-              (cfg->local_flags & PSOCN_SHIP_QUEST_RARES) ? "true" :
-              "false");
+            (cfg->local_flags & PSOCN_SHIP_QUEST_RARES) ? "true" :
+            "false");
         CONFIG_LOG("任务半稀有掉落: %s",
-              (cfg->local_flags & PSOCN_SHIP_QUEST_SRARES) ? "true" :
-              "false");
+            (cfg->local_flags & PSOCN_SHIP_QUEST_SRARES) ? "true" :
+            "false");
     }
 
-    if(cfg->smutdata_file)
+    if (cfg->smutdata_file)
         CONFIG_LOG("Smutdata 文件: %s", cfg->smutdata_file);
 
-    if(cfg->limits_count) {
+    if (cfg->limits_count) {
         CONFIG_LOG("已设置 %d /legit 个文件:", cfg->limits_count);
 
-        for(i = 0; i < cfg->limits_count; ++i) {
+        for (i = 0; i < cfg->limits_count; ++i) {
             CONFIG_LOG("%d: \"%s\": %s", i, cfg->limits[i].name,
-                  cfg->limits[i].filename);
+                cfg->limits[i].filename);
         }
 
         CONFIG_LOG("默认 /legit 文件数量: %d", cfg->limits_default);
@@ -491,34 +510,34 @@ static void print_config(psocn_ship_t *cfg) {
     CONFIG_LOG("船闸标识: 0x%08X", cfg->shipgate_flags);
     CONFIG_LOG("支持版本:");
 
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NODCNTE))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NODCNTE))
         CONFIG_LOG("Dreamcast Network Trial Edition DC网络测试版");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOV1))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOV1))
         CONFIG_LOG("Dreamcast Version 1 DC版本 v1");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOV2))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOV2))
         CONFIG_LOG("Dreamcast Version 2 DC版本 v2");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPCNTE))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPCNTE))
         CONFIG_LOG("PSO for PC Network Trial Edition PC网络测试版");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPC))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPC))
         CONFIG_LOG("PSO for PC PC网络版");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12))
         CONFIG_LOG("Gamecube Episode I & II GC章节 1/2");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3))
         CONFIG_LOG("Gamecube Episode III GC章节 3");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX))
         CONFIG_LOG("Xbox Episode I & II XBOX章节 1/2");
-    if(!(cfg->shipgate_flags & SHIPGATE_FLAG_NOBB))
+    if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOBB))
         CONFIG_LOG("Blue Burst 蓝色脉冲");
 }
 
-static void open_log(psocn_ship_t *cfg) {
-    char fn[64+ 32];
-    FILE *dbgfp;
+static void open_log(psocn_ship_t* cfg) {
+    char fn[64 + 32];
+    FILE* dbgfp;
 
     sprintf(fn, "Debug\\%s_debug.log", cfg->name);
     errno_t err = fopen_s(&dbgfp, fn, "a");
 
-    if(err) {
+    if (err) {
         perror("fopen");
         ERR_EXIT("无法打开日志文件");
     }
@@ -528,7 +547,7 @@ static void open_log(psocn_ship_t *cfg) {
 
 static void reopen_log(void) {
     char fn[64 + 32];
-    FILE *dbgfp, *ofp;
+    FILE* dbgfp, * ofp;
 
     sprintf(fn, "Debug\\%s_debug.log", ship->cfg->name);
     errno_t err = fopen_s(&dbgfp, fn, "a");
@@ -663,29 +682,41 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
+void move_console_to_center()
+{
+    HWND consoleHwnd = GetConsoleWindow(); // 获取控制台窗口句柄
+
+    // 获取屏幕尺寸
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    // 计算控制台窗口在屏幕中央的位置
+    int consoleWidth = 980; // 控制台窗口宽度
+    int consoleHeight = 510; // 控制台窗口高度
+    int consoleX = (screenWidth - consoleWidth) / 2; // 控制台窗口左上角 x 坐标
+    int consoleY = (screenHeight - consoleHeight) / 2; // 控制台窗口左上角 y 坐标
+
+    // 移动控制台窗口到屏幕中央
+    MoveWindow(consoleHwnd, consoleX, consoleY, consoleWidth, consoleHeight, TRUE);
+}
+
 /* 初始化 */
 static void initialization() {
 
     load_log_config();
 
-    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
-    WSADATA winsock_data;
-
-    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
-    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
-
-    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
-    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
-    errno_t err = WSAStartup(sockVersion, &winsock_data);
-
-    if (err)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
+        getchar();
+    }
+#endif
 
-    //HWND consoleHwnd;
+    HWND consoleHwnd;
     WNDCLASS wc = { 0 };
     HWND hwndWindow;
     HINSTANCE hinst = GetModuleHandle(NULL);
-    //consoleHwnd = GetConsoleWindow();
+    consoleHwnd = GetConsoleWindow();
 
     wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wc.hIcon = LoadIcon(hinst, IDI_APPLICATION);
@@ -709,9 +740,13 @@ static void initialization() {
 
     ShowWindow(hwndWindow, SW_HIDE);
     UpdateWindow(hwndWindow);
-    //MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
-    //ShowWindow(consoleHwnd, window_hide_or_show);
-    //UpdateWindow(consoleHwnd);
+    MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
+    ShowWindow(consoleHwnd, window_hide_or_show);
+    UpdateWindow(consoleHwnd);
+
+    // 设置崩溃处理函数
+    SetUnhandledExceptionFilter(crash_handler);
+
 }
 
 int read_param_file(psocn_ship_t* cfg) {
@@ -898,125 +933,136 @@ int read_param_file(psocn_ship_t* cfg) {
 }
 
 int __cdecl main(int argc, char** argv) {
-    void *tmp;
-    psocn_ship_t *cfg;
-   
+    void* tmp;
+    psocn_ship_t* cfg;
+
     initialization();
 
-    server_name_num = SHIPS_SERVER;
+    __try {
 
-    load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
+        server_name_num = SHIPS_SERVER;
 
-    /* Parse the command line... */
-    parse_command_line(argc, argv);
+        load_program_info(server_name[SHIPS_SERVER].name, SHIPS_SERVER_VERSION);
 
-    cfg = load_config();
+        /* Parse the command line... */
+        parse_command_line(argc, argv);
 
-    open_log(cfg);
+        cfg = load_config();
 
-restart:
-    print_config(cfg);
+        open_log(cfg);
 
-    /* Parse the addresses */
-    if(setup_addresses(cfg))
-        ERR_EXIT("获取 IP 地址失败");
+    restart:
+        print_config(cfg);
 
-    //if (setup_server_address(cfg, ship_host4, ship_host6, ship_ip4, ship_ip6)) {
-    //    ERR_EXIT("获取 IP 地址失败");
-    //}
+        /* Parse the addresses */
+        if (setup_addresses(cfg))
+            ERR_EXIT("获取 IP 地址失败");
 
-    /* Initialize GnuTLS stuff... */
-    if(!check_only) {
-        if (init_gnutls())
-            ERR_EXIT("无法设置 GnuTLS 证书");
+        //if (setup_server_address(cfg, ship_host4, ship_host6, ship_ip4, ship_ip6)) {
+        //    ERR_EXIT("获取 IP 地址失败");
+        //}
 
-        //if (shipkey_init(cfg))
-        //    ERR_EXIT("无法设置 舰船密钥");
+        /* Initialize GnuTLS stuff... */
+        if (!check_only) {
+            if (init_gnutls())
+                ERR_EXIT("无法设置 GnuTLS 证书");
 
-        /* Set up things for clients to connect. */
-        if(client_init(cfg))
-            ERR_EXIT("无法设置 客户端 接入");
-    }
+            //if (shipkey_init(cfg))
+            //    ERR_EXIT("无法设置 舰船密钥");
 
-    if(0 != read_param_file(cfg))
-        ERR_EXIT("无法读取参数设置");
+            /* Set up things for clients to connect. */
+            if (client_init(cfg))
+                ERR_EXIT("无法设置 客户端 接入");
+        }
 
-    /* Set a few other shipgate flags, if appropriate. */
+        if (0 != read_param_file(cfg))
+            ERR_EXIT("无法读取参数设置");
+
+        /* Set a few other shipgate flags, if appropriate. */
 #ifdef ENABLE_LUA
-    cfg->shipgate_flags |= LOGIN_FLAG_LUA;
+        cfg->shipgate_flags |= LOGIN_FLAG_LUA;
 #endif
 
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-    cfg->shipgate_flags |= LOGIN_FLAG_BE;
+        cfg->shipgate_flags |= LOGIN_FLAG_BE;
 #endif
 
 #if (SIZEOF_VOID_P == 4)
-    cfg->shipgate_flags |= LOGIN_FLAG_32BIT;
+        cfg->shipgate_flags |= LOGIN_FLAG_32BIT;
 #endif
 
-    /* Initialize all the iconv contexts we'll need */
-    if(init_iconv())
-        ERR_EXIT("无法读取 iconv 参数设置");
+        /* Initialize all the iconv contexts we'll need */
+        if (init_iconv())
+            ERR_EXIT("无法读取 iconv 参数设置");
 
-    /* Init mini18n if we have it */
-    init_i18n();
+        /* Init mini18n if we have it */
+        init_i18n();
 
-    /* Init the word censor. */
-    if(cfg->smutdata_file) {
-        SHIPS_LOG("读取 smutdata 文件: %s", cfg->smutdata_file);
-        if(smutdata_read(cfg->smutdata_file)) {
-            ERR_LOG("无法读取 smutdata 文件!");
-        }
-    }
-
-    if(!check_only) {
-        /* Install signal handlers */
-        HookupHandler();
-
-        /* Set up the ship and start it. */
-        ship = ship_server_start(cfg);
-        if(ship)
-            pthread_join(ship->thd, NULL);
-
-        /* Clean up... */
-        tmp = pthread_getspecific(sendbuf_key);
-        if(tmp) {
-            free_safe(tmp);
-            pthread_setspecific(sendbuf_key, NULL);
+        /* Init the word censor. */
+        if (cfg->smutdata_file) {
+            SHIPS_LOG("读取 smutdata 文件: %s", cfg->smutdata_file);
+            if (smutdata_read(cfg->smutdata_file)) {
+                ERR_LOG("无法读取 smutdata 文件!");
+            }
         }
 
-        tmp = pthread_getspecific(recvbuf_key);
-        if(tmp) {
-            free_safe(tmp);
-            pthread_setspecific(recvbuf_key, NULL);
+        if (!check_only) {
+            /* Install signal handlers */
+            HookupHandler();
+
+            /* Set up the ship and start it. */
+            ship = ship_server_start(cfg);
+            if (ship)
+                pthread_join(ship->thd, NULL);
+
+            /* Clean up... */
+            tmp = pthread_getspecific(sendbuf_key);
+            if (tmp) {
+                free_safe(tmp);
+                pthread_setspecific(sendbuf_key, NULL);
+            }
+
+            tmp = pthread_getspecific(recvbuf_key);
+            if (tmp) {
+                free_safe(tmp);
+                pthread_setspecific(recvbuf_key, NULL);
+            }
         }
+        else {
+            ship_check_cfg(cfg);
+        }
+
+        WSACleanup();
+        smutdata_cleanup();
+        cleanup_i18n();
+        cleanup_iconv();
+
+        if (!check_only) {
+            client_shutdown();
+            cleanup_gnutls();
+        }
+
+        psocn_free_ship_config(cfg);
+        bb_free_params();
+        v2_free_params();
+        gc_free_params();
+        pmt_cleanup();
+
+        if (restart_on_shutdown) {
+            cfg = load_config();
+            goto restart;
+        }
+
+        xmlCleanupParser();
+
     }
-    else {
-        ship_check_cfg(cfg);
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
-
-    WSACleanup();
-    smutdata_cleanup();
-    cleanup_i18n();
-    cleanup_iconv();
-
-    if(!check_only) {
-        client_shutdown();
-        cleanup_gnutls();
-    }
-
-    psocn_free_ship_config(cfg);
-    bb_free_params();
-    v2_free_params();
-    gc_free_params();
-    pmt_cleanup();
-
-    if(restart_on_shutdown) {
-        cfg = load_config();
-        goto restart;
-    }
-
-    xmlCleanupParser();
 
     return 0;
 }

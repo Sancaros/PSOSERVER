@@ -66,6 +66,7 @@
 #include <f_iconv.h>
 #include <f_checksum.h>
 #include <pso_ping.h>
+#include <pso_crash_handle.h>
 
 #ifndef _WIN32
 #if HAVE_LIBUTIL_H == 1
@@ -134,6 +135,23 @@ static int dont_daemonize = 0;
 static const char *pidfile_name = NULL;
 static struct pidfh *pf = NULL;
 static const char *runas_user = RUNAS_DEFAULT;
+
+//WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+static WSADATA winsock_data;
+
+static int init_wsa(void) {
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err) return -1;
+
+    return 0;
+}
 
 /* Forward declaration... */
 static void rehash_files();
@@ -841,18 +859,12 @@ static void initialization() {
 
     load_log_config();
 
-    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
-    WSADATA winsock_data;
-
-    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
-    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
-
-    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
-    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
-    errno_t err = WSAStartup(sockVersion, &winsock_data);
-
-    if (err)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
+        getchar();
+    }
+#endif
 
     HWND consoleHwnd;
     WNDCLASS wc = { 0 };
@@ -885,6 +897,10 @@ static void initialization() {
     MoveWindow(consoleHwnd, 0, 0, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
+
+    // 设置崩溃处理函数
+    SetUnhandledExceptionFilter(crash_handler);
+
 }
 
 static int open_sock(int family, uint16_t port) {
@@ -1111,55 +1127,65 @@ int __cdecl main(int argc, char** argv) {
 
     server_name_num = PATCH_SERVER;
 
-    load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
+    __try {
 
-    /* 读取命令行并读取设置. */
-    parse_command_line(argc, argv);
+        load_program_info(server_name[PATCH_SERVER].name, PATCH_SERVER_VERSION);
 
-    cfg = load_config();
+        /* 读取命令行并读取设置. */
+        parse_command_line(argc, argv);
 
-    srvcfg = load_srv_config();
+        cfg = load_config();
 
-    open_log();
+        srvcfg = load_srv_config();
 
-    /* 获取地址 */
-    if (setup_addresses(srvcfg))
-        exit(EXIT_FAILURE);
+        open_log();
 
-    /* 获取设置的端口 */
-    if (setup_ports(srvcfg))
-        exit(EXIT_FAILURE);
+        /* 获取地址 */
+        if (setup_addresses(srvcfg))
+            ERR_EXIT("setup_addresses 错误");
 
-    /* 读取随机32位种子. */
-    init_genrand((uint32_t)time(NULL));
+        /* 获取设置的端口 */
+        if (setup_ports(srvcfg))
+            ERR_EXIT("setup_ports 错误");
 
-    /* Initialize all the iconv contexts we'll need */
-    if (init_iconv())
-        exit(EXIT_FAILURE);
+        /* 读取随机32位种子. */
+        init_genrand((uint32_t)time(NULL));
 
-    /* 读取信号监听. */
-    HookupHandler();
+        /* Initialize all the iconv contexts we'll need */
+        if (init_iconv())
+            ERR_EXIT("init_iconv 错误");
 
-    listen_sockets(sockets);
+        /* 读取信号监听. */
+        HookupHandler();
 
-    PATCH_LOG("%s启动完成.", server_name[PATCH_SERVER].name);
-    PATCH_LOG("程序运行中...");
-    PATCH_LOG("请用 <Ctrl-C> 关闭程序.");
+        listen_sockets(sockets);
 
-    /* 进入主链接监听循环. */
-    run_server(sockets);
+        PATCH_LOG("%s启动完成.", server_name[PATCH_SERVER].name);
+        PATCH_LOG("程序运行中...");
+        PATCH_LOG("请用 <Ctrl-C> 关闭程序.");
 
-    cleanup_sockets(sockets);
+        /* 进入主链接监听循环. */
+        run_server(sockets);
 
-    WSACleanup();
-    cleanup_iconv();
+        cleanup_sockets(sockets);
 
-    /* Clean up after ourselves... */
-    if (cfg) {
-        patch_free_config(cfg);
+        WSACleanup();
+        cleanup_iconv();
+
+        /* Clean up after ourselves... */
+        if (cfg) {
+            patch_free_config(cfg);
+        }
+
+        UnhookHandler();
     }
 
-    UnhookHandler();
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+    }
 
     return 0;
 }

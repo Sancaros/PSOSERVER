@@ -94,6 +94,9 @@
     <ClInclude Include="pso_pack.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_crash_handle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">
@@ -130,6 +133,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pso_pack.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="pso_crash_handle.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

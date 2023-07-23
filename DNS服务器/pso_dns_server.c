@@ -19,18 +19,27 @@
     使用此服务器, 需确保服务器的53端口不被占用, 且开启UDP 53端口支持接入
 */
 
+#include <pso_crash_handle.h>
+
 #include "pso_dns_server.h"
 
 int host_line = 0;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-static WSADATA wsaData;
+
+//WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+static WSADATA winsock_data;
 
 static int init_wsa(void) {
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        fprintf(stderr, "Couldn't initialize winsock!\n");
-        return -1;
-    }
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err) return -1;
 
     return 0;
 }
@@ -348,7 +357,7 @@ static SOCKET open_sock(uint16_t port) {
     /* Create the socket. */
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-    if(sock == INVALID_SOCKET) {
+    if (sock == INVALID_SOCKET) {
         ERR_LOG("socket");
         return INVALID_SOCKET;
     }
@@ -359,7 +368,7 @@ static SOCKET open_sock(uint16_t port) {
     addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = htons(port);
 
-    if(bind(sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_in))) {
+    if (bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in))) {
         ERR_LOG("bind");
         close(sock);
         return INVALID_SOCKET;
@@ -597,23 +606,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
+void move_console_to_center()
+{
+    HWND consoleHwnd = GetConsoleWindow(); // 获取控制台窗口句柄
+
+    // 获取屏幕尺寸
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    // 计算控制台窗口在屏幕中央的位置
+    int consoleWidth = 980; // 控制台窗口宽度
+    int consoleHeight = 510; // 控制台窗口高度
+    int consoleX = (screenWidth - consoleWidth) / 2; // 控制台窗口左上角 x 坐标
+    int consoleY = (screenHeight - consoleHeight) / 2; // 控制台窗口左上角 y 坐标
+
+    // 移动控制台窗口到屏幕中央
+    MoveWindow(consoleHwnd, consoleX, consoleY, consoleWidth, consoleHeight, TRUE);
+}
+
 /* 初始化 */
 static void initialization() {
 
     load_log_config();
 
-    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
-    WSADATA winsock_data;
-
-    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
-    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
-
-    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
-    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
-    errno_t err = WSAStartup(sockVersion, &winsock_data);
-
-    if (err)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
+        getchar();
+    }
+#endif
 
     HWND consoleHwnd;
     WNDCLASS wc = { 0 };
@@ -645,9 +666,15 @@ static void initialization() {
 
     ShowWindow(hwndWindow, SW_HIDE);
     UpdateWindow(hwndWindow);
-    MoveWindow(consoleHwnd, 900, 300, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
+    MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
+
+    move_console_to_center();
+
+    // 设置崩溃处理函数
+    SetUnhandledExceptionFilter(crash_handler);
+
 }
 
 int __cdecl main(int argc, char** argv) {
@@ -658,61 +685,64 @@ int __cdecl main(int argc, char** argv) {
 
     initialization();
 
-    server_name_num = DNS_SERVER;
+    __try {
 
-    load_program_info(server_name[DNS_SERVER].name, DNS_SERVER_VERSION);
+        server_name_num = DNS_SERVER;
 
-#if defined(_WIN32) && !defined(__CYGWIN__)
-	if(init_wsa()) {
-        getchar();
-        ERR_EXIT("WSAStartup 错误...");
-	}
-#endif
+        load_program_info(server_name[DNS_SERVER].name, DNS_SERVER_VERSION);
 
-    /* Open the socket. We will probably need root for this on UNIX-like
-       systems. */
-    if((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
-        getchar();
-        ERR_EXIT("open_sock 错误");
-    }
+        /* Open the socket. We will probably need root for this on UNIX-like
+           systems. */
+        if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
+            ERR_EXIT("open_sock 错误");
+            getchar();
+        }
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
-    if (drop_privs()) {
-        ERR_EXIT("drop_privs 错误");
-    }
-
-    /* Daemonize. */
-    daemon(1, 0);
-#endif
-
-    /* Read in the configuration. */
-    if(read_config(CONFIG_DIR, CONFIG_FILE)) {
-        getchar();
-        ERR_EXIT("read_config 错误");
-    }
-
-    DNS_LOG("DNS服务器启动完成");
-
-    /* Go ahead and loop forever... */
-    for (;;) {
-        alen = sizeof(addr);
-
-        /* Grab the next request from the socket. */
-        if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr,
-            &alen)) > sizeof(dnsmsg_t)) {
-
-            process_query(sock, rlen, &addr);
+        if (drop_privs()) {
+            ERR_EXIT("drop_privs 错误");
         }
+
+        /* Daemonize. */
+        daemon(1, 0);
+#endif
+
+        /* Read in the configuration. */
+        if (read_config(CONFIG_DIR, CONFIG_FILE)) {
+            ERR_EXIT("read_config 错误");
+            getchar();
+        }
+
+        DNS_LOG("DNS服务器启动完成");
+
+        /* Go ahead and loop forever... */
+        for (;;) {
+            alen = sizeof(addr);
+
+            /* Grab the next request from the socket. */
+            if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr,
+                &alen)) > sizeof(dnsmsg_t)) {
+
+                process_query(sock, rlen, &addr);
+            }
+        }
+
+        /* We'll never actually get here... */
+#ifndef _WIN32
+        close(sock);
+#else
+        closesocket(sock);
+        WSACleanup();
+#endif
+
     }
 
-    /* We'll never actually get here... */
-#ifndef _WIN32
-    close(sock);
-#else
-    closesocket(sock);
-    WSACleanup();
-#endif
-    getchar();
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+    }
 
     return 0;
 }

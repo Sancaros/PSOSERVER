@@ -53,6 +53,7 @@
 #include <f_iconv.h>
 #include <debug.h>
 #include <database.h>
+#include <pso_crash_handle.h>
 
 #ifndef _WIN32
 #if HAVE_LIBUTIL_H == 1
@@ -62,9 +63,9 @@
 #else
 /* From pidfile.c */
 struct pidfh;
-struct pidfh *pidfile_open(const char *path, mode_t mode, pid_t *pidptr);
-int pidfile_write(struct pidfh *pfh);
-int pidfile_remove(struct pidfh *pfh);
+struct pidfh* pidfile_open(const char* path, mode_t mode, pid_t* pidptr);
+int pidfile_write(struct pidfh* pfh);
+int pidfile_remove(struct pidfh* pfh);
 #endif
 #endif
 
@@ -109,18 +110,35 @@ static volatile sig_atomic_t resend_scripts = 0;
 
 /* Events... */
 uint32_t event_count;
-monster_event_t *events;
+monster_event_t* events;
 
-static const char *config_file = NULL;
-static const char *custom_dir = NULL;
+static const char* config_file = NULL;
+static const char* custom_dir = NULL;
 static int dont_daemonize = 0;
-static const char *pidfile_name = NULL;
-static struct pidfh *pf = NULL;
-static const char *runas_user = RUNAS_DEFAULT;
+static const char* pidfile_name = NULL;
+static struct pidfh* pf = NULL;
+static const char* runas_user = RUNAS_DEFAULT;
 
-extern ship_script_t *scripts;
+extern ship_script_t* scripts;
 extern uint32_t script_count;
 extern time_t srv_time;
+
+//WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
+static WSADATA winsock_data;
+
+static int init_wsa(void) {
+
+    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
+    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
+
+    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
+    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
+    errno_t err = WSAStartup(sockVersion, &winsock_data);
+
+    if (err) return -1;
+
+    return 0;
+}
 
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 
@@ -129,15 +147,15 @@ static void print_program_info() {
     printf("%s version %s\n", server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
     printf("版权 (C) 2022 Sancaros\n\n");
     printf("This program is free software: you can redistribute it and/or\n"
-           "modify it under the terms of the GNU Affero General Public\n"
-           "License version 3 as published by the Free Software Foundation.\n\n"
-           "This program is distributed in the hope that it will be useful,\n"
-           "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-           "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-           "GNU General Public License for more details.\n\n"
-           "You should have received a copy of the GNU Affero General Public\n"
-           "License along with this program.  If not, see\n"
-           "<http://www.gnu.org/licenses/>.\n");
+        "modify it under the terms of the GNU Affero General Public\n"
+        "License version 3 as published by the Free Software Foundation.\n\n"
+        "This program is distributed in the hope that it will be useful,\n"
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+        "GNU General Public License for more details.\n\n"
+        "You should have received a copy of the GNU Affero General Public\n"
+        "License along with this program.  If not, see\n"
+        "<http://www.gnu.org/licenses/>.\n");
 }
 
 /* Print help to the user to stdout. */
@@ -329,7 +347,7 @@ static int read_events_table() {
     }
 
     /* Allocate space for the events... */
-    events = (monster_event_t *)malloc((size_t)row_count * sizeof(monster_event_t));
+    events = (monster_event_t*)malloc((size_t)row_count * sizeof(monster_event_t));
     if (!events) {
         ERR_LOG("分配节日数据内存错误!");
         psocn_db_result_free(result);
@@ -380,7 +398,7 @@ static int read_events_table() {
     for (i = 0; i < row_count; ++i) {
         sprintf(query, "SELECT monster_type, episode FROM "
             "%s WHERE event_id= '%" PRIu32 "'",
-			 SERVER_EVENT_MONSTER, events[i].event_id);
+            SERVER_EVENT_MONSTER, events[i].event_id);
 
         if (psocn_db_real_query(&conn, query)) {
             ERR_LOG("Couldn't fetch monsters from database!");
@@ -487,11 +505,11 @@ void run_server(int tsock, int tsock6) {
     socklen_t len;
     struct timeval timeout = { 0 };
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
-    ship_t *i, *tmp;
+    ship_t* i, * tmp;
     ssize_t sent;
     char ipstr[INET6_ADDRSTRLEN];
 
-    for(;;) {
+    for (;;) {
         /* Clear the fd_sets so we can use them. */
         FD_ZERO(&readfds);
         FD_ZERO(&writefds);
@@ -514,14 +532,14 @@ void run_server(int tsock, int tsock6) {
             tmp = TAILQ_NEXT(i, qentry);
 
             /* 如果两分钟内未接收舰船的数据反馈,则断开其连接. */
-            if(srv_time > i->last_message + 120 && i->last_ping &&
+            if (srv_time > i->last_message + 120 && i->last_ping &&
                 srv_time > i->last_ping + 60) {
                 destroy_connection(i);
                 i = tmp;
                 continue;
             }
             /* 如果1分钟内未接收到舰船数据, 则对其进行更新数据库IP并PING. */
-            else if(srv_time > i->last_message + 60 && srv_time > i->last_ping + 10) {
+            else if (srv_time > i->last_message + 60 && srv_time > i->last_ping + 10) {
                 //DBG_LOG("此船数据 %d %s", i->key_idx, i->remote_host4);
                 update_ship_ipv4(i);
 
@@ -539,8 +557,8 @@ void run_server(int tsock, int tsock6) {
             nfds = max(nfds, i->sock);
 
             /* Check GnuTLS' buffer for the connection. */
-            if(gnutls_record_check_pending(i->session)) {
-                if(handle_pkt(i)) {
+            if (gnutls_record_check_pending(i->session)) {
+                if (handle_pkt(i)) {
                     i->disconnected = 1;
                 }
             }
@@ -572,7 +590,7 @@ void run_server(int tsock, int tsock6) {
             nfds = max(nfds, tsock6);
         }
 
-        if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
+        if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* Check each ship's socket for activity. */
             TAILQ_FOREACH(i, &ships, qentry) {
                 if (i->disconnected) {
@@ -581,7 +599,7 @@ void run_server(int tsock, int tsock6) {
 
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
-                    if(handle_pkt(i)) {
+                    if (handle_pkt(i)) {
                         i->disconnected = 1;
                         continue;
                     }
@@ -683,7 +701,8 @@ void run_server(int tsock, int tsock6) {
 
                 SGATE_LOG("允许 TLS 舰船连接 IP:%s", ipstr);
             }
-        } else if (select_result == -1) {
+        }
+        else if (select_result == -1) {
             ERR_LOG("select 套接字 = -1");
         }
     }
@@ -707,11 +726,11 @@ static void reopen_log(void) {
 
     if (err)
         ERR_EXIT("无法打开日志文件");
-    else{
+    else {
         /* Swap out the file pointers and close the old one. */
         dbgfp = debug_set_file(dbgfp);
         fclose(dbgfp);
-	}
+    }
 }
 
 static int open_sock(int family, uint16_t port) {
@@ -727,7 +746,7 @@ static int open_sock(int family, uint16_t port) {
         ERR_LOG("创建端口监听 %d:%d 出现错误", family, port);
     }
 
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (PCHAR)&val, sizeof(int))) {
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (PCHAR)&val, sizeof(int))) {
         SOCKET_ERR(sock, "setsockopt SO_REUSEADDR");
         /* We can ignore this error, pretty much... its just a convenience thing */
     }
@@ -750,7 +769,7 @@ static int open_sock(int family, uint16_t port) {
     }
     else if (family == PF_INET6) {
         /* 单独支持IPV6. */
-        if(setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (PCHAR)&val, sizeof(int))) {
+        if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (PCHAR)&val, sizeof(int))) {
             SOCKET_ERR(sock, "设置端口信息 IPV6_V6ONLY");
             ERR_LOG("设置端口信息IPV6_V6ONLY %d:%d 出现错误", family, port);
         }
@@ -925,19 +944,13 @@ static void initialization() {
 
     load_log_config();
 
-    //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
-    WSADATA winsock_data;
-
-    //MAKEWORD声明调用不同的Winsock版本。例如MAKEWORD(2,2)就是调用2.2版
-    WORD sockVersion = MAKEWORD(2, 2);//使用winsocket2.2版本
-
-    //WSAStartup函数必须是应用程序或DLL调用的第一个Windows套接字函数
-    //可以进行初始化操作，检测winsock版本与调用dll是否一致，成功返回0
-    errno_t err = WSAStartup(sockVersion, &winsock_data);
-
-    if (err)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
-    
+        getchar();
+    }
+#endif
+
     HWND consoleHwnd;
     WNDCLASS wc = { 0 };
     HWND hwndWindow;
@@ -969,77 +982,92 @@ static void initialization() {
     MoveWindow(consoleHwnd, 0, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
+
+    // 设置崩溃处理函数
+    SetUnhandledExceptionFilter(crash_handler);
+
 }
 
 int __cdecl main(int argc, char** argv) {
     int tsock = SOCKET_ERROR, tsock6 = SOCKET_ERROR;
-    
+
     initialization();
 
-    server_name_num = SGATE_SERVER;
+    __try {
 
-    load_program_info(server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
+        server_name_num = SGATE_SERVER;
 
-    /* Parse the command line and read our configuration. */
-    parse_command_line(argc, argv);
+        load_program_info(server_name[SGATE_SERVER].name, SGATE_SERVER_VERSION);
 
-    cfg = load_config();
+        /* Parse the command line and read our configuration. */
+        parse_command_line(argc, argv);
 
-    open_log();
+        cfg = load_config();
 
-restart:
-    shutting_down = 0;
+        open_log();
 
-    /* Initialize GnuTLS */
-    if (init_gnutls(cfg))
-        ERR_EXIT("无法设置 GnuTLS 证书");
+    restart:
+        shutting_down = 0;
 
-    /* Initialize all the iconv contexts we'll need */
-    if (init_iconv())
-        ERR_EXIT("无法读取 iconv 参数设置");
+        /* Initialize GnuTLS */
+        if (init_gnutls(cfg))
+            ERR_EXIT("无法设置 GnuTLS 证书");
 
-    /* Install signal handlers */
-    HookupHandler();
-	
-    /* Create the socket and listen for TLS connections. */
-    tsock = open_sock(PF_INET, cfg->sgcfg.shipgate_port);
-    tsock6 = open_sock(PF_INET6, cfg->sgcfg.shipgate_port);
+        /* Initialize all the iconv contexts we'll need */
+        if (init_iconv())
+            ERR_EXIT("无法读取 iconv 参数设置");
 
-    if (tsock == SOCKET_ERROR && tsock6 == SOCKET_ERROR)
-        ERR_EXIT("无法创建 IPv4 或 IPv6 TLS 端口 tsock值 = %d tsock6值 = %d!", tsock, tsock6);
+        /* Install signal handlers */
+        HookupHandler();
 
-    init_scripts();
+        /* Create the socket and listen for TLS connections. */
+        tsock = open_sock(PF_INET, cfg->sgcfg.shipgate_port);
+        tsock6 = open_sock(PF_INET6, cfg->sgcfg.shipgate_port);
 
-    /* Clean up the DB now that we've done everything else that might fail... */
-    open_db();
+        if (tsock == SOCKET_ERROR && tsock6 == SOCKET_ERROR)
+            ERR_EXIT("无法创建 IPv4 或 IPv6 TLS 端口 tsock值 = %d tsock6值 = %d!", tsock, tsock6);
 
-    if (load_guild_default_flag("System\\guild\\默认公会标志.flag"))
-        ERR_EXIT("无法读取默认公会标志数据");
+        init_scripts();
 
-    SGATE_LOG("%s启动完成.", server_name[SGATE_SERVER].name);
-    SGATE_LOG("程序运行中...");
-    SGATE_LOG("请用 <Ctrl-C> 关闭程序.");
+        /* Clean up the DB now that we've done everything else that might fail... */
+        open_db();
 
-    /* Run the shipgate server. */
-    run_server(tsock, tsock6);
+        if (load_guild_default_flag("System\\guild\\默认公会标志.flag"))
+            ERR_EXIT("无法读取默认公会标志数据");
 
-    /* Clean up. */
-    closesocket(tsock);
-    closesocket(tsock6);
-    WSACleanup();
-    cleanup_scripts();
-    free_events();
-    cleanup_iconv();
-    psocn_db_close(&conn);
-    cleanup_gnutls();
-    psocn_free_config(cfg);
-    psocn_free_db_config(dbcfg);
-    UnhookHandler();
+        SGATE_LOG("%s启动完成.", server_name[SGATE_SERVER].name);
+        SGATE_LOG("程序运行中...");
+        SGATE_LOG("请用 <Ctrl-C> 关闭程序.");
 
-    /* Restart if we're supposed to be doing so. */
-    if(shutting_down == 2) {
-        load_config();
-        goto restart;
+        /* Run the shipgate server. */
+        run_server(tsock, tsock6);
+
+        /* Clean up. */
+        closesocket(tsock);
+        closesocket(tsock6);
+        WSACleanup();
+        cleanup_scripts();
+        free_events();
+        cleanup_iconv();
+        psocn_db_close(&conn);
+        cleanup_gnutls();
+        psocn_free_config(cfg);
+        psocn_free_db_config(dbcfg);
+        UnhookHandler();
+
+        /* Restart if we're supposed to be doing so. */
+        if (shutting_down == 2) {
+            load_config();
+            goto restart;
+        }
+
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
 
     return 0;
