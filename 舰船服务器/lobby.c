@@ -1672,7 +1672,11 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             /* Grab the player data and fill in the string */
             pl = l->clients[i]->pl;
 
+#ifdef DEBUG
+
             DBG_LOG("%s", get_player_name(pl, c->version));
+
+#endif // DEBUG
 
             len += snprintf(msg + len, 511 - len, 
                             "  GC%d %s µÈ¼¶ L%d\n"

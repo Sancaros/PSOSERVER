@@ -11562,13 +11562,13 @@ int send_bb_full_char(ship_client_t *c) {
     ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(&pkt->data.bank, &c->bb_pl->bank, PSOCN_STLENGTH_BANK);
     ///////////////////////////////////////////////////////////////////////////////////////
-    pkt->data.gc_data.guildcard = LE32(c->guildcard);
-    memcpy(&pkt->data.gc_data.name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    memcpy(pkt->data.gc_data.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
-    memcpy(pkt->data.gc_data.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-    pkt->data.gc_data.present = 1;
-    pkt->data.gc_data.language = c->language_code;
-    pkt->data.gc_data.char_class = c->bb_pl->character.dress_data.ch_class;
+    pkt->data.title.guildcard = LE32(c->guildcard);
+    memcpy(&pkt->data.title.name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
+    memcpy(pkt->data.title.guild_name, c->bb_opts->guild_name, sizeof(c->bb_opts->guild_name));
+    memcpy(pkt->data.title.guildcard_desc, c->bb_pl->guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+    pkt->data.title.present = 1;
+    pkt->data.title.language = c->language_code;
+    pkt->data.title.char_class = c->bb_pl->character.dress_data.ch_class;
     ///////////////////////////////////////////////////////////////////////////////////////
     memcpy(pkt->data.symbol_chats, c->bb_opts->symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
     memcpy(pkt->data.shortcuts, c->bb_opts->shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);

@@ -21,6 +21,10 @@
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
 
+/// <summary>
+/// //////////////////////////////////////////////////////
+/// 玩家数据其他操作
+
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot) {
     //char query[256];
 
@@ -145,7 +149,9 @@ char* db_get_char_create_time(uint32_t gc, uint8_t slot) {
     return row[0];
 }
 
-
+/// <summary>
+/// //////////////////////////////////////////////////////
+/// 玩家数据操作
 
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot) {
     void* result;
@@ -411,6 +417,72 @@ err:
     return NULL;
 }
 
+static int db_update_character(psocn_bb_db_char_t* data, char* table, uint32_t gc, uint8_t slot) {
+    memset(myquery, 0, sizeof(myquery));
+
+    snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
+        "`character2` = '", table);
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->character,
+        PSOCN_STLENGTH_BB_CHAR2);
+
+    strcat(myquery, "', bank = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->bank,
+        PSOCN_STLENGTH_BANK);
+
+    strcat(myquery, "', quest_data1 = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data1,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+
+    strcat(myquery, "', guildcard_desc = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->guildcard_desc,
+        88);
+
+    strcat(myquery, "', autoreply = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->autoreply,
+        172);
+
+    strcat(myquery, "', infoboard = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->infoboard,
+        172);
+
+    strcat(myquery, "', b_records = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->b_records,
+        PSOCN_STLENGTH_BATTLE_RECORDS);
+
+    strcat(myquery, "', c_records = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->c_records,
+        PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+
+    strcat(myquery, "', tech_menu = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech_menu,
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
+
+    strcat(myquery, "', quest_data2 = '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->quest_data2,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+
+    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
+        "slot = '%" PRIu8 "'", gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新数据");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
 int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint32_t gc, uint8_t slot) {
     Bytef* cmp_buf;
     uLong cmp_sz;
@@ -469,8 +541,6 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
         return -5;
     }
 
-    //data_size = (uint32_t)strtoul(row[1], NULL, 0);
-
     /* Is it a Blue Burst character or not? */
     if (data_len > 1056) {
         data_len = PSOCN_STLENGTH_BB_DB_CHAR;
@@ -488,25 +558,33 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
     }
 
     if (compressed == Z_OK && cmp_sz < data_len) {
-        sprintf(myquery, "UPDATE %s SET size = '%u', play_time = '%d', lastip = '%s', data = '",
+        sprintf(myquery, "UPDATE %s SET "
+            "size = '%u', play_time = '%d', lastip = '%s', data = '",
             CHARACTER, (unsigned)data_len, play_time, lastip);
-        psocn_db_escape_str(&conn, myquery + strlen(myquery),
-            (char*)cmp_buf,
+
+        psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)cmp_buf,
             cmp_sz);
-        sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-            "slot = '%" PRIu8 "'", gc, slot);
+
+        //sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
+        //    "slot = '%" PRIu8 "'", gc, slot);
     }
     else {
-        sprintf(myquery, "UPDATE %s SET size = '0', play_time = '%d', lastip = '%s', data = '",
+        sprintf(myquery, "UPDATE %s SET "
+            "size = '0', play_time = '%d', lastip = '%s', data = '",
             CHARACTER, play_time, lastip);
-        psocn_db_escape_str(&conn, myquery + strlen(myquery),
-            (char*)char_data,
+
+        psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)char_data,
             data_len);
-        sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-            "slot = '%" PRIu8 "'", gc, slot);
+
+        //snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
+        //    "slot = '%" PRIu8 "'", gc, slot);
+        //sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
+        //    "slot = '%" PRIu8 "'", gc, slot);
+
     }
 
-    //printf("%s \n", query);
+    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
+        "slot = '%" PRIu8 "'", gc, slot);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
@@ -514,6 +592,15 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -6;
+    }
+
+    /* 更新基础玩家数据 */
+    if (db_update_character(char_data, CHARACTER, gc, slot)) {
+        SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+            "槽位 %" PRIu8 "):%s", CHARACTER, gc, slot,
+            psocn_db_error(&conn));
+        /* XXXX: 未完成给客户端发送一个错误信息 */
+        return -7;
     }
 
     free(cmp_buf);
@@ -536,12 +623,70 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf(myquery, "INSERT INTO %s (guildcard, slot, size, ip, create_time, data) "
-        "VALUES ('%" PRIu32 "', '%" PRIu8 "', '0', '%s', '%s', '", CHARACTER, gc,
-        slot, ipstr, timestamp);
-    psocn_db_escape_str(&conn, myquery + strlen(myquery),
-        (char*)char_data,
+    sprintf(myquery, "INSERT INTO %s ("
+        "guildcard, slot, size, ip, create_time, "
+        "`character2`, bank, quest_data1, guildcard_desc, "
+        "autoreply, infoboard, b_records, c_records, tech_menu, quest_data2, "
+        "data"
+        ") VALUES ("
+        "'%" PRIu32 "', '%" PRIu8 "', '0', '%s', '%s', '"
+        , CHARACTER
+        , gc, slot, ipstr, timestamp
+    );
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->character,
+        PSOCN_STLENGTH_BB_CHAR2);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->bank,
+        PSOCN_STLENGTH_BANK);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->quest_data1,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->guildcard_desc,
+        88);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->autoreply,
+        172);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->infoboard,
+        172);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->b_records,
+        PSOCN_STLENGTH_BATTLE_RECORDS);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->c_records,
+        PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->tech_menu,
+        PSOCN_STLENGTH_BB_DB_TECH_MENU);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->quest_data2,
+        PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+
+    strcat(myquery, "', '");
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)char_data,
         PSOCN_STLENGTH_BB_DB_CHAR);
+
     strcat(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {

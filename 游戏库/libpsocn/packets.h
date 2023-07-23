@@ -3996,7 +3996,7 @@ typedef struct bb_full_char {
 // E8 (C->S): Guild card commands (BB)
 typedef struct bb_guildcard {
     bb_pkt_hdr_t hdr;
-    psocn_bb_guildcard_t gc_data;
+    psocn_bb_title_t gc_data;
 } PACKED bb_guildcard_pkt;
 
 // 01E8 (C->S): Check guild card file checksum
