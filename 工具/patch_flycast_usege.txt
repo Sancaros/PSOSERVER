@@ -1,1 +1,11 @@
+要使用脚本，请执行以下操作：
+
+1.构建并安装memwatch(https://github.com/fuzziqersoftware/memwatch)。
+
+2.启动Flycast并运行PSO。（你必须在PSO加载后运行下面的脚本——如果你在加载游戏前运行它，它将不起作用。）
+
+3.运行“sudo patch_flycast_memory.py<原始目的地>”。将“＜原始目的地＞”替换为PSO想要连接的主机名（您可以使用Wireshark并查找DNS查询来找到这一点）。脚本可能需要长达一分钟的时间；你可以在运行时继续使用Flycast，但在脚本完成之前不要启动在线游戏。
+
+4.运行newserv并在PSO中启动一个在线游戏。
+
 python patch_flycast_memory_en.py original_destination "本地服务器\Config\psocn_config_server.xml"
