@@ -1,0 +1,1 @@
+python patch_flycast_memory_en.py original_destination "本地服务器\Config\psocn_config_server.xml"
