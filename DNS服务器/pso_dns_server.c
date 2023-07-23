@@ -26,6 +26,9 @@
 int host_line = 0;
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
+HWND consoleHwnd;
+HWND hwndWindow;
+WNDCLASS wc = { 0 };
 
 //WSADATA是一种数据结构，用来存储被WSAStartup函数调用后返回的Windows sockets数据，包含Winsock.dll执行的数据。需要头文件
 static WSADATA winsock_data;
@@ -608,6 +611,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void move_console_to_center()
 {
+#if defined(_WIN32) && !defined(__CYGWIN__)
     HWND consoleHwnd = GetConsoleWindow(); // 获取控制台窗口句柄
 
     // 获取屏幕尺寸
@@ -622,6 +626,7 @@ void move_console_to_center()
 
     // 移动控制台窗口到屏幕中央
     MoveWindow(consoleHwnd, consoleX, consoleY, consoleWidth, consoleHeight, TRUE);
+#endif
 }
 
 /* 初始化 */
@@ -636,9 +641,6 @@ static void initialization() {
     }
 #endif
 
-    HWND consoleHwnd;
-    WNDCLASS wc = { 0 };
-    HWND hwndWindow;
     HINSTANCE hinst = GetModuleHandle(NULL);
     consoleHwnd = GetConsoleWindow();
 
@@ -666,7 +668,7 @@ static void initialization() {
 
     ShowWindow(hwndWindow, SW_HIDE);
     UpdateWindow(hwndWindow);
-    MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
+    //MoveWindow(consoleHwnd, 900, 510, 980, 510, SWP_SHOWWINDOW);	//把控制台拖到(100,100)
     ShowWindow(consoleHwnd, window_hide_or_show);
     UpdateWindow(consoleHwnd);
 
