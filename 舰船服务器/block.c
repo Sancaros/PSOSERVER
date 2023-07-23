@@ -1076,8 +1076,11 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
     c->q_lang = 0; /* 初始化为默认任务语言 */
     //c->q_lang = pkt->language_code;
 
+#ifdef DEBUG
 
     DBG_LOG("语言 %d %d", c->q_lang, c->language_code);
+
+#endif // DEBUG
 
     c->flags |= CLIENT_FLAG_GC_MSG_BOXES;
 
