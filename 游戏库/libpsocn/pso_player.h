@@ -97,13 +97,11 @@ typedef struct choice_search_config {
 
 /* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v1_player {
-    //inventory_t inv;
     psocn_v1v2v3pc_char_t character;
 } PACKED v1_player_t;
 
 /* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v2_player {
-    //inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_dc_records_data_t records;
     choice_search_config_t cs_config;
@@ -111,7 +109,6 @@ typedef struct v2_player {
 
 /* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct pc_player {
-    //inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_pc_records_data_t records;
     choice_search_config_t cs_config;
@@ -122,7 +119,6 @@ typedef struct pc_player {
 
 /* 玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct v3_player {
-    //inventory_t inv;
     psocn_v1v2v3pc_char_t character;
     psocn_v3_records_data_t records;
     choice_search_config_t cs_config;
@@ -134,7 +130,6 @@ typedef struct v3_player {
 
 /* BB玩家数据结构 用于认证服务器 0x0061 指令*/
 typedef struct bb_player {
-    //inventory_t inv;
     psocn_bb_char_t character;
     psocn_bb_records_data_t records;
     choice_search_config_t cs_config;
@@ -161,6 +156,10 @@ typedef union {
 
 #define PLAYER_T_DEFINED
 
+static char player_name[24];
+
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
+
+char* get_player_name(player_t* pl, int version);
 
 #endif /* !PLAYER_H */

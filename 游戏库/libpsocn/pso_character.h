@@ -136,9 +136,14 @@ typedef struct psocn_dress_data {
 
 /* BB 客户端 玩家名称结构 24字节 */
 typedef struct psocn_bb_char_name {
-    uint16_t name_tag;
-    uint16_t name_tag2;
-    uint16_t char_name[0x0A];
+    union bb_char_name {
+        struct char_name_part_data {
+            uint16_t name_tag;
+            uint16_t name_tag2;
+            uint16_t char_name[0x0A];
+        };
+        uint16_t all[0x0C];
+    };
 } PACKED psocn_bb_char_name_t;
 
 /* 用于认证服务器的预览角色数据结构 */
@@ -159,8 +164,8 @@ typedef struct psocn_bb_char {
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
     psocn_bb_char_name_t name;
-    uint32_t play_time; //4
     uint32_t unknown_a3; //4
+    uint32_t play_time; //4
     uint8_t config[0xE8]; //232
     uint8_t techniques[0x14]; //20 /* 默认 FF 为空*/
 } PACKED psocn_bb_char_t;

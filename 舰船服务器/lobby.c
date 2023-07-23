@@ -1672,10 +1672,14 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
             /* Grab the player data and fill in the string */
             pl = l->clients[i]->pl;
 
-            len += snprintf(msg + len, 511 - len, "%s 等级 L%d\n  %s    \n  语言: %s\n",
-                            pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.disp.level + 1,
-                            pso_class[pl->v1.character.dress_data.ch_class].cn_name,
-                            mini_language_codes_cn[pl->v1.character.inv.language]);
+            DBG_LOG("%s", get_player_name(pl, c->version));
+
+            len += snprintf(msg + len, 511 - len, 
+                            "  GC%d %s 等级 L%d\n"
+                            "  %s 语言: %s\n",
+                            c->guildcard, get_player_name(pl, c->version), pl->v1.character.disp.level + 1,
+                            pso_class[pl->v1.character.dress_data.ch_class].cn_name, mini_language_codes_cn[pl->v1.character.inv.language]
+            );
         }
     }
 
