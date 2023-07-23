@@ -61,6 +61,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_DISP "character_disp"
 #define CHARACTER_DRESS "character_dress"
 #define CHARACTER_FRIENDLIST "character_friendlist"
+#define CHARACTER_GUILD_CARD "character_guild_card"
 #define CHARACTER_INVENTORY "character_inventory"
 #define CHARACTER_INVENTORY_ITEMS "character_inventory_items"
 #define CHARACTER_INVENTORY_ITEMS_BACKUP "character_inventory_items_backup"
@@ -69,7 +70,6 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_RECORDS_BATTLE "character_records_battle"
 #define CHARACTER_RECORDS_CHALLENGE "character_records_challenge"
 #define CHARACTER_TECHNIQUES "character_techniques"
-#define CHARACTER_TITLE "character_title"
 #define CHARACTER_TRADE "character_trade"
 
 #define CLIENTS_GUILD "clients_guild"
