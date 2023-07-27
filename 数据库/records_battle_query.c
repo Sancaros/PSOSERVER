@@ -28,65 +28,39 @@ extern psocn_dbconn_t conn;
 //    uint8_t unknown_a1[0x0E];//14
 //} PACKED battle_records_t;
 
-static int db_insert_battle_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot) {
-    char name[64];
-    char class_name[64];
-
-    istrncpy16_raw(ic_utf16_to_utf8, name, &char_data->character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
-
-    istrncpy(ic_gbk_to_utf8, class_name, pso_class[char_data->character.dress_data.ch_class].cn_name, 64);
+static int db_insert_b_records(battle_records_t* b_records, uint32_t gc, uint8_t slot) {
 
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s("
         "guildcard, slot, "
-        "name, class_name, version, "
         "first, second, third, fourth, "
         "disconnect_count, "
-
         "data0, data1, data2, data3, "
         "data4, data5, data6, data7, "
         "data8, data9, data10, data11, "
         "data12, data13, "
-        
-        
-        
-        
-        
-        
-        
-        "unknown_a1, data"
+        "unknown_a1"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
-        "'%s', '%s', '%" PRIu8 "', "
         "'%04X', '%04X', '%04X', '%04X', "
         "'%04X', "
-
         "'%d', '%d', '%d', '%d', "
         "'%d', '%d', '%d', '%d', "
         "'%d', '%d', '%d', '%d', "
         "'%d', '%d', "
-
-
         "'", 
         TABLE, 
         gc, slot
-        , name, class_name, char_data->character.dress_data.version
-        , char_data->b_records.place_counts[0], char_data->b_records.place_counts[1], char_data->b_records.place_counts[2], char_data->b_records.place_counts[3]
-        , char_data->b_records.disconnect_count
-        , char_data->b_records.data0, char_data->b_records.data1, char_data->b_records.data2, char_data->b_records.data3
-        , char_data->b_records.data4, char_data->b_records.data5, char_data->b_records.data6, char_data->b_records.data7
-        , char_data->b_records.data8, char_data->b_records.data9, char_data->b_records.data10, char_data->b_records.data11
-        , char_data->b_records.data12, char_data->b_records.data13
+        , b_records->place_counts[0], b_records->place_counts[1], b_records->place_counts[2], b_records->place_counts[3]
+        , b_records->disconnect_count
+        , b_records->data0, b_records->data1, b_records->data2, b_records->data3
+        , b_records->data4, b_records->data5, b_records->data6, b_records->data7
+        , b_records->data8, b_records->data9, b_records->data10, b_records->data11
+        , b_records->data12, b_records->data13
     );
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->b_records.unknown_a1,
-        14);
-
-    strcat(myquery, "', '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&char_data->b_records,
-        PSOCN_STLENGTH_BATTLE_RECORDS);
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&b_records->unknown_a1, 14);
 
     strcat(myquery, "')");
 
@@ -119,11 +93,11 @@ static int db_clean_up_char_b_records(uint32_t gc, uint8_t slot) {
 }
 
 /* 更新玩家基础数据至数据库 */
-int db_update_char_b_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag) {
+int db_update_char_b_records(battle_records_t* b_records, uint32_t gc, uint8_t slot, uint32_t flag) {
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
 
-        if (db_insert_battle_records(char_data, gc, slot)) {
+        if (db_insert_b_records(b_records, gc, slot)) {
             SQLERR_LOG("无法保存对战数据表 %s (GC %" PRIu32 ", "
                 "槽位 %" PRIu8 ")", TABLE, gc, slot);
             return 0;
@@ -137,7 +111,7 @@ int db_update_char_b_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t
             return -1;
         }
 
-        if (db_insert_battle_records(char_data, gc, slot)) {
+        if (db_insert_b_records(b_records, gc, slot)) {
             SQLERR_LOG("无法保存对战数据表 %s (GC %" PRIu32 ", "
                 "槽位 %" PRIu8 ")", TABLE, gc, slot);
             return 0;
@@ -186,16 +160,16 @@ int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records) {
         return -3;
     }
 
-    int j = 6;
+    int j = 2;
 
     for (int i = 0; i < 4; i++) {
         b_records->place_counts[i] = (uint16_t)strtoul(row[j], NULL, 16);
         j++;
     }
     b_records->disconnect_count = (uint16_t)strtoul(row[j], NULL, 16);
-    //j++;
-    //memcpy((char*)&b_records->unknown_a1, row[j], 14);
-    j+=2;
+    j++;
+    memcpy((char*)&b_records->unknown_a1, row[j], 14);
+    j++;
     b_records->data0 = (uint8_t)strtoul(row[j], NULL, 10);
     j++;
     b_records->data1 = (uint8_t)strtoul(row[j], NULL, 10);
@@ -223,7 +197,6 @@ int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records) {
     b_records->data12 = (uint8_t)strtoul(row[j], NULL, 10);
     j++;
     b_records->data13 = (uint8_t)strtoul(row[j], NULL, 10);
-    //j++;
 
     psocn_db_result_free(result);
 

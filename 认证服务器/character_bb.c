@@ -853,9 +853,9 @@ static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
     //char query[256];
     //char mysqlerr[1024];
     
-    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    //display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
-    printf("刷新玩家在线数据... ");
+    //printf("刷新玩家在线数据... ");
 
     if (db_update_gc_login_state(c->guildcard, c->islogged, c->sec_data.slot, (char*)&pkt->data.character.name)) {
         return -1;

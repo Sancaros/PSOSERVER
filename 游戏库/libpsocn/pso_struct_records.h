@@ -65,7 +65,7 @@ typedef struct battle_records {
 /* 160 */
 typedef struct dc_challenge_records {
     uint16_t title_color;
-    uint8_t unknown_u0[2];
+    uint16_t unknown_u0;
     char rank_title[0x0C];
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
@@ -106,7 +106,7 @@ typedef struct psocn_dc_records_data {
 /* 216 */
 typedef struct pc_challenge_records {
     uint16_t title_color;
-    uint8_t unknown_u0[2];
+    uint16_t unknown_u0;
     uint16_t rank_title[0x0C];
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
@@ -147,13 +147,13 @@ typedef struct psocn_pc_records_data {
 /* 256 */
 typedef struct v3_challenge_records {
     uint16_t title_color;
-    uint8_t unknown_u0[2];
+    uint16_t unknown_u0;
     uint32_t times_ep1_online[9];
     uint32_t times_ep2_online[5];
     uint32_t times_ep1_offline[9];
     uint8_t unknown_g3[4];
     uint16_t grave_deaths;
-    uint8_t unknown_u4[2];
+    uint16_t unknown_u4;
     uint32_t grave_coords_time[5];
     char grave_team[0x14];
     char grave_message[0x20];
@@ -194,13 +194,13 @@ typedef struct psocn_v3_records_data {
 /* 320 */
 typedef struct bb_challenge_records {
     uint16_t title_color;
-    uint8_t unknown_u0[2];
+    uint16_t unknown_u0;
     uint32_t times_ep1_online[9];
     uint32_t times_ep2_online[5];
     uint32_t times_ep1_offline[9];
     uint32_t grave_unk4;
     uint16_t grave_deaths;
-    uint8_t unknown_u4[2];
+    uint16_t unknown_u4;
     uint32_t grave_coords_time[5];
     uint16_t grave_team[20];
     uint16_t grave_message[32];

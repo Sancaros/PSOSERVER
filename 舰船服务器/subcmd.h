@@ -625,14 +625,21 @@ typedef struct subcmd_bb_set_pos_0x24 {
 
 // 0x25: Equip item
 // Packet sent by clients to equip/unequip an item.
-// 0x26: Unequip item
-// Same format as 0x25
 typedef struct subcmd_bb_equip {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t item_id;
-    uint32_t equip_slot; // Unused for 0x26 (unequip item)
+    uint32_t equip_slot;
 } PACKED subcmd_bb_equip_t;
+
+// 0x26: Unequip item
+// Same format as 0x25
+typedef struct subcmd_bb_unequip {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t item_id;
+    uint32_t equip_slot; // Unused for 0x26 (unequip item)
+} PACKED subcmd_bb_unequip_t;
 
 // 0x27: Use item
 // Packet used when an item has been used

@@ -982,7 +982,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_26_bb(ship_client_t* src, ship_client_t* dest, 
-    subcmd_bb_equip_t* pkt) {
+    subcmd_bb_unequip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_count, i, isframe = 0;
 
@@ -3075,6 +3075,54 @@ static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_A8_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_gol_dragon_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int v = src->version, i;
+    subcmd_bb_gol_dragon_act_t tr;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+   match with what we expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0020) ||
+        pkt->shdr.size != 0x06) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (v == CLIENT_VERSION_BB)
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    /* Make a version to send to the other version if the client is on GC or
+       Xbox. */
+    memcpy(&tr, pkt, sizeof(subcmd_bb_gol_dragon_act_t));
+    tr.x.b = SWAP32(tr.x.b);
+    tr.z.b = SWAP32(tr.z.b);
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != src) {
+            if (l->clients[i]->version == v) {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+            }
+            else {
+                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&tr);
+            }
+        }
+    }
+
+    return 0;
+
+}
+
 static int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
@@ -3775,6 +3823,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type A0 - AF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
+    { SUBCMD60_GDRAGON_ACT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A8_bb },
     { SUBCMD60_CHAIR_CREATE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
     { SUBCMD60_CHAIR_TURN                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 

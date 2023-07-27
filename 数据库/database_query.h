@@ -260,14 +260,14 @@ int db_update_char_techniques(uint8_t tech_data[20], uint32_t gc, uint32_t slot,
 ////////////////////////////////////////////////////////////////
 
 /* 更新BB角色对战数据 */
-int db_update_char_b_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
+int db_update_char_b_records(battle_records_t* b_records, uint32_t gc, uint8_t slot, uint32_t flag);
+
+int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records);
 
 ////////////////////////////////////////////////////////////////
 
 /* 更新BB角色挑战数据 */
-int db_update_char_c_records(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot, uint32_t flag);
-
-int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records);
+int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uint8_t slot, uint32_t flag);
 
 
 
