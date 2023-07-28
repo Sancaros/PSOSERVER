@@ -18,7 +18,7 @@
 #include "database.h"
 #include "database_query.h"
 #include "f_checksum.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;

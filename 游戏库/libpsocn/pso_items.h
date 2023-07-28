@@ -18,6 +18,8 @@
 #ifndef PSO_ITEMS_H
 #define PSO_ITEMS_H
 
+#include <stdbool.h>
+
 #include "pso_player.h"
 #include "pso_item_list.h"
 
@@ -84,6 +86,25 @@
 #define ITEM_VERSION_GC         0x04
 #define ITEM_VERSION_XBOX       0x08
 #define ITEM_VERSION_BB         0x10
+
+/* 初始化物品数据 */
+void clear_item(item_t* item);
+
+/* 初始化背包物品数据 */
+void clear_iitem(iitem_t* iitem);
+
+/* 初始化银行物品数据 */
+void clear_bitem(bitem_t* bitem);
+
+size_t primary_identifier(item_t* i);
+
+/* 堆叠物检测 */
+bool is_stackable(const item_t* item);
+size_t stack_size(const item_t* item);
+size_t max_stack_size(const item_t* item);
+size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
+
+bool is_common_consumable(uint32_t primary_identifier);
 
 /* 获取物品名称 */
 const char* item_get_name(item_t* item, int version);

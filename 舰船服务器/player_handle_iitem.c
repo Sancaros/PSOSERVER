@@ -22,7 +22,7 @@
 
 #include <f_logs.h>
 
-#include "iitems.h"
+#include "player_handle_iitem.h"
 
 /* We need LE32 down below... so get it from packets.h */
 #define PACKETS_H_HEADERS_ONLY
@@ -34,144 +34,16 @@
 #include "max_tech_level.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-////物品操作
-
-/* 初始化物品数据 */
-void clear_item(item_t* item) {
-    item->datal[0] = 0;
-    item->datal[1] = 0;
-    item->datal[2] = 0;
-    item->item_id = EMPTY_STRING;
-    item->data2l = 0;
-}
+////游戏房间操作
 
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id) {
-    if (client_id < (size_t)l->max_clients) {
-        return l->item_player_id[client_id]++;
-    }
+    size_t c_id = client_id, l_max_c_id = l->max_clients;
 
-    return l->item_lobby_id++;
-}
+    if (c_id < l_max_c_id)
+        return ++l->item_player_id[client_id];
 
-size_t primary_identifier(item_t* item) {
-    // The game treats any item starting with 04 as Meseta, and ignores the rest
-    // of data1 (the value is in data2)
-    switch (item->datab[0]) 
-    {
-    case ITEM_TYPE_MESETA:
-        return 0x040000;
-
-    case ITEM_TYPE_TOOL:
-        if (item->datab[1] == ITEM_SUBTYPE_DISK) {
-            return 0x030200;// Tech disk (data1[2] is level, so omit it)
-        }
-        break;
-
-    case ITEM_TYPE_MAG:
-        return 0x020000 | (item->datab[1] << 8); // Mag
-
-    }
-
-    return (item->datab[0] << 16) | (item->datab[1] << 8) | item->datab[2];
-}
-
-bool is_stackable(const item_t* item) {
-    return max_stack_size(item) > 1;
-}
-
-size_t stack_size(const item_t* item) {
-    if (max_stack_size_for_item(item->datab[0], item->datab[1]) > 1) {
-        return item->datab[5];
-    }
-    return 1;
-}
-
-size_t max_stack_size(const item_t* item) {
-    return max_stack_size_for_item(item->datab[0], item->datab[1]);
-}
-
-//size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-//    if (data0 == ITEM_TYPE_MESETA) {
-//        return 999999;
-//    }
-//    if (data0 == ITEM_TYPE_TOOL) {
-//        if ((data1 < 9) && (data1 != ITEM_SUBTYPE_DISK)) {
-//            return 10;
-//        }
-//        else if (data1 == ITEM_SUBTYPE_PHOTON) {
-//            return 99;
-//        }
-//    }
-//    return 1;
-//}
-
-// TODO 需要客户端支持各种堆叠
-size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
-
-    switch (data0) 
-    {
-    case ITEM_TYPE_MESETA:
-        return 999999;
-
-    case ITEM_TYPE_TOOL:
-
-        switch (data1)
-        {
-            /* 支持大量堆叠 */
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
-        case ITEM_SUBTYPE_SOL_ATOMIZER:
-        case ITEM_SUBTYPE_MOON_ATOMIZER:
-        case ITEM_SUBTYPE_STAR_ATOMIZER:
-        case ITEM_SUBTYPE_ANTI:
-        case ITEM_SUBTYPE_TELEPIPE:
-        case ITEM_SUBTYPE_TRAP_VISION:
-        case ITEM_SUBTYPE_GRINDER:
-        case ITEM_SUBTYPE_MATERIAL:
-        case ITEM_SUBTYPE_MAG_CELL1:
-        case ITEM_SUBTYPE_MONSTER_LIMBS:
-        case ITEM_SUBTYPE_MAG_CELL2:
-        case ITEM_SUBTYPE_ADD_SLOT:
-        case ITEM_SUBTYPE_PHOTON:
-            return 99;
-
-        case ITEM_SUBTYPE_DISK:
-            return 1;
-
-
-        default:
-            return 10;
-        }
-
-        break;
-    }
-
-    return 1;
-}
-
-bool is_common_consumable(uint32_t primary_identifier) {
-    if (primary_identifier == 0x030200) {
-        return false;
-    }
-    return (primary_identifier >= 0x030000) && (primary_identifier < 0x030A00);
-}
-
-void clear_after(item_t* this, size_t position, size_t count) {
-    for (size_t x = position; x < count; x++) {
-        this->datab[x] = 0;
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////玩家背包操作
-
-/* 初始化玩家背包数据 */
-void clear_iitem(iitem_t* iitem) {
-    iitem->present = LE16(0xFF00);
-    iitem->tech = 0;
-    iitem->flags = 0;
-    clear_item(&iitem->data);
+    return ++l->item_lobby_id;
 }
 
 /* 修复玩家背包数据 */
@@ -181,7 +53,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 
     inventory_t* inv = &c->bb_pl->character.inv;
 
-    if(c->mode)
+    if (c->mode)
         inv = &c->mode_pl->bb.inv;
 
     if (c->version == CLIENT_VERSION_BB) {
@@ -207,19 +79,6 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
         l->item_player_id[c->client_id] = id;
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////银行背包操作
-
-/* 初始化银行背包数据 */
-void clear_bitem(bitem_t* bitem) {
-    clear_item(&bitem->data);
-    bitem->show_flags = 0;
-    bitem->amount = 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////游戏房间操作
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */

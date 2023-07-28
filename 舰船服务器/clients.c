@@ -40,7 +40,7 @@
 #include "subcmd.h"
 #include "subcmd_send_bb.h"
 #include "mapdata.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 
 #ifdef ENABLE_LUA
 #include <lua.h>

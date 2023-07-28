@@ -34,7 +34,7 @@
 #include "clients.h"
 #include "ship_packets.h"
 #include "utils.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "word_select.h"
 #include "scripts.h"
 #include "shipgate.h"
@@ -1168,7 +1168,8 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
             iitem_data.tech = 0;
             iitem_data.flags = 0;
 
-            iitem_data.data.item_id = generate_item_id(l, src->client_id);
+            //iitem_data.data.item_id = generate_item_id(l, src->client_id);
+            iitem_data.data.item_id = pkt->item_id;
 
             /* Add the item to the client's inventory. */
             if (!add_iitem(src, &iitem_data))
@@ -1487,7 +1488,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_bb_delete_meseta(src, price, 0);
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, false);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, price, false);
 }
 
 int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
@@ -2000,7 +2001,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         memset(&ii, 0, PSOCN_STLENGTH_IITEM);
         ii.data.datab[0] = ITEM_TYPE_MESETA;
         ii.data.data2l = meseta;
-        ii.data.item_id = generate_item_id(l, 0xFF);
+        ii.data.item_id = generate_item_id(l, EMPTY_STRING);
 
         if (!add_iitem(src, &ii)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
@@ -2008,7 +2009,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, true);
+        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, meseta, true);
     }
 }
 
@@ -2348,7 +2349,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
             }
 
-            return subcmd_send_drop_stack(src, pkt->area, pkt->x, pkt->z, litem);
+            return subcmd_send_drop_stack(src, pkt->area, pkt->x, pkt->z, litem, 1);
         }
 
     }

@@ -35,7 +35,7 @@
 #include "subcmd.h"
 #include "utils.h"
 #include "shipgate.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "bans.h"
 #include "admin.h"
 #include "ptdata.h"
@@ -637,7 +637,7 @@ static int handle_makeitem(ship_client_t* src, const char* params) {
     bb.two = dc.two = LE32(0x00000002);
 
     /* Clear the set item */
-    clear_item(&src->new_item);
+    //clear_item(&src->new_item);
 
     /* Send the packet to everyone in the lobby */
     pthread_mutex_unlock(&l->mutex);

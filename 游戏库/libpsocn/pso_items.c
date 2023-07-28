@@ -24,6 +24,124 @@
 #include "pso_items.h"
 #include "pso_character.h"
 
+/* 初始化物品数据 */
+void clear_item(item_t* item) {
+    item->datal[0] = 0;
+    item->datal[1] = 0;
+    item->datal[2] = 0;
+    item->item_id = EMPTY_STRING;
+    item->data2l = 0;
+}
+
+/* 初始化玩家背包数据 */
+void clear_iitem(iitem_t* iitem) {
+    iitem->present = LE16(0xFF00);
+    iitem->tech = 0;
+    iitem->flags = 0;
+    clear_item(&iitem->data);
+}
+
+/* 初始化银行背包数据 */
+void clear_bitem(bitem_t* bitem) {
+    clear_item(&bitem->data);
+    bitem->show_flags = 0;
+    bitem->amount = 0;
+}
+
+size_t primary_identifier(item_t* item) {
+    // The game treats any item starting with 04 as Meseta, and ignores the rest
+    // of data1 (the value is in data2)
+    switch (item->datab[0])
+    {
+    case ITEM_TYPE_MESETA:
+        return 0x040000;
+
+    case ITEM_TYPE_TOOL:
+        if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+            return 0x030200;// Tech disk (data1[2] is level, so omit it)
+        }
+        break;
+
+    case ITEM_TYPE_MAG:
+        return 0x020000 | (item->datab[1] << 8); // Mag
+
+    }
+
+    return (item->datab[0] << 16) | (item->datab[1] << 8) | item->datab[2];
+}
+
+bool is_stackable(const item_t* item) {
+    return max_stack_size(item) > 1;
+}
+
+size_t stack_size(const item_t* item) {
+    if (max_stack_size_for_item(item->datab[0], item->datab[1]) > 1) {
+        return item->datab[5];
+    }
+    return 1;
+}
+
+size_t max_stack_size(const item_t* item) {
+    return max_stack_size_for_item(item->datab[0], item->datab[1]);
+}
+
+// TODO 需要客户端支持各种堆叠
+size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
+
+    switch (data0)
+    {
+    case ITEM_TYPE_MESETA:
+        return 999999;
+
+    case ITEM_TYPE_TOOL:
+
+        switch (data1)
+        {
+            /* 支持大量堆叠 */
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+        case ITEM_SUBTYPE_SOL_ATOMIZER:
+        case ITEM_SUBTYPE_MOON_ATOMIZER:
+        case ITEM_SUBTYPE_STAR_ATOMIZER:
+        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_TELEPIPE:
+        case ITEM_SUBTYPE_TRAP_VISION:
+        case ITEM_SUBTYPE_GRINDER:
+        case ITEM_SUBTYPE_MATERIAL:
+        case ITEM_SUBTYPE_MAG_CELL1:
+        case ITEM_SUBTYPE_MONSTER_LIMBS:
+        case ITEM_SUBTYPE_MAG_CELL2:
+        case ITEM_SUBTYPE_ADD_SLOT:
+        case ITEM_SUBTYPE_PHOTON:
+            return 99;
+
+        case ITEM_SUBTYPE_DISK:
+            return 1;
+
+
+        default:
+            return 10;
+        }
+
+        break;
+    }
+
+    return 1;
+}
+
+bool is_common_consumable(uint32_t primary_identifier) {
+    if (primary_identifier == 0x030200) {
+        return false;
+    }
+    return (primary_identifier >= 0x030000) && (primary_identifier < 0x030A00);
+}
+
+void clear_after(item_t* this, size_t position, size_t count) {
+    for (size_t x = position; x < count; x++) {
+        this->datab[x] = 0;
+    }
+}
+
 const char* item_get_name_by_code(item_code_t code, int version) {
     item_map_t* cur = item_list;
     //TODO 未完成多语言物品名称
@@ -172,7 +290,7 @@ void print_bitem_data(bitem_t* bitem, int item_index, int version) {
         "(%s) %04X "
         "(%s) Flags %04X",
         item_index,
-        ((bitem->amount & LE32(0x0001)) ? "堆叠" : "单独"),
+        ((max_stack_size_for_item(bitem->data.datab[0], bitem->data.datab[1]) > 1) ? "堆叠" : "单独"),
         bitem->amount,
         ((bitem->show_flags & LE32(0x0001)) ? "显示" : "隐藏"),
         bitem->show_flags

@@ -34,7 +34,7 @@
 #include "clients.h"
 #include "ship_packets.h"
 #include "utils.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "word_select.h"
 #include "scripts.h"
 #include "shipgate.h"
@@ -3319,35 +3319,6 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (src->mode) {
-        send_txt(src, "%s", __(src, "\tE\tC7暂未完成\n"
-            "挑战模式和对战模式."));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-
-        iitem_t ciitem = {0};//需要一个临时的背包？
-
-        display_packet(src->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-
-
-
-        if (ciitem.data.item_id == 0xFFFFFFFF) {
-            ciitem.data.item_id = generate_item_id(l, EMPTY_STRING);
-        }
-
-        /* We have the item... Add it to the lobby's inventory. */
-        if (!(it = add_litem_locked(l, &ciitem))) {
-            /* *Gulp* The lobby is probably toast... At least make sure this user is
-               still (mostly) safe... */
-            ERR_LOG("无法将物品添加至游戏房间!");
-            return -1;
-        }
-
-
-
-        return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it);
-
-    }
-
     iitem_t iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
 
     if (&iitem == NULL) {
@@ -3356,9 +3327,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (iitem.data.item_id == 0xFFFFFFFF) {
-        iitem.data.item_id = generate_item_id(l, EMPTY_STRING);
-    }
+    iitem.data.item_id = generate_item_id(l, EMPTY_STRING);
 
     if (!add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
@@ -3374,7 +3343,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it);
+    return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it, pkt->amount);
 }
 
 static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 

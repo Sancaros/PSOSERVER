@@ -47,7 +47,7 @@
 #include "scripts.h"
 #include "admin.h"
 #include "smutdata.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "records.h"
 
 extern int enable_ipv6;

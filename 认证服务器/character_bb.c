@@ -735,7 +735,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
-        /* 获取玩家角色背包数据数据项 */
+        /* 更新玩家角色银行数据数据项 */
         if (db_update_char_bank(&char_data->bank, c->guildcard, pkt->slot)) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
@@ -744,7 +744,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
-        /* 获取玩家角色背包数据数据项 */
+        /* 更新玩家角色quest_data1数据数据项 */
         if (db_update_char_quest_data1(char_data->quest_data1, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家数据 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
@@ -753,10 +753,23 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
+        /* 更新玩家角色b_records数据数据项 */
+        if (db_update_char_b_records(&char_data->b_records, c->guildcard, pkt->slot, flags)) {
+            ERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            free_safe(char_data);
+            return -1;
+        }
 
-
-
-
+        /* 更新玩家角色c_records数据数据项 */
+        if (db_update_char_c_records(&char_data->c_records, c->guildcard, pkt->slot, flags)) {
+            ERR_LOG("无法更新玩家数据 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            free_safe(char_data);
+            return -1;
+        }
 
         if (db_updata_bb_char_create_code(create_code,
             c->guildcard, pkt->slot)) {

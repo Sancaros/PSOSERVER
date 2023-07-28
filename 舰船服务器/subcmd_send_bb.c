@@ -18,7 +18,7 @@
 #include "subcmd_send_bb.h"
 #include "subcmd_size_table.h"
 
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "f_logs.h"
 
 // subcmd 直接发送指令至客户端
@@ -54,7 +54,7 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, i
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 单人掉落堆叠物品*/
-int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, iitem_t* item) {
+int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, iitem_t* iitem, uint32_t amount) {
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
 
@@ -81,16 +81,17 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
     bb.x = dc.x = x;
     bb.z = dc.z = z;
 
-    bb.data.datal[0] = dc.data.datal[0] = item->data.datal[0];
-    bb.data.datal[1] = dc.data.datal[1] = item->data.datal[1];
-    bb.data.datal[2] = dc.data.datal[2] = item->data.datal[2];
-    bb.data.item_id = dc.data.item_id = item->data.item_id;
-    bb.data.data2l = dc.data.data2l = item->data.data2l;
+    bb.data = dc.data = iitem->data;
+
+    if (iitem->data.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = iitem->data.data2l;
+    else
+        bb.data.datab[5] = dc.data.datab[5] = amount;
 
     bb.two = dc.two = LE32(0x00000002);
 
     if (src->version == CLIENT_VERSION_GC)
-        dc.data.data2l = SWAP32(item->data.data2l);
+        dc.data.data2l = SWAP32(iitem->data.data2l);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
@@ -110,7 +111,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
-int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item) {
+int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item, uint32_t amount) {
     lobby_t* l = src->cur_lobby;
 
     if (!l) {
@@ -127,7 +128,7 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint
                 continue;
             }
 
-            subcmd_send_drop_stack(l->clients[i], area, x, z, item);
+            subcmd_send_drop_stack(l->clients[i], area, x, z, item, amount);
         }
     }
 
@@ -151,10 +152,10 @@ int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_i
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_ITEM_DELETE_IN_MAP;
     pkt.shdr.size = 0x03;
-    pkt.shdr.client_id = c->client_id;
+    pkt.shdr.client_id = LE16(c->client_id);
 
     /* 填充剩余数据 */
-    pkt.client_id2 = c->client_id;
+    pkt.client_id2 = LE16(c->client_id);
     pkt.area = area;
     pkt.item_id = item_id;
 
@@ -283,7 +284,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
     uint32_t stack_count;
     uint32_t tmp;
     iitem_t tmp_meseta = { 0 };
-    iitem_t* meseta = { 0 };
+    iitem_t* ii_meseta = { 0 };
     lobby_t* l = c->cur_lobby;
 
     if (!l)
@@ -305,8 +306,8 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         tmp_meseta.data.data2l = count;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        meseta = add_litem_locked(l, &tmp_meseta);
-        if (!meseta) {
+        ii_meseta = add_litem_locked(l, &tmp_meseta);
+        if (!ii_meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!\n");
             return -1;
@@ -327,7 +328,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_lobby_drop_stack(c, NULL, c->drop_area, c->x, c->z, meseta))
+        if (subcmd_send_lobby_drop_stack(c, NULL, c->drop_area, c->x, c->z, ii_meseta, count))
             return -1;
     }
 

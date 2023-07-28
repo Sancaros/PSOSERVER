@@ -25,37 +25,11 @@
 #include "clients.h"
 #include "shop.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////物品操作
-
-/* 初始化物品数据 */
-void clear_item(item_t* item);
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id);
 
-size_t primary_identifier(item_t* i);
-
-/* 堆叠物检测 */
-bool is_stackable(const item_t* item);
-size_t stack_size(const item_t* item);
-size_t max_stack_size(const item_t* item);
-size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////玩家背包操作
-
-/* 初始化背包物品数据 */
-void clear_iitem(iitem_t* iitem);
-
 /* 修复玩家背包数据 */
 void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////银行背包操作
-
-/* 初始化银行物品数据 */
-void clear_bitem(bitem_t* bitem);
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////游戏房间操作

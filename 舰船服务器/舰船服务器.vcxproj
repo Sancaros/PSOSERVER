@@ -26,7 +26,7 @@
     <ClCompile Include="commands.c" />
     <ClCompile Include="enemy_type.c" />
     <ClCompile Include="gm.c" />
-    <ClCompile Include="iitems.c" />
+    <ClCompile Include="player_handle_iitem.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="lobby.c" />
     <ClCompile Include="mapdata.c" />
@@ -65,7 +65,7 @@
     <ClInclude Include="commands.h" />
     <ClInclude Include="enemy_type.h" />
     <ClInclude Include="gm.h" />
-    <ClInclude Include="iitems.h" />
+    <ClInclude Include="player_handle_iitem.h" />
     <ClInclude Include="lobby.h" />
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="pmtdata.h" />
