@@ -1031,8 +1031,8 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(%d): 版本 DC NTE GC %d 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DC NTE 已连接 IP %s",
+        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
 }
@@ -1119,8 +1119,8 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(%d): 版本 DCv1 GC %d 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DCv1 已连接 IP %s",
+        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
 }
@@ -1252,14 +1252,14 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
     if (c->version == CLIENT_VERSION_DCV2)
-        BLOCK_LOG("%s(%d): 版本 DCv2 GC %d 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DCv2 已连接 IP %s",
+            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
     else if (!(c->flags & CLIENT_FLAG_IS_NTE))
-        BLOCK_LOG("%s(%d): 版本 PC GC %d 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d PC 已连接 IP %s",
+            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
     else
-        BLOCK_LOG("%s(%d): 版本 PC NTE GC %d 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d PC NTE 已连接 IP %s",
+            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
 }
@@ -1361,8 +1361,8 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(%d): 版本 GameCube GC %d 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GameCube GC %d 已连接 IP %s",
+        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
 }
@@ -1422,8 +1422,8 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(%d): 版本 Xbox GC %d 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): Xbox GC %d 已连接 IP %s",
+        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
 }
