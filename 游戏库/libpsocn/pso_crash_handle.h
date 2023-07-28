@@ -20,6 +20,9 @@
 
 #include <stdio.h>
 #include <Windows.h>
+#include <excpt.h>
+#include <DbgHelp.h>
+#pragma comment(lib , "dbghelp.lib")
 
 LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info);
 
