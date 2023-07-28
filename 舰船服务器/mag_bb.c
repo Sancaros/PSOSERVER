@@ -24,7 +24,7 @@
 #include "mag_bb.h"
 #include "clients.h"
 #include "ship_packets.h"
-#include "iitems.h"
+#include "player_handle_iitem.h"
 #include "pmtdata.h"
 
 typedef struct {

@@ -119,7 +119,8 @@ void convert_dc_to_bb_challenge(const dc_challenge_records_t* rec_dc, bb_challen
     rec_bb->grave_unk4 = 0;
     //memset(rec_bb->grave_unk4, 0, sizeof(rec_bb->grave_unk4));
     rec_bb->grave_deaths = rec_dc->grave_deaths;
-    memset(rec_bb->unknown_u4, 0, sizeof(rec_bb->unknown_u4));
+    rec_bb->unknown_u4 = 0;
+    //memset(rec_bb->unknown_u4, 0, sizeof(rec_bb->unknown_u4));
     memcpy(rec_bb->grave_coords_time, rec_dc->grave_coords_time, sizeof(rec_bb->grave_coords_time));
     memcpy(rec_bb->grave_team, rec_dc->grave_team, sizeof(rec_bb->grave_team));
     memcpy(rec_bb->grave_message, rec_dc->grave_message, sizeof(rec_bb->grave_message));
