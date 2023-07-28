@@ -149,7 +149,7 @@ int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_i
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    pkt.shdr.type = SUBCMD60_DEL_MAP_ITEM;
+    pkt.shdr.type = SUBCMD60_ITEM_DELETE_IN_MAP;
     pkt.shdr.size = 0x03;
     pkt.shdr.client_id = c->client_id;
 
@@ -162,7 +162,7 @@ int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_i
 }
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 单人获得物品 */
-int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
+int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amount) {
     subcmd_bb_create_item_t pkt = { 0 };
 
     /* 填充数据并准备发送 */
@@ -171,19 +171,27 @@ int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item) {
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    pkt.shdr.type = SUBCMD60_CREATE_ITEM;
-    pkt.shdr.size = 0x07;
-    pkt.shdr.client_id = c->client_id;
+    pkt.shdr.type = SUBCMD60_ITEM_CREATE;
+    pkt.shdr.size = 0x09;
+    pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    pkt.item = item;
+    memcpy(&pkt.item.datab[0], &item.datab[0], 12);
+    pkt.item.item_id = item.item_id;
+
+    if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
+        pkt.item.data2l = item.data2l;
+    else
+        pkt.item.datab[0x05] = amount;
+
+    /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+    return send_pkt_bb(src, (bb_pkt_hdr_t*)&pkt);
 }
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 发送给大厅玩家物品 用于SHOP类型的获取 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool send_to_src) {
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amount, bool send_to_src) {
     lobby_t* l = src->cur_lobby;
     subcmd_bb_create_item_t pkt = { 0 };
 
@@ -196,12 +204,20 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool s
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    pkt.shdr.type = SUBCMD60_CREATE_ITEM;
-    pkt.shdr.size = 0x07;
+    pkt.shdr.type = SUBCMD60_ITEM_CREATE;
+    pkt.shdr.size = 0x09;
     pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    pkt.item = item;
+    memcpy(&pkt.item.datab[0], &item.datab[0], 12);
+    pkt.item.item_id = item.item_id;
+
+    if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
+        pkt.item.data2l = item.data2l;
+    else
+        pkt.item.datab[0x05] = amount;
+
+    /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;
 
     if (send_to_src)
@@ -251,8 +267,8 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt)
     d.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    d.shdr.type = SUBCMD60_DELETE_ITEM;
-    d.shdr.size = 0x03;
+    d.shdr.type = SUBCMD60_ITEM_DELETE;
+    d.shdr.size = pkt_size / 4;
     d.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
@@ -591,6 +607,28 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     }
 
     return rv;
+}
+
+/* 0xDB SUBCMD60_EXCHANGE_ITEM_IN_QUEST BB 任务中兑换物品 */
+int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount) {
+    subcmd_bb_item_exchange_in_quest_t pkt = { 0 };
+    int pkt_size = sizeof(subcmd_bb_item_exchange_in_quest_t);
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.flags = 0;
+
+    /* 填充副指令数据 */
+    pkt.shdr.type = SUBCMD60_ITEM_EXCHANGE_IN_QUEST;
+    pkt.shdr.size = pkt_size / 4;
+    pkt.shdr.params = 0;
+
+    pkt.unknown_a3 = 1;
+    pkt.item_id = item_id;
+    pkt.amount = amount;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */

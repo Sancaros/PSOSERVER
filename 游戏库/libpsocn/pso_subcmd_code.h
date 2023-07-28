@@ -18,7 +18,7 @@
 /* Subcommand types we care about (0x62/0x6D). */
 #define SUBCMD62_GUILDCARD                     0x06
 #define SUBCMD62_PICK_UP                       0x5A    /* Sent to leader when picking up item */
-#define SUBCMD62_ITEMREQ                       0x60    //SUBCMD62_MONSTER_DROP_ITEMREQ
+#define SUBCMD62_ITEM_DROP_REQ                 0x60    //SUBCMD62_MONSTER_DROP_ITEMREQ
 #define SUBCMD62_UNKNOW_6A                     0x6A
 /////////////////////////////////////////////////////////////////////////////////////
 /* The commands OK to send during bursting (0x62/0x6D). These are named for the
@@ -31,7 +31,7 @@
 #define SUBCMD6D_BURST_PLDATA                  0x70
 #define SUBCMD62_BURST6                        0x71
 /////////////////////////////////////////////////////////////////////////////////////
-#define SUBCMD62_BITEMREQ                      0xA2    /*SUBCMD62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
+#define SUBCMD62_ITEM_BOXDROP_REQ              0xA2    /*SUBCMD62_BOX_DROP_ITEMREQ BB/GC - Request item drop from box */
 #define SUBCMD62_TRADE                         0xA6    /* BB/GC - Player Trade function */
 #define SUBCMD62_UNKNOW_A8                     0xA8 // Gol Dragon actions
 #define SUBCMD62_UNKNOW_A9                     0xA9 // Barba Ray actions
@@ -54,12 +54,12 @@
 #define SUBCMD62_GUILD_INVITE1                 0xC1
 #define SUBCMD62_GUILD_INVITE2                 0xC2
 #define SUBCMD62_QUEST_REWARD_MESETA           0xC9
-#define SUBCMD62_QUEST_REWARD_ITEM             0xCA
+#define SUBCMD62_ITEM_QUEST_REWARD             0xCA
 #define SUBCMD62_GUILD_MASTER_TRANS1           0xCD
 #define SUBCMD62_GUILD_MASTER_TRANS2           0xCE
 #define SUBCMD62_BATTLE_CHAR_LEVEL_FIX         0xD0
 #define SUBCMD62_CH_GRAVE_DATA                 0xD1
-#define SUBCMD62_WARP_ITEM                     0xD6
+#define SUBCMD62_ITEM_WARP                     0xD6
 #define SUBCMD62_QUEST_BP_PHOTON_EX            0xDF    /* Blue Burst - black_paper_deal_photon_drop_exchange */
 #define SUBCMD62_QUEST_BP_REWARD               0xE0    /* Blue Burst - black_paper_deal_photon_drop_exchange */
 #define SUBCMD62_GANBLING                      0xE2
@@ -125,11 +125,11 @@
 #define SUBCMD60_SET_POS_24                    0x24    /* Used when starting a quest. */
 #define SUBCMD60_EQUIP                         0x25
 #define SUBCMD60_REMOVE_EQUIP                  0x26
-#define SUBCMD60_USE_ITEM                      0x27
+#define SUBCMD60_ITEM_USE                      0x27
 #define SUBCMD60_FEED_MAG                      0x28
-#define SUBCMD60_DELETE_ITEM                   0x29    /* Selling, deposit in bank, etc */
-#define SUBCMD60_DROP_ITEM                     0x2A    /* Drop full stack or non-stack item */
-#define SUBCMD60_TAKE_ITEM                     0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
+#define SUBCMD60_ITEM_DELETE                   0x29    /* Selling, deposit in bank, etc */
+#define SUBCMD60_ITEM_DROP                     0x2A    /* Drop full stack or non-stack item */
+#define SUBCMD60_ITEM_TAKE                     0x2B    /* Create inventory item (e.g. from tekker or bank withdrawal)*/
 #define SUBCMD60_SELECT_MENU                   0x2C    /* 选择菜单 */
 #define SUBCMD60_SELECT_DONE                   0x2D    /* 选择完成 */
 #define SUBCMD60_UNKNOW_2E                     0x2E
@@ -189,7 +189,7 @@
 #define SUBCMD60_UNKNOW_56                     0x56
 #define SUBCMD60_UNKNOW_57                     0x57
 #define SUBCMD60_LOBBY_ACTION                  0x58
-#define SUBCMD60_DEL_MAP_ITEM                  0x59    /* Sent by leader when item picked up */
+#define SUBCMD60_ITEM_DELETE_IN_MAP            0x59    /* Sent by leader when item picked up */
 #define SUBCMD60_UNKNOW_5A                     0x5A
 
 // 6x5B: Invalid subcommand
@@ -202,7 +202,7 @@
 #define SUBCMD60_ITEM_DROP_REQ_ENEMY           0x60 // Request for item drop (handled by the server on BB)
 #define SUBCMD60_LEVEL_UP_REQ                  0x61
 #define SUBCMD60_UNKNOW_62                     0x62
-#define SUBCMD60_DESTROY_GROUND_ITEM           0x63    /* Sent when game inventory is full */
+#define SUBCMD60_ITEM_GROUND_DESTROY           0x63    /* Sent when game inventory is full */
 #define SUBCMD60_UNKNOW_64                     0x64
 #define SUBCMD60_UNKNOW_65                     0x65
 #define SUBCMD60_USE_STAR_ATOMIZER             0x66
@@ -294,26 +294,26 @@
 #define SUBCMD60_UNKNOW_BB                     0xBB   //process_subcommand_open_bank_bb
 #define SUBCMD60_BANK_INV                      0xBC    /* Blue Burst - bank inventory */
 #define SUBCMD60_UNKNOW_BD                     0xBD   //process_subcommand_bank_action_bb
-#define SUBCMD60_CREATE_ITEM                   0xBE    /* Blue Burst - create new inventory item */
+#define SUBCMD60_ITEM_CREATE                   0xBE    /* Blue Burst - create new inventory item */
 #define SUBCMD60_JUKEBOX                       0xBF    /* Episode III - Change background music */
 #define SUBCMD60_GIVE_EXP                      0xBF    /* Blue Burst - give experience points */
-#define SUBCMD60_SELL_ITEM                     0xC0
-#define SUBCMD60_DROP_SPLIT_ITEM               0xC3    /* Blue Burst - Drop part of stack coords */
+#define SUBCMD60_ITEM_SELL                     0xC0
+#define SUBCMD60_ITEM_DROP_SPLIT               0xC3    /* Blue Burst - Drop part of stack coords */
 #define SUBCMD60_SORT_INV                      0xC4    /* Blue Burst - Sort inventory */
 #define SUBCMD60_MEDIC                         0xC5    /* Blue Burst - Use the medical center */
 #define SUBCMD60_STEAL_EXP                     0xC6
 #define SUBCMD60_CHARGE_ACT                    0xC7
 #define SUBCMD60_EXP_REQ                       0xC8    /* Blue Burst - Request Experience */
-#define SUBCMD60_GUILD_EX_ITEM                 0xCC
+#define SUBCMD60_ITEM_EXCHANGE_GUILD           0xCC
 #define SUBCMD60_START_BATTLE_MODE             0xCF
 #define SUBCMD60_GALLON_AREA                   0xD2
 #define SUBCMD60_TRADE_DONE                    0xD4
-#define SUBCMD60_EX_ITEM                       0xD5
+#define SUBCMD60_ITEM_EXCHANGE                 0xD5
 #define SUBCMD60_PD_TRADE                      0xD7
 #define SUBCMD60_SRANK_ATTR                    0xD8   //为S级武器添加属性（尚未实现）  挑战模式
-#define SUBCMD60_EX_ITEM_MK                    0xD9   // Momoka Item Exchange  Momoka物品交换 
+#define SUBCMD60_ITEM_EXCHANGE_MOMOKA          0xD9   // Momoka Item Exchange  Momoka物品交换 
 #define SUBCMD60_PD_COMPARE                    0xDA
-#define SUBCMD60_UNKNOW_DB                     0xDB
+#define SUBCMD60_ITEM_EXCHANGE_IN_QUEST        0xDB
 #define SUBCMD60_UNKNOW_DC                     0xDC
 #define SUBCMD60_SET_EXP_RATE                  0xDD
 #define SUBCMD60_UNKNOW_DE                     0xDE

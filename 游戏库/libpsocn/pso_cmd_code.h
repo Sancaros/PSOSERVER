@@ -85,7 +85,7 @@
 #define PING_TYPE                       0x001D //Ping pong 心跳数据包
 #define LOBBY_INFO_TYPE                 0x001F
 
-#define ITEM_EXCHANGE_DONE              0x0023 // PSOBB 1.0 服务端 副指令发送 S->C 8字节
+#define ITEM_EXCHANGE_STATE             0x0023 // PSOBB 1.0 服务端 副指令发送 S->C 8字节
 
 
 

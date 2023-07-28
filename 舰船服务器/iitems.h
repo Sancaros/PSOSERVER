@@ -72,6 +72,7 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id);
 size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id);
 size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item);
 size_t find_iitem_pid(inventory_t* inv, iitem_t* item);
+size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item);
 size_t find_equipped_weapon(inventory_t* inv);
 size_t find_equipped_armor(inventory_t* inv);
 size_t find_equipped_mag(inventory_t* inv);

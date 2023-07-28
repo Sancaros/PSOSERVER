@@ -38,10 +38,10 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint
 int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_id);
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 单人获得物品 */
-int subcmd_send_bb_create_inv_item(ship_client_t* c, item_t item);
+int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amount);
 
 /* 0xBE SUBCMD60_CREATE_ITEM BB 发送给大厅玩家物品 用于SHOP类型的获取 */
-int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, bool send_to_src);
+int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amount, bool send_to_src);
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
 int subcmd_send_bb_create_tekk_item(ship_client_t* c);
@@ -75,6 +75,9 @@ int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount);
 
 /* 0xDD SUBCMD60_SET_EXP_RATE BB 设置游戏经验倍率 */
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
+
+/* 0xDB SUBCMD60_EXCHANGE_ITEM_IN_QUEST BB 任务中兑换物品 */
+int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount);
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
 int subcmd_send_bb_level(ship_client_t* dest);

@@ -1168,6 +1168,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
             iitem_data.tech = 0;
             iitem_data.flags = 0;
 
+            iitem_data.data.item_id = generate_item_id(l, src->client_id);
 
             /* Add the item to the client's inventory. */
             if (!add_iitem(src, &iitem_data))
@@ -1176,7 +1177,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
-    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, true);
+    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, 1, true);
 
     return subcmd_send_bb_del_map_item(src, pkt->area, iitem_data.data.item_id);
 }
@@ -1486,7 +1487,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_bb_delete_meseta(src, price, 0);
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, false);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, false);
 }
 
 int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
@@ -1610,7 +1611,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, true);
+    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, 1, true);
 
     /* 初始化临时鉴定的物品数据 */
     memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
@@ -1840,7 +1841,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 发送至房间中的客户端. */
-            return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, true);
+            return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);
         }
 
     default:
@@ -2007,7 +2008,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, true);
+        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, true);
     }
 }
 
@@ -2034,7 +2035,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, true);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, true);
 }
 
 int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
@@ -2360,10 +2361,10 @@ subcmd_handle_func_t subcmd62_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
     { SUBCMD62_GUILDCARD                 , sub62_06_dc, sub62_06_gc, NULL,        sub62_06_xb, sub62_06_pc, sub62_06_bb },
     { SUBCMD62_PICK_UP                   , sub62_5A_dc, sub62_5A_dc, sub62_5A_dc, sub62_5A_dc, sub62_5A_dc, sub62_5A_bb },
-    { SUBCMD62_ITEMREQ                   , sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_bb },
+    { SUBCMD62_ITEM_DROP_REQ             , sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_dc, sub62_60_bb },
     { SUBCMD62_BURST5                    , sub62_6F_dc, sub62_6F_dc, sub62_6F_dc, sub62_6F_dc, sub62_6F_dc, sub62_6F_bb },
     { SUBCMD62_BURST6                    , sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_dc, sub62_71_bb },
-    { SUBCMD62_BITEMREQ                  , sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_bb },
+    { SUBCMD62_ITEM_BOXDROP_REQ          , sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_dc, sub62_A2_bb },
     { SUBCMD62_TRADE                     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_A6_bb },
     { SUBCMD62_CHAIR_STATE               , sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_dc, sub62_AE_pc, sub62_AE_bb },
     { SUBCMD62_SHOP_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B5_bb },
@@ -2375,11 +2376,11 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_GUILD_INVITE1             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C1_bb },
     { SUBCMD62_GUILD_INVITE2             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C2_bb },
     { SUBCMD62_QUEST_REWARD_MESETA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C9_bb },
-    { SUBCMD62_QUEST_REWARD_ITEM         , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CA_bb },
+    { SUBCMD62_ITEM_QUEST_REWARD         , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CA_bb },
     { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
     { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
     { SUBCMD62_BATTLE_CHAR_LEVEL_FIX     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D0_bb },
-    { SUBCMD62_WARP_ITEM                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
+    { SUBCMD62_ITEM_WARP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
     { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },
 };

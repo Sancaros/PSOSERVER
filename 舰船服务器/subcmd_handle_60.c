@@ -3800,6 +3800,71 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
 
 }
 
+static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_item_exchange_momoka_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发任务指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    //if (pkt->hdr.pkt_len != LE16(0x0040) || pkt->shdr.size != 0xAA) {
+    //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+    //        src->guildcard, pkt->shdr.type);
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+    DBG_LOG("sub60_D9_bb 数据包大小 0x%04X SIZE 0x%04X", pkt->hdr.pkt_len, pkt->shdr.size);
+
+    iitem_t compare_item = { 0 };
+    compare_item.data = pkt->compare_item;
+    uint32_t compare_item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &compare_item);
+
+    if (!compare_item_id) {
+
+        send_bb_item_exchange_state(src, 0x00000001);
+    }
+    else {
+
+        iitem_t item = remove_iitem(src, compare_item_id, 1, src->version != CLIENT_VERSION_BB);
+        if (&item == NULL) {
+            ERR_LOG("兑换 %d ID 0x%04X 失败", 1, compare_item_id);
+            return -1;
+        }
+
+        subcmd_send_bb_exchange_item_in_quest(src, compare_item_id, 1);
+
+        subcmd_send_bb_destroy_item(src, compare_item_id, 1);
+
+        iitem_t add_item;
+        memset(&add_item, 0, PSOCN_STLENGTH_IITEM);
+
+        add_item.present = LE16(0x0001);
+        add_item.tech = 0;
+        add_item.flags = 0;
+
+        add_item.data = pkt->add_item;
+        add_item.data.item_id = generate_item_id(l, src->client_id);
+
+        if (!add_iitem(src, &add_item)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                src->guildcard);
+            return -1;
+        }
+
+        subcmd_send_lobby_bb_create_inv_item(src, add_item.data, 1, true);
+
+        return send_bb_item_exchange_state(src, 0x00000000);
+    }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 // 定义函数指针数组
 subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 00 - 0F                      DC           GC           EP3          XBOX         PC           BB
@@ -3830,10 +3895,10 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SET_POS_24                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_24_bb },
     { SUBCMD60_EQUIP                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },
     { SUBCMD60_REMOVE_EQUIP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },
-    { SUBCMD60_USE_ITEM                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },
+    { SUBCMD60_ITEM_USE                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },
     { SUBCMD60_FEED_MAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
-    { SUBCMD60_DELETE_ITEM                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },
-    { SUBCMD60_DROP_ITEM                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },
+    { SUBCMD60_ITEM_DELETE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },
+    { SUBCMD60_ITEM_DROP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },
     { SUBCMD60_SELECT_MENU                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2C_bb },
     { SUBCMD60_SELECT_DONE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2D_bb },
     { SUBCMD60_HIT_BY_ENEMY               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },
@@ -3874,7 +3939,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
-    { SUBCMD60_DESTROY_GROUND_ITEM        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
+    { SUBCMD60_ITEM_GROUND_DESTROY        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
     { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
     { SUBCMD60_CREATE_ENEMY_SET           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
     { SUBCMD60_CREATE_PIPE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
@@ -3923,19 +3988,19 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_CHAIR_MOVE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
     //cmd_type C0 - CF                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SELL_ITEM                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
-    { SUBCMD60_DROP_SPLIT_ITEM            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C3_bb },
+    { SUBCMD60_ITEM_SELL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C0_bb },
+    { SUBCMD60_ITEM_DROP_SPLIT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C3_bb },
     { SUBCMD60_SORT_INV                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C4_bb },
     { SUBCMD60_MEDIC                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C5_bb },
     { SUBCMD60_STEAL_EXP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C6_bb },
     { SUBCMD60_CHARGE_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C7_bb },
     { SUBCMD60_EXP_REQ                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_C8_bb },
-    { SUBCMD60_GUILD_EX_ITEM              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
+    { SUBCMD60_ITEM_EXCHANGE_GUILD        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CC_bb },
     { SUBCMD60_START_BATTLE_MODE          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_CF_bb },
 
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
-    { SUBCMD60_EX_ITEM_MK                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_unimplement_bb },
+    { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
 };
 
 /* 处理BB 0x60 数据包. */

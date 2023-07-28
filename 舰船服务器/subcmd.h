@@ -3090,16 +3090,16 @@ struct G_AddSRankWeaponSpecial_BB_6xD8 {
 } PACKED;
 
 // 0xD9: Momoka Item Exchange  MomokaŒÔ∆∑Ωªªª
-typedef struct subcmd_bb_MomokaItemExchange_BB_6xD9 {
+typedef struct subcmd_bb_item_exchange_momoka {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    item_t unknown_a1;
-    item_t unknown_a2;
+    item_t compare_item;
+    item_t add_item;
     uint32_t unknown_a3;
     uint32_t unknown_a4;
     uint16_t unknown_a5;
     uint16_t unknown_a6;
-} PACKED subcmd_bb_MomokaItemExchange_BB_6xD9_t;
+} PACKED subcmd_bb_item_exchange_momoka_t;
 
 // 0xDA: Upgrade weapon attribute (BB; handled by server)
 // The client sends this when it executes an F957 or F958 quest opcode.
@@ -3116,13 +3116,13 @@ struct G_UpgradeWeaponAttribute_BB_6xDA {
 } PACKED;
 
 // 0xDB: Exchange item in quest (BB)
-typedef struct subcmd_bb_UNKNOW_0xDB {
+typedef struct subcmd_bb_item_exchange_in_quest {
     bb_pkt_hdr_t hdr;
     params_hdr_t shdr;
+    uint32_t unknown_a3;
     uint32_t item_id;
     uint32_t amount;
-    uint32_t unknown_a3;
-} PACKED subcmd_bb_UNKNOW_0xDB_t;
+} PACKED subcmd_bb_item_exchange_in_quest_t;
 
 // 0xDC: Saint-Million boss actions (BB)
 typedef struct subcmd_bb_UNKNOW_0xDC {

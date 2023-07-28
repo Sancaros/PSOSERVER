@@ -385,6 +385,24 @@ size_t find_iitem_pid(inventory_t* inv, iitem_t* item) {
     return -1;
 }
 
+size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item) {
+    uint32_t pid = primary_identifier(&item->data);
+    size_t x;
+
+    for (x = 0; x < inv->item_count; x++) {
+        if (primary_identifier(&inv->iitems[x].data) == pid) {
+            return x;
+        }
+    }
+
+    ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
+    //for (x = 0; x < inv->item_count; x++) {
+    //    print_iitem_data(&inv->iitems[x], x, 5);
+    //}
+
+    return -1;
+}
+
 bool is_wrapped(item_t* this) {
     switch (this->datab[0]) {
     case ITEM_TYPE_WEAPON:

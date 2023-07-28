@@ -269,7 +269,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
             dp.hdr.pkt_type = GAME_COMMAND0_TYPE;
             dp.hdr.pkt_len = LE16(0x0010);
-            dp.shdr.type = SUBCMD60_DESTROY_GROUND_ITEM;
+            dp.shdr.type = SUBCMD60_ITEM_GROUND_DESTROY;
             dp.shdr.size = 0x03;
             dp.item_id = pkt->data.item.item_id;
 
@@ -1884,7 +1884,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
     //case SUBCMD60_CONDITION_REMOVE:
     //    break;
 
-        case SUBCMD60_TAKE_ITEM:
+        case SUBCMD60_ITEM_TAKE:
             rv = handle_take_item(c, (subcmd_take_item_t *)pkt);
             break;
 
@@ -1927,7 +1927,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_move(c, (subcmd_move_t *)pkt);
             break;
 
-        case SUBCMD60_DELETE_ITEM:
+        case SUBCMD60_ITEM_DELETE:
             rv = handle_delete_inv(c, (subcmd_destroy_item_t *)pkt);
             break;
 
@@ -1935,7 +1935,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_buy(c, (subcmd_buy_t *)pkt);
             break;
 
-        case SUBCMD60_USE_ITEM:
+        case SUBCMD60_ITEM_USE:
             rv = handle_use_item(c, (subcmd_use_item_t *)pkt);
             break;
 
@@ -2005,7 +2005,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_menu_req(c, pkt);
             break;
 
-        case SUBCMD60_DROP_ITEM:
+        case SUBCMD60_ITEM_DROP:
             rv = handle_drop_item(c, (subcmd_drop_item_t *)pkt);
             break;
 

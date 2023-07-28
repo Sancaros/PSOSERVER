@@ -312,7 +312,7 @@ int check_gc_online(ship_client_t* c, uint32_t target_gc);
 
 int send_bb_quest_state(ship_client_t* c);
 
-int send_bb_ex_item_done(ship_client_t* c, uint32_t done);
+int send_bb_item_exchange_state(ship_client_t* c, uint32_t done);
 
 /* 用于构建完整公会数据 */
 uint8_t* build_guild_full_data_pkt(ship_client_t* c);
