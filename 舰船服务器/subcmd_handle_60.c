@@ -3075,6 +3075,72 @@ static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_A3_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Episode2BossActions_6xA3_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //if (pkt->shdr.client_id != src->client_id) {
+    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_A4_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_OlgaFlowPhase1Actions_6xA4_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //if (pkt->shdr.client_id != src->client_id) {
+    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_A5_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_OlgaFlowPhase2Actions_6xA5_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //if (pkt->shdr.client_id != src->client_id) {
+    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_A8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gol_dragon_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3158,6 +3224,28 @@ static int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest,
         //DBG_LOG("SUBCMD60_CHAIR_MOVE %02X", pktb0->angle);
         break;
     }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6xAD_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //if (pkt->shdr.client_id != src->client_id) {
+    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3823,8 +3911,12 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type A0 - AF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_SAVE_PLAYER_ACT            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
+    { SUBCMD60_OFB_BOSS_ACT               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A3_bb },
+    { SUBCMD60_OFP_1_BOSS_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A4_bb },
+    { SUBCMD60_OFP_2_BOSS_ACT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A5_bb },
     { SUBCMD60_GDRAGON_ACT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A8_bb },
     { SUBCMD60_CHAIR_CREATE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
+    { SUBCMD60_OFP_2_SUB_BOSS_ACT         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AD_bb },
     { SUBCMD60_CHAIR_TURN                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_AB_AF_B0_bb },
 
     //cmd_type B0 - BF                      DC           GC           EP3          XBOX         PC           BB

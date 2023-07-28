@@ -273,12 +273,15 @@
 #define SUBCMD60_GAL_GRYPHON_ACT               0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
 #define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */
 #define SUBCMD60_SAVE_PLAYER_ACT               0xA1    /* Save player actions */
+#define SUBCMD60_OFB_BOSS_ACT                  0xA3    /* Olga Flow boss actions */
+#define SUBCMD60_OFP_1_BOSS_ACT                0xA4    /* Olga Flow phase 1 actions */
+#define SUBCMD60_OFP_2_BOSS_ACT                0xA5    /* Olga Flow phase 2 actions */
 #define SUBCMD60_GDRAGON_ACT                   0xA8    /* Gol Dragon special actions */
 #define SUBCMD60_UNKNOW_A9                     0xA9   // Barba Ray actions
 #define SUBCMD60_UNKNOW_AA                     0xAA   // Episode 2 boss actions
 #define SUBCMD60_CHAIR_CREATE                  0xAB   // 生成大厅座椅
 #define SUBCMD60_UNKNOW_AC                     0xAC
-#define SUBCMD60_UNKNOW_AD                     0xAD   // Olga Flow phase 2 subordinate boss actions
+#define SUBCMD60_OFP_2_SUB_BOSS_ACT            0xAD   // Olga Flow phase 2 subordinate boss actions
 #define SUBCMD62_CHAIR_STATE                   0xAE   // 向新进入大厅的玩家发送座椅状态
 #define SUBCMD60_CHAIR_TURN                    0xAF   // 旋转椅子朝向
 #define SUBCMD60_CHAIR_MOVE                    0xB0   // 移动椅子
