@@ -269,6 +269,8 @@ int db_get_b_records(uint32_t gc, uint8_t slot, battle_records_t* b_records);
 /* 更新BB角色挑战数据 */
 int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uint8_t slot, uint32_t flag);
 
+int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_records);
+
 
 
 

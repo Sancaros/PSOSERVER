@@ -3069,6 +3069,11 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色b_records数据", gc, slot);
     }
 
+    /* 从数据库中获取玩家角色的b_records数据 */
+    if (db_get_c_records(gc, slot, &bb_data->c_records)) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色c_records数据", gc, slot);
+    }
+
     /* 将数据发回舰船. */
     rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
 

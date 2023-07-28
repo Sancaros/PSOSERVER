@@ -22,11 +22,6 @@
 extern psocn_dbconn_t conn;
 
 #define TABLE CHARACTER_RECORDS_BATTLE
-//typedef struct battle_records {
-//    uint16_t place_counts[4];//8
-//    uint16_t disconnect_count;//2
-//    uint8_t unknown_a1[0x0E];//14
-//} PACKED battle_records_t;
 
 static int db_insert_b_records(battle_records_t* b_records, uint32_t gc, uint8_t slot) {
 

@@ -50,9 +50,8 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
         "battle0, battle1, battle2, battle3, "
         "battle4, battle5, battle6, "
 
-        "grave_team, grave_message, unk3, string, rank_title, "
+        "grave_team, grave_message, unk3, string, rank_title"
 
-        "data"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
 
@@ -137,17 +136,13 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->rank_title,
         12);
 
-    strcat(myquery, "', '");
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records,
-        PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-
     strcat(myquery, "')");
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法保存挑战数据表 %s (GC %" PRIu32 ", "
             "槽位 %" PRIu8 "):\n%s", TABLE, gc, slot,
             psocn_db_error(&conn));
+        SQLERR_LOG("语句 %s", myquery);
         return -1;
     }
 
@@ -198,6 +193,108 @@ int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uin
             return 0;
         }
     }
+
+    return 0;
+}
+
+int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_records) {
+    void* result;
+    char** row;
+    int i = 0, j;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT *"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "' "
+        "AND slot = '%" PRIu8 "'"
+        , TABLE
+        , gc
+        , slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+
+        SQLERR_LOG("未找到保存的角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    j = 2;
+
+    c_records->title_color = (uint16_t)strtoul(row[j], NULL, 16);
+    j++;
+
+    c_records->unknown_u0 = (uint16_t)strtoul(row[j], NULL, 16);
+    j++;
+
+    for (i = 0; i < 9; i++) {
+        c_records->times_ep1_online[i] = (uint32_t)strtoul(row[j], NULL, 10);
+        j++;
+    }
+
+    for (i = 0; i < 5; i++) {
+        c_records->times_ep2_online[i] = (uint32_t)strtoul(row[j], NULL, 10);
+        j++;
+    }
+
+    for (i = 0; i < 9; i++) {
+        c_records->times_ep1_offline[i] = (uint32_t)strtoul(row[j], NULL, 10);
+        j++;
+    }
+
+    c_records->grave_unk4 = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->grave_deaths = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    c_records->unknown_u4 = (uint16_t)strtoul(row[j], NULL, 16);
+    j++;
+
+    for (i = 0; i < 5; i++) {
+        c_records->grave_coords_time[i] = (uint32_t)strtoul(row[j], NULL, 10);
+        j++;
+    }
+
+    memcpy((char*)&c_records->grave_team, row[j], 20);
+    j++;
+
+    memcpy((char*)&c_records->grave_message, row[j], 32);
+    j++;
+
+    memcpy((char*)&c_records->unk3, row[j], 4);
+    j++;
+
+    memcpy((char*)&c_records->string, row[j], 18);
+    j++;
+
+    memcpy((char*)&c_records->rank_title, row[j], 12);
+    j++;
+
+    for (i = 0; i < 7; i++) {
+        c_records->battle[i] = (uint32_t)strtoul(row[j], NULL, 10);
+        j++;
+    }
+
+    psocn_db_result_free(result);
 
     return 0;
 }
