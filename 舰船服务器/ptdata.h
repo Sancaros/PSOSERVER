@@ -244,15 +244,73 @@ struct TableOffsets {
     /* 58 / 15024 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
 } PACKED;
 
-#ifndef _WIN32
-#else
-#pragma pack()
-#endif
+/* Entry in one of the ItemPT files. This version corresponds to the files that
+   were used in PSOv2. The names of the fields were taken from the above
+   structure. In the file itself, each of these fields is stored in
+   little-endian byte order. */
+typedef struct fpt_v2_entry {
+    int8_t weapon_ratio[12];                /* 0x0000 */
+    int8_t weapon_minrank[12];              /* 0x000C */
+    int8_t weapon_upgfloor[12];             /* 0x0018 */
+    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint8_t percent_pattern[23][5];         /* 0x0048 */
+    int8_t area_pattern[3][10];             /* 0x00BB */
+    int8_t percent_attachment[6][10];       /* 0x00D9 */
+    int8_t element_ranking[10];             /* 0x0115 */
+    int8_t element_probability[10];         /* 0x011F */
+    int8_t armor_ranking[5];                /* 0x0129 */
+    int8_t slot_ranking[5];                 /* 0x012E */
+    int8_t unit_level[10];                  /* 0x0133 */
+    uint8_t padding;                        /* 0x013D */
+    uint16_t tool_frequency[28][10];        /* 0x013E */
+    uint8_t tech_frequency[19][10];         /* 0x036E */
+    int8_t tech_levels[19][20];             /* 0x042C */
+    int8_t enemy_dar[100];                  /* 0x05A8 */
+    uint16_t enemy_meseta[100][2];          /* 0x060C */
+    int8_t enemy_drop[100];                 /* 0x079C */
+    uint16_t box_meseta[10][2];             /* 0x0800 */
+    uint8_t box_drop[7][10];                /* 0x0828 */
+    uint16_t padding2;                      /* 0x086E */
+    /* 0870 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0874 */ uint32_t subtype_base_table_offset;
+    /* 0878 */ uint32_t subtype_area_length_table_offset;
+    /* 087C */ uint32_t grind_prob_tables_offset;
+    /* 0880 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0884 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0888 */ uint32_t enemy_meseta_ranges_offset;
+    /* 088C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0890 */ uint32_t enemy_item_classes_offset;
+    /* 0894 */ uint32_t box_meseta_ranges_offset;
+    /* 0898 */ uint32_t bonus_value_prob_tables_offset;
+    /* 089C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 08A0 */ uint32_t bonus_type_prob_tables_offset;
+    /* 08A4 */ uint32_t special_mult_offset;
+    /* 08A8 */ uint32_t special_percent_offset;
+    /* 08AC */ uint32_t tool_class_prob_table_offset;
+    /* 08B0 */ uint32_t technique_index_prob_table_offset;
+    /* 08B4 */ uint32_t technique_level_ranges_offset;
+    int32_t armor_level;                    /* 0x08B8 */
+    /* 08BC */ uint32_t unit_maxes_offset;
+    /* 08D0 */ uint32_t box_item_class_prob_tables_offset;
+    /* 08D4 */ uint32_t unused_offset2;
+    /* 08D8 */ uint32_t unused_offset3;
+    /* 08DC */ uint32_t unused_offset4;
+    /* 08E0 */ uint32_t unused_offset5;
+    /* 08E4 */ uint32_t unused_offset6;
+    /* 08E8 */ uint32_t unused_offset7;
+    /* 08EC */ uint32_t unused_offset8;
+    /* 08F0 */ uint16_t unknown_f1[0x20];
+    /* 0920 */ uint32_t unknown_f1_offset;
+    /* 0924 */ uint32_t unknown_f2[3];
+    /* 0930 */ uint32_t offset_table_offset;
+    /* 0934 */ uint32_t unknown_f3[3];
+} PACKED fpt_v2_entry_t;
 
-#undef PACKED
-
-/* Clean (non-packed) version of the v3 ItemPT entry structure. */
-typedef struct pt_v3_entry {
+/* Entry in one of the ItemPT files. Mostly adapted from Tethealla... In the
+   file itself, each of these fields is stored in big-endian byter order.
+   Some of this data also comes from a post by Lee on the PSOBB Eden forums:
+   http://edenserv.net/forum/viewtopic.php?p=19305#p19305 */
+typedef struct fpt_v3_entry {
     int8_t weapon_ratio[12];                /* 0x0000 */
     int8_t weapon_minrank[12];              /* 0x000C */
     int8_t weapon_upgfloor[12];             /* 0x0018 */
@@ -273,8 +331,111 @@ typedef struct pt_v3_entry {
     int8_t enemy_drop[100];                 /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
+    uint16_t padding;                       /* 0x090E */
+    /* 0910 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0914 */ uint32_t subtype_base_table_offset;
+    /* 0918 */ uint32_t subtype_area_length_table_offset;
+    /* 091C */ uint32_t grind_prob_tables_offset;
+    /* 0920 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0924 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0928 */ uint32_t enemy_meseta_ranges_offset;
+    /* 092C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0930 */ uint32_t enemy_item_classes_offset;
+    /* 0934 */ uint32_t box_meseta_ranges_offset;
+    /* 0938 */ uint32_t bonus_value_prob_tables_offset;
+    /* 093C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 0940 */ uint32_t bonus_type_prob_tables_offset;
+    /* 0944 */ uint32_t special_mult_offset;
+    /* 0948 */ uint32_t special_percent_offset;
+    /* 094C */ uint32_t tool_class_prob_table_offset;
+    /* 0950 */ uint32_t technique_index_prob_table_offset;
+    /* 0954 */ uint32_t technique_level_ranges_offset;
     int32_t armor_level;                    /* 0x0958 */
-} pt_v3_entry_t;
+    /* 095C */ uint32_t unit_maxes_offset;
+    /* 0960 */ uint32_t box_item_class_prob_tables_offset;
+    /* 0964 */ uint32_t unused_offset2;
+    /* 0968 */ uint32_t unused_offset3;
+    /* 096C */ uint32_t unused_offset4;
+    /* 0970 */ uint32_t unused_offset5;
+    /* 0974 */ uint32_t unused_offset6;
+    /* 0978 */ uint32_t unused_offset7;
+    /* 097C */ uint32_t unused_offset8;
+    /* 0980 */ uint16_t unknown_f1[0x20];
+    /* 09C0 */ uint32_t unknown_f1_offset;
+    /* 09C4 */ uint32_t unknown_f2[3];
+    /* 09D0 */ uint32_t offset_table_offset;
+    /* 09D4 */ uint32_t unknown_f3[3];
+} PACKED fpt_v3_entry_t;
+
+/* Entry in one of the ItemPT files. Mostly adapted from Tethealla... In the
+   file itself, each of these fields is stored in big-endian byter order.
+   Some of this data also comes from a post by Lee on the PSOBB Eden forums:
+   http://edenserv.net/forum/viewtopic.php?p=19305#p19305
+   补充：完整结构来自newserv
+   */
+typedef struct fpt_bb_entry {
+    int8_t weapon_ratio[12];                /* 0x0000 */
+    int8_t weapon_minrank[12];              /* 0x000C */
+    int8_t weapon_upgfloor[12];             /* 0x0018 */
+    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint16_t percent_pattern[23][6];        /* 0x0048 */
+    int8_t area_pattern[3][10];             /* 0x015C */
+    int8_t percent_attachment[6][10];       /* 0x017A */
+    int8_t element_ranking[10];             /* 0x01B6 */
+    int8_t element_probability[10];         /* 0x01C0 */
+    int8_t armor_ranking[5];                /* 0x01CA */
+    int8_t slot_ranking[5];                 /* 0x01CF */
+    int8_t unit_level[10];                  /* 0x01D4 */
+    uint16_t tool_frequency[28][10];        /* 0x01DE */
+    uint8_t tech_frequency[19][10];         /* 0x040E */
+    int8_t tech_levels[19][20];             /* 0x04CC */
+    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint16_t enemy_meseta[100][2];          /* 0x06AC */
+    int8_t enemy_drop[100];                 /* 0x083C */
+    uint16_t box_meseta[10][2];             /* 0x08A0 */
+    uint8_t box_drop[7][10];                /* 0x08C8 */
+    uint16_t padding;                       /* 0x090E */
+    /* 0910 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0914 */ uint32_t subtype_base_table_offset;
+    /* 0918 */ uint32_t subtype_area_length_table_offset;
+    /* 091C */ uint32_t grind_prob_tables_offset;
+    /* 0920 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0924 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0928 */ uint32_t enemy_meseta_ranges_offset;
+    /* 092C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0930 */ uint32_t enemy_item_classes_offset;
+    /* 0934 */ uint32_t box_meseta_ranges_offset;
+    /* 0938 */ uint32_t bonus_value_prob_tables_offset;
+    /* 093C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 0940 */ uint32_t bonus_type_prob_tables_offset;
+    /* 0944 */ uint32_t special_mult_offset;
+    /* 0948 */ uint32_t special_percent_offset;
+    /* 094C */ uint32_t tool_class_prob_table_offset;
+    /* 0950 */ uint32_t technique_index_prob_table_offset;
+    /* 0954 */ uint32_t technique_level_ranges_offset;
+    int32_t armor_level;                    /* 0x0958 */
+    /* 095C */ uint32_t unit_maxes_offset;
+    /* 0960 */ uint32_t box_item_class_prob_tables_offset;
+    /* 0964 */ uint32_t unused_offset2;
+    /* 0968 */ uint32_t unused_offset3;
+    /* 096C */ uint32_t unused_offset4;
+    /* 0970 */ uint32_t unused_offset5;
+    /* 0974 */ uint32_t unused_offset6;
+    /* 0978 */ uint32_t unused_offset7;
+    /* 097C */ uint32_t unused_offset8;
+    /* 0980 */ uint16_t unknown_f1[0x20];
+    /* 09C0 */ uint32_t unknown_f1_offset;
+    /* 09C4 */ uint32_t unknown_f2[3];
+    /* 09D0 */ uint32_t offset_table_offset;
+    /* 09D4 */ uint32_t unknown_f3[3];
+} PACKED fpt_bb_entry_t;
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
 
 /* Clean (non-packed) version of the v2 ItemPT entry structure. */
 typedef struct pt_v2_entry {
@@ -298,8 +459,99 @@ typedef struct pt_v2_entry {
     int8_t enemy_drop[100];                 /* 0x079C */
     uint16_t box_meseta[10][2];             /* 0x0800 */
     uint8_t box_drop[7][10];                /* 0x0828 */
+    uint16_t padding2;                      /* 0x086E */
+    /* 0870 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0874 */ uint32_t subtype_base_table_offset;
+    /* 0878 */ uint32_t subtype_area_length_table_offset;
+    /* 087C */ uint32_t grind_prob_tables_offset;
+    /* 0880 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0884 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0888 */ uint32_t enemy_meseta_ranges_offset;
+    /* 088C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0890 */ uint32_t enemy_item_classes_offset;
+    /* 0894 */ uint32_t box_meseta_ranges_offset;
+    /* 0898 */ uint32_t bonus_value_prob_tables_offset;
+    /* 089C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 08A0 */ uint32_t bonus_type_prob_tables_offset;
+    /* 08A4 */ uint32_t special_mult_offset;
+    /* 08A8 */ uint32_t special_percent_offset;
+    /* 08AC */ uint32_t tool_class_prob_table_offset;
+    /* 08B0 */ uint32_t technique_index_prob_table_offset;
+    /* 08B4 */ uint32_t technique_level_ranges_offset;
     int32_t armor_level;                    /* 0x08B8 */
+    /* 08BC */ uint32_t unit_maxes_offset;
+    /* 08D0 */ uint32_t box_item_class_prob_tables_offset;
+    /* 08D4 */ uint32_t unused_offset2;
+    /* 08D8 */ uint32_t unused_offset3;
+    /* 08DC */ uint32_t unused_offset4;
+    /* 08E0 */ uint32_t unused_offset5;
+    /* 08E4 */ uint32_t unused_offset6;
+    /* 08E8 */ uint32_t unused_offset7;
+    /* 08EC */ uint32_t unused_offset8;
+    /* 08F0 */ uint16_t unknown_f1[0x20];
+    /* 0920 */ uint32_t unknown_f1_offset;
+    /* 0924 */ uint32_t unknown_f2[3];
+    /* 0930 */ uint32_t offset_table_offset;
+    /* 0934 */ uint32_t unknown_f3[3];
 } pt_v2_entry_t;
+
+/* Clean (non-packed) version of the v3 ItemPT entry structure. */
+typedef struct pt_v3_entry {
+    int8_t weapon_ratio[12];                /* 0x0000 */
+    int8_t weapon_minrank[12];              /* 0x000C */
+    int8_t weapon_upgfloor[12];             /* 0x0018 */
+    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint16_t percent_pattern[23][6];        /* 0x0048 */
+    int8_t area_pattern[3][10];             /* 0x015C */
+    int8_t percent_attachment[6][10];       /* 0x017A */
+    int8_t element_ranking[10];             /* 0x01B6 */
+    int8_t element_probability[10];         /* 0x01C0 */
+    int8_t armor_ranking[5];                /* 0x01CA */
+    int8_t slot_ranking[5];                 /* 0x01CF */
+    int8_t unit_level[10];                  /* 0x01D4 */
+    uint16_t tool_frequency[28][10];        /* 0x01DE */
+    uint8_t tech_frequency[19][10];         /* 0x040E */
+    int8_t tech_levels[19][20];             /* 0x04CC */
+    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint16_t enemy_meseta[100][2];          /* 0x06AC */
+    int8_t enemy_drop[100];                 /* 0x083C */
+    uint16_t box_meseta[10][2];             /* 0x08A0 */
+    uint8_t box_drop[7][10];                /* 0x08C8 */
+    uint16_t padding;                       /* 0x090E */
+    /* 0910 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0914 */ uint32_t subtype_base_table_offset;
+    /* 0918 */ uint32_t subtype_area_length_table_offset;
+    /* 091C */ uint32_t grind_prob_tables_offset;
+    /* 0920 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0924 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0928 */ uint32_t enemy_meseta_ranges_offset;
+    /* 092C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0930 */ uint32_t enemy_item_classes_offset;
+    /* 0934 */ uint32_t box_meseta_ranges_offset;
+    /* 0938 */ uint32_t bonus_value_prob_tables_offset;
+    /* 093C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 0940 */ uint32_t bonus_type_prob_tables_offset;
+    /* 0944 */ uint32_t special_mult_offset;
+    /* 0948 */ uint32_t special_percent_offset;
+    /* 094C */ uint32_t tool_class_prob_table_offset;
+    /* 0950 */ uint32_t technique_index_prob_table_offset;
+    /* 0954 */ uint32_t technique_level_ranges_offset;
+    int32_t armor_level;                    /* 0x0958 */
+    /* 095C */ uint32_t unit_maxes_offset;
+    /* 0960 */ uint32_t box_item_class_prob_tables_offset;
+    /* 0964 */ uint32_t unused_offset2;
+    /* 0968 */ uint32_t unused_offset3;
+    /* 096C */ uint32_t unused_offset4;
+    /* 0970 */ uint32_t unused_offset5;
+    /* 0974 */ uint32_t unused_offset6;
+    /* 0978 */ uint32_t unused_offset7;
+    /* 097C */ uint32_t unused_offset8;
+    /* 0980 */ uint16_t unknown_f1[0x20];
+    /* 09C0 */ uint32_t unknown_f1_offset;
+    /* 09C4 */ uint32_t unknown_f2[3];
+    /* 09D0 */ uint32_t offset_table_offset;
+    /* 09D4 */ uint32_t unknown_f3[3];
+} pt_v3_entry_t;
 
 /* Clean (non-packed) version of the BB ItemPT entry structure. */
 typedef struct pt_bb_entry {
@@ -323,7 +575,40 @@ typedef struct pt_bb_entry {
     int8_t enemy_drop[100];                 /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
+    uint16_t padding;                       /* 0x090E */
+    /* 0910 */ uint32_t base_weapon_type_prob_table_offset;
+    /* 0914 */ uint32_t subtype_base_table_offset;
+    /* 0918 */ uint32_t subtype_area_length_table_offset;
+    /* 091C */ uint32_t grind_prob_tables_offset;
+    /* 0920 */ uint32_t armor_shield_type_index_prob_table_offset;
+    /* 0924 */ uint32_t armor_slot_count_prob_table_offset;
+    /* 0928 */ uint32_t enemy_meseta_ranges_offset;
+    /* 092C */ uint32_t enemy_type_drop_probs_offset;
+    /* 0930 */ uint32_t enemy_item_classes_offset;
+    /* 0934 */ uint32_t box_meseta_ranges_offset;
+    /* 0938 */ uint32_t bonus_value_prob_tables_offset;
+    /* 093C */ uint32_t nonrare_bonus_prob_spec_offset;
+    /* 0940 */ uint32_t bonus_type_prob_tables_offset;
+    /* 0944 */ uint32_t special_mult_offset;
+    /* 0948 */ uint32_t special_percent_offset;
+    /* 094C */ uint32_t tool_class_prob_table_offset;
+    /* 0950 */ uint32_t technique_index_prob_table_offset;
+    /* 0954 */ uint32_t technique_level_ranges_offset;
     int32_t armor_level;                    /* 0x0958 */
+    /* 095C */ uint32_t unit_maxes_offset;
+    /* 0960 */ uint32_t box_item_class_prob_tables_offset;
+    /* 0964 */ uint32_t unused_offset2;
+    /* 0968 */ uint32_t unused_offset3;
+    /* 096C */ uint32_t unused_offset4;
+    /* 0970 */ uint32_t unused_offset5;
+    /* 0974 */ uint32_t unused_offset6;
+    /* 0978 */ uint32_t unused_offset7;
+    /* 097C */ uint32_t unused_offset8;
+    /* 0980 */ uint16_t unknown_f1[0x20];
+    /* 09C0 */ uint32_t unknown_f1_offset;
+    /* 09C4 */ uint32_t unknown_f2[3];
+    /* 09D0 */ uint32_t offset_table_offset;
+    /* 09D4 */ uint32_t unknown_f3[3];
 } pt_bb_entry_t;
 
 static int have_v2pt = 0;
@@ -339,10 +624,10 @@ static pt_bb_entry_t bb_ptdata[5][4][10];
 int pt_read_v2(const char *fn);
 
 /* Read the ItemPT data from a v3-style (ItemPT.gsl) file. */
-int pt_read_v3(const char *fn/*, int bb*/);
+int pt_read_v3(const char *fn);
 
 /* Read the ItemPT data from a bb-style (ItemPT.gsl) file. */
-int pt_read_bb(const char* fn/*, int bb*/);
+int pt_read_bb(const char* fn);
 
 /* Did we read in a v2 ItemPT? */
 int pt_v2_enabled(void);
