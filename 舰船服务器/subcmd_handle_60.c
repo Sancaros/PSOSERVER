@@ -1014,6 +1014,12 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 
     i = find_iitem_index(inv, pkt->item_id);
 
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (i == -1) {
+        ERR_LOG("GC %" PRIu32 " 装备无效物品!", src->guildcard);
+        return -1;
+    }
+
     if (inv->iitems[i].data.item_id == pkt->item_id) {
         inv->iitems[i].flags &= LE32(0xFFFFFFF7);
 
@@ -1071,6 +1077,12 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
         inv = &src->mode_pl->bb.inv;
 
     index = find_iitem_index(inv, pkt->item_id);
+
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (index == -1) {
+        ERR_LOG("GC %" PRIu32 " 使用无效物品!", src->guildcard);
+        return -1;
+    }
 
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
@@ -3457,6 +3469,12 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 
     i = find_iitem_index(&player->inv, pkt->item_id);
 
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (i == -1) {
+        ERR_LOG("GC %" PRIu32 " 售卖无效物品!", src->guildcard);
+        return -1;
+    }
+
     uint32_t shop_price = get_bb_shop_price(&player->inv.iitems[i]) * pkt->sell_amount;
 
     player->disp.meseta = MIN(
@@ -3558,6 +3576,13 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             int index = find_iitem_index(&player->inv, pkt->item_ids[x]);
+
+            /* 如果找不到该物品，则将用户从船上推下. */
+            if (index == -1) {
+                ERR_LOG("GC %" PRIu32 " 整理无效物品!", src->guildcard);
+                return -1;
+            }
+
             sorted.iitems[x] = player->inv.iitems[index];
         }
     }
@@ -3971,6 +3996,8 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t compare_item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &compare_item);
 
     if (compare_item_id == -1) {
+
+        ERR_LOG("GC %" PRIu32 " 没有兑换卷物品!", src->guildcard);
 
         send_bb_item_exchange_state(src, 0x00000001);
     }

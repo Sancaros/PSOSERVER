@@ -2204,6 +2204,13 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         iitem_t ex_pc = { 0 };
         ex_pc.data.datal[0] = BBItem_Photon_Crystal;
         size_t item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &ex_pc);
+
+        /* 如果找不到该物品，则将用户从船上推下. */
+        if (item_id == -1) {
+            ERR_LOG("GC %" PRIu32 " 没有兑换所需物品!", src->guildcard);
+            return -1;
+        }
+
         iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
         if(&item == NULL)
             l->drops_disabled = true;
