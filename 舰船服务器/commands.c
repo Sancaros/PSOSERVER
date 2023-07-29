@@ -1553,7 +1553,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
 }
 
 static void dumpinv_internal(ship_client_t *src) {
-    char name[64];
+    //char name[64];
     psocn_v1v2v3pc_char_t* player_v1 = { 0 };
     psocn_bb_char_t* player_bb = { 0 };
     int i;
@@ -1566,8 +1566,9 @@ static void dumpinv_internal(ship_client_t *src) {
             player_v1 = &src->mode_pl->nobb;
 
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", src->pl->v1.character.dress_data.guildcard_str.string,
-              src->guildcard, src->sec_data.slot);
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
+            get_player_name(src->pl, src->version, false), 
+            src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
         ITEM_LOG("背包物品数量: %u", player_v1->inv.item_count);
 
@@ -1582,10 +1583,12 @@ static void dumpinv_internal(ship_client_t *src) {
         if (src->mode)
             player_bb = &src->mode_pl->bb;
 
-        istrncpy16_raw(ic_utf16_to_gb18030, name, &src->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_CHAR_NAME_WLENGTH);
+        /*istrncpy16_raw(ic_utf16_to_gb18030, name, &src->bb_pl->character.name.char_name[0], 64,
+            BB_CHARACTER_CHAR_NAME_WLENGTH);*/
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", name, src->guildcard, src->sec_data.slot);
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
+            get_player_name(src->pl, src->version, false), 
+            src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
         ITEM_LOG("背包物品数量: %u", player_bb->inv.item_count);
 
