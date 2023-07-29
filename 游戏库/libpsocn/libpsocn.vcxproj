@@ -35,6 +35,7 @@
     <ClInclude Include="pso_struct_item.h" />
     <ClInclude Include="pso_struct_length.h" />
     <ClInclude Include="pso_struct_level_stats.h" />
+    <ClInclude Include="pso_struct_techniques.h" />
     <ClInclude Include="pso_version.h" />
     <ClInclude Include="sg_packets.h" />
     <ClInclude Include="sg_packetlist.h" />

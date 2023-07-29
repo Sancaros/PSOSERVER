@@ -97,6 +97,9 @@
     <ClInclude Include="pso_crash_handle.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pso_struct_techniques.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_menu.c">

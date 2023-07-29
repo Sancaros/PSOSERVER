@@ -617,7 +617,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             ERR_LOG("technique level too high");
             return -1;
         }
-        player->techniques[item.data.datab[4]] = item.data.datab[2];
+        player->tech.all[item.data.datab[4]] = item.data.datab[2];
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030A00) { // Grinder

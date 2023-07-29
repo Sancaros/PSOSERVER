@@ -1,0 +1,474 @@
+Phantasy Star Online - Blue Burst
+
+Cheat Codes:
+------------
+Submitted by: conner54
+
+Control loading screen:
+-----------------------
+When the sparkles appear in a loading screen, press the Cursor Keys to move it 
+around. 
+
+
+Photon Chair:
+-------------
+Press [Down] + [Left] + [Right] while in a lobby to create a Photon Chair. Press 
+A or D to turn the chair, [Down] to move it forward, or [Right] to get out of it.
+
+
+Ranger Wall:
+------------
+The Ranger Wall is available in Galleon's shop after you have 300 points if you are 
+playing with a Ranger class character. 
+
+
+Dressing Room:
+--------------
+The Dressing Room is available after you have 3,000 points.
+
+
+Al Rappy or Pal Rappy:
+----------------------
+To find a Al Rappy or Pal Rappy(Pal Rappy is found in Ultimate)go to first
+person mode and go to side story at the hunters guild then go to The Fake 
+in Yellow defaet all the rappys until u get to the part when u see the 
+weird rappy for the second time if u dont see a Al Rappy or Pal Rappy dont
+kill the rappys instead use a telepipe go through and go back in repeat 
+until u see a Al Rappy or Pal Rappy.
+
+
+Akiko's Frying Pan:
+-------------------
+First, begin your single player quests until you are able to do the "Secret 
+Delivery" quest. Start this quest and while on Pioneer 2, talk to a man near
+the hospital (he'll mention something about WEAPONS). When prompted to answer
+his questions, select "!!" as your answers. Finish the quest to have this 
+conversation registered. Now you will need to find four different people who
+mention WEAPONS in four different missions, which are Gran Squall, Lost Bride,
+Claiming a Stake, and the Value of Money, to gain their approval and be able 
+to acquire this weapon. Also, you have to beat these quests and the rest of 
+the quests to gain access to older quests. Once you have acquired the approval 
+of these four specific characters, go back to the "Secret Delivery" quest. 
+Talk to the same man you talked to before and he'll tell you to talk to the
+WEAPON leader. She's located in the weapon shop. After you talk to her, you
+will acquire the rare, TP-friendly weapon, Akiko's Frying Pan.
+
+
+Unlock Levels:
+--------------
+Unlike other versions, you have to do quests to unlock other levels. Go to 
+the Principals Office, then talk to Moloka (the first to the left of the 
+principal, then you can do these quests (1, 2, 3, 4 quests are in Episode 1.
+ 5, 6, 7, 8 quests are in Episode 2. Some info may be inaccurate)
+
+Unlockable                                       How to Unlock
+-------------------------------------------------------------------------
+Beat Normal/Hard/Very Hard/Ultimate Episode 1  - Do all quests starting with 4.
+Beat Normal/Hard/Very Hard/Ultimate Episode 2  - Do all quests starting with 8.
+Normal/Hard/Very Hard/Ultimate Caves           - Do all quests starting with 1.
+Normal/Hard/Very Hard/Ultimate Central Control - Do all quests starting with 6.
+Normal/Hard/Very Hard/Ultimate Mines           - Do all quests starting with 2.
+Normal/Hard/Very Hard/Ultimate Ruins           - Do all quests starting with 3.
+Normal/Hard/Very Hard/Ultimate Seabed          - Do all quests starting with 7.
+Normal/Hard/Very Hard/Ultimate Spaceship       - Do all quests starting with 5.
+
+
+Load Screen Trick:
+------------------
+When you are in a loading screen with the sparkles (seen when you are connecting 
+to online mode, when you enter lobby or you leave pioneer 2), use the directional
+buttons to move the little sparkling thing around. Good fun when you're loading 
+slow.
+
+
+Easily go past traps and enemies:
+---------------------------------
+You know how annoying traps in the hallways can be (especially in Caves). When 
+you get to one of these situations, or whenever there are traps around, press 
+[F12]. This will bring up the menu, but you will be able to run past traps and/or
+enemies without slowing down.
+
+
+Hidden item:
+------------
+When playing in Gallon's shop, if you get a total of 300-310 pts, you can talk 
+to Gallon and get a Ranger wall(When playing with a Ranger class) or Force wall
+(When playing with a Force class).
+
+
+Raise your level even more:
+---------------------------
+To raise your level quickly you must take the Quest: Towards the Future. You will
+run series of areas and will have to fight all 4 bosses including Dark Falz's 3rd
+Form (only in Hard, V.Hard & Ultimate Difficulty).
+If you're too weak and can't even hit the enemy, use a gun or a technique and run 
+away hile a stronger player slays the monster you hit. Don't worry, everyone gets 
+EXP even they deal 0 Damage to the enemy. Techniques always hit successfully (Megid
+doesn't really). If you're an Android use traps or guns. It is also recommended you
+have a Mag to raise DEF(DFP), ATK(ATP), DEX(ATA) & MIND(MST).
+NOTE: If you raise your Mag(s) a lot you will able to learn higher Techniques and 
+use more powerful weapons. And especially your defense.
+
+
+Giratablulu:
+------------
+These things can only be found in Subterranean Desert 2 & 3 in PSOBB Episode 4. You'll
+find it most annoying: This thing can change it's elements to Thunder, Fire & Ice.
+If you stray too far it will try to pull you right to it! Whenever you hit it, you were
+able to prevent from being Shocked/Frozen. The claws are its protection so you may want
+to attack in the center. It's not a good idea to do this alone but in a party it is. 
+Make sure you have a high-leveled partner with you to slay it for you. (Don't forget 
+to hit and run so you can get EXP! And make sure you survive or you won't get any.)
+
+
+ALT Actions:
+------------
+These button codes only works in the lobby or anywhere else (except for ALT+U or I).
+
+[ALT] + A-Z    - (Greeting Actions)
+[ALT] + 1-0    - (Move/Flip Actions)
+[ALT] + F1-F12 - (Combat Actions, will not set off weapons in lobby)
+
+By pressing [ALT] with these keys you are able to make cool commands.
+NOTE: Depending on the gender they have different commands, so some may not do what 
+says below. Or also known as "Stylish".
+
+Example shown below:
+
+PS: The reason why you are unable to execute buttons "ALT+U or I" in other places 
+because they're chair actions and they only work in the Lobby. The chair color matches
+your ID Section Color. 
+
+Code     Effect
+---------------------
+[ALT]+M  - Play Dead
+[ALT]+U  - Chair 1
+[ALT]+I  - Chair 2
+[ALT]+N	 - P.U. (Bad smell)
+[ALT]+F1 - SMASH HIT (Fall on ground hard)
+[ALT]+2  - Jump flip backwards
+[ALT]+F6 - Kick
+
+
+Character Status:
+-----------------
+These are stats for your character:
+
+LVL=Level - Displays current Level (Can use various of ARMOR and SHIELDS with required LVL)
+ATP=Attack Points - Shows strength of a character (Can use various of SWORDS with required ATP)
+DFP=Defense Points - Gain resistance of enemy's attacks
+MST=Mental Strength - Shows how much Intelligence (Can use various of TECHNIQUES and CANES
+with required MST)
+ATA=Attack Accuracy - Shows you can hit the enemy or not (Can use various of GUNS with
+required ATA)
+EVA=Evasion = Avoid enemy attacks
+LCK=Luck - More likely to get Critical Hits (Not for finding Rare Items)
+
+~ELEMENT RESISTANCE~
+Here in this section shows how much you can resist of that element.
+
+EFR=Fire Element
+EIC=Ice Element
+ETH=Thunder Element
+ELT=Light Element
+EDK=Dark Element
+
+The more resistance you get the more you will soon to be immune to them.
+
+NOTE: Each character has its own specialty such as a HUcast has high ATP or a FOnewaerl
+has high and power MST. Not all characters can use Swords, Guns or Canes but some of the
+weapons classes you can use and some you cannot. Be sure to check its availability of the
+Weapon/Armor you have otherwise it's useless (unless you want to transfer items to your
+other character). If you see the (X) on the item it means you can't use them in a certain
+class (that's mostly for androids).
+
+
+Limited Games:
+--------------
+When you tried to make a party, and you got a note that says "Limited of games has been
+accomplished. Please join a party" it means that people already made their party and there
+are too many of them. It also means you either have to join the party or wait.
+
+
+How to make your Mag into Nidra:
+--------------------------------
+This Nidra will be created on a ranger of any section-a type section id. This Nidra will
+can have three different major stat areas which are power, mind, and dex. The final mag
+will have the photon blasts: Mylla & Youlla, Estilla, and Pilla.
+
+-=Step One=-
+You should have a level 5 baby mag that is the color of your desired Nidra. Feed the baby
+mag antidotes until it evolves into a Kalki with the stats 5/1/4/0 and the photon blast
+Estilla. It should have a syncro of 30 and an I.Q. of 30. You should have spend 15 minutes
+feeding and 600 meseta.
+
+-=Step Two=-
+Take your new Kalki and feed it antidotes until it evolves into Mitra at level 35. Your
+new Mitra should have the stats 5/7/23/0 and the photon blasts Estilla and Pilla. The
+Mitra should have a syncro of 30 and an I.Q. of 157. At this point you should have spent
+225 Minutes and 8220 meseta.
+
+-=Step Three=-
+Make sure at this point you hand over you Mitra to a type-b section id ranger. Feed your
+new Mitra antiparalysis until it evolves into Kaitabha at level 50. It should now have the
+stats 5/7/38/0 and the photon blasts Estilla, Pilla, and Mylla & Youlla. The Kaitabha
+should have a syncro of 120 and an I.Q. of 157. You should have now spent 350 minutes and
+12720 meseta on the mag thus far.
+
+-=Step Four=-
+At this point you will want to feed the Kaitabha antidotes until dex equals 50 (5/7/50/0).
+It should now have a syncro of 120 and an I.Q. of 82. You should have now spent 475
+minutes and 17220 meseta.
+
+-=Step Five=-
+Now you should alternate between monomates (increase power, decrease def) and sol
+atomizers (increase power, increase def) until power equals 49.
+
+-=Step Six=-
+Your now at the final step. Give the Kaitabha to a Virdia, Blueful, Redria, or Whitill
+FOmar and feed the mag the last monomate or sol atomizer and you should have a Nidra with
+the stats (5/45/50/0).
+
+-=Step Seven=-
+At this point you can use monomates to increase power (5/145/50/0). Monofluids to increase
+mind (5/45/50/100). Antidotes to increase dex (5/45/150/0).
+
+
+Mag Feeding Guide:
+------------------
+It appears a lot of people are having trouble getting a Rare Mag by feeding. So I'm just
+gonna see how it works out just fine.
+
+In this guide I will be talking about Mags having stats DEF+DEX=POW+MIND. Only if you have
+IDs of Redria, Bluefull, Whitill, & Viridia.
+
+NOTE: Everyone can get those stat but it is recommended to pass the Mags on a Type B
+Ranger (Greenill, Oran, Bluefull, Pinkal, & Whitill) for good PBs (Photon Blasts).
+
+Please keep this in mind: If you raise a stat (DEF, POW, DEX and/or MIND) it will raise
+your base stats. But, be warned how much does it raise by. As you can see, DEF and DEX
+will not help your character much. And remember that you are NOT supposed to raise its DEF
+since it only adds 1 Base DFP.
+
+DEF: Adds 1 Base DFP
+POW: Adds 2 Base ATP
+DEX: Adds 0.5 Base ATA
+MIND: Adds 2 Base MST
+~-------~
+POWER MAG FEEDING
+
+Before Starting: Please have yourself a new fresh Baby Mag (one with only 5 DEF and
+nothing else). And create a Type B Ranger for the best Photon Blasts. And now lets start!
+
+POWER MAGS
+Step 1: Your Ranger (any Ranger for the first two forms) must feed your Baby Mag plain
+Antidotes until it evolves into Kalki (PB "Estilla", Dolphin, piercing attack).
+
+Step 2: Keep feeding it Antidotes until it becomes Mitra (PB "Pilla", Sage,
+destroy nearby enemies).
+
+Step 3: Now pass the Mitra to a Type B Ranger (Greenill, Oran, Bluefull, Pinkal, or
+Whitill). Now this time feed it only Antiparalysis until it becomes Kaitabha (PB
+"Mylla&Youlla", Twins, casts Shifta&Deband).
+
+Step 4: Now for the hardest part... You will now take responsibility of your Mag you're
+working on. Feed your Mag Antidotes until DEX is 45.
+
+Step 5: Once DEX is 45, feed your Mag only Dimates until POW is 49. Why Well, here's a
+surprise... Now it's your choice to pass on any class, but only IDs of Redria, Bluefull,
+Whitill or Viridia.
+
+Hunter Males: Deva (When I look at this Mag... It looked like a satellite...)
+Hunter Females: Savitri (Haha, a Robot! And they look cool if they're blue or yellow)
+Ranger Males: Pushan (I'm not sure what this is, but I keep thinking of it as a butterfly)
+Ranger Females: Rukmin (Well, it kinda looks like a Rocket Boy or something)
+Force Males: Nidra (Cool looking Scorpion, but in Green color, it looks even cooler)
+Force Females: Sato (Everyone's favorite kitty mag, SATO!!)
+
+NOTE: The race of all classes does not matter but the gender does. So keep that in mind.
+
+Step 6: Once you've made a choice of making a specific Rare Mag, feed it Dimates until POW
+is 50. And there you go! You got a... Whatever Rare Mag you got from the class and gender
+you picked above. You will now feed it only Dimates until POW is 150.
+
+
+-=MIND MAG=-
+Step 1: Well, start with any Ranger (for the first two forms) by feeding it Monofluids
+until it becomes Kalki (PB "Estilla", Dolphin, piercing attack).
+
+Step 2: Antidotes raises DEX and POW, but we want to raise DEX and MIND so feed it only
+Antiparalysis until it becomes Mitra (PB "Pilla", Sage, destroys all nearby
+enemies).
+
+Step 3: Now pass the Mitra to a Type B Force (Greenill, Oran, Bluefull, Pinkal, or
+Whitill). Just feed it only Monofluids until it evolves into Ila (PB
+"Mylla&Youlla", Twins, casts Shifta&Deband).
+
+Step 4: Good, now you need to feed it Antidotes until DEX is 45.
+
+Step 5: And then feed it Difluids until MIND is 49. But you do have a choice of making a
+Rare Mind Mag. So it's recommended making it into a Sato.
+
+-------
+The Mag's DEF and DEX must be equal to POW and MIND (or other way around) when it reaches
+Lv100. So... I'll give a few examples:
+
+25+25=25+25
+5+45=50+0
+10+40=0+50
+50+0=25+25
+
+You see how both sides add up to 50:50, right It doesn't matter on what kind of Mag you
+have to make a Rare Mag. You just need to make sure DEF and DEX have same amount as POW
+and MIND. Sounds simple Maybe Well, figure it out on your own and see if it works.
+
+JUST FOR FUN: Sometimes people not only follow the main instructions of making a Rare Mag.
+But they can create unique ones. However a complete DEX Mag is completely useless, so why
+bother.
+
+If you have ideas or problems of making a Rare Mag. PM me and I'll see what went wrong.
+So don't give up.
+
+
+
+Unsealing and Combining Items:
+------------------------------
+Specific items/weapons needed to have a number of kills when worn. And once worn DO NOT 
+remove the weapon or item that you are about to unseal otherwise you may have to start 
+over. And most people say there's no worries about switching to other weapons or units.
+But they're wrong. And once the item has reached that many kills, go to to Menu>Items>Bag
+and select the item you are going to unseal and select the "USE" option. You will then 
+unseal an item.
+
+Here are the list of items you can unseal into their TRUE form:
+
+Lame D'argent        --> 10,000 Kills --> Excalibur
+Sealed J-Sword       --> 23,000 Kills --> Tsumikiri J-Sword
+Proof of Sword-Saint --> 20,000 Kills --> Swordsman Lore
+Limiter              --> 20,000 Kills --> Adept
+
+Combining items into cooler weapons or armor that can help you improve ATP and or MST 
+for weapons and DFP and EVP for armor. You will need a certain weapon/ armor and a 
+material to make an improved item.
+
+You must be at least Lv100-140 for certain combination.
+
+Here are the list of materials you can combine:
+
+-=WEAPONS=-
+Monkey King Bar (Max Grinded) + Blue Black Stone + Hunters 800 ATP = Black King Bar
+Slicer Series (Max Grinded) + Magic Stone "Irista" + 570 ATP = Rainbow Baton
+Frozen Shooter (Max Grinded) + Photon Booster + Ranger 162 ATA= Snow Queen
+Flame Visit (Max Grinded) + Photon Booster + Ranger 164 ATA = Burning Visit
+Maser Beam (Max Grinded) + Photon Booster + Ranger 160 ATA = Power Maser
+Panzer Faust (Max Grinded) + Photon Booster + Android Ranger 182 ATA = Iron Faust
+Wand Series (Max Grinded) + Magic Rock "Heartkey" + Force 800 MST = Magical Piece
+S-Berill's Hands #0 (Max Grinded) + Berill Photon + Hunter 600 ATP = S-Berill's Hands #1
+Lavis Cannon + Syncesta + Hunter 850 ATP = Lavis Blade
+Lavis Blade + Syncesta + Hunter 900 ATP = Double Cannon
+Double Cannon + Syncesta + Hunter 900 ATP = Lavis Cannon 
+ (You can use Syncesta repeatedly, there's no limit)
+Sword Series (Max Grinded) + Parasitic Gene "Flow" + Hunter 971 ATP = DARK FLOW
+Shot Series (Max Grinded) + Parasitic Gene "Flow" + Ranger 190 ATA = DARK METEOR
+Rod Series (Max Grinded) + Parasitic Gene "Flow" + Force 900 MST = DARK BRIDGE
+Hitogata (Max Grinded) + Book of Hitogata + Force 900 MST = Dancing Hitogata
+Handgun: Guld + Handgun: Milla + Ranger 190 ATA = Guld Milla
+Plantain Leaf + Magic Water + Force 630 MST = Plantain Fan
+Fatsia + Magic Water + Force 690 MST = Plantain Huge Fan
+Handgun Series + Parts of Eggblaster + Ranger 140 ATA = Egg Blaster
+Sange + Yasha + Hunter 800 ATP = Sange&Yasha
+Branch of Paku Paku + Chao Mag + Force 695 MST = Striker of Chao
+Heaven Punisher + Ophelie Seize + Ranger 210 ATA = Mille Martuex
+Wand Series (Max Grinded) + Force 670 MST = Twinkle Star
+
+-=ARMOR=-
+Spirit Garment + Magic Rock "Moola" + Lv152 (NO ANDROIDS) = Aura Field
+Spirit Garment + Star Amplifier + Lv111 = Brightness Circle
+Spirit Garment + Magic Rock "Heartkey" + Females Lv131 = Love Heart
+Love Heart + Magic Rock "Heartkey" + Females Lv131 = Sweetheart
+Invisible Guard + Magic Rock "Heartkey" + Females Lv131 = Safety Heart
+Spirit Garment + Chu Chu Mag + Lv101 = Chu Chu Fever
+Stink Frame + Parasitic Cell Type-D + Lv54 (NO ANDROIDS) = Parasite Wear: De Rol
+Parasite Wear: De Rol + Parasitic Cell Type-D + Lv66 (NO ANDROIDS) = Parasite Wear: Nelgal
+Parasite Wear: Nelgal + Parasitic Cell Type-D + Lv89 (NO ANDROIDS) = Parasite Wear: Vajulla
+Parasite Wear: Vajulla + Parasitic Cell Type-D + Lv156 (NO ANDROIDS) = Virus Armor: Lafuteria
+
+
+Dark Falz:
+----------
+-="The ancient monster that returns every 100 years..."=-
+
+Dark Falz isn't really much of a threat since the story he always return in new forms that
+obviously he will fall in defeat. Dark Falz is Episode 1 Final Boss. He is the easiest
+Final Boss to defeat.
+
+-=IF YOU ARE PLAYING ON NORMAL DIFFICULTY=-
+Dark Falz will not reveal his Final Form in this difficulty. How sad. Playing in Normal
+Difficulty is great start for beginners. He casts offensive spells which he will most
+likely kill you if you have an HP below 200. I suggest you have Hp over 200+ in order to
+survive his multi Rafoie or Rabarta. And be sure to avoid the Heaven Punishment which will
+hurt a lot.
+
+-=IF YOU ARE PLAYING ON HARD, VERY HARD OR ULTIMATE DIFFICULTY=-
+Dark Falz will reveal his Final Form. Knowing this would be the most challenging boss.
+Well, not really. To experts, they think they're for noobs. How wrong they are--What about
+in Ultimate Difficulty On his Final Form, Dark Falz will often keep a distance away from
+you or sometimes get near you. It just depends WHERE Dark Falz IS. You'd better shoot it
+quick before it rises up and summon "Guiding Light" on you (AND START RUNNING
+LAD!!!). On Ultimate, the Guiding Light will move into a different pattern but will still
+hurt a lot. If you are in a Party, you would most likely get killed by Megid (since in
+other difficulties his Megid doesn't work). Beware of his powerful Grants which will hurt
+a lot. It is a Light-based attack which Forces use also. When Dark Falz takes your soul
+(or your party's), DO NOT HIT DARK FALZ UNDER THIS CONDITION. It will result taking your
+life away the amount of damage you've dealt (or the others). When it returns the soul, it
+will bitch slap you and float around. Remember, this pattern keeps on going until it's
+dead.
+
+-=Dark Falz's weakness=-
+* First Form weak to Lightning (Zonde series).
+* Second Form weak to Ice (Barta series).
+* Final Form weak to Fire and Light (Foie series and Grants).
+
+
+Christmas FIASCO:
+-----------------
+Christmas Fiasco (SCHTHACK Server Christmas Event) is the event that only happens every
+December. It's an event that basically need to kill monsters of break boxes for presents.
+BUT! You don't have to do this inside of Fiasco but you can do this outside as well. If
+you haven't got a present from Fiasco or outside of it, keep going, don't get discouraged
+if you haven't got a present yet. It requires more killing or breaking boxes.
+
+All the "REAL" Presents (if it says '[NAME] has received a gift from Santa
+Claus') will contain a legit item. You may be surprised about your gift you have but you
+can also trade it if you don't like it. And if you have two of the same items, you can
+trade or sell it. Remember, if you are part of a team and there is someone you want to
+give for PSO Christmas... You can always surprise them by giving them an uber item or
+something they wanted awfully a long time.
+
+During this event, all monsters on Ultimate Difficulty are "on crack". Meaning
+their stats are doubled and they will get revenge that you think of them "easy
+killing". Now what do you think how THEY feel... ANGRY! Now they wants to kill you
+once you set foot on Ultimate. And while this occurs for the rest of the Christmas Event,
+the drops will be 3 TIMES faster than normal. Meaning you can get Rares faster than you
+can possibly get. If you are in Fiasco Ultimate, you should always have a FORCE in your
+party with good Shifta and Deband (ATP & DFP increase), along with Jellen and Zalure
+(ATP & DFP decrease).
+
+Well, this will happen every year on Christmas. Enjoy and don't forget, Merry Christmas!
+
+PS: You should also look for a Saint Rappy on Episode 2 VR Temple. Doesn't matter what
+difficulty you find them or what you get from them. You only get variety of Mag Cells.
+
+
+Red Ring and Parasitic Gene "Flow":
+-----------------------------------
+Red Ring and Parasitic Gene "Flow" cannot be obtained in Single Player Mode. You must
+do it in Multiplayer Mode (Normal Mode). You can only obtain one of these uber items 
+from Final Bosses Dark Falz and Olga Flow.
+
+This also has to be done on Ultimate Difficulty. If you can't solo Ultimate on Normal
+Mode, then you will need a trusted friend to help you. Mainly, you need a Force. If you
+want to solo without support, then you might need to carry few Scape Dolls in your 
+Inventory.
+
+Good luck to those who are trying to get RR or PGF.

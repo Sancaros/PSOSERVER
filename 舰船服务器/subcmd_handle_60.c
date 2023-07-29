@@ -233,7 +233,7 @@ int check_aoe_timer(ship_client_t* src,
     uint8_t tech_level = 0;
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = src->pl->bb.character.techniques[pkt->technique_number];
+    tech_level = src->pl->bb.character.tech.all[pkt->technique_number];
     if (tech_level == 0xFF) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
         在我们有真正的库存跟踪之前，我们将不得不篡改这一点。

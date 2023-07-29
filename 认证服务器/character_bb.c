@@ -549,10 +549,11 @@ static int handle_char_select(login_client_t *c, bb_char_select_pkt *pkt) {
            
             /* 已获得角色数据... 将其从检索的行中复制出来. */
             if (db_get_dress_data(c->guildcard, pkt->slot, &mc.dress_data, 0)) {
-                SQLERR_LOG("无法更新玩家数据 (GC %"
-                    PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+                SQLERR_LOG("无法更新玩家外观数据 (GC %"
+                    PRIu32 ", 槽位 %" PRIu8 "), 读取原始数据.", c->guildcard, pkt->slot);
                 /* XXXX: 未完成给客户端发送一个错误信息 */
-                return -3;
+                
+                mc.dress_data = char_data->character.dress_data;
             }
 
             mc.name.name_tag = char_data->character.name.name_tag;
@@ -727,7 +728,7 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
-        if (db_update_char_techniques(char_data->character.techniques, c->guildcard, pkt->slot, flags)) {
+        if (db_update_char_techniques(&char_data->character.tech, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家科技数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
             /* XXXX: 未完成给客户端发送一个错误信息 */

@@ -18,99 +18,122 @@
 #include "database.h"
 #include "database_query.h"
 
+#define TABLE CHARACTER_DISP
+
 /* 初始化数据库连接 */
 extern psocn_dbconn_t conn;
+
+static int db_insert_char_disp(psocn_disp_char_t* disp_data,
+    uint32_t gc, uint8_t slot) {
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "INSERT INTO "
+        "%s (guildcard, slot, "
+        "atp, mst, evp, hp, "
+        "dfp, ata, lck, "
+        "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
+        "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
+        "level, exp, meseta) "
+        "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
+        "'%d', '%d', '%d', '%d', "
+        "'%d', '%d', '%d', "
+        "'%d', '%d', '%d', '%d', '%d',"
+        "'%d', '%d', '%d', '%d', '%d',"
+        "'%d', '%d', '%d')"
+        , TABLE, gc, slot
+        , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
+        , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
+        , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
+        , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+        , disp_data->level + 1, disp_data->exp, disp_data->meseta
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
+            "槽位 %" PRIu8 "):\n%s", TABLE, gc, slot,
+            psocn_db_error(&conn));
+        /* XXXX: 未完成给客户端发送一个错误信息 */
+        return -6;
+    }
+
+    return 0;
+}
+
+static int db_upd_char_disp(psocn_disp_char_t* disp_data,
+    uint32_t gc, uint8_t slot) {
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "UPDATE %s SET"
+        " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
+        " opt_flags1='%d', opt_flags2='%d', opt_flags3='%d', opt_flags4='%d', opt_flags5='%d',"
+        " opt_flags6='%d', opt_flags7='%d', opt_flags8='%d', opt_flags9='%d', opt_flags10='%d',"
+        " level='%d', exp='%d', meseta='%d'"
+        " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE
+        , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp, disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
+        , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
+        , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+        , disp_data->level + 1, disp_data->exp, disp_data->meseta
+        , gc, slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+            "槽位 %" PRIu8 "):\n%s", TABLE, gc, slot,
+            psocn_db_error(&conn));
+        /* XXXX: 未完成给客户端发送一个错误信息 */
+        return -6;
+    }
+
+    return 0;
+}
+
+static int db_del_char_disp(uint32_t gc, uint8_t slot) {
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "DELETE FROM %s WHERE guildcard="
+        "'%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE, gc,
+        slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 "):\n%s", TABLE, gc, slot,
+            psocn_db_error(&conn));
+        /* XXXX: 未完成给客户端发送一个错误信息 */
+        return -1;
+    }
+
+    return 0;
+}
 
 /* 更新玩家基础数据至数据库 */
 int db_update_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot, uint32_t flag) {
-    static char query[PSOCN_STLENGTH_DISP * 2 + 256];
-    const char* tbl = CHARACTER_DISP;
 
     if (flag & PSOCN_DB_SAVE_CHAR) {
-        sprintf(query, "INSERT INTO "
-            "%s (guildcard, slot, "
-            "atp, mst, evp, hp, "
-            "dfp, ata, lck, "
-            "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
-            "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
-            "level, exp, meseta) "
-            "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
-            "'%d', '%d', '%d', '%d', "
-            "'%d', '%d', '%d', "
-            "'%d', '%d', '%d', '%d', '%d',"
-            "'%d', '%d', '%d', '%d', '%d',"
-            "'%d', '%d', '%d')"
-            , tbl, gc, slot
-            , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
-            , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
-            , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
-            , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
-            , disp_data->level + 1, disp_data->exp, disp_data->meseta
-        );
 
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
-                psocn_db_error(&conn));
-            /* XXXX: 未完成给客户端发送一个错误信息 */
-            return -6;
+        if (db_insert_char_disp(disp_data, gc, slot)) {
+            SQLERR_LOG("无法保存数值数据 %s (GC %" PRIu32 ", "
+                "槽位 %" PRIu8 ")", TABLE, gc, slot);
+            return -1;
         }
     }
     else if (flag & PSOCN_DB_UPDATA_CHAR) {
-        sprintf(query, "UPDATE %s SET"
-            " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
-            " opt_flags1='%d', opt_flags2='%d', opt_flags3='%d', opt_flags4='%d', opt_flags5='%d',"
-            " opt_flags6='%d', opt_flags7='%d', opt_flags8='%d', opt_flags9='%d', opt_flags10='%d',"
-            " level='%d', exp='%d', meseta='%d'"
-            " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", tbl
-            , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp, disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
-            , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
-            , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
-            , disp_data->level + 1, disp_data->exp, disp_data->meseta
-            , gc, slot
-        );
 
-        if (psocn_db_real_query(&conn, query)) {
-            sprintf(query, "DELETE FROM %s WHERE guildcard="
-                "'%" PRIu32 "' AND slot='%" PRIu8 "'", tbl, gc,
-                slot);
+        if (db_upd_char_disp(disp_data, gc, slot)) {
+            SQLERR_LOG("无法更新数据表 %s (GC %" PRIu32 ", "
+                "槽位 %" PRIu8 ")", TABLE, gc, slot);
 
-            if (psocn_db_real_query(&conn, query)) {
-                SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
-                    PRIu32 ", 槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
-                    psocn_db_error(&conn));
-                /* XXXX: 未完成给客户端发送一个错误信息 */
-                return -1;
+            if (db_del_char_disp(gc, slot)) {
+
+                SQLERR_LOG("无法删除数值数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", TABLE, gc, slot);
+                return -3;
             }
 
-            sprintf(query, "INSERT INTO "
-                "%s (guildcard, slot, "
-                "atp, mst, evp, hp, "
-                "dfp, ata, lck, "
-                "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
-                "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
-                "level, exp, meseta) "
-                "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
-                "'%d', '%d', '%d', '%d', "
-                "'%d', '%d', '%d', "
-                "'%d', '%d', '%d', '%d', '%d',"
-                "'%d', '%d', '%d', '%d', '%d',"
-                "'%d', '%d', '%d')"
-                , tbl, gc, slot
-                , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
-                , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
-                , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
-                , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
-                , disp_data->level + 1, disp_data->exp, disp_data->meseta
-            );
-
-            if (psocn_db_real_query(&conn, query)) {
-                SQLERR_LOG("无法创建数据表 %s (GC %" PRIu32 ", "
-                    "槽位 %" PRIu8 "):\n%s", tbl, gc, slot,
-                    psocn_db_error(&conn));
-                /* XXXX: 未完成给客户端发送一个错误信息 */
-                return -6;
+            if (db_insert_char_disp(disp_data, gc, slot)) {
+                SQLERR_LOG("无法保存数值数据 %s (GC %" PRIu32 ", "
+                    "槽位 %" PRIu8 ")", TABLE, gc, slot);
+                return -4;
             }
         }
     }

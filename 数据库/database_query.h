@@ -253,9 +253,9 @@ int db_get_char_quest_data1(uint32_t gc, uint8_t slot, uint8_t* quest_data1, int
 
 ////////////////////////////////////////////////////////////////
 
-int db_get_char_techniques(uint32_t gc, uint8_t slot, uint8_t tech_data[20], int check);
+int db_get_char_techniques(uint32_t gc, uint8_t slot, techniques_t* tech_data, int check);
 
-int db_update_char_techniques(uint8_t tech_data[20], uint32_t gc, uint32_t slot, uint32_t flag);
+int db_update_char_techniques(techniques_t* tech_data, uint32_t gc, uint32_t slot, uint32_t flag);
 
 ////////////////////////////////////////////////////////////////
 

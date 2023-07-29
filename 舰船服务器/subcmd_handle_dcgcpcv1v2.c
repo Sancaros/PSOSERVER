@@ -1304,7 +1304,7 @@ static int handle_objhit_tech(ship_client_t *c, subcmd_objhit_tech_t *pkt) {
     }
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = c->pl->v1.character.techniques[pkt->tech];
+    tech_level = c->pl->v1.character.tech.all[pkt->tech];
     if(tech_level == 0xFF) {
         /* This might happen if the user learns a new tech in a team. Until we
            have real inventory tracking, we'll have to fudge this. Once we have
