@@ -25,6 +25,6 @@
 static const char shipgate_login_msg[] =
 "梦幻之星中国 船闸服务器 Copyright Sancaros";
 
-#include <pso_sgcmd_code.h>
+#include <pso_opcodes_shipgate.h>
 
 #endif /* !SHIPGATE_PACKETS_LIST */

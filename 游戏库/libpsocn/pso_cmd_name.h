@@ -15,14 +15,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef PSOCN_CMD_NAME_H
+#define PSOCN_CMD_NAME_H
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "pso_cmd_code.h"
-#include "pso_subcmd_code.h"
-#include "pso_sgcmd_code.h"
+#include "pso_opcodes_block.h"
+#include "pso_opcodes_subcmd.h"
+#include "pso_opcodes_shipgate.h"
 
 #define NO_SUCH_CMD 0xFFFFFFFF
 
@@ -277,3 +280,5 @@ static cmd_map_st s_cmd_names[] = {
 extern const char* c_cmd_name(uint16_t cmd, int32_t version);
 extern const char* c_subcmd_name(uint16_t cmd, int32_t version);
 extern const char* s_cmd_name(uint16_t cmd, int32_t version);
+
+#endif /* !PSOCN_CMD_NAME_H */

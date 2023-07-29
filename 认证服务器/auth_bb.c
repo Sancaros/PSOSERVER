@@ -26,7 +26,7 @@
 #include <f_logs.h>
 #include <database.h>
 
-#include <pso_cmd_code.h>
+#include <pso_opcodes_block.h>
 #include <pso_version.h>
 
 #include "auth.h"

@@ -33,7 +33,7 @@
 #include <database.h>
 #include <quest.h>
 
-#include <pso_cmd_code.h>
+#include <pso_opcodes_block.h>
 #include <pso_menu.h>
 #include <pso_packet_length.h>
 

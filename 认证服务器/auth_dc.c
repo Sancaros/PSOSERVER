@@ -30,7 +30,7 @@
 #include <md5.h>
 #include <items.h>
 
-#include <pso_cmd_code.h>
+#include <pso_opcodes_block.h>
 
 #include "auth.h"
 #include <pso_player.h>

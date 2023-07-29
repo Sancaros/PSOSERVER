@@ -4883,6 +4883,6 @@ typedef struct patch_send_footer {
 #undef PACKED
 
 /* Parameters for the various packets. */
-#include <pso_cmd_code.h>
+#include <pso_opcodes_block.h>
 #endif /* !PACKETS_H_HAVE_PACKETS */
 #endif /* !PACKETS_H_HEADERS_ONLY */

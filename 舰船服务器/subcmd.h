@@ -22,7 +22,7 @@
 
 #include "clients.h"
 
-#include <pso_subcmd_code.h>
+#include <pso_opcodes_shipgate.h>
 
 #ifdef PACKED
 #undef PACKED

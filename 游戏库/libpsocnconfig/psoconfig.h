@@ -22,9 +22,9 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "queue.h"
-#include "pso_cmd_code.h"
-#include "pso_subcmd_code.h"
-#include "pso_sgcmd_code.h"
+#include "pso_opcodes_block.h"
+#include "pso_opcodes_subcmd.h"
+#include "pso_opcodes_shipgate.h"
 
 //#define SIZEOF_VOID_P 4
 
