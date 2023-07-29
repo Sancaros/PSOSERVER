@@ -826,7 +826,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
 
             /* Create the name string */
             char tmp[17];
-            sprintf_s(tmp, sizeof(tmp), "BLOCK%01X%01X", (i / 10), (i % 10));
+            sprintf_s(tmp, sizeof(tmp), "BLOCK%01X%01X[%02d]", (i / 10), (i % 10), s->blocks[i - 1]->num_clients);
 
             /* Create the name string */
             istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, tmp,
@@ -891,8 +891,8 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
             pkt->entries[entries].flags = LE16(0x0000);
 
             /* Create the name string */
-            char tmp[17];
-            sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X", (i / 10), (i % 10));
+            char tmp[27];
+            sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X[%02d]", (i / 10), (i % 10), s->blocks[i - 1]->num_clients);
 
             /* Create the name string */
             istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, tmp,
@@ -956,8 +956,8 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
             pkt->entries[entries].menu_id = LE32(MENU_ID_BLOCK);
             pkt->entries[entries].item_id = LE32(i);
             pkt->entries[entries].flags = LE16(0x0000);
-            char tmp[17];
-            sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X", (i / 10), (i % 10));
+            char tmp[27];
+            sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X[%02d]", (i / 10), (i % 10), s->blocks[i - 1]->num_clients);
 
             /* Create the name string */
             istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, tmp,
