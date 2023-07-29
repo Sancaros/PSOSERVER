@@ -704,9 +704,10 @@ int db_insert_char_data(psocn_bb_db_char_t* char_data, uint32_t gc, uint8_t slot
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot) {
     static char query[PSOCN_STLENGTH_BB_DB_CHAR * 2 + 256];
 
-    sprintf(query, "DELETE FROM %s WHERE guildcard="
-        "'%" PRIu32 "' AND slot='%" PRIu8 "'", CHARACTER, gc,
-        slot);
+    sprintf(query, "DELETE FROM %s WHERE "
+        "guildcard = '%" PRIu32 "' AND slot='%" PRIu8 "'", 
+        CHARACTER, 
+        gc, slot);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法清理旧玩家 %s 数据 (GC %"
