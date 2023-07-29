@@ -1541,7 +1541,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
+    istrncpy16_raw(ic_utf16_to_gb18030, guild_name, &g_data->guild_name[2], 24, sizeof(g_data->guild_name) - 4);
 
     create_res = db_insert_bb_char_guild(g_data->guild_name, default_guild_flag, g_data->guildcard, g_data->hdr.flags);
 
@@ -3374,7 +3374,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
 
         istrncpy16_raw(ic_utf16_to_utf8, name, &pkt->ch_name[2], out, in);
 
-        //iconv(ic_utf16_to_gbk, &inptr, &in, &outptr, &out);
+        //iconv(ic_utf16_to_gb18030, &inptr, &in, &outptr, &out);
     }
     else {
         /* Make sure the name is terminated properly */
@@ -3717,7 +3717,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
 
         istrncpy16_raw(ic_utf16_to_utf8, outptr, &pkt->ch_name[2], out, in);
 
-        //iconv(ic_utf16_to_gbk, &inptr, &in, &outptr, &out);
+        //iconv(ic_utf16_to_gb18030, &inptr, &in, &outptr, &out);
     }
     else {
         /* Make sure the name is terminated properly */

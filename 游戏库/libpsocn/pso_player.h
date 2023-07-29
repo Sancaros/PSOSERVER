@@ -19,6 +19,8 @@
 #define PLAYER_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "pso_character.h"
 
 #ifdef PACKED
@@ -160,6 +162,6 @@ static char player_name[24];
 
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src);
 
-char* get_player_name(player_t* pl, int version);
+char* get_player_name(player_t* pl, int version, bool raw);
 
 #endif /* !PLAYER_H */

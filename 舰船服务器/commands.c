@@ -1553,13 +1553,13 @@ static int handle_teleport(ship_client_t *c, const char *params) {
 }
 
 static void dumpinv_internal(ship_client_t *c) {
-    char name[64];
+    //char name[64];
     int i;
     int v = c->version;
 
     if(v != CLIENT_VERSION_BB) {
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d) 背包数据转储", c->pl->v1.character.dress_data.guildcard_str.string,
+        ITEM_LOG("玩家: %s (%d) 背包数据转储", get_player_name(c->pl, c->version, false),
               c->guildcard);
 
         for(i = 0; i < c->item_count; ++i) {
@@ -1573,10 +1573,10 @@ static void dumpinv_internal(ship_client_t *c) {
         if (c->mode)
             player = &c->mode_pl->bb;
 
-        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_CHAR_NAME_WLENGTH);
+        //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
+        //    BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", get_player_name(c->pl, c->version, false), c->guildcard, c->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
         ITEM_LOG("背包物品数量: %u", player->inv.item_count);
 
@@ -1675,17 +1675,17 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
 }
 
 static void dumpbank_internal(ship_client_t* c) {
-    char name[64];
+    //char name[64];
     size_t i;
     int v = c->version;
 
     if (v == CLIENT_VERSION_BB) {
         psocn_bb_char_t* player = &c->bb_pl->character;
 
-        istrncpy16_raw(ic_utf16_to_gbk, name, &c->bb_pl->character.name.char_name[0], 64,
-            BB_CHARACTER_CHAR_NAME_WLENGTH);
+        //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
+        //    BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", name, c->guildcard, c->sec_data.slot);
+        ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", get_player_name(c->pl, c->version, false), c->guildcard, c->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
         ITEM_LOG("银行物品数量: %u", c->bb_pl->bank.item_count);
 

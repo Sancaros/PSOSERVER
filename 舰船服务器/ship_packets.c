@@ -876,7 +876,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[entries]->menu_id);
     pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[entries]->item_id);
     pkt->entries[entries].flags = LE16(pso_block_list_menu_last[entries]->flag);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, s->cfg->name, len3);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, s->cfg->name, len3);
     ++entries;
 
     /* Add each block to the list. */
@@ -895,7 +895,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
             sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X[%02d]", (i / 10), (i % 10), s->blocks[i - 1]->num_clients);
 
             /* Create the name string */
-            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, tmp,
                 len3);
 
             len += len2;
@@ -909,7 +909,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
         pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
         pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
         ++entries;
         len += len2;
     }
@@ -943,7 +943,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[entries]->menu_id);
     pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[entries]->item_id);
     pkt->entries[entries].flags = LE16(pso_block_list_menu_last[entries]->flag);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, s->cfg->name, len3);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, s->cfg->name, len3);
     ++entries;
 
     /* Add each block to the list. */
@@ -960,7 +960,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
             sprintf_s(tmp, sizeof(tmp), "Ñ¡Ôñ½¢²Ö%01X%01X[%02d]", (i / 10), (i % 10), s->blocks[i - 1]->num_clients);
 
             /* Create the name string */
-            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, tmp,
                 len3);
             /* We don't need to terminate this string because we did the memset
                above to clear the entry to all zero bytes. */
@@ -975,7 +975,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].menu_id = LE32(pso_block_list_menu_last[i]->menu_id);
         pkt->entries[entries].item_id = LE32(pso_block_list_menu_last[i]->item_id);
         pkt->entries[entries].flags = LE16(pso_block_list_menu_last[i]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, pso_block_list_menu_last[i]->name, len3);
         ++entries;
         len += len2;
     }
@@ -1034,7 +1034,7 @@ static int send_dc_info_reply(ship_client_t *c, const char *msg) {
         }
     }
     else {
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     /* Convert the message to the appropriate encoding. */
@@ -1091,7 +1091,7 @@ static int send_bb_info_reply(ship_client_t *c, const char *msg) {
     out = 65520;
     inptr = (char *)msg;
     outptr = (char *)pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     out = 65520 - out + 0x10;
@@ -1349,7 +1349,7 @@ static int send_dcnte_lobby_join(ship_client_t *c, lobby_t *l) {
 
         /* If its a Blue Burst client, iconv it. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
-            istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
+            istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
                            &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
@@ -1422,7 +1422,7 @@ static int send_dc_lobby_join(ship_client_t *c, lobby_t *l) {
 
         /* If its a Blue Burst client, iconv it. */
         if(l->clients[i]->version == CLIENT_VERSION_BB) {
-            istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
+            istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
                            &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
@@ -1573,7 +1573,7 @@ static int send_xbox_lobby_join(ship_client_t *c, lobby_t *l) {
 
         /* If its a Blue Burst client, iconv it. */
         if(cl->version == CLIENT_VERSION_BB) {
-            istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
+            istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[pls].hdr.name,
                            &cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
         }
         else {
@@ -1891,7 +1891,7 @@ static int send_dcnte_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
+        istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
     else {
@@ -1949,7 +1949,7 @@ static int send_dc_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
+        istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
     else {
@@ -2079,7 +2079,7 @@ static int send_xbox_lobby_add_player(lobby_t *l, ship_client_t *c,
 
     /* If its a Blue Burst client, iconv it. */
     if(nc->version == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
+        istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->entries[0].hdr.name,
                        &nc->pl->bb.character.name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
     else {
@@ -2429,7 +2429,7 @@ static int send_pc_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->msg, tm, (len * 2) + 1);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->msg, tm, (len * 2) + 1);
 
     free_safe(tm);
 
@@ -2504,7 +2504,7 @@ static int send_bb_lobby_chat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     pkt->guildcard = LE32(s->guildcard);
 
     /* Convert the message to the appropriate encoding. */
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->msg, tm, (len * 2) + 1);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->msg, tm, (len * 2) + 1);
 
     free_safe(tm);
 
@@ -2616,7 +2616,7 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
     out = 65520;
     inptr = (char *)&s->pl->bb.character.name.char_name[0];
     outptr = pkt->msg;
-    iconv(ic_utf16_to_gbk/*³¢ÊÔGBK*/, &inptr, &in, &outptr, &out);
+    iconv(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, &inptr, &in, &outptr, &out);
 
     if(!(c->flags & CLIENT_FLAG_IS_NTE)) {
         /* Add the separator */
@@ -2641,9 +2641,9 @@ static int send_dc_lobby_bbchat(lobby_t *l, ship_client_t *c, ship_client_t *s,
 
     /* Convert the message to the appropriate encoding. */
     if((c->flags & CLIENT_FLAG_IS_NTE) || msg[1] == LE16('J'))
-        iconv(ic_utf16_to_sjis, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_sjis, &inptr, &in, &outptr, &out);
     else
-        iconv(ic_utf16_to_8859, &inptr, &in, &outptr, &out);
+        iconv(ic_gbk_to_8859, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65520 - out;
@@ -2851,7 +2851,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     /* iconv the name, if needed... */
     if(s->version == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->name,
+        istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->name,
                        &s->bb_pl->character.name.char_name[0], 0x20, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
     else {
@@ -2933,15 +2933,15 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
 
     if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, ,%s", lobby_name, ship->cfg->name);
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, tmp, 0x88);
     }
     else {
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->location, l->name, 0x1C);
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, l->name, 0x1C);
         pkt->location[14] = pkt->location[15] = 0;
         len = strlen16_raw(pkt->location);
 
         sprintf(tmp, ",%s, ,%s", lobby_name, ship->cfg->name);
-        istrncpy(ic_gbk_to_utf16, (char *)(pkt->location + len), tmp,
+        istrncpy(ic_gb18030_to_utf16, (char *)(pkt->location + len), tmp,
                  0x88 - len * 2);
     }
 
@@ -3003,7 +3003,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
         sprintf(tmp, "%s,%s, ,%s", l->name, lobby_name, ship->cfg->name);
     }
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, tmp, 0x88);
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
@@ -3096,7 +3096,7 @@ static int send_dc_guild_reply6(ship_client_t *c, ship_client_t *s) {
 
     /* iconv the name, if needed... */
     if(s->version == CLIENT_VERSION_BB) {
-        istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->name,
+        istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->name,
                        &s->bb_pl->character.name.char_name[0], 0x20, 10);
     }
     else {
@@ -3179,15 +3179,15 @@ static int send_pc_guild_reply6(ship_client_t *c, ship_client_t *s) {
 
     if(l->type == LOBBY_TYPE_LOBBY) {
         sprintf(tmp, "%s, ,%s", lobby_name, ship->cfg->name);
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, tmp, 0x88);
     }
     else {
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->location, l->name, 0x1C);
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, l->name, 0x1C);
         pkt->location[14] = pkt->location[15] = 0;
         len = strlen16_raw(pkt->location);
 
         sprintf(tmp, ",%s, ,%s", lobby_name, ship->cfg->name);
-        istrncpy(ic_gbk_to_utf16, (char *)(pkt->location + len), tmp,
+        istrncpy(ic_gb18030_to_utf16, (char *)(pkt->location + len), tmp,
                  0x88 - len * 2);
     }
 
@@ -3251,7 +3251,7 @@ static int send_bb_guild_reply6(ship_client_t *c, ship_client_t *s) {
         sprintf(tmp, "%s,%s, ,%s", l->name, lobby_name, ship->cfg->name);
     }
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->location, tmp, 0x88);
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, tmp, 0x88);
 
     /* ...and the name. */
     if(s->version == CLIENT_VERSION_BB) {
@@ -3355,7 +3355,7 @@ static int send_pc_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *dc) {
     pkt->item_id = dc->item_id;
 
     /* Fill in the location string and the name */
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->location, dc->location, 0x88);
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, dc->location, 0x88);
     istrncpy(ic_8859_to_utf16, (char *)pkt->name, dc->name, 0x40);
 
     /* ¼ÓÃÜ²¢·¢ËÍ */
@@ -3452,7 +3452,7 @@ static int send_pc_guild_reply6_sg(ship_client_t *c, dc_guild_reply6_pkt *dc) {
     pkt->item_id = dc->item_id;
 
     /* Fill in the location string and the name */
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->location, dc->location, 0x88);
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->location, dc->location, 0x88);
     istrncpy(ic_8859_to_utf16, (char *)pkt->name, dc->name, 0x40);
 
     /* ¼ÓÃÜ²¢·¢ËÍ */
@@ -3601,7 +3601,7 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
     else {
         //ic = ic_utf8_to_utf16;
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     //in = strlen(tm) + 1;
@@ -3681,7 +3681,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     out = 65520;
     inptr = tm;
     outptr = (char *)pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
@@ -3827,7 +3827,7 @@ static int send_dcnte_game_join(ship_client_t *c, lobby_t *l) {
             pkt->players[i].client_id = LE32(i);
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
-                istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
+                istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->players[i].name,
                                &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
@@ -3885,7 +3885,7 @@ static int send_dc_game_join(ship_client_t *c, lobby_t *l) {
             pkt->players[i].client_id = LE32(i);
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
-                istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
+                istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->players[i].name,
                                &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
@@ -4006,7 +4006,7 @@ static int send_gc_game_join(ship_client_t *c, lobby_t *l) {
             pkt->players[i].client_id = LE32(i);
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
-                istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
+                istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->players[i].name,
                                &l->clients[i]->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
@@ -4088,7 +4088,7 @@ static int send_xbox_game_join(ship_client_t *c, lobby_t *l) {
             pkt->players[i].client_id = LE32(i);
 
             if(l->clients[i]->version == CLIENT_VERSION_BB) {
-                istrncpy16_raw(ic_utf16_to_gbk/*³¢ÊÔGBK*/, pkt->players[i].name,
+                istrncpy16_raw(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, pkt->players[i].name,
                                &cl->pl->bb.character.name, 16, BB_CHARACTER_NAME_LENGTH);
             }
             else {
@@ -4393,7 +4393,7 @@ static int send_pc_game_list(ship_client_t *c, block_t *b) {
     pkt->entries[0].item_id = 0xFFFFFFFF;
     pkt->entries[0].flags = 0x04;
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
              0x20);
 
     pthread_rwlock_rdlock(&b->lobby_lock);
@@ -4453,7 +4453,7 @@ static int send_pc_game_list(ship_client_t *c, block_t *b) {
 
         /* Copy the name. For some unknown reason, PSOPC needs two NULs at the
            end of names, or something... */
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, l->name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, l->name,
                  0x1C);
 
         /* Unlock the lobby */
@@ -4668,7 +4668,7 @@ static int send_bb_game_list(ship_client_t *c, block_t *b) {
     pkt->entries[0].item_id = 0xFFFFFFFF;
     pkt->entries[0].flags = 0x04;
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
              0x20);
 
     pthread_rwlock_rdlock(&b->lobby_lock);
@@ -4697,7 +4697,7 @@ static int send_bb_game_list(ship_client_t *c, block_t *b) {
             ((l->flags & LOBBY_FLAG_SINGLEPLAYER) ? 0x04 : 0x00);
 
         /* Copy the name */
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, l->name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, l->name,
                  0x20);
 
         /* Unlock the lobby */
@@ -4838,7 +4838,7 @@ static int send_pc_info_list(ship_client_t *c, ship_t *s) {
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = 0;
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[0].name, s->cfg->name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, s->cfg->name,
              0x20);
 
     /* Add each info item to the list. */
@@ -4864,7 +4864,7 @@ static int send_pc_info_list(ship_client_t *c, ship_t *s) {
         pkt->entries[entries].item_id = LE32(i);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name,
                  s->cfg->info_files[i].desc, 0x20);
 
         len += 0x2C;
@@ -4902,7 +4902,7 @@ static int send_bb_info_list(ship_client_t* c, ship_t* s) {
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = 0;
 
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[0].name, s->cfg->name,
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[0].name, s->cfg->name,
         0x20);
 
     /* Add each info item to the list. */
@@ -4928,7 +4928,7 @@ static int send_bb_info_list(ship_client_t* c, ship_t* s) {
         pkt->entries[entries].item_id = LE32(i);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name,
             s->cfg->info_files[i].desc, 0x20);
 
         len += 0x2C;
@@ -4989,7 +4989,7 @@ int send_pc_game_type_sel(ship_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_game_create_menu_pc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_create_menu_pc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_create_menu_pc[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_pc[count]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_pc[count]->name, len3);
         len += len2;
     }
 
@@ -5035,7 +5035,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_game_create_menu_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_create_menu_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_create_menu_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_bb[count]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, pso_game_create_menu_bb[count]->name, len3);
         len += len2;
     }
 
@@ -5066,7 +5066,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_game_drop_menu_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_game_drop_menu_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_game_drop_menu_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_game_drop_menu_bb[count]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, pso_game_drop_menu_bb[count]->name, len3);
         len += len2;
     }
 
@@ -5131,7 +5131,7 @@ static int send_dc_message_box(ship_client_t *c, const char *fmt,
         }
     }
     else {
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     /* Convert the message to the appropriate encoding. */
@@ -5219,7 +5219,7 @@ static int send_message_box(ship_client_t* c, const char* fmt,
         }
     }
     else {
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     /* Convert the message to the appropriate encoding. */
@@ -5338,7 +5338,7 @@ static int send_message_type(ship_client_t* c, uint16_t type, const char* fmt,
         }
     }
     else {
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     /* Convert the message to the appropriate encoding. */
@@ -5625,7 +5625,7 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
         out = 64;
         inptr = qlist->cats[i].name;
         outptr = (char *)pkt->entries[entries].name;
-        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
         wchar_add_color_tag(pkt->entries[entries].name);
 
@@ -5633,7 +5633,7 @@ static int send_pc_quest_categories(ship_client_t *c, int lang) {
         out = 224;
         inptr = qlist->cats[i].desc;
         outptr = (char *)pkt->entries[entries].desc;
-        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
         wchar_add_color_tag(pkt->entries[entries].desc);
 
@@ -5810,7 +5810,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
         out = 64;
         inptr = qlist->cats[i].name;
         outptr = (char *)pkt->entries[entries].name;
-        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
         wchar_add_color_tag(pkt->entries[entries].name);
 
@@ -5818,7 +5818,7 @@ static int send_bb_quest_categories(ship_client_t* c, int lang) {
         out = 244;
         inptr = qlist->cats[i].desc;
         outptr = (char *)pkt->entries[entries].desc;
-        iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+        iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
         wchar_add_color_tag(pkt->entries[entries].desc);
 
@@ -6464,7 +6464,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
             out = 64;
             inptr = quest->name;
             outptr = (char *)pkt->entries[entries].name;
-            iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+            iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
             wchar_add_color_tag(pkt->entries[entries].name);
 
@@ -6472,7 +6472,7 @@ static int send_pc_quest_list(ship_client_t *c, int cn, int lang) {
             out = 224;
             inptr = quest->desc;
             outptr = (char *)pkt->entries[entries].desc;
-            iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+            iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
             wchar_add_color_tag(pkt->entries[entries].desc);
 
@@ -7090,11 +7090,11 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
             pkt->entries[entries].item_id = LE32(quest->qid);
 
             /* Convert the name and the description to UTF-16. */
-            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, quest->name, sizeof(pkt->entries[entries].name));
+            istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, quest->name, sizeof(pkt->entries[entries].name));
 
             wchar_add_color_tag(pkt->entries[entries].name);
 
-            istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].desc, quest->desc, sizeof(pkt->entries[entries].desc));
+            istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].desc, quest->desc, sizeof(pkt->entries[entries].desc));
 
             wchar_add_color_tag(pkt->entries[entries].desc);
 
@@ -7215,7 +7215,7 @@ static int send_pc_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     inptr = q->long_desc;
     out = 0x248;
     outptr = pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* ¼ÓÃÜ²¢·¢ËÍ */
     return crypt_send(c, PC_QUEST_INFO_LENGTH, sendbuf);
@@ -8567,7 +8567,7 @@ static int send_pc_lobby_name(ship_client_t *c, lobby_t *l) {
     out = 65532;
     inptr = l->name;
     outptr = pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65532 - (uint16_t)out;
@@ -8607,7 +8607,7 @@ static int send_bb_lobby_name(ship_client_t *c, lobby_t *l) {
     out = 65532;
     inptr = l->name;
     outptr = pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65532 - (uint16_t)out;
@@ -9051,7 +9051,7 @@ static int send_ship_list_pc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
                     tmp2[0] ? "/" : "", i->name);
 
             /* Convert the name to UTF-16 */
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, tmp, 0x22);
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, tmp, 0x22);
 
             /* We're done with this ship, increment the counter */
             ++entries;
@@ -9089,7 +9089,7 @@ static int send_ship_list_pc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
                 strcpy(tmp, "½¢´¬/Main");
 
             /* And convert to UTF-16 */
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, tmp,
                      0x22);
 
             /* We're done with this "ship", increment the counter */
@@ -9107,7 +9107,7 @@ static int send_ship_list_pc(ship_client_t *c, ship_t *s, uint16_t menu_code) {
         pkt->entries[entries].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, "¶Ï¿ªÁ¬½Ó", 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, "¶Ï¿ªÁ¬½Ó", 0x22);
 
         ++entries;
         len += 0x2C;
@@ -9144,7 +9144,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
     pkt->entries[entries].menu_id = LE32(MENU_ID_SHIP);
     pkt->entries[entries].item_id = 0;
     pkt->entries[entries].flags = LE16(0x0004);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
 
     ++entries;
 
@@ -9178,7 +9178,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
                     tmp2[0] ? "/" : "", i->name);
 
             /* Convert the name to UTF-16 */
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, tmp,
                      0x22);
 
             ++entries;
@@ -9218,7 +9218,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
                 strcpy(tmp, "½¢´¬/Main");
 
             /* And convert to UTF-16 */
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name, tmp,
                      0x22);
 
             /* We're done with this "ship", increment the counter */
@@ -9236,7 +9236,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
         pkt->entries[entries].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, "¶Ï¿ªÁ¬½Ó", 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, "¶Ï¿ªÁ¬½Ó", 0x22);
 
         ++entries;
         len += 0x2C;
@@ -9483,7 +9483,7 @@ static int send_bb_choice_search(ship_client_t* c) {
         pkt->entries[i].item_id = LE16(cs_options[i].item_id);
 
         /* Convert the text to UTF-16 */
-        istrncpy(ic_utf16_to_gbk, (char*)pkt->entries[i].text,
+        istrncpy(ic_utf16_to_gb18030, (char*)pkt->entries[i].text,
             cs_options[i].text, 0x38);
     }
 
@@ -9534,14 +9534,14 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
 
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entry].location,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entry].location,
                      it->cur_lobby->name, 0x1C);
             pkt->entries[entry].location[14] = 0;
             pkt->entries[entry].location[15] = 0;
             len = strlen16_raw(pkt->entries[entry].location);
 
             sprintf(tmp, ",BLOCK%02d,%s", b->b, ship->cfg->name);
-            istrncpy(ic_gbk_to_utf16,
+            istrncpy(ic_gb18030_to_utf16,
                      (char *)(pkt->entries[entry].location + len), tmp,
                      0x60 - (len * 2));
 
@@ -9621,14 +9621,14 @@ static int fill_one_choice6_entry(uint8_t *sendbuf, int version,
             istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
 
-            istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entry].location,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entry].location,
                      it->cur_lobby->name, 0x1C);
             pkt->entries[entry].location[14] = 0;
             pkt->entries[entry].location[15] = 0;
             len = strlen16_raw(pkt->entries[entry].location);
 
             sprintf(tmp, ",BLOCK%02d,%s", b->b, ship->cfg->name);
-            istrncpy(ic_gbk_to_utf16,
+            istrncpy(ic_gb18030_to_utf16,
                      (char *)(pkt->entries[entry].location + len), tmp,
                      0x60 - (len * 2));
 
@@ -10104,7 +10104,7 @@ static int send_dc_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     out = 0x10;
     inptr = (char *)p->pcmaildata.pcname;
     outptr = pkt->dcmaildata.dcname;
-    iconv(ic_utf16_to_gbk/*³¢ÊÔGBK*/, &inptr, &in, &outptr, &out);
+    iconv(ic_utf16_to_gb18030/*³¢ÊÔGBK*/, &inptr, &in, &outptr, &out);
 
     /* Convert the first instance of text. */
     in = 0x120;
@@ -11717,7 +11717,7 @@ static int send_pc_gm_menu(ship_client_t *c, uint32_t menu_id) {
         pkt->entries[entries].item_id = LE32(gm_opts[i].item_id);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name,
                  __(c, gm_opts[i].text), 0x20);
 
         len += 0x2C;
@@ -11754,7 +11754,7 @@ static int send_bb_gm_menu(ship_client_t *c, uint32_t menu_id) {
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = 0;
 
-    istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->name,
              0x20);
 
     /* Add each info item to the list. */
@@ -11783,7 +11783,7 @@ static int send_bb_gm_menu(ship_client_t *c, uint32_t menu_id) {
         pkt->entries[entries].item_id = LE32(gm_opts[i].item_id);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name,
                  __(c, gm_opts[i].text), 0x20);
 
         len += 0x2C;
@@ -11952,7 +11952,7 @@ static int send_pc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
         pkt->entries[entries].item_id = LE32(ents[i].item_id);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name,
                  __(c, ents[i].text), 0x20);
 
         len += 0x2C;
@@ -12004,7 +12004,7 @@ static int send_bb_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
         pkt->entries[entries].item_id = LE32(ents[i].item_id);
         pkt->entries[entries].flags = LE16(0x0000);
 
-        istrncpy(ic_gbk_to_utf16, (char *)pkt->entries[entries].name,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entries].name,
                  __(c, ents[i].text), 0x20);
 
         len += 0x2C;
@@ -12643,8 +12643,8 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
 
         /* Ìî³ä²Ëµ¥ÊµÀý */
         for (i = 0; i < (int)spec_item_list->item_num; ++i) {
-            istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_name, pso_guild_rank_list_bb[i]->name, sizeof(spec_item_list->entries[i].item_name));
-            istrncpy(ic_gbk_to_utf16, (char*)spec_item_list->entries[i].item_desc, "Bronze Pen1111111111111111", sizeof(spec_item_list->entries[i].item_desc));
+            istrncpy(ic_gb18030_to_utf16, (char*)spec_item_list->entries[i].item_name, pso_guild_rank_list_bb[i]->name, sizeof(spec_item_list->entries[i].item_name));
+            istrncpy(ic_gb18030_to_utf16, (char*)spec_item_list->entries[i].item_desc, "Bronze Pen1111111111111111", sizeof(spec_item_list->entries[i].item_desc));
             spec_item_list->entries[i].price = 123;
             num++;
         }
@@ -12673,7 +12673,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
             menu->entries[i].menu_id = LE32(pso_guild_rank_list_bb[i]->menu_id);
             menu->entries[i].item_id = LE32(pso_guild_rank_list_bb[i]->item_id);
             menu->entries[i].flags = LE16(pso_guild_rank_list_bb[i]->flag);
-            istrncpy(ic_gbk_to_utf16, (char*)menu->entries[i].name, pso_guild_rank_list_bb[i]->name, 0x20);
+            istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_guild_rank_list_bb[i]->name, 0x20);
             len += 0x2C;
         }
 

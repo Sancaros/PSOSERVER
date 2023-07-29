@@ -225,7 +225,7 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
 
     memset(u8msg, 0, (len + 1) << 1);
 
-    istrncpy16(ic_utf16_to_gbk, u8msg, pkt->msg, (len + 1) << 1);
+    istrncpy16(ic_utf16_to_gb18030, u8msg, pkt->msg, (len + 1) << 1);
 
     /* Don't send the message if they have the protection flag on. */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -1389,8 +1389,8 @@ static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     //UNK_CPD(type, c->version, pkt);
 
     /* 转换房间 名称/密码 为 UTF-8格式 */
-    istrncpy16_raw(ic_utf16_to_gbk, name, pkt->name, 64, 16);
-    istrncpy16_raw(ic_utf16_to_gbk, passwd, pkt->password, 64, 16);
+    istrncpy16_raw(ic_utf16_to_gb18030, name, pkt->name, 64, 16);
+    istrncpy16_raw(ic_utf16_to_gb18030, passwd, pkt->password, 64, 16);
 
 #ifdef DEBUG
     LOBBY_LOG("创建游戏房间 章节 %d 难度 %d 人物等级 %d 需求等级 %d", pkt->episode,
@@ -2000,7 +2000,7 @@ static int process_bb_guild_member_remove(ship_client_t* c, bb_guild_member_remo
 
             if (c2->bb_guild->data.guild_priv_level < c->bb_guild->data.guild_priv_level) {
 
-                istrncpy16_raw(ic_utf16_to_gbk, guild_name, &c->bb_guild->data.guild_name[2], 30, 12);
+                istrncpy16_raw(ic_utf16_to_gb18030, guild_name, &c->bb_guild->data.guild_name[2], 30, 12);
 
                 send_msg(c2, MSG1_TYPE, "%s%s%s",
                     __(c2, "\tE您已被 "),
@@ -2770,6 +2770,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         type, c_cmd_name(type, 0), len, flags, c->guildcard);
     display_packet((unsigned char*)pkt, len);
 #endif // DEBUG
+    DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
+        type, c_cmd_name(type, 0), len, flags, c->guildcard);
+    display_packet((unsigned char*)pkt, len);
 
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {

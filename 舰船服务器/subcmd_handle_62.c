@@ -1869,8 +1869,8 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
-    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
@@ -1921,8 +1921,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
-    istrncpy16_raw(ic_utf16_to_gbk, inviter_name_text, &pkt->inviter_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
@@ -2055,8 +2055,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
-    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);
@@ -2089,8 +2089,8 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    istrncpy16_raw(ic_utf16_to_gbk, guild_name_text, &pkt->guild_name[2], 24, 12);
-    istrncpy16_raw(ic_utf16_to_gbk, master_name_text, &pkt->master_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
+    istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
     display_packet((uint8_t*)pkt, len);

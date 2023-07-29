@@ -45,7 +45,9 @@ int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {
     return 0;
 }
 
-char* get_player_name(player_t* pl, int version) {
+char* get_player_name(player_t* pl, int version, bool raw) {
+
+    memcpy(&player_name[0], 0, 24);
 
     switch (version)
     {
@@ -55,14 +57,24 @@ char* get_player_name(player_t* pl, int version) {
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
     case CLIENT_VERSION_XBOX:
-        return pl->v1.character.dress_data.guildcard_str.string;
+        if (raw)
+            istrncpy16_raw(ic_utf8_to_gb18030, player_name,
+                &pl->v1.character.dress_data.guildcard_str.string[0], 24, 16);
+        else
+            istrncpy16_raw(ic_utf16_to_gb18030, player_name,
+                &pl->v1.character.dress_data.guildcard_str.string[2], 24, 14);
 
     case CLIENT_VERSION_BB:
-        istrncpy16_raw(ic_utf16_to_gbk, player_name,
-            &pl->bb.character.name, 24, BB_CHARACTER_NAME_LENGTH);
-
-        return player_name;
+        if (raw)
+            istrncpy16_raw(ic_utf16_to_gb18030, player_name,
+                &pl->bb.character.name, 24, BB_CHARACTER_NAME_LENGTH);
+        else
+            istrncpy16_raw(ic_utf16_to_gb18030, player_name,
+                &pl->bb.character.name.char_name[0], 24, BB_CHARACTER_CHAR_NAME_LENGTH);
     }
 
-    return NULL;
+    if (player_name == NULL)
+        ERR_LOG("GC %s Íæ¼ÒÃû³ÆÎª¿Õ", &pl->v1.character.dress_data.guildcard_str.string[2]);
+
+    return player_name;
 }

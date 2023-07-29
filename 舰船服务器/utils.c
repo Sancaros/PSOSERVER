@@ -361,7 +361,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     out = 0x90;
     inptr = pkt->pcmaildata.stuff;
     outptr = text;
-    iconv(ic_utf16_to_gbk, &inptr, &in, &outptr, &out);
+    iconv(ic_utf16_to_gb18030, &inptr, &in, &outptr, &out);
 
     text[0x90] = '\0';
 
@@ -405,11 +405,11 @@ int bb_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
     out = 0x200;
     inptr = (char *)pkt->bbmaildata.message;
     outptr = text;
-    iconv(ic_utf16_to_gbk, &inptr, &in, &outptr, &out);
+    iconv(ic_utf16_to_gb18030, &inptr, &in, &outptr, &out);
 
     text[0x1FF] = '\0';
 
-    istrncpy16_raw(ic_utf16_to_gbk, name, &c->pl->bb.character.name.char_name[0], 64,
+    istrncpy16_raw(ic_utf16_to_gb18030, name, &c->pl->bb.character.name.char_name[0], 64,
         BB_CHARACTER_CHAR_NAME_LENGTH);
 
     /* Attempt to open up the file. */

@@ -211,7 +211,7 @@ static void* block_thd(void* d) {
                probably dead. Disconnect it. */
             if (srv_time > it->last_message + 90) {
                 if (it->bb_pl) {
-                    istrncpy16_raw(ic_utf16_to_gbk, nm,
+                    istrncpy16_raw(ic_utf16_to_gb18030, nm,
                         &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
                     DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
                 }
@@ -480,7 +480,7 @@ static void* block_thd(void* d) {
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->bb_pl && it->guildcard) {
-                    istrncpy16_raw(ic_utf16_to_gbk, nm,
+                    istrncpy16_raw(ic_utf16_to_gb18030, nm,
                         &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
                     DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
                 }
@@ -1361,7 +1361,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GameCube GC %d 已连接 IP %s",
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d GameCube 已连接 IP %s",
         ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
 
     return 0;
@@ -1765,7 +1765,7 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
 
     memset(u8msg, 0, (len + 1) << 1);
 
-    istrncpy16(ic_utf16_to_gbk, u8msg, (uint16_t*)pkt->msg, (len + 1) << 1);
+    istrncpy16(ic_utf16_to_gb18030, u8msg, (uint16_t*)pkt->msg, (len + 1) << 1);
 
     /* Check for commands. */
     if (pkt->msg[4] == '/') {
@@ -2126,7 +2126,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
     char name[32], password[16];
 
     /* Convert the name/password to the appropriate encoding. */
-    istrncpy16_raw(ic_utf16_to_gbk, name, pkt->name, 32, 16);
+    istrncpy16_raw(ic_utf16_to_gb18030, name, pkt->name, 32, 16);
     istrncpy16_raw(ic_utf16_to_ascii, password, pkt->password, 16, 16);
 
     /* Check the user's ability to create a game of that difficulty. */
@@ -3004,6 +3004,8 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
     DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
 
 #endif // DEBUG
+
+    DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
 
     switch (type) {
     case LOGIN_8B_TYPE:

@@ -254,7 +254,7 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     }
     else {
         //ic = iconv_open(UTF16LE, GBK);
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     //if (ic == (iconv_t)-1) {
@@ -330,7 +330,7 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     //}
 
     //ic = iconv_open(UTF16LE, GBK);
-    ic = ic_gbk_to_utf16;
+    ic = ic_gb18030_to_utf16;
 
     //if(ic == (iconv_t)-1) {
     //    perror("iconv_open");
@@ -744,7 +744,7 @@ static int send_initial_menu_pc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_pc[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_pc[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_pc[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_pc[count]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_pc[count]->name, len3);
         len += len2;
     }
 
@@ -822,7 +822,7 @@ static int send_initial_menu_bb(login_client_t* c) {
         pkt->entries[count].menu_id = LE32(pso_initial_menu_auth_bb[count]->menu_id);
         pkt->entries[count].item_id = LE32(pso_initial_menu_auth_bb[count]->item_id);
         pkt->entries[count].flags = LE16(pso_initial_menu_auth_bb[count]->flag);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_bb[count]->name, len3);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, pso_initial_menu_auth_bb[count]->name, len3);
         len += len2;
     }
 
@@ -1156,7 +1156,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
             sprintf(tmp, "%02X:%s", ship_num, row[1]);
 
         /* And convert to UTF-16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
@@ -1220,7 +1220,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
             strcpy(tmp, "舰船/Main");
 
         /* And convert to UTF-16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
@@ -1238,7 +1238,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
         pkt->entries[num_ships].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, no_ship_msg, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, no_ship_msg, 0x22);
 
         ++num_ships;
         len += 0x2C;
@@ -1250,7 +1250,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
         pkt->entries[num_ships].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, "断开连接", 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, "断开连接", 0x22);
 
         ++num_ships;
         len += 0x2C;
@@ -1287,7 +1287,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
     pkt->entries[num_ships].menu_id = LE32(MENU_ID_DATABASE);
     pkt->entries[num_ships].item_id = LE32(MENU_ID_INITIAL);
     pkt->entries[num_ships].flags = LE16(0x0004);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
     //memcpy(pkt->entries[num_ships].name, "S\0H\0I\0P\0/\0U\0S\0", 14);
 
     if(menu_code) {
@@ -1344,7 +1344,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
             sprintf(tmp, "%02X:%s", ship_num, row[1]);
 
         /* And convert to UTF-16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
@@ -1409,7 +1409,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
             strcpy(tmp, "舰船/Main");
 
         /* And convert to UTF-16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
 
         /* We're done with this ship, increment the counter */
         ++num_ships;
@@ -1427,7 +1427,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
         pkt->entries[num_ships].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, no_ship_msg, 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, no_ship_msg, 0x22);
 
         ++num_ships;
         len += 0x2C;
@@ -1440,7 +1440,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
         pkt->entries[num_ships].flags = LE16(0x0000);
 
         /* And convert to UTF16 */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[num_ships].name, "断开连接", 0x22);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, "断开连接", 0x22);
 
         ++num_ships;
         len += 0x2C;
@@ -1525,7 +1525,7 @@ static int send_info_reply_dc(login_client_t *c, uint16_t type, const char* fmt,
         }
     }
     else {
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
         //ic = iconv_open(UTF16LE, GBK);
     }
 
@@ -1607,7 +1607,7 @@ static int send_info_reply_bb(login_client_t *c, uint16_t type, const char* fmt,
     out = 65520;
     inptr = tm;
     outptr = (char*)pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
@@ -2391,7 +2391,7 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
     pkt->entries[0].menu_id = LE32(MENU_ID_DATABASE);
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = LE16(0x0004);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, "DATABASE/US", 0x12);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, "DATABASE/US", 0x12);
 
     /* Add each info item to the list. */
     for (i = 0; i < cfg->info_file_count; ++i) {
@@ -2419,7 +2419,7 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
         pkt->entries[entries].flags = LE16(0x0000);
 
         /* These are always ASCII, so this is fine */
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, cfg->info_files[i].desc, 0x20);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, cfg->info_files[i].desc, 0x20);
 
         len += 0x1C;
     }
@@ -2432,7 +2432,7 @@ static int send_bb_info_list(login_client_t* c, uint32_t ver) {
     pkt->entries[entries].item_id = LE32(ITEM_ID_LAST);
     pkt->entries[entries].flags = LE16(0x0000);
 
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[entries].name, "主菜单", 0x20);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[entries].name, "主菜单", 0x20);
     len += 0x1C;
 
     /* Fill in the rest of the header */
@@ -2716,7 +2716,7 @@ static int send_dc_message(login_client_t* c, uint16_t type, const char* fmt,
     }
     else {
         //ic = ic_utf8_to_utf16;
-        ic = ic_gbk_to_utf16;
+        ic = ic_gb18030_to_utf16;
     }
 
     //in = strlen(tm) + 1;
@@ -2796,7 +2796,7 @@ static int send_bb_message(login_client_t* c, uint16_t type, const char* fmt,
     out = 65520;
     inptr = tm;
     outptr = (char*)pkt->msg;
-    iconv(ic_gbk_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* Figure out how long the new string is. */
     len = 65520 - out + 0x10;
@@ -2926,7 +2926,7 @@ static int send_gm_menu_pc(login_client_t *c) {
     pkt->entries[count].menu_id = LE32(MENU_ID_GM);
     pkt->entries[count].item_id = LE32(ITEM_ID_GM_REF_QUESTS);
     pkt->entries[count].flags = LE16(0x0004);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "刷新任务", 0x11);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "刷新任务", 0x11);
     //ascii_to_utf16("Refresh Quests", pkt->entries[count].name, 0x11);
     ++count;
     len += 0x2C;
@@ -2935,7 +2935,7 @@ static int send_gm_menu_pc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(MENU_ID_GM);
         pkt->entries[count].item_id = LE32(ITEM_ID_GM_RESTART);
         pkt->entries[count].flags = LE16(0x0004);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "重启服务器", 0x11);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "重启服务器", 0x11);
         //ascii_to_utf16("Restart", pkt->entries[count].name, 0x11);
         ++count;
         len += 0x2C;
@@ -2943,7 +2943,7 @@ static int send_gm_menu_pc(login_client_t *c) {
         pkt->entries[count].menu_id = LE32(MENU_ID_GM);
         pkt->entries[count].item_id = LE32(ITEM_ID_GM_SHUTDOWN);
         pkt->entries[count].flags = LE16(0x0004);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "关闭服务器", 0x11);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "关闭服务器", 0x11);
         //ascii_to_utf16("Shutdown", pkt->entries[count].name, 0x11);
         ++count;
         len += 0x2C;
@@ -2952,7 +2952,7 @@ static int send_gm_menu_pc(login_client_t *c) {
     pkt->entries[count].menu_id = LE32(MENU_ID_GM);
     pkt->entries[count].item_id = LE32(0xFFFFFFFF);
     pkt->entries[count].flags = LE16(0x0F04);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "主菜单", 0x11);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "主菜单", 0x11);
     //ascii_to_utf16("Main Menu", pkt->entries[count].name, 0x11);
     ++count;
     len += 0x2C;
@@ -2984,7 +2984,7 @@ static int send_gm_menu_bb(login_client_t* c) {
     pkt->entries[count].menu_id = LE32(MENU_ID_GM);
     pkt->entries[count].item_id = LE32(ITEM_ID_GM_REF_QUESTS);
     pkt->entries[count].flags = LE16(0x0004);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "刷新任务", 0x12);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "刷新任务", 0x12);
     //ascii_to_utf16("Refresh Quests", pkt->entries[count].name, 0x11);
     ++count;
     len += 0x2C;
@@ -2993,7 +2993,7 @@ static int send_gm_menu_bb(login_client_t* c) {
         pkt->entries[count].menu_id = LE32(MENU_ID_GM);
         pkt->entries[count].item_id = LE32(ITEM_ID_GM_RESTART);
         pkt->entries[count].flags = LE16(0x0004);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "重启服务器", 0x12);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "重启服务器", 0x12);
         //ascii_to_utf16("Restart", pkt->entries[count].name, 0x11);
         ++count;
         len += 0x2C;
@@ -3001,7 +3001,7 @@ static int send_gm_menu_bb(login_client_t* c) {
         pkt->entries[count].menu_id = LE32(MENU_ID_GM);
         pkt->entries[count].item_id = LE32(ITEM_ID_GM_SHUTDOWN);
         pkt->entries[count].flags = LE16(0x0004);
-        istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "关闭服务器", 0x12);
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "关闭服务器", 0x12);
         //ascii_to_utf16("Shutdown", pkt->entries[count].name, 0x11);
         ++count;
         len += 0x2C;
@@ -3010,7 +3010,7 @@ static int send_gm_menu_bb(login_client_t* c) {
     pkt->entries[count].menu_id = LE32(MENU_ID_GM);
     pkt->entries[count].item_id = LE32(0xFFFFFFFF);
     pkt->entries[count].flags = LE16(0x0F04);
-    istrncpy(ic_gbk_to_utf16, (char*)pkt->entries[count].name, "主菜单", 0x12);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[count].name, "主菜单", 0x12);
     //ascii_to_utf16("Main Menu", pkt->entries[count].name, 0x11);
     ++count;
     len += 0x2C;
