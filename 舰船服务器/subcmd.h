@@ -3125,12 +3125,12 @@ typedef struct subcmd_bb_item_exchange_in_quest {
 } PACKED subcmd_bb_item_exchange_in_quest_t;
 
 // 0xDC: Saint-Million boss actions (BB)
-typedef struct subcmd_bb_UNKNOW_0xDC {
+typedef struct subcmd_bb_boss_act_saint_million {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED subcmd_bb_UNKNOW_0xDC_t;
+} PACKED subcmd_bb_boss_act_saint_million_t;
 
 // 0xDD:  Set EXP multiplier (BB)
 // header.param specifies the EXP multiplier. It is 1-based, so the value 2

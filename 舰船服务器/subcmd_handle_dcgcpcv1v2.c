@@ -2021,11 +2021,11 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
             rv = handle_done_talk_npc(c, (subcmd_select_done_t*)pkt);
             break;
 
-        case SUBCMD60_DRAGON_ACT:
+        case SUBCMD60_BOSS_ACT_DRAGON:
             rv = handle_dragon_act(c, (subcmd_dragon_act_t*)pkt);
             break;
 
-        case SUBCMD60_GDRAGON_ACT:
+        case SUBCMD60_BOSS_ACT_GDRAGON:
             rv = handle_gol_dragon_act(c, (subcmd_gol_dragon_act_t*)pkt);
             break;
 
@@ -2052,7 +2052,7 @@ int subcmd_handle_60(ship_client_t *c, subcmd_pkt_t *pkt) {
         case SUBCMD60_LOAD_22:
         case SUBCMD60_LOAD_3B:
         case SUBCMD60_WARP_55:
-        case SUBCMD60_LOBBY_ACTION:
+        case SUBCMD60_LOBBY_ACT:
         case SUBCMD60_GOGO_BALL:
         case SUBCMD60_CHAIR_CREATE:
         case SUBCMD60_CHAIR_TURN:

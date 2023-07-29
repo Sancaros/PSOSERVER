@@ -44,7 +44,7 @@
 #define SUBCMD62_TEKKED                        0xBA    /* Blue Burst - Client is tekked a weapon */
 #define SUBCMD62_OPEN_BANK                     0xBB    /* Blue Burst - open the bank menu */
 /////////////////////////////////////////////////////////////////////////////////////
-#define SUBCMD62_BANK_ACTION                   0xBD    /* Blue Burst - do something at the bank */
+#define SUBCMD62_BANK_ACT                      0xBD    /* Blue Burst - do something at the bank */
 /* Actions that can be performed at the bank with Subcommand 0xBD (0x62) */
 #define SUBCMD62_BANK_ACT_DEPOSIT              0
 #define SUBCMD62_BANK_ACT_TAKE                 1
@@ -100,14 +100,14 @@
 
 #define SUBCMD60_UNKNOW_10                     0x10
 #define SUBCMD60_UNKNOW_11                     0x11
-#define SUBCMD60_DRAGON_ACT                    0x12
-#define SUBCMD60_ACTION_DE_ROl_LE              0x13
-#define SUBCMD60_ACTION_DE_ROl_LE2             0x14
-#define SUBCMD60_ACTION_VOL_OPT                0x15
-#define SUBCMD60_ACTION_VOL_OPT2               0x16
+#define SUBCMD60_BOSS_ACT_DRAGON               0x12
+#define SUBCMD60_BOSS_ACT_DE_ROl_LE              0x13
+#define SUBCMD60_BOSS_ACT_DE_ROl_LE2             0x14
+#define SUBCMD60_BOSS_ACT_VOL_OPT                0x15
+#define SUBCMD60_BOSS_ACT_VOL_OPT2               0x16
 #define SUBCMD60_TELEPORT                      0x17    //SUBCMD60_TELEPORT_1
 #define SUBCMD60_UNKNOW_18                     0x18    /* Dragon special actions */
-#define SUBCMD60_ACTION_DARK_FALZ              0x19
+#define SUBCMD60_BOSS_ACT_DARK_FALZ              0x19
 
 // 6x1A: Invalid subcommand
 
@@ -188,7 +188,7 @@
 #define SUBCMD60_WARP_55                       0x55    /* 传送至总督府触发 */
 #define SUBCMD60_UNKNOW_56                     0x56
 #define SUBCMD60_UNKNOW_57                     0x57
-#define SUBCMD60_LOBBY_ACTION                  0x58
+#define SUBCMD60_LOBBY_ACT                     0x58
 #define SUBCMD60_ITEM_DELETE_IN_MAP            0x59    /* Sent by leader when item picked up */
 #define SUBCMD60_UNKNOW_5A                     0x5A
 
@@ -218,9 +218,9 @@
 #define SUBCMD60_UNKNOW_70                     0x70
 #define SUBCMD60_UNKNOW_71                     0x71
 #define SUBCMD60_BURST_DONE                    0x72
-#define SUBCMD60_WARP_SHIP                     0x73
+#define SUBCMD60_SHIP_WARP                     0x73
 #define SUBCMD60_WORD_SELECT                   0x74
-#define SUBCMD60_SET_FLAG                      0x75
+#define SUBCMD60_FLAG_SET                      0x75
 #define SUBCMD60_KILL_MONSTER                  0x76    /* A monster was killed. */
 #define SUBCMD60_SYNC_REG                      0x77    /* Sent when register is synced in quest */
 #define SUBCMD60_UNKNOW_78                     0x78
@@ -270,18 +270,18 @@
 #define SUBCMD60_UNKNOW_9C                     0x9C
 #define SUBCMD60_CH_GAME_FINISHED              0x9D
 #define SUBCMD60_UNKNOW_9E                     0x9E
-#define SUBCMD60_GAL_GRYPHON_ACT               0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
-#define SUBCMD60_GAL_GRYPHON_SACT              0xA0    /* Gal Gryphon special actions */
-#define SUBCMD60_SAVE_PLAYER_ACT               0xA1    /* Save player actions */
-#define SUBCMD60_OFB_BOSS_ACT                  0xA3    /* Olga Flow boss actions */
-#define SUBCMD60_OFP_1_BOSS_ACT                0xA4    /* Olga Flow phase 1 actions */
-#define SUBCMD60_OFP_2_BOSS_ACT                0xA5    /* Olga Flow phase 2 actions */
-#define SUBCMD60_GDRAGON_ACT                   0xA8    /* Gol Dragon special actions */
+#define SUBCMD60_BOSS_ACT_GAL_GRYPHON          0x9F    //Gal Gryphon actions(not valid on PC or Episode 3)
+#define SUBCMD60_BOSS_ACT_GAL_GRYPHON_SP       0xA0    /* Gal Gryphon special actions */
+#define SUBCMD60_PLAYER_ACT_SAVE               0xA1    /* Save player actions */
+#define SUBCMD60_BOSS_ACT_OFB                  0xA3    /* Olga Flow boss actions */
+#define SUBCMD60_BOSS_ACT_OFP_1                0xA4    /* Olga Flow phase 1 actions */
+#define SUBCMD60_BOSS_ACT_OFP_2                0xA5    /* Olga Flow phase 2 actions */
+#define SUBCMD60_BOSS_ACT_GDRAGON              0xA8    /* Gol Dragon special actions */
 #define SUBCMD60_UNKNOW_A9                     0xA9   // Barba Ray actions
 #define SUBCMD60_UNKNOW_AA                     0xAA   // Episode 2 boss actions
 #define SUBCMD60_CHAIR_CREATE                  0xAB   // 生成大厅座椅
 #define SUBCMD60_UNKNOW_AC                     0xAC
-#define SUBCMD60_OFP_2_SUB_BOSS_ACT            0xAD   // Olga Flow phase 2 subordinate boss actions
+#define SUBCMD60_BOSS_ACT_OFP_2_SP             0xAD   // Olga Flow phase 2 subordinate boss actions
 #define SUBCMD62_CHAIR_STATE                   0xAE   // 向新进入大厅的玩家发送座椅状态
 #define SUBCMD60_CHAIR_TURN                    0xAF   // 旋转椅子朝向
 #define SUBCMD60_CHAIR_MOVE                    0xB0   // 移动椅子
@@ -314,7 +314,7 @@
 #define SUBCMD60_ITEM_EXCHANGE_MOMOKA          0xD9   // Momoka Item Exchange  Momoka物品交换 
 #define SUBCMD60_PD_COMPARE                    0xDA
 #define SUBCMD60_ITEM_EXCHANGE_IN_QUEST        0xDB
-#define SUBCMD60_UNKNOW_DC                     0xDC
+#define SUBCMD60_BOSS_ACT_SAINT_MILLION        0xDC
 #define SUBCMD60_SET_EXP_RATE                  0xDD
 #define SUBCMD60_UNKNOW_DE                     0xDE
 #define SUBCMD60_GALLON_PLAN                   0xE1

@@ -9290,7 +9290,7 @@ static int send_dc_warp(ship_client_t *c, uint8_t area, bool lobby) {
     if (lobby)
         pkt->shdr.type = SUBCMD60_WARP_LOBBY;
     else
-        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+        pkt->shdr.type = SUBCMD60_SHIP_WARP;
     pkt->shdr.size = 0x02;
     pkt->shdr.client_id = c->client_id;
 
@@ -9317,7 +9317,7 @@ static int send_pc_warp(ship_client_t *c, uint8_t area, bool lobby) {
     if (lobby)
         pkt->shdr.type = SUBCMD60_WARP_LOBBY;
     else
-        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+        pkt->shdr.type = SUBCMD60_SHIP_WARP;
     pkt->shdr.size = 0x02;
     pkt->shdr.client_id = c->client_id;
 
@@ -9344,7 +9344,7 @@ static int send_bb_warp(ship_client_t *c, uint8_t area, bool lobby) {
     if(lobby)
         pkt->shdr.type = SUBCMD60_WARP_LOBBY;
     else
-        pkt->shdr.type = SUBCMD60_WARP_SHIP;
+        pkt->shdr.type = SUBCMD60_SHIP_WARP;
     pkt->shdr.size = 0x02;
     pkt->shdr.client_id= c->client_id;
 
