@@ -2770,9 +2770,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         type, c_cmd_name(type, 0), len, flags, c->guildcard);
     display_packet((unsigned char*)pkt, len);
 #endif // DEBUG
-    DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
-        type, c_cmd_name(type, 0), len, flags, c->guildcard);
-    display_packet((unsigned char*)pkt, len);
 
     /* 整合为综合指令集 */
     switch (type & 0x00FF) {

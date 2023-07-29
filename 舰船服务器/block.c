@@ -3005,8 +3005,6 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
 #endif // DEBUG
 
-    DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
-
     switch (type) {
     case LOGIN_8B_TYPE:
         return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);

@@ -1552,36 +1552,45 @@ static int handle_teleport(ship_client_t *c, const char *params) {
     }
 }
 
-static void dumpinv_internal(ship_client_t *c) {
-    //char name[64];
+static void dumpinv_internal(ship_client_t *src) {
+    char name[64];
+    psocn_v1v2v3pc_char_t* player_v1 = { 0 };
+    psocn_bb_char_t* player_bb = { 0 };
     int i;
-    int v = c->version;
+    int v = src->version;
 
     if(v != CLIENT_VERSION_BB) {
-        ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d) 背包数据转储", get_player_name(c->pl, c->version, false),
-              c->guildcard);
+        player_v1 = &src->pl->v1.character;
 
-        for(i = 0; i < c->item_count; ++i) {
-            print_iitem_data(&c->iitems[i], i, c->version);
+        if (src->mode)
+            player_v1 = &src->mode_pl->nobb;
+
+        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", src->pl->v1.character.dress_data.guildcard_str.string,
+              src->guildcard, src->sec_data.slot);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("背包物品数量: %u", player_v1->inv.item_count);
+
+        for(i = 0; i < player_v1->inv.item_count; ++i) {
+            print_iitem_data(&player_v1->inv.iitems[i], i, src->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
     else {
-        psocn_bb_char_t* player = &c->bb_pl->character;
+        player_bb = &src->bb_pl->character;
 
-        if (c->mode)
-            player = &c->mode_pl->bb;
+        if (src->mode)
+            player_bb = &src->mode_pl->bb;
 
-        //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
-        //    BB_CHARACTER_CHAR_NAME_WLENGTH);
+        istrncpy16_raw(ic_utf16_to_gb18030, name, &src->bb_pl->character.name.char_name[0], 64,
+            BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("------------------------------------------------------------");
-        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", get_player_name(c->pl, c->version, false), c->guildcard, c->sec_data.slot);
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
-        ITEM_LOG("背包物品数量: %u", player->inv.item_count);
+        ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", name, src->guildcard, src->sec_data.slot);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("背包物品数量: %u", player_bb->inv.item_count);
 
-        for (i = 0; i < player->inv.item_count; ++i) {
-            print_iitem_data(&player->inv.iitems[i], i, c->version);
+        for (i = 0; i < player_bb->inv.item_count; ++i) {
+            print_iitem_data(&player_bb->inv.iitems[i], i, src->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
@@ -1589,15 +1598,15 @@ static void dumpinv_internal(ship_client_t *c) {
 }
 
 /* 用法: /dbginv [l/client_id/guildcard] */
-static int handle_dbginv(ship_client_t* c, const char* params) {
-    lobby_t* l = c->cur_lobby;
+static int handle_dbginv(ship_client_t* src, const char* params) {
+    lobby_t* l = src->cur_lobby;
     lobby_item_t* j;
     int do_lobby;
     uint32_t client;
 
     /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(c)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
 
     do_lobby = params && !strcmp(params, "l");
@@ -1608,7 +1617,7 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
 
         if (l->type != LOBBY_TYPE_GAME || l->version != CLIENT_VERSION_BB) {
             pthread_mutex_unlock(&l->mutex);
-            return send_txt(c, "%s", __(c, "\tE\tC7无效请求或非BB版本客户端."));
+            return send_txt(src, "%s", __(src, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
         SHIPS_LOG("------------------------------------------------------------");
@@ -1616,7 +1625,7 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
             l->lobby_id);
 
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            print_item_data(&j->data.data, c->version);
+            print_item_data(&j->data.data, src->version);
             //SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
             //    LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
             //    LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
@@ -1628,7 +1637,7 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
     }
     /* If there's no arguments, then dump the caller's inventory. */
     else if (!params || params[0] == '\0') {
-        dumpinv_internal(c);
+        dumpinv_internal(src);
     }
     /* Otherwise, try to parse the arguments. */
     else {
@@ -1637,7 +1646,7 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
         client = (int)strtoul(params, NULL, 10);
 
         if (errno) {
-            return send_txt(c, "%s", __(c, "\tE\tC7无效目标."));
+            return send_txt(src, "%s", __(src, "\tE\tC7无效目标."));
         }
 
         /* See if we have a client ID or a guild card number... */
@@ -1646,7 +1655,7 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
 
             if (client >= 4 && l->type == LOBBY_TYPE_GAME) {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+                return send_txt(src, "%s", __(src, "\tE\tC7无效 Client ID."));
             }
 
             if (l->clients[client]) {
@@ -1654,24 +1663,24 @@ static int handle_dbginv(ship_client_t* c, const char* params) {
             }
             else {
                 pthread_mutex_unlock(&l->mutex);
-                return send_txt(c, "%s", __(c, "\tE\tC7无效 Client ID."));
+                return send_txt(src, "%s", __(src, "\tE\tC7无效 Client ID."));
             }
 
             pthread_mutex_unlock(&l->mutex);
         }
         /* Otherwise, assume we're looking for a guild card number. */
         else {
-            ship_client_t* target = block_find_client(c->cur_block, client);
+            ship_client_t* target = block_find_client(src->cur_block, client);
 
             if (!target) {
-                return send_txt(c, "%s", __(c, "\tE\tC7未找到请求的玩家."));
+                return send_txt(src, "%s", __(src, "\tE\tC7未找到请求的玩家."));
             }
 
             dumpinv_internal(target);
         }
     }
 
-    return send_txt(c, "%s", __(c, "\tE\tC7已转储的背包数据到日志文件."));
+    return send_txt(src, "%s", __(src, "\tE\tC7已转储的背包数据到日志文件."));
 }
 
 static void dumpbank_internal(ship_client_t* c) {
