@@ -94,7 +94,7 @@ int pt_read_v2(const char* fn) {
 	pso_afs_read_t* a;
 	pso_error_t err;
 	ssize_t sz;
-	int rv = 0, i, j, k;
+	int rv = 0, i, j/*, k*/;
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 	int l;
 #endif
@@ -132,7 +132,7 @@ int pt_read_v2(const char* fn) {
 
 			/* Grab the data... */
 			sz = sizeof(fpt_v2_entry_t);
-			if (pso_afs_file_read(a, i * 10 + j, (uint8_t*)buf,
+			if (pso_afs_file_read(a, i * 10 + j, buf,
 				(size_t)sz) != sz) {
 				ERR_LOG("无法读取 %s 数据!", fn);
 				rv = -4;
@@ -142,74 +142,76 @@ int pt_read_v2(const char* fn) {
 			/* Dump it into our nicer (not packed) structure. */
 			ent = &v2_ptdata[i][j];
 
+			memcpy(ent, buf, sz);
+
 			//display_packet(buf, sz);
 
-			//for (int x = 0; x < 12; x++) {
-			//	DBG_LOG("weapon_ratio %f", buf->weapon_ratio[x]);
+			for (int x = 0; x < 12; x++) {
+				DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
+			}
+
+			//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
+			//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
+			//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
+			//memcpy(ent->element_ranking, buf->element_ranking, 10);
+			//memcpy(ent->element_probability, buf->element_probability, 10);
+			//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
+			//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
+			//memcpy(ent->unit_level, buf->unit_level, 10);
+			//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
+			//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
+			//ent->armor_level = LE32(buf->armor_level);
+
+			//for (k = 0; k < 9; ++k) {
+			//	memcpy(ent->power_pattern[k], buf->power_pattern[k], 4);
 			//}
 
-			memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-			memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-			memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-			memcpy(ent->element_ranking, buf->element_ranking, 10);
-			memcpy(ent->element_probability, buf->element_probability, 10);
-			memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-			memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-			memcpy(ent->unit_level, buf->unit_level, 10);
-			memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-			memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-			ent->armor_level = LE32(buf->armor_level);
+			//for (k = 0; k < 23; ++k) {
+			//	memcpy(ent->percent_pattern[k], buf->percent_pattern[k], 5);
+			//}
 
-			for (k = 0; k < 9; ++k) {
-				memcpy(ent->power_pattern[k], buf->power_pattern[k], 4);
-			}
+			//for (k = 0; k < 3; ++k) {
+			//	memcpy(ent->area_pattern[k], buf->area_pattern[k], 10);
+			//}
 
-			for (k = 0; k < 23; ++k) {
-				memcpy(ent->percent_pattern[k], buf->percent_pattern[k], 5);
-			}
+			//for (k = 0; k < 6; ++k) {
+			//	memcpy(ent->percent_attachment[k], buf->percent_attachment[k],
+			//		10);
+			//}
 
-			for (k = 0; k < 3; ++k) {
-				memcpy(ent->area_pattern[k], buf->area_pattern[k], 10);
-			}
+			//for (k = 0; k < 7; ++k) {
+			//	memcpy(ent->box_drop[k], buf->box_drop[k], 10);
+			//}
 
-			for (k = 0; k < 6; ++k) {
-				memcpy(ent->percent_attachment[k], buf->percent_attachment[k],
-					10);
-			}
-
-			for (k = 0; k < 7; ++k) {
-				memcpy(ent->box_drop[k], buf->box_drop[k], 10);
-			}
-
-			for (k = 0; k < 28; ++k) {
-				memcpy(ent->tool_frequency[k], buf->tool_frequency[k], 20);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+			for (k = 0; k < 28; ++k) {
+				//memcpy(ent->tool_frequency[k], buf->tool_frequency[k], 20);
 				for (l = 0; l < 10; ++l) {
 					ent->tool_frequency[k][l] = LE16(ent->tool_frequency[k][l]);
 				}
+			}
 #endif
-			}
 
-			for (k = 0; k < 19; ++k) {
-				memcpy(ent->tech_frequency[k], buf->tech_frequency[k], 10);
-				memcpy(ent->tech_levels[k], buf->tech_levels[k], 20);
-			}
+			//for (k = 0; k < 19; ++k) {
+			//	memcpy(ent->tech_frequency[k], buf->tech_frequency[k], 10);
+			//	memcpy(ent->tech_levels[k], buf->tech_levels[k], 20);
+			//}
 
-			for (k = 0; k < 100; ++k) {
-				memcpy(ent->enemy_meseta[k], buf->enemy_meseta[k], 4);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+			for (k = 0; k < 100; ++k) {
+				//memcpy(ent->enemy_meseta[k], buf->enemy_meseta[k], 4);
 				ent->enemy_meseta[k][0] = LE16(ent->enemy_meseta[k][0]);
 				ent->enemy_meseta[k][1] = LE16(ent->enemy_meseta[k][1]);
-#endif
 			}
+#endif
 
-			for (k = 0; k < 10; ++k) {
-				memcpy(ent->box_meseta[k], buf->box_meseta[k], 4);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+			for (k = 0; k < 10; ++k) {
+				//memcpy(ent->box_meseta[k], buf->box_meseta[k], 4);
 				ent->box_meseta[k][0] = LE16(ent->box_meseta[k][0]);
 				ent->box_meseta[k][1] = LE16(ent->box_meseta[k][1]);
-#endif
 			}
+#endif
 		}
 	}
 
@@ -229,7 +231,7 @@ int pt_read_v3(const char* fn) {
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_v3_entry_t);
 	pso_error_t err;
-	int rv = 0, i, j, k, l, m;
+	int rv = 0, 章节, 难度, 颜色/*, l, m*/;
 	fpt_v3_entry_t* buf;
 	pt_v3_entry_t* ent;
 
@@ -253,13 +255,13 @@ int pt_read_v3(const char* fn) {
 	}
 
 	/* Now, parse each entry... */
-	for (i = 0; i < 4; ++i) {
-		for (j = 0; j < 4; ++j) {
-			for (k = 0; k < 10; ++k) {
+	for (章节 = 0; 章节 < 4; ++章节) {
+		for (难度 = 0; 难度 < 4; ++难度) {
+			for (颜色 = 0; 颜色 < 10; ++颜色) {
 				/* Figure out the name of the file in the archive that we're
 				   looking for... */
-				snprintf(filename, 32, "ItemPT%s%c%d.rel", episodes[i],
-					difficulties[j], k);
+				snprintf(filename, 32, "ItemPT%s%c%d.rel", episodes[章节],
+					difficulties[难度], 颜色);
 
 				//printf("%s \n", filename);
 
@@ -287,65 +289,67 @@ int pt_read_v3(const char* fn) {
 				}
 
 				/* Dump it into our nicer (not packed) structure. */
-				ent = &gc_ptdata[i][j][k];
+				ent = &gc_ptdata[章节][难度][颜色];
 
-				memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-				memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-				memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-				memcpy(ent->element_ranking, buf->element_ranking, 10);
-				memcpy(ent->element_probability, buf->element_probability, 10);
-				memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-				memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-				memcpy(ent->unit_level, buf->unit_level, 10);
-				memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-				memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-				ent->armor_level = ntohl(buf->armor_level);
+				memcpy(ent, buf, sz);
 
-				for (l = 0; l < 9; ++l) {
-					memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
-				}
+				//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
+				//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
+				//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
+				//memcpy(ent->element_ranking, buf->element_ranking, 10);
+				//memcpy(ent->element_probability, buf->element_probability, 10);
+				//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
+				//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
+				//memcpy(ent->unit_level, buf->unit_level, 10);
+				//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
+				//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
+				//ent->armor_level = ntohl(buf->armor_level);
 
-				for (l = 0; l < 3; ++l) {
-					memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
-				}
+				//for (l = 0; l < 9; ++l) {
+				//	memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
+				//}
 
-				for (l = 0; l < 6; ++l) {
-					memcpy(ent->percent_attachment[l],
-						buf->percent_attachment[l], 10);
-				}
+				//for (l = 0; l < 3; ++l) {
+				//	memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
+				//}
 
-				for (l = 0; l < 7; ++l) {
-					memcpy(ent->box_drop[l], buf->box_drop[l], 10);
-				}
+				//for (l = 0; l < 6; ++l) {
+				//	memcpy(ent->percent_attachment[l],
+				//		buf->percent_attachment[l], 10);
+				//}
 
-				for (l = 0; l < 19; ++l) {
-					memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
-					memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
-				}
+				//for (l = 0; l < 7; ++l) {
+				//	memcpy(ent->box_drop[l], buf->box_drop[l], 10);
+				//}
 
-				for (l = 0; l < 23; ++l) {
-					for (m = 0; m < 6; ++m) {
-						ent->percent_pattern[l][m] =
-							ntohs(buf->percent_pattern[l][m]);
-					}
-				}
+				//for (l = 0; l < 19; ++l) {
+				//	memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
+				//	memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
+				//}
 
-				for (l = 0; l < 28; ++l) {
-					for (m = 0; m < 10; ++m) {
-						ent->tool_frequency[l][m] =
-							ntohs(buf->tool_frequency[l][m]);
-					}
-				}
+				//for (l = 0; l < 23; ++l) {
+				//	for (m = 0; m < 6; ++m) {
+				//		ent->percent_pattern[l][m] =
+				//			ntohs(buf->percent_pattern[l][m]);
+				//	}
+				//}
 
-				for (l = 0; l < 100; ++l) {
-					ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
-					ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
-				}
+				//for (l = 0; l < 28; ++l) {
+				//	for (m = 0; m < 10; ++m) {
+				//		ent->tool_frequency[l][m] =
+				//			ntohs(buf->tool_frequency[l][m]);
+				//	}
+				//}
 
-				for (l = 0; l < 10; ++l) {
-					ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
-					ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
-				}
+				//for (l = 0; l < 100; ++l) {
+				//	ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
+				//	ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
+				//}
+
+				//for (l = 0; l < 10; ++l) {
+				//	ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
+				//	ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
+				//}
 			}
 		}
 	}
@@ -367,7 +371,7 @@ int pt_read_bb(const char* fn) {
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_bb_entry_t);
 	pso_error_t err;
-	int rv = 0, 章节, 难度, 颜色, l, m;
+	int rv = 0, 章节, 难度, 颜色/*, l, m*/;
 	fpt_bb_entry_t* buf;
 	pt_bb_entry_t* ent;
 
@@ -417,7 +421,7 @@ int pt_read_bb(const char* fn) {
 					goto out;
 				}
 
-				if (pso_gsl_file_read(a, hnd, (uint8_t*)buf, sz) != sz) {
+				if (pso_gsl_file_read(a, hnd, buf, sz) != sz) {
 					ERR_LOG("读取 %s 错误,路径 %s!",
 						filename, fn);
 					rv = -5;
@@ -427,89 +431,97 @@ int pt_read_bb(const char* fn) {
 				/* Dump it into our nicer (not packed) structure. */
 				ent = &bb_ptdata[章节][难度][颜色];
 
+				memcpy(ent, buf, sz);
+
 				//display_packet(buf, sz);
 
-				DBG_LOG("%s", filename);
-
-				for (int x = 0; x < 12; x++) {
-					DBG_LOG("weapon_ratio %f", buf->weapon_ratio[x]);
-				}
+				//DBG_LOG("%s", filename);
 
 				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_minrank %f", buf->weapon_minrank[x]);
+				//	DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
+				//}
+
+				//DBG_LOG("base_weapon_type_prob_table_offset 0x%zX", ent->base_weapon_type_prob_table_offset);
+
+				//DBG_LOG("subtype_base_table_offset 0x%zX", ent->subtype_base_table_offset);
+				//DBG_LOG("subtype_area_length_table_offset 0x%zX", ent->subtype_area_length_table_offset);
+				//for (int x = 0; x < 12; x++) {
+				//	DBG_LOG("weapon_minrank 0x%zX", ent->weapon_minrank[x]);
 				//}
 
 				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_upgfloor %f", buf->weapon_upgfloor[x]);
+				//	DBG_LOG("weapon_upgfloor 0x%zX", ent->weapon_upgfloor[x]);
 				//}
 
 				//for (int x = 0; x < 10; x++) {
-				//	DBG_LOG("element_ranking %f", buf->element_ranking[x]);
+				//	DBG_LOG("element_ranking 0x%zX", ent->element_ranking[x]);
 				//}
 
-				memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-				memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-				memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-				memcpy(ent->element_ranking, buf->element_ranking, 10);
-				memcpy(ent->element_probability, buf->element_probability, 10);
-				memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-				memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-				memcpy(ent->unit_level, buf->unit_level, 10);
+				//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
+				//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
+				//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
+				//memcpy(ent->element_ranking, buf->element_ranking, 10);
+				//memcpy(ent->element_probability, buf->element_probability, 10);
+				//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
+				//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
+				//memcpy(ent->unit_level, buf->unit_level, 10);
 
-				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_ratio %f", buf->weapon_ratio[x]);
+				////for (int x = 0; x < 12; x++) {
+				////	DBG_LOG("weapon_ratio %f", buf->weapon_ratio[x]);
+				////}
+
+
+				//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
+				//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
+				//ent->armor_level = ntohl(buf->armor_level);
+				//
+				//DBG_LOG("armor_level 0x%zX 0x%zX", ent->armor_level, buf->armor_level);
+
+				//for (l = 0; l < 9; ++l) {
+				//	memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
 				//}
 
+				//for (l = 0; l < 3; ++l) {
+				//	memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
+				//}
 
-				memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-				memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-				ent->armor_level = ntohl(buf->armor_level);
+				//for (l = 0; l < 6; ++l) {
+				//	memcpy(ent->percent_attachment[l],
+				//		buf->percent_attachment[l], 10);
+				//}
 
-				for (l = 0; l < 9; ++l) {
-					memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
-				}
+				//for (l = 0; l < 7; ++l) {
+				//	memcpy(ent->box_drop[l], buf->box_drop[l], 10);
+				//}
 
-				for (l = 0; l < 3; ++l) {
-					memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
-				}
+				//for (l = 0; l < 19; ++l) {
+				//	memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
+				//	memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
+				//}
 
-				for (l = 0; l < 6; ++l) {
-					memcpy(ent->percent_attachment[l],
-						buf->percent_attachment[l], 10);
-				}
+				//for (l = 0; l < 23; ++l) {
+				//	for (m = 0; m < 6; ++m) {
+				//		ent->percent_pattern[l][m] =
+				//			ntohs(buf->percent_pattern[l][m]);
+				//	}
+				//}
 
-				for (l = 0; l < 7; ++l) {
-					memcpy(ent->box_drop[l], buf->box_drop[l], 10);
-				}
+				//for (l = 0; l < 28; ++l) {
+				//	for (m = 0; m < 10; ++m) {
+				//		ent->tool_frequency[l][m] =
+				//			ntohs(buf->tool_frequency[l][m]);
+				//	}
+				//}
 
-				for (l = 0; l < 19; ++l) {
-					memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
-					memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
-				}
+				//for (l = 0; l < 100; ++l) {
+				//	ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
+				//	ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
+				//}
 
-				for (l = 0; l < 23; ++l) {
-					for (m = 0; m < 6; ++m) {
-						ent->percent_pattern[l][m] =
-							ntohs(buf->percent_pattern[l][m]);
-					}
-				}
-
-				for (l = 0; l < 28; ++l) {
-					for (m = 0; m < 10; ++m) {
-						ent->tool_frequency[l][m] =
-							ntohs(buf->tool_frequency[l][m]);
-					}
-				}
-
-				for (l = 0; l < 100; ++l) {
-					ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
-					ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
-				}
-
-				for (l = 0; l < 10; ++l) {
-					ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
-					ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
-				}
+				//for (l = 0; l < 10; ++l) {
+				//	ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
+				//	ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
+				//}
 			}
 		}
 	}
@@ -1430,7 +1442,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 		}
 
 		/* Figure out what the byte we'll use is */
-		armor = ((int)ent->armor_level) - 3 + area + armor;
+		armor = (ent->armor_level) - 3 + area + armor;
 
 		if (armor < 0)
 			armor = 0;

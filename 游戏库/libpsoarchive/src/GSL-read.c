@@ -287,7 +287,7 @@ psize_t pso_gsl_file_size(pso_gsl_read_t* a, uint32_t hnd) {
     return (psize_t)a->files[hnd].size;
 }
 
-psize_t pso_gsl_file_read(pso_gsl_read_t* a, uint32_t hnd, uint8_t* buf,
+psize_t pso_gsl_file_read(pso_gsl_read_t* a, uint32_t hnd, void* buf,
     size_t len) {
     /* Make sure the arguments are sane... */
     if (!a || hnd > a->file_count || !buf || !len)

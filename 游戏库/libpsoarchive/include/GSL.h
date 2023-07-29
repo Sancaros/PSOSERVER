@@ -52,7 +52,7 @@ psize_t pso_gsl_file_size(pso_gsl_read_t* a, uint32_t hnd);
 pso_error_t pso_gsl_file_name(pso_gsl_read_t* a, uint32_t hnd, char* fn,
     size_t len);
 
-psize_t pso_gsl_file_read(pso_gsl_read_t* a, uint32_t hnd, uint8_t* buf,
+psize_t pso_gsl_file_read(pso_gsl_read_t* a, uint32_t hnd, void* buf,
     size_t len);
 
 /* Archive creation/writing functionality... */

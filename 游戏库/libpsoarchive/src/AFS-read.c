@@ -398,7 +398,7 @@ pso_error_t pso_afs_file_stat(pso_afs_read_t* a, uint32_t hnd,
     return PSOARCHIVE_OK;
 }
 
-psize_t pso_afs_file_read(pso_afs_read_t* a, uint32_t hnd, uint8_t* buf,
+psize_t pso_afs_file_read(pso_afs_read_t* a, uint32_t hnd, void* buf,
     size_t len) {
     /* Make sure the arguments are sane... */
     if (!a || hnd > a->file_count || !buf || !len)
