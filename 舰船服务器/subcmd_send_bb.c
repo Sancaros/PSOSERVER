@@ -54,7 +54,7 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, i
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 单人掉落堆叠物品*/
-int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, iitem_t* iitem, uint32_t amount) {
+int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t area, float x, float z, item_t item, uint32_t amount) {
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
 
@@ -65,7 +65,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 
     dc.shdr.type = SUBCMD60_DROP_STACK;
     dc.shdr.size = 0x0A;
-    dc.shdr.client_id = src->client_id;
+    dc.shdr.client_id = drop_src_id;
 
 
     bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
@@ -74,24 +74,24 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
     bb.shdr.size = 0x09;
-    bb.shdr.client_id = src->client_id;
+    bb.shdr.client_id = drop_src_id;
 
     dc.area = LE16(area);
     bb.area = LE32(area);
     bb.x = dc.x = x;
     bb.z = dc.z = z;
 
-    bb.data = dc.data = iitem->data;
+    bb.data = dc.data = item;
 
-    if (iitem->data.datab[0] == ITEM_TYPE_MESETA)
-        bb.data.data2l = dc.data.data2l = iitem->data.data2l;
+    if (item.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = item.data2l;
     else
         bb.data.datab[5] = dc.data.datab[5] = amount;
 
     bb.two = dc.two = LE32(0x00000002);
 
     if (src->version == CLIENT_VERSION_GC)
-        dc.data.data2l = SWAP32(iitem->data.data2l);
+        dc.data.data2l = SWAP32(item.data2l);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
@@ -111,7 +111,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint32_t area, float x, float z, 
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
-int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint32_t area, float x, float z, iitem_t* item, uint32_t amount) {
+int subcmd_send_lobby_drop_stack(ship_client_t* src, uint16_t drop_src_id, ship_client_t* nosend, uint32_t area, float x, float z, item_t item, uint32_t amount) {
     lobby_t* l = src->cur_lobby;
 
     if (!l) {
@@ -128,7 +128,7 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, ship_client_t* nosend, uint
                 continue;
             }
 
-            subcmd_send_drop_stack(l->clients[i], area, x, z, item, amount);
+            subcmd_send_drop_stack(l->clients[i], drop_src_id, area, x, z, item, amount);
         }
     }
 
@@ -328,7 +328,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_lobby_drop_stack(c, NULL, c->drop_area, c->x, c->z, ii_meseta, count))
+        if (subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, count))
             return -1;
     }
 

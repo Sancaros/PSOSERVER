@@ -175,7 +175,7 @@ static void* block_thd(void* d) {
 #ifdef DEBUG
     char ipstr[INET6_ADDRSTRLEN];
 #endif // DEBUG
-    char nm[64];
+    //char nm[64];
     int sock;
     ssize_t sent;
     //time_t now;
@@ -210,13 +210,8 @@ static void* block_thd(void* d) {
             /* If we haven't heard from a client in a minute and a half, it is
                probably dead. Disconnect it. */
             if (srv_time > it->last_message + 90) {
-                if (it->bb_pl) {
-                    istrncpy16_raw(ic_utf16_to_gb18030, nm,
-                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
-                    DC_LOG("Ping 超时: %s(%d)", nm, it->guildcard);
-                }
-                else if (it->pl) {
-                    DC_LOG("Ping 超时: %s(%d)", it->pl->v1.character.dress_data.guildcard_str.string,
+                if (it->pl) {
+                    DC_LOG("Ping 超时: %s(%d)", get_player_name(it->pl, it->version, false),
                         it->guildcard);
                 }
 
@@ -479,13 +474,8 @@ static void* block_thd(void* d) {
             tmp = TAILQ_NEXT(it, qentry);
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
-                if (it->bb_pl && it->guildcard) {
-                    istrncpy16_raw(ic_utf16_to_gb18030, nm,
-                        &it->pl->bb.character.name.char_name[0], 64, BB_CHARACTER_CHAR_NAME_LENGTH);
-                    DC_LOG("客户端 %s(%d) 断开连接", nm, it->guildcard);
-                }
-                else if (it->pl && it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接", it->pl->v1.character.dress_data.guildcard_str.string,
+                if (it->guildcard) {
+                    DC_LOG("客户端 %s(%d) 断开连接", get_player_name(it->pl, it->version, false), 
                         it->guildcard);
                 }
 #ifdef DEBUG

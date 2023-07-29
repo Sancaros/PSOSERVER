@@ -32,6 +32,31 @@
 #include "packets.h"
 #include "pso_StringReader.h"
 
+char abbreviation_for_difficulty(uint8_t difficulty) {
+    char abbreviation = '?';
+
+    switch (difficulty) {
+    case 0:
+        abbreviation = 'N';
+        break;
+    case 1:
+        abbreviation = 'H';
+        break;
+    case 2:
+        abbreviation = 'V';
+        break;
+    case 3:
+        abbreviation = 'U';
+        break;
+    default:
+        // 在给定的范围之外，默认返回 '?'
+        abbreviation = '?';
+        break;
+    }
+
+    return abbreviation;
+}
+
 uint32_t quest_search_enemy_list(uint32_t id, qenemy_t *list, int len, int sd) {
     int i;
     uint32_t mask = sd ? PSOCN_QUEST_ENDROP_SDROPS :

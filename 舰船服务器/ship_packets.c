@@ -106,6 +106,8 @@ static gm_opt_t gm_opts[] = {
         CLIENT_PRIV_LOCAL_GM    , "游戏节日"          },
     {   MENU_ID_GM              , ITEM_ID_GM_LOBBY_EVENT, 0x07,
         CLIENT_PRIV_LOCAL_GM    , "大厅节日"          },
+    {   MENU_ID_GM              , ITEM_ID_GM_LOBBY_SET  , 0x07,
+        CLIENT_PRIV_LOCAL_GM    , "GM房间设置"        },
     {   MENU_ID_GM_SHUTDOWN     , 1                     , 0x07,
         CLIENT_PRIV_LOCAL_ROOT  , "1 分钟"            },
     {   MENU_ID_GM_SHUTDOWN     , 5                     , 0x07,
@@ -168,6 +170,10 @@ static gm_opt_t gm_opts[] = {
         CLIENT_PRIV_LOCAL_GM    , "白色情人节 (特殊)" },
     {   MENU_ID_GM_LOBBY_EVENT  , LOBBY_EVENT_ALT_NORMAL, 0x07,
         CLIENT_PRIV_LOCAL_GM    , "正常 (替代)"       },
+    {   MENU_ID_GM_LOBBY_SET    , LOBBY_SET_NONE        , 0x07,
+        CLIENT_PRIV_LOCAL_GM    , "默认设置"          },
+    {   MENU_ID_GM_LOBBY_SET    , LOBBY_SET_DROP_RARE   , 0x07,
+        CLIENT_PRIV_LOCAL_GM    , "全局稀有掉落"      },
     /* End of list marker -- Do not remove */
     {   0                       , 0                     , 0x00,
         0                       , ""                }

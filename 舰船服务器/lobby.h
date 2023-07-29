@@ -305,6 +305,10 @@ TAILQ_HEAD(lobby_queue, lobby);
 #define LOBBY_EVENT_SPRINGFLAG  13
 #define LOBBY_EVENT_ALT_NORMAL  14
 
+/* ∑øº‰…Ë÷√ */
+#define LOBBY_SET_NONE          0
+#define LOBBY_SET_DROP_RARE     1
+
 #define LOBBY_QFLAG_SHORT       (1 << 0)
 #define LOBBY_QFLAG_DATA        (1 << 1)
 #define LOBBY_QFLAG_JOIN        (1 << 2)

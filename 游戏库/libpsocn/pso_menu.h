@@ -49,7 +49,6 @@ typedef struct pso_menu {
 
 #define MENU_ID_INITIAL         0x00000000
 #define MENU_ID_BLOCK           0x00000001
-//#define MENU_ID_SHIP            0x00000001
 #define MENU_ID_GAME            0x00000002
 #define MENU_ID_PATCH           0x00000002
 #define MENU_ID_QCATEGORY       0x00000003
@@ -69,6 +68,7 @@ typedef struct pso_menu {
 #define MENU_ID_GM_RESTART      0x00000507
 #define MENU_ID_GM_GAME_EVENT   0x00000607
 #define MENU_ID_GM_LOBBY_EVENT  0x00000707
+#define MENU_ID_GM_LOBBY_SET    0x00000807
 
 #define ITEM_ID_EMPTY           0x00000000
 #define ITEM_ID_INIT_SHIP       0x00000000
@@ -88,6 +88,7 @@ typedef struct pso_menu {
 #define ITEM_ID_GM_RESTART      0x00000005
 #define ITEM_ID_GM_GAME_EVENT   0x00000006
 #define ITEM_ID_GM_LOBBY_EVENT  0x00000007
+#define ITEM_ID_GM_LOBBY_SET    0x00000008
 
 static pso_menu_t pso_initial_menu_auth_dc[][4] = {
     {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_INITIAL, 0x0004},

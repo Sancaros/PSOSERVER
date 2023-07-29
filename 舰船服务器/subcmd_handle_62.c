@@ -2356,7 +2356,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
             }
 
-            return subcmd_send_drop_stack(src, pkt->area, pkt->x, pkt->z, litem, 1);
+            return subcmd_send_drop_stack(src, 0xFBFF, pkt->area, pkt->x, pkt->z, litem->data, 1);
         }
 
     }

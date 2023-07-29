@@ -3537,7 +3537,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_drop_stack(src, NULL, pkt->area, pkt->x, pkt->z, it, pkt->amount);
+    return subcmd_send_lobby_drop_stack(src, src->client_id, NULL, pkt->area, pkt->x, pkt->z, it->data, pkt->amount);
 }
 
 static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 

@@ -47,6 +47,9 @@ int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {
 
 char* get_player_name(player_t* pl, int version, bool raw) {
 
+	if (!pl)
+		return "玩家名称不存在";
+
 	switch (version)
 	{
 	case CLIENT_VERSION_DCV1:

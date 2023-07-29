@@ -48,6 +48,9 @@ typedef struct quest_map_elem {
 TAILQ_HEAD(quest_map, quest_map_elem);
 typedef struct quest_map quest_map_t;
 
+/* 返回难度文字名称 */
+char abbreviation_for_difficulty(uint8_t difficulty);
+
 /* Find a quest by ID, if it exists */
 quest_map_elem_t *quest_lookup(quest_map_t *map, uint32_t qid);
 

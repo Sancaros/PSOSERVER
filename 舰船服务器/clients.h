@@ -96,6 +96,8 @@ typedef struct client_game_data {
 
     int gm_debug;
 
+    int gm_drop_rare;
+
     int db_save_done;
 
     client_error_t err;

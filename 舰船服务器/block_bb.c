@@ -437,6 +437,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
         case ITEM_ID_GM_SHUTDOWN:
         case ITEM_ID_GM_GAME_EVENT:
         case ITEM_ID_GM_LOBBY_EVENT:
+        case ITEM_ID_GM_LOBBY_SET:
             return send_gm_menu(c, MENU_ID_GM | (item_id << 8));
         }
 
@@ -460,6 +461,24 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
             ship->lobby_event = item_id;
             update_lobby_event();
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7Event set."));
+        }
+
+        break;
+
+    case MENU_ID_GM_LOBBY_SET:
+        switch (item_id)
+        {
+        case LOBBY_SET_NONE:
+            c->game_data->gm_drop_rare = 0;
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4房间恢复默认设置!"));
+
+        case LOBBY_SET_DROP_RARE:
+            c->game_data->gm_drop_rare = 1;
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4全局稀有掉落已设置!"));
+
+        default:
+            DBG_LOG("MENU_ID_GM_LOBBY_SET item_id 0x%08X", item_id);
+            break;
         }
 
         break;

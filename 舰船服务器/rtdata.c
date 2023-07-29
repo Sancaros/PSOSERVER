@@ -531,6 +531,8 @@ uint32_t rt_generate_bb_rare(ship_client_t* c, lobby_t* l, int rt_index,
     if (rt_index >= 0) {
         rnd = mt19937_genrand_real1(rng);
 
+        DBG_LOG("rnd %f prob %f", rnd, set->enemy_rares[rt_index].prob);
+
         if (rnd < set->enemy_rares[rt_index].prob)
             return set->enemy_rares[rt_index].item_data;
     }
@@ -538,6 +540,8 @@ uint32_t rt_generate_bb_rare(ship_client_t* c, lobby_t* l, int rt_index,
         for (i = 0; i < 30; ++i) {
             if (set->box_rares[i].area == area) {
                 rnd = mt19937_genrand_real1(rng);
+
+                DBG_LOG("rnd %f prob %f", rnd, set->box_rares[i].prob);
 
                 if (rnd < set->box_rares[i].prob)
                     return set->box_rares[i].item_data;

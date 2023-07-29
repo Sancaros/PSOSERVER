@@ -1701,12 +1701,12 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a guard item */
-    if(parts[0] != 0x01) {
+    if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
 
     /* Make sure its not a unit */
-    if(parts[1] == 0x03) {
+    if(parts[1] == ITEM_SUBTYPE_UNIT) {
         return -3;
     }
 
