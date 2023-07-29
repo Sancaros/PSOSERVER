@@ -83,7 +83,7 @@ static int db_update_techniques(techniques_t* tech_data, uint32_t gc, uint32_t s
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -6;
     }
-
+    
     return 0;
 }
 
