@@ -13072,7 +13072,7 @@ int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2)
     pkt->hdr.flags = 0;
 
     /* 填充副指令数据 */
-    pkt->type = opcode2;
+    pkt->type = (uint8_t)opcode2;
     pkt->size = (pkt_size - 8) / 4;
     pkt->param = 0;
 

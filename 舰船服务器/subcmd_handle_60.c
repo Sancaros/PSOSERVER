@@ -2005,8 +2005,6 @@ static int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* 用于通知其他玩家此区域生成了什么怪物 */
-
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -3859,7 +3857,8 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t mid;
-    uint32_t bp, exp_amount;
+    pmt_guard_bb_t tmp_guard = { 0 };
+    uint32_t bp, exp_amount, eic = 0;
     game_enemy_t* en;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -3881,9 +3880,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Make sure the enemy is in range. */
     mid = LE16(pkt->enemy_id2);
-    //DBG_LOG("怪物编号原值 %02X %02X", mid, pkt->enemy_id2);
     mid &= 0xFFF;
-    //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
 
     if (mid > l->map_enemies->count) {
         ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
@@ -3909,8 +3906,44 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 
     //DBG_LOG("经验原值 %d bp %d", exp_amount, bp);
 
+    inventory_t* inv = &src->bb_pl->character.inv;
+
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
+
+    for (int x = 0; x < inv->item_count; x++) {
+        if (!(inv->iitems[x].flags & 0x00000008)) {
+            continue;
+        }
+        if (inv->iitems[x].data.datab[0] != ITEM_TYPE_GUARD) {
+            continue;
+        }
+        switch (inv->iitems[x].data.datab[1]) {
+        case ITEM_SUBTYPE_FRAME:
+            if (pmt_lookup_guard_bb(inv->iitems[x].data.datal[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", inv->iitems[x].data.datal[0]);
+                break;
+            }
+            eic += LE32(tmp_guard.eic);
+            break;
+
+        case ITEM_SUBTYPE_BARRIER:
+            if (pmt_lookup_guard_bb(inv->iitems[x].data.datal[0], &tmp_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", inv->iitems[x].data.datal[0]);
+                break;
+            }
+            eic += LE32(tmp_guard.eic);
+            break;
+        }
+    }
+
+    if (eic > 0) {
+        exp_amount += eic;
+        //DBG_LOG("经验新值 %d", exp_amount);
+    }
+
     if ((src->game_data->expboost) && (l->exp_mult > 0))
-        exp_amount = l->bb_params[bp].exp * l->exp_mult;
+        exp_amount = exp_amount * l->exp_mult;
 
     if (!exp_amount)
         ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);

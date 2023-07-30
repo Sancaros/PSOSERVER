@@ -893,18 +893,6 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     return 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
