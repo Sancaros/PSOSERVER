@@ -556,7 +556,7 @@ int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount) {
 
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_GIVE_EXP;
-    pkt.shdr.size = pkt_size / 4;
+    pkt.shdr.size = (pkt_size - 8) / 4;
     pkt.shdr.client_id = dest->client_id;
 
     /* 填充剩余数据 */
@@ -650,7 +650,7 @@ int subcmd_send_bb_level(ship_client_t* dest) {
 
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD60_LEVEL_UP;
-    pkt.shdr.size = 0x05;
+    pkt.shdr.size = (pkt_size - 8) / 4;
     pkt.shdr.client_id = dest->client_id;
 
     psocn_bb_char_t* player = &dest->bb_pl->character;

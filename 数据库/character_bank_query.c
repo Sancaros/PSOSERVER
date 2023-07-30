@@ -163,12 +163,6 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
 
     memset(myquery, 0, sizeof(myquery));
 
-    if (isEmptyInt(item->amount))
-        item->amount = 1;
-
-    if (isEmptyInt(item->show_flags))
-        item->show_flags = 1;
-
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
         "data_b0 = '%02X', data_b1 = '%02X', data_b2 = '%02X', data_b3 = '%02X', "
         "data_b4 = '%02X', data_b5 = '%02X', data_b6 = '%02X', data_b7 = '%02X', "
@@ -462,9 +456,6 @@ static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* ba
     while ((row = psocn_db_result_fetch(result)) != NULL) {
         if (!isEmptyInt((uint16_t)strtoul(row[5], &endptr, 16))) {
             bank->bitems[k].amount = (uint16_t)strtoul(row[4], &endptr, 16);
-            if (isEmptyInt(bank->bitems[k].amount))
-                bank->bitems[k].amount = 1;
-
             bank->bitems[k].show_flags = (uint16_t)strtoul(row[5], &endptr, 16);
 
             bank->bitems[k].data.datab[0] = (uint8_t)strtoul(row[6], &endptr, 16);

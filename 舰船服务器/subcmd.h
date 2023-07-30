@@ -834,7 +834,8 @@ typedef struct subcmd_level_up {
     uint16_t hp;
     uint16_t dfp;
     uint16_t ata;
-    uint32_t level;
+    uint16_t level;
+    uint16_t unknown_a1; // Must be 0 or 1
 } PACKED subcmd_level_up_t;
 
 // 0x30: Level up
@@ -848,10 +849,8 @@ typedef struct subcmd_bb_level_up {
     uint16_t hp;
     uint16_t dfp;
     uint16_t ata;
-    uint32_t level;
-
-    //le_uint16_t level;
-    //le_uint16_t unknown_a1; // Must be 0 or 1
+    uint16_t level;
+    uint16_t unknown_a1; // Must be 0 or 1
 } PACKED subcmd_bb_level_up_t;
 
 // 0x31: Medical center
