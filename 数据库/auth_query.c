@@ -19,9 +19,6 @@
 #include "database_query.h"
 #include "packets_bb.h"
 
-/* 数据库连接 */
-extern psocn_dbconn_t conn;
-
 int db_upload_temp_data(void* data, size_t size) {
 
     memset(myquery, 0, sizeof(myquery));

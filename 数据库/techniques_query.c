@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 #define TABLE1 CHARACTER_TECHNIQUES
 
 static int db_insert_techniques(techniques_t* tech_data, uint32_t gc, uint32_t slot) {

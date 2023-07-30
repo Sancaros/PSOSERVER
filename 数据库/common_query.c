@@ -20,9 +20,6 @@
 #include "f_checksum.h"
 #include "player_handle_iitem.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 /* 读取玩家最大科技魔法的等级表 */
 int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) {
     char query[256];

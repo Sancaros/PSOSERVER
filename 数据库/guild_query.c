@@ -19,9 +19,6 @@
 #include "database_query.h"
 #include "packets_bb.h"
 
-/* 数据库连接 */
-extern psocn_dbconn_t conn;
-
 //是否与 db_update_bb_char_guild 函数重叠了？？？？？
 static int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc) {
 

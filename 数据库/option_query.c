@@ -19,9 +19,6 @@
 #include "database_query.h"
 #include "packets_bb.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
     //DBG_LOG("更新设置 %d", gc);
 

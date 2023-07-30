@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 int db_initialize() {
     char query[256] = { 0 };
 

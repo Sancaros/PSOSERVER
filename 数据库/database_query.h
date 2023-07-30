@@ -48,6 +48,9 @@
 #define PSOCN_DB_SAVE_CHAR              0x00000001
 #define PSOCN_DB_UPDATA_CHAR            0x00000002
 
+/* 数据库连接 */
+extern psocn_dbconn_t conn;
+
 /* 通用查询 */
 /* 获取BB职业最大法术数据 */
 int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level);

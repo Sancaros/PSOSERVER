@@ -20,9 +20,6 @@
 #include "f_checksum.h"
 #include "player_handle_iitem.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);
 

@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 数据库连接 */
-extern psocn_dbconn_t conn;
-
 int db_update_character_default(psocn_bb_db_char_t* data, int index) {
     memset(myquery, 0, sizeof(myquery));
 

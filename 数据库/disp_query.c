@@ -20,9 +20,6 @@
 
 #define TABLE CHARACTER_DISP
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 static int db_insert_char_disp(psocn_disp_char_t* disp_data,
     uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));

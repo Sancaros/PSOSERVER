@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 #define TABLE1 CHARACTER_DRESS
 
 int db_updata_bb_char_create_code(uint32_t code,

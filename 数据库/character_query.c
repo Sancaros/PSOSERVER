@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 /// <summary>
 /// //////////////////////////////////////////////////////
 /// 玩家数据其他操作
@@ -564,9 +561,6 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)cmp_buf,
             cmp_sz);
-
-        //sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-        //    "slot = '%" PRIu8 "'", gc, slot);
     }
     else {
         sprintf(myquery, "UPDATE %s SET "
@@ -575,12 +569,6 @@ int db_compress_char_data(psocn_bb_db_char_t* char_data, uint16_t data_len, uint
 
         psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)char_data,
             data_len);
-
-        //snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-        //    "slot = '%" PRIu8 "'", gc, slot);
-        //sprintf(myquery + strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-        //    "slot = '%" PRIu8 "'", gc, slot);
-
     }
 
     snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "

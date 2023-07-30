@@ -19,8 +19,6 @@
 #include "database_query.h"
 #include "f_checksum.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
 #define TABLE1 CHARACTER_QUEST_DATA1
 
 static int db_del_char_quest_data1(uint32_t gc, uint8_t slot) {

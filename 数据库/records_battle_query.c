@@ -18,9 +18,6 @@
 #include "database.h"
 #include "database_query.h"
 
-/* 初始化数据库连接 */
-extern psocn_dbconn_t conn;
-
 #define TABLE CHARACTER_RECORDS_BATTLE
 
 static int db_insert_b_records(battle_records_t* b_records, uint32_t gc, uint8_t slot) {
