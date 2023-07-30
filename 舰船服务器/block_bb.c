@@ -351,7 +351,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t ite
             break;
         }
 
-        DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
+        //DBG_LOG("选项 %d lobby_create %d", item_id, l->lobby_create);
 
         if (!l->lobby_create) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);

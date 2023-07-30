@@ -8234,7 +8234,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         }
     }
     //System\quests\bb\cn\quest204_cn.qst quest204 5 0 31
-    DBG_LOG("%s %s %d %d %d", filename, q->prefix, c->version, v1, q->versions);
+    DBG_LOG("GC %u 载入任务 %s 版本 %s %d %d",c->guildcard, q->prefix, client_type[c->version]->ver_name, v1, q->versions);
 
     fp = fopen(filename, "rb");
 
