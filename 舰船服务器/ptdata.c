@@ -146,9 +146,9 @@ int pt_read_v2(const char* fn) {
 
 			//display_packet(buf, sz);
 
-			for (int x = 0; x < 12; x++) {
-				DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
-			}
+			//for (int x = 0; x < 12; x++) {
+			//	DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
+			//}
 
 			//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
 			//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
@@ -1048,8 +1048,21 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 		return -1;
 	}
 
+	//if (l->drop_rare) {
+	//	if (item_b[1] < 10) {
+	//		// 生成随机值
+	//		int min = 0x0A;
+	//		int max = 0xED;
+
+	//		item_b[1] = (mt19937_genrand_int32(rng) % (max - min + 1)) + min;
+	//	}
+
+	//	if (item_b[2] <= 4)
+	//		item_b[2] = 5;
+	//}
+
 	/* See if we made a "semi-rare" item. */
-	if ((item_b[1] >= 10 && item_b[2] > 3) || item_b[2] > 4)
+	if ((item_b[1] >= 10 && item_b[2] > 3) || item_b[2] > 4 || l->drop_rare)
 		semirare = 1;
 
 already_picked:
@@ -1454,7 +1467,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[0] = 0x00000101 | (armor << 16);
-}
+	}
 
 	item[1] = item[2] = item[3] = 0;
 
@@ -3705,9 +3718,9 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	DBG_LOG("PTID %d rnd %f enemy_dar %f", req->pt_index, rnd, ent->enemy_dar[req->pt_index]);
+	DBG_LOG("PTID %d rnd %d enemy_dar %d", req->pt_index, rnd, ent->enemy_dar[req->pt_index]);
 
-	if ((int8_t)rnd >= ent->enemy_dar[req->pt_index])
+	if ((rnd >= ent->enemy_dar[req->pt_index]) && !src->game_data->gm_drop_rare)
 		/* Nope. You get nothing! */
 		return 0;
 
@@ -3724,8 +3737,10 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		DBG_LOG("全红掉落已开启 %d", do_rare);
 	}
 
+	item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0);
+
 	/* See if the user is lucky today... */
-	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0))) {
+	if (do_rare && item[0]) {
 
 		ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
 

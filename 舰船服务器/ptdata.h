@@ -311,24 +311,24 @@ typedef struct fpt_v2_entry {
    Some of this data also comes from a post by Lee on the PSOBB Eden forums:
    http://edenserv.net/forum/viewtopic.php?p=19305#p19305 */
 typedef struct fpt_v3_entry {
-    int8_t weapon_ratio[12];                /* 0x0000 */
+    uint8_t weapon_ratio[12];               /* 0x0000 */
     int8_t weapon_minrank[12];              /* 0x000C */
-    int8_t weapon_upgfloor[12];             /* 0x0018 */
-    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint8_t weapon_upgfloor[12];            /* 0x0018 */
+    uint8_t power_pattern[9][4];            /* 0x0024 */
     uint16_t percent_pattern[23][6];        /* 0x0048 */
-    int8_t area_pattern[3][10];             /* 0x015C */
-    int8_t percent_attachment[6][10];       /* 0x017A */
-    int8_t element_ranking[10];             /* 0x01B6 */
-    int8_t element_probability[10];         /* 0x01C0 */
-    int8_t armor_ranking[5];                /* 0x01CA */
-    int8_t slot_ranking[5];                 /* 0x01CF */
-    int8_t unit_level[10];                  /* 0x01D4 */
+    uint8_t area_pattern[3][10];            /* 0x015C */
+    uint8_t percent_attachment[6][10];      /* 0x017A */
+    uint8_t element_ranking[10];            /* 0x01B6 */
+    uint8_t element_probability[10];        /* 0x01C0 */
+    uint8_t armor_ranking[5];               /* 0x01CA */
+    uint8_t slot_ranking[5];                /* 0x01CF */
+    uint8_t unit_level[10];                 /* 0x01D4 */
     uint16_t tool_frequency[28][10];        /* 0x01DE */
     uint8_t tech_frequency[19][10];         /* 0x040E */
-    int8_t tech_levels[19][20];             /* 0x04CC */
-    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint8_t tech_levels[19][20];            /* 0x04CC */
+    uint8_t enemy_dar[100];                 /* 0x0648 */
     uint16_t enemy_meseta[100][2];          /* 0x06AC */
-    int8_t enemy_drop[100];                 /* 0x083C */
+    uint8_t enemy_drop[100];                /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
     uint16_t padding;                       /* 0x090E */
@@ -374,24 +374,24 @@ typedef struct fpt_v3_entry {
    补充：完整结构来自newserv
    */
 typedef struct fpt_bb_entry {
-    int8_t weapon_ratio[12];                /* 0x0000 */
+    uint8_t weapon_ratio[12];               /* 0x0000 */
     int8_t weapon_minrank[12];              /* 0x000C */
-    int8_t weapon_upgfloor[12];             /* 0x0018 */
-    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint8_t weapon_upgfloor[12];            /* 0x0018 */
+    uint8_t power_pattern[9][4];            /* 0x0024 */
     uint16_t percent_pattern[23][6];        /* 0x0048 */
-    int8_t area_pattern[3][10];             /* 0x015C */
-    int8_t percent_attachment[6][10];       /* 0x017A */
-    int8_t element_ranking[10];             /* 0x01B6 */
-    int8_t element_probability[10];         /* 0x01C0 */
-    int8_t armor_ranking[5];                /* 0x01CA */
-    int8_t slot_ranking[5];                 /* 0x01CF */
-    int8_t unit_level[10];                  /* 0x01D4 */
+    uint8_t area_pattern[3][10];            /* 0x015C */
+    uint8_t percent_attachment[6][10];      /* 0x017A */
+    uint8_t element_ranking[10];            /* 0x01B6 */
+    uint8_t element_probability[10];        /* 0x01C0 */
+    uint8_t armor_ranking[5];               /* 0x01CA */
+    uint8_t slot_ranking[5];                /* 0x01CF */
+    uint8_t unit_level[10];                 /* 0x01D4 */
     uint16_t tool_frequency[28][10];        /* 0x01DE */
     uint8_t tech_frequency[19][10];         /* 0x040E */
-    int8_t tech_levels[19][20];             /* 0x04CC */
-    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint8_t tech_levels[19][20];            /* 0x04CC */
+    uint8_t enemy_dar[100];                 /* 0x0648 */
     uint16_t enemy_meseta[100][2];          /* 0x06AC */
-    int8_t enemy_drop[100];                 /* 0x083C */
+    uint8_t enemy_drop[100];                /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
     uint16_t padding;                       /* 0x090E */
@@ -497,24 +497,24 @@ typedef struct pt_v2_entry {
 
 /* Clean (non-packed) version of the v3 ItemPT entry structure. */
 typedef struct pt_v3_entry {
-    int8_t weapon_ratio[12];                /* 0x0000 */
+    uint8_t weapon_ratio[12];               /* 0x0000 */
     int8_t weapon_minrank[12];              /* 0x000C */
-    int8_t weapon_upgfloor[12];             /* 0x0018 */
-    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint8_t weapon_upgfloor[12];            /* 0x0018 */
+    uint8_t power_pattern[9][4];            /* 0x0024 */
     uint16_t percent_pattern[23][6];        /* 0x0048 */
-    int8_t area_pattern[3][10];             /* 0x015C */
-    int8_t percent_attachment[6][10];       /* 0x017A */
-    int8_t element_ranking[10];             /* 0x01B6 */
-    int8_t element_probability[10];         /* 0x01C0 */
-    int8_t armor_ranking[5];                /* 0x01CA */
-    int8_t slot_ranking[5];                 /* 0x01CF */
-    int8_t unit_level[10];                  /* 0x01D4 */
+    uint8_t area_pattern[3][10];            /* 0x015C */
+    uint8_t percent_attachment[6][10];      /* 0x017A */
+    uint8_t element_ranking[10];            /* 0x01B6 */
+    uint8_t element_probability[10];        /* 0x01C0 */
+    uint8_t armor_ranking[5];               /* 0x01CA */
+    uint8_t slot_ranking[5];                /* 0x01CF */
+    uint8_t unit_level[10];                 /* 0x01D4 */
     uint16_t tool_frequency[28][10];        /* 0x01DE */
     uint8_t tech_frequency[19][10];         /* 0x040E */
-    int8_t tech_levels[19][20];             /* 0x04CC */
-    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint8_t tech_levels[19][20];            /* 0x04CC */
+    uint8_t enemy_dar[100];                 /* 0x0648 */
     uint16_t enemy_meseta[100][2];          /* 0x06AC */
-    int8_t enemy_drop[100];                 /* 0x083C */
+    uint8_t enemy_drop[100];                /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
     uint16_t padding;                       /* 0x090E */
@@ -555,24 +555,24 @@ typedef struct pt_v3_entry {
 
 /* Clean (non-packed) version of the BB ItemPT entry structure. */
 typedef struct pt_bb_entry {
-    int8_t weapon_ratio[12];                /* 0x0000 */
+    uint8_t weapon_ratio[12];               /* 0x0000 */
     int8_t weapon_minrank[12];              /* 0x000C */
-    int8_t weapon_upgfloor[12];             /* 0x0018 */
-    int8_t power_pattern[9][4];             /* 0x0024 */
+    uint8_t weapon_upgfloor[12];            /* 0x0018 */
+    uint8_t power_pattern[9][4];            /* 0x0024 */
     uint16_t percent_pattern[23][6];        /* 0x0048 */
-    int8_t area_pattern[3][10];             /* 0x015C */
-    int8_t percent_attachment[6][10];       /* 0x017A */
-    int8_t element_ranking[10];             /* 0x01B6 */
-    int8_t element_probability[10];         /* 0x01C0 */
-    int8_t armor_ranking[5];                /* 0x01CA */
-    int8_t slot_ranking[5];                 /* 0x01CF */
-    int8_t unit_level[10];                  /* 0x01D4 */
+    uint8_t area_pattern[3][10];            /* 0x015C */
+    uint8_t percent_attachment[6][10];      /* 0x017A */
+    uint8_t element_ranking[10];            /* 0x01B6 */
+    uint8_t element_probability[10];        /* 0x01C0 */
+    uint8_t armor_ranking[5];               /* 0x01CA */
+    uint8_t slot_ranking[5];                /* 0x01CF */
+    uint8_t unit_level[10];                 /* 0x01D4 */
     uint16_t tool_frequency[28][10];        /* 0x01DE */
     uint8_t tech_frequency[19][10];         /* 0x040E */
-    int8_t tech_levels[19][20];             /* 0x04CC */
-    int8_t enemy_dar[100];                  /* 0x0648 */
+    uint8_t tech_levels[19][20];            /* 0x04CC */
+    uint8_t enemy_dar[100];                 /* 0x0648 */
     uint16_t enemy_meseta[100][2];          /* 0x06AC */
-    int8_t enemy_drop[100];                 /* 0x083C */
+    uint8_t enemy_drop[100];                /* 0x083C */
     uint16_t box_meseta[10][2];             /* 0x08A0 */
     uint8_t box_drop[7][10];                /* 0x08C8 */
     uint16_t padding;                       /* 0x090E */

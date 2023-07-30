@@ -470,10 +470,12 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
         {
         case LOBBY_SET_NONE:
             c->game_data->gm_drop_rare = 0;
+            c->cur_lobby->drop_rare = 0;
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4房间恢复默认设置!"));
 
         case LOBBY_SET_DROP_RARE:
             c->game_data->gm_drop_rare = 1;
+            c->cur_lobby->drop_rare = 1;
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4全局稀有掉落已设置!"));
 
         default:

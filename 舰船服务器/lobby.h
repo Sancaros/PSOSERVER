@@ -153,6 +153,7 @@ struct lobby {
     uint32_t bitem_player_id[12]; //玩家银行背包物品id容器
     uint32_t item_lobby_id; //大厅背包物品id容器
     uint32_t item_count; //大厅背包物品数量
+    bool drop_rare;
     /* 游戏房间物品链表 用于存储物品丢出 鉴定 */
     struct lobby_item_queue item_queue;
 
