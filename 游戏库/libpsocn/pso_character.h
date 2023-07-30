@@ -159,7 +159,7 @@ typedef struct psocn_bb_mini_char {
 } PACKED psocn_bb_mini_char_t;
 
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
-/* 1244字节 玩家外观描述数值数据*/
+/* BB 玩家数据结构 1244字节 */
 typedef struct psocn_bb_char {
     inventory_t inv;
     psocn_disp_char_t disp; //101
