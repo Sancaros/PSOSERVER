@@ -728,6 +728,14 @@ static int handle_update_char(login_client_t* c, bb_char_preview_pkt* pkt) {
             return -1;
         }
 
+        if (db_update_char_name(&char_data->character.name, c->guildcard, pkt->slot)) {
+            ERR_LOG("无法更新玩家名字数据至数据库 (GC %"
+                PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);
+            /* XXXX: 未完成给客户端发送一个错误信息 */
+            free_safe(char_data);
+            return -1;
+        }
+
         if (db_update_char_techniques(&char_data->character.tech, c->guildcard, pkt->slot, flags)) {
             ERR_LOG("无法更新玩家科技数据至数据库 (GC %"
                 PRIu32 ", 槽位 %" PRIu8 ")", c->guildcard, pkt->slot);

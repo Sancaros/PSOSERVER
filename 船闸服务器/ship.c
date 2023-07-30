@@ -2741,6 +2741,14 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         return 0;
     }
 
+    if (db_update_char_name(&char_data->character.name, gc, slot)) {
+        send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+        SQLERR_LOG("无法更新玩家名字数据 (GC %"
+            PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
+        return 0;
+    }
+
     if (db_update_char_techniques(&char_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
@@ -3050,6 +3058,15 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据, 错误码:%d", gc, slot, rv);
         db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_SAVE_CHAR);
     }
+
+    /* 从数据库中获取玩家角色外观数据 */
+    if ((rv = db_get_char_name(gc, slot, &bb_data->character.name))) {
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据, 错误码:%d", gc, slot, rv);
+        db_update_char_name(&bb_data->character.name, gc, slot);
+    }
+
+    /* 防止玩家名称内存溢出 */
+    bb_data->character.padding = 0;
 
     /* 从数据库中获取玩家角色外观数据 */
     if ((rv = db_get_char_techniques(gc, slot, &bb_data->character.tech, 0))) {
@@ -3377,7 +3394,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         inptr = (char*)&pkt->ch_name[2];
         outptr = name;
 
-        istrncpy16_raw(ic_utf16_to_utf8, name, &pkt->ch_name[2], out, in);
+        istrncpy16_raw(ic_utf16_to_utf8, name, inptr, out, in);
 
         //iconv(ic_utf16_to_gb18030, &inptr, &in, &outptr, &out);
     }

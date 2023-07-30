@@ -159,19 +159,20 @@ typedef struct psocn_bb_mini_char {
 } PACKED psocn_bb_mini_char_t;
 
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
-/* 400字节 玩家外观描述数值数据*/
+/* 1244字节 玩家外观描述数值数据*/
 typedef struct psocn_bb_char {
     inventory_t inv;
     psocn_disp_char_t disp; //101
     psocn_dress_data_t dress_data;
     psocn_bb_char_name_t name;
-    uint32_t unknown_a3; //4
+    uint16_t padding;
+    uint16_t unknown_a3; //4
     uint32_t play_time; //4
     uint8_t config[0xE8]; //232
     techniques_t tech; //20 /* 默认 FF 为空*/
 } PACKED psocn_bb_char_t;
 
-/* v1v2v3pc 玩家数据结构 208字节 */
+/* v1v2v3pc 玩家数据结构 1052字节 */
 typedef struct psocn_v1v2v3pc_char {
     inventory_t inv;
     psocn_disp_char_t disp;

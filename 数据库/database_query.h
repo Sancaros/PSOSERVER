@@ -274,6 +274,13 @@ int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uin
 
 int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_records);
 
+////////////////////////////////////////////////////////////////
+
+/* ½ÇÉ«Ãû³Æ²Ù×÷ */
+int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot);
+
+int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name);
+
 
 
 
