@@ -1859,8 +1859,6 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t type = pkt->shdr.type;
     uint32_t invite_cmd = pkt->trans_cmd;
     uint32_t target_guildcard = pkt->traget_guildcard;
-    char guild_name_text[24];
-    char inviter_name_text[24];
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
@@ -1869,10 +1867,13 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+    char guild_name_text[24];
+    char inviter_name_text[24];
+
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
-#ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
     display_packet((uint8_t*)pkt, len);
 #endif // DEBUG
@@ -1925,7 +1926,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
+    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
+        type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
     display_packet((uint8_t*)pkt, len);
 #endif // DEBUG
 
@@ -1947,16 +1949,19 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 对方拒绝加入公会 */
     case 0x03:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", 
+            __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
         break;
 
         /* 公会邀请失败 给双方返回错误信息 */
     case 0x04:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", 
+            __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
         break;
 
     default:
-        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
+        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
+            type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
         display_packet((uint8_t*)pkt, len);
         break;
     }
