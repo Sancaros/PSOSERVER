@@ -875,7 +875,7 @@ static int handle_full_char(login_client_t* c, bb_full_char_pkt* pkt) {
         return -1;
     }
 
-    printf("完成!\n");
+    AUTH_LOG("handle_full_char 完成!");
     return 0;
 }
 

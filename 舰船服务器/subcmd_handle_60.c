@@ -1534,8 +1534,9 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (pkt->shdr.client_id != src->client_id ||
-        pkt->technique_number > TECHNIQUE_MEGID ||
-        src->equip_flags & EQUIP_FLAGS_DROID
+        src->equip_flags & EQUIP_FLAGS_DROID ||
+        pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
+        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
         ) {
         ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
             src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
@@ -1571,7 +1572,13 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || 
+        pkt->shdr.size != 0x02 || 
+        src->client_id != pkt->shdr.client_id ||
+        src->equip_flags & EQUIP_FLAGS_DROID ||
+        pkt->technique_number >= MAX_PLAYER_TECHNIQUES || 
+        max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
+        ) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1584,10 +1591,12 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
+    if (src->game_data->gm_debug) {
+        send_lobby_mod_stat(l, src, SUBCMD60_STAT_TPUP, 255);
+    }
+
     /* This aught to do it... */
-    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_TPUP, 255);
-    //return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
@@ -3254,6 +3263,51 @@ static int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_9F_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_GalGryphonActions_6x9F_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (pkt->hdr.pkt_len != LE16(0x0018)/* || pkt->shdr.size != 0x0A*/) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    send_txt(src, "%s\n动作:0x%04X\n位置:x %f z %f.", __(src, "\tE\tC6GG BOSS"), pkt->unknown_a1, pkt->x, pkt->z);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_A0_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_GalGryphonActions_6xA0_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (pkt->hdr.pkt_len != LE16(0x0030) || pkt->shdr.size != 0x0A) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    send_txt(src, "%s\n"
+        "位置:x:%f y:%f z:%f\n"
+        "动作:%d\n"
+        "阶段:0x%02X 0x%02X.",
+        "未知:%d\n%d\n%d\n%d.",
+        __(src, "\tE\tC6GG BOSS SP"), 
+        pkt->x, pkt->y, pkt->z, 
+        pkt->unknown_a1, 
+        pkt->unknown_a2, pkt->unknown_a3, 
+        pkt->unknown_a4[0],
+        pkt->unknown_a4[1],
+        pkt->unknown_a4[2],
+        pkt->unknown_a4[3]
+    );
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3632,7 +3686,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         player = &src->mode_pl->bb;
 
-    /* Subtract 10 meseta from the client. */
+    /* 从客户端扣除10美赛塔 TODO 设置文件自定义. */
     player->disp.meseta -= 10;
 
     if (!src->mode)
@@ -3762,6 +3816,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             return client_give_exp(src, exp_amount);
         }
     }
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -4196,8 +4251,10 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_BATTLE_MODE_PLAYER_DIE     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9B_bb },
     { SUBCMD60_UNKNOW_9C                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9C_bb },
     { SUBCMD60_CH_GAME_FINISHED           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9D_bb },
+    { SUBCMD60_BOSS_ACT_GAL_GRYPHON       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9F_bb },
 
     //cmd_type A0 - AF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_BOSS_ACT_GAL_GRYPHON_SP    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A0_bb },
     { SUBCMD60_PLAYER_ACT_SAVE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A1_bb },
     { SUBCMD60_BOSS_ACT_OFB               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A3_bb },
     { SUBCMD60_BOSS_ACT_OFP_1             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_A4_bb },

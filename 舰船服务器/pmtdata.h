@@ -87,8 +87,6 @@ typedef struct pmt_weapon_bb {
     uint16_t model;
     uint16_t skin;
     uint32_t team_points;
-    //uint16_t team_points;
-    //uint16_t unused1;
     uint8_t equip_flag;
     uint8_t unused2;
     uint16_t atp_min;
@@ -97,7 +95,6 @@ typedef struct pmt_weapon_bb {
     uint16_t mst_req;
     uint16_t ata_req;
     uint16_t mst;
-    //uint8_t min_grind;
     uint8_t max_grind;
     uint8_t photon_color;
     uint8_t special_type;
@@ -116,49 +113,7 @@ typedef struct pmt_weapon_bb {
     uint8_t unknown5;
     uint8_t tech_boost;
     uint8_t combo_type;
-    //uint8_t star;
 } PACKED pmt_weapon_bb_t;
-
-//
-///* 武器参数结构 */
-//typedef struct PACKED weapon_pmt {
-//    uint32_t index;
-//    uint16_t model;
-//    uint16_t texture;
-//    uint32_t team_points;
-//    uint8_t equip_class; //可穿戴职业类型
-//    uint8_t reserved1;
-//
-//    uint16_t atpmin;
-//    uint16_t atpmax;
-//    uint16_t atpreq;
-//    uint16_t mstreq;
-//    uint16_t atareq;
-//    uint16_t mst_add;
-//
-//    uint8_t min_grind;
-//
-//    uint8_t max_grind;
-//    uint8_t photon_color;
-//    uint8_t special_type;
-//    uint8_t ata_add;
-//
-//    uint8_t stat_boost;
-//    uint8_t projectile;
-//    uint8_t photon_trail_1_x;
-//    uint8_t photon_trail_1_y;
-//    uint8_t photon_trail_2_x;
-//    uint8_t photon_trail_2_y;
-//    uint8_t photon_type;
-//    uint8_t unknown1;
-//    uint8_t unknown2;
-//    uint8_t unknown3;
-//    uint8_t unknown4;
-//    uint8_t unknown5;
-//    uint8_t tech_boost;
-//    uint8_t combo_type;
-//    uint8_t star;
-//}PMT_WEAPON;
 
 static const int pmtdsa = sizeof(pmt_weapon_bb_t);
 
@@ -205,8 +160,6 @@ typedef struct pmt_guard_bb {
     uint16_t model;
     uint16_t skin;
     uint32_t team_points;
-    //uint16_t team_points;
-    //uint16_t unused1;
     uint16_t base_dfp;
     uint16_t base_evp;
     uint8_t block_particle;
@@ -221,42 +174,11 @@ typedef struct pmt_guard_bb {
     uint8_t elt;
     uint8_t dfp_range;
     uint8_t evp_range;
-    //uint32_t unused4;
     uint8_t stat_boost;
     uint8_t tech_boost;
     uint8_t unknown1;
     uint8_t unknown2;
-    //uint8_t star;
 } PACKED pmt_guard_bb_t;
-
-//// 指针 @ 0x40 与盾牌一样 (两者结构相同...)
-//// 装甲指针 @ 0x14f0
-///* 护甲参数结构 和盾牌一样的结构*/
-//typedef struct PACKED guard_pmt {
-//    uint32_t index;
-//    uint16_t model;
-//    uint16_t texture;
-//    uint32_t team_points;
-//    uint16_t dfp;
-//    uint16_t evp;
-//    uint8_t block_particle;
-//    uint8_t block_effect;
-//    uint8_t equip_class; //可穿戴职业类型
-//    uint8_t reserved1;
-//    uint8_t req_level;
-//    uint8_t efr;
-//    uint8_t eth;
-//    uint8_t eic;
-//    uint8_t edk;
-//    uint8_t elt;
-//    uint8_t dfp_range;
-//    uint8_t evp_range;
-//    uint8_t stat_boost;
-//    uint8_t tech_boost;
-//    uint8_t unknown1;
-//    uint8_t unknown2;
-//    uint8_t star;
-//}PMT_GUARD;
 
 typedef struct pmt_unit_v2 {
     uint32_t index;
@@ -281,8 +203,6 @@ typedef struct pmt_unit_bb {
     uint16_t model;
     uint16_t skin;
     uint32_t team_points;
-    //uint16_t team_points;
-    //uint16_t unused1;
     uint16_t stat;
     uint16_t amount;
     uint8_t pm_range;
@@ -343,8 +263,6 @@ typedef struct pmt_mag_bb {
     uint16_t model;
     uint16_t skin;
     uint32_t team_points;
-    //uint16_t team_points;
-    //uint16_t unused1;
     uint16_t feed_table;
     uint8_t photon_blast;
     uint8_t activation;
@@ -412,8 +330,7 @@ static uint64_t* units_by_stars_gc = NULL;
 static uint32_t* units_with_stars_gc = NULL;
 static uint8_t unit_max_stars_gc = 0;
 
-/* PSOBB data. */
-
+/* PSOBB ITEMPMT STURCT data. */
 /* 玛古喂养表结构 */
 typedef struct MagFeedItem_Pmt {
     int8_t defence;
