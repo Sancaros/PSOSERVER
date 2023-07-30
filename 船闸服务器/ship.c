@@ -5349,8 +5349,8 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         return 0;
 
     default:
-        DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-        display_packet((unsigned char*)pkt, length);
+        //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+        //display_packet((unsigned char*)pkt, length);
         return -3;
     }
 }
