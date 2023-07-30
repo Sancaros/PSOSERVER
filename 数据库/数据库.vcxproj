@@ -32,9 +32,9 @@
     <ClCompile Include="auth_query.c" />
     <ClCompile Include="character_disp_query.c" />
     <ClCompile Include="character_dress_data_query.c" />
-    <ClCompile Include="guild_query.c" />
+    <ClCompile Include="character_guild_query.c" />
     <ClCompile Include="character_inventory_query.c" />
-    <ClCompile Include="option_query.c" />
+    <ClCompile Include="character_option_query.c" />
     <ClCompile Include="character_quest_data1_query.c" />
     <ClCompile Include="character_records_battle_query.c" />
     <ClCompile Include="character_records_challenge_query.c" />

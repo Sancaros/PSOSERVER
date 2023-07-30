@@ -51,7 +51,10 @@ typedef struct {
     size_t len;
 } Buffer;
 
-int isStringEmpty(const char* str);
+/* ÅÐ¶ÏÊý¾ÝÎª¿Õ */
+int isEmptyString(const char* str);
+int isEmptyInt(int num);
+int isEmptyFloat(float val);
 
 void write_data(write_data_func func, const void* data, size_t len);
 

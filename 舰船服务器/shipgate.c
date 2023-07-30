@@ -1356,6 +1356,7 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
     return 0;
 }
 
+/* 请求角色数据并发送至客户端 */
 static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *pkt) {
     uint32_t i;
     ship_t *s = conn->ship;
@@ -1387,8 +1388,8 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         memcpy(c->pl, pkt->data, clen);
 
                         ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->pl->bb.character.inv.item_count; ++i) {
-                            print_iitem_data(&c->pl->bb.character.inv.iitems[i], i, c->version);
+                        for (i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
+                            print_iitem_data(&c->pl->v1.character.inv.iitems[i], i, c->version);
                         }
                         
                         send_lobby_join(c, c->cur_lobby);
@@ -1407,16 +1408,20 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
                         }
 
+                        clean_up_inv(&c->bb_pl->character.inv);
+
                         fix_equip_item(&c->bb_pl->character.inv);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {
-                            if (c->bb_pl->bank.bitems[i].show_flags) {
+                            if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
                                 fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
                             }
                             else
                                 clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
                         }
+
+                        clean_up_bank(&c->bb_pl->bank);
                     }
 
                     done = 1;

@@ -207,6 +207,7 @@ int db_update_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, uint8
 int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data, int check) {
     void* result;
     char** row;
+    int j = 0;
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -242,70 +243,76 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
         return -3;
     }
 
-    if (row != NULL) {
-        int i = 3;
-        memcpy(&dress_data->guildcard_str.str, row[i], sizeof(dress_data->guildcard_str.str));
-        i++;
+    j = 3;
 
-        dress_data->guildcard_str.slot1 = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
+    if (isEmptyString(row[j])) {
+        psocn_db_result_free(result);
 
-        dress_data->guildcard_str.slot2 = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-
-        dress_data->guildcard_str.slot3 = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-
-        memcpy(&dress_data->unk1, row[i], sizeof(dress_data->unk1));
-        i++;
-
-        dress_data->name_color_b = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->name_color_g = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->name_color_r = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->name_color_transparency = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->model = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        memcpy(&dress_data->unk3, row[i], sizeof(dress_data->unk3));
-        i++;
-        dress_data->create_code = (uint32_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->name_color_checksum = (uint32_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->section = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->ch_class = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->v2flags = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->version = (uint8_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->v1flags = (uint32_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->costume = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->skin = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->face = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->head = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->hair = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->hair_r = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->hair_g = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->hair_b = (uint16_t)strtoul(row[i], NULL, 10);
-        i++;
-        dress_data->prop_x = strtof(row[i], NULL);
-        i++;
-        dress_data->prop_y = strtof(row[i], NULL);
+        SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+        return -4;
     }
 
+    memcpy(&dress_data->guildcard_str.str, row[j], sizeof(dress_data->guildcard_str.str));
+    j++;
+
+    dress_data->guildcard_str.slot1 = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    dress_data->guildcard_str.slot2 = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    dress_data->guildcard_str.slot3 = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    memcpy(&dress_data->unk1, row[j], sizeof(dress_data->unk1));
+    j++;
+
+    dress_data->name_color_b = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->name_color_g = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->name_color_r = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->name_color_transparency = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->model = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    memcpy(&dress_data->unk3, row[j], sizeof(dress_data->unk3));
+    j++;
+    dress_data->create_code = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->name_color_checksum = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->section = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->ch_class = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->v2flags = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->version = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->v1flags = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->costume = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->skin = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->face = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->head = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->hair = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->hair_r = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->hair_g = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->hair_b = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    dress_data->prop_x = strtof(row[j], NULL);
+    j++;
+    dress_data->prop_y = strtof(row[j], NULL);
+    
     psocn_db_result_free(result);
 
     return 0;

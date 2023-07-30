@@ -1421,26 +1421,26 @@ void fix_equip_item(inventory_t* inv) {
 void clean_up_inv(inventory_t* inv) {
     uint8_t i, j = 0;
 
-    iitem_t* new_data = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
+    iitem_t* new_iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
 
-    if (!new_data) {
+    if (!new_iitem) {
         ERR_LOG("无法更新背包物品ID,申请内存失败");
         return;
     }
 
     for (i = 0; i < inv->item_count; i++)
-        if (inv->iitems[i].present)
-            new_data[j++] = inv->iitems[i];
+        if (inv->iitems[i].present && inv->iitems[i].data.datal[0])
+            new_iitem[j++] = inv->iitems[i];
 
     inv->item_count = j;
 
     for (i = 0; i < inv->item_count; i++)
-        inv->iitems[i] = new_data[i];
+        inv->iitems[i] = new_iitem[i];
 
-    ERR_LOG("更新背包物品完成");
+    //ERR_LOG("更新背包物品完成");
 
     /* 释放掉内存 */
-    free_safe(new_data);
+    free_safe(new_iitem);
 }
 
 void sort_client_inv(inventory_t* inv) {
@@ -1453,7 +1453,7 @@ void sort_client_inv(inventory_t* inv) {
 
     for (ch4 = 0; ch4 < MAX_PLAYER_INV_ITEMS; ch4++) {
         sort_data[ch4].data.datab[1] = 0xFF;
-        sort_data[ch4].data.item_id = 0xFFFFFFFF;
+        sort_data[ch4].data.item_id = EMPTY_STRING;
     }
 
     ch4 = 0;
@@ -1461,7 +1461,7 @@ void sort_client_inv(inventory_t* inv) {
     for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++) {
         itemid = inv->iitems[ch2].data.item_id;
         ch2 += 4;
-        if (itemid != 0xFFFFFFFF) {
+        if (itemid != EMPTY_STRING) {
             for (ch3 = 0; ch3 < inv->item_count; ch3++) {
                 if ((inv->iitems[ch3].present) && (inv->iitems[ch3].data.item_id == itemid)) {
                     sort_data[ch4++] = inv->iitems[ch3];
@@ -1479,24 +1479,24 @@ void sort_client_inv(inventory_t* inv) {
 void clean_up_bank(psocn_bank_t* bank) {
     uint32_t i, j = 0;
 
-    bitem_t* bank_data = (bitem_t*)malloc(PSOCN_STLENGTH_BITEM * bank->item_count);
+    bitem_t* bank_item = (bitem_t*)malloc(PSOCN_STLENGTH_BITEM * bank->item_count);
 
-    if (!bank_data) {
+    if (!bank_item) {
         ERR_LOG("无法更新银行物品ID,申请内存失败");
         return;
     }
 
     for (i = 0; i < bank->item_count; i++)
-        if (bank->bitems[i].data.item_id != 0xFFFFFFFF)
-            bank_data[j++] = bank->bitems[i]; 
+        if (bank->bitems[i].show_flags && bank->bitems[i].amount && bank->bitems[i].data.datal[0])
+            bank_item[j++] = bank->bitems[i]; 
 
     bank->item_count = j;
 
     for (i = 0; i < bank->item_count; i++)
-        bank->bitems[i] = bank_data[i];
+        bank->bitems[i] = bank_item[i];
 
-    ERR_LOG("更新银行物品完成");
+    //ERR_LOG("更新银行物品完成");
 
     /* 释放掉内存 */
-    free_safe(bank_data);
+    free_safe(bank_item);
 }

@@ -47,7 +47,7 @@
     <ClCompile Include="character_quest_data1_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="option_query.c">
+    <ClCompile Include="character_option_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="character_techniques_query.c">
@@ -56,7 +56,7 @@
     <ClCompile Include="character_dress_data_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="guild_query.c">
+    <ClCompile Include="character_guild_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="character_default_query.c">

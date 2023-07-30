@@ -7,9 +7,9 @@ E:\梦幻之星项目\PSOSERVER\数据库\database_config.c;E:\梦幻之星项�
 E:\梦幻之星项目\PSOSERVER\数据库\auth_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\auth_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_disp_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_disp_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_dress_data_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_dress_data_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\guild_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\guild_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_guild_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_guild_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_inventory_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_inventory_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\option_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\option_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_option_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_option_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_quest_data1_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_quest_data1_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_records_battle_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_records_battle_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_records_challenge_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_records_challenge_query.obj

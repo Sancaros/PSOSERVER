@@ -141,6 +141,7 @@ int db_update_char_disp(psocn_disp_char_t* disp_data,
 int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int check) {
     void* result;
     char** row;
+    int j = 0;
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -171,28 +172,57 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
     }
 
     /* 获取玩家角色7项基本数值 */
-    data->stats.atp = (uint16_t)strtoul(row[2], NULL, 10);
-    data->stats.mst = (uint16_t)strtoul(row[3], NULL, 10);
-    data->stats.evp = (uint16_t)strtoul(row[4], NULL, 10);
-    data->stats.hp = (uint16_t)strtoul(row[5], NULL, 10);
-    data->stats.dfp = (uint16_t)strtoul(row[6], NULL, 10);
-    data->stats.ata = (uint16_t)strtoul(row[7], NULL, 10);
-    data->stats.lck = (uint16_t)strtoul(row[8], NULL, 10);
 
-    data->opt_flag1 = (uint8_t)strtoul(row[9], NULL, 10);
-    data->opt_flag2 = (uint8_t)strtoul(row[10], NULL, 10);
-    data->opt_flag3 = (uint8_t)strtoul(row[11], NULL, 10);
-    data->opt_flag4 = (uint8_t)strtoul(row[12], NULL, 10);
-    data->opt_flag5 = (uint8_t)strtoul(row[13], NULL, 10);
-    data->opt_flag6 = (uint8_t)strtoul(row[14], NULL, 10);
-    data->opt_flag7 = (uint8_t)strtoul(row[15], NULL, 10);
-    data->opt_flag8 = (uint8_t)strtoul(row[16], NULL, 10);
-    data->opt_flag9 = (uint8_t)strtoul(row[17], NULL, 10);
-    data->opt_flag10 = (uint8_t)strtoul(row[18], NULL, 10);
+    j = 2;
 
-    data->level = (uint32_t)strtoul(row[19], NULL, 10) - 1;
-    data->exp = (uint32_t)strtoul(row[20], NULL, 10);
-    data->meseta = (uint32_t)strtoul(row[21], NULL, 10);
+    if (isEmptyString(row[j])) {
+        psocn_db_result_free(result);
+
+        SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+        return -4;
+    }
+
+    data->stats.atp = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.mst = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.evp = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.hp = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.dfp = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.ata = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->stats.lck = (uint16_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    data->opt_flag1 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag2 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag3 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag4 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag5 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag6 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag7 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag8 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag9 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->opt_flag10 = (uint8_t)strtoul(row[j], NULL, 10);
+    j++;
+
+    data->level = (uint32_t)strtoul(row[j], NULL, 10) - 1;
+    j++;
+    data->exp = (uint32_t)strtoul(row[j], NULL, 10);
+    j++;
+    data->meseta = (uint32_t)strtoul(row[j], NULL, 10);
 
     psocn_db_result_free(result);
 

@@ -257,7 +257,7 @@ static int read_config(const char* dir, const char* fn) {
         if (sscanf(linebuf, "%1023s %1023s %1023s %15s", name, host4, host6, ipv4) != 4)
             continue;
 
-        if (!isStringEmpty(host4))
+        if (!isEmptyString(host4))
             if (!isIPAddress(host4)) {
                 if (get_IPv4_from_hostname(host4, ipv4) == 0) {
 #ifdef DEBUG
@@ -269,7 +269,7 @@ static int read_config(const char* dir, const char* fn) {
                 }
             }
 
-        if (!isStringEmpty(host6))
+        if (!isEmptyString(host6))
             if (!isIPv6Address(host6)) {
                 if (get_IPv6_from_hostname(host6, ipv6, sizeof(ipv6)) == 0) {
 #ifdef DEBUG
@@ -411,7 +411,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     /* Subtract out the size of the header. */
     len -= sizeof(dnsmsg_t);
 
-    if (!isStringEmpty(h->host4))
+    if (!isEmptyString(h->host4))
         if (!isIPAddress(h->host4)) {
             if (get_IPv4_from_hostname(h->host4, ipv4) == 0) {
                 DNS_LOG("DNS (%d)%s Ìø×ªIPv4µØÖ·Îª %s:%s", host_line, h->name, h->host4, ipv4);
