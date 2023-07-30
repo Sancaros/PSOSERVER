@@ -894,6 +894,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_INITIALIZATION_DATA:
                         if (dest->guildcard == sender_gc) {
 
+                            send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
                             display_packet((uint8_t*)g, len);
                         }
@@ -2272,8 +2273,6 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             memcpy(i->bb_guild, &pkt->guild, PSOCN_STLENGTH_BB_GUILD);
 
             i->guild_points_personal_donation = pkt->guild_points_personal_donation;
-
-            DBG_LOG("%d", i->guild_points_personal_donation);
 
             /* Move the user on now that we have everything... */
             send_lobby_list(i);

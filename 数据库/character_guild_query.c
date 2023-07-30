@@ -40,42 +40,6 @@ static int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc) {
     return 0;
 }
 
-static int db_get_bb_char_guild_id(uint32_t gc) {
-    int guild_id = -1;
-    void* result;
-    char** row;
-
-    memset(myquery, 0, sizeof(myquery));
-
-    sprintf(myquery, "SELECT guild_id FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -2;
-    }
-
-    if ((row = psocn_db_result_fetch(result)) == NULL) {
-        psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -3;
-    }
-
-    guild_id = (int)strtol(row[0], NULL, 10);
-
-    psocn_db_result_free(result);
-
-    return guild_id;
-}
-
 static int db_del_guild_data(uint32_t guild_id) {
     memset(myquery, 0, sizeof(myquery));
 
@@ -306,6 +270,78 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     return guild;
 }
 
+int db_get_bb_char_guild_id(uint32_t gc) {
+    int guild_id = -1;
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT guild_id FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    guild_id = (int)strtol(row[0], NULL, 10);
+
+    psocn_db_result_free(result);
+
+    return guild_id;
+}
+
+uint32_t db_get_bb_char_guild_priv_level(uint32_t gc) {
+    uint32_t guild_priv_level = -1;
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT guild_priv_level FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    guild_priv_level = (uint32_t)strtoul(row[0], NULL, 10);
+
+    psocn_db_result_free(result);
+
+    return guild_priv_level;
+}
+
 int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc, uint32_t version) {
     void* result;
     //char** row;
@@ -419,43 +455,6 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id) {
     return 1;
 }
 
-uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc) {
-    void* result;
-    char** row;
-    uint32_t guild_points_personal_donation = 0;
-
-    memset(myquery, 0, sizeof(myquery));
-
-    sprintf(myquery, "SELECT guild_points_personal_donation"
-        " FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -2;
-    }
-
-    if ((row = psocn_db_result_fetch(result)) == NULL) {
-        psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色数据 (%u)", gc);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -3;
-    }
-
-    guild_points_personal_donation = (uint32_t)strtoul(row[0], NULL, 10);
-
-    psocn_db_result_free(result);
-
-    return guild_points_personal_donation;
-}
-
 int db_dissolve_bb_guild(uint32_t guild_id) {
 
     if (db_del_guild_data(guild_id))
@@ -540,3 +539,41 @@ int db_update_bb_guild_ranks(psocn_dbconn_t* conn) {
 
     return 0;
 }
+
+uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc) {
+    void* result;
+    char** row;
+    uint32_t guild_points_personal_donation = 0;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT guild_points_personal_donation"
+        " FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    guild_points_personal_donation = (uint32_t)strtoul(row[0], NULL, 10);
+
+    psocn_db_result_free(result);
+
+    return guild_points_personal_donation;
+}
+

@@ -175,13 +175,6 @@ int db_insert_character_default(psocn_bb_db_char_t* data, int index, char* class
 /* 获取BB角色选项数据 */
 psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc);
 
-int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc);
-
-/* 获取BB角色公会数据 */
-psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc);
-
-uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc);
-
 /* 更新BB角色认证数据*/
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot);
 
@@ -196,9 +189,6 @@ psocn_srvconfig_t db_get_auth_server_list(uint32_t id);
 
 ///////////////////////////////////////////////////////
 /* 船闸查询 */
-
-/* 处理BB 公会创建 */
-int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc, uint32_t version);
 
 /* 获取玩家角色数据长度 */
 uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot);
@@ -226,8 +216,15 @@ int db_update_ship_ipv4(uint32_t ip, uint16_t key_idx);
 
 ///////////////////////////////////////////////////////////
 
-/* 更新BB角色公会数据 */
-int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
+/* 获取BB角色公会数据 */
+psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc);
+
+int db_get_bb_char_guild_id(uint32_t gc);
+
+uint32_t db_get_bb_char_guild_priv_level(uint32_t gc);
+
+/* 处理BB 公会创建 */
+int db_insert_bb_char_guild(uint16_t* guild_name, uint8_t* default_guild_flag, uint32_t gc, uint32_t version);
 
 /* 公会新增BB角色 */
 int db_update_bb_guild_member_add(uint32_t guild_id, uint32_t gc_target);
@@ -238,8 +235,15 @@ int db_update_bb_guild_flag(uint8_t* guild_flag, uint32_t guild_id);
 /* 解散BB角色公会 */
 int db_dissolve_bb_guild(uint32_t guild_id);
 
+/* 更新BB角色公会数据 */
+int db_update_bb_char_guild(psocn_bb_db_guild_t guild, uint32_t gc);
+
 /* 更新BB公会排行榜 */
 int db_update_bb_guild_ranks(psocn_dbconn_t* conn);
+
+int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc);
+
+uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc);
 
 ///////////////////////////////////////////////////////////
 

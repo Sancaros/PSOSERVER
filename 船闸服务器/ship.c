@@ -1847,14 +1847,14 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         g_data->entries[i].guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].char_name[0], row[2], len3);
         g_data->entries[i].char_name[1] = 0x0045;
-        g_data->entries[i].guild_reward[0] = (uint32_t)strtoul(row[3], NULL, 0);
-        g_data->entries[i].guild_reward[1] = (uint32_t)strtoul(row[4], NULL, 0);
-        g_data->entries[i].guild_reward[2] = (uint32_t)strtoul(row[5], NULL, 0);
-        g_data->entries[i].guild_reward[3] = (uint32_t)strtoul(row[6], NULL, 0);
-        g_data->entries[i].guild_reward[4] = (uint32_t)strtoul(row[7], NULL, 0);
-        g_data->entries[i].guild_reward[5] = (uint32_t)strtoul(row[8], NULL, 0);
-        g_data->entries[i].guild_reward[6] = (uint32_t)strtoul(row[9], NULL, 0);
-        g_data->entries[i].guild_reward[7] = (uint32_t)strtoul(row[10], NULL, 0);
+        //g_data->entries[i].guild_reward[0] = (uint32_t)strtoul(row[3], NULL, 0);
+        //g_data->entries[i].guild_reward[1] = (uint32_t)strtoul(row[4], NULL, 0);
+        //g_data->entries[i].guild_reward[2] = (uint32_t)strtoul(row[5], NULL, 0);
+        //g_data->entries[i].guild_reward[3] = (uint32_t)strtoul(row[6], NULL, 0);
+        //g_data->entries[i].guild_reward[4] = (uint32_t)strtoul(row[7], NULL, 0);
+        //g_data->entries[i].guild_reward[5] = (uint32_t)strtoul(row[8], NULL, 0);
+        //g_data->entries[i].guild_reward[6] = (uint32_t)strtoul(row[9], NULL, 0);
+        //g_data->entries[i].guild_reward[7] = (uint32_t)strtoul(row[10], NULL, 0);
 
         size += entries_size;
     }
@@ -2150,6 +2150,9 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
     uint16_t type = LE16(g_data->hdr.pkt_type);
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t guild_id = pkt->fw_flags;
+    void* result;
+    char** row;
 
     if (len != sizeof(bb_guild_unk_12EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2159,6 +2162,74 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
         return 0;
     }
+
+    //guild_id = db_get_bb_char_guild_id(sender);
+
+    //g_data->unk = 0;
+
+    //if (guild_id) {
+    //    memset(myquery, 0, sizeof(myquery));
+
+    //    sprintf_s(myquery, _countof(myquery), "SELECT %s.guildcard, %s.guild_priv_level, "
+    //        "lastchar_blob, guild_points_personal_donation, "
+    //        "%s.guild_points_rank, guild_points_rest, "
+    //        "guild_reward0, guild_reward1, guild_reward2, guild_reward3, "
+    //        "guild_reward4, guild_reward5, guild_reward6, guild_reward7"
+    //        " FROM "
+    //        "%s INNER JOIN %s ON "
+    //        "%s.guild_id = %s.guild_id WHERE "
+    //        "%s.guild_id = '%" PRIu32 "' ORDER BY guild_points_personal_donation DESC"
+    //        , AUTH_ACCOUNT, AUTH_ACCOUNT
+    //        , CLIENTS_GUILD
+    //        , AUTH_ACCOUNT, CLIENTS_GUILD
+    //        , AUTH_ACCOUNT, CLIENTS_GUILD
+    //        , CLIENTS_GUILD, guild_id
+    //    );
+
+    //    sprintf(myquery, "SELECT "
+    //        "guild_priv_level"
+    //        " FROM %s WHERE guild_id = '%" PRIu32 "'", 
+    //        CLIENTS_GUILD, guild_id);
+
+    //    if (psocn_db_real_query(&conn, myquery)) {
+    //        SQLERR_LOG("无法查询角色数据 (%u)", sender);
+    //        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+    //        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //        return -1;
+    //    }
+
+    //    /* Grab the data we got. */
+    //    if ((result = psocn_db_result_store(&conn)) == NULL) {
+    //        SQLERR_LOG("未获取到角色数据 (%u)", sender);
+    //        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+    //        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //        return -2;
+    //    }
+
+    //    if ((row = psocn_db_result_fetch(result)) == NULL) {
+    //        psocn_db_result_free(result);
+    //        SQLERR_LOG("未找到保存的角色数据 (%u)", sender);
+    //        SQLERR_LOG("%s", psocn_db_error(&conn));
+
+    //        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //        return -3;
+    //    }
+
+
+    //}
+
+
+
+    //if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
+    //    send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+    //        ERR_BAD_ERROR, (uint8_t*)g_data, len);
+    //    return 0;
+    //}
 
     display_packet((uint8_t*)g_data, len);
     return 0;
@@ -2283,6 +2354,14 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     /* 更新BB公会排行榜 */
     if (db_update_bb_guild_ranks(&conn)) {
         SQLERR_LOG("更新公会排行榜失败");
+
+        send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
+            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+        return 0;
+    }
+
+    if (guild_id != db_get_bb_char_guild_id(sender)) {
+        SQLERR_LOG("获取公会ID失败 %d", guild_id);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
@@ -2495,6 +2574,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
 #ifdef DEBUG_GUILD
     DBG_LOG("舰闸:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 #endif // DEBUG_GUILD
+    DBG_LOG("舰闸:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_GUILD_CREATE:
