@@ -152,8 +152,10 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     if (l->version != CLIENT_VERSION_BB)
         return -1;
 
-    memset(rv, 0, PSOCN_STLENGTH_IITEM);
-    rv->data.datal[0] = LE32(Item_NoSuchItem);
+    clear_iitem(rv);
+
+    //memset(rv, 0, PSOCN_STLENGTH_IITEM);
+    //rv->data.datal[0] = LE32(Item_NoSuchItem);
 
     i = TAILQ_FIRST(&l->item_queue);
     while (i) {
