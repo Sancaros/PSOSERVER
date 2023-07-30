@@ -3983,6 +3983,8 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     src->guild_points_personal_donation += point_add;
     src->bb_guild->data.guild_points_rest += point_add;
 
+    DBG_LOG("sub60_CC_bb %d", src->guild_points_personal_donation);
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

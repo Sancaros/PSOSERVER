@@ -2271,6 +2271,10 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
             /* 复制角色公会数据 */
             memcpy(i->bb_guild, &pkt->guild, PSOCN_STLENGTH_BB_GUILD);
 
+            i->guild_points_personal_donation = pkt->guild_points_personal_donation;
+
+            DBG_LOG("%d", i->guild_points_personal_donation);
+
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
             send_bb_full_char(i);

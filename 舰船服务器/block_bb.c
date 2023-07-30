@@ -2246,7 +2246,7 @@ static int process_bb_guild_member_promote(ship_client_t* c, bb_guild_member_pro
     DBG_LOG("目标GC %u", target_gc);
 
     for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i]->guildcard == target_gc && l->clients[i]->guild_master_exfer != 1) {
+        if (l->clients[i]->guildcard == target_gc && l->clients[i]->guild_master_exfer != true) {
             c2 = l->clients[i];
 
             DBG_LOG("非会长转换GC %u %d", c2->guildcard, l->clients[i]->guild_master_exfer);
@@ -2379,9 +2379,6 @@ static int process_bb_guild_buy_privilege_and_point_info(ship_client_t* c, bb_gu
     }
 
     return shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c);
-    //display_packet((uint8_t*)pkt, len);
-    //return send_bb_guild_cmd(c, BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO);
-    //return shipgate_fw_bb(&ship->sg, pkt, 0, c);
 }
 
 static int process_bb_guild_privilege_list(ship_client_t* c, bb_guild_privilege_list_pkt* pkt) {

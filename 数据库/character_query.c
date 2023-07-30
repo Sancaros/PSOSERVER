@@ -162,9 +162,6 @@ uint32_t db_get_char_data_length(uint32_t gc, uint8_t slot) {
     sprintf(myquery, "SELECT data, size FROM %s WHERE guildcard='%u' "
         "AND slot='%u'", CHARACTER, gc, slot);
 
-    /*SQLERR_LOG("gc %d = %d  slot %d = %d"
-        , gc, pkt->guildcard, slot, pkt->slot);*/
-
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%u: %u)", gc, slot);
         SQLERR_LOG("%s", psocn_db_error(&conn));

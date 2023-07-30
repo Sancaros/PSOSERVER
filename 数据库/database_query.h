@@ -180,6 +180,8 @@ int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc);
 /* 获取BB角色公会数据 */
 psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc);
 
+uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc);
+
 /* 更新BB角色认证数据*/
 int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t slot);
 

@@ -602,7 +602,8 @@ int send_user_options(ship_t* c) {
 
 /* 发送客户端 Blue Burst 选项数据 */
 int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
-    psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild) {
+    psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild, 
+    uint32_t guild_points_personal_donation) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
@@ -622,6 +623,8 @@ int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
 
     /* 填充公会数据 */
     memcpy(&pkt->guild, guild, sizeof(psocn_bb_db_guild_t));
+
+    pkt->guild_points_personal_donation = guild_points_personal_donation;
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

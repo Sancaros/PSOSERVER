@@ -2063,8 +2063,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    display_packet((uint8_t*)pkt, len);
+    //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    //display_packet((uint8_t*)pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", src->guildcard);
@@ -2085,7 +2085,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t target_guildcard = pkt->traget_guildcard;
     char guild_name_text[24];
     char master_name_text[24];
-    dest->guild_master_exfer = 0;
+    dest->guild_master_exfer = false;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
@@ -2097,13 +2097,13 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, guild_name_text, &pkt->guild_name[2], 24, 12);
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
-    TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    display_packet((uint8_t*)pkt, len);
+    //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
+    //display_packet((uint8_t*)pkt, len);
 
     switch (trans_cmd)
     {
     case 0x01:
-        dest->guild_master_exfer = 1;
+        dest->guild_master_exfer = true;
         send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", __(dest, "\tE\tC4会长变更中."), master_name_text, guild_name_text);
         break;
 

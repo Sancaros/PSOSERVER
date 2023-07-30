@@ -249,8 +249,8 @@ struct ship_client {
     psocn_bb_db_char_t *bb_pl;
     psocn_bb_db_opts_t *bb_opts;
     bool guild_accept;
-    int guild_master_exfer;
-    int guild_points_personal_donation;
+    bool guild_master_exfer;
+    uint32_t guild_points_personal_donation;
     psocn_bb_db_guild_t *bb_guild;
 
     sg_char_bkup_pkt game_info;
