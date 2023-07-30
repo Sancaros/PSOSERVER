@@ -11335,9 +11335,10 @@ int send_records_update(ship_client_t *c, lobby_t *l) {
 static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
-    //subcmd_pkt_t *pkt = (subcmd_pkt_t *)sendbuf;
     subcmd_update_player_stat_t *pkt = (subcmd_update_player_stat_t *)sendbuf;
     int len = 0;
+    uint8_t send_type = GAME_COMMAND0_TYPE;
+    uint8_t sub_amount = 0;
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -11346,36 +11347,32 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
+        sub_amount = MIN(amt, 0xFF);
+
         pkt->shdr.type = SUBCMD60_CHANGE_STAT;
         pkt->shdr.size = 0x02;
         pkt->shdr.client_id = s->client_id;
         pkt->client_id2 = 0x0000;
         pkt->stat_type = stat_type;
-        pkt->amount = (amt > 0xFF) ? 0xFF : amt;
+        pkt->amount = sub_amount;
 
         len += sizeof(subcmd_update_player_stat_t);
 
-        //sendbuf[len++] = SUBCMD60_CHANGE_STAT;
-        //sendbuf[len++] = 2;
-        //sendbuf[len++] = s->client_id;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = stat;
-        //sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
-        amt -= 0xFF;
+        amt -= sub_amount;
     }
+
+    send_type = len > 0x400 / (sizeof(subcmd_update_player_stat_t) - 4) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
 
     /* 填充数据头 */
     if(d->version == CLIENT_VERSION_DCV1 || d->version == CLIENT_VERSION_DCV2 ||
        d->version == CLIENT_VERSION_GC || d->version == CLIENT_VERSION_EP3 ||
        d->version == CLIENT_VERSION_XBOX) {
-        pkt->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
+        pkt->hdr.dc.pkt_type = send_type;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.dc.pkt_len = LE16(len);
     }
     else {
-        pkt->hdr.pc.pkt_type = GAME_COMMAND0_TYPE;
+        pkt->hdr.pc.pkt_type = send_type;
         pkt->hdr.dc.flags = 0;
         pkt->hdr.pc.pkt_len = LE16(len);
     }
@@ -11387,9 +11384,10 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
 static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
                             int amt) {
     uint8_t *sendbuf = get_sendbuf();
-    //subcmd_bb_pkt_t *pkt = (subcmd_bb_pkt_t *)sendbuf;
     subcmd_bb_update_player_stat_t *pkt = (subcmd_bb_update_player_stat_t *)sendbuf;
     int len = 0;
+    uint16_t send_type = GAME_COMMAND0_TYPE;
+    uint8_t sub_amount = 0;
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -11398,38 +11396,32 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
+        sub_amount = MIN(amt, 0xFF);
+
         pkt->shdr.type = SUBCMD60_CHANGE_STAT;
         pkt->shdr.size = 0x02;
         pkt->shdr.client_id = s->client_id;
         pkt->client_id2 = 0x0000;
         pkt->stat_type = stat_type;
-        pkt->amount = (amt > 0xFF) ? 0xFF : amt;
+        pkt->amount = sub_amount;
 
         len += sizeof(subcmd_bb_update_player_stat_t);
 
-        //sendbuf[len++] = SUBCMD60_CHANGE_STAT;
-        //sendbuf[len++] = 2;
-        //sendbuf[len++] = s->client_id;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = 0;
-        //sendbuf[len++] = stat;
-        //sendbuf[len++] = (amt > 0xFF) ? 0xFF : amt;
-        amt -= 0xFF;
+        amt -= sub_amount;
     }
 
-    DBG_LOG("测试是否正常");
+    send_type = len > 0x400 / (sizeof(subcmd_bb_update_player_stat_t) - 8) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
 
     /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(len);
-    pkt->hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt->hdr.pkt_type = send_type;
     pkt->hdr.flags = 0;
 
     /* 将数据包发送出去 */
     return crypt_send(d, len, sendbuf);
 }
 
-int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat_type, int amt) {
+int send_lobby_mod_stat(lobby_t *l, ship_client_t *src, int stat_type, int amt) {
     int i;
 
     /* Don't send these to default lobbies, ever */
@@ -11438,8 +11430,8 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat_type, int amt) {
     }
 
     /* Make sure the request is sane */
-    if(stat_type < SUBCMD60_STAT_HPDOWN || stat_type > SUBCMD60_STAT_TPUP || amt < 1 ||
-       amt > 2040) {
+    if(stat_type < SUBCMD60_STAT_HPDOWN || stat_type > SUBCMD60_STAT_TPUP || amt < 1
+       /* || amt > 2040*/) {
         return 0;
     }
 
@@ -11457,11 +11449,12 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *c, int stat_type, int amt) {
                 case CLIENT_VERSION_GC:
                 case CLIENT_VERSION_EP3:
                 case CLIENT_VERSION_XBOX:
-                    send_dc_mod_stat(l->clients[i], c, stat_type, amt);
+                    send_dc_mod_stat(l->clients[i], src, stat_type, amt);
                     break;
 
                 case CLIENT_VERSION_BB:
-                    send_bb_mod_stat(l->clients[i], c, stat_type, amt);
+                    send_bb_mod_stat(l->clients[i], src, stat_type, amt);
+                    break;
             }
 
             pthread_mutex_unlock(&l->clients[i]->mutex);

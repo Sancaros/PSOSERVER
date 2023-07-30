@@ -967,10 +967,11 @@ static int handle_legit(ship_client_t *c, const char *params) {
             break;
 
         case CLIENT_VERSION_EP3:
-            return send_txt(c, "%s", __(c, "\tE\tC7Not valid on Episode 3."));
+            return send_txt(c, "%s", __(c, "\tE\tC7合法模式不支持 Episode 3."));
 
         case CLIENT_VERSION_BB:
-            return send_txt(c, "%s", __(c, "\tE\tC7Blue Burst 不支持该指令."));
+            v = ITEM_VERSION_BB;
+            break;
 
         default:
             return -1;
@@ -979,17 +980,14 @@ static int handle_legit(ship_client_t *c, const char *params) {
     /* See if we're turning the flag off. */
     if(!strcmp(params, "off")) {
         c->flags &= ~CLIENT_FLAG_LEGIT;
-        return send_txt(c, "%s", __(c, "\tE\tC7Legit mode off\n"
-                                    "for any new teams."));
+        return send_txt(c, "%s", __(c, "\tE\tC7所有新的房间的合法模式已关闭."));
     }
 
     /* XXXX: Select the appropriate limits file. */
     pthread_rwlock_rdlock(&ship->llock);
     if(!ship->def_limits) {
         pthread_rwlock_unlock(&ship->llock);
-        return send_txt(c, "%s", __(c, "\tE\tC7Legit mode not\n"
-                                    "available on this\n"
-                                    "ship."));
+        return send_txt(c, "%s", __(c, "\tE\tC7当前舰船不支持合法模式."));
     }
 
     limits = ship->def_limits;
@@ -1005,8 +1003,7 @@ static int handle_legit(ship_client_t *c, const char *params) {
                   LE32(item->data.datal[1]), LE32(item->data.datal[2]),
                   LE32(item->data.data2l));
             pthread_rwlock_unlock(&ship->llock);
-            return send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
-                                           "check."));
+            return send_txt(c, "%s", __(c, "\tE\tC7你的合法模式检查失败."));
         }
     }
 
@@ -1016,8 +1013,7 @@ static int handle_legit(ship_client_t *c, const char *params) {
 
     pthread_rwlock_unlock(&ship->llock);
 
-    return send_txt(c, "%s", __(c, "\tE\tC7Legit mode on\n"
-                                "for your next team."));
+    return send_txt(c, "%s", __(c, "\tE\tC7下一个新建房间合法模式将会生效."));
 }
 
 /* 用法: /normal */
@@ -1044,7 +1040,7 @@ static int handle_normal(ship_client_t *c, const char *params) {
     /* If we're not in legit mode, then this command doesn't do anything... */
     if(!(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7Already in normal mode."));
+        return send_txt(c, "%s", __(c, "\tE\tC7已经是合法模式,无法使用作弊模式."));
     }
 
     /* Clear the flag */
@@ -1054,7 +1050,7 @@ static int handle_normal(ship_client_t *c, const char *params) {
     for(i = 0; i < l->max_clients; ++i) {
         if(l->clients[i]) {
             send_txt(l->clients[i], "%s",
-                     __(l->clients[i], "\tE\tC7Legit mode deactivated."));
+                     __(l->clients[i], "\tE\tC7合法模式已关闭."));
         }
     }
 
@@ -1978,15 +1974,13 @@ static int handle_npc(ship_client_t *c, const char *params) {
     /* Also, make sure its not a battle or challenge lobby. */
     if(l->battle || l->challenge) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7Not valid in battle or\n"
-                                    "challenge modes."));
+        return send_txt(c, "%s", __(c, "\tE\tC7对战模式和挑战模式无法使用."));
     }
 
     /* Make sure we're not in legit mode. */
     if((l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         pthread_mutex_unlock(&l->mutex);
-        return send_txt(c, "%s", __(c, "\tE\tC7Not valid in legit\n"
-                                    "mode."));
+        return send_txt(c, "%s", __(c, "\tE\tC7合法模式下无法生效."));
     }
 
     /* Make sure we're not in a quest. */
@@ -3872,6 +3866,41 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     }
 }
 
+/* 用法: /cheat [off] */
+static int handle_cheat(ship_client_t* c, const char* params) {
+    pthread_mutex_lock(&c->mutex);
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(c)) {
+        pthread_mutex_unlock(&c->mutex);
+        return send_txt(c, "%s", __(c, "\tE\tC7权限不足."));
+    }
+
+    /* See if we're turning the flag off. */
+    if (!strcmp(params, "off")) {
+        c->options.infinite_hp = false;
+        c->options.infinite_tp = false;
+        c->options.switch_assist = false;
+        c->flags &= ~CLIENT_FLAG_INFINITE_TP;
+        c->flags &= ~CLIENT_FLAG_INVULNERABLE;
+        c->cur_lobby->flags &= ~LOBBY_TYPE_CHEATS_ENABLED;
+        pthread_mutex_unlock(&c->mutex);
+
+        return send_txt(c, "%s", __(c, "\tE\tC7作弊模式关闭."));
+    }
+
+    /* Set the flag since we're turning it on. */
+    c->cur_lobby->flags |= LOBBY_TYPE_CHEATS_ENABLED;
+    c->flags |= CLIENT_FLAG_INFINITE_TP;
+    c->flags |= CLIENT_FLAG_INVULNERABLE;
+    c->options.infinite_hp = true;
+    c->options.infinite_tp = true;
+    c->options.switch_assist = true;
+
+    pthread_mutex_unlock(&c->mutex);
+    return send_txt(c, "%s", __(c, "\tE\tC7作弊模式开启."));
+}
+
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug   },
     { "swarp"    , handle_shipwarp  },
@@ -3974,6 +4003,7 @@ static command_t cmds[] = {
     { "xblink"   , handle_xblink    },
     { "logme"    , handle_logme     },
     { "clean"    , handle_clean     },
+    { "cheat"    , handle_cheat     },
     { ""         , NULL             }     /* End marker -- DO NOT DELETE */
 };
 

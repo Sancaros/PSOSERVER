@@ -1679,7 +1679,7 @@ int lobby_info_reply(ship_client_t *c, uint32_t lobby) {
 #endif // DEBUG
 
             len += snprintf(msg + len, 511 - len, 
-                            "  GC%d %s L%d\n"
+                            "  GC%d %s Lv%d\n"
                             "  %s ÓïÑÔ: %s\n",
                             c->guildcard, get_player_name(pl, c->version, true), pl->v1.character.disp.level + 1,
                             pso_class[pl->v1.character.dress_data.ch_class].cn_name, mini_language_codes_cn[pl->v1.character.inv.language]

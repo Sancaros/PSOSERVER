@@ -1310,11 +1310,14 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* TODO ²âÊÔGM DBUG ÎÞÏÞÑªÁ¿ */
-    if (src->game_data->gm_debug)
-        send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2040);
+    /* If we're in legit mode or the flag isn't set, then don't do anything. */
+    if ((l->flags & LOBBY_FLAG_LEGIT_MODE) ||
+        !(src->flags & CLIENT_FLAG_INVULNERABLE)) {
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2550);
 }
 
 static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
@@ -1591,12 +1594,9 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    if (src->game_data->gm_debug) {
-        send_lobby_mod_stat(l, src, SUBCMD60_STAT_TPUP, 255);
-    }
-
     /* This aught to do it... */
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_TPUP, 255);
 }
 
 static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
@@ -1680,11 +1680,9 @@ static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    if (src->game_data->gm_debug)
-        send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
-
     /* This aught to do it... */
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
 }
 
 static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest, 
