@@ -105,10 +105,6 @@ static int cmp_str(const char* s1, const char* s2) {
     }
 }
 
-int isStringEmpty(const char* str) {
-    return (strlen(str) == 0);
-}
-
 int isIPAddress(const char* hostname) {
     struct sockaddr_in sa = { 0 };
     return inet_pton(AF_INET, hostname, &(sa.sin_addr)) != 0;

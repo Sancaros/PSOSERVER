@@ -19,6 +19,7 @@
 #include "database_query.h"
 
 #include <f_iconv.h>
+#include <pso_text.h>
 
 int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot) {
 	char tmp_name[20];
@@ -36,12 +37,6 @@ int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot) {
 		name->name_tag, name->name_tag2, tmp_name,
 		gc, slot
 	);
-
-	//psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&name->char_name,
-	//    PSOCN_STLENGTH_BB_CHAR2);
-
-	//snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND "
-	//    "slot = '%" PRIu8 "'", gc, slot);
 
 	if (psocn_db_real_query(&conn, myquery)) {
 		SQLERR_LOG("无法更新角色 %s 名字数据!", CHARACTER);
@@ -99,13 +94,35 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 	j = 0;
 
 	name->name_tag = (uint16_t)strtoul(row[j], NULL, 16);
+
+	if (isStringEmpty(row[j])) {
+		psocn_db_result_free(result);
+
+		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+		return -4;
+	}
+
 	j++;
+
 	name->name_tag2 = (uint16_t)strtoul(row[j], NULL, 16);
+
+	if (isStringEmpty(row[j])) {
+		psocn_db_result_free(result);
+
+		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+		return -5;
+	}
+
 	j++;
+
+	if (isStringEmpty(row[j])) {
+		psocn_db_result_free(result);
+
+		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
+		return -6;
+	}
 
 	memcpy(&tmp_name[0], row[j], 20);
-
-	tmp_name[19] = '\0';
 
 	memset(&name->char_name[0], 0, sizeof(name->char_name));
 

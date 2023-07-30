@@ -38,22 +38,22 @@
     <ClCompile Include="common_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="inventory_query.c">
+    <ClCompile Include="character_inventory_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="bank_query.c">
+    <ClCompile Include="character_bank_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="quest_data1_query.c">
+    <ClCompile Include="character_quest_data1_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="option_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="techniques_query.c">
+    <ClCompile Include="character_techniques_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="dress_data_query.c">
+    <ClCompile Include="character_dress_data_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="guild_query.c">
@@ -62,13 +62,13 @@
     <ClCompile Include="character_default_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="disp_query.c">
+    <ClCompile Include="character_disp_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="records_challenge_query.c">
+    <ClCompile Include="character_records_challenge_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="records_battle_query.c">
+    <ClCompile Include="character_records_battle_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="character_query.c">

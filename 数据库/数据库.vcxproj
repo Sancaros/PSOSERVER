@@ -23,24 +23,24 @@
     <ClInclude Include="database_query.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bank_query.c" />
+    <ClCompile Include="character_bank_query.c" />
     <ClCompile Include="character_default_query.c" />
     <ClCompile Include="character_name_query.c" />
     <ClCompile Include="character_query.c" />
     <ClCompile Include="database.c" />
     <ClCompile Include="database_config.c" />
     <ClCompile Include="auth_query.c" />
-    <ClCompile Include="disp_query.c" />
-    <ClCompile Include="dress_data_query.c" />
+    <ClCompile Include="character_disp_query.c" />
+    <ClCompile Include="character_dress_data_query.c" />
     <ClCompile Include="guild_query.c" />
-    <ClCompile Include="inventory_query.c" />
+    <ClCompile Include="character_inventory_query.c" />
     <ClCompile Include="option_query.c" />
-    <ClCompile Include="quest_data1_query.c" />
-    <ClCompile Include="records_battle_query.c" />
-    <ClCompile Include="records_challenge_query.c" />
+    <ClCompile Include="character_quest_data1_query.c" />
+    <ClCompile Include="character_records_battle_query.c" />
+    <ClCompile Include="character_records_challenge_query.c" />
     <ClCompile Include="shipgate_query.c" />
     <ClCompile Include="common_query.c" />
-    <ClCompile Include="techniques_query.c" />
+    <ClCompile Include="character_techniques_query.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -22,6 +22,13 @@
 
 #include "pso_text.h"
 
+int isStringEmpty(const char* str) {
+    if (str == NULL || strlen(str) == 0) {
+        return 1; // ×Ö·û´®Îª¿Õ
+    }
+    return 0; // ×Ö·û´®·Ç¿Õ
+}
+
 void write_data(write_data_func func, const void* data, size_t len) {
     func(data, len);
 }

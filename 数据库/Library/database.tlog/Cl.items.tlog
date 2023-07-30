@@ -1,20 +1,20 @@
-E:\梦幻之星项目\PSOSERVER\数据库\bank_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\bank_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_bank_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_bank_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_default_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_default_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_name_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_name_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\database.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\database.obj
 E:\梦幻之星项目\PSOSERVER\数据库\database_config.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\database_config.obj
 E:\梦幻之星项目\PSOSERVER\数据库\auth_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\auth_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\disp_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\disp_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\dress_data_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\dress_data_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_disp_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_disp_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_dress_data_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_dress_data_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\guild_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\guild_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\inventory_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\inventory_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_inventory_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_inventory_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\option_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\option_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\quest_data1_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\quest_data1_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\records_battle_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\records_battle_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\records_challenge_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\records_challenge_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_quest_data1_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_quest_data1_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_records_battle_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_records_battle_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_records_challenge_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_records_challenge_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\shipgate_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\shipgate_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\common_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\common_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\techniques_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\techniques_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_techniques_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_techniques_query.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.ixx;E:\梦幻之星项目\PSOSERVER\数据库\Library\std.ixx.obj
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.36.32532\modules\std.compat.ixx;E:\梦幻之星项目\PSOSERVER\数据库\Library\std.compat.ixx.obj
