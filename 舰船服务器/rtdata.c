@@ -536,7 +536,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     if (rt_index >= 0) {
         rnd = mt19937_genrand_real1(rng);
 
-        DBG_LOG("rnd %d prob %d", rnd, set->enemy_rares[rt_index].prob);
+        //DBG_LOG("rnd %d prob %d", rnd, set->enemy_rares[rt_index].prob);
 
         if ((rnd < set->enemy_rares[rt_index].prob) || src->game_data->gm_drop_rare)
             return set->enemy_rares[rt_index].item_data;
@@ -546,7 +546,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
             if (set->box_rares[i].area == area) {
                 rnd = mt19937_genrand_real1(rng);
 
-                DBG_LOG("rnd %d prob %d", rnd, set->box_rares[i].prob);
+                //DBG_LOG("rnd %d prob %d", rnd, set->box_rares[i].prob);
 
                 if ((rnd < set->box_rares[i].prob) || src->game_data->gm_drop_rare)
                     return set->box_rares[i].item_data;

@@ -3718,8 +3718,6 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	DBG_LOG("PTID %d rnd %d enemy_dar %d", req->pt_index, rnd, ent->enemy_dar[req->pt_index]);
-
 	if ((rnd >= ent->enemy_dar[req->pt_index]) && !src->game_data->gm_drop_rare)
 		/* Nope. You get nothing! */
 		return 0;

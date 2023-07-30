@@ -1942,14 +1942,14 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    /* We can't get these in lobbies without someone messing with something
-   that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
-            src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
+   // /* We can't get these in lobbies without someone messing with something
+   //that they shouldn't be... Disconnect anyone that tries. */
+   // if (l->type != LOBBY_TYPE_LOBBY) {
+   //     ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+   //         src->guildcard);
+   //     ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+   //     return -1;
+   // }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
@@ -1959,6 +1959,10 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
+//代码 1950 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年07月30日 12:35:07:357] 截获(1950):
+//( 00000000 )   14 00 60 00 00 00 00 00   63 03 9A 10 34 00 81 00  ..`.....c.?4.?
+//( 00000010 )   02 00 00 00                                     ....
 
     if (l->flags & LOBBY_ITEM_TRACKING_ENABLED) {
         //auto item = l->remove_item(cmd.item_id);
