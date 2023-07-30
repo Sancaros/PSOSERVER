@@ -26,5 +26,5 @@ typedef struct bb_max_tech_level {
 } bb_max_tech_level_t;
 
 /* 已改为数据库载入 */
-bb_max_tech_level_t max_tech_level[MAX_TECH_LEVEL];
+bb_max_tech_level_t max_tech_level[MAX_PLAYER_TECHNIQUES];
 #endif /* !BB_MAX_TECH_H */

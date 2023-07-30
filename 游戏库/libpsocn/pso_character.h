@@ -30,7 +30,7 @@
 
 #define MAX_PLAYER_BANK_ITEMS           200
 #define MAX_PLAYER_INV_ITEMS            30
-#define MAX_TECH_LEVEL                  19
+#define MAX_PLAYER_TECHNIQUES           19
 #define MAX_TRADE_ITEMS                 200
 
 #ifdef PACKED

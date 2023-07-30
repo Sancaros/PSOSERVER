@@ -182,7 +182,7 @@ int db_get_char_techniques(uint32_t gc, uint8_t slot, techniques_t* tech_data, i
 
     if (row != NULL) {
         int i2 = 2;
-        for (int i = 0; i < MAX_TECH_LEVEL; i++) {
+        for (int i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
             tech_data->all[i] = (uint8_t)strtoul(row[i2], NULL, 16);
             i2++;
         }

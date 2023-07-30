@@ -178,7 +178,7 @@ struct StatBoost {
 
 struct MaxTechniqueLevels {
     // Indexed as [tech_num][char_class]
-    uint8_t max_level[MAX_TECH_LEVEL][MAX_PLAYER_CLASS_BB];
+    uint8_t max_level[MAX_PLAYER_TECHNIQUES][MAX_PLAYER_CLASS_BB];
 } PACKED;
 
 struct ItemCombination {
@@ -217,6 +217,16 @@ struct NonWeaponSaleDivisors {
     float unit_divisor;
     float mag_divisor;
 } PACKED;
+
+typedef struct rang_8bit {
+    uint8_t min;
+    uint8_t max;
+} PACKED rang_8bit_t;
+
+typedef struct rang_16bit {
+    uint16_t min;
+    uint16_t max;
+} PACKED rang_16bit_t;
 
 struct TableOffsets {
     /* 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)

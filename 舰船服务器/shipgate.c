@@ -2908,7 +2908,7 @@ static int handle_max_tech_level_bb(shipgate_conn_t* conn, shipgate_max_tech_lvl
 
     memcpy(max_tech_level, pkt->data, sizeof(max_tech_level));
 
-    for (i = 0; i < MAX_TECH_LEVEL; i++) {
+    for (i = 0; i < MAX_PLAYER_TECHNIQUES; i++) {
         for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
             if (max_tech_level[i].tech_name == NULL) {
                 ERR_LOG("舰船接收职业最大法术名称为空, 请检查函数错误");

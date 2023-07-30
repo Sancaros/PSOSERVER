@@ -1365,7 +1365,7 @@ static int generate_armor_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 			item_b[5] = i;
 			break;
 		}
-}
+	}
 
 	/* Look up the item in the ItemPMT data so we can see what boosts we might
 	   apply... */
@@ -1411,7 +1411,7 @@ static int generate_armor_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 	return 0;
-	}
+}
 
 static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	struct mt19937_state* rng, int picked, int bb,
@@ -1445,7 +1445,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 				armor = i;
 				break;
 			}
-	}
+		}
 
 		/* 合理性检查... */
 		if (armor == -1) {
@@ -1536,7 +1536,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 	return 0;
-	}
+}
 
 /* Generate a random shield, based on data for PSOv2. This is exactly the same
    as the armor version, but without unit slots. */
@@ -1569,7 +1569,7 @@ static int generate_shield_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 				armor = i;
 				break;
 			}
-	}
+		}
 
 		/* 合理性检查... */
 		if (armor == -1) {
@@ -1590,7 +1590,7 @@ static int generate_shield_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[0] = 0x00000201 | (armor << 16);
-}
+	}
 
 	item[1] = item[2] = item[3] = 0;
 
@@ -1624,7 +1624,7 @@ static int generate_shield_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 	return 0;
-	}
+}
 
 static int generate_shield_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 	struct mt19937_state* rng, int picked, int bb,
@@ -1657,7 +1657,7 @@ static int generate_shield_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 				armor = i;
 				break;
 			}
-	}
+		}
 
 		/* 合理性检查... */
 		if (armor == -1) {
@@ -1680,7 +1680,7 @@ static int generate_shield_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[0] = 0x00000201 | (armor << 16);
-}
+	}
 
 	item[1] = item[2] = item[3] = 0;
 
@@ -1728,7 +1728,7 @@ static int generate_shield_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 	return 0;
-	}
+}
 
 static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	struct mt19937_state* rng, int picked, int bb,
@@ -1762,7 +1762,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 				armor = i;
 				break;
 			}
-	}
+		}
 
 		/* 合理性检查... */
 		if (armor == -1) {
@@ -1785,7 +1785,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[0] = 0x00000201 | (armor << 16);
-}
+	}
 
 	item[1] = item[2] = item[3] = 0;
 
@@ -1837,7 +1837,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 	return 0;
-	}
+}
 
 static uint32_t generate_tool_base(uint16_t freqs[28][10], int area,
 	struct mt19937_state* rng, lobby_t* l) {
@@ -1847,7 +1847,7 @@ static uint32_t generate_tool_base(uint16_t freqs[28][10], int area,
 #ifdef DEBUG
 	if (l->flags & LOBBY_FLAG_DBG_SDROPS) {
 		ITEM_LOG("generate_tool_base: RNG picked %" PRIu32 "", rnd);
-}
+	}
 #endif
 
 	for (i = 0; i < 28; ++i) {
@@ -1864,7 +1864,7 @@ static uint32_t generate_tool_base(uint16_t freqs[28][10], int area,
 #endif
 
 			return tool_base[i];
-	}
+		}
 	}
 
 #ifdef DEBUG
@@ -1873,7 +1873,7 @@ static uint32_t generate_tool_base(uint16_t freqs[28][10], int area,
 #endif
 
 	return Item_NoSuchItem;
-	}
+}
 
 /* XXXX: There's something afoot here generating invalid techs. */
 static int generate_tech(uint8_t freqs[19][10], int8_t levels[19][20],
@@ -1894,7 +1894,7 @@ static int generate_tech(uint8_t freqs[19][10], int8_t levels[19][20],
 
 	rnd /= 1000;
 
-	for (i = 0; i < 19; ++i) {
+	for (i = 0; i < MAX_PLAYER_TECHNIQUES; ++i) {
 #ifdef DEBUG
 		if (l->flags & LOBBY_FLAG_DBG_SDROPS)
 			ITEM_LOG("    index: %d, chance: %" PRIu8 " left: %" PRIu32
@@ -1944,13 +1944,13 @@ static int generate_tech(uint8_t freqs[19][10], int8_t levels[19][20],
 			item[1] = i;
 			item[0] |= (level << 16);
 			return 0;
-}
+		}
 	}
 
 	/* Shouldn't get here... */
 	ITEM_LOG("Couldn't find technique to drop for area %d!", area);
 	return -1;
-	}
+}
 
 static int generate_tool_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 	struct mt19937_state* rng, lobby_t* l) {
@@ -1976,7 +1976,7 @@ static int generate_tool_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[1] = (1 << 8);
-}
+	}
 
 	if (item[0] == Item_Disk_Lv01) {
 #ifdef DEBUG
@@ -2019,7 +2019,7 @@ static int generate_tool_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[1] = (1 << 8);
-}
+	}
 
 	if (item[0] == Item_Disk_Lv01) {
 #ifdef DEBUG
@@ -2062,7 +2062,7 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 #endif
 
 		item[1] = (1 << 8);
-}
+	}
 
 	if (item[0] == Item_Disk_Lv01) {
 #ifdef DEBUG
@@ -2094,7 +2094,7 @@ static int generate_meseta(int min, int max, uint32_t item[4],
 	if (l->flags & LOBBY_FLAG_DBG_SDROPS) {
 		ITEM_LOG("generate_meseta: generated %" PRIu32 " meseta. (min, "
 			" max) = (%d, %d)", rnd, min, max);
-}
+	}
 #endif
 
 	if (rnd) {
@@ -2337,7 +2337,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 			"-- max: %d, quest=%" PRIu32 ")!\n", c->guildcard, mid,
 			l->map_enemies->count, l->qid);
 		return -1;
-}
+	}
 
 	/* Grab the map enemy to make sure it hasn't already dropped something. */
 	enemy = &l->map_enemies->enemies[mid];
@@ -2949,7 +2949,7 @@ int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 			"        PT Entry Pointer: %p",
 			c->guildcard, l->sdrops_ep, l->sdrops_section, l->sdrops_diff,
 			area, darea, mid, ent);
-}
+	}
 #endif
 
 	/* We only really need this separate for debugging... */
@@ -3240,7 +3240,7 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 #endif
 
 		return 0;
-}
+	}
 
 	obj = &gobj->data;
 

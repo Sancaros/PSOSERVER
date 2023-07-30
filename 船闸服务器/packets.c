@@ -1025,7 +1025,7 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(pkt->data, data, sizeof(bb_max_tech_level_t) * MAX_TECH_LEVEL);
+    memcpy(pkt->data, data, sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
 
 #ifdef DEBUG
     DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
@@ -1063,7 +1063,7 @@ int send_player_max_tech_level_table_bb(ship_t* c) {
     bb_max_tech_level_t* bb_max_tech_level = { 0 };
     int i;
 
-    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_TECH_LEVEL);
+    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
 
     if (!bb_max_tech_level)
         return 0;
