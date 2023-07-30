@@ -13038,3 +13038,43 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 //    send_file_chunk(c, cmd.filename, flag + 1, (command == 0xA7));
 //}
 //
+
+/* 物品兑换完成 */
+int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_pkt_hdr_t* pkt = (bb_pkt_hdr_t*)sendbuf;
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* 填充数据并准备发送 */
+    pkt->pkt_len = LE16(sizeof(bb_pkt_hdr_t));
+    pkt->pkt_type = LE16(opcode1);
+    pkt->flags = 0;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+}
+
+/* 指令测试 */
+int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2) {
+    uint8_t* sendbuf = get_sendbuf();
+    subcmd_bb_pkt_t* pkt = (subcmd_bb_pkt_t*)sendbuf;
+    int pkt_size = sizeof(subcmd_bb_pkt_t);
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_len = LE16(pkt_size);
+    pkt->hdr.pkt_type = opcode1;
+    pkt->hdr.flags = 0;
+
+    /* 填充副指令数据 */
+    pkt->type = opcode2;
+    pkt->size = (pkt_size - 8) / 4;
+    pkt->param = 0;
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}

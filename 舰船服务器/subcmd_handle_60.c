@@ -3928,26 +3928,9 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest, 
     subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
-    int found = 0;
+    uint32_t ex_item_id = pkt->ex_item_id, point_add = pkt->point_add_amount;
 
-    //[2023年02月14日 18:07:48:964] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
-    //
-    //( 00000000 )   14 00 60 00 00 00 00 00  CC 03 00 00 00 00 01 00    ..`.............
-    //( 00000010 )   01 00 00 00                                         ....
-    //[2023年02月14日 18:07:56:864] 调试(block-bb.c 2347): 舰仓：BB 公会功能指令 0x18EA BB_GUILD_BUY_PRIVILEGE_AND_POINT_INFO - 0x18EA (长度8)
-    //( 00000000 )   08 00 EA 18 00 00 00 00                             ........
-    //[2023年02月14日 18:07:56:890] 调试(ship_packets.c 11953): 向GC 42004063 发送公会指令 0x18EA
-    //[2023年02月14日 18:08:39:462] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
-    //
-    //( 00000000 )   14 00 60 00 00 00 00 00  CC 03 00 00 06 00 01 00    ..`.............
-    //( 00000010 )   01 00 00 00          
-//[2023年02月14日 18:16:59:989] 调试(subcmd-bb.c 5348): 暂未完成 0x60: 0xCC
-//
-//( 00000000 )   14 00 60 00 00 00 00 00  CC 03 01 00 00 00 81 00    ..`.............
-//( 00000010 )   01 00 00 00                                         ....
-
-    if (pkt->shdr.client_id != src->client_id || ex_amount == 0) {
+    if (pkt->shdr.client_id != src->client_id) {
         DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
@@ -3959,12 +3942,15 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem_t item = remove_iitem(src, pkt->ex_item_id, pkt->ex_amount, src->version != CLIENT_VERSION_BB);
+    iitem_t item = remove_iitem(src, pkt->ex_item_id, 1, src->version != CLIENT_VERSION_BB);
 
     if (&item == NULL) {
-        ERR_LOG("无法从玩家背包中移除 %d ID 0x%04X 物品!", pkt->ex_amount, pkt->ex_item_id);
+        ERR_LOG("无法从玩家背包中移除 ID 0x%04X 物品!", pkt->ex_item_id);
         return -1;
     }
+
+    src->guild_points_personal_donation += point_add;
+    src->bb_guild->data.guild_points_rest += point_add;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

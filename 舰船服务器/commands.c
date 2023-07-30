@@ -3901,6 +3901,56 @@ static int handle_cheat(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC7作弊模式开启."));
 }
 
+/* 用法: /cmdc [opcode1, opcode2] */
+static int handle_cmdcheck(ship_client_t* src, const char* params) {
+    int count;
+    uint16_t opcode[2] = { 0 };
+
+    pthread_mutex_lock(&src->mutex);
+
+    ///* Make sure the requester is a GM. */
+    //if (!LOCAL_GM(src)) {
+    //    pthread_mutex_unlock(&src->mutex);
+    //    return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    //}
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%hX,%hX", &opcode[0], &opcode[1]);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效参数代码."));
+    }
+
+    /* See if we're turning the flag off. */
+    if (opcode[0] && !opcode[1]) {
+
+        send_bb_cmd_test(src, opcode[0]);
+
+        DBG_LOG("测试指令 0x%04X %s GC %u",
+            opcode[0], c_cmd_name(opcode[0], 0), src->guildcard);
+
+        pthread_mutex_unlock(&src->mutex);
+
+        return send_txt(src, "%s", __(src, "\tE\tC7cmd代码已执行."));
+    }
+
+    /* See if we're turning the flag off. */
+    if (opcode[0] && opcode[1]) {
+
+        send_bb_subcmd_test(src, opcode[0], opcode[1]);
+
+        DBG_LOG("测试指令 0x%04X %s 0x%04X GC %u",
+            opcode[0], c_cmd_name(opcode[0], 0), isEmptyInt(opcode[1]) ? 0 : opcode[1], src->guildcard);
+
+        pthread_mutex_unlock(&src->mutex);
+
+        return send_txt(src, "%s", __(src, "\tE\tC7subcmd代码已执行."));
+    }
+
+    pthread_mutex_unlock(&src->mutex);
+    return send_txt(src, "%s", __(src, "\tE\tC6指令不正确\n参数为[opcodes]."));
+}
+
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug   },
     { "swarp"    , handle_shipwarp  },
@@ -4004,6 +4054,7 @@ static command_t cmds[] = {
     { "logme"    , handle_logme     },
     { "clean"    , handle_clean     },
     { "cheat"    , handle_cheat     },
+    { "cmdc"     , handle_cmdcheck  },
     { ""         , NULL             }     /* End marker -- DO NOT DELETE */
 };
 

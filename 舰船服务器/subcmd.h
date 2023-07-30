@@ -2960,7 +2960,7 @@ typedef struct subcmd_bb_guild_ex_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t ex_item_id;
-    uint32_t ex_amount;
+    uint32_t point_add_amount;
 } PACKED subcmd_bb_guild_ex_item_t;
 
 // 0xCD: subcmd_bb_guild_master_trans1

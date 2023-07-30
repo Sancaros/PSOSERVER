@@ -1883,14 +1883,14 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
         /* 公会邀请起始 检测双方的 公会情况 */
     case 0x00:
         if (dest->bb_guild->data.guild_id != 0) {
-            dest->guild_accept = 0;
+            dest->guild_accept = false;
             DBG_LOG("被邀请方 GUILD ID %u", dest->bb_guild->data.guild_id);
             /* 到这就没了, 获取对方已经属于某个公会. */
             send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4无法邀请玩家!"),
                 __(src, "\tC7对方已在公会中."));
         }
         else
-            dest->guild_accept = 1;
+            dest->guild_accept = true;
 
         break;
 
@@ -1913,7 +1913,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t target_guildcard = pkt->traget_guildcard;
     char guild_name_text[24];
     char inviter_name_text[24];
-    src->guild_accept = 0;
+    src->guild_accept = false;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
@@ -1943,7 +1943,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
                     __(src, "\tC7对方已在公会中."));
             }
             else
-                src->guild_accept = 1;
+                src->guild_accept = true;
 
         break;
 

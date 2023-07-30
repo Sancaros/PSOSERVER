@@ -1914,7 +1914,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
 #ifdef DEBUG
                 DBG_LOG("Ä¿±ê GUILD ID %u GC %u", c2->bb_guild->data.guild_id, c2->guildcard);
 #endif // DEBUG
-                if (c2->bb_guild->data.guild_id <= 0 && c2->guild_accept == 1) {
+                if (c2->bb_guild->data.guild_id <= 0 && c2->guild_accept == true) {
                     pthread_mutex_lock(&c2->mutex);
 
                     shipgate_fw_bb(&ship->sg, pkt, c->bb_guild->data.guild_id, c2);
@@ -1952,7 +1952,7 @@ static int process_bb_guild_member_add(ship_client_t* c, bb_guild_member_add_pkt
                     break;
                 }
 
-                c2->guild_accept = 0;
+                c2->guild_accept = false;
             }
         }
 

@@ -331,4 +331,8 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes);
 
 int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16_t subcmd_type);
 
+int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1);
+
+int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2);
+
 #endif /* !SHIP_PACKETS_H */

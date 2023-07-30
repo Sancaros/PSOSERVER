@@ -132,7 +132,7 @@
 #define LEAVE_GAME_PL_DATA_TYPE         0x0098
 #define SHIP_LIST_REQ_TYPE              0x0099
 #define EP3_UPDATE_REQ_TYPE             0x0099
-#define LOGIN_9A_TYPE                   0x009A
+#define LOGIN_9A_TYPE                   0x009A /* 30日测试 会让BB客户端返回一个9E数据包*/
 #define LOGIN_9B_TYPE                   0x009B
 #define LOGIN_9C_TYPE                   0x009C
 #define LOGIN_9D_TYPE                   0x009D

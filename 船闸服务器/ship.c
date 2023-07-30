@@ -118,13 +118,11 @@ static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
-        return 0;
+        return forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
     }
-    else {
-        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
-        return 1;
-    }
+
+    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+    return 0;
 }
 
 /* 完成数据包设置,发送至PC舰船... */
@@ -143,13 +141,11 @@ static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
-        return 0;
+        return forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
     }
-    else {
-        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
-        return 1;
-    }
+
+    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+    return 0;
 }
 
 /* 完成数据包设置,发送至BB舰船... */
@@ -168,13 +164,11 @@ static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
-        return 0;
+        return forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
     }
-    else{
-        ERR_LOG("未找到 %u 玩家所在舰船.", gc_target);
-        return 1;
-    }
+
+    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+    return 0;
 }
 
 static inline void pack_ipv6(struct in6_addr* addr, uint64_t* hi,
@@ -2336,14 +2330,14 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
         g_data->entries[i].member_list.guildcard_client = (uint32_t)strtoul(row[0], NULL, 0);
         memcpy(&g_data->entries[i].member_list.char_name[0], row[2], BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
         g_data->entries[i].member_list.char_name[1] = 0x0045; //颜色代码
-        g_data->entries[i].member_list.guild_reward[0] = (uint32_t)strtoul(row[6], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[1] = (uint32_t)strtoul(row[7], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[2] = (uint32_t)strtoul(row[8], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[3] = (uint32_t)strtoul(row[9], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[4] = (uint32_t)strtoul(row[10], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[5] = (uint32_t)strtoul(row[11], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[6] = (uint32_t)strtoul(row[12], NULL, 0);
-        g_data->entries[i].member_list.guild_reward[7] = (uint32_t)strtoul(row[13], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[0] = (uint32_t)strtoul(row[6], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[1] = (uint32_t)strtoul(row[7], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[2] = (uint32_t)strtoul(row[8], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[3] = (uint32_t)strtoul(row[9], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[4] = (uint32_t)strtoul(row[10], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[5] = (uint32_t)strtoul(row[11], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[6] = (uint32_t)strtoul(row[12], NULL, 0);
+        //g_data->entries[i].member_list.guild_reward[7] = (uint32_t)strtoul(row[13], NULL, 0);
 
         g_data->entries[i].guild_points_personal_donation = (uint32_t)strtoul(row[3], NULL, 0);
 
