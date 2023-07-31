@@ -33,7 +33,7 @@
     <ClCompile Include="gm.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="player_handle_iitem.c">
+    <ClCompile Include="handle_player_items.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="list.c">

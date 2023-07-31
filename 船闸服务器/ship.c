@@ -5319,8 +5319,8 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
 
 /* Process one ship packet. */
 int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
-    //__try
-    //{
+    __try
+    {
         uint16_t length = ntohs(pkt->pkt_len);
         uint16_t type = ntohs(pkt->pkt_type);
         uint16_t flags = ntohs(pkt->flags);
@@ -5458,13 +5458,13 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
             return -3;
         }
 
-    //}
-    //__except (crash_handler(GetExceptionInformation())) {
-    //    // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-    //    ERR_LOG("出现错误, 程序将退出.");
-    //    (void)getchar();
-    //    return -4;
-    //}
+    }
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {

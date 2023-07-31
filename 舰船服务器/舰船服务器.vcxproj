@@ -26,7 +26,7 @@
     <ClCompile Include="commands.c" />
     <ClCompile Include="enemy_type.c" />
     <ClCompile Include="gm.c" />
-    <ClCompile Include="player_handle_iitem.c" />
+    <ClCompile Include="handle_player_items.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="lobby.c" />
     <ClCompile Include="mapdata.c" />
