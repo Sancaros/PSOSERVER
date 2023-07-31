@@ -3096,86 +3096,95 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 
 /* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
 static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
-    uint32_t gc, slot;
-    int rv;
-    gc = ntohl(pkt->guildcard);
-    slot = ntohl(pkt->slot);
+    __try
+    {
+        uint32_t gc, slot;
+        int rv;
+        gc = ntohl(pkt->guildcard);
+        slot = ntohl(pkt->slot);
 
-    psocn_bb_db_char_t* bb_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
+        psocn_bb_db_char_t* bb_data = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
 
-    if (!bb_data) {
-        ERR_LOG("无法分配角色数据的内存空间");
-        ERR_LOG("%s", strerror(errno));
+        if (!bb_data) {
+            ERR_LOG("无法分配角色数据的内存空间");
+            ERR_LOG("%s", strerror(errno));
 
-        send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
-        return 0;
+            send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
+                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            return 0;
+        }
+
+        memset(bb_data, 0, PSOCN_STLENGTH_BB_DB_CHAR);
+
+        bb_data = db_get_uncompress_char_data(gc, slot);
+
+        /* 从数据库中获取玩家角色的背包数据 */
+        if ((rv = db_get_char_inv(gc, slot, &bb_data->character.inv, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据, 错误码:%d", gc, slot, rv);
+        }
+
+        /* 从数据库中获取玩家角色数值数据 */
+        if ((rv = db_get_char_disp(gc, slot, &bb_data->character.disp, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色数值数据, 错误码:%d", gc, slot, rv);
+            db_update_char_disp(&bb_data->character.disp, gc, slot, PSOCN_DB_SAVE_CHAR);
+        }
+
+        /* 从数据库中获取玩家角色外观数据 */
+        if ((rv = db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据, 错误码:%d", gc, slot, rv);
+            db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_SAVE_CHAR);
+        }
+
+        /* 从数据库中获取玩家角色名称数据 */
+        if ((rv = db_get_char_name(gc, slot, &bb_data->character.name))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色名称数据, 错误码:%d", gc, slot, rv);
+            db_update_char_name(&bb_data->character.name, gc, slot);
+        }
+
+        /* 防止玩家名称内存溢出 */
+        bb_data->character.padding = 0;
+
+        /* 从数据库中获取玩家角色科技数据 */
+        if ((rv = db_get_char_techniques(gc, slot, &bb_data->character.tech, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色科技数据, 错误码:%d", gc, slot, rv);
+            db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_SAVE_CHAR);
+        }
+
+        /* 从数据库中获取玩家角色的QUEST_DATA1数据 */
+        if ((rv = db_get_char_quest_data1(gc, slot, bb_data->quest_data1, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据, 错误码:%d", gc, slot, rv);
+        }
+
+        /* 从数据库中获取玩家角色的银行数据 */
+        if ((rv = db_get_char_bank(gc, slot, &bb_data->bank, 0))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据, 错误码:%d", gc, slot, rv);
+        }
+
+        /* 从数据库中获取玩家角色的b_records数据 */
+        if ((rv = db_get_b_records(gc, slot, &bb_data->b_records))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色b_records数据, 错误码:%d", gc, slot, rv);
+            db_update_char_b_records(&bb_data->b_records, gc, slot, PSOCN_DB_SAVE_CHAR);
+        }
+
+        /* 从数据库中获取玩家角色的b_records数据 */
+        if ((rv = db_get_c_records(gc, slot, &bb_data->c_records))) {
+            SQLERR_LOG("无法获取(GC%u:%u槽)角色c_records数据, 错误码:%d", gc, slot, rv);
+            db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_SAVE_CHAR);
+        }
+
+        /* 将数据发回舰船. */
+        rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
+
+        /* 清理内存并结束 */
+        free_safe(bb_data);
+        return rv;
     }
-
-    memset(bb_data, 0, PSOCN_STLENGTH_BB_DB_CHAR);
-
-    bb_data = db_get_uncompress_char_data(gc, slot);
-
-    /* 从数据库中获取玩家角色的背包数据 */
-    if ((rv = db_get_char_inv(gc, slot, &bb_data->character.inv, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色背包数据, 错误码:%d", gc, slot, rv);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
-
-    /* 从数据库中获取玩家角色数值数据 */
-    if ((rv = db_get_char_disp(gc, slot, &bb_data->character.disp, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色数值数据, 错误码:%d", gc, slot, rv);
-        db_update_char_disp(&bb_data->character.disp, gc, slot, PSOCN_DB_SAVE_CHAR);
-    }
-
-    /* 从数据库中获取玩家角色外观数据 */
-    if ((rv = db_get_dress_data(gc, slot, &bb_data->character.dress_data, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据, 错误码:%d", gc, slot, rv);
-        db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_SAVE_CHAR);
-    }
-
-    /* 从数据库中获取玩家角色名称数据 */
-    if ((rv = db_get_char_name(gc, slot, &bb_data->character.name))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色名称数据, 错误码:%d", gc, slot, rv);
-        db_update_char_name(&bb_data->character.name, gc, slot);
-    }
-
-    /* 防止玩家名称内存溢出 */
-    bb_data->character.padding = 0;
-
-    /* 从数据库中获取玩家角色科技数据 */
-    if ((rv = db_get_char_techniques(gc, slot, &bb_data->character.tech, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色科技数据, 错误码:%d", gc, slot, rv);
-        db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_SAVE_CHAR);
-    }
-
-    /* 从数据库中获取玩家角色的QUEST_DATA1数据 */
-    if ((rv = db_get_char_quest_data1(gc, slot, bb_data->quest_data1, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色QUEST_DATA1数据, 错误码:%d", gc, slot, rv);
-    }
-
-    /* 从数据库中获取玩家角色的银行数据 */
-    if ((rv = db_get_char_bank(gc, slot, &bb_data->bank, 0))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据, 错误码:%d", gc, slot, rv);
-    }
-
-    /* 从数据库中获取玩家角色的b_records数据 */
-    if ((rv = db_get_b_records(gc, slot, &bb_data->b_records))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色b_records数据, 错误码:%d", gc, slot, rv);
-        db_update_char_b_records(&bb_data->b_records, gc, slot, PSOCN_DB_SAVE_CHAR);
-    }
-
-    /* 从数据库中获取玩家角色的b_records数据 */
-    if ((rv = db_get_c_records(gc, slot, &bb_data->c_records))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色c_records数据, 错误码:%d", gc, slot, rv);
-        db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_SAVE_CHAR);
-    }
-
-    /* 将数据发回舰船. */
-    rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);
-
-    /* 清理内存并结束 */
-    free_safe(bb_data);
-    return rv;
 }
 
 /* 处理客户端来自舰船的登陆请求. */
@@ -5310,8 +5319,8 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
 
 /* Process one ship packet. */
 int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
-    __try
-    {
+    //__try
+    //{
         uint16_t length = ntohs(pkt->pkt_len);
         uint16_t type = ntohs(pkt->pkt_type);
         uint16_t flags = ntohs(pkt->flags);
@@ -5449,13 +5458,13 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
             return -3;
         }
 
-    }
-    __except (crash_handler(GetExceptionInformation())) {
-        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-        ERR_LOG("出现错误, 程序将退出.");
-        (void)getchar();
-        return -4;
-    }
+    //}
+    //__except (crash_handler(GetExceptionInformation())) {
+    //    // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+    //    ERR_LOG("出现错误, 程序将退出.");
+    //    (void)getchar();
+    //    return -4;
+    //}
 }
 
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {

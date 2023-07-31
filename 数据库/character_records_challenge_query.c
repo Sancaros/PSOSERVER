@@ -333,7 +333,7 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
 
     memcpy(&tmp_name[0], row[j], 20);
 
-    memcpy(&c_records->title_str[0], 0, sizeof(c_records->title_str));
+    memset(c_records->title_str, 0, sizeof(c_records->title_str));
 
     in = strlen(tmp_name);
     inptr = tmp_name;

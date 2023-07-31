@@ -128,7 +128,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	memcpy(&tmp_name[0], row[j], 20);
 
-	memcpy(&name->char_name[0], 0, sizeof(name->char_name));
+	memset(name->char_name, 0, sizeof(name->char_name));
 
 	in = strlen(tmp_name);
 	inptr = tmp_name;

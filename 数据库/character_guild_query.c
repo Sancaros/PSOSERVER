@@ -210,19 +210,19 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
                 guild.data.guild_name[1] = 0x0045;
                 memcpy(&guild.data.guild_name, L"公会数据错误", 14);
 
-                guild.data.guild_rank = 0; // ?? 应该是排行榜未完成的参数了
+                //guild.data.guild_rank = 0; // ?? 应该是排行榜未完成的参数了
 
-                memcpy(&guild.data.guild_flag, 0, sizeof(guild.data.guild_flag));
+                //memset(&guild.data.guild_flag, 0, sizeof(guild.data.guild_flag));
 
-                /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
-                guild.data.guild_reward[0] = 0;
-                guild.data.guild_reward[1] = 0;
-                guild.data.guild_reward[2] = 0;
-                guild.data.guild_reward[3] = 0;
-                guild.data.guild_reward[4] = 0;
-                guild.data.guild_reward[5] = 0;
-                guild.data.guild_reward[6] = 0;
-                guild.data.guild_reward[7] = 0;
+                ///* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
+                //guild.data.guild_reward[0] = 0;
+                //guild.data.guild_reward[1] = 0;
+                //guild.data.guild_reward[2] = 0;
+                //guild.data.guild_reward[3] = 0;
+                //guild.data.guild_reward[4] = 0;
+                //guild.data.guild_reward[5] = 0;
+                //guild.data.guild_reward[6] = 0;
+                //guild.data.guild_reward[7] = 0;
 
                 sprintf(myquery, "INSERT INTO %s ("
                     "guildcard, guild_id, guild_points_rank, guild_points_rest, guild_priv_level, "
