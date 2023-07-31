@@ -65,9 +65,7 @@ int db_update_bb_char_option(psocn_bb_db_opts_t opts, uint32_t gc) {
 psocn_bb_db_opts_t db_get_bb_char_option(uint32_t gc) {
     void* result;
     char** row;
-    psocn_bb_db_opts_t opts;
-
-    memset(&opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
+    psocn_bb_db_opts_t opts = { 0 };
 
     memset(myquery, 0, sizeof(myquery));
 

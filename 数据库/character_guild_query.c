@@ -114,10 +114,8 @@ static int db_initialize_account_guild_data(uint32_t guild_id) {
 psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
     void* result;
     char** row;
-    psocn_bb_db_guild_t guild;
+    psocn_bb_db_guild_t guild = { 0 };
     uint32_t guild_id, guild_priv_level;
-
-    memset(&guild, 0, PSOCN_STLENGTH_BB_GUILD);
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -214,7 +212,7 @@ psocn_bb_db_guild_t db_get_bb_char_guild(uint32_t gc) {
 
                 guild.data.guild_rank = 0; // ?? 应该是排行榜未完成的参数了
 
-                memset(&guild.data.guild_flag, 0, sizeof(guild.data.guild_flag));
+                memcpy(&guild.data.guild_flag, 0, sizeof(guild.data.guild_flag));
 
                 /* TODO 其他数据未获得初始数据 可以从默认的完整角色数据中获取初始数据*/
                 guild.data.guild_reward[0] = 0;

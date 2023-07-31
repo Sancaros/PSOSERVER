@@ -38,7 +38,7 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
 
     memset(myquery, 0, sizeof(myquery));
 
-    display_packet(c_records, sizeof(bb_challenge_records_t));
+    //display_packet(c_records, sizeof(bb_challenge_records_t));
 
     sprintf(myquery, "INSERT INTO %s("
         "guildcard, slot, "
@@ -333,7 +333,7 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
 
     memcpy(&tmp_name[0], row[j], 20);
 
-    memset(&c_records->title_str[0], 0, sizeof(c_records->title_str));
+    memcpy(&c_records->title_str[0], 0, sizeof(c_records->title_str));
 
     in = strlen(tmp_name);
     inptr = tmp_name;

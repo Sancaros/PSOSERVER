@@ -22,11 +22,7 @@
 #include <pso_text.h>
 
 int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot) {
-	char tmp_name[20];
-
-	memset(tmp_name, 0, 20);
-
-
+	char tmp_name[20] = { 0 };
 
 	istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&name->char_name, 20, 10);
 
@@ -132,7 +128,7 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	memcpy(&tmp_name[0], row[j], 20);
 
-	memset(&name->char_name[0], 0, sizeof(name->char_name));
+	memcpy(&name->char_name[0], 0, sizeof(name->char_name));
 
 	in = strlen(tmp_name);
 	inptr = tmp_name;

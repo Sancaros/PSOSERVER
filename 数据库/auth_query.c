@@ -93,9 +93,7 @@ int db_update_auth_server_list(psocn_srvconfig_t* cfg) {
 psocn_srvconfig_t db_get_auth_server_list(uint32_t id) {
     void* result;
     char** row;
-    psocn_srvconfig_t cfg;
-
-    memset(&cfg, 0, sizeof(psocn_srvconfig_t));
+    psocn_srvconfig_t cfg = { 0 };
 
     memset(myquery, 0, sizeof(myquery));
 
