@@ -269,8 +269,6 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
         return -4;
     }
 
-    memset(c_records, 0, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-
     c_records->title_color = (uint16_t)strtoul(row[j], NULL, 16);
     j++;
 
