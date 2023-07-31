@@ -1259,7 +1259,7 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
+        display_packet(pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1281,7 +1281,7 @@ static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
+        display_packet(pkt, pkt->hdr.pkt_len);
         return -1;
     }
 

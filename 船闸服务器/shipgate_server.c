@@ -53,7 +53,6 @@
 #include <f_iconv.h>
 #include <debug.h>
 #include <database.h>
-#include <pso_crash_handle.h>
 
 #ifndef _WIN32
 #if HAVE_LIBUTIL_H == 1
@@ -1007,7 +1006,6 @@ int __cdecl main(int argc, char** argv) {
         cfg = load_config();
 
         open_log();
-
     restart:
         shutting_down = 0;
 
@@ -1067,7 +1065,6 @@ int __cdecl main(int argc, char** argv) {
 
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-
         ERR_LOG("出现错误, 程序将退出.");
         (void)getchar();
     }

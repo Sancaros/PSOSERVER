@@ -58,7 +58,7 @@
 #define SUBCMD62_GUILD_MASTER_TRANS1           0xCD
 #define SUBCMD62_GUILD_MASTER_TRANS2           0xCE
 #define SUBCMD62_BATTLE_CHAR_LEVEL_FIX         0xD0
-#define SUBCMD62_CH_GRAVE_DATA                 0xD1
+#define SUBCMD62_CH_GRAVE_DROP_REQ             0xD1
 #define SUBCMD62_ITEM_WARP                     0xD6
 #define SUBCMD62_QUEST_BP_PHOTON_EX            0xDF    /* Blue Burst - black_paper_deal_photon_drop_exchange */
 #define SUBCMD62_QUEST_BP_REWARD               0xE0    /* Blue Burst - black_paper_deal_photon_drop_exchange */

@@ -274,7 +274,7 @@ static int check_user_blocklist(uint32_t searcher, uint32_t guildcard,
     char** row;
 
     sprintf(query, "SELECT flags FROM %s NATURAL JOIN %s "
-            "WHERE %s.blocked_gc='%u' AND guildcard='%u'"
+        "WHERE %s.blocked_gc='%u' AND guildcard='%u'"
         , SERVER_BLOCKS_LIST, AUTH_ACCOUNT_BLUEBURST
         , SERVER_BLOCKS_LIST, searcher, guildcard);
 
@@ -724,7 +724,7 @@ static size_t strlen16(const uint16_t* str) {
 }
 
 static int save_mail(uint32_t gc, uint32_t from, void* pkt, int version) {
-    char msg[512]= { 0 }, name[64];
+    char msg[512] = { 0 }, name[64];
     static char query[2048];
     void* result;
     char** row;
@@ -1527,7 +1527,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 
     if (g_data->guildcard != sender) {
-        ERR_LOG("无效 BB %s 数据包 (%d) 公会创建者GC不一致(%d:%d)", 
+        ERR_LOG("无效 BB %s 数据包 (%d) 公会创建者GC不一致(%d:%d)",
             c_cmd_name(type, 0), len, g_data->guildcard, sender);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -1691,7 +1691,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    if(!target_gc || guild_id < 1)
+    if (!target_gc || guild_id < 1)
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len);
 
@@ -2151,8 +2151,8 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
     uint16_t len = LE16(g_data->hdr.pkt_len);
     uint32_t sender = ntohl(pkt->guildcard);
     uint32_t guild_id = pkt->fw_flags;
-    void* result;
-    char** row;
+    //void* result;
+    //char** row;
 
     if (len != sizeof(bb_guild_unk_12EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
@@ -2531,7 +2531,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    TEST_LOG("handle_bb_guild_rank_list guild_id = %u",pkt->fw_flags);
+    TEST_LOG("handle_bb_guild_rank_list guild_id = %u", pkt->fw_flags);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2890,46 +2890,46 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
     const char name[], uint32_t block) {
     char query[256];
     char name2[65];
-    uint8_t *data;
-    void *result;
-    char **row;
-    unsigned long *len;
+    uint8_t* data;
+    void* result;
+    char** row;
+    unsigned long* len;
     int sz, rv;
     uLong sz2, csz;
-    int slot = pkt->game_info.slot ,version = ntohl(pkt->game_info.c_version);
+    int slot = pkt->game_info.slot, version = ntohl(pkt->game_info.c_version);
     int dbversion = 0, dbslot = 0;
 
     /* Build the query asking for the data. */
     psocn_db_escape_str(&conn, name2, name, strlen(name));
     sprintf(query, "SELECT data, size, version, slot FROM %s WHERE "
-            "guildcard='%u' AND name='%s'", CHARACTER_BACKUP, gc, name2);
+        "guildcard='%u' AND name='%s'", CHARACTER_BACKUP, gc, name2);
 
-    if(psocn_db_real_query(&conn, query)) {
+    if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法获取角色备份数据 (%u: %s)", gc, name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
     /* Grab the data we got. */
-    if((result = psocn_db_result_store(&conn)) == NULL) {
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
         SQLERR_LOG("未查询到角色备份数据 (%u: %s)", gc, name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
-    if((row = psocn_db_result_fetch(result)) == NULL) {
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         SQLERR_LOG("未找到角色备份数据 (%u: %s)", gc, name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_CREQ_NO_DATA, (uint8_t *)&pkt->game_info.guildcard, 8);
+            ERR_CREQ_NO_DATA, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
@@ -2959,53 +2959,53 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
     }
 
     /* Grab the length of the character data */
-    if(!(len = psocn_db_result_lengths(result))) {
+    if (!(len = psocn_db_result_lengths(result))) {
         psocn_db_result_free(result);
         SQLERR_LOG("无法获取角色备份数据的长度 %s", psocn_db_error(&conn));
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                   ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
         return 0;
     }
 
     /* Grab the data from the result */
     sz = (int)len[0];
 
-    if(row[1]) {
+    if (row[1]) {
         sz2 = (uLong)atoi(row[1]);
         csz = (uLong)sz;
 
-        data = (uint8_t *)malloc(sz2);
-        if(!data) {
+        data = (uint8_t*)malloc(sz2);
+        if (!data) {
             SQLERR_LOG("无法为解压角色备份数据分配内存空间");
             SQLERR_LOG("%s", strerror(errno));
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
             return 0;
         }
 
         /* 解压缩数据 */
-        if(uncompress((Bytef *)data, &sz2, (Bytef *)row[0], csz) != Z_OK) {
+        if (uncompress((Bytef*)data, &sz2, (Bytef*)row[0], csz) != Z_OK) {
             SQLERR_LOG("无法解压角色备份数据");
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
             return 0;
         }
 
         sz = sz2;
     }
     else {
-        data = (uint8_t *)malloc(sz);
-        if(!data) {
+        data = (uint8_t*)malloc(sz);
+        if (!data) {
             SQLERR_LOG("无法分配玩家备份内存");
             SQLERR_LOG("%s", strerror(errno));
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                       ERR_BAD_ERROR, (uint8_t *)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
             return 0;
         }
 
@@ -3095,7 +3095,7 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
 }
 
 /* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
-static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
+static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
     uint32_t gc, slot;
     int rv;
     gc = ntohl(pkt->guildcard);
@@ -3133,16 +3133,16 @@ static int handle_char_data_req(ship_t *c, shipgate_char_req_pkt *pkt) {
         db_update_char_dress_data(&bb_data->character.dress_data, gc, slot, PSOCN_DB_SAVE_CHAR);
     }
 
-    /* 从数据库中获取玩家角色外观数据 */
+    /* 从数据库中获取玩家角色名称数据 */
     if ((rv = db_get_char_name(gc, slot, &bb_data->character.name))) {
-        SQLERR_LOG("无法获取(GC%u:%u槽)角色外观数据, 错误码:%d", gc, slot, rv);
+        SQLERR_LOG("无法获取(GC%u:%u槽)角色名称数据, 错误码:%d", gc, slot, rv);
         db_update_char_name(&bb_data->character.name, gc, slot);
     }
 
     /* 防止玩家名称内存溢出 */
     bb_data->character.padding = 0;
 
-    /* 从数据库中获取玩家角色外观数据 */
+    /* 从数据库中获取玩家角色科技数据 */
     if ((rv = db_get_char_techniques(gc, slot, &bb_data->character.tech, 0))) {
         SQLERR_LOG("无法获取(GC%u:%u槽)角色科技数据, 错误码:%d", gc, slot, rv);
         db_update_char_techniques(&bb_data->character.tech, gc, slot, PSOCN_DB_SAVE_CHAR);
@@ -3496,7 +3496,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     /* Insert the client into the online_clients table */
     psocn_db_escape_str(&conn, tmp_name, name, strlen(name));
     sprintf(query, "INSERT INTO %s(guildcard, name, ship_id, "
-        "block) VALUES('%u', '%s', '%hu', '%u')", tbl_nm, 
+        "block) VALUES('%u', '%s', '%hu', '%u')", tbl_nm,
         gc, tmp_name, c->key_idx, bl);
 
     /* If the query fails, most likely its a primary key violation, so assume
@@ -3663,12 +3663,12 @@ skip_opts:
                 "server website to read your mail.");
 
         send_simple_mail(c, gc, bl, 2, "\tESys.Message", query);
-            /*
-            sprintf(query, "\tE您有 %" PRIu32 " 条未读邮件,请访问服务器网站阅读您的邮件.", opt);
-        else
-            sprintf(query, "\tE您有一条未读邮件,请访问服务器网站阅读您的邮件.");
+        /*
+        sprintf(query, "\tE您有 %" PRIu32 " 条未读邮件,请访问服务器网站阅读您的邮件.", opt);
+    else
+        sprintf(query, "\tE您有一条未读邮件,请访问服务器网站阅读您的邮件.");
 
-        send_simple_mail(c, gc, bl, 2, "系统.短消息", query);*/
+    send_simple_mail(c, gc, bl, 2, "系统.短消息", query);*/
     }
 
     psocn_db_result_free(result);
@@ -4705,19 +4705,19 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     gc = ntohl(pkt->guildcard);
 
     /* Build the query asking for the data. */
-    if(pkt->hdr.version == TLOGIN_VER_NORMAL) {
+    if (pkt->hdr.version == TLOGIN_VER_NORMAL) {
         sprintf(query, "SELECT privlevel, account_id FROM %s NATURAL "
-                "JOIN %s NATURAL JOIN %s WHERE "
-                "guildcard='%u' AND username='%s' AND token='%s'"
-				, AUTH_ACCOUNT
-				, AUTH_ACCOUNT_GUILDCARDS, AUTH_LOGIN_TOKENS, gc
-				, esc, esc2);
+            "JOIN %s NATURAL JOIN %s WHERE "
+            "guildcard='%u' AND username='%s' AND token='%s'"
+            , AUTH_ACCOUNT
+            , AUTH_ACCOUNT_GUILDCARDS, AUTH_LOGIN_TOKENS, gc
+            , esc, esc2);
     }
     else {
         sprintf(query, "SELECT privlevel, %s.account_id FROM "
-                "%s NATURAL JOIN %s, %s NATURAL "
-                "JOIN %s WHERE username='%s' AND token='%s' AND "
-                "guildcard='%u' AND %s.account_id is NULL", AUTH_ACCOUNT
+            "%s NATURAL JOIN %s, %s NATURAL "
+            "JOIN %s WHERE username='%s' AND token='%s' AND "
+            "guildcard='%u' AND %s.account_id is NULL", AUTH_ACCOUNT
             , AUTH_ACCOUNT, AUTH_LOGIN_TOKENS, AUTH_ACCOUNT_GUILDCARDS
             , AUTH_ACCOUNT_XBOX, esc, esc2
             , gc, AUTH_ACCOUNT_GUILDCARDS);
@@ -4781,20 +4781,20 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     psocn_db_result_free(result);
 
     /* If this was a request to associate an XBL account, then do it. */
-    if(pkt->hdr.version == TLOGIN_VER_XBOX) {
+    if (pkt->hdr.version == TLOGIN_VER_XBOX) {
         sprintf(query, "UPDATE %s SET account_id='%u' WHERE "
-                "guildcard='%u' AND account_id is NULL", AUTH_ACCOUNT_GUILDCARDS, account_id, gc);
+            "guildcard='%u' AND account_id is NULL", AUTH_ACCOUNT_GUILDCARDS, account_id, gc);
 
-        if(psocn_db_real_query(&conn, query)) {
+        if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("Couldn't update guild card data (user: %s, "
-                            "gc: %u)", pkt->username, gc);
+                "gc: %u)", pkt->username, gc);
             SQLERR_LOG("%s", psocn_db_error(&conn));
 
             return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
-                              ERR_BAD_ERROR, (uint8_t *)&pkt->guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
         }
     }
-	
+
     /* Delete the request. */
     sprintf(query, "DELETE FROM %s WHERE account_id='%u'"
         , AUTH_LOGIN_TOKENS, account_id);
@@ -5310,141 +5310,151 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
 
 /* Process one ship packet. */
 int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
-    uint16_t length = ntohs(pkt->pkt_len);
-    uint16_t type = ntohs(pkt->pkt_type);
-    uint16_t flags = ntohs(pkt->flags);
+    __try
+    {
+        uint16_t length = ntohs(pkt->pkt_len);
+        uint16_t type = ntohs(pkt->pkt_type);
+        uint16_t flags = ntohs(pkt->flags);
 
 #ifdef DEBUG
-    DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-    display_packet((unsigned char*)pkt, length);
+        DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+        display_packet((unsigned char*)pkt, length);
 #endif // DEBUG
 
-    switch (type) {
-    case SHDR_TYPE_LOGIN6:
-        return handle_ship_login6(c, pkt);
+        switch (type) {
+        case SHDR_TYPE_LOGIN6:
+            return handle_ship_login6(c, pkt);
 
-    case SHDR_TYPE_COUNT:
-        return handle_count(c, (shipgate_cnt_pkt*)pkt);
+        case SHDR_TYPE_COUNT:
+            return handle_count(c, (shipgate_cnt_pkt*)pkt);
 
-    case SHDR_TYPE_DC:
-        return handle_dreamcast(c, (shipgate_fw_9_pkt*)pkt);
+        case SHDR_TYPE_DC:
+            return handle_dreamcast(c, (shipgate_fw_9_pkt*)pkt);
 
-    case SHDR_TYPE_PC:
-        return handle_pc(c, (shipgate_fw_9_pkt*)pkt);
+        case SHDR_TYPE_PC:
+            return handle_pc(c, (shipgate_fw_9_pkt*)pkt);
 
-    case SHDR_TYPE_BB:
-        return handle_bb(c, (shipgate_fw_9_pkt*)pkt);
+        case SHDR_TYPE_BB:
+            return handle_bb(c, (shipgate_fw_9_pkt*)pkt);
 
-    case SHDR_TYPE_PING:
+        case SHDR_TYPE_PING:
 
-        if (handle_ship_ping(c, (shipgate_ping_t*)pkt)) {
-            ERR_LOG("handle_ship_ping");
-            return -1;
-        }
+            if (handle_ship_ping(c, (shipgate_ping_t*)pkt)) {
+                ERR_LOG("handle_ship_ping");
+                return -1;
+            }
 
-        /* If this is a ping request, reply. Otherwise, ignore it, the work
-           has already been done. */
-        if (!(flags & SHDR_RESPONSE)) {
-            return send_ping(c, 1);
-        }
+            /* If this is a ping request, reply. Otherwise, ignore it, the work
+               has already been done. */
+            if (!(flags & SHDR_RESPONSE)) {
+                return send_ping(c, 1);
+            }
 
-        return 0;
-
-    case SHDR_TYPE_CDATA:
-        return handle_char_data_save(c, (shipgate_char_data_pkt*)pkt);
-
-    case SHDR_TYPE_CREQ:
-        return handle_char_data_req(c, (shipgate_char_req_pkt*)pkt);
-
-    case SHDR_TYPE_USRLOGIN:
-        return handle_usrlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
-
-    case SHDR_TYPE_GCBAN:
-    case SHDR_TYPE_IPBAN:
-        return handle_ban(c, (shipgate_ban_req_pkt*)pkt, type);
-
-    case SHDR_TYPE_BLKLOGIN:
-        return handle_blocklogin(c, (shipgate_block_login_pkt*)pkt);
-
-    case SHDR_TYPE_BLKLOGOUT:
-        return handle_blocklogout(c, (shipgate_block_login_pkt*)pkt);
-
-    case SHDR_TYPE_ADDFRIEND:
-        return handle_friendlist_add(c, (shipgate_friend_add_pkt*)pkt);
-
-    case SHDR_TYPE_DELFRIEND:
-        return handle_friendlist_del(c, (shipgate_friend_upd_pkt*)pkt);
-
-    case SHDR_TYPE_LOBBYCHG:
-        return handle_lobby_chg(c, (shipgate_lobby_change_pkt*)pkt);
-
-    case SHDR_TYPE_BCLIENTS:
-        return handle_clients(c, (shipgate_block_clients_pkt*)pkt);
-
-    case SHDR_TYPE_KICK:
-        return handle_kick(c, (shipgate_kick_pkt*)pkt);
-
-    case SHDR_TYPE_FRLIST:
-        return handle_frlist_req(c, (shipgate_friend_list_req*)pkt);
-
-    case SHDR_TYPE_GLOBALMSG:
-        return handle_globalmsg(c, (shipgate_global_msg_pkt*)pkt);
-
-    case SHDR_TYPE_USEROPT:
-        return handle_useropt(c, (shipgate_user_opt_pkt*)pkt);
-
-    case SHDR_TYPE_BBOPTS:
-        return handle_bbopts(c, (shipgate_bb_opts_pkt*)pkt);
-
-    case SHDR_TYPE_BBOPT_REQ:
-        return handle_bbopt_req(c, (shipgate_bb_opts_req_pkt*)pkt);
-
-    case SHDR_TYPE_CBKUP:
-        return handle_char_data_backup(c, (shipgate_char_bkup_pkt*)pkt);
-
-    case SHDR_TYPE_MKILL:
-        return handle_mkill(c, (shipgate_mkill_pkt*)pkt);
-
-    case SHDR_TYPE_TLOGIN:
-        return handle_tlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
-
-    case SHDR_TYPE_SCHUNK:
-        /* 合理性检查... */
-        if (!(flags & SHDR_RESPONSE)) {
-            ERR_LOG("舰船发送了脚本块?");
-            return -1;
-        }
-
-        /* If it's a success response, don't bother doing anything */
-        if (!(flags & SHDR_FAILURE))
             return 0;
 
-        return handle_schunk(c, (shipgate_schunk_err_pkt*)pkt);
+        case SHDR_TYPE_CDATA:
+            return handle_char_data_save(c, (shipgate_char_data_pkt*)pkt);
 
-    case SHDR_TYPE_SDATA:
-        return handle_sdata(c, (shipgate_sdata_pkt*)pkt);
+        case SHDR_TYPE_CREQ:
+            return handle_char_data_req(c, (shipgate_char_req_pkt*)pkt);
 
-    case SHDR_TYPE_QFLAG_SET:
-        return handle_qflag_set(c, (shipgate_qflag_pkt*)pkt);
+        case SHDR_TYPE_USRLOGIN:
+            return handle_usrlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
 
-    case SHDR_TYPE_QFLAG_GET:
-        return handle_qflag_get(c, (shipgate_qflag_pkt*)pkt);
+        case SHDR_TYPE_GCBAN:
+        case SHDR_TYPE_IPBAN:
+            return handle_ban(c, (shipgate_ban_req_pkt*)pkt, type);
 
-    case SHDR_TYPE_SHIP_CTL:
-        return handle_shipctl_reply(c, (shipgate_shipctl_pkt*)pkt,
-            length, flags);
+        case SHDR_TYPE_BLKLOGIN:
+            return handle_blocklogin(c, (shipgate_block_login_pkt*)pkt);
 
-    case SHDR_TYPE_UBL_ADD:
-        return handle_ubl_add(c, (shipgate_ubl_add_pkt*)pkt);
+        case SHDR_TYPE_BLKLOGOUT:
+            return handle_blocklogout(c, (shipgate_block_login_pkt*)pkt);
 
-    case SHDR_TYPE_CHECK_PLONLINE:
-        DBG_LOG("收到查询指令");
-        return 0;
+        case SHDR_TYPE_ADDFRIEND:
+            return handle_friendlist_add(c, (shipgate_friend_add_pkt*)pkt);
 
-    default:
-        //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-        //display_packet((unsigned char*)pkt, length);
-        return -3;
+        case SHDR_TYPE_DELFRIEND:
+            return handle_friendlist_del(c, (shipgate_friend_upd_pkt*)pkt);
+
+        case SHDR_TYPE_LOBBYCHG:
+            return handle_lobby_chg(c, (shipgate_lobby_change_pkt*)pkt);
+
+        case SHDR_TYPE_BCLIENTS:
+            return handle_clients(c, (shipgate_block_clients_pkt*)pkt);
+
+        case SHDR_TYPE_KICK:
+            return handle_kick(c, (shipgate_kick_pkt*)pkt);
+
+        case SHDR_TYPE_FRLIST:
+            return handle_frlist_req(c, (shipgate_friend_list_req*)pkt);
+
+        case SHDR_TYPE_GLOBALMSG:
+            return handle_globalmsg(c, (shipgate_global_msg_pkt*)pkt);
+
+        case SHDR_TYPE_USEROPT:
+            return handle_useropt(c, (shipgate_user_opt_pkt*)pkt);
+
+        case SHDR_TYPE_BBOPTS:
+            return handle_bbopts(c, (shipgate_bb_opts_pkt*)pkt);
+
+        case SHDR_TYPE_BBOPT_REQ:
+            return handle_bbopt_req(c, (shipgate_bb_opts_req_pkt*)pkt);
+
+        case SHDR_TYPE_CBKUP:
+            return handle_char_data_backup(c, (shipgate_char_bkup_pkt*)pkt);
+
+        case SHDR_TYPE_MKILL:
+            return handle_mkill(c, (shipgate_mkill_pkt*)pkt);
+
+        case SHDR_TYPE_TLOGIN:
+            return handle_tlogin(c, (shipgate_usrlogin_req_pkt*)pkt);
+
+        case SHDR_TYPE_SCHUNK:
+            /* 合理性检查... */
+            if (!(flags & SHDR_RESPONSE)) {
+                ERR_LOG("舰船发送了脚本块?");
+                return -1;
+            }
+
+            /* If it's a success response, don't bother doing anything */
+            if (!(flags & SHDR_FAILURE))
+                return 0;
+
+            return handle_schunk(c, (shipgate_schunk_err_pkt*)pkt);
+
+        case SHDR_TYPE_SDATA:
+            return handle_sdata(c, (shipgate_sdata_pkt*)pkt);
+
+        case SHDR_TYPE_QFLAG_SET:
+            return handle_qflag_set(c, (shipgate_qflag_pkt*)pkt);
+
+        case SHDR_TYPE_QFLAG_GET:
+            return handle_qflag_get(c, (shipgate_qflag_pkt*)pkt);
+
+        case SHDR_TYPE_SHIP_CTL:
+            return handle_shipctl_reply(c, (shipgate_shipctl_pkt*)pkt,
+                length, flags);
+
+        case SHDR_TYPE_UBL_ADD:
+            return handle_ubl_add(c, (shipgate_ubl_add_pkt*)pkt);
+
+        case SHDR_TYPE_CHECK_PLONLINE:
+            DBG_LOG("收到查询指令");
+            return 0;
+
+        default:
+            //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
+            //display_packet((unsigned char*)pkt, length);
+            return -3;
+        }
+
+    }
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
 }
 
@@ -5507,8 +5517,8 @@ int handle_pkt(ship_t* c) {
     c->recvbuf_cur = 0;
     rbp = recvbuf;
 
-        /* As long as what we have is long enough, decrypt it. */
-    if(sz >= 8) {
+    /* As long as what we have is long enough, decrypt it. */
+    if (sz >= 8) {
         while (sz >= 8 && rv == 0) {
             /* Grab the packet header so we know what exactly we're looking
                for, in terms of packet length. */
@@ -5541,32 +5551,32 @@ int handle_pkt(ship_t* c) {
         }
     }
 
-        /* If we've still got something left here, buffer it for the next pass. */
-    if(sz) {
-            /* Reallocate the recvbuf for the client if its too small. */
-            if (c->recvbuf_size < sz) {
-                tmp = realloc(c->recvbuf, sz);
+    /* If we've still got something left here, buffer it for the next pass. */
+    if (sz) {
+        /* Reallocate the recvbuf for the client if its too small. */
+        if (c->recvbuf_size < sz) {
+            tmp = realloc(c->recvbuf, sz);
 
-                if (!tmp) {
-                    perror("realloc");
-                    return -1;
-                }
-
-                c->recvbuf = (unsigned char*)tmp;
-                c->recvbuf_size = sz;
+            if (!tmp) {
+                perror("realloc");
+                return -1;
             }
 
-            memcpy(c->recvbuf, rbp, sz);
-            c->recvbuf_cur = sz;
-        }
-    else {
-            /* Free the buffer, if we've got nothing in it. */
-            free_safe(c->recvbuf);
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
+            c->recvbuf = (unsigned char*)tmp;
+            c->recvbuf_size = sz;
         }
 
-        return rv;
+        memcpy(c->recvbuf, rbp, sz);
+        c->recvbuf_cur = sz;
+    }
+    else {
+        /* Free the buffer, if we've got nothing in it. */
+        free_safe(c->recvbuf);
+        c->recvbuf = NULL;
+        c->recvbuf_size = 0;
+    }
+
+    return rv;
     /*}*/
 
 end:

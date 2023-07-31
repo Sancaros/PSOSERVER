@@ -66,13 +66,27 @@ typedef struct battle_records {
 typedef struct dc_challenge_records {
     uint16_t title_color;
     uint16_t unknown_u0;
-    char rank_title[0x0C];
+    union {
+        struct {
+            char title_tag;
+            char title_tag2;
+            char title_str[10];
+        };
+        char rank_title[12]; //備瘍
+    };
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
     uint16_t grave_deaths;
     uint32_t grave_coords_time[5];
-    char grave_team[0x14];
-    char grave_message[0x18];
+    union {
+        struct {
+            char grave_team_tag;
+            char grave_team_tag2;
+            char grave_team_str[18];
+        };
+        char grave_team[20]; //備瘍
+    };
+    char grave_message[24];
     uint32_t times_ep1_offline[9];
     uint8_t battle[4];
 } PACKED dc_challenge_records_t;
@@ -84,36 +98,31 @@ typedef struct psocn_dc_records_data {
     battle_records_t battle;
 } PACKED psocn_dc_records_data_t;
 
-//typedef struct psocn_v2_c_rank_data {
-//    uint32_t client_id;
-//    union {
-//        uint8_t data[184];
-//        struct {
-//            uint32_t unk1;
-//            char string[0x0C];
-//            uint8_t times_ep1_online[0x24];
-//            uint16_t grave_unk4;
-//            uint16_t grave_deaths;
-//            uint32_t grave_coords_time[5];
-//            char grave_team[20];
-//            char grave_message[24];
-//            uint32_t times_ep1_offline[9];
-//            uint32_t battle[7];
-//        } part;
-//    } c_rank;
-//} PACKED psocn_v2_c_rank_data_t;
-
 /* 216 */
 typedef struct pc_challenge_records {
     uint16_t title_color;
     uint16_t unknown_u0;
-    uint16_t rank_title[0x0C];
+    union {
+        struct {
+            uint16_t title_tag;
+            uint16_t title_tag2;
+            uint16_t title_str[10];
+        };
+        uint16_t rank_title[12]; //備瘍
+    };
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
     uint16_t grave_deaths;
     uint32_t grave_coords_time[5];
-    uint16_t grave_team[0x14];
-    uint16_t grave_message[0x18];
+    union {
+        struct {
+            uint16_t grave_team_tag;
+            uint16_t grave_team_tag2;
+            uint16_t grave_team_str[18];
+        };
+        uint16_t grave_team[20]; //備瘍
+    };
+    uint16_t grave_message[24];
     uint32_t times_ep1_offline[9];
     uint8_t battle[4];
 } PACKED pc_challenge_records_t;
@@ -124,25 +133,6 @@ typedef struct psocn_pc_records_data {
     pc_challenge_records_t challenge;
     battle_records_t battle;
 } PACKED psocn_pc_records_data_t;
-
-//typedef struct psocn_pc_c_rank_data {
-//    uint32_t client_id;
-//    union {
-//        uint8_t data[0xF0];
-//        struct {
-//            uint32_t unk1;
-//            uint16_t string[0x0C];
-//            uint8_t times_ep1_online[0x24];
-//            uint16_t grave_unk4;
-//            uint16_t grave_deaths;
-//            uint32_t grave_coords_time[5];
-//            uint16_t grave_team[20];
-//            uint16_t grave_message[24];
-//            uint32_t times_ep1_offline[9];
-//            uint32_t battle[7];
-//        } part;
-//    } c_rank;
-//} PACKED psocn_pc_c_rank_data_t;
 
 /* 256 */
 typedef struct v3_challenge_records {
@@ -155,11 +145,25 @@ typedef struct v3_challenge_records {
     uint16_t grave_deaths;
     uint16_t unknown_u4;
     uint32_t grave_coords_time[5];
-    char grave_team[0x14];
-    char grave_message[0x20];
+    union {
+        struct {
+            char grave_team_tag;
+            char grave_team_tag2;
+            char grave_team_str[18];
+        };
+        char grave_team[20]; //備瘍
+    };
+    char grave_message[32];
     uint8_t unknown_m5[4];
     uint32_t unknown_t6[9];
-    char rank_title[12];
+    union {
+        struct {
+            char title_tag;
+            char title_tag2;
+            char title_str[10];
+        };
+        char rank_title[12]; //備瘍
+    };
     uint32_t battle[7];
 } PACKED v3_challenge_records_t;
 
@@ -170,27 +174,6 @@ typedef struct psocn_v3_records_data {
     battle_records_t battle;
 } PACKED psocn_v3_records_data_t;
 
-//typedef struct psocn_v3_c_rank_data {
-//    uint32_t client_id;
-//    union {
-//        uint8_t data[0x0118];
-//        struct {
-//            uint32_t unk1;          /* Flip the words for dc/pc! */
-//            uint32_t times_ep1_offline[9];
-//            uint32_t times_ep2_offline[5];
-//            uint8_t times_ep1_online[0x24];     /* Probably corresponds to unk2 dc/pc */
-//            uint32_t grave_unk4;
-//            uint32_t grave_deaths;
-//            uint32_t grave_coords_time[5];
-//            char grave_team[20];
-//            char grave_message[48];
-//            uint8_t unk3[24];
-//            char string[12];
-//            uint8_t unk4[24];
-//            uint32_t battle[7];
-//        } part;
-//    } c_rank;
-//} PACKED psocn_v3_c_rank_data_t;
 /* 320 */
 typedef struct bb_challenge_records {
     uint16_t title_color;
@@ -202,11 +185,25 @@ typedef struct bb_challenge_records {
     uint16_t grave_deaths;
     uint16_t unknown_u4;
     uint32_t grave_coords_time[5];
-    uint16_t grave_team[20];
+    union {
+        struct {
+            uint16_t grave_team_tag;
+            uint16_t grave_team_tag2;
+            uint16_t grave_team_str[18];
+        };
+        uint16_t grave_team[20]; //備瘍
+    };
     uint16_t grave_message[32];
     uint8_t unk3[4];
     uint16_t string[18];
-    uint16_t rank_title[12]; //備瘍
+    union {
+        struct {
+            uint16_t title_tag;
+            uint16_t title_tag2;
+            uint16_t title_str[10];
+        };
+        uint16_t rank_title[12]; //備瘍
+    };
     uint32_t battle[7];
 } PACKED bb_challenge_records_t;
 

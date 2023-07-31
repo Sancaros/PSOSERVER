@@ -201,7 +201,7 @@ extern int32_t script_log_console_show;
 //#define ERR_EXIT(m) (perror(m),exit(EXIT_FAILURE))
 #define CODE_LINE(LINE) fprintf(LINE,"%d",__LINE__)
 
-#define P_DATA(DATA, LENGTH) display_packet((unsigned char*)DATA, LE16(LENGTH));
+#define P_DATA(DATA, LENGTH) display_packet(DATA, LE16(LENGTH));
 //#define qWiFiDebug(format, ...) qDebug("[WiFi] "format" File:%s, Line:%d, Function:%s", ##__VA_ARGS__, __FILE__, __LINE__ , __func__); 
 
 #define PATCH_LOG(...) flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__)

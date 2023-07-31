@@ -26,7 +26,15 @@ int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot) {
 
 	memset(tmp_name, 0, 20);
 
+
+
 	istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&name->char_name, 20, 10);
+
+	if (name->name_tag != 0x0009)
+		name->name_tag = 0x0009;
+
+	if (name->name_tag2 != 0x0042)
+		name->name_tag2 = 0x0042;
 
 	memset(myquery, 0, sizeof(myquery));
 
@@ -93,8 +101,6 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 
 	j = 0;
 
-	name->name_tag = (uint16_t)strtoul(row[j], NULL, 16);
-
 	if (isEmptyString(row[j])) {
 		psocn_db_result_free(result);
 
@@ -102,9 +108,9 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 		return -4;
 	}
 
-	j++;
+	name->name_tag = (uint16_t)strtoul(row[j], NULL, 16);
 
-	name->name_tag2 = (uint16_t)strtoul(row[j], NULL, 16);
+	j++;
 
 	if (isEmptyString(row[j])) {
 		psocn_db_result_free(result);
@@ -112,6 +118,8 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name) {
 		SQLERR_LOG("保存的角色数据为空 (%" PRIu32 ": %u)", gc, slot);
 		return -5;
 	}
+
+	name->name_tag2 = (uint16_t)strtoul(row[j], NULL, 16);
 
 	j++;
 

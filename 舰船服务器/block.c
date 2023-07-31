@@ -429,12 +429,12 @@ static void* block_thd(void* d) {
                         sent = send(it->sock, it->sendbuf + it->sendbuf_start,
                             it->sendbuf_cur - it->sendbuf_start, 0);
 
-                        /*ERR_LOG( 
+                        /*ERR_LOG(
                             "舰仓writefds端口 %d 发送数据 = %d 字节 版本识别 = %d",
                             it->sock, sent, it->version);*/
 
-                        /* If we fail to send, and the error isn't EAGAIN,
-                           bail. */
+                            /* If we fail to send, and the error isn't EAGAIN,
+                               bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
                                 it->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -461,7 +461,8 @@ static void* block_thd(void* d) {
             }
 
             pthread_rwlock_unlock(&b->lock);
-        } else if (select_result == -1) {
+        }
+        else if (select_result == -1) {
             ERR_LOG("select 套接字 = -1");
         }
 
@@ -475,7 +476,7 @@ static void* block_thd(void* d) {
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接", get_player_name(it->pl, it->version, false), 
+                    DC_LOG("客户端 %s(%d) 断开连接", get_player_name(it->pl, it->version, false),
                         it->guildcard);
                 }
 #ifdef DEBUG
@@ -522,7 +523,7 @@ block_t* block_server_start(ship_t* s, int b, uint16_t port) {
     /* Limit receive window size on DC versions to ensure that we don't
        mistakenly negotiate window scaling. */
     i = 32767;
-    if(setsockopt(dcsock[0], SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
+    if (setsockopt(dcsock[0], SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
         perror("setsockopt");
     }
 
@@ -561,7 +562,7 @@ block_t* block_server_start(ship_t* s, int b, uint16_t port) {
         /* Limit receive window size on DC versions to ensure that we don't
            mistakenly negotiate window scaling. */
         i = 32767;
-        if(setsockopt(dcsock[1], SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
+        if (setsockopt(dcsock[1], SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
             perror("setsockopt");
         }
 
@@ -791,7 +792,7 @@ int block_info_reply(ship_client_t* c, uint32_t block) {
     int players, games;
 
     /* Make sure the block selected is in range. */
-    if((int)block > ship->cfg->blocks) {
+    if ((int)block > ship->cfg->blocks) {
         return 0;
     }
 
@@ -802,26 +803,26 @@ int block_info_reply(ship_client_t* c, uint32_t block) {
 
     //if ((int)block - 1 <= ship->cfg->blocks) {
         /* Grab the block in question */
-        b = ship->blocks[block - 1];
+    b = ship->blocks[block - 1];
 
-        /* Grab the stats from the block structure */
-        pthread_rwlock_rdlock(&b->lobby_lock);
-        games = b->num_games;
-        pthread_rwlock_unlock(&b->lobby_lock);
+    /* Grab the stats from the block structure */
+    pthread_rwlock_rdlock(&b->lobby_lock);
+    games = b->num_games;
+    pthread_rwlock_unlock(&b->lobby_lock);
 
-        pthread_rwlock_rdlock(&b->lock);
-        players = b->num_clients;
-        pthread_rwlock_unlock(&b->lock);
-
-        /* Fill in the string. */
-        snprintf(string, 256, "舰仓%02d\n%d %s\n%d %s", b->b, players,
-            __(c, "玩家"), games, __(c, "房间"));
-   // }
+    pthread_rwlock_rdlock(&b->lock);
+    players = b->num_clients;
+    pthread_rwlock_unlock(&b->lock);
 
     /* Fill in the string. */
-    //snprintf(string, 256, "NO MESSAGE");
+    snprintf(string, 256, "舰仓%02d\n%d %s\n%d %s", b->b, players,
+        __(c, "玩家"), games, __(c, "房间"));
+    // }
 
-    /* Send the information away. */
+     /* Fill in the string. */
+     //snprintf(string, 256, "NO MESSAGE");
+
+     /* Send the information away. */
     return send_info_reply(c, string);
 }
 
@@ -1034,9 +1035,9 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
-    dc_login_93_meet_ext *ext;
+    dc_login_93_meet_ext* ext;
     uint32_t menu;
-    lobby_t *i;
+    lobby_t* i;
 
     /* Make sure v1 is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOV1)) {
@@ -1079,15 +1080,15 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
 
     /* Is this in response to a "Meet the User" from a guild card search? */
     len = LE16(pkt->hdr.pkt_len);
-    if(len == 0x0114) {
-        ext = (dc_login_93_meet_ext *)pkt->extra_data;
+    if (len == 0x0114) {
+        ext = (dc_login_93_meet_ext*)pkt->extra_data;
         menu = LE32(ext->lobby_menu);
 
-        if(menu == MENU_ID_LOBBY) {
+        if (menu == MENU_ID_LOBBY) {
             menu = LE32(ext->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
+                if (i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1095,7 +1096,7 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
         }
     }
 
-    if(send_dc_security(c, c->guildcard, NULL, 0)) {
+    if (send_dc_security(c, c->guildcard, NULL, 0)) {
         return -1;
     }
 
@@ -1133,10 +1134,10 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
-    dcv2_login_9d_meet_ext *extd;
-    pc_login_9d_meet_ext *extp;
+    dcv2_login_9d_meet_ext* extd;
+    pc_login_9d_meet_ext* extp;
     uint32_t menu;
-    lobby_t *i;
+    lobby_t* i;
 
     /* Make sure the client's version is allowed on this ship. */
     if (c->version != CLIENT_VERSION_PC) {
@@ -1196,30 +1197,30 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
 
     /* See if it looks like we're here because of a "meet the user". */
     len = LE16(pkt->hdr.dc.pkt_len);
-    if(c->version == CLIENT_VERSION_DCV2 && len == 0x0130) {
-        extd = (dcv2_login_9d_meet_ext *)pkt->extra_data;
+    if (c->version == CLIENT_VERSION_DCV2 && len == 0x0130) {
+        extd = (dcv2_login_9d_meet_ext*)pkt->extra_data;
         menu = LE32(extd->lobby_menu);
 
-        if(menu == MENU_ID_LOBBY) {
+        if (menu == MENU_ID_LOBBY) {
             menu = LE32(extd->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
+                if (i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
             }
         }
     }
-    else if(c->version == CLIENT_VERSION_PC && len == 0x0150) {
-        extp = (pc_login_9d_meet_ext *)pkt->extra_data;
+    else if (c->version == CLIENT_VERSION_PC && len == 0x0150) {
+        extp = (pc_login_9d_meet_ext*)pkt->extra_data;
         menu = LE32(extp->lobby_menu);
 
-        if(menu == MENU_ID_LOBBY) {
+        if (menu == MENU_ID_LOBBY) {
             menu = LE32(extp->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
+                if (i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1227,7 +1228,7 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
         }
     }
 
-    if(send_dc_security(c, c->guildcard, NULL, 0)) {
+    if (send_dc_security(c, c->guildcard, NULL, 0)) {
         return -1;
     }
 
@@ -1261,9 +1262,9 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
-    gc_login_9e_meet_ext *ext;
+    gc_login_9e_meet_ext* ext;
     uint32_t menu;
-    lobby_t *i;
+    lobby_t* i;
 
     /* Make sure PSOGC is allowed on this ship. */
     if (c->version == CLIENT_VERSION_GC) {
@@ -1321,15 +1322,15 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
 
     /* See if it looks like we're here because of a "meet the user". */
     len = LE16(pkt->hdr.pkt_len);
-    if(len == 0x0150) {
-        ext = (gc_login_9e_meet_ext *)pkt->extra_data;
+    if (len == 0x0150) {
+        ext = (gc_login_9e_meet_ext*)pkt->extra_data;
         menu = LE32(ext->lobby_menu);
 
-        if(menu == MENU_ID_LOBBY) {
+        if (menu == MENU_ID_LOBBY) {
             menu = LE32(ext->lobby_id);
 
             TAILQ_FOREACH(i, &c->cur_block->lobbies, qentry) {
-                if(i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
+                if (i->lobby_id == menu && i->type == LOBBY_TYPE_LOBBY) {
                     c->lobby_req = i;
                     break;
                 }
@@ -1337,7 +1338,7 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
         }
     }
 
-    if(send_dc_security(c, c->guildcard, NULL, 0)) {
+    if (send_dc_security(c, c->guildcard, NULL, 0)) {
         return -1;
     }
 
@@ -1398,15 +1399,15 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
 
     memcpy(c->xbl_ip, &pkt->xbl_ip, sizeof(xbox_ip_t));
 
-    if(send_dc_security(c, c->guildcard, NULL, 0)) {
+    if (send_dc_security(c, c->guildcard, NULL, 0)) {
         return -1;
     }
 
-    if(send_lobby_list(c)) {
+    if (send_lobby_list(c)) {
         return -2;
     }
 
-    if(send_simple(c, CHAR_DATA_REQUEST_TYPE, 0)) {
+    if (send_simple(c, CHAR_DATA_REQUEST_TYPE, 0)) {
         return -3;
     }
 
@@ -1539,8 +1540,8 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
     /* If the client isn't in a lobby/team already, then add them to the first
        available lobby. */
-    if(!c->cur_lobby) {
-        if(lobby_add_to_any(c, c->lobby_req)) {
+    if (!c->cur_lobby) {
+        if (lobby_add_to_any(c, c->lobby_req)) {
             pthread_mutex_unlock(&c->mutex);
             return -1;
         }
@@ -1591,7 +1592,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
                     c->cur_lobby->lobby_id, c->cur_lobby->name);
             else
-                ERR_LOG( 
+                ERR_LOG(
                     "shipgate_send_lobby_chg 错误");
         }
 
@@ -1674,7 +1675,7 @@ static int dc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
 
     /* Fill in escapes for the color chat stuff */
     if (c->cc_char) {
-        for(i = 0; i < len; ++i) {
+        for (i = 0; i < len; ++i) {
             /* Only accept it if it has a C right after, since that means we
                should have a color code... Also, make sure there's at least one
                character after the C, or we get junk... */
@@ -1734,7 +1735,7 @@ static int pc_process_chat(ship_client_t* c, dc_chat_pkt* pkt) {
 
     /* Fill in escapes for the color chat stuff */
     if (c->cc_char) {
-        for(i = 0; i < len; i += 2) {
+        for (i = 0; i < len; i += 2) {
             /* Only accept it if it has a C right after, since that means we
                should have a color code... Also, make sure there's at least one
                character after the C, or we get junk..
@@ -2073,7 +2074,7 @@ static int dc_process_game_create(ship_client_t* c, dc_game_create_pkt* pkt) {
 
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
-        if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
+        if ((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
             return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
@@ -2121,7 +2122,7 @@ static int pc_process_game_create(ship_client_t* c, pc_game_create_pkt* pkt) {
 
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
-        if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
+        if ((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
             return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
@@ -2183,7 +2184,7 @@ static int gc_process_game_create(ship_client_t* c, gc_game_create_pkt* pkt) {
 
     /* Check the user's ability to create a game of that difficulty. */
     if (!(c->flags & CLIENT_FLAG_OVERRIDE_GAME)) {
-        if((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
+        if ((LE32((int)c->pl->v1.character.disp.level) + 1) < game_required_level[pkt->difficulty]) {
             return send_msg(c, MSG1_TYPE, "%s\n %s\n%s\n\n%s\n%s%d",
                 __(c, "\tE房间名称: "),
                 name,
@@ -2354,7 +2355,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
     //DBG_LOG("process_menu指令: 0x%08X item_id %d", menu_id & 0xFF, item_id);
 
     /* Figure out what the client is selecting. */
-    switch(menu_id & 0xFF) {
+    switch (menu_id & 0xFF) {
         /* Lobby Information Desk */
     case MENU_ID_INFODESK:
         return send_info_file(c, ship, item_id);
@@ -2370,7 +2371,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
         }
 
         /* Make sure the block selected is in range. */
-            if((int)item_id > ship->cfg->blocks) {
+        if ((int)item_id > ship->cfg->blocks) {
             return -1;
         }
 
@@ -2486,7 +2487,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
         int rv;
         int lang;
 
-            pthread_rwlock_rdlock(&ship->qlock);
+        pthread_rwlock_rdlock(&ship->qlock);
 
         /* Do we have quests configured? */
         if (!TAILQ_EMPTY(&ship->qmap)) {
@@ -2497,7 +2498,7 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
             rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未读取任务."));
         }
 
-            pthread_rwlock_unlock(&ship->qlock);
+        pthread_rwlock_unlock(&ship->qlock);
         return rv;
     }
 
@@ -2752,9 +2753,9 @@ static int process_infoboard(ship_client_t* c, gc_write_info_pkt* pkt) {
 static int process_dc_update_quest_stats(ship_client_t* c,
     dc_update_quest_stats_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    lobby_t *l = c->cur_lobby;
+    lobby_t* l = c->cur_lobby;
 
-    display_packet((unsigned char*)pkt, len);
+    display_packet(pkt, len);
 
     if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
@@ -2798,7 +2799,7 @@ static int process_ep3_command(ship_client_t* c, const uint8_t* pkt) {
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
             ERR_LOG("未知 Episode 3 指令: 0x%04X", hdr->flags);
-            display_packet((unsigned char*)pkt, len);
+            display_packet(pkt, len);
             return -1;
         }
         return 0;
@@ -2964,299 +2965,309 @@ ship_client_t* block_find_client(block_t* b, uint32_t gc) {
 
 /* Process block commands for a Dreamcast client. */
 int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
-    uint8_t type;
-    uint8_t flags;
-    uint16_t len;
-    dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt;
-    pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;
-    int rv;
+    __try {
+        uint8_t type;
+        uint8_t flags;
+        uint16_t len;
+        dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt;
+        pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;
+        int rv;
 
-    if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
-        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
-        c->version == CLIENT_VERSION_XBOX) {
-        type = dc->pkt_type;
-        len = LE16(dc->pkt_len);
-        flags = dc->flags;
-    }
-    else {
-        //display_packet(pkt, pc->pkt_len);
+        if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
+            c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
+            c->version == CLIENT_VERSION_XBOX) {
+            type = dc->pkt_type;
+            len = LE16(dc->pkt_len);
+            flags = dc->flags;
+        }
+        else {
+            //display_packet(pkt, pc->pkt_len);
 
-        type = pc->pkt_type;
-        len = LE16(pc->pkt_len);
-        flags = pc->flags;
-        dc->pkt_type = type;
-        dc->pkt_len = LE16(len);
-        dc->flags = flags;
-    }
+            type = pc->pkt_type;
+            len = LE16(pc->pkt_len);
+            flags = pc->flags;
+            dc->pkt_type = type;
+            dc->pkt_len = LE16(len);
+            dc->flags = flags;
+        }
 
 #ifdef DEBUG
 
-    DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
+        DBG_LOG("舰仓：DC指令 = 0x%04X %s 长度 = %d 标志 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, flags, c->guildcard);
 
 #endif // DEBUG
 
-    switch (type) {
-    case LOGIN_8B_TYPE:
-        return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);
+        switch (type) {
+        case LOGIN_8B_TYPE:
+            return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);
 
-    case LOGIN_93_TYPE:
-        return dc_process_login(c, (dc_login_93_pkt*)pkt);
+        case LOGIN_93_TYPE:
+            return dc_process_login(c, (dc_login_93_pkt*)pkt);
 
-    case CHAR_DATA_TYPE:
-        return dc_process_char(c, (dc_char_data_pkt*)pkt);
+        case CHAR_DATA_TYPE:
+            return dc_process_char(c, (dc_char_data_pkt*)pkt);
 
-    case GAME_COMMAND0_TYPE:
-        return subcmd_handle_60(c, (subcmd_pkt_t*)pkt);
+        case GAME_COMMAND0_TYPE:
+            return subcmd_handle_60(c, (subcmd_pkt_t*)pkt);
 
-    case GAME_COMMAND2_TYPE:
-        return subcmd_handle_62(c, (subcmd_pkt_t*)pkt);
+        case GAME_COMMAND2_TYPE:
+            return subcmd_handle_62(c, (subcmd_pkt_t*)pkt);
 
-    case GAME_COMMANDD_TYPE:
-        return subcmd_handle_6D(c, (subcmd_pkt_t*)pkt);
+        case GAME_COMMANDD_TYPE:
+            return subcmd_handle_6D(c, (subcmd_pkt_t*)pkt);
 
-    case LOBBY_CHANGE_TYPE:
-        return dc_process_change_lobby(c, (dc_select_pkt*)pkt);
+        case LOBBY_CHANGE_TYPE:
+            return dc_process_change_lobby(c, (dc_select_pkt*)pkt);
 
-    case PING_TYPE:
-        if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
-            send_motd(c);
-            c->flags |= CLIENT_FLAG_SENT_MOTD;
-        }
-
-        /* If they've got the always legit flag set, but we haven't run the
-           legit check yet, then do so now. The reason we wait until now is
-           so that if they fail the legit check, we can actually inform them
-           of that. */
-        if ((c->flags & CLIENT_FLAG_ALWAYS_LEGIT) &&
-            !(c->flags & CLIENT_FLAG_LEGIT)) {
-            psocn_limits_t* limits;
-
-            pthread_rwlock_rdlock(&ship->llock);
-            if (!ship->def_limits) {
-                pthread_rwlock_unlock(&ship->llock);
-                c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
-                send_txt(c, "%s", __(c, "\tE\tC7Legit mode not\n"
-                    "available on this\n"
-                    "ship."));
-                return 0;
+        case PING_TYPE:
+            if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
+                send_motd(c);
+                c->flags |= CLIENT_FLAG_SENT_MOTD;
             }
 
-            limits = ship->def_limits;
+            /* If they've got the always legit flag set, but we haven't run the
+               legit check yet, then do so now. The reason we wait until now is
+               so that if they fail the legit check, we can actually inform them
+               of that. */
+            if ((c->flags & CLIENT_FLAG_ALWAYS_LEGIT) &&
+                !(c->flags & CLIENT_FLAG_LEGIT)) {
+                psocn_limits_t* limits;
 
-            if (client_legit_check(c, limits)) {
-                c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
-                send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
-                    "check."));
+                pthread_rwlock_rdlock(&ship->llock);
+                if (!ship->def_limits) {
+                    pthread_rwlock_unlock(&ship->llock);
+                    c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
+                    send_txt(c, "%s", __(c, "\tE\tC7Legit mode not\n"
+                        "available on this\n"
+                        "ship."));
+                    return 0;
+                }
+
+                limits = ship->def_limits;
+
+                if (client_legit_check(c, limits)) {
+                    c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
+                    send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
+                        "check."));
+                }
+                else {
+                    /* Set the flag and retain the limits list on the client. */
+                    c->flags |= CLIENT_FLAG_LEGIT;
+                    c->limits = retain(limits);
+                }
+
+                pthread_rwlock_unlock(&ship->llock);
+            }
+
+            if (c->flags & CLIENT_FLAG_WAIT_QPING) {
+                lobby_t* l = c->cur_lobby;
+
+                if (!l)
+                    return -1;
+
+                pthread_mutex_lock(&l->mutex);
+                l->flags &= ~LOBBY_FLAG_BURSTING;
+                c->flags &= ~(CLIENT_FLAG_BURSTING | CLIENT_FLAG_WAIT_QPING);
+
+                rv = lobby_resend_burst(l, c);
+                rv = send_simple(c, PING_TYPE, 0) |
+                    lobby_handle_done_burst(l, c);
+                pthread_mutex_unlock(&l->mutex);
+                return rv;
+            }
+
+            return 0;
+
+        case BURSTING_TYPE:
+            /* If we've already gotten one of these, disconnect the client. */
+            if (c->flags & CLIENT_FLAG_GOT_05) {
+                c->flags |= CLIENT_FLAG_DISCONNECTED;
+            }
+
+            c->flags |= CLIENT_FLAG_GOT_05;
+            return 0;
+
+        case CHAT_TYPE:
+            if (c->version != CLIENT_VERSION_PC) {
+                return dc_process_chat(c, (dc_chat_pkt*)pkt);
             }
             else {
-                /* Set the flag and retain the limits list on the client. */
-                c->flags |= CLIENT_FLAG_LEGIT;
-                c->limits = retain(limits);
+                return pc_process_chat(c, (dc_chat_pkt*)pkt);
             }
 
-            pthread_rwlock_unlock(&ship->llock);
+            return -1;
+
+        case GUILD_SEARCH_TYPE:
+            return dc_process_guild_search(c, (dc_guild_search_pkt*)pkt);
+
+        case SIMPLE_MAIL_TYPE:
+            if (c->version != CLIENT_VERSION_PC) {
+                return dc_process_mail(c, (simple_mail_pkt*)pkt);
+            }
+            else {
+                return pc_process_mail(c, (simple_mail_pkt*)pkt);
+            }
+
+            return -1;
+
+        case DC_GAME_CREATE_TYPE:
+        case GAME_CREATE_TYPE:
+            if (c->version == CLIENT_VERSION_DCV1 &&
+                (c->flags & CLIENT_FLAG_IS_NTE)) {
+                return dcnte_process_game_create(c,
+                    (dcnte_game_create_pkt*)pkt);
+            }
+            else if (c->version != CLIENT_VERSION_PC &&
+                c->version != CLIENT_VERSION_GC &&
+                c->version != CLIENT_VERSION_XBOX) {
+                return dc_process_game_create(c, (dc_game_create_pkt*)pkt);
+            }
+            else if (c->version == CLIENT_VERSION_PC) {
+                return pc_process_game_create(c, (pc_game_create_pkt*)pkt);
+            }
+            else {
+                return gc_process_game_create(c, (gc_game_create_pkt*)pkt);
+            }
+
+            return -1;
+
+        case DONE_BURSTING_TYPE:
+            return dc_process_done_burst(c);
+
+        case GAME_LIST_TYPE:
+            return send_game_list(c, c->cur_block);
+
+        case MENU_SELECT_TYPE:
+            return dc_process_menu(c, (dc_select_pkt*)pkt);
+
+        case LEAVE_GAME_PL_DATA_TYPE:
+            return dc_process_char(c, (dc_char_data_pkt*)pkt);
+
+        case LOBBY_INFO_TYPE:
+            return send_info_list(c, ship);
+
+        case BLOCK_LIST_REQ_TYPE:
+        case DCNTE_BLOCK_LIST_REQ_TYPE:
+            return send_block_list(c, ship);
+
+        case INFO_REQUEST_TYPE:
+            return dc_process_info_req(c, (dc_select_pkt*)pkt);
+
+        case QUEST_LIST_TYPE:
+            return process_qlist(c);
+
+        case QUEST_END_LIST_TYPE:
+            return process_qlist_end(c);
+
+        case LOGIN_9D_TYPE:
+            return dcv2_process_login(c, (dcv2_login_9d_pkt*)pkt);
+
+        case LOBBY_NAME_TYPE:
+            return send_lobby_name(c, c->cur_lobby);
+
+        case LOBBY_ARROW_CHANGE_TYPE:
+            return dc_process_arrow(c, flags);
+
+        case SHIP_LIST_TYPE:
+        case DCNTE_SHIP_LIST_TYPE:
+            return send_ship_list(c, ship, ship->cfg->menu_code);
+
+        case CHOICE_OPTION_TYPE:
+            return send_choice_search(c);
+
+        case CHOICE_SETTING_TYPE:
+            /* Ignore these for now. */
+            return 0;
+
+        case CHOICE_SEARCH_TYPE:
+            return send_choice_reply(c, (dc_choice_set_pkt*)pkt);
+
+        case LOGIN_9E_TYPE:
+            if (c->version != CLIENT_VERSION_XBOX)
+                return gc_process_login(c, (gc_login_9e_pkt*)pkt);
+            else
+                return xb_process_login(c, (xb_login_9e_pkt*)pkt);
+
+            return -1;
+
+        case QUEST_CHUNK_TYPE:
+        case QUEST_FILE_TYPE:
+            /* Uhh... Ignore these for now, we've already sent it by the time we
+               get this packet from the client. */
+            return 0;
+
+        case QUEST_LOAD_DONE_TYPE:
+            return process_qload_done(c);
+
+        case INFOBOARD_WRITE_TYPE:
+            return process_infoboard(c, (gc_write_info_pkt*)pkt);
+
+        case INFOBOARD_TYPE:
+            return send_infoboard(c, c->cur_lobby);
+
+        case TRADE_0_TYPE:
+            return process_trade(c, (gc_trade_pkt*)pkt);
+
+        case TRADE_2_TYPE:
+            /* Ignore. */
+            return 0;
+
+        case GC_MSG_BOX_CLOSED_TYPE:
+            /* Ignore. */
+            return 0;
+
+        case BLACKLIST_TYPE:
+            return gc_process_blacklist(c, (gc_blacklist_update_pkt*)pkt);
+
+        case AUTOREPLY_SET_TYPE:
+            return client_set_autoreply(c, ((autoreply_set_pkt*)dc)->msg,
+                len - 4);
+
+        case AUTOREPLY_CLEAR_TYPE:
+            return client_disable_autoreply(c);
+
+        case GAME_COMMAND_C9_TYPE:
+        case GAME_COMMAND_CB_TYPE:
+            return subcmd_handle_ep3_bcast(c, (subcmd_pkt_t*)pkt);
+
+        case EP3_COMMAND_TYPE:
+            return process_ep3_command(c, pkt);
+
+        case EP3_SERVER_DATA_TYPE:
+            ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
+                c->guildcard);
+            display_packet(pkt, len);
+            return 0;
+
+        case EP3_MENU_CHANGE_TYPE:
+            if (dc->flags != 0) {
+                return send_simple(c, EP3_MENU_CHANGE_TYPE, 0);
+            }
+            return 0;
+
+        case EP3_GAME_CREATE_TYPE:
+            return ep3_process_game_create(c, (ep3_game_create_pkt*)pkt);
+
+        case QUEST_STATS_TYPE:
+            return process_dc_update_quest_stats(c, (dc_update_quest_stats_pkt*)pkt);
+
+        default:
+            if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
+                len)) {
+                ERR_LOG("未知数据包!");
+                display_packet(pkt, len);
+                return -3;
+            }
+            return 0;
         }
+    }
 
-        if (c->flags & CLIENT_FLAG_WAIT_QPING) {
-            lobby_t* l = c->cur_lobby;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-            if (!l)
-                return -1;
-
-            pthread_mutex_lock(&l->mutex);
-            l->flags &= ~LOBBY_FLAG_BURSTING;
-            c->flags &= ~(CLIENT_FLAG_BURSTING | CLIENT_FLAG_WAIT_QPING);
-
-            rv = lobby_resend_burst(l, c);
-            rv = send_simple(c, PING_TYPE, 0) |
-                lobby_handle_done_burst(l, c);
-            pthread_mutex_unlock(&l->mutex);
-            return rv;
-        }
-
-        return 0;
-
-    case BURSTING_TYPE:
-        /* If we've already gotten one of these, disconnect the client. */
-        if (c->flags & CLIENT_FLAG_GOT_05) {
-            c->flags |= CLIENT_FLAG_DISCONNECTED;
-        }
-
-        c->flags |= CLIENT_FLAG_GOT_05;
-        return 0;
-
-    case CHAT_TYPE:
-        if (c->version != CLIENT_VERSION_PC) {
-            return dc_process_chat(c, (dc_chat_pkt*)pkt);
-        }
-        else {
-            return pc_process_chat(c, (dc_chat_pkt*)pkt);
-        }
-
-        return -1;
-
-    case GUILD_SEARCH_TYPE:
-        return dc_process_guild_search(c, (dc_guild_search_pkt*)pkt);
-
-    case SIMPLE_MAIL_TYPE:
-        if (c->version != CLIENT_VERSION_PC) {
-            return dc_process_mail(c, (simple_mail_pkt*)pkt);
-        }
-        else {
-            return pc_process_mail(c, (simple_mail_pkt*)pkt);
-        }
-
-        return -1;
-
-    case DC_GAME_CREATE_TYPE:
-    case GAME_CREATE_TYPE:
-        if (c->version == CLIENT_VERSION_DCV1 &&
-            (c->flags & CLIENT_FLAG_IS_NTE)) {
-            return dcnte_process_game_create(c,
-                (dcnte_game_create_pkt*)pkt);
-        }
-        else if (c->version != CLIENT_VERSION_PC &&
-            c->version != CLIENT_VERSION_GC &&
-            c->version != CLIENT_VERSION_XBOX) {
-            return dc_process_game_create(c, (dc_game_create_pkt*)pkt);
-        }
-        else if (c->version == CLIENT_VERSION_PC) {
-            return pc_process_game_create(c, (pc_game_create_pkt*)pkt);
-        }
-        else {
-            return gc_process_game_create(c, (gc_game_create_pkt*)pkt);
-        }
-
-        return -1;
-
-    case DONE_BURSTING_TYPE:
-        return dc_process_done_burst(c);
-
-    case GAME_LIST_TYPE:
-        return send_game_list(c, c->cur_block);
-
-    case MENU_SELECT_TYPE:
-        return dc_process_menu(c, (dc_select_pkt*)pkt);
-
-    case LEAVE_GAME_PL_DATA_TYPE:
-        return dc_process_char(c, (dc_char_data_pkt*)pkt);
-
-    case LOBBY_INFO_TYPE:
-        return send_info_list(c, ship);
-
-    case BLOCK_LIST_REQ_TYPE:
-    case DCNTE_BLOCK_LIST_REQ_TYPE:
-        return send_block_list(c, ship);
-
-    case INFO_REQUEST_TYPE:
-        return dc_process_info_req(c, (dc_select_pkt*)pkt);
-
-    case QUEST_LIST_TYPE:
-        return process_qlist(c);
-
-    case QUEST_END_LIST_TYPE:
-        return process_qlist_end(c);
-
-    case LOGIN_9D_TYPE:
-        return dcv2_process_login(c, (dcv2_login_9d_pkt*)pkt);
-
-    case LOBBY_NAME_TYPE:
-        return send_lobby_name(c, c->cur_lobby);
-
-    case LOBBY_ARROW_CHANGE_TYPE:
-        return dc_process_arrow(c, flags);
-
-    case SHIP_LIST_TYPE:
-    case DCNTE_SHIP_LIST_TYPE:
-        return send_ship_list(c, ship, ship->cfg->menu_code);
-
-    case CHOICE_OPTION_TYPE:
-        return send_choice_search(c);
-
-    case CHOICE_SETTING_TYPE:
-        /* Ignore these for now. */
-        return 0;
-
-    case CHOICE_SEARCH_TYPE:
-        return send_choice_reply(c, (dc_choice_set_pkt*)pkt);
-
-    case LOGIN_9E_TYPE:
-        if (c->version != CLIENT_VERSION_XBOX)
-            return gc_process_login(c, (gc_login_9e_pkt*)pkt);
-        else
-            return xb_process_login(c, (xb_login_9e_pkt*)pkt);
-
-        return -1;
-
-    case QUEST_CHUNK_TYPE:
-    case QUEST_FILE_TYPE:
-        /* Uhh... Ignore these for now, we've already sent it by the time we
-           get this packet from the client. */
-        return 0;
-
-    case QUEST_LOAD_DONE_TYPE:
-        return process_qload_done(c);
-
-    case INFOBOARD_WRITE_TYPE:
-        return process_infoboard(c, (gc_write_info_pkt*)pkt);
-
-    case INFOBOARD_TYPE:
-        return send_infoboard(c, c->cur_lobby);
-
-    case TRADE_0_TYPE:
-        return process_trade(c, (gc_trade_pkt*)pkt);
-
-    case TRADE_2_TYPE:
-        /* Ignore. */
-        return 0;
-
-    case GC_MSG_BOX_CLOSED_TYPE:
-        /* Ignore. */
-        return 0;
-
-    case BLACKLIST_TYPE:
-        return gc_process_blacklist(c, (gc_blacklist_update_pkt*)pkt);
-
-    case AUTOREPLY_SET_TYPE:
-        return client_set_autoreply(c, ((autoreply_set_pkt*)dc)->msg,
-            len - 4);
-
-    case AUTOREPLY_CLEAR_TYPE:
-        return client_disable_autoreply(c);
-
-    case GAME_COMMAND_C9_TYPE:
-    case GAME_COMMAND_CB_TYPE:
-        return subcmd_handle_ep3_bcast(c, (subcmd_pkt_t*)pkt);
-
-    case EP3_COMMAND_TYPE:
-        return process_ep3_command(c, pkt);
-
-    case EP3_SERVER_DATA_TYPE:
-        ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
-            c->guildcard);
-        display_packet((unsigned char*)pkt, len);
-        return 0;
-
-    case EP3_MENU_CHANGE_TYPE:
-        if (dc->flags != 0) {
-            return send_simple(c, EP3_MENU_CHANGE_TYPE, 0);
-        }
-        return 0;
-
-    case EP3_GAME_CREATE_TYPE:
-        return ep3_process_game_create(c, (ep3_game_create_pkt*)pkt);
-
-    case QUEST_STATS_TYPE:
-        return process_dc_update_quest_stats(c, (dc_update_quest_stats_pkt *)pkt);
-
-    default:
-        if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
-            len)) {
-            ERR_LOG("未知数据包!");
-            display_packet((unsigned char*)pkt, len);
-            return -3;
-        }
-        return 0;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
 }
 

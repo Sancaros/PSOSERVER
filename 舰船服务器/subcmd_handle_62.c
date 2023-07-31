@@ -1848,7 +1848,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             src->guildcard, pkt->action);
-        display_packet((uint8_t*)pkt, 0x18);
+        display_packet(pkt, 0x18);
         return -1;
     }
 }
@@ -1875,7 +1875,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-    display_packet((uint8_t*)pkt, len);
+    display_packet(pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -1898,7 +1898,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x01:
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        display_packet((uint8_t*)pkt, len);
+        display_packet(pkt, len);
         break;
     }
 
@@ -1928,7 +1928,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
         type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
-    display_packet((uint8_t*)pkt, len);
+    display_packet(pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -1962,7 +1962,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
             type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        display_packet((uint8_t*)pkt, len);
+        display_packet(pkt, len);
         break;
     }
 
@@ -2028,7 +2028,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    display_packet((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    display_packet(pkt, LE16(pkt->hdr.pkt_len));
 
     iitem_t ii;
     memset(&ii, 0, PSOCN_STLENGTH_IITEM);
@@ -2064,7 +2064,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //display_packet((uint8_t*)pkt, len);
+    //display_packet(pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", src->guildcard);
@@ -2098,7 +2098,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //display_packet((uint8_t*)pkt, len);
+    //display_packet(pkt, len);
 
     switch (trans_cmd)
     {
@@ -2158,6 +2158,67 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_c_mode_grave_drop_req_pkt_t* pkt) {
+    //subcmd_bb_drop_stack_t bb = { 0 };
+    iitem_t* iitem;
+    lobby_t* l = src->cur_lobby;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    /* Make sure there's something set with /item */
+    if (!pkt->item_datal) {
+        return send_txt(src, "%s", __(src, "\tE\tC7墓碑掉落无效."));
+    }
+
+    iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM);
+
+    if(iitem == NULL) {
+        return send_txt(src, "%s", __(src, "\tE\tC7墓碑掉落无效."));
+    }
+
+    iitem->present = 1;
+    iitem->data.datal[0] = pkt->item_datal;
+    
+//[2023年07月31日 04:42 : 58 : 142] 调试(subcmd_handle_62.c 2515) : 未知 0x62 指令 : 0xD1
+//(00000000)   1C 00 62 00 00 00 00 00   D1 05 00 00 01 00 05 00  ..b..... ? ......
+//(00000010)   B0 FF 07 C4 99 E8 3E C2   00 00 00 00 ? .臋 ? ? ...
+
+    iitem = add_new_litem_locked(l, &iitem->data, src->cur_area, src->x, src->z);
+
+    if (iitem == NULL) {
+        return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
+    }
+
+    //bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    //bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    //bb.hdr.flags = 0;
+
+    //bb.shdr.type = SUBCMD60_DROP_STACK;
+    //bb.shdr.size = 0x09;
+    //bb.shdr.client_id = 0xFBFF;
+
+    //bb.area = LE32(src->cur_area);
+    //bb.x = pkt->x;
+    //bb.z = pkt->z;
+
+    //bb.data = iitem->data;
+
+    //bb.data.item_id = LE32((l->item_lobby_id - 1));
+
+    //bb.two = LE32(0x00000002);
+
+    subcmd_send_drop_stack(src, 0xFBFF, src->cur_area, pkt->x, pkt->z, iitem->data, 1);
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 }
 
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
@@ -2393,6 +2454,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_GUILD_MASTER_TRANS1       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CD_bb },
     { SUBCMD62_GUILD_MASTER_TRANS2       , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_CE_bb },
     { SUBCMD62_BATTLE_CHAR_LEVEL_FIX     , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D0_bb },
+    { SUBCMD62_CH_GRAVE_DROP_REQ         , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D1_bb },
     { SUBCMD62_ITEM_WARP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
     { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },

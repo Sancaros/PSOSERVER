@@ -21,8 +21,24 @@
 #define TABLE CHARACTER_RECORDS_CHALLENGE
 
 static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, uint8_t slot) {
+    char tmp_name[20];
+
+    memset(tmp_name, 0, 20);
+
+    istrncpy16_raw(ic_utf16_to_utf8, tmp_name, (char*)&c_records->title_str, 20, 10);
+
+    c_records->grave_team_tag = 0x0009;
+    c_records->grave_team_tag2 = 0x0042;
+
+    if (c_records->title_tag != 0x002D)
+        c_records->title_tag = 0x002D;
+
+    if (c_records->title_tag2 != 0x007C)
+        c_records->title_tag2 = 0x007C;
 
     memset(myquery, 0, sizeof(myquery));
+
+    display_packet(c_records, sizeof(bb_challenge_records_t));
 
     sprintf(myquery, "INSERT INTO %s("
         "guildcard, slot, "
@@ -46,8 +62,10 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
 
         "battle0, battle1, battle2, battle3, "
         "battle4, battle5, battle6, "
+        
+        "title_tag, title_tag2, rank_title, "
 
-        "grave_team, grave_message, unk3, string, rank_title"
+        "grave_team, grave_message, unk3, string"
 
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
@@ -77,6 +95,8 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
         /* battle */
         "'%" PRIu32 "', '%" PRIu32 "', '%" PRIu32 "', '%" PRIu32 "', "
         "'%" PRIu32 "', '%" PRIu32 "', '%" PRIu32 "', "
+
+        "'%04X', '%04X', '%s', "
 
         "'"
 
@@ -108,6 +128,8 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
         , c_records->battle[0], c_records->battle[1], c_records->battle[2], c_records->battle[3]
         , c_records->battle[4], c_records->battle[5], c_records->battle[6]
 
+        , c_records->title_tag, c_records->title_tag2, tmp_name
+
         );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->grave_team,
@@ -128,10 +150,10 @@ static int db_insert_c_records(bb_challenge_records_t* c_records, uint32_t gc, u
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->string,
         18);
 
-    strcat(myquery, "', '");
+    //strcat(myquery, "', '");
 
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->rank_title,
-        12);
+    //psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&c_records->title_str,
+    //    10);
 
     strcat(myquery, "')");
 
@@ -196,7 +218,11 @@ int db_update_char_c_records(bb_challenge_records_t* c_records, uint32_t gc, uin
 
 int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_records) {
     void* result;
+    char tmp_name[20] = { 0 };
     char** row;
+    size_t in, out;
+    char* inptr;
+    char* outptr;
     int i = 0, j;
 
     memset(myquery, 0, sizeof(myquery));
@@ -243,6 +269,8 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
         return -4;
     }
 
+    memset(c_records, 0, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+
     c_records->title_color = (uint16_t)strtoul(row[j], NULL, 16);
     j++;
 
@@ -281,6 +309,9 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
     memcpy((char*)&c_records->grave_team, row[j], 20);
     j++;
 
+    c_records->grave_team_tag = 0x0009;
+    c_records->grave_team_tag2 = 0x0042;
+
     memcpy((char*)&c_records->grave_message, row[j], 32);
     j++;
 
@@ -290,7 +321,29 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
     memcpy((char*)&c_records->string, row[j], 18);
     j++;
 
-    memcpy((char*)&c_records->rank_title, row[j], 12);
+    c_records->title_tag = (uint16_t)strtoul(row[j], NULL, 16);
+    if (c_records->title_tag != 0x002D)
+        c_records->title_tag = 0x002D;
+
+    j++;
+
+    c_records->title_tag2 = (uint16_t)strtoul(row[j], NULL, 16);
+    if (c_records->title_tag2 != 0x007C)
+        c_records->title_tag2 = 0x007C;
+
+    j++;
+
+    memcpy(&tmp_name[0], row[j], 20);
+
+    memset(&c_records->title_str[0], 0, sizeof(c_records->title_str));
+
+    in = strlen(tmp_name);
+    inptr = tmp_name;
+    out = 0x14;
+    outptr = (char*)&c_records->title_str[0];
+
+    iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
+
     j++;
 
     for (i = 0; i < 7; i++) {

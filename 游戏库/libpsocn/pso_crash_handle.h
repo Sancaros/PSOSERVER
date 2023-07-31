@@ -22,8 +22,12 @@
 #include <Windows.h>
 #include <excpt.h>
 #include <DbgHelp.h>
+
 #pragma comment(lib , "dbghelp.lib")
 
+#define MAX_BACKTRACE_DEPTH 50
+
+void printStackTrace();
 LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info);
 
 #endif // !PSO_CRASH_HANDLE_H

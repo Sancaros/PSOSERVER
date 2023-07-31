@@ -2992,15 +2992,14 @@ typedef struct subcmd_bb_battle_mode_level_up {
 } PACKED subcmd_bb_battle_mode_level_up_t;
 
 // 0xD1: Challenge mode grave (BB; handled by server)
-struct G_ChallengeModeGrave_BB_6xD1 {
+typedef struct subcmd_bb_c_mode_grave_drop_req {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unknown_a1;
-    uint16_t unknown_a2;
-    uint32_t unknown_a3;
-    uint32_t unknown_a4;
-    uint32_t unknown_a5;
-} PACKED;
+    uint32_t item_datal;
+    float x;
+    float z;
+    uint32_t unused; /* 00 00 00 00 */
+} PACKED subcmd_bb_c_mode_grave_drop_req_pkt_t;
 
 // 0xD2: Set quest data 2 (BB)
 // Writes 4 bytes to the 32-bit field specified by index.

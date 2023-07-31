@@ -185,19 +185,19 @@ static void* ship_thd(void* d) {
         now = time(NULL);
 
         /* Break out if we're shutting down now */
-        if(s->shutdown_time && s->shutdown_time <= now) {
+        if (s->shutdown_time && s->shutdown_time <= now) {
             s->run = 0;
             break;
         }
 
         /* If we haven't swept the bans list in the last day, do it now. */
-        if((last_ban_sweep + 3600 * 24) <= now) {
+        if ((last_ban_sweep + 3600 * 24) <= now) {
             ban_sweep(s);
             last_ban_sweep = now = time(NULL);
         }
 
         /* If the shipgate isn't there, attempt to reconnect */
-        if(s->sg.sock == SOCKET_ERROR && s->sg.login_attempt < now) {
+        if (s->sg.sock == SOCKET_ERROR && s->sg.login_attempt < now) {
             if (shipgate_reconnect(&s->sg)) {
                 /* Set the next login attempt to ~15 seconds from now... */
                 s->sg.login_attempt = now + 14;
@@ -232,7 +232,7 @@ static void* ship_thd(void* d) {
 
             /* If we haven't heard from a client in 2 minutes, its dead.
                Disconnect it. */
-            if(now > it->last_message + 120) {
+            if (now > it->last_message + 120) {
                 it->flags |= CLIENT_FLAG_DISCONNECTED;
                 continue;
             }
@@ -290,12 +290,12 @@ static void* ship_thd(void* d) {
 
         /* If we're supposed to shut down soon, make sure we aren't in the
            middle of a select still when its supposed to happen. */
-        if(s->shutdown_time && now + timeout.tv_sec > s->shutdown_time) {
+        if (s->shutdown_time && now + timeout.tv_sec > s->shutdown_time) {
             timeout.tv_sec = (long)(s->shutdown_time - now);
         }
 
         /* Wait for some activity... */
-        if((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
+        if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* Clear anything written to the pipe */
             if (FD_ISSET(s->pipes[1], &readfds)) {
                 recv(s->pipes[1], (char*)&len, 1, 0);
@@ -350,7 +350,7 @@ static void* ship_thd(void* d) {
                         closesocket(sock);
                     }
 
-                    if(s->shutdown_time) {
+                    if (s->shutdown_time) {
                         send_msg(tmp, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                             __(tmp, "\tE舰船已被击沉."),
                             __(tmp, "请登录其他舰船."),
@@ -378,7 +378,7 @@ static void* ship_thd(void* d) {
                         closesocket(sock);
                     }
 
-                    if(s->shutdown_time) {
+                    if (s->shutdown_time) {
                         send_msg(tmp, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                             __(tmp, "\tE舰船已被击沉."),
                             __(tmp, "请登录其他舰船."),
@@ -407,7 +407,7 @@ static void* ship_thd(void* d) {
                         closesocket(sock);
                     }
 
-                    if(s->shutdown_time) {
+                    if (s->shutdown_time) {
                         send_msg(tmp, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                             __(tmp, "\tE舰船已被击沉."),
                             __(tmp, "请登录其他舰船."),
@@ -435,7 +435,7 @@ static void* ship_thd(void* d) {
                         closesocket(sock);
                     }
 
-                    if(s->shutdown_time) {
+                    if (s->shutdown_time) {
                         send_msg(tmp, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                             __(tmp, "\tE舰船已被击沉."),
                             __(tmp, "请登录其他舰船."),
@@ -464,7 +464,7 @@ static void* ship_thd(void* d) {
                         closesocket(sock);
                     }
 
-                    if(s->shutdown_time) {
+                    if (s->shutdown_time) {
                         send_msg(tmp, MSG_BOX_TYPE, "%s\n\n%s\n%s",
                             __(tmp, "\tE舰船已被击沉."),
                             __(tmp, "请登录其他舰船."),
@@ -476,7 +476,7 @@ static void* ship_thd(void* d) {
 
             /* Process the shipgate */
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
-                if((rv = shipgate_process_pkt(&s->sg))) {
+                if ((rv = shipgate_process_pkt(&s->sg))) {
                     ERR_LOG("%s: 失去与船闸的连接1 rv = %d",
                         s->cfg->name, rv);
 
@@ -497,7 +497,7 @@ static void* ship_thd(void* d) {
             }
 
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
-                if(rv = shipgate_send_pkts(&s->sg)) {
+                if (rv = shipgate_send_pkts(&s->sg)) {
                     ERR_LOG("%s: 失去与船闸的连接2 rv = %d",
                         s->cfg->name, rv);
 
@@ -506,7 +506,7 @@ static void* ship_thd(void* d) {
                     closesocket(s->sg.sock);
                     gnutls_deinit(s->sg.session);
                     s->sg.sock = SOCKET_ERROR;
-                    
+
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错2, 断开!",
                             s->cfg->name);
@@ -540,8 +540,8 @@ static void* ship_thd(void* d) {
                             "舰船writefds端口 %d 发送数据 = %d 字节 版本识别 = %d",
                             it->sock, sent, it->version);*/
 
-                        /* If we fail to send, and the error isn't EAGAIN,
-                           bail. */
+                            /* If we fail to send, and the error isn't EAGAIN,
+                               bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
                                 it->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -563,7 +563,8 @@ static void* ship_thd(void* d) {
                     }
                 }
             }
-        } else if (select_result == -1) {
+        }
+        else if (select_result == -1) {
             ERR_LOG("select 套接字 = -1");
         }
 
@@ -1243,18 +1244,18 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
     time_t ban_end;
 
     /* Make sure PSOGC is allowed on this ship. */
-    if(c->version == CLIENT_VERSION_GC) {
-        if((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12)) {
+    if (c->version == CLIENT_VERSION_GC) {
+        if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12)) {
             send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE此舰船不支持 PSO Episode 1 & 2 客户端登录.\n\n"
-                                         "正在断开连接."));
+                "正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
     }
     else {
-        if((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3)) {
+        if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3)) {
             send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE此舰船不支持 PSO Episode 3 客户端登录.\n\n"
-                                         "正在断开连接."));
+                "正在断开连接."));
             c->flags |= CLIENT_FLAG_DISCONNECTED;
             return 0;
         }
@@ -1295,7 +1296,7 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
     /* Make sure PSOX is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX)) {
         send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE此舰船不支持 PSO Episode 1 & 2 Xbox客户端登录.\n\n"
-                                     "正在断开连接."));
+            "正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
@@ -1336,7 +1337,7 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     /* Make sure PSOBB is allowed on this ship. */
     if ((ship->cfg->shipgate_flags & LOGIN_FLAG_NOBB)) {
         send_msg(c, MSG_BOX_TYPE, "%s", __(c, "\tE此舰船不支持 PSO Blue Burst 客户端登录.\n\n"
-                                        "正在断开连接."));
+            "正在断开连接."));
         c->flags |= CLIENT_FLAG_DISCONNECTED;
         return 0;
     }
@@ -1407,7 +1408,7 @@ static int dc_process_block_sel(ship_client_t* c, dc_select_pkt* pkt) {
     }
 
     /* Make sure the block selected is in range. */
-    if(block > ship->cfg->blocks) {
+    if (block > ship->cfg->blocks) {
         return -1;
     }
 
@@ -1749,16 +1750,16 @@ static int dc_process_info_req(ship_client_t* c, dc_select_pkt* pkt) {
                 char tmp[3] = { (char)i->menu_code,
                     (char)(i->menu_code >> 8), 0 };
 
-                    sprintf(string, "%02x:%s%s%s\n%d %s\n%d %s", i->ship_number,
-                            tmp, tmp[0] ? "/" : "", i->name, i->clients,
-                            __(c, "玩家"), i->games, __(c, "房间"));
-                    return send_info_reply(c, string);
-                }
+                sprintf(string, "%02x:%s%s%s\n%d %s\n%d %s", i->ship_number,
+                    tmp, tmp[0] ? "/" : "", i->name, i->clients,
+                    __(c, "玩家"), i->games, __(c, "房间"));
+                return send_info_reply(c, string);
             }
-
-            return send_info_reply(c,
-                                   __(c, "\tE\tC4当前选择的舰船\n已离线."));
         }
+
+        return send_info_reply(c,
+            __(c, "\tE\tC4当前选择的舰船\n已离线."));
+    }
 
     default:
         return -1;
@@ -1775,7 +1776,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     switch (menu_id & 0xFF) {
         /* Block */
     case MENU_ID_BLOCK:
-        if(item_id == -1)
+        if (item_id == -1)
             return 0;
 
         return block_info_reply(c, item_id);
@@ -1809,123 +1810,143 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
 }
 
 static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
-    uint8_t type;
-    uint16_t len;
-    dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt;
-    pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;
+    __try {
+        uint8_t type;
+        uint16_t len;
+        dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt;
+        pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;
 
-    if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
-        c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
-        c->version == CLIENT_VERSION_XBOX) {
-        type = dc->pkt_type;
-        len = LE16(dc->pkt_len);
-    }
-    else {
-        type = pc->pkt_type;
-        len = LE16(pc->pkt_len);
-    }
-
-    switch (type) {
-    case PING_TYPE:
-        /* Ignore these. */
-        return 0;
-
-    case LOGIN_8B_TYPE:
-        return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);
-
-    case LOGIN_93_TYPE:
-        return dc_process_login(c, (dc_login_93_pkt*)pkt);
-
-    case MENU_SELECT_TYPE:
-        return dc_process_menu(c, (dc_select_pkt*)pkt);
-
-    case INFO_REQUEST_TYPE:
-        return dc_process_info_req(c, (dc_select_pkt*)pkt);
-
-    case LOGIN_9D_TYPE:
-        return dcv2_process_login(c, (dcv2_login_9d_pkt*)pkt);
-
-    case LOGIN_9E_TYPE:
-        if (c->version != CLIENT_VERSION_XBOX)
-            return gc_process_login(c, (gc_login_9e_pkt*)pkt);
-        else
-            return xb_process_login(c, (xb_login_9e_pkt*)pkt);
-
-    case GC_MSG_BOX_CLOSED_TYPE:
-        return send_block_list(c, ship);
-
-    case GAME_COMMAND0_TYPE:
-        display_packet((unsigned char*)pkt, len);
-        /* Ignore these, since taking screenshots on PSOPC generates them
-           for some reason. */
-        return 0;
-
-    default:
-        if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
-            len)) {
-            ERR_LOG("未知数据包!");
-            display_packet((unsigned char*)pkt, len);
-            return -3;
+        if (c->version == CLIENT_VERSION_DCV1 || c->version == CLIENT_VERSION_DCV2 ||
+            c->version == CLIENT_VERSION_GC || c->version == CLIENT_VERSION_EP3 ||
+            c->version == CLIENT_VERSION_XBOX) {
+            type = dc->pkt_type;
+            len = LE16(dc->pkt_len);
         }
-        return 0;
+        else {
+            type = pc->pkt_type;
+            len = LE16(pc->pkt_len);
+        }
+
+        switch (type) {
+        case PING_TYPE:
+            /* Ignore these. */
+            return 0;
+
+        case LOGIN_8B_TYPE:
+            return dcnte_process_login(c, (dcnte_login_8b_pkt*)pkt);
+
+        case LOGIN_93_TYPE:
+            return dc_process_login(c, (dc_login_93_pkt*)pkt);
+
+        case MENU_SELECT_TYPE:
+            return dc_process_menu(c, (dc_select_pkt*)pkt);
+
+        case INFO_REQUEST_TYPE:
+            return dc_process_info_req(c, (dc_select_pkt*)pkt);
+
+        case LOGIN_9D_TYPE:
+            return dcv2_process_login(c, (dcv2_login_9d_pkt*)pkt);
+
+        case LOGIN_9E_TYPE:
+            if (c->version != CLIENT_VERSION_XBOX)
+                return gc_process_login(c, (gc_login_9e_pkt*)pkt);
+            else
+                return xb_process_login(c, (xb_login_9e_pkt*)pkt);
+
+        case GC_MSG_BOX_CLOSED_TYPE:
+            return send_block_list(c, ship);
+
+        case GAME_COMMAND0_TYPE:
+            display_packet(pkt, len);
+            /* Ignore these, since taking screenshots on PSOPC generates them
+               for some reason. */
+            return 0;
+
+        default:
+            if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
+                len)) {
+                ERR_LOG("未知数据包!");
+                display_packet(pkt, len);
+                return -3;
+            }
+            return 0;
+        }
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
 }
 
 static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
-    bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
-    uint16_t type = LE16(hdr->pkt_type);
-    uint16_t len = LE16(hdr->pkt_len);
+    __try {
+        bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
+        uint16_t type = LE16(hdr->pkt_type);
+        uint16_t len = LE16(hdr->pkt_len);
 
-    //DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
+        //DBG_LOG("舰船：处理BB数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u", type, c_cmd_name(type, 0), len, c->guildcard);
 
-    //display_packet((unsigned char*)pkt, len);
+        //display_packet(pkt, len);
 
-    switch (type) {
-        /* 0x0005 5*/
-    case BURSTING_TYPE:
-        c->flags |= CLIENT_FLAG_DISCONNECTED;
-        return 0;
+        switch (type) {
+            /* 0x0005 5*/
+        case BURSTING_TYPE:
+            c->flags |= CLIENT_FLAG_DISCONNECTED;
+            return 0;
 
-        /* 0x0009 9*/
-    case INFO_REQUEST_TYPE:
-        return bb_process_info_req(c, (bb_select_pkt*)pkt);
+            /* 0x0009 9*/
+        case INFO_REQUEST_TYPE:
+            return bb_process_info_req(c, (bb_select_pkt*)pkt);
 
-        /* 0x0010 16*/
-    case MENU_SELECT_TYPE:
-        return bb_process_menu(c, (bb_select_pkt*)pkt);
+            /* 0x0010 16*/
+        case MENU_SELECT_TYPE:
+            return bb_process_menu(c, (bb_select_pkt*)pkt);
 
-        /* 0x001D 29*/
-    case PING_TYPE:
-        /* Ignore these. */
-        c->last_message = time(NULL);
-        return 0;
+            /* 0x001D 29*/
+        case PING_TYPE:
+            /* Ignore these. */
+            c->last_message = time(NULL);
+            return 0;
 
-        /* 0x0060 96*/
-    case GAME_COMMAND0_TYPE:
-        /* Ignore these, since taking screenshots on PSOPC generates them
-           for some reason. */
-        UDONE_CPD(type, c->version, pkt);
-        return 0;
+            /* 0x0060 96*/
+        case GAME_COMMAND0_TYPE:
+            /* Ignore these, since taking screenshots on PSOPC generates them
+               for some reason. */
+            UDONE_CPD(type, c->version, pkt);
+            return 0;
 
-        /* 0x0093 147*/
-    case LOGIN_93_TYPE:
-        return bb_process_login(c, (bb_login_93_pkt*)pkt);
+            /* 0x0093 147*/
+        case LOGIN_93_TYPE:
+            return bb_process_login(c, (bb_login_93_pkt*)pkt);
 
-        /* 0x00E7 231*/
-    case BB_FULL_CHARACTER_TYPE:
-        // Client sending character data... 客户端离线发送角色数据
-        UDONE_CPD(type, c->version, pkt);
-        return 0;
+            /* 0x00E7 231*/
+        case BB_FULL_CHARACTER_TYPE:
+            // Client sending character data... 客户端离线发送角色数据
+            UDONE_CPD(type, c->version, pkt);
+            return 0;
 
-    default:
-        UNK_CPD(type, c->version, pkt);
-        if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
-            len)) {
-            ERR_LOG("未知数据包!");
-            display_packet((unsigned char*)pkt, len);
-            return -3;
+        default:
+            UNK_CPD(type, c->version, pkt);
+            if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
+                len)) {
+                ERR_LOG("未知数据包!");
+                display_packet(pkt, len);
+                return -3;
+            }
+            return 0;
         }
-        return 0;
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
 }
 
