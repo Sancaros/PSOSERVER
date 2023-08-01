@@ -292,70 +292,81 @@ int subcmd_handle_6D(ship_client_t* src, subcmd_pkt_t* pkt) {
 
 /* 处理BB 0x6D 数据包. */
 int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    ship_client_t* dest;
-    uint16_t len = pkt->hdr.pkt_len;
-    uint16_t hdr_type = pkt->hdr.pkt_type;
-    uint8_t type = pkt->type;
-    uint8_t size = pkt->size;
-    int rv = -1;
-    uint32_t dnum = LE32(pkt->hdr.flags);
+    __try {
+        lobby_t* l = src->cur_lobby;
+        ship_client_t* dest;
+        uint16_t len = pkt->hdr.pkt_len;
+        uint16_t hdr_type = pkt->hdr.pkt_type;
+        uint8_t type = pkt->type;
+        uint8_t size = pkt->size;
+        int rv = -1;
+        uint32_t dnum = LE32(pkt->hdr.flags);
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    /* 搜索目标客户端. */
-    dest = l->clients[dnum];
+        /* 搜索目标客户端. */
+        dest = l->clients[dnum];
 
-    /* 目标客户端已离线，将不再发送数据包. */
-    if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
+        /* 目标客户端已离线，将不再发送数据包. */
+        if (!dest) {
+            pthread_mutex_unlock(&l->mutex);
+            return 0;
+        }
 #ifdef DEBUG
 
-    DBG_LOG("GC %u 目标客户端-> %d GC %u 0x%02X 指令: 0x%02X", src->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
+        DBG_LOG("GC %u 目标客户端-> %d GC %u 0x%02X 指令: 0x%02X", src->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
 #endif // DEBUG
 
-    //subcmd_bb_626Dsize_check(c, pkt);
+        //subcmd_bb_626Dsize_check(c, pkt);
 
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
-    /* If there's a burst going on in the lobby, delay most packets */
-    if (l->flags & LOBBY_FLAG_BURSTING) {
-        rv = 0;
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            rv = 0;
 
-        switch (type) {
-        case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
-        case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
-        case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
-        case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
-        case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
-            rv = l->subcmd_handle(src, dest, pkt);
-            break;
+            switch (type) {
+            case SUBCMD6D_BURST1://0x6D 6D //其他大厅跃迁进房时触发 1
+            case SUBCMD6D_BURST2://0x6D 6B //其他大厅跃迁进房时触发 2
+            case SUBCMD6D_BURST3://0x6D 6C //其他大厅跃迁进房时触发 3
+            case SUBCMD6D_BURST4://0x6D 6E //其他大厅跃迁进房时触发 4
+            case SUBCMD6D_BURST_PLDATA://0x6D 70 //其他大厅跃迁进房时触发 7
+                rv = l->subcmd_handle(src, dest, pkt);
+                break;
 
-        default:
-            DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
-            rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+            default:
+                DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
+                rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+            }
+
+        }
+        else {
+
+            if (l->subcmd_handle == NULL) {
+#ifdef BB_LOG_UNKNOWN_SUBS
+                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+                display_packet(pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+                rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            }
+            else
+                rv = l->subcmd_handle(src, dest, pkt);
         }
 
-    }
-    else {
-
-        if (l->subcmd_handle == NULL) {
-#ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            display_packet(pkt, len);
-#endif /* BB_LOG_UNKNOWN_SUBS */
-            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-        }else
-            rv = l->subcmd_handle(src, dest, pkt);
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
     }
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }

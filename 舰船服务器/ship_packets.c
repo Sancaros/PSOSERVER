@@ -3598,21 +3598,17 @@ static int send_dc_message(ship_client_t *c, uint16_t type, const char *fmt,
        c->version == CLIENT_VERSION_XBOX) {
         if(tm[1] != 'J') {
             ic = ic_gbk_to_8859;
-            //ic = ic_utf8_to_8859;
         }
         else {
             ic = ic_gbk_to_sjis;
-            //ic = ic_utf8_to_sjis;
         }
     }
     else {
-        //ic = ic_utf8_to_utf16;
         ic = ic_gb18030_to_utf16;
     }
 
-    //in = strlen(tm) + 1;
-
     /* Convert the message to the appropriate encoding. */
+    in = strlen(tm) + 1;
     out = 65520;
     inptr = tm;
     outptr = pkt->msg;
@@ -3684,6 +3680,7 @@ static int send_bb_message(ship_client_t *c, uint16_t type, const char *fmt,
     }
 
     /* Convert the message to the appropriate encoding. */
+    in = strlen(tm) + 1;
     out = 65520;
     inptr = tm;
     outptr = (char *)pkt->msg;

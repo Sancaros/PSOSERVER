@@ -3418,7 +3418,7 @@ typedef struct bb_msg_box {
 } PACKED bb_msg_box_pkt;
 
 typedef struct msg_box {
-    union {
+    union hdr_t{
         dc_pkt_hdr_t dc;
         pc_pkt_hdr_t pc;
         bb_pkt_hdr_t bb;

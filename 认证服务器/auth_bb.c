@@ -105,7 +105,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
 
     psocn_db_escape_str(&conn, tmp_username, pkt->username, len);
 
-    sprintf_s(query, _countof(query), "SELECT %s.account_id, isbanned, islogged ,isactive, guild_id, "
+    sprintf_s(query, _countof(query), "SELECT %s.account_id, isbanned, isactive, islogged, guild_id, "
         "privlevel, %s.guildcard, dressflag, isgm, regtime, %s.password, menu_id, preferred_lobby_id FROM "
         "%s INNER JOIN %s ON "
         "%s.account_id = %s.account_id WHERE "
@@ -145,33 +145,22 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -4;
     }
 
-    islogged = atoi(row[2]);
-
-    /* Make sure some simple checks pass first... */
-    if (db_check_gc_online((uint32_t)strtoul(row[6], NULL, 0))) {
-        /* 玩家已在线. */
-        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
-        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-        psocn_db_result_free(result);
-        return -4;
-    }
-    else
-        db_update_gc_login_state((uint32_t)strtoul(row[6], NULL, 0), 0, -1, NULL);
-
-    if (db_remove_gc_char_login_state((uint32_t)strtoul(row[6], NULL, 0))) {
-        /* 玩家已在线. */
-        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
-        send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
-        psocn_db_result_free(result);
-        return -4;
-    }
-
-    isactive = atoi(row[3]);
+    isactive = atoi(row[2]);
 
     /* Make sure some simple checks pass first... */
     if (!isactive) {
         /* 账号未激活. */
         send_bb_security(c, 0, LOGIN_93BB_LOCKED, 0, NULL, 0);
+        psocn_db_result_free(result);
+        return -4;
+    }
+
+    islogged = atoi(row[3]);
+
+    /* Make sure some simple checks pass first... */
+    if (islogged) {
+        /* 账号未激活. */
+        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
         psocn_db_result_free(result);
         return -4;
     }
@@ -230,6 +219,25 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //if (strcmp(PSO_CLIENT_VER_STRING, c->bbversion_string)) {
     //    send_bb_security(c, 0, LOGIN_93BB_BAD_VERSION, 0, NULL, 0);
     //    return -2;
+    //}
+
+    /* Make sure some simple checks pass first... */
+    //if (db_check_gc_online(c->guildcard)) {
+    //    /* 玩家已在线. */
+    //    //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
+    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+    //    psocn_db_result_free(result);
+    //    return -4;
+    //}
+    //else
+    //    db_update_gc_login_state(c->guildcard, 0, -1, NULL);
+
+    //if (db_remove_gc_char_login_state(c->guildcard)) {
+    //    /* 玩家已在线. */
+    //    //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
+    //    send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
+    //    psocn_db_result_free(result);
+    //    return -4;
     //}
 
     /* Set up the security data (everything else is already 0'ed). */

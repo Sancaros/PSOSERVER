@@ -49,7 +49,7 @@ extern v2_level_table_t v2_char_stats;
 
 extern psocn_bb_mode_char_t default_mode_char;
 
-static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -66,7 +66,7 @@ static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -84,7 +84,7 @@ static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -227,7 +227,7 @@ const uint16_t rafoie_timing[6] = { 1500, 1400, 1300, 1200, 1100, 1100 };
 const uint16_t razonde_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 const uint16_t rabarta_timing[6] = { 1200, 1100, 950, 800, 750, 750 };
 
-int check_aoe_timer(ship_client_t* src, 
+int check_aoe_timer(ship_client_t* src,
     subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint8_t tech_level = 0;
@@ -318,7 +318,7 @@ int check_aoe_timer(ship_client_t* src,
     return 0;
 }
 
-static int sub60_05_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_switch_changed_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
@@ -401,7 +401,7 @@ static int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     return rv;
 }
 
-static int sub60_07_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_07_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_symbol_chat_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -416,7 +416,7 @@ static int sub60_07_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 1);
 }
 
-static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_mhit_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t enemy_id2, enemy_id, dmg;
@@ -467,7 +467,7 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_0B_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bhit_pkt_t* pkt) {
     uint64_t now = get_ms_time();
     //SYSTEMTIME aoetime;
@@ -497,7 +497,7 @@ static int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -548,7 +548,7 @@ static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_12_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_12_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_dragon_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int v = src->version, i;
@@ -626,7 +626,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊:0x%08X.", __(src, "\tE\tC6DR BOSS2"), 
+    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊:0x%08X.", __(src, "\tE\tC6DR BOSS2"),
         pkt->action, pkt->stage, pkt->unused);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -650,7 +650,7 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS1"), 
+    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS1"),
         pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unknown_a5);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -770,7 +770,7 @@ static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_1F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_1F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_area_1F_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -801,7 +801,7 @@ static int sub60_1F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_20_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_20_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_area_20_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -839,7 +839,7 @@ static int sub60_20_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_21_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_21_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_inter_level_warp_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -862,7 +862,7 @@ static int sub60_21_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_22_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
@@ -886,7 +886,7 @@ static int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_23_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
@@ -910,7 +910,7 @@ static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
     return rv;
 }
 
-static int sub60_24_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_0x24_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -938,7 +938,7 @@ static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_25_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id, equip_resault = 0;
@@ -981,7 +981,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_26_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_unequip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_count, i, isframe = 0;
@@ -1052,7 +1052,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_27_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     size_t index;
@@ -1093,7 +1093,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_28_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->fed_item_id, mag_id = pkt->mag_item_id;
@@ -1127,7 +1127,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_29_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t item_data = { 0 };
@@ -1162,7 +1162,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int isframe = 0;
@@ -1192,48 +1192,48 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
+        inventory_t* inv = &src->bb_pl->character.inv;
 
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+        if (src->mode)
+            inv = &src->mode_pl->bb.inv;
 
-    /* 在玩家背包中查找物品. */
-    size_t index = find_iitem_index(inv, pkt->item_id);
+        /* 在玩家背包中查找物品. */
+        size_t index = find_iitem_index(inv, pkt->item_id);
 
-    /* If the item isn't found, then punt the user from the ship. */
-    if (index == -1) {
-        ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
-            src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
-        return -1;
-    }
+        /* If the item isn't found, then punt the user from the ship. */
+        if (index == -1) {
+            ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
+                src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
+            return -1;
+        }
 
-    if (inv->iitems[index].data.datab[0] == ITEM_TYPE_GUARD &&
-        inv->iitems[index].data.datab[1] == ITEM_SUBTYPE_FRAME &&
-        (inv->iitems[index].flags & LE32(0x00000008))) {
-        isframe = 1;
-    }
+        if (inv->iitems[index].data.datab[0] == ITEM_TYPE_GUARD &&
+            inv->iitems[index].data.datab[1] == ITEM_SUBTYPE_FRAME &&
+            (inv->iitems[index].flags & LE32(0x00000008))) {
+            isframe = 1;
+        }
 
-    /* 清理已装备的标签 */
-    inv->iitems[index].flags &= LE32(0xFFFFFFF7);
+        /* 清理已装备的标签 */
+        inv->iitems[index].flags &= LE32(0xFFFFFFF7);
 
-    /* 卸掉所有已插入在这件装备的插件 */
-    if (isframe) {
-        for (int i = 0; i < inv->item_count; ++i) {
-            if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+        /* 卸掉所有已插入在这件装备的插件 */
+        if (isframe) {
+            for (int i = 0; i < inv->item_count; ++i) {
+                if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+                    inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
+                    inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                }
             }
         }
-    }
 
-    /* We have the item... Add it to the lobby's inventory.
-    我们有这个物品…把它添加到大厅的背包中 */
-    if (!add_litem_locked(l, &inv->iitems[index])) {
-        /* *Gulp* The lobby is probably toast... At least make sure this user is
-           still (mostly) safe... */
-        ERR_LOG("无法将物品新增游戏房间背包!");
-        return -1;
-    }
+        /* We have the item... Add it to the lobby's inventory.
+        我们有这个物品…把它添加到大厅的背包中 */
+        if (!add_litem_locked(l, &inv->iitems[index])) {
+            /* *Gulp* The lobby is probably toast... At least make sure this user is
+               still (mostly) safe... */
+            ERR_LOG("无法将物品新增游戏房间背包!");
+            return -1;
+        }
 
     /* TODO 可以打印丢出的物品信息 */
     remove_iitem(src, pkt->item_id, 0, src->version != CLIENT_VERSION_BB);
@@ -1242,7 +1242,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1254,7 +1254,7 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
        //    return -1;
        //}
 
-    /* 合理性检查... Make sure the size of the subcommand matches with what we 
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
     expect. Disconnect the client if not. */
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
@@ -1272,7 +1272,7 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_select_done_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1288,7 +1288,7 @@ static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_hit_by_enemy_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t type = LE16(pkt->hdr.pkt_type);
@@ -1341,9 +1341,9 @@ static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//[2023年07月15日 20:40 : 25 : 447] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x37 版本 5 的处理
-//[2023年07月15日 20:40 : 25 : 463] 调试(subcmd_handle_60.c 3591) : 未知 0x60 指令 : 0x37
-//(00000000)   10 00 60 00 00 00 00 00   37 02 00 00 64 00 00 00  ..`.....7...d...
+    //[2023年07月15日 20:40 : 25 : 447] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x37 版本 5 的处理
+    //[2023年07月15日 20:40 : 25 : 463] 调试(subcmd_handle_60.c 3591) : 未知 0x60 指令 : 0x37
+    //(00000000)   10 00 60 00 00 00 00 00   37 02 00 00 64 00 00 00  ..`.....7...d...
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -1372,7 +1372,7 @@ static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_game_client_leave_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1397,7 +1397,7 @@ static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1416,7 +1416,7 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1434,7 +1434,7 @@ static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1454,7 +1454,7 @@ static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_natk_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1563,7 +1563,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_48_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_used_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1575,11 +1575,11 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || 
-        pkt->shdr.size != 0x02 || 
+    if (pkt->hdr.pkt_len != LE16(0x0010) ||
+        pkt->shdr.size != 0x02 ||
         src->client_id != pkt->shdr.client_id ||
         src->equip_flags & EQUIP_FLAGS_DROID ||
-        pkt->technique_number >= MAX_PLAYER_TECHNIQUES || 
+        pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
         max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
         ) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
@@ -1624,15 +1624,15 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("无效 subtract PB energy 指令");
     }
 
-//[2023年07月15日 20:40:23:414] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x49 版本 5 的处理
-//[2023年07月15日 20:40:23:426] 调试(subcmd_handle_60.c 3591): 未知 0x60 指令: 0x49
-//( 00000000 )   14 00 60 00 00 00 00 00   49 03 00 00 00 00 00 00  ..`.....I.......
-//( 00000010 )   64 00 00 00                                     d...
-    /* This aught to do it... */
+    //[2023年07月15日 20:40:23:414] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x49 版本 5 的处理
+    //[2023年07月15日 20:40:23:426] 调试(subcmd_handle_60.c 3591): 未知 0x60 指令: 0x49
+    //( 00000000 )   14 00 60 00 00 00 00 00   49 03 00 00 00 00 00 00  ..`.....I.......
+    //( 00000010 )   64 00 00 00                                     d...
+        /* This aught to do it... */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_defense_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1655,7 +1655,7 @@ static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_take_damage_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1685,7 +1685,7 @@ static int sub60_4B_4C_bb(ship_client_t* src, ship_client_t* dest,
     return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
 }
 
-static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1719,7 +1719,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_cmd_4e_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1741,7 +1741,7 @@ static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_player_saved_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1754,7 +1754,7 @@ static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_50_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_switch_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1776,7 +1776,7 @@ static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_52_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_52_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_menu_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1811,28 +1811,28 @@ static int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x000C) || 
-        pkt->shdr.size != 0x01 || 
+    if (pkt->hdr.pkt_len != LE16(0x000C) ||
+        pkt->shdr.size != 0x01 ||
         pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//[2023年07月06日 13:23:16:910] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
-//[2023年07月06日 13:23:16:927] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
-//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
-//[2023年07月06日 13:23:25:808] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
-//[2023年07月06日 13:23:25:832] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
-//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
-//[2023年07月06日 13:23:34:356] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
-//[2023年07月06日 13:23:34:374] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
-//( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
-//[2023年07月06日 13:23:40:484] 错误(iitems.c 0428): 未从背包中找已装备的玛古
+    //[2023年07月06日 13:23:16:910] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+    //[2023年07月06日 13:23:16:927] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+    //( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+    //[2023年07月06日 13:23:25:808] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+    //[2023年07月06日 13:23:25:832] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+    //( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+    //[2023年07月06日 13:23:34:356] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
+    //[2023年07月06日 13:23:34:374] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x53
+    //( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
+    //[2023年07月06日 13:23:40:484] 错误(iitems.c 0428): 未从背包中找已装备的玛古
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_55_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_map_warp_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1902,7 +1902,7 @@ static int sub60_58_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int sub60_58_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1920,7 +1920,7 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_61_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_levelup_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -1944,7 +1944,7 @@ static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_63_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destory_ground_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
@@ -1969,19 +1969,16 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (l->flags & LOBBY_ITEM_TRACKING_ENABLED) {
+    destory_count = remove_litem_locked(l, pkt->item_id, &iitem_data);
 
-        destory_count = remove_litem_locked(l, pkt->item_id, &iitem_data);
-
-        if (destory_count < 0) {
-            ERR_LOG("删除地面物品错误");
-            return -1;
-        }
-
-        if(src->game_data->gm_debug)
-            DBG_LOG("地面物品 %08" PRIX32 " 已被摧毁 (%s)", 
-                iitem_data.data.item_id, item_get_name(&iitem_data.data, src->version));
+    if (destory_count < 0) {
+        ERR_LOG("删除地面物品错误");
+        return -1;
     }
+
+    if (src->game_data->gm_debug)
+        DBG_LOG("地面物品 %08" PRIX32 " 已被摧毁 (%s)",
+            iitem_data.data.item_id, item_get_name(&iitem_data.data, src->version));
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2032,7 +2029,7 @@ static int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_68_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pipe_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2071,7 +2068,7 @@ static int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_69_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_69_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2098,7 +2095,7 @@ static int sub60_69_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, pkt, 0);
 }
 
-static int sub60_6A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_6A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_Unknown_6x6A_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2120,7 +2117,7 @@ static int sub60_6A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_72_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_72_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2133,7 +2130,7 @@ static int sub60_72_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_74_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_word_select_t* pkt) {
     /* Don't send the message if they have the protection flag on. */
     if (src->flags & CLIENT_FLAG_GC_PROTECT) {
@@ -2144,23 +2141,23 @@ static int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     if ((src->flags & CLIENT_FLAG_STFU)) {
         return 0;
     }
-//( 00000000 )   28 00 60 00 00 00 00 00   
-//                     74 08 00 00
-//                     02 00 01 00  (.`.....t.......
-//( 00000010 )   46 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  F.?
-//( 00000020 )   00 00 00 00 00 00 00 00                           ........
-//
-//( 00000000 )   28 00 60 00 00 00 00 00   
-//                      74 08 00 00 
-//                      01 00 01 00  (.`.....t.......
-//( 00000010 )   49 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  I.?
-//( 00000020 )   00 00 00 00 00 00 00 00   
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //( 00000000 )   28 00 60 00 00 00 00 00   
+    //                     74 08 00 00
+    //                     02 00 01 00  (.`.....t.......
+    //( 00000010 )   46 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  F.?
+    //( 00000020 )   00 00 00 00 00 00 00 00                           ........
+    //
+    //( 00000000 )   28 00 60 00 00 00 00 00   
+    //                      74 08 00 00 
+    //                      01 00 01 00  (.`.....t.......
+    //( 00000010 )   49 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  I.?
+    //( 00000020 )   00 00 00 00 00 00 00 00   
+        //display_packet(pkt, pkt->hdr.pkt_len);
 
     return word_select_send_bb(src, pkt);
 }
 
-static int sub60_75_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_flag_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t flag_index = pkt->flag;
@@ -2170,14 +2167,14 @@ static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
-    //if (!l || l->type != LOBBY_TYPE_GAME) {
-    //    ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
-    //        src->guildcard);
-    //    return -1;
-    //}
+       //if (!l || l->type != LOBBY_TYPE_GAME) {
+       //    ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
+       //        src->guildcard);
+       //    return -1;
+       //}
 
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
+       /* 合理性检查... Make sure the size of the subcommand matches with what we
+          expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
@@ -2211,7 +2208,7 @@ static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_76_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_76_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_killed_monster_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2247,7 +2244,7 @@ inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
     return -1;
 }
 
-static int sub60_77_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t val = LE32(pkt->value);
@@ -2363,7 +2360,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-static int sub60_79_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_79_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gogo_ball_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2379,7 +2376,7 @@ static int sub60_79_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-int handle_bb_battle_mode(ship_client_t* src, 
+int handle_bb_battle_mode(ship_client_t* src,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int ch, ch2;
@@ -2453,7 +2450,7 @@ int handle_bb_battle_mode(ship_client_t* src,
     return 0;
 }
 
-int handle_bb_challenge_mode_grave(ship_client_t* src, 
+int handle_bb_challenge_mode_grave(ship_client_t* src,
     subcmd_bb_pkt_t* pkt) {
     int i;
     lobby_t* l = src->cur_lobby;
@@ -2611,7 +2608,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
     return 0;
 }
 
-static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_7C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2698,9 +2695,9 @@ static int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-//[2023年07月06日 13:21:25:848] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x80 版本 5 的处理
-//[2023年07月06日 13:21:25:865] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x80
-//( 00000000 )   10 00 60 00 00 00 00 00   80 02 FC 47 50 00 02 00  ..`.....�.麲P...
+    //[2023年07月06日 13:21:25:848] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x80 版本 5 的处理
+    //[2023年07月06日 13:21:25:865] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x80
+    //( 00000000 )   10 00 60 00 00 00 00 00   80 02 FC 47 50 00 02 00  ..`.....�.麲P...
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2717,8 +2714,8 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || 
-        pkt->shdr.size != 0x02 || 
+    if (pkt->hdr.pkt_len != LE16(0x0010) ||
+        pkt->shdr.size != 0x02 ||
         src->client_id != pkt->shdr.client_id
         ) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
@@ -2726,9 +2723,9 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//[2023年07月06日 13:21:22:702] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x83 版本 5 的处理
-//[2023年07月06日 13:21:22:717] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x83
-//( 00000000 )   10 00 60 00 00 00 00 00   83 02 00 00 03 00 14 00  ..`.....?......
+    //[2023年07月06日 13:21:22:702] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x83 版本 5 的处理
+    //[2023年07月06日 13:21:22:717] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x83
+    //( 00000000 )   10 00 60 00 00 00 00 00   83 02 00 00 03 00 14 00  ..`.....?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2752,19 +2749,19 @@ static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//[2023年07月12日 20:08:29:962] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
-//[2023年07月12日 20:08:29:978] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
-//( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
-//( 00000010 )   FB 00 00 00 00 00 05 00                           ?......
-//[2023年07月12日 20:08:32:368] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
-//[2023年07月12日 20:08:32:386] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
-//( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
-//( 00000010 )   FB 00 00 00 00 00 04 00                           ?......
+    //[2023年07月12日 20:08:29:962] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
+    //[2023年07月12日 20:08:29:978] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
+    //( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
+    //( 00000010 )   FB 00 00 00 00 00 05 00                           ?......
+    //[2023年07月12日 20:08:32:368] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
+    //[2023年07月12日 20:08:32:386] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x86
+    //( 00000000 )   18 00 60 00 00 00 00 00   86 04 FB 40 00 00 00 00  ..`.....?鸃....
+    //( 00000010 )   FB 00 00 00 00 00 04 00                           ?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_88_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_arrow_change_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2787,7 +2784,7 @@ static int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
     return send_lobby_arrows(l);
 }
 
-static int sub60_89_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_player_died_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2809,7 +2806,7 @@ static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_ch_game_select_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2833,7 +2830,7 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_technique_level_override_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -2901,165 +2898,165 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//[2023年07月29日 09:04:37:017] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:37:032] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
-//( 00000010 )   3E 00 00 00 00 00 02 00   00 00 00 02             >...........
-//[2023年07月29日 09:04:37:618] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:37:635] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
-//( 00000010 )   3E 00 00 00 00 00 01 00   00 00 00 02             >...........
-//[2023年07月29日 09:04:38:050] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:38:064] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
-//( 00000010 )   3E 00 00 00 01 00 00 00   96 00 01 02             >.......?..
-//[2023年07月29日 09:04:41:117] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:41:131] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 00 00 05 00   00 00 00 02             3...........
-//[2023年07月29日 09:04:41:584] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:41:600] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 00 00 04 00   00 00 00 02             3...........
-//[2023年07月29日 09:04:42:017] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:42:030] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 00 00 03 00   00 00 00 02             3...........
-//[2023年07月29日 09:04:42:917] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:42:930] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 00 00 02 00   00 00 00 02             3...........
-//[2023年07月29日 09:04:43:383] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:43:397] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 00 00 01 00   00 00 00 02             3...........
-//[2023年07月29日 09:04:43:818] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:43:831] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
-//( 00000010 )   33 00 00 00 01 00 00 00   2A 00 01 02             3.......*...
-//[2023年07月29日 09:04:53:297] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:53:314] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 07 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:53:763] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:53:778] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 06 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:54:197] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:54:212] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 05 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:55:064] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:55:088] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 04 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:55:530] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:55:548] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 03 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:55:964] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:55:977] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 02 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:56:830] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:56:850] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 00 00 01 00   00 00 00 02             v...........
-//[2023年07月29日 09:04:57:297] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:04:57:312] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
-//( 00000010 )   76 00 00 00 01 00 00 00   34 00 01 02             v.......4...
-//[2023年07月29日 09:05:55:028] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:05:55:044] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
-//( 00000010 )   78 00 00 00 00 00 04 00   00 00 00 02             x...........
-//[2023年07月29日 09:05:56:395] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:05:56:417] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
-//( 00000010 )   78 00 00 00 00 00 03 00   00 00 00 02             x...........
-//[2023年07月29日 09:05:58:498] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:05:58:511] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
-//( 00000010 )   78 00 00 00 00 00 02 00   00 00 00 02             x...........
-//[2023年07月29日 09:05:59:631] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:05:59:639] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
-//( 00000010 )   78 00 00 00 00 00 01 00   00 00 00 02             x...........
-//[2023年07月29日 09:06:00:098] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:00:113] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
-//( 00000010 )   78 00 00 00 01 00 00 00   36 00 01 02             x.......6...
-//[2023年07月29日 09:06:02:265] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:02:278] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 06 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:02:732] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:02:761] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 05 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:03:165] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:03:178] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 04 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:04:132] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:04:151] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 03 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:04:599] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:04:607] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 02 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:05:032] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:05:048] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 00 00 01 00   00 00 00 02             y...........
-//[2023年07月29日 09:06:05:932] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:05:944] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
-//( 00000010 )   79 00 00 00 01 00 00 00   37 00 01 02             y.......7...
-//[2023年07月29日 09:06:10:619] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:10:636] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
-//( 00000010 )   77 00 00 00 00 00 03 00   00 00 00 02             w...........
-//[2023年07月29日 09:06:11:852] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:11:871] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
-//( 00000010 )   77 00 00 00 00 00 02 00   00 00 00 02             w...........
-//[2023年07月29日 09:06:12:319] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:12:336] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
-//( 00000010 )   77 00 00 00 00 00 01 00   00 00 00 02             w...........
-//[2023年07月29日 09:06:13:386] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:13:403] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
-//( 00000010 )   77 00 00 00 01 00 00 00   35 00 01 02             w.......5...
-//[2023年07月29日 09:06:19:552] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:19:570] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
-//( 00000010 )   7A 00 00 00 00 00 05 00   00 00 00 02             z...........
-//[2023年07月29日 09:06:20:018] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:20:036] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
-//( 00000010 )   7A 00 00 00 00 00 04 00   00 00 00 02             z...........
-//[2023年07月29日 09:06:20:452] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:20:470] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
-//( 00000010 )   7A 00 00 00 00 00 03 00   00 00 00 02             z...........
-//[2023年07月29日 09:06:21:318] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:21:339] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
-//( 00000010 )   7A 00 00 00 00 00 02 00   00 00 00 02             z...........
-//[2023年07月29日 09:06:21:785] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
-//[2023年07月29日 09:06:21:804] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
-//( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
-//( 00000010 )   7A 00 00 00 00 00 01 00   00 00 00 02             z...........
+    //[2023年07月29日 09:04:37:017] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:37:032] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
+    //( 00000010 )   3E 00 00 00 00 00 02 00   00 00 00 02             >...........
+    //[2023年07月29日 09:04:37:618] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:37:635] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
+    //( 00000010 )   3E 00 00 00 00 00 01 00   00 00 00 02             >...........
+    //[2023年07月29日 09:04:38:050] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:38:064] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 3E 40 00 00 00 00  ..`.....?>@....
+    //( 00000010 )   3E 00 00 00 01 00 00 00   96 00 01 02             >.......?..
+    //[2023年07月29日 09:04:41:117] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:41:131] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 00 00 05 00   00 00 00 02             3...........
+    //[2023年07月29日 09:04:41:584] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:41:600] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 00 00 04 00   00 00 00 02             3...........
+    //[2023年07月29日 09:04:42:017] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:42:030] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 00 00 03 00   00 00 00 02             3...........
+    //[2023年07月29日 09:04:42:917] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:42:930] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 00 00 02 00   00 00 00 02             3...........
+    //[2023年07月29日 09:04:43:383] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:43:397] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 00 00 01 00   00 00 00 02             3...........
+    //[2023年07月29日 09:04:43:818] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:43:831] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 33 40 00 00 00 00  ..`.....?3@....
+    //( 00000010 )   33 00 00 00 01 00 00 00   2A 00 01 02             3.......*...
+    //[2023年07月29日 09:04:53:297] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:53:314] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 07 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:53:763] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:53:778] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 06 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:54:197] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:54:212] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 05 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:55:064] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:55:088] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 04 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:55:530] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:55:548] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 03 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:55:964] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:55:977] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 02 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:56:830] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:56:850] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 00 00 01 00   00 00 00 02             v...........
+    //[2023年07月29日 09:04:57:297] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:04:57:312] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 76 40 00 00 00 00  ..`.....?v@....
+    //( 00000010 )   76 00 00 00 01 00 00 00   34 00 01 02             v.......4...
+    //[2023年07月29日 09:05:55:028] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:05:55:044] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
+    //( 00000010 )   78 00 00 00 00 00 04 00   00 00 00 02             x...........
+    //[2023年07月29日 09:05:56:395] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:05:56:417] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
+    //( 00000010 )   78 00 00 00 00 00 03 00   00 00 00 02             x...........
+    //[2023年07月29日 09:05:58:498] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:05:58:511] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
+    //( 00000010 )   78 00 00 00 00 00 02 00   00 00 00 02             x...........
+    //[2023年07月29日 09:05:59:631] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:05:59:639] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
+    //( 00000010 )   78 00 00 00 00 00 01 00   00 00 00 02             x...........
+    //[2023年07月29日 09:06:00:098] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:00:113] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 78 40 00 00 00 00  ..`.....?x@....
+    //( 00000010 )   78 00 00 00 01 00 00 00   36 00 01 02             x.......6...
+    //[2023年07月29日 09:06:02:265] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:02:278] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 06 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:02:732] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:02:761] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 05 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:03:165] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:03:178] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 04 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:04:132] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:04:151] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 03 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:04:599] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:04:607] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 02 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:05:032] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:05:048] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 00 00 01 00   00 00 00 02             y...........
+    //[2023年07月29日 09:06:05:932] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:05:944] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 79 40 00 00 00 00  ..`.....?y@....
+    //( 00000010 )   79 00 00 00 01 00 00 00   37 00 01 02             y.......7...
+    //[2023年07月29日 09:06:10:619] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:10:636] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
+    //( 00000010 )   77 00 00 00 00 00 03 00   00 00 00 02             w...........
+    //[2023年07月29日 09:06:11:852] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:11:871] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
+    //( 00000010 )   77 00 00 00 00 00 02 00   00 00 00 02             w...........
+    //[2023年07月29日 09:06:12:319] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:12:336] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
+    //( 00000010 )   77 00 00 00 00 00 01 00   00 00 00 02             w...........
+    //[2023年07月29日 09:06:13:386] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:13:403] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 77 40 00 00 00 00  ..`.....?w@....
+    //( 00000010 )   77 00 00 00 01 00 00 00   35 00 01 02             w.......5...
+    //[2023年07月29日 09:06:19:552] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:19:570] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
+    //( 00000010 )   7A 00 00 00 00 00 05 00   00 00 00 02             z...........
+    //[2023年07月29日 09:06:20:018] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:20:036] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
+    //( 00000010 )   7A 00 00 00 00 00 04 00   00 00 00 02             z...........
+    //[2023年07月29日 09:06:20:452] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:20:470] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
+    //( 00000010 )   7A 00 00 00 00 00 03 00   00 00 00 02             z...........
+    //[2023年07月29日 09:06:21:318] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:21:339] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
+    //( 00000010 )   7A 00 00 00 00 00 02 00   00 00 00 02             z...........
+    //[2023年07月29日 09:06:21:785] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
+    //[2023年07月29日 09:06:21:804] 调试(subcmd_handle_60.c 4037): 未知 0x60 指令: 0x91
+    //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
+    //( 00000010 )   7A 00 00 00 00 00 01 00   00 00 00 02             z...........
 
-    //display_packet(pkt, pkt->hdr.pkt_len);
+        //display_packet(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_93_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3077,35 +3074,35 @@ static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
-//( 00000010 )   00 9A 62 00                                     .歜.
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
-//( 00000010 )   00 9A 62 00                                     .歜.
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
-//( 00000010 )   00 9A 62 00                                     .歜.
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
-//( 00000010 )   00 9A 62 00                                     .歜.
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
-//( 00000010 )   00 9A 62 00                                     .歜.
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
-//( 00000010 )   00 00 00 11                                     ....
-//    [2023年07月12日 20:11:36:648] 截获(2631): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
-//代码 2631 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
-//[2023年07月12日 20:11:36:669] 截获(2631):
-//( 00000000 )   14 00 60 00 00 00 00 00   93 03 42 19 01 00 6A 00  ..`.....?B...j.
-//( 00000010 )   00 FF D3 03                                     .代码 2631 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
+    //( 00000010 )   00 9A 62 00                                     .歜.
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
+    //( 00000010 )   00 9A 62 00                                     .歜.
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
+    //( 00000010 )   00 9A 62 00                                     .歜.
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
+    //( 00000010 )   00 9A 62 00                                     .歜.
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0B 00  ..`.....?......
+    //( 00000010 )   00 9A 62 00                                     .歜.
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 00 00 07 00 0A 00  ..`.....?......
+    //( 00000010 )   00 00 00 11                                     ....
+    //    [2023年07月12日 20:11:36:648] 截获(2631): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+    //代码 2631 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+    //[2023年07月12日 20:11:36:669] 截获(2631):
+    //( 00000000 )   14 00 60 00 00 00 00 00   93 03 42 19 01 00 6A 00  ..`.....?B...j.
+    //( 00000010 )   00 FF D3 03                                     .代码 2631 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
     display_packet(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3144,7 +3141,7 @@ static int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_update_player_stat_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3163,9 +3160,9 @@ static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-//[2023年07月06日 12:31:43:857] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9A 版本 5 的处理
-//[2023年07月06日 12:31:43:869] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9A
-//( 00000000 )   10 00 60 00 00 00 00 00   9A 02 00 00 00 00 03 0D  ..`.....?......
+    //[2023年07月06日 12:31:43:857] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9A 版本 5 的处理
+    //[2023年07月06日 12:31:43:869] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9A
+    //( 00000000 )   10 00 60 00 00 00 00 00   9A 02 00 00 00 00 03 0D  ..`.....?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3216,21 +3213,21 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-//[2023年07月06日 13:15:14:214] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
-//[2023年07月06日 13:15:14:233] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
-//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 F0 10 10 00 00 00  ..`.....??....
-//[2023年07月06日 13:15:14:306] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
-//[2023年07月06日 13:15:14:322] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
-//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 EF 10 10 00 00 00  ..`.....??....
-//[2023年07月06日 13:16:38:651] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
-//[2023年07月06日 13:16:38:666] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
-//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 12 11 10 00 00 00  ..`.....?......
-//[2023年07月06日 13:16:39:680] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
-//[2023年07月06日 13:16:39:696] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
-//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 13 11 10 00 00 00  ..`.....?......
-//[2023年07月06日 13:16:42:718] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
-//[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
-//( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
+    //[2023年07月06日 13:15:14:214] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+    //[2023年07月06日 13:15:14:233] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+    //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 F0 10 10 00 00 00  ..`.....??....
+    //[2023年07月06日 13:15:14:306] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+    //[2023年07月06日 13:15:14:322] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+    //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 EF 10 10 00 00 00  ..`.....??....
+    //[2023年07月06日 13:16:38:651] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+    //[2023年07月06日 13:16:38:666] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+    //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 12 11 10 00 00 00  ..`.....?......
+    //[2023年07月06日 13:16:39:680] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+    //[2023年07月06日 13:16:39:696] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+    //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 13 11 10 00 00 00  ..`.....?......
+    //[2023年07月06日 13:16:42:718] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
+    //[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
+    //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3289,10 +3286,10 @@ static int sub60_A0_bb(ship_client_t* src, ship_client_t* dest,
         "动作:%d\n"
         "阶段:0x%02X 0x%02X.",
         "未知:%d\n%d\n%d\n%d.",
-        __(src, "\tE\tC6GG BOSS SP"), 
-        pkt->x, pkt->y, pkt->z, 
-        pkt->unknown_a1, 
-        pkt->unknown_a2, pkt->unknown_a3, 
+        __(src, "\tE\tC6GG BOSS SP"),
+        pkt->x, pkt->y, pkt->z,
+        pkt->unknown_a1,
+        pkt->unknown_a2, pkt->unknown_a3,
         pkt->unknown_a4[0],
         pkt->unknown_a4[1],
         pkt->unknown_a4[2],
@@ -3302,7 +3299,7 @@ static int sub60_A0_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3429,7 +3426,7 @@ static int sub60_A8_bb(ship_client_t* src, ship_client_t* dest,
 
 }
 
-static int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_AB_AF_B0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     uint8_t type = pkt->type;
     lobby_t* l = src->cur_lobby;
@@ -3490,7 +3487,7 @@ static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     size_t i;
@@ -3505,8 +3502,8 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || 
-        pkt->shdr.size != 0x03 || 
+    if (pkt->hdr.pkt_len != LE16(0x0014) ||
+        pkt->shdr.size != 0x03 ||
         pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
@@ -3516,7 +3513,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 
     psocn_bb_char_t* player = &src->bb_pl->character;
 
-    if(src->mode)
+    if (src->mode)
         player = &src->mode_pl->bb;
 
     i = find_iitem_index(&player->inv, pkt->item_id);
@@ -3542,7 +3539,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t* it;
@@ -3592,7 +3589,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_drop_stack(src, src->client_id, NULL, pkt->area, pkt->x, pkt->z, it->data, pkt->amount);
 }
 
-static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = src->cur_lobby;
     inventory_t sorted = { 0 };
@@ -3646,14 +3643,14 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
 
     player->inv = sorted;
 
-    if(!src->mode)
+    if (!src->mode)
         src->pl->bb.character.inv = sorted;
 
     /* Nobody else really needs to care about this one... */
     return 0;
 }
 
-static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_medical_center_used_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
@@ -3690,7 +3687,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_steal_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
     pmt_weapon_bb_t tmp_wp = { 0 };
@@ -3838,7 +3835,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
 
     psocn_disp_char_t* disp = &src->bb_pl->character.disp;
 
-    if(src->mode)
+    if (src->mode)
         disp = &src->mode_pl->bb.disp;
 
     if (pkt->meseta_amount > disp->meseta) {
@@ -3853,7 +3850,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 /* 从怪物获取的经验倍率未进行调整 */
-static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_req_exp_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint16_t mid;
@@ -3956,7 +3953,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     return client_give_exp(src, exp_amount);
 }
 
-static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t ex_item_id = pkt->ex_item_id, point_add = pkt->point_add_amount;
@@ -4010,7 +4007,7 @@ static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
-static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest, 
+static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t quest_offset = pkt->quest_offset;
@@ -4134,27 +4131,27 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
 
     send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6SM BOSS"), pkt->unknown_a1, pkt->unknown_a2);
 
-//[2023年07月28日 21:42:58:852] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:42:58:871] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 16 00  ..`.....?....
-//[2023年07月28日 21:42:59:903] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:42:59:921] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 11 00  ..`.....?....
-//[2023年07月28日 21:43:09:525] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:43:09:540] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 10 00  ..`.....?....
-//[2023年07月28日 21:43:09:642] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:43:09:659] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 18 00  ..`.....?....
-//[2023年07月28日 21:43:12:886] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:43:12:904] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 03 00 03 00  ..`.....?....
-//[2023年07月28日 21:43:18:319] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:43:18:336] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 04 00 03 00  ..`.....?....
-//[2023年07月28日 21:43:21:497] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
-//[2023年07月28日 21:43:21:513] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
-//( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 11 00  ..`.....?....
+    //[2023年07月28日 21:42:58:852] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:42:58:871] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 16 00  ..`.....?....
+    //[2023年07月28日 21:42:59:903] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:42:59:921] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 11 00  ..`.....?....
+    //[2023年07月28日 21:43:09:525] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:43:09:540] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 10 00  ..`.....?....
+    //[2023年07月28日 21:43:09:642] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:43:09:659] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 18 00  ..`.....?....
+    //[2023年07月28日 21:43:12:886] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:43:12:904] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 03 00 03 00  ..`.....?....
+    //[2023年07月28日 21:43:18:319] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:43:18:336] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 04 00 03 00  ..`.....?....
+    //[2023年07月28日 21:43:21:497] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
+    //[2023年07月28日 21:43:21:513] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
+    //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 11 00  ..`.....?....
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4303,77 +4300,87 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    ship_client_t* dest;
-    uint16_t len = pkt->hdr.pkt_len;
-    uint16_t hdr_type = pkt->hdr.pkt_type;
-    uint8_t type = pkt->type;
-    int rv = 0, sent = 1, i = 0;
-    uint32_t dnum = LE32(pkt->hdr.flags);
+    __try {
+        lobby_t* l = src->cur_lobby;
+        ship_client_t* dest;
+        uint16_t len = pkt->hdr.pkt_len;
+        uint16_t hdr_type = pkt->hdr.pkt_type;
+        uint8_t type = pkt->type;
+        int rv = 0, sent = 1, i = 0;
+        uint32_t dnum = LE32(pkt->hdr.flags);
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
 #ifdef DEBUG_60
 
-    DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
+        DBG_LOG("玩家 0x%02X 指令: 0x%02X", hdr_type, type);
 
 #endif // DEBUG_60
 
-    if(src->mode)
-        DBG_LOG("GC %u CH 0x%04X 60指令: 0x%02X", src->guildcard, hdr_type, type);
+        if (src->mode)
+            DBG_LOG("GC %u CH 0x%04X 60指令: 0x%02X", src->guildcard, hdr_type, type);
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    /* 搜索目标客户端. */
-    dest = l->clients[dnum];
+        /* 搜索目标客户端. */
+        dest = l->clients[dnum];
 
-    /* 目标客户端已离线，将不再发送数据包. */
-    if (!dest) {
-        //DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
-
-    subcmd_bb_60size_check(src, pkt);
-
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
-
-    /* If there's a burst going on in the lobby, delay most packets */
-    if (l->flags & LOBBY_FLAG_BURSTING) {
-        switch (type) {
-        case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
-        case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
-        case SUBCMD60_SET_AREA_20:
-        case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
-        case SUBCMD60_BURST_DONE:
-            /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
-        case SUBCMD60_SET_C_GAME_MODE:
-            rv = l->subcmd_handle(src, dest, pkt);
-            break;
-
-        default:
-            DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
-            rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+        /* 目标客户端已离线，将不再发送数据包. */
+        if (!dest) {
+            //DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
+            pthread_mutex_unlock(&l->mutex);
+            return 0;
         }
 
-        pthread_mutex_unlock(&l->mutex);
-        return rv;
-    }
+        subcmd_bb_60size_check(src, pkt);
 
-    if (l->subcmd_handle == NULL) {
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            switch (type) {
+            case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
+            case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
+            case SUBCMD60_SET_AREA_20:
+            case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
+            case SUBCMD60_BURST_DONE:
+                /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
+            case SUBCMD60_SET_C_GAME_MODE:
+                rv = l->subcmd_handle(src, dest, pkt);
+                break;
+
+            default:
+                DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+                rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+            }
+
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
+
+        if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-        DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-        display_packet(pkt, pkt->hdr.pkt_len);
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, pkt->hdr.pkt_len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-        rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+            rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
+
+        rv = l->subcmd_handle(src, dest, pkt);
+
         pthread_mutex_unlock(&l->mutex);
         return rv;
     }
 
-    rv = l->subcmd_handle(src, dest, pkt);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }

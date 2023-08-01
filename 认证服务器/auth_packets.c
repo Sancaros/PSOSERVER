@@ -205,9 +205,9 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     va_list args) {
     uint8_t* sendbuf = get_sendbuf();
     dc_msg_box_pkt* pkt = (dc_msg_box_pkt*)sendbuf;
-    int size = 4;
+    int len = 4;
     iconv_t ic;
-    //char tm[512];
+    char tm[512];
     size_t in, out;
     char* inptr;
     char* outptr;
@@ -221,62 +221,55 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
     memset(pkt, 0, sizeof(dc_msg_box_pkt));
 
     /* Do the formatting */
-    //vsnprintf(tm, 512, fmt, args);
-    //tm[511] = '\0';
-    //in = strlen(fmt) + 1;
+    vsnprintf(tm, 512, fmt, args);
+    tm[511] = '\0';
+    in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
-    //if (fmt[0] != '\t' || (fmt[1] != 'E' && fmt[1] != 'J')) {
-    //    /* Assume Non-Japanese if we don't have a marker. */
-    //    memmove(&fmt[2], &fmt[0], in);
-    //    fmt[0] = '\t';
-    //    fmt[1] = 'E';
-    //    in += 2;
-    //}
+    if (tm[0] != '\t' || (tm[1] != 'E' && tm[1] != 'J')) {
+        /* Assume Non-Japanese if we don't have a marker. */
+        memmove(&tm[2], &tm[0], in);
+        tm[0] = '\t';
+        tm[1] = 'E';
+        in += 2;
+    }
 
     if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
         c->type == CLIENT_AUTH_EP3 || c->type == CLIENT_AUTH_DCNTE ||
         c->type == CLIENT_AUTH_XBOX) {
-        if (fmt[1] != 'J') {
+        if (tm[1] != 'J') {
             ic = ic_gbk_to_8859;
         }
         else {
             ic = ic_gbk_to_sjis;
         }
-        //if (tm[1] == 'J') {
-        //    //ic = iconv_open(SJIS, GBK);
-        //    ic = ic_gbk_to_sjis;
-        //}
-        //else {
-        //    //ic = iconv_open(ISO8859, GBK);
-        //    ic = ic_gbk_to_8859;
-        //}
     }
     else {
-        //ic = iconv_open(UTF16LE, GBK);
         ic = ic_gb18030_to_utf16;
     }
 
-    //if (ic == (iconv_t)-1) {
-    //    perror("iconv_open");
-    //    return -1;
-    //}
-
     /* Convert to the proper encoding */
-    in = strlen(fmt) + 1;
+    in = strlen(tm) + 1;
     out = 65524;
-    inptr = (char*)fmt;
-    outptr = (char*)pkt->msg;
+    inptr = tm;
+    outptr = pkt->msg;
     iconv(ic, &inptr, &in, &outptr, &out);
-    iconv_close(ic);
 
     /* Figure out how long the packet is */
-    size += 65524 - out;
+    len += 65524 - out;
+
+    /* 结尾添加截断字符 0x00*/
+    pkt->msg[len++] = 0x00;
 
     /* Pad to a length divisible by 4 */
-    while (size & 0x03) {
-        sendbuf[size++] = 0;
+    while (len & 0x03) {
+        pkt->msg[len++] = 0;
     }
+
+    char_add_color_tag(pkt->msg);
+
+    /* Fill in the length */
+    len += 0x0C;
 
     /* 填充数据头 */
     if (c->type == CLIENT_AUTH_DC || c->type == CLIENT_AUTH_GC ||
@@ -284,16 +277,16 @@ static int send_large_msg_dc(login_client_t* c, uint16_t type, const char* fmt,
         c->type == CLIENT_AUTH_XBOX) {
         pkt->hdr.dc.pkt_type = (uint8_t)type;
         pkt->hdr.dc.flags = 0;
-        pkt->hdr.dc.pkt_len = LE16(size);
+        pkt->hdr.dc.pkt_len = LE16(len);
     }
     else {
         pkt->hdr.pc.pkt_type = (uint8_t)type;
         pkt->hdr.pc.flags = 0;
-        pkt->hdr.pc.pkt_len = LE16(size);
+        pkt->hdr.pc.pkt_len = LE16(len);
     }
 
     /* 将数据包发送出去 */
-    return crypt_send(c, size, sendbuf);
+    return crypt_send(c, len, sendbuf);
 }
 
 static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
@@ -302,7 +295,7 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     bb_msg_box_pkt *pkt = (bb_msg_box_pkt *)sendbuf;
     int size = 8;
     iconv_t ic;
-    //char tm[512];
+    char tm[512];
     size_t in, out;
     char *inptr;
     char *outptr;
@@ -316,34 +309,27 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     memset(pkt, 0, sizeof(bb_msg_box_pkt));
 
     /* Do the formatting */
-    //vsnprintf(tm, 512, fmt, args);
-    //tm[511] = '\0';
-    in = strlen(fmt) + 1;
+    vsnprintf(tm, 512, fmt, args);
+    tm[511] = '\0';
+    in = strlen(tm) + 1;
 
     /* Make sure we have a language code tag */
-    //if (fmt[0] != '\t' || (fmt[1] != 'E' && fmt[1] != 'J')) {
-    //    /* Assume Non-Japanese if we don't have a marker. */
-    //    memmove(&fmt[2], &fmt[0], in);
-    //    fmt[0] = '\t';
-    //    fmt[1] = 'E';
-    //    in += 2;
-    //}
+    if (tm[0] != '\t' || (tm[1] != 'E' && tm[1] != 'J')) {
+        /* Assume Non-Japanese if we don't have a marker. */
+        memmove(&tm[2], &tm[0], in);
+        tm[0] = '\t';
+        tm[1] = 'E';
+        in += 2;
+    }
 
-    //ic = iconv_open(UTF16LE, GBK);
     ic = ic_gb18030_to_utf16;
 
-    //if(ic == (iconv_t)-1) {
-    //    perror("iconv_open");
-    //    return -1;
-    //}
-
     /* Convert to the proper encoding */
-    in = strlen(fmt) + 1;
+    in = strlen(tm) + 1;
     out = 65520;
-    inptr = (char*)fmt;
-    outptr = (char *)pkt->msg;
+    inptr = tm;
+    outptr = (char*)pkt->msg;
     iconv(ic, &inptr, &in, &outptr, &out);
-    iconv_close(ic);
 
     /* Figure out how long the packet is */
     size += 65520 - out + 0x10;
@@ -355,6 +341,8 @@ static int send_msg_bb(login_client_t *c, uint16_t type, const char* fmt,
     while(size & 0x07) {
         sendbuf[size++] = 0;
     }
+
+    char_add_color_tag(pkt->msg);
 
     /* 填充数据头 */
     pkt->hdr.pkt_type = LE16(type);

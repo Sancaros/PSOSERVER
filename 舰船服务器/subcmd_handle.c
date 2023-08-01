@@ -86,30 +86,40 @@ subcmd_handle_t subcmd_search_handler(
 
 // 使用函数指针直接调用相应的处理函数
 subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
-    subcmd_handle_t func = { 0 };
-    size_t count = 0;
+    __try {
+        subcmd_handle_t func = { 0 };
+        size_t count = 0;
 
-    switch (cmd_type)
-    {
-    case GAME_COMMAND0_TYPE:
-        count = _countof(subcmd60_handler);
-        func = subcmd_search_handler(subcmd60_handler, count, subcmd_type, version);
-        break;
+        switch (cmd_type)
+        {
+        case GAME_COMMAND0_TYPE:
+            count = _countof(subcmd60_handler);
+            func = subcmd_search_handler(subcmd60_handler, count, subcmd_type, version);
+            break;
 
-    case GAME_COMMAND2_TYPE:
-        count = _countof(subcmd62_handler);
-        func = subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
-        break;
+        case GAME_COMMAND2_TYPE:
+            count = _countof(subcmd62_handler);
+            func = subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
+            break;
 
-    case GAME_COMMANDD_TYPE:
-        count = _countof(subcmd6D_handler);
-        func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
-        break;
+        case GAME_COMMANDD_TYPE:
+            count = _countof(subcmd6D_handler);
+            func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
+            break;
+        }
+
+        if (!func)
+            ERR_LOG("subcmd_get_handler 未完成对 "
+                "0x%02X 0x%02X 版本 %s(%d) 的处理", cmd_type, subcmd_type, client_type[version]->ver_name, version);
+
+        return func;
     }
 
-    if(!func)
-        ERR_LOG("subcmd_get_handler 未完成对 "
-            "0x%02X 0x%02X 版本 %s(%d) 的处理", cmd_type, subcmd_type, client_type[version]->ver_name, version);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    return func;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return NULL;
+    }
 }

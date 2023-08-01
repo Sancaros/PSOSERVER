@@ -52,6 +52,14 @@ int db_remove_gc_char_login_state(uint32_t gc) {
 
     sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' "
         "WHERE guildcard = '%u' AND islogged = '1'",
+        AUTH_ACCOUNT, gc);
+    if (psocn_db_real_query(&conn, query)) {
+        SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
+        return 1;
+    }
+
+    sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '0' "
+        "WHERE guildcard = '%u' AND islogged = '1'",
         CHARACTER, gc);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);

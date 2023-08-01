@@ -2774,7 +2774,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
 }
 
 /* Process a 0xBA packet. */
-static int process_ep3_command(ship_client_t* c, const uint8_t* pkt) {
+static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
     dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt;
     uint16_t len = LE16(hdr->pkt_len);
     uint16_t tmp;
@@ -2798,7 +2798,7 @@ static int process_ep3_command(ship_client_t* c, const uint8_t* pkt) {
 
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
-            ERR_LOG("未知 Episode 3 指令: 0x%04X", hdr->flags);
+            ERR_LOG("GC %u 未知 Episode 3 指令: 0x%04X", c->guildcard, hdr->flags);
             display_packet(pkt, len);
             return -1;
         }
@@ -3254,7 +3254,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         default:
             if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
                 len)) {
-                ERR_LOG("未知数据包!");
+                ERR_LOG("GC %u 未知数 0x%X 据包!", c->guildcard, type);
                 display_packet(pkt, len);
                 return -3;
             }

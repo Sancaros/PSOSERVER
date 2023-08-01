@@ -752,34 +752,34 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     /* TODO */
     else if ((item_identifier & 0xFFFF00) == 0x031500) {
         // Christmas Present, etc. - use unwrap_table + probabilities therein
-        auto table = s->item_parameter_table->get_event_items(item.data.datab[2]);
-        size_t sum = 0;
-        for (size_t z = 0; z < table.second; z++) {
-            sum += table.first[z].probability;
-        }
-        if (sum == 0) {
-            ERR_LOG("no unwrap results available for event");
-        }
-        size_t det = mt19937_genrand_int32(rng) % sum;
-        for (size_t z = 0; z < table.second; z++) {
-            const auto& entry = table.first[z];
-            if (det > entry.probability) {
-                det -= entry.probability;
-            }
-            else {
-                item.data.data2l = 0;
-                item.data.datab[0] = entry.item[0];
-                item.data.datab[1] = entry.item[1];
-                item.data.datab[2] = entry.item[2];
-                memset(item.data.datab[3], 0, 3);
-                //item.data.datab.clear_after(3);
-                should_delete_item = false;
+        //auto table = s->item_parameter_table->get_event_items(item.data.datab[2]);
+        //size_t sum = 0;
+        //for (size_t z = 0; z < table.second; z++) {
+        //    sum += table.first[z].probability;
+        //}
+        //if (sum == 0) {
+        //    ERR_LOG("no unwrap results available for event");
+        //}
+        //size_t det = mt19937_genrand_int32(rng) % sum;
+        //for (size_t z = 0; z < table.second; z++) {
+        //    const auto& entry = table.first[z];
+        //    if (det > entry.probability) {
+        //        det -= entry.probability;
+        //    }
+        //    else {
+        //        item.data.data2l = 0;
+        //        item.data.datab[0] = entry.item[0];
+        //        item.data.datab[1] = entry.item[1];
+        //        item.data.datab[2] = entry.item[2];
+        //        memset(item.data.datab[3], 0, 3);
+        //        //item.data.datab.clear_after(3);
+        //        should_delete_item = false;
 
-                lobby_t* l = src->cur_lobby;
-                subcmd_send_lobby_bb_create_inv_item(src, item.data, 1, true);
-                break;
-            }
-        }
+        //        lobby_t* l = src->cur_lobby;
+        //        subcmd_send_lobby_bb_create_inv_item(src, item.data, 1, true);
+        //        break;
+        //    }
+        //}
 
     }
     else {
@@ -790,45 +790,45 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             if (!(inv_item.flags & 0x00000008)) {
                 continue;
             }
-            try {
-                const auto& combo = s->item_parameter_table->get_item_combination(
-                    item.data, inv_item.data);
-                if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
-                    ERR_LOG("item combination requires specific char_class");
-                }
-                if (combo.mag_level != 0xFF) {
-                    if (inv_item.data.datab[0] != 2) {
-                        ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
-                    }
-                    if (inv_item.data.compute_mag_level() < combo.mag_level) {
-                        ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
-                    }
-                }
-                if (combo.grind != 0xFF) {
-                    if (inv_item.data.datab[0] != 0) {
-                        ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
-                    }
-                    if (inv_item.data.datab[3] < combo.grind) {
-                        ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
-                    }
-                }
-                if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
-                    ERR_LOG("item combination applies with level requirement, but player level is too low");
-                }
-                // If we get here, then the combo applies
-                if (combo_applied) {
-                    ERR_LOG("multiple combinations apply");
-                }
-                combo_applied = true;
+            //try {
+            //    item_t combo = s->item_parameter_table->get_item_combination(
+            //        item.data, inv_item.data);
+            //    if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
+            //        ERR_LOG("item combination requires specific char_class");
+            //    }
+            //    if (combo.mag_level != 0xFF) {
+            //        if (inv_item.data.datab[0] != 2) {
+            //            ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+            //        }
+            //        if (inv_item.data.compute_mag_level() < combo.mag_level) {
+            //            ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+            //        }
+            //    }
+            //    if (combo.grind != 0xFF) {
+            //        if (inv_item.data.datab[0] != 0) {
+            //            ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+            //        }
+            //        if (inv_item.data.datab[3] < combo.grind) {
+            //            ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+            //        }
+            //    }
+            //    if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
+            //        ERR_LOG("item combination applies with level requirement, but player level is too low");
+            //    }
+            //    // If we get here, then the combo applies
+            //    if (combo_applied) {
+            //        ERR_LOG("multiple combinations apply");
+            //    }
+            //    combo_applied = true;
 
-                inv_item.data.datab[0] = combo.result_item[0];
-                inv_item.data.datab[1] = combo.result_item[1];
-                inv_item.data.datab[2] = combo.result_item[2];
-                inv_item.data.datab[3] = 0; // Grind
-                inv_item.data.datab[4] = 0; // Flags + special
-            }
-            catch (const out_of_range&) {
-            }
+            //    inv_item.data.datab[0] = combo.result_item[0];
+            //    inv_item.data.datab[1] = combo.result_item[1];
+            //    inv_item.data.datab[2] = combo.result_item[2];
+            //    inv_item.data.datab[3] = 0; // Grind
+            //    inv_item.data.datab[4] = 0; // Flags + special
+            //}
+            //catch (const out_of_range&) {
+            //}
         }
 
         if (!combo_applied) {

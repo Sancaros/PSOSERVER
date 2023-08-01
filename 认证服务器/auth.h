@@ -187,6 +187,11 @@ typedef struct login_client {
 #define CLIENT_EXTVER_GC_REG_MASK   (3 << 6)
 #define CLIENT_EXTVER_GC_VER_MASK   (0xFF << 8)
 
+/* ÓÃÓÚSET_FLAG */
+#define CLIENT_AUTH_FLAG_CANCELED   0x00000000
+#define CLIENT_AUTH_FLAG_RECREATE   0x00000001
+#define CLIENT_AUTH_FLAG_DREESING   0x00000002
+
 static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT] = {
     {CLIENT_AUTH_DC,           "dc", 4},
     {CLIENT_AUTH_PC,           "pc", 4},

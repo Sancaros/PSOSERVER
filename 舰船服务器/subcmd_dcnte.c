@@ -31,11 +31,11 @@
 // 指令集
 // (60, 62, 6C, 6D, C9, CB).
 
-static int handle_set_area_1D(ship_client_t *c, subcmd_set_area_1D_t *pkt) {
-    lobby_t *l = c->cur_lobby;
+static int handle_set_area_1D(ship_client_t* c, subcmd_set_area_1D_t* pkt) {
+    lobby_t* l = c->cur_lobby;
 
     /* Make sure the area is valid */
-    if(pkt->area > 17)
+    if (pkt->area > 17)
         return -1;
 
     /* Save the new area and move along */
@@ -46,74 +46,75 @@ static int handle_set_area_1D(ship_client_t *c, subcmd_set_area_1D_t *pkt) {
         c->z = pkt->z;
     }
 
-    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t *)pkt, 0);
+    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int handle_set_pos(ship_client_t *c, subcmd_set_pos_t *pkt) {
-    lobby_t *l = c->cur_lobby;
+static int handle_set_pos(ship_client_t* c, subcmd_set_pos_t* pkt) {
+    lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->shdr.client_id) {
+    if (c->client_id == pkt->shdr.client_id) {
         c->w = pkt->w;
         c->x = pkt->x;
         c->y = pkt->y;
         c->z = pkt->z;
     }
 
-    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t *)pkt, 0);
+    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int handle_move(ship_client_t *c, subcmd_move_t *pkt) {
-    lobby_t *l = c->cur_lobby;
+static int handle_move(ship_client_t* c, subcmd_move_t* pkt) {
+    lobby_t* l = c->cur_lobby;
 
     /* Save the new position and move along */
-    if(c->client_id == pkt->shdr.client_id) {
+    if (c->client_id == pkt->shdr.client_id) {
         c->x = pkt->x;
         c->z = pkt->z;
     }
 
-    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t *)pkt, 0);
+    return subcmd_send_lobby_dcnte(l, c, (subcmd_pkt_t*)pkt, 0);
 }
 
 
-int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
-    uint8_t type = pkt->type;
-    lobby_t *l = c->cur_lobby;
-    int rv, sent = 1, i;
+int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
+    __try {
+        uint8_t type = pkt->type;
+        lobby_t* l = c->cur_lobby;
+        int rv, sent = 1, i;
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if(!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    switch(type) {
+        switch (type) {
         case SUBCMD60_DCNTE_SET_AREA:
             rv = handle_set_area_1D(c, (subcmd_set_area_1D_t*)pkt);
             break;
 
         case SUBCMD60_DCNTE_SET_POS:
-            rv = handle_set_pos(c, (subcmd_set_pos_t *)pkt);
+            rv = handle_set_pos(c, (subcmd_set_pos_t*)pkt);
             break;
 
         case SUBCMD60_DCNTE_MOVE_SLOW:
         case SUBCMD60_DCNTE_MOVE_FAST:
-            rv = handle_move(c, (subcmd_move_t *)pkt);
+            rv = handle_move(c, (subcmd_move_t*)pkt);
             break;
 
         default:
 #ifdef LOG_UNKNOWN_SUBS
-            SHIPS_LOG("未知 0x60 指令: 0x%02X %s", type, c_cmd_name(type, 0));
-            display_packet((unsigned char *)pkt, LE16(pkt->hdr.dc.pkt_len));
+            DBG_LOG("未知 0x60 指令: 0x%02X %s", type, c_cmd_name(type, 0));
+            display_packet((unsigned char*)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
             break;
 
         case SUBCMD60_SET_AREA_1F:
-            if(l->type == LOBBY_TYPE_LOBBY) {
-                for(i = 0; i < l->max_clients; ++i) {
-                    if(l->clients[i] && l->clients[i] != c &&
-                       subcmd_send_pos(c, l->clients[i])) {
+            if (l->type == LOBBY_TYPE_LOBBY) {
+                for (i = 0; i < l->max_clients; ++i) {
+                    if (l->clients[i] && l->clients[i] != c &&
+                        subcmd_send_pos(c, l->clients[i])) {
                         rv = -1;
                         break;
                     }
@@ -121,23 +122,33 @@ int subcmd_dcnte_handle_bcast(ship_client_t *c, subcmd_pkt_t *pkt) {
             }
             sent = 0;
             break;
+        }
+
+        /* Broadcast anything we don't care to check anything about. */
+        if (!sent)
+            rv = subcmd_send_lobby_dcnte(l, c, pkt, 0);
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
     }
 
-    /* Broadcast anything we don't care to check anything about. */
-    if(!sent)
-        rv = subcmd_send_lobby_dcnte(l, c, pkt, 0);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
-int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt) {
-    uint8_t *sendbuf;
-    uint8_t newtype = 0xFF;
-    uint16_t len = LE16(pkt->hdr.dc.pkt_len);
-    int rv;
+int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt) {
+    __try {
+        uint8_t* sendbuf;
+        uint8_t newtype = 0xFF;
+        uint16_t len = LE16(pkt->hdr.dc.pkt_len);
+        int rv;
 
-    switch(pkt->type) {
+        switch (pkt->type) {
         case SUBCMD60_INTER_LEVEL_WARP:
             newtype = SUBCMD60_DCNTE_SET_AREA;
             break;
@@ -165,30 +176,40 @@ int subcmd_translate_dc_to_nte(ship_client_t *c, subcmd_pkt_t *pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate DC->NTE packet, dropping");
-            display_packet((unsigned char *)pkt, len);
+            display_packet((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
+        }
+
+        if (!(sendbuf = (uint8_t*)malloc(len)))
+            return -1;
+
+        memcpy(sendbuf, pkt, len);
+        pkt = (subcmd_pkt_t*)sendbuf;
+        pkt->type = newtype;
+
+        rv = send_pkt_dc(c, (dc_pkt_hdr_t*)sendbuf);
+        free_safe(sendbuf);
+        return rv;
     }
 
-    if(!(sendbuf = (uint8_t *)malloc(len)))
-        return -1;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    memcpy(sendbuf, pkt, len);
-    pkt = (subcmd_pkt_t *)sendbuf;
-    pkt->type = newtype;
-
-    rv = send_pkt_dc(c, (dc_pkt_hdr_t *)sendbuf);
-    free_safe(sendbuf);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
-int subcmd_translate_bb_to_nte(ship_client_t *c, subcmd_bb_pkt_t *pkt) {
-    uint8_t *sendbuf;
-    uint8_t newtype = 0xFF;
-    uint16_t len = LE16(pkt->hdr.pkt_len);
-    int rv;
+int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
+    __try {
+        uint8_t* sendbuf;
+        uint8_t newtype = 0xFF;
+        uint16_t len = LE16(pkt->hdr.pkt_len);
+        int rv;
 
-    switch(pkt->type) {
+        switch (pkt->type) {
         case SUBCMD60_INTER_LEVEL_WARP:
             newtype = SUBCMD60_DCNTE_SET_AREA;
             break;
@@ -216,30 +237,40 @@ int subcmd_translate_bb_to_nte(ship_client_t *c, subcmd_bb_pkt_t *pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate BB->NTE packet, dropping");
-            display_packet((unsigned char *)pkt, len);
+            display_packet((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
+        }
+
+        if (!(sendbuf = (uint8_t*)malloc(len)))
+            return -1;
+
+        memcpy(sendbuf, pkt, len);
+        pkt = (subcmd_bb_pkt_t*)sendbuf;
+        pkt->type = newtype;
+
+        rv = send_pkt_bb(c, (bb_pkt_hdr_t*)sendbuf);
+        free_safe(sendbuf);
+        return rv;
     }
 
-    if(!(sendbuf = (uint8_t *)malloc(len)))
-        return -1;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    memcpy(sendbuf, pkt, len);
-    pkt = (subcmd_bb_pkt_t *)sendbuf;
-    pkt->type = newtype;
-
-    rv = send_pkt_bb(c, (bb_pkt_hdr_t *)sendbuf);
-    free_safe(sendbuf);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
-int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt) {
-    uint8_t *sendbuf;
-    uint8_t newtype = 0xFF;
-    uint16_t len = LE16(pkt->hdr.dc.pkt_len);
-    int rv;
+int subcmd_translate_nte_to_dc(ship_client_t* c, subcmd_pkt_t* pkt) {
+    __try {
+        uint8_t* sendbuf;
+        uint8_t newtype = 0xFF;
+        uint16_t len = LE16(pkt->hdr.dc.pkt_len);
+        int rv;
 
-    switch(pkt->type) {
+        switch (pkt->type) {
         case SUBCMD60_DCNTE_SET_AREA:
             newtype = SUBCMD60_INTER_LEVEL_WARP;
             break;
@@ -267,39 +298,48 @@ int subcmd_translate_nte_to_dc(ship_client_t *c, subcmd_pkt_t *pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate NTE->DC packet, dropping");
-            display_packet((unsigned char *)pkt, len);
+            display_packet((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
+        }
+
+        if (!(sendbuf = (uint8_t*)malloc(len)))
+            return -1;
+
+        memcpy(sendbuf, pkt, len);
+        pkt = (subcmd_pkt_t*)sendbuf;
+        pkt->type = newtype;
+
+        rv = send_pkt_dc(c, (dc_pkt_hdr_t*)sendbuf);
+        free_safe(sendbuf);
+        return rv;
     }
 
-    if(!(sendbuf = (uint8_t *)malloc(len)))
-        return -1;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    memcpy(sendbuf, pkt, len);
-    pkt = (subcmd_pkt_t *)sendbuf;
-    pkt->type = newtype;
-
-    rv = send_pkt_dc(c, (dc_pkt_hdr_t *)sendbuf);
-    free_safe(sendbuf);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
-int subcmd_send_lobby_dcnte(lobby_t *l, ship_client_t *c, subcmd_pkt_t *pkt,
-                            int ignore_check) {
+int subcmd_send_lobby_dcnte(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,
+    int ignore_check) {
     int i;
 
     /* Send the packet to every connected client. */
-    for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] && l->clients[i] != c) {
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i] && l->clients[i] != c) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet. */
-            if(ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
+            if (ignore_check && client_has_ignored(l->clients[i], c->guildcard)) {
                 continue;
             }
 
-            if(l->clients[i]->version == CLIENT_VERSION_DCV1 &&
-               (l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
-                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t *)pkt);
+            if (l->clients[i]->version == CLIENT_VERSION_DCV1 &&
+                (l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
+                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)pkt);
             else
                 subcmd_translate_nte_to_dc(l->clients[i], pkt);
         }

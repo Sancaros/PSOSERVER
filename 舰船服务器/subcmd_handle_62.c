@@ -307,14 +307,14 @@ int sub62_06_dc(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub62_06_pc(ship_client_t* src, ship_client_t* dest, 
+int sub62_06_pc(ship_client_t* src, ship_client_t* dest,
     subcmd_pc_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
     if (client_has_ignored(dest, src->guildcard))
         return 0;
 
-        /* This differs based on the destination client's version. */
+    /* This differs based on the destination client's version. */
     switch (dest->version) {
     case CLIENT_VERSION_PC:
         /* Don't allow guild cards to be sent to PC NTE, as it doesn't
@@ -498,14 +498,14 @@ int sub62_06_pc(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub62_06_gc(ship_client_t* src, ship_client_t* dest, 
+int sub62_06_gc(ship_client_t* src, ship_client_t* dest,
     subcmd_gc_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
     if (client_has_ignored(dest, src->guildcard))
         return 0;
 
-        /* This differs based on the destination client's version. */
+    /* This differs based on the destination client's version. */
     switch (dest->version) {
     case CLIENT_VERSION_GC:
     case CLIENT_VERSION_EP3:
@@ -673,7 +673,7 @@ int sub62_06_gc(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
-int sub62_06_xb(ship_client_t* src, ship_client_t* dest, 
+int sub62_06_xb(ship_client_t* src, ship_client_t* dest,
     subcmd_xb_gcsend_t* pkt) {
 
     /* Make sure the recipient is not ignoring the sender... */
@@ -1187,11 +1187,11 @@ int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (src->new_item.datal[0] && 
+    if (src->new_item.datal[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
     }
-    else if (l->dropfunc && 
+    else if (l->dropfunc &&
         (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
         return  l->dropfunc(src, l, pkt);
     }
@@ -1224,7 +1224,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_6F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
 
-    if(dest->version == CLIENT_VERSION_BB)
+    if (dest->version == CLIENT_VERSION_BB)
         send_bb_quest_data1(dest);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
@@ -1926,7 +1926,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
 #ifdef DEBUG
-    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
+    TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
         type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
     display_packet(pkt, len);
 #endif // DEBUG
@@ -1949,18 +1949,18 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 对方拒绝加入公会 */
     case 0x03:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", 
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
             __(dest, "\tE\tC4对方拒绝加入公会."), inviter_name_text, guild_name_text);
         break;
 
         /* 公会邀请失败 给双方返回错误信息 */
     case 0x04:
-        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s", 
+        send_msg(dest, TEXT_MSG_TYPE, "%s\n\tC6邀请人:%s\n\tC8公会名称:%s",
             __(dest, "\tE\tC4公会邀请失败."), inviter_name_text, guild_name_text);
         break;
 
     default:
-        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", 
+        ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
             type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
         display_packet(pkt, len);
         break;
@@ -2181,16 +2181,16 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
 
     iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM);
 
-    if(iitem == NULL) {
+    if (iitem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7墓碑掉落无效."));
     }
 
     iitem->present = 1;
     iitem->data.datal[0] = pkt->item_datal;
-    
-//[2023年07月31日 04:42 : 58 : 142] 调试(subcmd_handle_62.c 2515) : 未知 0x62 指令 : 0xD1
-//(00000000)   1C 00 62 00 00 00 00 00   D1 05 00 00 01 00 05 00  ..b..... ? ......
-//(00000010)   B0 FF 07 C4 99 E8 3E C2   00 00 00 00 ? .臋 ? ? ...
+
+    //[2023年07月31日 04:42 : 58 : 142] 调试(subcmd_handle_62.c 2515) : 未知 0x62 指令 : 0xD1
+    //(00000000)   1C 00 62 00 00 00 00 00   D1 05 00 00 01 00 05 00  ..b..... ? ......
+    //(00000010)   B0 FF 07 C4 99 E8 3E C2   00 00 00 00 ? .臋 ? ? ...
 
     iitem = add_new_litem_locked(l, &iitem->data, src->cur_area, src->x, src->z);
 
@@ -2278,7 +2278,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
-        if(&item == NULL)
+        if (&item == NULL)
             l->drops_disabled = true;
     }
 
@@ -2462,128 +2462,149 @@ subcmd_handle_func_t subcmd62_handler[] = {
 
 /* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */
 int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    ship_client_t* dest;
-    uint16_t hdr_type = pkt->hdr.dc.pkt_type;
-    uint8_t type = pkt->type;
-    int rv = -1;
+    __try {
+        lobby_t* l = src->cur_lobby;
+        ship_client_t* dest;
+        uint16_t hdr_type = pkt->hdr.dc.pkt_type;
+        uint8_t type = pkt->type;
+        int rv = -1;
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    /* 搜索目标客户端. */
-    dest = l->clients[pkt->hdr.dc.flags];
+        /* 搜索目标客户端. */
+        dest = l->clients[pkt->hdr.dc.flags];
 
-    /* 目标客户端已离线，将不再发送数据包. */
-    if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
-
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
-
-    /* If there's a burst going on in the lobby, delay most packets */
-    if (l->flags & LOBBY_FLAG_BURSTING) {
-        rv = 0;
-
-        switch (type) {
-        case SUBCMD62_BURST5:
-        case SUBCMD62_BURST6:
-            rv |= l->subcmd_handle(src, dest, pkt);
-            break;
-
-        default:
-            rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
+        /* 目标客户端已离线，将不再发送数据包. */
+        if (!dest) {
+            pthread_mutex_unlock(&l->mutex);
+            return 0;
         }
 
-    }
-    else {
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
-        if (l->subcmd_handle == NULL) {
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            rv = 0;
+
+            switch (type) {
+            case SUBCMD62_BURST5:
+            case SUBCMD62_BURST6:
+                rv |= l->subcmd_handle(src, dest, pkt);
+                break;
+
+            default:
+                rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
+            }
+
+        }
+        else {
+
+            if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
-            //UNK_CSPD(type, c->version, pkt);
+                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+                display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
+                //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-            rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+                rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
+            }
+            else
+                rv = l->subcmd_handle(src, dest, pkt);
         }
-        else
-            rv = l->subcmd_handle(src, dest, pkt);
+
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
     }
 
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* 处理BB 0x62 数据包. */
 int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    ship_client_t* dest;
-    uint16_t len = pkt->hdr.pkt_len;
-    uint16_t hdr_type = pkt->hdr.pkt_type;
-    uint8_t type = pkt->type;
-    uint8_t size = pkt->size;
-    int rv = -1;
-    uint32_t dnum = LE32(pkt->hdr.flags);
+    __try {
+        lobby_t* l = src->cur_lobby;
+        ship_client_t* dest;
+        uint16_t len = pkt->hdr.pkt_len;
+        uint16_t hdr_type = pkt->hdr.pkt_type;
+        uint8_t type = pkt->type;
+        uint8_t size = pkt->size;
+        int rv = -1;
+        uint32_t dnum = LE32(pkt->hdr.flags);
 
-    /* 如果客户端不在大厅或者队伍中则忽略数据包. */
-    if (!l)
-        return 0;
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
 
-    pthread_mutex_lock(&l->mutex);
+        pthread_mutex_lock(&l->mutex);
 
-    /* 搜索目标客户端. */
-    dest = l->clients[dnum];
+        /* 搜索目标客户端. */
+        dest = l->clients[dnum];
 
-    /* 目标客户端已离线，将不再发送数据包. */
-    if (!dest) {
-        pthread_mutex_unlock(&l->mutex);
-        return 0;
-    }
+        /* 目标客户端已离线，将不再发送数据包. */
+        if (!dest) {
+            pthread_mutex_unlock(&l->mutex);
+            return 0;
+        }
 
 #ifdef DEBUG
 
-    DBG_LOG("src %d GC%u dest %d GC%u 0x%02X 指令: 0x%02X", c->client_id, c->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
+        DBG_LOG("src %d GC%u dest %d GC%u 0x%02X 指令: 0x%02X", c->client_id, c->guildcard, dnum, l->clients[dnum]->guildcard, hdr_type, type);
 
 #endif // DEBUG
 
-    l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 
-    /* If there's a burst going on in the lobby, delay most packets */
-    if (l->flags & LOBBY_FLAG_BURSTING) {
-        rv = 0;
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            rv = 0;
 
-        switch (type) {
-        case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
-        case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
+            switch (type) {
+            case SUBCMD62_BURST5://0x62 6F //其他大厅跃迁进房时触发 5
+            case SUBCMD62_BURST6://0x62 71 //其他大厅跃迁进房时触发 6
 
-            rv |= l->subcmd_handle(src, dest, pkt);
-            break;
+                rv |= l->subcmd_handle(src, dest, pkt);
+                break;
 
-        default:
-            DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
-            rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+            default:
+                DBG_LOG("lobby_enqueue_pkt_bb 0x62 指令: 0x%02X", type);
+                rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
+            }
+
         }
+        else {
 
-    }
-    else {
-
-        if (l->subcmd_handle == NULL) {
+            if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            display_packet(pkt, len);
-            //UNK_CSPD(type, c->version, pkt);
+                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+                display_packet(pkt, len);
+                //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-            rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+                rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            }
+            else
+                rv = l->subcmd_handle(src, dest, pkt);
         }
-        else
-            rv = l->subcmd_handle(src, dest, pkt);
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
     }
 
-    pthread_mutex_unlock(&l->mutex);
-    return rv;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
+
 }
