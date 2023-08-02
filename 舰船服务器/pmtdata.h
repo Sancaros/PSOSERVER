@@ -281,29 +281,29 @@ typedef struct pmt_mag_bb {
 typedef struct pmt_table_offsets_v3 {
     union {
         struct {
-            /* 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
-            /* 04 / 1478C */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
-            /* 08 / 1479C */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
-            /* 0C / 147AC */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
-            /* 10 / 147A4 */ uint32_t mag_table; // -> {count, offset -> [Mag]}
-            /* 14 / 0F4B8 */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
-            /* 18 / 0DE7C */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
-            /* 1C / 0E194 */ uint32_t weapon_range_table; // -> ???
-            /* 20 / 0F5A8 */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
-            /* 24 / 0F83C */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
-            /* 28 / 1502C */ uint32_t mag_feed_table; // -> MagFeedResultsTable
-            /* 2C / 0FB0C */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
-            /* 30 / 0FE3C */ uint32_t special_data_table; // -> [Special]
-            /* 34 / 0FEE0 */ uint32_t weapon_effect_table; // -> [16-byte structs]
-            /* 38 / 1275C */ uint32_t stat_boost_table; // -> [StatBoost]
-            /* 3C / 11C80 */ uint32_t shield_effect_table; // -> [8-byte structs]
-            /* 40 / 12894 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
-            /* 44 / 14FF4 */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
-            /* 48 / 12754 */ uint32_t unknown_a1;
-            /* 4C / 14278 */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
-            /* 50 / 15014 */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
-            /* 54 / 1501C */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
-            /* 58 / 15024 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
+            /* 00 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
+            /* 01 04 / 1478C */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
+            /* 02 08 / 1479C */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
+            /* 03 0C / 147AC */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
+            /* 04 10 / 147A4 */ uint32_t mag_table; // -> {count, offset -> [Mag]}
+            /* 05 14 / 0F4B8 */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
+            /* 06 18 / 0DE7C */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
+            /* 07 1C / 0E194 */ uint32_t weapon_range_table; // -> ???
+            /* 08 20 / 0F5A8 */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
+            /* 09 24 / 0F83C */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
+            /* 10 28 / 1502C */ uint32_t mag_feed_table; // -> MagFeedResultsTable
+            /* 11 2C / 0FB0C */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
+            /* 12 30 / 0FE3C */ uint32_t special_data_table; // -> [Special]
+            /* 13 34 / 0FEE0 */ uint32_t weapon_effect_table; // -> [16-byte structs]
+            /* 14 38 / 1275C */ uint32_t stat_boost_table; // -> [StatBoost]
+            /* 15 3C / 11C80 */ uint32_t shield_effect_table; // -> [8-byte structs]
+            /* 16 40 / 12894 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
+            /* 17 44 / 14FF4 */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
+            /* 18 48 / 12754 */ uint32_t unknown_a1;
+            /* 19 4C / 14278 */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
+            /* 20 50 / 15014 */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
+            /* 21 54 / 1501C */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
+            /* 22 58 / 15024 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
         };
         uint32_t ptr[23];
     };

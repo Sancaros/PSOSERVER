@@ -132,7 +132,7 @@ static int read_v2_weapons(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_weapon_types = cnt = (ptrs[11] - ptrs[1]) / 8;
 
     /* Allocate the stuff we need to allocate... */
@@ -209,7 +209,7 @@ static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_weapon_types_gc = cnt = (ptrs->ptr[17] - ptrs->ptr[0]) / 8;
 
     /* Allocate the stuff we need to allocate... */
@@ -289,7 +289,7 @@ static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_weapon_types_bb = cnt = (ptrs->ptr[17] - ptrs->ptr[0]) / 8;
 
     /* Allocate the stuff we need to allocate... */
@@ -370,7 +370,7 @@ static int read_v2_guards(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_guard_types = cnt = (ptrs[3] - ptrs[2]) / 8;
 
     /* Make sure its sane... Should always be 2. */
@@ -450,7 +450,7 @@ static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_guard_types_gc = cnt = (ptrs->ptr[2] - ptrs->ptr[1]) / 8;
 
     /* Make sure its sane... Should always be 2. */
@@ -534,7 +534,7 @@ static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
         return -1;
     }
 
-    /* Figure out how many tables we have... */
+    /* 算出我们有多少张表... */
     num_guard_types_bb = cnt = (ptrs->ptr[2] - ptrs->ptr[1]) / 8;
 
     /* Make sure its sane... Should always be 2. */
@@ -819,14 +819,14 @@ static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
 static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     /* Make sure the pointers are sane... */
-    if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
+    if(ptrs->star_value_table > sz || ptrs->special_data_table > sz || ptrs->special_data_table < ptrs->star_value_table) {
         ERR_LOG("ItemPMT.prs file for BB has invalid star pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Save how big it is, allocate the space, and copy it in */
-    star_max_bb = ptrs->ptr[12] - ptrs->ptr[11];
+    star_max_bb = ptrs->special_data_table - ptrs->star_value_table;
 
     if(star_max_bb < unit_lowest_bb + num_units - weapon_lowest_bb) {
         ERR_LOG("Star table doesn't have enough entries!\n"
@@ -842,7 +842,7 @@ static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
         return -3;
     }
 
-    memcpy(star_table_bb, pmt + ptrs->ptr[11], star_max_bb);
+    memcpy(star_table_bb, pmt + ptrs->star_value_table, star_max_bb);
     return 0;
 }
 
@@ -1401,7 +1401,7 @@ int pmt_lookup_weapon_v2(uint32_t code, pmt_weapon_v2_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a weapon */
-    if(parts[0] != 0x00) {
+    if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
@@ -1433,12 +1433,12 @@ int pmt_lookup_guard_v2(uint32_t code, pmt_guard_v2_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a guard item */
-    if(parts[0] != 0x01) {
+    if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
 
     /* Make sure its not a unit */
-    if(parts[1] == 0x03) {
+    if(parts[1] == ITEM_SUBTYPE_UNIT) {
         return -3;
     }
 
@@ -1470,7 +1470,7 @@ int pmt_lookup_unit_v2(uint32_t code, pmt_unit_v2_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a unit */
-    if(parts[0] != 0x01 || parts[1] != 0x03) {
+    if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
 
@@ -1498,7 +1498,7 @@ uint8_t pmt_lookup_stars_v2(uint32_t code) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     switch(parts[0]) {
-        case 0x00:                      /* Weapons */
+        case ITEM_TYPE_WEAPON:                          /* Weapons */
             if(pmt_lookup_weapon_v2(code, &weap))
                 return (uint8_t)-1;
 
@@ -1507,10 +1507,10 @@ uint8_t pmt_lookup_stars_v2(uint32_t code) {
 
             return star_table[weap.index - weapon_lowest];
 
-        case 0x01:                      /* Guards */
+        case ITEM_TYPE_GUARD:                           /* Guards */
             switch(parts[1]) {
-                case 0x01:              /* Armors */
-                case 0x02:              /* Shields */
+                case ITEM_SUBTYPE_FRAME:                /* Armors */
+                case ITEM_SUBTYPE_BARRIER:              /* Shields */
                     if(pmt_lookup_guard_v2(code, &guard))
                         return (uint8_t)-1;
 
@@ -1519,7 +1519,7 @@ uint8_t pmt_lookup_stars_v2(uint32_t code) {
 
                     return star_table[guard.index - weapon_lowest];
 
-                case 0x03:              /* Units */
+                case ITEM_SUBTYPE_UNIT:                 /* Units */
                     if(pmt_lookup_unit_v2(code, &unit))
                         return (uint8_t)-1;
 
@@ -1547,7 +1547,7 @@ int pmt_lookup_weapon_gc(uint32_t code, pmt_weapon_gc_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a weapon */
-    if(parts[0] != 0x00) {
+    if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
@@ -1579,12 +1579,12 @@ int pmt_lookup_guard_gc(uint32_t code, pmt_guard_gc_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a guard item */
-    if(parts[0] != 0x01) {
+    if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
 
     /* Make sure its not a unit */
-    if(parts[1] == 0x03) {
+    if(parts[1] == ITEM_SUBTYPE_UNIT) {
         return -3;
     }
 
@@ -1616,7 +1616,7 @@ int pmt_lookup_unit_gc(uint32_t code, pmt_unit_gc_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a unit */
-    if(parts[0] != 0x01 || parts[1] != 0x03) {
+    if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
 
@@ -1644,7 +1644,7 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     switch(parts[0]) {
-        case 0x00:                      /* Weapons */
+        case ITEM_TYPE_WEAPON:                      /* Weapons */
             if(pmt_lookup_weapon_gc(code, &weap))
                 return (uint8_t)-1;
 
@@ -1653,10 +1653,10 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
 
             return star_table_gc[weap.index - weapon_lowest_gc];
 
-        case 0x01:                      /* Guards */
+        case ITEM_TYPE_GUARD:                        /* Guards */
             switch(parts[1]) {
-                case 0x01:              /* Armors */
-                case 0x02:              /* Shields */
+                case ITEM_SUBTYPE_FRAME:             /* Armors */
+                case ITEM_SUBTYPE_BARRIER:           /* Shields */
                     if(pmt_lookup_guard_gc(code, &guard))
                         return (uint8_t)-1;
 
@@ -1665,7 +1665,7 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
 
                     return star_table_gc[guard.index - weapon_lowest_gc];
 
-                case 0x03:              /* Units */
+                case ITEM_SUBTYPE_UNIT:              /* Units */
                     if(pmt_lookup_unit_gc(code, &unit))
                         return (uint8_t)-1;
 
@@ -1693,7 +1693,7 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a weapon */
-    if(parts[0] != 0x00) {
+    if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
@@ -1762,7 +1762,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* Make sure we're looking up a unit */
-    if(parts[0] != 0x01 || parts[1] != 0x03) {
+    if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
 
@@ -1790,7 +1790,7 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     switch(parts[0]) {
-        case 0x00:                      /* Weapons */
+        case ITEM_TYPE_WEAPON:                        /* Weapons */
             if(pmt_lookup_weapon_bb(code, &weap))
                 return (uint8_t)-1;
 
@@ -1799,10 +1799,10 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
 
             return star_table_bb[weap.index - weapon_lowest_bb];
 
-        case 0x01:                      /* Guards */
+        case ITEM_TYPE_GUARD:                         /* Guards */
             switch(parts[1]) {
-                case 0x01:              /* Armors */
-                case 0x02:              /* Shields */
+                case ITEM_SUBTYPE_FRAME:              /* Armors */
+                case ITEM_SUBTYPE_BARRIER:            /* Shields */
                     if(pmt_lookup_guard_bb(code, &guard))
                         return (uint8_t)-1;
 
@@ -1811,7 +1811,7 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
 
                     return star_table_bb[guard.index - weapon_lowest_bb];
 
-                case 0x03:              /* Units */
+                case ITEM_SUBTYPE_UNIT:               /* Units */
                     if(pmt_lookup_unit_bb(code, &unit))
                         return (uint8_t)-1;
 
