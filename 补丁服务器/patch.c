@@ -168,8 +168,8 @@ int change_directory(patch_client_t* c, const char cur[],
 
 out:
     /* We should be where we belong, clean up. */
-    free(s1);
-    free(s2);
+    free_safe(s1);
+    free_safe(s2);
 
     return rv;
 }
@@ -453,7 +453,7 @@ int handle_list_done(patch_client_t* c) {
 
         /* Remove the current head, we're done with it. */
         TAILQ_REMOVE(&c->files, i, qentry);
-        free(i);
+        free_safe(i);
         i = tmp;
     }
     /* If we're just starting on a file, change the directory if appropriate. */
@@ -527,7 +527,7 @@ done:
 }
 
 /* 处理数据包. */
-int process_packet(patch_client_t* c, void* pkt) {
+int process_patch_packet(patch_client_t* c, void* pkt) {
     pkt_header_t* data = (pkt_header_t*)pkt;
     uint16_t type = LE16(data->pkt_type);
     uint16_t len = LE16(data->pkt_len);

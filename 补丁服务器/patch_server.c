@@ -540,7 +540,7 @@ static int read_from_client(patch_client_t* c) {
         /* We now have the whole header, so ready things for that */
         memcpy(&tmp_hdr, c->recvbuf, 4);
         c->pkt_cur = 0;
-        free(c->recvbuf);
+        free_safe(c->recvbuf);
     }
 
     /* If we haven't decrypted the packet header, do so now, since we definitely
@@ -598,10 +598,10 @@ static int read_from_client(patch_client_t* c) {
     CRYPT_CryptData(&c->client_cipher, c->recvbuf + 4, pkt_sz - 4, 0);
 
 process:
-    rv = process_packet(c, c->recvbuf);
+    rv = process_patch_packet(c, c->recvbuf);
 
     /* 等待上面处理完数据后 清空接收并等待下一个数据包 */
-    free(c->recvbuf);
+    free_safe(c->recvbuf);
     c->recvbuf = NULL;
     c->pkt_cur = c->pkt_sz = 0;
     return rv;
@@ -813,7 +813,7 @@ static void run_server(int sockets[PATCH_CLIENT_SOCKETS_TYPE_MAX]) {
 
                             /* If we've sent everything, free the buffer. */
                             if(i->sendbuf_start == i->sendbuf_cur) {
-                                free(i->sendbuf);
+                                free_safe(i->sendbuf);
                                 i->sendbuf = NULL;
                                 i->sendbuf_cur = 0;
                                 i->sendbuf_size = 0;

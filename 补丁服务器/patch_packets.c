@@ -216,6 +216,7 @@ int send_redirect(patch_client_t *c, in_addr_t ip, uint16_t port) {
 /* Send a IPv6 redirect packet to the given client.
    The port must be in network byte order. */
 int send_redirect6(patch_client_t *c, const uint8_t ip[16], uint16_t port) {
+    uint8_t* sendbuf = get_sendbuf();
     patch_redirect6_pkt *pkt = (patch_redirect6_pkt *)sendbuf;
 
     /* 填充数据头, and copy the IP/Port. */
@@ -229,7 +230,7 @@ int send_redirect6(patch_client_t *c, const uint8_t ip[16], uint16_t port) {
     CRYPT_CryptData(&c->server_cipher, pkt, PATCH_REDIRECT6_LENGTH, 1);
 
     /* 将数据包发送出去 */
-    return send_raw(c, PATCH_REDIRECT6_LENGTH);
+    return send_raw(c, PATCH_REDIRECT6_LENGTH, sendbuf);
 }
 
 #endif
