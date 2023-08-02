@@ -18,7 +18,7 @@
 #include "subcmd_send_bb.h"
 #include "subcmd_size_table.h"
 
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 #include "f_logs.h"
 
 // subcmd 直接发送指令至客户端

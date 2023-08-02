@@ -18,7 +18,7 @@
 #include "database.h"
 #include "database_query.h"
 #include "f_checksum.h"
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 
 static int db_insert_inv_param(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	uint32_t inv_crc32 = psocn_crc32((uint8_t*)inv, PSOCN_STLENGTH_INV);

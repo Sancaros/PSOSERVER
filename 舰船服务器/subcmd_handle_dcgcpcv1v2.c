@@ -30,7 +30,7 @@
 #include "clients.h"
 #include "ship_packets.h"
 #include "utils.h"
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 #include "shop.h"
 #include "word_select.h"
 #include "scripts.h"

@@ -48,7 +48,7 @@
 #include "scripts.h"
 #include "quest_functions.h"
 #include "max_tech_level.h"
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 
 /* TLS stuff -- from ship_server.c */
 extern gnutls_anon_client_credentials_t anoncred;
@@ -1407,7 +1407,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
                         }
 
-                        clean_up_inv(&c->bb_pl->character.inv);
+                        fix_client_inv(&c->bb_pl->character.inv);
 
                         fix_equip_item(&c->bb_pl->character.inv);
 
@@ -1420,7 +1420,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                                 clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */
                         }
 
-                        clean_up_bank(&c->bb_pl->bank);
+                        fix_client_bank(&c->bb_pl->bank);
                     }
 
                     done = 1;

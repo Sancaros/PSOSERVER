@@ -18,7 +18,7 @@
 #include "database.h"
 #include "database_query.h"
 #include "f_checksum.h"
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 
 /* 读取玩家最大科技魔法的等级表 */
 int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) {

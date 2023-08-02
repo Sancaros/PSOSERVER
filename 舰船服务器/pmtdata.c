@@ -32,7 +32,7 @@
 #include "pmtdata.h"
 #include "utils.h"
 #include "packets.h"
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 
 /* The parsing code in here is based on some code/information from Lee. Thanks
    again! */

@@ -66,7 +66,7 @@
     <ClInclude Include="commands.h" />
     <ClInclude Include="enemy_type.h" />
     <ClInclude Include="gm.h" />
-    <ClInclude Include="player_handle_iitem.h" />
+    <ClInclude Include="handle_player_items.h" />
     <ClInclude Include="lobby.h" />
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="pmtdata.h" />

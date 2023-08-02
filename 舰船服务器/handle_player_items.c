@@ -23,7 +23,7 @@
 #include <f_logs.h>
 #include <mtwist.h>
 
-#include "player_handle_iitem.h"
+#include "handle_player_items.h"
 #include "subcmd_send_bb.h"
 
 /* We need LE32 down below... so get it from packets.h */
@@ -1412,7 +1412,7 @@ void fix_equip_item(inventory_t* inv) {
 }
 
 /* 清理背包物品 */
-void clean_up_inv(inventory_t* inv) {
+void fix_client_inv(inventory_t* inv) {
     uint8_t i, j = 0;
 
     iitem_t* new_iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
@@ -1470,7 +1470,7 @@ void sort_client_inv(inventory_t* inv) {
 
 }
 
-void clean_up_bank(psocn_bank_t* bank) {
+void fix_client_bank(psocn_bank_t* bank) {
     uint32_t i, j = 0;
 
     bitem_t* bank_item = (bitem_t*)malloc(PSOCN_STLENGTH_BITEM * bank->item_count);

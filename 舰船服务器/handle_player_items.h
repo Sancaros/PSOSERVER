@@ -78,8 +78,8 @@ void fix_inv_bank_item(item_t* i);
 void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
-void clean_up_inv(inventory_t* inv);
+void fix_client_inv(inventory_t* inv);
 void sort_client_inv(inventory_t* inv);
-void clean_up_bank(psocn_bank_t* bank);
+void fix_client_bank(psocn_bank_t* bank);
 
 #endif /* !IITEMS_H */
