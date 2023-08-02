@@ -375,7 +375,7 @@ int db_get_char_ship_id(uint32_t gc) {
 
     /* Grab the data from the result */
     errno = 0;
-    ship_id = atoi(row[0]);/* (uint16_t)strtoul(row[0], NULL, 0);*/
+    ship_id = atoi(row[0]);
     psocn_db_result_free(result);
 
     if (errno) {

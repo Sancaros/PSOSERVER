@@ -33,20 +33,17 @@ void safe_free(const char* func, uint32_t line, void** ptr) {
         *ptr = NULL;
     }
     else
-        ERR_LOG("(%s%04d)内存释放错误, 本身为空", func, line);
+        ERR_LOG("(%s[%04d])内存释放错误, 本身为空", func, line);
 }
 
 #ifndef  _WIN32
-
 void SecureErase(void* buffer, size_t size) {
     volatile char* p = (volatile char*)buffer;  // 使用 volatile 修饰符确保内存读写不被优化
     while (size--) {
         *p++ = 0;
     }
 }
-
 #else
-
 void SecureErase(void* buffer, size_t size) {
     typedef VOID(WINAPI* RtlSecureZeroMemory_t)(PVOID, SIZE_T);
 
@@ -63,7 +60,6 @@ void SecureErase(void* buffer, size_t size) {
         memset(buffer, 0, size);
     }
 }
-
 #endif // ! _WIN32
 
 int isEmptyString(const char* str) {

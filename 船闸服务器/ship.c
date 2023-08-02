@@ -361,7 +361,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     } while (tmp < 0 && gnutls_error_is_fatal(tmp) == 0);
 
     if (tmp < 0) {
-        ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(tmp));
+        //ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(tmp));
         goto err_hs;
     }
     //else {
@@ -3866,7 +3866,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
             ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
     }
 
-    if (db_remove_gc_char_login_state(gc)) {
+    if (db_remove_gc_char_login_state(gc, 0)) {
         SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
             ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
@@ -5580,7 +5580,7 @@ int handle_pkt(ship_t* c) {
     }
     else {
         /* Free the buffer, if we've got nothing in it. */
-        free_safe(c->recvbuf);
+        //free_safe(c->recvbuf);
         c->recvbuf = NULL;
         c->recvbuf_size = 0;
     }

@@ -292,7 +292,7 @@ reconnet:
     irv = gnutls_handshake(rv->session);
 
     if (irv < 0) {
-        ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(irv));
+        //ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(irv));
         goto err_tls;
     }
     //else {
@@ -704,8 +704,6 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("G->S 指令0x%04X %d %d %d", type, sender_gc, ntohl(pkt->guildcard), ntohl(pkt->ship_id));
 
 #endif // DEBUG
-
-    DBG_LOG("G->S 指令0x%04X %d %d 公会ID %u", type, sender_gc, ntohl(pkt->guildcard), pkt->fw_flags);
 
     //这是从船闸返回来的公会数据包
 
