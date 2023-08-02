@@ -61,7 +61,7 @@ static int read_v2ptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[21]) {
     return 0;
 }
 
-static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_t* ptrs) {
+static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_t* ptrs) {
     uint32_t tmp;
 #if !defined(WORDS_BIGENDIAN) && !defined(__BIG_ENDIAN__)
     uint32_t i;
@@ -70,12 +70,12 @@ static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_
     memcpy(&tmp, pmt + sz - 16, 4);
     tmp = ntohl(tmp);
 
-    if(tmp + sizeof(pmt_table_offsets_bb_t) > sz - 16) {
+    if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 16) {
         ERR_LOG("GC ItemPMT 中的指针表位置无效!");
         return -1;
     }
 
-    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_bb_t));
+    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_v3_t));
 
 #if !defined(WORDS_BIGENDIAN) && !defined(__BIG_ENDIAN__)
     for(i = 0; i < 23; ++i) {
@@ -86,7 +86,7 @@ static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_
     return 0;
 }
 
-static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_t* ptrs) {
+static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_t* ptrs) {
     uint32_t tmp;
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
     uint32_t i;
@@ -95,12 +95,12 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_
     memcpy(&tmp, pmt + sz - 16, 4);
     tmp = LE32(tmp);
 
-    if(tmp + sizeof(pmt_table_offsets_bb_t) > sz - 16) {
+    if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 16) {
         ERR_LOG("BB ItemPMT 中的指针表位置无效!");
         return -1;
     }
 
-    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_bb_t));
+    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_v3_t));
 
 #ifdef DEBUG
 
@@ -199,7 +199,7 @@ static int read_v2_weapons(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
-                           const pmt_table_offsets_bb_t* ptrs) {
+                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
@@ -279,7 +279,7 @@ static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
-                           const pmt_table_offsets_bb_t* ptrs) {
+                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
@@ -440,7 +440,7 @@ static int read_v2_guards(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
-                          const pmt_table_offsets_bb_t* ptrs) {
+                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
@@ -524,7 +524,7 @@ static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
-                          const pmt_table_offsets_bb_t* ptrs) {
+                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
@@ -656,7 +656,7 @@ static int read_v2_units(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_units(const uint8_t *pmt, uint32_t sz,
-                         const pmt_table_offsets_bb_t* ptrs) {
+                         const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
     /* Make sure the pointers are sane... */
@@ -706,7 +706,7 @@ static int read_gc_units(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_units(const uint8_t *pmt, uint32_t sz,
-                         const pmt_table_offsets_bb_t* ptrs) {
+                         const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
     /* Make sure the pointers are sane... */
@@ -787,7 +787,7 @@ static int read_v2_stars(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
-                         const pmt_table_offsets_bb_t* ptrs) {
+                         const pmt_table_offsets_v3_t* ptrs) {
     /* Make sure the pointers are sane... */
     if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
         ERR_LOG("ItemPMT.prs file for GC has invalid star pointers. "
@@ -817,7 +817,7 @@ static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
-                         const pmt_table_offsets_bb_t* ptrs) {
+                         const pmt_table_offsets_v3_t* ptrs) {
     /* Make sure the pointers are sane... */
     if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
         ERR_LOG("ItemPMT.prs file for BB has invalid star pointers. "
@@ -1163,7 +1163,7 @@ int pmt_read_gc(const char *fn, int norestrict) {
         return -1;
     }
 
-    if (!(pmt_tb_offsets = (pmt_table_offsets_bb_t*)malloc(sizeof(pmt_table_offsets_bb_t)))) {
+    if (!(pmt_tb_offsets = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
         ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
             strerror(errno));
         free_safe(pmt_tb_offsets);
@@ -1224,7 +1224,7 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -1;
     }
 
-    if (!(pmt_tb_offsets = (pmt_table_offsets_bb_t*)malloc(sizeof(pmt_table_offsets_bb_t)))) {
+    if (!(pmt_tb_offsets = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
         ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
             strerror(errno));
         free_safe(pmt_tb_offsets);

@@ -278,7 +278,7 @@ typedef struct pmt_mag_bb {
     uint8_t unused2[3];
 } PACKED pmt_mag_bb_t;
 
-typedef struct pmt_table_offsets_bb {
+typedef struct pmt_table_offsets_v3 {
     union {
         struct {
             /* 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
@@ -307,7 +307,7 @@ typedef struct pmt_table_offsets_bb {
         };
         uint32_t ptr[23];
     };
-} PACKED pmt_table_offsets_bb_t;
+} PACKED pmt_table_offsets_v3_t;
 
 #ifndef _WIN32
 #else
@@ -362,7 +362,7 @@ static uint32_t* units_with_stars_gc = NULL;
 static uint8_t unit_max_stars_gc = 0;
 
 /* PSOBB data. */
-static pmt_table_offsets_bb_t* pmt_tb_offsets = NULL;
+static pmt_table_offsets_v3_t* pmt_tb_offsets = NULL;
 
 
 static pmt_mag_bb_t* pmt_mag_bb = NULL;
