@@ -233,6 +233,9 @@
     <ClInclude Include="enemy_type.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="itempmt_unused.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

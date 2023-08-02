@@ -60,6 +60,7 @@
     <ClInclude Include="admin.h" />
     <ClInclude Include="bans.h" />
     <ClInclude Include="block.h" />
+    <ClInclude Include="itempmt_unused.h" />
     <ClInclude Include="records.h" />
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />

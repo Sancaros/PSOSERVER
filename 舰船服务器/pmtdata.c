@@ -61,7 +61,7 @@ static int read_v2ptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[21]) {
     return 0;
 }
 
-static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[23]) {
+static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_t* ptrs) {
     uint32_t tmp;
 #if !defined(WORDS_BIGENDIAN) && !defined(__BIG_ENDIAN__)
     uint32_t i;
@@ -70,23 +70,23 @@ static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[23]) {
     memcpy(&tmp, pmt + sz - 16, 4);
     tmp = ntohl(tmp);
 
-    if(tmp + sizeof(uint32_t) * 23 > sz - 16) {
+    if(tmp + sizeof(pmt_table_offsets_bb_t) > sz - 16) {
         ERR_LOG("GC ItemPMT 中的指针表位置无效!");
         return -1;
     }
 
-    memcpy(ptrs, pmt + tmp, sizeof(uint32_t) * 23);
+    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_bb_t));
 
 #if !defined(WORDS_BIGENDIAN) && !defined(__BIG_ENDIAN__)
     for(i = 0; i < 23; ++i) {
-        ptrs[i] = ntohl(ptrs[i]);
+        ptrs->ptr[i] = ntohl(ptrs->ptr[i]);
     }
 #endif
 
     return 0;
 }
 
-static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[23]) {
+static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_bb_t* ptrs) {
     uint32_t tmp;
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
     uint32_t i;
@@ -95,16 +95,26 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[23]) {
     memcpy(&tmp, pmt + sz - 16, 4);
     tmp = LE32(tmp);
 
-    if(tmp + sizeof(uint32_t) * 23 > sz - 16) {
+    if(tmp + sizeof(pmt_table_offsets_bb_t) > sz - 16) {
         ERR_LOG("BB ItemPMT 中的指针表位置无效!");
         return -1;
     }
 
-    memcpy(ptrs, pmt + tmp, sizeof(uint32_t) * 23);
+    memcpy(ptrs->ptr, pmt + tmp, sizeof(pmt_table_offsets_bb_t));
+
+#ifdef DEBUG
+
+    DBG_LOG("armor_table offsets = %u", ptrs->armor_table);
+    DBG_LOG("ranged_special_table offsets = %u", ptrs->ranged_special_table);
+    for (int i = 0; i < 23; ++i) {
+        DBG_LOG("offsets = %u", ptrs->ptr[i]);
+    }
+
+#endif // DEBUG
 
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-    for(i = 0; i < 23; ++i) {
-        ptrs[i] = LE32(ptrs[i]);
+    for(int i = 0; i < 23; ++i) {
+        ptrs.ptr[i] = LE32(ptrs.ptr[i]);
     }
 #endif
 
@@ -189,18 +199,18 @@ static int read_v2_weapons(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
-                           const uint32_t ptrs[23]) {
+                           const pmt_table_offsets_bb_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[0] > sz || ptrs[0] > ptrs[17]) {
+    if(ptrs->ptr[0] > sz || ptrs->ptr[0] > ptrs->ptr[17]) {
         ERR_LOG("ItemPMT.prs file for GC has invalid weapon pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Figure out how many tables we have... */
-    num_weapon_types_gc = cnt = (ptrs[17] - ptrs[0]) / 8;
+    num_weapon_types_gc = cnt = (ptrs->ptr[17] - ptrs->ptr[0]) / 8;
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons_gc = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
@@ -225,7 +235,7 @@ static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs[0] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->ptr[0] + (i << 3), sizeof(uint32_t) * 2);
         values[0] = ntohl(values[0]);
         values[1] = ntohl(values[1]);
 
@@ -269,18 +279,18 @@ static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
-                           const uint32_t ptrs[23]) {
+                           const pmt_table_offsets_bb_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[0] > sz || ptrs[0] > ptrs[17]) {
+    if(ptrs->ptr[0] > sz || ptrs->ptr[0] > ptrs->ptr[17]) {
         ERR_LOG("ItemPMT.prs file for BB has invalid weapon pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Figure out how many tables we have... */
-    num_weapon_types_bb = cnt = (ptrs[17] - ptrs[0]) / 8;
+    num_weapon_types_bb = cnt = (ptrs->ptr[17] - ptrs->ptr[0]) / 8;
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons_bb = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
@@ -305,7 +315,7 @@ static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs[0] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->ptr[0] + (i << 3), sizeof(uint32_t) * 2);
         values[0] = LE32(values[0]);
         values[1] = LE32(values[1]);
 
@@ -430,18 +440,18 @@ static int read_v2_guards(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
-                          const uint32_t ptrs[23]) {
+                          const pmt_table_offsets_bb_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[2] > sz || ptrs[1] > ptrs[2]) {
+    if(ptrs->ptr[2] > sz || ptrs->ptr[1] > ptrs->ptr[2]) {
         ERR_LOG("ItemPMT.prs file for GC has invalid guard pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Figure out how many tables we have... */
-    num_guard_types_gc = cnt = (ptrs[2] - ptrs[1]) / 8;
+    num_guard_types_gc = cnt = (ptrs->ptr[2] - ptrs->ptr[1]) / 8;
 
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
@@ -474,7 +484,7 @@ static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs[1] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->ptr[1] + (i << 3), sizeof(uint32_t) * 2);
         values[0] = ntohl(values[0]);
         values[1] = ntohl(values[1]);
 
@@ -514,18 +524,18 @@ static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
-                          const uint32_t ptrs[23]) {
+                          const pmt_table_offsets_bb_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[2] > sz || ptrs[1] > ptrs[2]) {
+    if(ptrs->ptr[2] > sz || ptrs->ptr[1] > ptrs->ptr[2]) {
         ERR_LOG("ItemPMT.prs file for BB has invalid guard pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Figure out how many tables we have... */
-    num_guard_types_bb = cnt = (ptrs[2] - ptrs[1]) / 8;
+    num_guard_types_bb = cnt = (ptrs->ptr[2] - ptrs->ptr[1]) / 8;
 
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
@@ -558,7 +568,7 @@ static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs[1] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->ptr[1] + (i << 3), sizeof(uint32_t) * 2);
         values[0] = LE32(values[0]);
         values[1] = LE32(values[1]);
 
@@ -646,18 +656,18 @@ static int read_v2_units(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_units(const uint8_t *pmt, uint32_t sz,
-                         const uint32_t ptrs[23]) {
+                         const pmt_table_offsets_bb_t* ptrs) {
     uint32_t values[2], i;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[2] > sz) {
+    if(ptrs->ptr[2] > sz) {
         ERR_LOG("ItemPMT.prs file for GC has invalid unit pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs[2], sizeof(uint32_t) * 2);
+    memcpy(values, pmt + ptrs->ptr[2], sizeof(uint32_t) * 2);
     values[0] = ntohl(values[0]);
     values[1] = ntohl(values[1]);
 
@@ -696,18 +706,18 @@ static int read_gc_units(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_bb_units(const uint8_t *pmt, uint32_t sz,
-                         const uint32_t ptrs[23]) {
+                         const pmt_table_offsets_bb_t* ptrs) {
     uint32_t values[2], i;
 
     /* Make sure the pointers are sane... */
-    if(ptrs[2] > sz) {
+    if(ptrs->ptr[2] > sz) {
         ERR_LOG("ItemPMT.prs file for BB has invalid unit pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs[2], sizeof(uint32_t) * 2);
+    memcpy(values, pmt + ptrs->ptr[2], sizeof(uint32_t) * 2);
     values[0] = LE32(values[0]);
     values[1] = LE32(values[1]);
 
@@ -777,16 +787,16 @@ static int read_v2_stars(const uint8_t *pmt, uint32_t sz,
 }
 
 static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
-                         const uint32_t ptrs[23]) {
+                         const pmt_table_offsets_bb_t* ptrs) {
     /* Make sure the pointers are sane... */
-    if(ptrs[11] > sz || ptrs[12] > sz || ptrs[12] < ptrs[11]) {
+    if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
         ERR_LOG("ItemPMT.prs file for GC has invalid star pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Save how big it is, allocate the space, and copy it in */
-    star_max_gc = ptrs[12] - ptrs[11];
+    star_max_gc = ptrs->ptr[12] - ptrs->ptr[11];
 
     if(star_max_gc < unit_lowest_gc + num_units - weapon_lowest_gc) {
         ERR_LOG("Star table doesn't have enough entries!\n"
@@ -802,21 +812,21 @@ static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
         return -3;
     }
 
-    memcpy(star_table_gc, pmt + ptrs[11], star_max_gc);
+    memcpy(star_table_gc, pmt + ptrs->ptr[11], star_max_gc);
     return 0;
 }
 
 static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
-                         const uint32_t ptrs[23]) {
+                         const pmt_table_offsets_bb_t* ptrs) {
     /* Make sure the pointers are sane... */
-    if(ptrs[11] > sz || ptrs[12] > sz || ptrs[12] < ptrs[11]) {
+    if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
         ERR_LOG("ItemPMT.prs file for BB has invalid star pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Save how big it is, allocate the space, and copy it in */
-    star_max_bb = ptrs[12] - ptrs[11];
+    star_max_bb = ptrs->ptr[12] - ptrs->ptr[11];
 
     if(star_max_bb < unit_lowest_bb + num_units - weapon_lowest_bb) {
         ERR_LOG("Star table doesn't have enough entries!\n"
@@ -832,7 +842,7 @@ static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
         return -3;
     }
 
-    memcpy(star_table_bb, pmt + ptrs[11], star_max_bb);
+    memcpy(star_table_bb, pmt + ptrs->ptr[11], star_max_bb);
     return 0;
 }
 
@@ -1145,7 +1155,7 @@ int pmt_read_v2(const char *fn, int norestrict) {
 int pmt_read_gc(const char *fn, int norestrict) {
     int ucsz;
     uint8_t *ucbuf;
-    uint32_t ptrs[23];
+    //uint32_t ptrs[23];
 
     /* Read in the file and decompress it. */
     if((ucsz = pso_prs_decompress_file(fn, &ucbuf)) < 0) {
@@ -1153,32 +1163,39 @@ int pmt_read_gc(const char *fn, int norestrict) {
         return -1;
     }
 
+    if (!(pmt_tb_offsets = (pmt_table_offsets_bb_t*)malloc(sizeof(pmt_table_offsets_bb_t)))) {
+        ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
+            strerror(errno));
+        free_safe(pmt_tb_offsets);
+        return -2;
+    }
+
     /* Read in the pointers table. */
-    if(read_gcptr_tbl(ucbuf, ucsz, ptrs)) {
+    if(read_gcptr_tbl(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -9;
     }
 
     /* Let's start with weapons... */
-    if(read_gc_weapons(ucbuf, ucsz, ptrs)) {
+    if(read_gc_weapons(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -10;
     }
 
     /* Grab the guards... */
-    if(read_gc_guards(ucbuf, ucsz, ptrs)) {
+    if(read_gc_guards(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -11;
     }
 
     /* Next, read in the units... */
-    if(read_gc_units(ucbuf, ucsz, ptrs)) {
+    if(read_gc_units(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -12;
     }
 
     /* Read in the star values... */
-    if(read_gc_stars(ucbuf, ucsz, ptrs)) {
+    if(read_gc_stars(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -13;
     }
@@ -1199,7 +1216,7 @@ int pmt_read_gc(const char *fn, int norestrict) {
 int pmt_read_bb(const char *fn, int norestrict) {
     int ucsz;
     uint8_t *ucbuf;
-    uint32_t ptrs[23];
+    //uint32_t ptrs[23];
 
     /* Read in the file and decompress it. */
     if((ucsz = pso_prs_decompress_file(fn, &ucbuf)) < 0) {
@@ -1207,32 +1224,39 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -1;
     }
 
+    if (!(pmt_tb_offsets = (pmt_table_offsets_bb_t*)malloc(sizeof(pmt_table_offsets_bb_t)))) {
+        ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
+            strerror(errno));
+        free_safe(pmt_tb_offsets);
+        return -2;
+    }
+
     /* Read in the pointers table. */
-    if(read_bbptr_tbl(ucbuf, ucsz, ptrs)) {
+    if(read_bbptr_tbl(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -9;
     }
 
     /* Let's start with weapons... */
-    if(read_bb_weapons(ucbuf, ucsz, ptrs)) {
+    if(read_bb_weapons(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -10;
     }
 
     /* Grab the guards... */
-    if(read_bb_guards(ucbuf, ucsz, ptrs)) {
+    if(read_bb_guards(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -11;
     }
 
     /* Next, read in the units... */
-    if(read_bb_units(ucbuf, ucsz, ptrs)) {
+    if(read_bb_units(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -12;
     }
 
     /* Read in the star values... */
-    if(read_bb_stars(ucbuf, ucsz, ptrs)) {
+    if(read_bb_stars(ucbuf, ucsz, pmt_tb_offsets)) {
         free_safe(ucbuf);
         return -13;
     }
