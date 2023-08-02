@@ -107,7 +107,8 @@ typedef struct client_game_data {
 
 typedef struct client_type {
     int ver_code;
-    char ver_name[5];
+    char ver_name[16];
+    char ver_name_file[5];
     int hdr_size;
 } client_type_t;
 
@@ -364,14 +365,14 @@ extern pthread_key_t sendbuf_key;
 #define CLIENT_FLAG_SHOPPING        0x10000000
 #define CLIENT_FLAG_ERR_TO_SHIP     0x20000000
 
-static client_type_t client_type[CLIENT_VERSION_ALL][3] = {
-    {CLIENT_VERSION_DCV1, "v1", 4},
-    {CLIENT_VERSION_DCV2, "v2", 4},
-    {CLIENT_VERSION_PC,   "pc", 4},
-    {CLIENT_VERSION_GC,   "gc", 4},
-    {CLIENT_VERSION_EP3,  "e3", 4},
-    {CLIENT_VERSION_BB,   "bb", 8},
-    {CLIENT_VERSION_XBOX, "xb", 4},
+static client_type_t client_type[CLIENT_VERSION_ALL] = {
+    {CLIENT_VERSION_DCV1, "DreanCard V1", "v1", 4},
+    {CLIENT_VERSION_DCV2, "DreanCard V2", "v2", 4},
+    {CLIENT_VERSION_PC,   "PC EP1&EP2  ", "pc", 4},
+    {CLIENT_VERSION_GC,   "GameCube    ", "gc", 4},
+    {CLIENT_VERSION_EP3,  "Episode III ", "e3", 4},
+    {CLIENT_VERSION_BB,   "Blue Brust  ", "bb", 8},
+    {CLIENT_VERSION_XBOX, "XBOX        ", "xb", 4},
 };
 
 /* Language codes. */

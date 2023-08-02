@@ -312,21 +312,21 @@ void read_quests() {
 
     if (cfg->quests_dir && cfg->quests_dir[0]) {
         for (i = 0; i < CLIENT_AUTH_VERSION_COUNT; ++i) {
-            if (client_type[i].ver_name[0] == 0)
+            if (client_type[i].ver_name_file[0] == 0)
                 continue;
 
             for (j = 0; j < CLIENT_LANG_ALL; ++j) {
                 sprintf(fn, "%s/%s/quests_%s.xml", cfg->quests_dir,
-                    client_type[i].ver_name, language_codes[j]);
+                    client_type[i].ver_name_file, language_codes[j]);
                 if (!psocn_quests_read(fn, &tmp)) {
-                    AUTH_LOG("读取任务 %s 语言 %s", client_type[i].ver_name,
+                    AUTH_LOG("读取任务 %s 语言 %s", client_type[i].ver_name_file,
                         language_codes[j]);
                 }
 
                 /* Cleanup and move the new stuff in place. */
                 if (read_quests) {
                     AUTH_LOG("无法索引任务 %s 语言 %s",
-                        client_type[i].ver_name, language_codes[j]);
+                        client_type[i].ver_name_file, language_codes[j]);
                     psocn_quests_destroy(&qlist[i][j]);
                 }
 
@@ -1189,9 +1189,9 @@ static void run_server(int dcsocks[NUM_AUTH_DC_SOCKS], int pcsocks[NUM_AUTH_PC_S
 
                 if (i->guildcard) {
                     if (i->auth)
-                        AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 进入跃迁轨道", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
+                        AUTH_LOG("GC %" PRIu32 " 进入跃迁轨道 (%s:%d) %s", i->guildcard, ipstr, i->sock, client_type[i->version].ver_name);
                     else
-                        AUTH_LOG("%s 客户端 %" PRIu32 " (%s:%d) 断开认证", client_type[i->version].ver_name, i->guildcard, ipstr, i->sock);
+                        AUTH_LOG("GC %" PRIu32 " 断开认证 (%s:%d) %s", i->guildcard, ipstr, i->sock, client_type[i->version].ver_name);
                 }
 #ifdef DEBUG
                 else {

@@ -66,7 +66,8 @@ typedef int ssize_t;
 
 typedef struct client_type {
     int ver_code;
-    char ver_name[5];
+    char ver_name[16];
+    char ver_name_file[5];
     int hdr_size;
 } client_type_t;
 
@@ -193,14 +194,14 @@ typedef struct login_client {
 #define CLIENT_AUTH_FLAG_DREESING   0x00000002
 
 static client_type_t client_type[CLIENT_AUTH_VERSION_COUNT] = {
-    {CLIENT_AUTH_DC,           "dc", 4},
-    {CLIENT_AUTH_PC,           "pc", 4},
-    {CLIENT_AUTH_GC,           "gc", 4},
-    {CLIENT_AUTH_EP3,          "e3", 4},
-    {CLIENT_AUTH_BB_LOGIN,     "",   8},
-    {CLIENT_AUTH_BB_CHARACTER, "",   8},
-    {CLIENT_AUTH_DCNTE,        "",   4},
-    {CLIENT_AUTH_XBOX,         "xb", 4},
+    {CLIENT_AUTH_DC,           "DreamCard"      ,  "dc", 4},
+    {CLIENT_AUTH_PC,           "PC EP1&EP2"     ,  "pc", 4},
+    {CLIENT_AUTH_GC,           "GameCube"       ,  "gc", 4},
+    {CLIENT_AUTH_EP3,          "Episode III"    ,  "e3", 4},
+    {CLIENT_AUTH_BB_LOGIN,     "Blue Burst"     ,  ""  , 8},
+    {CLIENT_AUTH_BB_CHARACTER, "Blue Burst"     ,  ""  , 8},
+    {CLIENT_AUTH_DCNTE,        "DreamCard NTE"  ,  ""  , 4},
+    {CLIENT_AUTH_XBOX,         "XBOX"           ,  "xb", 4},
 };
 
 /* Language codes. */

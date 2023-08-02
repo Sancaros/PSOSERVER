@@ -1292,8 +1292,15 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d Blue Burst 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }

@@ -476,8 +476,8 @@ static void* block_thd(void* d) {
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接", get_player_name(it->pl, it->version, false),
-                        it->guildcard);
+                    DC_LOG("客户端 %s(%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
+                        it->guildcard, client_type[it->version].ver_name);
                 }
 #ifdef DEBUG
                 else {
@@ -1022,8 +1022,15 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DC NTE 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }
@@ -1110,8 +1117,15 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DCv1 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }
@@ -1242,15 +1256,15 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    if (c->version == CLIENT_VERSION_DCV2)
-        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d DCv2 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
-    else if (!(c->flags & CLIENT_FLAG_IS_NTE))
-        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d PC 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
-    else
-        BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d PC NTE 已连接 IP %s",
-            ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }
@@ -1352,8 +1366,15 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %d GameCube 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }
@@ -1413,8 +1434,15 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
 
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): Xbox GC %d 已连接 IP %s",
-        ship->cfg->name, c->cur_block->b, c->cur_block->num_clients, c->guildcard, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
+        , ship->cfg->name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , c->guildcard
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }

@@ -564,7 +564,7 @@ int client_process_pkt(ship_client_t *c) {
     unsigned char *rbp;
     void *tmp;
     uint8_t *recvbuf = get_recvbuf();
-    const int hsz = client_type[c->version]->hdr_size, hsm = 0x10000 - hsz;
+    const int hsz = client_type[c->version].hdr_size, hsm = 0x10000 - hsz;
 
     /* Make sure we got the recvbuf, otherwise, bail. */
     if(!recvbuf) {

@@ -964,15 +964,15 @@ void ship_check_cfg(psocn_ship_t* s) {
         for (i = 0; i < CLIENT_VERSION_ALL; ++i) {
             for (j = 0; j < CLIENT_LANG_ALL; ++j) {
                 sprintf(fn, "%s/%s/quests_%s.xml", s->quests_dir,
-                    client_type[i]->ver_name, language_codes[j]);
+                    client_type[i].ver_name_file, language_codes[j]);
                 if (!psocn_quests_read(fn, &rv->qlist[i][j])) {
                     if (!quest_map(&rv->qmap, &rv->qlist[i][j], i, j)) {
                         SHIPS_LOG("已读取任务 %s 语言 %s",
-                            client_type[i]->ver_name, language_codes[j]);
+                            client_type[i].ver_name_file, language_codes[j]);
                     }
                     else {
                         SHIPS_LOG("无法读取任务 %s 语言 %s",
-                            client_type[i]->ver_name, language_codes[j]);
+                            client_type[i].ver_name_file, language_codes[j]);
                         psocn_quests_destroy(&rv->qlist[i][j]);
                     }
                 }

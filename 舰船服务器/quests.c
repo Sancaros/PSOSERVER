@@ -608,7 +608,7 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
     }
 
     for (j = 0; j < CLIENT_VERSION_ALL; ++j) {
-        sprintf(mdir, "%s\\.mapcache\\%s", dir, client_type[j]->ver_name);
+        sprintf(mdir, "%s\\.mapcache\\%s", dir, client_type[j].ver_name_file);
         if (_mkdir(mdir) && errno != EEXIST) {
             QERR_LOG("创建地图缓存文件夹错误: %s",
                 strerror(errno));
@@ -646,16 +646,16 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
                         return -1;
                     }
 
-                    sprintf(fn1, "%s\\%s\\%s\\%s_%s.%s", dir, client_type[j]->ver_name,
+                    sprintf(fn1, "%s\\%s\\%s\\%s_%s.%s", dir, client_type[j].ver_name_file,
                             language_codes[k], q->prefix, language_codes[k], exts[q->format]);
-                    sprintf(fn2, "%s\\.mapcache\\%s\\%08x", dir, client_type[j]->ver_name,
+                    sprintf(fn2, "%s\\.mapcache\\%s\\%08x", dir, client_type[j].ver_name_file,
                             q->qid);
 
                     //DBG_LOG("%s  -  %s 后缀 %s", fn1, fn2, exts[q->format]);
 
                     if(check_cache_age(fn1, fn2)) {
                         QERR_LOG("任务缓存 %s 语言 %s %d 需要更新!",
-                            client_type[j]->ver_name, language_codes[k], q->qid);
+                            client_type[j].ver_name_file, language_codes[k], q->qid);
                     }
 
                     if(q->format == PSOCN_QUEST_BINDAT) {

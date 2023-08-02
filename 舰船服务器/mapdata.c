@@ -2218,7 +2218,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
 
     /* Figure out where we're looking... */
     sprintf(fn, "%s\\.mapcache\\%s\\%08x", ship->cfg->quests_dir,
-        client_type[ver]->ver_name, qid);
+        client_type[ver].ver_name_file, qid);
 
     if(!(fp = fopen(fn, "rb"))) {
         ERR_LOG("无法打开文件 \"%s\": %s", fn, strerror(errno));

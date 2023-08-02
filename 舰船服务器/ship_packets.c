@@ -7330,7 +7330,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     /* Each quest has two files: a .dat file and a .bin file, send a file packet
        for each of them. */
     snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-        client_type[CLIENT_VERSION_DCV1]->ver_name, language_codes[lang],
+        client_type[CLIENT_VERSION_DCV1].ver_name_file, language_codes[lang],
              q->prefix);
 
     snprintf(filename, 260, "%s_%s.bin", fn_base, language_codes[lang]);
@@ -7493,11 +7493,11 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
        for each of them. */
     if(!v1 || (q->versions & PSOCN_QUEST_V1)) {
         snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-            client_type[c->version]->ver_name, language_codes[lang], q->prefix);
+            client_type[c->version].ver_name_file, language_codes[lang], q->prefix);
     }
     else {
         snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-            client_type[CLIENT_VERSION_DCV1]->ver_name, language_codes[lang],
+            client_type[CLIENT_VERSION_DCV1].ver_name_file, language_codes[lang],
                  q->prefix);
     }
 
@@ -7661,11 +7661,11 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
        for each of them. */
     if(!v1 || (q->versions & PSOCN_QUEST_V1)) {
         snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-                 client_type[c->version]->ver_name, language_codes[lang], q->prefix);
+                 client_type[c->version].ver_name_file, language_codes[lang], q->prefix);
     }
     else {
         snprintf(fn_base, 256, "%s/%s/%s/%sv1", ship->cfg->quests_dir,
-                 client_type[c->version]->ver_name, language_codes[lang], q->prefix);
+                 client_type[c->version].ver_name_file, language_codes[lang], q->prefix);
     }
 
     snprintf(filename, 260, "%s_%s.bin", fn_base, language_codes[lang]);
@@ -7835,11 +7835,11 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
        for each of them. */
     if(!v1 || (q->versions & PSOCN_QUEST_V1)) {
         snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-                 client_type[v]->ver_name, language_codes[lang], q->prefix);
+                 client_type[v].ver_name_file, language_codes[lang], q->prefix);
     }
     else {
         snprintf(fn_base, 256, "%s/%s/%s/%sv1", ship->cfg->quests_dir,
-                 client_type[v]->ver_name, language_codes[lang], q->prefix);
+                 client_type[v].ver_name_file, language_codes[lang], q->prefix);
     }
 
     snprintf(filename, 260, "%s_%s.bin", fn_base, language_codes[lang]);
@@ -8009,11 +8009,11 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
        for each of them. */
     if (!v1 || (q->versions & PSOCN_QUEST_V1)) {
         snprintf(fn_base, 256, "%s/%s/%s/%s", ship->cfg->quests_dir,
-            client_type[v]->ver_name, language_codes[lang], q->prefix);
+            client_type[v].ver_name_file, language_codes[lang], q->prefix);
     }
     else {
         snprintf(fn_base, 256, "%s/%s/%s/%sv1", ship->cfg->quests_dir,
-            client_type[v]->ver_name, language_codes[lang], q->prefix);
+            client_type[v].ver_name_file, language_codes[lang], q->prefix);
     }
 
     snprintf(filename, 260, "%s_%s.bin", fn_base, language_codes[lang]);
@@ -8174,10 +8174,10 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     if(!v1 || (q->versions & PSOCN_QUEST_V1)) {
         if(c->version != CLIENT_VERSION_XBOX)
             snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst", ship->cfg->quests_dir,
-                client_type[c->version]->ver_name, language_codes[lang], q->prefix, language_codes[lang]);
+                client_type[c->version].ver_name_file, language_codes[lang], q->prefix, language_codes[lang]);
         else
             snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst", ship->cfg->quests_dir,
-                client_type[CLIENT_VERSION_GC]->ver_name, language_codes[lang],
+                client_type[CLIENT_VERSION_GC].ver_name_file, language_codes[lang],
                      q->prefix, language_codes[lang]);
     }
     else {
@@ -8186,27 +8186,27 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             case CLIENT_VERSION_DCV2:
                 snprintf(filename, 256, "%s\\%s\\%s\\%s_%s.qst",
                          ship->cfg->quests_dir,
-                         client_type[CLIENT_VERSION_DCV1]->ver_name,
+                         client_type[CLIENT_VERSION_DCV1].ver_name_file,
                          language_codes[lang], q->prefix, language_codes[lang]);
                 break;
 
             case CLIENT_VERSION_PC:
             case CLIENT_VERSION_GC:
                 snprintf(filename, 256, "%s\\%s\\%s\\%sv1_%s.qst",
-                         ship->cfg->quests_dir, client_type[c->version]->ver_name,
+                         ship->cfg->quests_dir, client_type[c->version].ver_name_file,
                          language_codes[lang], q->prefix, language_codes[lang]);
                 break;
 
             case CLIENT_VERSION_XBOX:
                 snprintf(filename, 256, "%s\\%s\\%s\\%sv1_%s.qst",
                          ship->cfg->quests_dir,
-                         client_type[CLIENT_VERSION_GC]->ver_name, language_codes[lang],
+                         client_type[CLIENT_VERSION_GC].ver_name_file, language_codes[lang],
                          q->prefix, language_codes[lang]);
                 break;
         }
     }
     //System\quests\bb\cn\quest204_cn.qst quest204 5 0 31
-    DBG_LOG("GC %u 载入任务 %s 版本 %s %d %d",c->guildcard, q->prefix, client_type[c->version]->ver_name, v1, q->versions);
+    DBG_LOG("GC %u 载入任务 %s 版本 %s %d %d",c->guildcard, q->prefix, client_type[c->version].ver_name, v1, q->versions);
 
     fp = fopen(filename, "rb");
 
@@ -11059,7 +11059,7 @@ static int send_gc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
     gc_records_update_pkt *pkt = (gc_records_update_pkt *)sendbuf;
-    int entries = 0, size = client_type[dest->version]->hdr_size;
+    int entries = 0, size = client_type[dest->version].hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11093,7 +11093,7 @@ static int send_dc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
     dc_records_update_pkt *pkt = (dc_records_update_pkt *)sendbuf;
-    int entries = 0, size = client_type[dest->version]->hdr_size;
+    int entries = 0, size = client_type[dest->version].hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11127,7 +11127,7 @@ static int send_pc_lobby_c_rank(ship_client_t *dest, lobby_t *l) {
     int i;
     uint8_t *sendbuf = get_sendbuf();
     pc_records_update_pkt *pkt = (pc_records_update_pkt *)sendbuf;
-    int entries = 0, size = client_type[dest->version]->hdr_size;
+    int entries = 0, size = client_type[dest->version].hdr_size;
     ship_client_t *c2;
 
     /* 确认已获得数据发送缓冲 */
@@ -11161,7 +11161,7 @@ static int send_bb_lobby_c_rank(ship_client_t* dest, lobby_t* l) {
     int i;
     uint8_t* sendbuf = get_sendbuf();
     bb_records_update_pkt* pkt = (bb_records_update_pkt*)sendbuf;
-    int entries = 0, size = client_type[dest->version]->hdr_size;
+    int entries = 0, size = client_type[dest->version].hdr_size;
     ship_client_t* c2;
 
     /* 确认已获得数据发送缓冲 */

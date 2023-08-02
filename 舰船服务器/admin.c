@@ -107,17 +107,17 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
         for(i = 0; i < CLIENT_VERSION_ALL; ++i) {
             for(j = 0; j < CLIENT_LANG_ALL; ++j) {
                 sprintf(fn, "%s/%s/quests_%s.xml", cfg->quests_dir,
-                    client_type[i]->ver_name, language_codes[j]);
+                    client_type[i].ver_name_file, language_codes[j]);
                 // 检查文件是否存在
                 if (_access(fn, 0) == 0) {
                     if (!psocn_quests_read(fn, &qlist[i][j])) {
                         if (!quest_map(&qmap, &qlist[i][j], i, j)) {
                             SHIPS_LOG("读取 %s 任务语言 %s",
-                                client_type[i]->ver_name, language_codes[j]);
+                                client_type[i].ver_name_file, language_codes[j]);
                         }
                         else {
                             SHIPS_LOG("无法索引 %s 任务语言 %s",
-                                client_type[i]->ver_name, language_codes[j]);
+                                client_type[i].ver_name_file, language_codes[j]);
                             psocn_quests_destroy(&qlist[i][j]);
                         }
                     }

@@ -2002,7 +2002,7 @@ int send_quest(login_client_t *c, psocn_quest_t *q) {
     int v = c->type;
 
     /* Figure out what file we're going to send. */
-    sprintf(filename, "%s/%s/%s/%s.qst", cfg->quests_dir, client_type[v].ver_name,
+    sprintf(filename, "%s/%s/%s/%s.qst", cfg->quests_dir, client_type[v].ver_name_file,
             language_codes[c->language_code], q->prefix);
     fp = fopen(filename, "rb");
 

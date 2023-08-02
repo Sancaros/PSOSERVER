@@ -110,7 +110,7 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
 
         if (!func)
             ERR_LOG("subcmd_get_handler 未完成对 "
-                "0x%02X 0x%02X 版本 %s(%d) 的处理", cmd_type, subcmd_type, client_type[version]->ver_name, version);
+                "0x%02X 0x%02X 版本 %s(%d) 的处理", cmd_type, subcmd_type, client_type[version].ver_name_file, version);
 
         return func;
     }
