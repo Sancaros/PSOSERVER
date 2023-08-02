@@ -51,6 +51,9 @@ typedef struct {
     size_t len;
 } Buffer;
 
+/* 安全擦除函数 */
+void SecureErase(void* buffer, size_t size);
+
 /* 判断数据为空 */
 int isEmptyString(const char* str);
 int isEmptyInt(int num);

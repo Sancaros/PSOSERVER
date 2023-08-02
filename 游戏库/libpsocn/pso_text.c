@@ -17,10 +17,54 @@
 
 #include <stdbool.h>
 #include <ctype.h>
+#ifndef _WIN32
+#include <unistd.h>
+#else
+#include <Windows.h>
+#endif
 
 #include "f_logs.h"
 
 #include "pso_text.h"
+
+void safe_free(const char* func, uint32_t line, void** ptr) {
+    if (ptr != NULL && *ptr != NULL) {
+        free(*ptr);
+        *ptr = NULL;
+    }
+    else
+        ERR_LOG("(%s%04d)内存释放错误, 本身为空", func, line);
+}
+
+#ifndef  _WIN32
+
+void SecureErase(void* buffer, size_t size) {
+    volatile char* p = (volatile char*)buffer;  // 使用 volatile 修饰符确保内存读写不被优化
+    while (size--) {
+        *p++ = 0;
+    }
+}
+
+#else
+
+void SecureErase(void* buffer, size_t size) {
+    typedef VOID(WINAPI* RtlSecureZeroMemory_t)(PVOID, SIZE_T);
+
+    // 获取函数地址
+    RtlSecureZeroMemory_t pRtlSecureZeroMemory =
+        (RtlSecureZeroMemory_t)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlSecureZeroMemory");
+
+    if (pRtlSecureZeroMemory) {
+        // 调用 RtlSecureZeroMemory 函数
+        pRtlSecureZeroMemory(buffer, size);
+    }
+    else {
+        // 如果无法获取函数地址，则使用 memset 函数清零
+        memset(buffer, 0, size);
+    }
+}
+
+#endif // ! _WIN32
 
 int isEmptyString(const char* str) {
     return (str == NULL || strlen(str) == 0);

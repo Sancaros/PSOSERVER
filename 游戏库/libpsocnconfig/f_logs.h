@@ -245,17 +245,20 @@ extern int32_t script_log_console_show;
 
 #define CHECK3(...) { printf(__VA_ARGS__); }
 
-#define free_safe(EXP)  if((EXP)!=NULL && \
-                        (unsigned int)(EXP)>(unsigned int)0x00000000 && \
-                        (unsigned int)(EXP)<(unsigned int)0xFFFFFFFF ){\
-                            free((EXP));\
-                        }else if((EXP)!=NULL){\
-                            flog(__LINE__, \
-                            error_log_console_show, \
-                            ERR_LOG, "%s:%d行:FREE_ERROR:%s 内存 0x%08x", \
-                            logfilename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
-                            free((EXP)); \
-                        }
+void safe_free(const char* func, uint32_t line, void** ptr);
+#define free_safe(EXP) safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP)
+
+//#define free_safe2(EXP)  if((EXP)!=NULL && \
+//                        (unsigned int)(EXP)>(unsigned int)0x00000000 && \
+//                        (unsigned int)(EXP)<(unsigned int)0xFFFFFFFF ){\
+//                            free((EXP));\
+//                        }else if((EXP)!=NULL){\
+//                            flog(__LINE__, \
+//                            error_log_console_show, \
+//                            ERR_LOG, "%s:%d行:FREE_ERROR:%s 内存 0x%08x", \
+//                            logfilename(__FILE__),__LINE__,#EXP,(unsigned int)(EXP) ); \
+//                            free((EXP)); \
+//                        }
 
 /* 日志设置 */
 

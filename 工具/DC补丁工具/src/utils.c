@@ -16,38 +16,38 @@
 */
 
 #include "utils.h"
-
-void memset(uint8 *p1, uint32 val, uint32 count) {
-    while(count--)
-        *p1++ = val;
-}
-
-void memset2(uint16 *p1, uint32 val, uint32 count) {
-    while(count--)
-        *p1++ = val;
-}
-
-void memset4(uint32 *p1, uint32 val, uint32 count) {
-    while(count--)
-        *p1++ = val;
-}
-
-void memcpy(void *p1, const void *p2, uint32 count) {
-    uint8 *b1 = (uint8 *)p1, *b2 = (uint8 *)p2;
-
-    while(count--)
-        *b1++ = *b2++;
-}
-
-void memcpy2(uint16 *p1, const uint16 *p2, uint32 count) {
-    while(count--)
-        *p1++ = *p2++;
-}
-
-void memcpy4(uint32 *p1, const uint32 *p2, uint32 count) {
-    while(count--)
-        *p1++ = *p2++;
-}
+//
+//void memset(uint8 *p1, uint32 val, uint32 count) {
+//    while(count--)
+//        *p1++ = val;
+//}
+//
+//void memset2(uint16 *p1, uint32 val, uint32 count) {
+//    while(count--)
+//        *p1++ = val;
+//}
+//
+//void memset4(uint32 *p1, uint32 val, uint32 count) {
+//    while(count--)
+//        *p1++ = val;
+//}
+//
+//void memcpy(void *p1, const void *p2, uint32 count) {
+//    uint8 *b1 = (uint8 *)p1, *b2 = (uint8 *)p2;
+//
+//    while(count--)
+//        *b1++ = *b2++;
+//}
+//
+//void memcpy2(uint16 *p1, const uint16 *p2, uint32 count) {
+//    while(count--)
+//        *p1++ = *p2++;
+//}
+//
+//void memcpy4(uint32 *p1, const uint32 *p2, uint32 count) {
+//    while(count--)
+//        *p1++ = *p2++;
+//}
 
 uint32 hex_to_uint32(const char *hex, int len) {
     uint32 rv = 0;

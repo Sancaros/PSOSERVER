@@ -2216,9 +2216,9 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
 
     //bb.two = LE32(0x00000002);
 
-    subcmd_send_drop_stack(src, 0xFBFF, src->cur_area, pkt->x, pkt->z, iitem->data, 1);
+    send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
+    return subcmd_send_drop_stack(src, 0xFBFF, src->cur_area, pkt->x, pkt->z, iitem->data, 1);
 }
 
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,

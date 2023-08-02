@@ -1097,7 +1097,7 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
     bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt;
     uint16_t type = LE16(bb->pkt_type);
 
-    DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
+    //DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
 
     //display_packet(pkt, LE16(bb->pkt_len));
 
