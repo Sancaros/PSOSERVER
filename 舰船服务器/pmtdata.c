@@ -42,7 +42,7 @@ static int read_v2ptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[21]) {
     uint32_t i;
 #endif
 
-    memcpy(&tmp, pmt + sz - 16, 4);
+    memcpy(&tmp, pmt + sz - 16, sizeof(uint32_t));
     tmp = LE32(tmp);
 
     if(tmp + sizeof(uint32_t) * 21 > sz - 16) {
@@ -67,7 +67,7 @@ static int read_gcptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
     uint32_t i;
 #endif
 
-    memcpy(&tmp, pmt + sz - 16, 4);
+    memcpy(&tmp, pmt + sz - 16, sizeof(uint32_t));
     tmp = ntohl(tmp);
 
     if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 16) {
@@ -92,7 +92,7 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
     uint32_t i;
 #endif
 
-    memcpy(&tmp, pmt + sz - 16, 4);
+    memcpy(&tmp, pmt + sz - 16, sizeof(uint32_t));
     tmp = LE32(tmp);
 
     if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 16) {
@@ -121,7 +121,7 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
     return 0;
 }
 
-static int read_v2_weapons(const uint8_t *pmt, uint32_t sz,
+static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
                            const uint32_t ptrs[21]) {
     uint32_t cnt, i, values[2], j;
 
@@ -198,7 +198,7 @@ static int read_v2_weapons(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
+static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
                            const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
@@ -278,19 +278,19 @@ static int read_gc_weapons(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
+static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
                            const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs->ptr[0] > sz || ptrs->ptr[0] > ptrs->ptr[17]) {
+    if(ptrs->weapon_table > sz || ptrs->weapon_table > ptrs->combination_table) {
         ERR_LOG("ItemPMT.prs file for BB has invalid weapon pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* 算出我们有多少张表... */
-    num_weapon_types_bb = cnt = (ptrs->ptr[17] - ptrs->ptr[0]) / 8;
+    num_weapon_types_bb = cnt = (ptrs->combination_table - ptrs->weapon_table) / 8;
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons_bb = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
@@ -315,7 +315,7 @@ static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs->ptr[0] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->weapon_table + (i << 3), sizeof(uint32_t) * 2);
         values[0] = LE32(values[0]);
         values[1] = LE32(values[1]);
 
@@ -359,7 +359,7 @@ static int read_bb_weapons(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_v2_guards(const uint8_t *pmt, uint32_t sz,
+static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
                           const uint32_t ptrs[21]) {
     uint32_t cnt, i, values[2], j;
 
@@ -439,7 +439,7 @@ static int read_v2_guards(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
+static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
@@ -523,19 +523,19 @@ static int read_gc_guards(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
+static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
-    if(ptrs->ptr[2] > sz || ptrs->ptr[1] > ptrs->ptr[2]) {
+    if(ptrs->unit_table > sz || ptrs->armor_table > ptrs->unit_table) {
         ERR_LOG("ItemPMT.prs file for BB has invalid guard pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* 算出我们有多少张表... */
-    num_guard_types_bb = cnt = (ptrs->ptr[2] - ptrs->ptr[1]) / 8;
+    num_guard_types_bb = cnt = (ptrs->unit_table - ptrs->armor_table) / 8;
 
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
@@ -568,7 +568,7 @@ static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs->ptr[1] + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(values, pmt + ptrs->armor_table + (i << 3), sizeof(uint32_t) * 2);
         values[0] = LE32(values[0]);
         values[1] = LE32(values[1]);
 
@@ -608,7 +608,7 @@ static int read_bb_guards(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_v2_units(const uint8_t *pmt, uint32_t sz,
+static int read_units_v2(const uint8_t *pmt, uint32_t sz,
                          const uint32_t ptrs[21]) {
     uint32_t values[2], i;
 
@@ -655,7 +655,7 @@ static int read_v2_units(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_gc_units(const uint8_t *pmt, uint32_t sz,
+static int read_units_gc(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
@@ -705,19 +705,19 @@ static int read_gc_units(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_bb_units(const uint8_t *pmt, uint32_t sz,
+static int read_units_bb(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
     /* Make sure the pointers are sane... */
-    if(ptrs->ptr[2] > sz) {
+    if(ptrs->unit_table > sz) {
         ERR_LOG("ItemPMT.prs file for BB has invalid unit pointers. "
               "Please check it for validity!");
         return -1;
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs->ptr[2], sizeof(uint32_t) * 2);
+    memcpy(values, pmt + ptrs->unit_table, sizeof(uint32_t) * 2);
     values[0] = LE32(values[0]);
     values[1] = LE32(values[1]);
 
@@ -756,7 +756,7 @@ static int read_bb_units(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_v2_stars(const uint8_t *pmt, uint32_t sz,
+static int read_stars_v2(const uint8_t *pmt, uint32_t sz,
                          const uint32_t ptrs[21]) {
     /* Make sure the pointers are sane... */
     if(ptrs[12] > sz || ptrs[13] > sz || ptrs[13] < ptrs[12]) {
@@ -786,7 +786,7 @@ static int read_v2_stars(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
+static int read_stars_gc(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     /* Make sure the pointers are sane... */
     if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
@@ -816,7 +816,7 @@ static int read_gc_stars(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
+static int read_stars_bb(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     /* Make sure the pointers are sane... */
     if(ptrs->star_value_table > sz || ptrs->special_data_table > sz || ptrs->special_data_table < ptrs->star_value_table) {
@@ -846,7 +846,144 @@ static int read_bb_stars(const uint8_t *pmt, uint32_t sz,
     return 0;
 }
 
-static int build_v2_units(int norestrict) {
+static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    uint32_t values[2], i;
+
+    /* Make sure the pointers are sane... */
+    if (ptrs->mag_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has invalid mag pointers. "
+            "Please check it for validity!");
+        return -1;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(values, pmt + ptrs->mag_table, sizeof(uint32_t) * 2);
+    values[0] = LE32(values[0]);
+    values[1] = LE32(values[1]);
+
+    /* Make sure we have enough file... */
+    if (values[1] + sizeof(pmt_mag_bb_t) * values[0] > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has mag table outside "
+            "of file bounds! Please check the file for validity!");
+        return -2;
+    }
+
+    num_mags_bb = values[0];
+    if (!(mags_bb = (pmt_mag_bb_t*)malloc(sizeof(pmt_mag_bb_t) *
+        values[0]))) {
+        ERR_LOG("Cannot allocate space for BB mags: %s",
+            strerror(errno));
+        num_mags_bb = 0;
+        return -3;
+    }
+
+    memcpy(mags_bb, pmt + values[1], sizeof(pmt_mag_bb_t) * values[0]);
+
+    //DBG_LOG("num_mag_types_bb %d", num_mags_bb);
+
+    for (i = 0; i < values[0]; ++i) {
+        //DBG_LOG("index %d", mags_bb[i].index);
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+        mags_bb[i].index = LE32(mags_bb[i].index);
+        mags_bb[i].model = LE16(mags_bb[i].model);
+        mags_bb[i].skin = LE16(mags_bb[i].skin);
+        mags_bb[i].team_points = LE32(mags_bb[i].team_points);
+        mags_bb[i].feed_table = LE16(mags_bb[i].feed_table);
+#endif
+
+        if (mags_bb[i].index < mag_lowest_bb)
+            mag_lowest_bb = mags_bb[i].index;
+    }
+
+    return 0;
+}
+
+static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
+    const pmt_table_offsets_v3_t* ptrs) {
+    uint32_t cnt, i, values[2], j;
+
+    /* Make sure the pointers are sane... */
+    if (ptrs->tool_table > sz || ptrs->tool_table > ptrs->weapon_table) {
+        ERR_LOG("ItemPMT.prs file for BB has invalid tool pointers. "
+            "Please check it for validity!");
+        return -1;
+    }
+
+    /* 算出我们有多少张表... */
+    num_tool_types_bb = cnt = (ptrs->weapon_table - ptrs->tool_table) / 8;
+
+    //DBG_LOG("num_tool_types_bb %d", num_tool_types_bb);
+
+    /* Allocate the stuff we need to allocate... */
+    if (!(num_tools_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
+        ERR_LOG("Cannot allocate space for BB tool count: %s",
+            strerror(errno));
+        num_tool_types_bb = 0;
+        return -2;
+    }
+
+    if (!(tools_bb = (pmt_tool_bb_t**)malloc(sizeof(pmt_tool_bb_t*) *
+        cnt))) {
+        ERR_LOG("Cannot allocate space for BB tool list: %s",
+            strerror(errno));
+        free_safe(num_tools_bb);
+        num_tools_bb = NULL;
+        num_tool_types_bb = 0;
+        return -3;
+    }
+
+    memset(tools_bb, 0, sizeof(pmt_tool_bb_t*) * cnt);
+
+    /* Read in each table... */
+    for (i = 0; i < cnt; ++i) {
+        /* Read the pointer and the size... */
+        memcpy(values, pmt + ptrs->tool_table + (i << 3), sizeof(uint32_t) * 2);
+        values[0] = LE32(values[0]);
+        values[1] = LE32(values[1]);
+
+        /* Make sure we have enough file... */
+        if (values[1] + sizeof(pmt_tool_bb_t) * values[0] > sz) {
+            ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
+                "of file bounds! Please check the file for validity!");
+            return -4;
+        }
+
+        num_tools_bb[i] = values[0];
+
+        //DBG_LOG("i %d num_tools_bb %d", i, num_tools_bb[i]);
+
+        if (!(tools_bb[i] = (pmt_tool_bb_t*)malloc(sizeof(pmt_tool_bb_t) *
+            values[0]))) {
+            ERR_LOG("Cannot allocate space for BB weapons: %s",
+                strerror(errno));
+            return -5;
+        }
+
+        memcpy(tools_bb[i], pmt + values[1],
+            sizeof(pmt_tool_bb_t) * values[0]);
+
+        for (j = 0; j < values[0]; ++j) {
+            //DBG_LOG("index %d", tools_bb[i][j].cost);
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+            tools_bb[i][j].index = LE32(tools_bb[i][j].index);
+            tools_bb[i][j].model = LE16(tools_bb[i][j].model);
+            tools_bb[i][j].skin = LE16(tools_bb[i][j].skin);
+            tools_bb[i][j].team_points = LE32(tools_bb[i][j].team_points);
+            tools_bb[i][j].amount = LE16(tools_bb[i][j].amount);
+            tools_bb[i][j].tech = LE16(tools_bb[i][j].tech);
+            tools_bb[i][j].cost = LE32(tools_bb[i][j].cost);
+#endif
+
+            if (tools_bb[i][j].index < tool_lowest_bb)
+                tool_lowest_bb = tools_bb[i][j].index;
+        }
+    }
+
+    return 0;
+}
+
+static int build_units_v2(int norestrict) {
     uint32_t i, j, k;
     uint8_t star;
     pmt_unit_v2_t *unit;
@@ -930,7 +1067,7 @@ static int build_v2_units(int norestrict) {
     return 0;
 }
 
-static int build_gc_units(int norestrict) {
+static int build_units_gc(int norestrict) {
     uint32_t i, j, k;
     uint8_t star;
     pmt_unit_gc_t *unit;
@@ -1014,7 +1151,7 @@ static int build_gc_units(int norestrict) {
     return 0;
 }
 
-static int build_bb_units(int norestrict) {
+static int build_units_bb(int norestrict) {
     uint32_t i, j, k;
     uint8_t star;
     pmt_unit_bb_t *unit;
@@ -1116,25 +1253,25 @@ int pmt_read_v2(const char *fn, int norestrict) {
     }
 
     /* Let's start with weapons... */
-    if(read_v2_weapons(ucbuf, ucsz, ptrs)) {
+    if(read_weapons_v2(ucbuf, ucsz, ptrs)) {
         free_safe(ucbuf);
         return -10;
     }
 
     /* Grab the guards... */
-    if(read_v2_guards(ucbuf, ucsz, ptrs)) {
+    if(read_guards_v2(ucbuf, ucsz, ptrs)) {
         free_safe(ucbuf);
         return -11;
     }
 
     /* Next, read in the units... */
-    if(read_v2_units(ucbuf, ucsz, ptrs)) {
+    if(read_units_v2(ucbuf, ucsz, ptrs)) {
         free_safe(ucbuf);
         return -12;
     }
 
     /* Read in the star values... */
-    if(read_v2_stars(ucbuf, ucsz, ptrs)) {
+    if(read_stars_v2(ucbuf, ucsz, ptrs)) {
         free_safe(ucbuf);
         return -13;
     }
@@ -1143,7 +1280,7 @@ int pmt_read_v2(const char *fn, int norestrict) {
     free_safe(ucbuf);
 
     /* Make the tables for generating random units */
-    if(build_v2_units(norestrict)) {
+    if(build_units_v2(norestrict)) {
         return -14;
     }
 
@@ -1163,39 +1300,39 @@ int pmt_read_gc(const char *fn, int norestrict) {
         return -1;
     }
 
-    if (!(pmt_tb_offsets = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
+    if (!(pmt_tb_offsets_gc = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
         ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
             strerror(errno));
-        free_safe(pmt_tb_offsets);
+        free_safe(pmt_tb_offsets_gc);
         return -2;
     }
 
     /* Read in the pointers table. */
-    if(read_gcptr_tbl(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_gcptr_tbl(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -9;
     }
 
     /* Let's start with weapons... */
-    if(read_gc_weapons(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_weapons_gc(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -10;
     }
 
     /* Grab the guards... */
-    if(read_gc_guards(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_guards_gc(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -11;
     }
 
     /* Next, read in the units... */
-    if(read_gc_units(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_units_gc(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -12;
     }
 
     /* Read in the star values... */
-    if(read_gc_stars(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_stars_gc(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -13;
     }
@@ -1204,7 +1341,7 @@ int pmt_read_gc(const char *fn, int norestrict) {
     free_safe(ucbuf);
 
     /* Make the tables for generating random units */
-    if(build_gc_units(norestrict)) {
+    if(build_units_gc(norestrict)) {
         return -14;
     }
 
@@ -1216,7 +1353,6 @@ int pmt_read_gc(const char *fn, int norestrict) {
 int pmt_read_bb(const char *fn, int norestrict) {
     int ucsz;
     uint8_t *ucbuf;
-    //uint32_t ptrs[23];
 
     /* Read in the file and decompress it. */
     if((ucsz = pso_prs_decompress_file(fn, &ucbuf)) < 0) {
@@ -1224,49 +1360,64 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -1;
     }
 
-    if (!(pmt_tb_offsets = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
+    //display_packet(ucbuf, sizeof(pmt_table_offsets_v3_t));
+    //getchar();
+
+    if (!(pmt_tb_offsets_bb = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
         ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
             strerror(errno));
-        free_safe(pmt_tb_offsets);
+        free_safe(pmt_tb_offsets_bb);
         return -2;
     }
 
     /* Read in the pointers table. */
-    if(read_bbptr_tbl(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_bbptr_tbl(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -9;
     }
 
     /* Let's start with weapons... */
-    if(read_bb_weapons(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_weapons_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -10;
     }
 
     /* Grab the guards... */
-    if(read_bb_guards(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_guards_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -11;
     }
 
     /* Next, read in the units... */
-    if(read_bb_units(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_units_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -12;
     }
 
     /* Read in the star values... */
-    if(read_bb_stars(ucbuf, ucsz, pmt_tb_offsets)) {
+    if(read_stars_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -13;
+    }
+
+    /* Read in the mags values... */
+    if (read_mags_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -14;
+    }
+
+    /* Read in the mags values... */
+    if (read_tools_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -15;
     }
 
     /* We're done with the raw PMT data now, clean it up. */
     free_safe(ucbuf);
 
     /* Make the tables for generating random units */
-    if(build_bb_units(norestrict)) {
-        return -14;
+    if(build_units_bb(norestrict)) {
+        return -16;
     }
 
     have_bb_pmt = 1;
@@ -1274,117 +1425,174 @@ int pmt_read_bb(const char *fn, int norestrict) {
     return 0;
 }
 
-int pmt_v2_enabled(void) {
+int pmt_enabled_v2(void) {
     return have_v2_pmt;
 }
 
-int pmt_gc_enabled(void) {
+int pmt_enabled_gc(void) {
     return have_gc_pmt;
 }
 
-int pmt_bb_enabled(void) {
+int pmt_enabled_bb(void) {
     return have_bb_pmt;
 }
 
-void pmt_cleanup(void) {
+void pmt_cleanup_v2(void) {
     uint32_t i;
 
-    for(i = 0; i < num_weapon_types; ++i) {
+    for (i = 0; i < num_weapon_types; ++i) {
         free_safe(weapons[i]);
     }
-
     free_safe(weapons);
     free_safe(num_weapons);
-
-    for(i = 0; i < num_guard_types; ++i) {
-        free_safe(guards[i]);
-    }
-
-    free_safe(guards);
-    free_safe(num_guards);
-    free_safe(units);
-    free_safe(units_gc);
-    free_safe(units_bb);
-    free_safe(star_table);
-    free_safe(star_table_gc);
-    free_safe(star_table_bb);
-    free_safe(units_with_stars);
-    free_safe(units_by_stars);
-    free_safe(units_with_stars_gc);
-    free_safe(units_by_stars_gc);
-    free_safe(units_with_stars_bb);
-    free_safe(units_by_stars_bb);
-
-    for(i = 0; i < num_weapon_types_gc; ++i) {
-        free_safe(weapons_gc[i]);
-    }
-
-    free_safe(weapons_gc);
-    free_safe(num_weapons_gc);
-
-    for(i = 0; i < num_guard_types_gc; ++i) {
-        free_safe(guards_gc[i]);
-    }
-
-    free_safe(guards_gc);
-    free_safe(num_guards_gc);
-
-    for(i = 0; i < num_weapon_types_bb; ++i) {
-        free_safe(weapons_bb[i]);
-    }
-
-    free_safe(weapons_bb);
-    free_safe(num_weapons_bb);
-
-    for(i = 0; i < num_guard_types_bb; ++i) {
-        free_safe(guards_bb[i]);
-    }
-
-    free_safe(guards_bb);
-    free_safe(num_guards_bb);
-
     weapons = NULL;
     num_weapons = NULL;
-    weapons_gc = NULL;
-    num_weapons_gc = NULL;
-    weapons_bb = NULL;
-    num_weapons_bb = NULL;
+    num_weapon_types = 0;
+    weapon_lowest = EMPTY_STRING;
+
+    for (i = 0; i < num_guard_types; ++i) {
+        free_safe(guards[i]);
+    }
+    free_safe(guards);
+    free_safe(num_guards);
     guards = NULL;
     num_guards = NULL;
+    num_guard_types = 0;
+    guard_lowest = EMPTY_STRING;
+
+    free_safe(units);
+    num_units = 0;
+    units = NULL;
+    unit_lowest = EMPTY_STRING;
+
+    free_safe(star_table);
+    star_table = NULL;
+    star_max = 0;
+
+    free_safe(units_by_stars);
+    free_safe(units_with_stars);
+    units_by_stars = NULL;
+    units_with_stars = NULL;
+    unit_max_stars = 0;
+
+    have_v2_pmt = 0;
+
+}
+
+void pmt_cleanup_gc(void) {
+    uint32_t i;
+
+    free_safe(pmt_tb_offsets_gc);
+    pmt_tb_offsets_gc = NULL;
+
+    for (i = 0; i < num_weapon_types_gc; ++i) {
+        free_safe(weapons_gc[i]);
+    }
+    free_safe(weapons_gc);
+    free_safe(num_weapons_gc);
+    weapons_gc = NULL;
+    num_weapons_gc = NULL;
+    num_weapon_types_gc = 0;
+    weapon_lowest_gc = EMPTY_STRING;
+
+    for (i = 0; i < num_guard_types_gc; ++i) {
+        free_safe(guards_gc[i]);
+    }
+    free_safe(guards_gc);
+    free_safe(num_guards_gc);
     guards_gc = NULL;
     num_guards_gc = NULL;
+    num_guard_types_gc = 0;
+    guard_lowest_gc = EMPTY_STRING;
+
+    free_safe(units_gc);
+    units_gc = NULL;
+    num_units_gc = 0;
+    unit_lowest_gc = EMPTY_STRING;
+
+    free_safe(star_table_gc);
+    star_table_gc = NULL;
+    star_max_gc = 0;
+
+    free_safe(units_by_stars_gc);
+    free_safe(units_with_stars_gc);
+    units_by_stars_gc = NULL;
+    units_with_stars_gc = NULL;
+    unit_max_stars_gc = 0;
+
+    have_gc_pmt = 0;
+}
+
+void pmt_cleanup_bb(void) {
+    uint32_t i;
+
+    free_safe(pmt_tb_offsets_bb);
+    pmt_tb_offsets_bb = NULL;
+
+    for (i = 0; i < num_weapon_types_bb; ++i) {
+        free_safe(weapons_bb[i]);
+    }
+    free_safe(weapons_bb);
+    free_safe(num_weapons_bb);
+    weapons_bb = NULL;
+    num_weapons_bb = NULL;
+    num_weapon_types_bb = 0;
+    weapon_lowest_bb = EMPTY_STRING;
+
+    for (i = 0; i < num_guard_types_bb; ++i) {
+        free_safe(guards_bb[i]);
+    }
+    free_safe(guards_bb);
+    free_safe(num_guards_bb);
     guards_bb = NULL;
     num_guards_bb = NULL;
-    units = NULL;
-    units_bb = NULL;
-    units_with_stars = NULL;
-    units_by_stars = NULL;
-    units_with_stars_gc = NULL;
-    units_by_stars_gc = NULL;
-    units_with_stars_bb = NULL;
-    units_by_stars_bb = NULL;
-    star_table = NULL;
-    star_table_gc = NULL;
-    star_table_bb = NULL;
-    num_weapon_types = 0;
-    num_weapon_types_gc = 0;
-    num_weapon_types_bb = 0;
-    num_guard_types = 0;
-    num_guard_types_gc = 0;
     num_guard_types_bb = 0;
-    num_units = 0;
-    num_units_gc = 0;
+    guard_lowest_bb = EMPTY_STRING;
+
+    free_safe(units_bb);
+    units_bb = NULL;
     num_units_bb = 0;
-    weapon_lowest = guard_lowest = unit_lowest = EMPTY_STRING;
-    weapon_lowest_gc = guard_lowest_gc = unit_lowest_gc = EMPTY_STRING;
-    weapon_lowest_bb = guard_lowest_bb = unit_lowest_bb = EMPTY_STRING;
-    star_max = 0;
-    star_max_gc = 0;
+    unit_lowest_bb = EMPTY_STRING;
+
+    free_safe(star_table_bb);
+    star_table_bb = NULL;
     star_max_bb = 0;
-    unit_max_stars = 0;
-    unit_max_stars_gc = 0;
+
+    free_safe(units_by_stars_bb);
+    free_safe(units_with_stars_bb);
+    units_by_stars_bb = NULL;
+    units_with_stars_bb = NULL;
     unit_max_stars_bb = 0;
-    have_v2_pmt = have_gc_pmt = have_bb_pmt = 0;
+
+    free_safe(mags_bb);
+    mags_bb = NULL;
+    num_mags_bb = 0;
+    mag_lowest_bb = EMPTY_STRING;
+
+    for (i = 0; i < num_tool_types_bb; ++i) {
+        free_safe(tools_bb[i]);
+    }
+    free_safe(tools_bb);
+    free_safe(num_tools_bb);
+    tools_bb = NULL;
+    num_tools_bb = NULL;
+    num_tool_types_bb = 0;
+    tool_lowest_bb = EMPTY_STRING;
+
+    have_bb_pmt = 0;
+}
+
+void pmt_cleanup(void) {
+
+    /* 清理V2版本的 ItemPMT数据 */
+    pmt_cleanup_v2();
+
+    /* 清理GC版本的 ItemPMT数据 */
+    pmt_cleanup_gc();
+
+    /* 清理BB版本的 ItemPMT数据 */
+    pmt_cleanup_bb();
+
 }
 
 int pmt_lookup_weapon_v2(uint32_t code, pmt_weapon_v2_t *rv) {
@@ -1400,12 +1608,12 @@ int pmt_lookup_weapon_v2(uint32_t code, pmt_weapon_v2_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a weapon */
+    /* 确保我们正在查找 weapon */
     if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_weapon_types) {
         return -3;
     }
@@ -1414,7 +1622,7 @@ int pmt_lookup_weapon_v2(uint32_t code, pmt_weapon_v2_t *rv) {
         return -4;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &weapons[parts[1]][parts[2]], sizeof(pmt_weapon_v2_t));
     return 0;
 }
@@ -1432,7 +1640,7 @@ int pmt_lookup_guard_v2(uint32_t code, pmt_guard_v2_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a guard item */
+    /* 确保我们正在查找 guard item */
     if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
@@ -1442,7 +1650,7 @@ int pmt_lookup_guard_v2(uint32_t code, pmt_guard_v2_t *rv) {
         return -3;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_guard_types) {
         return -4;
     }
@@ -1451,7 +1659,7 @@ int pmt_lookup_guard_v2(uint32_t code, pmt_guard_v2_t *rv) {
         return -5;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &guards[parts[1] - 1][parts[2]], sizeof(pmt_guard_v2_t));
     return 0;
 }
@@ -1469,7 +1677,7 @@ int pmt_lookup_unit_v2(uint32_t code, pmt_unit_v2_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a unit */
+    /* 确保我们正在查找 unit */
     if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
@@ -1478,7 +1686,7 @@ int pmt_lookup_unit_v2(uint32_t code, pmt_unit_v2_t *rv) {
         return -3;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &units[parts[2]], sizeof(pmt_unit_v2_t));
     return 0;
 }
@@ -1546,12 +1754,12 @@ int pmt_lookup_weapon_gc(uint32_t code, pmt_weapon_gc_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a weapon */
+    /* 确保我们正在查找 weapon */
     if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_weapon_types_gc) {
         return -3;
     }
@@ -1560,7 +1768,7 @@ int pmt_lookup_weapon_gc(uint32_t code, pmt_weapon_gc_t *rv) {
         return -4;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &weapons_gc[parts[1]][parts[2]], sizeof(pmt_weapon_gc_t));
     return 0;
 }
@@ -1578,7 +1786,7 @@ int pmt_lookup_guard_gc(uint32_t code, pmt_guard_gc_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a guard item */
+    /* 确保我们正在查找 guard item */
     if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
@@ -1588,7 +1796,7 @@ int pmt_lookup_guard_gc(uint32_t code, pmt_guard_gc_t *rv) {
         return -3;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_guard_types_gc) {
         return -4;
     }
@@ -1597,7 +1805,7 @@ int pmt_lookup_guard_gc(uint32_t code, pmt_guard_gc_t *rv) {
         return -5;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &guards_gc[parts[1] - 1][parts[2]], sizeof(pmt_guard_gc_t));
     return 0;
 }
@@ -1615,7 +1823,7 @@ int pmt_lookup_unit_gc(uint32_t code, pmt_unit_gc_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a unit */
+    /* 确保我们正在查找 unit */
     if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
@@ -1624,7 +1832,7 @@ int pmt_lookup_unit_gc(uint32_t code, pmt_unit_gc_t *rv) {
         return -3;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &units_gc[parts[2]], sizeof(pmt_unit_gc_t));
     return 0;
 }
@@ -1692,12 +1900,12 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a weapon */
+    /* 确保我们正在查找 weapon */
     if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_weapon_types_bb) {
         return -3;
     }
@@ -1706,7 +1914,7 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
         return -4;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &weapons_bb[parts[1]][parts[2]], sizeof(pmt_weapon_bb_t));
     return 0;
 }
@@ -1724,7 +1932,7 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a guard item */
+    /* 确保我们正在查找 guard item */
     if(parts[0] != ITEM_TYPE_GUARD) {
         return -2;
     }
@@ -1734,7 +1942,7 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
         return -3;
     }
 
-    /* Make sure that we don't go out of bounds anywhere */
+    /* 确保我们在任何地方都不越界 */
     if(parts[1] > num_guard_types_bb) {
         return -4;
     }
@@ -1743,7 +1951,7 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
         return -5;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &guards_bb[parts[1] - 1][parts[2]], sizeof(pmt_guard_bb_t));
     return 0;
 }
@@ -1761,7 +1969,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-    /* Make sure we're looking up a unit */
+    /* 确保我们正在查找 unit */
     if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
         return -2;
     }
@@ -1770,8 +1978,73 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
         return -3;
     }
 
-    /* Grab the data and copy it out */
+    /* 获取数据并将其复制出来 */
     memcpy(rv, &units_bb[parts[2]], sizeof(pmt_unit_bb_t));
+    return 0;
+}
+
+int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
+    uint8_t parts[3] = { 0 };
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt || !rv) {
+        return -1;
+    }
+
+    parts[0] = (uint8_t)(code & 0xFF);
+    parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+    /* 确保我们正在查找 guard item */
+    if (parts[0] != ITEM_TYPE_MAG) {
+        return -2;
+    }
+
+    /* 确保我们在任何地方都不越界 */
+    if (parts[1] > num_mags_bb) {
+        return -3;
+    }
+
+    /* 确保我们在任何地方都不越界 */
+    if (parts[2] == 0x00) {
+        return -4;
+    }
+
+    /* 获取数据并将其复制出来 */
+    memcpy(rv, &mags_bb[parts[1]], sizeof(pmt_mag_bb_t));
+    return 0;
+}
+
+int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
+    uint8_t parts[3] = { 0 };
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt || !rv) {
+        return -1;
+    }
+
+    parts[0] = (uint8_t)(code & 0xFF);
+    parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+    /* 确保我们正在查找 weapon */
+    if (parts[0] != ITEM_TYPE_TOOL) {
+        return -2;
+    }
+
+    /* 确保我们在任何地方都不越界 */
+    if (parts[1] > num_tool_types_bb) {
+        return -3;
+    }
+
+    if (parts[2] >= num_tools_bb[parts[1]]) {
+        return -4;
+    }
+
+    /* 获取数据并将其复制出来 */
+    memcpy(rv, &tools_bb[parts[1]][parts[2]], sizeof(pmt_tool_bb_t));
     return 0;
 }
 

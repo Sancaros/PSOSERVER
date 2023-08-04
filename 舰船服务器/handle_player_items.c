@@ -782,59 +782,59 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         //}
 
     }
-    else {
-        // Use item combinations table from ItemPMT
-        bool combo_applied = false;
-        for (size_t z = 0; z < player->inv.item_count; z++) {
-            iitem_t inv_item = player->inv.iitems[z];
-            if (!(inv_item.flags & 0x00000008)) {
-                continue;
-            }
-            //try {
-            //    item_t combo = s->item_parameter_table->get_item_combination(
-            //        item.data, inv_item.data);
-            //    if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
-            //        ERR_LOG("item combination requires specific char_class");
-            //    }
-            //    if (combo.mag_level != 0xFF) {
-            //        if (inv_item.data.datab[0] != 2) {
-            //            ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
-            //        }
-            //        if (inv_item.data.compute_mag_level() < combo.mag_level) {
-            //            ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
-            //        }
-            //    }
-            //    if (combo.grind != 0xFF) {
-            //        if (inv_item.data.datab[0] != 0) {
-            //            ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
-            //        }
-            //        if (inv_item.data.datab[3] < combo.grind) {
-            //            ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
-            //        }
-            //    }
-            //    if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
-            //        ERR_LOG("item combination applies with level requirement, but player level is too low");
-            //    }
-            //    // If we get here, then the combo applies
-            //    if (combo_applied) {
-            //        ERR_LOG("multiple combinations apply");
-            //    }
-            //    combo_applied = true;
+    //else {
+    //    // Use item combinations table from ItemPMT
+    //    bool combo_applied = false;
+    //    for (size_t z = 0; z < player->inv.item_count; z++) {
+    //        iitem_t inv_item = player->inv.iitems[z];
+    //        if (!(inv_item.flags & 0x00000008)) {
+    //            continue;
+    //        }
+    //        //try {
+    //        //    item_t combo = s->item_parameter_table->get_item_combination(
+    //        //        item.data, inv_item.data);
+    //        //    if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
+    //        //        ERR_LOG("item combination requires specific char_class");
+    //        //    }
+    //        //    if (combo.mag_level != 0xFF) {
+    //        //        if (inv_item.data.datab[0] != 2) {
+    //        //            ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+    //        //        }
+    //        //        if (inv_item.data.compute_mag_level() < combo.mag_level) {
+    //        //            ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+    //        //        }
+    //        //    }
+    //        //    if (combo.grind != 0xFF) {
+    //        //        if (inv_item.data.datab[0] != 0) {
+    //        //            ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+    //        //        }
+    //        //        if (inv_item.data.datab[3] < combo.grind) {
+    //        //            ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+    //        //        }
+    //        //    }
+    //        //    if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
+    //        //        ERR_LOG("item combination applies with level requirement, but player level is too low");
+    //        //    }
+    //        //    // If we get here, then the combo applies
+    //        //    if (combo_applied) {
+    //        //        ERR_LOG("multiple combinations apply");
+    //        //    }
+    //        //    combo_applied = true;
 
-            //    inv_item.data.datab[0] = combo.result_item[0];
-            //    inv_item.data.datab[1] = combo.result_item[1];
-            //    inv_item.data.datab[2] = combo.result_item[2];
-            //    inv_item.data.datab[3] = 0; // Grind
-            //    inv_item.data.datab[4] = 0; // Flags + special
-            //}
-            //catch (const out_of_range&) {
-            //}
-        }
+    //        //    inv_item.data.datab[0] = combo.result_item[0];
+    //        //    inv_item.data.datab[1] = combo.result_item[1];
+    //        //    inv_item.data.datab[2] = combo.result_item[2];
+    //        //    inv_item.data.datab[3] = 0; // Grind
+    //        //    inv_item.data.datab[4] = 0; // Flags + special
+    //        //}
+    //        //catch (const out_of_range&) {
+    //        //}
+    //    }
 
-        if (!combo_applied) {
-            ERR_LOG("no combinations apply");
-        }
-    }
+    //    if (!combo_applied) {
+    //        ERR_LOG("no combinations apply");
+    //    }
+    //}
 
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't

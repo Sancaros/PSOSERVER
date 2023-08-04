@@ -2968,7 +2968,7 @@ static int handle_sdrops(ship_client_t *c, const char *params) {
         case CLIENT_VERSION_DCV1:
         case CLIENT_VERSION_DCV2:
         case CLIENT_VERSION_PC:
-            if(!pt_v2_enabled() || !map_have_v2_maps() || !pmt_v2_enabled() ||
+            if(!pt_v2_enabled() || !map_have_v2_maps() || !pmt_enabled_v2() ||
                !rt_v2_enabled())
                 return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
                                             "suported on this ship for\n"
@@ -2978,7 +2978,7 @@ static int handle_sdrops(ship_client_t *c, const char *params) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_XBOX:
             /* XXXX: GM-only until they're fixed... */
-            if(!pt_gc_enabled() || !map_have_gc_maps() || !pmt_gc_enabled() ||
+            if(!pt_gc_enabled() || !map_have_gc_maps() || !pmt_enabled_gc() ||
                !rt_gc_enabled() || !LOCAL_GM(c))
                 return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
                                             "suported on this ship for\n"
@@ -2990,7 +2990,7 @@ static int handle_sdrops(ship_client_t *c, const char *params) {
 
         case CLIENT_VERSION_BB:
             /* XXXX: GM-only until they're fixed... */
-            if (!pt_bb_enabled() || !map_have_bb_maps() || !pmt_bb_enabled() ||
+            if (!pt_bb_enabled() || !map_have_bb_maps() || !pmt_enabled_bb() ||
                 !rt_bb_enabled() || !LOCAL_GM(c))
                 return send_txt(c, "%s", __(c, "\tE\tC7Server-side drops not\n"
                     "suported on this ship for\n"

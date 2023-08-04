@@ -150,7 +150,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
             case CLIENT_VERSION_PC:
-                if(pt_v2_enabled() && map_have_v2_maps() && pmt_v2_enabled() &&
+                if(pt_v2_enabled() && map_have_v2_maps() && pmt_enabled_v2() &&
                    rt_v2_enabled() && !l->battle && !l->challenge) {
                     l->dropfunc = pt_generate_v2_drop;
                     l->flags |= LOBBY_FLAG_SERVER_DROPS;
@@ -159,7 +159,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
 
             case CLIENT_VERSION_GC:
             case CLIENT_VERSION_XBOX: /* XXXX? */
-                if(pt_gc_enabled() && map_have_gc_maps() && pmt_gc_enabled() &&
+                if(pt_gc_enabled() && map_have_gc_maps() && pmt_enabled_gc() &&
                    rt_gc_enabled() && !l->battle && !l->challenge) {
                     l->dropfunc = pt_generate_gc_drop;
                     l->flags |= LOBBY_FLAG_SERVER_DROPS;
@@ -167,7 +167,7 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
                 return;
 
             case CLIENT_VERSION_BB:
-                if (pt_bb_enabled() && map_have_bb_maps() && pmt_bb_enabled() &&
+                if (pt_bb_enabled() && map_have_bb_maps() && pmt_enabled_bb() &&
                     rt_bb_enabled()/* && !l->battle && !l->challenge*/) {
                     l->dropfunc = pt_generate_bb_drop;
                     l->flags |= LOBBY_FLAG_SERVER_DROPS;

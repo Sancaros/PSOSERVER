@@ -31,6 +31,7 @@
     <ClInclude Include="pso_pack.h" />
     <ClInclude Include="pso_packet_length.h" />
     <ClInclude Include="pso_ping.h" />
+    <ClInclude Include="pso_struct_mag_feed_table.h" />
     <ClInclude Include="pso_struct_records.h" />
     <ClInclude Include="pso_struct_item.h" />
     <ClInclude Include="pso_struct_length.h" />

@@ -153,6 +153,8 @@ typedef struct Item_Pmt {
     PMT_ARMOR_SHIELD_SALEDIVISOR* armorshieldsaledivisortable;
 }ITEMPMT;
 
+static int pmt_size = 0x15360;
+
 //ITEMPMT Item_Pmt_Tbl;
 
 //https://www.pioneer2.net/community/threads/editing-some-things-p.71/

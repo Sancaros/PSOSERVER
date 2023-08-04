@@ -209,19 +209,6 @@ typedef struct pmt_unit_bb {
     uint8_t unused2[3];
 } PACKED pmt_unit_bb_t;
 
-/* 工具参数结构 */
-typedef struct pmt_tool_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
-    uint16_t amount;
-    uint16_t tech;
-    uint32_t cost;
-    uint8_t itemFlag;
-    uint8_t reserved[3];
-} PACKED pmt_tool_bb_t;
-
 typedef struct pmt_mag_v2 {
     uint32_t index;
     uint16_t feed_table;
@@ -258,6 +245,7 @@ typedef struct pmt_mag_gc {
     uint8_t unused[3];
 } PACKED pmt_mag_gc_t;
 
+/* 玛古 ItemPmt参数结构 */
 typedef struct pmt_mag_bb {
     uint32_t index;
     uint16_t model;
@@ -278,32 +266,82 @@ typedef struct pmt_mag_bb {
     uint8_t unused2[3];
 } PACKED pmt_mag_bb_t;
 
+/* 工具 ItemPmt参数结构 */
+typedef struct pmt_tool_bb {
+    uint32_t index;
+    uint16_t model;
+    uint16_t skin;
+    uint32_t team_points;
+    uint16_t amount;
+    uint16_t tech;
+    uint32_t cost;
+    uint8_t itemFlag;
+    uint8_t reserved[3];
+} PACKED pmt_tool_bb_t;
+
+typedef struct pmt_itemcombination_bb {
+    uint8_t used_item[3];
+    uint8_t equipped_item[3];
+    uint8_t result_item[3];
+    uint8_t mag_level;
+    uint8_t grind;
+    uint8_t level;
+    uint8_t char_class;
+    uint8_t unused[3];
+} PACKED pmt_itemcombination_bb_t;
+
+typedef struct pmt_techniqueboost_bb {
+    uint32_t tech1;
+    float boost1;
+    uint32_t tech2;
+    float boost2;
+    uint32_t tech3;
+    float boost3;
+} PACKED pmt_techniqueboost_bb_t;
+
+typedef struct pmt_eventitem_bb {
+    uint8_t item[3];
+    uint8_t probability;
+} PACKED pmt_eventitem_bb_t;
+
+typedef struct pmt_unsealableitem_bb {
+    uint8_t item[3];
+    uint8_t unused;
+} PACKED pmt_unsealableitem_bb_t;
+
+typedef struct pmt_nonweaponsaledivisors_bb {
+    float armor_divisor;
+    float shield_divisor;
+    float unit_divisor;
+    float mag_divisor;
+} PACKED pmt_nonweaponsaledivisors_bb_t;
+
 typedef struct pmt_table_offsets_v3 {
     union {
         struct {
-            /* 00 00 / 14884 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
-            /* 01 04 / 1478C */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
-            /* 02 08 / 1479C */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
-            /* 03 0C / 147AC */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
-            /* 04 10 / 147A4 */ uint32_t mag_table; // -> {count, offset -> [Mag]}
-            /* 05 14 / 0F4B8 */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
-            /* 06 18 / 0DE7C */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
-            /* 07 1C / 0E194 */ uint32_t weapon_range_table; // -> ???
-            /* 08 20 / 0F5A8 */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
-            /* 09 24 / 0F83C */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
-            /* 10 28 / 1502C */ uint32_t mag_feed_table; // -> MagFeedResultsTable
-            /* 11 2C / 0FB0C */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
-            /* 12 30 / 0FE3C */ uint32_t special_data_table; // -> [Special]
-            /* 13 34 / 0FEE0 */ uint32_t weapon_effect_table; // -> [16-byte structs]
-            /* 14 38 / 1275C */ uint32_t stat_boost_table; // -> [StatBoost]
-            /* 15 3C / 11C80 */ uint32_t shield_effect_table; // -> [8-byte structs]
-            /* 16 40 / 12894 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
-            /* 17 44 / 14FF4 */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
-            /* 18 48 / 12754 */ uint32_t unknown_a1;
-            /* 19 4C / 14278 */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
-            /* 20 50 / 15014 */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
-            /* 21 54 / 1501C */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
-            /* 22 58 / 15024 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
+            /* 00 00 / 14884 0x0001489C */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
+            /* 01 04 / 1478C 0x000147A4 */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
+            /* 02 08 / 1479C 0x000147B4 */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
+            /* 03 0C / 147AC 0x000147C4 */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
+            /* 04 10 / 147A4 0x000147BC */ uint32_t mag_table; // -> {count, offset -> [Mag]}
+            /* 05 14 / 0F4B8 0x0000F4CC */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
+            /* 06 18 / 0DE7C 0x0000DE7C */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
+            /* 07 1C / 0E194 0x0000E194 */ uint32_t weapon_range_table; // -> ???
+            /* 08 20 / 0F5A8 0x0000F5BC */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
+            /* 09 24 / 0F83C 0x0000F850 */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
+            /* 10 28 / 1502C 0x00015044 */ uint32_t mag_feed_table; // -> MagFeedResultsTable
+            /* 11 2C / 0FB0C 0x0000FB20 */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
+            /* 12 30 / 0FE3C 0x0000FE50 */ uint32_t special_data_table; // -> [Special]
+            /* 13 34 / 0FEE0 0x0000FEF4 */ uint32_t weapon_effect_table; // -> [16-byte structs]
+            /* 14 38 / 1275C 0x00012770 */ uint32_t stat_boost_table; // -> [StatBoost]
+            /* 15 3C / 11C80 0x00011C94 */ uint32_t shield_effect_table; // -> [8-byte structs]
+            /* 16 40 / 12894 0x000128A8 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
+            /* 17 44 / 14FF4 0x0001500C */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
+            /* 18 48 / 12754 0x00012768 */ uint32_t unknown_a1;
+            /* 19 4C / 14278 0x0001428C */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
+            /* 20 50 / 15014 0x0001502C */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
+            /* 21 54 / 1501C 0x00015034 */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
+            /* 22 58 / 15024 0x0001503C */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
         };
         uint32_t ptr[23];
     };
@@ -340,6 +378,8 @@ static uint32_t* units_with_stars = NULL;
 static uint8_t unit_max_stars = 0;
 
 /* PSOGC data. */
+static pmt_table_offsets_v3_t* pmt_tb_offsets_gc = NULL;
+
 static pmt_weapon_gc_t** weapons_gc = NULL;
 static uint32_t* num_weapons_gc = NULL;
 static uint32_t num_weapon_types_gc = 0;
@@ -362,26 +402,21 @@ static uint32_t* units_with_stars_gc = NULL;
 static uint8_t unit_max_stars_gc = 0;
 
 /* PSOBB data. */
-static pmt_table_offsets_v3_t* pmt_tb_offsets = NULL;
-
-
-static pmt_mag_bb_t* pmt_mag_bb = NULL;
-
-static pmt_tool_bb_t* pmt_tool_bb = NULL;
+static pmt_table_offsets_v3_t* pmt_tb_offsets_bb = NULL;
 
 static pmt_weapon_bb_t** weapons_bb = NULL;
 static uint32_t* num_weapons_bb = NULL;
 static uint32_t num_weapon_types_bb = 0;
-static uint32_t weapon_lowest_bb = 0xFFFFFFFF;
+static uint32_t weapon_lowest_bb = EMPTY_STRING;
 
 static pmt_guard_bb_t** guards_bb = NULL;
 static uint32_t* num_guards_bb = NULL;
 static uint32_t num_guard_types_bb = 0;
-static uint32_t guard_lowest_bb = 0xFFFFFFFF;
+static uint32_t guard_lowest_bb = EMPTY_STRING;
 
 static pmt_unit_bb_t* units_bb = NULL;
 static uint32_t num_units_bb = 0;
-static uint32_t unit_lowest_bb = 0xFFFFFFFF;
+static uint32_t unit_lowest_bb = EMPTY_STRING;
 
 static uint8_t* star_table_bb = NULL;
 static uint32_t star_max_bb = 0;
@@ -390,6 +425,15 @@ static uint64_t* units_by_stars_bb = NULL;
 static uint32_t* units_with_stars_bb = NULL;
 static uint8_t unit_max_stars_bb = 0;
 
+static pmt_mag_bb_t* mags_bb = NULL;
+static uint32_t num_mags_bb = 0;
+static uint32_t mag_lowest_bb = EMPTY_STRING;
+
+static pmt_tool_bb_t** tools_bb = NULL;
+static uint32_t* num_tools_bb = NULL;
+static uint32_t num_tool_types_bb = 0;
+static uint32_t tool_lowest_bb = EMPTY_STRING;
+
 static int have_v2_pmt = 0;
 static int have_gc_pmt = 0;
 static int have_bb_pmt = 0;
@@ -397,9 +441,9 @@ static int have_bb_pmt = 0;
 int pmt_read_v2(const char* fn, int norestrict);
 int pmt_read_gc(const char* fn, int norestrict);
 int pmt_read_bb(const char* fn, int norestrict);
-int pmt_v2_enabled(void);
-int pmt_gc_enabled(void);
-int pmt_bb_enabled(void);
+int pmt_enabled_v2(void);
+int pmt_enabled_gc(void);
+int pmt_enabled_bb(void);
 
 void pmt_cleanup(void);
 
