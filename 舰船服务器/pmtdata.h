@@ -468,6 +468,9 @@ static uint32_t* num_tools_bb = NULL;
 static uint32_t num_tool_types_bb = 0;
 static uint32_t tool_lowest_bb = EMPTY_STRING;
 
+static pmt_itemcombination_bb_t* itemcombination_bb = NULL;
+static uint32_t itemcombinations_max_bb = 0;
+
 static int have_v2_pmt = 0;
 static int have_gc_pmt = 0;
 static int have_bb_pmt = 0;
@@ -500,6 +503,9 @@ int pmt_random_unit_gc(uint8_t max, uint32_t item[4],
 int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t* rv);
 int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t* rv);
 int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t* rv);
+int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv);
+int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv);
+int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     struct mt19937_state* rng, lobby_t* l);

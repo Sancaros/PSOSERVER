@@ -599,54 +599,55 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
+    errno_t err = 0;
 
     psocn_bb_char_t* player = &src->bb_pl->character;
 
     if (src->mode)
         player = &src->mode_pl->bb;
 
-    iitem_t item = player->inv.iitems[item_index];
-    uint32_t item_identifier = primary_identifier(&item.data);
+    iitem_t* item = &player->inv.iitems[item_index];
+    uint32_t item_identifier = primary_identifier(&item->data);
 
-    iitem_t weapon = { 0 };
-    iitem_t armor = { 0 };
-    iitem_t mag = { 0 };
+    iitem_t* weapon = { 0 };
+    iitem_t* armor = { 0 };
+    iitem_t* mag = { 0 };
 
     if (is_common_consumable(item_identifier)) { // Monomate, etc.
         // Nothing to do (it should be deleted)
 
     }
     else if (item_identifier == 0x030200) { // Technique disk
-        uint8_t max_level = max_tech_level[item.data.datab[4]].max_lvl[player->dress_data.ch_class];
-        if (item.data.datab[2] > max_level) {
+        uint8_t max_level = max_tech_level[item->data.datab[4]].max_lvl[player->dress_data.ch_class];
+        if (item->data.datab[2] > max_level) {
             ERR_LOG("technique level too high");
             return -1;
         }
-        player->tech.all[item.data.datab[4]] = item.data.datab[2];
+        player->tech.all[item->data.datab[4]] = item->data.datab[2];
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030A00) { // Grinder
-        if (item.data.datab[2] > 2) {
+        if (item->data.datab[2] > 2) {
             ERR_LOG("incorrect grinder value");
             return -2;
         }
-        weapon = player->inv.iitems[find_equipped_weapon(&player->inv)];
+        weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
         pmt_weapon_bb_t weapon_def = { 0 };
-        if (pmt_lookup_weapon_bb(weapon.data.datal[0], &weapon_def)) {
+        if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
             ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                 src->guildcard);
             return -3;
         }
 
-        if (weapon.data.datab[3] >= weapon_def.max_grind) {
+        if (weapon->data.datab[3] >= weapon_def.max_grind) {
             ERR_LOG("weapon already at maximum grind");
             return -4;
         }
-        weapon.data.datab[3] += (item.data.datab[2] + 1);
+        weapon->data.datab[3] += (item->data.datab[2] + 1);
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030B00) { // Material
-        switch (item.data.datab[2]) {
+        switch (item->data.datab[2]) {
         case 0: // Power Material
             player->disp.stats.atp += 2;
             break;
@@ -675,84 +676,84 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
     }
     else if ((item_identifier & 0xFFFF00) == 0x030F00) { // AddSlot
-        armor = player->inv.iitems[find_equipped_armor(&player->inv)];
-        if (armor.data.datab[5] >= 4) {
+        armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
+        if (armor->data.datab[5] >= 4) {
             ERR_LOG("armor already at maximum slot count");
             return -6;
         }
-        armor.data.datab[5]++;
+        armor->data.datab[5]++;
 
     }
-    else if (is_wrapped(&item.data)) {
+    else if (is_wrapped(&item->data)) {
         // Unwrap present
-        unwrap(&item.data);
+        unwrap(&item->data);
         should_delete_item = false;
 
     }
     else if (item_identifier == 0x003300) {
         // Unseal Sealed J-Sword => Tsumikiri J-Sword
-        item.data.datab[1] = 0x32;
+        item->data.datab[1] = 0x32;
         should_delete_item = false;
 
     }
     else if (item_identifier == 0x00AB00) {
         // Unseal Lame d'Argent => Excalibur
-        item.data.datab[1] = 0xAC;
+        item->data.datab[1] = 0xAC;
         should_delete_item = false;
 
     }
     else if (item_identifier == 0x01034D) {
         // Unseal Limiter => Adept
-        item.data.datab[2] = 0x4E;
+        item->data.datab[2] = 0x4E;
         should_delete_item = false;
 
     }
     else if (item_identifier == 0x01034F) {
         // Unseal Swordsman Lore => Proof of Sword-Saint
-        item.data.datab[2] = 0x50;
+        item->data.datab[2] = 0x50;
         should_delete_item = false;
 
     }
     else if (item_identifier == 0x030C00) {
         // Cell of MAG 502
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = (player->dress_data.section & 1) ? 0x1D : 0x21;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = (player->dress_data.section & 1) ? 0x1D : 0x21;
 
     }
     else if (item_identifier == 0x030C01) {
         // Cell of MAG 213
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = (player->dress_data.section & 1) ? 0x27 : 0x22;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = (player->dress_data.section & 1) ? 0x27 : 0x22;
 
     }
     else if (item_identifier == 0x030C02) {
         // Parts of RoboChao
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = 0x28;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = 0x28;
 
     }
     else if (item_identifier == 0x030C03) {
         // Heart of Opa Opa
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = 0x29;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = 0x29;
 
     }
     else if (item_identifier == 0x030C04) {
         // Heart of Pian
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = 0x2A;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = 0x2A;
 
     }
     else if (item_identifier == 0x030C05) {
         // Heart of Chao
-        mag = player->inv.iitems[find_equipped_mag(&player->inv)];
-        mag.data.datab[1] = 0x2B;
+        mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+        mag->data.datab[1] = 0x2B;
 
     }
     /* TODO */
     else if ((item_identifier & 0xFFFF00) == 0x031500) {
         // Christmas Present, etc. - use unwrap_table + probabilities therein
-        //auto table = s->item_parameter_table->get_event_items(item.data.datab[2]);
+        //auto table = s->item_parameter_table->get_event_items(item->data.datab[2]);
         //size_t sum = 0;
         //for (size_t z = 0; z < table.second; z++) {
         //    sum += table.first[z].probability;
@@ -767,79 +768,86 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         //        det -= entry.probability;
         //    }
         //    else {
-        //        item.data.data2l = 0;
-        //        item.data.datab[0] = entry.item[0];
-        //        item.data.datab[1] = entry.item[1];
-        //        item.data.datab[2] = entry.item[2];
-        //        memset(item.data.datab[3], 0, 3);
-        //        //item.data.datab.clear_after(3);
+        //        item->data.data2l = 0;
+        //        item->data.datab[0] = entry.item[0];
+        //        item->data.datab[1] = entry.item[1];
+        //        item->data.datab[2] = entry.item[2];
+        //        memset(item->data.datab[3], 0, 3);
+        //        //item->data.datab.clear_after(3);
         //        should_delete_item = false;
 
         //        lobby_t* l = src->cur_lobby;
-        //        subcmd_send_lobby_bb_create_inv_item(src, item.data, 1, true);
+        //        subcmd_send_lobby_bb_create_inv_item(src, item->data, 1, true);
         //        break;
         //    }
         //}
 
     }
-    //else {
-    //    // Use item combinations table from ItemPMT
-    //    bool combo_applied = false;
-    //    for (size_t z = 0; z < player->inv.item_count; z++) {
-    //        iitem_t inv_item = player->inv.iitems[z];
-    //        if (!(inv_item.flags & 0x00000008)) {
-    //            continue;
-    //        }
-    //        //try {
-    //        //    item_t combo = s->item_parameter_table->get_item_combination(
-    //        //        item.data, inv_item.data);
-    //        //    if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
-    //        //        ERR_LOG("item combination requires specific char_class");
-    //        //    }
-    //        //    if (combo.mag_level != 0xFF) {
-    //        //        if (inv_item.data.datab[0] != 2) {
-    //        //            ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
-    //        //        }
-    //        //        if (inv_item.data.compute_mag_level() < combo.mag_level) {
-    //        //            ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
-    //        //        }
-    //        //    }
-    //        //    if (combo.grind != 0xFF) {
-    //        //        if (inv_item.data.datab[0] != 0) {
-    //        //            ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
-    //        //        }
-    //        //        if (inv_item.data.datab[3] < combo.grind) {
-    //        //            ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
-    //        //        }
-    //        //    }
-    //        //    if (combo.level != 0xFF && player->disp.stats.level + 1 < combo.level) {
-    //        //        ERR_LOG("item combination applies with level requirement, but player level is too low");
-    //        //    }
-    //        //    // If we get here, then the combo applies
-    //        //    if (combo_applied) {
-    //        //        ERR_LOG("multiple combinations apply");
-    //        //    }
-    //        //    combo_applied = true;
+    else {
+        // Use item combinations table from ItemPMT
+        bool combo_applied = false;
+        pmt_itemcombination_bb_t combo = { 0 };
+        for (size_t z = 0; z < player->inv.item_count; z++) {
+            iitem_t* inv_item = &player->inv.iitems[z];
+            if (!(inv_item->flags & 0x00000008)) {
+                continue;
+            }
+            __try {
+                if(err = pmt_lookup_itemcombination_bb(item->data.datal[0], inv_item->data.datal[0], &combo)){
+                    ERR_LOG("pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", err);
+                    return -1;
+                }
 
-    //        //    inv_item.data.datab[0] = combo.result_item[0];
-    //        //    inv_item.data.datab[1] = combo.result_item[1];
-    //        //    inv_item.data.datab[2] = combo.result_item[2];
-    //        //    inv_item.data.datab[3] = 0; // Grind
-    //        //    inv_item.data.datab[4] = 0; // Flags + special
-    //        //}
-    //        //catch (const out_of_range&) {
-    //        //}
-    //    }
+                if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
+                    ERR_LOG("item combination requires specific char_class");
+                }
+                if (combo.mag_level != 0xFF) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG) {
+                        ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+                    }
+                    if (compute_mag_level(&inv_item->data) < combo.mag_level) {
+                        ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+                    }
+                }
+                if (combo.grind != 0xFF) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON) {
+                        ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+                    }
+                    if (inv_item->data.datab[3] < combo.grind) {
+                        ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+                    }
+                }
+                if (combo.level != 0xFF && player->disp.level + 1 < combo.level) {
+                    ERR_LOG("item combination applies with level requirement, but player level is too low");
+                }
+                // If we get here, then the combo applies
+                if (combo_applied) {
+                    DBG_LOG("multiple combinations apply");
+                }
+                combo_applied = true;
 
-    //    if (!combo_applied) {
-    //        ERR_LOG("no combinations apply");
-    //    }
-    //}
+                inv_item->data.datab[0] = combo.result_item[0];
+                inv_item->data.datab[1] = combo.result_item[1];
+                inv_item->data.datab[2] = combo.result_item[2];
+                inv_item->data.datab[3] = 0; // Grind
+                inv_item->data.datab[4] = 0; // Flags + special
+            }
+
+            __except (crash_handler(GetExceptionInformation())) {
+                // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+                ERR_LOG("使用物品合成出现错误.");
+            }
+        }
+
+        if (!combo_applied) {
+            ERR_LOG("no combinations apply");
+        }
+    }
 
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
-        remove_iitem(src, item.data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        remove_iitem(src, item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
     }
 
     return 0;

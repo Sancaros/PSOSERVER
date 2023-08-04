@@ -910,7 +910,7 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
 }
 
 static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
-    const pmt_table_offsets_v3_t* ptrs) {
+                         const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
     /* Make sure the pointers are sane... */
@@ -989,6 +989,64 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
                 tool_lowest_bb = tools_bb[i][j].index;
         }
     }
+
+    return 0;
+}
+
+static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    uint32_t values[2];
+
+    /* Make sure the pointers are sane... */
+    if (ptrs->combination_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has invalid tool pointers. "
+            "Please check it for validity!");
+        return -1;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(values, pmt + ptrs->combination_table, sizeof(uint32_t) * 2);
+    values[0] = LE32(values[0]);
+    values[1] = LE32(values[1]);
+
+    /* Make sure we have enough file... */
+    if (values[1] + sizeof(pmt_itemcombination_bb_t) * values[0] > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has unit table outside "
+            "of file bounds! Please check the file for validity!");
+        return -2;
+    }
+
+    itemcombinations_max_bb = values[0];
+    if (!(itemcombination_bb = (pmt_itemcombination_bb_t*)malloc(sizeof(pmt_itemcombination_bb_t) *
+        values[0]))) {
+        ERR_LOG("Cannot allocate space for BB units: %s",
+            strerror(errno));
+        itemcombinations_max_bb = 0;
+        return -3;
+    }
+
+    memcpy(itemcombination_bb, pmt + values[1], sizeof(pmt_itemcombination_bb_t) * values[0]);
+
+#ifdef DEBUG
+    for (int i = 0; i < itemcombinations_max_bb; ++i) {
+
+        DBG_LOG("i %d used_item 0x%02X", i, itemcombination_bb[i].used_item[0]);
+        DBG_LOG("i %d used_item 0x%02X", i, itemcombination_bb[i].used_item[1]);
+        DBG_LOG("i %d used_item 0x%02X", i, itemcombination_bb[i].used_item[2]);
+        DBG_LOG("i %d equipped_item 0x%02X", i, itemcombination_bb[i].equipped_item[0]);
+        DBG_LOG("i %d equipped_item 0x%02X", i, itemcombination_bb[i].equipped_item[1]);
+        DBG_LOG("i %d equipped_item 0x%02X", i, itemcombination_bb[i].equipped_item[2]);
+        DBG_LOG("i %d result_item 0x%02X", i, itemcombination_bb[i].result_item[0]);
+        DBG_LOG("i %d result_item 0x%02X", i, itemcombination_bb[i].result_item[1]);
+        DBG_LOG("i %d result_item 0x%02X", i, itemcombination_bb[i].result_item[2]);
+        getchar();
+
+
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+#endif
+    }
+
+#endif // DEBUG
 
     return 0;
 }
@@ -1416,8 +1474,14 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -14;
     }
 
-    /* Read in the mags values... */
+    /* Read in the tools values... */
     if (read_tools_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -15;
+    }
+
+    /* Read in the itemcombinations values... */
+    if (read_itemcombinations_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -15;
     }
@@ -1588,6 +1652,13 @@ void pmt_cleanup_bb(void) {
     num_tools_bb = NULL;
     num_tool_types_bb = 0;
     tool_lowest_bb = EMPTY_STRING;
+
+    free_safe(itemcombination_bb);
+    itemcombination_bb = NULL;
+    itemcombinations_max_bb = 0;
+
+
+
 
     have_bb_pmt = 0;
 }
@@ -2055,6 +2126,55 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
 
     /* 获取数据并将其复制出来 */
     memcpy(rv, &tools_bb[parts[1]][parts[2]], sizeof(pmt_tool_bb_t));
+    return 0;
+}
+
+int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv) {
+    size_t i = 0;
+    uint8_t parts[3] = { 0 }, eparts[3] = { 0 };
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt || !rv) {
+        return -1;
+    }
+
+    parts[0] = (uint8_t)(code & 0xFF);
+    parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+    eparts[0] = (uint8_t)(equip_code & 0xFF);
+    eparts[1] = (uint8_t)((equip_code >> 8) & 0xFF);
+    eparts[2] = (uint8_t)((equip_code >> 16) & 0xFF);
+
+    /* 确保我们正在查找 unit */
+    if (parts[0] != ITEM_TYPE_TOOL) {
+        return -2;
+    }
+
+    /* 确保我们在任何地方都不越界 */
+    if (parts[1] > num_tool_types_bb) {
+        return -3;
+    }
+
+    if (parts[2] >= num_tools_bb[parts[1]]) {
+        return -4;
+    }
+
+    for (i; i < itemcombinations_max_bb;i++) {
+        if (parts[0] == itemcombination_bb[i].used_item[0] && 
+            parts[1] == itemcombination_bb[i].used_item[1] &&
+            parts[2] == itemcombination_bb[i].used_item[2] &&
+            eparts[0] == itemcombination_bb[i].equipped_item[0] &&
+            eparts[1] == itemcombination_bb[i].equipped_item[1] &&
+            eparts[2] == itemcombination_bb[i].equipped_item[2]
+            ) {
+            /* 获取数据并将其复制出来 */
+            memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+            break;
+        }
+    }
+
     return 0;
 }
 

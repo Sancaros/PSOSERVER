@@ -400,6 +400,9 @@ enum mag_type {
 	Mag_0507
 };
 
+/* 计算玛古等级 */
+uint16_t compute_mag_level(const item_t* item);
+
 /* MAG 喂养函数 */
 void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index);
 
