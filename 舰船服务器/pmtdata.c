@@ -52,6 +52,16 @@ static int read_v2ptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[21]) {
 
     memcpy(ptrs, pmt + tmp, sizeof(uint32_t) * 21);
 
+#ifdef DEBUG
+
+    for (int i = 0; i < 21; ++i) {
+        DBG_LOG("v2 offset %02d 0x%08X", i, ptrs[i]);
+    }
+
+    getchar();
+
+#endif // DEBUG
+
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
     for(i = 0; i < 21; ++i) {
         ptrs[i] = LE32(ptrs[i]);

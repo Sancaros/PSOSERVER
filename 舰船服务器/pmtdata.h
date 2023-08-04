@@ -316,6 +316,39 @@ typedef struct pmt_nonweaponsaledivisors_bb {
     float mag_divisor;
 } PACKED pmt_nonweaponsaledivisors_bb_t;
 
+/* TODO V2 ItemPMT Offset Struct */
+typedef struct pmt_table_offsets_v2 {
+    union {
+        struct {
+            /*         GC    V2         */
+            /* 00 00 / 14884 0x00000013 */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
+            /* 01 04 / 1478C 0x00005AFC */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
+            /* 02 08 / 1479C 0x00005A5C */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
+            /* 03 0C / 147AC 0x00005A6C */ uint32_t tool_table; // -> [{count, offset -> [Tool]}](0x1A) (last if out of range)
+            /* 04 10 / 147A4 0x00005A7C */ uint32_t mag_table; // -> {count, offset -> [Mag]}
+            /* 05 14 / 0F4B8 0x00005A74 */ uint32_t attack_animation_table; // -> [uint8_t](0xED)
+            /* 06 18 / 0DE7C 0x00003DF8 */ uint32_t photon_color_table; // -> [0x24-byte structs](0x20)
+            /* 07 1C / 0E194 0x00002E4C */ uint32_t weapon_range_table; // -> ???
+            /* 08 20 / 0F5A8 0x000032CC */ uint32_t weapon_sale_divisor_table; // -> [float](0xED)
+            /* 09 24 / 0F83C 0x00003E84 */ uint32_t sale_divisor_table; // -> NonWeaponSaleDivisors
+            /* 10 28 / 1502C 0x000040A8 */ uint32_t mag_feed_table; // -> MagFeedResultsTable
+            /* 11 2C / 0FB0C 0x00005F4C */ uint32_t star_value_table; // -> [uint8_t] (indexed by .id from weapon, armor, etc.)
+            /* 12 30 / 0FE3C 0x00004378 */ uint32_t special_data_table; // -> [Special]
+            /* 13 34 / 0FEE0 0x00004540 */ uint32_t weapon_effect_table; // -> [16-byte structs]
+            /* 14 38 / 1275C 0x000045E4 */ uint32_t stat_boost_table; // -> [StatBoost]
+            /* 15 3C / 11C80 0x000058DC */ uint32_t shield_effect_table; // -> [8-byte structs]
+            /* 16 40 / 12894 0x00005704 */ uint32_t max_tech_level_table; // -> MaxTechniqueLevels
+            /* 17 44 / 14FF4 0x00000000 */ uint32_t combination_table; // -> {count, offset -> [ItemCombination]}
+            /* 18 48 / 12754 0x00000000 */ uint32_t unknown_a1;
+            /* 19 4C / 14278 0x00000000 */ uint32_t tech_boost_table; // -> [TechniqueBoost] (always 0x2C of them? from counts struct?)
+            /* 20 50 / 15014 0x00000000 */ uint32_t unwrap_table; // -> {count, offset -> [{count, offset -> [EventItem]}]}
+            /* 21 54 / 1501C 0x00000000 */ uint32_t unsealable_table; // -> {count, offset -> [UnsealableItem]}
+            /* 22 58 / 15024 0x00000000 */ uint32_t ranged_special_table; // -> {count, offset -> [4-byte structs]}
+        };
+        uint32_t ptr[21];
+    };
+} PACKED pmt_table_offsets_v2_t;
+
 typedef struct pmt_table_offsets_v3 {
     union {
         struct {
