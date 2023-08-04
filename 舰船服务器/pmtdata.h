@@ -319,6 +319,7 @@ typedef struct pmt_nonweaponsaledivisors_bb {
 typedef struct pmt_table_offsets_v3 {
     union {
         struct {
+            /*         GC    BB         */
             /* 00 00 / 14884 0x0001489C */ uint32_t weapon_table; // -> [{count, offset -> [Weapon]}](0xED)
             /* 01 04 / 1478C 0x000147A4 */ uint32_t armor_table; // -> [{count, offset -> [ArmorOrShield]}](2; armors and shields)
             /* 02 08 / 1479C 0x000147B4 */ uint32_t unit_table; // -> {count, offset -> [Unit]} (last if out of range)
