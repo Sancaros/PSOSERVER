@@ -27,6 +27,13 @@
 
 #include "pso_text.h"
 
+void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        array[i] = value & 0xFF;
+        value >>= 8;
+    }
+}
+
 void safe_free(const char* func, uint32_t line, void** ptr) {
     if (ptr != NULL && *ptr != NULL) {
         free(*ptr);

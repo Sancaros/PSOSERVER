@@ -471,6 +471,10 @@ static uint32_t tool_lowest_bb = EMPTY_STRING;
 static pmt_itemcombination_bb_t* itemcombination_bb = NULL;
 static uint32_t itemcombinations_max_bb = 0;
 
+static pmt_eventitem_bb_t** eventitem_bb = NULL;
+static uint32_t* num_eventitems_bb = NULL;
+static uint32_t num_eventitem_list_bb = 0;
+
 static int have_v2_pmt = 0;
 static int have_gc_pmt = 0;
 static int have_bb_pmt = 0;

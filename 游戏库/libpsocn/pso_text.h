@@ -51,6 +51,9 @@ typedef struct {
     size_t len;
 } Buffer;
 
+/* 32位数字转8位数组 */
+void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size);
+
 /* 安全擦除函数 */
 void SecureErase(void* buffer, size_t size);
 

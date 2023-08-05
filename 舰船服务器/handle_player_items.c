@@ -753,6 +753,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     /* TODO */
     else if ((item_identifier & 0xFFFF00) == 0x031500) {
         // Christmas Present, etc. - use unwrap_table + probabilities therein
+        pmt_eventitem_bb_t eventitem_table = { 0 };
         //auto table = s->item_parameter_table->get_event_items(item->data.datab[2]);
         //size_t sum = 0;
         //for (size_t z = 0; z < table.second; z++) {
@@ -787,43 +788,83 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         // Use item combinations table from ItemPMT
         bool combo_applied = false;
         pmt_itemcombination_bb_t combo = { 0 };
+        // Setting the eq variables here should fix problem with ADD SLOT and such.
+        int eq_wep = -1, eq_frame = -1, eq_barrier = -1, eq_mag = -1;
+
+        /* TODO 这里需要做判断 判断是MAG细胞 或是 武器 或是 装甲 */
+
         for (size_t z = 0; z < player->inv.item_count; z++) {
             iitem_t* inv_item = &player->inv.iitems[z];
             if (!(inv_item->flags & 0x00000008)) {
                 continue;
             }
-            __try {
-                if(err = pmt_lookup_itemcombination_bb(item->data.datal[0], inv_item->data.datal[0], &combo)){
-                    ERR_LOG("pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", err);
-                    return -1;
+
+            switch (inv_item->data.datab[0]) {
+            case ITEM_TYPE_WEAPON:
+                eq_wep = z;
+                break;
+
+            case ITEM_TYPE_GUARD:
+                switch (inv_item->data.datab[1]) {
+                case ITEM_SUBTYPE_FRAME:
+                    eq_frame = z;
+                    break;
+
+                case ITEM_SUBTYPE_BARRIER:
+                    eq_barrier = z;
+                    break;
                 }
+                break;
+
+            case ITEM_TYPE_MAG:
+                eq_mag = z;
+                break;
+            }
+
+            __try {
+                if (err = pmt_lookup_itemcombination_bb(item->data.datal[0], inv_item->data.datal[0], &combo)) {
+#ifdef DEBUG
+                    ERR_LOG("pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", err);
+#endif // DEBUG
+                    continue;
+                }
+
 
                 if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
                     ERR_LOG("item combination requires specific char_class");
+                    ERR_LOG("combo.class %d player %d", combo.char_class, player->dress_data.ch_class);
                 }
                 if (combo.mag_level != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_MAG) {
                         ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+                        ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
+                        return -1;
                     }
                     if (compute_mag_level(&inv_item->data) < combo.mag_level) {
                         ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+                        return -2;
                     }
                 }
                 if (combo.grind != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON) {
                         ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+                        return -3;
                     }
                     if (inv_item->data.datab[3] < combo.grind) {
                         ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+                        return -4;
                     }
                 }
                 if (combo.level != 0xFF && player->disp.level + 1 < combo.level) {
                     ERR_LOG("item combination applies with level requirement, but player level is too low");
+                    return -5;
                 }
                 // If we get here, then the combo applies
+#ifdef DEBUG
                 if (combo_applied) {
                     DBG_LOG("multiple combinations apply");
                 }
+#endif // DEBUG
                 combo_applied = true;
 
                 inv_item->data.datab[0] = combo.result_item[0];
@@ -838,6 +879,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 ERR_LOG("使用物品合成出现错误.");
             }
         }
+
 
         if (!combo_applied) {
             ERR_LOG("no combinations apply");

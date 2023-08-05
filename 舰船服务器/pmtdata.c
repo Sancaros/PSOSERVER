@@ -135,10 +135,10 @@ static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
                            const uint32_t ptrs[21]) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs[1] > sz || ptrs[1] > ptrs[11]) {
-        ERR_LOG("ItemPMT.prs file for v2 has invalid weapon pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for v2 的 weapon 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -175,7 +175,7 @@ static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_weapon_v2_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for v2 has weapon table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
@@ -212,10 +212,10 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
                            const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->ptr[0] > sz || ptrs->ptr[0] > ptrs->ptr[17]) {
-        ERR_LOG("ItemPMT.prs file for GC has invalid weapon pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for GC 的 weapon 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -252,7 +252,7 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_weapon_gc_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for GC has weapon table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
@@ -292,10 +292,10 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
                            const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->weapon_table > sz || ptrs->weapon_table > ptrs->combination_table) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid weapon pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 weapon 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -332,7 +332,7 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_weapon_bb_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
@@ -373,10 +373,10 @@ static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
                           const uint32_t ptrs[21]) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs[3] > sz || ptrs[2] > ptrs[3]) {
-        ERR_LOG("ItemPMT.prs file for v2 has invalid guard pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for v2 的 guard 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -386,7 +386,7 @@ static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
         ERR_LOG("ItemPMT.prs file for v2 does not have two guard "
-              "tables. Please check it for validity!");
+              "tables. 请检查其有效性!");
         num_guard_types = 0;
         return -2;
     }
@@ -420,7 +420,7 @@ static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_guard_v2_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for v2 has guard table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -5;
         }
 
@@ -453,10 +453,10 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->ptr[2] > sz || ptrs->ptr[1] > ptrs->ptr[2]) {
-        ERR_LOG("ItemPMT.prs file for GC has invalid guard pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for GC 的 guard 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -466,7 +466,7 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
         ERR_LOG("ItemPMT.prs file for GC does not have two guard "
-              "tables. Please check it for validity!");
+              "tables. 请检查其有效性!");
         num_guard_types_gc = 0;
         return -2;
     }
@@ -501,7 +501,7 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_guard_gc_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for GC has guard table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -5;
         }
 
@@ -537,10 +537,10 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
                           const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->unit_table > sz || ptrs->armor_table > ptrs->unit_table) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid guard pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 guard 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -550,7 +550,7 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
     /* Make sure its sane... Should always be 2. */
     if(cnt != 2) {
         ERR_LOG("ItemPMT.prs file for BB does not have two guard "
-              "tables. Please check it for validity!");
+              "tables. 请检查其有效性!");
         num_guard_types_bb = 0;
         return -2;
     }
@@ -585,7 +585,7 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if(values[1] + sizeof(pmt_guard_bb_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for BB has guard table outside "
-                  "of file bounds! Please check the file for validity!");
+                  "of file bounds! 请检查文件的有效性!");
             return -5;
         }
 
@@ -622,10 +622,10 @@ static int read_units_v2(const uint8_t *pmt, uint32_t sz,
                          const uint32_t ptrs[21]) {
     uint32_t values[2], i;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs[3] > sz) {
-        ERR_LOG("ItemPMT.prs file for v2 has invalid unit pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for v2 的 unit 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -637,7 +637,7 @@ static int read_units_v2(const uint8_t *pmt, uint32_t sz,
     /* Make sure we have enough file... */
     if(values[1] + sizeof(pmt_unit_v2_t) * values[0] > sz) {
         ERR_LOG("ItemPMT.prs file for v2 has unit table outside "
-              "of file bounds! Please check the file for validity!");
+              "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
@@ -669,10 +669,10 @@ static int read_units_gc(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->ptr[2] > sz) {
-        ERR_LOG("ItemPMT.prs file for GC has invalid unit pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for GC 的 unit 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -684,7 +684,7 @@ static int read_units_gc(const uint8_t *pmt, uint32_t sz,
     /* Make sure we have enough file... */
     if(values[1] + sizeof(pmt_unit_gc_t) * values[0] > sz) {
         ERR_LOG("ItemPMT.prs file for GC has unit table outside "
-              "of file bounds! Please check the file for validity!");
+              "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
@@ -719,10 +719,10 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->unit_table > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid unit pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 unit 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -734,7 +734,7 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
     /* Make sure we have enough file... */
     if(values[1] + sizeof(pmt_unit_bb_t) * values[0] > sz) {
         ERR_LOG("ItemPMT.prs file for BB has unit table outside "
-              "of file bounds! Please check the file for validity!");
+              "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
@@ -768,10 +768,10 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
 
 static int read_stars_v2(const uint8_t *pmt, uint32_t sz,
                          const uint32_t ptrs[21]) {
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs[12] > sz || ptrs[13] > sz || ptrs[13] < ptrs[12]) {
-        ERR_LOG("ItemPMT.prs file for v2 has invalid star pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for v2 的 star 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -798,10 +798,10 @@ static int read_stars_v2(const uint8_t *pmt, uint32_t sz,
 
 static int read_stars_gc(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->ptr[11] > sz || ptrs->ptr[12] > sz || ptrs->ptr[12] < ptrs->ptr[11]) {
-        ERR_LOG("ItemPMT.prs file for GC has invalid star pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for GC 的 star 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -828,10 +828,10 @@ static int read_stars_gc(const uint8_t *pmt, uint32_t sz,
 
 static int read_stars_bb(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if(ptrs->star_value_table > sz || ptrs->special_data_table > sz || ptrs->special_data_table < ptrs->star_value_table) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid star pointers. "
-              "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 star 指针无效. "
+              "请检查其有效性!");
         return -1;
     }
 
@@ -860,10 +860,10 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2], i;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if (ptrs->mag_table > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid mag pointers. "
-            "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 mag 指针无效. "
+            "请检查其有效性!");
         return -1;
     }
 
@@ -875,7 +875,7 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
     /* Make sure we have enough file... */
     if (values[1] + sizeof(pmt_mag_bb_t) * values[0] > sz) {
         ERR_LOG("ItemPMT.prs file for BB has mag table outside "
-            "of file bounds! Please check the file for validity!");
+            "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
@@ -913,10 +913,10 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t cnt, i, values[2], j;
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if (ptrs->tool_table > sz || ptrs->tool_table > ptrs->weapon_table) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid tool pointers. "
-            "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 tool 指针无效. "
+            "请检查其有效性!");
         return -1;
     }
 
@@ -955,7 +955,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
         /* Make sure we have enough file... */
         if (values[1] + sizeof(pmt_tool_bb_t) * values[0] > sz) {
             ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
-                "of file bounds! Please check the file for validity!");
+                "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
@@ -997,10 +997,10 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
     uint32_t values[2];
 
-    /* Make sure the pointers are sane... */
+    /* Make sure the 指针无效 are sane... */
     if (ptrs->combination_table > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has invalid tool pointers. "
-            "Please check it for validity!");
+        ERR_LOG("ItemPMT.prs file for BB 的 itemcombination 指针无效. "
+            "请检查其有效性!");
         return -1;
     }
 
@@ -1011,15 +1011,15 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
 
     /* Make sure we have enough file... */
     if (values[1] + sizeof(pmt_itemcombination_bb_t) * values[0] > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has unit table outside "
-            "of file bounds! Please check the file for validity!");
+        ERR_LOG("ItemPMT.prs file for BB has itemcombination table outside "
+            "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
     itemcombinations_max_bb = values[0];
     if (!(itemcombination_bb = (pmt_itemcombination_bb_t*)malloc(sizeof(pmt_itemcombination_bb_t) *
         values[0]))) {
-        ERR_LOG("Cannot allocate space for BB units: %s",
+        ERR_LOG("Cannot allocate space for BB itemcombination: %s",
             strerror(errno));
         itemcombinations_max_bb = 0;
         return -3;
@@ -1050,6 +1050,166 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
 
     return 0;
 }
+
+static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    uint32_t values[2], i, j;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->unwrap_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 unit 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(values, pmt + ptrs->unwrap_table, sizeof(uint32_t) * 2);
+    values[0] = LE32(values[0]);
+    values[1] = LE32(values[1]);
+
+    /* Make sure we have enough file... */
+    if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has unit table outside "
+            "of file bounds! 请检查文件的有效性!");
+        return -2;
+    }
+
+    num_eventitem_list_bb = values[0];
+    if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t) *
+        values[0]))) {
+        ERR_LOG("Cannot allocate space for BB units: %s",
+            strerror(errno));
+        num_eventitem_list_bb = 0;
+        return -3;
+    }
+
+    DBG_LOG("num_eventitem_list_bb %d", num_eventitem_list_bb);
+//
+//    /* Read in each table... */
+//    for (i = 0; i < num_eventitem_list_bb; ++i) {
+//        /* Read the pointer and the size... */
+//        memcpy(values, pmt + ptrs->unwrap_table + (i << 3), sizeof(uint32_t) * 2);
+//        values[0] = LE32(values[0]);
+//        values[1] = LE32(values[1]);
+//
+//        /* Make sure we have enough file... */
+//        if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
+//            ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
+//                "of file bounds! 请检查文件的有效性!");
+//            return -4;
+//        }
+//
+//        num_eventitems_bb[i] = values[0];
+//
+//        //DBG_LOG("i %d num_eventitems_bb %d", i, num_eventitems_bb[i]);
+//
+//        if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
+//            values[0]))) {
+//            ERR_LOG("Cannot allocate space for BB weapons: %s",
+//                strerror(errno));
+//            return -5;
+//        }
+//
+//        memcpy(eventitem_bb[i], pmt + values[1],
+//            sizeof(pmt_eventitem_bb_t) * values[0]);
+//
+//        for (j = 0; j < num_eventitem_list_bb; ++i) {
+//
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[0]);
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[1]);
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[2]);
+//
+//
+//#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+//#endif
+//        }
+//    }
+//
+//    getchar();
+    return 0;
+}
+
+//static int read_eventitems_bb2(const uint8_t* pmt, uint32_t sz,
+//                         const pmt_table_offsets_v3_t* ptrs) {
+//    uint32_t cnt, i, values[2], j;
+//
+//    /* Make sure the 指针无效 are sane... */
+//    if (ptrs->unwrap_table > sz || ptrs->unwrap_table > ptrs->ranged_special_table) {
+//        ERR_LOG("ItemPMT.prs file for BB 的 eventitem 指针无效. "
+//            "请检查其有效性!");
+//        return -1;
+//    }
+//
+//    /* 算出我们有多少张表... */
+//    num_eventitem_list_bb = cnt = 3;
+//
+//    DBG_LOG("num_eventitem_list_bb %d", num_eventitem_list_bb);
+//
+//    //getchar();
+//
+//    /* Allocate the stuff we need to allocate... */
+//    if (!(num_eventitems_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
+//        ERR_LOG("Cannot allocate space for BB eventitem count: %s",
+//            strerror(errno));
+//        num_eventitem_list_bb = 0;
+//        return -2;
+//    }
+//
+//    if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t*) *
+//        cnt))) {
+//        ERR_LOG("Cannot allocate space for BB eventitem list: %s",
+//            strerror(errno));
+//        free_safe(num_eventitems_bb);
+//        num_eventitems_bb = NULL;
+//        num_eventitem_list_bb = 0;
+//        return -3;
+//    }
+//
+//    memset(eventitem_bb, 0, sizeof(pmt_eventitem_bb_t*) * cnt);
+//
+//    /* Read in each table... */
+//    for (i = 0; i < cnt; ++i) {
+//        /* Read the pointer and the size... */
+//        memcpy(values, pmt + ptrs->unwrap_table + (i << 3), sizeof(uint32_t) * 2);
+//        values[0] = LE32(values[0]);
+//        values[1] = LE32(values[1]);
+//
+//        /* Make sure we have enough file... */
+//        if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
+//            ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
+//                "of file bounds! 请检查文件的有效性!");
+//            return -4;
+//        }
+//
+//        num_eventitems_bb[i] = values[0];
+//
+//        //DBG_LOG("i %d num_eventitems_bb %d", i, num_eventitems_bb[i]);
+//
+//        if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
+//            values[0]))) {
+//            ERR_LOG("Cannot allocate space for BB weapons: %s",
+//                strerror(errno));
+//            return -5;
+//        }
+//
+//        memcpy(eventitem_bb[i], pmt + values[1],
+//            sizeof(pmt_eventitem_bb_t) * values[0]);
+//
+//        for (j = 0; j < num_eventitem_list_bb; ++i) {
+//
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[0]);
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[1]);
+//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[2]);
+//
+//
+//#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+//#endif
+//        }
+//    }
+//
+//    getchar();
+//    return 0;
+//}
 
 static int build_units_v2(int norestrict) {
     uint32_t i, j, k;
@@ -1314,7 +1474,7 @@ int pmt_read_v2(const char *fn, int norestrict) {
         return -1;
     }
 
-    /* Read in the pointers table. */
+    /* Read in the 指针无效 table. */
     if(read_v2ptr_tbl(ucbuf, ucsz, ptrs)) {
         free_safe(ucbuf);
         return -9;
@@ -1375,7 +1535,7 @@ int pmt_read_gc(const char *fn, int norestrict) {
         return -2;
     }
 
-    /* Read in the pointers table. */
+    /* Read in the 指针无效 table. */
     if(read_gcptr_tbl(ucbuf, ucsz, pmt_tb_offsets_gc)) {
         free_safe(ucbuf);
         return -9;
@@ -1438,7 +1598,7 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -2;
     }
 
-    /* Read in the pointers table. */
+    /* Read in the 指针无效 table. */
     if(read_bbptr_tbl(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -9;
@@ -1483,7 +1643,13 @@ int pmt_read_bb(const char *fn, int norestrict) {
     /* Read in the itemcombinations values... */
     if (read_itemcombinations_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
-        return -15;
+        return -16;
+    }
+
+    /* Read in the itemcombinations values... */
+    if (read_eventitems_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -17;
     }
 
     /* We're done with the raw PMT data now, clean it up. */
@@ -1491,7 +1657,7 @@ int pmt_read_bb(const char *fn, int norestrict) {
 
     /* Make the tables for generating random units */
     if(build_units_bb(norestrict)) {
-        return -16;
+        return -23;
     }
 
     have_bb_pmt = 1;
@@ -2147,6 +2313,20 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
     eparts[1] = (uint8_t)((equip_code >> 8) & 0xFF);
     eparts[2] = (uint8_t)((equip_code >> 16) & 0xFF);
 
+#ifdef DEBUG
+    DBG_LOG("物品1, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
+        code,
+        parts[0],
+        parts[1],
+        parts[2]);
+
+    DBG_LOG("物品2, equipped_item 0x%08X 0x%02X 0x%02X 0x%02X",
+        equip_code,
+        eparts[0],
+        eparts[1],
+        eparts[2]);
+#endif // DEBUG
+
     /* 确保我们正在查找 unit */
     if (parts[0] != ITEM_TYPE_TOOL) {
         return -2;
@@ -2164,16 +2344,76 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
     for (i; i < itemcombinations_max_bb;i++) {
         if (parts[0] == itemcombination_bb[i].used_item[0] && 
             parts[1] == itemcombination_bb[i].used_item[1] &&
-            parts[2] == itemcombination_bb[i].used_item[2] &&
-            eparts[0] == itemcombination_bb[i].equipped_item[0] &&
-            eparts[1] == itemcombination_bb[i].equipped_item[1] &&
-            eparts[2] == itemcombination_bb[i].equipped_item[2]
-            ) {
-            /* 获取数据并将其复制出来 */
-            memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+            parts[2] == itemcombination_bb[i].used_item[2]) {
+
+            if (eparts[0] != itemcombination_bb[i].equipped_item[0] &&
+                eparts[1] != itemcombination_bb[i].equipped_item[1] &&
+                eparts[2] != itemcombination_bb[i].equipped_item[2]) {
+                continue;
+            }
+
+            /* TODO 是否还要进一步的加强设置 或者合成失败？ */
+            switch (itemcombination_bb[i].equipped_item[0]) {
+            case ITEM_TYPE_WEAPON:
+#ifdef DEBUG
+                DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                /* 获取数据并将其复制出来 */
+                memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                break;
+
+            case ITEM_TYPE_GUARD:
+#ifdef DEBUG
+                DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                switch (itemcombination_bb[i].equipped_item[1]) {
+                case ITEM_SUBTYPE_FRAME:
+#ifdef DEBUG
+                    DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                    /* 获取数据并将其复制出来 */
+                    memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                    break;
+
+                case ITEM_SUBTYPE_BARRIER:
+#ifdef DEBUG
+                    DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                    /* 获取数据并将其复制出来 */
+                    memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                    break;
+                }
+                break;
+
+            case ITEM_TYPE_MAG:
+#ifdef DEBUG
+                DBG_LOG("ITEM_TYPE_MAG");
+#endif // DEBUG
+                /* 获取数据并将其复制出来 */
+                memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                break;
+            }
+
             break;
         }
     }
+
+    if (i >= itemcombinations_max_bb) {
+#ifdef DEBUG
+        ERR_LOG("结果有误 result_item 0x%02X 0x%02X 0x%02X",
+            itemcombination_bb[i].result_item[0],
+            itemcombination_bb[i].result_item[1],
+            itemcombination_bb[i].result_item[2]);
+#endif // DEBUG
+        return -1;
+    }
+#ifdef DEBUG
+    else
+        DBG_LOG("结果, result_item 0x%02X 0x%02X 0x%02X",
+            itemcombination_bb[i].result_item[0],
+            itemcombination_bb[i].result_item[1],
+            itemcombination_bb[i].result_item[2]);
+#endif // DEBUG
 
     return 0;
 }
