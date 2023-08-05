@@ -829,34 +829,33 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                     continue;
                 }
 
-
                 if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
-                    ERR_LOG("item combination requires specific char_class");
+                    ERR_LOG("物品合成需要特定的玩家职业");
                     ERR_LOG("combo.class %d player %d", combo.char_class, player->dress_data.ch_class);
                 }
                 if (combo.mag_level != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_MAG) {
-                        ERR_LOG("item combination applies with mag level requirement, but equipped item is not a mag");
+                        ERR_LOG("物品合成适用于mag级别要求,但装备的物品不是mag");
                         ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
                         return -1;
                     }
                     if (compute_mag_level(&inv_item->data) < combo.mag_level) {
-                        ERR_LOG("item combination applies with mag level requirement, but equipped mag level is too low");
+                        ERR_LOG("物品合成适用于mag等级要求,但装备的mag等级过低");
                         return -2;
                     }
                 }
                 if (combo.grind != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON) {
-                        ERR_LOG("item combination applies with grind requirement, but equipped item is not a weapon");
+                        ERR_LOG("物品合成适用于研磨要求,但装备的物品不是武器");
                         return -3;
                     }
                     if (inv_item->data.datab[3] < combo.grind) {
-                        ERR_LOG("item combination applies with grind requirement, but equipped weapon grind is too low");
+                        ERR_LOG("物品合成适用于研磨要求,但装备的武器研磨过低");
                         return -4;
                     }
                 }
                 if (combo.level != 0xFF && player->disp.level + 1 < combo.level) {
-                    ERR_LOG("item combination applies with level requirement, but player level is too low");
+                    ERR_LOG("物品合成适用于等级要求,但玩家等级过低");
                     return -5;
                 }
                 // If we get here, then the combo applies
@@ -882,7 +881,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
 
         if (!combo_applied) {
-            ERR_LOG("no combinations apply");
+            ERR_LOG("不适用任何合成");
         }
     }
 

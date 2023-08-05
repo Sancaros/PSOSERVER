@@ -2327,19 +2327,19 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
         eparts[2]);
 #endif // DEBUG
 
-    /* 确保我们正在查找 unit */
-    if (parts[0] != ITEM_TYPE_TOOL) {
-        return -2;
-    }
+    ///* 确保我们正在查找 unit */
+    //if (parts[0] != ITEM_TYPE_TOOL) {
+    //    return -2;
+    //}
 
-    /* 确保我们在任何地方都不越界 */
-    if (parts[1] > num_tool_types_bb) {
-        return -3;
-    }
+    ///* 确保我们在任何地方都不越界 */
+    //if (parts[1] > num_tool_types_bb) {
+    //    return -3;
+    //}
 
-    if (parts[2] >= num_tools_bb[parts[1]]) {
-        return -4;
-    }
+    //if (parts[2] >= num_tools_bb[parts[1]]) {
+    //    return -4;
+    //}
 
     for (i; i < itemcombinations_max_bb;i++) {
         if (parts[0] == itemcombination_bb[i].used_item[0] && 

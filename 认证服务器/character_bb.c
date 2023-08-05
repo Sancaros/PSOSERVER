@@ -273,7 +273,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     //uint8_t hash[32];
     uint32_t hwinfo[2] = { 0 };
     //uint16_t clientver;
-    uint32_t isbanded, isactive, islogged;
+    uint32_t isbanded, isactive/*, islogged*/;
     uint8_t MDBuffer[0x30] = { 0 };
     int8_t password[0x30] = { 0 };
     int8_t md5password[0x30] = { 0 };
@@ -360,15 +360,15 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -4;
     }
 
-    islogged = atoi(row[3]);
+    //islogged = atoi(row[3]);
 
-    /* Make sure some simple checks pass first... */
-    if (islogged) {
-        /* 账号未激活. */
-        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-        psocn_db_result_free(result);
-        return -4;
-    }
+    ///* Make sure some simple checks pass first... */
+    //if (islogged && !c->islogged) {
+    //    /* 账号未激活. */
+    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+    //    psocn_db_result_free(result);
+    //    return -4;
+    //}
 
     memcpy(&password, &pkt->password, sizeof(pkt->password));
 
@@ -432,7 +432,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     }
 
     /* Make sure some simple checks pass first... */
-    if (db_check_gc_online(c->guildcard)) {
+    if (db_check_gc_online(c->guildcard) && !c->islogged) {
         /* 玩家已在线. */
         //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
         send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
