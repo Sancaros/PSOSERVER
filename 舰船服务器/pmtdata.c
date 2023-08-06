@@ -2256,8 +2256,11 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 
     for (i; i < itemcombinations_max_bb;i++) {
         if (parts[0] == itemcombination_bb[i].used_item[0] && 
-            parts[1] == itemcombination_bb[i].used_item[1] &&
-            parts[2] == itemcombination_bb[i].used_item[2]) {
+            parts[1] == itemcombination_bb[i].used_item[1]) {
+
+            if (itemcombination_bb[i].used_item[2] != 0xFF)
+                if (parts[2] != itemcombination_bb[i].used_item[2])
+                    continue;
 
             if (eparts[0] != itemcombination_bb[i].equipped_item[0] &&
                 eparts[1] != itemcombination_bb[i].equipped_item[1]) {
@@ -2311,6 +2314,15 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
             case ITEM_TYPE_MAG:
 #ifdef DEBUG
                 DBG_LOG("ITEM_TYPE_MAG");
+#endif // DEBUG
+                /* 获取数据并将其复制出来 */
+                memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                break;
+                
+                /* TODO 好像表中没有关于物品合成的信息 */
+            case ITEM_TYPE_TOOL:
+#ifdef DEBUG
+                DBG_LOG("ITEM_TYPE_TOOL");
 #endif // DEBUG
                 /* 获取数据并将其复制出来 */
                 memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));

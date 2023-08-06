@@ -661,29 +661,30 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             break;
         }
     }
-    else if (item->data.datab[0] == ITEM_TYPE_MAG) {
-        switch (item->data.datab[1]) {
-        case 0x2B:
-            weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
-            // Chao Mag used
-            if ((weapon->data.datab[1] == 0x68) &&
-                (weapon->data.datab[2] == 0x00)) {
-                weapon->data.datab[1] = 0x58; // Striker of Chao
-                weapon->data.datab[2] = 0x00;
-                weapon->data.datab[3] = 0x00;
-                weapon->data.datab[4] = 0x00;
-            }
-            break;
+    /* 已经修复ITEMPMT的读取顺序 但是保留 后期可以进一步开发 ??? */
+    //else if (item->data.datab[0] == ITEM_TYPE_MAG) {
+    //    switch (item->data.datab[1]) {
+    //    case 0x2B:
+    //        weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
+    //        // Chao Mag used
+    //        if ((weapon->data.datab[1] == 0x68) &&
+    //            (weapon->data.datab[2] == 0x00)) {
+    //            weapon->data.datab[1] = 0x58; // Striker of Chao
+    //            weapon->data.datab[2] = 0x00;
+    //            weapon->data.datab[3] = 0x00;
+    //            weapon->data.datab[4] = 0x00;
+    //        }
+    //        break;
 
-        case 0x2C:
-            armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
-            // Chu Chu mag used
-            if ((armor->data.datab[2] == 0x1C)) {
-                armor->data.datab[2] = 0x2C; // Chuchu Fever
-            }
-            break;
-        }
-    }
+    //    case 0x2C:
+    //        armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
+    //        // Chu Chu mag used
+    //        if ((armor->data.datab[2] == 0x1C)) {
+    //            armor->data.datab[2] = 0x2C; // Chuchu Fever
+    //        }
+    //        break;
+    //    }
+    //}
     else if (item->data.datab[0] == ITEM_TYPE_TOOL) {
         switch (item->data.datab[1]) {
         case ITEM_SUBTYPE_DISK: // Technique disk
