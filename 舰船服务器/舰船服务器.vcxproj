@@ -63,6 +63,7 @@
     <ClInclude Include="block.h" />
     <ClInclude Include="itempmt_unused.h" />
     <ClInclude Include="mageditdata.h" />
+    <ClInclude Include="mag_bb_unused.h" />
     <ClInclude Include="records.h" />
     <ClInclude Include="clients.h" />
     <ClInclude Include="commands.h" />

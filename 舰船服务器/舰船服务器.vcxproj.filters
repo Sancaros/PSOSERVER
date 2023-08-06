@@ -242,6 +242,9 @@
     <ClInclude Include="mageditdata.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="mag_bb_unused.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\icon\ship_icon.ico">

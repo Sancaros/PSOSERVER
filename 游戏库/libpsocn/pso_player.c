@@ -28,6 +28,34 @@
 #define CLIENT_VERSION_BB       5
 #define CLIENT_VERSION_XBOX     6
 
+bool char_class_is_male(uint8_t cls) {
+	return class_flags[cls] & MALE;
+}
+
+bool char_class_is_human(uint8_t cls) {
+	return class_flags[cls] & HUMAN;
+}
+
+bool char_class_is_newman(uint8_t cls) {
+	return class_flags[cls] & NEWMAN;
+}
+
+bool char_class_is_android(uint8_t cls) {
+	return class_flags[cls] & ANDROID;
+}
+
+bool char_class_is_hunter(uint8_t cls) {
+	return class_flags[cls] & HUNTER;
+}
+
+bool char_class_is_ranger(uint8_t cls) {
+	return class_flags[cls] & RANGER;
+}
+
+bool char_class_is_force(uint8_t cls) {
+	return class_flags[cls] & FORCE;
+}
+
 int player_bb_name_cpy(psocn_bb_char_name_t* dst, psocn_bb_char_name_t* src) {
 	size_t dst_name_len = sizeof(dst->char_name);
 	size_t src_name_len = sizeof(src->char_name);

@@ -157,6 +157,42 @@ typedef union {
 } player_t;
 
 #define PLAYER_T_DEFINED
+#define MALE 0x01
+#define HUMAN 0x02
+#define NEWMAN 0x04
+#define ANDROID 0x08
+#define HUNTER 0x10
+#define RANGER 0x20
+#define FORCE 0x40
+
+static uint8_t class_flags[12] = {
+    HUNTER | HUMAN | MALE,         // HUmar
+    HUNTER | NEWMAN,               // HUnewearl
+    HUNTER | ANDROID | MALE,       // HUcast
+    RANGER | HUMAN | MALE,         // RAmar
+    RANGER | ANDROID | MALE,       // RAcast
+    RANGER | ANDROID,              // RAcaseal
+    FORCE | HUMAN,                 // FOmarl
+    FORCE | NEWMAN | MALE,         // FOnewm
+    FORCE | NEWMAN,                // FOnewearl
+    HUNTER | ANDROID,              // HUcaseal
+    FORCE | HUMAN | MALE,          // FOmar
+    RANGER | HUMAN                 // RAmarl
+};
+
+bool char_class_is_male(uint8_t cls);
+
+bool char_class_is_human(uint8_t cls);
+
+bool char_class_is_newman(uint8_t cls);
+
+bool char_class_is_android(uint8_t cls);
+
+bool char_class_is_hunter(uint8_t cls);
+
+bool char_class_is_ranger(uint8_t cls);
+
+bool char_class_is_force(uint8_t cls);
 
 static char player_name[24];
 
