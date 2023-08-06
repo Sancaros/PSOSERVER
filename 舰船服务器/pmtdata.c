@@ -117,7 +117,7 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
     DBG_LOG("armor_table offsets = %u", ptrs->armor_table);
     DBG_LOG("ranged_special_table offsets = %u", ptrs->ranged_special_table);
     for (int i = 0; i < 23; ++i) {
-        DBG_LOG("offsets = %u", ptrs->ptr[i]);
+        DBG_LOG("offsets = 0x%08X", ptrs->ptr[i]);
     }
 
 #endif // DEBUG
@@ -717,7 +717,8 @@ static int read_units_gc(const uint8_t *pmt, uint32_t sz,
 
 static int read_units_bb(const uint8_t *pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t values[2], i;
+    pmt_countandoffset_t values;
+    size_t i;
 
     /* Make sure the 指针无效 are sane... */
     if(ptrs->unit_table > sz) {
@@ -727,29 +728,29 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs->unit_table, sizeof(uint32_t) * 2);
-    values[0] = LE32(values[0]);
-    values[1] = LE32(values[1]);
+    memcpy(&values, pmt + ptrs->unit_table, sizeof(pmt_countandoffset_t));
+    values.count = LE32(values.count);
+    values.offset = LE32(values.offset);
 
     /* Make sure we have enough file... */
-    if(values[1] + sizeof(pmt_unit_bb_t) * values[0] > sz) {
+    if(values.offset + sizeof(pmt_unit_bb_t) * values.count > sz) {
         ERR_LOG("ItemPMT.prs file for BB has unit table outside "
               "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
-    num_units_bb = values[0];
+    num_units_bb = values.count;
     if(!(units_bb = (pmt_unit_bb_t *)malloc(sizeof(pmt_unit_bb_t) *
-                                            values[0]))) {
+                                            values.count))) {
         ERR_LOG("Cannot allocate space for BB units: %s",
               strerror(errno));
         num_units_bb = 0;
         return -3;
     }
 
-    memcpy(units_bb, pmt + values[1], sizeof(pmt_unit_bb_t) * values[0]);
+    memcpy(units_bb, pmt + values.offset, sizeof(pmt_unit_bb_t) * values.count);
 
-    for(i = 0; i < values[0]; ++i) {
+    for(i = 0; i < values.count; ++i) {
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
         units_bb[i].index = LE32(units_bb[i].index);
         units_bb[i].model = LE16(units_bb[i].model);
@@ -911,7 +912,8 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
 
 static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t cnt, i, values[2], j;
+    uint32_t cnt, i, j;
+    pmt_countandoffset_t values;
 
     /* Make sure the 指针无效 are sane... */
     if (ptrs->tool_table > sz || ptrs->tool_table > ptrs->weapon_table) {
@@ -948,32 +950,32 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
     /* Read in each table... */
     for (i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs->tool_table + (i << 3), sizeof(uint32_t) * 2);
-        values[0] = LE32(values[0]);
-        values[1] = LE32(values[1]);
+        memcpy(&values, pmt + ptrs->tool_table + (i << 3), sizeof(uint32_t) * 2);
+        values.count = LE32(values.count);
+        values.offset = LE32(values.offset);
 
         /* Make sure we have enough file... */
-        if (values[1] + sizeof(pmt_tool_bb_t) * values[0] > sz) {
+        if (values.offset + sizeof(pmt_tool_bb_t) * values.count > sz) {
             ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
                 "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
-        num_tools_bb[i] = values[0];
+        num_tools_bb[i] = values.count;
 
         //DBG_LOG("i %d num_tools_bb %d", i, num_tools_bb[i]);
 
         if (!(tools_bb[i] = (pmt_tool_bb_t*)malloc(sizeof(pmt_tool_bb_t) *
-            values[0]))) {
+            values.count))) {
             ERR_LOG("Cannot allocate space for BB weapons: %s",
                 strerror(errno));
             return -5;
         }
 
-        memcpy(tools_bb[i], pmt + values[1],
-            sizeof(pmt_tool_bb_t) * values[0]);
+        memcpy(tools_bb[i], pmt + values.offset,
+            sizeof(pmt_tool_bb_t) * values.count);
 
-        for (j = 0; j < values[0]; ++j) {
+        for (j = 0; j < values.count; ++j) {
             //DBG_LOG("index %d", tools_bb[i][j].cost);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
             tools_bb[i][j].index = LE32(tools_bb[i][j].index);
@@ -995,7 +997,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
 static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t values[2];
+    pmt_countandoffset_t values;
 
     /* Make sure the 指针无效 are sane... */
     if (ptrs->combination_table > sz) {
@@ -1005,27 +1007,27 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs->combination_table, sizeof(uint32_t) * 2);
-    values[0] = LE32(values[0]);
-    values[1] = LE32(values[1]);
+    memcpy(&values, pmt + ptrs->combination_table, sizeof(pmt_countandoffset_t));
+    values.count = LE32(values.count);
+    values.offset = LE32(values.offset);
 
     /* Make sure we have enough file... */
-    if (values[1] + sizeof(pmt_itemcombination_bb_t) * values[0] > sz) {
+    if (values.offset + sizeof(pmt_itemcombination_bb_t) * values.count > sz) {
         ERR_LOG("ItemPMT.prs file for BB has itemcombination table outside "
             "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
-    itemcombinations_max_bb = values[0];
+    itemcombinations_max_bb = values.count;
     if (!(itemcombination_bb = (pmt_itemcombination_bb_t*)malloc(sizeof(pmt_itemcombination_bb_t) *
-        values[0]))) {
+        values.count))) {
         ERR_LOG("Cannot allocate space for BB itemcombination: %s",
             strerror(errno));
         itemcombinations_max_bb = 0;
         return -3;
     }
 
-    memcpy(itemcombination_bb, pmt + values[1], sizeof(pmt_itemcombination_bb_t) * values[0]);
+    memcpy(itemcombination_bb, pmt + values.offset, sizeof(pmt_itemcombination_bb_t) * values.count);
 
 #ifdef DEBUG
     for (int i = 0; i < itemcombinations_max_bb; ++i) {
@@ -1053,163 +1055,88 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
 
 static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t values[2], i, j;
+    pmt_countandoffset_t values;
+    size_t i = 0, j = 0, cnt;
 
     /* Make sure the 指针无效 are sane... */
-    if (ptrs->unwrap_table > sz) {
-        ERR_LOG("ItemPMT.prs file for BB 的 unit 指针无效. "
+    if (ptrs->unwrap_table > sz || ptrs->unwrap_table > ptrs->mag_feed_table) {
+        ERR_LOG("ItemPMT.prs file for BB 的 eventitem 指针无效. "
             "请检查其有效性!");
         return -1;
     }
 
-    /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs->unwrap_table, sizeof(uint32_t) * 2);
-    values[0] = LE32(values[0]);
-    values[1] = LE32(values[1]);
+    /* 算出我们有多少张表... */
+    num_eventitem_types_bb = cnt = (ptrs->mag_feed_table - ptrs->unwrap_table) / 8;
 
-    /* Make sure we have enough file... */
-    if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has unit table outside "
-            "of file bounds! 请检查文件的有效性!");
+#ifdef DEBUG
+    DBG_LOG("num_eventitem_types_bb %d", num_eventitem_types_bb);
+#endif // DEBUG
+
+    /* Allocate the stuff we need to allocate... */
+    if (!(num_eventitems_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
+        ERR_LOG("Cannot allocate space for BB eventitem count: %s",
+            strerror(errno));
+        num_eventitem_types_bb = 0;
         return -2;
     }
 
-    num_eventitem_list_bb = values[0];
-    if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t) *
-        values[0]))) {
-        ERR_LOG("Cannot allocate space for BB units: %s",
+    if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t*) *
+        cnt))) {
+        ERR_LOG("Cannot allocate space for BB eventitem list: %s",
             strerror(errno));
-        num_eventitem_list_bb = 0;
+        free_safe(num_eventitems_bb);
+        num_eventitems_bb = NULL;
+        num_eventitem_types_bb = 0;
         return -3;
     }
 
-    DBG_LOG("num_eventitem_list_bb %d", num_eventitem_list_bb);
-//
-//    /* Read in each table... */
-//    for (i = 0; i < num_eventitem_list_bb; ++i) {
-//        /* Read the pointer and the size... */
-//        memcpy(values, pmt + ptrs->unwrap_table + (i << 3), sizeof(uint32_t) * 2);
-//        values[0] = LE32(values[0]);
-//        values[1] = LE32(values[1]);
-//
-//        /* Make sure we have enough file... */
-//        if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
-//            ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
-//                "of file bounds! 请检查文件的有效性!");
-//            return -4;
-//        }
-//
-//        num_eventitems_bb[i] = values[0];
-//
-//        //DBG_LOG("i %d num_eventitems_bb %d", i, num_eventitems_bb[i]);
-//
-//        if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
-//            values[0]))) {
-//            ERR_LOG("Cannot allocate space for BB weapons: %s",
-//                strerror(errno));
-//            return -5;
-//        }
-//
-//        memcpy(eventitem_bb[i], pmt + values[1],
-//            sizeof(pmt_eventitem_bb_t) * values[0]);
-//
-//        for (j = 0; j < num_eventitem_list_bb; ++i) {
-//
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[0]);
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[1]);
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[2]);
-//
-//
-//#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
-//#endif
-//        }
-//    }
-//
-//    getchar();
+    memset(eventitem_bb, 0, sizeof(pmt_eventitem_bb_t*) * cnt);
+
+    /* Read in each table... */
+    for (i = 0; i < cnt; ++i) {
+        /* Read the pointer and the size... */
+        memcpy(&values, pmt + 0x00015014 + (i << 3)/*ptrs->unwrap_table + (i << 3)*/, sizeof(pmt_countandoffset_t));
+        values.count = LE32(values.count);
+        values.offset = LE32(values.offset);
+
+        /* Make sure we have enough file... */
+        if (values.offset + sizeof(pmt_eventitem_bb_t) * values.count > sz) {
+            ERR_LOG("ItemPMT.prs file for BB has eventitem table outside "
+                "of file bounds! 请检查文件的有效性!");
+            return -4;
+        }
+
+        num_eventitems_bb[i] = values.count;
+
+        //DBG_LOG("i %d num_eventitems_bb %d", i, num_eventitems_bb[i]);
+
+        if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
+            values.count))) {
+            ERR_LOG("Cannot allocate space for BB eventitem: %s",
+                strerror(errno));
+            return -5;
+        }
+
+        memcpy(eventitem_bb[i], pmt + values.offset,
+            sizeof(pmt_eventitem_bb_t) * values.count);
+
+#ifdef DEBUG
+
+        for (j = 0; j < values.count; ++j) {
+            DBG_LOG("i %d j %d 0x%02X", i, j, eventitem_bb[i][j].item[0]);
+            DBG_LOG("i %d j %d 0x%02X", i, j, eventitem_bb[i][j].item[1]);
+            DBG_LOG("i %d j %d 0x%02X", i, j, eventitem_bb[i][j].item[2]);
+            DBG_LOG("i %d j %d 0x%02X", i, j, eventitem_bb[i][j].probability);
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+#endif
+        }
+    getchar();
+#endif // DEBUG
+
+    }
+
     return 0;
 }
-
-//static int read_eventitems_bb2(const uint8_t* pmt, uint32_t sz,
-//                         const pmt_table_offsets_v3_t* ptrs) {
-//    uint32_t cnt, i, values[2], j;
-//
-//    /* Make sure the 指针无效 are sane... */
-//    if (ptrs->unwrap_table > sz || ptrs->unwrap_table > ptrs->ranged_special_table) {
-//        ERR_LOG("ItemPMT.prs file for BB 的 eventitem 指针无效. "
-//            "请检查其有效性!");
-//        return -1;
-//    }
-//
-//    /* 算出我们有多少张表... */
-//    num_eventitem_list_bb = cnt = 3;
-//
-//    DBG_LOG("num_eventitem_list_bb %d", num_eventitem_list_bb);
-//
-//    //getchar();
-//
-//    /* Allocate the stuff we need to allocate... */
-//    if (!(num_eventitems_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
-//        ERR_LOG("Cannot allocate space for BB eventitem count: %s",
-//            strerror(errno));
-//        num_eventitem_list_bb = 0;
-//        return -2;
-//    }
-//
-//    if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t*) *
-//        cnt))) {
-//        ERR_LOG("Cannot allocate space for BB eventitem list: %s",
-//            strerror(errno));
-//        free_safe(num_eventitems_bb);
-//        num_eventitems_bb = NULL;
-//        num_eventitem_list_bb = 0;
-//        return -3;
-//    }
-//
-//    memset(eventitem_bb, 0, sizeof(pmt_eventitem_bb_t*) * cnt);
-//
-//    /* Read in each table... */
-//    for (i = 0; i < cnt; ++i) {
-//        /* Read the pointer and the size... */
-//        memcpy(values, pmt + ptrs->unwrap_table + (i << 3), sizeof(uint32_t) * 2);
-//        values[0] = LE32(values[0]);
-//        values[1] = LE32(values[1]);
-//
-//        /* Make sure we have enough file... */
-//        if (values[1] + sizeof(pmt_eventitem_bb_t) * values[0] > sz) {
-//            ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
-//                "of file bounds! 请检查文件的有效性!");
-//            return -4;
-//        }
-//
-//        num_eventitems_bb[i] = values[0];
-//
-//        //DBG_LOG("i %d num_eventitems_bb %d", i, num_eventitems_bb[i]);
-//
-//        if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
-//            values[0]))) {
-//            ERR_LOG("Cannot allocate space for BB weapons: %s",
-//                strerror(errno));
-//            return -5;
-//        }
-//
-//        memcpy(eventitem_bb[i], pmt + values[1],
-//            sizeof(pmt_eventitem_bb_t) * values[0]);
-//
-//        for (j = 0; j < num_eventitem_list_bb; ++i) {
-//
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[0]);
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[1]);
-//            DBG_LOG("i %d j %d item 0x%02X", i, j, eventitem_bb[i][j].item[2]);
-//
-//
-//#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
-//#endif
-//        }
-//    }
-//
-//    getchar();
-//    return 0;
-//}
 
 static int build_units_v2(int norestrict) {
     uint32_t i, j, k;
@@ -2327,62 +2254,58 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
         eparts[2]);
 #endif // DEBUG
 
-    ///* 确保我们正在查找 unit */
-    //if (parts[0] != ITEM_TYPE_TOOL) {
-    //    return -2;
-    //}
-
-    ///* 确保我们在任何地方都不越界 */
-    //if (parts[1] > num_tool_types_bb) {
-    //    return -3;
-    //}
-
-    //if (parts[2] >= num_tools_bb[parts[1]]) {
-    //    return -4;
-    //}
-
     for (i; i < itemcombinations_max_bb;i++) {
         if (parts[0] == itemcombination_bb[i].used_item[0] && 
             parts[1] == itemcombination_bb[i].used_item[1] &&
             parts[2] == itemcombination_bb[i].used_item[2]) {
 
             if (eparts[0] != itemcombination_bb[i].equipped_item[0] &&
-                eparts[1] != itemcombination_bb[i].equipped_item[1] &&
-                eparts[2] != itemcombination_bb[i].equipped_item[2]) {
+                eparts[1] != itemcombination_bb[i].equipped_item[1]) {
                 continue;
             }
 
             /* TODO 是否还要进一步的加强设置 或者合成失败？ */
-            switch (itemcombination_bb[i].equipped_item[0]) {
+            switch (eparts[0]) {
             case ITEM_TYPE_WEAPON:
 #ifdef DEBUG
                 DBG_LOG("ITEM_TYPE_WEAPON");
 #endif // DEBUG
-                /* 获取数据并将其复制出来 */
-                memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                if(eparts[2] != itemcombination_bb[i].equipped_item[2])
+                    /* 获取数据并将其复制出来 */
+                    memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                else
+                    continue;
+
                 break;
 
             case ITEM_TYPE_GUARD:
-#ifdef DEBUG
-                DBG_LOG("ITEM_TYPE_WEAPON");
-#endif // DEBUG
-                switch (itemcombination_bb[i].equipped_item[1]) {
-                case ITEM_SUBTYPE_FRAME:
-#ifdef DEBUG
-                    DBG_LOG("ITEM_TYPE_WEAPON");
-#endif // DEBUG
-                    /* 获取数据并将其复制出来 */
-                    memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
-                    break;
 
-                case ITEM_SUBTYPE_BARRIER:
+                if (eparts[2] != itemcombination_bb[i].equipped_item[2]) {
+
 #ifdef DEBUG
                     DBG_LOG("ITEM_TYPE_WEAPON");
 #endif // DEBUG
-                    /* 获取数据并将其复制出来 */
-                    memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
-                    break;
+                    switch (eparts[1]) {
+                    case ITEM_SUBTYPE_FRAME:
+#ifdef DEBUG
+                        DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                        /* 获取数据并将其复制出来 */
+                        memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                        break;
+
+                    case ITEM_SUBTYPE_BARRIER:
+#ifdef DEBUG
+                        DBG_LOG("ITEM_TYPE_WEAPON");
+#endif // DEBUG
+                        /* 获取数据并将其复制出来 */
+                        memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
+                        break;
+                    }
                 }
+                else
+                    continue;
+
                 break;
 
             case ITEM_TYPE_MAG:
@@ -2415,6 +2338,40 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
             itemcombination_bb[i].result_item[2]);
 #endif // DEBUG
 
+    return 0;
+}
+
+int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv) {
+    uint8_t parts[3] = { 0 };
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt || !rv) {
+        return -1;
+    }
+
+    parts[0] = (uint8_t)(code & 0xFF);
+    parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+
+    DBG_LOG("0x%02X", parts[0]);
+    DBG_LOG("0x%02X", parts[1]);
+    DBG_LOG("0x%02X", parts[2]);
+
+
+    /* 确保我们正在查找 圣诞物品 */
+    if (parts[0] != ITEM_TYPE_TOOL) {
+        return -2;
+    }
+
+    /* 确保我们在任何地方都不越界 */
+    if (parts[1] != 0x15) {
+        return -3;
+    }
+
+    /* 获取数据并将其复制出来 */
+    memcpy(rv, &eventitem_bb, sizeof(pmt_eventitem_bb_t));
     return 0;
 }
 

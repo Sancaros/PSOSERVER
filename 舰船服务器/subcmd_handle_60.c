@@ -1076,6 +1076,8 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         inv = &src->mode_pl->bb.inv;
 
+    display_packet(pkt, pkt->hdr.pkt_len);
+
     index = find_iitem_index(inv, pkt->item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */

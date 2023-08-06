@@ -753,16 +753,36 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     /* TODO */
     else if ((item_identifier & 0xFFFF00) == 0x031500) {
         // Christmas Present, etc. - use unwrap_table + probabilities therein
-        pmt_eventitem_bb_t eventitem_table = { 0 };
-        //auto table = s->item_parameter_table->get_event_items(item->data.datab[2]);
-        //size_t sum = 0;
-        //for (size_t z = 0; z < table.second; z++) {
-        //    sum += table.first[z].probability;
+        //pmt_eventitem_bb_t** eventitem_table = { 0 };
+        pmt_eventitem_bb_t entry = { 0 };
+
+
+
+        //if (err = pmt_lookup_eventitem_bb(item->data.datal[0], eventitem_table)) {
+        //    ERR_LOG("pmt_lookup_eventitem_bb 不存在数据! 错误码 %d", err);
+        //    return -1;
         //}
-        //if (sum == 0) {
-        //    ERR_LOG("no unwrap results available for event");
-        //}
+
+        DBG_LOG("0x%08X", num_eventitem_types_bb);
+
+
+        size_t sum = 0, j = 0, z = 0;
+        for (z = 0; z < num_eventitem_types_bb; z++) {
+            for (j = 0; j < num_eventitems_bb[z]; z++) {
+
+                DBG_LOG("0x%02X", eventitem_bb[z][j].probability);
+                sum += eventitem_bb[z][j].probability;
+            }
+        }
+        if (sum == 0) {
+            ERR_LOG("no unwrap results available for event");
+        }
         //size_t det = mt19937_genrand_int32(rng) % sum;
+        //DBG_LOG("0x%08X", det);
+        /*DBG_LOG("0x%02X", eventitem_table.item[0]);
+        DBG_LOG("0x%02X", eventitem_table.item[1]);
+        DBG_LOG("0x%02X", eventitem_table.item[2]);
+        DBG_LOG("0x%02X", eventitem_table.probability);*/
         //for (size_t z = 0; z < table.second; z++) {
         //    const auto& entry = table.first[z];
         //    if (det > entry.probability) {
@@ -777,7 +797,6 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         //        //item->data.datab.clear_after(3);
         //        should_delete_item = false;
 
-        //        lobby_t* l = src->cur_lobby;
         //        subcmd_send_lobby_bb_create_inv_item(src, item->data, 1, true);
         //        break;
         //    }
@@ -788,37 +807,11 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         // Use item combinations table from ItemPMT
         bool combo_applied = false;
         pmt_itemcombination_bb_t combo = { 0 };
-        // Setting the eq variables here should fix problem with ADD SLOT and such.
-        int eq_wep = -1, eq_frame = -1, eq_barrier = -1, eq_mag = -1;
-
-        /* TODO 这里需要做判断 判断是MAG细胞 或是 武器 或是 装甲 */
 
         for (size_t z = 0; z < player->inv.item_count; z++) {
             iitem_t* inv_item = &player->inv.iitems[z];
             if (!(inv_item->flags & 0x00000008)) {
                 continue;
-            }
-
-            switch (inv_item->data.datab[0]) {
-            case ITEM_TYPE_WEAPON:
-                eq_wep = z;
-                break;
-
-            case ITEM_TYPE_GUARD:
-                switch (inv_item->data.datab[1]) {
-                case ITEM_SUBTYPE_FRAME:
-                    eq_frame = z;
-                    break;
-
-                case ITEM_SUBTYPE_BARRIER:
-                    eq_barrier = z;
-                    break;
-                }
-                break;
-
-            case ITEM_TYPE_MAG:
-                eq_mag = z;
-                break;
             }
 
             __try {
@@ -834,7 +827,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                     ERR_LOG("combo.class %d player %d", combo.char_class, player->dress_data.ch_class);
                 }
                 if (combo.mag_level != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(&player->inv) == -1) {
                         ERR_LOG("物品合成适用于mag级别要求,但装备的物品不是mag");
                         ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
                         return -1;
@@ -845,7 +838,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                     }
                 }
                 if (combo.grind != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(&player->inv) == -1) {
                         ERR_LOG("物品合成适用于研磨要求,但装备的物品不是武器");
                         return -3;
                     }
@@ -866,11 +859,27 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 #endif // DEBUG
                 combo_applied = true;
 
+                switch (inv_item->data.datab[0]) {
+                case ITEM_TYPE_WEAPON:
+                    break;
+
+                case ITEM_TYPE_GUARD:
+                    break;
+
+                case ITEM_TYPE_MAG:
+                    break;
+
+                default:
+                    break;
+                }
+
                 inv_item->data.datab[0] = combo.result_item[0];
                 inv_item->data.datab[1] = combo.result_item[1];
-                inv_item->data.datab[2] = combo.result_item[2];
-                inv_item->data.datab[3] = 0; // Grind
-                inv_item->data.datab[4] = 0; // Flags + special
+                if (combo.result_item[2] != 0xFF)
+                    inv_item->data.datab[2] = combo.result_item[2];
+                if (combo.result_item[3] != 0xFF)
+                    inv_item->data.datab[3] = combo.grind; // Grind
+                //inv_item->data.datab[4] = 0; // Flags + special
             }
 
             __except (crash_handler(GetExceptionInformation())) {

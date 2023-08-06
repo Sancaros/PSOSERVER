@@ -480,8 +480,6 @@ static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* ba
 
             k++;
         }
-        else
-            break;
     }
 
     psocn_db_result_free(result);

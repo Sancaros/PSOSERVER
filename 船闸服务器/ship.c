@@ -436,11 +436,11 @@ void db_remove_client(ship_t* c) {
             send_ship_status(i, c, 0);
         }
 
-        db_delete_online_ships(c->name, c->key_idx);
-
         db_delete_online_clients(c->name, c->key_idx);
 
         db_delete_transient_clients(c->name, c->key_idx);
+
+        db_delete_online_ships(c->name, c->key_idx);
 
     }
 }

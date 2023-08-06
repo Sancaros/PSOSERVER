@@ -424,8 +424,6 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 
 			k++;
 		}
-		else
-			break;
 	}
 
 	psocn_db_result_free(result);

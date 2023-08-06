@@ -36,6 +36,11 @@
 #pragma pack(push, 1) 
 #endif
 
+typedef struct pmt_countandoffset {
+    uint32_t count;
+    uint32_t offset;
+} PACKED pmt_countandoffset_t;
+
 typedef struct pmt_weapon_v2 {
     uint32_t index;
     uint8_t classes;
@@ -473,7 +478,8 @@ static uint32_t itemcombinations_max_bb = 0;
 
 static pmt_eventitem_bb_t** eventitem_bb = NULL;
 static uint32_t* num_eventitems_bb = NULL;
-static uint32_t num_eventitem_list_bb = 0;
+static uint32_t num_eventitem_types_bb = 0;
+static uint32_t eventitem_lowest_bb = EMPTY_STRING;
 
 static int have_v2_pmt = 0;
 static int have_gc_pmt = 0;
@@ -510,6 +516,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t* rv);
 int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv);
 int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv);
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
+int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv);
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     struct mt19937_state* rng, lobby_t* l);

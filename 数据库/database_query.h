@@ -70,8 +70,7 @@ int db_update_gc_char_login_state(uint32_t gc, uint32_t char_slot,
     uint32_t islogged, uint32_t block_num);
 
 /* 更新玩家账户在线情况 */
-int db_update_gc_login_state(uint32_t gc,
-    uint32_t islogged, uint32_t char_slot, char* char_name);
+int db_update_gc_login_state(uint32_t gc, int islogged, int char_slot, char* char_name);
 
 /* 获取角色所在舰船ID */
 int db_get_char_ship_id(uint32_t gc);

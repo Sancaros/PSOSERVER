@@ -301,8 +301,7 @@ int db_update_gc_char_login_state(uint32_t gc, uint32_t char_slot,
 }
 
 /**/
-int db_update_gc_login_state(uint32_t gc, 
-    uint32_t islogged, uint32_t char_slot, char* char_name) {
+int db_update_gc_login_state(uint32_t gc, int islogged, int char_slot, char* char_name) {
     char query[512];
     char lastchar_name[64];
     uint8_t lastchar_blob[4098] = { 0 };
@@ -315,7 +314,7 @@ int db_update_gc_login_state(uint32_t gc,
         return 1;
     }
 
-    if (!(char_slot < 0)) {
+    if (char_slot >= 0) {
         sprintf_s(query, _countof(query), "UPDATE %s SET lastchar_slot = '%d'"
             " where guildcard = '%u'",
             AUTH_ACCOUNT, char_slot, gc);
@@ -323,6 +322,17 @@ int db_update_gc_login_state(uint32_t gc,
             SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", gc, psocn_db_error(&conn));
             return 2;
         }
+    }
+    else if (char_slot == -2) {
+
+        sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%d'"
+            " where guildcard = '%u'",
+            CHARACTER, islogged, gc);
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("更新GC %u 在线数据信息错误:\n %s", gc, psocn_db_error(&conn));
+            return 1;
+        }
+
     }
 
     if (char_name != NULL) {
@@ -436,18 +446,64 @@ int db_delete_online_ships(char* ship_name, uint16_t id) {
     return 0;
 }
 
-int db_delete_online_clients(char* ship_name, uint16_t id) {
+int db_delete_online_clients(char* ship_name, uint16_t ship_id) {
+    void* result;
+    char** row;
+    uint32_t guildcard;
 
     memset(myquery, 0, sizeof(myquery));
 
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT guildcard FROM %s WHERE ship_id = '%hu'", SERVER_CLIENTS_ONLINE, ship_id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        DBG_LOG("111");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        DBG_LOG("111");
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    DBG_LOG("111");
+
+    while ((row = psocn_db_result_fetch(result)) != NULL) {
+        guildcard = (uint32_t)strtoul(row[0], NULL, 10);
+        DBG_LOG("%u", guildcard);
+        if(guildcard)
+            db_update_gc_login_state(guildcard, 0, -2, NULL);
+    }
+
+
+
+
+
+
+
+    psocn_db_result_free(result);
+
+
+    DBG_LOG("111");
+
+
+
+
+
+
+
     /* Remove the client from the server_online_clients table. */
     sprintf(myquery, "DELETE FROM %s WHERE ship_id='%hu'"
-        , SERVER_CLIENTS_ONLINE, id);
+        , SERVER_CLIENTS_ONLINE, ship_id);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法清理 %s 在线玩家数据库表 %s", ship_name,
             SERVER_CLIENTS_ONLINE);
-        return -1;
+        return -2;
     }
 
     return 0;
