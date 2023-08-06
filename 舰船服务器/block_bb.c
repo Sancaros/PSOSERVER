@@ -2882,20 +2882,10 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             /* 0x0060 96*/
         case GAME_COMMAND0_TYPE:
-            //if (c->mode) {
-
-            //    err = subcmd_bb_handle_60_mode(c, (subcmd_bb_pkt_t*)pkt);
-            //    if (err) {
-            //        ERR_LOG("GC %u 玩家发生错误", c->guildcard);
-            //        return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
-            //    }
-
-            //    return 0;
-            //}
-
             err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+                display_packet(pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }
 
@@ -2912,6 +2902,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+                display_packet(pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }
             return 0;
@@ -2921,6 +2912,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误", c->guildcard);
+                display_packet(pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }
             return 0;

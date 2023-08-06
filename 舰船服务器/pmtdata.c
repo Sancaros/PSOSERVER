@@ -1,5 +1,5 @@
 /*
-    梦幻之星中国 舰船服务器
+    梦幻之星中国 ItemPMT
     版权 (C) 2022, 2023 Sancaros
 
     This program is free software: you can redistribute it and/or modify
@@ -1166,7 +1166,7 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     unsealableitems_max_bb = values.count;
 
-    DBG_LOG("unsealableitems_max_bb %d", unsealableitems_max_bb);
+    //DBG_LOG("unsealableitems_max_bb %d", unsealableitems_max_bb);
 
     if (!(unsealableitems_bb = (pmt_unsealableitem_bb_t*)malloc(sizeof(pmt_unsealableitem_bb_t) *
         values.count))) {
@@ -1178,13 +1178,77 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     memcpy(unsealableitems_bb, pmt + values.offset, sizeof(pmt_unsealableitem_bb_t) * values.count);
 
+#ifdef DEBUG
+
     for (i = 0; i < values.count; ++i) {
         DBG_LOG("item 0x%02X", unsealableitems_bb[i].item[0]);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 #endif
     }
 
-    getchar();
+#endif // DEBUG
+
+    return 0;
+}
+
+static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    size_t i = 0, j = 0, cnt = (sizeof(pmt_mag_feed_results_list_offsets_t) / 4);
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->mag_feed_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 mag_feed_table 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    if (!(mag_feed_results_list_offsets = (pmt_mag_feed_results_list_offsets_t*)malloc(sizeof(pmt_mag_feed_results_list_offsets_t)))) {
+        ERR_LOG("Cannot allocate space for BB mag_feed_results_list_offsets: %s",
+            strerror(errno));
+        free_safe(mag_feed_results_list_offsets);
+        return -2;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(mag_feed_results_list_offsets, pmt + ptrs->mag_feed_table, sizeof(pmt_mag_feed_results_list_offsets_t));
+
+    if (!(mag_feed_results_list = (pmt_mag_feed_results_list_t**)malloc(sizeof(pmt_mag_feed_results_list_t*) * cnt))) {
+        ERR_LOG("Cannot allocate space for BB mag_feed_results list: %s",
+            strerror(errno));
+        return -3;
+    }
+
+    memset(mag_feed_results_list, 0, sizeof(pmt_mag_feed_results_list_t*) * cnt);
+
+    for (i = 0; i < cnt; ++i) {
+
+        if (!(mag_feed_results_list[i] = (pmt_mag_feed_results_list_t*)malloc(sizeof(pmt_mag_feed_results_list_t)))) {
+            ERR_LOG("Cannot allocate space for BB mag_feed_results_list: %s",
+                strerror(errno));
+            return -5;
+        }
+
+        memcpy(mag_feed_results_list[i], pmt + mag_feed_results_list_offsets->offsets[i], sizeof(pmt_mag_feed_results_list_t));
+
+#ifdef DEBUG
+
+        for (j = 0; j < 11; j++) {
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].def);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].pow);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].dex);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].mind);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].iq);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].synchro);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].unused[0]);
+            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].unused[1]);
+        }
+
+        if (i == 2)
+            getchar();
+#endif // DEBUG
+
+    }
+
     return 0;
 }
 
@@ -1635,6 +1699,12 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -17;
     }
 
+    /* Read in the mag_feed_results values... */
+    if (read_mag_feed_results_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -18;
+    }
+
     /* We're done with the raw PMT data now, clean it up. */
     free_safe(ucbuf);
 
@@ -1660,7 +1730,7 @@ int pmt_enabled_bb(void) {
     return have_bb_pmt;
 }
 
-void pmt_cleanup_v2(void) {
+static void pmt_cleanup_v2(void) {
     uint32_t i;
 
     for (i = 0; i < num_weapon_types; ++i) {
@@ -1702,7 +1772,7 @@ void pmt_cleanup_v2(void) {
 
 }
 
-void pmt_cleanup_gc(void) {
+static void pmt_cleanup_gc(void) {
     uint32_t i;
 
     free_safe(pmt_tb_offsets_gc);
@@ -1746,7 +1816,7 @@ void pmt_cleanup_gc(void) {
     have_gc_pmt = 0;
 }
 
-void pmt_cleanup_bb(void) {
+static void pmt_cleanup_bb(void) {
     uint32_t i;
 
     free_safe(pmt_tb_offsets_bb);

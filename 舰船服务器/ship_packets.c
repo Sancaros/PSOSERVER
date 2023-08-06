@@ -12946,9 +12946,9 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 
     if (l->flags & LOBBY_FLAG_QUESTING) {
 
-        pthread_mutex_lock(&c->mutex);
+        //pthread_mutex_lock(&c->mutex);
         send_warp(c, 1, false);
-        pthread_mutex_unlock(&c->mutex);
+        //pthread_mutex_unlock(&c->mutex);
 
         c->game_data->err.error_cmd_type = cmd_type;
         c->game_data->err.error_subcmd_type = subcmd_type;

@@ -265,6 +265,7 @@ typedef struct psocn_shipcfg {
     char* bb_rtdata_file;
     psocn_event_t* events;
     char* smutdata_file;
+    char* mageditdata_file;
 
     char* ship_host4;
     char* ship_host6;

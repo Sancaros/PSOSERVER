@@ -404,7 +404,7 @@ enum mag_type {
 uint16_t compute_mag_level(const item_t* item);
 
 /* MAG 喂养函数 */
-void player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index);
+int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index);
 
 /* MAG 喂养函数 */
 int mag_bb_feed(ship_client_t* src, uint32_t mag_id, uint32_t item_id);

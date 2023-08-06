@@ -321,6 +321,24 @@ typedef struct pmt_nonweaponsaledivisors_bb {
     float mag_divisor;
 } PACKED pmt_nonweaponsaledivisors_bb_t;
 
+typedef struct pmt_mag_feed_result {
+    int8_t def;
+    int8_t pow;
+    int8_t dex;
+    int8_t mind;
+    int8_t iq;
+    int8_t synchro;
+    uint8_t unused[2];
+} PACKED pmt_mag_feed_result_t;
+
+typedef struct pmt_mag_feed_results_list {
+    pmt_mag_feed_result_t results[11];
+} PACKED pmt_mag_feed_results_list_t;
+
+typedef struct pmt_mag_feed_results_list_offsets {
+    uint32_t offsets[8]; // Offsets of MagFeedResultsList structs
+} PACKED pmt_mag_feed_results_list_offsets_t;
+
 /* TODO V2 ItemPMT Offset Struct */
 typedef struct pmt_table_offsets_v2 {
     union {
@@ -483,6 +501,9 @@ uint32_t eventitem_lowest_bb;
 
 pmt_unsealableitem_bb_t* unsealableitems_bb;
 uint32_t unsealableitems_max_bb;
+
+pmt_mag_feed_results_list_t** mag_feed_results_list;
+pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
 
 int have_v2_pmt;
 int have_gc_pmt;

@@ -45,8 +45,12 @@
 /* The list of language codes */
 #define LANGUAGE_CODE_COUNT     8
 
+//static const char language_codes[LANGUAGE_CODE_COUNT][3] = {
+//    "jp", "en", "de", "fr", "es", "cs", "ct", "kr"
+//};
+
 static const char language_codes[LANGUAGE_CODE_COUNT][3] = {
-    "jp", "en", "de", "fr", "es", "cs", "ct", "kr"
+    "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
 
 static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
@@ -954,6 +958,20 @@ static int handle_smutdata(xmlNode* n, psocn_ship_t* cur) {
     return -1;
 }
 
+static int handle_mageditdata(xmlNode* n, psocn_ship_t* cur) {
+    xmlChar* fn;
+
+    /* Grab the directory, if given */
+    if ((fn = xmlGetProp(n, XC"file"))) {
+        cur->mageditdata_file = (char*)fn;
+        return 0;
+    }
+
+    /* If we don't have it, report the error */
+    ERR_LOG("mageditdata参数格式错误,未提供目录");
+    return -1;
+}
+
 static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
     xmlChar* name, * blocks, * key, * gms, * menu, * gmonly, * cert, * priv;
     int rv;
@@ -1146,6 +1164,12 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
         else if (!xmlStrcmp(n2->name, XC"smutdata")) {
             if (handle_smutdata(n2, cur)) {
                 rv = -21;
+                goto err;
+            }
+        }
+        else if (!xmlStrcmp(n2->name, XC"mageditdata")) {
+            if (handle_mageditdata(n2, cur)) {
+                rv = -22;
                 goto err;
             }
         }

@@ -123,6 +123,9 @@
     <ClCompile Include="records.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="mageditdata.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -234,6 +237,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="itempmt_unused.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mageditdata.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -64,6 +64,7 @@
 #include "shop.h"
 #include "admin.h"
 #include "smutdata.h"
+#include "mageditdata.h"
 
 #ifndef RUNAS_DEFAULT
 #define RUNAS_DEFAULT "psocn"
@@ -502,6 +503,9 @@ static void print_config(psocn_ship_t* cfg) {
     if (cfg->smutdata_file)
         CONFIG_LOG("Smutdata 文件: %s", cfg->smutdata_file);
 
+    if (cfg->mageditdata_file)
+        CONFIG_LOG("MagEditdata 文件: %s", cfg->mageditdata_file);
+
     if (cfg->limits_count) {
         CONFIG_LOG("已设置 %d /legit 个文件:", cfg->limits_count);
 
@@ -927,6 +931,18 @@ int read_param_file(psocn_ship_t* cfg) {
             ERR_LOG("无法读取 Blue Burst 参数文件"
                 ", 取消支持 Blue Burst 版本!");
             cfg->shipgate_flags |= SHIPGATE_FLAG_NOBB;
+        }
+
+        CONFIG_LOG("读取 Mag Edit 参数文件/////////////////////////");
+
+        /* Read the Mag Edit file... */
+        if (cfg->mageditdata_file) {
+            CONFIG_LOG("读取 Mag Edit 文件: %s"
+                , cfg->mageditdata_file);
+            if (magedit_read_bb(cfg->mageditdata_file, 0)) {
+                ERR_LOG("无法读取 Mag Edit 文件: %s"
+                    , cfg->mageditdata_file);
+            }
         }
 
         return rv;
