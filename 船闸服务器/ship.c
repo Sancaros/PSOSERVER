@@ -423,75 +423,75 @@ err_cert:
     return NULL;
 }
 
-void db_remove_client(ship_t* c) {
+void db_remove_client(ship_t* s) {
     ship_t* i;
 
-    TAILQ_REMOVE(&ships, c, qentry);
+    TAILQ_REMOVE(&ships, s, qentry);
 
-    if (c->key_idx) {
+    if (s->key_idx) {
         /* Send a status packet to everyone telling them its gone away
          向每个人发送状态数据包，告诉他们它已经消失了
         */
         TAILQ_FOREACH(i, &ships, qentry) {
-            send_ship_status(i, c, 0);
+            send_ship_status(i, s, 0);
         }
 
-        db_delete_online_clients(c->name, c->key_idx);
+        db_delete_online_clients(s->name, s->key_idx);
 
-        db_delete_transient_clients(c->name, c->key_idx);
+        db_delete_transient_clients(s->name, s->key_idx);
 
-        db_delete_online_ships(c->name, c->key_idx);
+        db_delete_online_ships(s->name, s->key_idx);
 
     }
 }
 
 /* Destroy a connection, closing the socket and removing it from the list. */
-void destroy_connection(ship_t* c) {
-    if (c->name[0]) {
-        SGATE_LOG("关闭与 %s 的连接", c->name);
+void destroy_connection(ship_t* s) {
+    if (s->name[0]) {
+        SGATE_LOG("关闭与 %s 的连接", s->name);
     }
     else {
         SGATE_LOG("取消与未认证舰船的连接");
     }
 
-    db_remove_client(c);
+    db_remove_client(s);
 
     /* Clean up the TLS resources and the socket. */
-    if (c->sock >= 0) {
-        gnutls_bye(c->session, GNUTLS_SHUT_RDWR);
-        closesocket(c->sock);
-        gnutls_deinit(c->session);
-        c->sock = SOCKET_ERROR;
+    if (s->sock >= 0) {
+        gnutls_bye(s->session, GNUTLS_SHUT_RDWR);
+        closesocket(s->sock);
+        gnutls_deinit(s->session);
+        s->sock = SOCKET_ERROR;
     }
 
-    if (c->recvbuf) {
-        free_safe(c->recvbuf);
+    if (s->recvbuf) {
+        free_safe(s->recvbuf);
     }
 
-    if (c->sendbuf) {
-        free_safe(c->sendbuf);
+    if (s->sendbuf) {
+        free_safe(s->sendbuf);
     }
 
-    free_safe(c);
+    free_safe(s);
 }
 
 /* 更新舰船IPv4 暂未完成更新IPv6 */
-int update_ship_ipv4(ship_t* c) {
+int update_ship_ipv4(ship_t* s) {
     struct addrinfo hints;
     struct addrinfo* server, * j;
     char ipstr[INET6_ADDRSTRLEN];
     struct sockaddr_in* addr4;
     struct sockaddr_in6* addr6;
 
-    if (!c->remote_host4)
+    if (!s->remote_host4)
         return 0;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(c->remote_host4, "11000", &hints, &server)) {
-        ERR_LOG("无效 IPv4 地址: %s", c->remote_host4);
+    if (getaddrinfo(s->remote_host4, "11000", &hints, &server)) {
+        ERR_LOG("无效 IPv4 地址: %s", s->remote_host4);
         return -1;
     }
 
@@ -499,7 +499,7 @@ int update_ship_ipv4(ship_t* c) {
         if (j->ai_family == PF_INET) {
             addr4 = (struct sockaddr_in*)j->ai_addr;
             inet_ntop(j->ai_family, &addr4->sin_addr, ipstr, INET6_ADDRSTRLEN);
-            c->remote_addr4 = addr4->sin_addr.s_addr;
+            s->remote_addr4 = addr4->sin_addr.s_addr;
             //SGATE_LOG("    获取到 IPv4 地址: %s", ipstr);
         }
         else if (j->ai_family == PF_INET6) {
@@ -512,23 +512,23 @@ int update_ship_ipv4(ship_t* c) {
     freeaddrinfo(server);
 
     /* Make sure we found at least an IPv4 address */
-    if (!c->remote_addr4) {
+    if (!s->remote_addr4) {
         ERR_LOG("无法获取IPv4地址!");
         return -1;
     }
     else
-        db_update_ship_ipv4(c->remote_addr4, c->key_idx);
+        db_update_ship_ipv4(s->remote_addr4, s->key_idx);
 
     return 0;
 }
 
 /* 处理 ship's login response. */
-static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
+static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     char query[512];
     ship_t* j;
     void* result;
     char** row;
-    uint32_t pver = c->proto_ver = ntohl(pkt->proto_ver);
+    uint32_t pver = s->proto_ver = ntohl(pkt->proto_ver);
     uint16_t menu_code = ntohs(pkt->menu_code);
     int ship_number;
     uint64_t ip6_hi, ip6_lo;
@@ -541,43 +541,43 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     if (pver < SHIPGATE_MINIMUM_PROTO_VER || pver > SHIPGATE_MAXIMUM_PROTO_VER) {
         ERR_LOG("无效协议版本: %lu", pver);
 
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_LOGIN_BAD_PROTO, NULL, 0);
         return -1;
     }
 
     /* Attempt to grab the key for this ship. */
     sprintf(query, "SELECT main_menu, ship_number FROM %s WHERE "
-        "idx='%u'", SERVER_SHIPS, c->key_idx);
+        "idx='%u'", SERVER_SHIPS, s->key_idx);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法查询舰船密钥数据库");
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, NULL, 0);
         return -1;
     }
 
     if ((result = psocn_db_result_store(&conn)) == NULL ||
         (row = psocn_db_result_fetch(result)) == NULL) {
-        SQLERR_LOG("无效密钥idx索引 %d", c->key_idx);
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        SQLERR_LOG("无效密钥idx索引 %d", s->key_idx);
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_LOGIN_BAD_KEY, NULL, 0);
         return -1;
     }
 
     /* Check the menu code for validity */
     if (menu_code && (!isalpha(menu_code & 0xFF) | !isalpha(menu_code >> 8))) {
-        SQLERR_LOG("菜单代码错误 idx: %d", c->key_idx);
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        SQLERR_LOG("菜单代码错误 idx: %d", s->key_idx);
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_LOGIN_BAD_MENU, NULL, 0);
         return -1;
     }
 
     /* If the ship requests the main menu and they aren't allowed there, bail */
     if (!menu_code && !atoi(row[0])) {
-        SQLERR_LOG("菜单代码无效 id: %d", c->key_idx);
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        SQLERR_LOG("菜单代码无效 id: %d", s->key_idx);
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_LOGIN_INVAL_MENU, NULL, 0);
         return -1;
     }
@@ -587,51 +587,51 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     psocn_db_result_free(result);
 
     /* Fill in the ship structure */
-    memcpy(c->remote_host4, pkt->ship_host4, 32);
-    memcpy(c->remote_host6, pkt->ship_host6, 128);
-    c->remote_addr4 = pkt->ship_addr4;
-    memcpy(&c->remote_addr6, pkt->ship_addr6, 16);
-    c->port = ntohs(pkt->ship_port);
-    c->clients = ntohs(pkt->clients);
-    c->games = ntohs(pkt->games);
-    c->flags = ntohl(pkt->flags);
-    c->menu_code = menu_code;
-    memcpy(c->name, pkt->name, 12);
-    c->ship_number = ship_number;
-    c->privileges = ntohl(pkt->privileges);
+    memcpy(s->remote_host4, pkt->ship_host4, 32);
+    memcpy(s->remote_host6, pkt->ship_host6, 128);
+    s->remote_addr4 = pkt->ship_addr4;
+    memcpy(&s->remote_addr6, pkt->ship_addr6, 16);
+    s->port = ntohs(pkt->ship_port);
+    s->clients = ntohs(pkt->clients);
+    s->games = ntohs(pkt->games);
+    s->flags = ntohl(pkt->flags);
+    s->menu_code = menu_code;
+    memcpy(s->name, pkt->name, 12);
+    s->ship_number = ship_number;
+    s->privileges = ntohl(pkt->privileges);
 
-    pack_ipv6(&c->remote_addr6, &ip6_hi, &ip6_lo);
+    pack_ipv6(&s->remote_addr6, &ip6_hi, &ip6_lo);
 
     sprintf(query, "INSERT INTO %s(name, players, ship_host4, ship_host6, ip, port, int_ip, "
         "ship_id, gm_only, games, menu_code, flags, ship_number, "
         "ship_ip6_high, ship_ip6_low, protocol_ver, privileges) VALUES "
         "('%s', '%hu', '%s', '%s', '%lu', '%hu', '%u', '%u', '%d', '%hu', '%hu', '%u', "
-        "'%d', '%llu', '%llu', '%u', '%u')", SERVER_SHIPS_ONLINE, c->name, c->clients,
-        c->remote_host4, c->remote_host6, ntohl(c->remote_addr4), c->port, 0, c->key_idx,
-        !!(c->flags & LOGIN_FLAG_GMONLY), c->games, c->menu_code, c->flags,
+        "'%d', '%llu', '%llu', '%u', '%u')", SERVER_SHIPS_ONLINE, s->name, s->clients,
+        s->remote_host4, s->remote_host6, ntohl(s->remote_addr4), s->port, 0, s->key_idx,
+        !!(s->flags & LOGIN_FLAG_GMONLY), s->games, s->menu_code, s->flags,
         ship_number, (unsigned long long)ip6_hi,
-        (unsigned long long)ip6_lo, pver, c->privileges);
+        (unsigned long long)ip6_lo, pver, s->privileges);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法将 %s 新增至在线舰船列表.",
-            c->name);
+            s->name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
-        send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
+        send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, NULL, 0);
         return -1;
     }
 
     /* Hooray for misusing functions! */
-    if (send_error(c, SHDR_TYPE_LOGIN6, SHDR_RESPONSE, ERR_NO_ERROR, NULL, 0)) {
+    if (send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE, ERR_NO_ERROR, NULL, 0)) {
         ERR_LOG("滥用函数万岁!");
         return -1;
     }
 
 #ifdef ENABLE_LUA
     /* Send script check packets, if the ship supports scripting */
-    if (pver >= 16 && c->flags & LOGIN_FLAG_LUA) {
+    if (pver >= 16 && s->flags & LOGIN_FLAG_LUA) {
         for (i = 0; i < script_count; ++i) {
-            send_script_check(c, &scripts[i]);
+            send_script_check(s, &scripts[i]);
         }
     }
 #endif
@@ -639,12 +639,12 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     /* Does this ship support the initial shipctl packets? If so, send it a
        uname and a version request 这艘船是否支持初始shipctl数据包？如果是，请向其发送uname和版本请求 . */
     if (pver >= 19) {
-        if (send_sctl(c, SCTL_TYPE_UNAME, 0)) {
+        if (send_sctl(s, SCTL_TYPE_UNAME, 0)) {
             ERR_LOG("滥用函数万岁!");
             return -1;
         }
 
-        if (send_sctl(c, SCTL_TYPE_VERSION, 0)) {
+        if (send_sctl(s, SCTL_TYPE_VERSION, 0)) {
             ERR_LOG("滥用函数万岁!");
             return -1;
         }
@@ -654,12 +654,12 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     TAILQ_FOREACH(j, &ships, qentry) {
         /* Don't send ships with privilege bits set to ships not running
            protocol v18 or newer 不发送特权位设置为未运行协议v18或更新版本的装运 . */
-        if (!c->privileges || j->proto_ver >= 18)
-            send_ship_status(j, c, 1);
+        if (!s->privileges || j->proto_ver >= 18)
+            send_ship_status(j, s, 1);
 
         /*  把这艘船送到新船上去，只要不是在上面 . */
-        if (j != c) {
-            send_ship_status(c, j, 1);
+        if (j != s) {
+            send_ship_status(s, j, 1);
         }
 
         clients += j->clients;
@@ -668,7 +668,7 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
     //SHIPS_LOG("handle_shipgate_login6t c->privileges = %d", c->privileges);
     /* Update the table of client counts, if it might have actually changed from
        this update packet. */
-    if (c->clients) {
+    if (s->clients) {
         sprintf(query, "INSERT INTO %s (clients) VALUES('%" PRIu32
             "') ON DUPLICATE KEY UPDATE clients=VALUES(clients)", SERVER_CLIENTS_COUNT, clients);
         if (psocn_db_real_query(&conn, query)) {
@@ -676,36 +676,36 @@ static int handle_shipgate_login6t(ship_t* c, shipgate_login6_reply_pkt* pkt) {
         }
     }
 
-    SGATE_LOG("%s: 舰船与船闸完成对接", c->name);
+    SGATE_LOG("%s: 舰船与船闸完成对接", s->name);
     return 0;
 }
 
 /* 处理 ship's update counters packet. */
-static int handle_count(ship_t* c, shipgate_cnt_pkt* pkt) {
+static int handle_count(ship_t* s, shipgate_cnt_pkt* pkt) {
     char query[256];
     ship_t* j;
     uint32_t clients = 0;
-    uint16_t sclients = c->clients;
+    uint16_t sclients = s->clients;
 
-    c->clients = ntohs(pkt->clients);
-    c->games = ntohs(pkt->games);
+    s->clients = ntohs(pkt->clients);
+    s->games = ntohs(pkt->games);
 
     sprintf(query, "UPDATE %s SET players='%hu', games='%hu' WHERE "
-        "ship_id='%u'", SERVER_SHIPS_ONLINE, c->clients, c->games, c->key_idx);
+        "ship_id='%u'", SERVER_SHIPS_ONLINE, s->clients, s->games, s->key_idx);
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法更新舰船 %s 玩家/游戏 数量", c->name);
+        SQLERR_LOG("无法更新舰船 %s 玩家/游戏 数量", s->name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
     }
 
     /* Update all of the ships */
     TAILQ_FOREACH(j, &ships, qentry) {
-        send_counts(j, c->key_idx, c->clients, c->games);
+        send_counts(j, s->key_idx, s->clients, s->games);
         clients += j->clients;
     }
 
     /* Update the table of client counts, if the number actually changed from
        this update packet. */
-    if (sclients != c->clients) {
+    if (sclients != s->clients) {
         sprintf(query, "INSERT INTO %s (clients) VALUES('%" PRIu32
             "') ON DUPLICATE KEY UPDATE clients=VALUES(clients)", SERVER_CLIENTS_COUNT, clients);
         if (psocn_db_real_query(&conn, query)) {

@@ -4345,7 +4345,6 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             switch (type) {
             case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
             case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
-            case SUBCMD60_SET_AREA_20:
             case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
             case SUBCMD60_BURST_DONE:
                 /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
@@ -4354,7 +4353,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
                 break;
 
             default:
-                DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+                //DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
 

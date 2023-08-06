@@ -2270,7 +2270,7 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 #ifdef DEBUG
                 DBG_LOG("ITEM_TYPE_WEAPON");
 #endif // DEBUG
-                if(eparts[2] != itemcombination_bb[i].equipped_item[2])
+                if(eparts[2] == itemcombination_bb[i].equipped_item[2])
                     /* 获取数据并将其复制出来 */
                     memcpy(rv, &itemcombination_bb[i], sizeof(pmt_itemcombination_bb_t));
                 else
@@ -2280,7 +2280,7 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 
             case ITEM_TYPE_GUARD:
 
-                if (eparts[2] != itemcombination_bb[i].equipped_item[2]) {
+                if (eparts[2] == itemcombination_bb[i].equipped_item[2]) {
 
 #ifdef DEBUG
                     DBG_LOG("ITEM_TYPE_WEAPON");
