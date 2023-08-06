@@ -2341,7 +2341,7 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
     return 0;
 }
 
-int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv) {
+int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
     uint8_t parts[3] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
@@ -2354,12 +2354,6 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
-
-    DBG_LOG("0x%02X", parts[0]);
-    DBG_LOG("0x%02X", parts[1]);
-    DBG_LOG("0x%02X", parts[2]);
-
-
     /* 确保我们正在查找 圣诞物品 */
     if (parts[0] != ITEM_TYPE_TOOL) {
         return -2;
@@ -2370,8 +2364,13 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv) {
         return -3;
     }
 
+    /* 确保我们在任何地方都不越界 */
+    if (parts[2] > 0x02) {
+        return -4;
+    }
+
     /* 获取数据并将其复制出来 */
-    memcpy(rv, &eventitem_bb, sizeof(pmt_eventitem_bb_t));
+    memcpy(rv, &eventitem_bb[parts[2]], sizeof(pmt_eventitem_bb_t));
     return 0;
 }
 

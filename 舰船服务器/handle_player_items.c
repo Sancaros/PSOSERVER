@@ -750,58 +750,40 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         mag->data.datab[1] = 0x2B;
 
     }
-    /* TODO */
-    else if ((item_identifier & 0xFFFF00) == 0x031500) {
-        // Christmas Present, etc. - use unwrap_table + probabilities therein
-        //pmt_eventitem_bb_t** eventitem_table = { 0 };
-        pmt_eventitem_bb_t entry = { 0 };
+    else if (
+        (item_identifier & 0xFFFF00) == 0x031500 ||
+        (item_identifier & 0xFFFF00) == 0x031501 ||
+        (item_identifier & 0xFFFF00) == 0x031502
+        ) {
+        // Present, etc. - use unwrap_table + probabilities therein
+        size_t sum = 0, z = 0;
 
-
-
-        //if (err = pmt_lookup_eventitem_bb(item->data.datal[0], eventitem_table)) {
-        //    ERR_LOG("pmt_lookup_eventitem_bb 不存在数据! 错误码 %d", err);
-        //    return -1;
-        //}
-
-        DBG_LOG("0x%08X", num_eventitem_types_bb);
-
-
-        size_t sum = 0, j = 0, z = 0;
-        for (z = 0; z < num_eventitem_types_bb; z++) {
-            for (j = 0; j < num_eventitems_bb[z]; z++) {
-
-                DBG_LOG("0x%02X", eventitem_bb[z][j].probability);
-                sum += eventitem_bb[z][j].probability;
-            }
+        for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
+            sum += eventitem_bb[item->data.datab[2]][z].probability;
         }
         if (sum == 0) {
-            ERR_LOG("no unwrap results available for event");
+            ERR_LOG("节日事件没有可用的礼包结果");
         }
-        //size_t det = mt19937_genrand_int32(rng) % sum;
-        //DBG_LOG("0x%08X", det);
-        /*DBG_LOG("0x%02X", eventitem_table.item[0]);
-        DBG_LOG("0x%02X", eventitem_table.item[1]);
-        DBG_LOG("0x%02X", eventitem_table.item[2]);
-        DBG_LOG("0x%02X", eventitem_table.probability);*/
-        //for (size_t z = 0; z < table.second; z++) {
-        //    const auto& entry = table.first[z];
-        //    if (det > entry.probability) {
-        //        det -= entry.probability;
-        //    }
-        //    else {
-        //        item->data.data2l = 0;
-        //        item->data.datab[0] = entry.item[0];
-        //        item->data.datab[1] = entry.item[1];
-        //        item->data.datab[2] = entry.item[2];
-        //        memset(item->data.datab[3], 0, 3);
-        //        //item->data.datab.clear_after(3);
-        //        should_delete_item = false;
+        size_t det = mt19937_genrand_int32(rng) % sum;
+        for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
+            pmt_eventitem_bb_t entry = eventitem_bb[item->data.datab[2]][z];
+            if (det > entry.probability) {
+                det -= entry.probability;
+            }
+            else {
+                item->data.data2l = 0;
+                item->data.datab[0] = entry.item[0];
+                item->data.datab[1] = entry.item[1];
+                item->data.datab[2] = entry.item[2];
+                item->data.datab[3] = 0;
+                item->data.datab[4] = 0;
+                item->data.datab[5] = 0;
+                should_delete_item = false;
 
-        //        subcmd_send_lobby_bb_create_inv_item(src, item->data, 1, true);
-        //        break;
-        //    }
-        //}
-
+                subcmd_send_lobby_bb_create_inv_item(src, item->data, 1, true);
+                break;
+            }
+        }
     }
     else {
         // Use item combinations table from ItemPMT

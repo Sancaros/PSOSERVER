@@ -394,96 +394,96 @@ typedef struct pmt_table_offsets_v3 {
 #undef PACKED
 
 /* PSOv1/PSOv2 data. */
-static pmt_weapon_v2_t** weapons = NULL;
-static uint32_t* num_weapons = NULL;
-static uint32_t num_weapon_types = 0;
-static uint32_t weapon_lowest = EMPTY_STRING;
+pmt_weapon_v2_t** weapons;
+uint32_t* num_weapons;
+uint32_t num_weapon_types;
+uint32_t weapon_lowest;
 
-static pmt_guard_v2_t** guards = NULL;
-static uint32_t* num_guards = NULL;
-static uint32_t num_guard_types = 0;
-static uint32_t guard_lowest = EMPTY_STRING;
+pmt_guard_v2_t** guards;
+uint32_t* num_guards;
+uint32_t num_guard_types;
+uint32_t guard_lowest;
 
-static pmt_unit_v2_t* units = NULL;
-static uint32_t num_units = 0;
-static uint32_t unit_lowest = EMPTY_STRING;
+pmt_unit_v2_t* units;
+uint32_t num_units;
+uint32_t unit_lowest;
 
-static uint8_t* star_table = NULL;
-static uint32_t star_max = 0;
+uint8_t* star_table;
+uint32_t star_max;
 
 /* These three are used in generating random units... */
-static uint64_t* units_by_stars = NULL;
-static uint32_t* units_with_stars = NULL;
-static uint8_t unit_max_stars = 0;
+uint64_t* units_by_stars;
+uint32_t* units_with_stars;
+uint8_t unit_max_stars;
 
 /* PSOGC data. */
-static pmt_table_offsets_v3_t* pmt_tb_offsets_gc = NULL;
+pmt_table_offsets_v3_t* pmt_tb_offsets_gc;
 
-static pmt_weapon_gc_t** weapons_gc = NULL;
-static uint32_t* num_weapons_gc = NULL;
-static uint32_t num_weapon_types_gc = 0;
-static uint32_t weapon_lowest_gc = EMPTY_STRING;
+pmt_weapon_gc_t** weapons_gc;
+uint32_t* num_weapons_gc;
+uint32_t num_weapon_types_gc;
+uint32_t weapon_lowest_gc;
 
-static pmt_guard_gc_t** guards_gc = NULL;
-static uint32_t* num_guards_gc = NULL;
-static uint32_t num_guard_types_gc = 0;
-static uint32_t guard_lowest_gc = EMPTY_STRING;
+pmt_guard_gc_t** guards_gc;
+uint32_t* num_guards_gc;
+uint32_t num_guard_types_gc;
+uint32_t guard_lowest_gc;
 
-static pmt_unit_gc_t* units_gc = NULL;
-static uint32_t num_units_gc = 0;
-static uint32_t unit_lowest_gc = EMPTY_STRING;
+pmt_unit_gc_t* units_gc;
+uint32_t num_units_gc;
+uint32_t unit_lowest_gc;
 
-static uint8_t* star_table_gc = NULL;
-static uint32_t star_max_gc = 0;
+uint8_t* star_table_gc;
+uint32_t star_max_gc;
 
-static uint64_t* units_by_stars_gc = NULL;
-static uint32_t* units_with_stars_gc = NULL;
-static uint8_t unit_max_stars_gc = 0;
+uint64_t* units_by_stars_gc;
+uint32_t* units_with_stars_gc;
+uint8_t unit_max_stars_gc;
 
 /* PSOBB data. */
-static pmt_table_offsets_v3_t* pmt_tb_offsets_bb = NULL;
+pmt_table_offsets_v3_t* pmt_tb_offsets_bb;
 
-static pmt_weapon_bb_t** weapons_bb = NULL;
-static uint32_t* num_weapons_bb = NULL;
-static uint32_t num_weapon_types_bb = 0;
-static uint32_t weapon_lowest_bb = EMPTY_STRING;
+pmt_weapon_bb_t** weapons_bb;
+uint32_t* num_weapons_bb;
+uint32_t num_weapon_types_bb;
+uint32_t weapon_lowest_bb;
 
-static pmt_guard_bb_t** guards_bb = NULL;
-static uint32_t* num_guards_bb = NULL;
-static uint32_t num_guard_types_bb = 0;
-static uint32_t guard_lowest_bb = EMPTY_STRING;
+pmt_guard_bb_t** guards_bb;
+uint32_t* num_guards_bb;
+uint32_t num_guard_types_bb;
+uint32_t guard_lowest_bb;
 
-static pmt_unit_bb_t* units_bb = NULL;
-static uint32_t num_units_bb = 0;
-static uint32_t unit_lowest_bb = EMPTY_STRING;
+pmt_unit_bb_t* units_bb;
+uint32_t num_units_bb;
+uint32_t unit_lowest_bb;
 
-static uint8_t* star_table_bb = NULL;
-static uint32_t star_max_bb = 0;
+uint8_t* star_table_bb;
+uint32_t star_max_bb;
 
-static uint64_t* units_by_stars_bb = NULL;
-static uint32_t* units_with_stars_bb = NULL;
-static uint8_t unit_max_stars_bb = 0;
+uint64_t* units_by_stars_bb;
+uint32_t* units_with_stars_bb;
+uint8_t unit_max_stars_bb;
 
-static pmt_mag_bb_t* mags_bb = NULL;
-static uint32_t num_mags_bb = 0;
-static uint32_t mag_lowest_bb = EMPTY_STRING;
+pmt_mag_bb_t* mags_bb;
+uint32_t num_mags_bb;
+uint32_t mag_lowest_bb;
 
-static pmt_tool_bb_t** tools_bb = NULL;
-static uint32_t* num_tools_bb = NULL;
-static uint32_t num_tool_types_bb = 0;
-static uint32_t tool_lowest_bb = EMPTY_STRING;
+pmt_tool_bb_t** tools_bb;
+uint32_t* num_tools_bb;
+uint32_t num_tool_types_bb;
+uint32_t tool_lowest_bb;
 
-static pmt_itemcombination_bb_t* itemcombination_bb = NULL;
-static uint32_t itemcombinations_max_bb = 0;
+pmt_itemcombination_bb_t* itemcombination_bb;
+uint32_t itemcombinations_max_bb;
 
-static pmt_eventitem_bb_t** eventitem_bb = NULL;
-static uint32_t* num_eventitems_bb = NULL;
-static uint32_t num_eventitem_types_bb = 0;
-static uint32_t eventitem_lowest_bb = EMPTY_STRING;
+pmt_eventitem_bb_t** eventitem_bb;
+uint32_t* num_eventitems_bb;
+uint32_t num_eventitem_types_bb;
+uint32_t eventitem_lowest_bb;
 
-static int have_v2_pmt = 0;
-static int have_gc_pmt = 0;
-static int have_bb_pmt = 0;
+int have_v2_pmt;
+int have_gc_pmt;
+int have_bb_pmt;
 
 int pmt_read_v2(const char* fn, int norestrict);
 int pmt_read_gc(const char* fn, int norestrict);
@@ -516,7 +516,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t* rv);
 int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv);
 int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv);
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
-int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t** rv);
+int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv);
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     struct mt19937_state* rng, lobby_t* l);
