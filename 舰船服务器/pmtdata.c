@@ -859,7 +859,8 @@ static int read_stars_bb(const uint8_t *pmt, uint32_t sz,
 
 static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
                          const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t values[2], i;
+    pmt_countandoffset_t values;
+    size_t i;
 
     /* Make sure the 指针无效 are sane... */
     if (ptrs->mag_table > sz) {
@@ -869,31 +870,31 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
     }
 
     /* Read the pointer and the size... */
-    memcpy(values, pmt + ptrs->mag_table, sizeof(uint32_t) * 2);
-    values[0] = LE32(values[0]);
-    values[1] = LE32(values[1]);
+    memcpy(&values, pmt + ptrs->mag_table, sizeof(pmt_countandoffset_t));
+    values.count = LE32(values.count);
+    values.offset = LE32(values.offset);
 
     /* Make sure we have enough file... */
-    if (values[1] + sizeof(pmt_mag_bb_t) * values[0] > sz) {
+    if (values.offset + sizeof(pmt_mag_bb_t) * values.count > sz) {
         ERR_LOG("ItemPMT.prs file for BB has mag table outside "
             "of file bounds! 请检查文件的有效性!");
         return -2;
     }
 
-    num_mags_bb = values[0];
+    num_mags_bb = values.count;
     if (!(mags_bb = (pmt_mag_bb_t*)malloc(sizeof(pmt_mag_bb_t) *
-        values[0]))) {
+        values.count))) {
         ERR_LOG("Cannot allocate space for BB mags: %s",
             strerror(errno));
         num_mags_bb = 0;
         return -3;
     }
 
-    memcpy(mags_bb, pmt + values[1], sizeof(pmt_mag_bb_t) * values[0]);
+    memcpy(mags_bb, pmt + values.offset, sizeof(pmt_mag_bb_t) * values.count);
 
     //DBG_LOG("num_mag_types_bb %d", num_mags_bb);
 
-    for (i = 0; i < values[0]; ++i) {
+    for (i = 0; i < values.count; ++i) {
         //DBG_LOG("index %d", mags_bb[i].index);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
         mags_bb[i].index = LE32(mags_bb[i].index);
@@ -1135,6 +1136,55 @@ static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
 
     }
 
+    return 0;
+}
+
+static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    pmt_countandoffset_t values;
+    size_t i = 0, j = 0;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->unsealable_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 eventitem 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+
+    /* Read the pointer and the size... */
+    memcpy(&values, pmt + ptrs->unsealable_table, sizeof(pmt_countandoffset_t));
+    values.count = LE32(values.count);
+    values.offset = LE32(values.offset);
+
+    /* Make sure we have enough file... */
+    if (values.offset + sizeof(pmt_unsealableitem_bb_t) * values.count > sz) {
+        ERR_LOG("ItemPMT.prs file for BB has mag table outside "
+            "of file bounds! 请检查文件的有效性!");
+        return -2;
+    }
+
+    unsealableitems_max_bb = values.count;
+
+    DBG_LOG("unsealableitems_max_bb %d", unsealableitems_max_bb);
+
+    if (!(unsealableitems_bb = (pmt_unsealableitem_bb_t*)malloc(sizeof(pmt_unsealableitem_bb_t) *
+        values.count))) {
+        ERR_LOG("Cannot allocate space for BB mags: %s",
+            strerror(errno));
+        unsealableitems_max_bb = 0;
+        return -3;
+    }
+
+    memcpy(unsealableitems_bb, pmt + values.offset, sizeof(pmt_unsealableitem_bb_t) * values.count);
+
+    for (i = 0; i < values.count; ++i) {
+        DBG_LOG("item 0x%02X", unsealableitems_bb[i].item[0]);
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+#endif
+    }
+
+    getchar();
     return 0;
 }
 
@@ -1573,8 +1623,14 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -16;
     }
 
-    /* Read in the itemcombinations values... */
+    /* Read in the eventitems values... */
     if (read_eventitems_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -17;
+    }
+
+    /* Read in the unsealableitems values... */
+    if (read_unsealableitems_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
         free_safe(ucbuf);
         return -17;
     }

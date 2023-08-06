@@ -481,6 +481,9 @@ uint32_t* num_eventitems_bb;
 uint32_t num_eventitem_types_bb;
 uint32_t eventitem_lowest_bb;
 
+pmt_unsealableitem_bb_t* unsealableitems_bb;
+uint32_t unsealableitems_max_bb;
+
 int have_v2_pmt;
 int have_gc_pmt;
 int have_bb_pmt;
