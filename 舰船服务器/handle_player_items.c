@@ -1211,11 +1211,9 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
                 inv_item->data.datab[0] = combo.result_item[0];
                 inv_item->data.datab[1] = combo.result_item[1];
-                if (combo.result_item[2] != 0xFF)
-                    inv_item->data.datab[2] = combo.result_item[2];
-                if (combo.result_item[3] != 0xFF)
-                    inv_item->data.datab[3] = combo.grind; // Grind
-                //inv_item->data.datab[4] = 0; // Flags + special
+                inv_item->data.datab[2] = combo.result_item[2];
+                inv_item->data.datab[3] = 0; // Grind
+                inv_item->data.datab[4] = 0; // Flags + special
             }
 
             __except (crash_handler(GetExceptionInformation())) {
