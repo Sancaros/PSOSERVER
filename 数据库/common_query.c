@@ -458,43 +458,23 @@ int db_delete_online_clients(char* ship_name, uint16_t ship_id) {
     sprintf(myquery, "SELECT guildcard FROM %s WHERE ship_id = '%hu'", SERVER_CLIENTS_ONLINE, ship_id);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        DBG_LOG("111");
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        DBG_LOG("111");
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
 
-    DBG_LOG("111");
-
     while ((row = psocn_db_result_fetch(result)) != NULL) {
         guildcard = (uint32_t)strtoul(row[0], NULL, 10);
-        DBG_LOG("%u", guildcard);
         if(guildcard)
             db_update_gc_login_state(guildcard, 0, -2, NULL);
     }
 
-
-
-
-
-
-
     psocn_db_result_free(result);
-
-
-    DBG_LOG("111");
-
-
-
-
-
-
 
     /* Remove the client from the server_online_clients table. */
     sprintf(myquery, "DELETE FROM %s WHERE ship_id='%hu'"
