@@ -345,17 +345,17 @@ typedef union psocn_mode_char {
 
 // 角色颜色ID定义
 const enum SectionIDs {
-    ID_Viridia = 0, //铬绿
-    ID_Greennill, //翠绿
-    ID_Skyly, // 天青
-    ID_Bluefull, //纯蓝
-    ID_Pinkal, //淡紫
-    ID_Purplenum, //粉红
-    ID_Redria, //真红
-    ID_Oran, //橙黄
-    ID_Yellowboze, //金黄
-    ID_Whitill, //羽白
-    ID_MAX //颜色ID最大数值
+    SID_Viridia = 0, //铬绿
+    SID_Greennill, //翠绿
+    SID_Skyly, // 天青
+    SID_Bluefull, //纯蓝
+    SID_Pinkal, //淡紫
+    SID_Purplenum, //粉红
+    SID_Redria, //真红
+    SID_Oran, //橙黄
+    SID_Yellowboze, //金黄
+    SID_Whitill, //羽白
+    SID_MAX //颜色ID最大数值
 };
 
 // 职业定义

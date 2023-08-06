@@ -2997,7 +2997,10 @@ typedef struct subcmd_bb_battle_mode_level_up {
 typedef struct subcmd_bb_c_mode_grave_drop_req {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint32_t item_datal;
+    uint8_t drop_amount;
+    uint8_t unk1;
+    uint8_t item_subtype;
+    uint8_t unk2;
     float x;
     float z;
     uint32_t unused; /* 00 00 00 00 */

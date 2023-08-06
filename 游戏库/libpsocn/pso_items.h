@@ -49,23 +49,25 @@
 
 #define MESETA_IDENTIFIER               0x00040000
 
-   /* ITEM_TYPE_GUARD items are actually slightly more specialized, and fall into
-      three subtypes of their own. These are the second least significant byte in
-      the item code. */
+/* ITEM_TYPE_GUARD items are actually slightly more specialized, and fall into
+   three subtypes of their own. These are the second least significant byte in
+   the item code. */
 #define ITEM_SUBTYPE_FRAME              0x01
 #define ITEM_SUBTYPE_BARRIER            0x02
 #define ITEM_SUBTYPE_UNIT               0x03
 
-      /* ITEM_TYPE_TOOL subtype*/
+/* ITEM_TYPE_TOOL subtype*/
 #define ITEM_SUBTYPE_MATE               0x00
 #define ITEM_SUBTYPE_FLUID              0x01
 #define ITEM_SUBTYPE_DISK               0x02
+
 #define ITEM_SUBTYPE_SOL_ATOMIZER       0x03
 #define ITEM_SUBTYPE_MOON_ATOMIZER      0x04
 #define ITEM_SUBTYPE_STAR_ATOMIZER      0x05
 #define ITEM_SUBTYPE_ANTI               0x06
 #define ITEM_SUBTYPE_TELEPIPE           0x07
 #define ITEM_SUBTYPE_TRAP_VISION        0x08
+
 #define ITEM_SUBTYPE_GRINDER            0x0A
 #define ITEM_SUBTYPE_MATERIAL           0x0B
 #define ITEM_SUBTYPE_MAG_CELL1          0x0C
@@ -73,6 +75,16 @@
 #define ITEM_SUBTYPE_MAG_CELL2          0x0E
 #define ITEM_SUBTYPE_ADD_SLOT           0x0F
 #define ITEM_SUBTYPE_PHOTON             0x10
+#define ITEM_SUBTYPE_BOOK               0x11
+#define ITEM_SUBTYPE_SERVER_ITEM1       0x12/*todo player_use_item*/
+#define ITEM_SUBTYPE_PRESENT            0x13/*todo player_use_item*/
+#define ITEM_SUBTYPE_SERVER_ITEM2       0x14/*todo player_use_item*/
+#define ITEM_SUBTYPE_PRESENT_EVENT      0x15
+#define ITEM_SUBTYPE_DISK_MUSIC         0x16/*todo player_use_item*/
+#define ITEM_SUBTYPE_HUNTER_REPORT      0x17/*todo player_use_item*/
+#define ITEM_SUBTYPE_PART_OF_MAG_CELL   0x18
+#define ITEM_SUBTYPE_GUILD_REWARD       0x19/*todo player_use_item*/
+#define ITEM_SUBTYPE_UNKNOW_ITEM        0x1A
 
 /* Default behaviors for the item lists. ITEM_DEFAULT_ALLOW means to accept any
    things NOT in the list read in by default, whereas ITEM_DEFAULT_REJECT causes

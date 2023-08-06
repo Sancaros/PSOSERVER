@@ -2162,8 +2162,6 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
 
 int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_c_mode_grave_drop_req_pkt_t* pkt) {
-    //subcmd_bb_drop_stack_t bb = { 0 };
-    iitem_t* iitem;
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2175,50 +2173,29 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     display_packet(pkt, pkt->hdr.pkt_len);
 
     /* Make sure there's something set with /item */
-    if (!pkt->item_datal) {
+    if (!pkt->drop_amount) {
         return send_txt(src, "%s", __(src, "\tE\tC7墓碑掉落无效."));
     }
 
-    iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM);
-
-    if (iitem == NULL) {
-        return send_txt(src, "%s", __(src, "\tE\tC7墓碑掉落无效."));
-    }
-
-    iitem->present = 1;
-    iitem->data.datal[0] = pkt->item_datal;
+    /* TODO 错了 是掉落和玩家背包中ID一致的物品 */
 
     //[2023年07月31日 04:42 : 58 : 142] 调试(subcmd_handle_62.c 2515) : 未知 0x62 指令 : 0xD1
     //(00000000)   1C 00 62 00 00 00 00 00   D1 05 00 00 01 00 05 00  ..b..... ? ......
     //(00000010)   B0 FF 07 C4 99 E8 3E C2   00 00 00 00 ? .臋 ? ? ...
+    item_t drop_item = { 0 };
+    drop_item.datab[0] = ITEM_TYPE_TOOL;
+    drop_item.datab[1] = pkt->item_subtype;
+    drop_item.datab[5] = pkt->drop_amount;
 
-    iitem = add_new_litem_locked(l, &iitem->data, src->cur_area, src->x, src->z);
+    iitem_t* new_iitem = add_new_litem_locked(l, &drop_item, src->cur_area, pkt->x, pkt->z);
 
-    if (iitem == NULL) {
+    if (new_iitem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
     }
 
-    //bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    //bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
-    //bb.hdr.flags = 0;
-
-    //bb.shdr.type = SUBCMD60_DROP_STACK;
-    //bb.shdr.size = 0x09;
-    //bb.shdr.client_id = 0xFBFF;
-
-    //bb.area = LE32(src->cur_area);
-    //bb.x = pkt->x;
-    //bb.z = pkt->z;
-
-    //bb.data = iitem->data;
-
-    //bb.data.item_id = LE32((l->item_lobby_id - 1));
-
-    //bb.two = LE32(0x00000002);
-
     send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 
-    return subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, pkt->x, pkt->z, iitem->data, 1);
+    return subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, pkt->x, pkt->z, new_iitem->data, 1);
 }
 
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,

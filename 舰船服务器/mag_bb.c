@@ -916,10 +916,10 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type,
 
 		switch (section_id)
 		{
-		case ID_Viridia:
-		case ID_Bluefull:
-		case ID_Redria:
-		case ID_Whitill:
+		case SID_Viridia:
+		case SID_Bluefull:
+		case SID_Redria:
+		case SID_Whitill:
 			if ((mDefense + mDex) == (mPower + mMind))
 			{
 				switch (type)
@@ -953,9 +953,9 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type,
 				}
 			}
 			break;
-		case ID_Skyly:
-		case ID_Pinkal:
-		case ID_Yellowboze:
+		case SID_Skyly:
+		case SID_Pinkal:
+		case SID_Yellowboze:
 			if ((mDefense + mPower) == (mDex + mMind))
 			{
 				switch (type)
@@ -989,9 +989,9 @@ int32_t mag_bb_special_evolution(magitem_t* m, uint8_t section_id, uint8_t type,
 				}
 			}
 			break;
-		case ID_Greennill:
-		case ID_Oran:
-		case ID_Purplenum:
+		case SID_Greennill:
+		case SID_Oran:
+		case SID_Purplenum:
 			if ((mDefense + mMind) == (mPower + mDex))
 			{
 				switch (type)
