@@ -308,10 +308,6 @@ size_t get_mag_feed_table_index(iitem_t* mag) {
 	}
 }
 
-uint8_t get_evolution_number(iitem_t* mag) {
-	return mag_evolution_numbers_table.values[mag->data.datab[1]];
-}
-
 // 玛古喂养表
 magfeedresultslist_t mag_feed_table[MAG_MAX_FEED_TABLE][11 * 6] = {
 
@@ -498,9 +494,6 @@ bool char_class_is_force(uint8_t cls) {
 }
 
 int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index) {
-	//if (src->version != CLIENT_VERSION_BB)
-	//	return send_txt(src, __(src, "\tE\tC4不支持非BB版本"));
-
 	errno_t err = 0;
 
 	psocn_bb_char_t* character = { 0 };
@@ -514,8 +507,22 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 	iitem_t* mag_item = &character->inv.iitems[mag_item_index];
 
 	size_t result_index = find_result_index(primary_identifier(&fed_item.data));
-	size_t feed_table_index = get_mag_feed_table_index(mag_item);
-	magfeedresult_t feed_result = get_mag_feed_result(feed_table_index, result_index);
+	pmt_mag_bb_t mag_table = { 0 };
+
+	if ((err = pmt_lookup_mag_bb(mag_item->data.datal[0], &mag_table))) {
+		ERR_LOG("GC %" PRIu32 " 喂养了不存在的玛古数据!错误码 %d",
+			src->guildcard, err);
+		return err;
+	}
+
+	size_t feed_table_index = mag_table.feed_table;
+	pmt_mag_feed_result_t feed_result = { 0 };
+
+	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->data.datal[0], feed_table_index, result_index, &feed_result))) {
+		ERR_LOG("GC %" PRIu32 " 喂养了不存在的玛古数据!错误码 %d",
+			src->guildcard, err);
+		return err;
+	}
 
 	update_stat(&mag_item->data, 2, feed_result.def);
 	update_stat(&mag_item->data, 3, feed_result.pow);
@@ -526,7 +533,14 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 
 	uint8_t mag_level = (uint8_t)compute_mag_level(&mag_item->data);
 	mag_item->data.datab[2] = mag_level;
-	uint8_t evolution_number = get_evolution_number(mag_item);
+	uint8_t evolution_number = magedit_lookup_mag_evolution_number(mag_item);
+
+	if (evolution_number < 0) {
+		ERR_LOG("GC %" PRIu32 " evolution_number 错误!错误码 %d",
+			src->guildcard, evolution_number);
+		return evolution_number;
+	}
+
 	uint8_t mag_number = mag_item->data.datab[1];
 
 	// Note: Sega really did just hardcode all these rules into the client. There

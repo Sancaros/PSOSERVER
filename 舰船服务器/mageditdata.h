@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+#include "pso_struct_item.h"
+
 #ifdef PACKED
 #undef PACKED
 #endif
@@ -103,8 +105,6 @@ typedef struct mag_evolution_number_table {
 
 #undef PACKED
 
-int magedit_read_bb(const char* fn, int norestrict);
-
 static magedit_table_offsets_t* magedit_tb_offsets;
 
 static mag_position_table_t mag_positions_table;
@@ -115,5 +115,8 @@ static mag_color_table_t mag_colors_table;
 static mag_evolution_number_table_t mag_evolution_numbers_table;
 
 int have_bb_magedit;
+
+int magedit_read_bb(const char* fn, int norestrict);
+uint8_t magedit_lookup_mag_evolution_number(iitem_t* rv);
 
 #endif // !PSOCN_MAG_EDIT_DATA_H

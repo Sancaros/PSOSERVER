@@ -2306,11 +2306,6 @@ int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
         return -3;
     }
 
-    /* 确保我们在任何地方都不越界 */
-    if (parts[2] == 0x00) {
-        return -4;
-    }
-
     /* 获取数据并将其复制出来 */
     memcpy(rv, &mags_bb[parts[1]], sizeof(pmt_mag_bb_t));
     return 0;
@@ -2509,6 +2504,36 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
 
     /* 获取数据并将其复制出来 */
     memcpy(rv, &eventitem_bb[parts[2]], sizeof(pmt_eventitem_bb_t));
+    return 0;
+}
+
+int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t item_index, pmt_mag_feed_result_t* rv) {
+    uint8_t parts[3] = { 0 };
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt || !rv) {
+        return -1;
+    }
+
+    parts[0] = (uint8_t)(code & 0xFF);
+    parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+    /* 确保我们正在查找 圣诞物品 */
+    if (parts[0] != ITEM_TYPE_MAG) {
+        return -2;
+    }
+
+    if (table_index >= 8) {
+        return -3;
+    }
+    if (item_index >= 11) {
+        return -4;
+    }
+
+    /* 获取数据并将其复制出来 */
+    memcpy(rv, &mag_feed_results_list[table_index][item_index], sizeof(pmt_mag_feed_result_t));
     return 0;
 }
 
