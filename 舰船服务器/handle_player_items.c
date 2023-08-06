@@ -623,7 +623,6 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     }
     else if (item->data.datab[0] == ITEM_TYPE_WEAPON) {
         switch (item->data.datab[1]) {
-
         case 0x33:
             // Unseal Sealed J-Sword => Tsumikiri J-Sword
             item->data.datab[1] = 0x32;
@@ -635,17 +634,13 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             item->data.datab[1] = 0xAC;
             should_delete_item = false;
             break;
-
-        default:
-            break;
         }
 
     }
     else if (item->data.datab[0] == ITEM_TYPE_GUARD) {
         switch (item->data.datab[1]) {
         case ITEM_SUBTYPE_UNIT:
-            switch (item->data.datab[2])
-            {
+            switch (item->data.datab[2]) {
             case 0x4D:
                 // Unseal Limiter => Adept
                 item->data.datab[2] = 0x4E;
@@ -689,11 +684,13 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         switch (item->data.datab[1]) {
         case ITEM_SUBTYPE_DISK: // Technique disk
             uint8_t max_level = max_tech_level[item->data.datab[4]].max_lvl[player->dress_data.ch_class];
+
             if (item->data.datab[2] > max_level) {
                 ERR_LOG("法术科技光碟等级高于职业可用等级");
                 return -1;
             }
             player->tech.all[item->data.datab[4]] = item->data.datab[2];
+
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
@@ -701,8 +698,10 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 ERR_LOG("无效打磨物品值");
                 return -2;
             }
+
             weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
             pmt_weapon_bb_t weapon_def = { 0 };
+
             if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                     src->guildcard);
@@ -713,6 +712,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 ERR_LOG("武器已达最大打磨值");
                 return -4;
             }
+
             weapon->data.datab[3] += (item->data.datab[2] + 1);
             break;
 
@@ -747,6 +747,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
         case ITEM_SUBTYPE_MAG_CELL1:
             mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+
             switch (item->data.datab[2]) {
             case 0x00:
                 // Cell of MAG 502
@@ -786,6 +787,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
         case ITEM_SUBTYPE_ADD_SLOT:
             armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
+
             if (armor->data.datab[5] >= 4) {
                 ERR_LOG("物品已达最大插槽数量");
                 return -6;
@@ -1037,12 +1039,12 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 }
                 break;
             }
-
             break;
 
         case ITEM_SUBTYPE_SERVER_ITEM2:
             item_t new_item = { 0 };
             iitem_t* new_iitem;
+
             switch (item->data.datab[2]) {
             case 0x03: // WeaponsSilverBadge 031403
                 //Add Exp
@@ -1111,11 +1113,14 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
                 sum += eventitem_bb[item->data.datab[2]][z].probability;
             }
+
             if (sum == 0) {
                 ERR_LOG("节日事件没有可用的礼包结果");
                 return 0;
             }
+
             size_t det = mt19937_genrand_int32(rng) % sum;
+
             for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
                 pmt_eventitem_bb_t entry = eventitem_bb[item->data.datab[2]][z];
                 if (det > entry.probability) {
