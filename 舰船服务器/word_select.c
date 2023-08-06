@@ -497,22 +497,22 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     int i;
     subcmd_word_select_t pc = { 0 }, dc = { 0 }, xb = { 0 }, gc = { 0 };
     subcmd_bb_word_select_t bb = { 0 };
-    int pcusers = 0, dcusers = 0;
-    int pcuntrans = 0, dcuntrans = 0;
+    int pcusers = 0, dcusers = 0, gcusers = 0;
+    int pcuntrans = 0, dcuntrans = 0, gcuntrans = 0;
     uint16_t dcw, pcw, gcw;
     uint8_t client_id;
 
     if (c->version == CLIENT_VERSION_XBOX) {
         client_id = (uint8_t)pkt->shdr.client_id;
-        memcpy(&xb, pkt, sizeof(subcmd_word_select_t));
-        memcpy(&gc, pkt, sizeof(subcmd_word_select_t));
+        memcpy(&xb.data, &pkt->data, sizeof(word_select_t));
+        memcpy(&gc.data, &pkt->data, sizeof(word_select_t));
         gc.client_id = 0;
         gc.client_id_gc = client_id;
     }
     else {
         client_id = (uint8_t)pkt->shdr.client_id;
-        memcpy(&xb, pkt, sizeof(subcmd_word_select_t));
-        memcpy(&gc, pkt, sizeof(subcmd_word_select_t));
+        memcpy(&xb.data, &pkt->data, sizeof(word_select_t));
+        memcpy(&gc.data, &pkt->data, sizeof(word_select_t));
         xb.client_id = client_id;
         xb.client_id_gc = 0;
     }
@@ -538,6 +538,26 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     dc.data.num_words = pkt->data.num_words;
     dc.data.ws_type = pkt->data.ws_type;
 
+    gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gc.hdr.flags = pkt->hdr.flags;
+    gc.hdr.pkt_len = LE16(0x0024);
+    gc.type = SUBCMD60_WORD_SELECT;
+    gc.size = 0x08;
+    gc.client_id = 0;
+    gc.client_id_gc = client_id;
+    gc.data.num_words = pkt->data.num_words;
+    gc.data.ws_type = pkt->data.ws_type;
+
+    xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    xb.hdr.flags = pkt->hdr.flags;
+    xb.hdr.pkt_len = LE16(0x0024);
+    xb.type = SUBCMD60_WORD_SELECT;
+    xb.size = 0x08;
+    xb.client_id = client_id;
+    xb.client_id_gc = 0;
+    xb.data.num_words = pkt->data.num_words;
+    xb.data.ws_type = pkt->data.ws_type;
+
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
@@ -546,6 +566,14 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     bb.shdr.client_id = client_id;
     bb.data.num_words = pkt->data.num_words;
     bb.data.ws_type = pkt->data.ws_type;
+
+
+    /* No versions other than PSODC sport the lovely LIST ALL menu. Oh well, I
+       guess I can't go around saying "HELL HELL HELL" to everyone. */
+    if (pkt->data.ws_type == 6) {
+        pcuntrans = 1;
+        gcuntrans = 1;
+    }
 
     for (i = 0; i < 8; ++i) {
         gcw = LE16(pkt->data.words[i]);
@@ -559,6 +587,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
         if (gcw != 0xFFFF) {
             dcw = word_select_gc_map[gcw][0];
             pcw = word_select_gc_map[gcw][1];
+            gcw = word_select_dc_map[dcw][1];
         }
         else {
             pcw = dcw = 0xFFFF;
@@ -573,9 +602,14 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
             dcuntrans = 1;
         }
 
+        if (gcw == 0xFFFF && dcw != 0xFFFF) {
+            gcuntrans = 1;
+        }
+
         /* Throw them into the packets */
         pc.data.words[i] = LE16(pcw);
         dc.data.words[i] = LE16(dcw);
+        gc.data.words[i] = xb.data.words[i] = LE16(gcw);
         bb.data.words[i] = LE16(gcw);
     }
 
@@ -588,6 +622,14 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     pc.data.words[9] = pkt->data.words[9];
     pc.data.words[10] = pkt->data.words[10];
     pc.data.words[11] = pkt->data.words[11];
+    gc.data.words[8] = pkt->data.words[8];
+    gc.data.words[9] = pkt->data.words[9];
+    gc.data.words[10] = pkt->data.words[10];
+    gc.data.words[11] = pkt->data.words[11];
+    xb.data.words[8] = pkt->data.words[8];
+    xb.data.words[9] = pkt->data.words[9];
+    xb.data.words[10] = pkt->data.words[10];
+    xb.data.words[11] = pkt->data.words[11];
     bb.data.words[8] = pkt->data.words[8];
     bb.data.words[9] = pkt->data.words[9];
     bb.data.words[10] = pkt->data.words[10];
@@ -617,11 +659,19 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
 
             case CLIENT_VERSION_GC:
             case CLIENT_VERSION_EP3:
-                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&gc);
+                if (!gcuntrans) {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&gc);
+                }
+
+                gcusers = 1;
                 break;
 
             case CLIENT_VERSION_XBOX:
-                send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&xb);
+                if (!gcuntrans) {
+                    send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&xb);
+                }
+
+                gcusers = 1;
                 break;
 
             case CLIENT_VERSION_BB:
@@ -632,7 +682,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     }
 
     /* See if we had anyone that we couldn't send it to */
-    if ((pcusers && pcuntrans) || (dcusers && dcuntrans)) {
+    if ((pcusers && pcuntrans) || (dcusers && dcuntrans) || (gcusers && gcuntrans)) {
         send_txt(c, __(c, "\tE\tC7Some clients did not\n"
             "receive your last word\nselect."));
     }

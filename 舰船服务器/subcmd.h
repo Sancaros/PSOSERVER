@@ -1765,12 +1765,14 @@ typedef struct subcmd_bb_warp_ship {
     uint32_t area;
 } PACKED subcmd_bb_warp_ship_t;
 
+// 0x74: Word select
+// Packet used for word select
 typedef struct word_select {
-    uint16_t num_words;
-    uint16_t ws_type;
-    uint16_t words[8];
-    uint32_t unused1;
-    uint32_t unused2;
+    uint8_t num_words;
+    uint8_t unused1;
+    uint8_t ws_type;
+    uint8_t unused2;
+    uint16_t words[12];
 } PACKED word_select_t;
 
 // 0x74: Word select

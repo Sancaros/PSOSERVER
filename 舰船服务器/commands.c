@@ -541,12 +541,76 @@ static int handle_item(ship_client_t *src, const char *params) {
     src->new_item.datal[2] = SWAP32(item[2]);
     src->new_item.data2l = SWAP32(item[3]);
 
-    print_item_data(&src->new_item, src->version);
-
     return send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
         item_get_name(&src->new_item, src->version),
         __(src, "\tE\tC6 new_item 设置成功."));
+}
+
+/* 用法 /item1 item1 */
+static int handle_item1(ship_client_t* src, const char* params) {
+    uint32_t item;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item1 物品代码."));
+    }
+
+    src->new_item.datal[0] = LE32(item);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item1 设置成功."));
+}
+
+/* 用法 /item2 item2 */
+static int handle_item2(ship_client_t* src, const char* params) {
+    uint32_t item;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item2 物品代码."));
+    }
+
+    src->new_item.datal[1] = LE32(item);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
+}
+
+/* 用法 /item3 item3 */
+static int handle_item3(ship_client_t* src, const char* params) {
+    uint32_t item;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item3 物品代码."));
+    }
+
+    src->new_item.datal[2] = LE32(item);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
 }
 
 /* 用法 /item4 item4 */
@@ -563,16 +627,16 @@ static int handle_item4(ship_client_t *src, const char *params) {
     count = sscanf(params, "%X", &item);
 
     if(count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item4 物品代码."));
     }
 
     src->new_item.data2l = LE32(item);
 
-    return send_txt(src, "%s", __(src, "\tE\tC7next_item 设置成功."));
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));
 }
 
-/* 用法: /makeitem */
-static int handle_makeitem(ship_client_t* src, const char* params) {
+/* 用法: /miitem */
+static int handle_miitem(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
     iitem_t* iitem;
     uint32_t amount = 0;
@@ -640,6 +704,8 @@ static int handle_makeitem(ship_client_t* src, const char* params) {
     bb.data = dc.data = src->new_item;
     bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
     bb.two = dc.two = LE32(0x00000002);
+
+    print_item_data(&bb.data, src->version);
 
     /* Send the packet to everyone in the lobby */
     pthread_mutex_unlock(&l->mutex);
@@ -3967,8 +4033,11 @@ static command_t cmds[] = {
     { "arrow"    , handle_arrow     },
     { "login"    , handle_login     },
     { "item"     , handle_item      },
+    { "item1"    , handle_item1     },
+    { "item2"    , handle_item2     },
+    { "item3"    , handle_item3     },
     { "item4"    , handle_item4     },
-    { "makeitem" , handle_makeitem  },
+    { "miitem"   , handle_miitem    },
     { "event"    , handle_event     },
     { "passwd"   , handle_passwd    },
     { "lname"    , handle_lname     },
