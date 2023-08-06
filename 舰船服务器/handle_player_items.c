@@ -714,6 +714,33 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         should_delete_item = false;
 
     }
+    else if (item->data.datab[0] == ITEM_TYPE_MAG) {
+        switch (item->data.datab[1]) {
+        case 0x2B:
+            weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
+            // Chao Mag used
+            if ((weapon->data.datab[1] == 0x68) &&
+                (weapon->data.datab[2] == 0x00)) {
+                weapon->data.datab[1] = 0x58; // Striker of Chao
+                weapon->data.datab[2] = 0x00;
+                weapon->data.datab[3] = 0x00;
+                weapon->data.datab[4] = 0x00;
+                subcmd_send_lobby_bb_create_inv_item(src, weapon->data, 1, true);
+                should_delete_item = true;
+            }
+            break;
+
+        case 0x2C:
+            armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
+            // Chu Chu mag used
+            if ((armor->data.datab[2] == 0x1C)) {
+                armor->data.datab[2] = 0x2C; // Chuchu Fever
+                subcmd_send_lobby_bb_create_inv_item(src, armor->data, 1, true);
+                should_delete_item = true;
+            }
+            break;
+        }
+    }
     else if (item_identifier == 0x030C00) {
         // Cell of MAG 502
         mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
@@ -750,11 +777,9 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         mag->data.datab[1] = 0x2B;
 
     }
-    else if (
-        (item_identifier & 0xFFFF00) == 0x031500 ||
+    else if ((item_identifier & 0xFFFF00) == 0x031500 ||
         (item_identifier & 0xFFFF00) == 0x031501 ||
-        (item_identifier & 0xFFFF00) == 0x031502
-        ) {
+        (item_identifier & 0xFFFF00) == 0x031502) {
         // Present, etc. - use unwrap_table + probabilities therein
         size_t sum = 0, z = 0;
 
@@ -881,6 +906,8 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
     }
+
+    fix_client_inv(&player->inv);
 
     return 0;
 }
