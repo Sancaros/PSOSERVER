@@ -242,7 +242,7 @@ int check_aoe_timer(ship_client_t* src,
     }
 
     if (src->version >= CLIENT_VERSION_DCV2)
-        tech_level += src->pl->bb.character.inv.iitems[pkt->technique_number].tech;
+        tech_level += src->pl->bb.character.inv.iitems[pkt->technique_number].extension_data1;
 
     if (tech_level < pkt->level) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
@@ -3641,8 +3641,6 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         if (pkt->item_ids[x] == 0xFFFFFFFF) {
             clear_iitem(&sorted.iitems[x]);
-            //sorted.iitems[x].present = LE16(0xFF00);
-            //sorted.iitems[x].data.item_id = 0xFFFFFFFF;
         }
         else {
             int index = find_iitem_index(&player->inv, pkt->item_ids[x]);
@@ -4111,7 +4109,8 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
         memset(&add_item, 0, PSOCN_STLENGTH_IITEM);
 
         add_item.present = LE16(0x0001);
-        add_item.tech = 0;
+        add_item.extension_data1 = 0;
+        add_item.extension_data2 = 0;
         add_item.flags = 0;
 
         add_item.data = pkt->add_item;

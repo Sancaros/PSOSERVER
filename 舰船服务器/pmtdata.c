@@ -361,8 +361,8 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
             weapons_bb[i][j].mst = LE16(weapons_bb[i][j].mst);
 #endif
 
-            if(weapons_bb[i][j].index < weapon_lowest_bb)
-                weapon_lowest_bb = weapons_bb[i][j].index;
+            if(weapons_bb[i][j].base.index < weapon_lowest_bb)
+                weapon_lowest_bb = weapons_bb[i][j].base.index;
         }
     }
 
@@ -610,8 +610,8 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
             guards_bb[i][j].base_evp = LE16(guards_bb[i][j].base_evp);
 #endif
 
-            if(guards_bb[i][j].index < guard_lowest_bb)
-                guard_lowest_bb = guards_bb[i][j].index;
+            if(guards_bb[i][j].base.index < guard_lowest_bb)
+                guard_lowest_bb = guards_bb[i][j].base.index;
         }
     }
 
@@ -760,8 +760,8 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
         units_bb[i].amount = LE16(units_bb[i].amount);
 #endif
 
-        if(units_bb[i].index < unit_lowest_bb)
-            unit_lowest_bb = units_bb[i].index;
+        if(units_bb[i].base.index < unit_lowest_bb)
+            unit_lowest_bb = units_bb[i].base.index;
     }
 
     return 0;
@@ -904,8 +904,8 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
         mags_bb[i].feed_table = LE16(mags_bb[i].feed_table);
 #endif
 
-        if (mags_bb[i].index < mag_lowest_bb)
-            mag_lowest_bb = mags_bb[i].index;
+        if (mags_bb[i].base.index < mag_lowest_bb)
+            mag_lowest_bb = mags_bb[i].base.index;
     }
 
     return 0;
@@ -988,8 +988,8 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
             tools_bb[i][j].cost = LE32(tools_bb[i][j].cost);
 #endif
 
-            if (tools_bb[i][j].index < tool_lowest_bb)
-                tool_lowest_bb = tools_bb[i][j].index;
+            if (tools_bb[i][j].base.index < tool_lowest_bb)
+                tool_lowest_bb = tools_bb[i][j].base.index;
         }
     }
 
@@ -2324,6 +2324,15 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
     parts[1] = (uint8_t)((code >> 8) & 0xFF);
     parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
+#ifdef DEBUG
+    DBG_LOG("物品, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
+        code,
+        parts[0],
+        parts[1],
+        parts[2]);
+#endif // DEBUG
+
+
     /* 确保我们正在查找 weapon */
     if (parts[0] != ITEM_TYPE_TOOL) {
         return -2;
@@ -2337,6 +2346,13 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
     if (parts[2] >= num_tools_bb[parts[1]]) {
         return -4;
     }
+
+#ifdef DEBUG
+    DBG_LOG("index 0x%08X", tools_bb[parts[1]][parts[2]].base.index);
+    DBG_LOG("subtype 0x%04X", tools_bb[parts[1]][parts[2]].base.subtype);
+    DBG_LOG("skin 0x%04X", tools_bb[parts[1]][parts[2]].base.skin);
+    DBG_LOG("team_points 0x%08X", tools_bb[parts[1]][parts[2]].base.team_points);
+#endif // DEBUG
 
     /* 获取数据并将其复制出来 */
     memcpy(rv, &tools_bb[parts[1]][parts[2]], sizeof(pmt_tool_bb_t));
@@ -2556,10 +2572,10 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
             if(pmt_lookup_weapon_bb(code, &weap))
                 return (uint8_t)-1;
 
-            if(weap.index - weapon_lowest_bb > star_max_bb)
+            if(weap.base.index - weapon_lowest_bb > star_max_bb)
                 return (uint8_t)-1;
 
-            return star_table_bb[weap.index - weapon_lowest_bb];
+            return star_table_bb[weap.base.index - weapon_lowest_bb];
 
         case ITEM_TYPE_GUARD:                         /* Guards */
             switch(parts[1]) {
@@ -2568,19 +2584,19 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
                     if(pmt_lookup_guard_bb(code, &guard))
                         return (uint8_t)-1;
 
-                    if(guard.index - weapon_lowest_bb > star_max_bb)
+                    if(guard.base.index - weapon_lowest_bb > star_max_bb)
                         return (uint8_t)-1;
 
-                    return star_table_bb[guard.index - weapon_lowest_bb];
+                    return star_table_bb[guard.base.index - weapon_lowest_bb];
 
                 case ITEM_SUBTYPE_UNIT:               /* Units */
                     if(pmt_lookup_unit_bb(code, &unit))
                         return (uint8_t)-1;
 
-                    if(unit.index - weapon_lowest_bb > star_max_bb)
+                    if(unit.base.index - weapon_lowest_bb > star_max_bb)
                         return (uint8_t)-1;
 
-                    return star_table_bb[unit.index - weapon_lowest_bb];
+                    return star_table_bb[unit.base.index - weapon_lowest_bb];
             }
     }
 
@@ -2699,3 +2715,118 @@ int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
 
     return 0;
 }
+
+pmt_item_base_t* get_item_definition_bb(const item_t* item) {
+    errno_t err = 0;
+
+    pmt_item_base_t* item_base = (pmt_item_base_t*)malloc(sizeof(pmt_item_base_t));
+
+    if (!item_base)
+        return NULL;
+
+    memset(item_base, 0, sizeof(pmt_item_base_t));
+
+    switch (item->datab[0]) {
+    case ITEM_TYPE_WEAPON:
+        pmt_weapon_bb_t weapon = { 0 };
+        if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+            ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+            return NULL;
+        }
+        memcpy(item_base, &weapon.base, sizeof(pmt_item_base_t));
+        return item_base;
+
+    case ITEM_TYPE_GUARD:
+        if (item->datab[1] == ITEM_SUBTYPE_UNIT) {
+            pmt_unit_bb_t unit = { 0 };
+            if (err = pmt_lookup_unit_bb(item->datal[0], &unit)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                return NULL;
+            }
+            memcpy(item_base, &unit.base, sizeof(pmt_item_base_t));
+            return item_base;
+        }
+        else if ((item->datab[1] == ITEM_SUBTYPE_FRAME) || (item->datab[1] == ITEM_SUBTYPE_BARRIER)) {
+            pmt_guard_bb_t guard = { 0 };
+            if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                return NULL;
+            }
+            memcpy(item_base, &guard.base, sizeof(pmt_item_base_t));
+            return item_base;
+        }
+        ERR_LOG("invalid item");
+        break;
+
+    case ITEM_TYPE_MAG:
+        pmt_mag_bb_t mag = { 0 };
+        if (err = pmt_lookup_mag_bb(item->datal[0], &mag)) {
+            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            return NULL;
+        }
+        memcpy(item_base, &mag.base, sizeof(pmt_item_base_t));
+        return item_base;
+
+    case ITEM_TYPE_TOOL:
+        pmt_tool_bb_t tool = { 0 };
+        if (err = pmt_lookup_tools_bb(item->datal[0], &tool)) {
+            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            return NULL;
+        }
+
+        if (!&tool) {
+            ERR_LOG("this should be impossible");
+            break;
+        }
+
+        memcpy(item_base, &tool.base, sizeof(pmt_item_base_t));
+        return item_base;
+            
+
+        //if (item->datab[1] == ITEM_SUBTYPE_DISK) {
+        //    return this->get_tool(2, item->datab[4]).base;
+        //}
+        //else {
+        //    return this->get_tool(item->datab[1], item->datab[2]).base;
+        //}
+
+    case ITEM_TYPE_MESETA:
+        ERR_LOG("item is meseta and therefore has no definition");
+        break;
+
+    default:
+        ERR_LOG("invalid item");
+        break;
+    }
+
+    return NULL;
+}
+
+uint8_t get_item_base_stars(const item_t* item) {
+    if (item->datab[0] == 2) {
+        return (item->datab[1] > 0x27) ? 12 : 0;
+    }
+    else if (item->datab[0] < 2) {
+        return pmt_lookup_stars_bb(item->datal[0]);
+    }
+    else if (item->datab[0] == 3) {
+        pmt_tool_bb_t def = { 0 };
+
+        if (pmt_lookup_tools_bb(item->datal[0], &def)) {
+            ERR_LOG("不存在物品数据!");
+            return -3;
+        }
+
+        return (def.itemFlag & 0x80) ? 12 : 0;
+    }
+    else {
+        return 0;
+    }
+}
+
+bool is_item_rare(const item_t* item) {
+    return (get_item_base_stars(item) >= 9);
+}
+
+
+

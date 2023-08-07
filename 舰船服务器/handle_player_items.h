@@ -63,6 +63,8 @@ int player_use_item(ship_client_t* src, size_t item_index);
 int initialize_cmode_iitem(ship_client_t* dest);
 
 /* 蓝色脉冲银行管理 */
+void player_iitem_init(iitem_t* item, const bitem_t* src);
+void player_bitem_init(bitem_t* item, const iitem_t* src);
 void cleanup_bb_bank(ship_client_t *c);
 
 /* 物品检测装备标签 */

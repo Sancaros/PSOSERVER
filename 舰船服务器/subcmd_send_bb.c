@@ -529,13 +529,17 @@ int subcmd_send_bb_bank(ship_client_t* src) {
     pkt->hdr.flags = 0;
 
     pkt->shdr.type = SUBCMD60_BANK_INV;
-    pkt->shdr.size = pkt->shdr.size;
+    pkt->shdr.size = 0;
     pkt->shdr.unused = 0x0000;
 
-    pkt->size = LE32(size);
+    pkt->size = LE32((num_items + 1) * PSOCN_STLENGTH_BITEM);
     pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
+    pkt->item_count = src->bb_pl->bank.item_count;
+    pkt->meseta = src->bb_pl->bank.meseta;
 
-    memcpy(&pkt->item_count, &src->bb_pl->bank, PSOCN_STLENGTH_BANK);
+    if (src->bb_pl->bank.item_count) {
+        memcpy(&pkt->bitems, &src->bb_pl->bank.bitems[0], sizeof(bitem_t) * src->bb_pl->bank.item_count);
+    }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
 }

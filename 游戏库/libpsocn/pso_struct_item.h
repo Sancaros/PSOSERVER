@@ -93,33 +93,35 @@ typedef struct item_data { // 0x14 bytes
     };
 } PACKED item_t;
 
-// PSO V2 stored some extra data in the character structs in a format that I'm
-// sure Sega thought was very clever for backward compatibility, but for us is
-// just plain annoying. Specifically, they used the third and fourth bytes of
-// the InventoryItem struct to store some things not present in V1. The game
-// stores arrays of bytes striped across these structures. In newserv, we call
-// those fields extension_data. They contain:
-//   items[0].extension_data1 through items[19].extension_data1:
-//       Extended technique levels. The values in the v1_technique_levels array
-//       only go up to 14 (tech level 15); if the player has a technique above
-//       level 15, the corresponding extension_data1 field holds the remaining
-//       levels (so a level 20 tech would have 14 in v1_technique_levels and 5
-//       in the corresponding item's extension_data1 field).
-//   items[0].extension_data2 through items[3].extension_data2:
-//       The value known as unknown_a1 in the PSOGCCharacterFile::Character
-//       struct. See SaveFileFormats.hh.
-//   items[4].extension_data2 through items[7].extension_data2:
-//       The timestamp when the character was last saved, in seconds since
-//       January 1, 2000. Stored little-endian, so items[4] contains the LSB.
-//   items[8].extension_data2 through items[12].extension_data2:
-//       Number of power materials, mind materials, evade materials, def
-//       materials, and luck materials (respectively) used by the player.
-//   items[13].extension_data2 through items[15].extension_data2:
-//       Unknown. These are not an array, but do appear to be related.
+//PSO V2在字符结构中存储了一些额外的数据，格式如下
+//当然，世嘉认为向后兼容性非常聪明，但对我们来说
+//只是很烦人。具体来说，他们使用了
+//InventoryItem结构来存储V1中不存在的一些东西。游戏
+//存储跨这些结构条带化的字节数组。在newserv中，我们调用
+//那些字段extension_data。它们包含：
+//items[0]。extension_data1到items[19]。extension_data1：
+//扩展的技术水平。v1_technique_levels数组中的值
+//只有14级（技术等级15）；如果玩家有以上技术
+//级别15，相应的extension_data1字段保存剩余的
+//等级（因此，一个20级的技术在v1_technique_levels中有14个和5个
+//在对应项目的extension_data1字段中）。
+//items[0]。extension_data2到items[3]。extension_data2：
+//PSOGCCharacterFile:：Character中称为unknown_a1的值
+//结构。请参阅SaveFileFormats.hh。
+//items[4]。extension_data2到items[7]。extension_data2：
+//上次保存字符时的时间戳，以秒为单位
+//2000年1月1日。存储了小endian，所以items[4]包含LSB。
+//items[8].extension_data2到items[12].extension _data2：
+//力量材料、心理材料、躲避材料、def的数量
+//材料和玩家（分别）使用的运气材料。
+//items[13]。extension_data2到items[15]。extension_data2：
+//未知。这些不是一个数组，但看起来确实是相关的。
 
-typedef struct psocn_iitem { // 0x1c bytes  
+typedef struct psocn_iitem { // 0x1C bytes  
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
-    uint16_t tech;  //是否鉴定
+  // See note above about these fields
+    uint8_t extension_data1;  //是否鉴定
+    uint8_t extension_data2;
     uint32_t flags;// 0x00000008 = 已装备
     item_t data;
 } PACKED iitem_t;

@@ -19,6 +19,7 @@
 #define PMTDATA_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <mtwist.h>
 
@@ -40,6 +41,13 @@ typedef struct pmt_countandoffset {
     uint32_t count;
     uint32_t offset;
 } PACKED pmt_countandoffset_t;
+
+typedef struct pmt_item_base {
+    uint32_t index;
+    uint16_t subtype;
+    uint16_t skin;
+    uint32_t team_points;
+} PACKED pmt_item_base_t;
 
 typedef struct pmt_weapon_v2 {
     uint32_t index;
@@ -88,10 +96,7 @@ typedef struct pmt_weapon_gc {
 } PACKED pmt_weapon_gc_t;
 
 typedef struct pmt_weapon_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
+    pmt_item_base_t base;
     uint8_t equip_flag;
     uint8_t unused2;
     uint16_t atp_min;
@@ -161,10 +166,7 @@ typedef struct pmt_guard_gc {
 } PACKED pmt_guard_gc_t;
 
 typedef struct pmt_guard_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
+    pmt_item_base_t base;
     uint16_t base_dfp;
     uint16_t base_evp;
     uint8_t block_particle;
@@ -204,10 +206,7 @@ typedef struct pmt_unit_gc {
 } PACKED pmt_unit_gc_t;
 
 typedef struct pmt_unit_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
+    pmt_item_base_t base;
     uint16_t stat;
     uint16_t amount;
     uint8_t pm_range;
@@ -252,10 +251,7 @@ typedef struct pmt_mag_gc {
 
 /* 玛古 ItemPmt参数结构 */
 typedef struct pmt_mag_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
+    pmt_item_base_t base;
     uint16_t feed_table;
     uint8_t photon_blast;
     uint8_t activation;
@@ -273,10 +269,7 @@ typedef struct pmt_mag_bb {
 
 /* 工具 ItemPmt参数结构 */
 typedef struct pmt_tool_bb {
-    uint32_t index;
-    uint16_t model;
-    uint16_t skin;
-    uint32_t team_points;
+    pmt_item_base_t base;
     uint16_t amount;
     uint16_t tech;
     uint32_t cost;
@@ -546,5 +539,9 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     struct mt19937_state* rng, lobby_t* l);
 uint8_t pmt_lookup_stars_bb(uint32_t code);
+
+pmt_item_base_t* get_item_definition_bb(const item_t* item);
+uint8_t get_item_base_stars(const item_t* item);
+bool is_item_rare(const item_t* item);
 
 #endif /* !PMTDATA_H */

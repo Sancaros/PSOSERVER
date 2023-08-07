@@ -45,125 +45,6 @@
 #pragma pack(push, 1) 
 #endif
 
-struct CountAndOffset {
-    uint32_t count;
-    uint32_t offset;
-} PACKED;
-
-struct ItemBase {
-    uint32_t id;
-    uint16_t type;
-    uint16_t skin;
-    uint32_t team_points;
-} PACKED;
-
-struct ArmorOrShield {
-    struct ItemBase base;
-    uint16_t dfp;
-    uint16_t evp;
-    uint8_t block_particle;
-    uint8_t block_effect;
-    uint8_t item_class;
-    uint8_t unknown_a1;
-    uint8_t required_level;
-    uint8_t efr;
-    uint8_t eth;
-    uint8_t eic;
-    uint8_t edk;
-    uint8_t elt;
-    uint8_t dfp_range;
-    uint8_t evp_range;
-    uint8_t stat_boost;
-    uint8_t tech_boost;
-    uint16_t unknown_a2;
-} PACKED;
-
-struct Unit {
-    struct ItemBase base;
-    uint16_t stat;
-    uint16_t stat_amount;
-    int16_t modifier_amount;
-    uint8_t unused[2];
-} PACKED;
-
-struct Mag {
-    struct ItemBase base;
-    uint16_t feed_table;
-    uint8_t photon_blast;
-    uint8_t activation;
-    uint8_t on_pb_full;
-    uint8_t on_low_hp;
-    uint8_t on_death;
-    uint8_t on_boss;
-    uint8_t on_pb_full_flag;
-    uint8_t on_low_hp_flag;
-    uint8_t on_death_flag;
-    uint8_t on_boss_flag;
-    uint8_t item_class;
-    uint8_t unused[3];
-} PACKED;
-
-struct Tool {
-    struct ItemBase base;
-    uint16_t amount;
-    uint16_t tech;
-    int32_t cost;
-    uint8_t item_flag;
-    uint8_t unused[3];
-} PACKED;
-
-struct Weapon {
-    struct ItemBase base;
-    uint8_t item_class;
-    uint8_t unknown_a0;
-    uint16_t atp_min;
-    uint16_t atp_max;
-    uint16_t atp_required;
-    uint16_t mst_required;
-    uint16_t ata_required;
-    uint16_t mst;
-    uint8_t max_grind;
-    uint8_t photon;
-    uint8_t special;
-    uint8_t ata;
-    uint8_t stat_boost;
-    uint8_t projectile;
-    int8_t trail1_x;
-    int8_t trail1_y;
-    int8_t trail2_x;
-    int8_t trail2_y;
-    int8_t color;
-    uint8_t unknown_a1;
-    uint8_t unknown_a2;
-    uint8_t unknown_a3;
-    uint8_t unknown_a4;
-    uint8_t unknown_a5;
-    uint8_t tech_boost;
-    uint8_t combo_type;
-} PACKED;
-
-struct MagFeedResult {
-    int8_t def;
-    int8_t pow;
-    int8_t dex;
-    int8_t mind;
-    int8_t iq;
-    int8_t synchro;
-    uint8_t unused[2];
-} PACKED;
-
-struct MagFeedResultsList {
-    struct MagFeedResult results[11];
-} PACKED;
-
-struct MagFeedResultsListOffsets {
-    uint32_t offsets[8]; // Offsets of MagFeedResultsList structs
-} PACKED;
-
-struct ItemStarValue {
-    uint8_t num_stars;
-} PACKED;
-
 struct Special {
     uint16_t type;
     uint16_t amount;
@@ -176,22 +57,6 @@ struct StatBoost {
     uint16_t amount2;
 } PACKED;
 
-struct MaxTechniqueLevels {
-    // Indexed as [tech_num][char_class]
-    uint8_t max_level[MAX_PLAYER_TECHNIQUES][MAX_PLAYER_CLASS_BB];
-} PACKED;
-
-struct ItemCombination {
-    uint8_t used_item[3];
-    uint8_t equipped_item[3];
-    uint8_t result_item[3];
-    uint8_t mag_level;
-    uint8_t grind;
-    uint8_t level;
-    uint8_t char_class;
-    uint8_t unused[3];
-} PACKED;
-
 struct TechniqueBoost {
     uint32_t tech1;
     float boost1;
@@ -199,16 +64,6 @@ struct TechniqueBoost {
     float boost2;
     uint32_t tech3;
     float boost3;
-} PACKED;
-
-struct EventItem {
-    uint8_t item[3];
-    uint8_t probability;
-} PACKED;
-
-struct UnsealableItem {
-    uint8_t item[3];
-    uint8_t unused;
 } PACKED;
 
 struct NonWeaponSaleDivisors {

@@ -35,8 +35,9 @@ void clear_item(item_t* item) {
 
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
-	iitem->present = LE16(0xFF00);
-	iitem->tech = 0;
+	iitem->present = LE16(0x0000);
+	iitem->extension_data1 = 0;
+	iitem->extension_data2 = 0;
 	iitem->flags = 0;
 	clear_item(&iitem->data);
 }
@@ -265,12 +266,13 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
-		"鉴定 %d "
+		"鉴定 %d %d"
 		"(%s) Flags %08X",
 		item_index,
 		((iitem->present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
 		iitem->present,
-		iitem->tech,
+		iitem->extension_data1,
+		iitem->extension_data2,
 		((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
 		iitem->flags
 	);
@@ -316,12 +318,13 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 			ITEM_LOG(""
 				"槽位 (%d) "
 				"(%s) %04X "
-				"鉴定 %d "
+				"鉴定 %d %d"
 				"(%s) Flags %08X",
 				item_index,
 				((iitem->present == 0x0001) ? "已占槽位" : "未占槽位"),
 				iitem->present,
-				iitem->tech,
+				iitem->extension_data1,
+				iitem->extension_data2,
 				((iitem->flags & LE32(0x00000008)) ? "已装备" : "未装备"),
 				iitem->flags
 			);

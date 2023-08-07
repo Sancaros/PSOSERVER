@@ -2622,7 +2622,8 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             iitem_t iitem = { 0 };
 
             iitem.present = LE16(0x0001);
-            iitem.tech = LE16(0x0000);
+            iitem.extension_data1 = 0;
+            iitem.extension_data2 = 0;
             iitem.flags = LE32(0x00000000);
 
             iitem.data.datab[0] = 0x03;

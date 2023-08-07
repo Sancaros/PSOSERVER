@@ -2730,7 +2730,7 @@ typedef struct subcmd_bb_bank_inv {
     uint32_t checksum;
     uint32_t item_count;
     uint32_t meseta;
-    bitem_t items[];
+    bitem_t bitems[];
 } PACKED subcmd_bb_bank_inv_t;
 
 

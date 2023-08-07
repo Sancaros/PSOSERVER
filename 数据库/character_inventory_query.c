@@ -79,7 +79,7 @@ static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"data_b8 = '%02X', data_b9 = '%02X', data_b10 = '%02X', data_b11 = '%02X', "
 		"item_id = '%08X', "
 		"data2_b0 = '%02X', data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', "
-		"present = '%04X', tech = '%04X', flags = '%08X', "
+		"present = '%04X', extension_data1 = '%02X', extension_data2 = '%02X', flags = '%08X', "
 		"item_name = '%s'"
 		" WHERE "
 		"(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
@@ -89,7 +89,7 @@ static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
 		item->data.item_id,
 		item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
-		item->present, item->tech, item->flags,
+		item->present, item->extension_data1, item->extension_data2, item->flags,
 		item_name_text,
 		gc, slot, item_index
 	);
@@ -115,7 +115,7 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"data_b8, data_b9, data_b10, data_b11, "
 		"item_id, "
 		"data2_b0, data2_b1, data2_b2, data2_b3, "
-		"item_index, present, tech, flags, "
+		"item_index, present, extension_data1, extension_data2, flags, "
 		"item_name, "
 		"guildcard, slot"
 		") VALUES ("
@@ -124,7 +124,7 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"'%02X', '%02X', '%02X', '%02X', "
 		"'%08X', "
 		"'%02X', '%02X', '%02X', '%02X', "
-		"'%d', '%04X', '%04X', '%08X', "
+		"'%d', '%04X', '%02X', '%02X', '%08X', "
 		"'%s', "
 		"'%" PRIu32 "', '%" PRIu8 "'"
 		")",
@@ -134,7 +134,7 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
 		item->data.item_id,
 		item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
-		item_index, item->present, item->tech, item->flags,
+		item_index, item->present, item->extension_data1, item->extension_data2, item->flags,
 		item_name_text,
 		gc, slot
 	);
@@ -312,7 +312,9 @@ static int db_get_char_inv_items(uint32_t gc, uint8_t slot, iitem_t* item, int i
 
 	item->present = (uint16_t)strtoul(row[j], &endptr, 16);
 	j++;
-	item->tech = (uint16_t)strtoul(row[j], &endptr, 16);
+	item->extension_data1 = (uint8_t)strtoul(row[j], &endptr, 16);
+	j++;
+	item->extension_data2 = (uint8_t)strtoul(row[j], &endptr, 16);
 	j++;
 	item->flags = (uint32_t)strtoul(row[j], &endptr, 16);
 	j++;
@@ -399,28 +401,29 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 	while ((row = psocn_db_result_fetch(result)) != NULL) {
 		if (!isEmptyInt((uint16_t)strtoul(row[4], &endptr, 16))) {
 			inv->iitems[k].present = (uint16_t)strtoul(row[4], &endptr, 16);
-			inv->iitems[k].tech = (uint16_t)strtoul(row[5], &endptr, 16);
-			inv->iitems[k].flags = (uint32_t)strtoul(row[6], &endptr, 16);
+			inv->iitems[k].extension_data1 = (uint8_t)strtoul(row[5], &endptr, 16);
+			inv->iitems[k].extension_data2 = (uint8_t)strtoul(row[6], &endptr, 16);
+			inv->iitems[k].flags = (uint32_t)strtoul(row[7], &endptr, 16);
 
-			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[7], &endptr, 16);
-			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[8], &endptr, 16);
-			inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[9], &endptr, 16);
-			inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[10], &endptr, 16);
-			inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[11], &endptr, 16);
-			inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[12], &endptr, 16);
-			inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[13], &endptr, 16);
-			inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[14], &endptr, 16);
-			inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[15], &endptr, 16);
-			inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[16], &endptr, 16);
-			inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[17], &endptr, 16);
-			inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[18], &endptr, 16);
+			inv->iitems[k].data.datab[0] = (uint8_t)strtoul(row[8], &endptr, 16);
+			inv->iitems[k].data.datab[1] = (uint8_t)strtoul(row[9], &endptr, 16);
+			inv->iitems[k].data.datab[2] = (uint8_t)strtoul(row[10], &endptr, 16);
+			inv->iitems[k].data.datab[3] = (uint8_t)strtoul(row[11], &endptr, 16);
+			inv->iitems[k].data.datab[4] = (uint8_t)strtoul(row[12], &endptr, 16);
+			inv->iitems[k].data.datab[5] = (uint8_t)strtoul(row[13], &endptr, 16);
+			inv->iitems[k].data.datab[6] = (uint8_t)strtoul(row[14], &endptr, 16);
+			inv->iitems[k].data.datab[7] = (uint8_t)strtoul(row[15], &endptr, 16);
+			inv->iitems[k].data.datab[8] = (uint8_t)strtoul(row[16], &endptr, 16);
+			inv->iitems[k].data.datab[9] = (uint8_t)strtoul(row[17], &endptr, 16);
+			inv->iitems[k].data.datab[10] = (uint8_t)strtoul(row[18], &endptr, 16);
+			inv->iitems[k].data.datab[11] = (uint8_t)strtoul(row[19], &endptr, 16);
 
-			inv->iitems[k].data.item_id = (uint32_t)strtoul(row[19], &endptr, 16);
+			inv->iitems[k].data.item_id = (uint32_t)strtoul(row[20], &endptr, 16);
 
-			inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[20], &endptr, 16);
-			inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[21], &endptr, 16);
-			inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[22], &endptr, 16);
-			inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[23], &endptr, 16);
+			inv->iitems[k].data.data2b[0] = (uint8_t)strtoul(row[21], &endptr, 16);
+			inv->iitems[k].data.data2b[1] = (uint8_t)strtoul(row[22], &endptr, 16);
+			inv->iitems[k].data.data2b[2] = (uint8_t)strtoul(row[23], &endptr, 16);
+			inv->iitems[k].data.data2b[3] = (uint8_t)strtoul(row[24], &endptr, 16);
 
 			k++;
 		}
@@ -434,8 +437,9 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 	for (item_index; item_index < del_count; item_index++) {
 
-		inv->iitems[item_index].present = LE16(0xFF00);
-		inv->iitems[item_index].tech = 0;
+		inv->iitems[item_index].present = LE16(0x0000);
+		inv->iitems[item_index].extension_data1 = 0;
+		inv->iitems[item_index].extension_data2 = 0;
 		inv->iitems[item_index].flags = 0;
 
 		inv->iitems[item_index].data.datal[0] = 0;

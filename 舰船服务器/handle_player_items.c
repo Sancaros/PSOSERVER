@@ -100,7 +100,8 @@ iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
 
     /* Copy the item data in. */
     item->data.present = LE16(0x0001);
-    item->data.tech = LE16(0);
+    item->data.extension_data1 = 0;
+    item->data.extension_data2 = 0;
     item->data.flags = LE32(0);
 
     item->data.data.datal[0] = LE32(new_item->datal[0]);
@@ -474,6 +475,7 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
 
     // 查找银行物品的索引
     size_t index = find_bitem_index(bank, item_id);
+
     if (index == bank->item_count) {
         ERR_LOG("GC %" PRIu32 " 银行物品索引超出限制",
             src->guildcard);
@@ -606,50 +608,50 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     if (src->mode)
         player = &src->mode_pl->bb;
 
-    iitem_t* item = &player->inv.iitems[item_index];
+    iitem_t* iitem = &player->inv.iitems[item_index];
     iitem_t* weapon = { 0 };
     iitem_t* armor = { 0 };
     iitem_t* mag = { 0 };
 
-    if (is_common_consumable(primary_identifier(&item->data))) { // Monomate, etc.
+    if (is_common_consumable(primary_identifier(&iitem->data))) { // Monomate, etc.
         // Nothing to do (it should be deleted)
 
     }
-    else if (is_wrapped(&item->data)) {
+    else if (is_wrapped(&iitem->data)) {
         // Unwrap present
-        unwrap(&item->data);
+        unwrap(&iitem->data);
         should_delete_item = false;
 
     }
-    else if (item->data.datab[0] == ITEM_TYPE_WEAPON) {
-        switch (item->data.datab[1]) {
+    else if (iitem->data.datab[0] == ITEM_TYPE_WEAPON) {
+        switch (iitem->data.datab[1]) {
         case 0x33:
             // Unseal Sealed J-Sword => Tsumikiri J-Sword
-            item->data.datab[1] = 0x32;
+            iitem->data.datab[1] = 0x32;
             should_delete_item = false;
             break;
 
         case 0xAB:
             // Unseal Lame d'Argent => Excalibur
-            item->data.datab[1] = 0xAC;
+            iitem->data.datab[1] = 0xAC;
             should_delete_item = false;
             break;
         }
 
     }
-    else if (item->data.datab[0] == ITEM_TYPE_GUARD) {
-        switch (item->data.datab[1]) {
+    else if (iitem->data.datab[0] == ITEM_TYPE_GUARD) {
+        switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_UNIT:
-            switch (item->data.datab[2]) {
+            switch (iitem->data.datab[2]) {
             case 0x4D:
                 // Unseal Limiter => Adept
-                item->data.datab[2] = 0x4E;
+                iitem->data.datab[2] = 0x4E;
                 should_delete_item = false;
                 break;
 
             case 0x4F:
                 // Unseal Swordsman Lore => Proof of Sword-Saint
-                item->data.datab[2] = 0x50;
+                iitem->data.datab[2] = 0x50;
                 should_delete_item = false;
                 break;
             }
@@ -680,21 +682,21 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     //        break;
     //    }
     //}
-    else if (item->data.datab[0] == ITEM_TYPE_TOOL) {
-        switch (item->data.datab[1]) {
+    else if (iitem->data.datab[0] == ITEM_TYPE_TOOL) {
+        switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_DISK: // Technique disk
-            uint8_t max_level = max_tech_level[item->data.datab[4]].max_lvl[player->dress_data.ch_class];
+            uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[player->dress_data.ch_class];
 
-            if (item->data.datab[2] > max_level) {
+            if (iitem->data.datab[2] > max_level) {
                 ERR_LOG("法术科技光碟等级高于职业可用等级");
                 return -1;
             }
-            player->tech.all[item->data.datab[4]] = item->data.datab[2];
+            player->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
 
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
-            if (item->data.datab[2] > 2) {
+            if (iitem->data.datab[2] > 2) {
                 ERR_LOG("无效打磨物品值");
                 return -2;
             }
@@ -713,11 +715,11 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 return -4;
             }
 
-            weapon->data.datab[3] += (item->data.datab[2] + 1);
+            weapon->data.datab[3] += (iitem->data.datab[2] + 1);
             break;
 
         case ITEM_SUBTYPE_MATERIAL:
-            switch (item->data.datab[2]) {
+            switch (iitem->data.datab[2]) {
             case 0x00: // Power Material
                 player->disp.stats.atp += 2;
                 break;
@@ -740,7 +742,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 player->disp.stats.lck += 2;
                 break;
             default:
-                ERR_LOG("未知药物 0x%08X", item->data.datal[0]);
+                ERR_LOG("未知药物 0x%08X", iitem->data.datal[0]);
                 return -5;
             }
             break;
@@ -748,7 +750,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         case ITEM_SUBTYPE_MAG_CELL1:
             mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
 
-            switch (item->data.datab[2]) {
+            switch (iitem->data.datab[2]) {
             case 0x00:
                 // Cell of MAG 502
                 mag->data.datab[1] = (player->dress_data.section & SID_Greennill) ? 0x1D : 0x21;
@@ -780,7 +782,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 break;
 
             default:
-                ERR_LOG("未知玛古细胞 0x%08X", item->data.datal[0]);
+                ERR_LOG("未知玛古细胞 0x%08X", iitem->data.datal[0]);
                 return -5;
             }
             break;
@@ -800,7 +802,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             weapon = &player->inv.iitems[eq_wep];
 
             //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
-            switch (item->data.datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
+            switch (iitem->data.datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
             case 0x00: // weapons bronze
                 if (eq_wep != -1) {
                     uint32_t ai, plustype, num_attribs = 0;
@@ -1045,7 +1047,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             item_t new_item = { 0 };
             iitem_t* new_iitem;
 
-            switch (item->data.datab[2]) {
+            switch (iitem->data.datab[2]) {
             case 0x03: // WeaponsSilverBadge 031403
                 //Add Exp
                 if (player->disp.level < 200) {
@@ -1110,8 +1112,8 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             // Present, etc. - use unwrap_table + probabilities therein
             size_t sum = 0, z = 0;
 
-            for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
-                sum += eventitem_bb[item->data.datab[2]][z].probability;
+            for (z = 0; z < num_eventitems_bb[iitem->data.datab[2]]; z++) {
+                sum += eventitem_bb[iitem->data.datab[2]][z].probability;
             }
 
             if (sum == 0) {
@@ -1121,28 +1123,28 @@ int player_use_item(ship_client_t* src, size_t item_index) {
 
             size_t det = mt19937_genrand_int32(rng) % sum;
 
-            for (z = 0; z < num_eventitems_bb[item->data.datab[2]]; z++) {
-                pmt_eventitem_bb_t entry = eventitem_bb[item->data.datab[2]][z];
+            for (z = 0; z < num_eventitems_bb[iitem->data.datab[2]]; z++) {
+                pmt_eventitem_bb_t entry = eventitem_bb[iitem->data.datab[2]][z];
                 if (det > entry.probability) {
                     det -= entry.probability;
                 }
                 else {
-                    item->data.data2l = 0;
-                    item->data.datab[0] = entry.item[0];
-                    item->data.datab[1] = entry.item[1];
-                    item->data.datab[2] = entry.item[2];
-                    item->data.datab[3] = 0;
-                    item->data.datab[4] = 0;
-                    item->data.datab[5] = 0;
+                    iitem->data.data2l = 0;
+                    iitem->data.datab[0] = entry.item[0];
+                    iitem->data.datab[1] = entry.item[1];
+                    iitem->data.datab[2] = entry.item[2];
+                    iitem->data.datab[3] = 0;
+                    iitem->data.datab[4] = 0;
+                    iitem->data.datab[5] = 0;
                     should_delete_item = false;
 
-                    subcmd_send_lobby_bb_create_inv_item(src, item->data, 1, true);
+                    subcmd_send_lobby_bb_create_inv_item(src, iitem->data, 1, true);
                     break;
                 }
             }
 
             /* TODO 出现的武器 装甲 增加随机属性 */
-            switch (item->data.datab[2]) {
+            switch (iitem->data.datab[2]) {
             case 0x00:
                 DBG_LOG("使用圣诞礼物");
                 break;
@@ -1170,7 +1172,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             }
 
             __try {
-                if (err = pmt_lookup_itemcombination_bb(item->data.datal[0], inv_item->data.datal[0], &combo)) {
+                if (err = pmt_lookup_itemcombination_bb(iitem->data.datal[0], inv_item->data.datal[0], &combo)) {
 #ifdef DEBUG
                     ERR_LOG("pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", err);
 #endif // DEBUG
@@ -1236,7 +1238,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
-        remove_iitem(src, item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
     }
 
     fix_client_inv(&player->inv);
@@ -1296,6 +1298,20 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     return 0;
 }
 
+void player_iitem_init(iitem_t* item, const bitem_t* src) {
+    item->present = 1;
+    item->extension_data1 = 0;
+    item->extension_data2 = 0;
+    item->flags = 0;
+    item->data = src->data;
+}
+
+void player_bitem_init(bitem_t* item, const iitem_t* src) {
+    item->data = src->data;
+    item->amount = (uint16_t)stack_size(&item->data);
+    item->show_flags = 1;
+}
+
 /* 整理银行物品操作 */
 void cleanup_bb_bank(ship_client_t *c) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
@@ -1308,8 +1324,9 @@ void cleanup_bb_bank(ship_client_t *c) {
 
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_BANK_ITEMS; ++i) {
-        memset(&c->bb_pl->bank.bitems[i], 0, PSOCN_STLENGTH_BITEM);
-        c->bb_pl->bank.bitems[i].data.item_id = EMPTY_STRING;
+        clear_bitem(&c->bb_pl->bank.bitems[i]);
+        /*memset(&c->bb_pl->bank.bitems[i], 0, PSOCN_STLENGTH_BITEM);
+        c->bb_pl->bank.bitems[i].data.item_id = EMPTY_STRING;*/
     }
 }
 
@@ -1598,8 +1615,7 @@ void fix_inv_bank_item(item_t* i) {
     uint32_t ch3;
     pmt_guard_bb_t tmp_guard = { 0 };
 
-    switch (i->datab[0])
-    {
+    switch (i->datab[0]) {
     case ITEM_TYPE_WEAPON:// 修正武器的值
         int8_t percent_table[6] = { 0 };
         int8_t percent = 0;
@@ -1683,6 +1699,7 @@ void fix_inv_bank_item(item_t* i) {
             break;
         }
         break;
+
     case ITEM_TYPE_MAG:// 玛古
         magitem_t* playermag;
         int16_t mag_def, mag_pow, mag_dex, mag_mind;

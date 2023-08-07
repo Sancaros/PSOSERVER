@@ -1165,7 +1165,8 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             iitem_data.present = LE16(0x0001);
-            iitem_data.tech = 0;
+            iitem_data.extension_data1 = 0;
+            iitem_data.extension_data2 = 0;
             iitem_data.flags = 0;
 
             //iitem_data.data.item_id = generate_item_id(l, src->client_id);
@@ -1439,7 +1440,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 填充物品数据头 */
     ii.present = LE16(1);
-    ii.tech = LE16(0);
+    ii.extension_data1 = 0;
+    ii.extension_data2 = 0;
     ii.flags = LE32(0);
 
     /* 填充物品数据 */
@@ -1658,7 +1660,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     bool is_stack;
     iitem_t iitem = { 0 };
     bitem_t bitem = { 0 };
-    uint32_t ic[3] = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1769,12 +1770,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 bitem.amount = LE16(1);
             }
 
-            bitem.show_flags = LE16(1);
-            bitem.data.datal[0] = iitem.data.datal[0];
-            bitem.data.datal[1] = iitem.data.datal[1];
-            bitem.data.datal[2] = iitem.data.datal[2];
-            bitem.data.item_id = iitem.data.item_id;
-            bitem.data.data2l = iitem.data.data2l;
+            /* 已获得背包的物品数据, 将其添加至银行数据中... */
+            player_bitem_init(&bitem, &iitem);
 
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
@@ -1824,15 +1821,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
-            iitem.present = LE16(0x0001);
-            iitem.tech = LE16(0x0000);
-            iitem.flags = LE32(0);
-            ic[0] = iitem.data.datal[0] = bitem.data.datal[0];
-            ic[1] = iitem.data.datal[1] = bitem.data.datal[1];
-            ic[2] = iitem.data.datal[2] = bitem.data.datal[2];
-            iitem.data.item_id = LE32(l->item_lobby_id);
-            iitem.data.data2l = bitem.data.data2l;
-            ++l->item_lobby_id;
+            player_iitem_init(&iitem, &bitem);
+            iitem.data.item_id = generate_item_id(l, 0xFF);
 
             /* 新增至玩家背包中... */
             if (!add_iitem(src, &iitem)) {
