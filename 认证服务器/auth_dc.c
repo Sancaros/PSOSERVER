@@ -1786,9 +1786,10 @@ int process_dclogin_packet(login_client_t* c, void* pkt) {
             return handle_patch_return(c, (patch_return_pkt*)pkt);
 
         default:
-            DBG_LOG("未知 DC 认证 : 0x%02X\n", type);
+            DBG_LOG("DC角色指令: 0x%04X %u ver %d", type, c->guildcard, c->version);
+            //DBG_LOG("未知 DC 认证 : 0x%02X\n", type);
             //UNK_CPD(type, c->version, pkt);
-            display_packet(pkt, len);
+            //display_packet(pkt, len);
             return -3;
         }
 

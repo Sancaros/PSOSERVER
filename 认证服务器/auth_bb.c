@@ -307,9 +307,9 @@ int process_bblogin_packet(login_client_t* c, void* pkt) {
             return handle_bb_login(c, (bb_login_93_pkt*)pkt);
 
         default:
-            DBG_LOG("未知 BB 认证 : 0x%02X\n", type);
+            DBG_LOG("未知 BB 认证 : 0x%02X", type);
             //UNK_CPD(type, c->version, pkt);
-            display_packet(pkt, len);
+            //display_packet(pkt, len);
             return -1;
         }
 

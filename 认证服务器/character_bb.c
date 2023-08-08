@@ -1178,7 +1178,8 @@ int process_bbcharacter_packet(login_client_t *c, void *pkt) {
             ///////////////
 
         default:
-            UNK_CPD(type, c->version, pkt);
+            DBG_LOG("BB½ÇÉ«Ö¸Áî: 0x%04X %s %u", type, c_cmd_name(type, 0), c->guildcard);
+            //UNK_CPD(type, c->version, pkt);
             //display_packet(pkt, LE16(bb->pkt_len));
             return -1;
     }
