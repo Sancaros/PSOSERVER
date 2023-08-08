@@ -4511,6 +4511,8 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     rv = db_update_bb_char_option(pkt->opts, gc);
 
+    //display_packet(&pkt->guild, sizeof(psocn_bb_db_guild_t));
+
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
             (uint8_t*)&pkt->guildcard, 8);
@@ -5317,6 +5319,19 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
     return 0;
 }
 
+static int handle_char_common_bank_req(ship_t* c, shipgate_common_bank_data_pkt* pkt) {
+    uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t sender_block = ntohl(pkt->block);
+    uint32_t common_bank_req = ntohl(pkt->common_bank_req);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+
+    DBG_LOG("%s", (common_bank_req ? "请求" :"存储"));
+
+
+        /* 加密并发送 */
+    return forward_bb(c, (bb_pkt_hdr_t*)&pkt, c->key_idx, sender, sender_block);
+}
+
 /* Process one ship packet. */
 int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     __try
@@ -5451,6 +5466,10 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_CHECK_PLONLINE:
             DBG_LOG("收到查询指令");
             return 0;
+
+        case SHDR_TYPE_BB_COMMON_BANK_DATA:
+            DBG_LOG("收到公共仓库查询指令");
+            return handle_char_common_bank_req(c, (shipgate_common_bank_data_pkt*)pkt);
 
         default:
             //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);

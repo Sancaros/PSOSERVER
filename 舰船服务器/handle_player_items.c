@@ -1910,3 +1910,38 @@ void fix_client_bank(psocn_bank_t* bank) {
     /* 释放掉内存 */
     free_safe(bank_item);
 }
+
+//整理仓库物品
+void sort_client_bank(psocn_bank_t* bank) {
+    size_t i, j;
+    uint32_t compare_item1 = 0;
+    uint32_t compare_item2 = 0;
+    uint8_t swap_c;
+    bitem_t swap_item;
+    bitem_t b1;
+    bitem_t b2;
+
+    if (bank->item_count > 1) {
+        for (i = 0; i < bank->item_count - 1; i++) {
+            memcpy(&b1, &bank->bitems[i], sizeof(bitem_t));
+            swap_c = b1.data.datab[0];
+            b1.data.datab[0] = b1.data.datab[2];
+            b1.data.datab[2] = swap_c;
+            memcpy(&compare_item1, &b1.data.datab[0], 3);
+            for (j = i + 1; j < bank->item_count; j++) {
+                memcpy(&b2, &bank->bitems[j], sizeof(bitem_t));
+                swap_c = b2.data.datab[0];
+                b2.data.datab[0] = b2.data.datab[2];
+                b2.data.datab[2] = swap_c;
+                memcpy(&compare_item2, &b2.data.datab[0], 3);
+                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
+                    memcpy(&swap_item, &bank->bitems[i], sizeof(bitem_t));
+                    memcpy(&bank->bitems[i], &bank->bitems[j], sizeof(bitem_t));
+                    memcpy(&bank->bitems[j], &swap_item, sizeof(bitem_t));
+                    memcpy(&compare_item1, &compare_item2, 3);
+                }
+            }
+        }
+    }
+}
+

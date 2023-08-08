@@ -33,7 +33,7 @@
 #endif
 
 /* The header that is prepended to any packets sent to the shipgate (new version
-   for protocol v10 and newer). */
+   for protocol v10 and newer). 8×Ö½Ú */
 typedef struct shipgate_hdr {
     uint16_t pkt_len;
     uint16_t pkt_type;
@@ -232,6 +232,15 @@ typedef struct shipgate_char_data {
     uint32_t block;
     uint8_t data[];
 } PACKED shipgate_char_data_pkt;
+
+/* A packet sent to/from clients to save/restore common bank data. */
+typedef struct shipgate_common_bank_data {
+    shipgate_hdr_t hdr;
+    uint32_t guildcard;
+    uint32_t block;
+    uint32_t common_bank_req;
+    psocn_bank_t data;
+} PACKED shipgate_common_bank_data_pkt;
 
 typedef struct sg_char_bkup {
     uint32_t guildcard;
@@ -441,6 +450,7 @@ typedef struct shipgate_bb_opts {
     psocn_bb_db_opts_t opts;
     psocn_bb_db_guild_t guild;
     uint32_t guild_points_personal_donation;
+    psocn_bank_t common_bank;
 } PACKED shipgate_bb_opts_pkt;
 
 /* Packet used to send an update to the user's monster kill counts.

@@ -83,5 +83,6 @@ void fix_equip_item(inventory_t* inv);
 void fix_client_inv(inventory_t* inv);
 void sort_client_inv(inventory_t* inv);
 void fix_client_bank(psocn_bank_t* bank);
+void sort_client_bank(psocn_bank_t* bank);
 
 #endif /* !IITEMS_H */

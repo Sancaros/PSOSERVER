@@ -161,7 +161,20 @@ int forward_dreamcast(ship_t* c, dc_pkt_hdr_t* dc, uint32_t sender,
     pkt->block = htonl(block);
 
     /* Copy in the packet, unchanged */
-    memcpy(pkt->pkt, dc, dc_len);
+    if (safe_memcpy(pkt->pkt, (uint8_t*)dc, dc_len, pkt->pkt, pkt->pkt + dc_len)) {
+#ifdef DEBUG
+        DBG_LOG("安全复制成功！");
+        DBG_LOG("After safe memcpy:");
+        DBG_LOG("dest: ");
+        for (int i = 0; i < dc_len; i++) {
+            DBG_LOG("%d ", pkt->pkt[i]);
+        }
+#endif // DEBUG
+    }
+    else {
+        ERR_LOG("安全复制失败!请检查数据包情况!");
+    }
+    //memcpy(pkt->pkt, dc, dc_len);
 
     /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
@@ -194,7 +207,20 @@ int forward_pc(ship_t* c, dc_pkt_hdr_t* pc, uint32_t sender, uint32_t gc,
     pkt->block = htonl(block);
 
     /* Copy in the packet, unchanged */
-    memcpy(pkt->pkt, pc, pc_len);
+    if (safe_memcpy(pkt->pkt, (uint8_t*)pc, pc_len, pkt->pkt, pkt->pkt + pc_len)) {
+#ifdef DEBUG
+        DBG_LOG("安全复制成功！");
+        DBG_LOG("After safe memcpy:");
+        DBG_LOG("dest: ");
+        for (int i = 0; i < pc_len; i++) {
+            DBG_LOG("%d ", pkt->pkt[i]);
+        }
+#endif // DEBUG
+    }
+    else {
+        ERR_LOG("安全复制失败!请检查数据包情况!");
+    }
+    //memcpy(pkt->pkt, pc, pc_len);
 
     /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
@@ -227,7 +253,20 @@ int forward_bb(ship_t* c, bb_pkt_hdr_t* bb, uint32_t sender, uint32_t gc,
     pkt->block = htonl(block);
 
     /* Copy in the packet, unchanged */
-    memcpy(pkt->pkt, bb, bb_len);
+    if (safe_memcpy(pkt->pkt, (uint8_t*)bb, bb_len, pkt->pkt, pkt->pkt + bb_len)) {
+#ifdef DEBUG
+        DBG_LOG("安全复制成功！");
+        DBG_LOG("After safe memcpy:");
+        DBG_LOG("dest: ");
+        for (int i = 0; i < bb_len; i++) {
+            DBG_LOG("%d ", pkt->pkt[i]);
+        }
+#endif // DEBUG
+    }
+    else {
+        ERR_LOG("安全复制失败!请检查数据包情况!");
+    }
+    //safe_memcpy(pkt->pkt, bb, bb_len);
 
     /* 将数据包发送出去 */
     return send_crypt(c, full_len, sendbuf);
@@ -340,6 +379,29 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     pkt->slot = htonl(slot);
     pkt->block = htonl(block);
     memcpy(pkt->data, cdata, sz);
+
+    /* 加密并发送. */
+    return send_crypt(c, sizeof(shipgate_char_data_pkt) + sz, sendbuf);
+}
+
+/* Send the ship a character common bank data restore. */
+int send_common_bank_data(ship_t* c, uint32_t gc, uint32_t slot, void* cbdata, int sz,
+    uint32_t block) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
+
+    /* 填充数据头. */
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_char_data_pkt) + sz);
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_CREQ);
+    pkt->hdr.flags = htons(SHDR_RESPONSE);
+    pkt->hdr.reserved = 0;
+    pkt->hdr.version = 0;
+
+    /* Fill in the body. */
+    pkt->guildcard = htonl(gc);
+    pkt->slot = htonl(slot);
+    pkt->block = htonl(block);
+    memcpy(pkt->data, cbdata, sz);
 
     /* 加密并发送. */
     return send_crypt(c, sizeof(shipgate_char_data_pkt) + sz, sendbuf);

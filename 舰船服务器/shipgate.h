@@ -117,6 +117,10 @@ int shipgate_fw_bb(shipgate_conn_t *c, const void *bbp, uint32_t flags,
 /* Send a ping packet to the server. */
 int shipgate_send_ping(shipgate_conn_t *c, int reply);
 
+/* Send a common bank packet to the server. */
+int shipgate_send_common_bank(shipgate_conn_t* c,
+    psocn_bank_t* bank, uint32_t guildcard, uint32_t block, uint32_t common_bank_req);
+
 /* Send the shipgate a character data save request. */
 int shipgate_send_cdata(shipgate_conn_t *c, uint32_t gc, uint32_t slot,
                         const void *cdata, size_t len, uint32_t block);

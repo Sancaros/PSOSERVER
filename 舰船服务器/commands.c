@@ -4017,6 +4017,22 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
     return send_txt(src, "%s", __(src, "\tE\tC6指令不正确\n参数为[opcodes]."));
 }
 
+/* 用法: /bank */
+static int handle_bank(ship_client_t* c, const char* params) {
+    pthread_mutex_lock(&c->mutex);
+
+    if (!c->game_data->bank_type) {
+        c->game_data->bank_type = 1;
+        pthread_mutex_unlock(&c->mutex);
+
+        return send_txt(c, "%s", __(c, "\tE\tC8公共仓库."));
+    }
+
+    c->game_data->bank_type = 0;
+    pthread_mutex_unlock(&c->mutex);
+    return send_txt(c, "%s", __(c, "\tE\tC6角色仓库."));
+}
+
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug   },
     { "swarp"    , handle_shipwarp  },
@@ -4124,6 +4140,7 @@ static command_t cmds[] = {
     { "clean"    , handle_clean     },
     { "cheat"    , handle_cheat     },
     { "cmdc"     , handle_cmdcheck  },
+    { "bank"     , handle_bank      },
     { ""         , NULL             }     /* End marker -- DO NOT DELETE */
 };
 

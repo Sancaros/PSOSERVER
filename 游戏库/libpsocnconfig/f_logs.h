@@ -245,7 +245,6 @@ extern int32_t script_log_console_show;
 
 #define CHECK3(...) { printf(__VA_ARGS__); }
 
-void safe_free(const char* func, uint32_t line, void** ptr);
 #define free_safe(EXP) safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP)
 
 //#define free_safe2(EXP)  if((EXP)!=NULL && \

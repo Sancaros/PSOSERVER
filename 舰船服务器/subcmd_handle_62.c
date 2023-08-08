@@ -1776,8 +1776,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
                 ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
+                add_iitem(src, &iitem);
                 return -1;
             }
+
+            sort_client_bank(&src->bb_pl->bank);
 
             return subcmd_send_bb_destroy_item(src, iitem.data.item_id,
                 pkt->item_amount);
@@ -1830,6 +1833,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 add_bitem(src, &bitem);
                 return -1;
             }
+
+            sort_client_bank(&src->bb_pl->bank);
 
             /* 发送至房间中的客户端. */
             return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);

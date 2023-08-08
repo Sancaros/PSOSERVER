@@ -95,10 +95,13 @@ typedef struct client_game_data {
     uint32_t death;
 
     int gm_debug;
-
     int gm_drop_rare;
 
     int db_save_done;
+
+    int bank_type;
+    psocn_bank_t common_bank;
+    psocn_bank_t char_bank;
 
     client_error_t err;
 

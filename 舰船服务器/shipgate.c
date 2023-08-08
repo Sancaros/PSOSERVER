@@ -148,6 +148,29 @@ int shipgate_send_ping(shipgate_conn_t* c, int reply) {
     return send_crypt(c, sizeof(shipgate_ping_t), sendbuf);
 }
 
+/* Send a common bank packet to the server. */
+int shipgate_send_common_bank(shipgate_conn_t* c, 
+    psocn_bank_t* bank, uint32_t guildcard, uint32_t block, uint32_t common_bank_req) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_common_bank_data_pkt* pkt = (shipgate_common_bank_data_pkt*)sendbuf;
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* Build the packet up */
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_common_bank_data_pkt));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BB_COMMON_BANK_DATA);
+    pkt->guildcard = htonl(guildcard);
+    pkt->block = htonl(block);
+    pkt->common_bank_req = htonl(common_bank_req);
+
+    memcpy(&pkt->data, bank, sizeof(psocn_bank_t));
+
+    /* 加密并发送. */
+    return send_crypt(c, sizeof(shipgate_ping_t), sendbuf);
+}
+
 /* Attempt to connect to the shipgate. Returns < 0 on error, returns the socket
    for communciation on success. */
 static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
@@ -1153,7 +1176,6 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
         /* Warn the ship that sent the packet, then drop it
          警告发送包裹的船，然后丢弃它
         */
-        display_packet((uint8_t*)bb, len);
         return 0;
     }
 
@@ -3253,6 +3275,10 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_CHECK_PLONLINE:
             DBG_LOG("测试");
             return 0;
+
+        case SHDR_TYPE_BB_COMMON_BANK_DATA:
+            DBG_LOG("测试公共仓库数据获取");
+            return 0;
         }
     }
 
@@ -4085,6 +4111,11 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
 
     /* 填充公会数据 */
     memcpy(&pkt->guild, cl->bb_guild, PSOCN_STLENGTH_BB_GUILD);
+
+    pkt->guild_points_personal_donation = cl->guild_points_personal_donation;
+
+    /* 填充公共银行数据 */
+    memcpy(&pkt->common_bank, &cl->game_data->common_bank, PSOCN_STLENGTH_BANK);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

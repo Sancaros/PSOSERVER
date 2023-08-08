@@ -54,6 +54,9 @@ typedef struct {
 /* 32位数字转8位数组 */
 void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size);
 
+bool safe_memcpy(uint8_t* dst, const uint8_t* src, size_t len, const uint8_t* start, const uint8_t* end);
+void safe_free(const char* func, uint32_t line, void** ptr);
+
 /* 安全擦除函数 */
 void SecureErase(void* buffer, size_t size);
 
@@ -65,25 +68,19 @@ int isEmptyFloat(float val);
 void write_data(write_data_func func, const void* data, size_t len);
 
 Buffer* create_buffer(size_t len);
-
 void destroy_buffer(Buffer* buffer);
 
 char* string_vprintf(const char* fmt, va_list va);
-
 wchar_t* wstring_vprintf(const wchar_t* fmt, va_list va);
-
 char* string_printf(const char* fmt, ...);
-
 wchar_t* wstring_printf(const wchar_t* fmt, ...);
 
 uint8_t hexToByte(char* hs);
 
 /* 单字节字符串增加颜色识别 */
 int char_add_color_tag(char* a);
-
 /* 宽字节字符串增加颜色识别 */
 int wchar_add_color_tag(wchar_t* a);
-
 int add_color_tag(void* str);
 
 /* 实现字符的小写转换 */

@@ -1531,7 +1531,7 @@ static int bb_process_trade(ship_client_t* c, bb_trade_D0_D3_pkt* pkt) {
 
     display_packet(pkt, LE16(pkt->hdr.pkt_len));
 
-    memset(&c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
+    memset(c->game_data->pending_item_trade, 0, sizeof(client_trade_item_t));
     c->game_data->pending_item_trade->other_client_id = target_client_id;
     for (size_t x = 0; x < pkt->item_count; x++) {
         c->game_data->pending_item_trade->items[x] = pkt->items[x];

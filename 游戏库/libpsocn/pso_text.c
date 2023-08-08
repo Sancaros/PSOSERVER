@@ -34,6 +34,35 @@ void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size) {
     }
 }
 
+bool between(const uint8_t* start, const uint8_t* end, const uint8_t* p) {
+    return (p < end) && (p >= start);
+}
+
+bool safe_check(const uint8_t* dst, size_t len, const uint8_t* start, const uint8_t* end) {
+    if (len < 1) {
+        return false;
+    }
+    if (!dst || !start || !end) {
+        return false;
+    }
+    const uint8_t* last_pos = dst + len - 1;
+    if (last_pos < dst) {
+        return false;
+    }
+    return between(start, end, dst) && between(start, end, last_pos);
+}
+
+bool safe_memcpy(uint8_t* dst, const uint8_t* src, size_t len, const uint8_t* start, const uint8_t* end) {
+    if (!safe_check(dst, len, start, end)) {
+        return false;
+    }
+    if (!src) {
+        return false;
+    }
+    memcpy(dst, src, len);
+    return true;
+}
+
 void safe_free(const char* func, uint32_t line, void** ptr) {
     if (ptr != NULL && *ptr != NULL) {
         free(*ptr);
@@ -239,8 +268,14 @@ int wchar_add_color_tag(wchar_t* a) {
         if (*a == '%') {
             for (x = 0; wreps[x]; x++) if (wreps[x] == a[1]) break;
             if (wreps[x]) {
-                wcscpy_s(a, sizeof(a), &a[1]);
-                *a = wrepd[x];
+                errno_t result = wcscpy_s(a, sizeof(a), &a[1]);
+                if (result == 0) {
+                    *a = wrepd[x];
+                }
+                else {
+                    ERR_LOG("·¢Éú´íÎó£¬´íÎóÂë: %d", result);
+                    result = 0;
+                }
             }
         }
         a++;
