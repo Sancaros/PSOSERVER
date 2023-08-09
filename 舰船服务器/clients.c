@@ -321,6 +321,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->arrow_color = 1;
     rv->last_message = rv->login_time = time(NULL);
     rv->hdr_size = 4;
+    rv->game_data->expboost = 0;
 
     /* Create the mutex */
     pthread_mutexattr_init(&attr);
@@ -995,8 +996,6 @@ int client_give_level(ship_client_t *dest, uint32_t level_req) {
     if(player->disp.level >= level_req)
         return 0;
 
-    DBG_LOG("%d %d", player->disp.level, level_req);
-
     /* Grab the entry for that level... */
     cl = player->dress_data.ch_class;
     ent = &bb_char_stats.levels[cl][level_req];
@@ -1005,6 +1004,9 @@ int client_give_level(ship_client_t *dest, uint32_t level_req) {
     exp_total = LE32(player->disp.exp);
     exp_gained = ent->exp - exp_total;
     player->disp.exp = LE32(ent->exp);
+
+    if (player->disp.exp > bb_char_stats.levels[player->dress_data.ch_class][player->disp.level].exp)
+        player->disp.exp = bb_char_stats.levels[player->dress_data.ch_class][player->disp.level].exp;
 
     /* Send the packet telling them they've gotten experience. */
     if(subcmd_send_bb_exp(dest, exp_gained))

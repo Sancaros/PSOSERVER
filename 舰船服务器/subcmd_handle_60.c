@@ -3643,14 +3643,7 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             clear_iitem(&sorted.iitems[x]);
         }
         else {
-            int index = find_iitem_index(&player->inv, pkt->item_ids[x]);
-
-            /* 如果找不到该物品，则将用户从船上推下. */
-            if (index == -1) {
-                ERR_LOG("GC %" PRIu32 " 整理无效物品!", src->guildcard);
-                return -1;
-            }
-
+            size_t index = find_iitem_index(&player->inv, pkt->item_ids[x]);
             sorted.iitems[x] = player->inv.iitems[index];
         }
     }
