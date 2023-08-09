@@ -3156,7 +3156,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
         }
 
         /* 从数据库中获取玩家角色的银行数据 */
-        if ((rv = db_get_char_bank(gc, slot, &bb_data->bank, 0))) {
+        if ((rv = db_get_char_bank(gc, slot, &bb_data->bank))) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色银行数据, 错误码:%d", gc, slot, rv);
         }
 
@@ -4482,6 +4482,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     psocn_bb_db_opts_t opts;
     psocn_bb_db_guild_t guild;
     uint32_t guild_points_personal_donation = 0;
+    psocn_bank_t* common_bank = (psocn_bank_t*)malloc(PSOCN_STLENGTH_BANK);
     int rv = 0;
 
     /* Parse out the guildcard */
@@ -4492,12 +4493,19 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
     guild = db_get_bb_char_guild(gc);
     guild_points_personal_donation = db_get_bb_guild_points_personal_donation(gc);
 
-    rv = send_bb_opts(c, gc, block, &opts, &guild, guild_points_personal_donation);
+    if (common_bank) {
+        memset(common_bank, 0, PSOCN_STLENGTH_BANK);
+        db_get_char_common_bank(gc, common_bank);
+    }
+
+    rv = send_bb_opts(c, gc, block, &opts, &guild, guild_points_personal_donation, common_bank);
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
             (uint8_t*)&pkt->guildcard, 8);
     }
+
+    free_safe(common_bank);
 
     return rv;
 }
@@ -4511,7 +4519,9 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     rv = db_update_bb_char_option(pkt->opts, gc);
 
-    //display_packet(&pkt->guild, sizeof(psocn_bb_db_guild_t));
+    rv = db_update_bb_guild_points_personal_donation(gc, pkt->guild_points_personal_donation);
+
+    rv = db_update_char_common_bank(&pkt->common_bank, gc);
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,

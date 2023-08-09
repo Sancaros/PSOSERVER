@@ -459,6 +459,9 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
     bitem_t ret = { 0 };
     psocn_bank_t* bank = &src->bb_pl->bank;
+
+    if (src->bank_type)
+        bank = src->common_bank;
     
     // 检查是否超出美赛塔数量
     if (item_id == 0xFFFFFFFF) {
@@ -557,6 +560,9 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
 bool add_bitem(ship_client_t* src, bitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
     psocn_bank_t* bank = &src->bb_pl->bank;
+
+    if (src->bank_type)
+        bank = src->common_bank;
 
     if (pid == MESETA_IDENTIFIER) {
         bank->meseta += item->data.data2l;
@@ -1313,20 +1319,23 @@ void player_bitem_init(bitem_t* item, const iitem_t* src) {
 }
 
 /* 整理银行物品操作 */
-void cleanup_bb_bank(ship_client_t *c) {
+void cleanup_bb_bank(ship_client_t *c, psocn_bank_t* bank, bool comoon_bank) {
     uint32_t item_id = 0x80010000 | (c->client_id << 21);
-    uint32_t count = LE32(c->bb_pl->bank.item_count), i;
+    if (comoon_bank)
+        item_id = 0x80110000 | (c->client_id << 21);
+
+    uint32_t count = LE32(bank->item_count), i;
 
     for(i = 0; i < count; ++i) {
-        c->bb_pl->bank.bitems[i].data.item_id = LE32(item_id);
+        bank->bitems[i].data.item_id = LE32(item_id);
         ++item_id;
     }
 
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_BANK_ITEMS; ++i) {
-        clear_bitem(&c->bb_pl->bank.bitems[i]);
-        /*memset(&c->bb_pl->bank.bitems[i], 0, PSOCN_STLENGTH_BITEM);
-        c->bb_pl->bank.bitems[i].data.item_id = EMPTY_STRING;*/
+        clear_bitem(&bank->bitems[i]);
+        /*memset(&bank->bitems[i], 0, PSOCN_STLENGTH_BITEM);
+        bank->bitems[i].data.item_id = EMPTY_STRING;*/
     }
 }
 

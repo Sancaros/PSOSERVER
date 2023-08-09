@@ -2294,6 +2294,9 @@ static int handle_bbopts(shipgate_conn_t* c, shipgate_bb_opts_pkt* pkt) {
 
             i->guild_points_personal_donation = pkt->guild_points_personal_donation;
 
+            /* 复制公共仓库数据 */
+            memcpy(i->common_bank, &pkt->common_bank, PSOCN_STLENGTH_BANK);
+
             /* Move the user on now that we have everything... */
             send_lobby_list(i);
             send_bb_full_char(i);
@@ -4115,7 +4118,7 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->guild_points_personal_donation = cl->guild_points_personal_donation;
 
     /* 填充公共银行数据 */
-    memcpy(&pkt->common_bank, &cl->game_data->common_bank, PSOCN_STLENGTH_BANK);
+    memcpy(&pkt->common_bank, cl->common_bank, PSOCN_STLENGTH_BANK);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

@@ -4021,14 +4021,14 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
 static int handle_bank(ship_client_t* c, const char* params) {
     pthread_mutex_lock(&c->mutex);
 
-    if (!c->game_data->bank_type) {
-        c->game_data->bank_type = 1;
+    if (!c->bank_type) {
+        c->bank_type = 1;
         pthread_mutex_unlock(&c->mutex);
 
         return send_txt(c, "%s", __(c, "\tE\tC8¹«¹²²Ö¿â."));
     }
 
-    c->game_data->bank_type = 0;
+    c->bank_type = 0;
     pthread_mutex_unlock(&c->mutex);
     return send_txt(c, "%s", __(c, "\tE\tC6½ÇÉ«²Ö¿â."));
 }

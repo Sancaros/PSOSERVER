@@ -20,7 +20,7 @@
 #include "f_checksum.h"
 #include "handle_player_items.h"
 
-static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+static int db_insert_common_bank_param(psocn_bank_t* bank, uint32_t gc) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
 
     memset(myquery, 0, sizeof(myquery));
@@ -30,14 +30,14 @@ static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "guildcard, slot, "
+        "guildcard, "
         "item_count, meseta, bank_check_num"
         ") VALUES ("
-        "'%" PRIu32 "', '%" PRIu8 "', "
+        "'%" PRIu32 "', "
         "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "'"
         ")",
-        CHARACTER_BANK,
-        gc, slot,
+        CHARACTER_COMMON_BANK,
+        gc,
         bank->item_count, bank->meseta, inv_crc32
     );
 
@@ -49,18 +49,18 @@ static int db_insert_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_cleanup_bank_items(uint32_t gc, uint8_t slot) {
+static int db_cleanup_common_bank_items(uint32_t gc) {
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "DELETE FROM %s WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
-        CHARACTER_BANK_ITEMS,
-        gc, slot
+        "guildcard = '%" PRIu32 "'",
+        CHARACTER_COMMON_BANK_ITEMS,
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法清理旧玩家银行数据 (GC %"
-            PRIu32 ", 槽位 %" PRIu8 "):\n%s", gc, slot,
+            PRIu32 "):\n%s", gc,
             psocn_db_error(&conn));
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
@@ -69,7 +69,7 @@ static int db_cleanup_bank_items(uint32_t gc, uint8_t slot) {
     return 0;
 }
 
-static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
+static int db_insert_common_bank_items(bitem_t* item, uint32_t gc, int item_index) {
     char item_name_text[64];
 
     istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
@@ -84,7 +84,7 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "data2_b0, data2_b1, data2_b2, data2_b3, "
         "item_index, amount, show_flags, "
         "item_name, "
-        "guildcard, slot"
+        "guildcard"
         ") VALUES ("
         "'%02X', '%02X', '%02X', '%02X', "
         "'%02X', '%02X', '%02X', '%02X', "
@@ -93,9 +93,9 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "'%02X', '%02X', '%02X', '%02X', "
         "'%d', '%04X', '%04X', "
         "'%s', "
-        "'%" PRIu32 "', '%" PRIu8 "'"
+        "'%" PRIu32 "'"
         ")",
-        CHARACTER_BANK_ITEMS,
+        CHARACTER_COMMON_BANK_ITEMS,
         item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
         item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
         item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
@@ -103,7 +103,7 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item_index, item->amount, item->show_flags,
         item_name_text,
-        gc, slot
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
@@ -118,7 +118,7 @@ static int db_insert_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
 }
 
 /* 优先获取银行数据库中的数量 */
-uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
+uint32_t db_get_char_common_bank_item_count(uint32_t gc) {
     uint32_t item_count = 0;
     void* result;
     char** row;
@@ -126,25 +126,25 @@ uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT COUNT(*) FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_BANK_ITEMS, gc, slot);
+    sprintf(myquery, "SELECT COUNT(*) FROM %s WHERE guildcard = '%" PRIu32 "'", 
+        CHARACTER_COMMON_BANK_ITEMS, gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return 0;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return 0;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未找到保存的公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return 0;
     }
@@ -156,7 +156,7 @@ uint32_t db_get_char_bank_item_count(uint32_t gc, uint8_t slot) {
     return item_count;
 }
 
-static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int item_index) {
+static int db_update_common_bank_items(bitem_t* item, uint32_t gc, int item_index) {
     char item_name_text[64];
 
     istrncpy(ic_gbk_to_utf8, item_name_text, item_get_name(&item->data, 5), sizeof(item_name_text));
@@ -172,8 +172,8 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         "amount = '%04X', show_flags = '%04X', "
         "item_name = '%s'"
         " WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%d'",
-        CHARACTER_BANK_ITEMS,
+        "guildcard = '%" PRIu32 "' AND item_index = '%d'",
+        CHARACTER_COMMON_BANK_ITEMS,
         item->data.datab[0], item->data.datab[1], item->data.datab[2], item->data.datab[3],
         item->data.datab[4], item->data.datab[5], item->data.datab[6], item->data.datab[7],
         item->data.datab[8], item->data.datab[9], item->data.datab[10], item->data.datab[11],
@@ -181,9 +181,9 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
         item->data.data2b[0], item->data.data2b[1], item->data.data2b[2], item->data.data2b[3],
         item->amount, item->show_flags,
         item_name_text,
-        gc, slot, item_index
+        gc, item_index
     );
-        
+
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
         return -1;
@@ -192,7 +192,7 @@ static int db_update_bank_items(bitem_t* item, uint32_t gc, uint8_t slot, int it
     return 0;
 }
 
-static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+static int db_update_common_bank_param(psocn_bank_t* bank, uint32_t gc) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     memset(myquery, 0, sizeof(myquery));
 
@@ -202,10 +202,10 @@ static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
         "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "'"
         " WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
-        CHARACTER_BANK,
+        "guildcard = '%" PRIu32 "'",
+        CHARACTER_COMMON_BANK,
         bank->item_count, bank->meseta, inv_crc32,
-        gc, slot
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
@@ -217,19 +217,19 @@ static int db_update_bank_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 }
 
 /* 备份并删除旧银行物品数据 */
-static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_count) {
+static int db_del_common_bank_items(uint32_t gc, int item_index, int del_count) {
     memset(myquery, 0, sizeof(myquery));
     void* result;
     char** row;
 
     sprintf(myquery, "SELECT * FROM %s WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
-        CHARACTER_BANK_ITEMS,
-        gc, slot
+        "guildcard = '%" PRIu32 "'",
+        CHARACTER_COMMON_BANK_ITEMS,
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
@@ -240,9 +240,9 @@ static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_
         if ((row = mysql_fetch_row((MYSQL_RES*)result))) {
 
             sprintf(myquery, "INSERT INTO %s SELECT * FROM %s WHERE "
-                "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
-                CHARACTER_BANK_ITEMS_BACKUP, CHARACTER_BANK_ITEMS,
-                gc, slot
+                "guildcard = '%" PRIu32 "'",
+                CHARACTER_COMMON_BANK_ITEMS_BACKUP, CHARACTER_COMMON_BANK_ITEMS,
+                gc
             );
 
             psocn_db_real_query(&conn, myquery);
@@ -250,14 +250,14 @@ static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_
             for (item_index; item_index < MAX_PLAYER_BANK_ITEMS; item_index++) {
 
                 sprintf(myquery, "DELETE FROM %s WHERE "
-                    "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%" PRIu32 "'",
-                    CHARACTER_BANK_ITEMS,
-                    gc, slot, item_index
+                    "guildcard = '%" PRIu32 "' AND item_index = '%" PRIu32 "'",
+                    CHARACTER_COMMON_BANK_ITEMS,
+                    gc, item_index
                 );
 
                 if (psocn_db_real_query(&conn, myquery)) {
                     SQLERR_LOG("无法清理旧玩家数据 (GC %"
-                        PRIu32 ", 槽位 %" PRIu8 "):\n%s", gc, slot,
+                        PRIu32 ":\n%s", gc,
                         psocn_db_error(&conn));
                     /* XXXX: 未完成给客户端发送一个错误信息 */
                     return -1;
@@ -275,7 +275,7 @@ static int db_del_bank_items(uint32_t gc, uint8_t slot, int item_index, int del_
 }
 
 /* 优先获取银行数据库中的物品数量 */
-static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
+static int db_get_char_common_bank_param(uint32_t gc, psocn_bank_t* bank, int check) {
     void* result;
     char** row;
 
@@ -287,22 +287,20 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
         " FROM "
         "%s"
         " WHERE "
-        "guildcard = '%" PRIu32 "'"
-        " AND "
-        "slot = '%u'", 
-        CHARACTER_BANK, 
-        gc, slot
+        "guildcard = '%" PRIu32 "'",
+        CHARACTER_COMMON_BANK,
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
@@ -310,7 +308,7 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         if (check) {
-            SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("未找到保存的公共银行数据 (%" PRIu32 ")", gc);
             SQLERR_LOG("%s", psocn_db_error(&conn));
         }
         return -3;
@@ -327,7 +325,7 @@ static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank,
     return 0;
 }
 
-static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int item_index, int check) {
+static int db_get_char_common_bank_items(uint32_t gc, bitem_t* item, int item_index, int check) {
     void* result;
     char** row;
     char* endptr;
@@ -340,20 +338,20 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
         " FROM "
         "%s"
         " WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "' AND item_index = '%d'",
-        CHARACTER_BANK_ITEMS,
-        gc, slot, item_index
+        "guildcard = '%" PRIu32 "' AND item_index = '%d'",
+        CHARACTER_COMMON_BANK_ITEMS,
+        gc, item_index
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
@@ -361,14 +359,14 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
         if (check) {
-            SQLERR_LOG("未找到索引 %d 的银行物品数据 (%" PRIu32 ": %u)", item_index, gc, slot);
+            SQLERR_LOG("未找到索引 %d 的公共银行物品数据 (%" PRIu32 ")", item_index, gc);
             SQLERR_LOG("%s", psocn_db_error(&conn));
         }
         return -3;
     }
 
     /* 获取物品的二进制数据 */
-    int i = 4;
+    int i = 3;
     item->amount = (uint16_t)strtoul(row[i], &endptr, 16);
     i++;
     item->show_flags = (uint16_t)strtoul(row[i], &endptr, 16);
@@ -420,7 +418,7 @@ static int db_get_char_bank_items(uint32_t gc, uint8_t slot, bitem_t* item, int 
     return 0;
 }
 
-static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
+static int db_get_char_common_bank_itemdata(uint32_t gc, psocn_bank_t* bank) {
     void* result;
     char** row;
     char* endptr;
@@ -433,50 +431,66 @@ static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* ba
         " FROM "
         "%s"
         " WHERE "
-        "guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'",
-        CHARACTER_BANK_ITEMS,
-        gc, slot
+        "guildcard = '%" PRIu32 "'",
+        CHARACTER_COMMON_BANK_ITEMS,
+        gc
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_use(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
 
-    int k = 0;
+    int k = 0, j = 0;
 
     while ((row = psocn_db_result_fetch(result)) != NULL) {
-        if (!isEmptyInt((uint16_t)strtoul(row[5], &endptr, 16))) {
-            bank->bitems[k].amount = (uint16_t)strtoul(row[4], &endptr, 16);
-            bank->bitems[k].show_flags = (uint16_t)strtoul(row[5], &endptr, 16);
-
-            bank->bitems[k].data.datab[0] = (uint8_t)strtoul(row[6], &endptr, 16);
-            bank->bitems[k].data.datab[1] = (uint8_t)strtoul(row[7], &endptr, 16);
-            bank->bitems[k].data.datab[2] = (uint8_t)strtoul(row[8], &endptr, 16);
-            bank->bitems[k].data.datab[3] = (uint8_t)strtoul(row[9], &endptr, 16);
-            bank->bitems[k].data.datab[4] = (uint8_t)strtoul(row[10], &endptr, 16);
-            bank->bitems[k].data.datab[5] = (uint8_t)strtoul(row[11], &endptr, 16);
-            bank->bitems[k].data.datab[6] = (uint8_t)strtoul(row[12], &endptr, 16);
-            bank->bitems[k].data.datab[7] = (uint8_t)strtoul(row[13], &endptr, 16);
-            bank->bitems[k].data.datab[8] = (uint8_t)strtoul(row[14], &endptr, 16);
-            bank->bitems[k].data.datab[9] = (uint8_t)strtoul(row[15], &endptr, 16);
-            bank->bitems[k].data.datab[10] = (uint8_t)strtoul(row[16], &endptr, 16);
-            bank->bitems[k].data.datab[11] = (uint8_t)strtoul(row[17], &endptr, 16);
-
-            bank->bitems[k].data.item_id = (uint32_t)strtoul(row[18], &endptr, 16);
-
-            bank->bitems[k].data.data2b[0] = (uint8_t)strtoul(row[19], &endptr, 16);
-            bank->bitems[k].data.data2b[1] = (uint8_t)strtoul(row[20], &endptr, 16);
-            bank->bitems[k].data.data2b[2] = (uint8_t)strtoul(row[21], &endptr, 16);
-            bank->bitems[k].data.data2b[3] = (uint8_t)strtoul(row[22], &endptr, 16);
+        if (!isEmptyInt((uint16_t)strtoul(row[4], &endptr, 16))) {
+            j = 3;
+            bank->bitems[k].amount = (uint16_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].show_flags = (uint16_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[0] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[1] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[2] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[3] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[4] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[5] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[6] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[7] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[8] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[9] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[10] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.datab[11] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.item_id = (uint32_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.data2b[0] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.data2b[1] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.data2b[2] = (uint8_t)strtoul(row[j], &endptr, 16);
+            j++;
+            bank->bitems[k].data.data2b[3] = (uint8_t)strtoul(row[j], &endptr, 16);
 
             k++;
         }
@@ -487,7 +501,7 @@ static int db_get_char_bank_itemdata(uint32_t gc, uint8_t slot, psocn_bank_t* ba
     return k;
 }
 
-void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
+void clean_up_common_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
     for (item_index; item_index < del_count; item_index++) {
 
         bank->bitems[item_index].data.datal[0] = 0;
@@ -502,7 +516,7 @@ void clean_up_char_bank(psocn_bank_t* bank, int item_index, int del_count) {
 }
 
 /* 新增玩家银行银行数据至数据库 */
-int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+int db_insert_common_bank(psocn_bank_t* bank, uint32_t gc) {
     uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
     size_t i = 0;
 
@@ -510,49 +524,49 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
-        "guildcard, slot, item_count, meseta, bank_check_num"
+        "guildcardt, item_count, meseta, bank_check_num"
         ") VALUES ("
-        "'%" PRIu32 "', '%" PRIu8 "', "
+        "'%" PRIu32 "', "
         "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "'"
         ")",
-        CHARACTER_BANK,
-        gc, slot,
+        CHARACTER_COMMON_BANK,
+        gc,
         bank->item_count, bank->meseta, inv_crc32
     );
 
     if (psocn_db_real_query(&conn, myquery))
-        db_update_bank_param(bank, gc, slot);
+        db_update_common_bank_param(bank, gc);
 
     // 遍历银行数据，插入到数据库中
     for (i; i < bank->item_count; i++) {
-        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
-            db_update_bank_items(&bank->bitems[i], gc, slot, i);
+        if (db_insert_common_bank_items(&bank->bitems[i], gc, i)) {
+            db_update_common_bank_items(&bank->bitems[i], gc, i);
         }
     }
 
-    clean_up_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
+    clean_up_common_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
 
-    if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
+    if (db_del_common_bank_items(gc, bank->item_count, MAX_PLAYER_BANK_ITEMS))
         return -1;
 
     return 0;
 }
 
-int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+int db_update_char_common_bank(psocn_bank_t* bank, uint32_t gc) {
     size_t i = 0, ic = bank->item_count;
 
     if (ic > MAX_PLAYER_BANK_ITEMS)
-        ic = db_get_char_bank_item_count(gc, slot);
+        ic = db_get_char_common_bank_item_count(gc);
 
     bank->item_count = ic;
 
-    if (db_update_bank_param(bank, gc, slot)) {
-        SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
+    if (db_update_common_bank_param(bank, gc)) {
+        SQLERR_LOG("无法查询(GC%" PRIu32 ")公共银行参数数据", gc);
 
-        db_insert_bank_param(bank, gc, slot);
+        db_insert_common_bank_param(bank, gc);
 
         for (i = 0; i < ic; i++) {
-            if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+            if (db_insert_common_bank_items(&bank->bitems[i], gc, i))
                 break;
         }
 
@@ -561,51 +575,50 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
 
     // 遍历银行数据，插入到数据库中
     for (i; i < ic; i++) {
-        if (db_insert_bank_items(&bank->bitems[i], gc, slot, i)) {
-            if (db_update_bank_items(&bank->bitems[i], gc, slot, i)) {
-                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行 %d 物品数据", gc, slot, bank->item_count);
+        if (db_insert_common_bank_items(&bank->bitems[i], gc, i)) {
+            if (db_update_common_bank_items(&bank->bitems[i], gc, i)) {
+                SQLERR_LOG("无法新增(GC%" PRIu32 ")公共银行 %d 物品数据", gc, bank->item_count);
                 return -1;
             }
         }
     }
 
-    clean_up_char_bank(bank, ic, MAX_PLAYER_BANK_ITEMS);
+    clean_up_common_char_bank(bank, ic, MAX_PLAYER_BANK_ITEMS);
 
-    if (db_del_bank_items(gc, slot, ic, MAX_PLAYER_BANK_ITEMS))
+    if (db_del_common_bank_items(gc, ic, MAX_PLAYER_BANK_ITEMS))
         return -1;
 
     return 0;
 }
 
-/* 获取玩家角色银行数据数据项 */
-int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank) {
+/* 获取玩家公共银行数据数据项 */
+int db_get_char_common_bank(uint32_t gc, psocn_bank_t* bank) {
     size_t i = 0;
 
-    if (db_get_char_bank_param(gc, slot, bank, 0)) {
-        //SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色银行参数数据", gc, slot);
-        db_insert_bank_param(bank, gc, slot);
+    if (db_get_char_common_bank_param(gc, bank, 0)) {
+        db_insert_common_bank_param(bank, gc);
 
         for (i = 0; i < bank->item_count; i++) {
-            if(bank->bitems[i].show_flags)
-                if (db_insert_bank_items(&bank->bitems[i], gc, slot, i))
+            if (bank->bitems[i].show_flags)
+                if (db_insert_common_bank_items(&bank->bitems[i], gc, i))
                     break;
         }
 
         return 0;
     }
 
-    bank->item_count = db_get_char_bank_itemdata(gc, slot, bank);
+    bank->item_count = db_get_char_common_bank_itemdata(gc, bank);
 
-    clean_up_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
+    clean_up_common_char_bank(bank, bank->item_count, MAX_PLAYER_BANK_ITEMS);
 
-    if (db_del_bank_items(gc, slot, bank->item_count, MAX_PLAYER_BANK_ITEMS))
+    if (db_del_common_bank_items(gc, bank->item_count, MAX_PLAYER_BANK_ITEMS))
         return -1;
 
     return 0;
 }
 
 /* 优先获取银行数据checkum */
-uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot) {
+uint32_t db_get_char_common_bank_checkum(uint32_t gc) {
     uint32_t bank_crc32 = 0;
     void* result;
     char** row;
@@ -613,25 +626,25 @@ uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot) {
     memset(myquery, 0, sizeof(myquery));
 
     /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT bank_check_num FROM %s WHERE guildcard = '%" PRIu32 "' "
-        "AND slot = '%u'", CHARACTER_BANK, gc, slot);
+    sprintf(myquery, "SELECT bank_check_num FROM %s WHERE guildcard = '%" PRIu32 "'", 
+        CHARACTER_COMMON_BANK, gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("无法查询公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -1;
     }
 
     /* Grab the data we got. */
     if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未获取到公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -2;
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
         psocn_db_result_free(result);
-        SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("未找到保存的公共银行数据 (%" PRIu32 ")", gc);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return -3;
     }

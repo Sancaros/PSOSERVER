@@ -1768,7 +1768,20 @@ int send_pkt_dc(ship_client_t *c, const dc_pkt_hdr_t *pkt) {
         hdr->flags = pkt->flags;
         hdr->pkt_type = pkt->pkt_type;
 
-        memcpy(sendbuf + 4, ((uint8_t *)pkt) + 4, len - 4);
+        if (safe_memcpy(sendbuf + 4, ((uint8_t*)pkt) + 4, len - 4, sendbuf + 4, sendbuf + 4 + len - 4)) {
+#ifdef DEBUG
+            DBG_LOG("安全复制成功！");
+            DBG_LOG("After safe memcpy:");
+            DBG_LOG("dest: ");
+            for (int i = 0; i < bb_len; i++) {
+                DBG_LOG("%d ", pkt->pkt[i]);
+            }
+#endif // DEBUG
+        }
+        else {
+            ERR_LOG("安全复制失败!请检查数据包情况!");
+        }
+        //memcpy(sendbuf + 4, ((uint8_t *)pkt) + 4, len - 4);
     }
     else if(c->version == CLIENT_VERSION_BB) {
         bb_pkt_hdr_t *hdr = (bb_pkt_hdr_t *)sendbuf;
@@ -1777,7 +1790,20 @@ int send_pkt_dc(ship_client_t *c, const dc_pkt_hdr_t *pkt) {
         hdr->flags = LE32(pkt->flags);
         hdr->pkt_type = LE16(pkt->pkt_type);
 
-        memcpy(sendbuf + 8, ((uint8_t *)pkt) + 4, len - 4);
+        if (safe_memcpy(sendbuf + 8, ((uint8_t*)pkt) + 4, len - 4, sendbuf + 8, sendbuf + 8 + len - 4)) {
+#ifdef DEBUG
+            DBG_LOG("安全复制成功！");
+            DBG_LOG("After safe memcpy:");
+            DBG_LOG("dest: ");
+            for (int i = 0; i < bb_len; i++) {
+                DBG_LOG("%d ", pkt->pkt[i]);
+            }
+#endif // DEBUG
+        }
+        else {
+            ERR_LOG("安全复制失败!请检查数据包情况!");
+        }
+        //memcpy(sendbuf + 8, ((uint8_t *)pkt) + 4, len - 4);
         len += 4;
     }
     else {
@@ -1799,7 +1825,20 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
 
     /* Figure out what to do based on version... */
     if(c->version == CLIENT_VERSION_BB) {
-        memcpy(sendbuf, pkt, len);
+        if (safe_memcpy(sendbuf, (uint8_t*)pkt, len, sendbuf, sendbuf + len)) {
+#ifdef DEBUG
+            DBG_LOG("安全复制成功！");
+            DBG_LOG("After safe memcpy:");
+            DBG_LOG("dest: ");
+            for (int i = 0; i < bb_len; i++) {
+                DBG_LOG("%d ", pkt->pkt[i]);
+            }
+#endif // DEBUG
+        }
+        else {
+            ERR_LOG("安全复制失败!请检查数据包情况!");
+        }
+        //memcpy(sendbuf, pkt, len);
     }
     else if(c->version == CLIENT_VERSION_PC) {
         pc_pkt_hdr_t *hdr = (pc_pkt_hdr_t *)sendbuf;
@@ -1808,7 +1847,20 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
         hdr->flags = (uint8_t)pkt->flags;
         hdr->pkt_type = (uint8_t)pkt->pkt_type;
 
-        memcpy(sendbuf + 4, ((uint8_t *)pkt) + 8, len - 8);
+        if (safe_memcpy(sendbuf + 4, ((uint8_t*)pkt) + 8, len - 8, sendbuf + 4, sendbuf + 4 + len - 8)) {
+#ifdef DEBUG
+            DBG_LOG("安全复制成功！");
+            DBG_LOG("After safe memcpy:");
+            DBG_LOG("dest: ");
+            for (int i = 0; i < bb_len; i++) {
+                DBG_LOG("%d ", pkt->pkt[i]);
+            }
+#endif // DEBUG
+        }
+        else {
+            ERR_LOG("安全复制失败!请检查数据包情况!");
+        }
+        //memcpy(sendbuf + 4, ((uint8_t *)pkt) + 8, len - 8);
         len -= 4;
     }
     else {
@@ -1818,7 +1870,20 @@ int send_pkt_bb(ship_client_t *c, const bb_pkt_hdr_t *pkt) {
         hdr->flags = (uint8_t)pkt->flags;
         hdr->pkt_type = (uint8_t)pkt->pkt_type;
 
-        memcpy(sendbuf + 4, ((uint8_t *)pkt) + 8, len - 8);
+        if (safe_memcpy(sendbuf + 4, ((uint8_t*)pkt) + 8, len - 8, sendbuf + 4, sendbuf + 4 + len - 8)) {
+#ifdef DEBUG
+            DBG_LOG("安全复制成功！");
+            DBG_LOG("After safe memcpy:");
+            DBG_LOG("dest: ");
+            for (int i = 0; i < bb_len; i++) {
+                DBG_LOG("%d ", pkt->pkt[i]);
+            }
+#endif // DEBUG
+        }
+        else {
+            ERR_LOG("安全复制失败!请检查数据包情况!");
+        }
+        //memcpy(sendbuf + 4, ((uint8_t *)pkt) + 8, len - 8);
         len -= 4;
     }
 

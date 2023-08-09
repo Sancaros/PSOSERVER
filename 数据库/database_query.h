@@ -153,10 +153,25 @@ int db_insert_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
 int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot);
 
 /* 获取玩家角色银行背包数据数据项 */
-int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check);
+int db_get_char_bank(uint32_t gc, uint8_t slot, psocn_bank_t* bank);
 
 /* 获取玩家银行数据checkum */
 uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot);
+
+///////////////////////////////////////////////////////
+//玩家银行数据库操作
+
+/* 新增玩家银行背包数据至数据库 */
+int db_insert_common_bank(psocn_bank_t* bank, uint32_t gc);
+
+/* 更新玩家银行数据至数据库 */
+int db_update_char_common_bank(psocn_bank_t* bank, uint32_t gc);
+
+/* 获取玩家角色银行背包数据数据项 */
+int db_get_char_common_bank(uint32_t gc, psocn_bank_t* bank);
+
+/* 获取玩家银行数据checkum */
+uint32_t db_get_char_common_bank_checkum(uint32_t gc);
 
 ///////////////////////////////////////////////////////
 /* 认证查询 */
@@ -243,6 +258,8 @@ int db_update_bb_guild_ranks(psocn_dbconn_t* conn);
 int db_updata_bb_char_guild_data(uint32_t guild_id, uint32_t gc);
 
 uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc);
+
+int db_update_bb_guild_points_personal_donation(uint32_t gc, uint32_t new_value);
 
 ///////////////////////////////////////////////////////////
 

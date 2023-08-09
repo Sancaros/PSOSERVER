@@ -1645,17 +1645,29 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /* Clean up the user's bank first... */
-    cleanup_bb_bank(src);
+    //send_msg(src, BB_SCROLL_MSG_TYPE, "%s", src->bank_type ? 
+    //    __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
+    //);
+    send_txt(src, "%s", src->bank_type ?
+        __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
+    );
 
-    return subcmd_send_bb_bank(src);
+    psocn_bank_t* bank = &src->bb_pl->bank;
+
+    if(src->bank_type)
+        bank = src->common_bank;
+
+    /* Clean up the user's bank first... */
+    cleanup_bb_bank(src, bank, src->bank_type);
+
+    return subcmd_send_bb_bank(src, bank);
 }
 
 int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bank_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id;
-    uint32_t amt, bank, iitem_count, i;
+    uint32_t amt, bank_amt, iitem_count, i;
     int found = -1, isframe = 0;
     bool is_stack;
     iitem_t iitem = { 0 };
@@ -1678,6 +1690,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bank_t* bank = &src->bb_pl->bank;
+
+    if (src->bank_type)
+        bank = src->common_bank;
+
     switch (pkt->action) {
     case SUBCMD62_BANK_ACT_CLOSE:
     case SUBCMD62_BANK_ACT_DONE:
@@ -1694,18 +1711,18 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* Make sure they aren't trying to do something naughty... */
             if (amt > iitem_count) {
                 ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!", src->guildcard);
-                return -1;
+                return 0;
             }
 
-            bank = LE32(src->bb_pl->bank.meseta);
-            if (amt + bank > 999999) {
+            bank_amt = LE32(bank->meseta);
+            if ((amt + bank_amt) > 999999) {
                 ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出限制!", src->guildcard);
-                return -1;
+                return 0;
             }
 
-            src->bb_pl->character.disp.meseta = LE32((iitem_count - amt));
+            bank->meseta += amt;
+            src->bb_pl->character.disp.meseta -= amt;
             src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
-            src->bb_pl->bank.meseta = LE32((bank + amt));
 
             /* No need to tell everyone else, I guess? */
             return 0;
@@ -1780,7 +1797,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-            sort_client_bank(&src->bb_pl->bank);
+            sort_client_bank(bank);
 
             return subcmd_send_bb_destroy_item(src, iitem.data.item_id,
                 pkt->item_amount);
@@ -1794,22 +1811,22 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             amt = LE32(pkt->meseta_amount);
             iitem_count = LE32(src->bb_pl->character.disp.meseta);
 
-            /* Make sure they aren't trying to do something naughty... */
-            if (amt + iitem_count > 999999) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!", src->guildcard);
-                return -1;
-            }
-
-            bank = LE32(src->bb_pl->bank.meseta);
-
-            if (amt > bank) {
+            if (amt > iitem_count) {
                 ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!", src->guildcard);
-                return -1;
+                return 0;
             }
 
-            src->bb_pl->character.disp.meseta = LE32((iitem_count + amt));
+            /* Make sure they aren't trying to do something naughty... */
+            if ((amt + iitem_count) > 999999) {
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!", src->guildcard);
+                return 0;
+            }
+
+            bank_amt = LE32(bank->meseta);
+
+            bank->meseta -= amt;
+            src->bb_pl->character.disp.meseta += amt;
             src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
-            src->bb_pl->bank.meseta = LE32((bank - amt));
 
             /* 存取美赛塔不用告知其他客户端... */
             return 0;
@@ -1834,7 +1851,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-            sort_client_bank(&src->bb_pl->bank);
+            fix_client_bank(bank);
 
             /* 发送至房间中的客户端. */
             return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);

@@ -24,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="character_bank_query.c" />
+    <ClCompile Include="character_common_bank.c" />
     <ClCompile Include="character_default_query.c" />
     <ClCompile Include="character_name_query.c" />
     <ClCompile Include="character_query.c" />

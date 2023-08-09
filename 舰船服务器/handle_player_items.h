@@ -65,7 +65,7 @@ int initialize_cmode_iitem(ship_client_t* dest);
 /* 蓝色脉冲银行管理 */
 void player_iitem_init(iitem_t* item, const bitem_t* src);
 void player_bitem_init(bitem_t* item, const iitem_t* src);
-void cleanup_bb_bank(ship_client_t *c);
+void cleanup_bb_bank(ship_client_t *c, psocn_bank_t* bank, bool comoon_bank);
 
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);

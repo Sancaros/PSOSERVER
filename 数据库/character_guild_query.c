@@ -575,3 +575,18 @@ uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc) {
     return guild_points_personal_donation;
 }
 
+int db_update_bb_guild_points_personal_donation(uint32_t gc, uint32_t new_value) {
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "UPDATE %s SET guild_points_personal_donation='%u' WHERE guildcard='%u'", AUTH_ACCOUNT, new_value, gc);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新角色数据 (%u)", gc);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0; // 返回成功更新的标志
+}
+

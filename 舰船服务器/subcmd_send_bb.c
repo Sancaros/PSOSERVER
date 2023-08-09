@@ -515,10 +515,10 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
 }
 
 /* 0xBC SUBCMD60_BANK_INV BB Íæ¼ÒÒøÐÐ */
-int subcmd_send_bb_bank(ship_client_t* src) {
+int subcmd_send_bb_bank(ship_client_t* src, psocn_bank_t* bank) {
     uint8_t* sendbuf = get_sendbuf();
     subcmd_bb_bank_inv_t* pkt = (subcmd_bb_bank_inv_t*)sendbuf;
-    uint32_t num_items = LE32(src->bb_pl->bank.item_count);
+    uint32_t num_items = LE32(bank->item_count);
     uint16_t size = sizeof(subcmd_bb_bank_inv_t) + num_items *
         PSOCN_STLENGTH_BITEM;
     block_t* b = src->cur_block;
@@ -534,11 +534,11 @@ int subcmd_send_bb_bank(ship_client_t* src) {
 
     pkt->size = LE32((num_items + 1) * PSOCN_STLENGTH_BITEM);
     pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
-    pkt->item_count = src->bb_pl->bank.item_count;
-    pkt->meseta = src->bb_pl->bank.meseta;
+    pkt->item_count = bank->item_count;
+    pkt->meseta = bank->meseta;
 
-    if (src->bb_pl->bank.item_count) {
-        memcpy(&pkt->bitems, &src->bb_pl->bank.bitems[0], sizeof(bitem_t) * src->bb_pl->bank.item_count);
+    if (bank->item_count) {
+        memcpy(&pkt->bitems, &bank->bitems[0], sizeof(bitem_t) * bank->item_count);
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);

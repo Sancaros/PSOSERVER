@@ -99,10 +99,6 @@ typedef struct client_game_data {
 
     int db_save_done;
 
-    int bank_type;
-    psocn_bank_t common_bank;
-    psocn_bank_t char_bank;
-
     client_error_t err;
 
     void* char_backup; //用于临时备份角色
@@ -260,6 +256,10 @@ struct ship_client {
     sg_char_bkup_pkt game_info;
 
     client_game_data_t *game_data;
+
+    int bank_type;
+    psocn_bank_t* common_bank;
+    psocn_bank_t* char_bank;
 
     time_t cmd_cooldown[256];
     time_t subcmd_cooldown[256];

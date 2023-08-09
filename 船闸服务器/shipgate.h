@@ -105,7 +105,7 @@ int send_user_options(ship_t *c);
 /* 发送客户端 Blue Burst 选项数据 */
 int send_bb_opts(ship_t *c, uint32_t gc, uint32_t block,
                  psocn_bb_db_opts_t *opts, psocn_bb_db_guild_t* guild, 
-                 uint32_t guild_points_personal_donation);
+                 uint32_t guild_points_personal_donation, psocn_bank_t* common_bank);
 
 /* Send a system-generated simple mail message. */
 int send_simple_mail(ship_t *c, uint32_t gc, uint32_t block, uint32_t sender,
