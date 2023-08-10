@@ -639,7 +639,6 @@ static int handle_item4(ship_client_t *src, const char *params) {
 static int handle_miitem(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
     iitem_t* iitem;
-    uint32_t amount = 0;
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
 
@@ -648,17 +647,17 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
 
-    pthread_mutex_lock(&l->mutex);
+    //pthread_mutex_lock(&l->mutex);
 
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
+        //pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
     if (!src->new_item.datal[0]) {
-        pthread_mutex_unlock(&l->mutex);
+        //pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
@@ -668,7 +667,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         iitem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!iitem) {
-            pthread_mutex_unlock(&l->mutex);
+            //pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }
     }
@@ -676,12 +675,9 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         ++l->item_player_id[src->client_id];
     }
 
-    if (is_stackable(&src->new_item))
-        amount = src->new_item.datab[5];
-
     /* Generate the packet to drop the item */
     dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
-    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.pkt_len = 0x002C/* LE16(sizeof(subcmd_drop_stack_t))*/;
     dc.hdr.flags = 0;
 
     dc.shdr.type = SUBCMD60_DROP_STACK;
@@ -689,8 +685,8 @@ static int handle_miitem(ship_client_t* src, const char* params) {
     dc.shdr.client_id = 0xFBFF;
 
 
-    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_len = 0x002C/*LE16(sizeof(subcmd_bb_drop_stack_t))*/;
+    bb.hdr.pkt_type = GAME_COMMAND0_TYPE;
     bb.hdr.flags = 0;
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
@@ -703,12 +699,17 @@ static int handle_miitem(ship_client_t* src, const char* params) {
     bb.z = dc.z = src->z;
     bb.data = dc.data = src->new_item;
     bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
+
+    if (is_stackable(&src->new_item))
+        bb.data.datab[5] = dc.data.datab[5] = src->new_item.datab[5];
+
+
     bb.two = dc.two = LE32(0x00000002);
 
     print_item_data(&bb.data, src->version);
 
     /* Send the packet to everyone in the lobby */
-    pthread_mutex_unlock(&l->mutex);
+    //pthread_mutex_unlock(&l->mutex);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:

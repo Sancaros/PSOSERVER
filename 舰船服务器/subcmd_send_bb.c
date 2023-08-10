@@ -85,7 +85,8 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
 
     if (item.datab[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = item.data2l;
-    else
+
+    if(is_stackable(&item))
         bb.data.datab[5] = dc.data.datab[5] = amount;
 
     bb.two = dc.two = LE32(0x00000002);
