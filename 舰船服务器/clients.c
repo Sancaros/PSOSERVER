@@ -614,7 +614,7 @@ void client_send_bb_data(ship_client_t* c) {
 
             send_simple(c, PING_TYPE, 0);
 
-            DBG_LOG("%d √Î", num_seconds);
+            //DBG_LOG("%d √Î", num_seconds);
         }
     }
 }

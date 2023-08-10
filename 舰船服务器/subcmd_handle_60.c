@@ -1087,7 +1087,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if ((err = player_use_item(src, index))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
             src->guildcard, err);
-        return -1;
+        return -2;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1126,7 +1126,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     /* 如果找不到该物品，则将用户从船上推下. */
     if (feed_mag_index == -1) {
         ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 玛古!", src->guildcard, pkt->mag_item_id);
-        return -1;
+        return 0;
     }
 
     feed_item_index = find_iitem_index(inv, pkt->fed_item_id);
@@ -1134,7 +1134,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     /* 如果找不到该物品，则将用户从船上推下. */
     if (feed_item_index == -1) {
         ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 物品!", src->guildcard, pkt->fed_item_id);
-        return -2;
+        return 0;
     }
 
     errno_t err = player_feed_mag(src, feed_mag_index, feed_item_index);
@@ -1142,7 +1142,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     if (err) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据! 错误码 %d",
             src->guildcard, err);
-        return -3;
+        return -4;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
