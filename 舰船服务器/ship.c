@@ -138,7 +138,7 @@ static void* ship_thd(void* d) {
     struct timeval timeout = { 0 };
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     ship_client_t* it, * tmp;
-    socklen_t len;
+    socklen_t len = 0;
     struct sockaddr_storage addr = { 0 };
     struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];

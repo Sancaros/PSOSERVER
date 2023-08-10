@@ -1728,48 +1728,48 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
         else {
-            /* 在玩家背包中查找物品. */
-            iitem_count = src->bb_pl->character.inv.item_count;
-            for (i = 0; i < iitem_count; ++i) {
-                if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
-                    iitem = src->bb_pl->character.inv.iitems[i];
-                    found = i;
+            ///* 在玩家背包中查找物品. */
+            //iitem_count = src->bb_pl->character.inv.item_count;
+            //for (i = 0; i < iitem_count; ++i) {
+            //    if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
+            //        iitem = src->bb_pl->character.inv.iitems[i];
+            //        found = i;
 
-                    /* If it is an equipped frame, we need to unequip all
-                       the units that are attached to it. */
-                    if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
-                        iitem.data.datab[1] == ITEM_SUBTYPE_FRAME &&
-                        (iitem.flags & LE32(0x00000008))) {
-                        isframe = 1;
-                    }
+            //        /* If it is an equipped frame, we need to unequip all
+            //           the units that are attached to it. */
+            //        if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
+            //            iitem.data.datab[1] == ITEM_SUBTYPE_FRAME &&
+            //            (iitem.flags & LE32(0x00000008))) {
+            //            isframe = 1;
+            //        }
 
-                    break;
-                }
-            }
+            //        break;
+            //    }
+            //}
 
-            /* If the item isn't found, then punt the user from the ship. */
-            if (found == -1) {
-                ERR_LOG("GC %" PRIu32 " 存入的物品不存在!", src->guildcard);
-                return -1;
-            }
+            ///* If the item isn't found, then punt the user from the ship. */
+            //if (found == -1) {
+            //    ERR_LOG("GC %" PRIu32 " 存入的物品不存在!", src->guildcard);
+            //    return -1;
+            //}
 
-            /* Unequip any units, if the item was equipped and a frame. */
-            if (isframe) {
-                for (i = 0; i < iitem_count; ++i) {
-                    iitem = src->bb_pl->character.inv.iitems[i];
-                    if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
-                        iitem.data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                        src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
-                    }
-                }
-            }
+            ///* Unequip any units, if the item was equipped and a frame. */
+            //if (isframe) {
+            //    for (i = 0; i < iitem_count; ++i) {
+            //        iitem = src->bb_pl->character.inv.iitems[i];
+            //        if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
+            //            iitem.data.datab[1] == ITEM_SUBTYPE_UNIT) {
+            //            src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
+            //        }
+            //    }
+            //}
 
-            is_stack = is_stackable(&iitem.data);
+            //is_stack = is_stackable(&iitem.data);
 
-            if (!is_stack && pkt->item_amount > 1) {
-                ERR_LOG("GC %" PRIu32 " 存入了多个非堆叠的物品!", src->guildcard);
-                return -1;
-            }
+            //if (!is_stack && pkt->item_amount > 1) {
+            //    ERR_LOG("GC %" PRIu32 " 存入了多个非堆叠的物品!", src->guildcard);
+            //    return -1;
+            //}
 
             iitem = remove_iitem(src, pkt->item_id, pkt->item_amount, src->version != CLIENT_VERSION_BB);
 
@@ -1778,14 +1778,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -1;
             }
 
-            /* Fill in the bank item. */
-            if (is_stack) {
-                iitem.data.datab[5] = pkt->item_amount;
-                bitem.amount = LE16(pkt->item_amount);
-            }
-            else {
-                bitem.amount = LE16(1);
-            }
+            ///* Fill in the bank item. */
+            //if (is_stack) {
+            //    iitem.data.datab[5] = pkt->item_amount;
+            //    bitem.amount = LE16(pkt->item_amount);
+            //}
+            //else {
+            //    bitem.amount = LE16(1);
+            //}
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
             player_bitem_init(&bitem, &iitem);
@@ -1812,13 +1812,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             iitem_count = LE32(src->bb_pl->character.disp.meseta);
 
             if (amt > iitem_count) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d iitem_count %d", src->guildcard, amt, iitem_count);
                 return 0;
             }
 
             /* Make sure they aren't trying to do something naughty... */
             if ((amt + iitem_count) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!", src->guildcard);
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d iitem_count %d", src->guildcard, amt, iitem_count);
                 return 0;
             }
 

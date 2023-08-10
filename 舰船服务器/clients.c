@@ -321,7 +321,6 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->arrow_color = 1;
     rv->last_message = rv->login_time = time(NULL);
     rv->hdr_size = 4;
-    rv->game_data->expboost = 0;
 
     /* Create the mutex */
     pthread_mutexattr_init(&attr);
@@ -593,18 +592,30 @@ void client_destroy_connection(ship_client_t *c,
 }
 
 void client_send_bb_data(ship_client_t* c) {
-    time_t now = c->save_time = time(NULL);
+    time_t now = time(NULL);
+
+    uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB) {
-        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        if (num_seconds > 5) {
+            c->save_time = now;
 
-       //DBG_LOG("每隔5秒保存(GC %u:%d)玩家", c->guildcard, c->sec_data.slot);
-       /*shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-            c->cur_block->b);*/
+            /* 将游戏时间存储入人物数据 */
+            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-       /*shipgate_send_bb_opts(&ship->sg, c);*/
+            /* 将玩家数据存入数据库 */
+            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                c->cur_block->b);
+
+            /* 将玩家选项数据存入数据库 */
+            shipgate_send_bb_opts(&ship->sg, c);
+
+            send_simple(c, PING_TYPE, 0);
+
+            DBG_LOG("%d 秒", num_seconds);
+        }
     }
 }
 

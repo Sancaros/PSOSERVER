@@ -277,8 +277,8 @@
 #define SUBCMD60_BOSS_ACT_OFP_1                0xA4    /* Olga Flow phase 1 actions */
 #define SUBCMD60_BOSS_ACT_OFP_2                0xA5    /* Olga Flow phase 2 actions */
 #define SUBCMD60_BOSS_ACT_GDRAGON              0xA8    /* Gol Dragon special actions */
-#define SUBCMD60_UNKNOW_A9                     0xA9   // Barba Ray actions
-#define SUBCMD60_UNKNOW_AA                     0xAA   // Episode 2 boss actions
+#define SUBCMD60_BOSS_ACT_BARBA_RAY            0xA9   // Barba Ray actions
+#define SUBCMD60_BOSS_ACT_EP2                  0xAA   // Episode 2 boss actions
 #define SUBCMD60_CHAIR_CREATE                  0xAB   // Éú³É´óÌü×ùÒÎ
 #define SUBCMD60_UNKNOW_AC                     0xAC
 #define SUBCMD60_BOSS_ACT_OFP_2_SP             0xAD   // Olga Flow phase 2 subordinate boss actions
