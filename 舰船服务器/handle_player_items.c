@@ -439,7 +439,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     size_t index = find_iitem_index(&character->inv, item_id);
     iitem_t* inventory_item = &character->inv.iitems[index];
 
-    if (amount && (inventory_item->data.datab[5] > 1) && (amount < inventory_item->data.datab[5])) {
+    if (amount && (stack_size(&inventory_item->data) > 1) && (amount < inventory_item->data.datab[5])) {
         ret = *inventory_item;
         ret.data.datab[5] = amount;
         ret.data.item_id = 0xFFFFFFFF;
@@ -447,7 +447,11 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         return ret;
     }
 
-    ret = *inventory_item;
+    // If we get here, then it's not meseta, and either it's not a combine item or
+    // we're removing the entire stack. Delete the item from the inventory slot
+    // and return the deleted item.
+    memcpy(&ret, inventory_item, sizeof(iitem_t));
+    //ret = inventory_item;
     character->inv.item_count--;
     for (size_t x = index; x < character->inv.item_count; x++) {
         character->inv.iitems[x] = character->inv.iitems[x + 1];
@@ -498,8 +502,9 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
         return ret;
     }
 
-    ret = *bank_item;
+    //ret = *bank_item;
 
+    memcpy(&ret, bank_item, sizeof(bitem_t));
     // 移除银行物品
     bank->item_count--;
     for (size_t x = index; x < bank->item_count; x++) {

@@ -89,15 +89,12 @@ size_t max_stack_size(const item_t* item) {
 // TODO 需要客户端支持各种堆叠
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
-	switch (data0)
-	{
+	switch (data0) {
 	case ITEM_TYPE_MESETA:
 		return 999999;
 
 	case ITEM_TYPE_TOOL:
-
-		switch (data1)
-		{
+		switch (data1) {
 			/* 支持大量堆叠 */
 		case ITEM_SUBTYPE_MATE:
 		case ITEM_SUBTYPE_FLUID:

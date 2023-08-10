@@ -1728,64 +1728,12 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
         else {
-            ///* 在玩家背包中查找物品. */
-            //iitem_count = src->bb_pl->character.inv.item_count;
-            //for (i = 0; i < iitem_count; ++i) {
-            //    if (src->bb_pl->character.inv.iitems[i].data.item_id == pkt->item_id) {
-            //        iitem = src->bb_pl->character.inv.iitems[i];
-            //        found = i;
-
-            //        /* If it is an equipped frame, we need to unequip all
-            //           the units that are attached to it. */
-            //        if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
-            //            iitem.data.datab[1] == ITEM_SUBTYPE_FRAME &&
-            //            (iitem.flags & LE32(0x00000008))) {
-            //            isframe = 1;
-            //        }
-
-            //        break;
-            //    }
-            //}
-
-            ///* If the item isn't found, then punt the user from the ship. */
-            //if (found == -1) {
-            //    ERR_LOG("GC %" PRIu32 " 存入的物品不存在!", src->guildcard);
-            //    return -1;
-            //}
-
-            ///* Unequip any units, if the item was equipped and a frame. */
-            //if (isframe) {
-            //    for (i = 0; i < iitem_count; ++i) {
-            //        iitem = src->bb_pl->character.inv.iitems[i];
-            //        if (iitem.data.datab[0] == ITEM_TYPE_GUARD &&
-            //            iitem.data.datab[1] == ITEM_SUBTYPE_UNIT) {
-            //            src->bb_pl->character.inv.iitems[i].flags &= LE32(0xFFFFFFF7);
-            //        }
-            //    }
-            //}
-
-            //is_stack = is_stackable(&iitem.data);
-
-            //if (!is_stack && pkt->item_amount > 1) {
-            //    ERR_LOG("GC %" PRIu32 " 存入了多个非堆叠的物品!", src->guildcard);
-            //    return -1;
-            //}
-
             iitem = remove_iitem(src, pkt->item_id, pkt->item_amount, src->version != CLIENT_VERSION_BB);
 
             if (&iitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
                 return -1;
             }
-
-            ///* Fill in the bank item. */
-            //if (is_stack) {
-            //    iitem.data.datab[5] = pkt->item_amount;
-            //    bitem.amount = LE16(pkt->item_amount);
-            //}
-            //else {
-            //    bitem.amount = LE16(1);
-            //}
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
             player_bitem_init(&bitem, &iitem);
