@@ -1662,61 +1662,69 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         ERR_LOG("GC %d 等级超过 200 (%d)", c->guildcard, c->bb_pl->character.disp.level + 1);
         return -1;
     }
-//
-//    /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
-//    for (int i = 0; i < char_data.character.inv.item_count; i++) {
-//        if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
-//            char_data.character.inv.iitems[i].present = LE16(0x0001);
-//            char_data.character.inv.iitems[i].flags = LE32(0x00000008);
-//        }
-//        else {
-//            char_data.character.inv.iitems[i].present = LE16(0x0001);
-//            char_data.character.inv.iitems[i].flags = LE32(0x00000000);
-//        }
-//        char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
-//    }
-//
-//    if (!c->game_data->db_save_done) {
-//
-//#ifdef DEBUG
-//        printf("C->S数据来源 %d 字节\n", len);
-//        display_packet(&pkt, len);
-//        printf("原数据\n");
-//        display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-//#endif // DEBUG
-//
-//        /* BB has this in two places for now... */
-//        /////////////////////////////////////////////////////////////////////////////////////
-//        //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
-//        //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-//        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
-//        memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
-//        memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
-//        memcpy(c->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
-//        memcpy(c->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
-//        memcpy(c->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
-//        memcpy(&c->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
-//        memcpy(&c->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
-//        memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
-//        memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
-//        /////////////////////////////////////////////////////////////////////////////////////
-//        memcpy(&c->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
-//
-//
-//        /////////////////////////////////////////////////////////////////////////////////////
-//        c->bb_opts->option_flags = char_data.option_flags;
-//        memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
-//        memcpy(c->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
-//        memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
-//        memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
-//
-//
-//        c->game_data->db_save_done = 1;
-//#ifdef DEBUG
-//        DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-//        display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
-//#endif // DEBUG
-//    }
+
+    /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
+    //for (int i = 0; i < char_data.character.inv.item_count; i++) {
+    //    if (char_data.character.inv.iitems[i].present == LE16(0x0002)) {
+    //        char_data.character.inv.iitems[i].present = LE16(0x0001);
+    //        char_data.character.inv.iitems[i].flags = LE32(0x00000008);
+    //    }
+    //    else {
+    //        char_data.character.inv.iitems[i].present = LE16(0x0001);
+    //        char_data.character.inv.iitems[i].flags = LE32(0x00000000);
+    //    }
+    //    char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
+    //}
+
+    if (!c->game_data->db_save_done) {
+
+#ifdef DEBUG
+        printf("C->S数据来源 %d 字节\n", len);
+        display_packet(&pkt, len);
+        printf("原数据\n");
+        display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
+#endif // DEBUG
+
+        printf("C->S数据来源 %d 字节\n", len);
+        display_packet(&pkt, len);
+        printf("原数据\n");
+        display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
+
+        /* BB has this in two places for now... */
+        /////////////////////////////////////////////////////////////////////////////////////
+        //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
+        //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
+        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
+        memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
+        memcpy(c->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
+        memcpy(c->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
+        memcpy(c->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
+        memcpy(&c->bb_pl->b_records, &char_data.b_records, PSOCN_STLENGTH_BATTLE_RECORDS);
+        memcpy(&c->bb_pl->c_records, &char_data.c_records, PSOCN_STLENGTH_BB_CHALLENGE_RECORDS);
+        memcpy(c->bb_pl->tech_menu, char_data.tech_menu, PSOCN_STLENGTH_BB_DB_TECH_MENU);
+        memcpy(c->bb_pl->quest_data2, char_data.quest_data2, PSOCN_STLENGTH_BB_DB_QUEST_DATA2);
+        /////////////////////////////////////////////////////////////////////////////////////
+        memcpy(&c->bb_guild->data, &char_data.guild_data, PSOCN_STLENGTH_BB_GUILD);
+
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        c->bb_opts->option_flags = char_data.option_flags;
+        memcpy(c->bb_opts->symbol_chats, char_data.symbol_chats, PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS);
+        memcpy(c->bb_opts->shortcuts, char_data.shortcuts, PSOCN_STLENGTH_BB_DB_SHORTCUTS);
+        memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
+        memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
+
+
+        c->game_data->db_save_done = 1;
+#ifdef DEBUG
+        DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+        display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+#endif // DEBUG
+    }
+
+    DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+    display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 
     return 0;
 }

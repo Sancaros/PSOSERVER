@@ -658,15 +658,15 @@ process:
         case CLIENT_AUTH_GC:
         case CLIENT_AUTH_EP3:
         case CLIENT_AUTH_XBOX:
-            rv = process_dclogin_packet(c, c->recvbuf);
+            rv = process_login_packet_dc(c, c->recvbuf);
             break;
 
         case CLIENT_AUTH_BB_LOGIN:
-            rv = process_bblogin_packet(c, c->recvbuf);
+            rv = process_login_packet_bb(c, c->recvbuf);
             break;
 
         case CLIENT_AUTH_BB_CHARACTER:
-            rv = process_bbcharacter_packet(c, c->recvbuf);
+            rv = process_character_packet_bb(c, c->recvbuf);
             break;
 
         default:

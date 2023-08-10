@@ -287,7 +287,7 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
     return send_redirect(c, srvcfg->server_ip, bb_sockets[1].port);
 }
 
-int process_bblogin_packet(login_client_t* c, void* pkt) {
+int process_login_packet_bb(login_client_t* c, void* pkt) {
     __try {
         bb_pkt_hdr_t* bb = (bb_pkt_hdr_t*)pkt;
         uint16_t type = LE16(bb->pkt_type);

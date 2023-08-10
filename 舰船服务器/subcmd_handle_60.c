@@ -231,9 +231,10 @@ int check_aoe_timer(ship_client_t* src,
     subcmd_bb_objhit_tech_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint8_t tech_level = 0;
+    uint16_t technique_number = pkt->technique_number;
 
     /* 合理性检查... Does the character have that level of technique? */
-    tech_level = src->pl->bb.character.tech.all[pkt->technique_number];
+    tech_level = src->pl->bb.character.tech.all[technique_number];
     if (tech_level == 0xFF) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
         在我们有真正的库存跟踪之前，我们将不得不篡改这一点。
@@ -242,7 +243,7 @@ int check_aoe_timer(ship_client_t* src,
     }
 
     if (src->version >= CLIENT_VERSION_DCV2)
-        tech_level += src->pl->bb.character.inv.iitems[pkt->technique_number].extension_data1;
+        tech_level += src->pl->bb.character.inv.iitems[technique_number].extension_data1;
 
     if (tech_level < pkt->level) {
         /* 如果用户在团队中学习一项新技术，则可能会发生这种情况。
@@ -257,7 +258,7 @@ int check_aoe_timer(ship_client_t* src,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 
     /* See what technique was used... */
-    switch (pkt->technique_number) {
+    switch (technique_number) {
         /* These work just like physical hits and can only hit one target, so
            handle them the simple way... */
     case TECHNIQUE_FOIE:
@@ -588,6 +589,7 @@ static int sub60_12_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_de_rolLe_boss_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint16_t action = pkt->action, stage = pkt->stage;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -603,7 +605,7 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6DR BOSS"), pkt->action, pkt->stage);
+    send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X.", __(src, "\tE\tC6DR BOSS"), action, stage);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -611,6 +613,8 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_de_rolLe_boss_sact_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint16_t action = pkt->action, stage = pkt->stage;
+    uint32_t unused = pkt->unused;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -627,7 +631,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊:0x%08X.", __(src, "\tE\tC6DR BOSS2"),
-        pkt->action, pkt->stage, pkt->unused);
+        action, stage, unused);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -635,6 +639,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_VolOptBossActions_6x15_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint16_t unknown_a2 = pkt->unknown_a2, unknown_a3 = pkt->unknown_a3, unknown_a4 = pkt->unknown_a4, unknown_a5 = pkt->unknown_a5;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -651,7 +656,7 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     send_txt(src, "%s\n动作:0x%04X\n阶段:0x%04X\n特殊1:0x%04X\n特殊2:0x%04X.", __(src, "\tE\tC6Vol Opt BOSS1"),
-        pkt->unknown_a2, pkt->unknown_a3, pkt->unknown_a4, pkt->unknown_a5);
+        unknown_a2, unknown_a3, unknown_a4, unknown_a5);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -984,6 +989,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_unequip_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id;
     uint32_t item_count, i, isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1012,7 +1018,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     /* Find the item and remove the equip flag. */
     item_count = inv->item_count;
 
-    i = find_iitem_index(inv, pkt->item_id);
+    i = find_iitem_index(inv, item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (i == -1) {
@@ -1020,7 +1026,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (inv->iitems[i].data.item_id == pkt->item_id) {
+    if (inv->iitems[i].data.item_id == item_id) {
         inv->iitems[i].flags &= LE32(0xFFFFFFF7);
 
         /* If its a frame, we have to make sure to unequip any units that
@@ -1055,6 +1061,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = LE32(pkt->item_id);
     size_t index;
     errno_t err;
 
@@ -1076,7 +1083,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         inv = &src->mode_pl->bb.inv;
 
-    index = find_iitem_index(inv, pkt->item_id);
+    index = find_iitem_index(inv, item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (index == -1) {
@@ -1097,6 +1104,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
     size_t feed_mag_index = -1, feed_item_index = -1;
+    uint32_t feed_mag_id = pkt->mag_item_id, feed_item_id = pkt->fed_item_id;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1121,19 +1129,19 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         inv = &src->mode_pl->bb.inv;
 
-    feed_mag_index = find_iitem_index(inv, pkt->mag_item_id);
+    feed_mag_index = find_iitem_index(inv, feed_mag_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (feed_mag_index == -1) {
-        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 玛古!", src->guildcard, pkt->mag_item_id);
+        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 玛古!", src->guildcard, feed_mag_id);
         return 0;
     }
 
-    feed_item_index = find_iitem_index(inv, pkt->fed_item_id);
+    feed_item_index = find_iitem_index(inv, feed_item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (feed_item_index == -1) {
-        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 物品!", src->guildcard, pkt->fed_item_id);
+        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 物品!", src->guildcard, feed_item_id);
         return 0;
     }
 
@@ -1152,6 +1160,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t item_data = { 0 };
+    uint32_t item_id = pkt->item_id, amount = pkt->amount;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1171,7 +1180,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    item_data = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
+    item_data = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
 
     if (&item_data == NULL) {
         ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
@@ -1186,6 +1195,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id;
     int isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1213,51 +1223,57 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-        inventory_t* inv = &src->bb_pl->character.inv;
+    inventory_t* inv = &src->bb_pl->character.inv;
 
-        if (src->mode)
-            inv = &src->mode_pl->bb.inv;
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
 
-        /* 在玩家背包中查找物品. */
-        size_t index = find_iitem_index(inv, pkt->item_id);
+    /* 在玩家背包中查找物品. */
+    size_t index = find_iitem_index(inv, item_id);
 
-        /* If the item isn't found, then punt the user from the ship. */
-        if (index == -1) {
-            ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
-                src->guildcard, inv->iitems[index].data.item_id, pkt->item_id);
-            return -1;
-        }
+    /* If the item isn't found, then punt the user from the ship. */
+    if (index == -1) {
+        ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
+            src->guildcard, inv->iitems[index].data.item_id, item_id);
+        return -1;
+    }
 
-        if (inv->iitems[index].data.datab[0] == ITEM_TYPE_GUARD &&
-            inv->iitems[index].data.datab[1] == ITEM_SUBTYPE_FRAME &&
-            (inv->iitems[index].flags & LE32(0x00000008))) {
-            isframe = 1;
-        }
+    if (inv->iitems[index].data.datab[0] == ITEM_TYPE_GUARD &&
+        inv->iitems[index].data.datab[1] == ITEM_SUBTYPE_FRAME &&
+        (inv->iitems[index].flags & LE32(0x00000008))) {
+        isframe = 1;
+    }
 
-        /* 清理已装备的标签 */
-        inv->iitems[index].flags &= LE32(0xFFFFFFF7);
+    /* 清理已装备的标签 */
+    inv->iitems[index].flags &= LE32(0xFFFFFFF7);
 
-        /* 卸掉所有已插入在这件装备的插件 */
-        if (isframe) {
-            for (int i = 0; i < inv->item_count; ++i) {
-                if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                    inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                    inv->iitems[i].flags &= LE32(0xFFFFFFF7);
-                }
+    /* 卸掉所有已插入在这件装备的插件 */
+    if (isframe) {
+        for (int i = 0; i < inv->item_count; ++i) {
+            if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+                inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
             }
         }
+    }
 
-        /* We have the item... Add it to the lobby's inventory.
-        我们有这个物品…把它添加到大厅的背包中 */
-        if (!add_litem_locked(l, &inv->iitems[index])) {
-            /* *Gulp* The lobby is probably toast... At least make sure this user is
-               still (mostly) safe... */
-            ERR_LOG("无法将物品新增游戏房间背包!");
-            return -1;
-        }
+    /* We have the item... Add it to the lobby's inventory.
+    我们有这个物品…把它添加到大厅的背包中 */
+    if (!add_litem_locked(l, &inv->iitems[index])) {
+        /* *Gulp* The lobby is probably toast... At least make sure this user is
+           still (mostly) safe... */
+        ERR_LOG("无法将物品新增游戏房间背包!");
+        return -1;
+    }
 
     /* TODO 可以打印丢出的物品信息 */
-    remove_iitem(src, pkt->item_id, 0, src->version != CLIENT_VERSION_BB);
+    iitem_t iitem = remove_iitem(src, item_id, 0, src->version != CLIENT_VERSION_BB);
+
+    if (&iitem == NULL) {
+        ERR_LOG("GC %" PRIu32 " 掉落物品失败!",
+            src->guildcard);
+        return -2;
+    }
 
     /* 数据包完成, 发送至游戏房间. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1266,14 +1282,6 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_select_menu_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-       //if (l->type == LOBBY_TYPE_LOBBY) {
-       //    ERR_LOG("GC %" PRIu32 " 在大厅与游戏房间中的NPC交谈!",
-       //        c->guildcard);
-       //    return -1;
-       //}
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
     expect. Disconnect the client if not. */
@@ -1440,13 +1448,15 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t area = pkt->area;
+    float w = pkt->w,x = pkt->x,y = pkt->y,z = pkt->z;
 
     /* Save the new position and move along */
     if (src->client_id == pkt->shdr.client_id) {
-        src->w = pkt->w;
-        src->x = pkt->x;
-        src->y = pkt->y;
-        src->z = pkt->z;
+        src->w = w;
+        src->x = x;
+        src->y = y;
+        src->z = z;
 
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(src, l);
@@ -1458,11 +1468,12 @@ static int sub60_3E_3F_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    float x = pkt->x, z = pkt->z;
 
     /* Save the new position and move along */
     if (src->client_id == pkt->shdr.client_id) {
-        src->x = pkt->x;
-        src->z = pkt->z;
+        src->x = x;
+        src->z = z;
 
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(src, l);
@@ -1478,6 +1489,7 @@ static int sub60_40_42_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_natk_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint16_t client_id = pkt->shdr.client_id;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1495,7 +1507,7 @@ static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* Save the new area and move along */
-    if (src->client_id == pkt->shdr.client_id) {
+    if (src->client_id == client_id) {
         if ((l->flags & LOBBY_TYPE_GAME))
             update_bb_qpos(src, l);
     }
@@ -1623,6 +1635,8 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_subtract_PB_energy_6x49_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint16_t entry_count = pkt->entry_count;
+    uint8_t size = pkt->shdr.size;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -1632,16 +1646,16 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || size != 0x03 || src->client_id != pkt->shdr.client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
-    size_t allowed_count = MIN(pkt->shdr.size - 3, 14);
+    size_t allowed_count = MIN(size - 3, 14);
 
-    if (pkt->entry_count > allowed_count) {
+    if (entry_count > allowed_count) {
         ERR_LOG("无效 subtract PB energy 指令");
     }
 
@@ -2269,6 +2283,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sync_reg_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t val = LE32(pkt->value);
+    uint16_t register_number = pkt->register_number;
     int done = 0, idx;
     uint32_t ctl;
 
@@ -2291,13 +2306,13 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     /* Run the register sync script, if one is set. If the script returns
        non-zero, then assume that it has adequately handled the sync. */
     if ((script_execute(ScriptActionQuestSyncRegister, src, SCRIPT_ARG_PTR, src,
-        SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, pkt->register_number,
+        SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, register_number,
         SCRIPT_ARG_UINT32, val, SCRIPT_ARG_END))) {
         done = 1;
     }
 
     /* Does this quest use global flags? If so, then deal with them... */
-    if ((l->q_flags & LOBBY_QFLAG_SHORT) && pkt->register_number == l->q_shortflag_reg &&
+    if ((l->q_flags & LOBBY_QFLAG_SHORT) && register_number == l->q_shortflag_reg &&
         !done) {
         /* Check the control bits for sensibility... */
         ctl = (val >> 29) & 0x07;
@@ -2305,13 +2320,13 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
         /* Make sure the error or response bits aren't set. */
         if ((ctl & 0x06)) {
             DBG_LOG("Quest set flag register with illegal ctl!\n");
-            send_sync_register(src, pkt->register_number, 0x8000FFFE);
+            send_sync_register(src, register_number, 0x8000FFFE);
         }
         /* Make sure we don't have anything with any reserved ctl bits set
            (unless a script has already handled the sync). */
         else if ((val & 0x17000000)) {
             DBG_LOG("Quest set flag register with reserved ctl!\n");
-            send_sync_register(src, pkt->register_number, 0x8000FFFE);
+            send_sync_register(src, register_number, 0x8000FFFE);
         }
         else if ((val & 0x08000000)) {
             /* Delete the flag... */
@@ -2329,7 +2344,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Does this quest use server data calls? If so, deal with it... */
     if ((l->q_flags & LOBBY_QFLAG_DATA) && !done) {
-        if (pkt->register_number == l->q_data_reg) {
+        if (register_number == l->q_data_reg) {
             if (src->q_stack_top < CLIENT_MAX_QSTACK) {
                 if (!(src->flags & CLIENT_FLAG_QSTACK_LOCK)) {
                     src->q_stack[src->q_stack_top++] = val;
@@ -2341,7 +2356,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
                         ctl = quest_function_dispatch(src, l);
 
                         if (ctl != QUEST_FUNC_RET_NOT_YET) {
-                            send_sync_register(src, pkt->register_number, ctl);
+                            send_sync_register(src, register_number, ctl);
                             src->q_stack_top = 0;
                         }
                     }
@@ -2349,19 +2364,19 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
                 else {
                     /* The stack is locked, ignore the write and report the
                        error. */
-                    send_sync_register(src, pkt->register_number,
+                    send_sync_register(src, register_number,
                         QUEST_FUNC_RET_STACK_LOCKED);
                 }
             }
             else if (src->q_stack_top == CLIENT_MAX_QSTACK) {
                 /* Eat the stack push and report an error. */
-                send_sync_register(src, pkt->register_number,
+                send_sync_register(src, register_number,
                     QUEST_FUNC_RET_STACK_OVERFLOW);
             }
 
             done = 1;
         }
-        else if (pkt->register_number == l->q_ctl_reg) {
+        else if (register_number == l->q_ctl_reg) {
             /* For now, the only reason we'll have one of these is to reset the
                stack. There might be other reasons later, but this will do, for
                the time being... */
@@ -2371,7 +2386,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* Does this register have to be synced? */
-    if ((idx = reg_sync_index_bb(l, pkt->register_number)) != -1) {
+    if ((idx = reg_sync_index_bb(l, register_number)) != -1) {
         l->regvals[idx] = val;
     }
 
@@ -3872,6 +3887,7 @@ static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id, sell_amount = pkt->sell_amount;
     size_t i;
 
     /* We can't get these in lobbies without someone messing with something
@@ -3898,7 +3914,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         player = &src->mode_pl->bb;
 
-    i = find_iitem_index(&player->inv, pkt->item_id);
+    i = find_iitem_index(&player->inv, item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (i == -1) {
@@ -3906,15 +3922,15 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    uint32_t shop_price = get_bb_shop_price(&player->inv.iitems[i]) * pkt->sell_amount;
+    uint32_t shop_price = get_bb_shop_price(&player->inv.iitems[i]) * sell_amount;
 
     player->disp.meseta = MIN(
         player->disp.meseta + shop_price, 999999);
 
-    iitem_t item = remove_iitem(src, pkt->item_id, pkt->sell_amount, src->version != CLIENT_VERSION_BB);
+    iitem_t item = remove_iitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
     if (&item == NULL) {
         player->disp.meseta -= shop_price;
-        ERR_LOG("出售 %d ID 0x%04X 失败", pkt->sell_amount, pkt->item_id);
+        ERR_LOG("出售 %d 件 ID 0x%04X 失败", sell_amount, item_id);
         return -1;
     }
 
@@ -3924,6 +3940,9 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id, amount = pkt->amount;
+    uint32_t area = pkt->area;
+    float x = pkt->x, z = pkt->z;
     iitem_t* it;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -3944,7 +3963,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem_t iitem = remove_iitem(src, pkt->item_id, pkt->amount, src->version != CLIENT_VERSION_BB);
+    iitem_t iitem = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
 
     if (&iitem == NULL) {
         ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
@@ -3968,13 +3987,14 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_drop_stack(src, src->client_id, NULL, pkt->area, pkt->x, pkt->z, it->data, pkt->amount);
+    return subcmd_send_lobby_drop_stack(src, src->client_id, NULL, area, x, z, it->data, amount);
 }
 
 static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = src->cur_lobby;
     inventory_t sorted = { 0 };
+    uint32_t item_ids[30] = { 0 };
     size_t x = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -3994,17 +4014,24 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    memcpy(item_ids, pkt->item_ids, sizeof(uint32_t) * 30);
+
     psocn_bb_char_t* player = &src->bb_pl->character;
 
     if (src->mode)
         player = &src->mode_pl->bb;
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        if (pkt->item_ids[x] == 0xFFFFFFFF) {
+        sorted.iitems[x].data.datab[1] = 0xFF;
+        sorted.iitems[x].data.item_id = EMPTY_STRING;
+    }
+
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
+        if (item_ids[x] == 0xFFFFFFFF) {
             clear_iitem(&sorted.iitems[x]);
         }
         else {
-            size_t index = find_iitem_index(&player->inv, pkt->item_ids[x]);
+            size_t index = find_iitem_index(&player->inv, item_ids[x]);
             sorted.iitems[x] = player->inv.iitems[index];
         }
     }
@@ -4068,7 +4095,8 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t exp_percent = 0;
     uint32_t exp_to_add;
     uint8_t special = 0;
-    uint16_t mid;
+    /* Make sure the enemy is in range. */
+    uint16_t mid = LE16(pkt->shdr.enemy_id);
     uint32_t bp, exp_amount;
     int i;
 
@@ -4134,8 +4162,6 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         if (exp_percent) {
-            /* Make sure the enemy is in range. */
-            mid = LE16(pkt->shdr.enemy_id);
             //DBG_LOG("怪物编号原值 %02X %02X", mid, pkt->enemy_id2);
             mid &= 0xFFF;
             //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
@@ -4187,6 +4213,7 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_charge_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t meseta_amount = pkt->meseta_amount;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -4211,11 +4238,11 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     if (src->mode)
         disp = &src->mode_pl->bb.disp;
 
-    if (pkt->meseta_amount > disp->meseta) {
+    if (meseta_amount > disp->meseta) {
         disp->meseta = 0;
     }
     else {
-        disp->meseta -= pkt->meseta_amount;
+        disp->meseta -= meseta_amount;
     }
 
     /* Send it along to the rest of the lobby. */
@@ -4384,6 +4411,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gallon_area_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t quest_offset = pkt->quest_offset;
+    uint32_t value = pkt->value;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -4409,7 +4437,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000010 )   9A D7 00 00                                         ....
     if (quest_offset < 23) {
         quest_offset *= 4;
-        *(uint32_t*)&src->bb_pl->quest_data2[quest_offset] = pkt->value;
+        *(uint32_t*)&src->bb_pl->quest_data2[quest_offset] = value;
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);

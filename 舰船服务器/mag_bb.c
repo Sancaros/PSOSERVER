@@ -112,7 +112,7 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 	if ((delta > 0) || ((delta < 0) && (-delta < existing_stat))) {
 		uint16_t level = compute_mag_level(data);
 		if (level > 200) {
-			ERR_LOG("mag level is too high\n");
+			ERR_LOG("玛古等级已超上限值");
 			return;
 		}
 		if ((level == 200) && ((99 - existing_stat) < delta)) {
@@ -303,26 +303,26 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 	else if (mag_level < 35) { // Level 10 evolution
 		if (evolution_number < 1) {
 			switch (character->dress_data.ch_class) {
-			case 0: // HUmar
-			case 1: // HUnewearl
-			case 2: // HUcast
-			case 9: // HUcaseal
+			case CLASS_HUMAR: // HUmar
+			case CLASS_HUNEWEARL: // HUnewearl
+			case CLASS_HUCAST: // HUcast
+			case CLASS_HUCASEAL: // HUcaseal
 				mag_item->data.datab[1] = 0x01; // Varuna
 				break;
-			case 3: // RAmar
-			case 11: // RAmarl
-			case 4: // RAcast
-			case 5: // RAcaseal
+			case CLASS_RAMAR: // RAmar
+			case CLASS_RAMARL: // RAmarl
+			case CLASS_RACAST: // RAcast
+			case CLASS_RACASEAL: // RAcaseal
 				mag_item->data.datab[1] = 0x0D; // Kalki
 				break;
-			case 10: // FOmar
-			case 6: // FOmarl
-			case 7: // FOnewm
-			case 8: // FOnewearl
+			case CLASS_FOMAR: // FOmar
+			case CLASS_FOMARL: // FOmarl
+			case CLASS_FONEWM: // FOnewm
+			case CLASS_FONEWEARL: // FOnewearl
 				mag_item->data.datab[1] = 0x19; // Vritra
 				break;
 			default:
-				ERR_LOG("invalid character class");
+				ERR_LOG("无效角色职业");
 				err = -2;
 				return err;
 			}

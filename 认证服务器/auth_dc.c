@@ -1614,7 +1614,7 @@ int handle_patch_return(login_client_t* c, patch_return_pkt* pkt) {
 }
 
 /* Process one login packet. */
-int process_dclogin_packet(login_client_t* c, void* pkt) {
+int process_login_packet_dc(login_client_t* c, void* pkt) {
     __try {
         dc_pkt_hdr_t* dc = (dc_pkt_hdr_t*)pkt;
         pc_pkt_hdr_t* pc = (pc_pkt_hdr_t*)pkt;

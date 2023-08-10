@@ -1095,7 +1095,7 @@ static int handle_param_chunk_req(login_client_t *c, bb_pkt_hdr_t *pkt) {
     return -1;
 }
 
-int process_bbcharacter_packet(login_client_t *c, void *pkt) {
+int process_character_packet_bb(login_client_t *c, void *pkt) {
     bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt;
     uint16_t type = LE16(bb->pkt_type);
 

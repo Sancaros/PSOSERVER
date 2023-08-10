@@ -264,16 +264,16 @@ int ship_transfer(login_client_t* c, uint32_t shipid);
 void read_quests();
 
 /* In dclogin.c */
-int process_dclogin_packet(login_client_t* c, void* pkt);
+int process_login_packet_dc(login_client_t* c, void* pkt);
 
 void init_i18n(void);
 void cleanup_i18n(void);
 
 /* In bblogin.c */
-int process_bblogin_packet(login_client_t* c, void* pkt);
+int process_login_packet_bb(login_client_t* c, void* pkt);
 
 /* In bbcharacter.c */
-int process_bbcharacter_packet(login_client_t* c, void* pkt);
+int process_character_packet_bb(login_client_t* c, void* pkt);
 int load_param_data(void);
 void cleanup_param_data(void);
 int load_bb_char_data(void);

@@ -604,15 +604,15 @@ void client_send_bb_data(ship_client_t* c) {
             /* 将游戏时间存储入人物数据 */
             c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-            /* 将玩家数据存入数据库 */
-            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                c->cur_block->b);
+            ///* 将玩家数据存入数据库 */
+            //shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+            //    c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+            //    c->cur_block->b);
 
-            /* 将玩家选项数据存入数据库 */
-            shipgate_send_bb_opts(&ship->sg, c);
+            ///* 将玩家选项数据存入数据库 */
+            //shipgate_send_bb_opts(&ship->sg, c);
 
-            send_simple(c, PING_TYPE, 0);
+            //send_simple(c, PING_TYPE, 0);
 
             //DBG_LOG("%d 秒", num_seconds);
         }

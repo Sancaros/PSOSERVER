@@ -1078,6 +1078,8 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pick_up_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id;
+    uint16_t area = pkt->area;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -1092,7 +1094,7 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x03)
         return -1;
 
-    if (src->cur_area != pkt->area) {
+    if (src->cur_area != area) {
         ERR_LOG("GC %" PRIu32 " picked up item in area they are "
             "not currently in!", src->guildcard);
     }
@@ -1110,6 +1112,8 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
 int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pick_up_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_id = pkt->item_id;
+    uint16_t area = pkt->area;
     int pick_count;
     uint32_t item, tmp;
     iitem_t iitem_data = { 0 };
@@ -1133,7 +1137,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 尝试从大厅物品栏中移除... */
-    pick_count = remove_litem_locked(l, pkt->item_id, &iitem_data);
+    pick_count = remove_litem_locked(l, item_id, &iitem_data);
     if (pick_count < 0) {
         return -1;
     }
@@ -1170,7 +1174,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
             iitem_data.flags = 0;
 
             //iitem_data.data.item_id = generate_item_id(l, src->client_id);
-            iitem_data.data.item_id = pkt->item_id;
+            iitem_data.data.item_id = item_id;
 
             /* Add the item to the client's inventory. */
             if (!add_iitem(src, &iitem_data))
@@ -1181,7 +1185,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
     subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, 1, true);
 
-    return subcmd_send_bb_del_map_item(src, pkt->area, iitem_data.data.item_id);
+    return subcmd_send_bb_del_map_item(src, area, iitem_data.data.item_id);
 }
 
 int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
@@ -1209,7 +1213,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (src->mode) {
+    if (l->challenge) {
         send_txt(src, __(src, "\tE\tC6暂未探明挑战模式该掉什么东西."));
         return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
     }
@@ -1413,6 +1417,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     iitem_t ii = { 0 };
     int found = -1;
+    uint32_t new_inv_item_id = pkt->new_inv_item_id;
+    uint8_t shop_type = pkt->shop_type, shop_item_index = pkt->shop_item_index, num_bought = pkt->num_bought;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1434,7 +1440,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #ifdef DEBUG
 
-    DBG_LOG("购买 %d 个物品 %02X %04X", pkt->num_bought, pkt->unknown_a1, pkt->shdr.unused);
+    DBG_LOG("购买 %d 个物品 %02X %04X", num_bought, pkt->unknown_a1, pkt->shdr.unused);
 
 #endif // DEBUG
 
@@ -1446,12 +1452,12 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 填充物品数据 */
     //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], PSOCN_STLENGTH_ITEM);
-    ii.data = src->game_data->shop_items[pkt->shop_item_index];
+    ii.data = src->game_data->shop_items[shop_item_index];
 
     /* 如果是堆叠物品 */
     if (is_stackable(&ii.data)) {
-        if (pkt->num_bought <= max_stack_size(&ii.data)) {
-            ii.data.datab[5] = pkt->num_bought;
+        if (num_bought <= max_stack_size(&ii.data)) {
+            ii.data.datab[5] = num_bought;
         }
         else {
             ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
@@ -1461,7 +1467,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         }
     }
 
-    ii.data.item_id = pkt->new_inv_item_id;
+    ii.data.item_id = new_inv_item_id;
 
 #ifdef DEBUG
 
@@ -1475,7 +1481,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    uint32_t price = ii.data.data2l * pkt->num_bought;
+    uint32_t price = ii.data.data2l * num_bought;
 
     if (player->disp.meseta < price) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
@@ -1498,6 +1504,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
     uint32_t id_item_index = 0, attrib = 0;
+    uint32_t item_id = pkt->item_id;
     char percent_mod = 0;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -1516,7 +1523,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (src->bb_pl->character.disp.meseta < 100)
         return 0;
 
-    id_item_index = find_iitem_index(&src->bb_pl->character.inv, pkt->item_id);
+    id_item_index = find_iitem_index(&src->bb_pl->character.inv, item_id);
 
     if (src->bb_pl->character.inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
@@ -1567,7 +1574,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return -4;
     }
 
-    if (id_result->data.item_id != pkt->item_id) {
+    if (id_result->data.item_id != item_id) {
         ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
             src->guildcard);
         return -5;
@@ -1666,10 +1673,8 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bank_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t item_id;
-    uint32_t amt, bank_amt, iitem_count, i;
-    int found = -1, isframe = 0;
-    bool is_stack;
+    uint32_t item_id = LE32(pkt->item_id);
+    uint8_t action = pkt->action;  // 0 = deposit, 1 = take
     iitem_t iitem = { 0 };
     bitem_t bitem = { 0 };
 
@@ -1695,21 +1700,25 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     if (src->bank_type)
         bank = src->common_bank;
 
-    switch (pkt->action) {
+    psocn_bb_char_t* character = &src->bb_pl->character;
+
+    uint32_t amt = LE32(pkt->meseta_amount), 
+        bank_amt = LE32(bank->meseta), 
+        c_mst_amt = LE32(character->disp.meseta),
+        pkt_item_amt = LE32(pkt->item_amount)
+        ;
+
+    switch (action) {
     case SUBCMD62_BANK_ACT_CLOSE:
     case SUBCMD62_BANK_ACT_DONE:
         return 0;
 
     case SUBCMD62_BANK_ACT_DEPOSIT:
-        item_id = LE32(pkt->item_id);
 
         /* Are they depositing meseta or an item? */
         if (item_id == 0xFFFFFFFF) {
-            amt = LE32(pkt->meseta_amount);
-            iitem_count = LE32(src->bb_pl->character.disp.meseta);
-
             /* Make sure they aren't trying to do something naughty... */
-            if (amt > iitem_count) {
+            if (amt > c_mst_amt) {
                 ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!", src->guildcard);
                 return 0;
             }
@@ -1721,14 +1730,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             bank->meseta += amt;
-            src->bb_pl->character.disp.meseta -= amt;
-            src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
+            character->disp.meseta -= amt;
+            src->pl->bb.character.disp.meseta = character->disp.meseta;
 
             /* No need to tell everyone else, I guess? */
             return 0;
         }
         else {
-            iitem = remove_iitem(src, pkt->item_id, pkt->item_amount, src->version != CLIENT_VERSION_BB);
+            iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
 
             if (&iitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
@@ -1748,40 +1757,36 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             sort_client_bank(bank);
 
             return subcmd_send_bb_destroy_item(src, iitem.data.item_id,
-                pkt->item_amount);
+                pkt_item_amt);
         }
 
     case SUBCMD62_BANK_ACT_TAKE:
-        item_id = LE32(pkt->item_id);
 
         /* Are they taking meseta or an item? */
         if (item_id == 0xFFFFFFFF) {
-            amt = LE32(pkt->meseta_amount);
-            iitem_count = LE32(src->bb_pl->character.disp.meseta);
-
-            if (amt > iitem_count) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d iitem_count %d", src->guildcard, amt, iitem_count);
+            if (amt > c_mst_amt) {
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d iitem_count %d", src->guildcard, amt, c_mst_amt);
                 return 0;
             }
 
             /* Make sure they aren't trying to do something naughty... */
-            if ((amt + iitem_count) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d iitem_count %d", src->guildcard, amt, iitem_count);
+            if ((amt + c_mst_amt) > 999999) {
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d iitem_count %d", src->guildcard, amt, c_mst_amt);
                 return 0;
             }
 
             bank_amt = LE32(bank->meseta);
 
             bank->meseta -= amt;
-            src->bb_pl->character.disp.meseta += amt;
-            src->pl->bb.character.disp.meseta = src->bb_pl->character.disp.meseta;
+            character->disp.meseta += amt;
+            src->pl->bb.character.disp.meseta = character->disp.meseta;
 
             /* 存取美赛塔不用告知其他客户端... */
             return 0;
         }
         else {
             /* 尝试从银行中取出物品. */
-            bitem = remove_bitem(src, pkt->item_id, pkt->item_amount);
+            bitem = remove_bitem(src, item_id, pkt_item_amt);
 
             if (&bitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
@@ -1807,7 +1812,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
-            src->guildcard, pkt->action);
+            src->guildcard, action);
         display_packet(pkt, 0x18);
         return -1;
     }
@@ -1932,7 +1937,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_quest_reward_meseta_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int meseta;
+    int meseta = pkt->amount;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1946,8 +1951,6 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
-    meseta = pkt->amount;
 
     if (meseta < 0) {
         meseta = -meseta;
@@ -2123,6 +2126,7 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_c_mode_grave_drop_req_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    float x = pkt->x, z = pkt->z;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2147,7 +2151,7 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     drop_item.datab[1] = pkt->item_subtype;
     drop_item.datab[5] = pkt->drop_amount;
 
-    iitem_t* new_iitem = add_new_litem_locked(l, &drop_item, src->cur_area, pkt->x, pkt->z);
+    iitem_t* new_iitem = add_new_litem_locked(l, &drop_item, src->cur_area, x, z);
 
     if (new_iitem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
@@ -2155,12 +2159,13 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
 
     send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 
-    return subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, pkt->x, pkt->z, new_iitem->data, 1);
+    return subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, x, z, new_iitem->data, 1);
 }
 
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    item_t item_data = pkt->item_data;
     iitem_t backup_item;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -2171,11 +2176,11 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
 
     memset(&backup_item, 0, PSOCN_STLENGTH_IITEM);
 
-    backup_item = remove_iitem(src, pkt->item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
+    backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
     if (&backup_item == NULL) {
         ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
-            src->guildcard, pkt->item_data.item_id);
+            src->guildcard, item_data.item_id);
         return -1;
     }
 
@@ -2226,6 +2231,8 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_reward_t* pkt) {
     lobby_t* l = src->cur_lobby;
     struct mt19937_state* rng = &l->block->rng;
+    uint32_t area = pkt->area;
+    float x = pkt->x, z = pkt->z;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2238,7 +2245,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
         uint32_t bp, bp_list_count, new_item;
 
-        if (pkt->area > 0x03)
+        if (area > 0x03)
             bp_list_count = 1;
         else
             bp_list_count = l->difficulty + 1;
@@ -2246,7 +2253,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         for (bp = 0; bp < bp_list_count; bp++) {
             new_item = 0;
 
-            switch (pkt->area)
+            switch (area)
             {
             case 0x00:
                 // bp1 dorphon route
@@ -2334,9 +2341,9 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             bb.shdr.size = 0x09;
             bb.shdr.client_id = 0xFBFF;
 
-            bb.area = pkt->area;
-            bb.x = pkt->x;
-            bb.z = pkt->z;
+            bb.area = area;
+            bb.x = x;
+            bb.z = z;
 
             bb.data.datal[0] = new_item;
 
@@ -2353,13 +2360,13 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             if (new_item == 0x00)
                 bb.data.datab[4] = 0x80;
 
-            iitem_t* litem = add_new_litem_locked(l, &bb.data, pkt->area, pkt->x, pkt->z);
+            iitem_t* litem = add_new_litem_locked(l, &bb.data, area, x, z);
 
             if (!litem) {
                 return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
             }
 
-            return subcmd_send_drop_stack(src, 0xFBFF, pkt->area, pkt->x, pkt->z, litem->data, 1);
+            return subcmd_send_drop_stack(src, 0xFBFF, area, x, z, litem->data, 1);
         }
 
     }
