@@ -420,26 +420,157 @@ typedef struct pt_v3_entry {
 
 /* Clean (non-packed) version of the BB ItemPT entry structure. */
 typedef struct pt_bb_entry {
-    uint8_t weapon_ratio[12];               /* 0x0000 */
-    int8_t weapon_minrank[12];              /* 0x000C */
-    uint8_t weapon_upgfloor[12];            /* 0x0018 */
-    uint8_t power_pattern[9][4];            /* 0x0024 */
-    uint16_t percent_pattern[23][6];        /* 0x0048 */
-    uint8_t area_pattern[3][10];            /* 0x015C */
-    uint8_t percent_attachment[6][10];      /* 0x017A */
-    uint8_t element_ranking[10];            /* 0x01B6 */
-    uint8_t element_probability[10];        /* 0x01C0 */
-    uint8_t armor_ranking[5];               /* 0x01CA */
-    uint8_t slot_ranking[5];                /* 0x01CF */
-    uint8_t unit_level[10];                 /* 0x01D4 */
-    uint16_t tool_frequency[28][10];        /* 0x01DE */
-    uint8_t tech_frequency[19][10];         /* 0x040E */
-    uint8_t tech_levels[19][20];            /* 0x04CC */
-    uint8_t enemy_dar[100];                 /* 0x0648 */
-    uint16_t enemy_meseta[100][2];          /* 0x06AC */
-    uint8_t enemy_drop[100];                /* 0x083C */
-    uint16_t box_meseta[10][2];             /* 0x08A0 */
-    uint8_t box_drop[7][10];                /* 0x08C8 */
+    // This data structure uses index probability tables in multiple places. An
+    // index probability table is a table where each entry holds the probability
+    // that that entry's index is used. For example, if the armor slot count
+    // probability table contains [77, 17, 5, 1, 0], this means there is a 77%
+    // chance of no slots, 17% chance of 1 slot, 5% chance of 2 slots, 1% chance
+    // of 3 slots, and no chance of 4 slots. The values in index probability
+    // tables do not have to add up to 100; the game sums all of them and
+    // chooses a random number less than that maximum.
+
+    // The area (floor) number is used in many places as well. Unlike the normal
+    // area numbers, which start with Pioneer 2, the area numbers in this
+    // structure start with Forest 1, and boss areas are treated as the first
+    // area of the next section (so De Rol Le has Mines 1 drops, for example).
+    // Final boss areas are treated as the last non-boss area (so Dark Falz
+    // boxes are like Ruins 3 boxes). We refer to these adjusted area numbers as
+    // (area - 1).
+
+    // This index probability table determines the types of non-rare weapons.
+    // The indexes in this table correspond to the non-rare weapon types 01
+    // through 0C (Saber through Wand).
+    uint8_t base_weapon_type_prob_table[12];               /* 0x0000 base_weapon_type_prob_table */
+    // This table specifies the base subtype for each weapon type. Negative
+    // values here mean that the weapon cannot be found in the first N areas (so
+    // -2, for example, means that the weapon never appears in Forest 1 or 2 at
+    // all). Nonnegative values here mean the subtype can be found in all areas,
+    // and specify the base subtype (usually in the range [0, 4]). The subtype
+    // of weapon that actually appears depends on this value and a value from
+    // the following table.
+    int8_t subtype_base_table[12];              /* 0x000C subtype_base_table */
+    // This table specifies how many areas each weapon subtype appears in. For
+    // example, if Sword (subtype 02, which is index 1 in this table and the
+    // table above) has a subtype base of -2 and a subtype area lneght of 4,
+    // then Sword items can be found when area - 1 is 2, 3, 4, or 5 (Cave 1
+    // through Mine 1), and Gigush (the next sword subtype) can be found in Mine
+    // 1 through Ruins 3.
+    uint8_t subtype_area_length_table[12];            /* 0x0018 subtype_area_length_table */
+    // This index probability table specifies how likely each possible grind
+    // value is. The table is indexed as [grind][subtype_area_index], where the
+    // subtype area index is how many areas the player is beyond the first area
+    // in which the subtype can first be found (clamped to [0, 3]). To continue
+    // the example above, in Cave 3, subtype_area_index would be 2, since Swords
+    // can first be found two areas earlier in Cave 1.
+    // For example, this table could look like this:
+    //   [64 1E 19 14] // Chance of getting a grind +0
+    //   [00 1E 17 0F] // Chance of getting a grind +1
+    //   [00 14 14 0E] // Chance of getting a grind +2
+    //    ...
+    //    C1 C2 C3 M1  // (Episode 1 area values from the example for reference)
+    uint8_t grind_prob_tables[9][4];            /* 0x0024 grind_prob_tables */
+    // This array specifies the chance that a rare weapon will have each
+    // possible bonus value. This is indexed as [(bonus_value - 10 / 5)][spec],
+    // so the first row refers the probability of getting a -10% bonus, the next
+    // row is the chance of getting -5%, etc., all the way up to +100%. For
+    // non-rare items, spec is determined randomly based on the following field;
+    // for rare items, spec is always 5.
+    uint16_t bonus_value_prob_tables[23][6];        /* 0x0048 bonus_value_prob_tables */
+    // This array specifies the value of spec to be used in the above lookup for
+    // non-rare items. This is NOT an index probability table; this is a direct
+    // lookup with indexes [bonus_index][area - 1]. A value of 0xFF in any byte
+    // of this array prevents any weapon from having a bonus in that slot.
+    // For example, the array might look like this:
+    //   [00 00 00 01 01 01 01 02 02 02]
+    //   [FF FF FF 00 00 00 01 01 01 01]
+    //   [FF FF FF FF FF FF FF FF FF 00]
+    //    F1 F2 C1 C2 C3 M1 M2 R1 R2 R3  // (Episode 1 areas, for reference)
+    // In this example, spec is 0, 1, or 2 in all cases where a weapon can have
+    // a bonus. In Forest 1 and 2 and Cave 1, weapons may have at most one
+    // bonus; in all other areas except Ruins 3, they can have at most two
+    // bonuses, and in Ruins 3, they can have up to three bonuses.
+    uint8_t nonrare_bonus_prob_spec[3][10];            /* 0x015C nonrare_bonus_prob_spec */
+    // This array specifies the chance that a weapon will have each bonus type.
+    // The table is indexed as [bonus_type][area - 1] for non-rare items; for
+    // rare items, a random value in the range [0, 9] is used instead of
+    // (area - 1).
+    // For example, the table might look like this:
+    //   [46 46 3F 3E 3E 3D 3C 3C 3A 3A] // Chance of getting no bonus
+    //   [14 14 0A 0A 09 02 02 04 05 05] // Chance of getting Native bonus
+    //   [0A 0A 12 11 11 09 09 08 08 08] // Chance of getting A.Beast bonus
+    //   [00 00 09 0A 0B 13 12 08 09 09] // Chance of getting Machine bonus
+    //   [00 00 00 01 01 08 0A 13 13 13] // Chance of getting Dark bonus
+    //   [00 00 00 00 00 01 01 01 01 01] // Chance of getting Hit bonus
+    //    F1 F2 C1 C2 C3 M1 M2 R1 R2 R3  // (Episode 1 areas, for reference)
+    uint8_t bonus_type_prob_tables[6][10];      /* 0x017A bonus_type_prob_tables */
+    // This array (indexed by area - 1) specifies a multiplier of used in
+    // special ability determination. It seems this uses the star values from
+    // ItemPMT, but not yet clear exactly in what way.
+    // TODO: Figure out exactly what this does. Anchor: 80106FEC
+    uint8_t special_mult[10];            /* 0x01B6 special_mult */
+    // This array (indexed by area - 1) specifies the probability that any
+    // non-rare weapon will have a special ability.
+    uint8_t special_percent[10];        /* 0x01C0 special_percent */
+    // TODO: Figure out exactly how this table is used. Anchor: 80106D34
+    uint8_t armor_shield_type_index_prob_table[5];               /* 0x01CA armor_shield_type_index_prob_table */
+    // This index probability table specifies how common each possible slot
+    // count is for armor drops.
+    uint8_t armor_slot_count_prob_table[5];                /* 0x01CF armor_slot_count_prob_table */
+    // These values specify maximum indexes into another array which is
+    // generated at runtime. The values here are multiplied by a random float in
+    // the range [0, n] to look up the value in the secondary array, which is
+    // what ends up determining the unit type.
+    // TODO: Figure out and document the exact logic here. Anchor: 80106364
+    uint8_t unit_maxes[10];                 /* 0x01D4 unit_maxes */
+    // This index probability table is indexed by [tool_class][area - 1]. The
+    // tool class refers to an entry in ItemPMT, which links it to the actual
+    // item code.
+    uint16_t tool_class_prob_table[28][10];        /* 0x01DE tool_class_prob_table */
+    // This index probability table determines how likely each technique is to
+    // appear. The table is indexed as [technique_num][area - 1].
+    uint8_t technique_index_prob_table[19][10];         /* 0x040E technique_index_prob_table */
+    // This table specifies the ranges for technique disk levels. The table is
+    // indexed as [technique_num][area - 1]. If either min or max in the range
+    // is 0xFF, or if max < min, technique disks are not dropped for that
+    // technique and area pair.
+    uint8_t technique_level_ranges[19][20];            /* 0x04CC technique_level_ranges */
+    // Each byte in this table (indexed by enemy_type) represents the percent
+    // chance that the enemy drops anything at all. (This check is done after
+    // the rare drop check, so it only applies to non-rare items.)
+    uint8_t enemy_type_drop_probs[100];                 /* 0x0648 enemy_type_drop_probs */
+    // This array (indexed by enemy_id) specifies the range of meseta values
+    // that each enemy can drop.
+    rang_16bit_t enemy_meseta_ranges[100];          /* 0x06AC enemy_meseta_ranges */
+    // Each byte in this table (indexed by enemy_type) represents the class of
+    // item that the enemy can drop. The values are:
+    // 00 = weapon
+    // 01 = armor
+    // 02 = shield
+    // 03 = unit
+    // 04 = tool
+    // 05 = meseta
+    // Anything else = no item
+    uint8_t enemy_item_classes[100];                /* 0x083C enemy_item_classes */
+    // This table (indexed by area - 1) specifies the ranges of meseta values
+    // that can drop from boxes.
+    rang_16bit_t box_meseta_ranges[10];             /* 0x08A0 box_meseta_ranges */
+    // This index probability table determines which type of items drop from
+    // boxes. The table is indexed as [item_class][area - 1], with item_class as
+    // the result value (that is, in the example below, the game looks at a
+    // single column and sums the values going down, then the chosen item class
+    // is one of the row indexes based on the weight values in the column.) The
+    // resulting item_class value has the same meaning as in enemy_item_classes
+    // above.
+    // For example, this array might look like the following:
+    //   [07 07 08 08 06 07 08 09 09 0A] // Chances per area of a weapon drop
+    //   [02 02 02 02 03 02 02 02 03 03] // Chances per area of an armor drop
+    //   [02 02 02 02 03 02 02 02 03 03] // Chances per area of a shield drop
+    //   [00 00 03 03 03 04 03 04 05 05] // Chances per area of a unit drop
+    //   [11 11 12 12 12 12 12 12 12 12] // Chances per area of a tool drop
+    //   [32 32 32 32 32 32 32 32 32 32] // Chances per area of a meseta drop
+    //   [16 16 11 11 11 11 11 0F 0C 0B] // Chances per area of an empty box
+    //    F1 F2 C1 C2 C3 M1 M2 R1 R2 R3  // (Episode 1 areas, for reference)
+    uint8_t box_drop[7][10];                /* 0x08C8 box_item_class_prob_tables */
     uint16_t padding;                       /* 0x090E */
     /* 0910 */ uint32_t base_weapon_type_prob_table_offset;
     /* 0914 */ uint32_t subtype_base_table_offset;
@@ -459,7 +590,7 @@ typedef struct pt_bb_entry {
     /* 094C */ uint32_t tool_class_prob_table_offset;
     /* 0950 */ uint32_t technique_index_prob_table_offset;
     /* 0954 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x0958 */
+    int32_t armor_level;                    /* 0x0958 armor_or_shield_type_bias */
     /* 095C */ uint32_t unit_maxes_offset;
     /* 0960 */ uint32_t box_item_class_prob_tables_offset;
     /* 0964 */ uint32_t unused_offset2;

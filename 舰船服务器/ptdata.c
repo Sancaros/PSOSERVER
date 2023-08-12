@@ -435,12 +435,14 @@ int pt_read_bb(const char* fn) {
 
 				//display_packet(buf, sz);
 
-				//DBG_LOG("%s", filename);
+#ifdef DEBUG
+				DBG_LOG("%s", filename);
+				for (int x = 0; x < 100; x++) {
+					DBG_LOG("enemy_drop x %d 0x%02X", x, ent->enemy_drop[x]);
+				}
 
-				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
-				//}
-
+				getchar();
+#endif // DEBUG
 				//DBG_LOG("base_weapon_type_prob_table_offset 0x%zX", ent->base_weapon_type_prob_table_offset);
 
 				//DBG_LOG("subtype_base_table_offset 0x%zX", ent->subtype_base_table_offset);
@@ -990,32 +992,32 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	   work with right now...
 	   检查每种武器类型，看看我们现在实际需要使用哪些武器*/
 	for (i = 0; i < 12; ++i) {
-		if ((ent->weapon_minrank[i] + area) >= 0 && ent->weapon_ratio[i] > 0) {
+		if ((ent->subtype_base_table[i] + area) >= 0 && ent->base_weapon_type_prob_table[i] > 0) {
 			wtypes[j] = i;
-			wchance += ent->weapon_ratio[i];
+			wchance += ent->base_weapon_type_prob_table[i];
 
-			if (ent->weapon_minrank[i] >= 0) {
+			if (ent->subtype_base_table[i] >= 0) {
 				warea = area;
-				wranks[j] = ent->weapon_minrank[i];
+				wranks[j] = ent->subtype_base_table[i];
 			}
 			else {
-				warea = ent->weapon_minrank[i] + area;
+				warea = ent->subtype_base_table[i] + area;
 				wranks[j] = 0;
 			}
 
 			/* 合理性检查... Make sure this is sane before we go to the loop
 			   below, since it will end up being an infinite loop if its not
 			   sane... */
-			if (ent->weapon_upgfloor[i] <= 0) {
+			if (ent->subtype_area_length_table[i] <= 0) {
 				ITEM_LOG("无效 BB 武器 upgrade floor value for "
 					"floor %d, weapon type %d. 请检查您的 ItemPT.gsl "
 					"file (%s) 是否有效!", area, i, bb ? "BB" : "GC");
 				return -1;
 			}
 
-			while ((warea - ent->weapon_upgfloor[i]) >= 0) {
+			while ((warea - ent->subtype_area_length_table[i]) >= 0) {
 				++wranks[j];
-				warea -= ent->weapon_upgfloor[i];
+				warea -= ent->subtype_area_length_table[i];
 			}
 
 			gptrn[j] = MIN(warea, 3);
@@ -1033,7 +1035,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	/* Roll the dice! */
 	rnd = mt19937_genrand_int32(rng) % wchance;
 	for (i = 0; i < j; ++i) {
-		if ((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
+		if ((rnd -= ent->base_weapon_type_prob_table[wtypes[i]]) > (uint32_t)wchance) {
 			item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
 			/* Save off the grind pattern to use... */
@@ -1069,7 +1071,7 @@ already_picked:
 	/* Next up, determine the grind value. */
 	rnd = mt19937_genrand_int32(rng) % 100;
 	for (i = 0; i < 9; ++i) {
-		if ((rnd -= ent->power_pattern[i][warea]) > 100) {
+		if ((rnd -= ent->grind_prob_tables[i][warea]) > 100) {
 			item[0] |= (i << 24);
 			break;
 		}
@@ -1088,15 +1090,15 @@ already_picked:
 	   out in the PT file, this is the implied structure of it...
 	   让我们产生一些百分比，好吗？这不一定是我设计它的方式，但根据PT文件中数据的布局方式，这是它的隐含结构*/
 	for (i = 0; i < 3; ++i) {
-		if (ent->area_pattern[i][area] < 0)
+		if (ent->nonrare_bonus_prob_spec[i][area] < 0)
 			continue;
 
 		rnd = mt19937_genrand_int32(rng) % 10000;
-		warea = ent->area_pattern[i][area];
+		warea = ent->nonrare_bonus_prob_spec[i][area];
 
 		for (j = 0; j < 23; ++j) {
 			/* See if we're going to generate this one... */
-			if ((rnd -= ent->percent_pattern[j][warea]) > 10000) {
+			if ((rnd -= ent->bonus_value_prob_tables[j][warea]) > 10000) {
 				/* If it would be 0%, don't bother... */
 				if (j == 2) {
 					break;
@@ -1105,7 +1107,7 @@ already_picked:
 				/* Lets see what type we'll generate now... */
 				rnd = mt19937_genrand_int32(rng) % 100;
 				for (k = 0; k < 6; ++k) {
-					if ((rnd -= ent->percent_attachment[k][area]) > 100) {
+					if ((rnd -= ent->bonus_type_prob_tables[k][area]) > 100) {
 						if (k == 0 || (upcts & (1 << k)))
 							break;
 
@@ -1125,12 +1127,12 @@ already_picked:
 
 	/* Finally, lets see if there's going to be an elemental attribute applied
 	   to this weapon, or if its rare and we need to set the flag. */
-	if (!semirare && ent->element_ranking[area]) {
+	if (!semirare && ent->special_mult[area]) {
 		rnd = mt19937_genrand_int32(rng) % 100;
-		if (rnd < (uint32_t)ent->element_probability[area]) {
+		if (rnd < (uint32_t)ent->special_percent[area]) {
 			rnd = mt19937_genrand_int32(rng) %
-				attr_count[ent->element_ranking[area] - 1];
-			item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
+				attr_count[ent->special_mult[area] - 1];
+			item[1] = 0x80 | attr_list[ent->special_mult[area] - 1][rnd];
 		}
 	}
 	else if (rare) {
@@ -1441,7 +1443,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 					PRIu32 "", i, ent->armor_ranking[i], rnd);
 #endif
 
-			if ((rnd -= ent->armor_ranking[i]) > 100) {
+			if ((rnd -= ent->armor_shield_type_index_prob_table[i]) > 100) {
 				armor = i;
 				break;
 			}
@@ -1486,7 +1488,7 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 				PRIu32 "", i, ent->slot_ranking[i], rnd);
 #endif
 
-		if ((rnd -= ent->slot_ranking[i]) > 100) {
+		if ((rnd -= ent->armor_slot_count_prob_table[i]) > 100) {
 			item_b[5] = i;
 			break;
 		}
@@ -1758,7 +1760,7 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 					PRIu32 "", i, ent->armor_ranking[i], rnd);
 #endif
 
-			if ((rnd -= ent->armor_ranking[i]) > 100) {
+			if ((rnd -= ent->armor_shield_type_index_prob_table[i]) > 100) {
 				armor = i;
 				break;
 			}
@@ -2040,7 +2042,7 @@ static int generate_tool_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 
 static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	struct mt19937_state* rng, lobby_t* l) {
-	item[0] = generate_tool_base(ent->tool_frequency, area, rng, l);
+	item[0] = generate_tool_base(ent->tool_class_prob_table, area, rng, l);
 
 	/* This shouldn't happen happen, but just in case... */
 	if (item[0] == Item_NoSuchItem) {
@@ -2070,7 +2072,7 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 			ITEM_LOG("Item is technique disk. Picking technique.");
 #endif
 
-		if (generate_tech(ent->tech_frequency, ent->tech_levels, area,
+		if (generate_tech(ent->technique_index_prob_table, ent->technique_level_ranges, area,
 			item, rng, l)) {
 			ITEM_LOG("生成无效 technique! Please check "
 				"your ItemPT.gsl 文件 是否有效!");
@@ -3718,7 +3720,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	if ((rnd >= ent->enemy_dar[req->pt_index]) && !src->game_data->gm_drop_rare)
+	if ((rnd >= ent->enemy_type_drop_probs[req->pt_index]) && !src->game_data->gm_drop_rare)
 		/* Nope. You get nothing! */
 		return 0;
 
@@ -3809,7 +3811,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_drop[req->pt_index]) {
+		switch (ent->enemy_item_classes[req->pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
@@ -3836,7 +3838,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		case BOX_TYPE_UNIT:
 			/* Drop a unit */
-			if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l)) {
+			if (pmt_random_unit_bb(ent->unit_maxes[area], item, rng, l)) {
 				return 0;
 			}
 
@@ -3849,7 +3851,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d", ent->enemy_drop[req->pt_index],
+				"%d", ent->enemy_item_classes[req->pt_index],
 				req->pt_index);
 			return 0;
 		}
@@ -3866,8 +3868,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta[req->pt_index][0],
-			ent->enemy_meseta[req->pt_index][1],
+		if (generate_meseta(ent->enemy_meseta_ranges[req->pt_index].min,
+			ent->enemy_meseta_ranges[req->pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -4199,7 +4201,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 	else if ((rnd -= ent->box_drop[BOX_TYPE_UNIT][area]) > 100) {
 		/* Generate a unit */
-		if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l))
+		if (pmt_random_unit_bb(ent->unit_maxes[area], item, rng, l))
 			return 0;
 
 		return check_and_send_bb_lobby(src, l, item, src->cur_area,
@@ -4217,7 +4219,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	else if ((rnd -= ent->box_drop[BOX_TYPE_MESETA][area]) > 100) {
 	generate_meseta:
 		/* Generate money! */
-		if (generate_meseta(ent->box_meseta[area][0], ent->box_meseta[area][1],
+		if (generate_meseta(ent->box_meseta_ranges[area].min, ent->box_meseta_ranges[area].max,
 			item, rng, l))
 			return 0;
 
@@ -4393,7 +4395,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	if ((int8_t)rnd >= ent->enemy_dar[req->pt_index])
+	if ((int8_t)rnd >= ent->enemy_type_drop_probs[req->pt_index])
 		/* Nope. You get nothing! */
 		return 0;
 
@@ -4477,7 +4479,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_drop[req->pt_index]) {
+		switch (ent->enemy_item_classes[req->pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
@@ -4504,7 +4506,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		case BOX_TYPE_UNIT:
 			/* Drop a unit */
-			if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l)) {
+			if (pmt_random_unit_bb(ent->unit_maxes[area], item, rng, l)) {
 				return 0;
 			}
 
@@ -4517,7 +4519,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d", ent->enemy_drop[req->pt_index],
+				"%d", ent->enemy_item_classes[req->pt_index],
 				req->pt_index);
 			return 0;
 		}
@@ -4534,8 +4536,8 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta[req->pt_index][0],
-			ent->enemy_meseta[req->pt_index][1],
+		if (generate_meseta(ent->enemy_meseta_ranges[req->pt_index].min,
+			ent->enemy_meseta_ranges[req->pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -4866,7 +4868,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	}
 	else if ((rnd -= ent->box_drop[BOX_TYPE_UNIT][area]) > 100) {
 		/* Generate a unit */
-		if (pmt_random_unit_bb(ent->unit_level[area], item, rng, l))
+		if (pmt_random_unit_bb(ent->unit_maxes[area], item, rng, l))
 			return 0;
 
 		return check_and_send_bb(src, item, src->cur_area,
@@ -4884,7 +4886,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	else if ((rnd -= ent->box_drop[BOX_TYPE_MESETA][area]) > 100) {
 	generate_meseta:
 		/* Generate money! */
-		if (generate_meseta(ent->box_meseta[area][0], ent->box_meseta[area][1],
+		if (generate_meseta(ent->box_meseta_ranges[area].min, ent->box_meseta_ranges[area].max,
 			item, rng, l))
 			return 0;
 
