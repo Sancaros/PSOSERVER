@@ -409,6 +409,7 @@ size_t price_for_item(const item_t* item) {
     pmt_guard_bb_t pmt_guard = { 0 };
     pmt_tool_bb_t pmt_tool = { 0 };
     errno_t err = 0;
+    size_t price = 0;
 
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON: {
@@ -446,8 +447,8 @@ size_t price_for_item(const item_t* item) {
 
         size_t special_stars = get_special_stars(item->datab[4]);
         double special_stars_factor = 1000.0 * special_stars * special_stars;
-
-        return special_stars_factor + (atp_factor * (bonus_factor / 100.0));
+        price = (size_t)(special_stars_factor + (atp_factor * (bonus_factor / 100.0)));
+        return price;
     }
 
     case ITEM_TYPE_GUARD: {
@@ -457,7 +458,8 @@ size_t price_for_item(const item_t* item) {
         }
 
         if (item->datab[1] == ITEM_SUBTYPE_UNIT) { // Unit
-            return get_item_adjusted_stars(item) * pmt_lookup_sale_divisor_bb(item->datab[0], 3);
+            price = (size_t)(get_item_adjusted_stars(item) * pmt_lookup_sale_divisor_bb(item->datab[0], 3));
+            return price;
         }
 
         double sale_divisor = (double)pmt_lookup_sale_divisor_bb(item->datab[0], item->datab[1]);
@@ -476,11 +478,13 @@ size_t price_for_item(const item_t* item) {
 
         double power_factor = pmt_guard.base_dfp + pmt_guard.base_evp + def_bonus + evp_bonus;
         double power_factor_floor = (int32_t)((power_factor * power_factor) / sale_divisor);
-        return power_factor_floor + (70.0 * (double)(item->datab[5] + 1) * (double)(pmt_guard.level_req + 1));
+        price = (size_t)(power_factor_floor + (70.0 * (double)(item->datab[5] + 1) * (double)(pmt_guard.level_req + 1)));
+        return price;
     }
 
     case ITEM_TYPE_MAG:
-        return (item->datab[2] + 1) * pmt_lookup_sale_divisor_bb(item->datab[0], item->datab[1]);
+        price = (size_t)((item->datab[2] + 1) * pmt_lookup_sale_divisor_bb(item->datab[0], item->datab[1]));
+        return price;
 
     case ITEM_TYPE_TOOL: {
 
@@ -489,11 +493,13 @@ size_t price_for_item(const item_t* item) {
             return -1;
         }
 
-        return pmt_tool.cost * ((item->datab[1] == 2) ? (item->datab[2] + 1) : 1);
+        price = pmt_tool.cost * ((item->datab[1] == 2) ? (item->datab[2] + 1) : 1);
+        return price;
     }
 
     case ITEM_TYPE_MESETA:
-        return item->data2l;
+        price = item->data2l;
+        return price;
 
     default:
         ERR_LOG("无效物品, 价格为0 0x%08X", item->datal[0]);

@@ -204,7 +204,7 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
         }
     }
 
-    ERR_LOG("未从银行中找到ID 0x%08X 物品", item_id);
+    ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
     //for (x = 0; x < bank->item_count; x++) {
     //    print_bitem_data(&bank->bitems[x], x, 5);
     //}

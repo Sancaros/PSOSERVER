@@ -1775,7 +1775,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
                 ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
-                add_iitem(src, &iitem);
+                if (!add_iitem(src, &iitem)) {
+                    ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
+                        src->guildcard);
+                    return -1;
+                }
                 return -1;
             }
 
@@ -1825,7 +1829,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* 新增至玩家背包中... */
             if (!add_iitem(src, &iitem)) {
                 /* Uh oh... Guess we should put it back in the bank... */
-                add_bitem(src, &bitem);
+                if (!add_bitem(src, &bitem)) {
+                    ERR_LOG("GC %" PRIu32 " 物品返回玩家银行失败!",
+                        src->guildcard);
+                    return -1;
+                }
                 return -1;
             }
 
@@ -2196,7 +2204,6 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_warp_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     item_t item_data = pkt->item_data;
-    iitem_t backup_item;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2204,12 +2211,10 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    memset(&backup_item, 0, PSOCN_STLENGTH_IITEM);
-
-    backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
+    iitem_t backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
     if (&backup_item == NULL) {
-        ERR_LOG("GC %" PRIu32 " 传送物品ID %d 失败!",
+        ERR_LOG("GC %" PRIu32 " 转换物品ID %d 失败!",
             src->guildcard, item_data.item_id);
         return -1;
     }
@@ -2221,8 +2226,12 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 将物品新增至背包. */
     if (!add_iitem(dest, &backup_item)) {
-        add_iitem(src, &backup_item);
-        return send_txt(src, __(src, "\tE\tC4传送物品失败"));
+        if (!add_iitem(src, &backup_item)) {
+            ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
+                src->guildcard);
+            return -1;
+        }
+        return send_txt(src, __(src, "\tE\tC4转换物品失败"));
     }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
