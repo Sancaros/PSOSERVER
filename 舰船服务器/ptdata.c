@@ -3742,7 +3742,11 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the user is lucky today... */
 	if (do_rare && item[0]) {
 
-		ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
+#ifdef DEBUG
+
+		DBG_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
+
+#endif // DEBUG
 
 		switch (item[0] & 0xFF) {
 		case ITEM_TYPE_WEAPON:
@@ -3847,6 +3851,10 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		case -1:
 			/* This shouldn't happen, but if it does, don't drop
 			   anything at all. */
+			return 0;
+
+		case 0xFF:
+			/* 啥也没有. */
 			return 0;
 
 		default:
@@ -4515,6 +4523,10 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		case -1:
 			/* This shouldn't happen, but if it does, don't drop
 			   anything at all. */
+			return 0;
+
+		case 0xFF:
+			/* 啥也没有. */
 			return 0;
 
 		default:

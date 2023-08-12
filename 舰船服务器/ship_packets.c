@@ -7538,7 +7538,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 }
 
 static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
-                           int lang) {
+                         int lang) {
     uint8_t *sendbuf = get_sendbuf();
     dc_quest_file_pkt *file = (dc_quest_file_pkt *)sendbuf;
     dc_quest_chunk_pkt *chunk = (dc_quest_chunk_pkt *)sendbuf;
@@ -8049,7 +8049,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 }
 
 static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
-    int lang) {
+                         int lang) {
     uint8_t* sendbuf = get_sendbuf();
     bb_quest_file_pkt* file = (bb_quest_file_pkt*)sendbuf;
     bb_quest_chunk_pkt* chunk = (bb_quest_chunk_pkt*)sendbuf;
@@ -8278,25 +8278,35 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     if(!fp) {
         QERR_LOG("无法打开 qst 任务文件 %s: %s", filename,
               strerror(errno));
-        return -1;
+        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务错误:."), filename);
     }
 
     /* Figure out how long the file is. */
-    fseek(fp, 0, SEEK_END);
+
+    /* Go to where we'll be writing into the file table... */
+    if (fseek(fp, 0, SEEK_END))
+        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
+
     len = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+
+    if (fseek(fp, 0, SEEK_SET))
+        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
 
     /* Copy the file (in chunks if necessary) to the sendbuf to actually send
        away. */
     while(len) {
-        read = fread(sendbuf, 1, 65536, fp);
+        read = fread(sendbuf, 1, 0x400, fp);
+
+#ifdef DEBUG
+        DBG_LOG("len %d read %d", len, read);
+#endif // DEBUG
 
         /* If we can't read from the file, bail. */
         if(!read) {
             QERR_LOG("读取 qst 任务文件错误 %s: %s", filename,
                   strerror(errno));
             fclose(fp);
-            return -2;
+            return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4读取任务错误:."), filename);
         }
 
         /* Make sure we read up to a header-size boundary. */
@@ -8312,10 +8322,21 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             QERR_LOG("发送 qst 任务文件错误 %s: %s", filename,
                   strerror(errno));
             fclose(fp);
-            return -3;
+            return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4发送任务错误:."), filename);
         }
+#ifdef DEBUG
+
+        DBG_LOG("len %d", len);
+
+#endif // DEBUG
 
         len -= read;
+#ifdef DEBUG
+
+        DBG_LOG("len %d", len);
+
+#endif // DEBUG
+
     }
 
     /* We're finished. */

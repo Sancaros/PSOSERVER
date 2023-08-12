@@ -162,16 +162,25 @@ void handle_bb_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid) {
 
         /* Make sure the object is in range. */
         if (bid > l->map_objs->count) {
-            ERR_LOG("GC %" PRIu32 " 攻击了无效的实例 "
+#ifdef DEBUG
+
+            DBG_LOG("GC %" PRIu32 " 攻击了无效的实例 "
                 "(%d -- 地图实例数量: %d)!\n"
                 "章节: %d, 层级: %d, 地图: (%d, %d)", src->guildcard,
                 bid, l->map_objs->count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1],
                 l->maps[(src->cur_area << 1) + 1]);
 
+#endif // DEBUG
+
             if ((l->flags & LOBBY_FLAG_QUESTING))
-                ERR_LOG("任务 ID: %d, 版本: %d", l->qid,
+
+#ifdef DEBUG
+
+                DBG_LOG("任务 ID: %d, 版本: %d", l->qid,
                     l->version);
+
+#endif // DEBUG
 
             /* Just continue on and hope for the best. We've probably got a
                bug somewhere on our end anyway... */
