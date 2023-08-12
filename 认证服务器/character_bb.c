@@ -906,7 +906,7 @@ static int handle_setflag(login_client_t* c, bb_setflag_pkt* pkt) {
     case CLIENT_AUTH_FLAG_CANCELED:
         c->auth = 0;
         c->islogged = 0;
-        if (db_remove_gc_char_login_state(c->guildcard, c->islogged)) {
+        if (db_update_gc_char_login_state(c->guildcard, c->islogged)) {
             /* 玩家已在线. */
             //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
             send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);

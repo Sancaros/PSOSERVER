@@ -47,7 +47,7 @@ int db_update_char_auth_msg(char ipstr[INET6_ADDRSTRLEN], uint32_t gc, uint8_t s
     return 0;
 }
 
-int db_remove_gc_char_login_state(uint32_t gc, uint32_t islogined) {
+int db_update_gc_char_login_state(uint32_t gc, uint32_t islogined) {
     char query[512];
 
     sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%" PRIu32 "'"
@@ -55,7 +55,7 @@ int db_remove_gc_char_login_state(uint32_t gc, uint32_t islogined) {
         AUTH_ACCOUNT, islogined, gc);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", AUTH_ACCOUNT);
-        return 1;
+        return -1;
     }
 
     sprintf_s(query, _countof(query), "UPDATE %s SET islogged = '%" PRIu32 "'"
@@ -63,7 +63,7 @@ int db_remove_gc_char_login_state(uint32_t gc, uint32_t islogined) {
         CHARACTER, islogined, gc);
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("初始化 %s 数据表错误,请检查数据库", CHARACTER);
-        return 1;
+        return -2;
     }
 
     return 0;

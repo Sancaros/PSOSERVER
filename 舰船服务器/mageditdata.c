@@ -321,20 +321,20 @@ int magedit_read_bb(const char* fn, int norestrict) {
     return 0;
 }
 
-uint8_t magedit_lookup_mag_evolution_number(iitem_t* rv) {
+uint8_t magedit_lookup_mag_evolution_number(iitem_t* iitem) {
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
-    if (!have_bb_magedit || !rv) {
+    if (!have_bb_magedit || !iitem) {
         return -1;
     }
 
     /* 确保我们正在查找 圣诞物品 */
-    if (rv->data.datab[0] != ITEM_TYPE_MAG) {
+    if (iitem->data.datab[0] != ITEM_TYPE_MAG) {
         return -2;
     }
 
     /* 获取数据 */
-    return mag_evolution_numbers_table.values[rv->data.datab[1]];
+    return mag_evolution_numbers_table.values[iitem->data.datab[1]];
 }
 

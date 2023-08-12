@@ -757,7 +757,7 @@ static int bb_process_write_quest_file(ship_client_t* c, bb_write_quest_file_con
 }
 
 static int bb_process_ping(ship_client_t* c) {
-    int rv;
+    int rv = 0;
     if (!(c->flags & CLIENT_FLAG_SENT_MOTD)) {
         send_motd(c);
         c->flags |= CLIENT_FLAG_SENT_MOTD;
@@ -775,17 +775,17 @@ static int bb_process_ping(ship_client_t* c) {
         if (!ship->def_limits) {
             pthread_rwlock_unlock(&ship->llock);
             c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
-            send_txt(c, "%s", __(c, "\tE\tC7Legit mode not\n"
+            rv = send_txt(c, "%s", __(c, "\tE\tC7Legit mode not\n"
                 "available on this\n"
                 "ship."));
-            return 0;
+            return rv;
         }
 
         limits = ship->def_limits;
 
         if (client_legit_check(c, limits)) {
             c->flags &= ~CLIENT_FLAG_ALWAYS_LEGIT;
-            send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
+            rv = send_txt(c, "%s", __(c, "\tE\tC7You failed the legit "
                 "check."));
         }
         else {
@@ -811,12 +811,11 @@ static int bb_process_ping(ship_client_t* c) {
         rv = send_simple(c, PING_TYPE, 0) |
             lobby_handle_done_burst_bb(l, c);
         pthread_mutex_unlock(&l->mutex);
-        return rv;
     }
 
     c->last_message = time(NULL);
 
-    return 0;
+    return rv;
 }
 
 static int bb_process_guild_search(ship_client_t* c, bb_guild_search_pkt* pkt) {

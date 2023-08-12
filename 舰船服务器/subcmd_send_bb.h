@@ -51,7 +51,7 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
     uint8_t amt);
 
 /* BB 从客户端移除美赛塔 */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop);
+int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
 int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req);

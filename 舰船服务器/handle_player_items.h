@@ -57,7 +57,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount);
 bool add_iitem(ship_client_t* src, iitem_t* item);
 bool add_bitem(ship_client_t* src, bitem_t* item);
-int player_use_item(ship_client_t* src, size_t item_index);
+int player_use_item(ship_client_t* src, uint32_t item_id);
 
 /* 挑战模式专用 */
 int initialize_cmode_iitem(ship_client_t* dest);

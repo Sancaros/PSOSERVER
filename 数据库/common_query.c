@@ -267,24 +267,10 @@ uint32_t db_remove_account_login_state_from_ship(uint16_t key_idx) {
     return gc;
 }
 
-int db_update_gc_char_login_state(uint32_t gc, uint32_t char_slot,
-    uint32_t islogged, uint32_t block_num) {
+int db_update_gc_char_last_block(uint32_t gc, uint32_t char_slot, uint32_t block_num) {
     char query[512];
 
-    if (!(char_slot < 0)) {
-        sprintf_s(query, _countof(query), "UPDATE %s SET "
-            "islogged = '%d' "
-            "WHERE guildcard = '%u' AND slot = '%u'", 
-            CHARACTER,
-            islogged, 
-            gc, char_slot);
-        if (psocn_db_real_query(&conn, query)) {
-            SQLERR_LOG("更新GC %u 数据错误:\n %s", gc, psocn_db_error(&conn));
-            return 1;
-        }
-    }
-
-    if (block_num > 0) {
+    if (block_num >= 0) {
         sprintf_s(query, _countof(query), "UPDATE %s SET "
             "lastblock = '%d' "
             "WHERE guildcard = '%u' AND slot = '%u'",

@@ -1147,25 +1147,22 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
 
-        psocn_bb_char_t* player = &src->bb_pl->character;
+        psocn_bb_char_t* character = &src->bb_pl->character;
 
         if (src->mode)
-            player = &src->mode_pl->bb;
+            character = &src->mode_pl->bb;
 
         item = LE32(iitem_data.data.datal[0]);
 
         /* Is it meseta, or an item? */
         if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data.data2l) + LE32(player->disp.meseta);
+            tmp = LE32(iitem_data.data.data2l) + LE32(character->disp.meseta);
 
             /* Cap at 999,999 meseta. */
-            if (tmp > 999999)
-                tmp = 999999;
-
-            player->disp.meseta = LE32(tmp);
+            character->disp.meseta = MIN(tmp, 999999);
 
             if (!src->mode)
-                src->pl->bb.character.disp.meseta = player->disp.meseta;
+                src->pl->bb.character.disp.meseta = character->disp.meseta;
         }
         else {
             iitem_data.present = LE16(0x0001);
@@ -1405,6 +1402,14 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         item_data.item_id = generate_item_id(l, src->client_id);
+        item_data.data2l = price_for_item(&item_data);
+
+#ifdef DEBUG
+
+        print_item_data(&item_data, src->version);
+        DBG_LOG("price_for_item %d", item_data.data2l);
+
+#endif // DEBUG
 
         memcpy(&src->game_data->shop_items[i], &item_data, PSOCN_STLENGTH_ITEM);
     }
@@ -1433,10 +1438,10 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
-        player = &src->mode_pl->bb;
+        character = &src->mode_pl->bb;
 
 #ifdef DEBUG
 
@@ -1481,20 +1486,35 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
+    print_item_data(&ii.data, src->version);
+    DBG_LOG("num_bought %d", num_bought);
+
+#endif // DEBUG
+
     uint32_t price = ii.data.data2l * num_bought;
 
-    if (player->disp.meseta < price) {
+    if (character->disp.meseta < price) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
-            src->guildcard, pkt->shdr.type, player->disp.meseta, price);
+            src->guildcard, pkt->shdr.type, character->disp.meseta, price);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
     }
 
-    player->disp.meseta -= price;
+#ifdef DEBUG
 
-    if (!src->mode)
-        src->pl->bb.character.disp.meseta -= price;
+    DBG_LOG("扣款前 meseta %d price %d", character->disp.meseta, price);
 
-    subcmd_send_bb_delete_meseta(src, price, 0);
+#endif // DEBUG
+
+    subcmd_send_bb_delete_meseta(src, character, price, false);
+
+#ifdef DEBUG
+
+    DBG_LOG("扣款后 meseta %d price %d", character->disp.meseta, price);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb_create_inv_item(src, ii.data, price, false);
 }
@@ -1520,19 +1540,24 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    if (src->bb_pl->character.disp.meseta < 100)
+    psocn_bb_char_t* character = &src->bb_pl->character;
+
+    if (src->mode)
+        character = &src->mode_pl->bb;
+
+    if (character->disp.meseta < 100)
         return 0;
 
-    id_item_index = find_iitem_index(&src->bb_pl->character.inv, item_id);
+    id_item_index = find_iitem_index(&character->inv, item_id);
 
-    if (src->bb_pl->character.inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
+    if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
             src->guildcard);
         return -3;
     }
 
-    subcmd_send_bb_delete_meseta(src, 100, 0);
-    iitem_t* id_result = &src->bb_pl->character.inv.iitems[id_item_index];
+    subcmd_send_bb_delete_meseta(src, character, 100, false);
+    iitem_t* id_result = &character->inv.iitems[id_item_index];
     attrib = id_result->data.datab[4] & ~(0x80);
 
     src->game_data->identify_result = *id_result;
@@ -1952,14 +1977,19 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bb_char_t* character = &src->bb_pl->character;
+
+    if (src->mode)
+        character = &src->mode_pl->bb;
+
     if (meseta < 0) {
         meseta = -meseta;
 
-        if (meseta > (int)src->bb_pl->character.disp.meseta) {
-            src->bb_pl->character.disp.meseta = 0;
+        if (meseta > (int)character->disp.meseta) {
+            character->disp.meseta = 0;
         }
         else
-            src->bb_pl->character.disp.meseta -= meseta;
+            character->disp.meseta -= meseta;
 
         return 0;
 
@@ -2208,10 +2238,15 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    psocn_bb_char_t* character = &src->bb_pl->character;
+
+    if (src->mode)
+        character = &src->mode_pl->bb;
+
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
         iitem_t ex_pc = { 0 };
         ex_pc.data.datal[0] = BBItem_Photon_Crystal;
-        size_t item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &ex_pc);
+        size_t item_id = find_iitem_stack_item_id(&character->inv, &ex_pc);
 
         /* 如果找不到该物品，则将用户从船上推下. */
         if (item_id == -1) {

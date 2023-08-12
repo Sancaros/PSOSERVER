@@ -78,6 +78,7 @@ uint32_t get_bb_shop_price(iitem_t* ci);
 
 /* 生成商店物品 */
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子);
+size_t price_for_item(const item_t* item);
 
 const static char* shop_files[] = {
     "System\\Shop\\shop.dat",

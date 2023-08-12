@@ -96,8 +96,7 @@ uint16_t compute_mag_strength_flags(const item_t* item) {
 		ret |= 0x020;
 	}
 
-	uint16_t highest = ((dex > pow) ? dex : pow);
-	highest = (highest > mind) ? highest : mind;
+	uint16_t highest = MAX(dex, MAX(pow, mind));
 
 	if ((pow == highest) + (dex == highest) + (mind == highest) > 1) {
 		ret |= 0x100;
@@ -243,32 +242,26 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 	return 0;
 }
 
-int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_index) {
+int player_feed_mag(ship_client_t* src, uint32_t mag_item_id, uint32_t feed_item_id) {
 	errno_t err = 0;
+	bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
 
-	psocn_bb_char_t* character = { 0 };
+	psocn_bb_char_t* character = &src->bb_pl->character;
 
 	if (src->mode)
 		character = &src->mode_pl->bb;
-	else
-		character = &src->bb_pl->character;
 
-	iitem_t fed_item = character->inv.iitems[fed_item_index];
-	iitem_t* mag_item = &character->inv.iitems[mag_item_index];
-
-	size_t result_index = find_result_index(primary_identifier(&fed_item.data));
+	iitem_t* mag_item = &character->inv.iitems[find_iitem_index(&character->inv, mag_item_id)];
+	iitem_t* fed_item = &character->inv.iitems[find_iitem_index(&character->inv, feed_item_id)];
+	size_t result_index = find_result_index(primary_identifier(&fed_item->data));
 	pmt_mag_bb_t mag_table = { 0 };
-
 	if ((err = pmt_lookup_mag_bb(mag_item->data.datal[0], &mag_table))) {
 		ERR_LOG("GC %" PRIu32 " 喂养了不存在的玛古数据!错误码 %d",
 			src->guildcard, err);
 		return err;
 	}
-
-	size_t feed_table_index = mag_table.feed_table;
 	pmt_mag_feed_result_t feed_result = { 0 };
-
-	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->data.datal[0], feed_table_index, result_index, &feed_result))) {
+	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->data.datal[0], mag_table.feed_table, result_index, &feed_result))) {
 		ERR_LOG("GC %" PRIu32 " 喂养了不存在的玛古数据!错误码 %d",
 			src->guildcard, err);
 		return err;
@@ -284,18 +277,9 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 	uint8_t mag_level = (uint8_t)compute_mag_level(&mag_item->data);
 	mag_item->data.datab[2] = mag_level;
 	uint8_t evolution_number = magedit_lookup_mag_evolution_number(mag_item);
-
-	if (evolution_number < 0) {
-		ERR_LOG("GC %" PRIu32 " evolution_number 错误!错误码 %d",
-			src->guildcard, evolution_number);
-		return evolution_number;
-	}
-
 	uint8_t mag_number = mag_item->data.datab[1];
-
 	// Note: Sega really did just hardcode all these rules into the client. There
 	// is no data file describing these evolutions, unfortunately.
-
 	if (mag_level < 10) {
 		// Nothing to do
 
@@ -327,7 +311,6 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 				return err;
 			}
 		}
-
 	}
 	else if (mag_level < 50) { // Level 35 evolution
 		if (evolution_number < 2) {
@@ -335,38 +318,31 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 			if (mag_number == 0x0D) {
 				if ((flags & 0x110) == 0) {
 					mag_item->data.datab[1] = 0x02;
-				}
-				else if (flags & 8) {
+				} else if (flags & 8) {
 					mag_item->data.datab[1] = 0x03;
-				}
-				else if (flags & 0x20) {
+				} else if (flags & 0x20) {
 					mag_item->data.datab[1] = 0x0B;
 				}
 			}
 			else if (mag_number == 1) {
 				if (flags & 0x108) {
 					mag_item->data.datab[1] = 0x0E;
-				}
-				else if (flags & 0x10) {
+				} else if (flags & 0x10) {
 					mag_item->data.datab[1] = 0x0F;
-				}
-				else if (flags & 0x20) {
+				} else if (flags & 0x20) {
 					mag_item->data.datab[1] = 0x04;
 				}
 			}
 			else if (mag_number == 0x19) {
 				if (flags & 0x120) {
 					mag_item->data.datab[1] = 0x1A;
-				}
-				else if (flags & 8) {
+				} else if (flags & 8) {
 					mag_item->data.datab[1] = 0x1B;
-				}
-				else if (flags & 0x10) {
+				} else if (flags & 0x10) {
 					mag_item->data.datab[1] = 0x14;
 				}
 			}
 		}
-
 	}
 	else if ((mag_level % 5) == 0) { // Level 50 (and beyond) evolutions
 		if (evolution_number < 4) {
@@ -510,8 +486,16 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_index, size_t fed_item_i
 			return err;
 		}
 
-		return add_mag_photon_blast(&mag_item->data, new_mag_def.photon_blast);
+		err = add_mag_photon_blast(&mag_item->data, new_mag_def.photon_blast);
 	}
+
+	if (should_delete_item) {
+		// Allow overdrafting meseta if the client is not BB, since the server isn't
+		// informed when meseta is added or removed from the bank.
+		remove_iitem(src, fed_item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+	}
+
+	fix_client_inv(&character->inv);
 
 	return err;
 }

@@ -281,7 +281,7 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt)
 }
 
 /* BB 从客户端移除美赛塔 */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop) {
+int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop) {
     uint32_t stack_count;
     uint32_t tmp;
     iitem_t tmp_meseta = { 0 };
@@ -291,20 +291,20 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
     if (!l)
         return -1;
 
-    stack_count = c->bb_pl->character.disp.meseta;
+    stack_count = character->disp.meseta;
 
-    if (stack_count < count) {
-        c->bb_pl->character.disp.meseta = 0;
-        count = stack_count;
+    if (stack_count < amount) {
+        character->disp.meseta = 0;
+        amount = stack_count;
     }
     else
-        c->bb_pl->character.disp.meseta -= count;
+        character->disp.meseta -= amount;
 
     if (drop) {
         tmp_meseta.data.datal[0] = LE32(Item_Meseta);
         tmp_meseta.data.datal[1] = tmp_meseta.data.datal[2] = 0;
-        tmp_meseta.data.item_id = LE32((++l->item_player_id[c->client_id]));
-        tmp_meseta.data.data2l = count;
+        tmp_meseta.data.item_id = generate_item_id(l, c->client_id);
+        tmp_meseta.data.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
         ii_meseta = add_litem_locked(l, &tmp_meseta);
@@ -315,23 +315,25 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, uint32_t count, uint32_t drop
         }
 
         /* Remove the meseta from the character data */
-        tmp = LE32(c->bb_pl->character.disp.meseta);
+        tmp = LE32(character->disp.meseta);
 
-        if (count > tmp) {
+        if (amount > tmp) {
             ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
                 c->guildcard);
             return -1;
         }
 
-        c->bb_pl->character.disp.meseta = LE32(tmp - count);
-        c->pl->bb.character.disp.meseta = c->bb_pl->character.disp.meseta;
+        character->disp.meseta = LE32(tmp - amount);
 
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, count))
+        if (subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, amount))
             return -1;
     }
+
+    if (!c->mode)
+        c->pl->bb.character.disp.meseta = character->disp.meseta;
 
     return 0;
 }
@@ -715,11 +717,6 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
 
     uint16_t len = LE16(16) + num_items * PSOCN_STLENGTH_ITEM;
 
-    for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&shop.items[i], 0, PSOCN_STLENGTH_ITEM);
-        shop.items[i] = c->game_data->shop_items[i];
-    }
-
     shop.hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * PSOCN_STLENGTH_ITEM
     shop.hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
     shop.hdr.flags = 0;
@@ -732,6 +729,11 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
     /* 填充剩余数据 */
     shop.shop_type = shop_type;
     shop.num_items = num_items;
+
+    for (uint8_t i = 0; i < num_items; ++i) {
+        clear_item(&shop.items[i]);
+        shop.items[i] = c->game_data->shop_items[i];
+    }
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&shop);
 }

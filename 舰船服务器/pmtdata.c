@@ -853,7 +853,17 @@ static int read_stars_bb(const uint8_t *pmt, uint32_t sz,
         return -3;
     }
 
+    /* Read the pointer and the size... */
     memcpy(star_table_bb, pmt + ptrs->star_value_table, star_max_bb);
+
+#ifdef DEBUG
+    for (size_t i = 0; i < star_max_bb; ++i) {
+        DBG_LOG("i %d 0x%02X", i, star_table_bb[i]);
+#if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
+#endif
+    }
+    getchar();
+#endif // DEBUG
     return 0;
 }
 
@@ -1146,7 +1156,7 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     /* Make sure the 指针无效 are sane... */
     if (ptrs->unsealable_table > sz) {
-        ERR_LOG("ItemPMT.prs file for BB 的 eventitem 指针无效. "
+        ERR_LOG("ItemPMT.prs file for BB 的 unsealableitem 指针无效. "
             "请检查其有效性!");
         return -1;
     }
@@ -1159,7 +1169,7 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     /* Make sure we have enough file... */
     if (values.offset + sizeof(pmt_unsealableitem_bb_t) * values.count > sz) {
-        ERR_LOG("ItemPMT.prs file for BB has mag table outside "
+        ERR_LOG("ItemPMT.prs file for BB has unsealableitem table outside "
             "of file bounds! 请检查文件的有效性!");
         return -2;
     }
@@ -1170,7 +1180,7 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     if (!(unsealableitems_bb = (pmt_unsealableitem_bb_t*)malloc(sizeof(pmt_unsealableitem_bb_t) *
         values.count))) {
-        ERR_LOG("Cannot allocate space for BB mags: %s",
+        ERR_LOG("Cannot allocate space for BB unsealableitems: %s",
             strerror(errno));
         unsealableitems_max_bb = 0;
         return -3;
@@ -1185,6 +1195,66 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 #endif
     }
+
+#endif // DEBUG
+
+    return 0;
+}
+
+static int read_nonweaponsaledivisors_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    size_t i = 0, j = 0;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->sale_divisor_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 nonweaponsaledivisors 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(&nonweaponsaledivisors_bb, pmt + ptrs->sale_divisor_table, sizeof(pmt_nonweaponsaledivisors_bb_t));
+
+#ifdef DEBUG
+
+    DBG_LOG("armor_divisor %f", nonweaponsaledivisors_bb.armor_divisor);
+    DBG_LOG("shield_divisor %f", nonweaponsaledivisors_bb.shield_divisor);
+    DBG_LOG("unit_divisor %f", nonweaponsaledivisors_bb.unit_divisor);
+    DBG_LOG("mag_divisor %f", nonweaponsaledivisors_bb.mag_divisor);
+
+    getchar();
+
+#endif // DEBUG
+    return 0;
+}
+
+static int read_weaponsaledivisors_bb(const uint8_t* pmt, uint32_t sz,
+                         const pmt_table_offsets_v3_t* ptrs) {
+    size_t i = 0, j = 0, num_weaponsaledivisors = 0xA5;
+
+    /* Make sure the 指针无效 are sane... */
+    if (ptrs->weapon_sale_divisor_table > sz) {
+        ERR_LOG("ItemPMT.prs file for BB 的 weaponsaledivisors 指针无效. "
+            "请检查其有效性!");
+        return -1;
+    }
+
+    if (!(weaponsaledivisors_bb = (float*)malloc(sizeof(float) * num_weaponsaledivisors))) {
+        ERR_LOG("Cannot allocate weaponsaledivisors_bb table: %s", strerror(errno));
+        star_max_bb = 0;
+        return -2;
+    }
+
+    /* Read the pointer and the size... */
+    memcpy(weaponsaledivisors_bb, pmt + ptrs->weapon_sale_divisor_table, sizeof(float) * num_weaponsaledivisors);
+
+#ifdef DEBUG
+
+    for (i = 0; i < num_weaponsaledivisors; ++i) {
+        DBG_LOG("weapon_divisor %f", weaponsaledivisors_bb[i]);
+    }
+
+    getchar();
 
 #endif // DEBUG
 
@@ -1705,6 +1775,18 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -18;
     }
 
+    /* Read in the nonweaponsaledivisors values... */
+    if (read_weaponsaledivisors_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -19;
+    }
+
+    /* Read in the nonweaponsaledivisors values... */
+    if (read_nonweaponsaledivisors_bb(ucbuf, ucsz, pmt_tb_offsets_bb)) {
+        free_safe(ucbuf);
+        return -20;
+    }
+
     /* We're done with the raw PMT data now, clean it up. */
     free_safe(ucbuf);
 
@@ -1876,7 +1958,19 @@ static void pmt_cleanup_bb(void) {
     itemcombination_bb = NULL;
     itemcombinations_max_bb = 0;
 
+    for (i = 0; i < num_eventitem_types_bb; ++i) {
+        free_safe(eventitem_bb[i]);
+    }
+    free_safe(eventitem_bb);
+    free_safe(num_eventitems_bb);
+    eventitem_bb = NULL;
+    num_eventitems_bb = NULL;
+    num_eventitem_types_bb = 0;
+    eventitem_lowest_bb = EMPTY_STRING;
 
+    free_safe(unsealableitems_bb);
+    unsealableitems_bb = NULL;
+    unsealableitems_max_bb = 0;
 
 
     have_bb_pmt = 0;
@@ -2553,6 +2647,40 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
     return 0;
 }
 
+float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2) {
+
+    /* Make sure we loaded the PMT stuff to start with and that there is a place
+       to put the returned value */
+    if (!have_bb_pmt) {
+        return -1;
+    }
+
+    switch (code1)
+    {
+    case ITEM_TYPE_WEAPON:
+        if (code2 < 0xA5) {
+            return weaponsaledivisors_bb[code2];
+        }
+        return 0.0f;
+
+    case ITEM_TYPE_GUARD:
+        switch (code2) {
+        case ITEM_SUBTYPE_FRAME:
+            return nonweaponsaledivisors_bb.armor_divisor;
+        case ITEM_SUBTYPE_BARRIER:
+            return nonweaponsaledivisors_bb.shield_divisor;
+        case ITEM_SUBTYPE_UNIT:
+            return nonweaponsaledivisors_bb.unit_divisor;
+        }
+        return 0.0f;
+
+    case ITEM_TYPE_MAG:
+        return nonweaponsaledivisors_bb.mag_divisor;
+    }
+
+    return 0.0f;
+}
+
 uint8_t pmt_lookup_stars_bb(uint32_t code) {
     uint8_t parts[3] = { 0 };
     pmt_weapon_bb_t weap;
@@ -2737,7 +2865,18 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
         return item_base;
 
     case ITEM_TYPE_GUARD:
-        if (item->datab[1] == ITEM_SUBTYPE_UNIT) {
+        switch (item->datab[1]) {
+        case ITEM_SUBTYPE_FRAME:
+        case ITEM_SUBTYPE_BARRIER:
+            pmt_guard_bb_t guard = { 0 };
+            if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                return NULL;
+            }
+            memcpy(item_base, &guard.base, sizeof(pmt_item_base_t));
+            return item_base;
+
+        case ITEM_SUBTYPE_UNIT:
             pmt_unit_bb_t unit = { 0 };
             if (err = pmt_lookup_unit_bb(item->datal[0], &unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
@@ -2746,16 +2885,7 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
             memcpy(item_base, &unit.base, sizeof(pmt_item_base_t));
             return item_base;
         }
-        else if ((item->datab[1] == ITEM_SUBTYPE_FRAME) || (item->datab[1] == ITEM_SUBTYPE_BARRIER)) {
-            pmt_guard_bb_t guard = { 0 };
-            if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
-                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-                return NULL;
-            }
-            memcpy(item_base, &guard.base, sizeof(pmt_item_base_t));
-            return item_base;
-        }
-        ERR_LOG("invalid item");
+        ERR_LOG("无效物品 0x%08X", item->datal[0]);
         break;
 
     case ITEM_TYPE_MAG:
@@ -2775,7 +2905,7 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
         }
 
         if (!&tool) {
-            ERR_LOG("this should be impossible");
+            ERR_LOG("发生错误 0x%08X", item->datal[0]);
             break;
         }
 
@@ -2791,41 +2921,102 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
         //}
 
     case ITEM_TYPE_MESETA:
-        ERR_LOG("item is meseta and therefore has no definition");
+        ERR_LOG("美赛塔之类的物品没有定义");
         break;
 
     default:
-        ERR_LOG("invalid item");
+        ERR_LOG("无效物品 0x%08X", item->datal[0]);
         break;
     }
 
     return NULL;
 }
 
+uint8_t get_item_stars(uint16_t index) {
+    if ((index >= 0xB1) && (index < 0x437)) {
+        uint8_t star = star_table_bb[index - 0xB1];
+#ifdef DEBUG
+        DBG_LOG("%d", star);
+#endif // DEBUG
+        return star;
+    }
+    return 0;
+}
+
 uint8_t get_item_base_stars(const item_t* item) {
-    if (item->datab[0] == 2) {
-        return (item->datab[1] > 0x27) ? 12 : 0;
-    }
-    else if (item->datab[0] < 2) {
-        return pmt_lookup_stars_bb(item->datal[0]);
-    }
-    else if (item->datab[0] == 3) {
+    uint8_t star = 0;
+
+    switch (item->datab[0]) {
+    case ITEM_TYPE_WEAPON:
+    case ITEM_TYPE_GUARD:
+        uint32_t id = get_item_definition_bb(item)->index;
+        star = get_item_stars(id);
+        break;
+
+    case ITEM_TYPE_MAG:
+        star = (item->datab[1] > 0x27) ? 12 : 0;
+        break;
+
+    case ITEM_TYPE_TOOL:
         pmt_tool_bb_t def = { 0 };
 
         if (pmt_lookup_tools_bb(item->datal[0], &def)) {
-            ERR_LOG("不存在物品数据!");
-            return -3;
+            ERR_LOG("不存在物品数据! 0x%08X", item->datal[0]);
+            return -1;
         }
 
-        return (def.itemFlag & 0x80) ? 12 : 0;
+        star = (def.itemFlag & 0x80) ? 12 : 0;
+        break;
     }
-    else {
+
+    return star;
+
+}
+
+uint8_t get_special_stars(uint8_t det) {
+    if (!(det & 0x3F) || (det & 0x80)) {
         return 0;
     }
+    // Note: PSO GC uses 0x1CB here. 0x256 was chosen to point to the same data in
+    // PSO BB's ItemPMT file.
+    return get_item_stars(det + 0x0256);
+}
+
+uint8_t get_item_adjusted_stars(const item_t* item) {
+    uint8_t ret = get_item_base_stars(item);
+    if (item->datab[0] == 0) {
+        if (ret < 9) {
+            if (!(item->datab[4] & 0x80)) {
+                ret += get_special_stars(item->datab[4]);
+            }
+        }
+        else if (item->datab[4] & 0x80) {
+            ret = 0;
+        }
+    }
+    else if (item->datab[0] == 1) {
+        if (item->datab[1] == 3) {
+            int16_t unit_bonus = get_unit_bonus(item);
+            if (unit_bonus < 0) {
+                ret--;
+            }
+            else if (unit_bonus > 0) {
+                ret++;
+            }
+        }
+    }
+    return MIN(ret, 12);
 }
 
 bool is_item_rare(const item_t* item) {
-    return (get_item_base_stars(item) >= 9);
+    uint8_t item_base_star = get_item_base_stars(item);
+    if (item_base_star == 0xFF)
+        item_base_star = 0;
+#ifdef DEBUG
+    DBG_LOG("item_base_star %d", item_base_star);
+#endif // DEBUG
+    bool is_rare = item_base_star >= 9;
+    return is_rare;
 }
 
 

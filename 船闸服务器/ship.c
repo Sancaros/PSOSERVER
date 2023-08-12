@@ -2780,7 +2780,12 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
     uint16_t data_len = ntohs(pkt->hdr.pkt_len) - sizeof(shipgate_char_data_pkt);
     psocn_bb_db_char_t* char_data = (psocn_bb_db_char_t*)pkt->data;
 
-    //display_packet(&pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
+#ifdef DEBUG
+
+    display_packet(&pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
+    DBG_LOG("数据存储");
+
+#endif // DEBUG
 
     gc = ntohl(pkt->guildcard);
     slot = ntohl(pkt->slot);
@@ -3498,6 +3503,18 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     slot = ntohl(pkt->slot);
     bl = ntohl(pkt->blocknum);
 
+    if (db_update_gc_char_last_block(gc, slot, bl)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+    }
+
+    if (db_update_gc_char_login_state(gc, 1)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+    }
+
     /* Is this a transient client (that is to say someone on the PC NTE)? */
     if (gc >= 500 && gc < 600)
         tbl_nm = SERVER_CLIENTS_TRANSIENT;
@@ -3520,12 +3537,6 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     /* None of the rest of this applies to PC NTE clients at all... */
     if (gc >= 500 && gc < 600)
         return 0;
-
-    if (db_update_gc_char_login_state(gc, slot, 1, bl)) {
-        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
-        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
-    }
 
     /* Find anyone that has the user in their friendlist so we can send a
        message to them */
@@ -3840,6 +3851,18 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
     slot = ntohl(pkt->slot);
     bl = ntohl(pkt->blocknum);
 
+    if (db_update_gc_char_last_block(gc, slot, bl)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+    }
+
+    if (db_update_gc_char_login_state(gc, 0)) {
+        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
+        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+    }
+
     /* Is this a transient client (that is to say someone on the PC NTE)? */
     if (gc >= 500 && gc < 600) {
         /* Delete the client from the transient_clients table */
@@ -3858,18 +3881,6 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
 
     if (psocn_db_real_query(&conn, query)) {
         return 0;
-    }
-
-    if (db_update_gc_char_login_state(gc, slot, 0, bl)) {
-        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
-        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
-    }
-
-    if (db_remove_gc_char_login_state(gc, 0)) {
-        SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
-        return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
     }
 
     /* Find anyone that has the user in their friendlist so we can send a

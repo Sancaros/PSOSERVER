@@ -25,6 +25,7 @@
 
 #include <AFS.h>
 #include <GSL.h>
+#include <PRS.h>
 
 #include "rtdata.h"
 #include "ship_packets.h"
@@ -40,6 +41,71 @@ static double expand_rate(uint8_t rate) {
 
     expd = (2 << tmp) * ((rate & 7) + 7);
     return (double)expd / (double)0x100000000ULL;
+}
+
+uint32_t byteswap(uint32_t e) {
+    return (((e >> 24) & 0xFF) | (((e >> 16) & 0xFF) << 8) | (((e >> 8) & 0xFF) << 16) | ((e & 0xFF) << 24));
+}
+
+uint32_t be_convert_to_le_uint32(uint8_t item_code[3]) {
+    uint32_t result = 0;
+
+    result |= ((uint32_t)item_code[2]) << 16;
+    result |= ((uint32_t)item_code[1]) << 8;
+    result |= item_code[0];
+
+    return result;
+}
+
+uint32_t little_endian_value(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) {
+    return ((uint32_t)b4 << 24) | ((uint32_t)b3 << 16) | ((uint32_t)b2 << 8) | b1;
+}
+
+uint16_t key_for_params(uint32_t mode, uint32_t episode, uint8_t difficulty, uint8_t secid) {
+    if (difficulty > 3) {
+        // 抛出异常
+        ERR_LOG("incorrect difficulty");
+        return 0;
+    }
+    if (secid > 10) {
+        // 抛出异常
+        ERR_LOG("incorrect section id");
+        return 0;
+    }
+
+    uint16_t key = ((difficulty & 3) << 4) | (secid & 0x0F);
+    switch (mode) {
+    case 0:
+        break;
+    case 1:
+        key |= 0x0040;
+        break;
+    case 2:
+        key |= 0x0080;
+        break;
+    case 3:
+        key |= 0x00C0;
+        break;
+    default:
+        // 抛出异常
+        ERR_LOG("invalid gamemode in RareItemSet");
+        return 0;
+    }
+    switch (episode) {
+    case GAME_TYPE_EPISODE_1:
+        break;
+    case GAME_TYPE_EPISODE_2:
+        key |= 0x0100;
+        break;
+    case GAME_TYPE_EPISODE_4:
+        key |= 0x0200;
+        break;
+    default:
+        // 抛出异常
+        ERR_LOG("invalid episode in RareItemSet");
+        return 0;
+    }
+    return key;
 }
 
 int rt_read_v2(const char *fn) {
@@ -278,121 +344,212 @@ out:
 }
 
 int rt_read_bb(const char* fn) {
-    FILE* fp;
-    uint8_t buf[30];
-    int rv = 0, i, j, k, l;
-    uint32_t offsets[160] = { 0 }, tmp;
-    rt_entry_t ent;
+    pso_gsl_read_t* a;
+    const char difficulties[4] = { 'n', 'h', 'v', 'u' };
+    //EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+    const char* game_type[4] = { "", "l" , "c", "bb" };
+    char filename[32];
+    uint32_t hnd;
+    const size_t sz = sizeof(rt_table_t);
+    pso_error_t err;
+    int rv = 0, 章节, 难度, 颜色/*, l, m*/;
+    rt_table_t* buf;
+    rt_table_t* ent;
 
-    have_bbrt = 0;
+    if (!(buf = (rt_table_t*)malloc(sizeof(rt_table_t)))) {
+        ERR_LOG("无法为 ItemRT 数据条目分配内存空间!");
+        return -6;
+    }
 
-    /* Open up the file */
-    if (!(fp = fopen(fn, "rb"))) {
-        ERR_LOG("无法打开 ItemRT 文件 %s: %s", fn, strerror(errno));
+    /* Open up the file and make sure it looks sane enough... */
+    if (!(a = pso_gsl_read_open(fn, 0, &err))) {
+        ERR_LOG("%d 无法读取 BB %s: %s", a, fn, pso_strerror(err));
+        free_safe(buf);
         return -1;
     }
 
-    /* Read in the offsets and lengths for the Episode I & II & IV data. */
-    for (i = 0; i < 160; ++i) {
-        if (fseek(fp, 32, SEEK_CUR)) {
-            ERR_LOG("fseek错误: %s", strerror(errno));
-            rv = -2;
-            goto out;
-        }
-
-        if (fread(buf, 1, 4, fp) != 4) {
-            ERR_LOG("读取文件错误: %s", strerror(errno));
-            rv = -2;
-            goto out;
-        }
-
-        /* The offsets are in 2048 byte blocks. */
-        offsets[i] = (buf[3]) | (buf[2] << 8) | (buf[1] << 16) | (buf[0] << 24);
-        offsets[i] <<= 11;
-
-        if (fread(buf, 1, 4, fp) != 4) {
-            ERR_LOG("读取文件错误: %s", strerror(errno));
-            rv = -2;
-            goto out;
-        }
-
-        if (buf[0] != 0 || buf[1] != 0 || buf[2] != 0x02 || buf[3] != 0x80) {
-            ERR_LOG("ItemRT.gsl 中的条目大小无效!");
-            rv = 5;
-            goto out;
-        }
-
-        /* Skip over the padding. */
-        if (fseek(fp, 8, SEEK_CUR)) {
-            ERR_LOG("fseek错误: %s", strerror(errno));
-            rv = -2;
-            goto out;
-        }
+    /* Make sure the archive has the correct number of entries. */
+    if (pso_gsl_file_count(a) != 0xA0) {
+        ERR_LOG("%s 数据似乎不完整. 读取字节 0x%zX", fn, pso_gsl_file_count(a));
+        rv = -2;
+        goto out;
     }
 
-    //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
+    /* Now, parse each entry... */
+    for (章节 = 0; 章节 < 4; ++章节) {
+        for (难度 = 0; 难度 < 4; ++难度) {
+            for (颜色 = 0; 颜色 < 10; ++颜色) {
+                /* Figure out the name of the file in the archive that we're
+                   looking for... */
+                snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
+                    tolower(abbreviation_for_difficulty(难度)), 颜色);
 
-    /* 开始分析每一个实例数据.. */
-    for (i = 0; i < 4; ++i) {
-        for (j = 0; j < 4; ++j) {
-            for (k = 0; k < 10; ++k) {
-                if (fseek(fp, (long)offsets[i * 40 + j * 10 + k], SEEK_SET)) {
-                    ERR_LOG("fseek错误: %s", strerror(errno));
-                    rv = -2;
+                //DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+
+                /* Grab a handle to that file. */
+                hnd = pso_gsl_file_lookup(a, filename);
+                if (hnd == PSOARCHIVE_HND_INVALID) {
+                    ERR_LOG("%s 缺少 %s 文件!", fn, filename);
+                    rv = -3;
                     goto out;
                 }
 
-                /* Read in the enemy entries */
-                for (l = 0; l < 0x65; ++l) {
-                    if (fread(&ent, 1, sizeof(rt_entry_t), fp) !=
-                        sizeof(rt_entry_t)) {
-                        ERR_LOG("读取 ItemRT 文件错误: %s",
-                            strerror(errno));
-                        rv = -2;
-                        goto out;
-                    }
-					
-                    tmp = ent.item_data[0] | (ent.item_data[1] << 8) |
-                        (ent.item_data[2] << 16);
-                    bb_rtdata[i][j][k].enemy_rares[l].prob =
-                        expand_rate(ent.prob);
-                    bb_rtdata[i][j][k].enemy_rares[l].item_data = tmp;
-                    bb_rtdata[i][j][k].enemy_rares[l].area = 0; /* Unused */
-                }
-
-                /* Read in the box entries */
-                if (fread(buf, 1, 30, fp) != 30) {
-                    ERR_LOG("读取 ItemRT 文件错误: %s", strerror(errno));
-                    rv = -2;
+                /* Make sure the size is correct. */
+                if ((err = pso_gsl_file_size(a, hnd)) != 0x280) {
+                    ERR_LOG("%s 文件 %s 大小无效! 期待大小 0x%zX", fn,
+                        filename, err);
+                    rv = -4;
                     goto out;
                 }
 
-                for (l = 0; l < 30; ++l) {
-                    if (fread(&ent, 1, sizeof(rt_entry_t), fp) !=
-                        sizeof(rt_entry_t)) {
-                        ERR_LOG("读取 ItemRT 文件错误: %s",
-                            strerror(errno));
-                        rv = -2;
-                        goto out;
-                    }
-					
-                    tmp = ent.item_data[0] | (ent.item_data[1] << 8) |
-                        (ent.item_data[2] << 16);
-                    bb_rtdata[i][j][k].box_rares[l].prob =
-                        expand_rate(ent.prob);
-                    bb_rtdata[i][j][k].box_rares[l].item_data = tmp;
-                    bb_rtdata[i][j][k].box_rares[l].area = buf[k];
+                if (pso_gsl_file_read(a, hnd, buf, sz) != sz) {
+                    ERR_LOG("读取 %s 错误,路径 %s!",
+                        filename, fn);
+                    rv = -5;
+                    goto out;
                 }
+
+                /* Dump it into our nicer (not packed) structure. */
+                ent = &bb_rtdata[章节][难度][颜色];
+
+                memcpy(ent, buf, sz);
+
+                //for (size_t x = 0; x < 0x1E; x++) {
+                //    DBG_LOG("item_code0 0x%02X", ent->box_rares->item_code[0]);
+                //    DBG_LOG("item_code1 0x%02X", ent->box_rares->item_code[1]);
+                //    DBG_LOG("item_code2 0x%02X", ent->box_rares->item_code[2]);
+                //    DBG_LOG("probability %d", ent->box_rares->probability);
+                //    DBG_LOG("/////////////////");
+                //}
+
             }
         }
     }
 
-    have_gcrt = 1;
+    have_bbrt = 1;
 
 out:
-    fclose(fp);
+    pso_gsl_read_close(a);
+    free_safe(buf);
     return rv;
 }
+
+//int rt_read_bb(const char* fn) {
+//    FILE* fp;
+//    uint8_t buf[30];
+//    int rv = 0, i, j, k, l;
+//    uint32_t offsets[160] = { 0 }, tmp;
+//    rt_entry_t ent;
+//
+//    have_bbrt = 0;
+//
+//    /* Open up the file */
+//    if (!(fp = fopen(fn, "rb"))) {
+//        ERR_LOG("无法打开 ItemRT 文件 %s: %s", fn, strerror(errno));
+//        return -1;
+//    }
+//
+//    /* Read in the offsets and lengths for the Episode I & II & IV data. */
+//    for (i = 0; i < 160; ++i) {
+//        if (fseek(fp, 32, SEEK_CUR)) {
+//            ERR_LOG("fseek错误: %s", strerror(errno));
+//            rv = -2;
+//            goto out;
+//        }
+//
+//        if (fread(buf, 1, 4, fp) != 4) {
+//            ERR_LOG("读取文件错误: %s", strerror(errno));
+//            rv = -2;
+//            goto out;
+//        }
+//
+//        /* The offsets are in 2048 byte blocks. */
+//        offsets[i] = (buf[3]) | (buf[2] << 8) | (buf[1] << 16) | (buf[0] << 24);
+//        offsets[i] <<= 11;
+//
+//        if (fread(buf, 1, 4, fp) != 4) {
+//            ERR_LOG("读取文件错误: %s", strerror(errno));
+//            rv = -2;
+//            goto out;
+//        }
+//
+//        if (buf[0] != 0 || buf[1] != 0 || buf[2] != 0x02 || buf[3] != 0x80) {
+//            ERR_LOG("ItemRT.gsl 中的条目大小无效!");
+//            rv = 5;
+//            goto out;
+//        }
+//
+//        /* Skip over the padding. */
+//        if (fseek(fp, 8, SEEK_CUR)) {
+//            ERR_LOG("fseek错误: %s", strerror(errno));
+//            rv = -2;
+//            goto out;
+//        }
+//    }
+//
+//    //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
+//
+//    /* 开始分析每一个实例数据.. */
+//    for (i = 0; i < 4; ++i) {
+//        for (j = 0; j < 4; ++j) {
+//            for (k = 0; k < 10; ++k) {
+//                if (fseek(fp, (long)offsets[i * 40 + j * 10 + k], SEEK_SET)) {
+//                    ERR_LOG("fseek错误: %s", strerror(errno));
+//                    rv = -2;
+//                    goto out;
+//                }
+//
+//                /* Read in the enemy entries */
+//                for (l = 0; l < 0x65; ++l) {
+//                    if (fread(&ent, 1, sizeof(rt_entry_t), fp) !=
+//                        sizeof(rt_entry_t)) {
+//                        ERR_LOG("读取 ItemRT 文件错误: %s",
+//                            strerror(errno));
+//                        rv = -2;
+//                        goto out;
+//                    }
+//
+//                    tmp = ent.item_data[0] | (ent.item_data[1] << 8) |
+//                        (ent.item_data[2] << 16);
+//                    bb_rtdata[i][j][k].enemy_rares[l].prob =
+//                        expand_rate(ent.prob);
+//                    bb_rtdata[i][j][k].enemy_rares[l].item_data = tmp;
+//                    bb_rtdata[i][j][k].enemy_rares[l].area = 0; /* Unused */
+//                }
+//
+//                /* Read in the box entries */
+//                if (fread(buf, 1, 30, fp) != 30) {
+//                    ERR_LOG("读取 ItemRT 文件错误: %s", strerror(errno));
+//                    rv = -2;
+//                    goto out;
+//                }
+//
+//                for (l = 0; l < 30; ++l) {
+//                    if (fread(&ent, 1, sizeof(rt_entry_t), fp) !=
+//                        sizeof(rt_entry_t)) {
+//                        ERR_LOG("读取 ItemRT 文件错误: %s",
+//                            strerror(errno));
+//                        rv = -2;
+//                        goto out;
+//                    }
+//
+//                    tmp = ent.item_data[0] | (ent.item_data[1] << 8) |
+//                        (ent.item_data[2] << 16);
+//                    bb_rtdata[i][j][k].box_rares[l].prob =
+//                        expand_rate(ent.prob);
+//                    bb_rtdata[i][j][k].box_rares[l].item_data = tmp;
+//                    bb_rtdata[i][j][k].box_rares[l].area = buf[k];
+//                }
+//            }
+//        }
+//    }
+//
+//    have_bbrt = 1;
+//
+//out:
+//    fclose(fp);
+//    return rv;
+//}
 
 int rt_v2_enabled(void) {
     return have_v2rt;
@@ -488,7 +645,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     int area) {
     struct mt19937_state* rng = &src->cur_block->rng;
     double rnd;
-    rt_set_t* set;
+    rt_table_t* set;
     int i;
     int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
     uint8_t game_type = 0;//和游戏章节类型相关
@@ -536,20 +693,22 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     if (rt_index >= 0) {
         rnd = mt19937_genrand_real1(rng);
 
-        //DBG_LOG("rnd %d prob %d", rnd, set->enemy_rares[rt_index].prob);
+        //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->enemy_rares[rt_index].probability));
 
-        if ((rnd < set->enemy_rares[rt_index].prob) || src->game_data->gm_drop_rare)
-            return set->enemy_rares[rt_index].item_data;
+        if ((rnd < expand_rate(set->enemy_rares[rt_index].probability)) || src->game_data->gm_drop_rare)
+            //return set->enemy_rares[rt_index].item_data;
+            return be_convert_to_le_uint32(set->enemy_rares[rt_index].item_code);
     }
     else {
         for (i = 0; i < 30; ++i) {
-            if (set->box_rares[i].area == area) {
+            if (set->box_areas[i] == area) {
                 rnd = mt19937_genrand_real1(rng);
 
-                //DBG_LOG("rnd %d prob %d", rnd, set->box_rares[i].prob);
+                //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->box_rares[i].probability));
 
-                if ((rnd < set->box_rares[i].prob) || src->game_data->gm_drop_rare)
-                    return set->box_rares[i].item_data;
+                if ((rnd < expand_rate(set->box_rares[i].probability)) || src->game_data->gm_drop_rare)
+                    //return set->box_rares[i].item_data;
+                    return be_convert_to_le_uint32(set->box_rares[i].item_code);
             }
         }
     }

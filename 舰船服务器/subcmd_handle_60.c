@@ -1062,7 +1062,6 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = LE32(pkt->item_id);
-    size_t index;
     errno_t err;
 
     /* We can't get these in default lobbies without someone messing with
@@ -1075,26 +1074,18 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->shdr.size != 0x02)
-        return -1;
-
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
-
-    index = find_iitem_index(inv, item_id);
-
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (index == -1) {
-        ERR_LOG("GC %" PRIu32 " 使用无效物品!", src->guildcard);
-        return -1;
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送错误使用物品数据!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -2;
     }
 
-    if ((err = player_use_item(src, index))) {
+    if ((err = player_use_item(src, item_id))) {
         ERR_LOG("GC %" PRIu32 " 使用物品发生错误! 错误码 %d",
             src->guildcard, err);
-        return -2;
+        return -3;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -1103,8 +1094,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    size_t feed_mag_index = -1, feed_item_index = -1;
-    uint32_t feed_mag_id = pkt->mag_item_id, feed_item_id = pkt->fed_item_id;
+    uint32_t feed_mag_item_id = pkt->mag_item_id, feed_item_item_id = pkt->fed_item_id;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1124,33 +1114,11 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
-
-    feed_mag_index = find_iitem_index(inv, feed_mag_id);
-
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (feed_mag_index == -1) {
-        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 玛古!", src->guildcard, feed_mag_id);
-        return 0;
-    }
-
-    feed_item_index = find_iitem_index(inv, feed_item_id);
-
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (feed_item_index == -1) {
-        ERR_LOG("GC %" PRIu32 " 喂养无效ID 0x%08X 物品!", src->guildcard, feed_item_id);
-        return 0;
-    }
-
-    errno_t err = player_feed_mag(src, feed_mag_index, feed_item_index);
-
+    errno_t err = player_feed_mag(src, feed_mag_item_id, feed_item_item_id);
     if (err) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据! 错误码 %d",
             src->guildcard, err);
-        return -4;
+        return -2;
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2438,39 +2406,39 @@ int handle_bb_battle_mode(ship_client_t* src,
                 case 0x02:
                     // Copy character backup
                     if (lc->game_data->char_backup && lc->guildcard)
-                        memcpy(&lc->pl->bb.character, lc->game_data->char_backup, sizeof(lc->pl->bb.character));
+                        memcpy(&lc->mode_pl->bb, lc->game_data->char_backup, sizeof(lc->mode_pl->bb));
 
                     if (lc->mode == 0x02) {
-                        for (ch2 = 0; ch2 < lc->pl->bb.character.inv.item_count; ch2++)
+                        for (ch2 = 0; ch2 < lc->mode_pl->bb.inv.item_count; ch2++)
                         {
-                            if (lc->pl->bb.character.inv.iitems[ch2].data.datab[0] == 0x02)
-                                lc->pl->bb.character.inv.iitems[ch2].present = 0;
+                            if (lc->mode_pl->bb.inv.iitems[ch2].data.datab[0] == 0x02)
+                                lc->mode_pl->bb.inv.iitems[ch2].present = 0;
                         }
-                        //CleanUpInventory(lc);
-                        lc->pl->bb.character.disp.meseta = 0;
+                        fix_client_inv(&lc->mode_pl->bb.inv);
+                        lc->mode_pl->bb.disp.meseta = 0;
                     }
                     break;
                 case 0x03:
                     // Wipe items and reset level.
                     for (ch2 = 0; ch2 < 30; ch2++)
-                        lc->pl->bb.character.inv.iitems[ch2].present = 0;
-                    //CleanUpInventory(lc);
+                        lc->mode_pl->bb.inv.iitems[ch2].present = 0;
+                    fix_client_inv(&lc->mode_pl->bb.inv);
 
-                    uint8_t ch_class = lc->pl->bb.character.dress_data.ch_class;
+                    uint8_t ch_class = lc->mode_pl->bb.dress_data.ch_class;
 
-                    lc->pl->bb.character.disp.level = 0;
-                    lc->pl->bb.character.disp.exp = 0;
+                    lc->mode_pl->bb.disp.level = 0;
+                    lc->mode_pl->bb.disp.exp = 0;
 
-                    lc->pl->bb.character.disp.stats.atp = bb_char_stats.start_stats[ch_class].atp;
-                    lc->pl->bb.character.disp.stats.mst = bb_char_stats.start_stats[ch_class].mst;
-                    lc->pl->bb.character.disp.stats.evp = bb_char_stats.start_stats[ch_class].evp;
-                    lc->pl->bb.character.disp.stats.hp = bb_char_stats.start_stats[ch_class].hp;
-                    lc->pl->bb.character.disp.stats.dfp = bb_char_stats.start_stats[ch_class].dfp;
-                    lc->pl->bb.character.disp.stats.ata = bb_char_stats.start_stats[ch_class].ata;
+                    lc->mode_pl->bb.disp.stats.atp = bb_char_stats.start_stats[ch_class].atp;
+                    lc->mode_pl->bb.disp.stats.mst = bb_char_stats.start_stats[ch_class].mst;
+                    lc->mode_pl->bb.disp.stats.evp = bb_char_stats.start_stats[ch_class].evp;
+                    lc->mode_pl->bb.disp.stats.hp = bb_char_stats.start_stats[ch_class].hp;
+                    lc->mode_pl->bb.disp.stats.dfp = bb_char_stats.start_stats[ch_class].dfp;
+                    lc->mode_pl->bb.disp.stats.ata = bb_char_stats.start_stats[ch_class].ata;
 
                     /*if (l->battle_level > 1)
                         SkipToLevel(l->battle_level - 1, lc, 1);*/
-                    lc->pl->bb.character.disp.meseta = 0;
+                    lc->mode_pl->bb.disp.meseta = 0;
                     break;
                 default:
                     // Unknown mode?
@@ -3888,7 +3856,6 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sell_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id, sell_amount = pkt->sell_amount;
-    size_t i;
 
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
@@ -3909,30 +3876,21 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
-        player = &src->mode_pl->bb;
+        character = &src->mode_pl->bb;
 
-    i = find_iitem_index(&player->inv, item_id);
-
-    /* 如果找不到该物品，则将用户从船上推下. */
-    if (i == -1) {
-        ERR_LOG("GC %" PRIu32 " 售卖无效物品!", src->guildcard);
+    iitem_t iitem = remove_iitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
+    if (&iitem == NULL) {
+        ERR_LOG("GC %" PRIu32 ":%d 出售 %d 件 ID 0x%04X 失败", 
+            src->guildcard, src->sec_data.slot, sell_amount, item_id);
         return -1;
     }
 
-    uint32_t shop_price = get_bb_shop_price(&player->inv.iitems[i]) * sell_amount;
+    uint32_t sell_price = (price_for_item(&iitem.data) >> 3) * sell_amount;
 
-    player->disp.meseta = MIN(
-        player->disp.meseta + shop_price, 999999);
-
-    iitem_t item = remove_iitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
-    if (&item == NULL) {
-        player->disp.meseta -= shop_price;
-        ERR_LOG("出售 %d 件 ID 0x%04X 失败", sell_amount, item_id);
-        return -1;
-    }
+    character->disp.meseta = MIN(character->disp.meseta + sell_price, 999999);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4072,16 +4030,12 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
-        player = &src->mode_pl->bb;
+        character = &src->mode_pl->bb;
 
-    /* 从客户端扣除10美赛塔 TODO 设置文件自定义. */
-    player->disp.meseta -= 10;
-
-    if (!src->mode)
-        src->pl->bb.character.disp.meseta = player->disp.meseta;
+    subcmd_send_bb_delete_meseta(src, character, 10, false);
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -4233,17 +4187,12 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_disp_char_t* disp = &src->bb_pl->character.disp;
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
-        disp = &src->mode_pl->bb.disp;
+        character = &src->mode_pl->bb;
 
-    if (meseta_amount > disp->meseta) {
-        disp->meseta = 0;
-    }
-    else {
-        disp->meseta -= meseta_amount;
-    }
+    subcmd_send_bb_delete_meseta(src, character, meseta_amount, false);
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);

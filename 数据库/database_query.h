@@ -65,9 +65,8 @@ int db_check_gc_online(uint32_t gc);
 uint32_t db_remove_account_login_state_from_ship(uint16_t key_idx);
 
 /* 更新玩家数据在线情况 */
-int db_remove_gc_char_login_state(uint32_t gc, uint32_t islogined);
-int db_update_gc_char_login_state(uint32_t gc, uint32_t char_slot,
-    uint32_t islogged, uint32_t block_num);
+int db_update_gc_char_login_state(uint32_t gc, uint32_t islogined);
+int db_update_gc_char_last_block(uint32_t gc, uint32_t char_slot, uint32_t block_num);
 
 /* 更新玩家账户在线情况 */
 int db_update_gc_login_state(uint32_t gc, int islogged, int char_slot, char* char_name);

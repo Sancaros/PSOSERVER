@@ -1809,6 +1809,38 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     }
 }
 
+static int bb_process_ping(ship_client_t* c, uint8_t* pkt) {
+
+    //ship_client_t* it;
+    //uint32_t gc = 0;
+
+    /* Ignore these. */
+    c->last_message = time(NULL);
+
+    ///* 首先搜索本地的舰船. */
+    //for (size_t i = 0; i < ship->cfg->blocks; ++i) {
+    //    if (!ship->blocks[i] || !ship->blocks[i]->run) {
+    //        continue;
+    //    }
+
+    //    pthread_rwlock_rdlock(&ship->blocks[i]->lock);
+
+    //    /* 查看该舰仓的所有客户端. */
+    //    TAILQ_FOREACH(it, ship->blocks[i]->clients, qentry) {
+    //        /* Check if this is the target and the target has player
+    //           data. */
+    //        if (it->guildcard) {
+    //            pthread_mutex_lock(&it->mutex);
+    //            rv = send_simple(it, PING_TYPE, 0);
+    //            pthread_mutex_unlock(&it->mutex);
+    //        }
+    //    }
+
+    //    pthread_rwlock_unlock(&ship->blocks[i]->lock);
+    //}
+    return 0;
+}
+
 static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __try {
         uint8_t type;
@@ -1908,9 +1940,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 
             /* 0x001D 29*/
         case PING_TYPE:
-            /* Ignore these. */
-            c->last_message = time(NULL);
-            return 0;
+            return bb_process_ping(c, pkt);
 
             /* 0x0060 96*/
         case GAME_COMMAND0_TYPE:

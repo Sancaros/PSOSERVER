@@ -505,7 +505,7 @@ int db_update_char_inv(inventory_t* inv, uint32_t gc, uint8_t slot) {
 	inv->item_count = ic;
 
 	if (db_update_inv_param(inv, gc, slot)) {
-		//SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
+		SQLERR_LOG("无法查询(GC%" PRIu32 ":%" PRIu8 "槽)角色背包参数数据", gc, slot);
 		return -1;
 	}
 

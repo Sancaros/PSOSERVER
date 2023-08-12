@@ -18,6 +18,10 @@
 #ifndef PMTDATA_H
 #define PMTDATA_H
 
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -124,8 +128,6 @@ typedef struct pmt_weapon_bb {
     uint8_t tech_boost;
     uint8_t combo_type;
 } PACKED pmt_weapon_bb_t;
-
-static const int pmtdsa = sizeof(pmt_weapon_bb_t);
 
 typedef struct pmt_guard_v2 {
     uint32_t index;
@@ -314,6 +316,10 @@ typedef struct pmt_nonweaponsaledivisors_bb {
     float mag_divisor;
 } PACKED pmt_nonweaponsaledivisors_bb_t;
 
+typedef struct pmt_weaponsaledivisors_bb {
+    float sale_divisor[0xA5];
+} PACKED pmt_weaponsaledivisors_bb_t;
+
 typedef struct pmt_mag_feed_result {
     int8_t def;
     int8_t pow;
@@ -498,6 +504,10 @@ uint32_t unsealableitems_max_bb;
 pmt_mag_feed_results_list_t** mag_feed_results_list;
 pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
 
+static pmt_nonweaponsaledivisors_bb_t nonweaponsaledivisors_bb;
+
+float* weaponsaledivisors_bb;
+
 int have_v2_pmt;
 int have_gc_pmt;
 int have_bb_pmt;
@@ -535,13 +545,19 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv);
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
 int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv);
 int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t item_index, pmt_mag_feed_result_t* rv);
+float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2);
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     struct mt19937_state* rng, lobby_t* l);
 uint8_t pmt_lookup_stars_bb(uint32_t code);
 
 pmt_item_base_t* get_item_definition_bb(const item_t* item);
+
+uint8_t get_item_stars(uint16_t slot);
 uint8_t get_item_base_stars(const item_t* item);
+uint8_t get_special_stars(uint8_t det);
+uint8_t get_item_adjusted_stars(const item_t* item);
+
 bool is_item_rare(const item_t* item);
 
 #endif /* !PMTDATA_H */

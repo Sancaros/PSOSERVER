@@ -40,6 +40,40 @@ typedef struct rt_entry {
     uint8_t item_data[3];
 } PACKED rt_entry_t;
 
+typedef struct PackedDrop {
+    uint8_t probability;
+    uint8_t item_code[3];
+} PACKED PackedDrop_t;
+
+typedef struct ExpandedDrop {
+    uint32_t probability;
+    uint8_t item_code[3];
+} PACKED ExpandedDrop_t;
+
+typedef struct rt_table {
+    // 0x280 in size; describes one difficulty, section ID, and episode
+    // TODO: It looks like this structure can actually vary. In PSOGC, these all
+    // appear to be the same size/format, but that's probably not strictly
+    // required to be the case.
+    /* 0000 */ PackedDrop_t enemy_rares[0x65];
+    /* 0194 */ uint8_t box_areas[0x1E];
+    /* 01B2 */ PackedDrop_t box_rares[0x1E];
+    /* 022A */ uint8_t unknown_a1[2];
+    /* 022C */ uint32_t enemy_rares_offset; // == 0x0000
+    /* 0230 */ uint32_t box_count; // == 0x1E
+    /* 0234 */ uint32_t box_areas_offset; // == 0x0194
+    /* 0238 */ uint32_t box_rares_offset; // == 0x01B2
+    /* 023C */ uint32_t unused_offset1;
+    /* 0240 */ uint16_t unknown_a2[0x10];
+    /* 0260 */ uint32_t unknown_a2_offset;
+    /* 0264 */ uint32_t unknown_a2_count;
+    /* 0268 */ uint32_t unknown_a3;
+    /* 026C */ uint32_t unknown_a4;
+    /* 0270 */ uint32_t offset_table_offset; // == 0x022C
+    /* 0274 */ uint32_t unknown_a5[3];
+    /* 0280 */
+} PACKED rt_table_t;
+
 #ifndef _WIN32
 #else
 #pragma pack()
@@ -64,7 +98,8 @@ static rt_set_t v2_rtdata[4][10];
 static int have_gcrt = 0;
 static rt_set_t gc_rtdata[2][4][10];
 static int have_bbrt = 0;
-static rt_set_t bb_rtdata[4][4][10];
+//static rt_set_t bb_rtdata[4][4][10];
+static rt_table_t bb_rtdata[4][4][10];
 
 int rt_read_v2(const char *fn);
 int rt_read_gc(const char *fn);

@@ -178,6 +178,23 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
+//size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
+//    size_t x;
+//
+//    for (x = 0; x < inv->item_count; x++) {
+//        if (inv->iitems[x].data.item_id == item_id) {
+//            return x;
+//        }
+//    }
+//
+//    ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
+//    //for (x = 0; x < inv->item_count; x++) {
+//    //    print_iitem_data(&inv->iitems[x], x, 5);
+//    //}
+//
+//    return -1;
+//}
+
 size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
     size_t x;
 
@@ -187,9 +204,9 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
         }
     }
 
-    ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
-    //for (x = 0; x < inv->item_count; x++) {
-    //    print_iitem_data(&inv->iitems[x], x, 5);
+    ERR_LOG("未从银行中找到ID 0x%08X 物品", item_id);
+    //for (x = 0; x < bank->item_count; x++) {
+    //    print_bitem_data(&bank->bitems[x], x, 5);
     //}
 
     return -1;
@@ -606,27 +623,27 @@ bool add_bitem(ship_client_t* src, bitem_t* item) {
     return true;
 }
 
-int player_use_item(ship_client_t* src, size_t item_index) {
+int player_use_item(ship_client_t* src, uint32_t item_id) {
     struct mt19937_state* rng = &src->cur_block->rng;
+    iitem_t* weapon = { 0 };
+    iitem_t* armor = { 0 };
+    iitem_t* mag = { 0 };
     // On PC (and presumably DC), the client sends a 6x29 after this to delete the
     // used item. On GC and later versions, this does not happen, so we should
     // delete the item here.
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
     errno_t err = 0;
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
+    psocn_bb_char_t* character = &src->bb_pl->character;
 
     if (src->mode)
-        player = &src->mode_pl->bb;
+        character = &src->mode_pl->bb;
 
-    iitem_t* iitem = &player->inv.iitems[item_index];
-    iitem_t* weapon = { 0 };
-    iitem_t* armor = { 0 };
-    iitem_t* mag = { 0 };
+    iitem_t* iitem = &character->inv.iitems[find_iitem_index(&character->inv, item_id)];
 
     if (is_common_consumable(primary_identifier(&iitem->data))) { // Monomate, etc.
         // Nothing to do (it should be deleted)
-
+        goto done;
     }
     else if (is_wrapped(&iitem->data)) {
         // Unwrap present
@@ -670,40 +687,38 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         }
     }
     /* 已经修复ITEMPMT的读取顺序 但是保留 后期可以进一步开发 ??? */
-    //else if (item->data.datab[0] == ITEM_TYPE_MAG) {
-    //    switch (item->data.datab[1]) {
-    //    case 0x2B:
-    //        weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
-    //        // Chao Mag used
-    //        if ((weapon->data.datab[1] == 0x68) &&
-    //            (weapon->data.datab[2] == 0x00)) {
-    //            weapon->data.datab[1] = 0x58; // Striker of Chao
-    //            weapon->data.datab[2] = 0x00;
-    //            weapon->data.datab[3] = 0x00;
-    //            weapon->data.datab[4] = 0x00;
-    //        }
-    //        break;
+    else if (iitem->data.datab[0] == ITEM_TYPE_MAG) {
+        switch (iitem->data.datab[1]) {
+        case 0x2B:
+            weapon = &character->inv.iitems[find_equipped_weapon(&character->inv)];
+            // Chao Mag used
+            if ((weapon->data.datab[1] == 0x68) &&
+                (weapon->data.datab[2] == 0x00)) {
+                weapon->data.datab[1] = 0x58; // Striker of Chao
+                weapon->data.datab[2] = 0x00;
+                weapon->data.datab[3] = 0x00;
+                weapon->data.datab[4] = 0x00;
+            }
+            break;
 
-    //    case 0x2C:
-    //        armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
-    //        // Chu Chu mag used
-    //        if ((armor->data.datab[2] == 0x1C)) {
-    //            armor->data.datab[2] = 0x2C; // Chuchu Fever
-    //        }
-    //        break;
-    //    }
-    //}
+        case 0x2C:
+            armor = &character->inv.iitems[find_equipped_armor(&character->inv)];
+            // Chu Chu mag used
+            if ((armor->data.datab[2] == 0x1C)) {
+                armor->data.datab[2] = 0x2C; // Chuchu Fever
+            }
+            break;
+        }
+    }
     else if (iitem->data.datab[0] == ITEM_TYPE_TOOL) {
         switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_DISK: // Technique disk
-            uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[player->dress_data.ch_class];
-
+            uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[character->dress_data.ch_class];
             if (iitem->data.datab[2] > max_level) {
                 ERR_LOG("法术科技光碟等级高于职业可用等级");
                 return -1;
             }
-            player->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
-
+            character->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
             break;
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
@@ -711,47 +726,50 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                 ERR_LOG("无效打磨物品值");
                 return -2;
             }
-
-            weapon = &player->inv.iitems[find_equipped_weapon(&player->inv)];
+            weapon = &character->inv.iitems[find_equipped_weapon(&character->inv)];
             pmt_weapon_bb_t weapon_def = { 0 };
-
             if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                     src->guildcard);
                 return -3;
             }
-
             if (weapon->data.datab[3] >= weapon_def.max_grind) {
                 ERR_LOG("武器已达最大打磨值");
                 return -4;
             }
-
             weapon->data.datab[3] += (iitem->data.datab[2] + 1);
             break;
 
         case ITEM_SUBTYPE_MATERIAL:
             switch (iitem->data.datab[2]) {
             case 0x00: // Power Material
-                player->disp.stats.atp += 2;
+                character->disp.stats.atp += 2;
                 break;
+
             case 0x01: // Mind Material
-                player->disp.stats.mst += 2;
+                character->disp.stats.mst += 2;
                 break;
+
             case 0x02: // Evade Material
-                player->disp.stats.evp += 2;
+                character->disp.stats.evp += 2;
                 break;
+
             case 0x03: // HP Material
-                player->inv.hpmats_used += 2;
+                character->inv.hpmats_used += 2;
                 break;
+
             case 0x04: // TP Material
-                player->inv.tpmats_used += 2;
+                character->inv.tpmats_used += 2;
                 break;
+
             case 0x05: // Def Material
-                player->disp.stats.dfp += 2;
+                character->disp.stats.dfp += 2;
                 break;
+
             case 0x06: // Luck Material
-                player->disp.stats.lck += 2;
+                character->disp.stats.lck += 2;
                 break;
+
             default:
                 ERR_LOG("未知药物 0x%08X", iitem->data.datal[0]);
                 return -5;
@@ -759,17 +777,17 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             break;
 
         case ITEM_SUBTYPE_MAG_CELL1:
-            mag = &player->inv.iitems[find_equipped_mag(&player->inv)];
+            mag = &character->inv.iitems[find_equipped_mag(&character->inv)];
 
             switch (iitem->data.datab[2]) {
             case 0x00:
                 // Cell of MAG 502
-                mag->data.datab[1] = (player->dress_data.section & SID_Greennill) ? 0x1D : 0x21;
+                mag->data.datab[1] = (character->dress_data.section & SID_Greennill) ? 0x1D : 0x21;
                 break;
 
             case 0x01:
                 // Cell of MAG 213
-                mag->data.datab[1] = (player->dress_data.section & SID_Greennill) ? 0x27 : 0x22;
+                mag->data.datab[1] = (character->dress_data.section & SID_Greennill) ? 0x27 : 0x22;
                 break;
 
             case 0x02:
@@ -799,7 +817,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             break;
 
         case ITEM_SUBTYPE_ADD_SLOT:
-            armor = &player->inv.iitems[find_equipped_armor(&player->inv)];
+            armor = &character->inv.iitems[find_equipped_armor(&character->inv)];
 
             if (armor->data.datab[5] >= 4) {
                 ERR_LOG("物品已达最大插槽数量");
@@ -809,8 +827,8 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             break;
 
         case ITEM_SUBTYPE_SERVER_ITEM1:
-            size_t eq_wep = find_equipped_weapon(&player->inv);
-            weapon = &player->inv.iitems[eq_wep];
+            size_t eq_wep = find_equipped_weapon(&character->inv);
+            weapon = &character->inv.iitems[eq_wep];
 
             //アイテムIDの5, 6文字目が1, 2のアイテムの場合（0x0312 * *のとき）
             switch (iitem->data.datab[2]) {//スイッチ文。「使用」するアイテムIDの7, 8文字目をスイッチに使う。
@@ -1061,7 +1079,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
             switch (iitem->data.datab[2]) {
             case 0x03: // WeaponsSilverBadge 031403
                 //Add Exp
-                if (player->disp.level < 200) {
+                if (character->disp.level < 200) {
                     client_give_exp(src, 100000);
                 }
                 break;
@@ -1176,8 +1194,8 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         bool combo_applied = false;
         pmt_itemcombination_bb_t combo = { 0 };
 
-        for (size_t z = 0; z < player->inv.item_count; z++) {
-            iitem_t* inv_item = &player->inv.iitems[z];
+        for (size_t z = 0; z < character->inv.item_count; z++) {
+            iitem_t* inv_item = &character->inv.iitems[z];
             if (!(inv_item->flags & 0x00000008)) {
                 continue;
             }
@@ -1190,12 +1208,12 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                     continue;
                 }
 
-                if (combo.char_class != 0xFF && combo.char_class != player->dress_data.ch_class) {
+                if (combo.char_class != 0xFF && combo.char_class != character->dress_data.ch_class) {
                     ERR_LOG("物品合成需要特定的玩家职业");
-                    ERR_LOG("combo.class %d player %d", combo.char_class, player->dress_data.ch_class);
+                    ERR_LOG("combo.class %d player %d", combo.char_class, character->dress_data.ch_class);
                 }
                 if (combo.mag_level != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(&player->inv) == -1) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(&character->inv) == -1) {
                         ERR_LOG("物品合成适用于mag级别要求,但装备的物品不是mag");
                         ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
                         return -1;
@@ -1206,7 +1224,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                     }
                 }
                 if (combo.grind != 0xFF) {
-                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(&player->inv) == -1) {
+                    if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(&character->inv) == -1) {
                         ERR_LOG("物品合成适用于研磨要求,但装备的物品不是武器");
                         return -3;
                     }
@@ -1215,7 +1233,7 @@ int player_use_item(ship_client_t* src, size_t item_index) {
                         return -4;
                     }
                 }
-                if (combo.level != 0xFF && player->disp.level + 1 < combo.level) {
+                if (combo.level != 0xFF && character->disp.level + 1 < combo.level) {
                     ERR_LOG("物品合成适用于等级要求,但玩家等级过低");
                     return -5;
                 }
@@ -1246,15 +1264,16 @@ int player_use_item(ship_client_t* src, size_t item_index) {
         }
     }
 
+done:
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
     }
 
-    fix_client_inv(&player->inv);
+    fix_client_inv(&character->inv);
 
-    return 0;
+    return err;
 }
 
 int initialize_cmode_iitem(ship_client_t* dest) {
@@ -1795,7 +1814,7 @@ void fix_equip_item(inventory_t* inv) {
         for (i = 0; i < inv->item_count; i++) {
             // Unequip all weapons when there is more than one equipped.  
             // 当装备了多个武器时,取消所装备武器
-            if ((inv->iitems[i].data.datab[0] == 0x00) &&
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_WEAPON) &&
                 (inv->iitems[i].flags & LE32(0x00000008)))
                 inv->iitems[i].flags &= LE32(0xFFFFFFF7);
         }
@@ -1806,8 +1825,8 @@ void fix_equip_item(inventory_t* inv) {
         for (i = 0; i < inv->item_count; i++) {
             // Unequip all armor and slot items when there is more than one armor equipped. 
             // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
-            if ((inv->iitems[i].data.datab[0] == 0x01) &&
-                (inv->iitems[i].data.datab[1] != 0x02) &&
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
+                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
                 (inv->iitems[i].flags & LE32(0x00000008))) {
 
                 inv->iitems[i].data.datab[3] = 0x00;
@@ -1820,8 +1839,8 @@ void fix_equip_item(inventory_t* inv) {
         for (i = 0; i < inv->item_count; i++) {
             // Unequip all shields when there is more than one equipped. 
             // 当装备了多个护盾时，取消装备所有护盾。 
-            if ((inv->iitems[i].data.datab[0] == 0x01) &&
-                (inv->iitems[i].data.datab[1] == 0x02) &&
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
+                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_BARRIER) &&
                 (inv->iitems[i].flags & LE32(0x00000008))) {
 
                 inv->iitems[i].data.datab[3] = 0x00;
@@ -1834,7 +1853,7 @@ void fix_equip_item(inventory_t* inv) {
         for (i = 0; i < inv->item_count; i++) {
             // Unequip all mags when there is more than one equipped. 
             // 当装备了多个玛古时，取消装备所有玛古。 
-            if ((inv->iitems[i].data.datab[0] == 0x02) &&
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_MAG) &&
                 (inv->iitems[i].flags & LE32(0x00000008)))
                 inv->iitems[i].flags &= LE32(0xFFFFFFF7);
         }

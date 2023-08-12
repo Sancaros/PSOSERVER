@@ -4133,7 +4133,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 				break;
 
 			default:
-				ITEM_LOG("ItemRT generated an invalid item: "
+				ITEM_LOG("BB ItemRT 生成无效物品: "
 					"%08X", item[0]);
 				return 0;
 			}
@@ -4159,7 +4159,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 			break;
 
 		default:
-			ITEM_LOG("ItemRT generated an invalid item: %08X",
+			ITEM_LOG("BB ItemRT 生成无效物品: %08X",
 				item[0]);
 			return 0;
 		}

@@ -245,6 +245,18 @@ const char* item_get_name(item_t* item, int version) {
 		return item_get_name_by_code((item_code_t)code, version);
 }
 
+int16_t get_armor_or_shield_defense_bonus(const item_t* item) {
+	return item->dataw[3];
+}
+
+int16_t get_common_armor_evasion_bonus(const item_t* item) {
+	return item->dataw[4];
+}
+
+int16_t get_unit_bonus(const item_t* item) {
+	return item->dataw[3];
+}
+
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version) {
 	ITEM_LOG("物品:(ID %d / %08X) %s",

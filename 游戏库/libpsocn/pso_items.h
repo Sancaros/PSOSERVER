@@ -121,6 +121,10 @@ bool is_common_consumable(uint32_t primary_identifier);
 /* 获取物品名称 */
 const char* item_get_name(item_t* item, int version);
 
+int16_t get_armor_or_shield_defense_bonus(const item_t* item);
+int16_t get_common_armor_evasion_bonus(const item_t* item);
+int16_t get_unit_bonus(const item_t* item);
+
 /* 打印物品数据 */
 void print_item_data(item_t* item, int version);
 
