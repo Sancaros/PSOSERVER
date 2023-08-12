@@ -2574,7 +2574,6 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
 #ifdef DEBUG_GUILD
     DBG_LOG("舰闸:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 #endif // DEBUG_GUILD
-    DBG_LOG("舰闸:BB公会指令 0x%04X %s (长度%d)", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_GUILD_CREATE:

@@ -408,6 +408,7 @@ size_t price_for_item(const item_t* item) {
     pmt_weapon_bb_t pmt_weapon = { 0 };
     pmt_guard_bb_t pmt_guard = { 0 };
     pmt_tool_bb_t pmt_tool = { 0 };
+    errno_t err = 0;
 
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON: {
@@ -425,8 +426,8 @@ size_t price_for_item(const item_t* item) {
             return 0;
         }
 
-        if (pmt_lookup_weapon_bb(item->datal[0], &pmt_weapon)) {
-            ERR_LOG("从PMT未获取到准确的数据! 0x%08X", item->datal[0]);
+        if (err = pmt_lookup_weapon_bb(item->datal[0], &pmt_weapon)) {
+            ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
             return -1;
         }
 
@@ -468,8 +469,8 @@ size_t price_for_item(const item_t* item) {
         int16_t def_bonus = get_armor_or_shield_defense_bonus(item);
         int16_t evp_bonus = get_common_armor_evasion_bonus(item);
 
-        if (pmt_lookup_guard_bb(item->datal[0], &pmt_guard)) {
-            ERR_LOG("从PMT未获取到准确的数据! 0x%08X", item->datal[0]);
+        if (err = pmt_lookup_guard_bb(item->datal[0], &pmt_guard)) {
+            ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
             return -1;
         }
 
@@ -483,8 +484,8 @@ size_t price_for_item(const item_t* item) {
 
     case ITEM_TYPE_TOOL: {
 
-        if (pmt_lookup_tools_bb(item->datal[0], &pmt_tool)) {
-            ERR_LOG("从PMT未获取到准确的数据! 0x%08X", item->datal[0]);
+        if (err = pmt_lookup_tools_bb(item->datal[0], &pmt_tool)) {
+            ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
             return -1;
         }
 

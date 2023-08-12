@@ -1308,7 +1308,7 @@ static int read_gc_map_files(char* fn) {
 int bb_read_params2(psocn_ship_t* cfg) {
     int rv = 0;
     long sz;
-    char* buf, * path;
+    char* buf, *path;
 
     /* Make sure we have a directory set... */
     if (!cfg->bb_param_dir || !cfg->bb_map_dir) {
@@ -1339,12 +1339,12 @@ int bb_read_params2(psocn_ship_t* cfg) {
 
     /* Attempt to read all the files. */
     DBG_LOG("Loading Blue Burst battle parameter data...\n");
-    //rv = read_param_file(battle_params[0][0], "BattleParamEntry_on.dat");
-    //rv += read_param_file(battle_params[0][1], "BattleParamEntry_lab_on.dat");
-    //rv += read_param_file(battle_params[0][2], "BattleParamEntry_ep4_on.dat");
-    //rv += read_param_file(battle_params[1][0], "BattleParamEntry.dat");
-    //rv += read_param_file(battle_params[1][1], "BattleParamEntry_lab.dat");
-    //rv += read_param_file(battle_params[1][2], "BattleParamEntry_ep4.dat");
+    //rv = read_bb_battle_param_file(battle_params[0][0], "BattleParamEntry_on.dat");
+    //rv += read_bb_battle_param_file(battle_params[0][1], "BattleParamEntry_lab_on.dat");
+    //rv += read_bb_battle_param_file(battle_params[0][2], "BattleParamEntry_ep4_on.dat");
+    //rv += read_bb_battle_param_file(battle_params[1][0], "BattleParamEntry.dat");
+    //rv += read_bb_battle_param_file(battle_params[1][1], "BattleParamEntry_lab.dat");
+    //rv += read_bb_battle_param_file(battle_params[1][2], "BattleParamEntry_ep4.dat");
     int i = 0, j = 0, k = 0;
     for (i; i < NUM_BPEntry; i++) {
         //strcpy(&buf[i][0], path);

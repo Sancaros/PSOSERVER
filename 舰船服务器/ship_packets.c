@@ -5083,7 +5083,7 @@ int send_bb_game_type_sel(ship_client_t* c) {
     }
 
     /* 填充数据头 */
-    pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
+    pkt->hdr.pkt_type = LE16(SHIP_LIST_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 
@@ -5114,7 +5114,7 @@ int send_bb_game_game_drop_set(ship_client_t* c) {
     }
 
     /* 填充数据头 */
-    pkt->hdr.pkt_type = LE16(LOBBY_INFO_TYPE);
+    pkt->hdr.pkt_type = LE16(SHIP_LIST_TYPE);
     pkt->hdr.pkt_len = LE16(len);
     pkt->hdr.flags = count - 1;
 

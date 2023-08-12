@@ -49,6 +49,7 @@
 #include "quest_functions.h"
 #include "max_tech_level.h"
 #include "handle_player_items.h"
+#include "pmtdata.h"
 
 /* TLS stuff -- from ship_server.c */
 extern gnutls_anon_client_credentials_t anoncred;
@@ -1421,6 +1422,21 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+                            if (item_not_identification(&c->bb_pl->character.inv.iitems[i].data)) {
+                                DBG_LOG("GC %u 背包 i %d 是未识别物品", c->guildcard, i);
+                                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
+                                continue;
+                            }
+
+                            if (c->bb_pl->character.inv.iitems[i].data.datab[0] == 0x01
+                                && c->bb_pl->character.inv.iitems[i].data.datab[1] == 0x00
+                                && c->bb_pl->character.inv.iitems[i].data.datab[2] == 0x00
+                                ) {
+                                DBG_LOG("GC %u 背包 i %d 是未识别物品", c->guildcard, i);
+                                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
+                                continue;
+                            }
+
                             if (c->bb_pl->character.inv.iitems[i].present) {
                                 fix_inv_bank_item(&c->bb_pl->character.inv.iitems[i].data);
                                 c->bb_pl->character.inv.iitems[i].data.item_id = EMPTY_STRING;
@@ -1435,6 +1451,21 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {
+                            if (item_not_identification(&c->bb_pl->bank.bitems[i].data)) {
+                                DBG_LOG("GC %u 银行 i %d 是未识别物品", c->guildcard, i);
+                                clear_bitem(&c->bb_pl->bank.bitems[i]);
+                                continue;
+                            }
+
+                            if(c->bb_pl->bank.bitems[i].data.datab[0] == 0x01 
+                                && c->bb_pl->bank.bitems[i].data.datab[1] == 0x00
+                                && c->bb_pl->bank.bitems[i].data.datab[2] == 0x00
+                                ){
+                                DBG_LOG("GC %u 银行 i %d 是未识别物品", c->guildcard, i);
+                                clear_bitem(&c->bb_pl->bank.bitems[i]);
+                                continue;
+                            }
+
                             if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
                                 fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
                             }
@@ -2130,8 +2161,17 @@ static int handle_globalmsg(shipgate_conn_t* c, shipgate_global_msg_pkt* pkt) {
                 pthread_mutex_lock(&i2->mutex);
 
                 if (i2->pl) {
-                    send_txt(i2, "%s\n%s", __(i2, "\tE\tC7全球消息:"),
-                        pkt->text);
+                    switch (i2->version) {
+                    case CLIENT_VERSION_BB:
+                        send_msg(i2, BB_SCROLL_MSG_TYPE, "%s\n%s", __(i2, "\tE\tC7全球消息:"),
+                            pkt->text);
+                        break;
+
+                    default:
+                        send_txt(i2, "%s\n%s", __(i2, "\tE\tC7全球消息:"),
+                            pkt->text);
+                        break;
+                    }
                 }
 
                 pthread_mutex_unlock(&i2->mutex);

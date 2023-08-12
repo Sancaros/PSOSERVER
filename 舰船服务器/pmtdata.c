@@ -2437,10 +2437,6 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
         return -3;
     }
 
-    if (parts[2] >= num_tools_bb[parts[1]]) {
-        return -4;
-    }
-
 #ifdef DEBUG
     DBG_LOG("index 0x%08X", tools_bb[parts[1]][parts[2]].base.index);
     DBG_LOG("subtype 0x%04X", tools_bb[parts[1]][parts[2]].base.subtype);
@@ -2911,14 +2907,6 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
 
         memcpy(item_base, &tool.base, sizeof(pmt_item_base_t));
         return item_base;
-            
-
-        //if (item->datab[1] == ITEM_SUBTYPE_DISK) {
-        //    return this->get_tool(2, item->datab[4]).base;
-        //}
-        //else {
-        //    return this->get_tool(item->datab[1], item->datab[2]).base;
-        //}
 
     case ITEM_TYPE_MESETA:
         ERR_LOG("美赛塔之类的物品没有定义");
@@ -2930,6 +2918,10 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
     }
 
     return NULL;
+}
+
+bool item_not_identification(const item_t* item) {
+    return (get_item_definition_bb(item) == NULL);
 }
 
 uint8_t get_item_stars(uint16_t index) {

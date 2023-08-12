@@ -281,11 +281,21 @@ void lobby_print_info2(ship_client_t* src) {
     send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
 #endif /* ENABLE_LUA */
 
+    /* All's well in the world if we get here. */
+    send_msg(src, TEXT_MSG_TYPE, "%s\n掉落模式:%s\n", __(src, "\tE\tC7房间设置完成!")
+        , l->drop_pso2 == true ? __(src, "\tE\tC6PSO2") :
+        l->drop_psocn == true ? __(src, "\tE\tC8随机") :
+        __(src, "\tE\tC7默认")
+
+    );
     //send_msg(src, TEXT_MSG_TYPE, "当前地图:");
     //for (i = 0; i < 0x10; ++i) {
     //    send_msg(src, TEXT_MSG_TYPE, "  %d: %d %d", i, (int)l->maps[i << 1],
     //        (int)l->maps[(i << 1) + 1]);
     //}
+
+    //if(!l->challenge && !l->battle && !l->lobby_create && !l->oneperson && l->leader_id == src->client_id)
+    //    send_bb_game_type_sel(src);
 }
 
 lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,

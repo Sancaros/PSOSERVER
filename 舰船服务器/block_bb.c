@@ -246,6 +246,68 @@ static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {
     return i;
 }
 
+static int game_type_info_reply(ship_client_t* c, uint32_t item_id) {
+    char string[256];
+
+    switch (item_id) {
+    case 0:
+        snprintf(string, 256, "PSOBB 独享\n%s", __(c, "只允许BB版本玩家进入"));
+        break;
+
+    case 1:
+        snprintf(string, 256, "允许所有版本\n%s", __(c, "允许所有版本玩家进入"));
+        break;
+
+    case 2:
+        snprintf(string, 256, "允许PSO V1\n%s", __(c, "允许PSO V1版本玩家进入"));
+        break;
+
+    case 3:
+        snprintf(string, 256, "允许PSO V2\n%s", __(c, "允许PSO V2版本玩家进入"));
+        break;
+
+    case 4:
+        snprintf(string, 256, "允许PSO DC\n%s", __(c, "允许PSO DC版本玩家进入"));
+        break;
+
+    case 5:
+        snprintf(string, 256, "允许PSO GC\n%s", __(c, "允许PSO GC版本玩家进入"));
+        break;
+
+    default:
+        snprintf(string, 256, "返回上一级\n%s", __(c, "返回上一级菜单,啊啊啊啊啊"));
+        break;
+    }
+
+     /* Send the information away. */
+    return send_info_reply(c, string);
+}
+
+static int game_drop_info_reply(ship_client_t* c, uint32_t item_id) {
+    char string[256];
+
+    switch (item_id) {
+    case 0:
+        snprintf(string, 256, "掉落模式\n%s", __(c, "默认掉落模式"));
+        break;
+
+    case 1:
+        snprintf(string, 256, "PSO2模式\n%s", __(c, "每个玩家独立计算掉落"));
+        break;
+
+    case 2:
+        snprintf(string, 256, "随机模式\n%s", __(c, "掉落完全随机,看你的运气咯~"));
+        break;
+
+    default:
+        snprintf(string, 256, "返回上一级\n%s", __(c, "返回上一级菜单,啊啊啊啊啊"));
+        break;
+    }
+
+    /* Send the information away. */
+    return send_info_reply(c, string);
+}
+
 static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     uint32_t menu_id = LE32(pkt->menu_id);
     uint32_t item_id = LE32(pkt->item_id);
@@ -305,9 +367,17 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return 0;
     }
 
+    /* Game type (PSOBB only) */
+    case MENU_ID_GAME_TYPE:
+        return game_type_info_reply(c, item_id);
+
+        /* Game type (PSOBB only) */
+    case MENU_ID_GAME_DROP:
+        return game_drop_info_reply(c, item_id);
+
     default:
         UNK_CPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return -1;
+        return 0;
     }
 }
 
@@ -377,7 +447,6 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t menu_id, uint32_t
     if (l) {
         switch (item_id) {
         case 0:
-            //l->version = CLIENT_VERSION_BB;
             DBG_LOG("默认掉落模式");
             break;
 
@@ -408,7 +477,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t menu_id, uint32_t
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
         }
-
+        
         /* All's well in the world if we get here. */
         return 0;
     }
@@ -607,7 +676,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         if (!l) {
             /* The lobby has disappeared. */
             send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-                __(c, "\tC7This game is\nnon-existant."));
+                __(c, "\tC7游戏已不存在."));
             return 0;
         }
 
@@ -1406,6 +1475,7 @@ static int bb_process_update_quest_stats(ship_client_t* c,
     return send_bb_confirm_update_quest_statistics(c, pkt->request_token);
 }
 
+/* Blue Burst 游戏房间创建 */
 static int bb_process_game_create(ship_client_t* c, bb_game_create_pkt* pkt) {
     lobby_t* l;
     uint8_t event = ship->game_event;
@@ -1653,6 +1723,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         return -1;
 
     if (!c->bb_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
+        ERR_LOG("bb_process_full_char %d %d", c->version, len);
         return -1;
     }
 
@@ -1683,11 +1754,6 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         printf("原数据\n");
         display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
 #endif // DEBUG
-
-        printf("C->S数据来源 %d 字节\n", len);
-        display_packet(&pkt, len);
-        printf("原数据\n");
-        display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
@@ -1721,10 +1787,6 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
     }
-
-    DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-    display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
-
     return 0;
 }
 

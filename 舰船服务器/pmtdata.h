@@ -552,6 +552,7 @@ int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
 uint8_t pmt_lookup_stars_bb(uint32_t code);
 
 pmt_item_base_t* get_item_definition_bb(const item_t* item);
+bool item_not_identification(const item_t* item);
 
 uint8_t get_item_stars(uint16_t slot);
 uint8_t get_item_base_stars(const item_t* item);
