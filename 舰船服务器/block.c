@@ -2798,7 +2798,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
         return -1;
     }
 
-    return send_dc_confirm_update_quest_statistics(c, pkt->request_token);
+    return send_dc_confirm_update_quest_statistics(c, pkt->hdr.flags, 0, pkt->request_token);
 }
 
 /* Process a 0xBA packet. */

@@ -4351,7 +4351,11 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     src->guild_points_personal_donation += point_add;
     src->bb_guild->data.guild_points_rest += point_add;
 
+#ifdef DEBUG
+
     DBG_LOG("sub60_CC_bb %d", src->guild_points_personal_donation);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -4412,7 +4416,101 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
+}
 
+static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_item_exchange_pd_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发任务指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    //[2023年08月13日 15:39:39:110] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0xD7 版本 bb(5) 的处理
+    //[2023年08月13日 15:39:39:121] 调试(subcmd_handle_60.c 4737): 未知 0x60 指令: 0xD7
+    //( 00000000 )   24 00 60 00 00 00 00 00   D7 07 00 00/ 01 02 4B 00  $.`.....?....K.
+    //( 00000010 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+    //( 00000020 )   D0 00 C2 01                                     ??
+//[2023年08月13日 16:17:26:288] 调试(ship_packets.c 8277): GC 42004064 载入任务 quest204 版本 Blue Brust   0 31
+//[2023年08月13日 16:17:58:722] 物品(0263): 物品:(ID 8454144 / 00810000) 光子微晶
+//[2023年08月13日 16:17:58:736] 物品(0268): 数据: 03100000, 00630000, 00000000, 00000000
+//( 00000000 )   24 00 60 00 00 00 00 00   D7 07 00 00 03 0E 07 00  $.`.....?......
+//( 00000010 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
+//( 00000020 )   D0 00 C2 01                                     ??
+
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    iitem_t work_item = { 0 };
+    item_t compare_item = { 0 };
+    memcpy(&compare_item.datab[0], &pkt->compare_item.datab[0], 3);
+    for (size_t x = 0; x < (sizeof(gallons_shop_hopkins) / 4); x += 2) {
+        if (compare_item.datal[0] == gallons_shop_hopkins[x]) {
+            work_item.data.datab[0] = ITEM_TYPE_TOOL;
+            work_item.data.datab[1] = ITEM_SUBTYPE_PHOTON;
+            work_item.data.datab[2] = 0x00;
+            break;
+        }
+    }
+
+    if (work_item.data.datab[0] != ITEM_TYPE_TOOL) {
+
+        ERR_LOG("兑换失败, 未找到对应物品");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+
+    inventory_t* inv = &src->bb_pl->character.inv;
+
+    if (src->mode)
+        inv = &src->mode_pl->bb.inv;
+
+    size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
+    if(work_item_id == -1) {
+        ERR_LOG("兑换失败, 未找到对应物品");
+        return -1;
+    }
+    else {
+        iitem_t* del_item = &inv->iitems[find_iitem_index(inv, work_item_id)];
+        size_t max_count = stack_size(&del_item->data);
+        iitem_t pd = remove_iitem(src, del_item->data.item_id, max_count, src->version != CLIENT_VERSION_BB);
+        if (&pd == NULL) {
+            ERR_LOG("删除PD %d ID 0x%04X 失败", max_count, del_item->data.item_id);
+            return -2;
+        }
+
+        rv = subcmd_send_bb_destroy_item(src, del_item->data.item_id, max_count);
+
+        iitem_t add_item;
+        memset(&add_item, 0, PSOCN_STLENGTH_IITEM);
+
+        add_item.present = LE16(0x0001);
+        add_item.extension_data1 = 0;
+        add_item.extension_data2 = 0;
+        add_item.flags = 0;
+
+        add_item.data = pkt->compare_item;
+        add_item.data.item_id = generate_item_id(l, src->client_id);
+
+        if (!add_iitem(src, &add_item)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                src->guildcard);
+            return -3;
+        }
+
+        rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, 1, true);
+
+        uint16_t confirm_token = pkt->confirm_token;
+
+        rv = send_bb_confirm_update_quest_statistics(src, 1, confirm_token, 0);
+    }
+
+    rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    return rv;
 }
 
 static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
@@ -4666,6 +4764,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
+    { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
 };

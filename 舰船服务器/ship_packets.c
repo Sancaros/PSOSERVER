@@ -12793,43 +12793,50 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     return 0;
 }
 
-int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
-    dc_confirm_update_quest_statistics_pkt pkt;
+int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token) {
+    uint8_t* sendbuf = get_sendbuf();
+    dc_confirm_update_quest_statistics_pkt* pkt = (dc_confirm_update_quest_statistics_pkt*)sendbuf;
+    uint16_t pkt_size = sizeof(dc_confirm_update_quest_statistics_pkt);
 
-    memset(&pkt, 0, sizeof(dc_confirm_update_quest_statistics_pkt));
+    memset(pkt, 0, sizeof(dc_confirm_update_quest_statistics_pkt));
 
     /* 填充数据头并准备发送 */
-    pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
-    pkt.hdr.flags = 0x00;
-    pkt.hdr.pkt_len = LE16(0x000C);
+    pkt->hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
+    pkt->hdr.flags = flags;
+    pkt->hdr.pkt_len = pkt_size;
 
     /* 填充剩余数据 */
-    pkt.unknown_a1 = LE16(0x0000);
-    pkt.unknown_a2 = LE16(0x0000);
-    pkt.request_token = LE16(request_token);
-    pkt.unknown_a3 = LE16(0xBFFF);
+    pkt->confirm_token = confirm_token;
+    pkt->unknown_a2 = LE16(0);
+    pkt->request_token = request_token;
+    pkt->unknown_a3 = 0xBFFF;
 
-    return send_pkt_dc(c, (dc_pkt_hdr_t*)&pkt);
+    return send_pkt_dc(c, (dc_pkt_hdr_t*)pkt);
 }
 
-int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token) {
-    bb_confirm_update_quest_statistics_pkt pkt;
+int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_confirm_update_quest_statistics_pkt* pkt = (bb_confirm_update_quest_statistics_pkt*)sendbuf;
     uint16_t pkt_size = sizeof(bb_confirm_update_quest_statistics_pkt);
 
-    memset(&pkt, 0, pkt_size);
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    memset(pkt, 0, pkt_size);
 
     /* 填充数据头并准备发送 */
-    pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
-    pkt.hdr.flags = LE16(0x0000);
+    pkt->hdr.pkt_len = pkt_size;
+    pkt->hdr.pkt_type = QUEST_CONFIRM_STATS_TYPE;
+    pkt->hdr.flags = flags;
 
     /* 填充剩余数据 */
-    pkt.unknown_a1 = LE16(0x0000);
-    pkt.unknown_a2 = LE16(0x0000);
-    pkt.request_token = LE16(request_token);
-    pkt.unknown_a3 = LE16(0xBFFF);
+    pkt->confirm_token = confirm_token;
+    pkt->unknown_a2 = LE16(0);
+    pkt->request_token = request_token;
+    pkt->unknown_a3 = 0xBFFF;
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
 
 int send_bb_quest_data1(ship_client_t* src) {

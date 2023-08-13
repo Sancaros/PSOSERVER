@@ -255,7 +255,7 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* src) {
 }
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
-int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt) {
+int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_destroy_item_t d = { 0 };
     int pkt_size = sizeof(subcmd_bb_destroy_item_t);
@@ -275,7 +275,7 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint8_t amt)
 
     /* 填充剩余数据 */
     d.item_id = item_id;
-    d.amount = LE32(amt);
+    d.amount = amt;
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&d, 0);
 }

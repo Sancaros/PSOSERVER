@@ -101,13 +101,13 @@
 #define SUBCMD60_UNKNOW_10                     0x10
 #define SUBCMD60_UNKNOW_11                     0x11
 #define SUBCMD60_BOSS_ACT_DRAGON               0x12
-#define SUBCMD60_BOSS_ACT_DE_ROl_LE              0x13
-#define SUBCMD60_BOSS_ACT_DE_ROl_LE2             0x14
-#define SUBCMD60_BOSS_ACT_VOL_OPT                0x15
-#define SUBCMD60_BOSS_ACT_VOL_OPT2               0x16
+#define SUBCMD60_BOSS_ACT_DE_ROl_LE            0x13
+#define SUBCMD60_BOSS_ACT_DE_ROl_LE2           0x14
+#define SUBCMD60_BOSS_ACT_VOL_OPT              0x15
+#define SUBCMD60_BOSS_ACT_VOL_OPT2             0x16
 #define SUBCMD60_TELEPORT                      0x17    //SUBCMD60_TELEPORT_1
 #define SUBCMD60_UNKNOW_18                     0x18    /* Dragon special actions */
-#define SUBCMD60_BOSS_ACT_DARK_FALZ              0x19
+#define SUBCMD60_BOSS_ACT_DARK_FALZ            0x19
 
 // 6x1A: Invalid subcommand
 
@@ -309,7 +309,7 @@
 #define SUBCMD60_GALLON_AREA                   0xD2
 #define SUBCMD60_TRADE_DONE                    0xD4
 #define SUBCMD60_ITEM_EXCHANGE                 0xD5
-#define SUBCMD60_PD_TRADE                      0xD7
+#define SUBCMD60_ITEM_EXCHANGE_PD              0xD7
 #define SUBCMD60_SRANK_ATTR                    0xD8   //为S级武器添加属性（尚未实现）  挑战模式
 #define SUBCMD60_ITEM_EXCHANGE_MOMOKA          0xD9   // Momoka Item Exchange  Momoka物品交换 
 #define SUBCMD60_PD_COMPARE                    0xDA

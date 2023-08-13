@@ -47,8 +47,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
 int subcmd_send_bb_create_tekk_item(ship_client_t* c);
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
-int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id,
-    uint8_t amt);
+int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt);
 
 /* BB 从客户端移除美赛塔 */
 int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop);

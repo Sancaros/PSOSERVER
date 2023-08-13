@@ -200,7 +200,7 @@ int db_check_gc_online(uint32_t gc) {
 
     /* Fill in the query. */
     sprintf(query, "SELECT guildcard FROM %s WHERE guildcard='%u'", 
-        SERVER_CLIENTS_ONLINE, (unsigned int)gc);
+        SERVER_CLIENTS_ONLINE, gc);
 
     /* If we can't query the database, fail. */
     if (psocn_db_real_query(&conn, query)) {

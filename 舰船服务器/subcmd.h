@@ -3060,20 +3060,20 @@ typedef struct subcmd_bb_warp_item {
 
 // 0xD7: Paganini Photon Drop exchange (BB; handled by server)
 // The client sends this when it executes an F955 quest opcode.
-struct G_PaganiniPhotonDropExchange_BB_6xD7 {
+typedef struct subcmd_bb_item_exchange_pd {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    item_t unknown_a1; // Only data1[0]-[2] are used
-    uint16_t request_id;
+    item_t compare_item; // Only data1[0]-[2] are used
+    uint16_t confirm_token;
     uint16_t unknown_a3;
-} PACKED;
+} PACKED subcmd_bb_item_exchange_pd_t;
 
 // 0xD8: Add S-rank weapon special (BB; handled by server)
 // The client sends this when it executes an F956 quest opcode.
 struct G_AddSRankWeaponSpecial_BB_6xD8 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    item_t unknown_a1; // Only data1[0]-[2] are used
+    item_t compare_item; // Only data1[0]-[2] are used
     uint32_t unknown_a2;
     uint32_t unknown_a3;
     uint16_t unknown_a4;

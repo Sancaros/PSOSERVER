@@ -301,9 +301,9 @@ int send_lobby_mhit(lobby_t* l, ship_client_t* c,
 /* 用于 0x00EA BB公会 指令*/
 int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code);
 
-int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token);
+int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token);
 
-int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint16_t request_token);
+int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token);
 
 int send_bb_quest_data1(ship_client_t* c);
 

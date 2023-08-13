@@ -2775,7 +2775,7 @@ typedef struct bb_update_quest_stats {
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
 typedef struct dc_confirm_update_quest_statistics {
     dc_pkt_hdr_t hdr;
-    uint16_t unknown_a1; // 0
+    uint16_t confirm_token; // 0
     uint16_t unknown_a2; // Probably actually unused
     uint16_t request_token; // Should match token sent in AA command
     uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
@@ -2783,7 +2783,7 @@ typedef struct dc_confirm_update_quest_statistics {
 
 typedef struct bb_confirm_update_quest_statistics {
     bb_pkt_hdr_t hdr;
-    uint16_t unknown_a1; // 0
+    uint16_t confirm_token; // 0
     uint16_t unknown_a2; // Probably actually unused
     uint16_t request_token; // Should match token sent in AA command
     uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
