@@ -1553,12 +1553,24 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
             src->guildcard);
-        return -3;
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
     subcmd_send_bb_delete_meseta(src, character, 100, false);
     iitem_t* id_result = &character->inv.iitems[id_item_index];
     attrib = id_result->data.datab[4] & ~(0x80);
+
+    if (id_result->data.item_id == EMPTY_STRING) {
+        ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
+            src->guildcard);
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
+    }
+
+    if (id_result->data.item_id != item_id) {
+        ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
+            src->guildcard);
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
+    }
 
     src->game_data->identify_result = *id_result;
 
@@ -1592,18 +1604,6 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!(id_result->data.datab[10] & 128) && (id_result->data.datab[11] > 0))
         (char)src->game_data->identify_result.data.datab[11] += percent_mod;
-
-    if (!id_result->data.item_id) {
-        ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
-            src->guildcard);
-        return -4;
-    }
-
-    if (id_result->data.item_id != item_id) {
-        ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
-            src->guildcard);
-        return -5;
-    }
 
     src->drop_item_id = id_result->data.item_id;
     src->drop_amt = 1;

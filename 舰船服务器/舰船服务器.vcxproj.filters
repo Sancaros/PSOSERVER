@@ -45,10 +45,10 @@
     <ClCompile Include="mapdata.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pmtdata.c">
+    <ClCompile Include="item_pmt.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ptdata.c">
+    <ClCompile Include="item_pt.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="quest_functions.c">
@@ -57,7 +57,7 @@
     <ClCompile Include="quests.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="rtdata.c">
+    <ClCompile Include="item_rt.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="scripts.c">
@@ -123,7 +123,7 @@
     <ClCompile Include="records.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mageditdata.c">
+    <ClCompile Include="item_magedit.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

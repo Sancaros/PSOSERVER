@@ -435,6 +435,14 @@ int pt_read_bb(const char* fn) {
 
 				//display_packet(buf, sz);
 
+				//if (章节 == 4) {
+				//	DBG_LOG("%s", filename);
+				//	for (int x = 0; x < 100; x++) {
+				//		DBG_LOG("enemy_type_drop_probs x %d %d", x, ent->enemy_type_drop_probs[x]);
+				//	}
+
+				//	getchar();
+				//}
 #ifdef DEBUG
 				DBG_LOG("%s", filename);
 				for (int x = 0; x < 100; x++) {
@@ -3567,6 +3575,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	game_enemy_t* enemy;
 	int csr = 0;
 	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -3593,18 +3602,15 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 
 	ent = &bb_ptdata[game_type][l->difficulty][section];
-	//ent = &bb_ptdata[l->episode - 1][l->difficulty][section];
-
-	/* Make sure the PT index in the packet is sane */
-	//if(req->pt_index > 0x33)
-	//    return -1;
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
-	if (req->pt_index == 0x30)
+	if (pt_index == 0x30)
 		return pt_generate_bb_boxdrop(src, l, r);
 
 	/* Figure out the area we'll be worried with */
 	area = src->cur_area;
+
+	DBG_LOG("area %d", area);
 
 	switch (l->episode) {
 	case GAME_TYPE_NORMAL:
@@ -3699,6 +3705,10 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		break;
 	}
 
+	/* 修复EP4 错误的index 但是这样是不对的 应该修改原始pt文件 将怪物的index都增加87才是正确的位置 以后再说 */
+	if (game_type == 4)
+		pt_index -= 87;
+
 	/* Subtract one, since we want the index in the box_drop array */
 	--area;
 
@@ -3720,9 +3730,14 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	if ((rnd >= ent->enemy_type_drop_probs[req->pt_index]) && !src->game_data->gm_drop_rare)
+	if ((rnd >= ent->enemy_type_drop_probs[pt_index]) && !src->game_data->gm_drop_rare) {
+#ifdef DEBUG
+		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
+#endif // DEBUG
+
 		/* Nope. You get nothing! */
 		return 0;
+	}
 
 	/* See if we'll do a rare roll. */
 	if (l->qid) {
@@ -3737,7 +3752,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		DBG_LOG("全红掉落已开启 %d", do_rare);
 	}
 
-	item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0);
+	item[0] = rt_generate_bb_rare(src, l, pt_index, 0);
 
 	/* See if the user is lucky today... */
 	if (do_rare && item[0]) {
@@ -3810,12 +3825,16 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* Figure out what type to drop... */
 	rnd = mt19937_genrand_int32(rng) % 3;
 
-	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
+#ifdef DEBUG
+
+	ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d pt_index %d emptID %d 随机 %d 物品掉落", src->guildcard, l->episode, l->difficulty, src->cur_area, req->pt_index, pt_index, ent->enemy_type_drop_probs[pt_index], rnd);
+
+#endif // DEBUG
 
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_item_classes[req->pt_index]) {
+		switch (ent->enemy_item_classes[pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
@@ -3859,8 +3878,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d", ent->enemy_item_classes[req->pt_index],
-				req->pt_index);
+				"%d pt_index %d gametype %d", ent->enemy_item_classes[pt_index],
+				req->pt_index, pt_index, game_type);
 			return 0;
 		}
 
@@ -3876,8 +3895,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta_ranges[req->pt_index].min,
-			ent->enemy_meseta_ranges[req->pt_index].max,
+		if (generate_meseta(ent->enemy_meseta_ranges[pt_index].min,
+			ent->enemy_meseta_ranges[pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -3903,6 +3922,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	struct mt19937_state* rng = &src->cur_block->rng;
 	int csr = 0;
 	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -3933,7 +3953,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
 	/* Make sure this is actually a box drop... */
-	if (req->pt_index != 0x30)
+	if (pt_index != 0x30)
 		return -1;
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
@@ -4250,6 +4270,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	game_enemy_t* enemy;
 	int csr = 0;
 	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -4283,7 +4304,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	//    return -1;
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
-	if (req->pt_index == 0x30)
+	if (pt_index == 0x30)
 		return pt_generate_bb_pso2_boxdrop(src, l, section, r);
 
 	/* Figure out the area we'll be worried with */
@@ -4382,6 +4403,10 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		break;
 	}
 
+	/* 修复EP4 错误的index 但是这样是不对的 应该修改原始pt文件 将怪物的index都增加87才是正确的位置 以后再说 */
+	if (game_type == 4)
+		pt_index -= 87;
+
 	/* Subtract one, since we want the index in the box_drop array */
 	--area;
 
@@ -4403,7 +4428,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = mt19937_genrand_int32(rng) % 100;
 
-	if ((int8_t)rnd >= ent->enemy_type_drop_probs[req->pt_index])
+	if ((int8_t)rnd >= ent->enemy_type_drop_probs[pt_index])
 		/* Nope. You get nothing! */
 		return 0;
 
@@ -4416,7 +4441,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	}
 
 	/* See if the user is lucky today... */
-	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, req->pt_index, 0))) {
+	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, pt_index, 0))) {
 
 		ERR_LOG("GC %" PRIu32 " ITEM数据! 0x%02X", src->guildcard, item[0] & 0xFF);
 
@@ -4482,12 +4507,12 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	/* Figure out what type to drop... */
 	rnd = mt19937_genrand_int32(rng) % 3;
 
-	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, req->pt_index, ent->enemy_drop[req->pt_index], rnd);
+	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d emptID %d 随机 %d 物品掉落", c->guildcard, l->episode, l->difficulty, c->cur_area, pt_index, ent->enemy_drop[pt_index], rnd);
 
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_item_classes[req->pt_index]) {
+		switch (ent->enemy_item_classes[pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
@@ -4531,8 +4556,8 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d", ent->enemy_item_classes[req->pt_index],
-				req->pt_index);
+				"%d", ent->enemy_item_classes[pt_index],
+				pt_index);
 			return 0;
 		}
 
@@ -4548,8 +4573,8 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta_ranges[req->pt_index].min,
-			ent->enemy_meseta_ranges[req->pt_index].max,
+		if (generate_meseta(ent->enemy_meseta_ranges[pt_index].min,
+			ent->enemy_meseta_ranges[pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -4574,6 +4599,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	struct mt19937_state* rng = &src->cur_block->rng;
 	int csr = 0;
 	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -4604,7 +4630,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
 	/* Make sure this is actually a box drop... */
-	if (req->pt_index != 0x30)
+	if (pt_index != 0x30)
 		return -1;
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
