@@ -264,13 +264,17 @@ void lobby_print_info2(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
     //int i;
 
-    send_msg(src, TEXT_MSG_TYPE, "名称: %s", l->name);
-    send_msg(src, TEXT_MSG_TYPE, "标志: %08" PRIx32 "", l->flags);
-    send_msg(src, TEXT_MSG_TYPE, "版本: %d (v2: %d)", l->version,
-        (int)l->v2);
-    send_msg(src, TEXT_MSG_TYPE, "对战/挑战: %d/%d",
-        (int)l->battle, (int)l->challenge);
+    send_msg(src, TEXT_MSG_TYPE, "房间: %s", l->name);
+    if (src->game_data->gm_debug) {
+        send_msg(src, TEXT_MSG_TYPE, "标志: %08" PRIx32 "", l->flags);
+        send_msg(src, TEXT_MSG_TYPE, "版本: %d (v2: %d)", l->version,
+            (int)l->v2);
+    }
+    send_msg(src, TEXT_MSG_TYPE, "模式: %s", (int)l->battle == 1 ? __(src, "\tE\tC6对战模式") :
+        (int)l->challenge == 1 ? __(src, "\tE\tC8挑战模式") : (int)l->oneperson == 1 ? __(src, "\tE\tC5单人模式") :
+        __(src, "\tE\tC7普通模式"));
     send_msg(src, TEXT_MSG_TYPE, "难度: %d", (int)l->difficulty);
+    send_msg(src, TEXT_MSG_TYPE, "经验: %d 倍", l->exp_mult > 0 ? l->exp_mult : 1);
     //send_msg(src, TEXT_MSG_TYPE, "敌人: %p", l->map_enemies);
     //send_msg(src, TEXT_MSG_TYPE, "实例: %p", l->map_objs);
 
@@ -278,16 +282,16 @@ void lobby_print_info2(ship_client_t* src) {
         send_msg(src, TEXT_MSG_TYPE, "任务 ID: %" PRIu32 "", l->qid);
 
 #ifdef ENABLE_LUA
-    send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
+    if(src->game_data->gm_debug)
+        send_msg(src, TEXT_MSG_TYPE, "Lua 表: %d", l->script_ref);
 #endif /* ENABLE_LUA */
 
-    /* All's well in the world if we get here. */
-    send_msg(src, TEXT_MSG_TYPE, "%s\n掉落模式:%s\n", __(src, "\tE\tC7房间设置完成!")
-        , l->drop_pso2 == true ? __(src, "\tE\tC6PSO2") :
-        l->drop_psocn == true ? __(src, "\tE\tC8随机") :
-        __(src, "\tE\tC7默认")
-
-    );
+    if(l->lobby_create)
+        send_msg(src, TEXT_MSG_TYPE, "掉落: %s"
+            , l->drop_pso2 == true ? __(src, "\tE\tC6PSO2") :
+            l->drop_psocn == true ? __(src, "\tE\tC8随机") :
+            __(src, "\tE\tC7默认")
+        );
     //send_msg(src, TEXT_MSG_TYPE, "当前地图:");
     //for (i = 0; i < 0x10; ++i) {
     //    send_msg(src, TEXT_MSG_TYPE, "  %d: %d %d", i, (int)l->maps[i << 1],
@@ -1422,22 +1426,22 @@ out:
     return rv;
 }
 
-int lobby_send_pkt_dcnte(lobby_t *l, ship_client_t *c, void *h, void *h2,
+int lobby_send_pkt_dcnte(lobby_t *l, ship_client_t *src, void *h, void *h2,
                          int igcheck) {
     dc_pkt_hdr_t *hdr = (dc_pkt_hdr_t *)h, *hdr2 = (dc_pkt_hdr_t *)h2;
     int i;
 
     /* 将数据包发送到每个连接的客户端. */
     for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] && l->clients[i] != c) {
+        if(l->clients[i] && l->clients[i] != src) {
             /* If we're supposed to check the ignore list, and this client is on
                it, don't send the packet. */
-            if(igcheck && client_has_ignored(l->clients[i], c->guildcard)) {
+            if(igcheck && client_has_ignored(l->clients[i], src->guildcard)) {
                 continue;
             }
 
-            if(c->version == CLIENT_VERSION_DCV1 &&
-               (c->flags & CLIENT_FLAG_IS_NTE))
+            if(src->version == CLIENT_VERSION_DCV1 &&
+               (src->flags & CLIENT_FLAG_IS_NTE))
                 send_pkt_dc(l->clients[i], hdr);
             else
                 send_pkt_dc(l->clients[i], hdr2);
@@ -1487,13 +1491,13 @@ int lobby_send_pkt_bb(lobby_t *l, ship_client_t *src, void *h, int igcheck) {
     return 0;
 }
 
-int lobby_send_pkt_ep3(lobby_t *l, ship_client_t *c, void *h) {
+int lobby_send_pkt_ep3(lobby_t *l, ship_client_t *src, void *h) {
     dc_pkt_hdr_t *hdr = (dc_pkt_hdr_t *)h;
     int i;
 
     /* 将数据包发送到每个连接的 Episode 3 客户端. */
     for(i = 0; i < l->max_clients; ++i) {
-        if(l->clients[i] && l->clients[i] != c &&
+        if(l->clients[i] && l->clients[i] != src &&
            l->version == CLIENT_VERSION_EP3) {
             send_pkt_dc(l->clients[i], hdr);
         }

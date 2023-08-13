@@ -445,6 +445,48 @@ err:
     return rv;
 }
 
+static int handle_magnification(xmlNode* n, psocn_ship_t* cur) {
+    xmlChar* globla_exp_mult;
+    int rv;
+    long rv2;
+
+    /* Grab the attributes of the tag. */
+    globla_exp_mult = xmlGetProp(n, XC"globla_exp_mult");
+
+    /* Make sure we have all of them... */
+    if (!globla_exp_mult) {
+        ERR_LOG("倍率设置不完整");
+        rv = -1;
+        goto err;
+    }
+
+    /* Parse the game event out */
+    errno = 0;
+    rv2 = strtol((char*)globla_exp_mult, NULL, 0);
+
+    if (errno || rv2 > 100000 || rv2 < 0) {
+        ERR_LOG("经验倍率无效: %s",
+            (char*)globla_exp_mult);
+        rv = -2;
+        goto err;
+    }
+
+    cur->globla_exp_mult = rv2;
+
+#ifdef DEBUG
+
+    DBG_LOG("cur->globla_exp_mult %d", cur->globla_exp_mult);
+
+#endif // DEBUG
+
+    xmlFree(globla_exp_mult);
+    return 0;
+
+err:
+    xmlFree(globla_exp_mult);
+    return rv;
+}
+
 static int handle_info(xmlNode* n, psocn_ship_t* cur, int is_motd) {
     xmlChar* fn, * desc, * v1, * v2, * pc, * gc, * lang;
     void* tmp;
@@ -1065,111 +1107,117 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
                 goto err;
             }
         }
+        else if (!xmlStrcmp(n2->name, XC"magnification")) {
+            if (handle_magnification(n2, cur)) {
+                rv = -5;
+                goto err;
+            }
+        }
         else if (!xmlStrcmp(n2->name, XC"info")) {
             if (handle_info(n2, cur, 0)) {
-                rv = -5;
+                rv = -6;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"quests")) {
             if (handle_quests(n2, cur)) {
-                rv = -6;
+                rv = -7;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"limits")) {
             if (handle_limits(n2, cur)) {
-                rv = -7;
+                rv = -8;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"motd")) {
             if (handle_info(n2, cur, 1)) {
-                rv = -8;
+                rv = -9;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"versions")) {
             if (handle_versions(n2, cur)) {
-                rv = -9;
+                rv = -10;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"bans")) {
             if (handle_bans(n2, cur)) {
-                rv = -10;
+                rv = -11;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"scripts")) {
             if (handle_scripts(n2, cur)) {
-                rv = -11;
+                rv = -12;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"events")) {
             if (handle_events(n2, cur)) {
-                rv = -12;
+                rv = -13;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"bbparam")) {
             if (handle_bbparam(n2, cur)) {
-                rv = -13;
+                rv = -14;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"bbmaps")) {
             if (handle_bbmaps(n2, cur)) {
-                rv = -14;
+                rv = -15;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"itempt")) {
             if (handle_itempt(n2, cur)) {
-                rv = -15;
+                rv = -16;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"v2maps")) {
             if (handle_v2maps(n2, cur)) {
-                rv = -16;
+                rv = -17;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"itempmt")) {
             if (handle_itempmt(n2, cur)) {
-                rv = -17;
+                rv = -18;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"itemrt")) {
             if (handle_itemrt(n2, cur)) {
-                rv = -18;
+                rv = -19;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"gcmaps")) {
             if (handle_gcmaps(n2, cur)) {
-                rv = -19;
+                rv = -20;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"v2param")) {
             if (handle_v2param(n2, cur)) {
-                rv = -20;
+                rv = -21;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"smutdata")) {
             if (handle_smutdata(n2, cur)) {
-                rv = -21;
+                rv = -22;
                 goto err;
             }
         }
         else if (!xmlStrcmp(n2->name, XC"mageditdata")) {
             if (handle_mageditdata(n2, cur)) {
-                rv = -22;
+                rv = -23;
                 goto err;
             }
         }

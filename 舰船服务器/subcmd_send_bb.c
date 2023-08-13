@@ -577,7 +577,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     lobby_t* l = c->cur_lobby;
     subcmd_bb_set_exp_rate_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_set_exp_rate_t);
-    uint16_t exp_r;
+    uint16_t exp_r = 0;
     int rv = 0;
 
     if (!l)
@@ -586,7 +586,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     if (c->game_data->expboost <= 0)
         c->game_data->expboost = 1;
 
-    exp_r = LE16(exp_rate * c->game_data->expboost);
+    exp_r = exp_rate * c->game_data->expboost;
 
     if (exp_r <= 1)
         exp_r = 1;
@@ -610,9 +610,14 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
     else {
         if (l->exp_mult < LE32(exp_r)) {
             l->exp_mult = LE32(exp_r);
+#ifdef DEBUG
             DBG_LOG("GC %" PRIu32 " 的房间经验倍率提升为 %u 倍", c->guildcard, l->exp_mult);
+#endif // DEBUG
         }
     }
+
+    if (l->exp_mult == 0)
+        l->exp_mult = 1;
 
     return rv;
 }

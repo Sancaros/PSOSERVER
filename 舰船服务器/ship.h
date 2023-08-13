@@ -136,6 +136,8 @@ struct ship {
     struct limits_queue all_limits;
     psocn_limits_t *def_limits;
 
+    uint32_t globla_exp_mult;
+
 #ifdef ENABLE_LUA
     lua_State *lstate;
 #endif

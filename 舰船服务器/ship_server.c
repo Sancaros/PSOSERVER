@@ -229,8 +229,10 @@ static void parse_command_line(int argc, char* argv[]) {
 static psocn_ship_t* load_config(void) {
     psocn_ship_t* cfg;
 
-    if (psocn_read_ship_config(psocn_ship_cfg, &cfg))
+    if (psocn_read_ship_config(psocn_ship_cfg, &cfg)) {
+        getchar();
         ERR_EXIT("无法读取设置文件 %s", psocn_ship_cfg);
+    }
 
     return cfg;
 }
@@ -282,12 +284,12 @@ static int setup_addresses(psocn_ship_t* cfg) {
     struct sockaddr_in6* addr6;
 
     /* Clear the addresses */
-    memcpy(ship_host4, cfg->ship_host4, sizeof(ship_host4));
-    ship_host4[31] = 0;
-    if (cfg->ship_host6 != NULL) {
-        memcpy(ship_host6, cfg->ship_host6, sizeof(ship_host6));
-        ship_host6[127] = 0;
-    }
+    //memcpy(ship_host4, cfg->ship_host4, sizeof(ship_host4));
+    //ship_host4[31] = 0;
+    //if (cfg->ship_host6 != NULL) {
+    //    memcpy(ship_host6, cfg->ship_host6, sizeof(ship_host6));
+    //    ship_host6[127] = 0;
+    //}
     ship_ip4 = 0;
     cfg->ship_ip4 = 0;
     memset(ship_ip6, 0, 16);

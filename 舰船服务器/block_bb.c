@@ -173,6 +173,7 @@ static int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.name[31] = 0;
 
     c->mode = 0;
+    c->game_data->expboost = 0;
 
     /* 备份临时数据 TODO BB版本未完成 */
     if (c->version != CLIENT_VERSION_BB &&

@@ -1247,7 +1247,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = remove_iitem(src, item_id, 0, src->version != CLIENT_VERSION_BB);
 
     if (&iitem == NULL) {
-        ERR_LOG("GC %" PRIu32 " 掉落物品失败!",
+        ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
             src->guildcard);
         return -2;
     }
@@ -1414,8 +1414,10 @@ static int sub60_3B_bb(ship_client_t* src, ship_client_t* dest,
     //}
 
     if (l->type == LOBBY_TYPE_GAME) {
-        subcmd_send_bb_set_exp_rate(src, 3000);
-        src->need_save_data = 1;
+        if (!l->challenge && !l->battle && !src->mode) {
+            subcmd_send_bb_set_exp_rate(src, ship->cfg->globla_exp_mult);
+            src->need_save_data = 1;
+        }
         lobby_print_info2(src);
     }
 
@@ -4177,6 +4179,8 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
                 return client_give_exp(src, 1);
             }
 
+            DBG_LOG("exp_amount %d", exp_amount);
+
             return client_give_exp(src, exp_amount);
         }
     }
@@ -4268,9 +4272,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Give the client their experience! */
     bp = en->bp_entry;
-    exp_amount = l->bb_params[bp].exp + 100000;
-
-    //DBG_LOG("经验原值 %d bp %d", exp_amount, bp);
+    exp_amount = l->bb_params[bp].exp;
 
     inventory_t* inv = &src->bb_pl->character.inv;
 
@@ -4425,14 +4427,11 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (pkt->hdr.pkt_len != LE16(0x0040) || pkt->shdr.size != 0xAA) {
-    //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-    //        src->guildcard, pkt->shdr.type);
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
+#ifdef DEBUG
 
     DBG_LOG("sub60_D9_bb 数据包大小 0x%04X SIZE 0x%04X", pkt->hdr.pkt_len, pkt->shdr.size);
+
+#endif // DEBUG
 
     iitem_t compare_item = { 0 };
     compare_item.data = pkt->compare_item;
