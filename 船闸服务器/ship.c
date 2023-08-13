@@ -3098,6 +3098,72 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         (uint8_t*)&pkt->game_info.guildcard, 8);
 }
 
+void repair_client_character_data(psocn_bb_char_t* character) {
+
+    uint16_t maxFace, maxHair, maxHairColorRed, maxHairColorBlue, maxHairColorGreen,
+        maxCostume, maxSkin, maxHead;
+
+    // 修复格式错误的数据
+    character->name.name_tag = 0x0009;
+    character->name.name_tag2 = 0x0045;
+
+    if (character->disp.level > 199) {
+        character->disp.level = 199;
+    }
+
+    if ((character->dress_data.ch_class == CLASS_HUMAR) ||
+        (character->dress_data.ch_class == CLASS_HUNEWEARL) ||
+        (character->dress_data.ch_class == CLASS_RAMAR) ||
+        (character->dress_data.ch_class == CLASS_RAMARL) ||
+        (character->dress_data.ch_class == CLASS_FOMARL) ||
+        (character->dress_data.ch_class == CLASS_FONEWM) ||
+        (character->dress_data.ch_class == CLASS_FONEWEARL) ||
+        (character->dress_data.ch_class == CLASS_FOMAR)) {
+        maxFace = 0x05;
+        maxHair = 0x0A;
+        maxHairColorRed = 0xFF;
+        maxHairColorBlue = 0xFF;
+        maxHairColorGreen = 0xFF;
+        maxCostume = 0x11;
+        maxSkin = 0x03;
+        maxHead = 0x00;
+    } else {
+        maxFace = 0x00;
+        maxHair = 0x00;
+        maxHairColorRed = 0x00;
+        maxHairColorBlue = 0x00;
+        maxHairColorGreen = 0x00;
+        maxCostume = 0x00;
+        maxSkin = 0x18;
+        maxHead = 0x04;
+    }
+
+    character->dress_data.name_color_transparency = 0xFF;
+
+    if (character->dress_data.section > 0x09)
+        character->dress_data.section = rand() % 10;
+    if (character->dress_data.prop_x > 0x3F800000)
+        character->dress_data.prop_x = 0x3F800000;
+    if (character->dress_data.prop_y > 0x3F800000)
+        character->dress_data.prop_y = 0x3F800000;
+    if (character->dress_data.face > maxFace)
+        character->dress_data.face = rand() % maxFace;
+    if (character->dress_data.hair > maxHair)
+        character->dress_data.hair = rand() % maxHair;
+    if (character->dress_data.hair_r > maxHairColorRed)
+        character->dress_data.hair_r = rand() % maxHairColorRed;
+    if (character->dress_data.hair_g > maxHairColorBlue)
+        character->dress_data.hair_g = rand() % maxHairColorBlue;
+    if (character->dress_data.hair_b > maxHairColorGreen)
+        character->dress_data.hair_b = rand() % maxHairColorGreen;
+    if (character->dress_data.costume > maxCostume)
+        character->dress_data.costume = rand() % maxCostume;
+    if (character->dress_data.skin > maxSkin)
+        character->dress_data.skin = rand() % maxSkin;
+    if (character->dress_data.head > maxHead)
+        character->dress_data.head = rand() % maxHead;
+}
+
 /* 处理舰船获取角色数据请求. 目前仅限于PSOBB使用*/
 static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
     __try
@@ -3175,6 +3241,8 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             SQLERR_LOG("无法获取(GC%u:%u槽)角色c_records数据, 错误码:%d", gc, slot, rv);
             db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_SAVE_CHAR);
         }
+
+        repair_client_character_data(&bb_data->character);
 
         /* 将数据发回舰船. */
         rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);

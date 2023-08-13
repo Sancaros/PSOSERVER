@@ -4461,7 +4461,11 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	/* See if the user is lucky today... */
 	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, pt_index, 0))) {
 
+#ifdef DEBUG
+
 		ERR_LOG("GC %" PRIu32 " ITEMÊý¾Ý! 0x%02X", src->guildcard, item[0] & 0xFF);
+
+#endif // DEBUG
 
 		switch (item[0] & 0xFF) {
 		case ITEM_TYPE_WEAPON:

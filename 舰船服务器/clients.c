@@ -598,70 +598,59 @@ void client_send_bb_data(ship_client_t* c) {
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB) {
-        c->save_time = now;
+        //c->save_time = now;
 
-        /* 将游戏时间存储入人物数据 */
-        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        ///* 将游戏时间存储入人物数据 */
+        //c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-        psocn_bb_db_char_t* bb_pl = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
+        //fix_client_inv(&c->bb_pl->character.inv);
+        //fix_equip_item(&c->bb_pl->character.inv);
 
-        if (!bb_pl) {
-            ERR_LOG("GC %u 获取实时数据存储角色内存失败", c->guildcard);
-            return;
+        ///* 将玩家数据存入数据库 */
+        //shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+        //    c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+        //    c->cur_block->b);
+
+        ///* 将玩家选项数据存入数据库 */
+        //shipgate_send_bb_opts(&ship->sg, c);
+
+        //send_simple(c, PING_TYPE, 0);
+        if (num_seconds > 5) {
+            c->save_time = now;
+
+            /* 将游戏时间存储入人物数据 */
+            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+
+            psocn_bb_db_char_t* bb_pl = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
+
+            if (!bb_pl) {
+                ERR_LOG("GC %u 获取实时数据存储角色内存失败",c->guildcard);
+                return;
+            }
+
+            memcpy(bb_pl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
+
+            fix_client_inv(&bb_pl->character.inv);
+            fix_equip_item(&bb_pl->character.inv);
+
+            /* 将玩家数据存入数据库 */
+            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                c->cur_block->b);
+
+            free_safe(bb_pl);
+
+            /* 将玩家选项数据存入数据库 */
+            shipgate_send_bb_opts(&ship->sg, c);
+
+            send_simple(c, PING_TYPE, 0);
+
+#ifdef DEBUG
+
+            DBG_LOG("%d 秒", num_seconds);
+
+#endif // DEBUG
         }
-
-        memcpy(bb_pl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-
-        fix_client_inv(&bb_pl->character.inv);
-        fix_equip_item(&bb_pl->character.inv);
-
-        /* 将玩家数据存入数据库 */
-        shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-            bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-            c->cur_block->b);
-
-        free_safe(bb_pl);
-
-        /* 将玩家选项数据存入数据库 */
-        shipgate_send_bb_opts(&ship->sg, c);
-
-        send_simple(c, PING_TYPE, 0);
-//        if (num_seconds > 5) {
-//            c->save_time = now;
-//
-//            /* 将游戏时间存储入人物数据 */
-//            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
-//
-//            psocn_bb_db_char_t* bb_pl = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
-//
-//            if (!bb_pl) {
-//                ERR_LOG("GC %u 获取实时数据存储角色内存失败",c->guildcard);
-//                return;
-//            }
-//
-//            memcpy(bb_pl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-//
-//            fix_client_inv(&bb_pl->character.inv);
-//            fix_equip_item(&bb_pl->character.inv);
-//
-//            /* 将玩家数据存入数据库 */
-//            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-//                bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-//                c->cur_block->b);
-//
-//            free_safe(bb_pl);
-//
-//            /* 将玩家选项数据存入数据库 */
-//            shipgate_send_bb_opts(&ship->sg, c);
-//
-//            send_simple(c, PING_TYPE, 0);
-//
-//#ifdef DEBUG
-//
-//            DBG_LOG("%d 秒", num_seconds);
-//
-//#endif // DEBUG
-//        }
     }
 }
 

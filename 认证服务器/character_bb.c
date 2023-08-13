@@ -360,16 +360,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -4;
     }
 
-    //islogged = atoi(row[3]);
-
-    ///* Make sure some simple checks pass first... */
-    //if (islogged && !c->islogged) {
-    //    /* 账号未激活. */
-    //    send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-    //    psocn_db_result_free(result);
-    //    return -4;
-    //}
-
     memcpy(&password, &pkt->password, sizeof(pkt->password));
 
     sprintf_s(&password[strlen(password)],
@@ -406,14 +396,6 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -2;
     }
 
-    /* Make sure some simple checks pass first... */
-    if (db_check_gc_online(c->guildcard) && !c->islogged) {
-        /* 玩家已在线. */
-        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
-        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
-        return -4;
-    }
-
     /* Copy in the security data */
     memcpy(&c->sec_data, &pkt->var.new_clients.cfg, sizeof(bb_client_config_pkt));
 
@@ -439,12 +421,13 @@ static int handle_bb_login(login_client_t *c, bb_login_93_pkt *pkt) {
         return -4;
     }
 
-    //if (db_remove_gc_char_login_state(c->guildcard)) {
-    //    /* 玩家已在线. */
-    //    //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
-    //    send_bb_security(c, 0, LOGIN_93BB_UNKNOWN_ERROR, 0, NULL, 0);
-    //    return -4;
-    //}
+    /* Make sure some simple checks pass first... */
+    if (db_check_gc_online(c->guildcard)) {
+        /* 玩家已在线. */
+        //send_large_msg(c, __(c, "该账户已登录.\n\n请等候120秒后再次尝试登录."));
+        send_bb_security(c, 0, LOGIN_93BB_ALREADY_ONLINE, 0, NULL, 0);
+        return -4;
+    }
 
     c->islogged = 1;
 
