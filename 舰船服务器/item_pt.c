@@ -556,6 +556,20 @@ int pt_bb_enabled(void) {
 	return have_bbpt;
 }
 
+bool should_allow_meseta_drops(lobby_t* l) {
+	return l->challenge != 1;
+}
+
+bool are_rare_drops_allowed(lobby_t* l) {
+	//注意：客户在这里有一个额外的检查，这似乎是一个微妙的
+	//反作弊措施。客户端上有一个标志，最初为零
+	//当某些与项目相关的意外事件发生时（对于
+	//例如拥有等级高于200的mag的玩家）。当标志
+	//如果设置了，此函数将返回false，这将阻止所有稀有项目的删除。
+	//newserv有意不实现此标志。
+	return l->challenge != 1;
+}
+
 /*
    Generate a random weapon, based off of data for PSOv2. This is a rather ugly
    process, so here's a "short" description of how it actually works (note, the
@@ -3610,7 +3624,11 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* Figure out the area we'll be worried with */
 	area = src->cur_area;
 
+#ifdef DEBUG
+
 	DBG_LOG("area %d", area);
+
+#endif // DEBUG
 
 	switch (l->episode) {
 	case GAME_TYPE_NORMAL:

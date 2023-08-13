@@ -1723,8 +1723,8 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 
     size_t mag_index = find_equipped_mag(inv);
 
-    item_t mag = inv->iitems[mag_index].data;
-    mag.data2b[0] = MAX((mag.data2b[0] - 5), 0);
+    item_t* mag = &inv->iitems[mag_index].data;
+    mag->data2b[0] = MAX((mag->data2b[0] - 5), 0);
 
     src->game_data->death = 1;
 
