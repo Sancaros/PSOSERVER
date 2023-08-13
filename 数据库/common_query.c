@@ -270,7 +270,7 @@ uint32_t db_remove_account_login_state_from_ship(uint16_t key_idx) {
 int db_update_gc_char_last_block(uint32_t gc, uint32_t char_slot, uint32_t block_num) {
     char query[512];
 
-    if (block_num >= 0) {
+    if (block_num > 0) {
         sprintf_s(query, _countof(query), "UPDATE %s SET "
             "lastblock = '%d' "
             "WHERE guildcard = '%u' AND slot = '%u'",

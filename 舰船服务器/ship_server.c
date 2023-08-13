@@ -284,8 +284,10 @@ static int setup_addresses(psocn_ship_t* cfg) {
     /* Clear the addresses */
     memcpy(ship_host4, cfg->ship_host4, sizeof(ship_host4));
     ship_host4[31] = 0;
-    memcpy(ship_host6, cfg->ship_host6, sizeof(ship_host6));
-    ship_host6[127] = 0;
+    if (cfg->ship_host6 != NULL) {
+        memcpy(ship_host6, cfg->ship_host6, sizeof(ship_host6));
+        ship_host6[127] = 0;
+    }
     ship_ip4 = 0;
     cfg->ship_ip4 = 0;
     memset(ship_ip6, 0, 16);

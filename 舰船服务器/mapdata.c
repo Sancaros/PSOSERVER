@@ -1701,8 +1701,10 @@ int bb_load_game_enemies(lobby_t *l) {
             sets[i >> 1] = NULL;
             break;
         }
-        //printf("%d > %d map_count l->episode - 1 = %d\n", l->maps[i], maps->map_count, l->episode - 1);
-        //printf("%d > %d variation_count\n", l->maps[i + 1], maps->variation_count);
+#ifdef DEBUG
+        DBG_LOG("i %d :l->maps[i] %d > map_count %d  l->episode - 1 = %d", i, l->maps[i], maps->map_count, l->episode - 1);
+        DBG_LOG("i %d :l->maps[i + 1] %d > variation_count %d ", i, l->maps[i + 1], maps->variation_count);
+#endif // DEBUG
         /* Sanity Check! */
         if(l->maps[i] > maps->map_count ||
            l->maps[i + 1] > maps->variation_count) {
@@ -2190,8 +2192,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
 int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     FILE *fp;
     size_t dlen = strlen(ship->cfg->quests_dir);
-    char* fn/*[dlen + 40]*/;
-    //char fn[65535];
+    char* fn;
     void *tmp;
     uint32_t cnt, i;
     psocn_quest_t *q;
@@ -2208,6 +2209,11 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     }
 
     fn = (char*)malloc(sizeof(dlen) + 40);
+
+    if (!fn) {
+        ERR_LOG("分配文件名称内存失败");
+        return -1;
+    }
 
     /* Unset this, in case something screws up. */
     l->flags &= ~LOBBY_FLAG_SERVER_DROPS;
@@ -2275,18 +2281,23 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     for(i = 0; i < cnt; ++i) {
         if((amt = fread(&newob->objs[i].data, 1, sizeof(map_object_t),
                         fp)) != sizeof(map_object_t)) {
-            if(amt < 0) {
+#ifdef DEBUG
+
+            if (amt < 0) {
                 ERR_LOG("无法读取 objects 索引缓存 object id "
-                      "%" PRIu32 ": %s", i, strerror(errno));
+                    "%" PRIu32 ": %s", i, strerror(errno));
             }
             else {
                 ERR_LOG("无法读取 objects 索引缓存 object id "
-                      "%" PRIu32 ": 缺少 %zu, 并非 %zu", i,
-                      sizeof(map_object_t), amt);
+                    "%" PRIu32 ": 大小至少 %zu 字节, 并非 %zu 字节", i,
+                    sizeof(map_object_t), amt);
             }
 
-            //CONFIG_LOG("任务 ID: %" PRIu32 " 版本: %d", qid, ver);
-            //CONFIG_LOG("对象数量: %" PRIu32 "", cnt);
+            CONFIG_LOG("任务 ID: %" PRIu32 " 版本: %d", qid, ver);
+            CONFIG_LOG("对象数量: %" PRIu32 "", cnt);
+
+#endif // DEBUG
+
             free_safe(newob->objs);
             free_safe(newob);
             free_safe(newen);

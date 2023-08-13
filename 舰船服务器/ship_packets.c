@@ -46,6 +46,9 @@ extern char ship_host6[128];
 extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
+#define DATA_BLOCK_SIZE 0x400 // 每次读取的数据块大小
+#define DELAY_TIME_MS 60    // 延时时间（毫秒）
+
 /* Options for choice search. */
 typedef struct cs_opt {
     uint16_t menu_id;
@@ -7479,7 +7482,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, dat);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, dat);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7492,7 +7495,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 datdone = 1;
             }
         }
@@ -7509,7 +7512,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, bin);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, bin);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7522,7 +7525,7 @@ static int send_dcv1_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 bindone = 1;
             }
         }
@@ -7647,7 +7650,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, dat);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, dat);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7660,7 +7663,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 datdone = 1;
             }
         }
@@ -7677,7 +7680,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, bin);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, bin);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7690,7 +7693,7 @@ static int send_dcv2_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 bindone = 1;
             }
         }
@@ -7816,7 +7819,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, dat);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, dat);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7829,7 +7832,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 datdone = 1;
             }
         }
@@ -7846,7 +7849,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, bin);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, bin);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -7859,7 +7862,7 @@ static int send_pc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 bindone = 1;
             }
         }
@@ -7990,7 +7993,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, dat);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, dat);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -8003,7 +8006,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 datdone = 1;
             }
         }
@@ -8020,7 +8023,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, 16, "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, bin);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, bin);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -8033,7 +8036,7 @@ static int send_gc_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
             }
 
             /* Are we done with this file? */
-            if(amt != 0x400) {
+            if(amt != DATA_BLOCK_SIZE) {
                 bindone = 1;
             }
         }
@@ -8164,7 +8167,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.dat", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, dat);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, dat);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -8177,7 +8180,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             }
 
             /* Are we done with this file? */
-            if (amt != 0x400) {
+            if (amt != DATA_BLOCK_SIZE) {
                 datdone = 1;
             }
         }
@@ -8194,7 +8197,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
 
             /* Fill in the rest */
             snprintf(chunk->data.filename, sizeof(chunk->data.filename), "%-.11s.bin", q->prefix);
-            amt = fread(chunk->data.data, 1, 0x400, bin);
+            amt = fread(chunk->data.data, 1, DATA_BLOCK_SIZE, bin);
             chunk->data.data_size = LE32(((uint32_t)amt));
 
             /* 加密并发送 */
@@ -8207,7 +8210,7 @@ static int send_bb_quest(ship_client_t* c, quest_map_elem_t* qm, int v1,
             }
 
             /* Are we done with this file? */
-            if (amt != 0x400) {
+            if (amt != DATA_BLOCK_SIZE) {
                 bindone = 1;
             }
         }
@@ -8289,13 +8292,15 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
     len = ftell(fp);
 
-    if (fseek(fp, 0, SEEK_SET))
-        return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
+    rewind(fp);
+
+    //if (fseek(fp, 0, SEEK_SET))
+    //    return send_msg(c, MSG1_TYPE, "%s%s", __(c, "\tE\tC4任务fseek错误:."), filename);
 
     /* Copy the file (in chunks if necessary) to the sendbuf to actually send
        away. */
     while(len) {
-        read = fread(sendbuf, 1, 0x400, fp);
+        read = fread(sendbuf, 1, DATA_BLOCK_SIZE, fp);
 
 #ifdef DEBUG
         DBG_LOG("len %d read %d", len, read);
@@ -8329,6 +8334,11 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         DBG_LOG("len %d", len);
 
 #endif // DEBUG
+
+#ifdef _WIN32
+        // 模拟延时
+        Sleep(DELAY_TIME_MS);
+#endif //  _WIN32
 
         len -= read;
 #ifdef DEBUG
@@ -11444,7 +11454,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
         amt -= sub_amount;
     }
 
-    send_type = len > 0x400 / (sizeof(subcmd_update_player_stat_t) - 4) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
+    send_type = len > DATA_BLOCK_SIZE / (sizeof(subcmd_update_player_stat_t) - 4) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
 
     /* 填充数据头 */
     if(d->version == CLIENT_VERSION_DCV1 || d->version == CLIENT_VERSION_DCV2 ||
@@ -11493,7 +11503,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
         amt -= sub_amount;
     }
 
-    send_type = len > 0x400 / (sizeof(subcmd_bb_update_player_stat_t) - 8) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
+    send_type = len > DATA_BLOCK_SIZE / (sizeof(subcmd_bb_update_player_stat_t) - 8) ? GAME_COMMANDC_TYPE : GAME_COMMAND0_TYPE;
 
     /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(len);
@@ -13056,7 +13066,7 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 //
 //int send_quest_file_chunk(ship_client_t* c, const char* filename, size_t chunk_index, const void* data, size_t size,
 //    bool is_download_quest) {
-//    if (size > 0x400) {
+//    if (size > DATA_BLOCK_SIZE) {
 //        ERR_LOG("quest file chunks must be 1KB or smaller");
 //        return -1;
 //    }
@@ -13075,8 +13085,8 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 //    quest_chunk_t cmd;
 //    cmd.filename = filename;
 //    memcpy(cmd.data.data(), data, size);
-//    if (size < 0x400) {
-//        memset(&cmd.data[size], 0, 0x400 - size);
+//    if (size < DATA_BLOCK_SIZE) {
+//        memset(&cmd.data[size], 0, DATA_BLOCK_SIZE - size);
 //    }
 //    cmd.data_size = size;
 //    return crypt_send(c, BB_QUEST_FILE_LENGTH, sendbuf);
@@ -13097,14 +13107,14 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 //        return;
 //    }
 //
-//    size_t chunk_offset = chunk_index * 0x400;
+//    size_t chunk_offset = chunk_index * DATA_BLOCK_SIZE;
 //    if (chunk_offset >= data->size()) {
 //        DBG_LOG("Done sending file %s", filename.c_str());
 //        c->sending_files.erase(filename);
 //    }
 //    else {
-//        const void* chunk_data = data->data() + (chunk_index * 0x400);
-//        size_t chunk_size = min<size_t>(data->size() - chunk_offset, 0x400);
+//        const void* chunk_data = data->data() + (chunk_index * DATA_BLOCK_SIZE);
+//        size_t chunk_size = min<size_t>(data->size() - chunk_offset, DATA_BLOCK_SIZE);
 //        send_quest_file_chunk(c, filename, chunk_index, chunk_data, chunk_size, is_download_quest);
 //    }
 //}
