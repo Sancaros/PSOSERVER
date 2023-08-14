@@ -102,6 +102,8 @@ int process_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id,
 
 /* Process block commands for a client. */
 int dc_process_pkt(ship_client_t* c, uint8_t* pkt);
+
+int bb_join_game(ship_client_t* c, lobby_t* l);
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt);
 
 int send_motd(ship_client_t *c);

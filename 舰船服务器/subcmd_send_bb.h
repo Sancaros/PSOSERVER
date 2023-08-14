@@ -82,7 +82,7 @@ int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, ui
 int subcmd_send_bb_level(ship_client_t* dest);
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
-int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items);
+int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create);
 
 int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 

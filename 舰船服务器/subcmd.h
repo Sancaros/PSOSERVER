@@ -2405,27 +2405,20 @@ typedef struct subcmd_bb_ModifyTradeProposal_6xA6 {
     uint32_t unknown_a5;
 } PACKED subcmd_bb_ModifyTradeProposal_6xA6_t;
 
-typedef struct subcmd_bb_trade_menu {
-    uint16_t menu_pos;
-    uint16_t menu_id;
-} PACKED subcmd_bb_trade_menu_t;
-
 typedef struct subcmd_bb_trade_items {
     item_t titem[0x20][MAX_TRADE_ITEMS];
 } PACKED subcmd_bb_trade_items_t;
 
 /* 62处理交易数据包. (Blue Burst) */
 typedef struct subcmd_bb_trade {
-    bb_pkt_hdr_t hdr;                   /*18 00 62 00 00/01 00 00 00*/
+    bb_pkt_hdr_t hdr;        /*18 00 62 00 00/01 00 00 00*/
     client_id_hdr_t shdr;
-    uint8_t trade_type;                 /*D0开始 D1 D2 D3 D4 D5交易取消*/
-    uint8_t trade_stage;                /*00 02 04*/
-    uint8_t unk2;                       /*71 00 AC F6 */
-    uint8_t unk3;                       /*00 21*/
-    subcmd_bb_trade_menu_t menu;
-    //uint32_t menu_id;                   /*菜单序号*/
-    uint32_t trade_num;                   /*目标序号为0001*/
-    //uint16_t unused;                    /*一直为00 00*/
+    uint8_t trade_type;      /*D0开始 D1 D2 D3 D4 D5交易取消*/
+    uint8_t trade_stage;     /*00 02 04*/
+    uint16_t menu_id;        /*0x0071(新增取消物品) 0x0000 0x00AC(开始交易) 0x00F6 0x008F(确认) */
+    /* 当加入物品时 才会发送余下数据 否则获取都是乱码数据 */
+    uint32_t item_id;
+    uint32_t trade_num;      /*目标序号为0001*/
 } PACKED subcmd_bb_trade_t;
 
 // 0xA7: Unknown (不支持 PC)

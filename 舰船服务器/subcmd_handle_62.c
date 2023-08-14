@@ -1295,6 +1295,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_trade_t* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint8_t trade_type = pkt->trade_type, trade_stage = pkt->trade_stage;
     int rv = -1;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -1303,19 +1304,116 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         return rv;
     }
 
-    if (pkt->shdr.size != 0x04) {
+    if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
             src->guildcard, pkt->shdr.type, pkt->shdr.size);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return rv;
     }
 
-    send_msg(dest, BB_SCROLL_MSG_TYPE, "%s", __(dest, "\tE\tC6交易功能存在故障，暂时关闭"));
-    send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC6交易功能存在故障，暂时关闭"));
+    //send_msg(dest, BB_SCROLL_MSG_TYPE, "%s", __(dest, "\tE\tC6交易功能存在故障，暂时关闭"));
+    //send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC6交易功能存在故障，暂时关闭"));
 
-    DBG_LOG("GC %u -> %u", src->guildcard, dest->guildcard);
+    DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
     display_packet(pkt, pkt->hdr.pkt_len);
+
+    switch (trade_type) {
+    case 0x00:
+
+        switch (trade_stage) {
+        case 0x00:
+            //交易开始
+        //[2023年08月14日 20:03:54:452] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
+        //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 00 00 AC 00  ..b.....?....?
+        //( 00000010 )   82 00 00 00 0E 87 01 00                           ?...?.
+        case 0x02:
+            //交易开始确认
+        //[2023年08月14日 20:07:19:815] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+        //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 00 02 11 0F  ..b.....?......
+        //( 00000010 )   30 47 11 0F C7 C9 0C 00                           0G..巧..
+        case 0x03:
+            //对方拒绝交易
+        //[2023年08月14日 20:12:57:651] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+        //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 00 03 11 0F  ..b.....?......
+        //( 00000010 )   30 47 11 0F C8 75 81 00                           0G..萿?
+            break;
+        }
+        break;
+
+    case 0x01:
+        switch (trade_stage) {
+        case 0x00:
+            //被交易方加入物品栏ID 0x00010000 物品
+        //[2023年08月14日 20:15:20:984] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+        //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 01 00 71 00  ..b.....?....q.
+        //( 00000010 )   00 00 01 00 01 00 00 00                           ........
+            //交易方加入物品栏ID 0x00210000 物品
+        //[2023年08月14日 20:17:58:493] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
+        //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 01 00 71 00  ..b.....?....q.
+        //( 00000010 )   00 00 21 00 01 00 00 00                           ..!.....
+
+            //要判定加入得物品是否是堆叠得 如果是堆叠得物品 则相同交易物品的数量+1
+            //0xFFFFFF01 是梅塞塔？？？？ 不应该是FFFFFFFF吗
+
+            break;
+        }
+        break;
+
+    case 0x02:
+        //被交易方取消物品栏ID 0x00010000 物品
+    //[2023年08月14日 20:19:21:886] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+    //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 02 00 71 00  ..b.....?....q.
+    //( 00000010 )   00 00 01 00 01 00 00 00                           ........
+        //减掉对应的交易物品 从客户端的“交易物品栏”中删除对应的物品ID
+
+        break;
+
+    case 0x03:
+        switch (trade_stage) {
+        case 0x00:
+            //交易方确认
+        //[2023年08月14日 20:53:33:705] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
+        //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 03 00 8F 00  ..b.....?....?
+        //( 00000010 )   FF FF FF FF 00 00 00 00                           ....
+
+            //被交易方确认
+        //[2023年08月14日 20:40:33:430] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+        //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 03 00 8F 00  ..b.....?....?
+        //( 00000010 )   FF FF FF FF 00 00 00 00                           ....
+            break;
+        }
+        break;
+    case 0x04:
+        switch (trade_stage) {
+        case 0x00:
+            //交易方确认交易
+//[2023年08月14日 21:01:06:843] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
+//( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 04 00 1C 0F  ..b.....?......
+//( 00000010 )   40 AF 1C 0F 40 AF 1C 0F                           @?.@?.
+            //被交易方确认交易
+//[2023年08月14日 21:02:39:912] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+//( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 04 00 11 0F  ..b.....?......
+//( 00000010 )   40 3F 11 0F 40 3F 11 0F                           @?..@?..
+            break;
+        }
+        break;
+    case 0x05:
+        switch (trade_stage) {
+        case 0x04:
+            //交易终止
+    //[2023年08月14日 20:12:03:817] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
+    //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 05 04 00 00  ..b.....?......
+    //( 00000010 )   9D 3A 71 00 01 00 00 00                           ?q.....
+            break;
+        }
+        break;
+
+    default:
+        ERR_LOG("交易数据未处理 trade_type 0x%02X trade_stage 0x%02X", trade_type, trade_stage);
+        display_packet(pkt, pkt->hdr.pkt_len);
+        break;
+    }
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
@@ -1372,6 +1470,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     item_t item_data;
     uint32_t shop_type = LE32(req->shop_type);
     uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
+    size_t shop_size = sizeof(src->game_data->shop_items) / PSOCN_STLENGTH_ITEM;
+    bool create = true;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1379,8 +1479,15 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * shop_size);
+
     for (uint8_t i = 0; i < num_items; ++i) {
-        memset(&src->game_data->shop_items[i], 0, PSOCN_STLENGTH_ITEM);
+        if (num_items > shop_size) {
+            ERR_LOG("GC %" PRIu32 " 商店物品生成错误 num_items %d > shop_size %d",
+                src->guildcard, num_items, shop_size);
+            break;
+        }
+
         memset(&item_data, 0, PSOCN_STLENGTH_ITEM);
 
         switch (shop_type) {
@@ -1397,31 +1504,37 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
             break;
 
         default:
-            ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
-            return -1;
+            create = false;
+            send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4商店生成错误,菜单类型缺失,请联系管理员处理!"));
+            break;
         }
 
-        item_data.item_id = generate_item_id(l, src->client_id);
+        if (create) {
+            item_data.item_id = generate_item_id(l, src->client_id);
 
-        size_t shop_price = price_for_item(&item_data);
-        if (shop_price <= 0) {
-            ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%04X %s 发生错误 shop_price %d",
-                src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), shop_price);
-            return -2;
-        }
-        item_data.data2l = shop_price;
+            size_t shop_price = price_for_item(&item_data);
+            if (shop_price <= 0) {
+                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%04X %s 发生错误 shop_price %d",
+                    src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), shop_price);
+                return -2;
+            }
+            item_data.data2l = shop_price;
 
 #ifdef DEBUG
 
-        print_item_data(&item_data, src->version);
-        DBG_LOG("price_for_item %d", item_data.data2l);
+            print_item_data(&item_data, src->version);
+            DBG_LOG("price_for_item %d", item_data.data2l);
 
 #endif // DEBUG
 
-        memcpy(&src->game_data->shop_items[i], &item_data, PSOCN_STLENGTH_ITEM);
+            memcpy(&src->game_data->shop_items[i], &item_data, PSOCN_STLENGTH_ITEM);
+        }
     }
 
-    return subcmd_bb_send_shop(src, shop_type, num_items);
+    if(!create)
+        ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
+
+    return subcmd_bb_send_shop(src, shop_type, num_items, create);
 }
 
 int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,

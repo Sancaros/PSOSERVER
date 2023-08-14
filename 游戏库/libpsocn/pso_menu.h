@@ -57,6 +57,7 @@ typedef struct pso_menu {
 #define MENU_ID_GAME_TYPE       0x00000006
 #define MENU_ID_GM              0x00000007
 #define MENU_ID_GAME_DROP       0x00000008
+#define MENU_ID_ERROR           0x00000010
 #define MENU_ID_NO_SHIP         0x000000EF
 #define MENU_ID_INFODESK        0x000000FF
 #define MENU_ID_DATABASE        0x00040000
@@ -76,6 +77,7 @@ typedef struct pso_menu {
 #define ITEM_ID_INIT_INFO       0x00000002
 #define ITEM_ID_INIT_GM         0x00000003
 #define ITEM_ID_INIT_PATCH      0x00000004
+#define ITEM_ID_INIT_ERROR      0x00800000
 
 #define ITEM_ID_DISCONNECT      0xFFFFFFFE
 #define ITEM_ID_LAST            0xFFFFFFFF
@@ -174,6 +176,14 @@ static pso_menu_t pso_guild_rank_list_bb[][4] = {
     {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_INFO, 0x0004},
     {"暂未完成", MENU_ID_INITIAL, ITEM_ID_INIT_GM, 0x0004},
     {"暂未完成", MENU_ID_INITIAL, ITEM_ID_DISCONNECT, 0x0004}
+};
+
+static pso_menu_t pso_error_menu[][4] = {
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_ERROR, 0x0004},
+    {"菜单错误",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
+    {"请联系管理员", MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
+    {"记得截图",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
+    {"不然他不懂",   MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004}
 };
 
 #endif /* !PSO_MENU_HAVE_MENU */

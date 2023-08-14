@@ -773,9 +773,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
                             memcpy(&dest->bb_guild->data, guild, PSOCN_STLENGTH_BB_GUILD);*/
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
-
+#ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            //display_packet((uint8_t*)g, len);
+                            display_packet((uint8_t*)g, len);
+#endif // DEBUG
                         }
                         break;
 
@@ -868,7 +869,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_UNK_0EEA:
                         if (dest->guildcard == sender_gc) {
 
+#ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
+#endif // DEBUG
                             display_packet((uint8_t*)g, len);
                         }
                         break;
@@ -879,7 +882,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         guild_id = flag_pkt->hdr.flags;
 
                         if (dest->bb_guild->data.guild_id == guild_id) {
+#ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
+#endif // DEBUG
                             memcpy(dest->bb_guild->data.guild_flag, flag_pkt->guild_flag, sizeof(dest->bb_guild->data.guild_flag));
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                         }
@@ -888,9 +893,9 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_DISSOLVE:
                         bb_guild_dissolve_pkt* g_data = (bb_guild_dissolve_pkt*)pkt->pkt;
                         guild_id = g_data->hdr.flags;
-
+#ifdef DEBUG
                         DBG_LOG("%u %u %u", guild_id, dest->bb_guild->data.guild_id, pkt->fw_flags);
-
+#endif // DEBUG
                         if (dest->bb_guild->data.guild_id == guild_id) {
                             send_msg(dest, MSG_BOX_TYPE, "%s %u", __(dest, "\tE\tC4公会已被解散!"), dest->bb_guild->data.guild_id);
                             memset(dest->bb_guild, 0, PSOCN_STLENGTH_BB_GUILD);
@@ -905,9 +910,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 
 
                         if (dest->guildcard == promote_pkt->target_guildcard) {
+#ifdef DEBUG
                             DBG_LOG("BB_GUILD_MEMBER_PROMOTE %d %d", dest->guildcard, dest->guild_master_exfer);
-                            //display_packet((uint8_t*)g, len);
-
+                            display_packet((uint8_t*)g, len);
+#endif // DEBUG
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
                         }
@@ -917,8 +923,10 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
+#ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
                             display_packet((uint8_t*)g, len);
+#endif // DEBUG
                         }
                         break;
 
@@ -2910,7 +2918,7 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
     block_t* b;
     ship_client_t* i;
     uint32_t gc, block, count, j;
-    client_blocklist_t* list;
+    blocklist_t* list;
     uint16_t len = ntohs(pkt->hdr.pkt_len);
 
     /* Make sure the packet is one we understand and of a valid size. */
@@ -2939,7 +2947,7 @@ static int handle_ubl(shipgate_conn_t* c, shipgate_user_blocklist_pkt* pkt) {
         if (i->guildcard == gc) {
             pthread_mutex_lock(&i->mutex);
 
-            list = (client_blocklist_t*)malloc(sizeof(client_blocklist_t) *
+            list = (blocklist_t*)malloc(sizeof(blocklist_t) *
                 count);
             if (!list) {
                 ERR_LOG("%s: 从船闸服务器处理客户端封禁列表时内存不足");

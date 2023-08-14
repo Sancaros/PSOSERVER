@@ -103,11 +103,11 @@ static ship_t* find_ship(uint16_t id) {
 }
 
 /* 完成数据包设置,发送至DC舰船... */
-static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
+static int send_dc_pkt_to_ship(ship_t* c, uint32_t target_guildcard, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(gc_target);
+    ship_id = db_get_char_ship_id(target_guildcard);
 
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
@@ -118,19 +118,22 @@ static int send_dc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        return forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
+        return forward_dreamcast(s, (dc_pkt_hdr_t*)pkt, c->key_idx, target_guildcard, 0);
     }
 
-    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+#ifdef DEBUG
+    ERR_LOG("未找到GC %u 玩家所在舰船.", target_guildcard);
+#endif // DEBUG
+
     return 0;
 }
 
 /* 完成数据包设置,发送至PC舰船... */
-static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
+static int send_pc_pkt_to_ship(ship_t* c, uint32_t target_guildcard, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(gc_target);
+    ship_id = db_get_char_ship_id(target_guildcard);
 
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
@@ -141,19 +144,22 @@ static int send_pc_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        return forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
+        return forward_pc(s, (dc_pkt_hdr_t*)pkt, c->key_idx, target_guildcard, 0);
     }
 
-    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+#ifdef DEBUG
+    ERR_LOG("未找到GC %u 玩家所在舰船.", target_guildcard);
+#endif // DEBUG
+
     return 0;
 }
 
 /* 完成数据包设置,发送至BB舰船... */
-static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
+static int send_bb_pkt_to_ship(ship_t* c, uint32_t target_guildcard, uint8_t* pkt) {
     int ship_id;
     ship_t* s;
 
-    ship_id = db_get_char_ship_id(gc_target);
+    ship_id = db_get_char_ship_id(target_guildcard);
 
     if (ship_id >= 0) {
         /* If we've got this far, we should have the ship we need to send to */
@@ -164,10 +170,13 @@ static int send_bb_pkt_to_ship(ship_t* c, uint32_t gc_target, uint8_t* pkt) {
         }
 
         /* 完成数据包设置,发送至舰船... */
-        return forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, gc_target, 0);
+        return forward_bb(s, (bb_pkt_hdr_t*)pkt, c->key_idx, target_guildcard, 0);
     }
 
-    ERR_LOG("未找到GC %u 玩家所在舰船.", gc_target);
+#ifdef DEBUG
+    ERR_LOG("未找到GC %u 玩家所在舰船.", target_guildcard);
+#endif // DEBUG
+
     return 0;
 }
 

@@ -290,7 +290,7 @@ int send_lobby_sync_register(lobby_t *l, uint8_t n, uint32_t v);
 /* Send a message box to the user telling them that they are banned. */
 int send_ban_msg(ship_client_t *c, time_t until, const char *reason);
 
-int send_bb_execute_item_trade(ship_client_t* c, item_t* items);
+int send_bb_execute_item_trade(ship_client_t* c, item_t* items, uint16_t item_count);
 
 int send_info_file(ship_client_t* c, ship_t* s, uint32_t entry);
 
@@ -334,5 +334,7 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1);
 
 int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2);
+
+int send_bb_error_menu_list(ship_client_t* dest);
 
 #endif /* !SHIP_PACKETS_H */

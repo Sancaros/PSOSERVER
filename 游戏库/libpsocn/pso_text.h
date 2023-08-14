@@ -51,6 +51,34 @@ typedef struct {
     size_t len;
 } Buffer;
 
+int32_t ext24(uint32_t a);
+
+int64_t ext48(uint64_t a);
+
+uint8_t bswap8(uint8_t a);
+
+uint16_t bswap16(uint16_t a);
+
+uint32_t bswap24(uint32_t a);
+
+int32_t bswap24s(int32_t a);
+
+uint32_t bswap32(uint32_t a);
+
+uint64_t bswap48(uint64_t a);
+
+int64_t bswap48s(int64_t a);
+
+uint64_t bswap64(uint64_t a);
+
+float bswap32f(uint32_t a);
+
+double bswap64f(uint64_t a);
+
+uint32_t bswap32ff(float a);
+
+uint64_t bswap64ff(double a);
+
 /* 32位数字转8位数组 */
 void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size);
 

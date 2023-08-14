@@ -40,6 +40,7 @@
 #include "admin.h"
 #include "items.h"
 #include "records.h"
+#include "handle_player_items.h"
 
 extern char ship_host4[32];
 extern char ship_host6[128];
@@ -9326,6 +9327,7 @@ static int send_ship_list_bb(ship_client_t *c, ship_t *s, uint16_t menu_code) {
 }
 
 int send_ship_list(ship_client_t *c, ship_t *s, uint16_t menu_code) {
+
     /* Call the appropriate function. */
     switch(c->version) {
         case CLIENT_VERSION_DCV1:
@@ -12246,22 +12248,23 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
     return send_msg(c, MSG_BOX_TYPE, "%s", string);
 }
 
-int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {
+int send_bb_execute_item_trade(ship_client_t* c, item_t* items, uint16_t item_count) {
     uint8_t* sendbuf = get_sendbuf();
     bb_trade_D0_D3_pkt* pkt = (bb_trade_D0_D3_pkt*)sendbuf;
-    int rv = -1;
-    size_t item_size = sizeof(items);
 
-    if (/*items.size()*/item_size > sizeof(pkt->items) / sizeof(pkt->items[0])) {
+    if (item_count > sizeof(pkt->items) / sizeof(pkt->items[0])) {
         ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
             c->guildcard);
         return -1;
-        //throw logic_error("too many items in execute trade command");
     }
+
     pkt->target_client_id = c->client_id;
-    pkt->item_count = LE16((uint16_t)item_size);//items.size();
-    for (size_t x = 0; x < item_size/*items.size()*/; x++) {
+    pkt->item_count = item_count;
+    for (size_t x = 0; x < item_count; x++) {
         pkt->items[x] = items[x];
+        if (c->version == CLIENT_VERSION_GC) {
+            bswap_data2_if_mag(&pkt->items[x]);
+        }
     }
 
     lobby_t* l = c->cur_lobby;
@@ -12270,13 +12273,10 @@ int send_bb_execute_item_trade(ship_client_t* c, item_t* items) {
     DBG_LOG("GC %" PRIu32 " 尝试交易 %d 件物品 给 %" PRIu32 "!",
         c->guildcard, pkt->item_count, c2->guildcard);
 
-    //send_command_t(c, 0xD3, 0x00, pkt);
     pkt->hdr.pkt_type = TRADE_3_TYPE;
     pkt->hdr.flags = 0x00;
-    //pkt->type = SUBCMD62_TRADE;
-    //pkt->size = 0x04;
-    rv = send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
-    return rv;
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
 
 /* Send a message box containing an information file entry. */
@@ -12959,15 +12959,17 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     return (uint8_t*)pkt;
 }
 
-int send_bb_lobby_guild_data(ship_client_t* c, ship_client_t* nosend) {
-    lobby_t* l = c->cur_lobby;
+int send_bb_lobby_guild_data(ship_client_t* src, ship_client_t* nosend) {
+    lobby_t* l = src->cur_lobby;
     int  i = 0, rv = 0;
 
     /* 如果客户端不在大厅或者队伍中则忽略数据包. */
     if (!l) {
-        ERR_LOG("玩家GC %u 未处于大厅中", c->guildcard);
+        ERR_LOG("玩家GC %u 未处于大厅中", src->guildcard);
         return rv;
     }
+
+    //rv = send_pkt_bb(src, (bb_pkt_hdr_t*)build_guild_full_data_pkt(src));
 
     /* 将房间中的玩家公会数据发送至新进入的客户端 */
     for (i = 0; i < l->max_clients; ++i) {
@@ -12975,9 +12977,9 @@ int send_bb_lobby_guild_data(ship_client_t* c, ship_client_t* nosend) {
             (l->clients[i] != nosend) &&
             (l->clients[i]->version == CLIENT_VERSION_BB)
             ) {
-            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
-            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
-            rv = send_pkt_bb(c, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+            rv = send_pkt_bb(src, (bb_pkt_hdr_t*)build_guild_full_data_pkt(l->clients[i]));
+            //rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(c));
+            rv = send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)build_guild_full_data_pkt(src));
         }
     }
 
@@ -13047,97 +13049,27 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
 int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16_t subcmd_type) {
     lobby_t* l = c->cur_lobby;
 
+    c->game_data->err.has_error = true;
+    c->game_data->err.error_cmd_type = cmd_type;
+    c->game_data->err.error_subcmd_type = subcmd_type;
+
     if (l->flags & LOBBY_FLAG_QUESTING) {
 
-        //pthread_mutex_lock(&c->mutex);
         send_warp(c, 1, false);
-        //pthread_mutex_unlock(&c->mutex);
 
-        c->game_data->err.error_cmd_type = cmd_type;
-        c->game_data->err.error_subcmd_type = subcmd_type;
+#ifdef DEBUG
 
-        //DBG_LOG("0x%zX 0x%zX", c->game_data->err.error_cmd_type, c->game_data->err.error_subcmd_type);
+        DBG_LOG("0x%zX 0x%zX", c->game_data->err.error_cmd_type, c->game_data->err.error_subcmd_type);
+
+#endif // DEBUG
 
         return 0;
     }
     else {
-        send_msg(c, BB_SCROLL_MSG_TYPE,
-            "%s 错误指令:0x%zX 副指令:0x%zX",
-            __(c, "\tE\tC6非任务指令出错,请联系管理员处理!"), 
-            cmd_type, 
-            subcmd_type
-        );
-        return -1;
+        /* Attempt to change the player's lobby. */
+        return bb_join_game(c, l);
     }
 }
-//
-//int send_quest_file_chunk(ship_client_t* c, const char* filename, size_t chunk_index, const void* data, size_t size,
-//    bool is_download_quest) {
-//    if (size > DATA_BLOCK_SIZE) {
-//        ERR_LOG("quest file chunks must be 1KB or smaller");
-//        return -1;
-//    }
-//
-//    dc_quest_chunk_pkt dc = { 0 };
-//    bb_quest_chunk_pkt bb = { 0 };
-//
-//    uint16_t len_dc = sizeof(dc_quest_chunk_pkt);
-//    uint16_t len_bb = sizeof(bb_quest_chunk_pkt);
-//
-//    /* 填充数据头并准备发送 */
-//    pkt.hdr.pkt_len = sizeof(bb_send_quest_state_pkt);
-//    pkt.hdr.pkt_type = is_download_quest ? DL_QUEST_CHUNK_TYPE : QUEST_CHUNK_TYPE;
-//    pkt.hdr.flags = c->client_id;
-//
-//    quest_chunk_t cmd;
-//    cmd.filename = filename;
-//    memcpy(cmd.data.data(), data, size);
-//    if (size < DATA_BLOCK_SIZE) {
-//        memset(&cmd.data[size], 0, DATA_BLOCK_SIZE - size);
-//    }
-//    cmd.data_size = size;
-//    return crypt_send(c, BB_QUEST_FILE_LENGTH, sendbuf);
-//
-//    //send_command_t(c, is_download_quest ? 0xA7 : 0x13, chunk_index, cmd);
-//}
-//
-//static void send_file_chunk(
-//    ship_client_t* c,
-//    const char* filename,
-//    size_t chunk_index,
-//    bool is_download_quest) {
-//    shared_ptr<const string> data;
-//    try {
-//        data = c->sending_files.at(filename);
-//    }
-//    catch (const out_of_range&) {
-//        return;
-//    }
-//
-//    size_t chunk_offset = chunk_index * DATA_BLOCK_SIZE;
-//    if (chunk_offset >= data->size()) {
-//        DBG_LOG("Done sending file %s", filename.c_str());
-//        c->sending_files.erase(filename);
-//    }
-//    else {
-//        const void* chunk_data = data->data() + (chunk_index * DATA_BLOCK_SIZE);
-//        size_t chunk_size = min<size_t>(data->size() - chunk_offset, DATA_BLOCK_SIZE);
-//        send_quest_file_chunk(c, filename, chunk_index, chunk_data, chunk_size, is_download_quest);
-//    }
-//}
-//
-//static void on_44_A6_V3_BB(ship_client_t* c,
-//    uint16_t command, uint32_t, const uint8_t* data) {
-//    const auto& cmd = check_size_t<C_OpenFileConfirmation_44_A6>(data);
-//    send_file_chunk(c, cmd.filename, 0, (command == 0xA6));
-//}
-//
-//static void on_13_A7_V3_BB(ship_client_t* c,
-//    uint16_t command, uint32_t flag, const uint8_t* data) {
-//    const auto& cmd = check_size_t<C_WriteFileConfirmation_V3_BB_13_A7>(data);
-//    send_file_chunk(c, cmd.filename, flag + 1, (command == 0xA7));
-//}
-//
 
 /* 物品兑换完成 */
 int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1) {
@@ -13177,4 +13109,33 @@ int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2)
     pkt->param = 0;
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
+int send_bb_error_menu_list(ship_client_t* dest) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_guild_rank_list_pkt* menu = (bb_guild_rank_list_pkt*)sendbuf;
+    uint16_t len = 0x100;
+    size_t i = 0;
+
+    /* 初始化数据包 */
+    memset(menu, 0, len);
+
+    len = 0;
+
+    /* 填充菜单实例 */
+    for (i = 0; i < _countof(pso_error_menu); ++i) {
+        menu->entries[i].menu_id = LE32(pso_error_menu[i]->menu_id);
+        menu->entries[i].item_id = LE32(pso_error_menu[i]->item_id);
+        menu->entries[i].flags = LE16(pso_error_menu[i]->flag);
+        istrncpy(ic_gb18030_to_utf16, (char*)menu->entries[i].name, pso_error_menu[i]->name, 0x20);
+        len += 0x2C;
+    }
+
+    /* 填充数据头 */
+    menu->hdr.pkt_len = LE16(len + sizeof(bb_pkt_hdr_t));
+    menu->hdr.pkt_type = LE16(BLOCK_LIST_TYPE);
+    menu->hdr.flags = i - 1;
+
+    /* 加密并发送 */
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)menu);
 }

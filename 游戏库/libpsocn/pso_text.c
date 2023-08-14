@@ -27,6 +27,94 @@
 
 #include "pso_text.h"
 
+int32_t ext24(uint32_t a) {
+    return (a & 0x00800000) ? (a | 0xFF000000) : a;
+}
+
+int64_t ext48(uint64_t a) {
+    return (a & 0x00008000000000) ? (a | 0xFFFF0000000000) : a;
+}
+
+uint8_t bswap8(uint8_t a) {
+    return a;
+}
+
+uint16_t bswap16(uint16_t a) {
+    return ((a >> 8) & 0x00FF) |
+        ((a << 8) & 0xFF00);
+}
+
+uint32_t bswap24(uint32_t a) {
+    return ((a >> 16) & 0x000000FF) |
+        (a & 0x0000FF00) |
+        ((a << 16) & 0x00FF0000);
+}
+
+int32_t bswap24s(int32_t a) {
+    int32_t r = bswap24(a);
+    if (r & 0x00800000) {
+        return r | 0xFF000000;
+    }
+    return r;
+}
+
+uint32_t bswap32(uint32_t a) {
+    return ((a >> 24) & 0x000000FF) |
+        ((a >> 8) & 0x0000FF00) |
+        ((a << 8) & 0x00FF0000) |
+        ((a << 24) & 0xFF000000);
+}
+
+uint64_t bswap48(uint64_t a) {
+    return ((a >> 40) & 0x00000000000000FF) |
+        ((a >> 24) & 0x000000000000FF00) |
+        ((a >> 8) & 0x0000000000FF0000) |
+        ((a << 8) & 0x00000000FF000000) |
+        ((a << 24) & 0x000000FF00000000) |
+        ((a << 40) & 0x0000FF0000000000);
+}
+
+int64_t bswap48s(int64_t a) {
+    int64_t r = bswap48(a);
+    if (r & 0x0000800000000000) {
+        return r | 0xFFFF000000000000;
+    }
+    return r;
+}
+
+uint64_t bswap64(uint64_t a) {
+    return ((a >> 56) & 0x00000000000000FF) |
+        ((a >> 40) & 0x000000000000FF00) |
+        ((a >> 24) & 0x0000000000FF0000) |
+        ((a >> 8) & 0x00000000FF000000) |
+        ((a << 8) & 0x000000FF00000000) |
+        ((a << 24) & 0x0000FF0000000000) |
+        ((a << 40) & 0x00FF000000000000) |
+        ((a << 56) & 0xFF00000000000000);
+}
+
+float bswap32f(uint32_t a) {
+    float f;
+    *(uint32_t*)(&f) = bswap32(a);
+    return f;
+}
+
+double bswap64f(uint64_t a) {
+    double d;
+    *(uint64_t*)(&d) = bswap64(a);
+    return d;
+}
+
+uint32_t bswap32ff(float a) {
+    uint32_t i = *(uint32_t*)(&a);
+    return bswap32(i);
+}
+
+uint64_t bswap64ff(double a) {
+    uint64_t i = *(uint64_t*)(&a);
+    return bswap64(i);
+}
+
 void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size) {
     for (size_t i = 0; i < size; i++) {
         array[i] = value & 0xFF;

@@ -167,6 +167,40 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         memset(rv->game_data, 0, sizeof(client_game_data_t));
 
+        if (version == CLIENT_VERSION_BB) {
+            rv->game_data->pending_item_trade =
+                (trade_item_t*)malloc(sizeof(trade_item_t));
+
+            if (!rv->game_data) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
+
+            memset(rv->game_data->pending_item_trade, 0, sizeof(trade_item_t));
+        }
+
+        if (version == CLIENT_VERSION_EP3) {
+            rv->game_data->pending_card_trade =
+                (trade_card_t*)malloc(sizeof(trade_card_t));
+
+            if (!rv->game_data) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
+
+            memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
+        }
+
         rv->mode_pl =
             (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
 
@@ -1480,6 +1514,37 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
     }
 
     return 0;
+}
+
+inventory_t* get_client_inv_bb(ship_client_t* src) {
+    return src->mode > 0 ? &src->mode_pl->bb.inv : &src->bb_pl->character.inv;
+}
+
+psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
+    return src->mode > 0 ? &src->mode_pl->bb : &src->bb_pl->character;
+}
+
+inventory_t* get_client_inv_nobb(ship_client_t* src) {
+    return src->mode > 0 ? &src->mode_pl->nobb.inv : &src->pl->v1.character.inv;
+}
+
+psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
+    return src->mode > 0 ? &src->mode_pl->nobb : &src->pl->v1.character;
+}
+
+ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
+    int i = 0;
+
+    for (i = 0; i < l->max_clients; ++i) {
+        if (l->clients[i]->client_id == target_client_id) {
+            return l->clients[i];
+        }
+    }
+
+    if (i == l->max_clients)
+        ERR_LOG("GC %u 寻找的客户端ID %d 不存在", target_client_id);
+
+    return NULL;
 }
 
 #ifdef ENABLE_LUA

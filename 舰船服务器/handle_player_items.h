@@ -51,6 +51,8 @@ size_t find_equipped_weapon(inventory_t* inv);
 size_t find_equipped_armor(inventory_t* inv);
 size_t find_equipped_mag(inventory_t* inv);
 
+void bswap_data2_if_mag(item_t* item);
+
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);

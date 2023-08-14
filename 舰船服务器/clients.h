@@ -65,18 +65,32 @@ typedef struct lobby lobby_t;
 #undef PACKED
 #endif
 
-typedef struct client_blocklist_entry {
+typedef struct blocklist_entry {
     uint32_t gc;
     uint32_t flags;
-} client_blocklist_t;
+} blocklist_t;
 
-typedef struct client_trade_item {
+typedef struct trade_item {
     uint16_t other_client_id;
     bool confirmed; // true if client has sent a D2 command
+    uint32_t item_count;
     item_t items[0x20];
-} client_trade_item_t;
+} trade_item_t;
+
+struct Pair {
+    uint32_t first;
+    uint32_t second;
+};
+
+typedef struct trade_card {
+    uint8_t other_client_id;
+    int confirmed; // 0 for false, 1 for true
+    struct Pair* card_to_count;
+    size_t card_to_count_size;
+} trade_card_t;
 
 typedef struct client_error {
+    bool has_error;
     errno_t error_cmd_type;
     errno_t error_subcmd_type;
 } client_error_t;
@@ -87,7 +101,8 @@ typedef struct client_game_data {
 
     int bursting;
 
-    client_trade_item_t *pending_item_trade;
+    trade_item_t *pending_item_trade;
+    trade_card_t *pending_card_trade;
     iitem_t identify_result;
     item_t shop_items[0x14];
 
@@ -192,7 +207,7 @@ struct ship_client {
 
     uint32_t ignore_list[CLIENT_IGNORE_LIST_SIZE];
     uint32_t blacklist[CLIENT_BLACKLIST_SIZE];
-    client_blocklist_t *blocklist;
+    blocklist_t *blocklist;
 
     uint32_t last_info_req;
 
@@ -448,6 +463,16 @@ int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver);
 
 /* Run a legit check on a given client. */
 int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
+
+inventory_t* get_client_inv_bb(ship_client_t* src);
+
+psocn_bb_char_t* get_client_char_bb(ship_client_t* src);
+
+inventory_t* get_client_inv_nobb(ship_client_t* src);
+
+psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src);
+
+ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id);
 
 #ifdef ENABLE_LUA
 #include <lua.h>

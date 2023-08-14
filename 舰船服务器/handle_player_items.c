@@ -21,6 +21,7 @@
 #include <wincrypt.h>
 
 #include <f_logs.h>
+#include <pso_text.h>
 #include <mtwist.h>
 
 #include "handle_player_items.h"
@@ -287,44 +288,6 @@ size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item) {
     return -1;
 }
 
-bool is_wrapped(item_t* this) {
-    switch (this->datab[0]) {
-    case ITEM_TYPE_WEAPON:
-    case ITEM_TYPE_GUARD:
-        return this->datab[4] & 0x40;
-    case ITEM_TYPE_MAG:
-        return this->data2b[2] & 0x40;
-    case ITEM_TYPE_TOOL:
-        return !is_stackable(this) && (this->datab[3] & 0x40);
-    case ITEM_TYPE_MESETA:
-        return false;
-    }
-
-    ERR_LOG("无效物品数据 0x%02X", this->datab[0]);
-    return false;
-}
-
-void unwrap(item_t* this) {
-    switch (this->datab[0]) {
-    case ITEM_TYPE_WEAPON:
-    case ITEM_TYPE_GUARD:
-        this->datab[4] &= 0xBF;
-        break;
-    case ITEM_TYPE_MAG:
-        this->data2b[2] &= 0xBF;
-        break;
-    case ITEM_TYPE_TOOL:
-        if (!is_stackable(this)) {
-            this->datab[3] &= 0xBF;
-        }
-        break;
-    case 4:
-        break;
-    default:
-        ERR_LOG("无效 unwrap 物品类型");
-    }
-}
-
 /* 获取背包中目标物品所在槽位 */
 size_t find_equipped_weapon(inventory_t* inv){
     ssize_t ret = -1;
@@ -393,6 +356,12 @@ size_t find_equipped_mag(inventory_t* inv) {
         ERR_LOG("未从背包中找已装备的玛古");
     }
     return ret;
+}
+
+void bswap_data2_if_mag(item_t* item) {
+    if (item->datab[0] == ITEM_TYPE_MAG) {
+        item->data2l = bswap32(item->data2l);
+    }
 }
 
 /* 移除背包物品操作 */
@@ -624,6 +593,44 @@ bool add_bitem(ship_client_t* src, bitem_t* item) {
     bank->bitems[bank->item_count] = *item;
     bank->item_count++;
     return true;
+}
+
+bool is_wrapped(item_t* this) {
+    switch (this->datab[0]) {
+    case ITEM_TYPE_WEAPON:
+    case ITEM_TYPE_GUARD:
+        return this->datab[4] & 0x40;
+    case ITEM_TYPE_MAG:
+        return this->data2b[2] & 0x40;
+    case ITEM_TYPE_TOOL:
+        return !is_stackable(this) && (this->datab[3] & 0x40);
+    case ITEM_TYPE_MESETA:
+        return false;
+    }
+
+    ERR_LOG("无效物品数据 0x%02X", this->datab[0]);
+    return false;
+}
+
+void unwrap(item_t* this) {
+    switch (this->datab[0]) {
+    case ITEM_TYPE_WEAPON:
+    case ITEM_TYPE_GUARD:
+        this->datab[4] &= 0xBF;
+        break;
+    case ITEM_TYPE_MAG:
+        this->data2b[2] &= 0xBF;
+        break;
+    case ITEM_TYPE_TOOL:
+        if (!is_stackable(this)) {
+            this->datab[3] &= 0xBF;
+        }
+        break;
+    case 4:
+        break;
+    default:
+        ERR_LOG("无效 unwrap 物品类型");
+    }
 }
 
 int player_use_item(ship_client_t* src, uint32_t item_id) {
@@ -1962,4 +1969,3 @@ void sort_client_bank(psocn_bank_t* bank) {
         }
     }
 }
-

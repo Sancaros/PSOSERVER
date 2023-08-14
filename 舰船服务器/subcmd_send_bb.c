@@ -20,6 +20,7 @@
 
 #include "handle_player_items.h"
 #include "f_logs.h"
+#include "utils.h"
 
 // subcmd 直接发送指令至客户端
 /* 发送副指令数据包至房间 ignore_check 是否忽略被拉入被忽略的玩家 */
@@ -92,7 +93,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     bb.two = dc.two = LE32(0x00000002);
 
     if (src->version == CLIENT_VERSION_GC)
-        dc.data.data2l = SWAP32(item.data2l);
+        bswap_data2_if_mag(&dc.data);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
@@ -707,17 +708,26 @@ int subcmd_send_bb_level(ship_client_t* dest) {
 }
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
-int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) {
-    lobby_t* l = c->cur_lobby;
+int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create) {
+    lobby_t* l = dest->cur_lobby;
     subcmd_bb_shop_inv_t shop = { 0 };
 
-    if (!l)
-        return 0;
+    if (!l) {
+        ERR_LOG("GC %" PRIu32 " 不在任何房间中!",
+            dest->guildcard);
+        return -1;
+    }
+
+    if (!create) {
+        ERR_LOG("GC %" PRIu32 " 商店菜单数据错误! create %d shop_type %d num_items %d",
+            dest->guildcard, create, shop_type, num_items);
+        return send_bb_error_menu_list(dest);
+    }
 
     if (num_items > sizeof(shop.items) / sizeof(shop.items[0])) {
         ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! %d %d",
-            c->guildcard, num_items, sizeof(shop.items) / sizeof(shop.items[0]));
-        return -1;
+            dest->guildcard, num_items, sizeof(shop.items) / sizeof(shop.items[0]));
+        return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4商店生成错误,获取商店物品超出限制,请联系管理员处理!"));
     }
 
     uint16_t len = LE16(16) + num_items * PSOCN_STLENGTH_ITEM;
@@ -728,7 +738,7 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
 
     /* 填充副指令数据 */
     shop.shdr.type = SUBCMD60_SHOP_INV;
-    shop.shdr.size = sizeof(c->game_data->shop_items) / 4;
+    shop.shdr.size = sizeof(dest->game_data->shop_items) / 4;
     shop.shdr.params = LE16(0x0000);
 
     /* 填充剩余数据 */
@@ -737,10 +747,10 @@ int subcmd_bb_send_shop(ship_client_t* c, uint8_t shop_type, uint8_t num_items) 
 
     for (uint8_t i = 0; i < num_items; ++i) {
         clear_item(&shop.items[i]);
-        shop.items[i] = c->game_data->shop_items[i];
+        shop.items[i] = dest->game_data->shop_items[i];
     }
 
-    return send_pkt_bb(c, (bb_pkt_hdr_t*)&shop);
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)&shop);
 }
 
 int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
