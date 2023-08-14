@@ -4034,115 +4034,157 @@ static int handle_bank(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6角色仓库."));
 }
 
+/* 用法: /rsquset TODO 未完成*/
+static int handle_resetquest(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->flags & LOBBY_FLAG_QUESTING) {
+
+        if (l->oneperson) {
+            c->reset_quest = true;
+
+            /* Attempt to change the player's lobby. */
+            bb_join_game(c, l);
+
+            c->reset_quest = false;
+            return 0;
+        }
+
+        c->reset_quest = true;
+
+        /* Attempt to change the player's lobby. */
+        bb_join_game(c, l);
+
+        c->reset_quest = false;
+        return 0;
+        /* Do we have quests configured? */
+        //if (!TAILQ_EMPTY(&ship->qmap)) {
+        //    return send_quest_list(c, (int)c->quest_item_id, c->q_lang);
+        //}
+        //else {
+        //    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未读取任务."));
+        //}
+        //return lobby_setup_quest(l, c, l->qid, c->language_code);
+        //for (int i = 0; i < l->max_clients; ++i) {
+        //    if (l->clients[i]) {
+        //        return send_quest(l, l->qid, c->language_code);
+        //    }
+        //}
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
+}
+
 static command_t cmds[] = {
-    { "debug"    , handle_gmdebug   },
-    { "swarp"    , handle_shipwarp  },
-    { "warp"     , handle_warp      },
-    { "kill"     , handle_kill      },
-    { "minlvl"   , handle_min_level },
-    { "maxlvl"   , handle_max_level },
-    { "refresh"  , handle_refresh   },
-    { "save"     , handle_save      },
-    { "restore"  , handle_restore   },
-    { "bstat"    , handle_bstat     },
-    { "bcast"    , handle_bcast     },
-    { "tmsg"     , handle_tmsg      },
-    { "arrow"    , handle_arrow     },
-    { "login"    , handle_login     },
-    { "item"     , handle_item      },
-    { "item1"    , handle_item1     },
-    { "item2"    , handle_item2     },
-    { "item3"    , handle_item3     },
-    { "item4"    , handle_item4     },
-    { "miitem"   , handle_miitem    },
-    { "event"    , handle_event     },
-    { "passwd"   , handle_passwd    },
-    { "lname"    , handle_lname     },
-    { "warpall"  , handle_warpall   },
-    { "bug"      , handle_bug       },
-    { "clinfo"   , handle_clinfo    },
-    { "gban:d"   , handle_gban_d    },
-    { "gban:w"   , handle_gban_w    },
-    { "gban:m"   , handle_gban_m    },
-    { "gban:p"   , handle_gban_p    },
-    { "list"     , handle_list      },
-    { "legit"    , handle_legit     },
-    { "normal"   , handle_normal    },
-    { "shutdown" , handle_shutdown  },
-    { "log"      , handle_log       },
-    { "endlog"   , handle_endlog    },
-    { "motd"     , handle_motd      },
-    { "friendadd", handle_friendadd },
-    { "frienddel", handle_frienddel },
-    { "dconly"   , handle_dconly    },
-    { "v1only"   , handle_v1only    },
-    { "forgegc"  , handle_forgegc   },
-    { "invuln"   , handle_invuln    },
-    { "inftp"    , handle_inftp     },
-    { "smite"    , handle_smite     },
-    { "teleport" , handle_teleport  },
-    { "dbginv"   , handle_dbginv    },
-    { "dbgbank"  , handle_dbgbank   },
-    { "showdcpc" , handle_showdcpc  },
-    { "allowgc"  , handle_allowgc   },
-    { "ws"       , handle_ws        },
-    { "ll"       , handle_ll        },
-    { "npc"      , handle_npc       },
-    { "stfu"     , handle_stfu      },
-    { "unstfu"   , handle_unstfu    },
-    { "ignore"   , handle_ignore    },
-    { "unignore" , handle_unignore  },
-    { "quit"     , handle_quit      },
-    { "gameevent", handle_gameevent },
-    { "ban:d"    , handle_ban_d     },
-    { "ban:w"    , handle_ban_w     },
-    { "ban:m"    , handle_ban_m     },
-    { "ban:p"    , handle_ban_p     },
-    { "unban"    , handle_unban     },
-    { "cc"       , handle_cc        },
-    { "qlang"    , handle_qlang     },
-    { "friends"  , handle_friends   },
-    { "gbc"      , handle_gbc       },
-    { "logout"   , handle_logout    },
-    { "override" , handle_override  },
-    { "ver"      , handle_ver       },
-    { "restart"  , handle_restart   },
-    { "search"   , handle_search    },
-    { "gm"       , handle_gm        },
-    { "maps"     , handle_maps      },
-    { "showmaps" , handle_showmaps  },
-    { "restorebk", handle_restorebk },
-    { "enablebk" , handle_enablebk  },
-    { "disablebk", handle_disablebk },
-    { "exp"      , handle_exp       },
-    { "level"    , handle_level     },
-    { "sdrops"   , handle_sdrops    },
-    { "gcprotect", handle_gcprotect },
-    { "trackinv" , handle_trackinv  },
-    { "trackkill", handle_trackkill },
-    { "ep3music" , handle_ep3music  },
-    { "tlogin"   , handle_tlogin    },
-    { "dsdrops"  , handle_dsdrops   },
-    { "noevent"  , handle_noevent   },
-    { "lflags"   , handle_lflags    },
-    { "cflags"   , handle_cflags    },
-    { "stalk"    , handle_teleport  },    /* Happy, Aleron Ives? */
-    { "showpos"  , handle_showpos   },
-    { "t"        , handle_t         },    /* Short command = more precision. */
-    { "info"     , handle_info      },
-    { "quest"    , handle_quest     },
-    { "autolegit", handle_autolegit },
-    { "censor"   , handle_censor    },
-    { "teamlog"  , handle_teamlog   },
-    { "eteamlog" , handle_eteamlog  },
-    { "ib"       , handle_ib        },
-    { "xblink"   , handle_xblink    },
-    { "logme"    , handle_logme     },
-    { "clean"    , handle_clean     },
-    { "cheat"    , handle_cheat     },
-    { "cmdc"     , handle_cmdcheck  },
-    { "bank"     , handle_bank      },
-    { ""         , NULL             }     /* End marker -- DO NOT DELETE */
+    { "debug"    , handle_gmdebug       },
+    { "swarp"    , handle_shipwarp      },
+    { "warp"     , handle_warp          },
+    { "kill"     , handle_kill          },
+    { "minlvl"   , handle_min_level     },
+    { "maxlvl"   , handle_max_level     },
+    { "refresh"  , handle_refresh       },
+    { "save"     , handle_save          },
+    { "restore"  , handle_restore       },
+    { "bstat"    , handle_bstat         },
+    { "bcast"    , handle_bcast         },
+    { "tmsg"     , handle_tmsg          },
+    { "arrow"    , handle_arrow         },
+    { "login"    , handle_login         },
+    { "item"     , handle_item          },
+    { "item1"    , handle_item1         },
+    { "item2"    , handle_item2         },
+    { "item3"    , handle_item3         },
+    { "item4"    , handle_item4         },
+    { "miitem"   , handle_miitem        },
+    { "event"    , handle_event         },
+    { "passwd"   , handle_passwd        },
+    { "lname"    , handle_lname         },
+    { "warpall"  , handle_warpall       },
+    { "bug"      , handle_bug           },
+    { "clinfo"   , handle_clinfo        },
+    { "gban:d"   , handle_gban_d        },
+    { "gban:w"   , handle_gban_w        },
+    { "gban:m"   , handle_gban_m        },
+    { "gban:p"   , handle_gban_p        },
+    { "list"     , handle_list          },
+    { "legit"    , handle_legit         },
+    { "normal"   , handle_normal        },
+    { "shutdown" , handle_shutdown      },
+    { "log"      , handle_log           },
+    { "endlog"   , handle_endlog        },
+    { "motd"     , handle_motd          },
+    { "friendadd", handle_friendadd     },
+    { "frienddel", handle_frienddel     },
+    { "dconly"   , handle_dconly        },
+    { "v1only"   , handle_v1only        },
+    { "forgegc"  , handle_forgegc       },
+    { "invuln"   , handle_invuln        },
+    { "inftp"    , handle_inftp         },
+    { "smite"    , handle_smite         },
+    { "teleport" , handle_teleport      },
+    { "dbginv"   , handle_dbginv        },
+    { "dbgbank"  , handle_dbgbank       },
+    { "showdcpc" , handle_showdcpc      },
+    { "allowgc"  , handle_allowgc       },
+    { "ws"       , handle_ws            },
+    { "ll"       , handle_ll            },
+    { "npc"      , handle_npc           },
+    { "stfu"     , handle_stfu          },
+    { "unstfu"   , handle_unstfu        },
+    { "ignore"   , handle_ignore        },
+    { "unignore" , handle_unignore      },
+    { "quit"     , handle_quit          },
+    { "gameevent", handle_gameevent     },
+    { "ban:d"    , handle_ban_d         },
+    { "ban:w"    , handle_ban_w         },
+    { "ban:m"    , handle_ban_m         },
+    { "ban:p"    , handle_ban_p         },
+    { "unban"    , handle_unban         },
+    { "cc"       , handle_cc            },
+    { "qlang"    , handle_qlang         },
+    { "friends"  , handle_friends       },
+    { "gbc"      , handle_gbc           },
+    { "logout"   , handle_logout        },
+    { "override" , handle_override      },
+    { "ver"      , handle_ver           },
+    { "restart"  , handle_restart       },
+    { "search"   , handle_search        },
+    { "gm"       , handle_gm            },
+    { "maps"     , handle_maps          },
+    { "showmaps" , handle_showmaps      },
+    { "restorebk", handle_restorebk     },
+    { "enablebk" , handle_enablebk      },
+    { "disablebk", handle_disablebk     },
+    { "exp"      , handle_exp           },
+    { "level"    , handle_level         },
+    { "sdrops"   , handle_sdrops        },
+    { "gcprotect", handle_gcprotect     },
+    { "trackinv" , handle_trackinv      },
+    { "trackkill", handle_trackkill     },
+    { "ep3music" , handle_ep3music      },
+    { "tlogin"   , handle_tlogin        },
+    { "dsdrops"  , handle_dsdrops       },
+    { "noevent"  , handle_noevent       },
+    { "lflags"   , handle_lflags        },
+    { "cflags"   , handle_cflags        },
+    { "stalk"    , handle_teleport      },    /* Happy, Aleron Ives? */
+    { "showpos"  , handle_showpos       },
+    { "t"        , handle_t             },    /* Short command = more precision. */
+    { "info"     , handle_info          },
+    { "quest"    , handle_quest         },
+    { "autolegit", handle_autolegit     },
+    { "censor"   , handle_censor        },
+    { "teamlog"  , handle_teamlog       },
+    { "eteamlog" , handle_eteamlog      },
+    { "ib"       , handle_ib            },
+    { "xblink"   , handle_xblink        },
+    { "logme"    , handle_logme         },
+    { "clean"    , handle_clean         },
+    { "cheat"    , handle_cheat         },
+    { "cmdc"     , handle_cmdcheck      },
+    { "bank"     , handle_bank          },
+    { "rsquest"  , handle_resetquest    },
+    { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 
 static int command_call(ship_client_t *c, const char *txt, size_t len) {

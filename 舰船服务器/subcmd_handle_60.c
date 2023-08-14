@@ -2391,6 +2391,64 @@ static int sub60_79_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_7A_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x7A_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //[2023年08月14日 21:39 : 46 : 011] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
+    //[2023年08月14日 21:39 : 46 : 021] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
+    //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
+    //[2023年08月14日 21:43 : 59 : 254] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
+    //[2023年08月14日 21:43 : 59 : 265] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
+    //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
+    //[2023年08月14日 21:47 : 02 : 080] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
+    //[2023年08月14日 21:47 : 02 : 089] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
+    //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
+    //[2023年08月14日 21:47 : 15 : 072] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
+    //[2023年08月14日 21:47 : 15 : 082] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
+    //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
+
+    DBG_LOG("GC %" PRIu32 ":%d 任务ID %d 区域 %d", src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x7B_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    //[2023年08月14日 21:43 : 59 : 219] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
+    //[2023年08月14日 21:43 : 59 : 229] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
+    //(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
+    //[2023年08月14日 21:47 : 02 : 046] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
+    //[2023年08月14日 21:47 : 02 : 055] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
+    //(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
+    //[2023年08月14日 21:47 : 15 : 036] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
+    //[2023年08月14日 21:47 : 15 : 048] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
+    //(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
+    //[2023年08月14日 21:47 : 23 : 492] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
+    //[2023年08月14日 21:47 : 23 : 503] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
+    //(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
+
+    DBG_LOG("GC %" PRIu32 ":%d 任务ID %d 区域 %d", src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 int handle_bb_battle_mode(ship_client_t* src,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -4719,6 +4777,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_KILL_MONSTER               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
     { SUBCMD60_SYNC_REG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
+    { SUBCMD60_UNKNOW_7A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7A_bb },
+    { SUBCMD60_UNKNOW_7B                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7B_bb },
     { SUBCMD60_SET_C_GAME_MODE            , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7C_bb },
     { SUBCMD60_SYNC_BATTLE_MODE_DATA      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7D_bb },
 

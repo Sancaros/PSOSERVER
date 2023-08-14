@@ -221,6 +221,8 @@ struct ship_client {
     uint8_t cc_char;
     uint8_t q_lang;
     uint8_t autoreply_on;
+    uint16_t quest_item_id;
+    bool reset_quest;
 
     client_options_t options;
 

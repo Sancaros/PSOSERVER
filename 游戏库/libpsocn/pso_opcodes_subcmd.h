@@ -225,30 +225,6 @@
 #define SUBCMD60_SYNC_REG                      0x77    /* Sent when register is synced in quest */
 #define SUBCMD60_UNKNOW_78                     0x78
 #define SUBCMD60_GOGO_BALL                     0x79
-//[2023年08月14日 21:39 : 46 : 011] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
-//[2023年08月14日 21:39 : 46 : 021] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
-//(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
-//[2023年08月14日 21:43 : 59 : 219] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
-//[2023年08月14日 21:43 : 59 : 229] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
-//(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
-//[2023年08月14日 21:43 : 59 : 254] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
-//[2023年08月14日 21:43 : 59 : 265] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
-//(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
-//[2023年08月14日 21:47 : 02 : 046] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
-//[2023年08月14日 21:47 : 02 : 055] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
-//(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
-//[2023年08月14日 21:47 : 02 : 080] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
-//[2023年08月14日 21:47 : 02 : 089] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
-//(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
-//[2023年08月14日 21:47 : 15 : 036] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
-//[2023年08月14日 21:47 : 15 : 048] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
-//(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
-//[2023年08月14日 21:47 : 15 : 072] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
-//[2023年08月14日 21:47 : 15 : 082] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
-//(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
-//[2023年08月14日 21:47 : 23 : 492] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
-//[2023年08月14日 21:47 : 23 : 503] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
-//(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
 #define SUBCMD60_UNKNOW_7A                     0x7A
 #define SUBCMD60_UNKNOW_7B                     0x7B
 #define SUBCMD60_SET_C_GAME_MODE               0x7C

@@ -1600,12 +1600,6 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    if (!add_iitem(src, &ii)) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            src->guildcard);
-        return -1;
-    }
-
 #ifdef DEBUG
 
     print_item_data(&ii.data, src->version);
@@ -1619,6 +1613,12 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
             src->guildcard, pkt->shdr.type, character->disp.meseta, price);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (!add_iitem(src, &ii)) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+            src->guildcard);
         return -1;
     }
 

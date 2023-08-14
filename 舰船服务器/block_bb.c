@@ -83,7 +83,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
             __(c, "\tC7Your class is\nnot allowed in a\n"
                 "PSOv1 game."));
     }
-    if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER) {
+    if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER && !c->reset_quest) {
         /* Single player mode */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nin single player\nmode."));
@@ -132,12 +132,12 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
     else if (rv == LOBBY_FLAG_ERROR_MAX_LEVEL) {
         /* Level is too high */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Your level is\ntoo high."));
+            __(c, "\tC7你的等级太高了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MIN_LEVEL) {
         /* Level is too high */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Your level is\ntoo low."));
+            __(c, "\tC7你的等级太低了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_BURSTING) {
         /* A client is bursting. */
@@ -726,6 +726,8 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         /* Do we have quests configured? */
         if (!TAILQ_EMPTY(&ship->qmap)) {
             lang = (menu_id >> 24) & 0xFF;
+            DBG_LOG("0x%zX", item_id);
+            c->quest_item_id = item_id;
             rv = send_quest_list(c, (int)item_id, lang);
         }
         else {
