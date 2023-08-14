@@ -3910,7 +3910,14 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    uint32_t sell_price = (price_for_item(&iitem.data) >> 3) * sell_amount;
+    size_t orignal_price = price_for_item(&iitem.data);
+    if (orignal_price <= 0) {
+        ERR_LOG("GC %" PRIu32 ":%d 出售 %d 件 ID 0x%04X 发生错误 orignal_price %d",
+            src->guildcard, src->sec_data.slot, sell_amount, item_id, orignal_price);
+        return -2;
+    }
+
+    uint32_t sell_price = (orignal_price >> 3) * sell_amount;
 
     character->disp.meseta = MIN(character->disp.meseta + sell_price, 999999);
 

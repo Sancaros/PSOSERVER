@@ -3242,7 +3242,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             db_update_char_c_records(&bb_data->c_records, gc, slot, PSOCN_DB_SAVE_CHAR);
         }
 
-        repair_client_character_data(&bb_data->character);
+        //repair_client_character_data(&bb_data->character);
 
         /* 将数据发回舰船. */
         rv = send_cdata(c, gc, slot, bb_data, PSOCN_STLENGTH_BB_DB_CHAR, 0);

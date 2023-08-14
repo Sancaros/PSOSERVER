@@ -177,24 +177,6 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     return 1;
 }
 
-/* 获取背包中目标物品所在槽位 */
-//size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
-//    size_t x;
-//
-//    for (x = 0; x < inv->item_count; x++) {
-//        if (inv->iitems[x].data.item_id == item_id) {
-//            return x;
-//        }
-//    }
-//
-//    ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
-//    //for (x = 0; x < inv->item_count; x++) {
-//    //    print_iitem_data(&inv->iitems[x], x, 5);
-//    //}
-//
-//    return -1;
-//}
-
 size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
     size_t x;
 
@@ -205,9 +187,13 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
     }
 
     ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
-    //for (x = 0; x < bank->item_count; x++) {
-    //    print_bitem_data(&bank->bitems[x], x, 5);
-    //}
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
 
     return -1;
 }
@@ -222,9 +208,14 @@ size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id) {
     }
 
     ERR_LOG("未从银行中找到ID 0x%08X 物品", item_id);
-    //for (x = 0; x < bank->item_count; x++) {
-    //    print_bitem_data(&bank->bitems[x], x, 5);
-    //}
+
+#ifdef DEBUG
+
+    for (x = 0; x < bank->item_count; x++) {
+        print_bitem_data(&bank->bitems[x], x, 5);
+    }
+
+#endif // DEBUG
 
     return -1;
 }
@@ -241,9 +232,13 @@ size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item) {
     }
 
     ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
-    //for (x = 0; x < inv->item_count; x++) {
-    //    print_iitem_data(&inv->iitems[x], x, 5);
-    //}
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
 
     return -1;
 }
@@ -259,9 +254,13 @@ size_t find_iitem_pid(inventory_t* inv, iitem_t* item) {
     }
 
     ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
-    //for (x = 0; x < inv->item_count; x++) {
-    //    print_iitem_data(&inv->iitems[x], x, 5);
-    //}
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
 
     return -1;
 }
@@ -277,9 +276,13 @@ size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item) {
     }
 
     ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
-    //for (x = 0; x < inv->item_count; x++) {
-    //    print_iitem_data(&inv->iitems[x], x, 5);
-    //}
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
 
     return -1;
 }
@@ -1860,88 +1863,70 @@ void fix_equip_item(inventory_t* inv) {
     }
 }
 
+static iitem_t fix_iitem[30];
+static bitem_t fix_bitem[200];
+
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv) {
     uint8_t i, j = 0;
 
-    iitem_t* new_iitem = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
-
-    if (!new_iitem) {
-        ERR_LOG("无法更新背包物品ID,申请内存失败");
-        return;
-    }
+    memset(&fix_iitem[0], 0, PSOCN_STLENGTH_IITEM * inv->item_count);
 
     for (i = 0; i < inv->item_count; i++)
         if (inv->iitems[i].present && inv->iitems[i].data.datal[0])
-            new_iitem[j++] = inv->iitems[i];
+            fix_iitem[j++] = inv->iitems[i];
 
     inv->item_count = j;
 
     for (i = 0; i < inv->item_count; i++)
-        inv->iitems[i] = new_iitem[i];
-
-    //ERR_LOG("更新背包物品完成");
-
-    /* 释放掉内存 */
-    free_safe(new_iitem);
+        inv->iitems[i] = fix_iitem[i];
 }
 
 void sort_client_inv(inventory_t* inv) {
-    iitem_t sort_data[MAX_PLAYER_INV_ITEMS] = { 0 };
-    unsigned ch, ch2, ch3, ch4, itemid;
+    size_t i, j, k, l, item_id;
 
-    ch2 = 0x0C;
+    j = 0x0C;
 
-    memset(&sort_data[0], 0, PSOCN_STLENGTH_IITEM * MAX_PLAYER_INV_ITEMS);
+    memset(&fix_iitem[0], 0, PSOCN_STLENGTH_IITEM * MAX_PLAYER_INV_ITEMS);
 
-    for (ch4 = 0; ch4 < MAX_PLAYER_INV_ITEMS; ch4++) {
-        sort_data[ch4].data.datab[1] = 0xFF;
-        sort_data[ch4].data.item_id = EMPTY_STRING;
+    for (l = 0; l < MAX_PLAYER_INV_ITEMS; l++) {
+        fix_iitem[l].data.datab[1] = 0xFF;
+        fix_iitem[l].data.item_id = EMPTY_STRING;
     }
 
-    ch4 = 0;
+    l = 0;
 
-    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++) {
-        itemid = inv->iitems[ch2].data.item_id;
-        ch2 += 4;
-        if (itemid != EMPTY_STRING) {
-            for (ch3 = 0; ch3 < inv->item_count; ch3++) {
-                if ((inv->iitems[ch3].present) && (inv->iitems[ch3].data.item_id == itemid)) {
-                    sort_data[ch4++] = inv->iitems[ch3];
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
+        item_id = inv->iitems[j].data.item_id;
+        j += 4;
+        if (item_id != EMPTY_STRING) {
+            for (k = 0; k < inv->item_count; k++) {
+                if ((inv->iitems[k].present) && (inv->iitems[k].data.item_id == item_id)) {
+                    fix_iitem[l++] = inv->iitems[k];
                     break;
                 }
             }
         }
     }
 
-    for (ch = 0; ch < MAX_PLAYER_INV_ITEMS; ch++)
-        inv->iitems[ch] = sort_data[ch];
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        inv->iitems[i] = fix_iitem[i];
 
 }
 
 void fix_client_bank(psocn_bank_t* bank) {
-    uint32_t i, j = 0;
+    size_t i, j = 0;
 
-    bitem_t* bank_item = (bitem_t*)malloc(PSOCN_STLENGTH_BITEM * bank->item_count);
-
-    if (!bank_item) {
-        ERR_LOG("无法更新银行物品ID,申请内存失败");
-        return;
-    }
+    memset(&fix_bitem[0], 0, PSOCN_STLENGTH_BITEM * bank->item_count);
 
     for (i = 0; i < bank->item_count; i++)
         if (bank->bitems[i].show_flags && bank->bitems[i].amount && bank->bitems[i].data.datal[0])
-            bank_item[j++] = bank->bitems[i]; 
+            fix_bitem[j++] = bank->bitems[i];
 
     bank->item_count = j;
 
     for (i = 0; i < bank->item_count; i++)
-        bank->bitems[i] = bank_item[i];
-
-    //ERR_LOG("更新银行物品完成");
-
-    /* 释放掉内存 */
-    free_safe(bank_item);
+        bank->bitems[i] = fix_bitem[i];
 }
 
 //整理仓库物品

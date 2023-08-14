@@ -417,7 +417,9 @@ size_t price_for_item(const item_t* item) {
             return 8;
         }
         if (is_item_rare(item)) {
+#ifdef DEBUG
             DBG_LOG("物品 0x%08X 是稀有物品", item->datal[0]);
+#endif // DEBUG
             return 80;
         }
 
