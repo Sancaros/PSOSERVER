@@ -845,14 +845,16 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return bb_join_game(c, ls);
 
     default:
-        ERR_LOG("bb_process_menu menu_id & 0xFF = %u", menu_id & 0xFF);
         if (script_execute(ScriptActionUnknownMenu, c, SCRIPT_ARG_PTR, c,
             SCRIPT_ARG_UINT32, menu_id, SCRIPT_ARG_UINT32,
             item_id, SCRIPT_ARG_END) > 0)
             return 0;
+#ifdef DEBUG
+        ERR_LOG("bb_process_menu menu_id & 0xFF = %u", menu_id & 0xFF);
+#endif // DEBUG
 
-        return send_msg(c, MSG1_TYPE, "%s",
-            __(c, "\tE\tC4菜单错误, 请联系管理员."));
+        return send_msg(c, MSG1_TYPE, "%s menu_id 0x%zX",
+            __(c, "\tE\tC4菜单错误, 请联系管理员."), menu_id & 0xFF);
     }
 }
 

@@ -1478,8 +1478,8 @@ static int sub60_43_44_45_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发SET_FLAG指令!",
-            src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -1499,7 +1499,7 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     uint16_t pkt_size = pkt->hdr.pkt_len;
     uint8_t size = pkt->shdr.size;
     uint32_t hit_count = pkt->hit_count;
-    uint8_t i;
+    //uint8_t i;
 
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1509,9 +1509,11 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len == LE16(0x0010)) {
-        /* 对空气进行攻击 */
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
     }
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
@@ -1525,12 +1527,22 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Check the type of the object that was hit. If there's no object data
        loaded here, we pretty much have to bail now. */
-    if (!l->map_objs || !l->map_enemies)
+    if (pkt->hdr.pkt_len == LE16(0x0010) || !l->map_objs || !l->map_enemies) {
+        /* 对无效物品进行攻击 */
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
 
-    /* Handle each thing that was hit */
-    for (i = 0; i < pkt->shdr.size - 2; ++i)
-        handle_bb_objhit_common(src, l, LE16(pkt->objects[i].obj_id));
+    ///* Handle each thing that was hit */
+    //for (i = 0; i < pkt->shdr.size - 2; ++i)
+    //    handle_bb_objhit_common(src, l, LE16(pkt->objects[i].obj_id));
+
+    size_t allowed_count = MIN(pkt->shdr.size - 2, 11);
+    if (hit_count > allowed_count) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
+            src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -2;
+    }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1926,9 +1938,13 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("BB 动作ID %d", pkt->act_id);
 
     // pkt->act_id 大厅动作的对应ID
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

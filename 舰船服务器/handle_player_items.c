@@ -542,8 +542,8 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
     if (player->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值",
-            src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值,当前 %d 个物品",
+            src->guildcard, player->inv.item_count);
         return false;
     }
     player->inv.iitems[player->inv.item_count] = *item;
