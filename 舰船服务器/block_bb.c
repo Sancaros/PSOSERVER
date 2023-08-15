@@ -726,7 +726,11 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         /* Do we have quests configured? */
         if (!TAILQ_EMPTY(&ship->qmap)) {
             lang = (menu_id >> 24) & 0xFF;
+#ifdef DEBUG
+
             DBG_LOG("0x%zX", item_id);
+
+#endif // DEBUG
             c->quest_item_id = item_id;
             rv = send_quest_list(c, (int)item_id, lang);
         }
@@ -1165,7 +1169,6 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
 static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv;
-    uint32_t flag = LE32(pkt->bb.flags);
 
     /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
@@ -1175,6 +1178,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
 
 #ifdef DEBUG
 
+    uint32_t flag = LE32(pkt->bb.flags);
     DBG_LOG("bb_process_done_burst %u", flag);
 
 #endif // DEBUG
@@ -1216,13 +1220,17 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
 static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
     int rv = 0;
-    //uint32_t flag = LE32(pkt->bb.flags);
 
         /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY)
         return -1;
 
-    //DBG_LOG("bb_process_done_quest_burst %u", flag);
+#ifdef DEBUG
+
+    uint32_t flag = LE32(pkt->bb.flags);
+    DBG_LOG("bb_process_done_quest_burst %u", flag);
+
+#endif // DEBUG
 
     /* Lock the lobby, clear its bursting flag, send the resume game packet to
        the rest of the lobby, and continue on. */

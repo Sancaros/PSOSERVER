@@ -1035,22 +1035,21 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (inv->iitems[i].data.item_id == item_id) {
-        inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+    inv->iitems[i].flags &= LE32(0xFFFFFFF7);
 
-        /* If its a frame, we have to make sure to unequip any units that
-           may be equipped as well. */
-        if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-            inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
-            isframe = 1;
-        }
+    /* If its a frame, we have to make sure to unequip any units that
+       may be equipped as well. */
+    if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+        inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
+        isframe = 1;
     }
 
     /* Did we find something to equip? */
     if (i >= item_count) {
-        ERR_LOG("GC %" PRIu32 " 卸除了未存在的物品数据!",
-            src->guildcard);
-        return -1;
+        ERR_LOG("GC %" PRIu32 " 卸除了未存在的物品数据! 索引 %d ID 0x%08X",
+            src->guildcard, i, inv->iitems[i].data.item_id);
+        print_item_data(&inv->iitems[i].data, src->version);
+        return -2;
     }
 
     /* Clear any units if we unequipped a frame. */

@@ -1588,6 +1588,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
                 src->guildcard);
             ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            print_item_data(&ii.data, src->version);
             return -1;
         }
     }
@@ -1613,6 +1614,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
             src->guildcard, pkt->shdr.type, character->disp.meseta, price);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_item_data(&ii.data, src->version);
         return -1;
     }
 
