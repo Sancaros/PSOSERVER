@@ -83,7 +83,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
             __(c, "\tC7Your class is\nnot allowed in a\n"
                 "PSOv1 game."));
     }
-    if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER && !c->reset_quest) {
+    if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER/* && !c->reset_quest*/) {
         /* Single player mode */
         send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\nin single player\nmode."));

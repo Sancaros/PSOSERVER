@@ -4033,8 +4033,6 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 #ifdef DEBUG
 		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
 #endif // DEBUG
-
-		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
 		/* Nope. You get nothing! */
 		return 0;
 	}
