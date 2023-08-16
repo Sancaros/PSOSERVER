@@ -337,7 +337,7 @@ size_t find_equipped_armor(inventory_t* inv) {
 
 /* 获取背包中目标物品所在槽位 */
 size_t find_equipped_mag(inventory_t* inv) {
-    ssize_t ret = -1;
+    size_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
             continue;
@@ -649,7 +649,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     if (src->mode)
         character = &src->mode_pl->bb;
 
-    iitem_t* iitem = &character->inv.iitems[find_iitem_index(&character->inv, item_id)];
+    size_t index = find_iitem_index(&character->inv, item_id);
+    iitem_t* iitem = &character->inv.iitems[index];
 
     if (is_common_consumable(primary_identifier(&iitem->data))) { // Monomate, etc.
         // Nothing to do (it should be deleted)
@@ -787,6 +788,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_MAG_CELL1:
+            size_t mag_index = find_equipped_mag(&character->inv);
+            if (mag_index == -1) {
+
+                ERR_LOG("玩家没有装备玛古,玛古细胞 0x%08X", iitem->data.datal[0]);
+                break;
+            }
             mag = &character->inv.iitems[find_equipped_mag(&character->inv)];
 
             switch (iitem->data.datab[2]) {
@@ -1404,7 +1411,7 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
 
     /* 如果找不到该物品，则将用户从船上推下. */
     if (i == -1) {
-        ERR_LOG("GC %" PRIu32 " 掉落无效的堆叠物品!", gc);
+        ERR_LOG("GC %" PRIu32 " 装备的物品无效!", gc);
         return -1;
     }
 
@@ -1877,7 +1884,7 @@ static bitem_t fix_bitem[200];
 void fix_client_inv(inventory_t* inv) {
     uint8_t i, j = 0;
 
-    memset(&fix_iitem[0], 0, PSOCN_STLENGTH_IITEM * inv->item_count);
+    memset(fix_iitem, 0, sizeof(fix_iitem));
 
     for (i = 0; i < inv->item_count; i++)
         if (inv->iitems[i].present && inv->iitems[i].data.datal[0])

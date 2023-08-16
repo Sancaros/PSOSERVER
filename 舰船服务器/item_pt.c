@@ -43,6 +43,271 @@
 #define LOG(team, ...) team_log_write(team, TLOG_DROPS, __VA_ARGS__)
 #define LOGV(team, ...) team_log_write(team, TLOG_DROPSV, __VA_ARGS__)
 
+static const uint8_t area_subs[] = {
+	0x01, // 13 (VR Temple Alpha)
+	0x02, // 14 (VR Temple Beta)
+	0x03, // 15 (VR Spaceship Alpha)
+	0x04, // 16 (VR Spaceship Beta)
+	0x08, // 17 (Central Control Area)
+	0x05, // 18 (Jungle North)
+	0x06, // 19 (Jungle South)
+	0x07, // 1A (Mountain)
+	0x08, // 1B (Seaside)
+	0x09, // 1C (Seabed Upper)
+	0x0A, // 1D (Seabed Lower)
+	0x09, // 1E (Gal Gryphon)
+	0x0A, // 1F (Olga Flow)
+	0x03, // 20 (Barba Ray)
+	0x05, // 21 (Gol Dragon)
+	0x08, // 22 (Seaside Night)
+	0x0A, // 23 (Tower)
+};
+
+uint32_t ep2_rtremap[] =
+{
+	0x00, 0x00, // Pioneer 2
+	0x01, 0x01, // VR Temple Alpha
+	0x02, 0x02, // VR Temple Beta
+	0x03, 0x03, // VR Spaceship Alpha
+	0x04, 0x04, // VR Spaceship Beta
+	0x05, 0x08, // CCA
+	0x06, 0x05, // Jungle North
+	0x07, 0x06, // Jungle East
+	0x08, 0x07, // Mountain
+	0x09, 0x08, // Seaside
+	0x0A, 0x09, // Seabed Upper
+	0x0B, 0x0A, // Seabed Lower
+};
+
+struct ItemDropSub {
+	uint8_t override_area;
+};
+
+uint8_t normalize_area_number(uint8_t episode, uint8_t area) {
+	if (/*!this->item_drop_sub || */(area < 0x10) || (area > 0x11)) {
+		switch (episode) {
+		case GAME_TYPE_EPISODE_1:
+			if (area >= 15) {
+				ERR_LOG("invalid Episode 1 area number");
+				return -1;
+			}
+			switch (area) {
+			case 11:
+				return 3; // Dragon -> Cave 1
+			case 12:
+				return 6; // De Rol Le -> Mine 1
+			case 13:
+				return 8; // Vol Opt -> Ruins 1
+			case 14:
+				return 10; // Dark Falz -> Ruins 3
+			default:
+				return area;
+			}
+			ERR_LOG("this should be impossible");
+			return -1;
+		case GAME_TYPE_EPISODE_2: {
+			if ((area >= 0x13) && (area < 0x24)) {
+				return area_subs[area - 0x13];
+			}
+			return area;
+		}
+		case GAME_TYPE_EPISODE_4:
+			// TODO: Figure out remaps for Episode 4 (if there are any)
+			return area;
+		default:
+			ERR_LOG("invalid episode number");
+			return -1;
+		}
+
+	}
+	return -1;
+	//else {
+	//	return this->item_drop_sub->override_area;
+	//}
+}
+
+float rand_float_0_1_from_crypt(struct mt19937_state* rng) {
+	// 使用标准库中的rand函数和RAND_MAX宏来生成随机数
+	return ((float)mt19937_genrand_int32(rng) / (float)RAND_MAX);
+}
+
+uint32_t rand_int(struct mt19937_state* rng, uint64_t max) {
+	return (uint32_t)(mt19937_genrand_int32(rng) % max);
+}
+//
+//// Returns a weighted random result, indicating the chosen position in the
+//// weighted table.
+////
+//// For example, an input table of 40 40 40 40 would be equally likely to return
+//// 0, 1, 2, or 3. An input table of 40 40 80 would return 2 50% of the time, and
+//// 0 or 1 each 25% of the time.
+//template <typename IntT>
+//IntT ItemCreator::get_rand_from_weighted_tables(
+//	const IntT* tables, size_t offset, size_t num_values, size_t stride) {
+//	uint64_t rand_max = 0;
+//	for (size_t x = 0; x != num_values; x++) {
+//		rand_max += tables[x * stride + offset];
+//	}
+//	if (rand_max == 0) {
+//		throw runtime_error("weighted table is empty");
+//	}
+//
+//	uint32_t x = this->rand_int(rand_max);
+//	for (size_t z = 0; z < num_values; z++) {
+//		IntT table_value = tables[z * stride + offset];
+//		if (x < table_value) {
+//			return z;
+//		}
+//		x -= table_value;
+//	}
+//	throw logic_error("selector was not less than rand_max");
+//}
+
+void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus) {
+	item->dataw[3] = bonus;
+}
+
+void set_common_armor_evasion_bonus(item_t* item, int16_t bonus) {
+	item->dataw[4] = bonus;
+}
+
+void generate_common_armor_slot_count(item_t* item) {
+	//item->datab[5] = this->get_rand_from_weighted_tables_1d(
+	//	this->pt->armor_slot_count_prob_table);
+}
+
+void generate_common_armor_slots_and_bonuses(struct mt19937_state* rng, item_t* item) {
+	errno_t err = 0;
+
+	if ((item->datab[0] != 0x01) || (item->datab[1] < 1) || (item->datab[1] > 2)) {
+		return;
+	}
+
+	if (item->datab[1] == 1) {
+		generate_common_armor_slot_count(item);
+	}
+
+	pmt_guard_bb_t guard = { 0 };
+	if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
+		ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+		return;
+	}
+
+	set_armor_or_shield_defense_bonus(item, (int16_t)(guard.dfp_range * rand_float_0_1_from_crypt(rng)));
+	set_common_armor_evasion_bonus(item, (int16_t)(guard.evp_range * rand_float_0_1_from_crypt(rng)));
+}
+
+void generate_common_armor_or_shield_type_and_variances(
+	struct mt19937_state* rng, char area_norm, item_t* item) {
+	generate_common_armor_slots_and_bonuses(rng, item);
+
+	uint8_t type = 0;//this->get_rand_from_weighted_tables_1d(
+	//	this->pt->armor_shield_type_index_prob_table);
+	item->datab[2] = area_norm + type /*+ this->pt->armor_or_shield_type_bias*/;
+	if (item->datab[2] < 3) {
+		item->datab[2] = 0;
+	}
+	else {
+		item->datab[2] -= 3;
+	}
+}
+
+void set_unit_bonus(item_t* item, int16_t bonus) {
+	item->dataw[3] = bonus;
+}
+
+void generate_unit_weights_tables() {
+	// Note: This part of the function was originally in a different function,
+	// since it had another callsite. Unlike the original code, we generate these
+	// tables only once at construction time, so we've inlined the function here.
+	uint16_t z;
+	for (z = 0; z < 0x10; z++) {
+		uint8_t v = get_item_stars(z + 0x37D);
+		unit_weights_table1[(z * 5) + 0] = v - 1;
+		unit_weights_table1[(z * 5) + 1] = v - 1;
+		unit_weights_table1[(z * 5) + 2] = v;
+		unit_weights_table1[(z * 5) + 3] = v + 1;
+		unit_weights_table1[(z * 5) + 4] = v + 1;
+	}
+	for (; z < 0x48; z++) {
+		unit_weights_table1[z + 0x50] = get_item_stars(z + 0x37D);
+	}
+	// Note: Inlining ends here
+
+	memset(&unit_weights_table2[0], 0, sizeof(unit_weights_table2));
+	for (size_t z = 0; z < ARRAY_SIZE(unit_weights_table1); z++) {
+		uint8_t index = unit_weights_table1[z];
+		if (index < ARRAY_SIZE(unit_weights_table2)) {
+			unit_weights_table2[index]++;
+		}
+		z = z + 1;
+	}
+}
+
+void generate_common_unit_variances(struct mt19937_state* rng, uint8_t det, item_t* item) {
+	errno_t err = 0;
+
+	if (det >= 0x0D) {
+		return;
+	}
+	clear_item(item);
+	item->datab[0] = 0x01;
+	item->datab[1] = 0x03;
+
+	// Note: The original code calls generate_unit_weights_table1 here (which we
+	// have inlined into generate_unit_weights_tables above). This call seems
+	// unnecessary because the contents of the tables don't depend on anything
+	// except what appears in ItemPMT, which is essentially constant, so we
+	// don't bother regenerating the table here.
+
+	if (unit_weights_table2[det] == 0) {
+		return;
+	}
+
+	size_t which = rand_int(rng, unit_weights_table2[det]);
+	size_t current_index = 0;
+	for (uint8_t z = 0; z < ARRAY_SIZE(unit_weights_table1); z++) {
+		if (det != unit_weights_table1[z]) {
+			continue;
+		}
+		if (current_index != which) {
+			current_index++;
+		}
+		else {
+			if (z > 0x4F) {
+				if (det <= 0x87) {
+					item->datab[2] = z + 0xC0;
+				}
+			}
+			else {
+				item->datab[2] = z / 5;
+				pmt_unit_bb_t def = { 0 };
+				if (err = pmt_lookup_unit_bb(item->datal[0], &def)) {
+					ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+					return;
+				}
+				switch (z % 5) {
+				case 0:
+					set_unit_bonus(item, -(def.pm_range * 2));
+					break;
+				case 1:
+					set_unit_bonus(item, -(def.pm_range));
+					break;
+				case 2:
+					break;
+				case 3:
+					set_unit_bonus(item, (def.pm_range));
+					break;
+				case 4:
+					set_unit_bonus(item, (def.pm_range * 2));
+					break;
+				}
+			}
+			break;
+		}
+	}
+}
+
 static const int tool_base[28] = {
 	Item_Monomate, Item_Dimate, Item_Trimate,
 	Item_Monofluid, Item_Difluid, Item_Trifluid,
@@ -3607,6 +3872,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		else
 			game_type = 1;
 		break;
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_type = 4;
 		break;
@@ -3616,6 +3882,10 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 
 	ent = &bb_ptdata[game_type][l->difficulty][section];
+
+#ifdef DEBUG
+	display_packet(ent, sizeof(pt_bb_entry_t));
+#endif // DEBUG
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
 	if (pt_index == 0x30)
@@ -3702,26 +3972,31 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		default:
 			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
 			if (area > 10)
-				area = 10;
+				area = ep2_rtremap[(src->cur_area * 2) + 1];
 			else
 				area = 10; // tower
 
 			break;
-
 		}
 	}
 	break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		if (area == 0) {
 			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
 			return -1;
 		}
 
-		area = 1;
+		area = src->cur_area + 1;
 
 		break;
 	}
+#ifdef DEBUG
+
+	DBG_LOG("area %d l->episode %d", area, l->episode);
+
+#endif // DEBUG
 
 	/* 修复EP4 错误的index 但是这样是不对的 应该修改原始pt文件 将怪物的index都增加87才是正确的位置 以后再说 */
 	if (game_type == 4)
@@ -3729,6 +4004,12 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	/* Subtract one, since we want the index in the box_drop array */
 	--area;
+
+#ifdef DEBUG
+
+	DBG_LOG("--area %d l->episode %d", area, l->episode);
+
+#endif // DEBUG
 
 	/* Make sure the enemy's id is sane... */
 	mid = LE16(req->request_id);
@@ -3753,6 +4034,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
 #endif // DEBUG
 
+		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
 		/* Nope. You get nothing! */
 		return 0;
 	}
@@ -3958,6 +4240,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 		else
 			game_type = 1;
 		break;
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_type = 4;
 		break;
@@ -4063,7 +4346,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 		default:
 			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
 			if (area > 10)
-				area = 10;
+				area = ep2_rtremap[(src->cur_area * 2) + 1];
 			else
 				area = 1;
 			break;
@@ -4072,17 +4355,19 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 	break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		if (area == 0) {
 			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
 			return -1;
 		}
 
-		/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-		if (area > 10)
-			area = 10;
-		else
-			area = 10;
+		area = src->cur_area + 1;
+		///* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
+		//if (area > 10)
+		//	area = 10;
+		//else
+		//	area = 10;
 
 		break;
 	}
@@ -4306,6 +4591,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		else
 			game_type = 1;
 		break;
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_type = 4;
 		break;
@@ -4400,7 +4686,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		default:
 			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
 			if (area > 10)
-				area = 10;
+				area = ep2_rtremap[(src->cur_area * 2) + 1];
 			else
 				area = 10; // tower
 
@@ -4410,13 +4696,14 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	}
 	break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		if (area == 0) {
 			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
 			return -1;
 		}
 
-		area = 1;
+		area = src->cur_area + 1;
 
 		break;
 	}
@@ -4639,6 +4926,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 		else
 			game_type = 1;
 		break;
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_type = 4;
 		break;
@@ -4744,7 +5032,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 		default:
 			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
 			if (area > 10)
-				area = 10;
+				area = ep2_rtremap[(src->cur_area * 2) + 1];
 			else
 				area = 1;
 			break;
@@ -4753,18 +5041,14 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	}
 	break;
 
+	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		if (area == 0) {
 			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
 			return -1;
 		}
 
-		/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-		if (area > 10)
-			area = 10;
-		else
-			area = 10;
-
+		area = src->cur_area + 1;
 		break;
 	}
 

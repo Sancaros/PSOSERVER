@@ -616,6 +616,9 @@ static pt_v3_entry_t gc_ptdata[4][4][10];
 //EP1 0 / EP2 1 /  CHALLENGE1 2/ CHALLENGE2 3/ EP4 4
 static pt_bb_entry_t bb_ptdata[5][4][10];
 
+uint8_t unit_weights_table1[0x88];
+int8_t unit_weights_table2[0x0D];
+
 /* Read the ItemPT data from a v2-style (ItemPT.afs) file. */
 int pt_read_v2(const char *fn);
 

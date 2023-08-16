@@ -2686,7 +2686,11 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
                 break;
 
             default:
+#ifdef DEBUG
+
                 DBG_LOG("lobby_enqueue_pkt_bb 0x62 ЦёБо: 0x%02X", type);
+
+#endif // DEBUG
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
 

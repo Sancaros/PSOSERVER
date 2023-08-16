@@ -1198,10 +1198,8 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
             send_lobby_end_burst(l);
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
-            if (c->bb_guild->data.guild_id > 0) {
-                send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
-                send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-            }
+            send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
+            send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);

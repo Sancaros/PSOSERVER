@@ -3904,7 +3904,7 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
         memset(name, 0, 32);
         in = 32;
         out = 32;
-        inptr = (char*)pkt->ch_name[4];
+        inptr = (char*)&pkt->ch_name[4];
         outptr = name;
 
         istrncpy16_raw(ic_utf16_to_utf8, outptr, inptr, out, in);

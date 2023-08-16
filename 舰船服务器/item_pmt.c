@@ -961,7 +961,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
     /* Read in each table... */
     for (i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(&values, pmt + ptrs->tool_table + (i << 3), sizeof(uint32_t) * 2);
+        memcpy(&values, pmt + ptrs->tool_table + (i << 3), sizeof(pmt_countandoffset_t));
         values.count = LE32(values.count);
         values.offset = LE32(values.offset);
 
@@ -987,7 +987,12 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
             sizeof(pmt_tool_bb_t) * values.count);
 
         for (j = 0; j < values.count; ++j) {
-            //DBG_LOG("index %d", tools_bb[i][j].cost);
+#ifdef DEBUG
+            DBG_LOG("index %d cost %d", j, tools_bb[i][j].cost);
+
+            getchar();
+#endif // DEBUG
+
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
             tools_bb[i][j].index = LE32(tools_bb[i][j].index);
             tools_bb[i][j].model = LE16(tools_bb[i][j].model);

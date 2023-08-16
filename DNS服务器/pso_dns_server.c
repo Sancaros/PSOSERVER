@@ -460,6 +460,7 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
     host_info_t* host;
     uint16_t qdc, anc, nsc, arc;
     size_t olen = len;
+    char ip_str[INET6_ADDRSTRLEN];
 
     /* Subtract out the size of the header. */
     len -= sizeof(dnsmsg_t);
@@ -482,7 +483,24 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
         /* Make sure the length is sane. */
         if (len < i + partlen + 5) {
             /* Throw out the obvious bad packet. */
-            ERR_LOG("端口 %d 抛出坏数据包.", sock);
+
+            if (addr->sin_family == AF_INET) {
+                struct sockaddr_in* ipv4 = (struct sockaddr_in*)addr;
+                // 将 IPv4 地址转换为点分十进制字符串
+                inet_ntop(AF_INET, &(ipv4->sin_addr), ip_str, INET_ADDRSTRLEN);
+            }
+            else if (addr->sin_family == AF_INET6) {
+                struct sockaddr_in6* ipv6 = (struct sockaddr_in6*)addr;
+                // 将 IPv6 地址转换为点分十六进制字符串
+                inet_ntop(AF_INET6, &(ipv6->sin6_addr), ip_str, INET6_ADDRSTRLEN);
+            }
+            else {
+                ERR_LOG("接入端口 %d 无效IP地址family.", sock);
+                close(sock);
+                return;
+            }
+
+            ERR_LOG("接入 %s:%d 抛出坏数据包,断开其连接.", ip_str, sock);
             close(sock);
             return;
         }
