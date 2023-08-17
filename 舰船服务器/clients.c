@@ -1016,21 +1016,18 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
         return -1;
     }
 
-    psocn_bb_char_t* player = &dest->bb_pl->character;
-
-    if(dest->mode)
-        player = &dest->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(dest);
 
     /* No need if they've already maxed out. */
-    if(player->disp.level >= 199)
+    if(character->disp.level >= 199)
         return 0;
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(player->disp.exp);
+    exp_total = LE32(character->disp.exp);
     exp_total += exp_amount;
-    player->disp.exp = LE32(exp_total);
-    cl = player->dress_data.ch_class;
-    level = LE32(player->disp.level);
+    character->disp.exp = LE32(exp_total);
+    cl = character->dress_data.ch_class;
+    level = LE32(character->disp.level);
 
     /* Send the packet telling them they've gotten experience. */
     if(subcmd_send_bb_exp(dest, exp_amount))
@@ -1042,14 +1039,14 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
 
         if(exp_total >= ent->exp) {
             need_lvlup = 1;
-            give_stats(&player->disp.stats, ent);
+            give_stats(&character->disp.stats, ent);
             ++level;
         }
     } while(exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
 
     /* If they got any level ups, send out the packet that says so. */
     if(need_lvlup) {
-        player->disp.level = LE32(level);
+        character->disp.level = LE32(level);
         if(subcmd_send_bb_level(dest))
             return -1;
     }
@@ -1067,33 +1064,30 @@ int client_give_level(ship_client_t *dest, uint32_t level_req) {
     if(dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl) || level_req > 199)
         return -1;
 
-    psocn_bb_char_t* player = &dest->bb_pl->character;
-
-    if (dest->mode)
-        player = &dest->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(dest);
 
     /* No need if they've already at that level. */
-    if(player->disp.level >= level_req)
+    if(character->disp.level >= level_req)
         return 0;
 
     /* Grab the entry for that level... */
-    cl = player->dress_data.ch_class;
+    cl = character->dress_data.ch_class;
     ent = &bb_char_stats.levels[cl][level_req];
 
     /* Add in the experience to their total so far. */
-    exp_total = LE32(player->disp.exp);
+    exp_total = LE32(character->disp.exp);
     exp_gained = ent->exp - exp_total;
-    player->disp.exp = LE32(ent->exp);
+    character->disp.exp = LE32(ent->exp);
 
-    if (player->disp.exp > bb_char_stats.levels[player->dress_data.ch_class][player->disp.level].exp)
-        player->disp.exp = bb_char_stats.levels[player->dress_data.ch_class][player->disp.level].exp;
+    if (character->disp.exp > bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp)
+        character->disp.exp = bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp;
 
     /* Send the packet telling them they've gotten experience. */
     if(subcmd_send_bb_exp(dest, exp_gained))
         return -1;
 
     /* Send the level-up packet. */
-    player->disp.level = LE32(level_req);
+    character->disp.level = LE32(level_req);
     if(subcmd_send_bb_level(dest))
         return -1;
 

@@ -1037,10 +1037,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 	uint16_t* ft;
 	int16_t mag_iq, mag_def, mag_pow, mag_dex, mag_mind;
 
-	psocn_bb_char_t* character = &src->bb_pl->character;
-
-	if (src->mode)
-		character = &src->mode_pl->bb;
+	psocn_bb_char_t* character = get_client_char_bb(src);
 
 	if (fed_item_id != EMPTY_STRING) {
 		i = find_iitem_index(&character->inv, fed_item_id);

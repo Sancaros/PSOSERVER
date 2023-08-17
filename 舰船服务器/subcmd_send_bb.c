@@ -649,38 +649,35 @@ int subcmd_send_bb_level(ship_client_t* dest) {
     pkt.shdr.size = (pkt_size - 8) / 4;
     pkt.shdr.client_id = dest->client_id;
 
-    psocn_bb_char_t* player = &dest->bb_pl->character;
-
-    if(dest->mode)
-        player = &dest->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(dest);
 
     /* 填充人物基础数据. 均为 little-endian 字符串. */
-    pkt.atp = player->disp.stats.atp;
-    pkt.mst = player->disp.stats.mst;
-    pkt.evp = player->disp.stats.evp;
-    pkt.hp = player->disp.stats.hp;
-    pkt.dfp = player->disp.stats.dfp;
-    pkt.ata = player->disp.stats.ata;
-    pkt.level = player->disp.level;
+    pkt.atp = character->disp.stats.atp;
+    pkt.mst = character->disp.stats.mst;
+    pkt.evp = character->disp.stats.evp;
+    pkt.hp = character->disp.stats.hp;
+    pkt.dfp = character->disp.stats.dfp;
+    pkt.ata = character->disp.stats.ata;
+    pkt.level = character->disp.level;
 
     /* 增加MAG的升级奖励. */
-    for (i = 0; i < player->inv.item_count; ++i) {
-        if ((player->inv.iitems[i].flags & LE32(0x00000008)) &&
-            player->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
+    for (i = 0; i < character->inv.item_count; ++i) {
+        if ((character->inv.iitems[i].flags & LE32(0x00000008)) &&
+            character->inv.iitems[i].data.datab[0] == ITEM_TYPE_MAG) {
             base = LE16(pkt.dfp);
-            mag = LE16(player->inv.iitems[i].data.dataw[2]) / 100;
+            mag = LE16(character->inv.iitems[i].data.dataw[2]) / 100;
             pkt.dfp = LE16((base + mag));
 
             base = LE16(pkt.atp);
-            mag = LE16(player->inv.iitems[i].data.dataw[3]) / 50;
+            mag = LE16(character->inv.iitems[i].data.dataw[3]) / 50;
             pkt.atp = LE16((base + mag));
 
             base = LE16(pkt.ata);
-            mag = LE16(player->inv.iitems[i].data.dataw[4]) / 200;
+            mag = LE16(character->inv.iitems[i].data.dataw[4]) / 200;
             pkt.ata = LE16((base + mag));
 
             base = LE16(pkt.mst);
-            mag = LE16(player->inv.iitems[i].data.dataw[5]) / 50;
+            mag = LE16(character->inv.iitems[i].data.dataw[5]) / 50;
             pkt.mst = LE16((base + mag));
 
             break;

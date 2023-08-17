@@ -1923,7 +1923,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         else {
             /* 尝试从银行中取出物品. */
             bitem = remove_bitem(src, item_id, pkt_item_amt);
-
             if (&bitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
                 return -1;

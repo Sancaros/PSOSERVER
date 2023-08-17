@@ -242,14 +242,11 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 	return 0;
 }
 
-int player_feed_mag(ship_client_t* src, uint32_t mag_item_id, uint32_t feed_item_id) {
+int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id) {
 	errno_t err = 0;
 	bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
 
-	psocn_bb_char_t* character = &src->bb_pl->character;
-
-	if (src->mode)
-		character = &src->mode_pl->bb;
+	psocn_bb_char_t* character = get_client_char_bb(src);
 
 	iitem_t* mag_item = &character->inv.iitems[find_iitem_index(&character->inv, mag_item_id)];
 	iitem_t* fed_item = &character->inv.iitems[find_iitem_index(&character->inv, feed_item_id)];

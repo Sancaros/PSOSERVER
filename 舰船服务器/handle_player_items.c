@@ -54,10 +54,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     uint32_t id;
     int i;
 
-    inventory_t* inv = &c->bb_pl->character.inv;
-
-    if (c->mode)
-        inv = &c->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(c);
 
     if (c->version == CLIENT_VERSION_BB) {
         /* 在新房间中修正玩家背包ID */
@@ -530,16 +527,13 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
 
 bool add_iitem(ship_client_t* src, iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    psocn_bb_char_t* player = &src->bb_pl->character;
-
-    if (src->mode)
-        player = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        player->disp.meseta += item->data.data2l;
-        if (player->disp.meseta > 999999) {
-            player->disp.meseta = 999999;
+        character->disp.meseta += item->data.data2l;
+        if (character->disp.meseta > 999999) {
+            character->disp.meseta = 999999;
         }
         return true;
     }
@@ -549,30 +543,30 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
-        for (y = 0; y < player->inv.item_count; y++) {
-            if (primary_identifier(&player->inv.iitems[y].data) == pid) {
+        for (y = 0; y < character->inv.item_count; y++) {
+            if (primary_identifier(&character->inv.iitems[y].data) == pid) {
                 break;
             }
         }
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
-        if (y < player->inv.item_count) {
-            player->inv.iitems[y].data.datab[5] += item->data.datab[5];
-            if (player->inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
-                player->inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
+        if (y < character->inv.item_count) {
+            character->inv.iitems[y].data.datab[5] += item->data.datab[5];
+            if (character->inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
+                character->inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
             }
             return true;
         }
     }
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
-    if (player->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
+    if (character->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
         ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值,当前 %d 个物品",
-            src->guildcard, player->inv.item_count);
+            src->guildcard, character->inv.item_count);
         return false;
     }
-    player->inv.iitems[player->inv.item_count] = *item;
-    player->inv.item_count++;
+    character->inv.iitems[character->inv.item_count] = *item;
+    character->inv.item_count++;
     return true;
 }
 
@@ -666,10 +660,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     bool should_delete_item = (src->version != CLIENT_VERSION_DCV2) && (src->version != CLIENT_VERSION_PC);
     errno_t err = 0;
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     size_t index = find_iitem_index(&character->inv, item_id);
     iitem_t* iitem = &character->inv.iitems[index];
@@ -1101,7 +1092,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                             weapon->data.datab[3] = 0x00; // Not grinded
                             //強化値を０にする（つまりメルクリウスロッド + 9（0x00220109）→メルクリウスロッド（0x00220100）にする）
                             weapon->data.datab[4] = 0x00;
-                            //Send_Item(client->character.inventory[eq_wep].item.item_id, client);
+                            //Send_Item(client->character.inventory[eq_wep].data.item_id, client);
                             // 詳細不明。装備している武器をインベントリの最終行に送る？
                         }
                         break;
@@ -1319,16 +1310,119 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     size_t x;
     lobby_t* l = dest->cur_lobby;
 
-    psocn_bb_char_t* player = &dest->mode_pl->bb;
+    psocn_bb_char_t* character = &dest->mode_pl->bb;
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        clear_iitem(&dest->mode_pl->bb.inv.iitems[x]);
+        clear_iitem(&character->inv.iitems[x]);
     }
+
+    uint8_t char_class = character->dress_data.ch_class;
+    uint16_t costume = character->dress_data.costume;
+    uint16_t skin = character->dress_data.skin;
+    switch (char_class) {
+    case CLASS_HUMAR: //人类男
+    case CLASS_HUNEWEARL: //人类女
+    case CLASS_HUCAST: //机器人战士
+    case CLASS_HUCASEAL: //机器人女战士
+        // Saber战士
+        character->inv.iitems[0].present = 0x0001;
+        character->inv.iitems[0].flags = 0x00000008;
+        character->inv.iitems[0].data.datab[1] = 0x01; //不一样的地方
+        character->inv.iitems[0].data.item_id = 0x00010000;
+        break;
+    case CLASS_RAMAR: //人类男枪
+    case CLASS_RACAST: //人类女枪
+    case CLASS_RACASEAL: //机器人男枪
+    case CLASS_RAMARL: //机器人女枪
+        // Handgun枪手
+        character->inv.iitems[0].present = 0x0001;
+        character->inv.iitems[0].flags = 0x00000008;
+        character->inv.iitems[0].data.datab[1] = 0x06; //不一样的地方
+        character->inv.iitems[0].data.item_id = 0x00010000;
+        break;
+    case CLASS_FONEWM: //新人类男法师
+    case CLASS_FONEWEARL: //新人类女法师
+    case CLASS_FOMARL: //人类女法师
+    case CLASS_FOMAR: //人类男法师
+        // Cane法师
+        character->inv.iitems[0].present = 0x0001;
+        character->inv.iitems[0].flags = 0x00000008;
+        character->inv.iitems[0].data.datab[1] = 0x0A; //不一样的地方
+        character->inv.iitems[0].data.item_id = 0x00010000;
+        break;
+    default:
+        break;
+    }
+    // Frame 框架
+    character->inv.iitems[1].present = 0x0001;
+    character->inv.iitems[1].flags = 0x00000008;
+    character->inv.iitems[1].data.datab[0] = 0x01;
+    character->inv.iitems[1].data.datab[1] = 0x01;
+    character->inv.iitems[1].data.item_id = 0x00010001; //定义物品ID最大长度65537
+
+    // Mag 这里可以修改初始玛古的数据
+    character->inv.iitems[2].present = 0x0001;
+    character->inv.iitems[2].flags = 0x00000008;
+    character->inv.iitems[2].data.datab[0] = 0x02;
+    character->inv.iitems[2].data.datab[2] = 0x05;
+    character->inv.iitems[2].data.datab[4] = 0xF4;
+    character->inv.iitems[2].data.datab[5] = 0x01;
+    character->inv.iitems[2].data.data2b[0] = 0x14; // 20% synchro 20%同步
+    character->inv.iitems[2].data.item_id = 0x00010002;
+
+    if ((char_class == CLASS_HUCAST) || (char_class == CLASS_HUCASEAL) ||
+        (char_class == CLASS_RACAST) || (char_class == CLASS_RACASEAL))
+        character->inv.iitems[2].data.data2b[3] = (uint8_t)skin;
+    else
+        character->inv.iitems[2].data.data2b[3] = (uint8_t)costume;
+
+    if (character->inv.iitems[2].data.data2b[3] > 0x11)
+        character->inv.iitems[2].data.data2b[3] -= 0x11;
+
+    // Monomates 单体
+    character->inv.iitems[3].present = 0x0001;
+    character->inv.iitems[3].data.datab[0] = 0x03;
+    character->inv.iitems[3].data.datab[5] = 0x04;
+    character->inv.iitems[3].data.item_id = 0x00010003;
+
+    if ((char_class == CLASS_FONEWM) || (char_class == CLASS_FONEWEARL) ||
+        (char_class == CLASS_FOMARL) || (char_class == CLASS_FOMAR))
+    { //对应匹配四种人类模型
+      // Monofluids 单流体？
+        character->tech.foie = 0x00;//给基础技能 火球术
+        character->inv.iitems[4].present = 0x0001;
+        character->inv.iitems[4].flags = 0;
+        character->inv.iitems[4].data.datab[0] = 0x03;
+        character->inv.iitems[4].data.datab[1] = 0x01;
+        character->inv.iitems[4].data.datab[2] = 0x00;
+        character->inv.iitems[4].data.datab[3] = 0x00;
+        memset(&character->inv.iitems[4].data.datab[4], 0x00, 8);
+        character->inv.iitems[4].data.datab[5] = 0x04;
+        character->inv.iitems[4].data.item_id = 0x00010004;
+        memset(&character->inv.iitems[3].data.data2b[0], 0x00, 4);
+        character->inv.item_count = 5;
+    }
+    else {
+        character->inv.item_count = 4;
+    }
+
+    //调换一下代码位置 以匹配字节结构
+    character->inv.hpmats_used = 0; //血量
+    character->inv.tpmats_used = 0; //魔力
+    character->inv.language = 0; //语言
+
+    ////定义空白背包 格数为小于30
+    //for (ch = Character_NewE7->item_count; ch < 30; ch++)
+    //{
+    //    player->inv.iitems[ch].num_items = 0x00;
+    //    player->inv.iitems[ch].data.datab[1] = 0xFF;
+    //    player->inv.iitems[ch].data.item_id = EMPTY_STRING;
+    //}
 
     switch (l->episode)
     {
     case GAME_TYPE_EPISODE_1:
-        switch (player->dress_data.ch_class) {
+        switch (character->dress_data.ch_class) {
         case CLASS_HUMAR: // 人类男猎人
         case CLASS_HUNEWEARL: // 新人类女猎人
         case CLASS_HUCAST: // 机器人男猎人
@@ -1423,7 +1517,6 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
     pmt_guard_bb_t tmp_guard = { 0 };
     uint32_t found = 0, found_slot = 0, j = 0, slot[4] = { 0 }, inv_count = 0;
     int i = 0;
-    item_t found_item = { 0 };
 
     i = find_iitem_index(inv, item_id);
 #ifdef DEBUG
@@ -1437,16 +1530,15 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
         return -1;
     }
 
-    found_item = inv->iitems[i].data;
+    item_t* found_item = &inv->iitems[i].data;
 
-    if (found_item.item_id == item_id) {
+    if (found_item->item_id == item_id) {
         found = 1;
         inv_count = inv->item_count;
 
-        switch (found_item.datab[0])
-        {
+        switch (found_item->datab[0]) {
         case ITEM_TYPE_WEAPON:
-            if (pmt_lookup_weapon_bb(found_item.datal[0], &tmp_wp)) {
+            if (pmt_lookup_weapon_bb(found_item->datal[0], &tmp_wp)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                     gc);
                 return -1;
@@ -1470,9 +1562,9 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
             break;
 
         case ITEM_TYPE_GUARD:
-            switch (found_item.datab[1]) {
+            switch (found_item->datab[1]) {
             case ITEM_SUBTYPE_FRAME:
-                if (pmt_lookup_guard_bb(found_item.datal[0], &tmp_guard)) {
+                if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         gc);
                     return -3;
@@ -1506,7 +1598,7 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
                 break;
 
             case ITEM_SUBTYPE_BARRIER: // Check barrier equip requirements 检测护盾装备请求
-                if (pmt_lookup_guard_bb(found_item.datal[0], &tmp_guard)) {
+                if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         gc);
                     return -3;
