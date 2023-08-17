@@ -461,19 +461,16 @@ int client_give_level(ship_client_t *dest, uint32_t level_req);
 int client_give_level_v2(ship_client_t *dest, uint32_t level_req);
 
 /* Check if a client's newly sent character data looks corrupted. */
-int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver);
+int client_check_character(ship_client_t *c, player_t*pl, int ver);
 
 /* Run a legit check on a given client. */
 int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
 
+psocn_bank_t* get_client_bank_bb(ship_client_t* src);
 inventory_t* get_client_inv_bb(ship_client_t* src);
-
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src);
-
 inventory_t* get_client_inv_nobb(ship_client_t* src);
-
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src);
-
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id);
 
 #ifdef ENABLE_LUA

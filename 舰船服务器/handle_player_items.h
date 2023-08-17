@@ -53,6 +53,10 @@ size_t find_equipped_mag(inventory_t* inv);
 
 void bswap_data2_if_mag(item_t* item);
 
+/* 玩家美赛塔操作 内存操作 */
+int add_meseta(psocn_bb_char_t* character, uint32_t amount);
+int remove_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft);
+
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);

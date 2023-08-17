@@ -452,7 +452,7 @@ int tx_read_string_data(char* buffer, unsigned long length, void* data, unsigned
         if (read) {
             if (high) chr = chr << 4;
             else {
-                cmdbuffer[size] = chr;
+                cmdbuffer[size] = (char)chr;
                 chr = 0;
                 size++;
             }
@@ -471,7 +471,7 @@ char* tolower_c(const char* s) {
     }
 
     for (size_t i = 0; i < length; i++) {
-        ret[i] = tolower(s[i]); // 将每个字符转换为小写形式
+        ret[i] = (char)tolower(s[i]); // 将每个字符转换为小写形式
     }
     ret[length] = '\0'; // 在字符串末尾添加空字符
 

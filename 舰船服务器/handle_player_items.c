@@ -364,6 +364,37 @@ void bswap_data2_if_mag(item_t* item) {
     }
 }
 
+int add_meseta(psocn_bb_char_t* character, uint32_t amount) {
+    uint32_t max_meseta = 999999;
+#ifdef DEBUG
+
+    if (character->disp.meseta + amount > max_meseta) {
+        ERR_LOG("玩家美赛塔已满");
+        return -1;
+    }
+
+#endif // DEBUG
+
+    character->disp.meseta = MIN(character->disp.meseta + amount, max_meseta);
+
+    return 0;
+}
+
+int remove_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft) {
+    if (character->disp.meseta >= amount) {
+        character->disp.meseta -= amount;
+    }
+    else if (allow_overdraft) {
+        character->disp.meseta = 0;
+    }
+    else {
+        ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
+        return -1;
+    }
+
+    return 0;
+}
+
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id,
                          uint32_t amt) {
@@ -403,12 +434,9 @@ int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id,
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, 
     bool allow_meseta_overdraft) {
     iitem_t ret = { 0 };
-    psocn_bb_char_t* character = &src->bb_pl->character;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
-    if (src->mode)
-        character = &src->mode_pl->bb;
-
-    if (item_id == 0xFFFFFFFF) {
+    if (item_id == BTEM_ID_MESETA) {
         if (amount <= character->disp.meseta) {
             character->disp.meseta -= amount;
         }
@@ -451,10 +479,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
 
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
     bitem_t ret = { 0 };
-    psocn_bank_t* bank = &src->bb_pl->bank;
-
-    if (src->bank_type)
-        bank = src->common_bank;
+    psocn_bank_t* bank = get_client_bank_bb(src);
     
     // 检查是否超出美赛塔数量
     if (item_id == 0xFFFFFFFF) {
@@ -553,10 +578,7 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
 
 bool add_bitem(ship_client_t* src, bitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    psocn_bank_t* bank = &src->bb_pl->bank;
-
-    if (src->bank_type)
-        bank = src->common_bank;
+    psocn_bank_t* bank = get_client_bank_bb(src);
 
     if (pid == MESETA_IDENTIFIER) {
         bank->meseta += item->data.data2l;

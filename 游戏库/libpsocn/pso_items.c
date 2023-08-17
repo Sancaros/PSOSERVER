@@ -33,6 +33,29 @@ void clear_item(item_t* item) {
 	item->data2l = 0;
 }
 
+/* 预设物品数据 */
+bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item) {
+	if (item_size < 4) {
+		// 处理错误情况，例如打印错误消息或返回错误码
+		ERR_LOG("物品预设参数少于 4.");
+		return false;
+	}
+
+	for (size_t i = 0; i < 3; i++) {
+		if (item[i] != 0) {
+			tmp_item->datal[i] = item[i];
+		}
+		else {
+			// 处理空值的情况，这里可以选择赋予默认值或执行其他逻辑
+			tmp_item->datal[i] = 0;/* 默认值 */;
+		}
+	}
+	tmp_item->item_id = 0xFFFFFFFF;
+	tmp_item->data2l = item[3];
+
+	return true;
+}
+
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
 	iitem->present = LE16(0x0000);

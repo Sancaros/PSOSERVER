@@ -283,60 +283,43 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt
 
 /* BB 从客户端移除美赛塔 */
 int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop) {
-    uint32_t stack_count;
-    uint32_t tmp;
-    iitem_t tmp_meseta = { 0 };
-    iitem_t* ii_meseta = { 0 };
     lobby_t* l = c->cur_lobby;
+    errno_t err = 0;
 
-    if (!l)
-        return -1;
-
-    stack_count = character->disp.meseta;
-
-    if (stack_count < amount) {
-        character->disp.meseta = 0;
-        amount = stack_count;
+    if (err = remove_meseta(character, amount, c->version != CLIENT_VERSION_BB)) {
+        ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
+        return err;
     }
-    else
-        character->disp.meseta -= amount;
 
     if (drop) {
+        iitem_t tmp_meseta = { 0 };
         tmp_meseta.data.datal[0] = LE32(Item_Meseta);
         tmp_meseta.data.datal[1] = tmp_meseta.data.datal[2] = 0;
         tmp_meseta.data.item_id = generate_item_id(l, c->client_id);
         tmp_meseta.data.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        ii_meseta = add_litem_locked(l, &tmp_meseta);
+        iitem_t* ii_meseta = add_litem_locked(l, &tmp_meseta);
         if (!ii_meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
-            ERR_LOG("无法将物品添加至游戏房间!\n");
-            return -1;
+            ERR_LOG("无法将物品添加至游戏房间!");
+            err = -1;
+            return err;
         }
-
-        /* Remove the meseta from the character data */
-        tmp = LE32(character->disp.meseta);
-
-        if (amount > tmp) {
-            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
-                c->guildcard);
-            return -1;
-        }
-
-        character->disp.meseta = LE32(tmp - amount);
 
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, amount))
-            return -1;
+        if (err = subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, amount)) {
+            ERR_LOG("玩家掉落美赛塔失败 %d < %d", character->disp.meseta, amount);
+            return err;
+        }
     }
 
     if (!c->mode)
         c->pl->bb.character.disp.meseta = character->disp.meseta;
 
-    return 0;
+    return err;
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */

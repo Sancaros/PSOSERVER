@@ -38,6 +38,8 @@
 
 #define MAX_LOBBY_SAVED_ITEMS      3000
 
+#define BTEM_ID_MESETA                  0xFFFFFFFF
+
 /* Item buckets. Each item gets put into one of these buckets when in the list,
    in order to make searching the list slightly easier. These are all based on
    the least significant byte of the item code. */
@@ -101,6 +103,8 @@
 
 /* 初始化物品数据 */
 void clear_item(item_t* item);
+
+bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item);
 
 /* 初始化背包物品数据 */
 void clear_iitem(iitem_t* iitem);

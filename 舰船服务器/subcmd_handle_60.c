@@ -976,13 +976,10 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
-    if (src->mode)
-        player = &src->mode_pl->bb;
-
-    equip_resault = item_check_equip_flags(src->guildcard, player->disp.level,
-        src->equip_flags, &player->inv, item_id);
+    equip_resault = item_check_equip_flags(src->guildcard, character->disp.level,
+        src->equip_flags, &character->inv, item_id);
 
     /* 是否存在物品背包中? */
     if (!equip_resault) {
@@ -1019,10 +1016,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(src);
 
     /* Find the item and remove the equip flag. */
     item_count = inv->item_count;
@@ -1199,10 +1193,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(src);
 
     /* 在玩家背包中查找物品. */
     size_t index = find_iitem_index(inv, item_id);
@@ -1729,10 +1720,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(src);
 
     size_t mag_index = find_equipped_mag(inv);
 
@@ -3971,10 +3959,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     iitem_t iitem = remove_iitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
     if (&iitem == NULL) {
@@ -4076,10 +4061,7 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
 
     memcpy(item_ids, pkt->item_ids, sizeof(uint32_t) * 30);
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
-
-    if (src->mode)
-        player = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
         sorted.iitems[x].data.datab[1] = 0xFF;
@@ -4091,17 +4073,17 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             clear_iitem(&sorted.iitems[x]);
         }
         else {
-            size_t index = find_iitem_index(&player->inv, item_ids[x]);
-            sorted.iitems[x] = player->inv.iitems[index];
+            size_t index = find_iitem_index(&character->inv, item_ids[x]);
+            sorted.iitems[x] = character->inv.iitems[index];
         }
     }
 
-    sorted.item_count = player->inv.item_count;
-    sorted.hpmats_used = player->inv.hpmats_used;
-    sorted.tpmats_used = player->inv.tpmats_used;
-    sorted.language = player->inv.language;
+    sorted.item_count = character->inv.item_count;
+    sorted.hpmats_used = character->inv.hpmats_used;
+    sorted.tpmats_used = character->inv.tpmats_used;
+    sorted.language = character->inv.language;
 
-    player->inv = sorted;
+    character->inv = sorted;
 
     if (!src->mode)
         src->pl->bb.character.inv = sorted;
@@ -4132,10 +4114,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     subcmd_send_bb_delete_meseta(src, character, 10, false);
 
@@ -4162,28 +4141,25 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* player = &src->bb_pl->character;
-
-    if (src->mode)
-        player = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     mid = LE16(pkt->shdr.enemy_id);
     mid &= 0xFFF;
 
     if (mid < 0xB50) {
-        for (i = 0; i < player->inv.item_count; i++) {
-            if ((player->inv.iitems[i].flags & LE32(0x00000008)) &&
-                (player->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
-                if ((player->inv.iitems[i].data.datab[1] < 0x0A) &&
-                    (player->inv.iitems[i].data.datab[2] < 0x05)) {
-                    special = (player->inv.iitems[i].data.datab[4] & 0x1F);
+        for (i = 0; i < character->inv.item_count; i++) {
+            if ((character->inv.iitems[i].flags & LE32(0x00000008)) &&
+                (character->inv.iitems[i].data.datab[0] == ITEM_TYPE_WEAPON)) {
+                if ((character->inv.iitems[i].data.datab[1] < 0x0A) &&
+                    (character->inv.iitems[i].data.datab[2] < 0x05)) {
+                    special = (character->inv.iitems[i].data.datab[4] & 0x1F);
                 }
                 else {
-                    if ((player->inv.iitems[i].data.datab[1] < 0x0D) &&
-                        (player->inv.iitems[i].data.datab[2] < 0x04))
-                        special = (player->inv.iitems[i].data.datab[4] & 0x1F);
+                    if ((character->inv.iitems[i].data.datab[1] < 0x0D) &&
+                        (character->inv.iitems[i].data.datab[2] < 0x04))
+                        special = (character->inv.iitems[i].data.datab[4] & 0x1F);
                     else {
-                        if (pmt_lookup_weapon_bb(player->inv.iitems[i].data.datal[0], &tmp_wp)) {
+                        if (pmt_lookup_weapon_bb(character->inv.iitems[i].data.datal[0], &tmp_wp)) {
                             ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                                 src->guildcard);
                             return -1;
@@ -4291,10 +4267,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     subcmd_send_bb_delete_meseta(src, character, meseta_amount, false);
 
@@ -4354,10 +4327,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     bp = en->bp_entry;
     exp_amount = l->bb_params[bp].exp;
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(src);
 
     for (int x = 0; x < inv->item_count; x++) {
         if (!(inv->iitems[x].flags & 0x00000008)) {
@@ -4544,10 +4514,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
-    inventory_t* inv = &src->bb_pl->character.inv;
-
-    if (src->mode)
-        inv = &src->mode_pl->bb.inv;
+    inventory_t* inv = get_client_inv_bb(src);
 
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if(work_item_id == -1) {

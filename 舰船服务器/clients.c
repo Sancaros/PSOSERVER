@@ -1404,7 +1404,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     return 0;
 }
 
-int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver) {
+int client_check_character(ship_client_t *c, player_t*pl, int ver) {
 
     /*DBG_LOG("%s(%d): client_check_character for GC %" PRIu32
         " 版本 = %d", ship->cfg->name, c->cur_block->b,
@@ -1462,8 +1462,7 @@ int client_check_character(ship_client_t *c, player_t*pl, uint8_t ver) {
             return check_char_bb(c, pl);
 
         default:
-            ERR_LOG("角色数据检测: 未知版本 %d",
-                  (int)ver);
+            ERR_LOG("角色数据检测: 未知版本 %d", ver);
     }
 
     /* XXXX */
@@ -1516,20 +1515,24 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
     return 0;
 }
 
+psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
+    return src->bank_type != 0 ? src->common_bank : &src->bb_pl->bank;
+}
+
 inventory_t* get_client_inv_bb(ship_client_t* src) {
-    return src->mode > 0 ? &src->mode_pl->bb.inv : &src->bb_pl->character.inv;
+    return src->mode != 0 ? &src->mode_pl->bb.inv : &src->bb_pl->character.inv;
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
-    return src->mode > 0 ? &src->mode_pl->bb : &src->bb_pl->character;
+    return src->mode != 0 ? &src->mode_pl->bb : &src->bb_pl->character;
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
-    return src->mode > 0 ? &src->mode_pl->nobb.inv : &src->pl->v1.character.inv;
+    return src->mode != 0 ? &src->mode_pl->nobb.inv : &src->pl->v1.character.inv;
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
-    return src->mode > 0 ? &src->mode_pl->nobb : &src->pl->v1.character;
+    return src->mode != 0 ? &src->mode_pl->nobb : &src->pl->v1.character;
 }
 
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {

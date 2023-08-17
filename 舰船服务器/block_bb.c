@@ -402,7 +402,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
     }
 }
 
-static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
+static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
     l->lobby_create = 1;
 
@@ -460,7 +460,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t menu_id, uint32_t ite
     return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
 }
 
-static int bb_process_game_drop_set(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
+static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
     lobby_t* l = c->create_lobby;
     l->drop_pso2 = false;
     l->drop_psocn = false;
@@ -540,7 +540,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
 
     case MENU_ID_GM_GAME_EVENT:
         if (item_id < 7) {
-            ship->game_event = item_id;
+            ship->game_event = (uint8_t)item_id;
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7Game Event set."));
         }
 
@@ -548,7 +548,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
 
     case MENU_ID_GM_LOBBY_EVENT:
         if (item_id < 15) {
-            ship->lobby_event = item_id;
+            ship->lobby_event = (uint8_t)item_id;
             update_lobby_event();
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7Event set."));
         }
@@ -731,7 +731,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
             DBG_LOG("0x%zX", item_id);
 
 #endif // DEBUG
-            c->quest_item_id = item_id;
+            c->quest_item_id = (uint16_t)item_id;
             rv = send_quest_list(c, (int)item_id, lang);
         }
         else {
@@ -759,7 +759,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
     case MENU_ID_SHIP:
     {
         miniship_t* i;
-        int off = 0;
+        uint16_t off = 0;
 
         /* See if the user picked a Ship List item */
         if (item_id == ITEM_ID_INIT_SHIP) {
@@ -819,7 +819,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
     /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
-        return bb_process_game_type(c, menu_id, item_id);
+        return bb_process_game_type(c, item_id);
 
         /* GM Menu */
     case MENU_ID_GM:
@@ -827,7 +827,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
         /* Game type (PSOBB only) */
     case MENU_ID_GAME_DROP:
-        return bb_process_game_drop_set(c, menu_id, item_id);
+        return bb_process_game_drop_set(c, item_id);
 
         /* ERROR */
     case MENU_ID_ERROR:
@@ -1022,9 +1022,8 @@ static int bb_process_confirm_open_file(ship_client_t* c, bb_pkt_hdr_t* pkt) {
 static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
-    uint32_t version = c->version;// pkt->hdr.flags;
     uint32_t v;
-    int i;
+    int i, version = c->version;
 
     pthread_mutex_lock(&c->mutex);
 

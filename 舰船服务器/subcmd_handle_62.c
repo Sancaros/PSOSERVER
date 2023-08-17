@@ -1147,10 +1147,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
 
-        psocn_bb_char_t* character = &src->bb_pl->character;
-
-        if (src->mode)
-            character = &src->mode_pl->bb;
+        psocn_bb_char_t* character = get_client_char_bb(src);
 
         item = LE32(iitem_data.data.datal[0]);
 
@@ -1558,10 +1555,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
 #ifdef DEBUG
 
@@ -1662,13 +1656,12 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
-    if (src->mode)
-        character = &src->mode_pl->bb;
-
-    if (character->disp.meseta < 100)
+    if (character->disp.meseta < 100) {
+        DBG_LOG("sub62_B8_bb 玩家没钱了 %d", character->disp.meseta);
         return 0;
+    }
 
     id_item_index = find_iitem_index(&character->inv, item_id);
 
@@ -1806,10 +1799,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
         __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
     );
 
-    psocn_bank_t* bank = &src->bb_pl->bank;
-
-    if(src->bank_type)
-        bank = src->common_bank;
+    psocn_bank_t* bank = get_client_bank_bb(src);
 
     /* Clean up the user's bank first... */
     cleanup_bb_bank(src, bank, src->bank_type);
@@ -1842,18 +1832,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bank_t* bank = &src->bb_pl->bank;
-
-    if (src->bank_type)
-        bank = src->common_bank;
-
-    psocn_bb_char_t* character = &src->bb_pl->character;
+    psocn_bank_t* bank = get_client_bank_bb(src);
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     uint32_t amt = LE32(pkt->meseta_amount), 
         bank_amt = LE32(bank->meseta), 
         c_mst_amt = LE32(character->disp.meseta),
-        pkt_item_amt = LE32(pkt->item_amount)
-        ;
+        pkt_item_amt = LE32(pkt->item_amount);
 
     switch (action) {
     case SUBCMD62_BANK_ACT_CLOSE:
@@ -2092,7 +2077,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_quest_reward_meseta_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    int meseta = pkt->amount;
+    int meseta_amount = pkt->amount;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2107,28 +2092,21 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    if (meseta_amount < 0) {
+        meseta_amount = -meseta_amount;
 
-    if (meseta < 0) {
-        meseta = -meseta;
-
-        if (meseta > (int)character->disp.meseta) {
-            character->disp.meseta = 0;
+        if (remove_meseta(character, meseta_amount, src->version != CLIENT_VERSION_BB)) {
+            ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, meseta_amount);
+            return -1;
         }
-        else
-            character->disp.meseta -= meseta;
-
-        return 0;
-
     }
     else {
         iitem_t ii;
         memset(&ii, 0, PSOCN_STLENGTH_IITEM);
         ii.data.datab[0] = ITEM_TYPE_MESETA;
-        ii.data.data2l = meseta;
+        ii.data.data2l = meseta_amount;
         ii.data.item_id = generate_item_id(l, EMPTY_STRING);
 
         if (!add_iitem(src, &ii)) {
@@ -2137,8 +2115,10 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, meseta, true);
+        return subcmd_send_lobby_bb_create_inv_item(src, ii.data, meseta_amount, true);
     }
+
+    return 0;
 }
 
 int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
@@ -2369,10 +2349,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    psocn_bb_char_t* character = &src->bb_pl->character;
-
-    if (src->mode)
-        character = &src->mode_pl->bb;
+    psocn_bb_char_t* character = get_client_char_bb(src);
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (!l->drops_disabled)) {
         iitem_t ex_pc = { 0 };

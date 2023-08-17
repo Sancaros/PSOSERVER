@@ -405,14 +405,12 @@ double floor(double x) {
 }
 
 size_t price_for_item(const item_t* item) {
-    pmt_weapon_bb_t pmt_weapon = { 0 };
-    pmt_guard_bb_t pmt_guard = { 0 };
-    pmt_tool_bb_t pmt_tool = { 0 };
     errno_t err = 0;
     size_t price = 0;
 
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON: {
+        pmt_weapon_bb_t pmt_weapon = { 0 };
         if (item->datab[4] & 0x80) {
             return 8;
         }
@@ -431,7 +429,7 @@ size_t price_for_item(const item_t* item) {
 
         if (err = pmt_lookup_weapon_bb(item->datal[0], &pmt_weapon)) {
             ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
-            return -1;
+            return err;
         }
 
         //const auto& def = this->get_weapon(item->datab[1], item->datab[2]);
@@ -449,11 +447,12 @@ size_t price_for_item(const item_t* item) {
 
         size_t special_stars = get_special_stars(item->datab[4]);
         double special_stars_factor = 1000.0 * special_stars * special_stars;
-        price = (size_t)(special_stars_factor + (atp_factor * (bonus_factor / 100.0)));
+        price = (size_t)(special_stars_factor + ((atp_factor * bonus_factor) / 100.0));
         return price;
     }
 
     case ITEM_TYPE_GUARD: {
+        pmt_guard_bb_t pmt_guard = { 0 };
         if (is_item_rare(item)) {
             DBG_LOG("物品 0x%08X 是稀有物品", item->datal[0]);
             return 80;
@@ -475,7 +474,7 @@ size_t price_for_item(const item_t* item) {
 
         if (err = pmt_lookup_guard_bb(item->datal[0], &pmt_guard)) {
             ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
-            return -1;
+            return err;
         }
 
         double power_factor = pmt_guard.base_dfp + pmt_guard.base_evp + def_bonus + evp_bonus;
@@ -489,13 +488,16 @@ size_t price_for_item(const item_t* item) {
         return price;
 
     case ITEM_TYPE_TOOL: {
-
+        pmt_tool_bb_t pmt_tool = { 0 };
         if (err = pmt_lookup_tools_bb(item->datal[0], &pmt_tool)) {
             ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
-            return -1;
+            return err;
         }
 
-        price = pmt_tool.cost * ((item->datab[1] == 2) ? (item->datab[2] + 1) : 1);
+        price = pmt_tool.cost * ((item->datab[1] == ITEM_SUBTYPE_DISK) ? (item->datab[2] + 1) : 1);
+        if (price < 0) {
+            ERR_LOG("pmt_lookup_tools_bb 0x%08X 的价格 %d 为负数", item->datal[0], pmt_tool.cost);
+        }
         return price;
     }
 
@@ -505,14 +507,13 @@ size_t price_for_item(const item_t* item) {
 
     default:
         ERR_LOG("无效物品, 价格为0 0x%08X", item->datal[0]);
-        return 0;
+        return err;
     }
     ERR_LOG("不会吧 还能跑到这里吗？ 0x%08X", item->datal[0]);
 }
 
 /* 加载商店数据 */
-int load_shop_data()
-{
+int load_shop_data() {
 	uint32_t shop_checksum;
 	uint32_t ch;
 	FILE* fp;

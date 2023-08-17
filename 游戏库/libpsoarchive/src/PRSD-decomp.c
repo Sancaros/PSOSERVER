@@ -38,14 +38,14 @@
 #include "PRS.h"
 
 int pso_prsd_decompress_file(const char* fn, uint8_t** dst, int endian) {
-    long len;
+    size_t len;
     int rv;
     FILE* fp;
     uint8_t buf[8];
     uint32_t key, unc_len;
     uint8_t* cmp_buf;
     struct prsd_crypt_cxt ccxt;
-    int autodet = 0;
+    /*int autodet = 0;*/
 
     if (!fn || !dst)
         return PSOARCHIVE_EFAULT;
@@ -53,7 +53,8 @@ int pso_prsd_decompress_file(const char* fn, uint8_t** dst, int endian) {
     if (endian > PSO_PRSD_LITTLE_ENDIAN || endian < PSO_PRSD_AUTO_ENDIAN)
         return PSOARCHIVE_EINVAL;
 
-    if (!(fp = fopen(fn, "rb")))
+    fp = fopen(fn, "rb");
+    if (!fp)
         return PSOARCHIVE_EFILE;
 
     /* Figure out the length of the file. */
@@ -116,7 +117,8 @@ int pso_prsd_decompress_file(const char* fn, uint8_t** dst, int endian) {
     len -= 8;
 
     /* Allocate space for the compressed/encrypted data. */
-    if (!(cmp_buf = (uint8_t*)malloc((len + 3) & 0xFFFFFFFC))) {
+    cmp_buf = (uint8_t*)malloc((len + 3) & 0xFFFFFFFC);
+    if (!cmp_buf) {
         fclose(fp);
         return PSOARCHIVE_EMEM;
     }
@@ -204,7 +206,8 @@ int pso_prsd_decompress_buf(const uint8_t* src, uint8_t** dst, size_t src_len,
     src_len -= 8;
 
     /* Allocate space for the compressed/encrypted data. */
-    if (!(cmp_buf = (uint8_t*)malloc((src_len + 3) & 0xFFFFFFFC)))
+    cmp_buf = (uint8_t*)malloc((src_len + 3) & 0xFFFFFFFC);
+    if (!cmp_buf)
         return PSOARCHIVE_EMEM;
 
     /* Copy the data from the source buffer into our temporary one. */
@@ -287,7 +290,8 @@ int pso_prsd_decompress_buf2(const uint8_t* src, uint8_t* dst, size_t src_len,
         return PSOARCHIVE_ENOSPC;
 
     /* Allocate space for the compressed/encrypted data. */
-    if (!(cmp_buf = (uint8_t*)malloc((src_len + 3) & 0xFFFFFFFC)))
+    cmp_buf = (uint8_t*)malloc((src_len + 3) & 0xFFFFFFFC);
+    if (!cmp_buf)
         return PSOARCHIVE_EMEM;
 
     /* Copy the data from the source buffer into our temporary one. */

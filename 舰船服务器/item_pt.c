@@ -2255,7 +2255,11 @@ static int generate_tool_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 	/* Clear the rest of the item. */
 	item[1] = item[2] = item[3] = 0;
 
-	item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+	item_t tmp_item = { 0 };
+	if (!create_tmp_item(item, ARRAYSIZE(item), &tmp_item)) {
+		ERR_LOG("预设物品参数失败");
+		return 0;
+	}
 
 	/* If its a stackable item, make sure to give it a quantity of 1 */
 	if (is_stackable(&tmp_item)) {
@@ -2298,7 +2302,11 @@ static int generate_tool_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 	/* Clear the rest of the item. */
 	item[1] = item[2] = item[3] = 0;
 
-	item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+	item_t tmp_item = { 0 };
+	if (!create_tmp_item(item, ARRAYSIZE(item), &tmp_item)) {
+		ERR_LOG("预设物品参数失败");
+		return 0;
+	}
 
 	/* If its a stackable item, make sure to give it a quantity of 1 */
 	if (is_stackable(&tmp_item)) {
@@ -5078,7 +5086,11 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 			item[0] = ntohl(obj->dword[2]);
 			item[1] = item[2] = item[3] = 0;
 
-			item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+			item_t tmp_item = { 0 };
+			if (!create_tmp_item(item, ARRAYSIZE(item), &tmp_item)) {
+				ERR_LOG("预设物品参数失败");
+				return 0;
+			}
 
 			/* If its a stackable item, make sure to give it a quantity of 1 */
 			if (is_stackable(&tmp_item))
@@ -5163,7 +5175,11 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 			/* Tool -- Give it a quantity of 1 if its stackable. */
 			item[1] = item[2] = item[3] = 0;
 
-			item_t tmp_item = { item[0], item[1], item[2], 0, item[3] };
+			item_t tmp_item = { 0 };
+			if (!create_tmp_item(item, ARRAYSIZE(item), &tmp_item)) {
+				ERR_LOG("预设物品参数失败");
+				return 0;
+			}
 
 			if (is_stackable(&tmp_item))
 				item[1] = (1 << 8);

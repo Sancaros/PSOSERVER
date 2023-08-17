@@ -2653,7 +2653,7 @@ float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2) {
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
     if (!have_bb_pmt) {
-        return -1;
+        return 0;
     }
 
     switch (code1)
