@@ -97,7 +97,7 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
         }
 
         DWORD64 address = stackFrame.AddrPC.Offset;
-        callstack[frameIndex] = (void*)address;
+        callstack[frameIndex] = (void*)(uintptr_t)address;
 
         char symbolInfoBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
         PSYMBOL_INFO symbol = (PSYMBOL_INFO)symbolInfoBuffer;

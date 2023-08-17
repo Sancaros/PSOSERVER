@@ -110,7 +110,7 @@ int DecodeIcmpResponse_Ping(char* pBuf, int iPacketSize, DECODE_RESULT* stDecode
     }
     //指针指向ICMP报文的首地址
     ICMP_HEADER* pIcmpHrd = (ICMP_HEADER*)(pBuf + iIphedLen);
-    unsigned short usID, usSeqNo;
+    unsigned short usID = 0, usSeqNo = 0;
     //获得的数据包的type字段为ICMP_ECHO_REPLY，即收到一个回显应答ICMP报文
     if (pIcmpHrd->type == ICMP_ECHO_REPLY)
     {
@@ -144,12 +144,12 @@ int Ping_Pong(char* IP, uint32_t srvip)
         if (pHostent)
         {
             srvip = (*(IN_ADDR*)pHostent->h_addr).s_addr; //将HOSTENT转化为长整形
+            CONFIG_LOG("Ping 完成...");
             return 0;
-            CONFIG_LOG("Ping 完成...\n");
         }
         else
         {
-            CONFIG_LOG("地址解析失败！\n");
+            CONFIG_LOG("地址解析失败！");
             return -1;
         }
     }

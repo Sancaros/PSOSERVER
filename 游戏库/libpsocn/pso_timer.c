@@ -21,7 +21,7 @@
 #include "f_logs.h"
 
 int time_check(time_t c_time, uint32_t check_value) {
-	int v;
+	int v = 0;
 
 	if ((srv_time - c_time) >= check_value) {
 		c_time = srv_time;
