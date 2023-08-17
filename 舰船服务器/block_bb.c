@@ -185,7 +185,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
         }
     }
 
-    return rv;
+    return 0;
 }
 
 static int bb_process_chat(ship_client_t* c, bb_chat_pkt* pkt) {

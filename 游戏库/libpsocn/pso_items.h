@@ -38,7 +38,7 @@
 
 #define MAX_LOBBY_SAVED_ITEMS      3000
 
-#define BTEM_ID_MESETA                  0xFFFFFFFF
+#define ITEM_ID_MESETA                  0xFFFFFFFF
 
 /* Item buckets. Each item gets put into one of these buckets when in the list,
    in order to make searching the list slightly easier. These are all based on

@@ -87,6 +87,7 @@ void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv);
+void sort_client_inv2(inventory_t* inv);
 void sort_client_inv(inventory_t* inv);
 void fix_client_bank(psocn_bank_t* bank);
 void sort_client_bank(psocn_bank_t* bank);

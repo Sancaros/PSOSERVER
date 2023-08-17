@@ -433,7 +433,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     iitem_t ret = { 0 };
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    if (item_id == BTEM_ID_MESETA) {
+    if (item_id == ITEM_ID_MESETA) {
         if (amount <= character->disp.meseta) {
             character->disp.meseta -= amount;
         }
@@ -479,7 +479,7 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
     psocn_bank_t* bank = get_client_bank_bb(src);
     
     // 检查是否超出美赛塔数量
-    if (item_id == 0xFFFFFFFF) {
+    if (item_id == ITEM_ID_MESETA) {
         if (amount > bank->meseta) {
             ERR_LOG("GC %" PRIu32 " 移除的美赛塔超出所拥有的",
                 src->guildcard);
@@ -1299,9 +1299,8 @@ done:
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        fix_client_inv(&character->inv);
     }
-
-    fix_client_inv(&character->inv);
 
     return err;
 }
@@ -2010,6 +2009,41 @@ void fix_client_inv(inventory_t* inv) {
         inv->iitems[i] = fix_iitem[i];
 }
 
+//整理仓库物品 测试用
+void sort_client_inv2(inventory_t* inv) {
+    size_t i, j;
+    uint32_t compare_item1 = 0;
+    uint32_t compare_item2 = 0;
+    uint8_t swap_c;
+    iitem_t swap_item;
+    iitem_t b1;
+    iitem_t b2;
+
+    if (inv->item_count > 1) {
+        for (i = 0; i < (inv->item_count - 1); i++) {
+            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
+            swap_c = b1.data.datab[0];
+            b1.data.datab[0] = b1.data.datab[2];
+            b1.data.datab[2] = swap_c;
+            memcpy(&compare_item1, &b1.data.datab[0], 3);
+            for (j = i + 1; j < inv->item_count; j++) {
+                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
+                swap_c = b2.data.datab[0];
+                b2.data.datab[0] = b2.data.datab[2];
+                b2.data.datab[2] = swap_c;
+                memcpy(&compare_item2, &b2.data.datab[0], 3);
+                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
+                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
+                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
+                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
+                    memcpy(&compare_item1, &compare_item2, 3);
+                }
+            }
+        }
+    }
+}
+
+/* 暂未启用的函数 */
 void sort_client_inv(inventory_t* inv) {
     size_t i, j, k, l, item_id;
 
@@ -2045,7 +2079,7 @@ void sort_client_inv(inventory_t* inv) {
 void fix_client_bank(psocn_bank_t* bank) {
     size_t i, j = 0;
 
-    memset(&fix_bitem[0], 0, PSOCN_STLENGTH_BITEM * bank->item_count);
+    memset(fix_bitem, 0, sizeof(fix_bitem));
 
     for (i = 0; i < bank->item_count; i++)
         if (bank->bitems[i].show_flags && bank->bitems[i].amount && bank->bitems[i].data.datal[0])

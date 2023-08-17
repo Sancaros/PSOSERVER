@@ -2901,7 +2901,20 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    src->mode = pkt->mode;
+    switch (pkt->mode)
+    {
+    case 0x00:
+        display_packet(pkt, pkt->hdr.pkt_len);
+        break;
+
+    case 0x01:
+        src->mode = pkt->mode;
+    default:
+        DBG_LOG("挑战模式任务载入完成");
+        break;
+    }
+
+    DBG_LOG("pkt->mode %d src->mode %d", pkt->mode, src->mode);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

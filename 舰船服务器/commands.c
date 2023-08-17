@@ -1618,44 +1618,36 @@ static int handle_teleport(ship_client_t *c, const char *params) {
 }
 
 static void dumpinv_internal(ship_client_t *src) {
-    psocn_v1v2v3pc_char_t* player_v1 = { 0 };
-    psocn_bb_char_t* player_bb = { 0 };
     int i;
     int v = src->version;
 
     if(v != CLIENT_VERSION_BB) {
-        player_v1 = &src->pl->v1.character;
-
-        if (src->mode)
-            player_v1 = &src->mode_pl->nobb;
+        psocn_v1v2v3pc_char_t* character_v1 = get_client_char_nobb(src);
 
         ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("背包物品数量: %u", player_v1->inv.item_count);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("背包物品数量: %u", character_v1->inv.item_count);
 
-        for(i = 0; i < player_v1->inv.item_count; ++i) {
-            print_iitem_data(&player_v1->inv.iitems[i], i, src->version);
+        for(i = 0; i < character_v1->inv.item_count; ++i) {
+            print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
     else {
-        player_bb = &src->bb_pl->character;
-
-        if (src->mode)
-            player_bb = &src->mode_pl->bb;
+        psocn_bb_char_t* character_bb = get_client_char_bb(src);
 
         ITEM_LOG("------------------------------------------------------------");
         ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("背包物品数量: %u", player_bb->inv.item_count);
+        ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("背包物品数量: %u", character_bb->inv.item_count);
 
-        for (i = 0; i < player_bb->inv.item_count; ++i) {
-            print_iitem_data(&player_bb->inv.iitems[i], i, src->version);
+        for (i = 0; i < character_bb->inv.item_count; ++i) {
+            print_iitem_data(&character_bb->inv.iitems[i], i, src->version);
         }
         ITEM_LOG("------------------------------------------------------------");
     }
