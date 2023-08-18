@@ -1511,8 +1511,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
             size_t shop_price = price_for_item(&item_data);
             if (shop_price <= 0) {
-                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%04X %s 发生错误 shop_price %d",
-                    src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), shop_price);
+                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price %d",
+                    src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), item_data.datal[0], shop_price);
                 return -2;
             }
             item_data.data2l = shop_price;
@@ -1802,7 +1802,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bank_t* bank = get_client_bank_bb(src);
 
     /* Clean up the user's bank first... */
-    cleanup_bb_bank(src, bank, src->bank_type);
+    cleanup_bb_bank(src->client_id, bank, src->bank_type);
 
     return subcmd_send_bb_bank(src, bank);
 }
@@ -1839,11 +1839,18 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         bank_amt = LE32(bank->meseta), 
         c_mst_amt = LE32(character->disp.meseta),
         pkt_item_amt = LE32(pkt->item_amount);
+    uint16_t pkt_bitem_index = pkt->bitem_index;
+
+#ifdef DEBUG
+
+    DBG_LOG("pkt_item_amt %d bitem_index %d", pkt_item_amt, pkt->bitem_index);
+
+#endif // DEBUG
 
     switch (action) {
     case SUBCMD62_BANK_ACT_CLOSE:
     case SUBCMD62_BANK_ACT_DONE:
-        return 0;
+        break;
 
     case SUBCMD62_BANK_ACT_DEPOSIT:
 
@@ -1851,29 +1858,29 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         if (item_id == 0xFFFFFFFF) {
             /* Make sure they aren't trying to do something naughty... */
             if (amt > c_mst_amt) {
-                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!", src->guildcard);
-                return 0;
+                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!amt %d c_mst_amt %d", src->guildcard, amt, c_mst_amt);
+                return -1;
             }
 
             bank_amt = LE32(bank->meseta);
             if ((amt + bank_amt) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出限制!", src->guildcard);
-                return 0;
+                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出限制!amt %d bank_amt %d", src->guildcard, amt, bank_amt);
+                return -2;
             }
 
             bank->meseta += amt;
             character->disp.meseta -= amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
 
-            /* No need to tell everyone else, I guess? */
-            return 0;
+            ///* No need to tell everyone else, I guess? */
+            //break;
         }
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
 
             if (&iitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
-                return -1;
+                return -3;
             }
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
@@ -1885,30 +1892,33 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 if (!add_iitem(src, &iitem)) {
                     ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
                         src->guildcard);
-                    return -1;
+                    return -4;
                 }
-                return -1;
+                return -5;
             }
+
+            subcmd_send_bb_destroy_item(src, iitem.data.item_id,
+                pkt_item_amt);
 
             sort_client_bank(bank);
 
-            return subcmd_send_bb_destroy_item(src, iitem.data.item_id,
-                pkt_item_amt);
         }
+
+        break;
 
     case SUBCMD62_BANK_ACT_TAKE:
 
         /* Are they taking meseta or an item? */
-        if (item_id == 0xFFFFFFFF) {
-            if (amt > c_mst_amt) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d iitem_count %d", src->guildcard, amt, c_mst_amt);
-                return 0;
+        if (item_id == ITEM_ID_MESETA) {
+            if (amt > bank_amt) {
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d bank_amt %d", src->guildcard, amt, bank_amt);
+                return -6;
             }
 
             /* Make sure they aren't trying to do something naughty... */
             if ((amt + c_mst_amt) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d iitem_count %d", src->guildcard, amt, c_mst_amt);
-                return 0;
+                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d c_mst_amt %d", src->guildcard, amt, c_mst_amt);
+                return -7;
             }
 
             bank_amt = LE32(bank->meseta);
@@ -1917,20 +1927,26 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             character->disp.meseta += amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
 
-            /* 存取美赛塔不用告知其他客户端... */
-            return 0;
+            ///* 存取美赛塔不用告知其他客户端... */
+            //return 0;
         }
         else {
+            if (pkt_bitem_index == 0xFFFF) {
+                ERR_LOG("GC %" PRIu32 " 银行物品索引有误! pkt_bitem_index == 0xFFFF",
+                    src->guildcard);
+                return -8;
+            }
+
             /* 尝试从银行中取出物品. */
-            bitem = remove_bitem(src, item_id, pkt_item_amt);
+            bitem = remove_bitem(src, item_id, pkt_bitem_index, pkt_item_amt);
             if (&bitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
-                return -1;
+                return -9;
             }
 
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
             player_iitem_init(&iitem, &bitem);
-            iitem.data.item_id = generate_item_id(l, 0xFF);
+            iitem.data.item_id = generate_item_id(l, src->client_id);
 
             /* 新增至玩家背包中... */
             if (!add_iitem(src, &iitem)) {
@@ -1938,23 +1954,27 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 if (!add_bitem(src, &bitem)) {
                     ERR_LOG("GC %" PRIu32 " 物品返回玩家银行失败!",
                         src->guildcard);
-                    return -1;
+                    return -10;
                 }
-                return -1;
+                return -11;
             }
 
-            fix_client_bank(bank);
-
             /* 发送至房间中的客户端. */
-            return subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);
+            subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);
+
+            fix_client_bank(bank);
         }
+
+        break;
 
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             src->guildcard, action);
-        display_packet(pkt, 0x18);
-        return -1;
+        display_packet(pkt, pkt->hdr.pkt_len);
+        break;
     }
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }
 
 int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
@@ -2096,7 +2116,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     if (meseta_amount < 0) {
         meseta_amount = -meseta_amount;
 
-        if (remove_meseta(character, meseta_amount, src->version != CLIENT_VERSION_BB)) {
+        if (remove_character_meseta(character, meseta_amount, src->version != CLIENT_VERSION_BB)) {
             ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, meseta_amount);
             return -1;
         }

@@ -286,7 +286,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
     lobby_t* l = c->cur_lobby;
     errno_t err = 0;
 
-    if (err = remove_meseta(character, amount, c->version != CLIENT_VERSION_BB)) {
+    if (err = remove_character_meseta(character, amount, c->version != CLIENT_VERSION_BB)) {
         ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
         return err;
     }
@@ -299,7 +299,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
         tmp_meseta.data.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        iitem_t* ii_meseta = add_litem_locked(l, &tmp_meseta);
+        iitem_t* ii_meseta = add_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z);
         if (!ii_meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!");
@@ -704,9 +704,9 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
         return send_bb_error_menu_list(dest);
     }
 
-    if (num_items > sizeof(shop.items) / sizeof(shop.items[0])) {
-        ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! %d %d",
-            dest->guildcard, num_items, sizeof(shop.items) / sizeof(shop.items[0]));
+    if (num_items > ARRAY_SIZE(shop.items)) {
+        ERR_LOG("GC %" PRIu32 " 获取商店物品超出限制! 数量 %d > %d",
+            dest->guildcard, num_items, ARRAY_SIZE(shop.items));
         return send_msg(dest, MSG1_TYPE, "%s", __(dest, "\tE\tC4商店生成错误,获取商店物品超出限制,请联系管理员处理!"));
     }
 

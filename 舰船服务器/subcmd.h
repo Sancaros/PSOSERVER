@@ -709,7 +709,7 @@ typedef struct subcmd_bb_destroy_item {
 typedef struct subcmd_drop_item {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unk; // Should be 1... maybe amount?
+    uint16_t drop_amount; // Should be 1... maybe amount?
     uint16_t area;
     uint32_t item_id;
     float x;
@@ -722,7 +722,7 @@ typedef struct subcmd_drop_item {
 typedef struct subcmd_bb_drop_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint16_t unk; // Should be 1... maybe amount?
+    uint16_t drop_amount; // Should be 1... maybe amount?
     uint16_t area;
     uint32_t item_id;
     float x;
@@ -2764,7 +2764,7 @@ typedef struct subcmd_bb_bank_act {
     uint32_t meseta_amount;
     uint8_t action;  // 0 = deposit, 1 = take
     uint8_t item_amount;
-    uint16_t unused2;                   /* 0xFFFF */
+    uint16_t bitem_index;                   /* 0xFFFF */
 } PACKED subcmd_bb_bank_act_t;
 
 // 0xBE: Sound chat (Episode 3; not Trial Edition)

@@ -83,34 +83,29 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
 iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
-    lobby_item_t* item;
-
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
+    lobby_item_t* litem = (lobby_item_t*)malloc(sizeof(lobby_item_t));
 
-    if (!item)
+    if (!litem)
         return NULL;
 
-    memset(item, 0, sizeof(lobby_item_t));
+    memset(litem, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    item->data.present = LE16(0x0001);
-    item->data.extension_data1 = 0;
-    item->data.extension_data2 = 0;
-    item->data.flags = LE32(0);
+    litem->iitem.present = LE16(0x0001);
+    litem->iitem.extension_data1 = 0;
+    litem->iitem.extension_data2 = 0;
+    litem->iitem.flags = LE32(0);
 
-    item->data.data.datal[0] = LE32(new_item->datal[0]);
-    item->data.data.datal[1] = LE32(new_item->datal[1]);
-    item->data.data.datal[2] = LE32(new_item->datal[2]);
-    item->data.data.item_id = LE32(l->item_lobby_id);
-    item->data.data.data2l = LE32(new_item->data2l);
+    memcpy(&litem->iitem.data, new_item, PSOCN_STLENGTH_IITEM);
+    litem->iitem.data.item_id = LE32(l->item_lobby_id);
 
-    item->x = x;
-    item->z = z;
-    item->area = area;
+    litem->x = x;
+    litem->z = z;
+    litem->area = area;
 
 #ifdef DEBUG
 
@@ -120,31 +115,33 @@ iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
 
     /* Increment the item ID, add it to the queue, and return the new item */
     ++l->item_lobby_id;
-    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->data;
+    TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
+    return &litem->iitem;
 }
 
 /* 玩家丢出的 取出的 购买的物品 */
-iitem_t* add_litem_locked(lobby_t* l, iitem_t* it) {
-    lobby_item_t* item;
-
+iitem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, float z) {
+    
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    item = (lobby_item_t*)malloc(sizeof(lobby_item_t));
+    lobby_item_t* litem = (lobby_item_t*)malloc(sizeof(lobby_item_t));
 
-    if (!item)
+    if (!litem)
         return NULL;
 
-    memset(item, 0, sizeof(lobby_item_t));
+    memset(litem, 0, sizeof(lobby_item_t));
 
     /* Copy the item data in. */
-    memcpy(&item->data, it, PSOCN_STLENGTH_IITEM);
+    memcpy(&litem->iitem, iitem, PSOCN_STLENGTH_IITEM);
+    litem->x = x;
+    litem->z = z;
+    litem->area = area;
 
     /* Add it to the queue, and return the new item */
-    TAILQ_INSERT_HEAD(&l->item_queue, item, qentry);
-    return &item->data;
+    TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
+    return &litem->iitem;
 }
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
@@ -162,8 +159,8 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     while (i) {
         tmp = TAILQ_NEXT(i, qentry);
 
-        if (i->data.data.item_id == item_id) {
-            memcpy(rv, &i->data, PSOCN_STLENGTH_IITEM);
+        if (i->iitem.data.item_id == item_id) {
+            memcpy(rv, &i->iitem, PSOCN_STLENGTH_IITEM);
             TAILQ_REMOVE(&l->item_queue, i, qentry);
             free_safe(i);
             return 0;
@@ -361,7 +358,7 @@ void bswap_data2_if_mag(item_t* item) {
     }
 }
 
-int add_meseta(psocn_bb_char_t* character, uint32_t amount) {
+int add_character_meseta(psocn_bb_char_t* character, uint32_t amount) {
     uint32_t max_meseta = 999999;
 #ifdef DEBUG
 
@@ -377,7 +374,7 @@ int add_meseta(psocn_bb_char_t* character, uint32_t amount) {
     return 0;
 }
 
-int remove_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft) {
+int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft) {
     if (character->disp.meseta >= amount) {
         character->disp.meseta -= amount;
     }
@@ -453,7 +450,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     size_t index = find_iitem_index(&character->inv, item_id);
     iitem_t* inventory_item = &character->inv.iitems[index];
 
-    if (amount && (stack_size(&inventory_item->data) > 1) && (amount < inventory_item->data.datab[5])) {
+    if (amount && is_stackable(&inventory_item->data) && (amount < inventory_item->data.datab[5])) {
         ret = *inventory_item;
         ret.data.datab[5] = amount;
         ret.data.item_id = 0xFFFFFFFF;
@@ -474,7 +471,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     return ret;
 }
 
-bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
+bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount) {
     bitem_t ret = { 0 };
     psocn_bank_t* bank = get_client_bank_bb(src);
     
@@ -491,19 +488,19 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
         return ret;
     }
 
-    // 查找银行物品的索引
-    size_t index = find_bitem_index(bank, item_id);
+    //// 查找银行物品的索引
+    //size_t index = find_bitem_index(bank, item_id);
 
-    if (index == bank->item_count) {
+    if (bitem_index == bank->item_count) {
         ERR_LOG("GC %" PRIu32 " 银行物品索引超出限制",
             src->guildcard);
         return ret;
     }
 
-    bitem_t* bank_item = &bank->bitems[index];
+    bitem_t* bank_item = &bank->bitems[bitem_index];
 
     // 检查是否超出物品可堆叠的数量
-    if (amount && (stack_size(&bank_item->data) > 1) &&
+    if (amount && is_stackable(&bank_item->data) &&
         (amount < bank_item->data.datab[5])) {
         ret = *bank_item;
         ret.data.datab[5] = amount;
@@ -518,7 +515,7 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount) {
     memcpy(&ret, bank_item, sizeof(bitem_t));
     // 移除银行物品
     bank->item_count--;
-    for (size_t x = index; x < bank->item_count; x++) {
+    for (size_t x = bitem_index; x < bank->item_count; x++) {
         bank->bitems[x] = bank->bitems[x + 1];
     }
     clear_bitem(&bank->bitems[bank->item_count]);
@@ -1299,7 +1296,7 @@ done:
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
-        fix_client_inv(&character->inv);
+        cleanup_bb_inv(src->client_id, &character->inv);
     }
 
     return err;
@@ -1456,6 +1453,7 @@ int initialize_cmode_iitem(ship_client_t* dest) {
         return -1;
     }
 
+    DBG_LOG("重置GC %u 职业数据", dest->guildcard);
 
     return 0;
 }
@@ -1474,11 +1472,29 @@ void player_bitem_init(bitem_t* item, const iitem_t* src) {
     item->show_flags = 1;
 }
 
+/* 整理背包物品操作 */
+void cleanup_bb_inv(uint32_t client_id, inventory_t* inv) {
+    uint32_t item_id = 0x00010000 | (client_id << 21);
+
+    uint32_t count = LE32(inv->item_count), i;
+
+    for (i = 0; i < count; ++i) {
+        inv->iitems[i].data.item_id = LE32(item_id);
+        ++item_id;
+    }
+
+    /* Clear all the rest of them... */
+    for (; i < MAX_PLAYER_INV_ITEMS; ++i) {
+        clear_iitem(&inv->iitems[i]);
+    }
+}
+
 /* 整理银行物品操作 */
-void cleanup_bb_bank(ship_client_t *c, psocn_bank_t* bank, bool comoon_bank) {
-    uint32_t item_id = 0x80010000 | (c->client_id << 21);
+void cleanup_bb_bank(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank) {
+    uint32_t item_id = 0x80010000 | (client_id << 21);
+
     if (comoon_bank)
-        item_id = 0x80110000 | (c->client_id << 21);
+        item_id = 0x80110000 | (client_id << 21);
 
     uint32_t count = LE32(bank->item_count), i;
 
@@ -1490,8 +1506,6 @@ void cleanup_bb_bank(ship_client_t *c, psocn_bank_t* bank, bool comoon_bank) {
     /* Clear all the rest of them... */
     for(; i < MAX_PLAYER_BANK_ITEMS; ++i) {
         clear_bitem(&bank->bitems[i]);
-        /*memset(&bank->bitems[i], 0, PSOCN_STLENGTH_BITEM);
-        bank->bitems[i].data.item_id = EMPTY_STRING;*/
     }
 }
 
@@ -1531,6 +1545,11 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
 
     item_t* found_item = &inv->iitems[i].data;
 
+    if (!found_item) {
+        ERR_LOG("GC %" PRIu32 " 装备的物品已不存在!", gc);
+        return -2;
+    }
+
     if (found_item->item_id == item_id) {
         found = 1;
         inv_count = inv->item_count;
@@ -1540,13 +1559,13 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
             if (pmt_lookup_weapon_bb(found_item->datal[0], &tmp_wp)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                     gc);
-                return -1;
+                return -3;
             }
 
             if (item_check_equip(tmp_wp.equip_flag, equip_flags)) {
                 ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
                     gc);
-                return -2;
+                return -4;
             }
             else {
                 // 解除角色上任何其他武器的装备。（防止堆叠） 
@@ -1566,19 +1585,19 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
                 if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         gc);
-                    return -3;
+                    return -5;
                 }
 
                 if (target_level < tmp_guard.level_req) {
                     ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
                         gc);
-                    return -4;
+                    return -6;
                 }
 
                 if (item_check_equip(tmp_guard.equip_flag, equip_flags)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
                         gc);
-                    return -5;
+                    return -7;
                 }
                 else {
                     //DBG_LOG("装甲识别");
@@ -1600,19 +1619,19 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
                 if (pmt_lookup_guard_bb(found_item->datal[0], &tmp_guard)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
                         gc);
-                    return -3;
+                    return -8;
                 }
 
                 if (target_level < tmp_guard.level_req) {
                     ERR_LOG("GC %" PRIu32 " 等级不足, 不应该装备该物品数据!",
                         gc);
-                    return -4;
+                    return -9;
                 }
 
                 if (item_check_equip(tmp_guard.equip_flag, equip_flags)) {
                     ERR_LOG("GC %" PRIu32 " 装备了不属于该职业的物品数据!",
                         gc);
-                    return -5;
+                    return -10;
                 }else {
                     //DBG_LOG("护盾识别");
                     // Remove any other barrier
@@ -1662,7 +1681,7 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
                     inv->iitems[j].flags &= LE32(0xFFFFFFF7);
                     ERR_LOG("GC %" PRIu32 " 装备了作弊的插槽物品数据!",
                         gc);
-                    return -1;
+                    return -11;
                 }
                 break;
             }
@@ -1687,7 +1706,7 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
         inv->iitems[i].flags |= LE32(0x00000008);
     }
 
-    return found;
+    return 0;
 }
 
 /* 给客户端标记可穿戴职业装备的标签 */
@@ -2008,40 +2027,40 @@ void fix_client_inv(inventory_t* inv) {
     for (i = 0; i < inv->item_count; i++)
         inv->iitems[i] = fix_iitem[i];
 }
-
-//整理仓库物品 测试用
-void sort_client_inv2(inventory_t* inv) {
-    size_t i, j;
-    uint32_t compare_item1 = 0;
-    uint32_t compare_item2 = 0;
-    uint8_t swap_c;
-    iitem_t swap_item;
-    iitem_t b1;
-    iitem_t b2;
-
-    if (inv->item_count > 1) {
-        for (i = 0; i < (inv->item_count - 1); i++) {
-            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
-            swap_c = b1.data.datab[0];
-            b1.data.datab[0] = b1.data.datab[2];
-            b1.data.datab[2] = swap_c;
-            memcpy(&compare_item1, &b1.data.datab[0], 3);
-            for (j = i + 1; j < inv->item_count; j++) {
-                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
-                swap_c = b2.data.datab[0];
-                b2.data.datab[0] = b2.data.datab[2];
-                b2.data.datab[2] = swap_c;
-                memcpy(&compare_item2, &b2.data.datab[0], 3);
-                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
-                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
-                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
-                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
-                    memcpy(&compare_item1, &compare_item2, 3);
-                }
-            }
-        }
-    }
-}
+//
+////整理仓库物品 测试用
+//void sort_client_inv2(inventory_t* inv) {
+//    size_t i, j;
+//    uint32_t compare_item1 = 0;
+//    uint32_t compare_item2 = 0;
+//    uint8_t swap_c;
+//    iitem_t swap_item;
+//    iitem_t b1;
+//    iitem_t b2;
+//
+//    if (inv->item_count > 1) {
+//        for (i = 0; i < (inv->item_count - 1); i++) {
+//            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
+//            swap_c = b1.data.datab[0];
+//            b1.data.datab[0] = b1.data.datab[2];
+//            b1.data.datab[2] = swap_c;
+//            memcpy(&compare_item1, &b1.data.datab[0], 3);
+//            for (j = i + 1; j < inv->item_count; j++) {
+//                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
+//                swap_c = b2.data.datab[0];
+//                b2.data.datab[0] = b2.data.datab[2];
+//                b2.data.datab[2] = swap_c;
+//                memcpy(&compare_item2, &b2.data.datab[0], 3);
+//                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
+//                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
+//                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
+//                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
+//                    memcpy(&compare_item1, &compare_item2, 3);
+//                }
+//            }
+//        }
+//    }
+//}
 
 /* 暂未启用的函数 */
 void sort_client_inv(inventory_t* inv) {

@@ -243,7 +243,7 @@ struct ship_client {
 
     char *infoboard;                    /* Points into the player struct. */
 
-    int mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
+    bool mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
     record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
     psocn_mode_char_t* mode_pl;
 
@@ -274,7 +274,7 @@ struct ship_client {
 
     client_game_data_t *game_data;
 
-    int bank_type;
+    bool bank_type;
     psocn_bank_t* common_bank;
     psocn_bank_t* char_bank;
 

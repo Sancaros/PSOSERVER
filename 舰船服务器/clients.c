@@ -356,6 +356,11 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->last_message = rv->login_time = time(NULL);
     rv->hdr_size = 4;
 
+    rv->isvip = 0;
+    rv->mode = false;
+    rv->need_save_data = 0;
+    rv->bank_type = false;
+
     /* Create the mutex */
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
@@ -632,59 +637,33 @@ void client_send_bb_data(ship_client_t* c) {
 
     /* If the client was on Blue Burst, update their db character */
     if (c->version == CLIENT_VERSION_BB) {
-        //c->save_time = now;
+        /* 将游戏时间存储入人物数据 */
+        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-        ///* 将游戏时间存储入人物数据 */
-        //c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        c->save_time = now;
 
-        //fix_client_inv(&c->bb_pl->character.inv);
-        //fix_equip_item(&c->bb_pl->character.inv);
+#ifdef DEBUG
+        DBG_LOG("mode %d", c->mode);
+#endif // DEBUG
 
-        ///* 将玩家数据存入数据库 */
-        //shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-        //    c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-        //    c->cur_block->b);
+        fix_client_inv(&c->bb_pl->character.inv);
+        fix_equip_item(&c->bb_pl->character.inv);
 
-        ///* 将玩家选项数据存入数据库 */
-        //shipgate_send_bb_opts(&ship->sg, c);
+        /* 将玩家数据存入数据库 */
+        shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+            c->cur_block->b);
 
-        //send_simple(c, PING_TYPE, 0);
-        if (num_seconds > 5) {
-            c->save_time = now;
+        /* 将玩家选项数据存入数据库 */
+        shipgate_send_bb_opts(&ship->sg, c);
 
-            /* 将游戏时间存储入人物数据 */
-            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
-
-            psocn_bb_db_char_t* bb_pl = (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
-
-            if (!bb_pl) {
-                ERR_LOG("GC %u 获取实时数据存储角色内存失败",c->guildcard);
-                return;
-            }
-
-            memcpy(bb_pl, c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
-
-            fix_client_inv(&bb_pl->character.inv);
-            fix_equip_item(&bb_pl->character.inv);
-
-            /* 将玩家数据存入数据库 */
-            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                c->cur_block->b);
-
-            free_safe(bb_pl);
-
-            /* 将玩家选项数据存入数据库 */
-            shipgate_send_bb_opts(&ship->sg, c);
-
-            send_simple(c, PING_TYPE, 0);
+        send_simple(c, PING_TYPE, 0);
 
 #ifdef DEBUG
 
-            DBG_LOG("%d 秒", num_seconds);
+        DBG_LOG("%d 秒", num_seconds);
 
 #endif // DEBUG
-        }
     }
 }
 
@@ -1510,23 +1489,43 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
 }
 
 psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
-    return src->bank_type != 0 ? src->common_bank : &src->bb_pl->bank;
+#ifdef DEBUG
+
+    if (src->bank_type) {
+        DBG_LOG("GC %u 的银行模式为 %d", src->bank_type);
+    }
+
+#endif // DEBUG
+
+    return src->bank_type == false ? &src->bb_pl->bank : src->common_bank;
 }
 
 inventory_t* get_client_inv_bb(ship_client_t* src) {
-    return src->mode != 0 ? &src->mode_pl->bb.inv : &src->bb_pl->character.inv;
+    if (src->mode) {
+        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+    }
+    return src->mode == false ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
-    return src->mode != 0 ? &src->mode_pl->bb : &src->bb_pl->character;
+    if (src->mode) {
+        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+    }
+    return src->mode == false ? &src->bb_pl->character : &src->mode_pl->bb;
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
-    return src->mode != 0 ? &src->mode_pl->nobb.inv : &src->pl->v1.character.inv;
+    if (src->mode) {
+        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+    }
+    return src->mode == false ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
-    return src->mode != 0 ? &src->mode_pl->nobb : &src->pl->v1.character;
+    if (src->mode) {
+        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+    }
+    return src->mode == false ? &src->pl->v1.character : &src->mode_pl->nobb;
 }
 
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {

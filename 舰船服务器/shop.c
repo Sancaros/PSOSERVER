@@ -344,6 +344,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
 
             uint8_t ge_tech_level = mt19937_genrand_int32(随机因子) % max_tech_lvl[难度];
             uint8_t ge_anti_level = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
+
             uint32_t random = mt19937_genrand_int32(随机因子) % 10;/* 0 - 9 */
 
             switch (item.datab[4]) {
@@ -360,7 +361,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
                 }
                 else {
                     // 生成一个介于基础值和全局最大值之间的随机数
-                    ge_anti_level = mt19937_genrand_int32(随机因子) % (max_anti_lvl[难度] - base_anti_lvl[0]);
+                    ge_anti_level = mt19937_genrand_int32(随机因子) % (max_anti_lvl[难度] - base_anti_lvl[0] - 1);
                 }
 
                 item.datab[2] = ge_anti_level;
@@ -373,7 +374,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
                 }
                 else {
                     // 生成一个介于基础值和全局最大值之间的随机数
-                    ge_tech_level = mt19937_genrand_int32(随机因子) % (max_tech_lvl[难度] - base_tech_lvl[0]);
+                    ge_tech_level = mt19937_genrand_int32(随机因子) % (max_tech_lvl[难度] - base_tech_lvl[0] - 1);
                 }
 
                 item.datab[2] = ge_tech_level;
@@ -454,7 +455,12 @@ size_t price_for_item(const item_t* item) {
     case ITEM_TYPE_GUARD: {
         pmt_guard_bb_t pmt_guard = { 0 };
         if (is_item_rare(item)) {
+#ifdef DEBUG
+
             DBG_LOG("物品 0x%08X 是稀有物品", item->datal[0]);
+
+#endif // DEBUG
+
             return 80;
         }
 
@@ -494,7 +500,12 @@ size_t price_for_item(const item_t* item) {
             return err;
         }
 
-        price = pmt_tool.cost * ((item->datab[1] == ITEM_SUBTYPE_DISK) ? (item->datab[2] + 1) : 1);
+        size_t price_num = 1;
+
+        if (item->datab[1] == ITEM_SUBTYPE_DISK)
+            price_num = item->datab[2] + 1;
+
+        price = pmt_tool.cost * price_num;
         if (price < 0) {
             ERR_LOG("pmt_lookup_tools_bb 0x%08X 的价格 %d 为负数", item->datal[0], pmt_tool.cost);
         }

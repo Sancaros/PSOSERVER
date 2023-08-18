@@ -161,16 +161,16 @@ uint32_t db_get_char_bank_checkum(uint32_t gc, uint8_t slot);
 //玩家银行数据库操作
 
 /* 新增玩家银行背包数据至数据库 */
-int db_insert_common_bank(psocn_bank_t* bank, uint32_t gc);
+int db_insert_bank_common(psocn_bank_t* bank, uint32_t gc);
 
 /* 更新玩家银行数据至数据库 */
-int db_update_char_common_bank(psocn_bank_t* bank, uint32_t gc);
+int db_update_char_bank_common(psocn_bank_t* bank, uint32_t gc);
 
 /* 获取玩家角色银行背包数据数据项 */
-int db_get_char_common_bank(uint32_t gc, psocn_bank_t* bank);
+int db_get_char_bank_common(uint32_t gc, psocn_bank_t* bank);
 
 /* 获取玩家银行数据checkum */
-uint32_t db_get_char_common_bank_checkum(uint32_t gc);
+uint32_t db_get_char_bank_common_checkum(uint32_t gc);
 
 ///////////////////////////////////////////////////////
 /* 认证查询 */
@@ -301,6 +301,12 @@ int db_get_c_records(uint32_t gc, uint8_t slot, bb_challenge_records_t* c_record
 int db_update_char_name(psocn_bb_char_name_t* name, uint32_t gc, uint8_t slot);
 
 int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name);
+
+////////////////////////////////////////////////////////////////
+
+int db_update_character_default_mode(psocn_bb_char_t* data, int qid);
+
+int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class_name);
 
 
 

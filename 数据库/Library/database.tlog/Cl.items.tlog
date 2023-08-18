@@ -1,5 +1,6 @@
-E:\梦幻之星项目\PSOSERVER\数据库\character_bank_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_bank_query.obj
-E:\梦幻之星项目\PSOSERVER\数据库\character_common_bank.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_common_bank.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_bank_char_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_bank_char_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_bank_common_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_bank_common_query.obj
+E:\梦幻之星项目\PSOSERVER\数据库\character_default_mode_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_default_mode_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_default_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_default_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_name_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_name_query.obj
 E:\梦幻之星项目\PSOSERVER\数据库\character_query.c;E:\梦幻之星项目\PSOSERVER\数据库\Library\character_query.obj

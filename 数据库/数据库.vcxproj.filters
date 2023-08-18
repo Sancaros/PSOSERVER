@@ -41,7 +41,7 @@
     <ClCompile Include="character_inventory_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="character_bank_query.c">
+    <ClCompile Include="character_bank_char_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="character_quest_data1_query.c">
@@ -77,7 +77,10 @@
     <ClCompile Include="character_name_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="character_common_bank.c">
+    <ClCompile Include="character_bank_common_query.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="character_default_mode_query.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

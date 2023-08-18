@@ -1624,12 +1624,12 @@ static void dumpinv_internal(ship_client_t *src) {
     if(v != CLIENT_VERSION_BB) {
         psocn_v1v2v3pc_char_t* character_v1 = get_client_char_nobb(src);
 
-        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("背包物品数量: %u", character_v1->inv.item_count);
+        ITEM_LOG("数量: %u", character_v1->inv.item_count);
 
         for(i = 0; i < character_v1->inv.item_count; ++i) {
             print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
@@ -1639,13 +1639,15 @@ static void dumpinv_internal(ship_client_t *src) {
     else {
         psocn_bb_char_t* character_bb = get_client_char_bb(src);
 
-        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家: %s (%d:%d) 背包数据转储", 
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
-        ITEM_LOG("背包物品数量: %u", character_bb->inv.item_count);
+        ITEM_LOG("数量: %u", character_bb->inv.item_count);
+        ITEM_LOG("HPmats: %u TPmats: %u Lang: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
 
+        ITEM_LOG("------------------------------------------------------------");
         for (i = 0; i < character_bb->inv.item_count; ++i) {
             print_iitem_data(&character_bb->inv.iitems[i], i, src->version);
         }
@@ -1677,16 +1679,14 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             return send_txt(src, "%s", __(src, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        SHIPS_LOG("------------------------------------------------------------");
+        SHIPS_LOG("////////////////////////////////////////////////////////////");
         SHIPS_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
             l->lobby_id);
 
+        SHIPS_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
-            print_item_data(&j->data.data, src->version);
-            //SHIPS_LOG("%08x: %08x %08x %08x %08x: %s",
-            //    LE32(j->d.data.item_id), LE32(j->d.data.data_l[0]),
-            //    LE32(j->d.data.data_l[1]), LE32(j->d.data.data_l[2]),
-            //    LE32(j->d.data.data2_l), item_get_name(&j->d.data, l->version));
+            ITEM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
+            print_item_data(&j->iitem.data, src->version);
         }
         SHIPS_LOG("------------------------------------------------------------");
 
@@ -1747,17 +1747,20 @@ static void dumpbank_internal(ship_client_t* c) {
 
     if (v == CLIENT_VERSION_BB) {
         psocn_bb_char_t* player = &c->bb_pl->character;
+        psocn_bank_t* bank = get_client_bank_bb(c);
 
         //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
         //    BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", get_player_name(c->pl, c->version, false), c->guildcard, c->sec_data.slot);
-        ITEM_LOG("职业: %s 房间模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->mode ? "模式" : "普通");
-        ITEM_LOG("银行物品数量: %u", c->bb_pl->bank.item_count);
+        ITEM_LOG("职业: %s 银行: %s 模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->bank_type ? "公共" : "角色", c->mode ? "模式" : "普通");
+        ITEM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
 
-        for (i = 0; i < c->bb_pl->bank.item_count; ++i) {
-            print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
+        ITEM_LOG("------------------------------------------------------------");
+        for (i = 0; i < bank->item_count; ++i) {
+            print_bitem_data(&bank->bitems[i], i, c->version);
         }
+        ITEM_LOG("------------------------------------------------------------");
     }
     else {
         send_txt(c, "%s", __(c, "\tE\tC7仅限于BB使用."));
@@ -4012,17 +4015,13 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
 
 /* 用法: /bank */
 static int handle_bank(ship_client_t* c, const char* params) {
-    pthread_mutex_lock(&c->mutex);
 
     if (!c->bank_type) {
-        c->bank_type = 1;
-        pthread_mutex_unlock(&c->mutex);
-
+        c->bank_type = true;
         return send_txt(c, "%s", __(c, "\tE\tC8公共仓库."));
     }
 
-    c->bank_type = 0;
-    pthread_mutex_unlock(&c->mutex);
+    c->bank_type = false;
     return send_txt(c, "%s", __(c, "\tE\tC6角色仓库."));
 }
 

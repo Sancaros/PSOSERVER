@@ -36,7 +36,10 @@
 #define EQUIP_FLAGS_FEMALE   0x80   // Bit 8 ≈Æ»À
 #define EQUIP_FLAGS_MAX      8
 
-#define MAX_LOBBY_SAVED_ITEMS      3000
+#define MAX_LOBBY_SAVED_ITEMS           3000
+
+#define ITEM_BASE_STAR_DEFAULT          0
+#define ITEM_RARE_THRESHOLD             9
 
 #define ITEM_ID_MESETA                  0xFFFFFFFF
 

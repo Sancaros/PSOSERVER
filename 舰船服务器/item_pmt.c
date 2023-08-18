@@ -1704,8 +1704,13 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -1;
     }
 
-    //display_packet(ucbuf, sizeof(pmt_table_offsets_v3_t));
-    //getchar();
+#ifdef DEBUG
+
+    display_packet(&ucbuf, ucsz);
+    DBG_LOG("%d", ucsz);
+    getchar();
+
+#endif // DEBUG
 
     if (!(pmt_tb_offsets_bb = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
         ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
@@ -2930,12 +2935,12 @@ bool item_not_identification(const item_t* item) {
 }
 
 uint8_t get_item_stars(uint16_t index) {
-    if ((index >= 0xB1) && (index < 0x437)) {
-        uint8_t star = star_table_bb[index - 0xB1];
+    if ((index >= 0xB1) && (index <= 0x3E0)) {
 #ifdef DEBUG
+        uint8_t star = star_table_bb[index - 0xB1];
         DBG_LOG("%d", star);
 #endif // DEBUG
-        return star;
+        return star_table_bb[index - 0xB1];
     }
     return 0;
 }
@@ -2981,7 +2986,7 @@ uint8_t get_special_stars(uint8_t det) {
 
 uint8_t get_item_adjusted_stars(const item_t* item) {
     uint8_t ret = get_item_base_stars(item);
-    if (item->datab[0] == 0) {
+    if (item->datab[0] == ITEM_TYPE_WEAPON) {
         if (ret < 9) {
             if (!(item->datab[4] & 0x80)) {
                 ret += get_special_stars(item->datab[4]);
@@ -3008,11 +3013,11 @@ uint8_t get_item_adjusted_stars(const item_t* item) {
 bool is_item_rare(const item_t* item) {
     uint8_t item_base_star = get_item_base_stars(item);
     if (item_base_star == 0xFF)
-        item_base_star = 0;
+        item_base_star = ITEM_BASE_STAR_DEFAULT;
 #ifdef DEBUG
     DBG_LOG("item_base_star %d", item_base_star);
 #endif // DEBUG
-    bool is_rare = item_base_star >= 9;
+    bool is_rare = (item_base_star >= ITEM_RARE_THRESHOLD);
     return is_rare;
 }
 

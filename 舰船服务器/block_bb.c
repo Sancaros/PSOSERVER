@@ -173,7 +173,8 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
     strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
-    c->mode = 0;
+    c->mode = false;
+    c->bank_type = false;
     c->game_data->expboost = 0;
 
     /* 备份临时数据 TODO BB版本未完成 */
@@ -1817,7 +1818,7 @@ static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {
     return 0;
 }
 
-/* 0x00E7 231*/
+/* 0x00E7 231 完整角色数据 */
 static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     uint16_t len = LE16(pkt->hdr.pkt_len);
     psocn_bb_full_char_t char_data = pkt->data;
@@ -1825,9 +1826,27 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     if (c->version != CLIENT_VERSION_BB)
         return -1;
 
-    if (!c->bb_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
-        ERR_LOG("bb_process_full_char %d %d", c->version, len);
+    if (c->mode && c->mode_pl) {
+        pkt->data.character.dress_data.ch_class = c->bb_pl->character.dress_data.ch_class;
+        DBG_LOG("ch_class %d", c->bb_pl->character.dress_data.ch_class);
+        memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
         return -1;
+        //return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
+    }
+
+    if (!c->bb_pl || !c->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR || c->mode) {
+        ERR_LOG("bb_process_full_char %d %d c->mode %d", c->version, len, c->mode);
+        return -1;
+    }
+
+    if (c->bank_type) {
+        c->bank_type = false;
+#ifdef DEBUG
+
+        DBG_LOG("bank_type %d", c->bank_type);
+
+#endif // DEBUG
+
     }
 
     /* No need if they've already maxed out. */
@@ -1862,9 +1881,9 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         /////////////////////////////////////////////////////////////////////////////////////
         //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
         //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-        memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        memcpy(&c->bb_pl->character.disp, &char_data.character.disp, PSOCN_STLENGTH_BB_CHAR);
         memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
-        memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
+        //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
         memcpy(c->bb_pl->autoreply, char_data.autoreply, PSOCN_STLENGTH_BB_DB_AUTOREPLY);
         memcpy(c->bb_pl->infoboard, char_data.infoboard, PSOCN_STLENGTH_BB_DB_INFOBOARD);
@@ -2019,6 +2038,7 @@ static int bb_set_guild_text(ship_client_t* c, bb_guildcard_set_txt_pkt* pkt) {
 static int process_bb_guild_create(ship_client_t* c, bb_guild_create_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
+
 
     if (len != sizeof(bb_guild_create_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);

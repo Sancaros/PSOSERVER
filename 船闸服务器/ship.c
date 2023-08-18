@@ -2724,6 +2724,22 @@ static int handle_pc(ship_t* c, shipgate_fw_9_pkt* pkt) {
     }
 }
 
+static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    psocn_bb_full_char_t* cmode_char = (psocn_bb_full_char_t*)pkt->pkt;
+    uint32_t qid = pkt->fw_flags;
+
+    DBG_LOG("Qid %d", qid);
+
+    //display_packet(&cmode_char->character, sizeof(psocn_bb_char_t));
+
+    if (db_insert_character_default_mode(&cmode_char->character, qid, pso_class[cmode_char->character.dress_data.ch_class].cn_name)) {
+        DBG_LOG("qid %d %s 数据已存在,进行更新操作", qid, pso_class[cmode_char->character.dress_data.ch_class].cn_name);
+        db_update_character_default_mode(&cmode_char->character, qid);
+    }
+
+    return 0;
+}
+
 static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt->pkt;
     uint16_t type = LE16(hdr->pkt_type);
@@ -2741,6 +2757,9 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
         /* 0x00EA 公会功能 */
     case BB_GUILD_COMMAND:
         return handle_bb_guild(c, pkt);
+
+    case BB_FULL_CHARACTER_TYPE:
+        return handle_bb_cmode_char_data(c, pkt);
 
     default:
         break;
@@ -4582,7 +4601,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
 
     if (common_bank) {
         memset(common_bank, 0, PSOCN_STLENGTH_BANK);
-        db_get_char_common_bank(gc, common_bank);
+        db_get_char_bank_common(gc, common_bank);
     }
 
     rv = send_bb_opts(c, gc, block, &opts, &guild, guild_points_personal_donation, common_bank);
@@ -4608,7 +4627,7 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     rv = db_update_bb_guild_points_personal_donation(gc, pkt->guild_points_personal_donation);
 
-    rv = db_update_char_common_bank(&pkt->common_bank, gc);
+    rv = db_update_char_bank_common(&pkt->common_bank, gc);
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,

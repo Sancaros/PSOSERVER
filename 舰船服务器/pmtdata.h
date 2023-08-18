@@ -338,6 +338,12 @@ typedef struct pmt_mag_feed_results_list_offsets {
     uint32_t offsets[8]; // Offsets of MagFeedResultsList structs
 } PACKED pmt_mag_feed_results_list_offsets_t;
 
+typedef struct pmt_special_bb_t {
+    uint16_t type;
+    uint16_t amount;
+} PACKED pmt_special_bb_t;
+
+
 /* TODO V2 ItemPMT Offset Struct */
 typedef struct pmt_table_offsets_v2 {
     union {

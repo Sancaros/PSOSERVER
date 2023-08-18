@@ -44,7 +44,7 @@
 //#define PSOCN_STLENGTH_BB_DB_CHAR           7912
 #define PSOCN_STLENGTH_BB_DB_CHAR           7908
 
-//#define PSOCN_STLENGTH_BB_CHAR              400 + 844
+#define PSOCN_STLENGTH_BB_CHAR              400
 #define PSOCN_STLENGTH_BB_CHAR2             1244
 #define PSOCN_STLENGTH_BB_KEY_CONFIG        420
 #define PSOCN_STLENGTH_BB_GUILD             2108

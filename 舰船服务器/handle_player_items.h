@@ -37,7 +37,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
 iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
-iitem_t* add_litem_locked(lobby_t* l, iitem_t* item);
+iitem_t* add_litem_locked(lobby_t* l, iitem_t* it, uint8_t area, float x, float z);
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
@@ -54,13 +54,13 @@ size_t find_equipped_mag(inventory_t* inv);
 void bswap_data2_if_mag(item_t* item);
 
 /* 玩家美赛塔操作 内存操作 */
-int add_meseta(psocn_bb_char_t* character, uint32_t amount);
-int remove_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft);
+int add_character_meseta(psocn_bb_char_t* character, uint32_t amount);
+int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft);
 
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
-bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint32_t amount);
+bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
 bool add_iitem(ship_client_t* src, iitem_t* item);
 bool add_bitem(ship_client_t* src, bitem_t* item);
 int player_use_item(ship_client_t* src, uint32_t item_id);
@@ -71,7 +71,8 @@ int initialize_cmode_iitem(ship_client_t* dest);
 /* 蓝色脉冲银行管理 */
 void player_iitem_init(iitem_t* item, const bitem_t* src);
 void player_bitem_init(bitem_t* item, const iitem_t* src);
-void cleanup_bb_bank(ship_client_t *c, psocn_bank_t* bank, bool comoon_bank);
+void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
+void cleanup_bb_bank(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
@@ -87,7 +88,7 @@ void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv);
-void sort_client_inv2(inventory_t* inv);
+//void sort_client_inv2(inventory_t* inv);
 void sort_client_inv(inventory_t* inv);
 void fix_client_bank(psocn_bank_t* bank);
 void sort_client_bank(psocn_bank_t* bank);

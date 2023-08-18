@@ -23,8 +23,9 @@
     <ClInclude Include="database_query.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="character_bank_query.c" />
-    <ClCompile Include="character_common_bank.c" />
+    <ClCompile Include="character_bank_char_query.c" />
+    <ClCompile Include="character_bank_common_query.c" />
+    <ClCompile Include="character_default_mode_query.c" />
     <ClCompile Include="character_default_query.c" />
     <ClCompile Include="character_name_query.c" />
     <ClCompile Include="character_query.c" />

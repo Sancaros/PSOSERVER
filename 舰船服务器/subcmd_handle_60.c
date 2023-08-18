@@ -955,7 +955,7 @@ static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_equip_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t item_id = pkt->item_id, equip_resault = 0;
+    uint32_t item_id = pkt->item_id, equip_slot = pkt->equip_slot, equip_resault = 0;
     int i = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -978,13 +978,19 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
+#ifdef DEBUG
+
+    DBG_LOG("GC %u item_id 0x%08X equip_slot 0x%08X", src->guildcard, item_id, equip_slot);
+
+#endif // DEBUG
+
     equip_resault = item_check_equip_flags(src->guildcard, character->disp.level,
         src->equip_flags, &character->inv, item_id);
 
     /* 是否存在物品背包中? */
-    if (!equip_resault) {
-        ERR_LOG("GC %" PRIu32 " 装备了未存在的物品数据!",
-            src->guildcard);
+    if (equip_resault) {
+        ERR_LOG("GC %" PRIu32 " 装备了未存在的物品数据! 错误码:%d",
+            src->guildcard, equip_resault);
         return -1;
     }
 
@@ -1166,6 +1172,8 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id;
+    uint16_t drop_amount = pkt->drop_amount, area = pkt->area;
+    float x = pkt->x, y = pkt->y, z = pkt->z;
     int isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1205,14 +1213,16 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (inv->iitems[index].data.datab[0] == ITEM_TYPE_GUARD &&
-        inv->iitems[index].data.datab[1] == ITEM_SUBTYPE_FRAME &&
-        (inv->iitems[index].flags & LE32(0x00000008))) {
+    iitem_t* drop_iitem = &inv->iitems[index];
+
+    if (drop_iitem->data.datab[0] == ITEM_TYPE_GUARD &&
+        drop_iitem->data.datab[1] == ITEM_SUBTYPE_FRAME &&
+        (drop_iitem->flags & LE32(0x00000008))) {
         isframe = 1;
     }
 
     /* 清理已装备的标签 */
-    inv->iitems[index].flags &= LE32(0xFFFFFFF7);
+    drop_iitem->flags &= LE32(0xFFFFFFF7);
 
     /* 卸掉所有已插入在这件装备的插件 */
     if (isframe) {
@@ -1226,16 +1236,14 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中 */
-    if (!add_litem_locked(l, &inv->iitems[index])) {
+    if (!add_litem_locked(l, drop_iitem, (uint8_t)area, x, z)) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
         return -1;
     }
 
-    /* TODO 可以打印丢出的物品信息 */
-    iitem_t iitem = remove_iitem(src, item_id, 0, src->version != CLIENT_VERSION_BB);
-
+    iitem_t iitem = remove_iitem(src, item_id, drop_amount, src->version != CLIENT_VERSION_BB);
     if (&iitem == NULL) {
         ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
             src->guildcard);
@@ -2486,7 +2494,7 @@ int handle_bb_battle_mode(ship_client_t* src,
                             if (lc->mode_pl->bb.inv.iitems[ch2].data.datab[0] == 0x02)
                                 lc->mode_pl->bb.inv.iitems[ch2].present = 0;
                         }
-                        fix_client_inv(&lc->mode_pl->bb.inv);
+                        cleanup_bb_inv(lc->client_id, &lc->mode_pl->bb.inv);
                         lc->mode_pl->bb.disp.meseta = 0;
                     }
                     break;
@@ -2494,7 +2502,7 @@ int handle_bb_battle_mode(ship_client_t* src,
                     // Wipe items and reset level.
                     for (ch2 = 0; ch2 < 30; ch2++)
                         lc->mode_pl->bb.inv.iitems[ch2].present = 0;
-                    fix_client_inv(&lc->mode_pl->bb.inv);
+                    cleanup_bb_inv(lc->client_id, &lc->mode_pl->bb.inv);
 
                     uint8_t ch_class = lc->mode_pl->bb.dress_data.ch_class;
 
@@ -4029,7 +4037,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem.data.item_id = generate_item_id(l, EMPTY_STRING);
+    iitem.data.item_id = generate_item_id(l, 0xFF);
 
     if (!add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
@@ -4038,7 +4046,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* We have the item... Add it to the lobby's inventory. */
-    if (!(it = add_litem_locked(l, &iitem))) {
+    if (!(it = add_litem_locked(l, &iitem, area, x, z))) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品添加至游戏房间!");
