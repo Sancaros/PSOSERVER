@@ -1296,7 +1296,7 @@ done:
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
-        cleanup_bb_inv(src->client_id, &character->inv);
+        //cleanup_bb_inv(src->client_id, &character->inv);
     }
 
     return err;

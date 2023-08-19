@@ -457,10 +457,10 @@ void db_remove_client(ship_t* s) {
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(ship_t* s) {
     if (s->name[0]) {
-        SGATE_LOG("关闭与 %s 的连接", s->name);
+        DC_LOG("关闭与 %s 的连接", s->name);
     }
     else {
-        SGATE_LOG("取消与未认证舰船的连接");
+        DC_LOG("取消与未认证舰船的连接");
     }
 
     db_remove_client(s);
