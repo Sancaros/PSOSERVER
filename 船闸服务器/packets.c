@@ -1241,3 +1241,26 @@ int send_default_mode_char_data_bb(ship_t* c) {
 
     return i;
 }
+
+int send_recive_data_complete(ship_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
+    uint16_t len = (uint16_t)(sizeof(shipgate_hdr_t));
+
+    /* Make sure we don't try to send to a ship that won't know what to do with
+       the packet. */
+    if (c->proto_ver < 19)
+        return 0;
+
+    if (len & 0x07)
+        len = (len + 8) & 0xFFF8;
+
+    /* Swap that which we need to do */
+    pkt->pkt_type = htons(SHDR_TYPE_COMPLETE_DATA);
+    pkt->pkt_len = htons(len);
+    pkt->flags = SHDR_RESPONSE;
+
+    /* º”√‹≤¢∑¢ÀÕ */
+    return send_crypt(c, len, sendbuf);
+}
+

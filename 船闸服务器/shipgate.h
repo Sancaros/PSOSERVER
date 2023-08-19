@@ -162,4 +162,7 @@ int send_player_level_table_bb(ship_t* c);
 /* 向舰船发送基础玩家数据 */
 int send_default_mode_char_data_bb(ship_t* c);
 
+/* 向舰船发送 数据发送完成响应 */
+int send_recive_data_complete(ship_t* c);
+
 #endif /* !SHIPGATE_H */

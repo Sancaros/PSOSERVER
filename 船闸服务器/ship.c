@@ -5417,6 +5417,9 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
         send_player_level_table_bb(c);
 
         send_default_mode_char_data_bb(c);
+
+        /* 最终给舰船发送一个 数据完成的响应 */
+        send_recive_data_complete(c);
     }
 
     return rv;

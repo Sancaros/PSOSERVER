@@ -68,6 +68,7 @@
 #define SHDR_TYPE_CHECK_PLONLINE      0x0035      /* Check player online 53 */
 #define SHDR_TYPE_BBDEFAULT_MODE_DATA 0x0036      /* Blue Burst player default data 54 */
 #define SHDR_TYPE_BB_COMMON_BANK_DATA 0x0037      /* Blue Burst player common bank data 55 */
+#define SHDR_TYPE_COMPLETE_DATA       0x1000      /* ShipGate to Ship complete data 4096 */
 #define SHDR_TYPE_8000                0x8000      /* 0x8000 51 */
 
 /* Flags that can be set in the login packet */

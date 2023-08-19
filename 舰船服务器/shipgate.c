@@ -3352,6 +3352,15 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
             DBG_LOG("测试公共仓库数据获取");
             return 0;
 
+        case SHDR_TYPE_COMPLETE_DATA:
+            SHIPS_LOG("舰闸数据接收完成.");
+            /* Ignore responses for now... we don't send these just yet. */
+            if (flags & SHDR_RESPONSE) {
+                return 0;
+            }
+
+            return shipgate_send_ping(conn, 1);
+
         default:
             DBG_LOG("未知测试数据获取指令 0x%04X", type);
 
