@@ -1352,7 +1352,11 @@ static int handle_sstatus(shipgate_conn_t* conn, shipgate_ship_status6_pkt* p) {
         memcpy(i->ship_host4, p->ship_host4, 32);
         memcpy(i->ship_host6, p->ship_host6, 128);
 
+#ifdef DEBUG
+        /* TODO */
         DBG_LOG("此处需要继续往下写 %s", i->ship_host4);
+#endif // DEBUG
+
         i->ship_addr = p->ship_addr4;
         i->ship_port = ntohs(p->ship_port);
         i->clients = ntohs(p->clients);
@@ -3088,7 +3092,7 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
 }
 
 static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_default_mode_char_data_bb_pkt* pkt) {
-    uint32_t i;
+    uint32_t i, j;
 
     /* TODO 需增加加密传输认证,防止黑客行为 */
     if (!&pkt->data) {
@@ -3096,37 +3100,50 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_defa
         return -1;
     }
 
-    default_mode_char = pkt->data;
+    int sz;
+    uLong sz2, csz;
 
-    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
-        if (default_mode_char.cdata[i].dress_data.ch_class != i) {
-            ERR_LOG("舰船接收角色初始数据索引错误, 请检查函数错误");
-            return -1;
+    /* 获取压缩数据的大小 */
+    sz = (int)ntohl(pkt->compressed_size);
+    sz2 = sizeof(psocn_bb_mode_char_t);
+    csz = (uLong)sz;
+
+#ifdef DEBUG
+
+    DBG_LOG("成功接收到数据 压缩大小 %d 字节", sz);
+
+#endif // DEBUG
+
+    /* 解压缩数据 */
+    if (uncompress((Bytef*)&default_mode_char, &sz2, (Bytef*)pkt->data, csz) != Z_OK) {
+        ERR_LOG("无法解压角色数据");
+        return -2;
+    }
+
+    sz = sz2;
+
+#ifdef DEBUG
+
+    DBG_LOG("解压缩成功 原数据大小 %d", sz);
+
+#endif // DEBUG
+
+    for (i = 0; i < 14; i++) {
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+            if (default_mode_char.cdata[j][i].dress_data.ch_class != j) {
+                ERR_LOG("舰船接收角色初始数据索引错误, 请检查函数错误");
+                return -3;
+            }
+
+#ifdef DEBUG
+            CONFIG_LOG("接收 Blue Burst 初始MODE数据 MODE任务索引 %d MODE职业索引 %d 职业 %s",
+                i, j, pso_class[default_mode_char.cdata[j][i].dress_data.ch_class].cn_name);
+
+#endif // DEBUG
+
         }
-#ifdef DEBUG
-
-        CONFIG_LOG("接收 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_mode_char.char_class[i].dress_data.ch_class].cn_name, i);
-        display_packet(&default_mode_char.char_class[i].techniques, 20);
-
-#endif // DEBUG
 
     }
-
-#ifdef DEBUG
-
-    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
-
-        //ERR_LOG("舰船接收职业初始数据数据索引错误, 请检查函数错误 %u", default_chars.ch_class[i].character.dress_data.ch_class);
-        //display_packet(&default_chars.ch_class[i].character.inv, PSOCN_STLENGTH_INV);
-
-        CONFIG_LOG("接收 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_mode_char.char_class[i].dress_data.ch_class].cn_name, i);
-
-        display_packet(&default_mode_char.char_class[i].dress_data, PSOCN_STLENGTH_DRESS);
-
-    }
-
-#endif // DEBUG
-
 
     return 0;
 }
@@ -3135,8 +3152,12 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
     uint16_t type = ntohs(pkt->pkt_type);
     uint16_t flags = ntohs(pkt->flags);
 
-    //DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
-        //, type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
+#ifdef DEBUG
+
+    DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
+        , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
+
+#endif // DEBUG
 
     if (!conn->has_key) {
         /* Silently ignore non-login packets when we're without a key
@@ -3282,7 +3303,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_BBLVLDATA:
             return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
 
-        case SHDR_TYPE_BB_DEFAULT_PL_DATA:
+        case SHDR_TYPE_BBDEFAULT_MODE_DATA:
             return handle_default_mode_char_data_bb(conn, (shipgate_default_mode_char_data_bb_pkt*)pkt);
 
         case SHDR_TYPE_CBKUP:
@@ -3330,6 +3351,10 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_BB_COMMON_BANK_DATA:
             DBG_LOG("测试公共仓库数据获取");
             return 0;
+
+        default:
+            DBG_LOG("未知测试数据获取指令 0x%04X", type);
+
         }
     }
 

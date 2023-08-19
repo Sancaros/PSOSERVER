@@ -58,6 +58,7 @@
 #define PSOCN_STLENGTH_BB_DB_SHORTCUTS      2624
 #define PSOCN_STLENGTH_BB_DB_AUTOREPLY      344
 #define PSOCN_STLENGTH_BB_DB_INFOBOARD      344
+#define PSOCN_STLENGTH_BB_TECH              20
 
 /////////////////////////////////////////////////////////////////////////
 /////

@@ -304,9 +304,11 @@ int db_get_char_name(uint32_t gc, uint8_t slot, psocn_bb_char_name_t* name);
 
 ////////////////////////////////////////////////////////////////
 
-int db_update_character_default_mode(psocn_bb_char_t* data, int qid);
+int db_update_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid);
 
-int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class_name);
+int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid, char* class_name);
+
+int db_get_character_default_mode(psocn_bb_mode_char_t* data);
 
 
 

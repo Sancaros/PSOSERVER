@@ -4858,10 +4858,10 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 
         DBG_LOG("Íæ¼Ò 0x%02X Ö¸Áî: 0x%02X", hdr_type, type);
 
-#endif // DEBUG_60
-
         if (src->mode)
             DBG_LOG("GC %u CH 0x%04X 60Ö¸Áî: 0x%02X", src->guildcard, hdr_type, type);
+
+#endif // DEBUG_60
 
         pthread_mutex_lock(&l->mutex);
 

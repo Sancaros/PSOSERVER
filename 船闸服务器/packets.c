@@ -1170,50 +1170,74 @@ int send_player_level_table_bb(ship_t* c) {
     return i;
 }
 
-int send_def_mode_char_data_bb(ship_t* c, psocn_bb_mode_char_t* data) {
+int send_def_mode_char_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_default_mode_char_data_bb_pkt* pkt = (shipgate_default_mode_char_data_bb_pkt*)sendbuf;
-    uint16_t len = sizeof(psocn_bb_mode_char_t) + sizeof(shipgate_hdr_t);
+    uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
 
     /* Make sure we don't try to send to a ship that won't know what to do with
        the packet. */
     if (c->proto_ver < 19)
         return 0;
 
+    if (len & 0x07)
+        len = (len + 8) & 0xFFF8;
+
     /* Swap that which we need to do */
-    pkt->hdr.pkt_type = htons(SHDR_TYPE_BB_DEFAULT_PL_DATA);
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BBDEFAULT_MODE_DATA);
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(&pkt->data, data, sizeof(psocn_bb_mode_char_t));
+    pkt->compressed_size = htonl(compressed_size);
+
+    memcpy(pkt->data, data, compressed_size);
 
     /* 加密并发送 */
     return send_crypt(c, len, sendbuf);
 }
 
 int send_default_mode_char_data_bb(ship_t* c) {
-    int i, len = 0;
+    int i = 0, j = 0, len = 0;
+    Bytef* cmp_buf;
+    uLong cmp_sz;
+    int compressed = ~Z_OK;
+    int compress_power = 9;
+    size_t data_size = sizeof(psocn_bb_mode_char_t);
 
-    psocn_bb_mode_char_t mode_chars = { 0 };
+    psocn_bb_mode_char_t* mode_chars = (psocn_bb_mode_char_t*)malloc(data_size);
 
-    memset(&mode_chars, 0, sizeof(psocn_bb_mode_char_t));
-
-    if (db_get_character_mode(&mode_chars)) {
-        ERR_LOG("舰闸获取职业初始数据错误, 请检查函数错误");
+    if (!mode_chars) {
+        ERR_LOG("给 mode_chars 分配内存失败!");
         return -1;
     }
 
-#ifdef DEBUG
-
-    for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
-        SGATE_LOG("发送 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[mode_chars.char_class[i].dress_data.ch_class].cn_name, i);
-
-        //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
+    if (db_get_character_default_mode(mode_chars)) {
+        ERR_LOG("舰闸获取职业初始数据错误, 请检查函数错误");
+        return -2;
     }
 
-#endif // DEBUG
+    /* 压缩角色数据 */
+    cmp_sz = compressBound((uLong)data_size);
 
-    i = send_def_mode_char_data_bb(c, &mode_chars);
+    if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
+        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)mode_chars,
+            (uLong)data_size, compress_power);
+    }
+
+    if (compressed == Z_OK && cmp_sz < data_size) {
+#ifdef DEBUG
+        DBG_LOG("压缩成功 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+#endif // DEBUG
+    }
+    else {
+        DBG_LOG("压缩失败 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+        return -3;
+    }
+
+    i = send_def_mode_char_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
+
+    free(cmp_buf);
+    free_safe(mode_chars);
 
     return i;
 }

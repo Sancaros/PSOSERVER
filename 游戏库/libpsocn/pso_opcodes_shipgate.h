@@ -66,7 +66,7 @@
 #define SHDR_TYPE_BBLVLDATA           0x0034      /* Blue Burst player level data 52 */
 //#define SHDR_TYPE_BBGUILD_REQ         0x0034      /* Request Blue Burst guild data 52 */
 #define SHDR_TYPE_CHECK_PLONLINE      0x0035      /* Check player online 53 */
-#define SHDR_TYPE_BB_DEFAULT_PL_DATA  0x0036      /* Blue Burst player default data 54 */
+#define SHDR_TYPE_BBDEFAULT_MODE_DATA 0x0036      /* Blue Burst player default data 54 */
 #define SHDR_TYPE_BB_COMMON_BANK_DATA 0x0037      /* Blue Burst player common bank data 55 */
 #define SHDR_TYPE_8000                0x8000      /* 0x8000 51 */
 

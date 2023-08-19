@@ -290,7 +290,7 @@ typedef struct psocn_bb_default_char {
 } PACKED psocn_bb_default_char_t;
 
 typedef struct psocn_bb_mode_char {
-    psocn_bb_char_t cdata[MAX_PLAYER_CLASS_BB];
+    psocn_bb_char_t cdata[MAX_PLAYER_CLASS_BB][14];
 } PACKED psocn_bb_mode_char_t;
 
 // 11760 980

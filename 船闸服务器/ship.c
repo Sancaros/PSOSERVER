@@ -2725,16 +2725,19 @@ static int handle_pc(ship_t* c, shipgate_fw_9_pkt* pkt) {
 }
 
 static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
-    psocn_bb_full_char_t* cmode_char = (psocn_bb_full_char_t*)pkt->pkt;
+    bb_full_char_pkt* char_full = (bb_full_char_pkt*)pkt->pkt;
+    psocn_bb_full_char_t* cmode_char = &char_full->data;
     uint32_t qid = pkt->fw_flags;
+    char char_class_name_text[64];
 
-    DBG_LOG("Qid %d", qid);
+    DBG_LOG("Qid %d ch_class %d", qid, cmode_char->gc.char_class);
 
+    istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[cmode_char->gc.char_class].cn_name, sizeof(char_class_name_text));
     //display_packet(&cmode_char->character, sizeof(psocn_bb_char_t));
 
-    if (db_insert_character_default_mode(&cmode_char->character, qid, pso_class[cmode_char->character.dress_data.ch_class].cn_name)) {
-        DBG_LOG("qid %d %s 数据已存在,进行更新操作", qid, pso_class[cmode_char->character.dress_data.ch_class].cn_name);
-        db_update_character_default_mode(&cmode_char->character, qid);
+    if (db_insert_character_default_mode(&cmode_char->character, cmode_char->gc.char_class, qid, char_class_name_text)) {
+        DBG_LOG("qid %d %s 数据已存在,进行更新操作", qid, pso_class[cmode_char->gc.char_class].cn_name);
+        db_update_character_default_mode(&cmode_char->character, cmode_char->gc.char_class, qid);
     }
 
     return 0;

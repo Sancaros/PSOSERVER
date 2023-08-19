@@ -357,7 +357,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->hdr_size = 4;
 
     rv->isvip = 0;
-    rv->mode = false;
+    rv->mode = 0;
     rv->need_save_data = 0;
     rv->bank_type = false;
 
@@ -1504,28 +1504,28 @@ inventory_t* get_client_inv_bb(ship_client_t* src) {
     if (src->mode) {
         DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
     }
-    return src->mode == false ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
+    return src->mode == 0 ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
     if (src->mode) {
         DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
     }
-    return src->mode == false ? &src->bb_pl->character : &src->mode_pl->bb;
+    return src->mode == 0 ? &src->bb_pl->character : &src->mode_pl->bb;
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
     if (src->mode) {
         DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
     }
-    return src->mode == false ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
+    return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
     if (src->mode) {
         DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
     }
-    return src->mode == false ? &src->pl->v1.character : &src->mode_pl->nobb;
+    return src->mode == 0 ? &src->pl->v1.character : &src->mode_pl->nobb;
 }
 
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {

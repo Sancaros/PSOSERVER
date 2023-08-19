@@ -173,7 +173,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
     strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
-    c->mode = false;
+    c->mode = 0;
     c->bank_type = false;
     c->game_data->expboost = 0;
 
@@ -1082,6 +1082,17 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     memcpy(c->iitems, c->pl->bb.character.inv.iitems, PSOCN_STLENGTH_IITEM * 30);
     c->item_count = (int)c->pl->bb.character.inv.item_count;
 
+    /* 测试用 */
+    c->ch_class = c->pl->bb.character.dress_data.ch_class;
+
+#ifdef DEBUG
+
+    DBG_LOG("c->ch_class %d", c->ch_class);
+
+#endif // DEBUG
+
+    DBG_LOG("c->ch_class %d", c->ch_class);
+
     /* 重新对库存数据进行编号, 以便后期进行数据交换 */
     for (i = 0; i < c->item_count; ++i) {
         v = 0x00210000 | i;
@@ -1826,34 +1837,34 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     if (c->version != CLIENT_VERSION_BB)
         return -1;
 
-    if (c->mode && c->mode_pl) {
-        pkt->data.character.dress_data.ch_class = c->bb_pl->character.dress_data.ch_class;
-        DBG_LOG("ch_class %d", c->bb_pl->character.dress_data.ch_class);
-        memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
-        return -1;
-        //return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
-    }
-
-    if (!c->bb_pl || !c->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR || c->mode) {
+    if (!c->bb_pl || !c->mode_pl || len > PSOCN_STLENGTH_BB_FULL_CHAR) {
         ERR_LOG("bb_process_full_char %d %d c->mode %d", c->version, len, c->mode);
-        return -1;
-    }
-
-    if (c->bank_type) {
-        c->bank_type = false;
-#ifdef DEBUG
-
-        DBG_LOG("bank_type %d", c->bank_type);
-
-#endif // DEBUG
-
+        return -2;
     }
 
     /* No need if they've already maxed out. */
     if (c->bb_pl->character.disp.level + 1 > MAX_PLAYER_LEVEL) {
         ERR_LOG("GC %d 等级超过 200 (%d)", c->guildcard, c->bb_pl->character.disp.level + 1);
-        return -1;
+        return -4;
     }
+
+    if (c->mode && c->mode_pl) {
+        /*pkt->data.character.dress_data.ch_class = c->ch_class;*/
+        DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
+        memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        //return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
+        return -3;
+    }
+    else {
+        memcpy(&c->bb_pl->character.disp, &char_data.character.disp, PSOCN_STLENGTH_BB_CHAR);
+    }
+
+#ifdef DEBUG
+    if (c->bank_type) {
+        c->bank_type = false;
+        DBG_LOG("bank_type %d", c->bank_type);
+    }
+#endif // DEBUG
 
     /* 修复客户端传输过来的背包数据错误 是否是错误还需要检测??? TODO */
     //for (int i = 0; i < char_data.character.inv.item_count; i++) {
@@ -1881,7 +1892,6 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         /////////////////////////////////////////////////////////////////////////////////////
         //memcpy(&c->bb_pl->character.inv, &char_data.character.inv, PSOCN_STLENGTH_INV);
         //memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR);
-        memcpy(&c->bb_pl->character.disp, &char_data.character.disp, PSOCN_STLENGTH_BB_CHAR);
         memcpy(c->bb_pl->quest_data1, char_data.quest_data1, PSOCN_STLENGTH_BB_DB_QUEST_DATA1);
         //memcpy(&c->bb_pl->bank, &char_data.bank, PSOCN_STLENGTH_BANK);
         memcpy(c->bb_pl->guildcard_desc, char_data.gc.guildcard_desc, sizeof(c->bb_pl->guildcard_desc));
@@ -2809,7 +2819,7 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             uint8_t char_class = dest->bb_pl->character.dress_data.ch_class;
 
             /* 初始化 模式角色数据 */
-            memcpy(&dest->mode_pl->bb, &default_mode_char.cdata[char_class], PSOCN_STLENGTH_BB_CHAR2);
+            memcpy(&dest->mode_pl->bb, &default_mode_char.cdata[char_class][l->qid - 65522], PSOCN_STLENGTH_BB_CHAR2);
 
             /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
             //if (initialize_cmode_iitem(dest)) {

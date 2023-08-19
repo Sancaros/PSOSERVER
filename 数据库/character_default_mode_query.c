@@ -17,8 +17,9 @@
 
 #include "database.h"
 #include "database_query.h"
+#include "pso_character.h"
 
-int db_update_character_default_mode(psocn_bb_char_t* data, int qid) {
+int db_update_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid) {
     memset(myquery, 0, sizeof(myquery));
 
     snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
@@ -35,9 +36,9 @@ int db_update_character_default_mode(psocn_bb_char_t* data, int qid) {
     strcat(myquery, "', tech = '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
-        0x14);
+        PSOCN_STLENGTH_BB_TECH);
 
-    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `qid` = %d AND `ch_class` = %d", qid, data->dress_data.ch_class);
+    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `qid` = %d AND `ch_class` = %d", qid, char_class);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法更新数据");
@@ -48,7 +49,7 @@ int db_update_character_default_mode(psocn_bb_char_t* data, int qid) {
     return 0;
 }
 
-int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class_name) {
+int db_insert_character_default_mode(psocn_bb_char_t* data, uint8_t char_class, int qid, char* class_name) {
 
     memset(myquery, 0, sizeof(myquery));
 
@@ -58,7 +59,7 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class
         ") VALUES ("
         "'%d', '%d', '%s', '",
         CHARACTER_DEFAULT_MODE,
-        qid, data->dress_data.ch_class, class_name
+        qid, char_class, class_name
     );
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data,
@@ -72,7 +73,7 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class
     strcat(myquery, "', '");
 
     psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)&data->tech,
-        0x14);
+        PSOCN_STLENGTH_BB_TECH);
 
     strcat(myquery, "')");
 
@@ -82,5 +83,67 @@ int db_insert_character_default_mode(psocn_bb_char_t* data, int qid, char* class
         return -1;
     }
 
+    return 0;
+}
+
+int db_get_character_default_mode(psocn_bb_mode_char_t* data) {
+    void* result;
+    char** row;
+    int i, j, k, len = 0;
+
+    memset(myquery, 0, sizeof(myquery));
+
+
+    for (i = 0; i < 14; i++) {
+        for (j = 0; j < MAX_PLAYER_CLASS_BB; j++) {
+            k = i + 65522;
+
+            snprintf(myquery, sizeof(myquery), "SELECT "
+                "`character`, inventory, tech"
+                " FROM %s "
+                "WHERE `qid` = %d AND `ch_class` = %d", 
+                CHARACTER_DEFAULT_MODE, 
+                k, j
+            );
+
+            if (psocn_db_real_query(&conn, myquery)) {
+                SQLERR_LOG("无法获取数据");
+                SQLERR_LOG("%s", psocn_db_error(&conn));
+                return -1;
+            }
+
+            result = psocn_db_result_store(&conn);
+            if (result == NULL) {
+                SQLERR_LOG("无法获取查询结果");
+                SQLERR_LOG("%s", psocn_db_error(&conn));
+                return -1;
+            }
+
+            if (psocn_db_result_rows(result) < 1) {
+                SQLERR_LOG("未找到匹配的记录");
+                return -1;
+            }
+
+            row = psocn_db_result_fetch(result);
+            if (row == NULL) {
+                SQLERR_LOG("无法获取查询结果集");
+                SQLERR_LOG("%s", psocn_db_error(&conn));
+                return -1;
+            }
+
+            memcpy((char*)&data->cdata[j][i], row[0], PSOCN_STLENGTH_BB_CHAR2);
+            memcpy((char*)&data->cdata[j][i].inv, row[1], PSOCN_STLENGTH_INV);
+            memcpy((char*)&data->cdata[j][i].tech, row[2], PSOCN_STLENGTH_BB_TECH);
+
+            psocn_db_result_free(result);
+
+#ifdef DEBUG
+            CONFIG_LOG("获取 Blue Burst 初始MODE数据 MODE任务索引 %d MODE职业索引 %d 职业 %s",
+                i, j, pso_class[data->cdata[j][i].dress_data.ch_class].cn_name);
+#endif // DEBUG
+
+        }
+
+    }
     return 0;
 }

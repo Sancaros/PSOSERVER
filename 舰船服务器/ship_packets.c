@@ -48,7 +48,7 @@ extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
 #define DATA_BLOCK_SIZE 0x400 // 每次读取的数据块大小
-#define DELAY_TIME_MS 60    // 延时时间（毫秒）
+#define DELAY_TIME_MS 1    // 延时时间（毫秒）
 
 /* Options for choice search. */
 typedef struct cs_opt {
@@ -8304,6 +8304,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         read = fread(sendbuf, 1, DATA_BLOCK_SIZE, fp);
 
 #ifdef DEBUG
+        .
         DBG_LOG("len %d read %d", len, read);
 #endif // DEBUG
 
@@ -8355,30 +8356,30 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
     return 0;
 }
 
-int send_quest(lobby_t *l, uint32_t qid, int lc) {
+int send_quest(lobby_t* l, uint32_t qid, int lc) {
     int i;
     int v1 = 0, rv;
-    quest_map_elem_t *elem = quest_lookup(&ship->qmap, qid);
-    psocn_quest_t *q;
-    ship_client_t *c;
+    quest_map_elem_t* elem = quest_lookup(&ship->qmap, qid);
+    psocn_quest_t* q;
+    ship_client_t* c;
     int lang, ver;
 
     /* Make sure we get the quest */
-    if(!elem)
+    if (!elem)
         return -1;
 
     /* See if we're looking for a v1-compat quest */
-    if(!l->v2 && l->version < CLIENT_VERSION_GC)
+    if (!l->v2 && l->version < CLIENT_VERSION_GC)
         v1 = 1;
 
-    for(i = 0; i < l->max_clients; ++i) {
-        if((c = l->clients[i])) {
+    for (i = 0; i < l->max_clients; ++i) {
+        if ((c = l->clients[i])) {
             c->flags &= ~CLIENT_FLAG_QLOAD_DONE;
 
             /* What type of quest file are we sending? */
-            if(v1 && c->version == CLIENT_VERSION_DCV2)
+            if (v1 && c->version == CLIENT_VERSION_DCV2)
                 ver = CLIENT_VERSION_DCV1;
-            else if(c->version == CLIENT_VERSION_XBOX)
+            else if (c->version == CLIENT_VERSION_XBOX)
                 ver = CLIENT_VERSION_GC;
             else
                 ver = c->version;
@@ -8388,29 +8389,29 @@ int send_quest(lobby_t *l, uint32_t qid, int lc) {
 
             /* If we didn't find it on the quest language code, try the language
                code set in the character data. */
-            if(!q) {
+            if (!q) {
                 q = elem->qptr[ver][c->language_code];
                 lang = c->language_code;
             }
 
             /* Next try English, so as to have a reasonably sane fallback. */
-            if(!q) {
+            if (!q) {
                 q = elem->qptr[ver][CLIENT_LANG_ENGLISH];
                 lang = CLIENT_LANG_ENGLISH;
             }
 
             /* If all else fails, go with the language the quest was selected by
                the leader in, since that has to be there! */
-            if(!q) {
+            if (!q) {
                 q = elem->qptr[ver][lc];
                 lang = lc;
 
                 /* If we still didn't find it, we've got trouble elsewhere... */
-                if(!q) {
+                if (!q) {
                     QERR_LOG("未找到可发送的任务!\n"
-                          "ID: %d, 版本: %d, 语言: %d, 备用: %d, "
-                          "备用 2: %d", qid, ver, c->q_lang,
-                          c->language_code, lc);
+                        "ID: %d, 版本: %d, 语言: %d, 备用: %d, "
+                        "备用 2: %d", qid, ver, c->q_lang,
+                        c->language_code, lc);
 
                     /* Unfortunately, we're going to have to disconnect the user
                        if this happens, since we really have no recourse. */
@@ -8421,50 +8422,50 @@ int send_quest(lobby_t *l, uint32_t qid, int lc) {
 
             /* Set the counter we'll use to prevent v1 from sending silly
                packets to change other players' positions. */
-            if(c->version == CLIENT_VERSION_DCV1)
+            if (c->version == CLIENT_VERSION_DCV1)
                 c->autoreply_len = l->num_clients - 1;
 
-            if(q->format == PSOCN_QUEST_BINDAT) {
+            if (q->format == PSOCN_QUEST_BINDAT) {
                 /* Call the appropriate function. */
-                switch(ver) {
-                    case CLIENT_VERSION_DCV1:
-                        rv = send_dcv1_quest(c, elem, v1, lang);
-                        break;
+                switch (ver) {
+                case CLIENT_VERSION_DCV1:
+                    rv = send_dcv1_quest(c, elem, v1, lang);
+                    break;
 
-                    case CLIENT_VERSION_DCV2:
-                        rv = send_dcv2_quest(c, elem, v1, lang);
-                        break;
+                case CLIENT_VERSION_DCV2:
+                    rv = send_dcv2_quest(c, elem, v1, lang);
+                    break;
 
-                    case CLIENT_VERSION_PC:
-                        rv = send_pc_quest(c, elem, v1, lang);
-                        break;
+                case CLIENT_VERSION_PC:
+                    rv = send_pc_quest(c, elem, v1, lang);
+                    break;
 
-                    case CLIENT_VERSION_GC:
-                    case CLIENT_VERSION_XBOX:
-                        rv = send_gc_quest(c, elem, v1, lang);
-                        break;
+                case CLIENT_VERSION_GC:
+                case CLIENT_VERSION_XBOX:
+                    rv = send_gc_quest(c, elem, v1, lang);
+                    break;
 
-                    case CLIENT_VERSION_BB:
-                        rv = send_bb_quest(c, elem, v1, lang);
-                        break;
+                case CLIENT_VERSION_BB:
+                    rv = send_bb_quest(c, elem, v1, lang);
+                    break;
 
-                    case CLIENT_VERSION_EP3:    /* XXXX */
-                    default:
-                        return -1;
+                case CLIENT_VERSION_EP3:    /* XXXX */
+                default:
+                    return -1;
                 }
             }
-            else if(q->format == PSOCN_QUEST_QST) {
+            else if (q->format == PSOCN_QUEST_QST) {
                 rv = send_qst_quest(c, elem, v1, lang, ver);
             }
             else {
                 return -1;
             }
 
-            if(rv) {
+            if (rv) {
                 send_msg(c, MSG_BOX_TYPE, "Error reading quest file!\nPlease report "
-                                 "this problem!\nInclude your guildcard\n"
-                                 "number and the approximate\ntime in your "
-                                 "error report.");
+                    "this problem!\nInclude your guildcard\n"
+                    "number and the approximate\ntime in your "
+                    "error report.");
                 c->flags |= CLIENT_FLAG_DISCONNECTED;
             }
         }
@@ -8472,6 +8473,124 @@ int send_quest(lobby_t *l, uint32_t qid, int lc) {
 
     return 0;
 }
+//
+//int send_quest(lobby_t *l, uint32_t qid, int lc) {
+//    int i;
+//    int v1 = 0, rv;
+//    quest_map_elem_t *elem = quest_lookup(&ship->qmap, qid);
+//    psocn_quest_t *q;
+//    ship_client_t *c;
+//    int lang, ver;
+//
+//    /* Make sure we get the quest */
+//    if(!elem)
+//        return -1;
+//
+//    /* See if we're looking for a v1-compat quest */
+//    if(!l->v2 && l->version < CLIENT_VERSION_GC)
+//        v1 = 1;
+//
+//    for(i = 0; i < l->max_clients; ++i) {
+//        if((c = l->clients[i])) {
+//            c->flags &= ~CLIENT_FLAG_QLOAD_DONE;
+//
+//            /* What type of quest file are we sending? */
+//            if(v1 && c->version == CLIENT_VERSION_DCV2)
+//                ver = CLIENT_VERSION_DCV1;
+//            else if(c->version == CLIENT_VERSION_XBOX)
+//                ver = CLIENT_VERSION_GC;
+//            else
+//                ver = c->version;
+//
+//            q = elem->qptr[ver][c->q_lang];
+//            lang = c->q_lang;
+//
+//            /* If we didn't find it on the quest language code, try the language
+//               code set in the character data. */
+//            if(!q) {
+//                q = elem->qptr[ver][c->language_code];
+//                lang = c->language_code;
+//            }
+//
+//            /* Next try English, so as to have a reasonably sane fallback. */
+//            if(!q) {
+//                q = elem->qptr[ver][CLIENT_LANG_ENGLISH];
+//                lang = CLIENT_LANG_ENGLISH;
+//            }
+//
+//            /* If all else fails, go with the language the quest was selected by
+//               the leader in, since that has to be there! */
+//            if(!q) {
+//                q = elem->qptr[ver][lc];
+//                lang = lc;
+//
+//                /* If we still didn't find it, we've got trouble elsewhere... */
+//                if(!q) {
+//                    QERR_LOG("未找到可发送的任务!\n"
+//                          "ID: %d, 版本: %d, 语言: %d, 备用: %d, "
+//                          "备用 2: %d", qid, ver, c->q_lang,
+//                          c->language_code, lc);
+//
+//                    /* Unfortunately, we're going to have to disconnect the user
+//                       if this happens, since we really have no recourse. */
+//                    c->flags |= CLIENT_FLAG_DISCONNECTED;
+//                    continue;
+//                }
+//            }
+//
+//            /* Set the counter we'll use to prevent v1 from sending silly
+//               packets to change other players' positions. */
+//            if(c->version == CLIENT_VERSION_DCV1)
+//                c->autoreply_len = l->num_clients - 1;
+//
+//            if(q->format == PSOCN_QUEST_BINDAT) {
+//                /* Call the appropriate function. */
+//                switch(ver) {
+//                    case CLIENT_VERSION_DCV1:
+//                        rv = send_dcv1_quest(c, elem, v1, lang);
+//                        break;
+//
+//                    case CLIENT_VERSION_DCV2:
+//                        rv = send_dcv2_quest(c, elem, v1, lang);
+//                        break;
+//
+//                    case CLIENT_VERSION_PC:
+//                        rv = send_pc_quest(c, elem, v1, lang);
+//                        break;
+//
+//                    case CLIENT_VERSION_GC:
+//                    case CLIENT_VERSION_XBOX:
+//                        rv = send_gc_quest(c, elem, v1, lang);
+//                        break;
+//
+//                    case CLIENT_VERSION_BB:
+//                        rv = send_bb_quest(c, elem, v1, lang);
+//                        break;
+//
+//                    case CLIENT_VERSION_EP3:    /* XXXX */
+//                    default:
+//                        return -1;
+//                }
+//            }
+//            else if(q->format == PSOCN_QUEST_QST) {
+//                rv = send_qst_quest(c, elem, v1, lang, ver);
+//            }
+//            else {
+//                return -1;
+//            }
+//
+//            if(rv) {
+//                send_msg(c, MSG_BOX_TYPE, "Error reading quest file!\nPlease report "
+//                                 "this problem!\nInclude your guildcard\n"
+//                                 "number and the approximate\ntime in your "
+//                                 "error report.");
+//                c->flags |= CLIENT_FLAG_DISCONNECTED;
+//            }
+//        }
+//    }
+//
+//    return 0;
+//}
 
 int send_quest_one(lobby_t *l, ship_client_t *c, uint32_t qid, int lc) {
     int v1 = 0, rv;
@@ -11652,7 +11771,6 @@ int send_bb_full_char(ship_client_t *c) {
     /* 复制完整的公会数据 从首个元素开始 复制 2108字节 */
     memcpy(&pkt->data.guild_data, &c->bb_guild->data, PSOCN_STLENGTH_BB_GUILD);
 
-    /* FIXME: 需修复公会数据 */
     /* 将数据包发送出去 */
     return crypt_send(c, BB_FULL_CHAR_LENGTH, sendbuf);
 }
