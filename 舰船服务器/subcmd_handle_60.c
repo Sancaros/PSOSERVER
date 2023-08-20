@@ -4032,14 +4032,15 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     iitem_t iitem = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
-
     if (&iitem == NULL) {
         ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
             src->guildcard);
         return -1;
     }
 
-    iitem.data.item_id = generate_item_id(l, 0xFF);
+    if (iitem.data.item_id == EMPTY_STRING) {
+        iitem.data.item_id = generate_item_id(l, src->client_id);
+    }
 
     if (!add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",

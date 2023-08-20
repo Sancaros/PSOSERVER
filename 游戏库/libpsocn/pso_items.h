@@ -115,7 +115,7 @@ void clear_iitem(iitem_t* iitem);
 /* 初始化银行物品数据 */
 void clear_bitem(bitem_t* bitem);
 
-size_t primary_identifier(item_t* i);
+size_t primary_identifier(const item_t* i);
 
 /* 堆叠物检测 */
 bool is_stackable(const item_t* item);

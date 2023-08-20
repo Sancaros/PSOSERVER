@@ -1893,8 +1893,8 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //    char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
     //}
 
-    DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-    display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+    //DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+    //display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 
     if (!c->game_data->db_save_done) {
 

@@ -35,20 +35,23 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, i
 
     /* Send the packet to every connected client. */
     for (i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients[i] != src) {
-            /* If we're supposed to check the ignore list, and this client is on
-               it, don't send the packet
-               如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
-            if (ignore_check && client_has_ignored(l->clients[i], src->guildcard)) {
-                continue;
-            }
+        if (!l->clients[i])
+            continue;
 
-            if (l->clients[i]->version != CLIENT_VERSION_DCV1 ||
-                !(l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
-                send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
-            else
-                subcmd_translate_bb_to_nte(l->clients[i], pkt);
-        }
+        if (l->clients[i] == src)
+            continue;
+
+        /* If we're supposed to check the ignore list, and this client is on
+           it, don't send the packet
+           如果我们要检查忽略列表，并且该客户端在其中，请不要发送数据包. */
+        if (ignore_check && client_has_ignored(l->clients[i], src->guildcard))
+            continue;
+
+        if (l->clients[i]->version != CLIENT_VERSION_DCV1 ||
+            !(l->clients[i]->flags & CLIENT_FLAG_IS_NTE))
+            send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+        else
+            subcmd_translate_bb_to_nte(l->clients[i], pkt);
     }
 
     return 0;
@@ -87,7 +90,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     if (item.datab[0] == ITEM_TYPE_MESETA)
         bb.data.data2l = dc.data.data2l = item.data2l;
 
-    if(is_stackable(&item))
+    if (is_stackable(&item))
         bb.data.datab[5] = dc.data.datab[5] = amount;
 
     bb.two = dc.two = LE32(0x00000002);
@@ -123,15 +126,18 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, uint16_t drop_src_id, ship_
     }
 
     for (int i = 0; i < l->max_clients; ++i) {
-        if (l->clients[i] && l->clients[i] != nosend) {
-            /* If we're supposed to check the ignore list, and this client is on
-               it, don't send the packet. */
-            if (client_has_ignored(l->clients[i], src->guildcard)) {
-                continue;
-            }
+        if (!l->clients[i])
+            continue;
 
-            subcmd_send_drop_stack(l->clients[i], drop_src_id, area, x, z, item, amount);
-        }
+        if (l->clients[i] == nosend)
+            continue;
+
+        /* If we're supposed to check the ignore list, and this client is on
+           it, don't send the packet. */
+        if (client_has_ignored(l->clients[i], src->guildcard))
+            continue;
+
+        subcmd_send_drop_stack(l->clients[i], drop_src_id, area, x, z, item, amount);
     }
 
     return 0;

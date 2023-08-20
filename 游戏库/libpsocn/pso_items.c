@@ -72,7 +72,7 @@ void clear_bitem(bitem_t* bitem) {
 	bitem->amount = 0;
 }
 
-size_t primary_identifier(item_t* item) {
+size_t primary_identifier(const item_t* item) {
 	// The game treats any item starting with 04 as Meseta, and ignores the rest
 	// of data1 (the value is in data2)
 	switch (item->datab[0])

@@ -1115,7 +1115,6 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t item_id = pkt->item_id;
     uint16_t area = pkt->area;
     int pick_count;
-    uint32_t item, tmp;
     iitem_t iitem_data = { 0 };
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1146,33 +1145,10 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
     else {
-
-        psocn_bb_char_t* character = get_client_char_bb(src);
-
-        item = LE32(iitem_data.data.datal[0]);
-
-        /* Is it meseta, or an item? */
-        if (item == Item_Meseta) {
-            tmp = LE32(iitem_data.data.data2l) + LE32(character->disp.meseta);
-
-            /* Cap at 999,999 meseta. */
-            character->disp.meseta = MIN(tmp, 999999);
-
-            if (!src->mode)
-                src->pl->bb.character.disp.meseta = character->disp.meseta;
-        }
-        else {
-            iitem_data.present = LE16(0x0001);
-            iitem_data.extension_data1 = 0;
-            iitem_data.extension_data2 = 0;
-            iitem_data.flags = 0;
-
-            //iitem_data.data.item_id = generate_item_id(l, src->client_id);
-            iitem_data.data.item_id = item_id;
-
-            /* Add the item to the client's inventory. */
-            if (!add_iitem(src, &iitem_data))
-                return 0;
+        /* Add the item to the client's inventory. */
+        if (!add_iitem(src, &iitem_data)) {
+            ERR_LOG("GC %u 拾取物品出错");
+            return 0;
         }
     }
 
@@ -1351,7 +1327,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         //( 00000010 )   00 00 21 00 01 00 00 00                           ..!.....
 
             //要判定加入得物品是否是堆叠得 如果是堆叠得物品 则相同交易物品的数量+1
-            //0xFFFFFF01 是梅塞塔？？？？ 不应该是FFFFFFFF吗
+            //0xFFFFFF01 是美赛塔？？？？ 不应该是FFFFFFFF吗
 
             break;
         }
@@ -1802,7 +1778,9 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bank_t* bank = get_client_bank_bb(src);
 
     /* Clean up the user's bank first... */
-    cleanup_bb_bank(src->client_id, bank, src->bank_type);
+    regenerate_bank_item_id(src->client_id, bank, src->bank_type);
+
+    fix_client_bank(bank);
 
     return subcmd_send_bb_bank(src, bank);
 }

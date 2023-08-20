@@ -1217,7 +1217,7 @@ typedef struct {
 // 玩家结构体
 typedef struct {
     char name[32]; // 玩家名称
-    uint32_t meseta; // 玩家梅塞塔数量
+    uint32_t meseta; // 玩家美赛塔数量
     Item items[10]; // 玩家背包中最多容纳 10 个物品
     uint8_t item_count; // 当前玩家已经拥有的物品数量
     uint8_t trade_items[MAX_TRADE_ITEMS]; // 玩家要交易的物品列表
@@ -1336,7 +1336,7 @@ void trade_items(Player* player1, Player* player2) {
         }
     }
 
-    // 检查双方的梅塞塔是否足够支付交易物品的总价值
+    // 检查双方的美赛塔是否足够支付交易物品的总价值
     if (player1->meseta < price2 || player2->meseta < price1) {
         return;
     }
@@ -1361,7 +1361,7 @@ void trade_items(Player* player1, Player* player2) {
         }
     }
 
-    // 更新双方的梅塞塔数量
+    // 更新双方的美赛塔数量
     player1->meseta += price2 - price1;
     player2->meseta += price1 - price2;
     // 清空双方的交易物品列表和准备状态

@@ -172,16 +172,16 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     return 1;
 }
 
-size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
-    size_t x;
+size_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
+    size_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
-        if (inv->iitems[x].data.item_id == item_id) {
-            return x;
-        }
+        if (inv->iitems[x].data.item_id != item_id)
+            continue;
+
+        return x;
     }
 
-    ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
 #ifdef DEBUG
 
     for (x = 0; x < inv->item_count; x++) {
@@ -190,19 +190,23 @@ size_t find_iitem_index(inventory_t* inv, uint32_t item_id) {
 
 #endif // DEBUG
 
-    return -1;
-}
-
-size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id) {
-    size_t x;
-
-    for (x = 0; x < bank->item_count; x++) {
-        if (bank->bitems[x].data.item_id == item_id) {
-            return x;
-        }
+    if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
+        return -1;
     }
 
-    ERR_LOG("未从银行中找到ID 0x%08X 物品", item_id);
+    return -2;
+}
+
+size_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
+    size_t x = 0;
+
+    for (x = 0; x < bank->item_count; x++) {
+        if (bank->bitems[x].data.item_id != item_id)
+            continue;
+
+        return x;
+    }
 
 #ifdef DEBUG
 
@@ -212,21 +216,26 @@ size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id) {
 
 #endif // DEBUG
 
-    return -1;
+    if (x == bank->item_count) {
+        ERR_LOG("未从银行中找到ID 0x%08X 物品", item_id);
+        return -1;
+    }
+
+    return -2;
 }
 
 /* 仅用于PD PC 等独立堆叠物品 不可用于单独物品 */
-size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item) {
+size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x;
+    size_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
-        if (primary_identifier(&inv->iitems[x].data) == pid) {
-            return inv->iitems[x].data.item_id;
-        }
+        if (primary_identifier(&inv->iitems[x].data) != pid)
+            continue;
+
+        return inv->iitems[x].data.item_id;
     }
 
-    ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
 #ifdef DEBUG
 
     for (x = 0; x < inv->item_count; x++) {
@@ -235,20 +244,25 @@ size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item) {
 
 #endif // DEBUG
 
-    return -1;
+    if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
+        return -1;
+    }
+
+    return -2;
 }
 
-size_t find_iitem_pid(inventory_t* inv, iitem_t* item) {
+size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x;
+    size_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
-        if (primary_identifier(&inv->iitems[x].data) == pid) {
-            return primary_identifier(&inv->iitems[x].data);
-        }
+        if (primary_identifier(&inv->iitems[x].data) != pid)
+            continue;
+
+        return primary_identifier(&inv->iitems[x].data);
     }
 
-    ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
 #ifdef DEBUG
 
     for (x = 0; x < inv->item_count; x++) {
@@ -257,20 +271,25 @@ size_t find_iitem_pid(inventory_t* inv, iitem_t* item) {
 
 #endif // DEBUG
 
-    return -1;
+    if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
+        return -1;
+    }
+
+    return -2;
 }
 
-size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item) {
+size_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x;
+    size_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
-        if (primary_identifier(&inv->iitems[x].data) == pid) {
-            return x;
-        }
+        if (primary_identifier(&inv->iitems[x].data) != pid)
+            continue;
+
+        return x;
     }
 
-    ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
 #ifdef DEBUG
 
     for (x = 0; x < inv->item_count; x++) {
@@ -279,11 +298,16 @@ size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item) {
 
 #endif // DEBUG
 
-    return -1;
+    if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
+        return -1;
+    }
+
+    return -2;
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_weapon(inventory_t* inv){
+size_t find_equipped_weapon(const inventory_t* inv){
     ssize_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
@@ -306,7 +330,7 @@ size_t find_equipped_weapon(inventory_t* inv){
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_armor(inventory_t* inv) {
+size_t find_equipped_armor(const inventory_t* inv) {
     ssize_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
@@ -330,7 +354,7 @@ size_t find_equipped_armor(inventory_t* inv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_mag(inventory_t* inv) {
+size_t find_equipped_mag(const inventory_t* inv) {
     size_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
@@ -375,14 +399,13 @@ int add_character_meseta(psocn_bb_char_t* character, uint32_t amount) {
 }
 
 int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool allow_overdraft) {
-    if (character->disp.meseta >= amount) {
+    if (amount <= character->disp.meseta) {
         character->disp.meseta -= amount;
     }
     else if (allow_overdraft) {
         character->disp.meseta = 0;
     }
     else {
-        ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
         return -1;
     }
 
@@ -431,15 +454,8 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     if (item_id == ITEM_ID_MESETA) {
-        if (amount <= character->disp.meseta) {
-            character->disp.meseta -= amount;
-        }
-        else if (allow_meseta_overdraft) {
-            character->disp.meseta = 0;
-        }
-        else {
-            ERR_LOG("GC %" PRIu32 " 掉落的美赛塔超出所拥有的",
-                src->guildcard);
+        if (remove_character_meseta(character, amount, allow_meseta_overdraft)) {
+            ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
             return ret;
         }
         ret.data.datab[0] = 0x04;
@@ -468,6 +484,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
+    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -519,24 +536,22 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
         bank->bitems[x] = bank->bitems[x + 1];
     }
     clear_bitem(&bank->bitems[bank->item_count]);
+    fix_client_bank(bank);
     return ret;
 }
 
-bool add_iitem(ship_client_t* src, iitem_t* item) {
-    uint32_t pid = primary_identifier(&item->data);
+bool add_iitem(ship_client_t* src, iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        character->disp.meseta += item->data.data2l;
-        if (character->disp.meseta > 999999) {
-            character->disp.meseta = 999999;
-        }
+        add_character_meseta(character, iitem->data.data2l);
         return true;
     }
 
     // 处理可合并的物品
-    size_t combine_max = max_stack_size(&item->data);
+    size_t combine_max = max_stack_size(&iitem->data);
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
@@ -548,7 +563,7 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
         if (y < character->inv.item_count) {
-            character->inv.iitems[y].data.datab[5] += item->data.datab[5];
+            character->inv.iitems[y].data.datab[5] += iitem->data.datab[5];
             if (character->inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
                 character->inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
             }
@@ -562,8 +577,9 @@ bool add_iitem(ship_client_t* src, iitem_t* item) {
             src->guildcard, character->inv.item_count);
         return false;
     }
-    character->inv.iitems[character->inv.item_count] = *item;
+    character->inv.iitems[character->inv.item_count] = *iitem;
     character->inv.item_count++;
+    fix_client_inv(&character->inv);
     return true;
 }
 
@@ -605,6 +621,7 @@ bool add_bitem(ship_client_t* src, bitem_t* item) {
     }
     bank->bitems[bank->item_count] = *item;
     bank->item_count++;
+    fix_client_bank(bank);
     return true;
 }
 
@@ -1303,7 +1320,7 @@ done:
 }
 
 int initialize_cmode_iitem(ship_client_t* dest) {
-    size_t x;
+    size_t x = 0;
     lobby_t* l = dest->cur_lobby;
 
     psocn_bb_char_t* character = &dest->mode_pl->bb;
@@ -1490,7 +1507,7 @@ void cleanup_bb_inv(uint32_t client_id, inventory_t* inv) {
 }
 
 /* 整理银行物品操作 */
-void cleanup_bb_bank(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank) {
+void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank) {
     uint32_t item_id = 0x80010000 | (client_id << 21);
 
     if (comoon_bank)
@@ -2018,13 +2035,13 @@ void fix_client_inv(inventory_t* inv) {
 
     memset(fix_iitem, 0, sizeof(fix_iitem));
 
-    for (i = 0; i < inv->item_count; i++)
-        if (inv->iitems[i].present && inv->iitems[i].data.datal[0])
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        if (inv->iitems[i].present)
             fix_iitem[j++] = inv->iitems[i];
 
     inv->item_count = j;
 
-    for (i = 0; i < inv->item_count; i++)
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
         inv->iitems[i] = fix_iitem[i];
 }
 //
@@ -2100,13 +2117,18 @@ void fix_client_bank(psocn_bank_t* bank) {
 
     memset(fix_bitem, 0, sizeof(fix_bitem));
 
-    for (i = 0; i < bank->item_count; i++)
-        if (bank->bitems[i].show_flags && bank->bitems[i].amount && bank->bitems[i].data.datal[0])
+    for (j = 0; j < MAX_PLAYER_BANK_ITEMS; j++)
+        fix_bitem[j].data.item_id = EMPTY_STRING;
+
+    j = 0;
+
+    for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++)
+        if (bank->bitems[i].show_flags && bank->bitems[i].amount)
             fix_bitem[j++] = bank->bitems[i];
 
     bank->item_count = j;
 
-    for (i = 0; i < bank->item_count; i++)
+    for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++)
         bank->bitems[i] = fix_bitem[i];
 }
 

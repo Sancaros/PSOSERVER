@@ -42,14 +42,14 @@ iitem_t* add_litem_locked(lobby_t* l, iitem_t* it, uint8_t area, float x, float 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_iitem_index(inventory_t* inv, uint32_t item_id);
-size_t find_bitem_index(psocn_bank_t* bank, uint32_t item_id);
-size_t find_iitem_stack_item_id(inventory_t* inv, iitem_t* item);
-size_t find_iitem_pid(inventory_t* inv, iitem_t* item);
-size_t find_iitem_pid_index(inventory_t* inv, iitem_t* item);
-size_t find_equipped_weapon(inventory_t* inv);
-size_t find_equipped_armor(inventory_t* inv);
-size_t find_equipped_mag(inventory_t* inv);
+size_t find_iitem_index(const inventory_t* inv, const uint32_t item_id);
+size_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id);
+size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item);
+size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item);
+size_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item);
+size_t find_equipped_weapon(const inventory_t* inv);
+size_t find_equipped_armor(const inventory_t* inv);
+size_t find_equipped_mag(const inventory_t* inv);
 
 void bswap_data2_if_mag(item_t* item);
 
@@ -72,7 +72,7 @@ int initialize_cmode_iitem(ship_client_t* dest);
 void player_iitem_init(iitem_t* item, const bitem_t* src);
 void player_bitem_init(bitem_t* item, const iitem_t* src);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
-void cleanup_bb_bank(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
+void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 
 /* 物品检测装备标签 */
 int item_check_equip(uint8_t 装备标签, uint8_t 客户端装备标签);
