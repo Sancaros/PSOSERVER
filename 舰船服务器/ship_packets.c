@@ -31,6 +31,7 @@
 #include <f_logs.h>
 #include <f_iconv.h>
 #include <pso_menu.h>
+#include <pso_pack.h>
 #include <pso_packet_length.h>
 
 #include "ship_packets.h"
@@ -48,7 +49,6 @@ extern uint32_t ship_ip4;
 extern uint8_t ship_ip6[16];
 
 #define DATA_BLOCK_SIZE 0x400 // 每次读取的数据块大小
-#define DELAY_TIME_MS 1    // 延时时间（毫秒）
 
 /* Options for choice search. */
 typedef struct cs_opt {
@@ -741,11 +741,9 @@ int send_redirect6(ship_client_t *c, char* host6, const uint8_t ip[16], uint16_t
 #endif
 
 /* Send a timestamp packet to the given client. */
-static int send_dc_timestamp(ship_client_t *c) {
+static int send_timestamp_dc(ship_client_t *c) {
     uint8_t *sendbuf = get_sendbuf();
     dc_timestamp_pkt *pkt = (dc_timestamp_pkt *)sendbuf;
-    //struct timeval rawtime;
-    //struct tm cooked;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
 
@@ -769,12 +767,6 @@ static int send_dc_timestamp(ship_client_t *c) {
         pkt->hdr.pc.pkt_len = LE16(DC_TIMESTAMP_LENGTH);
     }
 
-    /* Get the timestamp */
-    //gettimeofday(&rawtime, NULL);
-
-    /* Get UTC */
-    //gmtime_r(&rawtime.tv_sec, &cooked);
-
     /* Fill in the timestamp */
     sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
         rawtime.wYear, rawtime.wMonth, rawtime.wDay,
@@ -783,6 +775,34 @@ static int send_dc_timestamp(ship_client_t *c) {
 
     /* 将数据包发送出去 */
     return crypt_send(c, DC_TIMESTAMP_LENGTH, sendbuf);
+}
+
+static int send_timestamp_bb(ship_client_t* c) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_timestamp_pkt* pkt = (bb_timestamp_pkt*)sendbuf;
+    SYSTEMTIME rawtime;
+    GetLocalTime(&rawtime);
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf) {
+        return -1;
+    }
+
+    /* Wipe the packet */
+    memset(pkt, 0, BB_TIMESTAMP_LENGTH);
+
+    /* 填充数据头 */
+    pkt->hdr.pkt_type = LE16(TIMESTAMP_TYPE);
+    pkt->hdr.pkt_len = LE16(BB_TIMESTAMP_LENGTH);
+
+    /* Fill in the timestamp */
+    sprintf(pkt->timestamp, "%u:%02u:%02u: %02u:%02u:%02u.%03u",
+        rawtime.wYear, rawtime.wMonth, rawtime.wDay,
+        rawtime.wHour, rawtime.wMinute, rawtime.wSecond,
+        rawtime.wMilliseconds);
+
+    /* 将数据包发送出去 */
+    return crypt_send(c, BB_TIMESTAMP_LENGTH, sendbuf);
 }
 
 int send_timestamp(ship_client_t *c) {
@@ -794,7 +814,10 @@ int send_timestamp(ship_client_t *c) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
-            return send_dc_timestamp(c);
+            return send_timestamp_dc(c);
+
+        case CLIENT_VERSION_BB:
+            return send_timestamp_bb(c);
     }
 
     return -1;
@@ -3458,7 +3481,6 @@ int send_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *pkt) {
 }
 
 #ifdef PSOCN_ENABLE_IPV6
-
 /* Send a premade IPv6 guild card search reply to the specified client. */
 static int send_dc_guild_reply6_sg(ship_client_t *c, dc_guild_reply6_pkt *p) {
     uint8_t *sendbuf = get_sendbuf();
@@ -7293,7 +7315,7 @@ static int send_bb_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     inptr = q->long_desc;
     out = 0x248;
     outptr = pkt->msg;
-    iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
 
     /* 加密并发送 */
     return crypt_send(c, BB_QUEST_INFO_LENGTH, sendbuf);
@@ -8304,7 +8326,6 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         read = fread(sendbuf, 1, DATA_BLOCK_SIZE, fp);
 
 #ifdef DEBUG
-        .
         DBG_LOG("len %d read %d", len, read);
 #endif // DEBUG
 
@@ -8337,10 +8358,7 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
 
 #endif // DEBUG
 
-#ifdef _WIN32
-        // 模拟延时
-        Sleep(DELAY_TIME_MS);
-#endif //  _WIN32
+        delay(DELAY_TIME_MS);
 
         len -= read;
 #ifdef DEBUG
@@ -8348,6 +8366,8 @@ static int send_qst_quest(ship_client_t *c, quest_map_elem_t *qm, int v1,
         DBG_LOG("len %d", len);
 
 #endif // DEBUG
+        //DBG_LOG("len %d", len);
+
 
     }
 
@@ -13138,11 +13158,11 @@ int send_bb_lobby_guild_NULL_initialzation_data(ship_client_t* c, ship_client_t*
     return rv;
 }
 
-int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
+int send_rare_enemy_index_list(ship_client_t* c, const uint16_t* rare_enemies) {
     uint8_t* sendbuf = get_sendbuf();
     bb_rare_monster_list_pkt* pkt = (bb_rare_monster_list_pkt*)sendbuf;
-    size_t enemy_ids_count = sizeof(pkt->enemy_ids) / sizeof(pkt->enemy_ids[0]);
-    size_t indexes_size = sizeof(indexes) / sizeof(indexes[0]);
+    size_t enemy_ids_count = ARRAYSIZE(pkt->enemy_ids);
+    size_t indexes_size = ARRAYSIZE(rare_enemies);
 
     if (indexes_size > enemy_ids_count) {
         // 抛出异常
@@ -13150,7 +13170,7 @@ int send_rare_enemy_index_list(ship_client_t* c, const size_t* indexes) {
         return -1;
     }
     for (size_t z = 0; z < indexes_size; z++) {
-        pkt->enemy_ids[z] = (uint16_t)indexes[z];
+        pkt->enemy_ids[z] = rare_enemies[z];
     }
     for (size_t i = indexes_size; i < enemy_ids_count; i++) {
         pkt->enemy_ids[i] = 0xFFFF;

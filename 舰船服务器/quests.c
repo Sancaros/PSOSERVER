@@ -666,6 +666,10 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
                     }
                     else {
                         if((dat = read_and_dec_qst(fn1, &dat_sz, j))) {
+#ifdef DEBUG
+                            //q->episod (1 2 4) 3???
+                            //DBG_LOG("q->episode %d", q->episode);
+#endif // DEBUG
                             cache_quest_enemies(fn2, dat, dat_sz, q->episode);
                             free_safe(dat);
                         }

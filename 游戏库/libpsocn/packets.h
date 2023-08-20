@@ -19,6 +19,10 @@
 #ifndef PACKETS_H_HAVE_HEADERS
 #define PACKETS_H_HAVE_HEADERS
 
+#include <stdint.h>
+
+#include "pso_player.h"
+
 /* Always define the headers of packets, if they haven't already been taken
    care of. */
 

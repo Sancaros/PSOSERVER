@@ -17,6 +17,12 @@
 
 #include "pso_pack.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <f_logs.h>
 
 int compress_data(const char* uncompressed_data, uLong uncompressed_length, char* compressed_data, uLong* compressed_length, int compression_level) {
@@ -143,6 +149,14 @@ int is_compressed_data_valid(const char* compressed_data, uLong compressed_lengt
     else {
         return 0; // 压缩数据无效
     }
+}
+
+void delay(int milliseconds) {
+#ifdef _WIN32
+    Sleep(milliseconds);
+#else
+    usleep(milliseconds * 1000);
+#endif
 }
 
 //int main() {

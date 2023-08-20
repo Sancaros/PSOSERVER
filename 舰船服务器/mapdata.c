@@ -317,6 +317,11 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
         switch(en[i].base_type) {
             case 0x0040:    /* Hildebear & Hildetorr */
                 acc = en[i].skin & 0x01;
+                //if (!acc && (game[count].rare_enemy_indexes < 0x1E) && (rand() < default_rare_rates.hildeblue)) {
+                //    game[count].rare_enemies[game[count].rare_enemy_indexes] = (uint16_t)count;
+                //    game[count].rare_enemy_indexes += 2;
+                //    acc = 1;
+                //}
                 gen[count].bp_entry = 0x49 + acc;
                 gen[count].rt_index = 0x01 + acc;
                 break;
@@ -779,8 +784,10 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
                 break;
 
             default:
+                //gen[count].rt_index = en[i].base_type;
+                //gen[count].bp_entry = 0x22;
 #ifdef VERBOSE_DEBUGGING1
-                ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", en[i].base, en[i].rt_index, en[i].skin, en[i].num_clones);
+                ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", en[i].base_type, en[i].rt_index, en[i].skin, en[i].num_children);
 #endif
                 break;
         }
@@ -2115,7 +2122,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
         return -2;
     }
 
-    /* 遍历每个区域并按顺序将它们编写出来. */
+    /* 遍历每个区域i并按顺序将它们编写出来. */
     for(i = 0; i < 17; ++i) {
         if((hdr = ptrs[0][i])) {
             sz = LE32(hdr->size);
@@ -2140,7 +2147,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     //CONFIG_LOG("敌人数据位置: %" PRIx64 "", (uint64_t)offs);
     index = 0;
 
-    /* 复制敌人数据. */
+    /* 复制每个区域i的敌人数据. */
     for(i = 0; i < 17; ++i) {
         if((hdr = ptrs[1][i])) {
             /* XXXX: Ugly! */
@@ -2148,7 +2155,9 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
             area = LE32(hdr->area);
             alt = 0;
 
-            if((episode == 3 && area > 5) || (episode == 2 && area > 15))
+            if((episode == GAME_TYPE_EPISODE_4 && area > 5) || 
+                (episode == GAME_TYPE_EPISODE_3 && area > 5) || 
+                (episode == GAME_TYPE_EPISODE_2 && area > 15))
                 alt = 1;
 
             if(parse_map((map_enemy_t *)(hdr->data), sz / sizeof(map_enemy_t),

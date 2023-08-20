@@ -464,7 +464,8 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     if (enemy_id2 > l->map_enemies->count) {
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!", src->guildcard, enemy_id2, l->map_enemies->count);
-        return -1;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+        //return -1;
     }
 
     /* Save the hit, assuming the enemy isn't already dead. */
@@ -4264,7 +4265,8 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             if (mid > l->map_enemies->count) {
                 ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
                     "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->count);
-                return -1;
+                return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+                //return -1;
             }
 
             /* Make sure this client actually hit the enemy and that the client didn't
@@ -4371,7 +4373,8 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     if (mid > l->map_enemies->count) {
         ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
             "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->count);
-        return -1;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+        //return -1;
     }
 
     /* Make sure this client actually hit the enemy and that the client didn't

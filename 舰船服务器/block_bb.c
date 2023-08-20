@@ -1199,7 +1199,7 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
 
     /* 合理性检查... Is the client in a game lobby? */
     if (!l || l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %u : %d 玩家不在房间中", c->guildcard, c->sec_data.slot);
+        ERR_LOG("GC %u:%d 玩家不在房间中", c->guildcard, c->sec_data.slot);
         return -1;
     }
 
@@ -1214,6 +1214,8 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
        the rest of the lobby, and continue on. */
     pthread_mutex_lock(&l->mutex);
 
+    send_timestamp(c);
+
     /* Handle the end of burst stuff with the lobby */
     if (!(l->flags & LOBBY_FLAG_QUESTING)) {
         l->flags &= ~LOBBY_FLAG_BURSTING;
@@ -1225,6 +1227,11 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
+
+            /* TODO 解析稀有怪物列表 */
+            //if (l->map_enemies)
+            //    rv |= send_rare_enemy_index_list(c, l->map_enemies->rare_enemies);
+            //DBG_LOG("发送稀有怪物列表");
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);
@@ -1233,7 +1240,6 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         rv = send_quest_one(l, c, l->qid, l->qlang);
         c->flags |= CLIENT_FLAG_WAIT_QPING;
         rv |= send_simple(c, PING_TYPE, 0);
-
     }
 
     pthread_mutex_unlock(&l->mutex);
@@ -1460,6 +1466,9 @@ static int bb_process_qload_done(ship_client_t* c) {
 
     /* 检测所有成员是否完成任务载入. */
     for (i = 0; i < l->max_clients; ++i) {
+        if (!l->clients[i])
+            continue;
+
         c2 = l->clients[i];
         if (c2) {
             /* 该客户端未完成载入, 结束循环并执行下一步. */
@@ -1471,6 +1480,9 @@ static int bb_process_qload_done(ship_client_t* c) {
 
     /* 如果我们到了这里, 所有客户端载入完成. 向每一个客户端发送载入完成指令. */
     for (i = 0; i < l->max_clients; ++i) {
+        if (!l->clients[i])
+            continue;
+
         c2 = l->clients[i];
         if (c2 && c2->version >= CLIENT_VERSION_GC) {
             if (send_simple(c2, QUEST_LOAD_DONE_TYPE, 0))

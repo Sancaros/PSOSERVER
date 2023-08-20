@@ -26,7 +26,8 @@
 #include <string.h>
 #include <zlib.h>
 
-#define MAX_PACKET_SIZE 262140
+#define MAX_PACKET_SIZE 65535
+#define DELAY_TIME_MS 5    // 延时时间（毫秒）
 
 
 //Z_NO_COMPRESSION：无压缩，数据不会进行压缩。
@@ -46,5 +47,7 @@ void pack(Packet_t* packet, uint8_t packet_type, const void* packet_data, size_t
 void unpack(Packet_t* packet, void* output_data, size_t output_length);
 
 int is_compressed_data_valid(const char* compressed_data, uLong compressed_length);
+
+void delay(int milliseconds);
 
 #endif // !PSO_PACK_H
