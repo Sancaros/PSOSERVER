@@ -244,6 +244,7 @@ struct ship_client {
     char *infoboard;                    /* Points into the player struct. */
 
     int mode;                           // 通常为0 只有在挑战模式和对战模式才会发生改变
+    uint32_t mode_semi_item_id;         /* 用于记录S武器占位的ID值 */
     uint8_t ch_class;/* 测试用 */
     record_data_t* records;              /* 指向玩家挑战/对战结构体的指针. */
     psocn_mode_char_t* mode_pl;

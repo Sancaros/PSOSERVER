@@ -61,16 +61,17 @@ int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool al
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
-bool add_iitem(ship_client_t* src, iitem_t* item);
-bool add_bitem(ship_client_t* src, bitem_t* item);
+bool add_iitem(ship_client_t* src, const iitem_t* item);
+bool add_bitem(ship_client_t* src, const bitem_t* item);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 
 /* 挑战模式专用 */
 int initialize_cmode_iitem(ship_client_t* dest);
 
-/* 蓝色脉冲银行管理 */
-void player_iitem_init(iitem_t* item, const bitem_t* src);
-void player_bitem_init(bitem_t* item, const iitem_t* src);
+/* 蓝色脉冲物品管理 */
+void player_iitem_init(iitem_t* item, const item_t data);
+void player_bitem_to_iitem(iitem_t* item, const bitem_t* src);
+void player_iitem_to_bitem(bitem_t* item, const iitem_t* src);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
 void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 

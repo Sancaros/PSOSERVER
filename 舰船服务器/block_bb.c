@@ -1862,17 +1862,6 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         return -4;
     }
 
-    if (c->mode && c->mode_pl) {
-        /*pkt->data.character.dress_data.ch_class = c->ch_class;*/
-        DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
-        memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
-        //return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
-        return -3;
-    }
-    else {
-        memcpy(&c->bb_pl->character.disp, &char_data.character.disp, PSOCN_STLENGTH_BB_CHAR);
-    }
-
 #ifdef DEBUG
     if (c->bank_type) {
         c->bank_type = false;
@@ -1893,8 +1882,8 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //    char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
     //}
 
-    //DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-    //display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+    //DBG_LOG("玩家背包数据保存 %d", c->game_data->db_save_done);
+    //display_packet(&char_data.character.inv, PSOCN_STLENGTH_INV);
 
     if (!c->game_data->db_save_done) {
 
@@ -1904,6 +1893,25 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         printf("原数据\n");
         display_packet(c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR);
 #endif // DEBUG
+
+        c->game_data->db_save_done = 1;
+#ifdef DEBUG
+        DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+        display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+#endif // DEBUG
+
+        if (c->mode) {
+            memcpy(&c->mode_pl->bb, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+#ifdef DEBUG
+            DBG_LOG("ch_class %d pkt_size 0x%04X", pkt->data.gc.char_class, c->pkt_size);
+            return shipgate_fw_bb(&ship->sg, pkt, c->cur_lobby->qid, c);
+#else
+            return -3;
+#endif // DEBUG
+        }
+        else {
+            memcpy(&c->bb_pl->character, &char_data.character, PSOCN_STLENGTH_BB_CHAR2);
+        }
 
         /* BB has this in two places for now... */
         /////////////////////////////////////////////////////////////////////////////////////
@@ -1929,12 +1937,11 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         memcpy(c->bb_opts->guild_name, char_data.guild_data.guild_name, sizeof(c->bb_opts->guild_name));
         memcpy(&c->bb_opts->key_cfg, &char_data.key_cfg, PSOCN_STLENGTH_BB_KEY_CONFIG);
 
+    }
 
-        c->game_data->db_save_done = 1;
-#ifdef DEBUG
-        DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
-        display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
-#endif // DEBUG
+    if (c->game_data->db_save_done) {
+
+
     }
 
     return 0;
@@ -2830,19 +2837,25 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
     for (int i = 0; i < l->max_clients; ++i) {
         if (l->clients[i]) {
             ship_client_t* dest = l->clients[i];
+            dest->mode = 1;
             /* 获取真实角色的职业 TODO 可以开发随机角色挑战模式 */
             uint8_t char_class = dest->bb_pl->character.dress_data.ch_class;
 
+            psocn_bb_char_t* character = get_client_char_bb(dest);
+
+            if (dest->mode == 0) {
+                ERR_LOG("目标GC %u 模式 %d 并非是挑战模式,跳过设置", dest->guildcard, dest->mode);
+                continue;
+            }
+
             /* 初始化 模式角色数据 并重建角色数据 */
-            memcpy(&dest->mode_pl->bb, &default_mode_char.cdata[char_class][l->qid - 65522], PSOCN_STLENGTH_BB_CHAR2);
+            memcpy(character, &default_mode_char.cdata[char_class][l->qid - 65522], PSOCN_STLENGTH_BB_CHAR2);
 
-            memcpy(&dest->mode_pl->bb.dress_data, &dest->bb_pl->character.dress_data, sizeof(psocn_dress_data_t));
-            memcpy(&dest->mode_pl->bb.name, &dest->bb_pl->character.name, sizeof(psocn_bb_char_name_t));
-            dest->mode_pl->bb.padding = 0;
-            dest->mode_pl->bb.unknown_a3 = dest->bb_pl->character.unknown_a3;
-            dest->mode_pl->bb.play_time = dest->bb_pl->character.play_time;
-
-            DBG_LOG("GC %u 成功载入 职业 %s ", dest->guildcard, pso_class[default_mode_char.cdata[char_class][l->qid - 65522].dress_data.ch_class].cn_name);
+            memcpy(&character->dress_data, &dest->bb_pl->character.dress_data, sizeof(psocn_dress_data_t));
+            memcpy(&character->name, &dest->bb_pl->character.name, sizeof(psocn_bb_char_name_t));
+            character->padding = 0;
+            character->unknown_a3 = dest->bb_pl->character.unknown_a3;
+            character->play_time = dest->bb_pl->character.play_time;
 
             /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
             //if (initialize_cmode_iitem(dest)) {
@@ -2851,25 +2864,30 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             //}
 
             /* 初始化 背包物品ID */
-            //regenerate_lobby_item_id(l, dest);
-            //cleanup_bb_inv(dest->client_id, &dest->mode_pl->bb.inv);
+            regenerate_lobby_item_id(l, dest);
+            //cleanup_bb_inv(dest->client_id, &character->inv);
+#ifdef DEBUG
 
-            for (size_t j = 0; j < dest->mode_pl->bb.inv.item_count; j++) {
+            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", dest->guildcard, dest->mode);
 
-                print_item_data(&dest->mode_pl->bb.inv.iitems[j].data, dest->version);
+            DBG_LOG("GC %u 成功载入 职业 %s ", dest->guildcard, pso_class[default_mode_char.cdata[char_class][l->qid - 65522].dress_data.ch_class].cn_name);
+
+            for (size_t j = 0; j < character->inv.item_count; j++) {
+                print_item_data(&character->inv.iitems[j].data, dest->version);
             }
 
-            dest->mode = 1;
-            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", dest->guildcard, dest->mode);
+#endif // DEBUG
 
         }
     }
 
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
+
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_02DF(ship_client_t* c, bb_challenge_02df_pkt* pkt) {
+static int process_bb_challenge_02DF(ship_client_t* src, bb_challenge_02df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2879,13 +2897,13 @@ static int process_bb_challenge_02DF(ship_client_t* c, bb_challenge_02df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_03DF(ship_client_t* c, bb_challenge_03df_pkt* pkt) {
+static int process_bb_challenge_03DF(ship_client_t* src, bb_challenge_03df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2895,13 +2913,13 @@ static int process_bb_challenge_03DF(ship_client_t* c, bb_challenge_03df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_04DF(ship_client_t* c, bb_challenge_04df_pkt* pkt) {
+static int process_bb_challenge_04DF(ship_client_t* src, bb_challenge_04df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2911,13 +2929,13 @@ static int process_bb_challenge_04DF(ship_client_t* c, bb_challenge_04df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_05DF(ship_client_t* c, bb_challenge_05df_pkt* pkt) {
+static int process_bb_challenge_05DF(ship_client_t* src, bb_challenge_05df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2927,13 +2945,13 @@ static int process_bb_challenge_05DF(ship_client_t* c, bb_challenge_05df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_06DF(ship_client_t* c, bb_challenge_06df_pkt* pkt) {
+static int process_bb_challenge_06DF(ship_client_t* src, bb_challenge_06df_pkt* pkt) {
     uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
@@ -2943,14 +2961,14 @@ static int process_bb_challenge_06DF(ship_client_t* c, bb_challenge_06df_pkt* pk
         return -1;
     }
 
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
 }
 
-static int process_bb_challenge_07DF(ship_client_t* c, bb_challenge_07df_pkt* pkt) {
-    //uint16_t type = LE16(pkt->hdr.pkt_type);
+static int process_bb_challenge_07DF(ship_client_t* src, bb_challenge_07df_pkt* pkt) {
+    uint16_t type = LE16(pkt->hdr.pkt_type);
     uint16_t len = LE16(pkt->hdr.pkt_len);
 
     //if (len != LE16(0x0014)) {
@@ -2962,7 +2980,7 @@ static int process_bb_challenge_07DF(ship_client_t* c, bb_challenge_07df_pkt* pk
 //( 00000000 )   24 00 DF 07 00 00 00 00   00 00 00 00 01 00 00 00  $.?............
 //( 00000010 )   01 02 2E 00 00 00 00 00   00 00 00 00 0D 00 01 00  ................
 //( 00000020 )   00 00 00 00                                     ....
-    DBG_LOG("目标GC %u", c->guildcard);
+    DBG_LOG("目标GC %u 挑战模式指令 0x%04X", src->guildcard, type);
 
     display_packet(pkt, len);
     return 0;
@@ -2978,8 +2996,6 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
     DBG_LOG("挑战指令 0x%04X %s %u字节", type, c_cmd_name(type, 0), len);
 
 #endif // DEBUG
-
-    DBG_LOG("挑战指令 0x%04X %s %u字节", type, c_cmd_name(type, 0), len);
 
     switch (type) {
     case BB_CHALLENGE_01DF:

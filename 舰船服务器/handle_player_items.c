@@ -60,6 +60,11 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
         /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
 
+        if (c->mode) {
+            c->mode_semi_item_id = id;
+            id++;
+        }
+
         for (i = 0; i < inv->item_count; ++i, ++id) {
             inv->iitems[i].data.item_id = LE32(id);
         }
@@ -68,8 +73,13 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
         l->item_player_id[c->client_id] = id;
     }
     else {
-        /* Fix up the inventory for their new lobby */
+        /* 在新房间中修正玩家背包ID */
         id = 0x00010000 | (c->client_id << 21) | (l->item_player_id[c->client_id]);
+
+        if (c->mode) {
+            c->mode_semi_item_id = id;
+            id++;
+        }
 
         for (i = 0; i < c->item_count; ++i, ++id) {
             c->iitems[i].data.item_id = LE32(id);
@@ -540,7 +550,7 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
     return ret;
 }
 
-bool add_iitem(ship_client_t* src, iitem_t* iitem) {
+bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
     uint32_t pid = primary_identifier(&iitem->data);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -583,7 +593,7 @@ bool add_iitem(ship_client_t* src, iitem_t* iitem) {
     return true;
 }
 
-bool add_bitem(ship_client_t* src, bitem_t* item) {
+bool add_bitem(ship_client_t* src, const bitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
     psocn_bank_t* bank = get_client_bank_bb(src);
 
@@ -625,7 +635,7 @@ bool add_bitem(ship_client_t* src, bitem_t* item) {
     return true;
 }
 
-bool is_wrapped(item_t* this) {
+bool is_wrapped(const item_t* this) {
     switch (this->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
@@ -821,7 +831,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 ERR_LOG("玩家没有装备玛古,玛古细胞 0x%08X", iitem->data.datal[0]);
                 break;
             }
-            mag = &character->inv.iitems[find_equipped_mag(&character->inv)];
+            mag = &character->inv.iitems[mag_index];
 
             switch (iitem->data.datab[2]) {
             case 0x00:
@@ -1475,7 +1485,15 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     return 0;
 }
 
-void player_iitem_init(iitem_t* item, const bitem_t* src) {
+void player_iitem_init(iitem_t* item, const item_t data) {
+    item->present = 1;
+    item->extension_data1 = 0;
+    item->extension_data2 = 0;
+    item->flags = 0;
+    item->data = data;
+}
+
+void player_bitem_to_iitem(iitem_t* item, const bitem_t* src) {
     item->present = 1;
     item->extension_data1 = 0;
     item->extension_data2 = 0;
@@ -1483,7 +1501,7 @@ void player_iitem_init(iitem_t* item, const bitem_t* src) {
     item->data = src->data;
 }
 
-void player_bitem_init(bitem_t* item, const iitem_t* src) {
+void player_iitem_to_bitem(bitem_t* item, const iitem_t* src) {
     item->data = src->data;
     item->amount = (uint16_t)stack_size(&item->data);
     item->show_flags = 1;

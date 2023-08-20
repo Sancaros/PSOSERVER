@@ -1862,7 +1862,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
-            player_bitem_init(&bitem, &iitem);
+            player_iitem_to_bitem(&bitem, &iitem);
 
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
@@ -1923,7 +1923,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
-            player_iitem_init(&iitem, &bitem);
+            player_bitem_to_iitem(&iitem, &bitem);
             iitem.data.item_id = generate_item_id(l, src->client_id);
 
             /* 新增至玩家背包中... */

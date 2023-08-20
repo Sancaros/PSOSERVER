@@ -2426,7 +2426,8 @@ static int sub60_7A_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年08月14日 21:47 : 15 : 082] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
     //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
 
-    DBG_LOG("GC %" PRIu32 ":%d 任务ID %d 区域 %d", src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2457,7 +2458,8 @@ static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
 
     //GC 42004146:2 任务ID 0 区域 0
 
-    DBG_LOG("GC %" PRIu32 ":%d 任务ID %d 区域 %d", src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2816,6 +2818,33 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x84_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d", 
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_HitDestructibleObject_6x86_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3150,6 +3179,10 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000000 )   1C 00 60 00 00 00 00 00   91 05 7A 40 00 00 00 00  ..`.....?z@....
     //( 00000010 )   7A 00 00 00 00 00 01 00   00 00 00 02             z...........
 
+
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
         //display_packet(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3338,6 +3371,10 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年07月06日 13:16:42:718] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
     //[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
     //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
+
+
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3955,6 +3992,10 @@ static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
     //    return -1;
     //}
 
+
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -4037,10 +4078,8 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         return -1;
     }
-
-    if (iitem.data.item_id == EMPTY_STRING) {
-        iitem.data.item_id = generate_item_id(l, src->client_id);
-    }
+    
+    iitem.data.item_id = generate_item_id(l, 0xFF);
 
     if (!add_iitem(src, &iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
@@ -4791,6 +4830,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 80 - 8F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
     { SUBCMD60_PLACE_TRAP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
+    { SUBCMD60_UNKNOW_84                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_84_bb },
     { SUBCMD60_HIT_DESTRUCTIBLE_OBJECT    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_86_bb },
     { SUBCMD60_ARROW_CHANGE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
     { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
