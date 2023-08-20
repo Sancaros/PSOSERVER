@@ -1492,7 +1492,7 @@ psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
 #ifdef DEBUG
 
     if (src->bank_type) {
-        DBG_LOG("GC %u 的银行模式为 %d", src->bank_type);
+        DBG_LOG("GC %u 的银行模式为 %d", src->guildcard, src->bank_type);
     }
 
 #endif // DEBUG
@@ -1500,31 +1500,39 @@ psocn_bank_t* get_client_bank_bb(ship_client_t* src) {
     return src->bank_type == false ? &src->bb_pl->bank : src->common_bank;
 }
 
+void print_quest_info(ship_client_t* src) {
+    if (src->mode)
+        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+}
+
 inventory_t* get_client_inv_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+        DBG_LOG("GC %u BB背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
     }
     return src->mode == 0 ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
 }
 
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+        DBG_LOG("GC %u BB角色数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
     }
+
     return src->mode == 0 ? &src->bb_pl->character : &src->mode_pl->bb;
 }
 
 inventory_t* get_client_inv_nobb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+        DBG_LOG("GC %u NOBB背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
     }
+
     return src->mode == 0 ? &src->pl->v1.character.inv : &src->mode_pl->nobb.inv;
 }
 
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src) {
     if (src->mode) {
-        DBG_LOG("GC %u 的游戏模式为 %d 任务编号 %d", src->mode, src->cur_lobby->qid);
+        DBG_LOG("GC %u NOBB角色数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
     }
+
     return src->mode == 0 ? &src->pl->v1.character : &src->mode_pl->nobb;
 }
 

@@ -533,7 +533,7 @@ int pmt_lookup_unit_v2(uint32_t code, pmt_unit_v2_t* rv);
 
 uint8_t pmt_lookup_stars_v2(uint32_t code);
 int pmt_random_unit_v2(uint8_t max, uint32_t item[4],
-    struct mt19937_state* rng, lobby_t* l);
+                       struct mt19937_state* rng, lobby_t* l);
 
 int pmt_lookup_weapon_gc(uint32_t code, pmt_weapon_gc_t* rv);
 int pmt_lookup_guard_gc(uint32_t code, pmt_guard_gc_t* rv);
@@ -541,7 +541,7 @@ int pmt_lookup_unit_gc(uint32_t code, pmt_unit_gc_t* rv);
 
 uint8_t pmt_lookup_stars_gc(uint32_t code);
 int pmt_random_unit_gc(uint8_t max, uint32_t item[4],
-    struct mt19937_state* rng, lobby_t* l);
+                       struct mt19937_state* rng, lobby_t* l);
 
 int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t* rv);
 int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t* rv);
@@ -554,7 +554,7 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
 float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2);
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
-    struct mt19937_state* rng, lobby_t* l);
+                       struct mt19937_state* rng, lobby_t* l);
 uint8_t pmt_lookup_stars_bb(uint32_t code);
 
 pmt_item_base_t* get_item_definition_bb(const item_t* item);

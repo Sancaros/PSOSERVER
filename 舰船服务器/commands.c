@@ -1746,14 +1746,14 @@ static void dumpbank_internal(ship_client_t* c) {
     int v = c->version;
 
     if (v == CLIENT_VERSION_BB) {
-        psocn_bb_char_t* player = &c->bb_pl->character;
+        psocn_bb_char_t* character = get_client_char_bb(c);
         psocn_bank_t* bank = get_client_bank_bb(c);
 
         //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
         //    BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
         ITEM_LOG("玩家 %s (%d:%d) 银行数据转储", get_player_name(c->pl, c->version, false), c->guildcard, c->sec_data.slot);
-        ITEM_LOG("职业: %s 银行: %s 模式: %s", pso_class[player->dress_data.ch_class].cn_name, c->bank_type ? "公共" : "角色", c->mode ? "模式" : "普通");
+        ITEM_LOG("职业: %s 银行: %s 模式: %s", pso_class[character->dress_data.ch_class].cn_name, c->bank_type ? "公共" : "角色", c->mode ? "模式" : "普通");
         ITEM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
 
         ITEM_LOG("------------------------------------------------------------");
@@ -2934,7 +2934,7 @@ static int handle_exp(ship_client_t *c, const char *params) {
 
     /* Make sure the requester is on Blue Burst */
     if(c->version != CLIENT_VERSION_BB) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Only valid on Blue Burst."));
+        return send_txt(c, "%s", __(c, "\tE\tC7该指令只适用于 Blue Burst."));
     }
 
     /* Figure out the amount requested */
@@ -2943,7 +2943,7 @@ static int handle_exp(ship_client_t *c, const char *params) {
 
     if(errno != 0) {
         /* Send a message saying invalid amount */
-        return send_txt(c, "%s", __(c, "\tE\tC7Invalid amount."));
+        return send_txt(c, "%s", __(c, "\tE\tC7无效经验数值."));
     }
 
     return client_give_exp(c, amt);
@@ -2978,7 +2978,8 @@ static int handle_level(ship_client_t *c, const char *params) {
             amt -= 1;
         }
         else {
-            amt = LE32(c->bb_pl->character.disp.level) + 1;
+            psocn_bb_char_t* character = get_client_char_bb(c);
+            amt = LE32(character->disp.level) + 1;
         }
 
         /* If the level is too high, let them know. */
@@ -3008,7 +3009,8 @@ static int handle_level(ship_client_t *c, const char *params) {
             amt -= 1;
         }
         else {
-            amt = LE32(c->pl->v1.character.disp.level) + 1;
+            psocn_v1v2v3pc_char_t* character = get_client_char_nobb(c);
+            amt = LE32(character->disp.level) + 1;
         }
 
         /* If the level is too high, let them know. */

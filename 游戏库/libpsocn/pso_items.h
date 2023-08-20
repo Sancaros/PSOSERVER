@@ -126,20 +126,20 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
 bool is_common_consumable(uint32_t primary_identifier);
 
 /* 获取物品名称 */
-const char* item_get_name(item_t* item, int version);
+const char* item_get_name(const item_t* item, int version);
 
 int16_t get_armor_or_shield_defense_bonus(const item_t* item);
 int16_t get_common_armor_evasion_bonus(const item_t* item);
 int16_t get_unit_bonus(const item_t* item);
 
 /* 打印物品数据 */
-void print_item_data(item_t* item, int version);
+void print_item_data(const item_t* item, int version);
 
 /* 打印背包物品数据 */
-void print_iitem_data(iitem_t* iitem, int item_index, int version);
+void print_iitem_data(const iitem_t* iitem, int item_index, int version);
 
 /* 打印银行物品数据 */
-void print_bitem_data(bitem_t* iitem, int item_index, int version);
+void print_bitem_data(const bitem_t* iitem, int item_index, int version);
 
 void print_biitem_data(void* data, int item_index, int version, int inv, int err);
 

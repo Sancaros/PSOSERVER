@@ -411,35 +411,49 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
         switch (item_id) {
         case 0:
             l->version = CLIENT_VERSION_BB;
+#ifdef DEBUG
             DBG_LOG("PSOBB 独享");
+#endif // DEBUG
             break;
 
         case 1:
+#ifdef DEBUG
             DBG_LOG("允许所有版本");
+#endif // DEBUG
             break;
 
         case 2:
             l->v2 = 0;
             l->version = CLIENT_VERSION_DCV1;
+#ifdef DEBUG
             DBG_LOG("允许PSO V1");
+#endif // DEBUG
             break;
 
         case 3:
+#ifdef DEBUG
             DBG_LOG("允许PSO V2");
+#endif // DEBUG
             break;
 
         case 4:
+#ifdef DEBUG
             DBG_LOG("允许PSO DC");
+#endif // DEBUG
             break;
 
         case 5:
             l->flags |= LOBBY_FLAG_GC_ALLOWED;
+#ifdef DEBUG
             DBG_LOG("允许PSO GC");
+#endif // DEBUG
             break;
 
         default:
             l->lobby_create = 0;
+#ifdef DEBUG
             DBG_LOG("返回上一级");
+#endif // DEBUG
             break;
         }
 
@@ -469,23 +483,23 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
     if (l) {
         switch (item_id) {
         case 0:
-            DBG_LOG("默认掉落模式");
+            //DBG_LOG("默认掉落模式");
             break;
 
         case 1:
-            DBG_LOG("PSO2掉落模式");
+            //DBG_LOG("PSO2掉落模式");
             l->drop_pso2 = true;
             break;
 
         case 2:
             //l->v2 = 0;
             //l->version = CLIENT_VERSION_DCV1;
-            DBG_LOG("随机掉落模式");
+            //DBG_LOG("随机掉落模式");
             l->drop_psocn = true;
             break;
 
         default:
-            DBG_LOG("返回上一级");
+            //DBG_LOG("返回上一级");
             return send_bb_game_type_sel(c);
         }
 
@@ -499,6 +513,8 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
         }
+
+        DBG_LOG("GC %u:%d %s", c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? "PSO2掉落模式" : l->drop_psocn == true ? "随机掉落模式" : "默认掉落模式");
         
         /* All's well in the world if we get here. */
         return 0;
@@ -1069,7 +1085,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     /* 复制玩家数据至统一结构, 并设置指针. */
     memcpy(c->pl, &pkt->data, sizeof(bb_player_t));
     /* 初始化 模式角色数据 */
-    memcpy(&c->mode_pl->bb, &default_mode_char.cdata[c->pl->bb.character.dress_data.ch_class], PSOCN_STLENGTH_BB_CHAR2);
+    memset(&c->mode_pl->bb, 0, PSOCN_STLENGTH_BB_CHAR2);
     c->infoboard = (char*)c->pl->bb.infoboard;
     if (!&c->pl->bb.records) {
         c->records->bb = c->pl->bb.records;
@@ -1090,8 +1106,6 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     DBG_LOG("c->ch_class %d", c->ch_class);
 
 #endif // DEBUG
-
-    DBG_LOG("c->ch_class %d", c->ch_class);
 
     /* 重新对库存数据进行编号, 以便后期进行数据交换 */
     for (i = 0; i < c->item_count; ++i) {
@@ -1879,6 +1893,9 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
     //    char_data.character.inv.iitems[i].data.item_id = EMPTY_STRING;
     //}
 
+    DBG_LOG("玩家数据保存 %d", c->game_data->db_save_done);
+    display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
+
     if (!c->game_data->db_save_done) {
 
 #ifdef DEBUG
@@ -1919,6 +1936,7 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
         display_packet(&char_data, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
     }
+
     return 0;
 }
 
@@ -2798,28 +2816,33 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
         return -1;
     }
 
-    /* 初始化挑战模式的物品ID */
-    if (src->version == CLIENT_VERSION_BB) {
-        for (size_t x = 0; x < 4; x++) {
-            l->item_player_id[x] = (0x00200000 * x) + 0x00010000;
-        }
-        l->item_lobby_id = 0x00810000;
-    }
-    else
-        l->item_lobby_id = 0xF0000000;
+    ///* 初始化挑战模式的物品ID */
+    //if (src->version == CLIENT_VERSION_BB) {
+    //    for (size_t x = 0; x < 4; x++) {
+    //        l->item_player_id[x] = (0x00200000 * x) + 0x00010000;
+    //    }
+    //    l->item_lobby_id = 0x00810000;
+    //}
+    //else
+    //    l->item_lobby_id = 0xF0000000;
 
     /* Send the packet to every connected client. */
     for (int i = 0; i < l->max_clients; ++i) {
         if (l->clients[i]) {
             ship_client_t* dest = l->clients[i];
-            dest->mode = src->mode;
-            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", dest->guildcard, dest->mode);
-
             /* 获取真实角色的职业 TODO 可以开发随机角色挑战模式 */
             uint8_t char_class = dest->bb_pl->character.dress_data.ch_class;
 
-            /* 初始化 模式角色数据 */
+            /* 初始化 模式角色数据 并重建角色数据 */
             memcpy(&dest->mode_pl->bb, &default_mode_char.cdata[char_class][l->qid - 65522], PSOCN_STLENGTH_BB_CHAR2);
+
+            memcpy(&dest->mode_pl->bb.dress_data, &dest->bb_pl->character.dress_data, sizeof(psocn_dress_data_t));
+            memcpy(&dest->mode_pl->bb.name, &dest->bb_pl->character.name, sizeof(psocn_bb_char_name_t));
+            dest->mode_pl->bb.padding = 0;
+            dest->mode_pl->bb.unknown_a3 = dest->bb_pl->character.unknown_a3;
+            dest->mode_pl->bb.play_time = dest->bb_pl->character.play_time;
+
+            DBG_LOG("GC %u 成功载入 职业 %s ", dest->guildcard, pso_class[default_mode_char.cdata[char_class][l->qid - 65522].dress_data.ch_class].cn_name);
 
             /* 初始化 玩家背包 对应不同的挑战等级 EP1 1-9 EP2 1-5 */
             //if (initialize_cmode_iitem(dest)) {
@@ -2828,27 +2851,16 @@ static int process_bb_challenge_01DF(ship_client_t* src, bb_challenge_01df_pkt* 
             //}
 
             /* 初始化 背包物品ID */
-            regenerate_lobby_item_id(l, dest);
+            //regenerate_lobby_item_id(l, dest);
+            //cleanup_bb_inv(dest->client_id, &dest->mode_pl->bb.inv);
 
-            /* 给角色新增一个替身娃娃 */
-            iitem_t iitem = { 0 };
+            for (size_t j = 0; j < dest->mode_pl->bb.inv.item_count; j++) {
 
-            iitem.present = LE16(0x0001);
-            iitem.extension_data1 = 0;
-            iitem.extension_data2 = 0;
-            iitem.flags = LE32(0x00000000);
-
-            iitem.data.datab[0] = 0x03;
-            iitem.data.datab[1] = 0x09;
-            iitem.data.datab[4] = 0x01;
-
-            iitem.data.item_id = generate_item_id(l, dest->client_id);
-
-            if (!add_iitem(dest, &iitem)) {
-                ERR_LOG("GC %" PRIu32 " 新增替身娃娃物品失败!",
-                    dest->guildcard);
-                return -1;
+                print_item_data(&dest->mode_pl->bb.inv.iitems[j].data, dest->version);
             }
+
+            dest->mode = 1;
+            DBG_LOG("挑战模式开始 目标GC %u 模式 %d", dest->guildcard, dest->mode);
 
         }
     }

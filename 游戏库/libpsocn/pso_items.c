@@ -223,7 +223,7 @@ const char* bbitem_get_name_by_code(bbitem_code_t code, int version) {
 }
 
 /* 获取物品名称 */
-const char* item_get_name(item_t* item, int version) {
+const char* item_get_name(const item_t* item, int version) {
 	uint32_t code = item->datab[0] | (item->datab[1] << 8) |
 		(item->datab[2] << 16);
 
@@ -281,7 +281,7 @@ int16_t get_unit_bonus(const item_t* item) {
 }
 
 /* 打印物品数据 */
-void print_item_data(item_t* item, int version) {
+void print_item_data(const item_t* item, int version) {
 	ITEM_LOG("物品:(ID %d / %08X) %s",
 		item->item_id, item->item_id, item_get_name(item, version));
 	ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
@@ -292,7 +292,7 @@ void print_item_data(item_t* item, int version) {
 }
 
 /* 打印背包物品数据 */
-void print_iitem_data(iitem_t* iitem, int item_index, int version) {
+void print_iitem_data(const iitem_t* iitem, int item_index, int version) {
 	ITEM_LOG("背包物品:(ID %d / %08X) %s",
 		iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
 	ITEM_LOG(""
@@ -316,7 +316,7 @@ void print_iitem_data(iitem_t* iitem, int item_index, int version) {
 }
 
 /* 打印银行物品数据 */
-void print_bitem_data(bitem_t* bitem, int item_index, int version) {
+void print_bitem_data(const bitem_t* bitem, int item_index, int version) {
 	ITEM_LOG("银行物品:(ID %d / %08X) %s",
 		bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
 	ITEM_LOG(""

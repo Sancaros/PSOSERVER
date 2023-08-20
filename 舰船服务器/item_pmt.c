@@ -2951,7 +2951,14 @@ uint8_t get_item_base_stars(const item_t* item) {
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
-        uint32_t id = get_item_definition_bb(item)->index;
+        pmt_item_base_t* base = get_item_definition_bb(item);
+        if (!base) {
+            DBG_LOG("物品基础信息错误");
+            print_item_data(item, 5);
+            return 0;
+        }
+
+        uint32_t id = base->index;
         star = get_item_stars(id);
         break;
 

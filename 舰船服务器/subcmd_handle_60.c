@@ -2455,6 +2455,8 @@ static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年08月14日 21:47 : 23 : 503] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
     //(00000000)   0C 00 60 00 00 00 00 00   7B 01 00 00             ..`.....{...
 
+    //GC 42004146:2 任务ID 0 区域 0
+
     DBG_LOG("GC %" PRIu32 ":%d 任务ID %d 区域 %d", src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
