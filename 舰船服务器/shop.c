@@ -219,9 +219,7 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
     static const uint8_t max_quantity[4] =  { 1,  1,  2,  2 };
-    static const uint8_t base_tech_lvl[4] = { 1,  8, 15, 23 };
     static const uint8_t max_tech_lvl[4] =  { 8, 15, 23, 30 };
-    static const uint8_t base_anti_lvl[4] = { 1,  2,  4,  5 };
     static const uint8_t max_anti_lvl[4] =  { 2,  4,  6,  7 };
     item_t item = { 0 };
     uint32_t tmp_value = 0;
@@ -341,43 +339,16 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
         switch (item.datab[1]) {
         case ITEM_SUBTYPE_DISK:
             item.datab[4] = mt19937_genrand_int32(随机因子) % 19;
-
-            uint8_t ge_tech_level = mt19937_genrand_int32(随机因子) % max_tech_lvl[难度];
-            uint8_t ge_anti_level = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
-
-            uint32_t random = mt19937_genrand_int32(随机因子) % 10;/* 0 - 9 */
-
             switch (item.datab[4]) {
             case 14:
             case 17:
                 item.datab[2] = 0; // reverser & ryuker always level 1 这两个法术永远是1级
                 break;
-
             case 16:
-
-                if (random <= 1) {
-                    // 生成一个介于基础值和最大技术等级之间的随机数
-                    ge_anti_level = base_anti_lvl[难度] + mt19937_genrand_int32(随机因子) % (max_anti_lvl[难度] - base_anti_lvl[难度]);
-                }
-                else {
-                    // 生成一个介于基础值和全局最大值之间的随机数
-                    ge_anti_level = mt19937_genrand_int32(随机因子) % (max_anti_lvl[难度] - base_anti_lvl[0] - 1);
-                }
-
-                item.datab[2] = ge_anti_level;
+                item.datab[2] = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
                 break;
-
             default:
-                if (random <= 1) {
-                    // 生成一个介于基础值和最大技术等级之间的随机数
-                    ge_tech_level = base_tech_lvl[难度] + mt19937_genrand_int32(随机因子) % (max_tech_lvl[难度] - base_tech_lvl[难度]);
-                }
-                else {
-                    // 生成一个介于基础值和全局最大值之间的随机数
-                    ge_tech_level = mt19937_genrand_int32(随机因子) % (max_tech_lvl[难度] - base_tech_lvl[0] - 1);
-                }
-
-                item.datab[2] = ge_tech_level;
+                item.datab[2] = mt19937_genrand_int32(随机因子) % max_tech_lvl[难度];
                 break;
             }
             break;

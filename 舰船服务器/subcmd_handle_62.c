@@ -1483,16 +1483,15 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         if (create) {
-            item_data.item_id = generate_item_id(l, src->client_id);
-
             size_t shop_price = price_for_item(&item_data);
             if (shop_price <= 0) {
                 ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price %d",
                     src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), item_data.datal[0], shop_price);
-                return -2;
+                continue;
             }
             item_data.data2l = shop_price;
 
+            item_data.item_id = generate_item_id(l, src->client_id);
 #ifdef DEBUG
 
             print_item_data(&item_data, src->version);

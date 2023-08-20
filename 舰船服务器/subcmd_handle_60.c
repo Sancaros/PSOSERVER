@@ -4041,7 +4041,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 
     uint32_t sell_price = (orignal_price >> 3) * sell_amount;
 
-    character->disp.meseta = MIN(character->disp.meseta + sell_price, 999999);
+    add_character_meseta(character, sell_price);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
