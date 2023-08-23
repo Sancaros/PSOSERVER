@@ -566,7 +566,8 @@ int pso_prs_decompress_file(const char* fn, uint8_t** dst) {
 
     /* Resize the output (if realloc fails to resize it, then just use the
        unshortened buffer). */
-    if (!(*dst = realloc(cxt.dst, rv)))
+    *dst = realloc(cxt.dst, rv);
+    if (!*dst)
         *dst = cxt.dst;
 
     return rv;

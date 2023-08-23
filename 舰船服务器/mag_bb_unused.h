@@ -310,13 +310,13 @@ magfeedresult_t get_mag_feed_result(size_t table_index, size_t item_index) {
 	if (table_index >= 8) {
 		ERR_LOG("invalid mag feed table index");
 		printf("按任意键停止程序...\n");
-		getchar();
+		(void)getchar();
 		exit(1);
 	}
 	if (item_index >= 11) {
 		ERR_LOG("invalid mag feed item index");
 		printf("按任意键停止程序...\n");
-		getchar();
+		(void)getchar();
 		exit(1);
 	}
 
@@ -1078,7 +1078,7 @@ int mag_bb_feed(ship_client_t* src, uint32_t mag_item_id, uint32_t fed_item_id) 
 			case ITEM_SUBTYPE_STAR_ATOMIZER:
 				mt_index = 5 + feed_item->datab[1];
 				break;
-			case ITEM_SUBTYPE_ANTI:
+			case ITEM_SUBTYPE_ANTI_TOOL:
 				mt_index = 6 + feed_item->datab[2];
 				break;
 			}

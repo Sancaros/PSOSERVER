@@ -867,7 +867,7 @@ static void initialization() {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if (init_wsa()) {
         ERR_EXIT("WSAStartup ´íÎó...");
-        getchar();
+        (void)getchar();
     }
 
     HINSTANCE hinst = GetModuleHandle(NULL);

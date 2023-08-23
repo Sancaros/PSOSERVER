@@ -57,6 +57,40 @@ char abbreviation_for_difficulty(uint8_t difficulty) {
     return abbreviation;
 }
 
+int quest_version(ship_client_t* c) {
+    switch (c->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+        if (c->flags & CLIENT_FLAG_IS_NTE) {
+            return DC_NTE;
+        }
+        else if (c->version == CLIENT_VERSION_DCV1) {
+            return DC_V1;
+        }
+        else {
+            return DC_V2;
+        }
+    case CLIENT_VERSION_PC:
+        return PC_V2;
+    case CLIENT_VERSION_GC:
+        //if (this->flags & Flag::IS_GC_TRIAL_EDITION) {
+        //    return GC_NTE;
+        //}
+        //else {
+            return GC_V3;
+            //}
+    case CLIENT_VERSION_EP3:
+        return GC_EP3;
+    case CLIENT_VERSION_XBOX:
+        return XB_V3;
+    case CLIENT_VERSION_BB:
+        return BB_V4;
+    default:
+        ERR_LOG("client\'s game version does not have a quest version");
+        return -1;
+    }
+}
+
 uint32_t quest_search_enemy_list(uint32_t id, qenemy_t *list, int len, int sd) {
     int i;
     uint32_t mask = sd ? PSOCN_QUEST_ENDROP_SDROPS :
@@ -429,7 +463,7 @@ static int copy_pc_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
 static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
                            uint32_t dsz) {
     const bb_quest_chunk_pkt *chunk;
-    uint32_t ptr = 176, optr = 0;
+    uint32_t ptr = 0xB0, optr = 0;
     char fn[32];
     char *cptr;
     uint32_t clen;
@@ -479,49 +513,20 @@ static int copy_bb_qst_dat(const uint8_t *buf, uint8_t *rbuf, off_t sz,
 }
 
 static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
-    FILE *fp;
-    off_t sz;
-    uint8_t *buf, *buf2, *rv;
+    uint8_t *buf2, *rv;
     uint32_t dsz;
-
-    /* Read the file in. */
-    if(!(fp = fopen(fn, "rb"))) {
-        QERR_LOG("无法打开任务文件 \"%s\": %s", fn,
-              strerror(errno));
-        return NULL;
-    }
-
-    _fseeki64(fp, 0, SEEK_END);
-    sz = (off_t)_ftelli64(fp);
-    _fseeki64(fp, 0, SEEK_SET);
+    StringReader* r = StringReader_file(fn);
 
     /* Make sure the file's size is sane. */
-    if(sz < 120) {
-        QERR_LOG("任务文件 \"%s\" 大小错误 %d < 120", fn, sz);
-        fclose(fp);
+    if(r->length < 120) {
+        QERR_LOG("任务文件 \"%s\" 大小错误 %d < 120", fn, r->length);
         return NULL;
     }
-
-    if(!(buf = (uint8_t *)malloc(sz))) {
-        QERR_LOG("无法分配内存去读取 qst: %s",
-              strerror(errno));
-        fclose(fp);
-        return NULL;
-    }
-
-    if(fread(buf, 1, sz, fp) != sz) {
-        QERR_LOG("无法读取 qst: %s", strerror(errno));
-        free_safe(buf);
-        fclose(fp);
-        return NULL;
-    }
-
-    fclose(fp);
 
     /* Figure out how big the .dat portion is. */
-    if(!(dsz = qst_dat_size(buf, ver))) {
+    if(!(dsz = qst_dat_size(r->data, ver))) {
         QERR_LOG("无法从qst文件中获取dat大小 \"%s\"", fn);
-        free_safe(buf);
+        StringReader_destroy(r);
         return NULL;
     }
 
@@ -529,7 +534,7 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
     if(!(buf2 = (uint8_t *)malloc(dsz))) {
         QERR_LOG("无法分配内存去解码 qst: %s",
               strerror(errno));
-        free_safe(buf);
+        StringReader_destroy(r);
         return NULL;
     }
 
@@ -540,30 +545,30 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
         case CLIENT_VERSION_DCV1:
         case CLIENT_VERSION_DCV2:
         case CLIENT_VERSION_GC:
-            if(copy_dc_qst_dat(buf, buf2, sz, dsz)) {
+            if(copy_dc_qst_dat(r->data, buf2, r->length, dsz)) {
                 QERR_LOG("解码 qst 文件 \"%s\" 错误, 详情看上文..", fn);
                 free_safe(buf2);
-                free_safe(buf);
+                StringReader_destroy(r);
                 return NULL;
             }
 
             break;
 
         case CLIENT_VERSION_PC:
-            if(copy_pc_qst_dat(buf, buf2, sz, dsz)) {
+            if(copy_pc_qst_dat(r->data, buf2, r->length, dsz)) {
                 QERR_LOG("解码 qst 文件 \"%s\" 错误, 详情看上文..", fn);
                 free_safe(buf2);
-                free_safe(buf);
+                StringReader_destroy(r);
                 return NULL;
             }
 
             break;
 
         case CLIENT_VERSION_BB:
-            if(copy_bb_qst_dat(buf, buf2, sz, dsz)) {
+            if(copy_bb_qst_dat(r->data, buf2, r->length, dsz)) {
                 QERR_LOG("解码 qst 文件 \"%s\" 错误, 详情看上文..", fn);
                 free_safe(buf2);
-                free_safe(buf);
+                StringReader_destroy(r);
                 return NULL;
             }
 
@@ -571,12 +576,12 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
 
         default:
             free_safe(buf2);
-            free_safe(buf);
+            StringReader_destroy(r);
             return NULL;
     }
 
     /* We're done with the first buffer, so clean it up. */
-    free_safe(buf);
+    StringReader_destroy(r);
 
     /* Return the dat decompressed. */
     rv = decompress_dat(buf2, (uint32_t)dsz, osz);

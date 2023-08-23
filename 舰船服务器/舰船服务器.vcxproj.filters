@@ -126,6 +126,9 @@
     <ClCompile Include="item_magedit.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="item_random.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h">
@@ -243,6 +246,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="mag_bb_unused.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="item_random.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

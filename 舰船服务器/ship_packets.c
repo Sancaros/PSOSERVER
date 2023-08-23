@@ -6118,6 +6118,7 @@ uint32_t check_solo_quest_stat(uint32_t qid, uint8_t oneperson, uint8_t episode,
         case GAME_TYPE_EPISODE_2:
             break;
 
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             break;
         }
@@ -6153,6 +6154,7 @@ uint32_t check_government_quest_stat(uint32_t qid, uint8_t government, uint8_t e
                     show_quest = 0;
             break;
 
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             qid -= 701;
             qid += 0x2BC;
@@ -7315,7 +7317,7 @@ static int send_bb_quest_info(ship_client_t *c, psocn_quest_t *q, int l) {
     inptr = q->long_desc;
     out = 0x248;
     outptr = pkt->msg;
-    iconv(ic_gb18030_to_utf16, &inptr, &in, &outptr, &out);
+    iconv(ic_utf8_to_utf16, &inptr, &in, &outptr, &out);
 
     /* º”√‹≤¢∑¢ÀÕ */
     return crypt_send(c, BB_QUEST_INFO_LENGTH, sendbuf);

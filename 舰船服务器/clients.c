@@ -644,10 +644,10 @@ void client_send_bb_data(ship_client_t* c) {
 
 #ifdef DEBUG
         DBG_LOG("mode %d", c->mode);
-#endif // DEBUG
-
         fix_client_inv(&c->bb_pl->character.inv);
         fix_equip_item(&c->bb_pl->character.inv);
+
+#endif // DEBUG
 
         /* 将玩家数据存入数据库 */
         shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,

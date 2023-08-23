@@ -494,7 +494,6 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
-    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -546,7 +545,6 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
         bank->bitems[x] = bank->bitems[x + 1];
     }
     clear_bitem(&bank->bitems[bank->item_count]);
-    fix_client_bank(bank);
     return ret;
 }
 
@@ -589,7 +587,6 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
     }
     character->inv.iitems[character->inv.item_count] = *iitem;
     character->inv.item_count++;
-    fix_client_inv(&character->inv);
     return true;
 }
 
@@ -631,7 +628,6 @@ bool add_bitem(ship_client_t* src, const bitem_t* item) {
     }
     bank->bitems[bank->item_count] = *item;
     bank->item_count++;
-    fix_client_bank(bank);
     return true;
 }
 
@@ -1323,7 +1319,6 @@ done:
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
         remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
-        //cleanup_bb_inv(src->client_id, &character->inv);
     }
 
     return err;

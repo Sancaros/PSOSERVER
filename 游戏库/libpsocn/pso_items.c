@@ -124,7 +124,7 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_SOL_ATOMIZER:
 		case ITEM_SUBTYPE_MOON_ATOMIZER:
 		case ITEM_SUBTYPE_STAR_ATOMIZER:
-		case ITEM_SUBTYPE_ANTI:
+		case ITEM_SUBTYPE_ANTI_TOOL:
 		case ITEM_SUBTYPE_TELEPIPE:
 		case ITEM_SUBTYPE_TRAP_VISION:
 		case ITEM_SUBTYPE_GRINDER:

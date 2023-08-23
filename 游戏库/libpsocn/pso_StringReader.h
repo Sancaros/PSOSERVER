@@ -27,14 +27,18 @@
 
 #include "f_logs.h"
 
-typedef struct {
-	const char* data;
+typedef struct StringReader_s {
+	char* data;
 	size_t length;
 	size_t offset;
 	pthread_mutex_t mutex;  // Ìí¼Ó»¥³âËø±äÁ¿
 } StringReader;
 
+char* read_file_all(const char* fn, size_t* sz);
+
 StringReader* StringReader_init();   // ³õÊ¼»¯StringReader¶ÔÏó²¢·µ»ØÖ¸Õë
+StringReader* StringReader_byte(const void* data, size_t length);
+StringReader* StringReader_file(const char* fn);
 void StringReader_destroy(StringReader* reader);   // Ïú»ÙStringReader¶ÔÏó
 void StringReader_setData(StringReader* reader, const char* data, size_t length, size_t offset);   // ÉèÖÃStringReader¶ÔÏóµÄÊı¾İ
 size_t StringReader_where(const StringReader* reader);   // »ñÈ¡µ±Ç°¶ÁÈ¡Î»ÖÃµÄÆ«ÒÆÁ¿
@@ -53,4 +57,8 @@ char* StringReader_subx(const StringReader* reader, size_t offset);   // ´ÓÖ¸¶¨Æ
 char* StringReader_get_line(StringReader* reader, int advance);   // ¶ÁÈ¡Ò»ĞĞÊı¾İ£¬ÒÔ»»ĞĞ·û\nÎª½ç¶¨£¬Ñ¡ÔñÊÇ·ñÒÆ¶¯¶ÁÈ¡Î»ÖÃ
 char* StringReader_get_cstr(StringReader* reader, int advance);   // ¶ÁÈ¡ÒÔ¿Õ×Ö·û\0½áÎ²µÄ×Ö·û´®£¬Ñ¡ÔñÊÇ·ñÒÆ¶¯¶ÁÈ¡Î»ÖÃ
 
+//bool pget_u32b(const StringReader* reader, size_t offset, uint32_t* result);
+uint32_t letoh32(uint32_t x);
+uint32_t pget_u32b(const StringReader* reader, size_t offset);
+uint32_t pget_u32l(const StringReader* reader, size_t offset);
 #endif // !PSO_STRINGREADER

@@ -38,6 +38,97 @@ typedef struct ship ship_t;
 typedef struct psocn_quest_enemy qenemy_t;
 #endif
 
+enum QuestScriptVersion {
+    DC_NTE = 0,
+    DC_V1 = 1,
+    DC_V2 = 2,
+    PC_V2 = 3,
+    GC_NTE = 4,
+    GC_V3 = 5,
+    XB_V3 = 6,
+    GC_EP3 = 7,
+    BB_V4 = 8,
+    UNKNOWN = 15,
+};
+
+#ifdef PACKED
+#undef PACKED
+#endif
+
+#ifndef _WIN32
+#define PACKED __attribute__((packed))
+#else
+#define PACKED __declspec(align(1))
+#pragma pack(push, 1) 
+#endif
+
+typedef struct psocn_quest_file_dc { // Same format for DC v1 and v2
+    uint32_t code_offset;
+    uint32_t function_table_offset;
+    uint32_t size;
+    uint32_t unused;
+    uint8_t is_download;
+    uint8_t unknown1;
+    uint16_t quest_number; // 0xFFFF for challenge quests
+    char name[0x20];
+    char short_description[0x80];
+    char long_description[0x120];
+} PACKED psocn_quest_file_dc_t;
+
+typedef struct psocn_quest_file_pc {
+    uint32_t code_offset;
+    uint32_t function_table_offset;
+    uint32_t size;
+    uint32_t unused;
+    uint8_t is_download;
+    uint8_t unknown1;
+    uint16_t quest_number; // 0xFFFF for challenge quests
+    char name[0x20];
+    char short_description[0x80];
+    char long_description[0x120];
+} PACKED psocn_quest_file_pc_t;
+
+// TODO: Is the XB quest header format the same as on GC? If not, make a
+// separate struct; if so, rename this struct to V3.
+typedef struct psocn_quest_file_gc {
+    uint32_t code_offset;
+    uint32_t function_table_offset;
+    uint32_t size;
+    uint32_t unused;
+    uint8_t is_download;
+    uint8_t unknown1;
+    uint8_t quest_number;
+    uint8_t episode; // 1 = Ep2. Apparently some quests have 0xFF here, which means ep1 (?)
+    char name[0x20];
+    char short_description[0x80];
+    char long_description[0x120];
+} PACKED psocn_quest_file_gc_t;
+
+typedef struct psocn_quest_file_bb {
+    uint32_t code_offset;
+    uint32_t function_table_offset;
+    uint32_t size;
+    uint32_t unused;
+    uint16_t quest_number; // 0xFFFF for challenge quests
+    uint16_t unused2;
+    uint8_t episode; // 0 = Ep1, 1 = Ep2, 2 = Ep4
+    uint8_t max_players;
+    uint8_t joinable_in_progress;
+    uint8_t unknown;
+    uint16_t name[0x20];
+    uint16_t short_description[0x80];
+    uint16_t long_description[0x120];
+} PACKED psocn_quest_file_bb_t;
+
+static int xdsa = sizeof(psocn_quest_file_bb_t);
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
+
 typedef struct quest_map_elem {
     TAILQ_ENTRY(quest_map_elem) qentry;
     uint32_t qid;

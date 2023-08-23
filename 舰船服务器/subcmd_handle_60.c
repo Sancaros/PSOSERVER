@@ -4102,9 +4102,6 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_sort_inv_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    inventory_t sorted = { 0 };
-    uint32_t item_ids[30] = { 0 };
-    size_t x = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -4123,21 +4120,15 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    memcpy(item_ids, pkt->item_ids, sizeof(uint32_t) * 30);
-
+    inventory_t sorted = { 0 };
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        sorted.iitems[x].data.datab[1] = 0xFF;
-        sorted.iitems[x].data.item_id = EMPTY_STRING;
-    }
-
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        if (item_ids[x] == 0xFFFFFFFF) {
-            clear_iitem(&sorted.iitems[x]);
+    for (size_t x = 0; x < 30; x++) {
+        if (pkt->item_ids[x] == 0xFFFFFFFF) {
+            sorted.iitems[x].data.item_id = EMPTY_STRING;
         }
         else {
-            size_t index = find_iitem_index(&character->inv, item_ids[x]);
+            size_t index = find_iitem_index(&character->inv, pkt->item_ids[x]);
             sorted.iitems[x] = character->inv.iitems[index];
         }
     }
@@ -4146,7 +4137,6 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     sorted.hpmats_used = character->inv.hpmats_used;
     sorted.tpmats_used = character->inv.tpmats_used;
     sorted.language = character->inv.language;
-
     character->inv = sorted;
 
     if (!src->mode)
@@ -4921,7 +4911,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             return 0;
         }
 
-        subcmd_bb_60size_check(src, pkt);
+        //subcmd_bb_60size_check(src, pkt);
 
         l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
 

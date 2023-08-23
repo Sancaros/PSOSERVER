@@ -16,6 +16,7 @@
 */
 
 #include "pso_StringReader.h"
+#include "pthread.h"
 
 #define PHOSG_WINDOWS
 
@@ -170,6 +171,43 @@ size_t parse_size(const char* str) {
   return integer_part * unit_scale + (size_t)(fractional_part * unit_scale);
 }
 
+/* 读取所有文件 返回数据流和文件大小sz*/
+char* read_file_all(const char* fn, size_t* sz) {
+    uint8_t* ret;
+    FILE* fp;
+
+    /* Read the file in. */
+    fp = fopen(fn, "rb");
+    if (!fp) {
+        //QERR_LOG("无法打开文件 \"%s\": %s", fn,
+        //    strerror(errno));
+        return NULL;
+    }
+
+    _fseeki64(fp, 0, SEEK_END);
+    *sz = (off_t)_ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
+
+    ret = (uint8_t*)malloc(*sz);
+    if (!ret) {
+        ERR_LOG("无法分配内存去读取: %s",
+            strerror(errno));
+        fclose(fp);
+        return NULL;
+    }
+
+    if (fread(ret, 1, *sz, fp) != *sz) {
+        ERR_LOG("无法读取: %s", strerror(errno));
+        free_safe(ret);
+        fclose(fp);
+        return NULL;
+    }
+
+    fclose(fp);
+
+    return (char*)ret;
+}
+
 //这个案例演示了如何使用StringReader类来从字符串中读取数据。
 //首先，我们创建了一个StringReader对象，并将要读取的字符串数据、长度和偏移量设置到对象中。
 //然后，通过调用StringReader_read方法，我们可以指定要读取的字符数，并选择是否前进到下一个位置。
@@ -186,6 +224,34 @@ StringReader* StringReader_init() {
     return reader;
 }
 
+StringReader* StringReader_byte(const char* data, size_t length) {
+    StringReader* reader = StringReader_init();
+    pthread_mutex_lock(&reader->mutex);  // 上锁
+    if (reader != NULL) {
+        reader->data = (char*)malloc(length);
+        if (reader->data == NULL) {
+            ERR_LOG("分配动态内存错误");
+        }
+        memcpy(reader->data, data, length);
+        reader->length = length;
+    }
+    pthread_mutex_unlock(&reader->mutex);  // 解锁
+    return reader;
+}
+
+StringReader* StringReader_file(const char* fn) {
+    StringReader* reader = StringReader_init();
+    pthread_mutex_lock(&reader->mutex);  // 上锁
+    if (reader != NULL) {
+        reader->data = read_file_all(fn, &reader->length);
+        if (reader->data == NULL) {
+            ERR_LOG("读取 \"%s\" 出错,数据为空或文件不存在", fn);
+        }
+    }
+    pthread_mutex_unlock(&reader->mutex);  // 解锁
+    return reader;
+}
+
 void StringReader_destroy(StringReader* reader) {
     pthread_mutex_destroy(&reader->mutex);  // 销毁互斥锁
     free(reader);
@@ -193,9 +259,16 @@ void StringReader_destroy(StringReader* reader) {
 
 void StringReader_setData(StringReader* reader, const char* data, size_t length, size_t offset) {
     pthread_mutex_lock(&reader->mutex);  // 上锁
-    reader->data = data;
-    reader->length = length;
-    reader->offset = offset;
+    if (reader->data) {
+
+        memcpy(reader->data, data, length);
+        //reader->data = data;
+        reader->length = length;
+        reader->offset = offset;
+    }
+    else {
+        ERR_LOG("StringReader_setData 未分配动态内存");
+    }
     pthread_mutex_unlock(&reader->mutex);  // 解锁
 }
 
@@ -321,4 +394,50 @@ char* StringReader_get_cstr(StringReader* reader, int advance) {
         }
     }
     return NULL;
+}
+
+typedef struct {
+    uint32_t value;
+} be_uint32_t;
+
+uint32_t letoh32(uint32_t x) {
+    uint32_t val = ((x & 0xFF) << 24) |
+        ((x & 0xFF00) << 8) |
+        ((x & 0xFF0000) >> 8) |
+        ((x & 0xFF000000) >> 24);
+    return val;
+}
+
+static uint32_t be_to_host_uint32(const be_uint32_t* value_ptr) {
+    const uint8_t* bytes = (const uint8_t*)&(value_ptr->value);
+    return (uint32_t)(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+}
+
+const void* pgetv(const void* data, size_t length, size_t offset, size_t size) {
+    if (offset + size > length) {
+        return NULL;  // 返回空指针表示访问超出范围
+    }
+    return (const char*)data + offset;
+}
+
+uint32_t pget(const StringReader* reader, size_t offset, size_t size) {
+    return (uint32_t)(pgetv(reader, reader->length, offset, size));
+}
+
+uint32_t pget_u32b(const StringReader* reader, size_t offset) {
+    uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
+    if (value_ptr == NULL) {
+        ERR_LOG("pget_u32b 错误");
+        return 0;
+    }
+    return value_ptr;
+}
+
+uint32_t pget_u32l(const StringReader* reader, size_t offset) {
+    uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
+    if (value_ptr == NULL) {
+        ERR_LOG("pget_u32b 错误");
+        return 0;
+    }
+    return value_ptr;
 }

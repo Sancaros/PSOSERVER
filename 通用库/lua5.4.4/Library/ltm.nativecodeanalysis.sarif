@@ -1,0 +1,355 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C6385",
+          "message": {
+            "text": "正在从 \"((L->l_G))->mt\" 读取无效数据。"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                },
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 7,
+                  "endLine": 81,
+                  "endColumn": 21
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "luaT_gettmbyobj",
+                  "decoratedName": "luaT_gettmbyobj",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 72,
+                            "startColumn": 10
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 73,
+                            "startColumn": 11
+                          }
+                        },
+                        "message": {
+                          "text": "假定 switch (“((((o))->tt_))&15”)解析为 default case"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 80,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 81,
+                            "startColumn": 10
+                          }
+                        },
+                        "message": {
+                          "text": "从“((L->l_G))->mt[15]”中读取无效(可读范围是 0 到 8)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C6385",
+          "message": {
+            "text": "正在从 \"luaT_typenames_\" 读取无效数据。"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                },
+                "region": {
+                  "startLine": 99,
+                  "startColumn": 3,
+                  "endLine": 99,
+                  "endColumn": 10
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "luaT_objtypename",
+                  "decoratedName": "luaT_objtypename",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 92,
+                            "startColumn": 10
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 93,
+                            "startColumn": 61
+                          }
+                        },
+                        "message": {
+                          "text": "跳过此分支(假定“<分支条件>”为 false)"
+                        }
+                      },
+                      "kinds": [
+                        "branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+                          },
+                          "region": {
+                            "startLine": 99,
+                            "startColumn": 3
+                          }
+                        },
+                        "message": {
+                          "text": "从“luaT_typenames_[16]”中读取无效(可读范围是 0 到 11)"
+                        }
+                      },
+                      "kinds": [
+                        "usage"
+                      ],
+                      "importance": "essential"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///E:/梦幻之星项目/PSOSERVER/通用库/lua5.4.4/src/ltm.c"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "7cbe645ed7e1161d31eb32ea467d8220b592c0acfa6107f0194487f0ddbf954b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lprefix.h"
+          },
+          "hashes": {
+            "sha-256": "626785d4eda75e9435f0ac21a780ae3b11f8b27dc36934e637a5c2305f906531"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lua.h"
+          },
+          "hashes": {
+            "sha-256": "245ec29da577aefefebdb728c32a7d7407e4ff43889e038d2ab6e6349f5153f0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/luaconf.h"
+          },
+          "hashes": {
+            "sha-256": "357b60be627fb7f65b2e338dc58dfa5a2fe769956c7a1c777fb57bd173cfa401"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/ldebug.h"
+          },
+          "hashes": {
+            "sha-256": "e2c04610e4ba14f7ed615ba89ce2eeb7cc1aa90e128a5103416cd0eb32423dc5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lstate.h"
+          },
+          "hashes": {
+            "sha-256": "7b31e449409ead7c3d7e8bc295dfea3aca1203df4943d6c624f47c82ccde700c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lobject.h"
+          },
+          "hashes": {
+            "sha-256": "bfb60c7515f54e4e181c0418998ed2d4fb73436255ffe86c0050928b5153183f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/llimits.h"
+          },
+          "hashes": {
+            "sha-256": "d588bdac3c8e1adc88df3dc92c950a1bfa29663d15f9221f58e2aa553b05a422"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/ltm.h"
+          },
+          "hashes": {
+            "sha-256": "730b681b5f13fd2519fef9e418423097dda7843466fa524fa7a5b718d3af4802"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lzio.h"
+          },
+          "hashes": {
+            "sha-256": "9673f62eac2d0fe3010f9d23148be7b8113319fdf4c4490015cd9feae2ecaad4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lmem.h"
+          },
+          "hashes": {
+            "sha-256": "8318a170a1d4bf21c3cb4deb1f8661f1dc7cf4eb688e4ec9a1e7ea16bfc3b5cf"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/ldo.h"
+          },
+          "hashes": {
+            "sha-256": "718cc0c55d3f9ae09047adf82dad8200e7143649726fca1fc86a7b027a209058"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lgc.h"
+          },
+          "hashes": {
+            "sha-256": "c83d3b8e31345c0aacd37442954a7f2434312ee48f98a8b9ae4fc8aad26d0c99"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lstring.h"
+          },
+          "hashes": {
+            "sha-256": "a8cb0d737276f6a41071a0776ee1d8aa13cf02fa7c79ea096d202b14ea792e31"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/ltable.h"
+          },
+          "hashes": {
+            "sha-256": "6f90dc1475f1ebed6e67e42c51682fa30df0147d8f723a7435313f88540a157e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/lua5.4.4/src/lvm.h"
+          },
+          "hashes": {
+            "sha-256": "aba601b887236d5e135392e0c49370df3b5a9ac5c66ab2d44156b3244f2dcef3"
+          }
+        }
+      ]
+    }
+  ]
+}

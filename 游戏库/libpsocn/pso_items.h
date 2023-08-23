@@ -69,7 +69,7 @@
 #define ITEM_SUBTYPE_SOL_ATOMIZER       0x03
 #define ITEM_SUBTYPE_MOON_ATOMIZER      0x04
 #define ITEM_SUBTYPE_STAR_ATOMIZER      0x05
-#define ITEM_SUBTYPE_ANTI               0x06
+#define ITEM_SUBTYPE_ANTI_TOOL               0x06
 #define ITEM_SUBTYPE_TELEPIPE           0x07
 #define ITEM_SUBTYPE_TRAP_VISION        0x08
 

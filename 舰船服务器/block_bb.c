@@ -367,7 +367,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return rv;
     }
 
-    /* Ship */
+        /* Ship */
     case MENU_ID_SHIP:
     {
         miniship_t* i;
@@ -389,7 +389,7 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return 0;
     }
 
-    /* Game type (PSOBB only) */
+        /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
         return game_type_info_reply(c, item_id);
 
@@ -398,8 +398,8 @@ static int bb_process_info_req(ship_client_t* c, bb_select_pkt* pkt) {
         return game_drop_info_reply(c, item_id);
 
     default:
-        UNK_CPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-        return 0;
+        display_packet(pkt, pkt->hdr.pkt_len);
+        return send_bb_error_menu_list(c);
     }
 }
 
@@ -2722,6 +2722,7 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
     //bb_guild_pkt_pkt* gpkt = (bb_guild_pkt_pkt*)pkt;
     uint16_t type = LE16(hdr->pkt_type);
+    uint16_t len = LE16(hdr->pkt_len);
 
 #ifdef DEBUG_GUILD
     uint16_t len = LE16(hdr->pkt_len);
@@ -2817,8 +2818,9 @@ static int bb_process_guild(ship_client_t* c, uint8_t* pkt) {
         return process_bb_guild_unk_1DEA(c, (bb_guild_unk_1DEA_pkt*)pkt);
 
     default:
-        UDONE_CPD(type, c->version, pkt);
-        break;
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        display_packet(hdr, len);
+        return send_bb_error_menu_list(c);
     }
     return 0;
 }
@@ -3032,8 +3034,9 @@ static int bb_process_challenge(ship_client_t* c, uint8_t* pkt) {
         return process_bb_challenge_07DF(c, (bb_challenge_07df_pkt*)pkt);
 
     default:
-        UDONE_CPD(type, c->version, pkt);
-        break;
+        ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
+        display_packet(hdr, len);
+        return send_bb_error_menu_list(c);
     }
     return 0;
 }

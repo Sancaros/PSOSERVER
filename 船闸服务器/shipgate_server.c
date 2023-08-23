@@ -951,9 +951,8 @@ static void initialization() {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
-        getchar();
+        (void)getchar();
     }
-#endif
 
     HINSTANCE hinst = GetModuleHandle(NULL);
     consoleHwnd = GetConsoleWindow();
@@ -987,6 +986,7 @@ static void initialization() {
     // 设置崩溃处理函数
     SetUnhandledExceptionFilter(crash_handler);
 
+#endif
 }
 
 int __cdecl main(int argc, char** argv) {

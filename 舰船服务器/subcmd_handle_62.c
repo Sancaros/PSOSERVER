@@ -1440,10 +1440,9 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_shop_req_t* req) {
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
-    item_t item_data;
     uint32_t shop_type = LE32(req->shop_type);
-    uint8_t num_items = 9 + (mt19937_genrand_int32(&b->rng) % 4);
-    size_t shop_size = sizeof(src->game_data->shop_items) / PSOCN_STLENGTH_ITEM;
+    uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
+    size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
     bool create = true;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
@@ -1452,28 +1451,31 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * shop_size);
+    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * shop_item_count);
 
-    for (uint8_t i = 0; i < num_items; ++i) {
-        if (num_items > shop_size) {
+    for (uint8_t i = 0; i < num_item_count; i++) {
+        if (num_item_count > shop_item_count) {
             ERR_LOG("GC %" PRIu32 " 商店物品生成错误 num_items %d > shop_size %d",
-                src->guildcard, num_items, shop_size);
+                src->guildcard, num_item_count, shop_item_count);
             break;
         }
 
-        memset(&item_data, 0, PSOCN_STLENGTH_ITEM);
+        item_t item = { 0 };
 
         switch (shop_type) {
         case BB_SHOPTYPE_TOOL:// 工具商店
-            item_data = create_bb_shop_item(l->difficulty, 3, &b->rng);
+            if (i < 2)
+                item = create_bb_shop_tool_common_item(l->difficulty, ITEM_TYPE_TOOL, i);
+            else
+                item = create_bb_shop_item(l->difficulty, ITEM_TYPE_TOOL, &b->rng);
             break;
 
         case BB_SHOPTYPE_WEAPON:// 武器商店
-            item_data = create_bb_shop_item(l->difficulty, 0, &b->rng);
+            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_WEAPON, &b->rng);
             break;
 
         case BB_SHOPTYPE_ARMOR:// 装甲商店
-            item_data = create_bb_shop_item(l->difficulty, 1, &b->rng);
+            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_GUARD, &b->rng);
             break;
 
         default:
@@ -1483,30 +1485,29 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         if (create) {
-            size_t shop_price = price_for_item(&item_data);
+            size_t shop_price = price_for_item(&item);
             if (shop_price <= 0) {
-                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price %d",
-                    src->guildcard, src->sec_data.slot, item_data.item_id, item_get_name(&item_data, src->version), item_data.datal[0], shop_price);
+                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d",
+                    src->guildcard, src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
                 continue;
             }
-            item_data.data2l = shop_price;
+            item.data2l = shop_price;
 
-            item_data.item_id = generate_item_id(l, src->client_id);
+            item.item_id = generate_item_id(l, 0xFF);
 #ifdef DEBUG
 
             print_item_data(&item_data, src->version);
             DBG_LOG("price_for_item %d", item_data.data2l);
 
 #endif // DEBUG
-
-            memcpy(&src->game_data->shop_items[i], &item_data, PSOCN_STLENGTH_ITEM);
+            src->game_data->shop_items[i] = item;
         }
     }
 
     if(!create)
         ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
 
-    return subcmd_bb_send_shop(src, shop_type, num_items, create);
+    return subcmd_bb_send_shop(src, shop_type, num_item_count, create);
 }
 
 int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
@@ -1908,9 +1909,9 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             //return 0;
         }
         else {
-            if (pkt_bitem_index == 0xFFFF) {
-                ERR_LOG("GC %" PRIu32 " 银行物品索引有误! pkt_bitem_index == 0xFFFF",
-                    src->guildcard);
+            if (pkt_bitem_index >= bank->item_count) {
+                ERR_LOG("GC %" PRIu32 " 银行物品索引有误! pkt_bitem_index == %d",
+                    src->guildcard, pkt_bitem_index);
                 return -8;
             }
 

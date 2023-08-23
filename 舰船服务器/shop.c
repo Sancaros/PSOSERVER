@@ -194,7 +194,7 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
 
     case ITEM_TYPE_TOOL:
         // Tool 工具
-        if (ci->data.datab[1] == 0x02) { // Technique 魔法科技
+        if (ci->data.datab[1] == ITEM_SUBTYPE_DISK) { // Technique 魔法科技
             if (ci->data.datab[4] < 0x13)
                 price = ((int32_t)(ci->data.datab[2] + 1) * tech_prices[ci->data.datab[4]]) / 100L;
         }
@@ -214,6 +214,52 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
         price = 0;
 
     return price;
+}
+
+item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index) {
+    static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
+    item_t item = { 0 };
+    item.datab[0] = 物品类型;
+
+    /* 检索物品类型 */
+    switch (item.datab[0]) {
+    case ITEM_TYPE_TOOL: // 武器
+
+        item.datab[1] = index;
+
+        switch (item.datab[1]) {
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+            switch (难度) {
+            case GAME_TYPE_DIFFICULTY_NORMARL:
+                item.datab[2] = 0;
+                break;
+
+            case GAME_TYPE_DIFFICULTY_HARD:
+                item.datab[2] = 1;
+                break;
+
+            case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                item.datab[2] = 2;
+                break;
+
+            case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                item.datab[2] = 2;
+                break;
+            }
+            item.datab[5] = max_quantity[难度] + 1;
+            break;
+        }
+
+        break;
+    }
+#ifdef DEBUG
+
+    DBG_LOG("难度 %d item 0x%08X", 难度, item.datal[0]);
+
+#endif // DEBUG
+
+    return item;
 }
 
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子) {
@@ -300,30 +346,30 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
         break;
 
     case ITEM_TYPE_TOOL: // 药品工具
-        item.datab[1] = mt19937_genrand_int32(随机因子) % 11;
+        item.datab[1] = mt19937_genrand_int32(随机因子) % 9 + 2;
         switch (item.datab[1]) {
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
-            switch (难度) {
-            case GAME_TYPE_NORMAL:
-                item.datab[2] = 0;
-                break;
+        //case ITEM_SUBTYPE_MATE:
+        //case ITEM_SUBTYPE_FLUID:
+        //    switch (难度) {
+        //    case GAME_TYPE_DIFFICULTY_NORMARL:
+        //        item.datab[2] = 0;
+        //        break;
 
-            case GAME_TYPE_EPISODE_1:
-                item.datab[2] = mt19937_genrand_int32(随机因子) % 2;
-                break;
+        //    case GAME_TYPE_DIFFICULTY_HARD:
+        //        item.datab[2] = mt19937_genrand_int32(随机因子) % 2;
+        //        break;
 
-            case GAME_TYPE_EPISODE_2:
-                item.datab[2] = (mt19937_genrand_int32(随机因子) % 2) + 1;
-                break;
+        //    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+        //        item.datab[2] = (mt19937_genrand_int32(随机因子) % 2) + 1;
+        //        break;
 
-            case GAME_TYPE_EPISODE_4:
-                item.datab[2] = 2;
-                break;
-            }
-            break;
+        //    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+        //        item.datab[2] = 2;
+        //        break;
+        //    }
+        //    break;
 
-        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_ANTI_TOOL:
             item.datab[2] = mt19937_genrand_int32(随机因子) % 2;
             break;
 
@@ -340,24 +386,39 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state*
         case ITEM_SUBTYPE_DISK:
             item.datab[4] = mt19937_genrand_int32(随机因子) % 19;
             switch (item.datab[4]) {
-            case 14:
-            case 17:
+            case TECHNIQUE_RYUKER:
+            case TECHNIQUE_REVERSER:
                 item.datab[2] = 0; // reverser & ryuker always level 1 这两个法术永远是1级
                 break;
-            case 16:
+            case TECHNIQUE_ANTI:
                 item.datab[2] = mt19937_genrand_int32(随机因子) % max_anti_lvl[难度];
                 break;
-            default:
+            case TECHNIQUE_FOIE:
+            case TECHNIQUE_GIFOIE:
+            case TECHNIQUE_RAFOIE:
+            case TECHNIQUE_BARTA:
+            case TECHNIQUE_GIBARTA:
+            case TECHNIQUE_RABARTA:
+            case TECHNIQUE_ZONDE:
+            case TECHNIQUE_GIZONDE:
+            case TECHNIQUE_RAZONDE:
+            case TECHNIQUE_GRANTS:
+            case TECHNIQUE_DEBAND:
+            case TECHNIQUE_JELLEN:
+            case TECHNIQUE_ZALURE:
+            case TECHNIQUE_SHIFTA:
+            case TECHNIQUE_RESTA:
+            case TECHNIQUE_MEGID:
                 item.datab[2] = mt19937_genrand_int32(随机因子) % max_tech_lvl[难度];
                 break;
             }
             break;
-        case ITEM_SUBTYPE_MATE:
-        case ITEM_SUBTYPE_FLUID:
+        //case ITEM_SUBTYPE_MATE:
+        //case ITEM_SUBTYPE_FLUID:
         case ITEM_SUBTYPE_SOL_ATOMIZER:
         case ITEM_SUBTYPE_MOON_ATOMIZER:
         case ITEM_SUBTYPE_STAR_ATOMIZER:
-        case ITEM_SUBTYPE_ANTI:
+        case ITEM_SUBTYPE_ANTI_TOOL:
         case ITEM_SUBTYPE_TELEPIPE:
         case ITEM_SUBTYPE_TRAP_VISION:
         case ITEM_SUBTYPE_PHOTON:
@@ -474,7 +535,8 @@ size_t price_for_item(const item_t* item) {
         size_t price_num = 1;
 
         if (item->datab[1] == ITEM_SUBTYPE_DISK)
-            price_num = item->datab[2] + 1;
+            if(item->datab[4] < 0x13)
+                price_num = item->datab[2] + 1;
 
         price = pmt_tool.cost * price_num;
         if (price < 0) {

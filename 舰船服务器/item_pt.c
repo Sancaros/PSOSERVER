@@ -111,6 +111,7 @@ uint8_t normalize_area_number(uint8_t episode, uint8_t area) {
 			}
 			return area;
 		}
+		case GAME_TYPE_EPISODE_3:
 		case GAME_TYPE_EPISODE_4:
 			// TODO: Figure out remaps for Episode 4 (if there are any)
 			return area;
@@ -359,7 +360,7 @@ int pt_read_v2(const char* fn) {
 	pso_afs_read_t* a;
 	pso_error_t err;
 	ssize_t sz;
-	int rv = 0, i, j/*, k*/;
+	int rv = 0, i, j, k;
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 	int l;
 #endif
@@ -407,7 +408,7 @@ int pt_read_v2(const char* fn) {
 			/* Dump it into our nicer (not packed) structure. */
 			ent = &v2_ptdata[i][j];
 
-			memcpy(ent, buf, sz);
+			//memcpy(ent, buf, sz);
 
 			//display_packet(buf, sz);
 
@@ -415,38 +416,38 @@ int pt_read_v2(const char* fn) {
 			//	DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
 			//}
 
-			//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-			//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-			//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-			//memcpy(ent->element_ranking, buf->element_ranking, 10);
-			//memcpy(ent->element_probability, buf->element_probability, 10);
-			//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-			//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-			//memcpy(ent->unit_level, buf->unit_level, 10);
-			//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-			//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-			//ent->armor_level = LE32(buf->armor_level);
+			memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
+			memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
+			memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
+			memcpy(ent->element_ranking, buf->element_ranking, 10);
+			memcpy(ent->element_probability, buf->element_probability, 10);
+			memcpy(ent->armor_ranking, buf->armor_ranking, 5);
+			memcpy(ent->slot_ranking, buf->slot_ranking, 5);
+			memcpy(ent->unit_level, buf->unit_level, 10);
+			memcpy(ent->enemy_dar, buf->enemy_dar, 100);
+			memcpy(ent->enemy_drop, buf->enemy_drop, 100);
+			ent->armor_level = LE32(buf->armor_level);
 
-			//for (k = 0; k < 9; ++k) {
-			//	memcpy(ent->power_pattern[k], buf->power_pattern[k], 4);
-			//}
+			for (k = 0; k < 9; ++k) {
+				memcpy(ent->power_pattern[k], buf->power_pattern[k], 4);
+			}
 
-			//for (k = 0; k < 23; ++k) {
-			//	memcpy(ent->percent_pattern[k], buf->percent_pattern[k], 5);
-			//}
+			for (k = 0; k < 23; ++k) {
+				memcpy(ent->percent_pattern[k], buf->percent_pattern[k], 5);
+			}
 
-			//for (k = 0; k < 3; ++k) {
-			//	memcpy(ent->area_pattern[k], buf->area_pattern[k], 10);
-			//}
+			for (k = 0; k < 3; ++k) {
+				memcpy(ent->area_pattern[k], buf->area_pattern[k], 10);
+			}
 
-			//for (k = 0; k < 6; ++k) {
-			//	memcpy(ent->percent_attachment[k], buf->percent_attachment[k],
-			//		10);
-			//}
+			for (k = 0; k < 6; ++k) {
+				memcpy(ent->percent_attachment[k], buf->percent_attachment[k],
+					10);
+			}
 
-			//for (k = 0; k < 7; ++k) {
-			//	memcpy(ent->box_drop[k], buf->box_drop[k], 10);
-			//}
+			for (k = 0; k < 7; ++k) {
+				memcpy(ent->box_drop[k], buf->box_drop[k], 10);
+			}
 
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 			for (k = 0; k < 28; ++k) {
@@ -457,10 +458,10 @@ int pt_read_v2(const char* fn) {
 			}
 #endif
 
-			//for (k = 0; k < 19; ++k) {
-			//	memcpy(ent->tech_frequency[k], buf->tech_frequency[k], 10);
-			//	memcpy(ent->tech_levels[k], buf->tech_levels[k], 20);
-			//}
+			for (k = 0; k < 19; ++k) {
+				memcpy(ent->tech_frequency[k], buf->tech_frequency[k], 10);
+				memcpy(ent->tech_levels[k], buf->tech_levels[k], 20);
+			}
 
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
 			for (k = 0; k < 100; ++k) {
@@ -496,7 +497,7 @@ int pt_read_v3(const char* fn) {
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_v3_entry_t);
 	pso_error_t err;
-	int rv = 0, 章节, 难度, 颜色/*, l, m*/;
+	int rv = 0, 章节, 难度, 颜色, l, m;
 	fpt_v3_entry_t* buf;
 	pt_v3_entry_t* ent;
 
@@ -556,65 +557,65 @@ int pt_read_v3(const char* fn) {
 				/* Dump it into our nicer (not packed) structure. */
 				ent = &gc_ptdata[章节][难度][颜色];
 
-				memcpy(ent, buf, sz);
+				//memcpy(ent, buf, sz);
 
-				//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-				//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-				//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-				//memcpy(ent->element_ranking, buf->element_ranking, 10);
-				//memcpy(ent->element_probability, buf->element_probability, 10);
-				//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-				//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-				//memcpy(ent->unit_level, buf->unit_level, 10);
-				//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-				//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-				//ent->armor_level = ntohl(buf->armor_level);
+				memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
+				memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
+				memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
+				memcpy(ent->element_ranking, buf->element_ranking, 10);
+				memcpy(ent->element_probability, buf->element_probability, 10);
+				memcpy(ent->armor_ranking, buf->armor_ranking, 5);
+				memcpy(ent->slot_ranking, buf->slot_ranking, 5);
+				memcpy(ent->unit_level, buf->unit_level, 10);
+				memcpy(ent->enemy_dar, buf->enemy_dar, 100);
+				memcpy(ent->enemy_drop, buf->enemy_drop, 100);
+				ent->armor_level = ntohl(buf->armor_level);
 
-				//for (l = 0; l < 9; ++l) {
-				//	memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
-				//}
+				for (l = 0; l < 9; ++l) {
+					memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
+				}
 
-				//for (l = 0; l < 3; ++l) {
-				//	memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
-				//}
+				for (l = 0; l < 3; ++l) {
+					memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
+				}
 
-				//for (l = 0; l < 6; ++l) {
-				//	memcpy(ent->percent_attachment[l],
-				//		buf->percent_attachment[l], 10);
-				//}
+				for (l = 0; l < 6; ++l) {
+					memcpy(ent->percent_attachment[l],
+						buf->percent_attachment[l], 10);
+				}
 
-				//for (l = 0; l < 7; ++l) {
-				//	memcpy(ent->box_drop[l], buf->box_drop[l], 10);
-				//}
+				for (l = 0; l < 7; ++l) {
+					memcpy(ent->box_drop[l], buf->box_drop[l], 10);
+				}
 
-				//for (l = 0; l < 19; ++l) {
-				//	memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
-				//	memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
-				//}
+				for (l = 0; l < 19; ++l) {
+					memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
+					memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
+				}
 
-				//for (l = 0; l < 23; ++l) {
-				//	for (m = 0; m < 6; ++m) {
-				//		ent->percent_pattern[l][m] =
-				//			ntohs(buf->percent_pattern[l][m]);
-				//	}
-				//}
+				for (l = 0; l < 23; ++l) {
+					for (m = 0; m < 6; ++m) {
+						ent->percent_pattern[l][m] =
+							ntohs(buf->percent_pattern[l][m]);
+					}
+				}
 
-				//for (l = 0; l < 28; ++l) {
-				//	for (m = 0; m < 10; ++m) {
-				//		ent->tool_frequency[l][m] =
-				//			ntohs(buf->tool_frequency[l][m]);
-				//	}
-				//}
+				for (l = 0; l < 28; ++l) {
+					for (m = 0; m < 10; ++m) {
+						ent->tool_frequency[l][m] =
+							ntohs(buf->tool_frequency[l][m]);
+					}
+				}
 
-				//for (l = 0; l < 100; ++l) {
-				//	ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
-				//	ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
-				//}
+				for (l = 0; l < 100; ++l) {
+					ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
+					ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
+				}
 
-				//for (l = 0; l < 10; ++l) {
-				//	ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
-				//	ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
-				//}
+				for (l = 0; l < 10; ++l) {
+					ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
+					ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
+				}
 			}
 		}
 	}
@@ -636,7 +637,7 @@ int pt_read_bb(const char* fn) {
 	uint32_t hnd;
 	const size_t sz = sizeof(fpt_bb_entry_t);
 	pso_error_t err;
-	int rv = 0, 章节, 难度, 颜色/*, l, m*/;
+	int rv = 0, 章节, 难度, 颜色, l, m;
 	fpt_bb_entry_t* buf;
 	pt_bb_entry_t* ent;
 
@@ -696,8 +697,71 @@ int pt_read_bb(const char* fn) {
 				/* Dump it into our nicer (not packed) structure. */
 				ent = &bb_ptdata[章节][难度][颜色];
 
-				memcpy(ent, buf, sz);
+				memcpy(ent->base_weapon_type_prob_table, buf->weapon_ratio, 12);
+				memcpy(ent->subtype_base_table, buf->weapon_minrank, 12);
+				memcpy(ent->subtype_area_length_table, buf->weapon_upgfloor, 12);
 
+				for (l = 0; l < 9; ++l) {
+					memcpy(ent->grind_prob_tables[l], buf->power_pattern[l], 4);
+				}
+
+				for (l = 0; l < 23; ++l) {
+					for (m = 0; m < 6; ++m) {
+						ent->bonus_value_prob_tables[l][m] =
+							ntohs(buf->percent_pattern[l][m]);
+					}
+				}
+
+				for (l = 0; l < 3; ++l) {
+					memcpy(ent->nonrare_bonus_prob_spec[l], buf->area_pattern[l], 10);
+				}
+
+				for (l = 0; l < 6; ++l) {
+					memcpy(ent->bonus_type_prob_tables[l],
+						buf->percent_attachment[l], 10);
+				}
+
+				memcpy(ent->special_mult, buf->element_ranking, 10);
+				memcpy(ent->special_percent, buf->element_probability, 10);
+				memcpy(ent->armor_shield_type_index_prob_table, buf->armor_ranking, 5);
+				memcpy(ent->armor_slot_count_prob_table, buf->slot_ranking, 5);
+				memcpy(ent->unit_maxes, buf->unit_level, 10);
+
+				for (l = 0; l < 28; ++l) {
+					for (m = 0; m < 10; ++m) {
+						ent->tool_class_prob_table[l][m] =
+							ntohs(buf->tool_frequency[l][m]);
+					}
+				}
+
+				for (l = 0; l < 19; ++l) {
+					memcpy(ent->technique_index_prob_table[l], buf->tech_frequency[l], 10);
+					memcpy(ent->technique_level_ranges[l], buf->tech_levels[l], 20);
+				}
+
+				memcpy(ent->enemy_type_drop_probs, buf->enemy_dar, 100);
+
+				for (l = 0; l < 100; ++l) {
+					ent->enemy_meseta_ranges[l].min = ntohs(buf->enemy_meseta[l][0]);
+					ent->enemy_meseta_ranges[l].max = ntohs(buf->enemy_meseta[l][1]);
+				}
+
+				memcpy(ent->enemy_item_classes, buf->enemy_drop, 100);
+
+				for (l = 0; l < 10; ++l) {
+					ent->box_meseta_ranges[l].min = ntohs(buf->box_meseta[l][0]);
+					ent->box_meseta_ranges[l].max = ntohs(buf->box_meseta[l][1]);
+				}
+
+				for (l = 0; l < 7; ++l) {
+					memcpy(ent->box_drop[l], buf->box_drop[l], 10);
+				}
+
+				ent->armor_level = ntohl(buf->armor_level);
+
+				//memcpy(ent, buf, sz);
+
+#ifdef DEBUG
 				//display_packet(buf, sz);
 
 				//if (章节 == 4) {
@@ -708,7 +772,6 @@ int pt_read_bb(const char* fn) {
 
 				//	getchar();
 				//}
-#ifdef DEBUG
 				DBG_LOG("%s", filename);
 				for (int x = 0; x < 100; x++) {
 					DBG_LOG("enemy_drop x %d 0x%02X", x, ent->enemy_drop[x]);
@@ -716,87 +779,6 @@ int pt_read_bb(const char* fn) {
 
 				getchar();
 #endif // DEBUG
-				//DBG_LOG("base_weapon_type_prob_table_offset 0x%zX", ent->base_weapon_type_prob_table_offset);
-
-				//DBG_LOG("subtype_base_table_offset 0x%zX", ent->subtype_base_table_offset);
-				//DBG_LOG("subtype_area_length_table_offset 0x%zX", ent->subtype_area_length_table_offset);
-				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_minrank 0x%zX", ent->weapon_minrank[x]);
-				//}
-
-				//for (int x = 0; x < 12; x++) {
-				//	DBG_LOG("weapon_upgfloor 0x%zX", ent->weapon_upgfloor[x]);
-				//}
-
-				//for (int x = 0; x < 10; x++) {
-				//	DBG_LOG("element_ranking 0x%zX", ent->element_ranking[x]);
-				//}
-
-				//memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
-				//memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
-				//memcpy(ent->weapon_upgfloor, buf->weapon_upgfloor, 12);
-				//memcpy(ent->element_ranking, buf->element_ranking, 10);
-				//memcpy(ent->element_probability, buf->element_probability, 10);
-				//memcpy(ent->armor_ranking, buf->armor_ranking, 5);
-				//memcpy(ent->slot_ranking, buf->slot_ranking, 5);
-				//memcpy(ent->unit_level, buf->unit_level, 10);
-
-				////for (int x = 0; x < 12; x++) {
-				////	DBG_LOG("weapon_ratio %f", buf->weapon_ratio[x]);
-				////}
-
-
-				//memcpy(ent->enemy_dar, buf->enemy_dar, 100);
-				//memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-				//ent->armor_level = ntohl(buf->armor_level);
-				//
-				//DBG_LOG("armor_level 0x%zX 0x%zX", ent->armor_level, buf->armor_level);
-
-				//for (l = 0; l < 9; ++l) {
-				//	memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
-				//}
-
-				//for (l = 0; l < 3; ++l) {
-				//	memcpy(ent->area_pattern[l], buf->area_pattern[l], 10);
-				//}
-
-				//for (l = 0; l < 6; ++l) {
-				//	memcpy(ent->percent_attachment[l],
-				//		buf->percent_attachment[l], 10);
-				//}
-
-				//for (l = 0; l < 7; ++l) {
-				//	memcpy(ent->box_drop[l], buf->box_drop[l], 10);
-				//}
-
-				//for (l = 0; l < 19; ++l) {
-				//	memcpy(ent->tech_frequency[l], buf->tech_frequency[l], 10);
-				//	memcpy(ent->tech_levels[l], buf->tech_levels[l], 20);
-				//}
-
-				//for (l = 0; l < 23; ++l) {
-				//	for (m = 0; m < 6; ++m) {
-				//		ent->percent_pattern[l][m] =
-				//			ntohs(buf->percent_pattern[l][m]);
-				//	}
-				//}
-
-				//for (l = 0; l < 28; ++l) {
-				//	for (m = 0; m < 10; ++m) {
-				//		ent->tool_frequency[l][m] =
-				//			ntohs(buf->tool_frequency[l][m]);
-				//	}
-				//}
-
-				//for (l = 0; l < 100; ++l) {
-				//	ent->enemy_meseta[l][0] = ntohs(buf->enemy_meseta[l][0]);
-				//	ent->enemy_meseta[l][1] = ntohs(buf->enemy_meseta[l][1]);
-				//}
-
-				//for (l = 0; l < 10; ++l) {
-				//	ent->box_meseta[l][0] = ntohs(buf->box_meseta[l][0]);
-				//	ent->box_meseta[l][1] = ntohs(buf->box_meseta[l][1]);
-				//}
 			}
 		}
 	}
@@ -1248,7 +1230,7 @@ already_picked:
 }
 
 static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
-	struct mt19937_state* rng, int picked, int bb,
+	struct mt19937_state* rng, int picked,
 	lobby_t* l) {
 	uint32_t rnd, upcts = 0;
 	int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
@@ -1298,7 +1280,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 			if (ent->subtype_area_length_table[i] <= 0) {
 				ITEM_LOG("无效 BB 武器 upgrade floor value for "
 					"floor %d, weapon type %d. 请检查您的 ItemPT.gsl "
-					"file (%s) 是否有效!", area, i, bb ? "BB" : "GC");
+					"文件 (BB) 是否有效!", area, i);
 				return -1;
 			}
 
@@ -1314,8 +1296,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 	/* 合理性检查... This shouldn't happen! */
 	if (!j) {
-		ITEM_LOG("层级 %d 未生成 BB 武器物品, 请检查 ItemPT.gsl 文件 (%s) 有效性!", area,
-			bb ? "BB" : "GC");
+		ITEM_LOG("层级 %d 未生成 BB 武器物品, 请检查 ItemPT.gsl 文件 (BB) 有效性!", area);
 		return -1;
 	}
 
@@ -1367,8 +1348,8 @@ already_picked:
 	/* 合理性检查... */
 	if (i >= 9) {
 		ITEM_LOG("Invalid power pattern for floor %d, pattern "
-			"number %d. 请检查您的 ItemPT.gsl (%s) 是否有效!",
-			area, warea, bb ? "BB" : "GC");
+			"number %d. 请检查您的 ItemPT.gsl (BB) 是否有效!",
+			area, warea);
 		return -1;
 	}
 
@@ -1703,13 +1684,12 @@ static int generate_armor_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 }
 
 static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
-	struct mt19937_state* rng, int picked, int bb,
+	struct mt19937_state* rng, int picked,
 	lobby_t* l) {
 	uint32_t rnd;
 	int i, armor = -1;
 	uint8_t* item_b = (uint8_t*)item;
 	uint16_t* item_w = (uint16_t*)item;
-	pmt_guard_gc_t gcg;
 	pmt_guard_bb_t bbg;
 	uint8_t dfp, evp;
 
@@ -1738,15 +1718,14 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 		/* 合理性检查... */
 		if (armor == -1) {
-			ITEM_LOG("无法生成 %s 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!",
-				bb ? "BB" : "GC");
+			ITEM_LOG("无法生成 BB 版本的 装甲. 请检查您的 ItemPT.gsl 文件是否有效!");
 			return -1;
 		}
 
 		/* Figure out what the byte we'll use is */
 		armor = (ent->armor_level) - 3 + area + armor;
 
-		if (armor < 0)
+		if (armor < 0 || armor > 0x57)
 			armor = 0;
 
 #ifdef DEBUG
@@ -1783,24 +1762,13 @@ static int generate_armor_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 	/* Look up the item in the ItemPMT data so we can see what boosts we might
 	   apply... */
-	if (!bb) {
-		if (pmt_lookup_guard_gc(item[0], &gcg)) {
-			ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
-			return -2;
-		}
-
-		dfp = gcg.dfp_range;
-		evp = gcg.evp_range;
+	if (pmt_lookup_guard_bb(item[0], &bbg)) {
+		ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
+		return -2;
 	}
-	else {
-		if (pmt_lookup_guard_bb(item[0], &bbg)) {
-			ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 装甲 类型的物品数据 (item[0] 代码 %08X).", item[0]);
-			return -2;
-		}
 
-		dfp = bbg.dfp_range;
-		evp = bbg.evp_range;
-	}
+	dfp = bbg.dfp_range;
+	evp = bbg.evp_range;
 
 #ifdef DEBUG
 	if (l->flags & LOBBY_FLAG_DBG_SDROPS)
@@ -2020,12 +1988,11 @@ static int generate_shield_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 }
 
 static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
-	struct mt19937_state* rng, int picked, int bb,
+	struct mt19937_state* rng, int picked,
 	lobby_t* l) {
 	uint32_t rnd;
 	int i, armor = -1;
 	uint16_t* item_w = (uint16_t*)item;
-	pmt_guard_gc_t gcg;
 	pmt_guard_bb_t bbg;
 	uint8_t dfp, evp;
 	errno_t err = 0;
@@ -2055,16 +2022,15 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 		/* 合理性检查... */
 		if (armor == -1) {
-			ITEM_LOG("无法找到可生成的 %s 护盾. 请"
-				"检查你的 ItemPT.gsl 文件是否有效!",
-				bb ? "BB" : "GC");
+			ITEM_LOG("无法找到可生成的 BB 护盾. 请"
+				"检查你的 ItemPT.gsl 文件是否有效!");
 			return -1;
 		}
 
 		/* Figure out what the byte we'll use is */
 		armor = (ent->armor_level) - 3 + area + armor;
 
-		if (armor < 0)
+		if (armor < 0 || armor > 0xA4)
 			armor = 0;
 
 #ifdef DEBUG
@@ -2080,28 +2046,15 @@ static int generate_shield_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 	/* Look up the item in the ItemPMT data so we can see what boosts we might
 	   apply... */
-	if (!bb) {
-		err = pmt_lookup_guard_gc(item[0], &gcg);
+	err = pmt_lookup_guard_bb(item[0], &bbg);
 
-		if (err) {
-			ITEM_LOG("ItemPMT.prs 文件版本 GC 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X 错误码 %d).", item[0], err);
-			return -2;
-		}
-
-		dfp = gcg.dfp_range;
-		evp = gcg.evp_range;
+	if (err) {
+		ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X 错误码 %d).", item[0], err);
+		return -2;
 	}
-	else {
-		err = pmt_lookup_guard_bb(item[0], &bbg);
 
-		if (err) {
-			ITEM_LOG("ItemPMT.prs 文件版本 BB 似乎缺少了一件 护盾 类型的物品数据 (item[0] 代码 %08X 错误码 %d).", item[0], err);
-			return -2;
-		}
-
-		dfp = bbg.dfp_range;
-		evp = bbg.evp_range;
-	}
+	dfp = bbg.dfp_range;
+	evp = bbg.evp_range;
 
 #ifdef DEBUG
 	if (l->flags & LOBBY_FLAG_DBG_SDROPS)
@@ -4073,7 +4026,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and
 			   such... */
-			if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+			if (generate_weapon_bb(ent, area, item, rng, 1, l))
 				return 0;
 			break;
 
@@ -4082,13 +4035,13 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 			switch ((item[0] >> 8) & 0xFF) {
 			case ITEM_SUBTYPE_FRAME:
 				/* Armor -- Add DFP/EVP boosts and slots */
-				if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_armor_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
 			case ITEM_SUBTYPE_BARRIER:
 				/* Shield -- Add DFP/EVP boosts */
-				if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_shield_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
@@ -4143,7 +4096,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		switch (ent->enemy_item_classes[pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
-			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_weapon_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -4151,7 +4104,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		case BOX_TYPE_ARMOR:
 			/* Drop an armor */
-			if (generate_armor_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_armor_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -4159,7 +4112,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		case BOX_TYPE_SHIELD:
 			/* Drop a shield */
-			if (generate_shield_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_shield_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -4448,7 +4401,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and
 			   such... */
-			if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+			if (generate_weapon_bb(ent, area, item, rng, 1, l))
 				return 0;
 			break;
 
@@ -4457,13 +4410,13 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 			switch ((item[0] >> 8) & 0xFF) {
 			case ITEM_SUBTYPE_FRAME:
 				/* Armor -- Add DFP/EVP boosts and slots */
-				if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_armor_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
 			case ITEM_SUBTYPE_BARRIER:
 				/* Shield -- Add DFP/EVP boosts */
-				if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_shield_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
@@ -4513,7 +4466,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	if ((rnd -= ent->box_drop[BOX_TYPE_WEAPON][area]) > 100) {
 	generate_weapon:
 		/* Generate a weapon */
-		if (generate_weapon_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_weapon_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb_lobby(src, l, item, src->cur_area,
@@ -4522,7 +4475,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	else if ((rnd -= ent->box_drop[BOX_TYPE_ARMOR][area]) > 100) {
 	generate_armor:
 		/* Generate an armor */
-		if (generate_armor_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_armor_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb_lobby(src, l, item, src->cur_area,
@@ -4530,7 +4483,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 	else if ((rnd -= ent->box_drop[BOX_TYPE_SHIELD][area]) > 100) {
 		/* Generate a shield */
-		if (generate_shield_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_shield_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb_lobby(src, l, item, src->cur_area,
@@ -4764,7 +4717,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and
 			   such... */
-			if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+			if (generate_weapon_bb(ent, area, item, rng, 1, l))
 				return 0;
 			break;
 
@@ -4773,13 +4726,13 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 			switch ((item[0] >> 8) & 0xFF) {
 			case ITEM_SUBTYPE_FRAME:
 				/* Armor -- Add DFP/EVP boosts and slots */
-				if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_armor_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
 			case ITEM_SUBTYPE_BARRIER:
 				/* Shield -- Add DFP/EVP boosts */
-				if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_shield_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
@@ -4830,7 +4783,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		switch (ent->enemy_item_classes[pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
-			if (generate_weapon_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_weapon_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -4838,7 +4791,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		case BOX_TYPE_ARMOR:
 			/* Drop an armor */
-			if (generate_armor_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_armor_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -4846,7 +4799,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		case BOX_TYPE_SHIELD:
 			/* Drop a shield */
-			if (generate_shield_bb(ent, area, item, rng, 0, 1, l)) {
+			if (generate_shield_bb(ent, area, item, rng, 0, l)) {
 				return 0;
 			}
 
@@ -5132,7 +5085,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and
 			   such... */
-			if (generate_weapon_bb(ent, area, item, rng, 1, 1, l))
+			if (generate_weapon_bb(ent, area, item, rng, 1, l))
 				return 0;
 			break;
 
@@ -5141,13 +5094,13 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 			switch ((item[0] >> 8) & 0xFF) {
 			case ITEM_SUBTYPE_FRAME:
 				/* Armor -- Add DFP/EVP boosts and slots */
-				if (generate_armor_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_armor_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
 			case ITEM_SUBTYPE_BARRIER:
 				/* Shield -- Add DFP/EVP boosts */
-				if (generate_shield_bb(ent, area, item, rng, 1, 1, l))
+				if (generate_shield_bb(ent, area, item, rng, 1, l))
 					return 0;
 				break;
 
@@ -5201,7 +5154,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	if ((rnd -= ent->box_drop[BOX_TYPE_WEAPON][area]) > 100) {
 	generate_weapon:
 		/* Generate a weapon */
-		if (generate_weapon_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_weapon_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb(src, item, src->cur_area,
@@ -5210,7 +5163,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	else if ((rnd -= ent->box_drop[BOX_TYPE_ARMOR][area]) > 100) {
 	generate_armor:
 		/* Generate an armor */
-		if (generate_armor_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_armor_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb(src, item, src->cur_area,
@@ -5218,7 +5171,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	}
 	else if ((rnd -= ent->box_drop[BOX_TYPE_SHIELD][area]) > 100) {
 		/* Generate a shield */
-		if (generate_shield_bb(ent, area, item, rng, 0, 1, l))
+		if (generate_shield_bb(ent, area, item, rng, 0, l))
 			return 0;
 
 		return check_and_send_bb(src, item, src->cur_area,

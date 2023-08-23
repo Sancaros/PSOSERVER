@@ -27,6 +27,7 @@
     <ClCompile Include="enemy_type.c" />
     <ClCompile Include="gm.c" />
     <ClCompile Include="handle_player_items.c" />
+    <ClCompile Include="item_random.c" />
     <ClCompile Include="list.c" />
     <ClCompile Include="lobby.c" />
     <ClCompile Include="item_magedit.c" />
@@ -62,6 +63,7 @@
     <ClInclude Include="bans.h" />
     <ClInclude Include="block.h" />
     <ClInclude Include="itempmt_unused.h" />
+    <ClInclude Include="item_random.h" />
     <ClInclude Include="mageditdata.h" />
     <ClInclude Include="mag_bb_unused.h" />
     <ClInclude Include="records.h" />

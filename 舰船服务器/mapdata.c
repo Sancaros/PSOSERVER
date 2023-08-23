@@ -939,6 +939,12 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             /* We're done with the file, so close it */
             fclose(fp);
 
+#ifdef DEBUG
+
+            DBG_LOG("episode %d", episode);
+
+#endif // DEBUG
+
             /* Parse */
             if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], episode + 1,
                          0, area)) {
@@ -1267,13 +1273,13 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
 }
 
 static int read_bb_map_files(char* fn) {
-    int srv, i, j, k;
-    for (i = 0; i < 2;++i) {
+    int srv, solo, episode, area;
+    for (solo = 0; solo < 2;++solo) {
         //printf("k = %d \n", k);
-        for (j = 0; j < 3; ++j) {                            /* 章节 */
-            for (k = 0; k < 16 && k <= max_area[j]; ++k) {   /* 区域 */
+        for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
+            for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
                 /* 读取多人和单人模式地图. */
-                srv = read_bb_map_set(i, j, k, fn);
+                srv = read_bb_map_set(solo, episode, area, fn);
                 /*if ((srv = read_bb_map_set(0, i, j, fn)))
                     return srv;
                 if ((srv = read_bb_map_set(1, i, j, fn)))
@@ -2041,17 +2047,20 @@ int map_have_bb_maps(void) {
 }
 
 static void parse_quest_objects(const uint8_t *data, uint32_t len,
-                                uint32_t *obj_cnt,
+                                uint32_t *obj_cnt, uint32_t* enemy_cnt, uint32_t* unk_cnt,
                                 const quest_dat_hdr_t *ptrs[4][17]) {
     const quest_dat_hdr_t *hdr = (const quest_dat_hdr_t *)data;
     uint32_t ptr = 0;
     uint32_t obj_count = 0;
     uint32_t enemy_count = 0;
+    uint32_t unknow_count = 0;
 
     while(ptr < len) {
+#ifdef DEBUG
 
-        //DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
+        DBG_LOG("obj_type %d next_hdr %d", hdr->obj_type, hdr->next_hdr);
 
+#endif // DEBUG
         switch(LE32(hdr->obj_type)) {
             case 0x01:                      /* 实例 */
                 ptrs[0][LE32(hdr->area)] = hdr;
@@ -2069,6 +2078,7 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
 
             case 0x03:                      /* TODO 此处需要修复 ??? - Skip */
                 ptrs[2][LE32(hdr->area)] = hdr;
+                unknow_count += LE32(hdr->size) / sizeof(map_enemy_t);
                 ptr += hdr->next_hdr;
                 hdr = (const quest_dat_hdr_t *)(data + ptr);
                 break;
@@ -2089,12 +2099,14 @@ static void parse_quest_objects(const uint8_t *data, uint32_t len,
     //DBG_LOG("敌人数量 %d", enemy_count);
 
     *obj_cnt = obj_count;
+    *enemy_cnt = enemy_count;
+    *unk_cnt = unknow_count;
 }
 
 int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                         int episode) {
     int i, alt;
-    uint32_t index, area, objects, j;
+    uint32_t index, area, objects, enemies, unknows, j;
     const quest_dat_hdr_t *ptrs[4][17] = { { 0 } };
     game_enemies_t tmp_en;
     FILE *fp;
@@ -2109,9 +2121,13 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     }
 
     /* 弄清楚该任务中敌人的总数... */
-    parse_quest_objects(dat, sz, &objects, ptrs);
-    //CONFIG_LOG("缓存文件: %s", ofn);
-    //CONFIG_LOG("对象数量: %" PRIu32 "", objects);
+    parse_quest_objects(dat, sz, &objects, &enemies, &unknows, ptrs);
+#ifdef DEBUG
+
+    CONFIG_LOG("缓存文件: %s", ofn);
+    CONFIG_LOG("对象数量: objects %" PRIu32 " enemies %" PRIu32 " unknows %" PRIu32 "", objects, enemies, unknows);
+
+#endif // DEBUG
 
     /* 按照稍后加载时需要的确切形式写出这些对象. */
     objects = LE32(objects);
@@ -2517,6 +2533,7 @@ const AreaMapFileIndex(*map_file_info_for_episode(uint32_t ep))[2][17]{
             return &map_file_info[0];
         case GAME_TYPE_EPISODE_2:
             return &map_file_info[1];
+        case GAME_TYPE_EPISODE_3:
         case GAME_TYPE_EPISODE_4:
             return &map_file_info[2];
     }

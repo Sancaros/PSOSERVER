@@ -97,6 +97,7 @@ uint16_t key_for_params(uint32_t mode, uint32_t episode, uint8_t difficulty, uin
     case GAME_TYPE_EPISODE_2:
         key |= 0x0100;
         break;
+    case GAME_TYPE_EPISODE_3:
     case GAME_TYPE_EPISODE_4:
         key |= 0x0200;
         break;
@@ -562,6 +563,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
         else
             game_type = 1;
         break;
+    case GAME_TYPE_EPISODE_3:
     case GAME_TYPE_EPISODE_4:
         game_type = 3;
         break;

@@ -26,6 +26,7 @@
 
 #include <f_logs.h>
 #include <mtwist.h>
+#include <pso_StringReader.h>
 
 #include <PRS.h>
 
@@ -102,10 +103,10 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
     uint32_t i;
 #endif
 
-    memcpy(&tmp, pmt + sz - 16, sizeof(uint32_t));
+    memcpy(&tmp, pmt + sz - 0x10, sizeof(uint32_t));
     tmp = LE32(tmp);
 
-    if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 16) {
+    if(tmp + sizeof(pmt_table_offsets_v3_t) > sz - 0x10) {
         ERR_LOG("BB ItemPMT 中的指针表位置无效!");
         return -1;
     }
@@ -114,17 +115,18 @@ static int read_bbptr_tbl(const uint8_t *pmt, uint32_t sz, pmt_table_offsets_v3_
 
 #ifdef DEBUG
 
-    DBG_LOG("armor_table offsets = %u", ptrs->armor_table);
-    DBG_LOG("ranged_special_table offsets = %u", ptrs->ranged_special_table);
     for (int i = 0; i < 23; ++i) {
         DBG_LOG("offsets = 0x%08X", ptrs->ptr[i]);
     }
 
+    DBG_LOG("armor_table offsets = %u", ptrs->armor_table);
+    DBG_LOG("ranged_special_table offsets = %u", ptrs->ranged_special_table);
+
 #endif // DEBUG
 
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
-    for(int i = 0; i < 23; ++i) {
-        ptrs.ptr[i] = LE32(ptrs.ptr[i]);
+    for (int i = 0; i < 23; ++i) {
+        ptrs->ptr[i] = LE32(ptrs->ptr[i]);
     }
 #endif
 
@@ -290,7 +292,8 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
 
 static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
                            const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t cnt, i, values[2], j;
+    uint32_t cnt, i, j;
+    pmt_countandoffset_t values;
 
     /* Make sure the 指针无效 are sane... */
     if(ptrs->weapon_table > sz || ptrs->weapon_table > ptrs->combination_table) {
@@ -325,29 +328,36 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs->weapon_table + (i << 3), sizeof(uint32_t) * 2);
-        values[0] = LE32(values[0]);
-        values[1] = LE32(values[1]);
+        memcpy(&values, pmt + ptrs->weapon_table + (i << 3), sizeof(pmt_countandoffset_t));
+        values.count = LE32(values.count);
+        values.offset = LE32(values.offset);
 
         /* Make sure we have enough file... */
-        if(values[1] + sizeof(pmt_weapon_bb_t) * values[0] > sz) {
+        if(values.offset + sizeof(pmt_weapon_bb_t) * values.count > sz) {
             ERR_LOG("ItemPMT.prs file for BB has weapon table outside "
                   "of file bounds! 请检查文件的有效性!");
             return -4;
         }
 
-        num_weapons_bb[i] = values[0];
+        num_weapons_bb[i] = values.count;
         if(!(weapons_bb[i] = (pmt_weapon_bb_t *)malloc(sizeof(pmt_weapon_bb_t) *
-                                                       values[0]))) {
+                                                       values.count))) {
             ERR_LOG("Cannot allocate space for BB weapons: %s",
                   strerror(errno));
             return -5;
         }
 
-        memcpy(weapons_bb[i], pmt + values[1],
-               sizeof(pmt_weapon_bb_t) * values[0]);
+        memcpy(weapons_bb[i], pmt + values.offset,
+               sizeof(pmt_weapon_bb_t) * values.count);
 
-        for(j = 0; j < values[0]; ++j) {
+        for(j = 0; j < values.count; ++j) {
+#ifdef DEBUG
+            DBG_LOG("/////////////// %d", i);
+            DBG_LOG("base.index %u", weapons_bb[i][j].base.index);
+            DBG_LOG("base.team_points %u", weapons_bb[i][j].base.team_points);
+            DBG_LOG("equip_flag %u", weapons_bb[i][j].equip_flag);
+#endif // DEBUG
+
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
             weapons_bb[i][j].index = LE32(weapons_bb[i][j].index);
             weapons_bb[i][j].model = LE16(weapons_bb[i][j].model);
@@ -535,7 +545,8 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
 
 static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
                           const pmt_table_offsets_v3_t* ptrs) {
-    uint32_t cnt, i, values[2], j;
+    uint32_t cnt, i, j;
+    pmt_countandoffset_t values;
 
     /* Make sure the 指针无效 are sane... */
     if(ptrs->unit_table > sz || ptrs->armor_table > ptrs->unit_table) {
@@ -578,29 +589,29 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
     /* Read in each table... */
     for(i = 0; i < cnt; ++i) {
         /* Read the pointer and the size... */
-        memcpy(values, pmt + ptrs->armor_table + (i << 3), sizeof(uint32_t) * 2);
-        values[0] = LE32(values[0]);
-        values[1] = LE32(values[1]);
+        memcpy(&values, pmt + ptrs->armor_table + (i << 3), sizeof(pmt_countandoffset_t));
+        values.count = LE32(values.count);
+        values.offset = LE32(values.offset);
 
         /* Make sure we have enough file... */
-        if(values[1] + sizeof(pmt_guard_bb_t) * values[0] > sz) {
+        if(values.offset + sizeof(pmt_guard_bb_t) * values.count > sz) {
             ERR_LOG("ItemPMT.prs file for BB has guard table outside "
                   "of file bounds! 请检查文件的有效性!");
             return -5;
         }
 
-        num_guards_bb[i] = values[0];
+        num_guards_bb[i] = values.count;
         if(!(guards_bb[i] = (pmt_guard_bb_t *)malloc(sizeof(pmt_guard_bb_t) *
-                                                     values[0]))) {
+                                                     values.count))) {
             ERR_LOG("Cannot allocate space for BB guards: %s",
                   strerror(errno));
             return -6;
         }
 
-        memcpy(guards_bb[i], pmt + values[1],
-               sizeof(pmt_guard_bb_t) * values[0]);
+        memcpy(guards_bb[i], pmt + values.offset,
+               sizeof(pmt_guard_bb_t) * values.count);
 
-        for(j = 0; j < values[0]; ++j) {
+        for(j = 0; j < values.count; ++j) {
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
             guards_bb[i][j].index = LE32(guards_bb[i][j].index);
             guards_bb[i][j].model = LE16(guards_bb[i][j].model);
@@ -751,11 +762,18 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
     memcpy(units_bb, pmt + values.offset, sizeof(pmt_unit_bb_t) * values.count);
 
     for(i = 0; i < values.count; ++i) {
+#ifdef DEBUG
+
+        DBG_LOG("index %d", units_bb[i].base.index);
+        DBG_LOG("stat %d", units_bb[i].stat);
+        DBG_LOG("amount %d", units_bb[i].amount);
+
+#endif // DEBUG
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
-        units_bb[i].index = LE32(units_bb[i].index);
-        units_bb[i].model = LE16(units_bb[i].model);
-        units_bb[i].skin = LE16(units_bb[i].skin);
-        units_bb[i].team_points = LE16(units_bb[i].team_points);
+        units_bb[i].base.index = LE32(units_bb[i].base.index);
+        units_bb[i].base.subtype = LE16(units_bb[i].subtype);
+        units_bb[i].base.skin = LE16(units_bb[i].base.skin);
+        units_bb[i].base.team_points = LE16(units_bb[i].base.team_points);
         units_bb[i].stat = LE16(units_bb[i].stat);
         units_bb[i].amount = LE16(units_bb[i].amount);
 #endif
@@ -936,7 +954,13 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
     /* 算出我们有多少张表... */
     num_tool_types_bb = cnt = (ptrs->weapon_table - ptrs->tool_table) / 8;
 
-    //DBG_LOG("num_tool_types_bb %d", num_tool_types_bb);
+#ifdef DEBUG
+
+    DBG_LOG("num_tool_types_bb %d", num_tool_types_bb);
+
+    getchar();
+
+#endif // DEBUG
 
     /* Allocate the stuff we need to allocate... */
     if (!(num_tools_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
@@ -988,9 +1012,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
         for (j = 0; j < values.count; ++j) {
 #ifdef DEBUG
-            DBG_LOG("index %d cost %d", j, tools_bb[i][j].cost);
-
-            getchar();
+            DBG_LOG("id %d index %d cost %d", j, tools_bb[i][j].base.index, tools_bb[i][j].cost);
 #endif // DEBUG
 
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)

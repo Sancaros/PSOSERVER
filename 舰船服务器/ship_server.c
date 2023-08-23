@@ -65,6 +65,7 @@
 #include "admin.h"
 #include "smutdata.h"
 #include "mageditdata.h"
+#include "item_random.h"
 
 #ifndef RUNAS_DEFAULT
 #define RUNAS_DEFAULT "psocn"
@@ -230,7 +231,7 @@ static psocn_ship_t* load_config(void) {
     psocn_ship_t* cfg;
 
     if (psocn_read_ship_config(psocn_ship_cfg, &cfg)) {
-        getchar();
+        (void)getchar();
         ERR_EXIT("无法读取设置文件 %s", psocn_ship_cfg);
     }
 
@@ -722,9 +723,8 @@ static void initialization() {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
-        getchar();
+        (void)getchar();
     }
-#endif
 
     HINSTANCE hinst = GetModuleHandle(NULL);
     consoleHwnd = GetConsoleWindow();
@@ -758,6 +758,7 @@ static void initialization() {
     // 设置崩溃处理函数
     SetUnhandledExceptionFilter(crash_handler);
 
+#endif
 }
 
 int read_param_file(psocn_ship_t* cfg) {
@@ -948,9 +949,9 @@ int read_param_file(psocn_ship_t* cfg) {
                     , cfg->mageditdata_file);
             }
         }
-
-        return rv;
     }
+
+    //load_ArmorRandomSet_data("System\\ItemRandom\\ArmorRandom_GC.rel");
 
     return 0;
 }

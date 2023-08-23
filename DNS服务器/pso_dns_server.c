@@ -651,7 +651,7 @@ static void initialization() {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
-        getchar();
+        (void)getchar();
     }
 #endif
 
@@ -711,7 +711,7 @@ int __cdecl main(int argc, char** argv) {
            systems. */
         if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
             ERR_EXIT("open_sock 错误");
-            getchar();
+            (void)getchar();
         }
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
@@ -726,7 +726,7 @@ int __cdecl main(int argc, char** argv) {
         /* Read in the configuration. */
         if (read_config(CONFIG_DIR, CONFIG_FILE)) {
             ERR_EXIT("read_config 错误");
-            getchar();
+            (void)getchar();
         }
 
         DNS_LOG("DNS服务器启动完成");

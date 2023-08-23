@@ -70,12 +70,10 @@ int32_t monster_error_log_console_show;
 int32_t script_log_console_show;
 int32_t config_log_console_show;
 
-uint8_t datadp[65535];
-
 void packet_to_text(uint8_t* buf, size_t len, bool show) {
 	static const char hex_digits[] = "0123456789ABCDEF";
 
-	memset(dp, 0, sizeof(dp));
+	memset(&dp[0], 0, sizeof(dp));
 
 	size_t c, c2, c3, c4;
 	c = c2 = c3 = c4 = 0;
@@ -129,7 +127,7 @@ void packet_to_text(uint8_t* buf, size_t len, bool show) {
 			dp[c2++] = 0x2E;
 	}
 
-	dp[c2] = '\0';
+	//dp[c2] = '\0';
 
 	if (show) {
 		// 打印结果
@@ -143,7 +141,7 @@ void packet_to_text(uint8_t* buf, size_t len, bool show) {
 }
 
 //显示数据用
-void display_packet(void* buf, size_t len) {
+void display_packet(const void* buf, size_t len) {
 	uint8_t* buff = (uint8_t*)buf;
 
 	if (!buff)

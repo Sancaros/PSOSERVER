@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+      <FILENAME>liolib.c</FILENAME>
+      <LINE>41</LINE>
+      <COLUMN>2</COLUMN>
+    </SFA>
+    <DEFECTCODE>6011</DEFECTCODE>
+    <DESCRIPTION>取消对 NULL 指针“mode”的引用。查看第 41 行以找出可能会发生此情况的前一位置</DESCRIPTION>
+    <FUNCTION>l_checkmode</FUNCTION>
+    <DECORATED>l_checkmode</DECORATED>
+    <FUNCLINE>40</FUNCLINE>
+    <PROBABILITY>1</PROBABILITY>
+    <RANK>4</RANK>
+    <CATEGORY>
+      <RULECATEGORY>mspft</RULECATEGORY>
+    </CATEGORY>
+    <PATH>
+      <SFA>
+        <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+        <FILENAME>liolib.c</FILENAME>
+        <LINE>41</LINE>
+        <COLUMN>2</COLUMN>
+        <KEYEVENT>
+          <ID>1</ID>
+          <KIND>usage</KIND>
+          <IMPORTANCE>Full</IMPORTANCE>
+          <MESSAGE>“mode”是对“strspn”的输入(在 c:\program files (x86)\windows kits\10\include\10.0.22621.0\ucrt\string.h:430 处声明)</MESSAGE>
+        </KEYEVENT>
+      </SFA>
+      <SFA>
+        <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+        <FILENAME>liolib.c</FILENAME>
+        <LINE>41</LINE>
+        <COLUMN>2</COLUMN>
+        <KEYEVENT>
+          <ID>2</ID>
+          <KIND>usage</KIND>
+          <IMPORTANCE>Essential</IMPORTANCE>
+          <MESSAGE>已取消对“mode”的引用，但可能仍为 NULL</MESSAGE>
+        </KEYEVENT>
+      </SFA>
+    </PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+      <FILENAME>liolib.c</FILENAME>
+      <LINE>41</LINE>
+      <COLUMN>2</COLUMN>
+    </SFA>
+    <DEFECTCODE>6387</DEFECTCODE>
+    <DESCRIPTION>"mode" 可以是 "0"。</DESCRIPTION>
+    <FUNCTION>l_checkmode</FUNCTION>
+    <DECORATED>l_checkmode</DECORATED>
+    <FUNCLINE>40</FUNCLINE>
+    <PROBABILITY>1</PROBABILITY>
+    <RANK>4</RANK>
+    <CATEGORY>
+      <RULECATEGORY>mspft</RULECATEGORY>
+    </CATEGORY>
+    <PATH>
+      <SFA>
+        <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+        <FILENAME>liolib.c</FILENAME>
+        <LINE>41</LINE>
+        <COLUMN>2</COLUMN>
+        <KEYEVENT>
+          <ID>1</ID>
+          <KIND>usage</KIND>
+          <IMPORTANCE>Full</IMPORTANCE>
+          <MESSAGE>“mode”是对“strspn”的输入(在 c:\program files (x86)\windows kits\10\include\10.0.22621.0\ucrt\string.h:430 处声明)</MESSAGE>
+        </KEYEVENT>
+      </SFA>
+      <SFA>
+        <FILEPATH>E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\src\</FILEPATH>
+        <FILENAME>liolib.c</FILENAME>
+        <LINE>41</LINE>
+        <COLUMN>2</COLUMN>
+        <KEYEVENT>
+          <ID>2</ID>
+          <KIND>usage</KIND>
+          <IMPORTANCE>Essential</IMPORTANCE>
+          <MESSAGE>“mode”不应为 NULL，因为这与“strspn”上的 SAL 批注不一致</MESSAGE>
+        </KEYEVENT>
+      </SFA>
+    </PATH>
+  </DEFECT>
+</DEFECTS>
