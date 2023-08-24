@@ -599,7 +599,8 @@ typedef struct shipgate_max_tech_lvl_bb {
 /* 用于传输玩家职业等级数值数据表 */
 typedef struct shipgate_pl_level_bb {
     shipgate_hdr_t hdr;
-    bb_level_table_t data;
+    uint32_t compressed_size;
+    uint8_t data[];
 } PACKED shipgate_pl_level_bb_pkt;
 
 /* 用于传输玩家职业等级数值数据表 */

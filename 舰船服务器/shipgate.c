@@ -3024,7 +3024,35 @@ static int handle_pl_level_bb(shipgate_conn_t* conn, shipgate_pl_level_bb_pkt* p
         return -1;
     }
 
-    bb_char_stats = pkt->data;
+    int sz;
+    uLong sz2, csz;
+
+    /* 获取压缩数据的大小 */
+    sz = (int)ntohl(pkt->compressed_size);
+    sz2 = sizeof(bb_level_table_t);
+    csz = (uLong)sz;
+
+#ifdef DEBUG
+
+    DBG_LOG("成功接收到数据 压缩大小 %d 字节", sz);
+
+#endif // DEBUG
+
+    /* 解压缩数据 */
+    if (uncompress((Bytef*)&bb_char_stats, &sz2, (Bytef*)pkt->data, csz) != Z_OK) {
+        ERR_LOG("无法解压角色数据");
+        return -2;
+    }
+
+    sz = sz2;
+
+#ifdef DEBUG
+
+    DBG_LOG("解压缩成功 原数据大小 %d", sz);
+
+#endif // DEBUG
+
+    //bb_char_stats = pkt->data;
 
     for (i = 0; i < MAX_PLAYER_CLASS_BB; i++) {
         if (bb_char_stats.start_stats_index[i] != i * 14) {

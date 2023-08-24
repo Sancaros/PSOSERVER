@@ -5420,6 +5420,8 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
 
         /* 最终给舰船发送一个 数据完成的响应 */
         send_recive_data_complete(c);
+
+        SGATE_LOG("%s: 舰闸数据发送完成", c->name);
     }
 
     return rv;

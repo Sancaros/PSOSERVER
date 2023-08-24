@@ -1343,11 +1343,17 @@ int load_bb_char_data(void) {
             return -2;
         }
 
-        //DBG_LOG("获取 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_chars.ch_class[i].character.dress_data.ch_class].cn_name, i);
-
         len += PSOCN_STLENGTH_BB_DB_CHAR;
 
+#ifdef DEBUG
+
+        display_packet(&default_chars.char_class[i].character.inv, PSOCN_STLENGTH_INV);
+
+        DBG_LOG("获取 Blue Burst 职业 %s 初始数据数据 索引 %d", pso_class[default_chars.ch_class[i].character.dress_data.ch_class].cn_name, i);
+
         //有用的结构数据 psocn_bb_mini_char_t  psocn_bb_char_t  inventory_t ，其他都可有可无
+#endif // DEBUG
+
     }
 
     AUTH_LOG("读取 %d 个职业初始角色数据, 共 %d 字节.", i, len);

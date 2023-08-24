@@ -1104,22 +1104,32 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
     return send_crypt(c, len, sendbuf);
 }
 
-int send_pl_lvl_data_bb(ship_t* c, bb_level_table_t* data) {
+int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_pl_level_bb_pkt* pkt = (shipgate_pl_level_bb_pkt*)sendbuf;
-    uint16_t len = sizeof(shipgate_pl_level_bb_pkt);
+    uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
+
+    if (!sendbuf) {
+        ERR_LOG("申请动态内存失败");
+        return -1;
+    }
 
     /* Make sure we don't try to send to a ship that won't know what to do with
        the packet. */
     if (c->proto_ver < 19)
         return 0;
 
+    if (len & 0x07)
+        len = (len + 8) & 0xFFF8;
+
     /* Swap that which we need to do */
     pkt->hdr.pkt_type = htons(SHDR_TYPE_BBLVLDATA);
     pkt->hdr.pkt_len = htons(len);
     pkt->hdr.flags = SHDR_RESPONSE;
 
-    memcpy(&pkt->data, data, sizeof(bb_level_table_t));
+    pkt->compressed_size = htonl(compressed_size);
+
+    memcpy(pkt->data, data, compressed_size);
 
     //DBG_LOG("测试 法术 %d.%s 职业 %d 等级 %d", 1, pkt->data[1].tech_name, 1, pkt->data[1].max_lvl[1]);
 
@@ -1150,6 +1160,11 @@ int send_player_max_tech_level_table_bb(ship_t* c) {
 int send_player_level_table_bb(ship_t* c) {
     bb_level_table_t* bb_level_tb = { 0 };
     int i;
+    Bytef* cmp_buf;
+    uLong cmp_sz;
+    int compressed = ~Z_OK;
+    int compress_power = 9;
+    size_t data_size = sizeof(bb_level_table_t);
 
     bb_level_tb = (bb_level_table_t*)malloc(sizeof(bb_level_table_t));
 
@@ -1163,7 +1178,25 @@ int send_player_level_table_bb(ship_t* c) {
         return -2;
     }
 
-    i = send_pl_lvl_data_bb(c, bb_level_tb);
+    /* 压缩角色数据 */
+    cmp_sz = compressBound((uLong)data_size);
+
+    if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
+        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)bb_level_tb,
+            (uLong)data_size, compress_power);
+    }
+
+    if (compressed == Z_OK && cmp_sz < data_size) {
+#ifdef DEBUG
+        DBG_LOG("压缩成功 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+#endif // DEBUG
+    }
+    else {
+        DBG_LOG("压缩失败 原大小 %d 压缩后 %d ", data_size, cmp_sz);
+        return -3;
+    }
+
+    i = send_pl_lvl_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
 
     free_safe(bb_level_tb);
 
