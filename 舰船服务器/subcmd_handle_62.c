@@ -1147,8 +1147,9 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     else {
         /* Add the item to the client's inventory. */
         if (!add_iitem(src, &iitem_data)) {
-            ERR_LOG("GC %u 拾取物品出错");
-            return 0;
+            ERR_LOG("GC %u 拾取物品出错", src->guildcard);
+            print_item_data(&iitem_data.data, src->version);
+            return -1;
         }
     }
 

@@ -552,6 +552,13 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
     uint32_t pid = primary_identifier(&iitem->data);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
+    // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
+    if (character->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值,当前 %d 个物品",
+            src->guildcard, character->inv.item_count);
+        return false;
+    }
+
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
         add_character_meseta(character, iitem->data.data2l);
@@ -578,13 +585,6 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
             return true;
         }
     }
-
-    // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
-    if (character->inv.item_count >= MAX_PLAYER_INV_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 背包物品数量超出最大值,当前 %d 个物品",
-            src->guildcard, character->inv.item_count);
-        return false;
-    }
     character->inv.iitems[character->inv.item_count] = *iitem;
     character->inv.item_count++;
     return true;
@@ -593,6 +593,12 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
 bool add_bitem(ship_client_t* src, const bitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
     psocn_bank_t* bank = get_client_bank_bb(src);
+    
+    if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
+        ERR_LOG("GC %" PRIu32 " 银行物品数量超出最大值",
+            src->guildcard);
+        return false;
+    }
 
     if (pid == MESETA_IDENTIFIER) {
         bank->meseta += item->data.data2l;
@@ -619,12 +625,6 @@ bool add_bitem(ship_client_t* src, const bitem_t* item) {
             bank->bitems[y].amount = bank->bitems[y].data.datab[5];
             return true;
         }
-    }
-
-    if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
-        ERR_LOG("GC %" PRIu32 " 银行物品数量超出最大值",
-            src->guildcard);
-        return false;
     }
     bank->bitems[bank->item_count] = *item;
     bank->item_count++;

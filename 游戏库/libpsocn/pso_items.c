@@ -257,9 +257,13 @@ const char* item_get_name(const item_t* item, int version) {
 	case ITEM_TYPE_MESETA: /* 美赛塔 */
 		break;
 
+#ifdef DEBUG
 	default:
 		ERR_LOG("未找到物品类型");
 		break;
+
+#endif // DEBUG
+
 	}
 
 	if (version == 5)

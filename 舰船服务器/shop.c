@@ -527,7 +527,7 @@ size_t price_for_item(const item_t* item) {
 
     case ITEM_TYPE_TOOL: {
         pmt_tool_bb_t pmt_tool = { 0 };
-        if (err = pmt_lookup_tools_bb(item->datal[0], &pmt_tool)) {
+        if (err = pmt_lookup_tools_bb(item->datal[0], item->datal[1], &pmt_tool)) {
             ERR_LOG("从PMT未获取到准确的数据! 0x%08X 错误码 %d", item->datal[0], err);
             return err;
         }

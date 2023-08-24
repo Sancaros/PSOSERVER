@@ -1012,6 +1012,8 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
         for (j = 0; j < values.count; ++j) {
 #ifdef DEBUG
+            if (i == 2)
+                DBG_LOG("id %d index %d cost %d", j, tools_bb[i][j].base.index, tools_bb[i][j].cost);
             DBG_LOG("id %d index %d cost %d", j, tools_bb[i][j].base.index, tools_bb[i][j].cost);
 #endif // DEBUG
 
@@ -2437,8 +2439,9 @@ int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
     return 0;
 }
 
-int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
-    uint8_t parts[3] = { 0 };
+int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv) {
+    uint8_t parts[4] = { 0 };
+    uint8_t parts2[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2446,9 +2449,15 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    parts[0] = (uint8_t)(code1 & 0xFF);
+    parts[1] = (uint8_t)((code1 >> 8) & 0xFF);
+    parts[2] = (uint8_t)((code1 >> 16) & 0xFF);
+    parts[3] = (uint8_t)((code1 >> 24) & 0xFF);
+
+    parts2[0] = (uint8_t)(code2 & 0xFF);
+    parts2[1] = (uint8_t)((code2 >> 8) & 0xFF);
+    parts2[2] = (uint8_t)((code2 >> 16) & 0xFF);
+    parts2[3] = (uint8_t)((code2 >> 24) & 0xFF);
 
 #ifdef DEBUG
     DBG_LOG("物品, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
@@ -2468,6 +2477,9 @@ int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv) {
     if (parts[1] > num_tool_types_bb) {
         return -3;
     }
+
+    if (parts[1] == ITEM_SUBTYPE_DISK)
+        parts[2] = parts2[0];
 
 #ifdef DEBUG
     DBG_LOG("index 0x%08X", tools_bb[parts[1]][parts[2]].base.index);
@@ -2927,7 +2939,7 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
 
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t tool = { 0 };
-        if (err = pmt_lookup_tools_bb(item->datal[0], &tool)) {
+        if (err = pmt_lookup_tools_bb(item->datal[0], item->datal[1], &tool)) {
             ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
             return NULL;
         }
@@ -2991,7 +3003,7 @@ uint8_t get_item_base_stars(const item_t* item) {
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t def = { 0 };
 
-        if (pmt_lookup_tools_bb(item->datal[0], &def)) {
+        if (pmt_lookup_tools_bb(item->datal[0], item->datal[1], &def)) {
             ERR_LOG("不存在物品数据! 0x%08X", item->datal[0]);
             return -1;
         }

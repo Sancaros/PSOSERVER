@@ -547,7 +547,7 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t* rv);
 int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t* rv);
 int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t* rv);
 int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv);
-int pmt_lookup_tools_bb(uint32_t code, pmt_tool_bb_t* rv);
+int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv);
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
 int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv);
 int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t item_index, pmt_mag_feed_result_t* rv);
