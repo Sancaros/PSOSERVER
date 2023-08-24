@@ -1729,9 +1729,25 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+//[2023年08月24日 19:10:08:279] 调试(ship_packets.c 8302): GC 10000000 载入任务 quest118 (0 31)版本 Blue Brust
+//( 00000000 )   10 00 60 00 00 00 00 00   4D 02 00 00 03 00 00 00  ..`.....M.......
+
     inventory_t* inv = get_client_inv_bb(src);
 
+#ifdef DEBUG
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    for (size_t x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, src->version);
+    }
+
+#endif // DEBUG
+
     size_t mag_index = find_equipped_mag(inv);
+
+    if (mag_index == -1)
+        return -2;
 
     item_t* mag = &inv->iitems[mag_index].data;
     mag->data2b[0] = MAX((mag->data2b[0] - 5), 0);

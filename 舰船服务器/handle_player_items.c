@@ -182,8 +182,8 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     return 1;
 }
 
-size_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
-    size_t x = 0;
+ssize_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
+    ssize_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id != item_id)
@@ -208,14 +208,15 @@ size_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
     return -2;
 }
 
-size_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
-    size_t x = 0;
+ssize_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
+    ssize_t x = -1;
 
-    for (x = 0; x < bank->item_count; x++) {
-        if (bank->bitems[x].data.item_id != item_id)
+    for (size_t y = 0; y < bank->item_count; y++) {
+        if (bank->bitems[y].data.item_id != item_id)
             continue;
 
-        return x;
+        x = y;
+        break;
     }
 
 #ifdef DEBUG
@@ -235,9 +236,9 @@ size_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
 }
 
 /* 仅用于PD PC 等独立堆叠物品 不可用于单独物品 */
-size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
+ssize_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x = 0;
+    ssize_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -262,9 +263,9 @@ size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
     return -2;
 }
 
-size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
+ssize_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x = 0;
+    ssize_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -289,9 +290,9 @@ size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     return -2;
 }
 
-size_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
+ssize_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    size_t x = 0;
+    ssize_t x = 0;
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -317,7 +318,7 @@ size_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_weapon(const inventory_t* inv){
+ssize_t find_equipped_weapon(const inventory_t* inv){
     ssize_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
@@ -340,7 +341,7 @@ size_t find_equipped_weapon(const inventory_t* inv){
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_armor(const inventory_t* inv) {
+ssize_t find_equipped_armor(const inventory_t* inv) {
     ssize_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
@@ -364,8 +365,8 @@ size_t find_equipped_armor(const inventory_t* inv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-size_t find_equipped_mag(const inventory_t* inv) {
-    size_t ret = -1;
+ssize_t find_equipped_mag(const inventory_t* inv) {
+    ssize_t ret = -1;
     for (size_t y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
             continue;
@@ -383,6 +384,7 @@ size_t find_equipped_mag(const inventory_t* inv) {
     if (ret < 0) {
         ERR_LOG("未从背包中找已装备的玛古");
     }
+    DBG_LOG("ret %u", ret);
     return ret;
 }
 
