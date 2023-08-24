@@ -1,2 +1,0 @@
-E:\梦幻之星项目\PSOSERVER\Library\libpsoarchive.lib.lastcodeanalysissucceeded
-E:\梦幻之星项目\PSOSERVER\游戏库\libpsoarchive\Library\NativeCodeAnalysis.read.1.tlog

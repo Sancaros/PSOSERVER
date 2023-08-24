@@ -1003,7 +1003,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_unequip_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id;
-    uint32_t item_count, i, isframe = 0;
+    int item_count, i = 0, isframe = 0;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1031,9 +1031,9 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     i = find_iitem_index(inv, item_id);
 
     /* 如果找不到该物品，则将用户从船上推下. */
-    if (i == -1) {
-        ERR_LOG("GC %" PRIu32 " 装备无效物品!", src->guildcard);
-        return -1;
+    if (i < 0) {
+        ERR_LOG("GC %" PRIu32 " 卸除无效装备物品! 错误码 %d", src->guildcard, i);
+        return i;
     }
 
     inv->iitems[i].flags &= LE32(0xFFFFFFF7);
@@ -1205,13 +1205,13 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     inventory_t* inv = get_client_inv_bb(src);
 
     /* 在玩家背包中查找物品. */
-    size_t index = find_iitem_index(inv, item_id);
+    int index = find_iitem_index(inv, item_id);
 
     /* If the item isn't found, then punt the user from the ship. */
-    if (index == -1) {
-        ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符!",
-            src->guildcard, inv->iitems[index].data.item_id, item_id);
-        return -1;
+    if (index < 0) {
+        ERR_LOG("GC %" PRIu32 " 掉落了的物品 ID 0x%04X 与 数据包 ID 0x%04X 不符! 错误码 %d",
+            src->guildcard, inv->iitems[index].data.item_id, item_id, index);
+        return index;
     }
 
     iitem_t* drop_iitem = &inv->iitems[index];
@@ -1732,6 +1732,8 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 //[2023年08月24日 19:10:08:279] 调试(ship_packets.c 8302): GC 10000000 载入任务 quest118 (0 31)版本 Blue Brust
 //( 00000000 )   10 00 60 00 00 00 00 00   4D 02 00 00 03 00 00 00  ..`.....M.......
 
+    src->game_data->death = 1;
+
     inventory_t* inv = get_client_inv_bb(src);
 
 #ifdef DEBUG
@@ -1744,15 +1746,20 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    size_t mag_index = find_equipped_mag(inv);
+    int mag_index = find_equipped_mag(inv);
 
-    if (mag_index == -1)
-        return -2;
+    /* 没有找到MAG 直接发送出去 */
+    if (mag_index == -1) {
+#ifdef DEBUG
+
+        ERR_LOG("未从 GC %" PRIu32 " 背包中找已装备的玛古", src->guildcard);
+
+#endif // DEBUG
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
 
     item_t* mag = &inv->iitems[mag_index].data;
-    mag->data2b[0] = MAX((mag->data2b[0] - 5), 0);
-
-    src->game_data->death = 1;
+    mag->data2b[0] = MAX((mag->data2b[0] - pkt->flag), 0);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2836,7 +2843,7 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_Unknown_6x84_t* pkt) {
+    subcmd_bb_boss_act_ofp_u_sp_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
     /* We can't get these in lobbies without someone messing with something
@@ -2854,10 +2861,125 @@ static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d", 
+#ifdef DEBUG
+    //[2023年07月23日 12:36 : 00 : 544] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:36 : 00 : 560] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 05 03 01 04  ..`..... ? ......
+//(00000010)   00 02 02 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:36 : 15 : 695] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:36 : 15 : 711] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 03 04 00 02  ..`..... ? ......
+//(00000010)   05 01 03 00 02 00 C8 02                           ...... ?
+//[2023年07月23日 12:36 : 33 : 085] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:36 : 33 : 100] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 01 05 02 04  ..`..... ? ......
+//(00000010)   00 03 04 00 02 00 C8 02                           ...... ?
+//[2023年07月23日 12:36 : 53 : 985] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:36 : 53 : 998] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 01 05 04 00  ..`..... ? ......
+//(00000010)   03 02 05 00 01 00 C8 02                           ...... ?
+//[2023年07月23日 12:37 : 12 : 191] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:37 : 12 : 207] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 01 04 05 03  ..`..... ? ......
+//(00000010)   00 02 05 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:37 : 27 : 285] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:37 : 27 : 285] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 00 01 04 02  ..`..... ? ......
+//(00000010)   05 03 05 00 01 00 C8 02                           ...... ?
+//[2023年07月23日 12:37 : 49 : 412] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:37 : 49 : 433] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 03 04 01 02  ..`..... ? ......
+//(00000010)   05 00 05 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:38 : 11 : 110] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:38 : 11 : 124] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 04 02 00 05  ..`..... ? ......
+//(00000010)   01 00 05 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:38 : 31 : 392] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:38 : 31 : 408] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 02 01 05 00  ..`..... ? ......
+//(00000010)   04 00 05 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:38 : 46 : 553] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年07月23日 12:38 : 46 : 565] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 09 15 04 00 02 01  ..`..... ? ......
+//(00000010)   05 00 05 00 00 00 C8 02                           ...... ?
+//[2023年07月23日 12:39 : 29 : 941] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x85 版本 bb(5) 的处理
+//[2023年07月23日 12:39 : 29 : 956] 调试(subcmd_handle_60.c 3862) : 未知 0x60 指令 : 0x85
+//(00000000)   1C 00 60 00 00 00 00 00   85 05 00 00 00 00 1B 00  ..`..... ? ......
+//(00000010)   10 00 20 00 EC E8 43 00   A7 73 00 00             ...扈C...
+//[2023年08月20日 17:53 : 59 : 609] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:53 : 59 : 624] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 01 04 02 03  ..`..... ? H.....
+//(00000010)   00 05 02 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:54 : 18 : 238] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:54 : 18 : 252] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 01 04 03 05  ..`..... ? H.....
+//(00000010)   00 02 03 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:54 : 35 : 411] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:54 : 35 : 426] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 02 05 00 01  ..`..... ? H.....
+//(00000010)   03 04 04 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:54 : 54 : 241] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:54 : 54 : 254] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 02 00 05 01  ..`..... ? H.....
+//(00000010)   03 04 05 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:55 : 12 : 135] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:55 : 12 : 148] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 04 01 02  ..`..... ? H.....
+//(00000010)   00 03 05 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:55 : 28 : 110] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:55 : 28 : 123] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 02 04 01  ..`..... ? H.....
+//(00000010)   03 00 05 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:55 : 43 : 457] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:55 : 43 : 470] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 04 00 02  ..`..... ? H.....
+//(00000010)   01 03 05 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:56 : 00 : 579] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:56 : 00 : 594] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 02 03 05 01  ..`..... ? H.....
+//(00000010)   04 00 05 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:56 : 21 : 243] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:56 : 21 : 255] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 01 04 03 00  ..`..... ? H.....
+//(00000010)   05 00 05 00 02 00 EA 03                           ...... ?
+//[2023年08月20日 17:56 : 42 : 981] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:56 : 42 : 996] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 04 03 01  ..`..... ? H.....
+//(00000010)   00 00 05 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:57 : 07 : 216] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:57 : 07 : 229] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 00 03 01 04  ..`..... ? H.....
+//(00000010)   05 00 05 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:57 : 27 : 307] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:57 : 27 : 320] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 03 01 04  ..`..... ? H.....
+//(00000010)   00 00 05 00 00 00 EA 03                           ...... ?
+//[2023年08月20日 17:57 : 40 : 893] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:57 : 40 : 904] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 00 03 01 05  ..`..... ? H.....
+//(00000010)   04 00 05 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:57 : 59 : 437] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:57 : 59 : 451] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 05 01 03 00  ..`..... ? H.....
+//(00000010)   04 00 05 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:58 : 30 : 969] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:58 : 30 : 986] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 00 03 01 04  ..`..... ? H.....
+//(00000010)   04 00 04 00 01 00 EA 03                           ...... ?
+//[2023年08月20日 17:58 : 44 : 881] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:58 : 44 : 894] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 03 04 01 00  ..`..... ? H.....
+//(00000010)   04 00 04 00 02 00 EA 03                           ...... ?
+//[2023年08月20日 17:58 : 58 : 509] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x84 版本 bb(5) 的处理
+//[2023年08月20日 17:58 : 58 : 522] 调试(subcmd_handle_60.c 4906) : 未知 0x60 指令 : 0x84
+//(00000000)   18 00 60 00 00 00 00 00   84 04 48 11 04 00 03 01  ..`..... ? H.....
+//(00000010)   04 00 04 00 00 00 EA 03                           ...... ?
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
     display_packet(pkt, pkt->hdr.pkt_len);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3373,6 +3495,8 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
     //[2023年07月06日 13:15:14:214] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x9C 版本 5 的处理
     //[2023年07月06日 13:15:14:233] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
     //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 F0 10 10 00 00 00  ..`.....??....
@@ -3389,6 +3513,11 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年07月06日 13:16:42:735] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x9C
     //( 00000000 )   10 00 60 00 00 00 00 00   9C 02 11 11 10 00 00 00  ..`.....?......
 
+
+    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+#endif // DEBUG
 
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
@@ -4144,7 +4273,12 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
             sorted.iitems[x].data.item_id = EMPTY_STRING;
         }
         else {
-            size_t index = find_iitem_index(&character->inv, pkt->item_ids[x]);
+            int index = find_iitem_index(&character->inv, pkt->item_ids[x]);
+            if (index < 0) {
+                ERR_LOG("GC %" PRIu32 " 整理物品失败! 错误码 %d",
+                    src->guildcard, index);
+                return index;
+            }
             sorted.iitems[x] = character->inv.iitems[index];
         }
     }
@@ -4589,12 +4723,18 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     inventory_t* inv = get_client_inv_bb(src);
 
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
-    if(work_item_id == -1) {
-        ERR_LOG("兑换失败, 未找到对应物品");
+    if (work_item_id == 0) {
+        ERR_LOG("GC %" PRIu32 " 兑换失败, 未找到对应物品", src->guildcard);
         return -1;
     }
     else {
-        iitem_t* del_item = &inv->iitems[find_iitem_index(inv, work_item_id)];
+        int index = find_iitem_index(inv, work_item_id);
+        if (index < 0) {
+            ERR_LOG("GC %" PRIu32 " 兑换物品失败! 错误码 %d",
+                src->guildcard, index);
+            return index;
+        }
+        iitem_t* del_item = &inv->iitems[index];
         size_t max_count = stack_size(&del_item->data);
         iitem_t pd = remove_iitem(src, del_item->data.item_id, max_count, src->version != CLIENT_VERSION_BB);
         if (&pd == NULL) {
@@ -4654,7 +4794,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     compare_item.data = pkt->compare_item;
     uint32_t compare_item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &compare_item);
 
-    if (compare_item_id == -1) {
+    if (compare_item_id == 0) {
 
         ERR_LOG("GC %" PRIu32 " 没有兑换卷物品!", src->guildcard);
 
@@ -4839,7 +4979,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 80 - 8F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
     { SUBCMD60_PLACE_TRAP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
-    { SUBCMD60_UNKNOW_84                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_84_bb },
+    { SUBCMD60_BOSS_ACT_OFP_U_SP          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_84_bb },
     { SUBCMD60_HIT_DESTRUCTIBLE_OBJECT    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_86_bb },
     { SUBCMD60_ARROW_CHANGE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
     { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },

@@ -1641,6 +1641,10 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     id_item_index = find_iitem_index(&character->inv, item_id);
+    if (id_item_index < 0) {
+        ERR_LOG("GC %" PRIu32 " 鉴定的物品无效! 错误码 %d", src->guildcard, id_item_index);
+        return id_item_index;
+    }
 
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
@@ -2355,7 +2359,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         size_t item_id = find_iitem_stack_item_id(&character->inv, &ex_pc);
 
         /* 如果找不到该物品，则将用户从船上推下. */
-        if (item_id == -1) {
+        if (item_id == 0) {
             ERR_LOG("GC %" PRIu32 " 没有兑换所需物品!", src->guildcard);
             return -1;
         }

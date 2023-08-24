@@ -248,8 +248,18 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	psocn_bb_char_t* character = get_client_char_bb(src);
 
-	iitem_t* mag_item = &character->inv.iitems[find_iitem_index(&character->inv, mag_item_id)];
-	iitem_t* fed_item = &character->inv.iitems[find_iitem_index(&character->inv, feed_item_id)];
+	int mag_item_index = find_iitem_index(&character->inv, mag_item_id);
+	if (mag_item_index < 0) {
+		ERR_LOG("GC %" PRIu32 " Âê¹Å²»´æÔÚ! ´íÎóÂë %d", src->guildcard, mag_item_index);
+		return mag_item_index;
+	}
+	iitem_t* mag_item = &character->inv.iitems[mag_item_index];
+	int feed_item_index = find_iitem_index(&character->inv, feed_item_id);
+	if (feed_item_index < 0) {
+		ERR_LOG("GC %" PRIu32 " Î¹ÑøÎïÆ·²»´æÔÚ! ´íÎóÂë %d", src->guildcard, feed_item_index);
+		return feed_item_index;
+	}
+	iitem_t* fed_item = &character->inv.iitems[feed_item_index];
 	size_t result_index = find_result_index(primary_identifier(&fed_item->data));
 	pmt_mag_bb_t mag_table = { 0 };
 	if ((err = pmt_lookup_mag_bb(mag_item->data.datal[0], &mag_table))) {

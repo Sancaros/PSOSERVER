@@ -182,8 +182,13 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     return 1;
 }
 
-ssize_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
-    ssize_t x = 0;
+int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
+    int x = 0;
+
+    if(inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return -1;
+    }
 
     for (x = 0; x < inv->item_count; x++) {
         if (inv->iitems[x].data.item_id != item_id)
@@ -202,16 +207,21 @@ ssize_t find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
 
     if (x == inv->item_count) {
         ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
-        return -1;
+        return -2;
     }
 
-    return -2;
+    return -3;
 }
 
-ssize_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
-    ssize_t x = -1;
+int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
+    int x = -1;
 
-    for (size_t y = 0; y < bank->item_count; y++) {
+    if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
+        ERR_LOG("银行物品数量超出限制 %d", bank->item_count);
+        return x;
+    }
+
+    for (int y = 0; y < (int)bank->item_count; y++) {
         if (bank->bitems[y].data.item_id != item_id)
             continue;
 
@@ -236,9 +246,14 @@ ssize_t find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
 }
 
 /* 仅用于PD PC 等独立堆叠物品 不可用于单独物品 */
-ssize_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
+size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    ssize_t x = 0;
+    size_t x = 0;
+
+    if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return 0;
+    }
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -257,15 +272,20 @@ ssize_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
 
     if (x == inv->item_count) {
         ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
-        return -1;
+        return 0;
     }
 
-    return -2;
+    return 0;
 }
 
-ssize_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
+size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    ssize_t x = 0;
+    int x = 0;
+
+    if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return -1;
+    }
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -290,9 +310,14 @@ ssize_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     return -2;
 }
 
-ssize_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
+int find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
     uint32_t pid = primary_identifier(&item->data);
-    ssize_t x = 0;
+    int x = 0;
+
+    if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return -1;
+    }
 
     for (x = 0; x < inv->item_count; x++) {
         if (primary_identifier(&inv->iitems[x].data) != pid)
@@ -318,9 +343,9 @@ ssize_t find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-ssize_t find_equipped_weapon(const inventory_t* inv){
-    ssize_t ret = -1;
-    for (size_t y = 0; y < inv->item_count; y++) {
+int find_equipped_weapon(const inventory_t* inv){
+    int ret = -1;
+    for (int y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
             continue;
         }
@@ -341,9 +366,9 @@ ssize_t find_equipped_weapon(const inventory_t* inv){
 }
 
 /* 获取背包中目标物品所在槽位 */
-ssize_t find_equipped_armor(const inventory_t* inv) {
-    ssize_t ret = -1;
-    for (size_t y = 0; y < inv->item_count; y++) {
+int find_equipped_armor(const inventory_t* inv) {
+    int ret = -1;
+    for (int y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
             continue;
         }
@@ -365,9 +390,9 @@ ssize_t find_equipped_armor(const inventory_t* inv) {
 }
 
 /* 获取背包中目标物品所在槽位 */
-ssize_t find_equipped_mag(const inventory_t* inv) {
-    ssize_t ret = -1;
-    for (size_t y = 0; y < inv->item_count; y++) {
+int find_equipped_mag(const inventory_t* inv) {
+    int ret = -1;
+    for (int y = 0; y < inv->item_count; y++) {
         if (!(inv->iitems[y].flags & 0x00000008)) {
             continue;
         }
@@ -381,10 +406,11 @@ ssize_t find_equipped_mag(const inventory_t* inv) {
             ERR_LOG("找到装备多件玛古");
         }
     }
-    if (ret < 0) {
-        ERR_LOG("未从背包中找已装备的玛古");
-    }
+#ifdef DEBUG
+
     DBG_LOG("ret %u", ret);
+#endif // DEBUG
+
     return ret;
 }
 
@@ -475,7 +501,11 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         return ret;
     }
 
-    size_t index = find_iitem_index(&character->inv, item_id);
+    int index = find_iitem_index(&character->inv, item_id);
+    if (index < 0) {
+        ERR_LOG("移除物品发生错误 错误码 %d", index);
+        return ret;
+    }
     iitem_t* inventory_item = &character->inv.iitems[index];
 
     if (amount && is_stackable(&inventory_item->data) && (amount < inventory_item->data.datab[5])) {
@@ -492,7 +522,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     memcpy(&ret, inventory_item, sizeof(iitem_t));
     //ret = inventory_item;
     character->inv.item_count--;
-    for (size_t x = index; x < character->inv.item_count; x++) {
+    for (int x = index; x < character->inv.item_count; x++) {
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
@@ -684,7 +714,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    size_t index = find_iitem_index(&character->inv, item_id);
+    int index = find_iitem_index(&character->inv, item_id);
+    if (index < 0) {
+        err = index;
+        ERR_LOG("使用物品发生错误 错误码 %d", index);
+        return err;
+    }
     iitem_t* iitem = &character->inv.iitems[index];
 
     if (is_common_consumable(primary_identifier(&iitem->data))) { // Monomate, etc.
@@ -823,9 +858,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             break;
 
         case ITEM_SUBTYPE_MAG_CELL1:
-            size_t mag_index = find_equipped_mag(&character->inv);
+            int mag_index = find_equipped_mag(&character->inv);
             if (mag_index == -1) {
-
                 ERR_LOG("玩家没有装备玛古,玛古细胞 0x%08X", iitem->data.datal[0]);
                 break;
             }
@@ -1570,8 +1604,8 @@ int item_check_equip_flags(uint32_t gc, uint32_t target_level, uint8_t equip_fla
 #endif // DEBUG
 
     /* 如果找不到该物品，则将用户从船上推下. */
-    if (i == -1) {
-        ERR_LOG("GC %" PRIu32 " 装备的物品无效!", gc);
+    if (i < 0) {
+        ERR_LOG("GC %" PRIu32 " 装备的物品无效! 错误码 %d", gc, i);
         return -1;
     }
 

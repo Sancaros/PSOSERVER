@@ -235,7 +235,7 @@
 #define SUBCMD60_UNKNOW_81                     0x81
 #define SUBCMD60_UNKNOW_82                     0x82
 #define SUBCMD60_PLACE_TRAP                    0x83
-#define SUBCMD60_UNKNOW_84                     0x84
+#define SUBCMD60_BOSS_ACT_OFP_U_SP             0x84
 #define SUBCMD60_UNKNOW_85                     0x85
 #define SUBCMD60_HIT_DESTRUCTIBLE_OBJECT       0x86
 #define SUBCMD60_UNKNOW_87                     0x87

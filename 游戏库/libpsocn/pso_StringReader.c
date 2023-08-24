@@ -426,7 +426,7 @@ uint32_t pget(const StringReader* reader, size_t offset, size_t size) {
 
 uint32_t pget_u32b(const StringReader* reader, size_t offset) {
     uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
-    if (value_ptr == NULL) {
+    if (value_ptr == 0) {
         ERR_LOG("pget_u32b ´íÎó");
         return 0;
     }
@@ -435,7 +435,7 @@ uint32_t pget_u32b(const StringReader* reader, size_t offset) {
 
 uint32_t pget_u32l(const StringReader* reader, size_t offset) {
     uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
-    if (value_ptr == NULL) {
+    if (value_ptr == 0) {
         ERR_LOG("pget_u32b ´íÎó");
         return 0;
     }
