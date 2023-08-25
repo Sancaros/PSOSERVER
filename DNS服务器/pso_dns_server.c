@@ -733,8 +733,7 @@ int __cdecl main(int argc, char** argv) {
             alen = sizeof(addr);
 
             /* Grab the next request from the socket. */
-            if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr,
-                &alen)) > sizeof(dnsmsg_t)) {
+            if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr, &alen)) > sizeof(dnsmsg_t)) {
 
                 process_query(sock, rlen, &addr);
             }

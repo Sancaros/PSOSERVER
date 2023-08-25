@@ -1,0 +1,2 @@
+E:\梦幻之星项目\PSOSERVER\Library\database.lib.lastcodeanalysissucceeded
+E:\梦幻之星项目\PSOSERVER\数据库\Library\NativeCodeAnalysis.read.1.tlog

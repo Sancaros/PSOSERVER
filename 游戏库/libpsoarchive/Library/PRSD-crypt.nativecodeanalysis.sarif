@@ -1,0 +1,59 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsoarchive/src/prsd-crypt.c"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "38f69c85ffe5086bb0a78f37812eefd829c6455c302b3a3c53cecd2f132f4462"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsoarchive/src/prsd-common.h"
+          },
+          "hashes": {
+            "sha-256": "38471acea40bcb09503d1caf69f1594713b2a050c535764629a984e324c28bf7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsoarchive/include/prsd.h"
+          },
+          "hashes": {
+            "sha-256": "6976eb85d035836b7a22fe17a2437bc6e300462658084c1123142e5eeeb4cee9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/游戏库/libpsoarchive/include/psoarchive-error.h"
+          },
+          "hashes": {
+            "sha-256": "ff65027c0ac1c24600caf1096da3c7d7ece66581c7a7790c5912e05e57e87dfb"
+          }
+        }
+      ]
+    }
+  ]
+}
