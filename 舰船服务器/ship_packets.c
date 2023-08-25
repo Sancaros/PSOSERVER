@@ -187,8 +187,6 @@ static gm_opt_t gm_opts[] = {
 static int send_dc_lobby_arrows(lobby_t *l, ship_client_t *c);
 static int send_bb_lobby_arrows(lobby_t *l, ship_client_t *c);
 
-bool needrelese = false;
-
 uint16_t pkt_size(const pkt_header_t* hdr, int version) {
     switch (version) {
     case CLIENT_VERSION_DCV1:
@@ -332,10 +330,7 @@ uint8_t *get_sendbuf() {
         }
 
         memset(sendbuf, 0, 65536);
-
-        needrelese = true;
-    }else
-        needrelese = false;
+    }
 
     return sendbuf;
 }
