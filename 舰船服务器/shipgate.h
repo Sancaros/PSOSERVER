@@ -176,7 +176,7 @@ int shipgate_send_user_opt(shipgate_conn_t *c, uint32_t gc, uint32_t block,
 int shipgate_send_bb_opt_req(shipgate_conn_t *c, uint32_t gc, uint32_t block);
 
 /* 发送 Blue Burst 客户端选项数据至数据库 */
-int shipgate_send_bb_opts(shipgate_conn_t *c, ship_client_t *cl);
+int shipgate_send_bb_opts(shipgate_conn_t *c, ship_client_t *src);
 
 /* Send the shipgate a character data backup request. */
 int shipgate_send_cbkup(shipgate_conn_t *c, sg_char_bkup_pkt* info, const void *cdata, int len);

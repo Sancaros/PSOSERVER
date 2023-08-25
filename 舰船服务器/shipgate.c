@@ -4201,7 +4201,7 @@ int shipgate_send_bb_opt_req(shipgate_conn_t* c, uint32_t gc, uint32_t block) {
 }
 
 /* 发送玩家 Blue Burst 选项数据至数据库 */
-int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
+int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* src) {
     uint8_t* sendbuf = get_sendbuf();
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
@@ -4216,19 +4216,19 @@ int shipgate_send_bb_opts(shipgate_conn_t* c, ship_client_t* cl) {
     pkt->hdr.version = pkt->hdr.reserved = 0;
     pkt->hdr.flags = 0;
 
-    pkt->guildcard = htonl(cl->guildcard);
-    pkt->block = htonl(cl->cur_block->b);
+    pkt->guildcard = htonl(src->guildcard);
+    pkt->block = htonl(src->cur_block->b);
 
     /* 填充选项数据 */
-    memcpy(&pkt->opts, cl->bb_opts, PSOCN_STLENGTH_BB_DB_OPTS);
+    memcpy(&pkt->opts, src->bb_opts, PSOCN_STLENGTH_BB_DB_OPTS);
 
     /* 填充公会数据 */
-    memcpy(&pkt->guild, cl->bb_guild, PSOCN_STLENGTH_BB_GUILD);
+    memcpy(&pkt->guild, src->bb_guild, PSOCN_STLENGTH_BB_GUILD);
 
-    pkt->guild_points_personal_donation = cl->guild_points_personal_donation;
+    pkt->guild_points_personal_donation = src->guild_points_personal_donation;
 
     /* 填充公共银行数据 */
-    memcpy(&pkt->common_bank, cl->common_bank, PSOCN_STLENGTH_BANK);
+    memcpy(&pkt->common_bank, src->common_bank, PSOCN_STLENGTH_BANK);
 
     /* 将数据包发送出去 */
     return send_crypt(c, sizeof(shipgate_bb_opts_pkt), sendbuf);

@@ -185,7 +185,7 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
     int x = 0;
 
-    if(inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+    if(inv->item_count > MAX_PLAYER_INV_ITEMS) {
         ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
         return -1;
     }
@@ -216,7 +216,7 @@ int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
 int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
     int x = -1;
 
-    if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
+    if (bank->item_count > MAX_PLAYER_BANK_ITEMS) {
         ERR_LOG("银行物品数量超出限制 %d", bank->item_count);
         return x;
     }
