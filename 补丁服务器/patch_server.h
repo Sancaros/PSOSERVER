@@ -25,6 +25,7 @@
 #include <encryption.h>
 #include <psoconfig.h>
 #include <mtwist.h>
+#include <SFMT.h>
 
 #define PATCH_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH) 
 
@@ -92,7 +93,8 @@ typedef struct patch_client {
     int cur_pos;
 
     /* Random number generator state */
-    struct mt19937_state rng;
+    //struct mt19937_state rng;
+    sfmt_t sfmt_rng;
 
 } patch_client_t;
 

@@ -28,6 +28,7 @@
 #include <f_logs.h>
 #include <encryption.h>
 #include <mtwist.h>
+#include <SFMT.h>
 
 #include "auth.h"
 #include "auth_packets.h"
@@ -259,13 +260,16 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
     /* Initialize the random number generator. The seed value is the current
        UNIX time, xored with the port (so that each block will use a different
        seed even though they'll probably get the same timestamp). */
-    mt19937_init(&rv->rng, (uint32_t)(time(NULL) ^ sock));
+    //mt19937_init(&rv->rng, (uint32_t)(time(NULL) ^ sock));
+    sfmt_init_gen_rand(&rv->sfmt_rng, (uint32_t)(time(NULL) ^ sock));
 
     switch(type) {
         case CLIENT_AUTH_DCNTE:
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc, CRYPT_PC);
             CRYPT_CreateKeys(&rv->client_cipher, &client_seed_dc, CRYPT_PC);
@@ -283,8 +287,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
 
         case CLIENT_AUTH_DC:
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc, CRYPT_PC);
             CRYPT_CreateKeys(&rv->client_cipher, &client_seed_dc, CRYPT_PC);
@@ -301,8 +307,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
 
         case CLIENT_AUTH_PC:
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc, CRYPT_PC);
             CRYPT_CreateKeys(&rv->client_cipher, &client_seed_dc, CRYPT_PC);
@@ -329,8 +337,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
             /* Fall through... */
 
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc,
                 CRYPT_GAMECUBE);
@@ -349,8 +359,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
 
         case CLIENT_AUTH_EP3:
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc,
                 CRYPT_GAMECUBE);
@@ -369,8 +381,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
 
         case CLIENT_AUTH_XBOX:
             /* Generate the encryption keys for the client and server. */
-            rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
-            rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->client_key = client_seed_dc = mt19937_genrand_int32(&rv->rng);
+            //rv->server_key = server_seed_dc = mt19937_genrand_int32(&rv->rng);
+            rv->client_key = client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+            rv->server_key = server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
             CRYPT_CreateKeys(&rv->server_cipher, &server_seed_dc,
                              CRYPT_GAMECUBE);
@@ -390,8 +404,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
         case CLIENT_AUTH_BB_LOGIN:
             /* Generate the encryption keys for the client and server. */
             for (i = 0; i < 48; i += 4) {
-                client_seed_dc = mt19937_genrand_int32(&rv->rng);
-                server_seed_dc = mt19937_genrand_int32(&rv->rng);
+                //client_seed_dc = mt19937_genrand_int32(&rv->rng);
+                //server_seed_dc = mt19937_genrand_int32(&rv->rng);
+                client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+                server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
                 client_seed_bb[i + 0] = (uint8_t)(client_seed_dc >> 0);
                 client_seed_bb[i + 1] = (uint8_t)(client_seed_dc >> 8);
@@ -421,8 +437,10 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
         case CLIENT_AUTH_BB_CHARACTER:
             /* Generate the encryption keys for the client and server. */
             for(i = 0; i < 48; i += 4) {
-                client_seed_dc = mt19937_genrand_int32(&rv->rng);
-                server_seed_dc = mt19937_genrand_int32(&rv->rng);
+                //client_seed_dc = mt19937_genrand_int32(&rv->rng);
+                //server_seed_dc = mt19937_genrand_int32(&rv->rng);
+                client_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
+                server_seed_dc = sfmt_genrand_uint32(&rv->sfmt_rng);
 
                 client_seed_bb[i + 0] = (uint8_t)(client_seed_dc >>  0);
                 client_seed_bb[i + 1] = (uint8_t)(client_seed_dc >>  8);

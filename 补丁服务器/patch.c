@@ -27,6 +27,7 @@
 #endif
 #include <queue.h>
 #include <mtwist.h>
+#include <SFMT.h>
 
 #include "patch_server.h"
 #include "patch_packets.h"
@@ -65,11 +66,14 @@ patch_client_t* create_connection(int sock, int type,
     /* Initialize the random number generator. The seed value is the current
        UNIX time, xored with the port (so that each block will use a different
        seed even though they'll probably get the same timestamp). */
-    mt19937_init(&rv->rng, (uint32_t)(time(NULL) ^ sock));
+    //mt19937_init(&rv->rng, (uint32_t)(time(NULL) ^ sock));
+    sfmt_init_gen_rand(&rv->sfmt_rng, (uint32_t)(time(NULL) ^ sock));
 
     /* Generate the encryption keys for the client and server. */
-    cvect = mt19937_genrand_int32(&rv->rng);
-    svect = mt19937_genrand_int32(&rv->rng);
+    //cvect = mt19937_genrand_int32(&rv->rng);
+    //svect = mt19937_genrand_int32(&rv->rng);
+    cvect = sfmt_genrand_uint32(&rv->sfmt_rng);
+    svect = sfmt_genrand_uint32(&rv->sfmt_rng);
 
     CRYPT_CreateKeys(&rv->client_cipher, &cvect, CRYPT_PC);
     CRYPT_CreateKeys(&rv->server_cipher, &svect, CRYPT_PC);

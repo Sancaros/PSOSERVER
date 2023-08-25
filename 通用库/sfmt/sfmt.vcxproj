@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -18,66 +18,16 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="character_bb.c" />
-    <ClCompile Include="auth_bb.c" />
-    <ClCompile Include="auth_dc.c" />
-    <ClCompile Include="auth.c" />
-    <ClCompile Include="auth_packets.c" />
-    <ClCompile Include="auth_server.c" />
-    <ClCompile Include="patch.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="auth.h" />
-    <ClInclude Include="auth_packets.h" />
-    <ClInclude Include="patch.h" />
-    <ClInclude Include="patch_stubs.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="version.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\icon\auth_icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\数据库\数据库.vcxproj">
-      <Project>{7dad8d18-3fae-479b-b1f5-ee097563cb9a}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\游戏库\libpsoarchive\libpso.vcxproj">
-      <Project>{ec1538af-ce8b-47d4-aca6-508a422f5d25}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\游戏库\libpsocnconfig\psoconfig.vcxproj">
-      <Project>{d216c3d9-12da-4863-bf95-d49538d3e29d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\游戏库\libpsocn\libpsocn.vcxproj">
-      <Project>{542e80b3-5ec9-4e39-b9dd-7a1c29317b2c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\通用库\lua5.4.4\lua5.4.4.vcxproj">
-      <Project>{1a373e06-f0d0-439a-aff0-338397e5f145}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\通用库\md5\md5.vcxproj">
-      <Project>{88c59be5-b96d-4476-aa01-a5ba7c8dc2e9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\通用库\mtwist\mtwist.vcxproj">
-      <Project>{dc65a794-ce8a-4f91-8655-3e1b34edcb55}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\通用库\pthread_win32\windows\VS2022\pthread_lib.2022.vcxproj">
-      <Project>{a063dfad-6995-4e1a-afff-e43dc11e95b1}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{8c4b7420-0b74-48a6-ba86-3624aa7144c2}</ProjectGuid>
-    <RootNamespace>登录服务器</RootNamespace>
+    <ProjectGuid>{6f245814-5fe2-4206-9fa2-e89c92d39ef0}</ProjectGuid>
+    <RootNamespace>sfmt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>认证服务器</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -121,36 +71,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)$(Configuration)\本地服务器\</OutDir>
-    <IntDir>$(Configuration)\本地服务器\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\Library\</OutDir>
+    <IntDir>Library\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32_LEAN_AND_MEAN;HAVE_LIBMINI18N</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\通用库\sfmt;..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\pthread_win32;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\数据库;..\通用库\md5;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;..\游戏库\libpsocn;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode>false</SupportJustMyCode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\通用库\libiconv-win-build\build-VS2019-MT\Release;..\Library;..\通用库\mini18n\BUILD\src\Debug;..\通用库\libgnutls\lib\x86;..\通用库\zlib-win-build\build-VS2019-MT\Release;..\通用库\libxml2-win-build\build-VS2019-MT\Release;..\通用库\pthread_win32;..\通用库\pthread_win32\windows\VS2022\bin\Release-MultiByte-32bit-x86;..\数据库\mariadbx86\win_build\libmariadb\Debug;..\通用库\libevent\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua5.4.4.lib;urlmon.lib;ws2_32.lib;wsock32.lib;netapi32.lib;libiconv.lib;libz.lib;libxml2.lib;libevent.lib;libevent_core.lib;libevent_extras.lib;libevent_openssl.lib;pthread_static_lib.lib;libmariadb.lib;mariadbclient.lib;md5.lib;gnutls.lib;libpsoarchive.lib;libpsoconfig.lib;libpsocn.lib;mini18n.lib;database.lib;sfmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -197,6 +131,28 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="SFMT-alti.h" />
+    <ClInclude Include="SFMT-common.h" />
+    <ClInclude Include="SFMT-neon.h" />
+    <ClInclude Include="SFMT-params.h" />
+    <ClInclude Include="SFMT-params11213.h" />
+    <ClInclude Include="SFMT-params1279.h" />
+    <ClInclude Include="SFMT-params132049.h" />
+    <ClInclude Include="SFMT-params19937.h" />
+    <ClInclude Include="SFMT-params216091.h" />
+    <ClInclude Include="SFMT-params2281.h" />
+    <ClInclude Include="SFMT-params4253.h" />
+    <ClInclude Include="SFMT-params44497.h" />
+    <ClInclude Include="SFMT-params607.h" />
+    <ClInclude Include="SFMT-params86243.h" />
+    <ClInclude Include="SFMT-sse2-msc.h" />
+    <ClInclude Include="SFMT-sse2.h" />
+    <ClInclude Include="SFMT.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SFMT.c" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

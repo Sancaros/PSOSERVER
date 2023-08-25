@@ -25,6 +25,7 @@
 #include <encryption.h>
 #include <database.h>
 #include <mtwist.h>
+#include <SFMT.h>
 
 #include <pso_player.h>
 
@@ -133,7 +134,8 @@ typedef struct login_client {
     char access_key[16];
 
     /* Random number generator state */
-    struct mt19937_state rng;
+    //struct mt19937_state rng;
+    sfmt_t sfmt_rng;
 
 } login_client_t;
 
