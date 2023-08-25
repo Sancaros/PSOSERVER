@@ -213,6 +213,7 @@ extern int32_t script_log_console_show;
 #define ERR_EXIT(...) \
     do { \
         ERR_LOG(__VA_ARGS__); \
+		(void*)getchar(); \
         exit(EXIT_FAILURE); \
     } while(0)
 

@@ -231,7 +231,6 @@ static psocn_ship_t* load_config(void) {
     psocn_ship_t* cfg;
 
     if (psocn_read_ship_config(psocn_ship_cfg, &cfg)) {
-        (void)getchar();
         ERR_EXIT("无法读取设置文件 %s", psocn_ship_cfg);
     }
 
@@ -723,7 +722,6 @@ static void initialization() {
 #if defined(_WIN32) && !defined(__CYGWIN__)
     if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
-        (void)getchar();
     }
 
     HINSTANCE hinst = GetModuleHandle(NULL);
