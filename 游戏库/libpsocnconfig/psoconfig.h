@@ -29,7 +29,7 @@
 //#define SIZEOF_VOID_P 4
 
 #define SOCKET_ERR(err, s) if(err==-1){perror(s);closesocket(err);return(-1);}
-#define LOOP_CHECK(rval, cmd) do{rval = cmd;} while(rval == GNUTLS_E_AGAIN || rval == GNUTLS_E_INTERRUPTED);assert(rval >= 0)
+#define LOOP_CHECK(rval, cmd) do{rval = cmd;} while(rval == GNUTLS_E_AGAIN || rval == GNUTLS_E_INTERRUPTED);/*assert(rval >= 0)*/
 
 #ifndef DATAROOTDIR
 #define DATAROOTDIR "config\\"

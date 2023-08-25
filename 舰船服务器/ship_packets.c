@@ -280,9 +280,6 @@ static int send_raw(ship_client_t *c, int len, uint8_t *sendbuf) {
         c->sendbuf_cur += rv;
     }
 
-    //if (sendbuf && needrelese)
-    //    free_safe(sendbuf);
-
     return 0;
 }
 
