@@ -3327,6 +3327,40 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x92_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+//[2023年08月25日 11:25:01:636] 调试(subcmd_handle_60.c 5097): 未知 0x60 指令: 0x92
+//( 00000000 )   14 00 60 00 00 00 00 00   92 03 00 00 00 00 00 00  ..`.....?......
+//( 00000010 )   3A 6D 20 3E                                     :m >
+    DBG_LOG("指令 0x%04X (0x%02X 0x%04X) GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+        pkt->hdr.pkt_type, pkt->shdr.type, pkt->shdr.unused, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+    DBG_LOG("动作:0x%04X 位置:unk %f.",
+        pkt->unknown_a1, pkt->unknown_a2);
+
+    send_txt(src, "动作:0x%04X\n位置:unk %f.", pkt->unknown_a1, pkt->unknown_a2);
+
+    //display_packet(pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_timed_switch_activated_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -4262,35 +4296,44 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 发送错误的整理物品数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
+        return -2;
     }
 
-    inventory_t sorted = { 0 };
-    psocn_bb_char_t* character = get_client_char_bb(src);
+    inventory_t* inv = get_client_inv_bb(src);
+    iitem_t* sorted = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
+    size_t x = 0, j, k = 0, tmp_item_id = EMPTY_STRING;
 
-    for (size_t x = 0; x < 30; x++) {
-        if (pkt->item_ids[x] == 0xFFFFFFFF) {
-            sorted.iitems[x].data.item_id = EMPTY_STRING;
-        }
-        else {
-            int index = find_iitem_index(&character->inv, pkt->item_ids[x]);
-            if (index < 0) {
-                ERR_LOG("GC %" PRIu32 " 整理物品失败! 错误码 %d",
-                    src->guildcard, index);
-                return index;
+    if (!sorted) {
+        ERR_LOG("GC %" PRIu32 " 整理物品动态内存申请失败!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -3;
+    }
+
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
+        sorted[x].data.datab[1] = 0xFF;
+        sorted[x].data.item_id = EMPTY_STRING;
+    }
+
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
+        tmp_item_id = pkt->item_ids[x];
+
+        if (tmp_item_id == EMPTY_STRING)
+            break;
+
+        for (j = 0; j < inv->item_count; j++) {
+            if ((inv->iitems[j].present) &&
+                (inv->iitems[j].data.item_id == tmp_item_id)) {
+                sorted[k++] = inv->iitems[j];
+                break;
             }
-            sorted.iitems[x] = character->inv.iitems[index];
         }
     }
 
-    sorted.item_count = character->inv.item_count;
-    sorted.hpmats_used = character->inv.hpmats_used;
-    sorted.tpmats_used = character->inv.tpmats_used;
-    sorted.language = character->inv.language;
-    character->inv = sorted;
+    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++)
+        inv->iitems[x] = sorted[x];
 
-    if (!src->mode)
-        src->pl->bb.character.inv = sorted;
+    free_safe(sorted);
 
     /* Nobody else really needs to care about this one... */
     return 0;
@@ -4989,6 +5032,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 90 - 9F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_UNKNOW_91                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_91_bb },
+    { SUBCMD60_UNKNOW_92                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_92_bb },
     { SUBCMD60_TIMED_SWITCH_ACTIVATED     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_93_bb },
     { SUBCMD60_CH_GAME_CANCEL             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_97_bb },
     { SUBCMD60_CHANGE_STAT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_9A_bb },
