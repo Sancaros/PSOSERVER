@@ -44,9 +44,9 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 /* 获取背包中目标物品所在槽位 */
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id);
 int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id);
-size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item);
-size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item);
-int find_iitem_pid_index(const inventory_t* inv, const iitem_t* item);
+size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem);
+size_t find_iitem_pid(const inventory_t* inv, const iitem_t* iitem);
+int find_iitem_pid_index(const inventory_t* inv, const iitem_t* iitem);
 int find_equipped_weapon(const inventory_t* inv);
 int find_equipped_armor(const inventory_t* inv);
 int find_equipped_mag(const inventory_t* inv);
@@ -61,17 +61,17 @@ int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool al
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
-bool add_iitem(ship_client_t* src, const iitem_t* item);
-bool add_bitem(ship_client_t* src, const bitem_t* item);
+bool add_iitem(ship_client_t* src, const iitem_t* iitem);
+bool add_bitem(ship_client_t* src, const bitem_t* bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 
 /* 挑战模式专用 */
 int initialize_cmode_iitem(ship_client_t* dest);
 
 /* 蓝色脉冲物品管理 */
-void player_iitem_init(iitem_t* item, const item_t data);
-void player_bitem_to_iitem(iitem_t* item, const bitem_t* src);
-void player_iitem_to_bitem(bitem_t* item, const iitem_t* src);
+void player_iitem_init(iitem_t* iitem, const item_t item);
+void player_bitem_to_iitem(iitem_t* iitem, const item_t item);
+void player_iitem_to_bitem(bitem_t* bitem, const item_t item);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
 void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 

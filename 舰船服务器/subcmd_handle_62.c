@@ -1154,7 +1154,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
-    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, 1, true);
+    subcmd_send_lobby_bb_create_inv_item(src, iitem_data.data, stack_size(&iitem_data.data), true);
 
     return subcmd_send_bb_del_map_item(src, area, iitem_data.data.item_id);
 }
@@ -1454,6 +1454,10 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
     memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * shop_item_count);
 
+    for (size_t x = 0; x < ARRAYSIZE(src->game_data->shop_items_price); x++) {
+        src->game_data->shop_items_price[x] = 0;
+    }
+
     for (uint8_t i = 0; i < num_item_count; i++) {
         if (num_item_count > shop_item_count) {
             ERR_LOG("GC %" PRIu32 " 商店物品生成错误 num_items %d > shop_size %d",
@@ -1492,9 +1496,9 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
                     src->guildcard, src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
                 continue;
             }
-            item.data2l = shop_price;
+            //item.data2l = shop_price;
 
-            item.item_id = generate_item_id(l, 0xFF);
+            item.item_id = generate_item_id(l, src->client_id);
 #ifdef DEBUG
 
             print_item_data(&item_data, src->version);
@@ -1502,10 +1506,11 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
             src->game_data->shop_items[i] = item;
+            src->game_data->shop_items_price[i] = shop_price;
         }
     }
 
-    if(!create)
+    if (!create)
         ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
 
     return subcmd_bb_send_shop(src, shop_type, num_item_count, create);
@@ -1541,14 +1546,15 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
     /* 填充物品数据头 */
-    ii.present = LE16(1);
-    ii.extension_data1 = 0;
-    ii.extension_data2 = 0;
-    ii.flags = LE32(0);
+    //ii.present = LE16(1);
+    //ii.extension_data1 = 0;
+    //ii.extension_data2 = 0;
+    //ii.flags = LE32(0);
 
     /* 填充物品数据 */
     //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], PSOCN_STLENGTH_ITEM);
-    ii.data = src->game_data->shop_items[shop_item_index];
+    //ii.data = src->game_data->shop_items[shop_item_index];
+    player_iitem_init(&ii, src->game_data->shop_items[shop_item_index]);
 
     /* 如果是堆叠物品 */
     if (is_stackable(&ii.data)) {
@@ -1579,7 +1585,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    uint32_t price = ii.data.data2l * num_bought;
+    uint32_t price = src->game_data->shop_items_price[shop_item_index] * num_bought;
 
     if (character->disp.meseta < price) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
@@ -1609,7 +1615,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, price, false);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, num_bought, false);
 }
 
 int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
@@ -1742,7 +1748,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, 1, true);
+    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, stack_size(&id_result->data), true);
 
     /* 初始化临时鉴定的物品数据 */
     memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
@@ -1818,8 +1824,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bank_t* bank = get_client_bank_bb(src);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    uint32_t amt = LE32(pkt->meseta_amount), 
-        bank_amt = LE32(bank->meseta), 
+    uint32_t amt = LE32(pkt->meseta_amount),
+        bank_amt = LE32(bank->meseta),
         c_mst_amt = LE32(character->disp.meseta),
         pkt_item_amt = LE32(pkt->item_amount);
     uint16_t pkt_bitem_index = pkt->bitem_index;
@@ -1834,6 +1840,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     case SUBCMD62_BANK_ACT_CLOSE:
     case SUBCMD62_BANK_ACT_DONE:
         break;
+        //return 0;
 
     case SUBCMD62_BANK_ACT_DEPOSIT:
 
@@ -1855,8 +1862,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             character->disp.meseta -= amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
 
-            ///* No need to tell everyone else, I guess? */
-            //break;
+            /* No need to tell everyone else, I guess? */
+            //return 0;
         }
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
@@ -1867,7 +1874,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
-            player_iitem_to_bitem(&bitem, &iitem);
+            player_iitem_to_bitem(&bitem, iitem.data);
 
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
@@ -1885,6 +1892,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             sort_client_bank(bank);
 
+            //return 0;
         }
 
         break;
@@ -1910,7 +1918,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             character->disp.meseta += amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
 
-            ///* 存取美赛塔不用告知其他客户端... */
+            /* 存取美赛塔不用告知其他客户端... */
             //return 0;
         }
         else {
@@ -1928,11 +1936,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
-            player_bitem_to_iitem(&iitem, &bitem);
+            player_bitem_to_iitem(&iitem, bitem.data);
             iitem.data.item_id = generate_item_id(l, src->client_id);
 
             /* 新增至玩家背包中... */
             if (!add_iitem(src, &iitem)) {
+                ERR_LOG("GC %" PRIu32 " 物品从玩家银行取出失败!",
+                    src->guildcard);
                 /* Uh oh... Guess we should put it back in the bank... */
                 if (!add_bitem(src, &bitem)) {
                     ERR_LOG("GC %" PRIu32 " 物品返回玩家银行失败!",
@@ -1943,7 +1953,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             /* 发送至房间中的客户端. */
-            subcmd_send_lobby_bb_create_inv_item(src, iitem.data, 1, true);
+            subcmd_send_lobby_bb_create_inv_item(src, iitem.data, pkt_item_amt, true);
 
             fix_client_bank(bank);
         }
@@ -2146,7 +2156,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, 1, true);
+    return subcmd_send_lobby_bb_create_inv_item(src, ii.data, stack_size(&ii.data), true);
 }
 
 int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
@@ -2534,7 +2544,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_SHOP_BUY                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B7_bb },
     { SUBCMD62_TEKKING                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_B8_bb },
     { SUBCMD62_TEKKED                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BA_bb },
-    { SUBCMD62_OPEN_BANK                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BB_bb },
+    { SUBCMD62_BANK_OPEN                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BB_bb },
     { SUBCMD62_BANK_ACT                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_BD_bb },
     { SUBCMD62_GUILD_INVITE1             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C1_bb },
     { SUBCMD62_GUILD_INVITE2             , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_C2_bb },

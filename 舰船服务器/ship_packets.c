@@ -13193,6 +13193,11 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
     c->game_data->err.error_cmd_type = cmd_type;
     c->game_data->err.error_subcmd_type = subcmd_type;
 
+    inventory_t* inv = get_client_inv_bb(c);
+    fix_client_inv(inv);
+    psocn_bank_t* bank = get_client_bank_bb(c);
+    fix_client_bank(bank);
+
     if (l->flags & LOBBY_FLAG_QUESTING) {
 
         send_warp(c, 1, false);

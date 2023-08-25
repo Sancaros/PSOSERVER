@@ -105,6 +105,7 @@ typedef struct client_game_data {
     trade_card_t *pending_card_trade;
     iitem_t identify_result;
     item_t shop_items[0x14];
+    size_t shop_items_price[0x14];
 
     uint32_t expboost; //用于开启房间经验倍率的开关 l->exp_mult
     uint32_t death;

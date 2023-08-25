@@ -246,8 +246,8 @@ int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id) {
 }
 
 /* 仅用于PD PC 等独立堆叠物品 不可用于单独物品 */
-size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
-    uint32_t pid = primary_identifier(&item->data);
+size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
     size_t x = 0;
 
     if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
@@ -278,8 +278,8 @@ size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* item) {
     return 0;
 }
 
-size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
-    uint32_t pid = primary_identifier(&item->data);
+size_t find_iitem_pid(const inventory_t* inv, const iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
     int x = 0;
 
     if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
@@ -310,8 +310,8 @@ size_t find_iitem_pid(const inventory_t* inv, const iitem_t* item) {
     return -2;
 }
 
-int find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
-    uint32_t pid = primary_identifier(&item->data);
+int find_iitem_pid_index(const inventory_t* inv, const iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
     int x = 0;
 
     if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
@@ -335,6 +335,38 @@ int find_iitem_pid_index(const inventory_t* inv, const iitem_t* item) {
 #endif // DEBUG
 
     if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
+        return -1;
+    }
+
+    return -2;
+}
+
+int find_bitem_pid_index(const psocn_bank_t* bank, const bitem_t* bitem) {
+    uint32_t pid = primary_identifier(&bitem->data);
+    int x = 0;
+
+    if (bank->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", bank->item_count);
+        return -1;
+    }
+
+    for (x = 0; x < (int)bank->item_count; x++) {
+        if (primary_identifier(&bank->bitems[x].data) != pid)
+            continue;
+
+        return x;
+    }
+
+#ifdef DEBUG
+
+    for (x = 0; x < bank->item_count; x++) {
+        print_bitem_data(&bank->bitems[x], x, 5);
+    }
+
+#endif // DEBUG
+
+    if (x == bank->item_count) {
         ERR_LOG("未从背包中找到ID 0x%08X 物品", pid);
         return -1;
     }
@@ -622,8 +654,8 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
     return true;
 }
 
-bool add_bitem(ship_client_t* src, const bitem_t* item) {
-    uint32_t pid = primary_identifier(&item->data);
+bool add_bitem(ship_client_t* src, const bitem_t* bitem) {
+    uint32_t pid = primary_identifier(&bitem->data);
     psocn_bank_t* bank = get_client_bank_bb(src);
     
     if (bank->item_count >= MAX_PLAYER_BANK_ITEMS) {
@@ -633,14 +665,14 @@ bool add_bitem(ship_client_t* src, const bitem_t* item) {
     }
 
     if (pid == MESETA_IDENTIFIER) {
-        bank->meseta += item->data.data2l;
+        bank->meseta += bitem->data.data2l;
         if (bank->meseta > 999999) {
             bank->meseta = 999999;
         }
         return true;
     }
     
-    size_t combine_max = max_stack_size(&item->data);
+    size_t combine_max = max_stack_size(&bitem->data);
     if (combine_max > 1) {
         size_t y;
         for (y = 0; y < bank->item_count; y++) {
@@ -650,7 +682,7 @@ bool add_bitem(ship_client_t* src, const bitem_t* item) {
         }
 
         if (y < bank->item_count) {
-            bank->bitems[y].data.datab[5] += item->data.datab[5];
+            bank->bitems[y].data.datab[5] += bitem->data.datab[5];
             if (bank->bitems[y].data.datab[5] > (uint8_t)combine_max) {
                 bank->bitems[y].data.datab[5] = (uint8_t)combine_max;
             }
@@ -658,40 +690,40 @@ bool add_bitem(ship_client_t* src, const bitem_t* item) {
             return true;
         }
     }
-    bank->bitems[bank->item_count] = *item;
+    bank->bitems[bank->item_count] = *bitem;
     bank->item_count++;
     return true;
 }
 
-bool is_wrapped(const item_t* this) {
-    switch (this->datab[0]) {
+bool is_wrapped(const item_t* item) {
+    switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
-        return this->datab[4] & 0x40;
+        return item->datab[4] & 0x40;
     case ITEM_TYPE_MAG:
-        return this->data2b[2] & 0x40;
+        return item->data2b[2] & 0x40;
     case ITEM_TYPE_TOOL:
-        return !is_stackable(this) && (this->datab[3] & 0x40);
+        return !is_stackable(item) && (item->datab[3] & 0x40);
     case ITEM_TYPE_MESETA:
         return false;
     }
 
-    ERR_LOG("无效物品数据 0x%02X", this->datab[0]);
+    ERR_LOG("无效物品数据 0x%02X", item->datab[0]);
     return false;
 }
 
-void unwrap(item_t* this) {
-    switch (this->datab[0]) {
+void unwrap(item_t* item) {
+    switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
-        this->datab[4] &= 0xBF;
+        item->datab[4] &= 0xBF;
         break;
     case ITEM_TYPE_MAG:
-        this->data2b[2] &= 0xBF;
+        item->data2b[2] &= 0xBF;
         break;
     case ITEM_TYPE_TOOL:
-        if (!is_stackable(this)) {
-            this->datab[3] &= 0xBF;
+        if (!is_stackable(item)) {
+            item->datab[3] &= 0xBF;
         }
         break;
     case 4:
@@ -1244,16 +1276,16 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     det -= entry.probability;
                 }
                 else {
-                    iitem->data.data2l = 0;
                     iitem->data.datab[0] = entry.item[0];
                     iitem->data.datab[1] = entry.item[1];
                     iitem->data.datab[2] = entry.item[2];
                     iitem->data.datab[3] = 0;
                     iitem->data.datab[4] = 0;
                     iitem->data.datab[5] = 0;
+                    iitem->data.data2l = 0;
                     should_delete_item = false;
 
-                    subcmd_send_lobby_bb_create_inv_item(src, iitem->data, 1, true);
+                    subcmd_send_lobby_bb_create_inv_item(src, iitem->data, stack_size(&iitem->data), true);
                     break;
                 }
             }
@@ -1516,26 +1548,26 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     return 0;
 }
 
-void player_iitem_init(iitem_t* item, const item_t data) {
-    item->present = 1;
-    item->extension_data1 = 0;
-    item->extension_data2 = 0;
-    item->flags = 0;
-    item->data = data;
+void player_iitem_init(iitem_t* iitem, const item_t item) {
+    iitem->present = LE16(0x0001);
+    iitem->extension_data1 = 0;
+    iitem->extension_data2 = 0;
+    iitem->flags = 0;
+    iitem->data = item;
 }
 
-void player_bitem_to_iitem(iitem_t* item, const bitem_t* src) {
-    item->present = 1;
-    item->extension_data1 = 0;
-    item->extension_data2 = 0;
-    item->flags = 0;
-    item->data = src->data;
+void player_bitem_to_iitem(iitem_t* iitem, const item_t item) {
+    iitem->present = LE16(0x0001);
+    iitem->extension_data1 = 0;
+    iitem->extension_data2 = 0;
+    iitem->flags = 0;
+    iitem->data = item;
 }
 
-void player_iitem_to_bitem(bitem_t* item, const iitem_t* src) {
-    item->data = src->data;
-    item->amount = (uint16_t)stack_size(&item->data);
-    item->show_flags = 1;
+void player_iitem_to_bitem(bitem_t* bitem, const item_t item) {
+    bitem->data = item;
+    bitem->amount = (uint16_t)stack_size(&item);
+    bitem->show_flags = LE16(0x0001);
 }
 
 /* 整理背包物品操作 */

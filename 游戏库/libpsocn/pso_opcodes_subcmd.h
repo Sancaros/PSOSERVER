@@ -42,7 +42,7 @@
 #define SUBCMD62_TEKKING                       0xB8    /* Blue Burst - Client is tekking a weapon */
 #define SUBCMD62_TEKKED_RESULT                 0xB9    /* Blue Burst - Client is tekked a weapon and get the result */
 #define SUBCMD62_TEKKED                        0xBA    /* Blue Burst - Client is tekked a weapon */
-#define SUBCMD62_OPEN_BANK                     0xBB    /* Blue Burst - open the bank menu */
+#define SUBCMD62_BANK_OPEN                     0xBB    /* Blue Burst - open the bank menu */
 /////////////////////////////////////////////////////////////////////////////////////
 #define SUBCMD62_BANK_ACT                      0xBD    /* Blue Burst - do something at the bank */
 /* Actions that can be performed at the bank with Subcommand 0xBD (0x62) */

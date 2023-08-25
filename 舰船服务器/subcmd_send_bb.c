@@ -224,7 +224,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
     if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
         pkt.item.data2l = item.data2l;
     else
-        pkt.item.datab[0x05] = amount;
+        pkt.item.datab[5] = amount;
 
     /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;

@@ -4333,8 +4333,6 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++)
         inv->iitems[x] = sorted[x];
 
-    free_safe(sorted);
-
     /* Nobody else really needs to care about this one... */
     return 0;
 }
@@ -4804,7 +4802,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
             return -3;
         }
 
-        rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, 1, true);
+        rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
         uint16_t confirm_token = pkt->confirm_token;
 
@@ -4872,7 +4870,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
             return -1;
         }
 
-        subcmd_send_lobby_bb_create_inv_item(src, add_item.data, 1, true);
+        subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
         send_bb_item_exchange_state(src, 0x00000000);
     }
