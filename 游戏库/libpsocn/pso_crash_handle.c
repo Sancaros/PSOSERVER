@@ -20,6 +20,8 @@
 
 #include "pso_crash_handle.h"
 
+#define MAX_BACKTRACE_DEPTH 50
+
 // 声明用于存储函数地址的数组
 void* callstack[MAX_BACKTRACE_DEPTH];
 
@@ -83,8 +85,11 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
     SymInitialize(GetCurrentProcess(), NULL, TRUE);
 
     // 解析异常地址对应的函数名称和代码行信息
-    if (SymGetLineFromAddr64(GetCurrentProcess(), exceptionAddress, &displacement, &line))
-        ERR_LOG("异常发生在函数：%s 的第 %u 行", line.FileName, line.LineNumber);
+    if (SymGetLineFromAddr64(GetCurrentProcess(), exceptionAddress, &displacement, &line)) {
+        ERR_LOG("异常发生位置:");
+        ERR_LOG("文件: %s", line.FileName);
+        ERR_LOG("第 %u 行", line.LineNumber);
+    }
     else
         ERR_LOG("无法定位到异常发生位置的函数和行号");
 
@@ -106,6 +111,9 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
 
         if (SymFromAddr(process, address, NULL, symbol)) {
             ERR_LOG("函数[%d]: %s", frameIndex, symbol->Name);
+        }
+        else {
+            ERR_LOG("函数[%d]: 无法获取函数名称", frameIndex);
         }
     }
 
