@@ -379,16 +379,20 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->skey.type = 0xFF;
 
     /* TODO 客户端是否也要自带随机数 */
-    //uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
-    sfmt_t* rng/* = (&rv->sfmt_rng, rng_seed)*/;
+    uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
+    sfmt_init_gen_rand(&rv->sfmt_rng, rng_seed);
+    sfmt_t* rng/* = &rv->sfmt_rng*/;
 
     if(type == CLIENT_TYPE_SHIP) {
         rv->flags |= CLIENT_FLAG_TYPE_SHIP;
         rng = &ship->sfmt_rng;
     }
+    //else if (type == CLIENT_TYPE_BLOCK) {
+    //    rng = &block->sfmt_rng;
+    //}
     else {
-        //rng = &block->rng;
         rng = &block->sfmt_rng;
+        //rng = &rv->sfmt_rng;
     }
 
 #ifdef ENABLE_LUA

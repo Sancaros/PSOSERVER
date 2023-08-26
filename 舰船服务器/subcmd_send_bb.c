@@ -77,7 +77,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     bb.hdr.flags = 0;
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
-    bb.shdr.size = 0x09;
+    bb.shdr.size = 0x0A;
     bb.shdr.client_id = drop_src_id;
 
     dc.area = LE16(area);
@@ -191,7 +191,7 @@ int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amo
     if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
         pkt.item.data2l = item.data2l;
     else
-        pkt.item.datab[0x05] = amount;
+        pkt.item.datab[5] = (uint8_t)amount;
 
     /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;
@@ -224,7 +224,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
     if ((!is_stackable(&item)) || (item.datab[0] == ITEM_TYPE_MESETA))
         pkt.item.data2l = item.data2l;
     else
-        pkt.item.datab[5] = amount;
+        pkt.item.datab[5] = (uint8_t)amount;
 
     /* 最后一个32位字节的初始化为0 未使用的*/
     pkt.unused2 = 0;

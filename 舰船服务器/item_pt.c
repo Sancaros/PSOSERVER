@@ -4535,7 +4535,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
 	//struct mt19937_state* rng = &src->cur_block->rng;
-	sfmt_t* rng = &src->cur_block->sfmt_rng;
+	sfmt_t* rng = &src->sfmt_rng;
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
@@ -4873,7 +4873,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	uint32_t item[4] = { 0 };
 	float f1, f2;
 	//struct mt19937_state* rng = &src->cur_block->rng;
-	sfmt_t* rng = &src->cur_block->sfmt_rng;
+	sfmt_t* rng = &src->sfmt_rng;
 	int csr = 0;
 	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;

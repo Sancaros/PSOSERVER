@@ -61,7 +61,7 @@ static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
 
     DBG_LOG("未处理指令 0x%02X", pkt->hdr.pkt_type);
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -107,7 +107,7 @@ static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     //}
 
     DBG_LOG("玩家 0x%02X 指令: 0x%X", pkt->hdr.pkt_type, pkt->type);
-    display_packet(pkt, pkt->hdr.pkt_len);
+    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -1264,7 +1264,7 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -1286,7 +1286,7 @@ static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -4229,8 +4229,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_drop_split_stacked_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t item_id = pkt->item_id, amount = pkt->amount;
-    uint32_t area = pkt->area;
+    uint32_t item_id = pkt->item_id, amount = pkt->amount, area = pkt->area;
     float x = pkt->x, z = pkt->z;
     iitem_t* it;
 
@@ -4258,7 +4257,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         return -1;
     }
-    
+
     iitem.data.item_id = generate_item_id(l, 0xFF);
 
     if (!add_iitem(src, &iitem)) {
@@ -4268,7 +4267,8 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* We have the item... Add it to the lobby's inventory. */
-    if (!(it = add_litem_locked(l, &iitem, area, x, z))) {
+    it = add_litem_locked(l, &iitem, area, x, z);
+    if (!it) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品添加至游戏房间!");
@@ -5102,12 +5102,12 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         /* 搜索目标客户端. */
         dest = l->clients[dnum];
 
-        /* 目标客户端已离线，将不再发送数据包. */
-        if (!dest) {
-            //DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
-            pthread_mutex_unlock(&l->mutex);
-            return 0;
-        }
+        /* TODO 目标客户端已离线，将不再发送数据包. 60需要探测是否还有其他客户端 而不是单独的给其中一个发送 */
+        //if (!dest) {
+        //    //DBG_LOG("不存在 dest 玩家 0x%02X 指令: 0x%X", hdr_type, type);
+        //    //pthread_mutex_unlock(&l->mutex);
+        //    return 0;
+        //}
 
         //subcmd_bb_60size_check(src, pkt);
 

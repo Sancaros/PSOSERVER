@@ -311,6 +311,8 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     lobby_t *l = (lobby_t *)malloc(sizeof(lobby_t));
     uint32_t *pid, id;
     int i;
+    uint32_t rng_seed = (uint32_t)(time(NULL) ^ section);
+    sfmt_init_gen_rand(&c->sfmt_rng, rng_seed);
 
 #ifdef DEBUG
     LOBBY_LOG("创建游戏房间 章节 %d 难度 %d", episode, difficulty);
@@ -465,7 +467,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 if(dcnte_maps[i] != 1) {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    dcnte_maps[i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         dcnte_maps[i];
                 }
             }
@@ -475,7 +477,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 if(maps[episode - 1][i] != 1) {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         maps[episode - 1][i];
                 }
             }
@@ -485,7 +487,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 if(sp_maps[episode - 1][i] != 1) {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    sp_maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         sp_maps[episode - 1][i];
                 }
             }
@@ -501,7 +503,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 else {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    dcnte_maps[i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         dcnte_maps[i];
                 }
             }
@@ -514,7 +516,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 else {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         maps[episode - 1][i];
                 }
             }
@@ -527,7 +529,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                 else {
                     //l->maps[i] = mt19937_genrand_int32(&block->rng) %
                     //    sp_maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&block->sfmt_rng) %
+                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         sp_maps[episode - 1][i];
                 }
             }
@@ -584,7 +586,7 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
     }
 
     //l->rand_seed = mt19937_genrand_int32(&block->rng);
-    l->rand_seed = sfmt_genrand_uint32(&block->sfmt_rng);
+    l->rand_seed = sfmt_genrand_uint32(&c->sfmt_rng);
 
     /* 对战模式 挑战模式 无设置掉落 */
     if(!chal && !battle)
@@ -676,7 +678,7 @@ lobby_t *lobby_create_ep3_game(block_t *block, char *name, char *passwd,
     l->min_level = 1;
     l->max_level = MAX_PLAYER_LEVEL;
     //l->rand_seed = mt19937_genrand_int32(&block->rng);
-    l->rand_seed = sfmt_genrand_uint32(&block->sfmt_rng);
+    l->rand_seed = sfmt_genrand_uint32(&c->sfmt_rng);
     l->create_time = time(NULL);
     l->flags |= LOBBY_FLAG_EP3;
 

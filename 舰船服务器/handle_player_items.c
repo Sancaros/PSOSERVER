@@ -49,6 +49,15 @@ size_t generate_item_id(lobby_t* l, size_t client_id) {
     return ++l->item_lobby_id;
 }
 
+size_t destroy_item_id(lobby_t* l, size_t client_id) {
+    size_t c_id = client_id, l_max_c_id = l->max_clients;
+
+    if (c_id < l_max_c_id)
+        return --l->item_player_id[client_id];
+
+    return --l->item_lobby_id;
+}
+
 /* 修复玩家背包数据 */
 void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     uint32_t id;
@@ -62,7 +71,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 
         if (c->mode) {
             c->mode_semi_item_id = id;
-            id++;
+            ++id;
         }
 
         for (i = 0; i < inv->item_count; ++i, ++id) {
@@ -78,7 +87,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 
         if (c->mode) {
             c->mode_semi_item_id = id;
-            id++;
+            ++id;
         }
 
         for (i = 0; i < c->item_count; ++i, ++id) {
@@ -92,7 +101,7 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
+iitem_t* add_new_litem_locked(lobby_t* l, const item_t* new_item, uint8_t area, float x, float z) {
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
@@ -130,7 +139,7 @@ iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
 }
 
 /* 玩家丢出的 取出的 购买的物品 */
-iitem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, float z) {
+iitem_t* add_litem_locked(lobby_t* l, const iitem_t* iitem, uint8_t area, float x, float z) {
     
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
@@ -155,7 +164,6 @@ iitem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, flo
 }
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
-    lobby_item_t* i, * tmp;
 
     if (l->version != CLIENT_VERSION_BB)
         return -1;
@@ -165,18 +173,18 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     //memset(rv, 0, PSOCN_STLENGTH_IITEM);
     //rv->data.datal[0] = LE32(Item_NoSuchItem);
 
-    i = TAILQ_FIRST(&l->item_queue);
-    while (i) {
-        tmp = TAILQ_NEXT(i, qentry);
+    lobby_item_t* litem = TAILQ_FIRST(&l->item_queue);
+    while (litem) {
+        lobby_item_t* tmp = TAILQ_NEXT(litem, qentry);
 
-        if (i->iitem.data.item_id == item_id) {
-            memcpy(rv, &i->iitem, PSOCN_STLENGTH_IITEM);
-            TAILQ_REMOVE(&l->item_queue, i, qentry);
-            free_safe(i);
+        if (litem->iitem.data.item_id == item_id) {
+            memcpy(rv, &litem->iitem, PSOCN_STLENGTH_IITEM);
+            TAILQ_REMOVE(&l->item_queue, litem, qentry);
+            free_safe(litem);
             return 0;
         }
 
-        i = tmp;
+        litem = tmp;
     }
 
     return 1;

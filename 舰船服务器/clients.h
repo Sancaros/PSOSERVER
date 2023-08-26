@@ -36,6 +36,7 @@
 #include <psoconfig.h>
 #include <items.h>
 #include <pso_version.h>
+#include <SFMT.h>
 
 #include "ship.h"
 #include "block.h"
@@ -167,6 +168,7 @@ struct ship_client {
 
     pthread_mutex_t mutex;
     pkt_header_t pkt;
+    sfmt_t sfmt_rng;
 
     uint16_t(*pkt_size)(const pkt_header_t* hdr, int version);
 

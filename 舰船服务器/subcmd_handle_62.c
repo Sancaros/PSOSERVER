@@ -1151,6 +1151,8 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
             print_item_data(&iitem_data.data, src->version);
             return -1;
         }
+        //size_t id = destroy_item_id(l, src->client_id);
+        //DBG_LOG("id %u", id);
     }
 
     /* 让所有人都知道是该客户端捡到的，并将其从所有人视线中删除. */
@@ -2120,7 +2122,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         memset(&ii, 0, PSOCN_STLENGTH_IITEM);
         ii.data.datab[0] = ITEM_TYPE_MESETA;
         ii.data.data2l = meseta_amount;
-        ii.data.item_id = generate_item_id(l, EMPTY_STRING);
+        ii.data.item_id = generate_item_id(l, 0xFF);
 
         if (!add_iitem(src, &ii)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
@@ -2505,7 +2507,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             bb.data.datal[0] = new_item;
 
             if (bb.data.item_id == 0xFFFFFFFF) {
-                bb.data.item_id = generate_item_id(l, EMPTY_STRING);
+                bb.data.item_id = generate_item_id(l, 0xFF);
             }
 
             if (new_item == 0x04) {

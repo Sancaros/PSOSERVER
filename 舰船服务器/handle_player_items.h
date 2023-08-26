@@ -27,6 +27,7 @@
 
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id);
+size_t destroy_item_id(lobby_t* l, size_t client_id);
 
 /* 修复玩家背包数据 */
 void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
@@ -36,8 +37,8 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
-iitem_t* add_litem_locked(lobby_t* l, iitem_t* it, uint8_t area, float x, float z);
+iitem_t* add_new_litem_locked(lobby_t* l, const item_t* new_item, uint8_t area, float x, float z);
+iitem_t* add_litem_locked(lobby_t* l, const iitem_t* it, uint8_t area, float x, float z);
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
