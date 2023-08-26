@@ -41,7 +41,7 @@
 
 #include <debug.h>
 #include <f_logs.h>
-#include <mtwist.h>
+//#include <mtwist.h>
 #include "max_tech_level.h"
 
 #define PSOCN_DB_LOAD_CHAR              0x00000000

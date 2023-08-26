@@ -1,2 +1,0 @@
-E:\梦幻之星项目\PSOSERVER\Library\lua5.4.4.lib.lastcodeanalysissucceeded
-E:\梦幻之星项目\PSOSERVER\通用库\lua5.4.4\Library\NativeCodeAnalysis.read.1.tlog

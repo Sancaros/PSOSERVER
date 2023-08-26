@@ -24,7 +24,7 @@
 
 #include <encryption.h>
 #include <psoconfig.h>
-#include <mtwist.h>
+//#include <mtwist.h>
 #include <SFMT.h>
 
 #define PATCH_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH) 

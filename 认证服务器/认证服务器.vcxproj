@@ -60,9 +60,6 @@
     <ProjectReference Include="..\通用库\md5\md5.vcxproj">
       <Project>{88c59be5-b96d-4476-aa01-a5ba7c8dc2e9}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\通用库\mtwist\mtwist.vcxproj">
-      <Project>{dc65a794-ce8a-4f91-8655-3e1b34edcb55}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\通用库\pthread_win32\windows\VS2022\pthread_lib.2022.vcxproj">
       <Project>{a063dfad-6995-4e1a-afff-e43dc11e95b1}</Project>
     </ProjectReference>

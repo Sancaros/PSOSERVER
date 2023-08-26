@@ -15,10 +15,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <mtwist.h>
 #ifndef SHOPDATA_H
 #define SHOPDATA_H
 
+//#include <mtwist.h>
+#include <SFMT.h>
 
 /* Pull in the packet header types. */
 #define PACKETS_H_HEADERS_ONLY
@@ -78,7 +79,7 @@ uint32_t get_bb_shop_price(iitem_t* ci);
 
 /* 生成商店物品 */
 item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index);
-item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, struct mt19937_state* 随机因子);
+item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型/*, struct mt19937_state* 随机因子*/, sfmt_t* 随机因子);
 size_t price_for_item(const item_t* item);
 
 const static char* shop_files[] = {

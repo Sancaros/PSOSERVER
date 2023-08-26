@@ -27,7 +27,8 @@
 #include <math.h>
 #include <WinSock_Defines.h>
 
-#include <mtwist.h>
+//#include <mtwist.h>
+#include <SFMT.h>
 #include <encryption.h>
 #include <f_logs.h>
 #include <psomemory.h>
@@ -100,7 +101,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
     int i;
     pthread_mutexattr_t attr;
-    struct mt19937_state *rng;
+    //struct mt19937_state *rng;
 
     /* Disable Nagle's algorithm */
     i = 1;
@@ -377,12 +378,17 @@ ship_client_t *client_create_connection(int sock, int version, int type,
     rv->ckey.type = 0xFF;
     rv->skey.type = 0xFF;
 
+    /* TODO 客户端是否也要自带随机数 */
+    //uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
+    sfmt_t* rng/* = (&rv->sfmt_rng, rng_seed)*/;
+
     if(type == CLIENT_TYPE_SHIP) {
         rv->flags |= CLIENT_FLAG_TYPE_SHIP;
-        rng = &ship->rng;
+        rng = &ship->sfmt_rng;
     }
     else {
-        rng = &block->rng;
+        //rng = &block->rng;
+        rng = &block->sfmt_rng;
     }
 
 #ifdef ENABLE_LUA
@@ -396,8 +402,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
         case CLIENT_VERSION_DCV2:
         case CLIENT_VERSION_PC:
             /* Generate the encryption keys for the client and server. */
-            client_seed_dc = mt19937_genrand_int32(rng);
-            server_seed_dc = mt19937_genrand_int32(rng);
+            client_seed_dc = sfmt_genrand_uint32(rng);
+            server_seed_dc = sfmt_genrand_uint32(rng);
 
             CRYPT_CreateKeys(&rv->skey, &server_seed_dc, CRYPT_PC);
             CRYPT_CreateKeys(&rv->ckey, &client_seed_dc, CRYPT_PC);
@@ -413,8 +419,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
             /* Generate the encryption keys for the client and server. */
-            client_seed_dc = mt19937_genrand_int32(rng);
-            server_seed_dc = mt19937_genrand_int32(rng);
+            client_seed_dc = sfmt_genrand_uint32(rng);
+            server_seed_dc = sfmt_genrand_uint32(rng);
 
             CRYPT_CreateKeys(&rv->skey, &server_seed_dc, CRYPT_GAMECUBE);
             CRYPT_CreateKeys(&rv->ckey, &client_seed_dc, CRYPT_GAMECUBE);
@@ -429,8 +435,8 @@ ship_client_t *client_create_connection(int sock, int version, int type,
         case CLIENT_VERSION_BB:
             /* Generate the encryption keys for the client and server. */
             for(i = 0; i < 48; i += 4) {
-                client_seed_dc = mt19937_genrand_int32(rng);
-                server_seed_dc = mt19937_genrand_int32(rng);
+                client_seed_dc = sfmt_genrand_uint32(rng);
+                server_seed_dc = sfmt_genrand_uint32(rng);
 
                 client_seed_bb[i + 0] = (uint8_t)(client_seed_dc >>  0);
                 client_seed_bb[i + 1] = (uint8_t)(client_seed_dc >>  8);
@@ -845,7 +851,7 @@ int client_set_autoreply(ship_client_t *c, void *buf, uint16_t len) {
 
     /* Make space for the new autoreply and copy it in. */
     if(!(tmp = malloc(len))) {
-        ERR_LOG("Cannot allocate memory for autoreply (%" PRIu32
+        ERR_LOG("分配动态内存给 autoreply (%" PRIu32
               "):\n%s", c->guildcard, strerror(errno));
         return -1;
     }

@@ -862,7 +862,8 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     }
 
     /* Create the random number generator state */
-    mt19937_init(&rv->rng, (uint32_t)time(NULL));
+    //mt19937_init(&rv->rng, (uint32_t)time(NULL));
+    sfmt_init_gen_rand(&rv->sfmt_rng, (uint32_t)time(NULL));
 
     /* Connect to the shipgate. */
     if (shipgate_connect(rv, &rv->sg)) {

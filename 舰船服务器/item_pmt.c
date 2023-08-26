@@ -149,7 +149,7 @@ static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for v2 weapon count: %s",
+        ERR_LOG("分配动态内存给 v2 weapon count: %s",
               strerror(errno));
         num_weapon_types = 0;
         return -2;
@@ -157,7 +157,7 @@ static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
 
     if(!(weapons = (pmt_weapon_v2_t **)malloc(sizeof(pmt_weapon_v2_t *) *
                                               cnt))) {
-        ERR_LOG("Cannot allocate space for v2 weapon list: %s",
+        ERR_LOG("分配动态内存给 v2 weapon list: %s",
               strerror(errno));
         free_safe(num_weapons);
         num_weapons = NULL;
@@ -184,7 +184,7 @@ static int read_weapons_v2(const uint8_t *pmt, uint32_t sz,
         num_weapons[i] = values[0];
         if(!(weapons[i] = (pmt_weapon_v2_t *)malloc(sizeof(pmt_weapon_v2_t) *
                                                     values[0]))) {
-            ERR_LOG("Cannot allocate space for v2 weapons: %s",
+            ERR_LOG("分配动态内存给 v2 weapons: %s",
                   strerror(errno));
             return -5;
         }
@@ -226,7 +226,7 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons_gc = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for GC weapon count: %s",
+        ERR_LOG("分配动态内存给 GC weapon count: %s",
               strerror(errno));
         num_weapon_types_gc = 0;
         return -2;
@@ -234,7 +234,7 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
 
     if(!(weapons_gc = (pmt_weapon_gc_t **)malloc(sizeof(pmt_weapon_gc_t *) *
                                                  cnt))) {
-        ERR_LOG("Cannot allocate space for GC weapon list: %s",
+        ERR_LOG("分配动态内存给 GC weapon list: %s",
               strerror(errno));
         free_safe(num_weapons_gc);
         num_weapons_gc = NULL;
@@ -261,7 +261,7 @@ static int read_weapons_gc(const uint8_t *pmt, uint32_t sz,
         num_weapons_gc[i] = values[0];
         if(!(weapons_gc[i] = (pmt_weapon_gc_t *)malloc(sizeof(pmt_weapon_gc_t) *
                                                        values[0]))) {
-            ERR_LOG("Cannot allocate space for GC weapons: %s",
+            ERR_LOG("分配动态内存给 GC weapons: %s",
                   strerror(errno));
             return -5;
         }
@@ -307,7 +307,7 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_weapons_bb = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for BB weapon count: %s",
+        ERR_LOG("分配动态内存给 BB weapon count: %s",
               strerror(errno));
         num_weapon_types_bb = 0;
         return -2;
@@ -315,7 +315,7 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
 
     if(!(weapons_bb = (pmt_weapon_bb_t **)malloc(sizeof(pmt_weapon_bb_t *) *
                                                  cnt))) {
-        ERR_LOG("Cannot allocate space for BB weapon list: %s",
+        ERR_LOG("分配动态内存给 BB weapon list: %s",
               strerror(errno));
         free_safe(num_weapons_bb);
         num_weapons_bb = NULL;
@@ -342,7 +342,7 @@ static int read_weapons_bb(const uint8_t *pmt, uint32_t sz,
         num_weapons_bb[i] = values.count;
         if(!(weapons_bb[i] = (pmt_weapon_bb_t *)malloc(sizeof(pmt_weapon_bb_t) *
                                                        values.count))) {
-            ERR_LOG("Cannot allocate space for BB weapons: %s",
+            ERR_LOG("分配动态内存给 BB weapons: %s",
                   strerror(errno));
             return -5;
         }
@@ -403,14 +403,14 @@ static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_guards = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for v2 guard count: %s",
+        ERR_LOG("分配动态内存给 v2 guard count: %s",
               strerror(errno));
         num_guard_types = 0;
         return -3;
     }
 
     if(!(guards = (pmt_guard_v2_t **)malloc(sizeof(pmt_guard_v2_t *) * cnt))) {
-        ERR_LOG("Cannot allocate space for v2 guards list: %s",
+        ERR_LOG("分配动态内存给 v2 guards list: %s",
               strerror(errno));
         free_safe(num_guards);
         num_guards = NULL;
@@ -437,7 +437,7 @@ static int read_guards_v2(const uint8_t *pmt, uint32_t sz,
         num_guards[i] = values[0];
         if(!(guards[i] = (pmt_guard_v2_t *)malloc(sizeof(pmt_guard_v2_t) *
                                                   values[0]))) {
-            ERR_LOG("Cannot allocate space for v2 guards: %s",
+            ERR_LOG("分配动态内存给 v2 guards: %s",
                   strerror(errno));
             return -6;
         }
@@ -483,7 +483,7 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_guards_gc = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for GC guard count: %s",
+        ERR_LOG("分配动态内存给 GC guard count: %s",
               strerror(errno));
         num_guard_types_gc = 0;
         return -3;
@@ -491,7 +491,7 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
 
     if(!(guards_gc = (pmt_guard_gc_t **)malloc(sizeof(pmt_guard_gc_t *) *
                                                cnt))) {
-        ERR_LOG("Cannot allocate space for GC guards list: %s",
+        ERR_LOG("分配动态内存给 GC guards list: %s",
               strerror(errno));
         free_safe(num_guards_gc);
         num_guards_gc = NULL;
@@ -518,7 +518,7 @@ static int read_guards_gc(const uint8_t *pmt, uint32_t sz,
         num_guards_gc[i] = values[0];
         if(!(guards_gc[i] = (pmt_guard_gc_t *)malloc(sizeof(pmt_guard_gc_t) *
                                                      values[0]))) {
-            ERR_LOG("Cannot allocate space for GC guards: %s",
+            ERR_LOG("分配动态内存给 GC guards: %s",
                   strerror(errno));
             return -6;
         }
@@ -568,7 +568,7 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if(!(num_guards_bb = (uint32_t *)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for BB guard count: %s",
+        ERR_LOG("分配动态内存给 BB guard count: %s",
               strerror(errno));
         num_guard_types_bb = 0;
         return -3;
@@ -576,7 +576,7 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
 
     if(!(guards_bb = (pmt_guard_bb_t **)malloc(sizeof(pmt_guard_bb_t *) *
                                                cnt))) {
-        ERR_LOG("Cannot allocate space for BB guards list: %s",
+        ERR_LOG("分配动态内存给 BB guards list: %s",
               strerror(errno));
         free_safe(num_guards_bb);
         num_guards_bb = NULL;
@@ -603,7 +603,7 @@ static int read_guards_bb(const uint8_t *pmt, uint32_t sz,
         num_guards_bb[i] = values.count;
         if(!(guards_bb[i] = (pmt_guard_bb_t *)malloc(sizeof(pmt_guard_bb_t) *
                                                      values.count))) {
-            ERR_LOG("Cannot allocate space for BB guards: %s",
+            ERR_LOG("分配动态内存给 BB guards: %s",
                   strerror(errno));
             return -6;
         }
@@ -654,7 +654,7 @@ static int read_units_v2(const uint8_t *pmt, uint32_t sz,
 
     num_units = values[0];
     if(!(units = (pmt_unit_v2_t *)malloc(sizeof(pmt_unit_v2_t) * values[0]))) {
-        ERR_LOG("Cannot allocate space for v2 units: %s",
+        ERR_LOG("分配动态内存给 v2 units: %s",
               strerror(errno));
         num_units = 0;
         return -3;
@@ -702,7 +702,7 @@ static int read_units_gc(const uint8_t *pmt, uint32_t sz,
     num_units_gc = values[0];
     if(!(units_gc = (pmt_unit_gc_t *)malloc(sizeof(pmt_unit_gc_t) *
                                             values[0]))) {
-        ERR_LOG("Cannot allocate space for GC units: %s",
+        ERR_LOG("分配动态内存给 GC units: %s",
               strerror(errno));
         num_units_gc = 0;
         return -3;
@@ -753,7 +753,7 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
     num_units_bb = values.count;
     if(!(units_bb = (pmt_unit_bb_t *)malloc(sizeof(pmt_unit_bb_t) *
                                             values.count))) {
-        ERR_LOG("Cannot allocate space for BB units: %s",
+        ERR_LOG("分配动态内存给 BB units: %s",
               strerror(errno));
         num_units_bb = 0;
         return -3;
@@ -806,7 +806,7 @@ static int read_stars_v2(const uint8_t *pmt, uint32_t sz,
     }
 
     if(!(star_table = (uint8_t *)malloc(star_max))) {
-        ERR_LOG("Cannot allocate star table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 star table: %s", strerror(errno));
         star_max = 0;
         return -3;
     }
@@ -836,7 +836,7 @@ static int read_stars_gc(const uint8_t *pmt, uint32_t sz,
     }
 
     if(!(star_table_gc = (uint8_t *)malloc(star_max_gc))) {
-        ERR_LOG("Cannot allocate star table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 star table: %s", strerror(errno));
         star_max_gc = 0;
         return -3;
     }
@@ -866,7 +866,7 @@ static int read_stars_bb(const uint8_t *pmt, uint32_t sz,
     }
 
     if(!(star_table_bb = (uint8_t *)malloc(star_max_bb))) {
-        ERR_LOG("Cannot allocate star table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 star table: %s", strerror(errno));
         star_max_bb = 0;
         return -3;
     }
@@ -912,7 +912,7 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
     num_mags_bb = values.count;
     if (!(mags_bb = (pmt_mag_bb_t*)malloc(sizeof(pmt_mag_bb_t) *
         values.count))) {
-        ERR_LOG("Cannot allocate space for BB mags: %s",
+        ERR_LOG("分配动态内存给 BB mags: %s",
             strerror(errno));
         num_mags_bb = 0;
         return -3;
@@ -964,7 +964,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if (!(num_tools_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for BB tool count: %s",
+        ERR_LOG("分配动态内存给 BB tool count: %s",
             strerror(errno));
         num_tool_types_bb = 0;
         return -2;
@@ -972,7 +972,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
     if (!(tools_bb = (pmt_tool_bb_t**)malloc(sizeof(pmt_tool_bb_t*) *
         cnt))) {
-        ERR_LOG("Cannot allocate space for BB tool list: %s",
+        ERR_LOG("分配动态内存给 BB tool list: %s",
             strerror(errno));
         free_safe(num_tools_bb);
         num_tools_bb = NULL;
@@ -1002,7 +1002,7 @@ static int read_tools_bb(const uint8_t* pmt, uint32_t sz,
 
         if (!(tools_bb[i] = (pmt_tool_bb_t*)malloc(sizeof(pmt_tool_bb_t) *
             values.count))) {
-            ERR_LOG("Cannot allocate space for BB weapons: %s",
+            ERR_LOG("分配动态内存给 BB weapons: %s",
                 strerror(errno));
             return -5;
         }
@@ -1061,7 +1061,7 @@ static int read_itemcombinations_bb(const uint8_t* pmt, uint32_t sz,
     itemcombinations_max_bb = values.count;
     if (!(itemcombination_bb = (pmt_itemcombination_bb_t*)malloc(sizeof(pmt_itemcombination_bb_t) *
         values.count))) {
-        ERR_LOG("Cannot allocate space for BB itemcombination: %s",
+        ERR_LOG("分配动态内存给 BB itemcombination: %s",
             strerror(errno));
         itemcombinations_max_bb = 0;
         return -3;
@@ -1114,7 +1114,7 @@ static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
 
     /* Allocate the stuff we need to allocate... */
     if (!(num_eventitems_bb = (uint32_t*)malloc(sizeof(uint32_t) * cnt))) {
-        ERR_LOG("Cannot allocate space for BB eventitem count: %s",
+        ERR_LOG("分配动态内存给 BB eventitem count: %s",
             strerror(errno));
         num_eventitem_types_bb = 0;
         return -2;
@@ -1122,7 +1122,7 @@ static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
 
     if (!(eventitem_bb = (pmt_eventitem_bb_t**)malloc(sizeof(pmt_eventitem_bb_t*) *
         cnt))) {
-        ERR_LOG("Cannot allocate space for BB eventitem list: %s",
+        ERR_LOG("分配动态内存给 BB eventitem list: %s",
             strerror(errno));
         free_safe(num_eventitems_bb);
         num_eventitems_bb = NULL;
@@ -1152,7 +1152,7 @@ static int read_eventitems_bb(const uint8_t* pmt, uint32_t sz,
 
         if (!(eventitem_bb[i] = (pmt_eventitem_bb_t*)malloc(sizeof(pmt_eventitem_bb_t) *
             values.count))) {
-            ERR_LOG("Cannot allocate space for BB eventitem: %s",
+            ERR_LOG("分配动态内存给 BB eventitem: %s",
                 strerror(errno));
             return -5;
         }
@@ -1209,7 +1209,7 @@ static int read_unsealableitems_bb(const uint8_t* pmt, uint32_t sz,
 
     if (!(unsealableitems_bb = (pmt_unsealableitem_bb_t*)malloc(sizeof(pmt_unsealableitem_bb_t) *
         values.count))) {
-        ERR_LOG("Cannot allocate space for BB unsealableitems: %s",
+        ERR_LOG("分配动态内存给 BB unsealableitems: %s",
             strerror(errno));
         unsealableitems_max_bb = 0;
         return -3;
@@ -1269,7 +1269,7 @@ static int read_weaponsaledivisors_bb(const uint8_t* pmt, uint32_t sz,
     }
 
     if (!(weaponsaledivisors_bb = (float*)malloc(sizeof(float) * num_weaponsaledivisors))) {
-        ERR_LOG("Cannot allocate weaponsaledivisors_bb table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 weaponsaledivisors_bb table: %s", strerror(errno));
         star_max_bb = 0;
         return -2;
     }
@@ -1302,7 +1302,7 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
     }
 
     if (!(mag_feed_results_list_offsets = (pmt_mag_feed_results_list_offsets_t*)malloc(sizeof(pmt_mag_feed_results_list_offsets_t)))) {
-        ERR_LOG("Cannot allocate space for BB mag_feed_results_list_offsets: %s",
+        ERR_LOG("分配动态内存给 BB mag_feed_results_list_offsets: %s",
             strerror(errno));
         free_safe(mag_feed_results_list_offsets);
         return -2;
@@ -1312,7 +1312,7 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
     memcpy(mag_feed_results_list_offsets, pmt + ptrs->mag_feed_table, sizeof(pmt_mag_feed_results_list_offsets_t));
 
     if (!(mag_feed_results_list = (pmt_mag_feed_results_list_t**)malloc(sizeof(pmt_mag_feed_results_list_t*) * cnt))) {
-        ERR_LOG("Cannot allocate space for BB mag_feed_results list: %s",
+        ERR_LOG("分配动态内存给 BB mag_feed_results list: %s",
             strerror(errno));
         return -3;
     }
@@ -1322,7 +1322,7 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
     for (i = 0; i < cnt; ++i) {
 
         if (!(mag_feed_results_list[i] = (pmt_mag_feed_results_list_t*)malloc(sizeof(pmt_mag_feed_results_list_t)))) {
-            ERR_LOG("Cannot allocate space for BB mag_feed_results_list: %s",
+            ERR_LOG("分配动态内存给 BB mag_feed_results_list: %s",
                 strerror(errno));
             return -5;
         }
@@ -1373,14 +1373,14 @@ static int build_units_v2(int norestrict) {
        even though some are actually disabled by the game. */
     if(!(units_by_stars = (uint64_t *)malloc((num_units * 5 + 1) *
                                              sizeof(uint64_t)))) {
-        ERR_LOG("Cannot allocate unit table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 unit table: %s", strerror(errno));
         return -1;
     }
 
     /* Allocate space for the "pointer" table */
     if(!(units_with_stars = (uint32_t *)malloc((unit_max_stars + 1) *
                                                sizeof(uint32_t)))) {
-        ERR_LOG("Cannot allocate unit ptr table: %s",
+        ERR_LOG("分配动态内存给 unit ptr table: %s",
               strerror(errno));
         free_safe(units_by_stars);
         units_by_stars = NULL;
@@ -1457,14 +1457,14 @@ static int build_units_gc(int norestrict) {
        even though some are actually disabled by the game. */
     if(!(units_by_stars_gc = (uint64_t *)malloc((num_units_gc * 5 + 1) *
                                                 sizeof(uint64_t)))) {
-        ERR_LOG("Cannot allocate unit table: %s", strerror(errno));
+        ERR_LOG("分配动态内存给 unit table: %s", strerror(errno));
         return -1;
     }
 
     /* Allocate space for the "pointer" table */
     if(!(units_with_stars_gc = (uint32_t *)malloc((unit_max_stars_gc + 1) *
                                                   sizeof(uint32_t)))) {
-        ERR_LOG("Cannot allocate unit ptr table: %s",
+        ERR_LOG("分配动态内存给 unit ptr table: %s",
               strerror(errno));
         free_safe(units_by_stars_gc);
         units_by_stars_gc = NULL;
@@ -1669,7 +1669,7 @@ int pmt_read_gc(const char *fn, int norestrict) {
     }
 
     if (!(pmt_tb_offsets_gc = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
-        ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
+        ERR_LOG("分配动态内存给 BB PMT offsets: %s",
             strerror(errno));
         free_safe(pmt_tb_offsets_gc);
         return -2;
@@ -1737,7 +1737,7 @@ int pmt_read_bb(const char *fn, int norestrict) {
 #endif // DEBUG
 
     if (!(pmt_tb_offsets_bb = (pmt_table_offsets_v3_t*)malloc(sizeof(pmt_table_offsets_v3_t)))) {
-        ERR_LOG("Cannot allocate space for BB PMT offsets: %s",
+        ERR_LOG("分配动态内存给 BB PMT offsets: %s",
             strerror(errno));
         free_safe(pmt_tb_offsets_bb);
         return -2;
@@ -2795,9 +2795,9 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
    is actually defined as a 0 increment anyway).
 */
 int pmt_random_unit_v2(uint8_t max, uint32_t item[4],
-                       struct mt19937_state*rng, lobby_t *l) {
+                       sfmt_t* rng, lobby_t *l) {
     uint64_t unit;
-    uint32_t rnd = mt19937_genrand_int32(rng);
+    uint32_t rnd = sfmt_genrand_uint32(rng);
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
@@ -2825,9 +2825,9 @@ int pmt_random_unit_v2(uint8_t max, uint32_t item[4],
 }
 
 int pmt_random_unit_gc(uint8_t max, uint32_t item[4],
-                       struct mt19937_state*rng, lobby_t *l) {
+                       sfmt_t* rng, lobby_t *l) {
     uint64_t unit;
-    uint32_t rnd = mt19937_genrand_int32(rng);
+    uint32_t rnd = sfmt_genrand_uint32(rng);
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)
@@ -2855,9 +2855,9 @@ int pmt_random_unit_gc(uint8_t max, uint32_t item[4],
 }
 
 int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
-                       struct mt19937_state*rng, lobby_t *l) {
+                       sfmt_t* rng, lobby_t *l) {
     uint64_t unit;
-    uint32_t rnd = mt19937_genrand_int32(rng);
+    uint32_t rnd = sfmt_genrand_uint32(rng);
 
 #ifdef DEBUG
     if(l->flags & LOBBY_FLAG_DBG_SDROPS)

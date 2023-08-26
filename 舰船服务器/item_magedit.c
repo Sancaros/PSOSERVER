@@ -265,7 +265,7 @@ int magedit_read_bb(const char* fn, int norestrict) {
     }
 
     if (!(magedit_tb_offsets = (magedit_table_offsets_t*)malloc(sizeof(magedit_table_offsets_t)))) {
-        ERR_LOG("Cannot allocate space for MagEdit offsets: %s",
+        ERR_LOG("分配动态内存给 MagEdit offsets: %s",
             strerror(errno));
         free_safe(magedit_tb_offsets);
         return -2;

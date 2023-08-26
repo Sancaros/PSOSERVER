@@ -734,7 +734,8 @@ void unwrap(item_t* item) {
 }
 
 int player_use_item(ship_client_t* src, uint32_t item_id) {
-    struct mt19937_state* rng = &src->cur_block->rng;
+    //struct mt19937_state* rng = &src->cur_block->rng;
+    sfmt_t* rng = &src->cur_block->sfmt_rng;
     iitem_t* weapon = { 0 };
     iitem_t* armor = { 0 };
     iitem_t* mag = { 0 };
@@ -1268,7 +1269,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 return 0;
             }
 
-            size_t det = mt19937_genrand_int32(rng) % sum;
+            //size_t det = mt19937_genrand_int32(rng) % sum;
+            size_t det = sfmt_genrand_uint32(rng) % sum;
 
             for (z = 0; z < num_eventitems_bb[iitem->data.datab[2]]; z++) {
                 pmt_eventitem_bb_t entry = eventitem_bb[iitem->data.datab[2]][z];

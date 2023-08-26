@@ -447,9 +447,10 @@ int rt_bb_enabled(void) {
     return have_bbrt;
 }
 
-uint32_t rt_generate_v2_rare(ship_client_t *c, lobby_t *l, int rt_index,
+uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
                              int area) {
-    struct mt19937_state *rng = &c->cur_block->rng;
+    //struct mt19937_state *rng = &c->cur_block->rng;
+    sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_set_t *set;
     int i;
@@ -467,7 +468,7 @@ uint32_t rt_generate_v2_rare(ship_client_t *c, lobby_t *l, int rt_index,
 
     /* Are we doing a drop for an enemy or a box? */
     if(rt_index >= 0) {
-        rnd = mt19937_genrand_real1(rng);
+        rnd = sfmt_genrand_real1(rng);
 
         if (rnd < set->enemy_rares[rt_index].prob)
             return set->enemy_rares[rt_index].item_data;
@@ -475,7 +476,7 @@ uint32_t rt_generate_v2_rare(ship_client_t *c, lobby_t *l, int rt_index,
     else {
         for (i = 0; i < 30; ++i) {
             if (set->box_rares[i].area == area) {
-                rnd = mt19937_genrand_real1(rng);
+                rnd = sfmt_genrand_real1(rng);
 
                 if(rnd < set->box_rares[i].prob)
                     return set->box_rares[i].item_data;
@@ -486,9 +487,10 @@ uint32_t rt_generate_v2_rare(ship_client_t *c, lobby_t *l, int rt_index,
     return 0;
 }
 
-uint32_t rt_generate_gc_rare(ship_client_t *c, lobby_t *l, int rt_index,
+uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
                              int area) {
-    struct mt19937_state *rng = &c->cur_block->rng;
+    //struct mt19937_state *rng = &c->cur_block->rng;
+    sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_set_t *set;
     int i;
@@ -506,7 +508,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *c, lobby_t *l, int rt_index,
 
     /* Are we doing a drop for an enemy or a box? */
     if(rt_index >= 0) {
-        rnd = mt19937_genrand_real1(rng);
+        rnd = sfmt_genrand_real1(rng);
 
         if (rnd < set->enemy_rares[rt_index].prob)
             return set->enemy_rares[rt_index].item_data;
@@ -514,7 +516,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *c, lobby_t *l, int rt_index,
     else {
         for (i = 0; i < 30; ++i) {
             if (set->box_rares[i].area == area) {
-                rnd = mt19937_genrand_real1(rng);
+                rnd = sfmt_genrand_real1(rng);
 
                 if(rnd < set->box_rares[i].prob)
                     return set->box_rares[i].item_data;
@@ -527,7 +529,8 @@ uint32_t rt_generate_gc_rare(ship_client_t *c, lobby_t *l, int rt_index,
 
 uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     int area) {
-    struct mt19937_state* rng = &src->cur_block->rng;
+    //struct mt19937_state *rng = &c->cur_block->rng;
+    sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_table_t* set;
     int i;
@@ -539,7 +542,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
         return 0;
 
     if (src->game_data->gm_drop_rare) {
-        rt_index = mt19937_genrand_int32(rng) % 100;
+        rt_index = sfmt_genrand_uint32(rng) % 100;
         DBG_LOG("È«ºìµôÂäÒÑ¿ªÆô rt_index %d", rt_index);
     }
 
@@ -576,7 +579,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
 
     /* Are we doing a drop for an enemy or a box? */
     if (rt_index >= 0) {
-        rnd = mt19937_genrand_real1(rng);
+        rnd = sfmt_genrand_real1(rng);
 
         //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->enemy_rares[rt_index].probability));
 
@@ -587,7 +590,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     else {
         for (i = 0; i < 30; ++i) {
             if (set->box_areas[i] == area) {
-                rnd = mt19937_genrand_real1(rng);
+                rnd = sfmt_genrand_real1(rng);
 
                 //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->box_rares[i].probability));
 

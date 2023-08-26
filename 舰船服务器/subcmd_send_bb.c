@@ -526,7 +526,8 @@ int subcmd_send_bb_bank(ship_client_t* src, psocn_bank_t* bank) {
     pkt->shdr.unused = 0x0000;
 
     pkt->size = LE32((num_items + 1) * PSOCN_STLENGTH_BITEM);
-    pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
+    //pkt->checksum = mt19937_genrand_int32(&b->rng); /* Client doesn't care */
+    pkt->checksum = sfmt_genrand_uint32(&b->sfmt_rng); /* Client doesn't care */
     pkt->item_count = bank->item_count;
     pkt->meseta = bank->meseta;
 

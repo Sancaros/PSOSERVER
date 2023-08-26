@@ -18,6 +18,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <string.h>
+#include <SFMT.h>
 
 #include "clients.h"
 #include "lobby.h"
@@ -556,8 +557,10 @@ static uint32_t get_random_integer(ship_client_t *c, lobby_t *l) {
 
     max -= min;
 
-    rnd = (uint32_t)(mt19937_genrand_int32(&l->block->rng) %
-                     ((uint64_t)max + 1) + min);
+    //rnd = (uint32_t)(mt19937_genrand_int32(&l->block->rng) %
+    //                 ((uint64_t)max + 1) + min);
+    rnd = (uint32_t)(sfmt_genrand_uint32(&l->block->sfmt_rng) %
+        ((uint64_t)max + 1) + min);
 
     send_sync_register(c, c->q_stack[5], rnd);
     return QUEST_FUNC_RET_NO_ERROR;

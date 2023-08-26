@@ -60,6 +60,7 @@
 #include <psoconfig.h>
 #include <debug.h>
 #include <mtwist.h>
+#include <SFMT.h>
 #include <encryption.h>
 #include <f_dirent.h>
 #include <f_logs.h>
@@ -1149,8 +1150,8 @@ int __cdecl main(int argc, char** argv) {
         if (setup_ports(srvcfg))
             ERR_EXIT("setup_ports 错误");
 
-        /* 读取随机32位种子. */
-        init_genrand((uint32_t)time(NULL));
+        /* 生成随机32位种子. */
+        //init_genrand((uint32_t)time(NULL));
 
         /* Initialize all the iconv contexts we'll need */
         if (init_iconv())

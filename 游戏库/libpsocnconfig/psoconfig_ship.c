@@ -676,7 +676,7 @@ static int handle_limits(xmlNode* n, psocn_ship_t* cur) {
     /* Allocate space for it in the array. */
     if (!(tmp = realloc(cur->limits, (cur->limits_count + 1) *
         sizeof(psocn_limit_config_t)))) {
-        ERR_LOG("Cannot allocate space for limits file: %s",
+        ERR_LOG("分配动态内存给 limits file: %s",
             strerror(errno));
         goto err;
     }

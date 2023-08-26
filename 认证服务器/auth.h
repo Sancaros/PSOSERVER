@@ -24,7 +24,7 @@
 #include <psoconfig.h>
 #include <encryption.h>
 #include <database.h>
-#include <mtwist.h>
+//#include <mtwist.h>
 #include <SFMT.h>
 
 #include <pso_player.h>

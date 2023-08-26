@@ -27,7 +27,7 @@
 #include <debug.h>
 #include <f_logs.h>
 #include <encryption.h>
-#include <mtwist.h>
+//#include <mtwist.h>
 #include <SFMT.h>
 
 #include "auth.h"

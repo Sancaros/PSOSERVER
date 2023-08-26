@@ -661,7 +661,8 @@ block_t* block_server_start(ship_t* s, int b, uint16_t port) {
        UNIX time, xored with the port (so that each block will use a different
        seed even though they'll probably get the same timestamp). */
     rng_seed = (uint32_t)(time(NULL) ^ port);
-    mt19937_init(&rv->rng, rng_seed);
+    //mt19937_init(&rv->rng, rng_seed);
+    sfmt_init_gen_rand(&rv->sfmt_rng, rng_seed);
 
     /* Start up the thread for this block. */
     if (pthread_create(&rv->thd, NULL, &block_thd, rv)) {

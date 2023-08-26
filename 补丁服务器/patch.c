@@ -26,7 +26,7 @@
 #include <unistd.h>
 #endif
 #include <queue.h>
-#include <mtwist.h>
+//#include <mtwist.h>
 #include <SFMT.h>
 
 #include "patch_server.h"

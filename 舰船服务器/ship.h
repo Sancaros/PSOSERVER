@@ -131,7 +131,8 @@ struct ship {
     int mccount;
     uint16_t *menu_codes;
 
-    struct mt19937_state rng;
+    //struct mt19937_state rng;
+    sfmt_t sfmt_rng;
 
     struct limits_queue all_limits;
     psocn_limits_t *def_limits;

@@ -23,6 +23,7 @@
 
 #include <psoconfig.h>
 #include <mtwist.h>
+#include <SFMT.h>
 
 #include "lobby.h"
 
@@ -77,7 +78,8 @@ struct block {
     int num_games;
 
     /* 随机数生成器状态 */
-    struct mt19937_state rng;
+    //struct mt19937_state rng;
+    sfmt_t sfmt_rng;
 };
 
 #ifndef BLOCK_DEFINED

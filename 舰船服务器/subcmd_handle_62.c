@@ -1442,7 +1442,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     block_t* b = src->cur_block;
     uint32_t shop_type = LE32(req->shop_type);
-    uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
+    //uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
+    uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4);
     size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
     bool create = true;
 
@@ -1472,15 +1473,15 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
             if (i < 2)
                 item = create_bb_shop_tool_common_item(l->difficulty, ITEM_TYPE_TOOL, i);
             else
-                item = create_bb_shop_item(l->difficulty, ITEM_TYPE_TOOL, &b->rng);
+                item = create_bb_shop_item(l->difficulty, ITEM_TYPE_TOOL, &b->sfmt_rng);
             break;
 
         case BB_SHOPTYPE_WEAPON:// 武器商店
-            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_WEAPON, &b->rng);
+            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_WEAPON, &b->sfmt_rng);
             break;
 
         case BB_SHOPTYPE_ARMOR:// 装甲商店
-            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_GUARD, &b->rng);
+            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_GUARD, &b->sfmt_rng);
             break;
 
         default:
@@ -1679,21 +1680,21 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     // 技能属性提取和随机数处理
     if (attrib < 0x29) {
         src->game_data->identify_result.data.datab[4] = tekker_attributes[(attrib * 3) + 1];
-        if ((mt19937_genrand_int32(&b->rng) % 100) > 70)
-            src->game_data->identify_result.data.datab[4] += mt19937_genrand_int32(&b->rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+        if ((sfmt_genrand_uint32(&b->sfmt_rng) % 100) > 70)
+            src->game_data->identify_result.data.datab[4] += sfmt_genrand_uint32(&b->sfmt_rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
     }
     else
         src->game_data->identify_result.data.datab[4] = 0;
 
     // 百分比修正处理
-    uint32_t mt_result_2 = mt19937_genrand_int32(&b->rng) % 10;
+    uint32_t mt_result_2 = sfmt_genrand_uint32(&b->sfmt_rng) % 10;
 
     if ((mt_result_2 > 0) && (mt_result_2 <= 7)) {
         if (mt_result_2 > 5) {
-            percent_mod = mt19937_genrand_int32(&b->rng) % mt_result_2;
+            percent_mod = sfmt_genrand_uint32(&b->sfmt_rng) % mt_result_2;
         }
         else if (mt_result_2 <= 5) {
-            percent_mod -= mt19937_genrand_int32(&b->rng) % mt_result_2;
+            percent_mod -= sfmt_genrand_uint32(&b->sfmt_rng) % mt_result_2;
         }
     }
 
@@ -2385,7 +2386,8 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_reward_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    struct mt19937_state* rng = &l->block->rng;
+    //struct mt19937_state* rng = &l->block->rng;
+    sfmt_t* rng = &l->block->sfmt_rng;
     uint32_t area = pkt->area;
     float x = pkt->x, z = pkt->z;
 
@@ -2415,16 +2417,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_dorphon_normal[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_normal) / 4)];
+                    new_item = bp_dorphon_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_dorphon_hard[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_hard) / 4)];
+                    new_item = bp_dorphon_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_dorphon_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
+                    new_item = bp_dorphon_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_dorphon_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
+                    new_item = bp_dorphon_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2433,16 +2435,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_rappy_normal[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_normal) / 4)];
+                    new_item = bp_rappy_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_rappy_hard[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_hard) / 4)];
+                    new_item = bp_rappy_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_rappy_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_vhard) / 4)];
+                    new_item = bp_rappy_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_rappy_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
+                    new_item = bp_rappy_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2451,16 +2453,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_zu_normal[mt19937_genrand_int32(rng) % (sizeof(bp_zu_normal) / 4)];
+                    new_item = bp_zu_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_zu_hard[mt19937_genrand_int32(rng) % (sizeof(bp_zu_hard) / 4)];
+                    new_item = bp_zu_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_zu_vhard[mt19937_genrand_int32(rng) % (sizeof(bp_zu_vhard) / 4)];
+                    new_item = bp_zu_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_zu_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp_zu_ultimate) / 4)];
+                    new_item = bp_zu_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2469,16 +2471,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp2_normal[mt19937_genrand_int32(rng) % (sizeof(bp2_normal) / 4)];
+                    new_item = bp2_normal[sfmt_genrand_uint32(rng) % (sizeof(bp2_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp2_hard[mt19937_genrand_int32(rng) % (sizeof(bp2_hard) / 4)];
+                    new_item = bp2_hard[sfmt_genrand_uint32(rng) % (sizeof(bp2_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp2_vhard[mt19937_genrand_int32(rng) % (sizeof(bp2_vhard) / 4)];
+                    new_item = bp2_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp2_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp2_ultimate[mt19937_genrand_int32(rng) % (sizeof(bp2_ultimate) / 4)];
+                    new_item = bp2_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp2_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2507,8 +2509,9 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             if (new_item == 0x04) {
+                /* TODO 解析PT怪物美赛塔掉落 */
                 //new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
-                new_item += mt19937_genrand_int32(rng) % 100;
+                new_item += sfmt_genrand_uint32(rng) % 100;
                 bb.data.data2l = new_item;
             }
 

@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pso_crash_handle.h" />
-    <ClInclude Include="pso_itemcreator.h" />
     <ClInclude Include="pso_items_black_paper_reward_list.h" />
     <ClInclude Include="pso_opcodes_block.h" />
     <ClInclude Include="packets.h" />
@@ -53,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_crash_handle.c" />
-    <ClCompile Include="pso_itemcreator.c" />
     <ClCompile Include="pso_items.c" />
     <ClCompile Include="pso_menu.c" />
     <ClCompile Include="pso_message.c" />

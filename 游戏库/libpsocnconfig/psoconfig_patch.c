@@ -418,7 +418,7 @@ static int handle_patch(xmlNode* n, struct file_queue* q) {
     /* Allocate space for the file */
     file = (patch_file_t*)malloc(sizeof(patch_file_t));
     if (!file) {
-        ERR_LOG("Cannot allocate space for patch info\n"
+        ERR_LOG("分配动态内存给 patch info\n"
             "%s", strerror(errno));
         rv = -2;
         goto err;
@@ -429,7 +429,7 @@ static int handle_patch(xmlNode* n, struct file_queue* q) {
     /* Allocate space for the first entry... */
     ent = (patch_file_entry_t*)malloc(sizeof(patch_file_entry_t));
     if (!ent) {
-        ERR_LOG("Cannot allocate space for patch entry",
+        ERR_LOG("分配动态内存给 patch entry",
             "%s", strerror(errno));
         rv = -11;
         goto err;
