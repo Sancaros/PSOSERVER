@@ -26,7 +26,7 @@
 
 /* 初始化物品数据 */
 void clear_item(item_t* item) {
-	item->datal[0] = 0;
+	item->datal[0] = 0x0000FF00;
 	item->datal[1] = 0;
 	item->datal[2] = 0;
 	item->item_id = EMPTY_STRING;
@@ -72,11 +72,40 @@ void clear_bitem(bitem_t* bitem) {
 	bitem->amount = 0;
 }
 
+size_t primary_code_identifier(const uint32_t code) {
+	uint8_t parts[4] = { 0 };
+
+	parts[0] = (uint8_t)(code & 0xFF);
+	parts[1] = (uint8_t)((code >> 8) & 0xFF);
+	parts[2] = (uint8_t)((code >> 16) & 0xFF);
+	parts[3] = (uint8_t)((code >> 24) & 0xFF);
+
+	// The game treats any item starting with 04 as Meseta, and ignores the rest
+	// of data1 (the value is in data2)
+	switch (parts[0]) {
+
+	case ITEM_TYPE_MESETA:
+		return 0x040000;
+
+	case ITEM_TYPE_TOOL:
+		if (parts[1] == ITEM_SUBTYPE_DISK) {
+			return 0x030200;// Tech disk (data1[2] is level, so omit it)
+		}
+		break;
+
+	case ITEM_TYPE_MAG:
+		return 0x020000 | (parts[1] << 8); // Mag
+
+	}
+
+	return (parts[0] << 16) | (parts[1] << 8) | parts[2];
+}
+
 size_t primary_identifier(const item_t* item) {
 	// The game treats any item starting with 04 as Meseta, and ignores the rest
 	// of data1 (the value is in data2)
-	switch (item->datab[0])
-	{
+	switch (item->datab[0]) {
+
 	case ITEM_TYPE_MESETA:
 		return 0x040000;
 

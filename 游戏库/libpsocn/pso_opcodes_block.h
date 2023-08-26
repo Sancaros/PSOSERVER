@@ -86,17 +86,16 @@
 #define LOBBY_INFO_TYPE                 0x001F
 
 #define ITEM_EXCHANGE_STATE             0x0023 // PSOBB 1.0 服务端 副指令发送 S->C 8字节
-
-
+#define ITEM_EXCHANGE_GALLON_RESULT     0x0025 /* 16字节数据包 服务器 -> 客户端 */
 
 
 #define GUILD_SEARCH_TYPE               0x0040
 #define GUILD_REPLY_TYPE                0x0041
 #define QUEST_FILE_TYPE                 0x0044
 #define CLIENT_UNKNOW_4F                0x004F
-#define GAME_COMMAND0_TYPE              0x0060  //来自1.0 BB服务端
+#define GAME_SUBCMD60_TYPE              0x0060  //来自1.0 BB服务端
 #define CHAR_DATA_TYPE                  0x0061
-#define GAME_COMMAND2_TYPE              0x0062  //来自1.0 BB服务端
+#define GAME_SUBCMD62_TYPE              0x0062  //来自1.0 BB服务端
 #define GAME_JOIN_TYPE                  0x0064
 #define GAME_ADD_PLAYER_TYPE            0x0065
 #define GAME_LEAVE_TYPE                 0x0066 //用户离开游戏房间数据包
@@ -104,8 +103,9 @@
 #define LOBBY_ADD_PLAYER_TYPE           0x0068 //大厅新增用户数据包
 #define LOBBY_LEAVE_TYPE                0x0069 //用户离开大厅数据包
 #define CLIENT_UNKNOW_6A                0x006A //来自1.0 BB服务端
-#define GAME_COMMANDC_TYPE              0x006C
-#define GAME_COMMANDD_TYPE              0x006D  //创建房间指令
+#define GAME_SUBCMD6C_TYPE              0x006C
+#define GAME_SUBCMD6D_TYPE              0x006D  //创建房间指令
+/* TODO 区分这两个状态 并解析 */
 #define DONE_BURSTING_TYPE              0x006F
 #define DONE_BURSTING_TYPE01            0x016F
 #define CLIENT_UNKNOW_77                0x0077  //来自1.0 BB服务端

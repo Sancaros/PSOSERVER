@@ -1806,19 +1806,19 @@ int lobby_handle_done_burst(lobby_t* l, ship_client_t* c) {
            queued packets */
         if (rv == 0) {
             switch (i->pkt->pkt_type) {
-            case GAME_COMMAND0_TYPE:
+            case GAME_SUBCMD60_TYPE:
                 if (subcmd_handle_60(i->src, (subcmd_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
                 break;
 
-            case GAME_COMMAND2_TYPE:
+            case GAME_SUBCMD62_TYPE:
                 if (subcmd_handle_62(i->src, (subcmd_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
                 break;
 
-            case GAME_COMMANDD_TYPE:
+            case GAME_SUBCMD6D_TYPE:
                 if (subcmd_handle_6D(i->src, (subcmd_pkt_t*)i->pkt)) {
                     rv = -1;
                 }
@@ -1860,8 +1860,8 @@ int lobby_resend_burst(lobby_t *l, ship_client_t *c) {
            by re-handling the old packet. */
         if(rv == 0) {
             switch(i->pkt->pkt_type) {
-                case GAME_COMMAND2_TYPE:
-                case GAME_COMMANDD_TYPE:
+                case GAME_SUBCMD62_TYPE:
+                case GAME_SUBCMD6D_TYPE:
                     rv = send_pkt_dc(c, i->pkt);
                     break;
 
@@ -1892,19 +1892,19 @@ int lobby_handle_done_burst_bb(lobby_t* l, ship_client_t* c) {
            queued packets */
         if (rv == 0) {
             switch (i->bb_pkt->pkt_type) {
-            case GAME_COMMAND0_TYPE:
+            case GAME_SUBCMD60_TYPE:
                 if (subcmd_bb_handle_60(i->src, (subcmd_bb_pkt_t*)i->bb_pkt)) {
                     rv = -1;
                 }
                 break;
 
-            case GAME_COMMAND2_TYPE:
+            case GAME_SUBCMD62_TYPE:
                 if (subcmd_bb_handle_62(i->src, (subcmd_bb_pkt_t*)i->bb_pkt)) {
                     rv = -1;
                 }
                 break;
 
-            case GAME_COMMANDD_TYPE:
+            case GAME_SUBCMD6D_TYPE:
                 if (subcmd_bb_handle_6D(i->src, (subcmd_bb_pkt_t*)i->bb_pkt)) {
                     rv = -1;
                 }
@@ -1947,8 +1947,8 @@ int lobby_resend_burst_bb(lobby_t* l, ship_client_t* c) {
            by re-handling the old packet. */
         if (rv == 0) {
             switch (i->bb_pkt->pkt_type) {
-            case GAME_COMMAND2_TYPE:
-            case GAME_COMMANDD_TYPE:
+            case GAME_SUBCMD62_TYPE:
+            case GAME_SUBCMD6D_TYPE:
                 rv = send_pkt_bb(c, i->bb_pkt);
                 break;
 
@@ -1979,8 +1979,8 @@ static int lobby_enqueue_pkt_ex(lobby_t *l, ship_client_t *c, dc_pkt_hdr_t *p,
         goto out;
     }
 
-    if(p->pkt_type != GAME_COMMAND0_TYPE && p->pkt_type != GAME_COMMAND2_TYPE &&
-       p->pkt_type != GAME_COMMANDD_TYPE) {
+    if(p->pkt_type != GAME_SUBCMD60_TYPE && p->pkt_type != GAME_SUBCMD62_TYPE &&
+       p->pkt_type != GAME_SUBCMD6D_TYPE) {
         rv = -2;
         goto out;
     }
@@ -2037,8 +2037,8 @@ static int lobby_enqueue_pkt_ex_bb(lobby_t* l, ship_client_t* c, bb_pkt_hdr_t* p
         goto out;
     }
 
-    if (p->pkt_type != GAME_COMMAND0_TYPE && p->pkt_type != GAME_COMMAND2_TYPE &&
-        p->pkt_type != GAME_COMMANDD_TYPE) {
+    if (p->pkt_type != GAME_SUBCMD60_TYPE && p->pkt_type != GAME_SUBCMD62_TYPE &&
+        p->pkt_type != GAME_SUBCMD6D_TYPE) {
         rv = -2;
         goto out;
     }

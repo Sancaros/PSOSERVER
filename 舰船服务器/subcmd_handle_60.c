@@ -2579,7 +2579,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
         memcpy(&dc, pkt, sizeof(subcmd_dc_grave_t));
 
         /* Make a copy to send to PC players... */
-        pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        pc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         pc.hdr.pkt_len = LE16(0x00E4);
 
         pc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
@@ -2636,7 +2636,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
         memcpy(&pc, pkt, sizeof(subcmd_pc_grave_t));
 
         /* Make a copy to send to DC players... */
-        dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         dc.hdr.pkt_len = LE16(0x00AC);
 
         dc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
@@ -4300,38 +4300,8 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     inventory_t* inv = get_client_inv_bb(src);
-    iitem_t* sorted = (iitem_t*)malloc(PSOCN_STLENGTH_IITEM * inv->item_count);
-    size_t x = 0, j, k = 0, tmp_item_id = EMPTY_STRING;
 
-    if (!sorted) {
-        ERR_LOG("GC %" PRIu32 " 整理物品动态内存申请失败!",
-            src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -3;
-    }
-
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        sorted[x].data.datab[1] = 0xFF;
-        sorted[x].data.item_id = EMPTY_STRING;
-    }
-
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++) {
-        tmp_item_id = pkt->item_ids[x];
-
-        if (tmp_item_id == EMPTY_STRING)
-            break;
-
-        for (j = 0; j < inv->item_count; j++) {
-            if ((inv->iitems[j].present) &&
-                (inv->iitems[j].data.item_id == tmp_item_id)) {
-                sorted[k++] = inv->iitems[j];
-                break;
-            }
-        }
-    }
-
-    for (x = 0; x < MAX_PLAYER_INV_ITEMS; x++)
-        inv->iitems[x] = sorted[x];
+    sort_client_inv(inv);
 
     /* Nobody else really needs to care about this one... */
     return 0;
@@ -4831,9 +4801,11 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
+    inventory_t* inv = get_client_inv_bb(src);
+
     iitem_t compare_item = { 0 };
     compare_item.data = pkt->compare_item;
-    uint32_t compare_item_id = find_iitem_stack_item_id(&src->bb_pl->character.inv, &compare_item);
+    uint32_t compare_item_id = find_iitem_stack_item_id(inv, &compare_item);
 
     if (compare_item_id == 0) {
 
@@ -4920,6 +4892,121 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年07月28日 21:43:21:497] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0xDC 版本 bb(5) 的处理
     //[2023年07月28日 21:43:21:513] 调试(subcmd_handle_60.c 4003): 未知 0x60 指令: 0xDC
     //( 00000000 )   10 00 60 00 00 00 00 00   DC 02 FF FF 00 00 11 00  ..`.....?....
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_gallons_plan_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+                // Gallon's Plan opcode
+
+    inventory_t* inv = get_client_inv_bb(src);
+
+    iitem_t remove_item = { 0 };
+    item_t add_item = { 0 };
+
+    size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
+    if (!pt_itemid) {
+        ERR_LOG("!pt_itemid");
+        return send_bb_item_exchange_state(src, 0x00000001);
+    }
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+//[2023年08月27日 00:55:19:592] 调试(ship_packets.c 8294): GC 10000001 载入任务 quest035 (0 31)版本 Blue Brust
+//[2023年08月27日 00:56:42:059] 物品(0290): 物品:(ID 8454144 / 00810000) 光子点卷
+//[2023年08月27日 00:56:42:061] 物品(0295): 数据: 03100400, 00630000, 00000000, 00000000
+//     棒棒糖
+//( 00000000 )   14 00 60 00 00 00 00 00   E1 03 00 00 3C 3D 02 00  ..`.....?..<=..
+//( 00000010 )   87 00 06 00                                     ?..
+//     隐身铠
+//( 00000000 )   14 00 60 00 00 00 00 00   E1 03 00 00 3C 3D 03 00  ..`.....?..<=..
+//( 00000010 )   7B 00 06 00                                     {...
+//     宽永通宝
+//( 00000000 )   14 00 60 00 00 00 00 00   E1 03 00 00 3C 3D 01 00  ..`.....?..<=..
+//( 00000010 )   79 00 06 00                                     y...
+
+    memset(&add_item, 0, sizeof(item_t));
+
+    switch (pkt->exchange_choice) {
+    case 0x0001:
+        /* 删除光子票据 10个 但是会全部删除 */
+        remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
+        if (&remove_item == NULL) {
+            ERR_LOG("GC %" PRIu32 " 发送损坏的数据",src->guildcard);
+            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            return -3;
+        }
+        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
+        // 宽永通宝
+        add_item.datal[0] = 0x0000D500;
+        break;
+
+    case 0x0002:
+        /* 删除光子票据 15个 但是会全部删除 */
+        remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
+        if (&remove_item == NULL) {
+            ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            return -3;
+        }
+        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
+        // 棒棒糖
+        add_item.datal[0] = 0x00070A00;
+        break;
+
+    case 0x0003:
+        /* 删除光子票据 20个 但是会全部删除 */
+        remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
+        if (&remove_item == NULL) {
+            ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            return -3;
+        }
+        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
+        // 隐身衣
+        add_item.datal[0] = 0x00570101;
+        break;
+
+    default:
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -4;
+    }
+
+    subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5));
+
+    add_item.item_id = generate_item_id(l, src->client_id);
+
+    iitem_t work_item = player_iitem_init(add_item);
+
+    if (!add_iitem(src, &work_item)) {
+        ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
+            src->guildcard);
+        return -5;
+    }
+
+    subcmd_send_lobby_bb_create_inv_item(src, work_item.data, stack_size(&work_item.data), true);
+
+    // Gallon's Plan result
+    send_bb_item_exchange_gallon_result(src, pkt->unknown_a4, pkt->unknown_a2);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5071,6 +5158,9 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
+
+    //cmd_type E0 - EF                      DC           GC           EP3          XBOX         PC           BB
+    { SUBCMD60_GALLON_PLAN                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_E1_bb },
 };
 
 /* 处理BB 0x60 数据包. */

@@ -3112,16 +3112,15 @@ typedef struct subcmd_bb_black_paper_deal_reward {
 
 // 0xE1: Gallon's Plan quest (BB; handled by server)
 // The client sends this when it executes an F95F quest opcode.
-struct G_GallonsPlanQuestActions_BB_6xE1 {
+typedef struct subcmd_bb_gallons_plan {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint8_t unknown_a1;
     uint8_t unknown_a2;
-    uint8_t unknown_a3;
-    uint8_t unused;
+    uint16_t exchange_choice;
     uint16_t unknown_a4;
     uint16_t unknown_a5;
-} PACKED;
+} PACKED subcmd_bb_gallons_plan_t;
 
 // 0xE2: Coren actions (BB)
 // The client sends this when it executes an F960 quest opcode.

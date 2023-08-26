@@ -53,7 +53,7 @@ static int handle_itemreq_gm(ship_client_t* src,
     lobby_t* l = src->cur_lobby;
 
     /* 填充数据并准备发送. */
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x30);
     gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
@@ -289,7 +289,7 @@ int sub62_06_dc(ship_client_t* src, ship_client_t* dest,
 
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
@@ -476,7 +476,7 @@ int sub62_06_pc(ship_client_t* src, ship_client_t* dest,
         /* 填充数据并准备发送.. */
         memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
         bb.hdr.pkt_len = LE16(0x0114);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
@@ -655,7 +655,7 @@ int sub62_06_gc(ship_client_t* src, ship_client_t* dest,
 
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
@@ -833,7 +833,7 @@ int sub62_06_xb(ship_client_t* src, ship_client_t* dest,
 
         /* Copy the rest over. */
         bb.hdr.pkt_len = LE16(0x0114);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
@@ -896,7 +896,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Copy the rest over. */
-        dc.hdr.pkt_type = GAME_COMMAND2_TYPE;
+        dc.hdr.pkt_type = GAME_SUBCMD62_TYPE;
         dc.hdr.flags = (uint8_t)dest->client_id;
         dc.hdr.pkt_len = LE16(0x0088);
         dc.shdr.type = SUBCMD62_GUILDCARD;
@@ -932,7 +932,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         memcpy(pc.guildcard_desc, src->bb_pl->guildcard_desc, sizeof(src->bb_pl->guildcard_desc));
 
         /* Copy the rest over. */
-        pc.hdr.pkt_type = GAME_COMMAND2_TYPE;
+        pc.hdr.pkt_type = GAME_SUBCMD62_TYPE;
         pc.hdr.flags = (uint8_t)dest->client_id;
         pc.hdr.pkt_len = LE16(0x00F8);
         pc.shdr.type = SUBCMD62_GUILDCARD;
@@ -979,7 +979,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Copy the rest over. */
-        gc.hdr.pkt_type = GAME_COMMAND2_TYPE;
+        gc.hdr.pkt_type = GAME_SUBCMD62_TYPE;
         gc.hdr.flags = (uint8_t)dest->client_id;
         gc.hdr.pkt_len = LE16(0x0098);
         gc.shdr.type = SUBCMD62_GUILDCARD;
@@ -1028,7 +1028,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         /* Copy the rest over. */
-        xb.hdr.pkt_type = GAME_COMMAND2_TYPE;
+        xb.hdr.pkt_type = GAME_SUBCMD62_TYPE;
         xb.hdr.flags = (uint8_t)dest->client_id;
         xb.hdr.pkt_len = LE16(0x0234);
         xb.shdr.type = SUBCMD62_GUILDCARD;
@@ -1053,7 +1053,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
         /* 填充数据并准备发送.. */
         memset(&bb, 0, sizeof(subcmd_bb_gcsend_t));
         bb.hdr.pkt_len = LE16(0x0114);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND2_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
         bb.hdr.flags = LE32(dest->client_id);
         bb.shdr.type = SUBCMD62_GUILDCARD;
         bb.shdr.size = 0x43;
@@ -1522,7 +1522,6 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_shop_buy_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    iitem_t ii = { 0 };
     int found = -1;
     uint32_t new_inv_item_id = pkt->new_inv_item_id;
     uint8_t shop_type = pkt->shop_type, shop_item_index = pkt->shop_item_index, num_bought = pkt->num_bought;
@@ -1548,16 +1547,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    /* 填充物品数据头 */
-    //ii.present = LE16(1);
-    //ii.extension_data1 = 0;
-    //ii.extension_data2 = 0;
-    //ii.flags = LE32(0);
-
     /* 填充物品数据 */
-    //memcpy(&ii.data.data_b[0], &src->game_data->shop_items[pkt->shop_item_index].data_b[0], PSOCN_STLENGTH_ITEM);
-    //ii.data = src->game_data->shop_items[shop_item_index];
-    player_iitem_init(&ii, src->game_data->shop_items[shop_item_index]);
+    iitem_t ii = player_iitem_init(src->game_data->shop_items[shop_item_index]);
 
     /* 如果是堆叠物品 */
     if (is_stackable(&ii.data)) {
@@ -1782,14 +1773,13 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //send_msg(src, BB_SCROLL_MSG_TYPE, "%s", src->bank_type ? 
-    //    __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
-    //);
-    send_txt(src, "%s", src->bank_type ?
-        __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
-    );
-
     psocn_bank_t* bank = get_client_bank_bb(src);
+
+    send_msg(src, BB_SCROLL_MSG_TYPE, "%s 数量 %u 美赛塔 %u", src->bank_type ?
+        __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
+        , bank->item_count
+        , bank->meseta
+    );
 
     /* Clean up the user's bank first... */
     regenerate_bank_item_id(src->client_id, bank, src->bank_type);
@@ -1841,9 +1831,11 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
     switch (action) {
     case SUBCMD62_BANK_ACT_CLOSE:
+        send_txt(src, "%s", src->bank_type ?
+            __(src, "\tE\tC6公共仓库") : __(src, "\tE\tC6角色仓库")
+        );
     case SUBCMD62_BANK_ACT_DONE:
         break;
-        //return 0;
 
     case SUBCMD62_BANK_ACT_DEPOSIT:
 
@@ -1864,30 +1856,20 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             bank->meseta += amt;
             character->disp.meseta -= amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
-
-            /* No need to tell everyone else, I guess? */
-            //return 0;
         }
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
-
             if (&iitem == NULL) {
                 ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
                 return -3;
             }
 
             /* 已获得背包的物品数据, 将其添加至银行数据中... */
-            player_iitem_to_bitem(&bitem, iitem.data);
+            bitem = player_bitem_init(iitem.data);
 
             /* 存入! */
             if (!add_bitem(src, &bitem)) {
                 ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
-                if (!add_iitem(src, &iitem)) {
-                    ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
-                        src->guildcard);
-                    return -4;
-                }
-                subcmd_send_lobby_bb_create_inv_item(src, iitem.data, pkt_item_amt, true);
                 return -5;
             }
 
@@ -1895,8 +1877,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 pkt_item_amt);
 
             sort_client_bank(bank);
-
-            //return 0;
         }
 
         break;
@@ -1921,9 +1901,6 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             bank->meseta -= amt;
             character->disp.meseta += amt;
             src->pl->bb.character.disp.meseta = character->disp.meseta;
-
-            /* 存取美赛塔不用告知其他客户端... */
-            //return 0;
         }
         else {
             if (pkt_bitem_index >= bank->item_count) {
@@ -1939,20 +1916,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -9;
             }
 
+            bitem.data.item_id = generate_item_id(l, src->client_id);
             /* 已获得银行的物品数据, 将其添加至临时背包数据中... */
-            player_bitem_to_iitem(&iitem, bitem.data);
-            iitem.data.item_id = generate_item_id(l, src->client_id);
+            iitem = player_iitem_init(bitem.data);
 
             /* 新增至玩家背包中... */
             if (!add_iitem(src, &iitem)) {
                 ERR_LOG("GC %" PRIu32 " 物品从玩家银行取出失败!",
                     src->guildcard);
-                /* Uh oh... Guess we should put it back in the bank... */
-                if (!add_bitem(src, &bitem)) {
-                    ERR_LOG("GC %" PRIu32 " 物品返回玩家银行失败!",
-                        src->guildcard);
-                    return -10;
-                }
                 return -11;
             }
 
@@ -2494,7 +2465,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             subcmd_bb_drop_stack_t bb = { 0 };
 
             bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-            bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+            bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
             bb.hdr.flags = 0;
 
             bb.shdr.type = SUBCMD60_DROP_STACK;

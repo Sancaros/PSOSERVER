@@ -1889,7 +1889,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GC_MSG_BOX_CLOSED_TYPE:
             return send_block_list(c, ship);
 
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             display_packet(pkt, len);
             /* Ignore these, since taking screenshots on PSOPC generates them
                for some reason. */
@@ -1944,7 +1944,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return bb_process_ping(c, pkt);
 
             /* 0x0060 96*/
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             /* Ignore these, since taking screenshots on PSOPC generates them
                for some reason. */
             UDONE_CPD(type, c->version, pkt);

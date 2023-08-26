@@ -267,7 +267,7 @@ static int handle_itemdrop(ship_client_t* c, subcmd_itemgen_t* pkt) {
 
             /* Fill in the destroy item packet. */
             memset(&dp, 0, sizeof(subcmd_destroy_item_t));
-            dp.hdr.pkt_type = GAME_COMMAND0_TYPE;
+            dp.hdr.pkt_type = GAME_SUBCMD60_TYPE;
             dp.hdr.pkt_len = LE16(0x0010);
             dp.shdr.type = SUBCMD60_ITEM_GROUND_DESTROY;
             dp.shdr.size = 0x03;
@@ -712,7 +712,7 @@ static int handle_cmode_grave(ship_client_t* c, subcmd_pkt_t* pkt) {
         memcpy(&dc, pkt, sizeof(subcmd_dc_grave_t));
 
         /* Make a copy to send to PC players... */
-        pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        pc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         pc.hdr.pkt_len = LE16(0x00E4);
 
         pc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
@@ -769,7 +769,7 @@ static int handle_cmode_grave(ship_client_t* c, subcmd_pkt_t* pkt) {
         memcpy(&pc, pkt, sizeof(subcmd_pc_grave_t));
 
         /* Make a copy to send to DC players... */
-        dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         dc.hdr.pkt_len = LE16(0x00AC);
 
         dc.shdr.type = SUBCMD60_SET_C_GAME_MODE;
@@ -2113,7 +2113,7 @@ int subcmd_send_lobby_item(lobby_t* l, subcmd_itemreq_t* req,
     uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
 
     /* 填充数据并准备发送. */
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
     gen.shdr.type = SUBCMD60_ITEM_DROP_BOX_ENEMY;
@@ -2175,7 +2175,7 @@ int subcmd_send_pos(ship_client_t* dst, ship_client_t* src) {
 
     if (dst->version == CLIENT_VERSION_BB) {
         bb.hdr.pkt_len = LE16(0x0020);
-        bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+        bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
         bb.hdr.flags = 0;
 
         bb.shdr.type = SUBCMD60_SET_AREA_20;
@@ -2191,7 +2191,7 @@ int subcmd_send_pos(ship_client_t* dst, ship_client_t* src) {
         return send_pkt_bb(dst, (bb_pkt_hdr_t*)&bb);
     }
     else {
-        dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         dc.hdr.flags = 0;
         dc.hdr.pkt_len = LE16(0x001C);
 

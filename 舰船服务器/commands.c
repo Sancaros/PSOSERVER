@@ -676,7 +676,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
     }
 
     /* Generate the packet to drop the item */
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.pkt_len = 0x002C/* LE16(sizeof(subcmd_drop_stack_t))*/;
     dc.hdr.flags = 0;
 
@@ -686,7 +686,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
 
     bb.hdr.pkt_len = 0x002C/*LE16(sizeof(subcmd_bb_drop_stack_t))*/;
-    bb.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    bb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     bb.hdr.flags = 0;
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
@@ -824,7 +824,7 @@ static int handle_bug(ship_client_t *c, const char *params) {
     subcmd_dc_gcsend_t gcpkt = { 0 };
 
     /* Forge a guildcard send packet. */
-    gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
+    gcpkt.hdr.pkt_type = GAME_SUBCMD62_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x88);
 
@@ -1423,7 +1423,7 @@ static int handle_forgegc(ship_client_t *c, const char *params) {
     }
 
     /* Forge the guildcard send */
-    gcpkt.hdr.pkt_type = GAME_COMMAND2_TYPE;
+    gcpkt.hdr.pkt_type = GAME_SUBCMD62_TYPE;
     gcpkt.hdr.flags = c->client_id;
     gcpkt.hdr.pkt_len = LE16(0x0088);
     gcpkt.shdr.type = SUBCMD62_GUILDCARD;
@@ -1595,7 +1595,7 @@ static int handle_teleport(ship_client_t *c, const char *params) {
     }
     else {
         /* Now, set up the teleport packet */
-        p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        p2.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
         p2.hdr.flags = 0;
         p2.shdr.type = SUBCMD60_TELEPORT;
@@ -1917,7 +1917,7 @@ static int handle_ws(ship_client_t *c, const char *params) {
     /* 填充数据头 */
     memset(p, 0, 0x24);
     memset(&tmp[0x0C], 0xFF, 0x10);
-    p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
+    p->hdr.dc.pkt_type = GAME_SUBCMD60_TYPE;
     p->hdr.dc.pkt_len = LE16(0x24);
     p->type = SUBCMD60_WORD_SELECT;
     p->size = 0x08;
@@ -2105,7 +2105,7 @@ static int handle_npc(ship_client_t *c, const char *params) {
 
     /* 填充数据头 */
     memset(p, 0, 0x10);
-    p->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
+    p->hdr.dc.pkt_type = GAME_SUBCMD60_TYPE;
     p->hdr.dc.pkt_len = LE16(0x0010);
     p->type = SUBCMD60_SPAWN_NPC;
     p->size = 0x03;
@@ -3168,7 +3168,7 @@ static int handle_ep3music(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效歌曲名称."));
 
     /* Prepare the packet. */
-    pkt->hdr.dc.pkt_type = GAME_COMMAND0_TYPE;
+    pkt->hdr.dc.pkt_type = GAME_SUBCMD60_TYPE;
     pkt->hdr.dc.flags = 0x00;
     pkt->hdr.dc.pkt_len = LE16(0x000C);
     pkt->shdr.type = SUBCMD60_JUKEBOX;
@@ -3383,7 +3383,7 @@ static int handle_t(ship_client_t *c, const char *params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效方位角."));
 
     /* Hopefully they know what they're doing... Send the packet. */
-    p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    p2.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     p2.hdr.pkt_len = sizeof(subcmd_teleport_t);
     p2.hdr.flags = 0;
     p2.shdr.type = SUBCMD60_TELEPORT;
@@ -3882,7 +3882,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     }
 
     /* Generate the packet to drop the item */
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
     dc.hdr.flags = 0;
 
@@ -3892,7 +3892,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
 
 
     bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = 0;
 
     bb.shdr.type = SUBCMD60_DROP_STACK;

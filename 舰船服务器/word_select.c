@@ -39,7 +39,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     uint16_t dcw, pcw, gcw;
 
     /* Fill in the translated packets */
-    pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pc.hdr.flags = pkt->hdr.flags;
     pc.hdr.pkt_len = LE16(0x0024);
     pc.type = SUBCMD60_WORD_SELECT;
@@ -49,7 +49,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.data.num_words = pkt->data.num_words;
     pc.data.ws_type = pkt->data.ws_type;
 
-    gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
     gc.hdr.pkt_len = LE16(0x0024);
     gc.type = SUBCMD60_WORD_SELECT;
@@ -59,7 +59,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.data.num_words = pkt->data.num_words;
     gc.data.ws_type = pkt->data.ws_type;
 
-    xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    xb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
     xb.hdr.pkt_len = LE16(0x0024);
     xb.type = SUBCMD60_WORD_SELECT;
@@ -69,7 +69,7 @@ int word_select_send_dc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.data.num_words = pkt->data.num_words;
     xb.data.ws_type = pkt->data.ws_type;
 
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
     bb.shdr.type = SUBCMD60_WORD_SELECT;
@@ -200,7 +200,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     uint16_t dcw, pcw, gcw;
 
     /* Fill in the translated packets */
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
     dc.hdr.pkt_len = LE16(0x0024);
     dc.type = SUBCMD60_WORD_SELECT;
@@ -210,7 +210,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.data.num_words = pkt->data.num_words;
     dc.data.ws_type = pkt->data.ws_type;
 
-    gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
     gc.hdr.pkt_len = LE16(0x0024);
     gc.type = SUBCMD60_WORD_SELECT;
@@ -220,7 +220,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     gc.data.num_words = pkt->data.num_words;
     gc.data.ws_type = pkt->data.ws_type;
 
-    xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    xb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
     xb.hdr.pkt_len = LE16(0x0024);
     xb.type = SUBCMD60_WORD_SELECT;
@@ -230,7 +230,7 @@ int word_select_send_pc(ship_client_t *c, subcmd_word_select_t *pkt) {
     xb.data.num_words = pkt->data.num_words;
     xb.data.ws_type = pkt->data.ws_type;
 
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
     bb.shdr.type = SUBCMD60_WORD_SELECT;
@@ -370,7 +370,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     }
 
     /* Fill in the translated packets */
-    pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pc.hdr.flags = pkt->hdr.flags;
     pc.hdr.pkt_len = LE16(0x0024);
     pc.type = SUBCMD60_WORD_SELECT;
@@ -380,7 +380,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     pc.data.num_words = pkt->data.num_words;
     pc.data.ws_type = pkt->data.ws_type;
 
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
     dc.hdr.pkt_len = LE16(0x0024);
     dc.type = SUBCMD60_WORD_SELECT;
@@ -390,7 +390,7 @@ int word_select_send_gc(ship_client_t *c, subcmd_word_select_t *pkt) {
     dc.data.num_words = pkt->data.num_words;
     dc.data.ws_type = pkt->data.ws_type;
 
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
     bb.shdr.type = SUBCMD60_WORD_SELECT;
@@ -518,7 +518,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     }
 
     /* Fill in the translated packets */
-    pc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pc.hdr.flags = pkt->hdr.flags;
     pc.hdr.pkt_len = LE16(0x0024);
     pc.type = SUBCMD60_WORD_SELECT;
@@ -528,7 +528,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     pc.data.num_words = pkt->data.num_words;
     pc.data.ws_type = pkt->data.ws_type;
 
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.flags = pkt->hdr.flags;
     dc.hdr.pkt_len = LE16(0x0024);
     dc.type = SUBCMD60_WORD_SELECT;
@@ -538,7 +538,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     dc.data.num_words = pkt->data.num_words;
     dc.data.ws_type = pkt->data.ws_type;
 
-    gc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gc.hdr.flags = pkt->hdr.flags;
     gc.hdr.pkt_len = LE16(0x0024);
     gc.type = SUBCMD60_WORD_SELECT;
@@ -548,7 +548,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     gc.data.num_words = pkt->data.num_words;
     gc.data.ws_type = pkt->data.ws_type;
 
-    xb.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    xb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     xb.hdr.flags = pkt->hdr.flags;
     xb.hdr.pkt_len = LE16(0x0024);
     xb.type = SUBCMD60_WORD_SELECT;
@@ -558,7 +558,7 @@ int word_select_send_bb(ship_client_t* c, subcmd_bb_word_select_t* pkt) {
     xb.data.num_words = pkt->data.num_words;
     xb.data.ws_type = pkt->data.ws_type;
 
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = LE32(pkt->hdr.flags);
     bb.hdr.pkt_len = LE16(0x0028);
     bb.shdr.type = SUBCMD60_WORD_SELECT;

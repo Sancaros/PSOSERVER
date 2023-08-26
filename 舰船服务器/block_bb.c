@@ -3149,7 +3149,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return bb_process_open_quest_file(c, (bb_open_quest_file_confirmation_pkt*)pkt);
 
             /* 0x0060 96*/
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);
@@ -3164,9 +3164,9 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return bb_process_char(c, (bb_char_data_pkt*)pkt);
 
             /* 0x0062 98*/
-        case GAME_COMMAND2_TYPE:
+        case GAME_SUBCMD62_TYPE:
             /* 0x006C 108*/
-        case GAME_COMMANDC_TYPE: //需要分离出来
+        case GAME_SUBCMD6C_TYPE: //需要分离出来
             err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX ", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);
@@ -3176,7 +3176,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return err;
 
             /* 0x006D 109*/
-        case GAME_COMMANDD_TYPE:
+        case GAME_SUBCMD6D_TYPE:
             err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
                 ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);

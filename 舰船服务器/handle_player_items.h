@@ -46,6 +46,7 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id);
 int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id);
 size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem);
+size_t find_iitem_code_stack_item_id(const inventory_t* inv, const uint32_t code);
 size_t find_iitem_pid(const inventory_t* inv, const iitem_t* iitem);
 int find_iitem_pid_index(const inventory_t* inv, const iitem_t* iitem);
 int find_equipped_weapon(const inventory_t* inv);
@@ -70,9 +71,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id);
 int initialize_cmode_iitem(ship_client_t* dest);
 
 /* 蓝色脉冲物品管理 */
-void player_iitem_init(iitem_t* iitem, const item_t item);
-void player_bitem_to_iitem(iitem_t* iitem, const item_t item);
-void player_iitem_to_bitem(bitem_t* bitem, const item_t item);
+iitem_t player_iitem_init(const item_t item);
+bitem_t player_bitem_init(const item_t item);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
 void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);
 
@@ -90,8 +90,7 @@ void fix_equip_item(inventory_t* inv);
 
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv);
-//void sort_client_inv2(inventory_t* inv);
-//void sort_client_inv(inventory_t* inv);
+void sort_client_inv(inventory_t* inv);
 void fix_client_bank(psocn_bank_t* bank);
 void sort_client_bank(psocn_bank_t* bank);
 

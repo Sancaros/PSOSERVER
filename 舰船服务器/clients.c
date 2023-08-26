@@ -1953,7 +1953,7 @@ static int client_dropItem_lua(lua_State *l) {
         }
 
         /* Generate the packet to drop the item */
-        p2.hdr.pkt_type = GAME_COMMAND0_TYPE;
+        p2.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         p2.hdr.pkt_len = sizeof(subcmd_drop_stack_t);
         p2.hdr.flags = 0;
         p2.shdr.type = SUBCMD60_DROP_STACK;

@@ -1751,7 +1751,7 @@ int process_login_packet_dc(login_client_t* c, void* pkt) {
             /* XXXX: Gee, I can be mean, can't I? */
             return handle_char_data(c, (dc_char_data_pkt*)pkt);
 
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             /* XXXX: Added so screenshots work on the ship list... */
             return 0;
 

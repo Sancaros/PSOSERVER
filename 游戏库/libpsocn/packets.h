@@ -1009,9 +1009,9 @@ struct SC_GameCardCheck_BB_0022 {
 // 24 (S->C): 祝您好运的结果（BB）
 // 在客户端发送的 6xDE 命令的响应中发送。
 // header.flag 指示客户端的库存中是否有任何秘密彩票（从而可以参与）：0 表示成功，1 表示失败。
-typedef struct bb_item_exchange_done {
+typedef struct bb_item_exchange_state {
     bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
-} PACKED bb_item_exchange_done_pkt;
+} PACKED bb_item_exchange_state_pkt;
 
 struct S_GoodLuckResult_BB_24 {
     uint16_t unknown_a1;
@@ -1021,15 +1021,15 @@ struct S_GoodLuckResult_BB_24 {
 
 // 25 (S->C): Gallon's Plan result (BB)
 // Sent in response to a 6xE1 command from the client.
-//struct S_Unknown_BB_25 {
-//    bb_pkt_hdr_t hdr;
-//    uint16_t unknown_a1;
-//    uint8_t offset1;
-//    uint8_t value1;
-//    uint8_t offset2;
-//    uint8_t value2;
-//    uint16_t unused;
-//} PACKED;
+typedef struct bb_item_exchange_gallon_result {
+    bb_pkt_hdr_t hdr;
+    uint16_t unknown_a1;
+    uint8_t offset1;
+    uint8_t value1;
+    uint8_t offset2;
+    uint8_t value2;
+    uint16_t unused;
+} PACKED bb_item_exchange_gallon_result_pkt;
 
 // 26: 无效或未解析指令
 // 27: 无效或未解析指令

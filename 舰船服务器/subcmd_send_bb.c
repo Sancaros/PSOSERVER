@@ -63,7 +63,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     subcmd_bb_drop_stack_t bb = { 0 };
 
     /* 填充数据并准备发送.. */
-    dc.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
     dc.hdr.flags = 0;
 
@@ -73,7 +73,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
 
 
     bb.hdr.pkt_len = LE16(0x2C);
-    bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     bb.hdr.flags = 0;
 
     bb.shdr.type = SUBCMD60_DROP_STACK;
@@ -154,7 +154,7 @@ int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_i
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -176,7 +176,7 @@ int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amo
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -209,7 +209,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(sizeof(subcmd_bb_create_item_t));
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -247,7 +247,7 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* src) {
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pkt.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pkt.hdr.flags = 0x00000000;
 
     /* 填充副指令数据 */
@@ -272,7 +272,7 @@ int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt
 
     /* 填充数据并准备发送 */
     d.hdr.pkt_len = LE16(pkt_size);
-    d.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    d.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     d.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -337,7 +337,7 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
 
     /* 填充数据并准备发送. */
     gen.hdr.pkt_len = LE16(0x30);
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gen.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -417,7 +417,7 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
 
     /* 填充数据并准备发送. */
     gen.hdr.pkt_len = LE16(0x0030);
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gen.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -479,7 +479,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
         return -1;
 
     /* 填充数据并准备发送. */
-    gen.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     gen.hdr.flags = 0;
     gen.hdr.pkt_len = LE16(0x0030);
 
@@ -518,7 +518,7 @@ int subcmd_send_bb_bank(ship_client_t* src, psocn_bank_t* bank) {
 
     /* 填充数据并准备发送 */
     pkt->hdr.pkt_len = LE16(size);
-    pkt->hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
+    pkt->hdr.pkt_type = LE16(GAME_SUBCMD6C_TYPE);
     pkt->hdr.flags = 0;
 
     pkt->shdr.type = SUBCMD60_BANK_INV;
@@ -549,7 +549,7 @@ int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount) {
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = GAME_COMMAND0_TYPE;
+    pkt.hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -584,7 +584,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate) {
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -620,7 +620,7 @@ int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, ui
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -648,7 +648,7 @@ int subcmd_send_bb_level(ship_client_t* dest) {
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
     pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
@@ -720,7 +720,7 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
     uint16_t len = LE16(16) + num_items * PSOCN_STLENGTH_ITEM;
 
     shop.hdr.pkt_len = LE16(len); //236 - 220 11 * 20 = 16 + num_items * PSOCN_STLENGTH_ITEM
-    shop.hdr.pkt_type = LE16(GAME_COMMANDC_TYPE);
+    shop.hdr.pkt_type = LE16(GAME_SUBCMD6C_TYPE);
     shop.hdr.flags = 0;
 
     /* 填充副指令数据 */

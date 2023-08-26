@@ -3036,13 +3036,13 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case CHAR_DATA_TYPE:
             return dc_process_char(c, (dc_char_data_pkt*)pkt);
 
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             return subcmd_handle_60(c, (subcmd_pkt_t*)pkt);
 
-        case GAME_COMMAND2_TYPE:
+        case GAME_SUBCMD62_TYPE:
             return subcmd_handle_62(c, (subcmd_pkt_t*)pkt);
 
-        case GAME_COMMANDD_TYPE:
+        case GAME_SUBCMD6D_TYPE:
             return subcmd_handle_6D(c, (subcmd_pkt_t*)pkt);
 
         case LOBBY_CHANGE_TYPE:

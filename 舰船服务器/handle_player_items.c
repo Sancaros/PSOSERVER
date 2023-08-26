@@ -286,6 +286,39 @@ size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem) {
     return 0;
 }
 
+/* 仅用于PD PC 等独立堆叠物品 不可用于单独物品 */
+size_t find_iitem_code_stack_item_id(const inventory_t* inv, const uint32_t code) {
+    uint32_t pid = primary_code_identifier(code);
+    size_t x = 0;
+
+    if (inv->item_count >= MAX_PLAYER_INV_ITEMS) {
+        ERR_LOG("背包物品数量超出限制 %d", inv->item_count);
+        return 0;
+    }
+
+    for (x = 0; x < inv->item_count; x++) {
+        if (primary_identifier(&inv->iitems[x].data) != pid)
+            continue;
+
+        return inv->iitems[x].data.item_id;
+    }
+
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
+
+    if (x == inv->item_count) {
+        ERR_LOG("未从背包中找到ID 0x%08X 物品", code);
+        return 0;
+    }
+
+    return 0;
+}
+
 size_t find_iitem_pid(const inventory_t* inv, const iitem_t* iitem) {
     uint32_t pid = primary_identifier(&iitem->data);
     int x = 0;
@@ -566,6 +599,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
+    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -1558,26 +1592,14 @@ int initialize_cmode_iitem(ship_client_t* dest) {
     return 0;
 }
 
-void player_iitem_init(iitem_t* iitem, const item_t item) {
-    iitem->present = LE16(0x0001);
-    iitem->extension_data1 = 0;
-    iitem->extension_data2 = 0;
-    iitem->flags = 0;
-    iitem->data = item;
+iitem_t player_iitem_init(const item_t item) {
+    iitem_t iitem = { LE16(0x0001), 0, 0, 0, item };
+    return iitem;
 }
 
-void player_bitem_to_iitem(iitem_t* iitem, const item_t item) {
-    iitem->present = LE16(0x0001);
-    iitem->extension_data1 = 0;
-    iitem->extension_data2 = 0;
-    iitem->flags = 0;
-    iitem->data = item;
-}
-
-void player_iitem_to_bitem(bitem_t* bitem, const item_t item) {
-    bitem->data = item;
-    bitem->amount = (uint16_t)stack_size(&item);
-    bitem->show_flags = LE16(0x0001);
+bitem_t player_bitem_init(const item_t item) {
+    bitem_t bitem = { item, (uint16_t)stack_size(&item), LE16(0x0001) };
+    return bitem;
 }
 
 /* 整理背包物品操作 */
@@ -2117,17 +2139,16 @@ void fix_equip_item(inventory_t* inv) {
     }
 }
 
-static iitem_t fix_iitem[30];
-static bitem_t fix_bitem[200];
-
 /* 清理背包物品 */
 void fix_client_inv(inventory_t* inv) {
     uint8_t i, j = 0;
-
-    memset(fix_iitem, 0, sizeof(fix_iitem));
+    iitem_t fix_iitem[MAX_PLAYER_INV_ITEMS] = { 0 };
 
     for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        if (inv->iitems[i].present)
+        clear_iitem(&fix_iitem[i]);
+
+    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
+        if (inv->iitems[i].present == 0x0001 || inv->iitems[i].present == 0x0002)
             fix_iitem[j++] = inv->iitems[i];
 
     inv->item_count = j;
@@ -2135,86 +2156,49 @@ void fix_client_inv(inventory_t* inv) {
     for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
         inv->iitems[i] = fix_iitem[i];
 }
-//
-////整理仓库物品 测试用
-//void sort_client_inv2(inventory_t* inv) {
-//    size_t i, j;
-//    uint32_t compare_item1 = 0;
-//    uint32_t compare_item2 = 0;
-//    uint8_t swap_c;
-//    iitem_t swap_item;
-//    iitem_t b1;
-//    iitem_t b2;
-//
-//    if (inv->item_count > 1) {
-//        for (i = 0; i < (inv->item_count - 1); i++) {
-//            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
-//            swap_c = b1.data.datab[0];
-//            b1.data.datab[0] = b1.data.datab[2];
-//            b1.data.datab[2] = swap_c;
-//            memcpy(&compare_item1, &b1.data.datab[0], 3);
-//            for (j = i + 1; j < inv->item_count; j++) {
-//                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
-//                swap_c = b2.data.datab[0];
-//                b2.data.datab[0] = b2.data.datab[2];
-//                b2.data.datab[2] = swap_c;
-//                memcpy(&compare_item2, &b2.data.datab[0], 3);
-//                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
-//                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
-//                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
-//                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
-//                    memcpy(&compare_item1, &compare_item2, 3);
-//                }
-//            }
-//        }
-//    }
-//}
 
-/* 暂未启用的函数 */
+//整理仓库物品 测试用
 void sort_client_inv(inventory_t* inv) {
-    size_t i, j, k, l, item_id;
+    int i = 0, j = 0;
+    uint32_t compare_item1 = 0, compare_item2 = 0;
+    uint8_t swap_c = 0;
+    iitem_t swap_item = { 0 }, b1 = { 0 }, b2 = { 0 };
 
-    j = 0x0C;
-
-    memset(&fix_iitem[0], 0, PSOCN_STLENGTH_IITEM * MAX_PLAYER_INV_ITEMS);
-
-    for (l = 0; l < MAX_PLAYER_INV_ITEMS; l++) {
-        fix_iitem[l].data.datab[1] = 0xFF;
-        fix_iitem[l].data.item_id = EMPTY_STRING;
-    }
-
-    l = 0;
-
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-        item_id = inv->iitems[j].data.item_id;
-        j += 4;
-        if (item_id != EMPTY_STRING) {
-            for (k = 0; k < inv->item_count; k++) {
-                if ((inv->iitems[k].present) && (inv->iitems[k].data.item_id == item_id)) {
-                    fix_iitem[l++] = inv->iitems[k];
-                    break;
+    if (inv->item_count > 1) {
+        for (i = 0; i < (inv->item_count - 1); i++) {
+            memcpy(&b1, &inv->iitems[i], sizeof(iitem_t));
+            swap_c = b1.data.datab[0];
+            b1.data.datab[0] = b1.data.datab[2];
+            b1.data.datab[2] = swap_c;
+            memcpy(&compare_item1, &b1.data.datab[0], 3);
+            for (j = i + 1; j < inv->item_count; j++) {
+                memcpy(&b2, &inv->iitems[j], sizeof(iitem_t));
+                swap_c = b2.data.datab[0];
+                b2.data.datab[0] = b2.data.datab[2];
+                b2.data.datab[2] = swap_c;
+                memcpy(&compare_item2, &b2.data.datab[0], 3);
+                if (compare_item2 < compare_item1) { // compare_item2 should take compare_item1's place
+                    memcpy(&swap_item, &inv->iitems[i], sizeof(iitem_t));
+                    memcpy(&inv->iitems[i], &inv->iitems[j], sizeof(iitem_t));
+                    memcpy(&inv->iitems[j], &swap_item, sizeof(iitem_t));
+                    memcpy(&compare_item1, &compare_item2, 3);
                 }
             }
         }
     }
-
-    for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++)
-        inv->iitems[i] = fix_iitem[i];
-
 }
 
 void fix_client_bank(psocn_bank_t* bank) {
     size_t i, j = 0;
-
-    memset(fix_bitem, 0, sizeof(fix_bitem));
+    bitem_t fix_bitem[MAX_PLAYER_BANK_ITEMS] = { 0 };
 
     for (j = 0; j < MAX_PLAYER_BANK_ITEMS; j++)
-        fix_bitem[j].data.item_id = EMPTY_STRING;
+        clear_bitem(&fix_bitem[j]);
 
     j = 0;
 
     for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++)
-        if (bank->bitems[i].show_flags && bank->bitems[i].amount)
+        if ((bank->bitems[i].show_flags == 0x0001) && bank->bitems[i].amount >= 1)
             fix_bitem[j++] = bank->bitems[i];
 
     bank->item_count = j;

@@ -92,17 +92,17 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
 
         switch (cmd_type)
         {
-        case GAME_COMMAND0_TYPE:
+        case GAME_SUBCMD60_TYPE:
             count = _countof(subcmd60_handler);
             func = subcmd_search_handler(subcmd60_handler, count, subcmd_type, version);
             break;
 
-        case GAME_COMMAND2_TYPE:
+        case GAME_SUBCMD62_TYPE:
             count = _countof(subcmd62_handler);
             func = subcmd_search_handler(subcmd62_handler, count, subcmd_type, version);
             break;
 
-        case GAME_COMMANDD_TYPE:
+        case GAME_SUBCMD6D_TYPE:
             count = _countof(subcmd6D_handler);
             func = subcmd_search_handler(subcmd6D_handler, count, subcmd_type, version);
             break;
