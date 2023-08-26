@@ -72,7 +72,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     dc.shdr.client_id = drop_src_id;
 
 
-    bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
+    bb.hdr.pkt_len = LE16(0x2C);
     bb.hdr.pkt_type = LE16(GAME_COMMAND0_TYPE);
     bb.hdr.flags = 0;
 

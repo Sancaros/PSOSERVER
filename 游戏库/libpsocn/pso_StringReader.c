@@ -420,12 +420,16 @@ const void* pgetv(const void* data, size_t length, size_t offset, size_t size) {
     return (const char*)data + offset;
 }
 
-uint32_t pget(const StringReader* reader, size_t offset, size_t size) {
-    return (uint32_t)(pgetv(reader, reader->length, offset, size));
+uint32_t pget(const StringReader* reader, size_t offset) {
+    uint32_t tmp = 0;
+    const void* data = pgetv(reader->data, reader->length, offset, sizeof(uint32_t));
+    if (data != NULL)
+        memcpy(&tmp, data, sizeof(uint32_t));
+    return tmp;
 }
 
 uint32_t pget_u32b(const StringReader* reader, size_t offset) {
-    uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
+    uint32_t value_ptr = pget(reader, offset);
     if (value_ptr == 0) {
         ERR_LOG("pget_u32b ´íÎó");
         return 0;
@@ -434,7 +438,7 @@ uint32_t pget_u32b(const StringReader* reader, size_t offset) {
 }
 
 uint32_t pget_u32l(const StringReader* reader, size_t offset) {
-    uint32_t value_ptr = pget(reader, offset, sizeof(uint32_t));
+    uint32_t value_ptr = pget(reader, offset);
     if (value_ptr == 0) {
         ERR_LOG("pget_u32b ´íÎó");
         return 0;
