@@ -316,7 +316,7 @@
 #define SUBCMD60_ITEM_EXCHANGE_IN_QUEST        0xDB
 #define SUBCMD60_BOSS_ACT_SAINT_MILLION        0xDC
 #define SUBCMD60_SET_EXP_RATE                  0xDD
-#define SUBCMD60_UNKNOW_DE                     0xDE
+#define SUBCMD60_GOOD_LUCK                     0xDE
 #define SUBCMD60_GALLON_PLAN                   0xE1
 
 

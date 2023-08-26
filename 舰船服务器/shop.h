@@ -95,8 +95,47 @@ uint32_t equip_prices[2][13][24][80];
 
 int load_shop_data();
 
-// Gallon's shop "Hopkins' Dad's" item list + Photon Drops required for each
+// Item list for Good Luck quest...祝你好运任务的物品清单
+const static uint32_t good_luck[] = {
+	0x00004C00,
+	0x00004500,
+	0x00078F00,
+	0x00004400,
+	0x00009A00,
+	0x00006A00,
+	0x002B0201,
+	0x00310101,
+	0x00300101,
+	0x00320101,
+	0x00003400,
+	0x00001300,
+	0x00003C00,
+	0x00002700,
+	0x00003E00,
+	0x00003900,
+	0x00004100,
+	0x00290101,
+	0x00290101,
+	0x00290201,
+	0x00350201,
+	0x00330101,
+	0x001C0101,
+	0x00002000,
+	0x00060600,
+	0x00002C00,
+	0x00060100,
+	0x00070100,
+	0x00210201,
+	0x00070800,
+	0x00070400,
+	0x00010D00,
+	0x00240201,
+	0x001B0101,
+	0x00060200,
+	0x00001003
+};
 
+// Gallon's shop "Hopkins' Dad's" item list + Photon Drops required for each
 const static uint32_t gallons_shop_hopkins[] = {
 	0x000003, 1,
 	0x000103, 1,
@@ -120,9 +159,7 @@ const static uint32_t gallons_shop_hopkins[] = {
 
 
 // Gallon's shop "Hopkins' Dad's" amount of PDs required for S-Rank attribute
-
-const static uint8_t gallon_srank_pds[] =
-{
+const static uint8_t gallon_srank_pds[] = {
 	0x01, 60,
 	0x02, 60,
 	0x03, 20,
@@ -142,8 +179,7 @@ const static uint8_t gallon_srank_pds[] =
 };
 
 // Tekking Attribute arrays
-const static uint8_t tekker_attributes[] =
-{
+const static uint8_t tekker_attributes[] = {
 	0x00, 0x00, 0x00,
 	0x01, 0x01, 0x02,
 	0x02, 0x01, 0x02,
@@ -188,8 +224,7 @@ const static uint8_t tekker_attributes[] =
 };
 
 // Shop Sellback Price per Attribute
-const static int32_t attrib[] =
-{
+const static int32_t attrib[] = {
 	0,
 	125,
 	500,
@@ -235,8 +270,7 @@ const static int32_t attrib[] =
 
 // Shop Sellback Price per Common Armor
 
-const static int32_t armor_prices[] =
-{
+const static int32_t armor_prices[] = {
 	24, 33, 41, 50, 59,
 	65, 100, 135, 170, 205,
 	123, 185, 246, 307, 368,

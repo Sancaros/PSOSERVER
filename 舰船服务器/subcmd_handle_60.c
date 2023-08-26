@@ -1015,13 +1015,61 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误卸除装备数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
+        return -2;
     }
+
+    if (pkt->shdr.client_id != src->client_id) {
+//[2023年08月27日 04:23:22:911] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:22:913] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:22:917] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 01 00 00 00 21 00  ..`.....&.....!.
+//( 00000010 )   00 00 00 00                                     ....
+// 
+//[2023年08月27日 04:23:22:930] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:22:934] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:22:942] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 01 00 01 00 21 00  ..`.....&.....!.
+//( 00000010 )   00 00 00 00                                     ....
+// 
+//[2023年08月27日 04:23:22:954] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:22:956] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:22:959] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 01 00 02 00 21 00  ..`.....&.....!.
+//( 00000010 )   00 00 00 00                                     ....
+// 
+//[2023年08月27日 04:23:22:972] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:22:974] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:22:976] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 02 00 00 00 41 00  ..`.....&.....A.
+//( 00000010 )   00 00 00 00                                     ....
+// 
+//[2023年08月27日 04:23:22:990] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:22:993] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:22:996] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 02 00 01 00 41 00  ..`.....&.....A.
+//( 00000010 )   00 00 00 00                                     ....
+// 
+//[2023年08月27日 04:23:23:009] 错误(subcmd_handle_60.c 1021): GC 10000001 发送错误卸除装备数据!
+//[2023年08月27日 04:23:23:011] 截获(1022): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+//代码 1022 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+//[2023年08月27日 04:23:23:013] 截获(1022):
+//( 00000000 )   14 00 60 00 00 00 00 00   26 03 02 00 02 00 41 00  ..`.....&.....A.
+//( 00000010 )   00 00 00 00                                     ....
+        //ERR_LOG("GC %" PRIu32 " 其他任务触发的数据!",
+        //    src->guildcard);
+        //ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return 0;
+    }
+
 
     inventory_t* inv = get_client_inv_bb(src);
 
@@ -4896,6 +4944,66 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_good_luck_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    sfmt_t* rng = &src->sfmt_rng;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -2;
+    }
+
+    inventory_t* inv = get_client_inv_bb(src);
+
+    uint32_t ci = 0;
+    item_t item = { 0 };
+
+    size_t itemid = find_iitem_code_stack_item_id(inv, 0x00031003);
+    if (!itemid) {
+        ERR_LOG("GC %" PRIu32 " !itemid 玩家背包中没有光子票据", src->guildcard);
+        return send_bb_item_exchange_good_luck(src, 0x00000001, pkt->subcmd_code, pkt->flags);
+    }
+//               00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F
+//( 00000000 )   10 00 60 00 00 00 00 00   DE 02 00 00 02 6F 5F 00  ..`.....?...o_.
+
+        /* 删除光子票据 10个 但是会全部删除 */
+    iitem_t remove_item = remove_iitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
+    if (&remove_item == NULL) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -3;
+    }
+    subcmd_send_bb_destroy_item(src, itemid, 1);
+
+    subcmd_send_bb_exchange_item_in_quest(src, itemid, 1);
+
+    memset(&item, 0, sizeof(item_t));
+    item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)];
+    item.item_id = generate_item_id(l, src->client_id);
+    iitem_t add_item = player_iitem_init(item);
+    if (!add_iitem(src, &add_item)) {
+        ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
+            src->guildcard);
+        return -5;
+    }
+    subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
+
+    display_packet(pkt, pkt->hdr.pkt_len);
+    send_bb_item_exchange_good_luck(src, 0x00000000, pkt->subcmd_code, pkt->flags);
+    return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "物品兑换成功"));
+}
+
 static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_gallons_plan_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -4915,20 +5023,16 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-                // Gallon's Plan opcode
-
     inventory_t* inv = get_client_inv_bb(src);
 
     iitem_t remove_item = { 0 };
-    item_t add_item = { 0 };
+    item_t item = { 0 };
 
     size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
     if (!pt_itemid) {
-        ERR_LOG("!pt_itemid");
-        return send_bb_item_exchange_state(src, 0x00000001);
+        ERR_LOG("GC %" PRIu32 " !pt_itemid 玩家背包中没有光子票据", src->guildcard);
+        return send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
     }
-
-    display_packet(pkt, pkt->hdr.pkt_len);
 
 //[2023年08月27日 00:55:19:592] 调试(ship_packets.c 8294): GC 10000001 载入任务 quest035 (0 31)版本 Blue Brust
 //[2023年08月27日 00:56:42:059] 物品(0290): 物品:(ID 8454144 / 00810000) 光子点卷
@@ -4943,7 +5047,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000000 )   14 00 60 00 00 00 00 00   E1 03 00 00 3C 3D 01 00  ..`.....?..<=..
 //( 00000010 )   79 00 06 00                                     y...
 
-    memset(&add_item, 0, sizeof(item_t));
+    memset(&item, 0, sizeof(item_t));
 
     switch (pkt->exchange_choice) {
     case 0x0001:
@@ -4956,7 +5060,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 宽永通宝
-        add_item.datal[0] = 0x0000D500;
+        item.datal[0] = 0x0000D500;
         break;
 
     case 0x0002:
@@ -4969,7 +5073,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 棒棒糖
-        add_item.datal[0] = 0x00070A00;
+        item.datal[0] = 0x00070A00;
         break;
 
     case 0x0003:
@@ -4982,7 +5086,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 隐身衣
-        add_item.datal[0] = 0x00570101;
+        item.datal[0] = 0x00570101;
         break;
 
     default:
@@ -4993,20 +5097,18 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5));
 
-    add_item.item_id = generate_item_id(l, src->client_id);
-
-    iitem_t work_item = player_iitem_init(add_item);
-
-    if (!add_iitem(src, &work_item)) {
+    item.item_id = generate_item_id(l, src->client_id);
+    iitem_t add_item = player_iitem_init(item);
+    if (!add_iitem(src, &add_item)) {
         ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
             src->guildcard);
         return -5;
     }
 
-    subcmd_send_lobby_bb_create_inv_item(src, work_item.data, stack_size(&work_item.data), true);
+    subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
     // Gallon's Plan result
-    send_bb_item_exchange_gallon_result(src, pkt->unknown_a4, pkt->unknown_a2);
+    send_bb_item_exchange_gallon_result(src, 0x00000000, pkt->subcmd_code, pkt->unknown_a2);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5158,6 +5260,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
+    { SUBCMD60_GOOD_LUCK                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DE_bb },
 
     //cmd_type E0 - EF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_PLAN                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_E1_bb },

@@ -3083,13 +3083,13 @@ typedef struct subcmd_bb_set_exp_rate {
 
 // 0xDE: Good Luck quest (BB; handled by server)
 // The client sends this when it executes an F95C quest opcode.
-struct G_GoodLuckQuestActions_BB_6xDE {
+typedef struct subcmd_bb_good_luck_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint8_t unknown_a1;
-    uint8_t unknown_a2;
-    uint16_t unknown_a3;
-} PACKED;
+    uint8_t unknown_a1; /* 得获得更多参数才能查明 */
+    uint8_t flags;
+    uint16_t subcmd_code;
+} PACKED subcmd_bb_good_luck_act_t;
 
 // 0xDF: Invalid subcommand
 typedef struct subcmd_bb_black_paper_deal_photon_drop_exchange {
@@ -3118,7 +3118,7 @@ typedef struct subcmd_bb_gallons_plan {
     uint8_t unknown_a1;
     uint8_t unknown_a2;
     uint16_t exchange_choice;
-    uint16_t unknown_a4;
+    uint16_t subcmd_code;
     uint16_t unknown_a5;
 } PACKED subcmd_bb_gallons_plan_t;
 

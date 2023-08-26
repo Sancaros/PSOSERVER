@@ -13063,16 +13063,40 @@ int send_bb_item_exchange_state(ship_client_t* c, uint32_t done) {
     return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
 }
 
+/* 物品兑换完成 祝你好运 */
+int send_bb_item_exchange_good_luck(ship_client_t* c, uint32_t done, uint16_t subcmd, uint8_t unkonw1) {
+    bb_item_exchange_good_luck_pkt pkt = { 0 };
+    sfmt_t* rng = &c->sfmt_rng;
+
+    /* 填充数据并准备发送 */
+    pkt.hdr.pkt_len = LE16(sizeof(bb_item_exchange_good_luck_pkt));
+    pkt.hdr.pkt_type = LE16(ITEM_EXCHANGE_GOOD_LUCK);
+    /* flags 0x00000000 Done 0x00000001 unDone*/
+    pkt.hdr.flags = done;
+
+    pkt.unknown_a1 = unkonw1;
+    pkt.subcmd_code = subcmd;
+
+    for (size_t x = 0; x < 8; x++) {
+
+        pkt.items_res[x] = good_luck[(sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)) + 1];
+
+        DBG_LOG(" pkt.items_res[%d] = 0x%08X", x, pkt.items_res[x]);
+    }
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)&pkt);
+}
+
 /* 物品兑换完成 加隆的计划 */
-int send_bb_item_exchange_gallon_result(ship_client_t* c, uint16_t subcmd, uint8_t unkonw1) {
+int send_bb_item_exchange_gallon_result(ship_client_t* c, uint32_t done, uint16_t subcmd, uint8_t unkonw1) {
     bb_item_exchange_gallon_result_pkt pkt = { 0 };
 
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(sizeof(bb_item_exchange_gallon_result_pkt));
     pkt.hdr.pkt_type = LE16(ITEM_EXCHANGE_GALLON_RESULT);
-    pkt.hdr.flags = 0;
+    pkt.hdr.flags = done;
 
-    pkt.unknown_a1 = subcmd;
+    pkt.subcmd_code = subcmd;
     pkt.offset1 = 0x3C;
     pkt.value1 = 0x08;
     pkt.offset2 = unkonw1;

@@ -1013,17 +1013,18 @@ typedef struct bb_item_exchange_state {
     bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
 } PACKED bb_item_exchange_state_pkt;
 
-struct S_GoodLuckResult_BB_24 {
-    uint16_t unknown_a1;
-    uint16_t unknown_a2;
-    uint32_t unknown_a3[8];
-} PACKED;
+typedef struct bb_item_exchange_good_luck {
+    /* 0x00 - 0x07 */bb_pkt_hdr_t hdr;
+    /* 0x08 - 0x09 */ uint16_t unknown_a1;
+    /* 0x0A - 0x0B */ uint16_t subcmd_code;
+    /* 0x0C - */ uint32_t items_res[8];
+} PACKED bb_item_exchange_good_luck_pkt;
 
 // 25 (S->C): Gallon's Plan result (BB)
 // Sent in response to a 6xE1 command from the client.
 typedef struct bb_item_exchange_gallon_result {
     bb_pkt_hdr_t hdr;
-    uint16_t unknown_a1;
+    uint16_t subcmd_code;
     uint8_t offset1;
     uint8_t value1;
     uint8_t offset2;
