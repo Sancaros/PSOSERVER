@@ -1887,6 +1887,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                         src->guildcard);
                     return -4;
                 }
+                subcmd_send_lobby_bb_create_inv_item(src, iitem.data, pkt_item_amt, true);
                 return -5;
             }
 
