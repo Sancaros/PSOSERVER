@@ -59,6 +59,7 @@ static char myquery[MAX_QUERY_SIZE] = { 0 };
 #define CHARACTER_BANK_COMMON_ITEMS "character_bank_common_items"
 #define CHARACTER_BANK_COMMON_ITEMS_BACKUP "character_bank_common_items_backup"
 #define CHARACTER_BLACKLIST "character_blacklist"
+#define CHARACTER_DATA_FULL "character_data_full"
 #define CHARACTER_DEFAULT "character_default"
 #define CHARACTER_DEFAULT_MODE "character_default_mode"
 #define CHARACTER_DELETE "character_delete"

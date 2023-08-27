@@ -1951,9 +1951,13 @@ static int bb_process_full_char(ship_client_t* c, bb_full_char_pkt* pkt) {
 
     }
 
-    if (c->game_data->db_save_done) {
+    if (!c->mode) {
+#ifdef DEBUG
 
+        DBG_LOG("非MODE存储角色完整数据");
 
+#endif // DEBUG
+        return shipgate_fw_bb(&ship->sg, pkt, c->sec_data.slot, c);
     }
 
     return 0;

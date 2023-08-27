@@ -101,6 +101,9 @@ int db_compress_char_data(psocn_bb_db_char_t *char_data, uint16_t data_len, uint
 /* 角色备份功能 */
 int db_backup_bb_char_data(uint32_t gc, uint8_t slot);
 
+int db_insert_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name);
+int db_update_bb_full_char_data(void* data, uint32_t gc, uint32_t slot, uint8_t char_class, char* class_name);
+
 /* 删除角色数据 */
 int db_delete_bb_char_data(uint32_t gc, uint8_t slot);
 

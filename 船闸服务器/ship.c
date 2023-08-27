@@ -2743,6 +2743,26 @@ static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     return 0;
 }
 
+static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
+    bb_full_char_pkt* full_data_pkt = (bb_full_char_pkt*)pkt->pkt;
+    uint32_t slot = pkt->fw_flags, gc = ntohl(pkt->guildcard);
+    char char_class_name_text[64];
+
+#ifdef DEBUG
+    DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
+    display_packet(full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
+#endif // DEBUG
+
+    istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
+    
+    if (db_insert_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text)) {
+        //DBG_LOG("qid %d %s 数据已存在,进行更新操作", slot, pso_class[full_data_pkt->data.gc.char_class].cn_name);
+        db_update_bb_full_char_data(full_data_pkt, gc, slot, full_data_pkt->data.gc.char_class, char_class_name_text);
+    }
+
+    return 0;
+}
+
 static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
     bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt->pkt;
     uint16_t type = LE16(hdr->pkt_type);
@@ -2762,7 +2782,10 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild(c, pkt);
 
     case BB_FULL_CHARACTER_TYPE:
-        return handle_bb_cmode_char_data(c, pkt);
+        if(pkt->fw_flags > 3)
+            return handle_bb_cmode_char_data(c, pkt);
+        else
+            return handle_bb_full_char_data(c, pkt);
 
     default:
         break;

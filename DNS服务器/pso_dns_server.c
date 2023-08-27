@@ -493,6 +493,7 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
 
     /* 检查消息以确保它看起来像是来自PSO. */
     if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
+        close(sock);
         return 0;
     }
 
