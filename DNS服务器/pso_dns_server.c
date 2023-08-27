@@ -452,7 +452,7 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
         sizeof(struct sockaddr_in));
 }
 
-static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
+static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
     size_t i;
     uint8_t partlen = 0;
     static char hostbuf[1024];
@@ -462,20 +462,28 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
     size_t olen = len;
     char ip_str[INET6_ADDRSTRLEN];
 
-    /* Subtract out the size of the header. */
+    /* 减去头部数据的大小. */
     len -= sizeof(dnsmsg_t);
 
-    /* Switch the byte ordering as needed on everything. */
+    /* 根据需要切换所有内容的字节顺序. */
     qdc = ntohs(inmsg->qdcount);
     anc = ntohs(inmsg->ancount);
     nsc = ntohs(inmsg->nscount);
     arc = ntohs(inmsg->arcount);
 
-    /* Check the message to make sure it looks like it came from PSO. */
-    if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0)
-        return;
+#ifdef DEBUG
 
-    /* Figure out the name of the host that the client is looking for. */
+    display_packet(inmsg, sizeof(dnsmsg_t));
+
+#endif // DEBUG
+
+    /* 检查消息以确保它看起来像是来自PSO. */
+    if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
+        close(sock);
+        return 0;
+    }
+
+    /* 找出客户端要查找的主机的名称. */
     i = 0;
     while (i < len) {
         partlen = inmsg->data[i];
@@ -496,35 +504,36 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
             }
             else {
                 ERR_LOG("接入端口 %d 无效IP地址family.", sock);
-                close(sock);
-                return;
+                return -2;
             }
 
             ERR_LOG("接入 %s:%d 抛出坏数据包,断开其连接.", ip_str, sock);
-            close(sock);
-            return;
+            return -3;
         }
 
-        /* Did we read the last part? */
+        /* 我们读了最后一部分了吗? */
         if (partlen == 0) {
-            /* Make sure the rest of the message is as we expect it. */
+            /* 确保消息的其余部分与我们预期的一样. */
             if (inmsg->data[i + 1] != 0 || inmsg->data[i + 2] != 1 ||
                 inmsg->data[i + 3] != 0 || inmsg->data[i + 4] != 1) {
-                //ERR_LOG("端口 %d 抛出非IN A请求.", sock);
-                close(sock);
-                return;
+                ERR_LOG("端口 %d 抛出非IN A请求.", sock);
+                return -4;
             }
 
             hostbuf[hostlen - 1] = '\0';
             i = len;
 
-            /* See if the requested host is in our list. If it is, respond.*/
-            if ((host = find_host(hostbuf))) {
-                respond_to_query(sock, olen, addr, host);
+            /* 查看请求的主机是否在我们的列表中.如果是,请回复.*/
+            host = find_host(hostbuf);
+            if (!host) {
+                ERR_LOG("端口 %d 需求的 %s 解析不在列表中.", sock, hostbuf);
+                return -5;
             }
 
+            respond_to_query(sock, olen, addr, host);
+
             /* And we're done. */
-            return;
+            break;
         }
 
         /* We've got a part to copy into our string... Do so. */
@@ -533,6 +542,8 @@ static void process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
         hostbuf[hostlen++] = '.';
         i += partlen + 1;
     }
+
+    return 0;
 }
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
@@ -697,6 +708,7 @@ int __cdecl main(int argc, char** argv) {
     struct sockaddr_in addr = { 0 };
     socklen_t alen;
     ssize_t rlen;
+    int rv = 0;
 
     initialization();
 
@@ -709,7 +721,7 @@ int __cdecl main(int argc, char** argv) {
         /* Open the socket. We will probably need root for this on UNIX-like
            systems. */
         if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
-            ERR_EXIT("open_sock 错误");
+            ERR_EXIT("open_sock 错误, 请检查端口 %u 是否被占用.", DNS_PORT);
         }
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
@@ -734,8 +746,11 @@ int __cdecl main(int argc, char** argv) {
 
             /* Grab the next request from the socket. */
             if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr, &alen)) > sizeof(dnsmsg_t)) {
-
-                process_query(sock, rlen, &addr);
+                rv = process_query(sock, rlen, &addr);
+                if (rv) {
+                    ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
+                    close(sock);
+                }
             }
         }
 
@@ -743,7 +758,7 @@ int __cdecl main(int argc, char** argv) {
 #ifndef _WIN32
         close(sock);
 #else
-        closesocket(sock);
+        close(sock);
         WSACleanup();
 #endif
 

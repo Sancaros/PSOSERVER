@@ -607,6 +607,13 @@ typedef struct subcmd_bb_inter_level_warp {
 
 // 0x22: Set player invisible
 // 0x23: Set player visible
+typedef struct subcmd_set_player_visibility_6x22_6x23 {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+} PACKED subcmd_set_player_visibility_6x22_6x23_t;
+
+// 0x22: Set player invisible
+// 0x23: Set player visible
 typedef struct subcmd_bb_set_player_visibility_6x22_6x23 {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -988,12 +995,24 @@ typedef struct subcmd_bb_move {
 // Same format as 0x43
 // 0x45: Third attack
 // Same format as 0x43
-typedef struct subcmd_bb_natk {
+typedef struct subcmd_normal_attack {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t unknown_a1;
+    uint16_t unknown_a2;
+} PACKED subcmd_normal_attack_t;
+
+// 0x43: First attack
+// 0x44: Second attack
+// Same format as 0x43
+// 0x45: Third attack
+// Same format as 0x43
+typedef struct subcmd_bb_normal_attack {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t unknown_a1;
     uint16_t unknown_a2;
-} PACKED subcmd_bb_natk_t;
+} PACKED subcmd_bb_normal_attack_t;
 
 typedef struct enemy_entry {
     uint16_t obj_id;    /* 0xtiii -> i: id, t: type (4 object, 1 monster) */
@@ -3218,7 +3237,6 @@ int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt);
 
 /* 处理 BB 0x60 来自客户端的数据包. */
 int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt);
-int subcmd_bb_handle_60_mode(ship_client_t* src, subcmd_bb_pkt_t* pkt);
 
 /////////////////////////////////////////////////////////////////////////////
 ////Episode 3

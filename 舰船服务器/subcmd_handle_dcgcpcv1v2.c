@@ -1825,21 +1825,37 @@ int handle_gol_dragon_act(ship_client_t* c, subcmd_gol_dragon_act_t* pkt) {
 }
 
 /* 处理 DC GC PC V1 V2 0x60 来自客户端的数据包. */
-int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
+int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
     __try {
         uint8_t type = pkt->type;
-        lobby_t* l = c->cur_lobby;
-        int rv, sent = 1, i;
+        lobby_t* l = src->cur_lobby;
+        int rv, sent = 1, i = 0;
+        ship_client_t* dest;
+        uint16_t len = 0, hdr_type = 0;
+        uint8_t dnum = 0;
+        if (src->version == CLIENT_VERSION_PC) {
+            len = pkt->hdr.pc.pkt_len;
+            hdr_type = pkt->hdr.pc.pkt_type;
+            dnum = pkt->hdr.pc.flags;
+        }
+        else {
+            len = pkt->hdr.dc.pkt_len;
+            hdr_type = pkt->hdr.dc.pkt_type;
+            dnum = pkt->hdr.dc.flags;
+        }
 
         /* The DC NTE must be treated specially, so deal with that elsewhere... */
-        if (c->version == CLIENT_VERSION_DCV1 && (c->flags & CLIENT_FLAG_IS_NTE))
-            return subcmd_dcnte_handle_bcast(c, pkt);
+        if (src->version == CLIENT_VERSION_DCV1 && (src->flags & CLIENT_FLAG_IS_NTE))
+            return subcmd_dcnte_handle_bcast(src, pkt);
 
         /* 如果客户端不在大厅或者队伍中则忽略数据包. */
         if (!l)
             return 0;
 
         pthread_mutex_lock(&l->mutex);
+
+        /* 搜索目标客户端. */
+        dest = l->clients[dnum];
 
 #ifdef DEBUG
 
@@ -1850,28 +1866,35 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
 
 #endif // DEBUG
 
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+
         /* If there's a burst going on in the lobby, delay most packets */
         if (l->flags & LOBBY_FLAG_BURSTING) {
             switch (type) {
-            case SUBCMD60_LOAD_3B:
+            case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
+            case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
+            case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
             case SUBCMD60_BURST_DONE:
-                rv = subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
-                break;
-
-            case SUBCMD60_SET_AREA_1F:
-                rv = handle_set_area_1F(c, (subcmd_set_area_1F_t*)pkt);
-                break;
-
-            case SUBCMD60_SET_POS_3F:
-                rv = handle_set_pos(c, (subcmd_set_pos_t*)pkt);
-                break;
-
+                /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
             case SUBCMD60_SET_C_GAME_MODE:
-                rv = handle_cmode_grave(c, pkt);
+                rv = l->subcmd_handle(src, dest, pkt);
+                //rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
                 break;
+
+            //case SUBCMD60_SET_AREA_1F:
+            //    rv = handle_set_area_1F(src, (subcmd_set_area_1F_t*)pkt);
+            //    break;
+
+            //case SUBCMD60_SET_POS_3F:
+            //    rv = handle_set_pos(src, (subcmd_set_pos_t*)pkt);
+            //    break;
+
+            //case SUBCMD60_SET_C_GAME_MODE:
+            //    rv = handle_cmode_grave(src, pkt);
+            //    break;
 
             default:
-                rv = lobby_enqueue_pkt(l, c, (dc_pkt_hdr_t*)pkt);
+                rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
             }
 
             pthread_mutex_unlock(&l->mutex);
@@ -1879,81 +1902,76 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
         }
 
         switch (type) {
-            //case SUBCMD60_CONDITION_ADD:
-            //    break;
-
-            //case SUBCMD60_CONDITION_REMOVE:
-            //    break;
 
         case SUBCMD60_ITEM_TAKE:
-            rv = handle_take_item(c, (subcmd_take_item_t*)pkt);
+            rv = handle_take_item(src, (subcmd_take_item_t*)pkt);
             break;
 
         case SUBCMD60_LEVEL_UP:
-            rv = handle_level_up(c, (subcmd_level_up_t*)pkt);
+            rv = handle_level_up(src, (subcmd_level_up_t*)pkt);
             break;
 
         case SUBCMD60_USED_TECH:
-            rv = handle_used_tech(c, (subcmd_used_tech_t*)pkt);
+            rv = handle_used_tech(src, (subcmd_used_tech_t*)pkt);
             break;
 
         case SUBCMD60_TAKE_DAMAGE1:
         case SUBCMD60_TAKE_DAMAGE2:
-            rv = handle_take_damage(c, (subcmd_take_damage_t*)pkt);
+            rv = handle_take_damage(src, (subcmd_take_damage_t*)pkt);
             break;
 
         case SUBCMD60_ITEM_DROP_BOX_ENEMY:
-            rv = handle_itemdrop(c, (subcmd_itemgen_t*)pkt);
+            rv = handle_itemdrop(src, (subcmd_itemgen_t*)pkt);
             break;
 
         case SUBCMD60_SET_AREA_1F:
-            rv = handle_set_area_1F(c, (subcmd_set_area_1F_t*)pkt);
+            rv = handle_set_area_1F(src, (subcmd_set_area_1F_t*)pkt);
             break;
 
         case SUBCMD60_SET_AREA_20:
-            rv = handle_set_area_20(c, (subcmd_set_area_20_t*)pkt);
+            rv = handle_set_area_20(src, (subcmd_set_area_20_t*)pkt);
             break;
 
         case SUBCMD60_INTER_LEVEL_WARP:
-            rv = handle_inter_level_warp(c, (subcmd_inter_level_warp_t*)pkt);
+            rv = handle_inter_level_warp(src, (subcmd_inter_level_warp_t*)pkt);
             break;
 
         case SUBCMD60_SET_POS_3E:
         case SUBCMD60_SET_POS_3F:
-            rv = handle_set_pos(c, (subcmd_set_pos_t*)pkt);
+            rv = handle_set_pos(src, (subcmd_set_pos_t*)pkt);
             break;
 
         case SUBCMD60_MOVE_SLOW:
         case SUBCMD60_MOVE_FAST:
-            rv = handle_move(c, (subcmd_move_t*)pkt);
+            rv = handle_move(src, (subcmd_move_t*)pkt);
             break;
 
         case SUBCMD60_ITEM_DELETE:
-            rv = handle_delete_inv(c, (subcmd_destroy_item_t*)pkt);
+            rv = handle_delete_inv(src, (subcmd_destroy_item_t*)pkt);
             break;
 
         case SUBCMD60_BUY:
-            rv = handle_buy(c, (subcmd_buy_t*)pkt);
+            rv = handle_buy(src, (subcmd_buy_t*)pkt);
             break;
 
         case SUBCMD60_ITEM_USE:
-            rv = handle_use_item(c, (subcmd_use_item_t*)pkt);
+            rv = handle_use_item(src, (subcmd_use_item_t*)pkt);
             break;
 
         case SUBCMD60_WORD_SELECT:
-            rv = handle_word_select(c, (subcmd_word_select_t*)pkt);
+            rv = handle_word_select(src, (subcmd_word_select_t*)pkt);
             break;
 
         case SUBCMD60_SYMBOL_CHAT:
-            rv = handle_symbol_chat(c, (subcmd_symbol_chat_t*)pkt);
+            rv = handle_symbol_chat(src, (subcmd_symbol_chat_t*)pkt);
             break;
 
         case SUBCMD60_SET_C_GAME_MODE:
-            rv = handle_cmode_grave(c, pkt);
+            rv = handle_cmode_grave(src, pkt);
             break;
 
         case SUBCMD60_HIT_MONSTER:
-            rv = handle_mhit(c, (subcmd_mhit_pkt_t*)pkt);
+            rv = handle_mhit(src, (subcmd_mhit_pkt_t*)pkt);
             break;
 
         case SUBCMD60_OBJHIT_PHYS:
@@ -1963,7 +1981,7 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
                 break;
             }
 
-            rv = handle_objhit_phys(c, (subcmd_objhit_phys_t*)pkt);
+            rv = handle_objhit_phys(src, (subcmd_objhit_phys_t*)pkt);
             break;
 
         case SUBCMD60_OBJHIT_TECH:
@@ -1973,7 +1991,7 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
                 break;
             }
 
-            rv = handle_objhit_tech(c, (subcmd_objhit_tech_t*)pkt);
+            rv = handle_objhit_tech(src, (subcmd_objhit_tech_t*)pkt);
             break;
 
         case SUBCMD60_HIT_OBJ:
@@ -1983,74 +2001,74 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
                 break;
             }
 
-            rv = handle_objhit(c, (subcmd_bhit_pkt_t*)pkt);
+            rv = handle_objhit(src, (subcmd_bhit_pkt_t*)pkt);
             break;
 
         case SUBCMD60_SPAWN_NPC:
-            rv = handle_spawn_npc(c, pkt);
+            rv = handle_spawn_npc(src, pkt);
             break;
 
         case SUBCMD60_CREATE_PIPE:
-            rv = handle_create_pipe(c, (subcmd_pipe_t*)pkt);
+            rv = handle_create_pipe(src, (subcmd_pipe_t*)pkt);
             break;
 
         case SUBCMD60_SYNC_REG:
-            rv = handle_sync_reg(c, (subcmd_sync_reg_t*)pkt);
+            rv = handle_sync_reg(src, (subcmd_sync_reg_t*)pkt);
             break;
 
         case SUBCMD60_SET_POS_24:
-            rv = handle_set_pos24(c, pkt);
+            rv = handle_set_pos24(src, pkt);
             break;
 
         case SUBCMD60_MENU_REQ:
-            rv = handle_menu_req(c, pkt);
+            rv = handle_menu_req(src, pkt);
             break;
 
         case SUBCMD60_ITEM_DROP:
-            rv = handle_drop_item(c, (subcmd_drop_item_t*)pkt);
+            rv = handle_drop_item(src, (subcmd_drop_item_t*)pkt);
             break;
 
         case SUBCMD60_DROP_STACK:
-            rv = handle_drop_stack(c, (subcmd_drop_stack_t*)pkt);
+            rv = handle_drop_stack(src, (subcmd_drop_stack_t*)pkt);
             break;
 
         case SUBCMD60_SELECT_MENU:
-            rv = handle_talk_npc(c, (subcmd_select_menu_t*)pkt);
+            rv = handle_talk_npc(src, (subcmd_select_menu_t*)pkt);
             break;
 
         case SUBCMD60_SELECT_DONE:
-            rv = handle_done_talk_npc(c, (subcmd_select_done_t*)pkt);
+            rv = handle_done_talk_npc(src, (subcmd_select_done_t*)pkt);
             break;
 
         case SUBCMD60_BOSS_ACT_DRAGON:
-            rv = handle_dragon_act(c, (subcmd_dragon_act_t*)pkt);
+            rv = handle_dragon_act(src, (subcmd_dragon_act_t*)pkt);
             break;
 
         case SUBCMD60_BOSS_ACT_GDRAGON:
-            rv = handle_gol_dragon_act(c, (subcmd_gol_dragon_act_t*)pkt);
+            rv = handle_gol_dragon_act(src, (subcmd_gol_dragon_act_t*)pkt);
             break;
 
-        default:
-#ifdef LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
-            //UNK_CSPD(type, c->version, pkt);
-            display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
-#endif /* LOG_UNKNOWN_SUBS */
-            sent = 0;
-            break;
+//        default:
+//#ifdef LOG_UNKNOWN_SUBS
+//            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+//            //UNK_CSPD(type, c->version, pkt);
+//            display_packet(pkt, len);
+//#endif /* LOG_UNKNOWN_SUBS */
+//            sent = 0;
+//            break;
 
-        case SUBCMD60_FINISH_LOAD:
-            if (l->type == LOBBY_TYPE_LOBBY) {
-                for (i = 0; i < l->max_clients; ++i) {
-                    if (l->clients[i] && l->clients[i] != c &&
-                        subcmd_send_pos(c, l->clients[i])) {
-                        rv = -1;
-                        break;
-                    }
-                }
-            }
+        //case SUBCMD60_FINISH_LOAD:
+        //    if (l->type == LOBBY_TYPE_LOBBY) {
+        //        for (i = 0; i < l->max_clients; ++i) {
+        //            if (l->clients[i] && l->clients[i] != src &&
+        //                subcmd_send_pos(src, l->clients[i])) {
+        //                rv = -1;
+        //                break;
+        //            }
+        //        }
+        //    }
 
-        case SUBCMD60_LOAD_22:
+        //case SUBCMD60_LOAD_22:
         case SUBCMD60_LOAD_3B:
         case SUBCMD60_WARP_55:
         case SUBCMD60_LOBBY_ACT:
@@ -2061,9 +2079,21 @@ int subcmd_handle_60(ship_client_t* c, subcmd_pkt_t* pkt) {
             sent = 0;
         }
 
-        /* Broadcast anything we don't care to check anything about. */
-        if (!sent)
-            rv = subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
+        ///* Broadcast anything we don't care to check anything about. */
+        //if (!sent)
+        //    rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+
+        if (l->subcmd_handle == NULL) {
+#ifdef BB_LOG_UNKNOWN_SUBS
+            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+            display_packet(pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+            rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+            pthread_mutex_unlock(&l->mutex);
+            return rv;
+        }
+
+        rv = l->subcmd_handle(src, dest, pkt);
 
         pthread_mutex_unlock(&l->mutex);
         return rv;
