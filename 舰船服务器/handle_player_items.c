@@ -569,7 +569,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
             ERR_LOG("玩家拥有的美赛塔不足 %d < %d", character->disp.meseta, amount);
             return ret;
         }
-        ret.data.datab[0] = 0x04;
+        ret.data.datab[0] = ITEM_TYPE_MESETA;
         ret.data.data2l = amount;
         return ret;
     }
@@ -584,7 +584,7 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     if (amount && is_stackable(&inventory_item->data) && (amount < inventory_item->data.datab[5])) {
         ret = *inventory_item;
         ret.data.datab[5] = amount;
-        ret.data.item_id = 0xFFFFFFFF;
+        ret.data.item_id = EMPTY_STRING;
         inventory_item->data.datab[5] -= amount;
         return ret;
     }
@@ -614,7 +614,7 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
                 src->guildcard);
             return ret;
         }
-        ret.data.datab[0] = 0x04;
+        ret.data.datab[0] = ITEM_TYPE_MESETA;
         ret.data.data2l = amount;
         bank->meseta -= amount;
         return ret;
@@ -1430,7 +1430,10 @@ done:
     if (should_delete_item) {
         // Allow overdrafting meseta if the client is not BB, since the server isn't
         // informed when meseta is added or removed from the bank.
-        remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        iitem_t delete_item = remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+        if (delete_item.data.datal[0] == 0 && delete_item.data.data2l == 0) {
+            ERR_LOG("物品 ID 0x%08X 已不存在", iitem->data.item_id);
+        }
     }
 
     return err;

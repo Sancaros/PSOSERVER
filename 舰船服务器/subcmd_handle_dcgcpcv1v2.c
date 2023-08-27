@@ -1924,39 +1924,39 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             rv = handle_itemdrop(src, (subcmd_itemgen_t*)pkt);
             break;
 
-        case SUBCMD60_SET_AREA_1F:
-            rv = handle_set_area_1F(src, (subcmd_set_area_1F_t*)pkt);
-            break;
+        //case SUBCMD60_SET_AREA_1F:
+        //    rv = handle_set_area_1F(src, (subcmd_set_area_1F_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SET_AREA_20:
-            rv = handle_set_area_20(src, (subcmd_set_area_20_t*)pkt);
-            break;
+        //case SUBCMD60_SET_AREA_20:
+        //    rv = handle_set_area_20(src, (subcmd_set_area_20_t*)pkt);
+        //    break;
 
-        case SUBCMD60_INTER_LEVEL_WARP:
-            rv = handle_inter_level_warp(src, (subcmd_inter_level_warp_t*)pkt);
-            break;
+        //case SUBCMD60_INTER_LEVEL_WARP:
+        //    rv = handle_inter_level_warp(src, (subcmd_inter_level_warp_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SET_POS_3E:
-        case SUBCMD60_SET_POS_3F:
-            rv = handle_set_pos(src, (subcmd_set_pos_t*)pkt);
-            break;
+        //case SUBCMD60_SET_POS_3E:
+        //case SUBCMD60_SET_POS_3F:
+        //    rv = handle_set_pos(src, (subcmd_set_pos_t*)pkt);
+        //    break;
 
-        case SUBCMD60_MOVE_SLOW:
-        case SUBCMD60_MOVE_FAST:
-            rv = handle_move(src, (subcmd_move_t*)pkt);
-            break;
+        //case SUBCMD60_MOVE_SLOW:
+        //case SUBCMD60_MOVE_FAST:
+        //    rv = handle_move(src, (subcmd_move_t*)pkt);
+        //    break;
 
         case SUBCMD60_ITEM_DELETE:
             rv = handle_delete_inv(src, (subcmd_destroy_item_t*)pkt);
             break;
 
-        case SUBCMD60_BUY:
-            rv = handle_buy(src, (subcmd_buy_t*)pkt);
-            break;
+        //case SUBCMD60_BUY:
+        //    rv = handle_buy(src, (subcmd_buy_t*)pkt);
+        //    break;
 
-        case SUBCMD60_ITEM_USE:
-            rv = handle_use_item(src, (subcmd_use_item_t*)pkt);
-            break;
+        //case SUBCMD60_ITEM_USE:
+        //    rv = handle_use_item(src, (subcmd_use_item_t*)pkt);
+        //    break;
 
         case SUBCMD60_WORD_SELECT:
             rv = handle_word_select(src, (subcmd_word_select_t*)pkt);
@@ -2004,21 +2004,21 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             rv = handle_objhit(src, (subcmd_bhit_pkt_t*)pkt);
             break;
 
-        case SUBCMD60_SPAWN_NPC:
-            rv = handle_spawn_npc(src, pkt);
-            break;
+        //case SUBCMD60_SPAWN_NPC:
+        //    rv = handle_spawn_npc(src, pkt);
+        //    break;
 
-        case SUBCMD60_CREATE_PIPE:
-            rv = handle_create_pipe(src, (subcmd_pipe_t*)pkt);
-            break;
+        //case SUBCMD60_CREATE_PIPE:
+        //    rv = handle_create_pipe(src, (subcmd_pipe_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SYNC_REG:
-            rv = handle_sync_reg(src, (subcmd_sync_reg_t*)pkt);
-            break;
+        //case SUBCMD60_SYNC_REG:
+        //    rv = handle_sync_reg(src, (subcmd_sync_reg_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SET_POS_24:
-            rv = handle_set_pos24(src, pkt);
-            break;
+        //case SUBCMD60_SET_POS_24:
+        //    rv = handle_set_pos24(src, pkt);
+        //    break;
 
         case SUBCMD60_MENU_REQ:
             rv = handle_menu_req(src, pkt);

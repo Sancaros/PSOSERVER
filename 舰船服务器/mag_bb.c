@@ -499,7 +499,10 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	if (should_delete_item) {
 		// Allow overdrafting meseta if the client is not BB, since the server isn't
 		// informed when meseta is added or removed from the bank.
-		remove_iitem(src, fed_item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+		iitem_t delete_item = remove_iitem(src, fed_item->data.item_id, 1, src->version != CLIENT_VERSION_BB);
+		if (delete_item.data.datal[0] == 0 && delete_item.data.data2l == 0) {
+			ERR_LOG("物品 ID 0x%08X 已不存在", fed_item->data.item_id);
+		}
 		//cleanup_bb_inv(src->client_id, &character->inv);
 
 	}

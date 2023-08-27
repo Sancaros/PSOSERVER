@@ -12283,7 +12283,6 @@ static int send_bb_sync_register(ship_client_t* c, uint16_t reg_num, uint32_t va
     memset(pkt, 0, sizeof(subcmd_bb_sync_reg_t));
 
     /* Fill it in */
-
     pkt2->hdr.pkt_type = GAME_SUBCMD60_TYPE;
     pkt2->hdr.pkt_len = LE16(sizeof(subcmd_bb_sync_reg_t));
 

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <queue.h>
 #include <Software_Defines.h>
 #include "version.h"
 
@@ -104,6 +105,36 @@ typedef struct host_info {
     char* host6;
     in_addr_t addr;
 } host_info_t;
+
+/* Patch server client structure. */
+typedef struct dns_client {
+    TAILQ_ENTRY(dns_client) qentry;
+
+    int type;
+    int sock;
+    int version;
+    int disconnected;
+    int is_ipv6;
+
+    struct sockaddr_storage ip_addr;
+
+    unsigned char* recvbuf;
+    int pkt_cur;
+    int pkt_sz;
+
+    unsigned char* sendbuf;
+    int sendbuf_cur;
+    int sendbuf_size;
+    int sendbuf_start;
+
+    int sending_data;
+    int cur_chunk;
+    int cur_pos;
+
+} dns_client_t;
+
+TAILQ_HEAD(client_queue, dns_client);
+extern struct client_queue clients;
 
 /* Input and output packet buffers. */
 static uint8_t inbuf[1024];

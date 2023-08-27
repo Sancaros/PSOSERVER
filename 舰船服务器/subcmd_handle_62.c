@@ -1859,7 +1859,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
-            if (&iitem == NULL) {
+            if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
                 ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
                 return -3;
             }
@@ -2302,7 +2302,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
 
     iitem_t backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
-    if (&backup_item == NULL) {
+    if (backup_item.data.datal[0] == 0 && backup_item.data.data2l == 0) {
         ERR_LOG("GC %" PRIu32 " 转换物品ID %d 失败!",
             src->guildcard, item_data.item_id);
         return -1;
@@ -2350,7 +2350,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
         }
 
         iitem_t item = remove_iitem(src, item_id, 1, src->version != CLIENT_VERSION_BB);
-        if (&item == NULL)
+        if (item.data.datal[0] == 0 && item.data.data2l == 0)
             l->drops_disabled = true;
     }
 

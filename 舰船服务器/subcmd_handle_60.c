@@ -875,6 +875,39 @@ static int sub60_1F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_20_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_set_area_20_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* Make sure the area is valid */
+    if (pkt->area > 17) {
+        return -1;
+    }
+
+    /* Save the new area and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        script_execute(ScriptActionChangeArea, src, SCRIPT_ARG_PTR, src,
+            SCRIPT_ARG_INT, (int)pkt->area, SCRIPT_ARG_INT,
+            src->cur_area, SCRIPT_ARG_END);
+
+        /* Clear the list of dropped items. */
+        if (src->cur_area == 0) {
+            memset(src->p2_drops, 0, sizeof(src->p2_drops));
+            src->p2_drops_max = 0;
+        }
+
+        src->cur_area = pkt->area;
+        src->x = pkt->x;
+        src->y = pkt->y;
+        src->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(src, l);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_20_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_area_20_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -911,6 +944,29 @@ static int sub60_20_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_21_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_inter_level_warp_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* Make sure the area is valid */
+    if (pkt->area > 17) {
+        return -1;
+    }
+
+    /* Save the new area and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        script_execute(ScriptActionChangeArea, src, SCRIPT_ARG_PTR, src,
+            SCRIPT_ARG_INT, (int)pkt->area, SCRIPT_ARG_INT,
+            src->cur_area, SCRIPT_ARG_END);
+        src->cur_area = pkt->area;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(src, l);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_21_bb(ship_client_t* src, ship_client_t* dest,
@@ -1026,6 +1082,38 @@ static int sub60_23_bb(ship_client_t* src, ship_client_t* dest,
     rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 
     return rv;
+}
+
+static int sub60_24_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* Ugh... For some reason, v1 really likes to send these at the start of
+       quests. And by "really likes to send these", I mean that everybody sends
+       one of these for themselves and everybody else in the team... That can
+       cause some interesting problems if clients are out of sync at the
+       beginning of a quest for any reason (like a PSOPC player playing with
+       a v1 player might be, for instance). Thus, we have to ignore these sent
+       by v1 players with other players' client IDs at the beginning of a
+       quest. */
+    if (src->version == CLIENT_VERSION_DCV1) {
+        /* 合理性检查... */
+        if (pkt->hdr.dc.pkt_len != LE16(0x0018) || pkt->size != 0x05) {
+            ERR_LOG("Client %" PRIu32 " sent invalid setpos24!",
+                src->guildcard);
+            return -1;
+        }
+
+        /* Oh look, misusing other portions of the client structure so that I
+           don't have to make a new field... */
+        if (src->autoreply_len && pkt->data[0] != src->client_id) {
+            /* Silently drop the packet. */
+            --src->autoreply_len;
+            return 0;
+        }
+    }
+
+    return subcmd_send_lobby_dc(l, src, pkt, 0);
 }
 
 static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
@@ -1218,6 +1306,38 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_27_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_use_item_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int num;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅使用物品!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    if (pkt->shdr.size != 0x02)
+        return -1;
+
+    if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
+        goto send_pkt;
+
+    /* Remove the item from the user's inventory */
+    num = remove_iitem_v1(src->iitems, src->item_count, pkt->item_id, 1);
+    if (num < 0)
+        ERR_LOG("Couldn't remove item from inventory!\n");
+    else
+        src->item_count -= num;
+
+send_pkt:
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1287,7 +1407,6 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destroy_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    iitem_t item_data = { 0 };
     uint32_t item_id = pkt->item_id, amount = pkt->amount;
 
     /* We can't get these in a lobby without someone messing with something that
@@ -1308,11 +1427,10 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    item_data = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
-
-    if (&item_data == NULL) {
-        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
-            src->guildcard);
+    iitem_t item_data = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
+    if (item_data.data.datal[0] == 0 && item_data.data.data2l == 0) {
+        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败! ID 0x%08X 数量 %u",
+            src->guildcard, item_id, amount);
         return -1;
     }
 
@@ -1396,7 +1514,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     iitem_t iitem = remove_iitem(src, item_id, drop_amount, src->version != CLIENT_VERSION_BB);
-    if (&iitem == NULL) {
+    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
         ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
             src->guildcard);
         return -2;
@@ -1677,6 +1795,26 @@ static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_40_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_move_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* Save the new position and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        src->x = pkt->x;
+        src->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(src, l);
+
+        if (src->game_data->death) {
+            src->game_data->death = 0;
+        }
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_40_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_move_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1696,6 +1834,26 @@ static int sub60_40_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_42_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_move_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* Save the new position and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        src->x = pkt->x;
+        src->z = pkt->z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_qpos(src, l);
+
+        if (src->game_data->death) {
+            src->game_data->death = 0;
+        }
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_42_bb(ship_client_t* src, ship_client_t* dest,
@@ -2312,6 +2470,50 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_5E_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_buy_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint32_t ic;
+    int i;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY)
+        return -1;
+
+    /* 合理性检查... Make sure the size of the subcommand and the client id
+       match with what we expect. Disconnect the client if not. */
+    if (pkt->shdr.size != 0x06 || pkt->shdr.client_id != src->client_id)
+        return -1;
+
+    /* Make a note of the item ID, and add to the inventory */
+    l->item_player_id[src->client_id] = LE32(pkt->data.item_id);
+
+    if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
+        goto send_pkt;
+
+    ic = LE32(pkt->data.datal[0]);
+
+    /* See if its a stackable item, since we have to treat them differently. */
+    if (is_stackable(&pkt->data)) {
+        /* Its stackable, so see if we have any in the inventory already */
+        for (i = 0; i < src->item_count; ++i) {
+            /* Found it, add what we're adding in */
+            if (src->iitems[i].data.datal[0] == pkt->data.datal[0]) {
+                src->iitems[i].data.datal[1] += pkt->data.datal[1];
+                goto send_pkt;
+            }
+        }
+    }
+
+    memcpy(&src->iitems[src->item_count].data.datal[0], &pkt->data.datal[0],
+        sizeof(uint32_t) * 4);
+    src->iitems[src->item_count++].data.data2l = 0;
+
+send_pkt:
+    return subcmd_send_lobby_dc(src->cur_lobby, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_levelup_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2421,6 +2623,36 @@ static int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_68_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pipe_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("Attempt by GC %" PRIu32 " to spawn pipe in lobby!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* See if the user is creating a pipe or destroying it. Destroying a pipe
+       always matches the created pipe, but sets the area to 0. We could keep
+       track of all of the pipe data, but that's probably overkill. For now,
+       blindly accept any pipes where the area is 0. */
+    if (pkt->area != 0) {
+        /* Make sure the user is sending a pipe from the area he or she is
+           currently in. */
+        if (pkt->area != src->cur_area) {
+            ERR_LOG("Attempt by GC %" PRIu32 " to spawn pipe to area "
+                "he/she is not in (in: %d, pipe: %d).", src->guildcard,
+                src->cur_area, (int)pkt->area);
+            return -1;
+        }
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pipe_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2458,6 +2690,33 @@ static int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_69_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("Attempt by GC %" PRIu32 " to spawn NPC in lobby!",
+            src->guildcard);
+        return -1;
+    }
+
+    /* The only quests that allow NPCs to be loaded are those that require there
+       to only be one player, so limit that here. Also, we only allow /npc in
+       single-player teams, so that'll fall into line too. */
+    if (l->num_clients > 1) {
+        ERR_LOG("Attempt by GC %" PRIu32 " to spawn NPC in multi-"
+            "player team!", src->guildcard);
+        return -1;
+    }
+
+    /* Either this is a legitimate request to spawn a quest NPC, or the player
+       is doing something stupid like trying to NOL himself. We don't care if
+       someone is stupid enough to NOL themselves, so send the packet on now. */
+    return subcmd_send_lobby_dc(l, src, pkt, 0);
 }
 
 static int sub60_69_bb(ship_client_t* src, ship_client_t* dest,
@@ -2633,6 +2892,121 @@ static int sub60_76_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static inline int reg_sync_index(lobby_t* l, uint16_t regnum) {
+    int i;
+
+    if (!(l->q_flags & LOBBY_QFLAG_SYNC_REGS))
+        return -1;
+
+    for (i = 0; i < l->num_syncregs; ++i) {
+        if (regnum == l->syncregs[i])
+            return i;
+    }
+
+    return -1;
+}
+
+static int sub60_77_dc(ship_client_t* src, ship_client_t* dest, 
+    subcmd_sync_reg_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint32_t val = LE32(pkt->value);
+    int done = 0, idx;
+    uint32_t ctl;
+
+    /* XXXX: Probably should do some checking here... */
+    /* Run the register sync script, if one is set. If the script returns
+       non-zero, then assume that it has adequately handled the sync. */
+    if ((script_execute(ScriptActionQuestSyncRegister, src, SCRIPT_ARG_PTR, src,
+        SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, pkt->register_number,
+        SCRIPT_ARG_UINT32, val, SCRIPT_ARG_END))) {
+        done = 1;
+    }
+
+    /* Does this quest use global flags? If so, then deal with them... */
+    if ((l->q_flags & LOBBY_QFLAG_SHORT) && pkt->register_number == l->q_shortflag_reg &&
+        !done) {
+        /* Check the control bits for sensibility... */
+        ctl = (val >> 29) & 0x07;
+
+        /* Make sure the error or response bits aren't set. */
+        if ((ctl & 0x06)) {
+            DBG_LOG("Quest set flag register with illegal ctl!\n");
+            send_sync_register(src, pkt->register_number, 0x8000FFFE);
+        }
+        /* Make sure we don't have anything with any reserved ctl bits set
+           (unless a script has already handled the sync). */
+        else if ((val & 0x17000000)) {
+            DBG_LOG("Quest set flag register with reserved ctl!\n");
+            send_sync_register(src, pkt->register_number, 0x8000FFFE);
+        }
+        else if ((val & 0x08000000)) {
+            /* Delete the flag... */
+            shipgate_send_qflag(&ship->sg, src, 1, ((val >> 16) & 0xFF),
+                src->cur_lobby->qid, 0, QFLAG_DELETE_FLAG);
+        }
+        else {
+            /* Send the request to the shipgate... */
+            shipgate_send_qflag(&ship->sg, src, ctl & 0x01, (val >> 16) & 0xFF,
+                src->cur_lobby->qid, val & 0xFFFF, 0);
+        }
+
+        done = 1;
+    }
+
+    /* Does this quest use server data calls? If so, deal with it... */
+    if ((l->q_flags & LOBBY_QFLAG_DATA) && !done) {
+        if (pkt->register_number == l->q_data_reg) {
+            if (src->q_stack_top < CLIENT_MAX_QSTACK) {
+                if (!(src->flags & CLIENT_FLAG_QSTACK_LOCK)) {
+                    src->q_stack[src->q_stack_top++] = val;
+
+                    /* Check if we've got everything we expected... */
+                    if (src->q_stack_top >= 3 &&
+                        src->q_stack_top == 3 + src->q_stack[1] + src->q_stack[2]) {
+                        /* Call the function requested and reset the stack. */
+                        ctl = quest_function_dispatch(src, l);
+
+                        if (ctl != QUEST_FUNC_RET_NOT_YET) {
+                            send_sync_register(src, pkt->register_number, ctl);
+                            src->q_stack_top = 0;
+                        }
+                    }
+                }
+                else {
+                    /* The stack is locked, ignore the write and report the
+                       error. */
+                    send_sync_register(src, pkt->register_number,
+                        QUEST_FUNC_RET_STACK_LOCKED);
+                }
+            }
+            else if (src->q_stack_top == CLIENT_MAX_QSTACK) {
+                /* Eat the stack push and report an error. */
+                send_sync_register(src, pkt->register_number,
+                    QUEST_FUNC_RET_STACK_OVERFLOW);
+            }
+
+            done = 1;
+        }
+        else if (pkt->register_number == l->q_ctl_reg) {
+            /* For now, the only reason we'll have one of these is to reset the
+               stack. There might be other reasons later, but this will do, for
+               the time being... */
+            src->q_stack_top = 0;
+            done = 1;
+        }
+    }
+
+    /* Does this register have to be synced? */
+    if ((idx = reg_sync_index(l, pkt->register_number)) != -1) {
+        l->regvals[idx] = val;
+    }
+
+    if (!done)
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+
+    return 0;
 }
 
 inline int reg_sync_index_bb(lobby_t* l, uint16_t regnum) {
@@ -4728,8 +5102,8 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     iitem_t iitem = remove_iitem(src, item_id, sell_amount, src->version != CLIENT_VERSION_BB);
-    if (&iitem == NULL) {
-        ERR_LOG("GC %" PRIu32 ":%d 出售 %d 件 ID 0x%04X 失败", 
+    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
+        ERR_LOG("GC %" PRIu32 ":%d 出售 %d 件 ID 0x%08X 失败", 
             src->guildcard, src->sec_data.slot, sell_amount, item_id);
         return -1;
     }
@@ -4774,9 +5148,9 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     iitem_t iitem = remove_iitem(src, item_id, amount, src->version != CLIENT_VERSION_BB);
-    if (&iitem == NULL) {
-        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败!",
-            src->guildcard);
+    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
+        ERR_LOG("GC %" PRIu32 " 掉落堆叠物品失败! ID 0x%08X 数量 %u",
+            src->guildcard, item_id, amount);
         return -1;
     }
 
@@ -5130,10 +5504,9 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem_t item = remove_iitem(src, pkt->ex_item_id, 1, src->version != CLIENT_VERSION_BB);
-
-    if (&item == NULL) {
-        ERR_LOG("无法从玩家背包中移除 ID 0x%04X 物品!", pkt->ex_item_id);
+    iitem_t iitem = remove_iitem(src, pkt->ex_item_id, 1, src->version != CLIENT_VERSION_BB);
+    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
+        ERR_LOG("无法从玩家背包中移除 ID 0x%08X 物品!", pkt->ex_item_id);
         return -1;
     }
 
@@ -5270,8 +5643,8 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         iitem_t* del_item = &inv->iitems[index];
         size_t max_count = stack_size(&del_item->data);
         iitem_t pd = remove_iitem(src, del_item->data.item_id, max_count, src->version != CLIENT_VERSION_BB);
-        if (&pd == NULL) {
-            ERR_LOG("删除PD %d ID 0x%04X 失败", max_count, del_item->data.item_id);
+        if (pd.data.datal[0] == 0 && pd.data.data2l == 0) {
+            ERR_LOG("删除PD %d ID 0x%08X 失败", max_count, del_item->data.item_id);
             return -2;
         }
 
@@ -5338,7 +5711,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     else {
 
         iitem_t item = remove_iitem(src, compare_item_id, 1, src->version != CLIENT_VERSION_BB);
-        if (&item == NULL) {
+        if (item.data.datal[0] == 0 && item.data.data2l == 0) {
             ERR_LOG("兑换 %d ID 0x%04X 失败", 1, compare_item_id);
             return -1;
         }
@@ -5453,7 +5826,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 删除光子票据 10个 但是会全部删除 */
     iitem_t remove_item = remove_iitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
-    if (&remove_item == NULL) {
+    if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -3;
@@ -5527,7 +5900,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x0001:
         /* 删除光子票据 10个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (&remove_item == NULL) {
+        if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据",src->guildcard);
             ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
             return -3;
@@ -5540,7 +5913,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x0002:
         /* 删除光子票据 15个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (&remove_item == NULL) {
+        if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
             ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
             return -3;
@@ -5553,7 +5926,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x0003:
         /* 删除光子票据 20个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
-        if (&remove_item == NULL) {
+        if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
             ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
             return -3;
@@ -5610,14 +5983,14 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SET_AREA_1F                , sub60_1F_dc, sub60_1F_dc, NULL,        NULL,        NULL,        sub60_1F_bb },
 
     //cmd_type 20 - 2F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SET_AREA_20                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_20_bb },
-    { SUBCMD60_INTER_LEVEL_WARP           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_21_bb },
+    { SUBCMD60_SET_AREA_20                , sub60_20_dc, sub60_20_dc, NULL,        NULL,        NULL,        sub60_20_bb },
+    { SUBCMD60_INTER_LEVEL_WARP           , sub60_21_dc, sub60_21_dc, NULL,        NULL,        NULL,        sub60_21_bb },
     { SUBCMD60_LOAD_22                    , sub60_22_dc, sub60_22_dc, NULL,        NULL,        NULL,        sub60_22_bb },
     { SUBCMD60_FINISH_LOAD                , sub60_23_dc, sub60_23_dc, NULL,        NULL,        NULL,        sub60_23_bb },
-    { SUBCMD60_SET_POS_24                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_24_bb },
+    { SUBCMD60_SET_POS_24                 , sub60_24_dc, sub60_24_dc, NULL,        NULL,        NULL,        sub60_24_bb },
     { SUBCMD60_EQUIP                      , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_25_bb },
     { SUBCMD60_REMOVE_EQUIP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_26_bb },
-    { SUBCMD60_ITEM_USE                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_27_bb },
+    { SUBCMD60_ITEM_USE                   , sub60_27_dc, sub60_27_dc, NULL,        NULL,        NULL,        sub60_27_bb },
     { SUBCMD60_FEED_MAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
     { SUBCMD60_ITEM_DELETE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_29_bb },
     { SUBCMD60_ITEM_DROP                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2A_bb },
@@ -5636,8 +6009,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SET_POS_3F                 , sub60_3F_dc, sub60_3F_dc, NULL,        NULL,        NULL,        sub60_3F_bb },
 
     //cmd_type 40 - 4F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_MOVE_SLOW                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_40_bb },
-    { SUBCMD60_MOVE_FAST                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_42_bb },
+    { SUBCMD60_MOVE_SLOW                  , sub60_40_dc, sub60_40_dc, NULL,        NULL,        NULL,        sub60_40_bb },
+    { SUBCMD60_MOVE_FAST                  , sub60_42_dc, sub60_42_dc, NULL,        NULL,        NULL,        sub60_42_bb },
     { SUBCMD60_ATTACK1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_bb },
     { SUBCMD60_ATTACK2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_44_bb },
     { SUBCMD60_ATTACK3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_45_bb },
@@ -5658,14 +6031,15 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
     { SUBCMD60_WARP_55                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
     { SUBCMD60_LOBBY_ACT                  , sub60_58_dc, sub60_58_dc, NULL,        sub60_58_dc, NULL,        sub60_58_bb },
+    { SUBCMD60_BUY                        , sub60_5E_dc, sub60_5E_dc, NULL,        NULL,        NULL,        NULL        },
 
     //cmd_type 60 - 6F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
     { SUBCMD60_ITEM_GROUND_DESTROY        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
     { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
     { SUBCMD60_CREATE_ENEMY_SET           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
-    { SUBCMD60_CREATE_PIPE                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_68_bb },
-    { SUBCMD60_SPAWN_NPC                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_69_bb },
+    { SUBCMD60_CREATE_PIPE                , sub60_68_dc, sub60_68_dc, NULL,        NULL,        NULL,        sub60_68_bb },
+    { SUBCMD60_SPAWN_NPC                  , sub60_69_dc, sub60_69_dc, NULL,        NULL,        NULL,        sub60_69_bb },
     { SUBCMD60_UNKNOW_6A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
 
     //cmd_type 70 - 7F                      DC           GC           EP3          XBOX         PC           BB
@@ -5673,7 +6047,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_WORD_SELECT                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_74_bb },
     { SUBCMD60_FLAG_SET                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_75_bb },
     { SUBCMD60_KILL_MONSTER               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
-    { SUBCMD60_SYNC_REG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_77_bb },
+    { SUBCMD60_SYNC_REG                   , sub60_77_dc, sub60_77_dc, NULL,        NULL,        NULL,        sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
     { SUBCMD60_UNKNOW_7A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7A_bb },
     { SUBCMD60_UNKNOW_7B                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_7B_bb },

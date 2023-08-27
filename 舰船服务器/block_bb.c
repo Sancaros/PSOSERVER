@@ -1707,7 +1707,7 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
 
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
             iitem_t iitem = remove_iitem(src, src_trade_item->item_id, item_amount, src->version != CLIENT_VERSION_BB);
-            if (&iitem == NULL) {
+            if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
                 ERR_LOG("GC %" PRIu32 " 交易物品失败!",
                     src->guildcard);
                 return -2;
