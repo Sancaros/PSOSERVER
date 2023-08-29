@@ -2001,8 +2001,6 @@ typedef struct subcmd_bb_grave {
     bb_challenge_records_t c_records;
 } PACKED subcmd_bb_grave_t;
 
-static int sdasd = sizeof(subcmd_bb_grave_t);
-
 // 0x7D: 同步对战模数据 (指令生效范围; 仅限游戏; 不支持 Episode 3)
 typedef struct subcmd_bb_sync_battle_mode_data {
     bb_pkt_hdr_t hdr;

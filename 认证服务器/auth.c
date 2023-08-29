@@ -692,7 +692,9 @@ process:
             rv = -1;
     }
 
-    free(c->recvbuf);
+    if (c->recvbuf) {
+        free_safe(c->recvbuf);
+    }
     c->recvbuf = NULL;
     c->pkt_cur = c->pkt_sz = 0;
     return rv;

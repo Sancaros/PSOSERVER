@@ -22,6 +22,7 @@
 #include <pso_crash_handle.h>
 
 #include "pso_dns_server.h"
+#include <time.h>
 #include <signal.h>
 #include <setjmp.h>
 
@@ -337,9 +338,13 @@ static int read_config(const char* dir, const char* fn) {
         strcpy(hosts[entries].host6, host6);
         hosts[entries].addr = addr;
 
-        //DNS_LOG("读取 DNS地址 %s", hosts[entries].name);
-        //DNS_LOG("读取 DNShost4 %s", hosts[entries].host4);
-        //DNS_LOG("读取 DNShost6 %s", hosts[entries].host6);
+#ifdef DEBUG
+
+        DNS_LOG("读取 DNS地址 %s", hosts[entries].name);
+        DNS_LOG("读取 DNShost4 %s", hosts[entries].host4);
+        DNS_LOG("读取 DNShost6 %s", hosts[entries].host6);
+
+#endif // DEBUG
 
         ++entries;
     }
@@ -359,32 +364,32 @@ static int read_config(const char* dir, const char* fn) {
     return 0;
 }
 
-static SOCKET open_sock(uint16_t port) {
-    SOCKET sock;
-    struct sockaddr_in addr;
-
-    /* Create the socket. */
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
-    if (sock == INVALID_SOCKET) {
-        ERR_LOG("socket");
-        return INVALID_SOCKET;
-    }
-
-    /* Bind the socket to the specified port. */
-    memset(&addr, 0, sizeof(struct sockaddr_in));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(port);
-
-    if (bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in))) {
-        ERR_LOG("bind");
-        close(sock);
-        return INVALID_SOCKET;
-    }
-
-    return sock;
-}
+//static SOCKET open_sock(uint16_t port) {
+//    SOCKET sock;
+//    struct sockaddr_in addr;
+//
+//    /* Create the socket. */
+//    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//
+//    if (sock == INVALID_SOCKET) {
+//        ERR_LOG("socket");
+//        return INVALID_SOCKET;
+//    }
+//
+//    /* Bind the socket to the specified port. */
+//    memset(&addr, 0, sizeof(struct sockaddr_in));
+//    addr.sin_family = AF_INET;
+//    addr.sin_addr.s_addr = INADDR_ANY;
+//    addr.sin_port = htons(port);
+//
+//    if (bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in))) {
+//        ERR_LOG("bind");
+//        close(sock);
+//        return INVALID_SOCKET;
+//    }
+//
+//    return sock;
+//}
 
 static host_info_t* find_host(const char* hostname) {
     int i;
@@ -400,7 +405,7 @@ static host_info_t* find_host(const char* hostname) {
     return NULL;
 }
 
-static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
+static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     host_info_t* h) {
     in_addr_t a;
     char ipv4[INET_ADDRSTRLEN];
@@ -408,8 +413,10 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     /* DNS specifies that any UDP messages over 512 bytes are truncated. We
        don't bother sending them at all, since we should never approach that
        size to start with. */
-    if (len + 16 > 512)
-        return;
+    if (len + 16 > 512) {
+        ERR_LOG("端口 %d / %d 字节 超出限制", sock, len + 16);
+        return -1;
+    }
 
     /* Copy the input to the output to start. */
     memcpy(outmsg, inmsg, len);
@@ -428,10 +435,12 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
                 /* Make sure the IP looks sane. */
                 if (inet_pton(AF_INET, ipv4, &h->addr) != 1) {
                     ERR_LOG("read_config - inet_pton");
+                    return -2;
                 }
             }
             else {
-                //fprintf(stderr, "从 %s 获取 IPv4 地址失败\n", host4);
+                ERR_LOG( "从 %s 获取 IPv4 地址失败", h->host4);
+                return -3;
             }
         }
 
@@ -460,10 +469,13 @@ static void respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     int bytes_sent = sendto(sock, outbuf, len + sizeof(dnsmsg_t), 0, (struct sockaddr*)addr,
         sizeof(struct sockaddr_in));
     if (bytes_sent < 0) {
-        ERR_LOG("sendto error");
+        ERR_LOG("sendto %d 错误", sock);
+        return -4;
     }
 
     DNS_LOG("发送DNS信息至端口 %d / %d 字节", sock, bytes_sent);
+
+    return 0;
 }
 
 static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
@@ -493,8 +505,8 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
 
     /* 检查消息以确保它看起来像是来自PSO. */
     if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
-        close(sock);
-        return 0;
+        ERR_LOG("端口 %d 发送的DNS数据无效.", sock);
+        return -1;
     }
 
     /* 找出客户端要查找的主机的名称. */
@@ -544,10 +556,13 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
                 return -5;
             }
 
-            respond_to_query(sock, olen, addr, host);
+            if (respond_to_query(sock, olen, addr, host)) {
+                ERR_LOG("端口 %d 数据回应错误.", sock);
+                return -6;
+            }
 
             /* And we're done. */
-            break;
+            return 0;
         }
 
         /* We've got a part to copy into our string... Do so. */
@@ -742,6 +757,70 @@ void handle_signal(int signal) {
     }
 }
 
+bool already_hooked_up;
+
+void HookupHandler() {
+    if (already_hooked_up) {
+        /*PATCH_LOG(
+            "Tried to hookup signal handlers more than once.");
+        already_hooked_up = false;*/
+    }
+    else {
+        already_hooked_up = true;
+    }
+#ifdef _WIN32 
+    signal(SIGINT, handle_signal);
+    signal(SIGTERM, handle_signal);
+    signal(SIGABRT, handle_signal);
+#else 
+    struct sigaction sa;
+    // Setup the handler 
+    sa.sa_handler = &handle_signal;
+    // Restart the system call, if at all possible 
+    sa.sa_flags = SA_RESTART;
+    // Block every signal during the handler 
+    sigfillset(&sa.sa_mask);
+    // Intercept SIGHUP and SIGINT 
+    if (sigaction(SIGHUP, &sa, NULL) == -1) {
+        PATCH_LOG(
+            "Cannot install SIGHUP handler.");
+    }
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        PATCH_LOG(
+            "Cannot install SIGINT handler.");
+    }
+#endif 
+}
+
+void UnhookHandler() {
+    if (already_hooked_up) {
+#ifdef _WIN32 
+        signal(SIGINT, SIG_DFL);
+        signal(SIGTERM, SIG_DFL);
+        signal(SIGABRT, SIG_DFL);
+#else 
+        struct sigaction sa;
+        // Setup the sighub handler 
+        sa.sa_handler = SIG_DFL;
+        // Restart the system call, if at all possible 
+        sa.sa_flags = SA_RESTART;
+        // Block every signal during the handler 
+        sigfillset(&sa.sa_mask);
+        // Intercept SIGHUP and SIGINT 
+        if (sigaction(SIGHUP, &sa, NULL) == -1) {
+            PATCH_LOG(
+                "Cannot uninstall SIGHUP handler.");
+        }
+        if (sigaction(SIGINT, &sa, NULL) == -1) {
+            PATCH_LOG(
+                "Cannot uninstall SIGINT handler.");
+        }
+#endif 
+
+        already_hooked_up = false;
+    }
+}
+
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(dns_client_t* c) {
     TAILQ_REMOVE(&clients, c, qentry);
@@ -782,6 +861,115 @@ const void* my_ntop(struct sockaddr_storage* addr,
     return NULL;
 }
 
+static int open_sock(int family, uint16_t port) {
+    int sock = SOCKET_ERROR, val;
+    struct sockaddr_in addr;
+    struct sockaddr_in6 addr6;
+
+    /* 创建端口并监听. */
+    sock = socket(family, SOCK_DGRAM, IPPROTO_UDP);
+
+    if (sock < 0) {
+        SOCKET_ERR(sock, "创建端口监听");
+        //ERR_LOG("创建端口监听 %d:%d 出现错误", family, port);
+    }
+
+    /* Set SO_REUSEADDR so we don't run into issues when we kill the login
+       server bring it back up quickly... */
+    val = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (PCHAR)&val, sizeof(int))) {
+        SOCKET_ERR(sock, "setsockopt SO_REUSEADDR");
+        /* We can ignore this error, pretty much... its just a convenience thing
+           anyway... */
+    }
+
+    if (family == PF_INET) {
+        memset(&addr, 0, sizeof(struct sockaddr_in));
+        addr.sin_family = family;
+        addr.sin_addr.s_addr = INADDR_ANY;
+        addr.sin_port = htons(port);
+
+        if (bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in))) {
+            SOCKET_ERR(sock, "bind error");
+            ERR_LOG("绑定端口 %d:%d 出现错误", family, port);
+        }
+
+        //if (listen(sock, 10)) {
+        //    SOCKET_ERR(sock, "listen error");
+        //    ERR_LOG("监听端口 %d:%d 出现错误", family, port);
+        //}
+    }
+    else if (family == PF_INET6) {
+        /* 单独支持IPV6. */
+        val = 1;
+        if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, (PCHAR)&val, sizeof(int))) {
+            SOCKET_ERR(sock, "设置端口信息 IPV6_V6ONLY");
+            ERR_LOG("设置端口信息IPV6_V6ONLY %d:%d 出现错误", family, port);
+        }
+
+        memset(&addr6, 0, sizeof(struct sockaddr_in6));
+        addr6.sin6_family = family;
+        addr6.sin6_addr = in6addr_any;
+        addr6.sin6_port = htons(port);
+
+        if (bind(sock, (struct sockaddr*)&addr6, sizeof(struct sockaddr_in6))) {
+            SOCKET_ERR(sock, "绑定端口");
+            ERR_LOG("绑定端口 %d:%d 出现错误", family, port);
+        }
+
+        //if (listen(sock, 10)) {
+        //    SOCKET_ERR(sock, "监听端口");
+        //    ERR_LOG("监听端口 %d:%d 出现错误", family, port);
+        //}
+    }
+    else {
+        ERR_LOG("打开端口 %d:%d 出现错误", family, port);
+        close(sock);
+        return -1;
+    }
+
+    return sock;
+}
+
+#ifdef PSOCN_ENABLE_IPV6
+#define DNS_CLIENT_SOCKETS_TYPE_MAX 2
+#else
+#define DNS_CLIENT_SOCKETS_TYPE_MAX 1
+#endif
+
+psocn_srvsockets_t dns_sockets[DNS_CLIENT_SOCKETS_TYPE_MAX] = {
+    { PF_INET , 53 , CLIENT_TYPE_DNS                , "DNS端口" },
+#ifdef PSOCN_ENABLE_IPV6
+    { PF_INET6 , 53 , CLIENT_TYPE_DNS                , "DNS(IPV6)端口" },
+#endif
+};
+
+static void listen_sockets(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
+    int i;
+
+    /* 开启所有监听端口 */
+    for (i = 0; i < DNS_CLIENT_SOCKETS_TYPE_MAX; ++i) {
+        sockets[i] = open_sock(dns_sockets[i].sock_type, dns_sockets[i].port);
+
+        if (sockets[i] < 0) {
+            ERR_EXIT("监听 %d (%s : %s) 错误, 程序退出", dns_sockets[i].port
+                , dns_sockets[i].sockets_name, dns_sockets[i].sock_type == PF_INET ? "IPv4" : "IPv6");
+        }
+        else {
+            DNS_LOG("监听 %d (%s) 成功.", dns_sockets[i].port, dns_sockets[i].sockets_name);
+        }
+    }
+}
+
+static void cleanup_sockets(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
+    int i;
+
+    /* Clean up. */
+    for (i = 0; i < DNS_CLIENT_SOCKETS_TYPE_MAX; ++i) {
+        close(sockets[i]);
+    }
+}
+
 /* Create a new connection, storing it in the list of clients. */
 dns_client_t* create_connection(int sock, int type,
     struct sockaddr* ip, socklen_t size) {
@@ -812,23 +1000,21 @@ dns_client_t* create_connection(int sock, int type,
     return rv;
 }
 
-static void run_server(int socket) {
-    fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
-    int select_result = 0;
-    struct timeval timeout = { 0 };
-    struct sockaddr_in addr = { 0 };
-    struct sockaddr_storage addr2 = { 0 };
-    struct sockaddr* addr_p = (struct sockaddr*)&addr2;
+void get_ip_address(struct sockaddr_in* addr, char* ip_buffer) {
+    const char* ip = inet_ntoa(addr->sin_addr);
+    strncpy(ip_buffer, ip, INET_ADDRSTRLEN);
+}
+
+static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
+    struct sockaddr_in client_addr = { 0 };
+    struct sockaddr_storage addr = { 0 };
+    struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     socklen_t len;
-    ssize_t rlen;
-    ssize_t sent;
-    dns_client_t* i, * tmp;
-    int nfds, sock;
+    ssize_t recive_len;
+    dns_client_t* i = { 0 }, * tmp;
+    int sock = SOCKET_ERROR, j;
     int rv = 0;
-    int client_count = 0;
-
-    DNS_LOG("DNS服务器启动完成");
 
     /* Go ahead and loop forever... */
     while (!should_exit) {
@@ -840,185 +1026,76 @@ static void run_server(int socket) {
         }
 
         /* If we need to, rehash the patches and welcome message. */
-        if (rehash && client_count == 0) {
+        if (rehash) {
             canjump = 0;
             rehash = 0;
             canjump = 1;
         }
 
-        /* Clear out the fd_sets and set the timeout value for select. */
-        FD_ZERO(&readfds);
-        FD_ZERO(&writefds);
-        FD_ZERO(&exceptfds);
-        nfds = 0;
+        /* Make sure a rehash event doesn't interrupt any of this stuff,
+               it will get handled the next time through the loop. */
+        canjump = 0;
 
-        /* Set the timeout differently if we're waiting on a rehash. */
-        if (!rehash) {
-            timeout.tv_sec = 9001;
-        }
-        else {
-            timeout.tv_sec = 10;
-        }
+        /* Check the listening sockets first. */
+        for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
+            len = sizeof(struct sockaddr);
 
-        timeout.tv_usec = 0;
-
-        /* Fill the sockets into the fd_set so we can use select below. */
-        TAILQ_FOREACH(i, &clients, qentry) {
-            FD_SET(i->sock, &readfds);
-
-            FD_SET(i->sock, &exceptfds);
-
-            /* Only add to the write fd_set if we have something to send. */
-            if (i->sendbuf_cur || i->sending_data) {
-                FD_SET(i->sock, &writefds);
+            if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= sizeof(dnsmsg_t)) {
+                perror("recvfrom");
             }
-
-            nfds = max(nfds, i->sock);
-        }
-
-        /* Add the listening sockets to the read fd_set if we aren't waiting on
-           all clients to disconnect for a rehash operation. Since they won't be
-           in the fd_set if we are waiting, we don't have to worry about clients
-           connecting while we're trying to do a rehash operation. */
-        if (!rehash) {
-            FD_SET(socket, &readfds);
-            nfds = max(nfds, socket);
-        }
-
-        len = sizeof(addr);
-
-        /* Grab the next request from the socket. */
-        if ((rlen = recvfrom(socket, inbuf, 1024, 0, (struct sockaddr*)&addr, &len)) > sizeof(dnsmsg_t)) {
-            rv = process_query(socket, rlen, &addr);
-            if (rv) {
-                ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
-                close(sock);
+            else {
+                sock = ntohs(client_addr.sin_port);
+                if (!create_connection(sock, dns_sockets[j].port_type, addr_p, sizeof(struct sockaddr_storage))) {
+                    ERR_LOG("断开端口 %d 创建连接", sock);
+                    i->disconnected = 1;
+                }
+                else {
+                    rv = process_query(sockets[j], recive_len, &client_addr);
+                    if (rv) {
+                        ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
+                        i->disconnected = 1;
+                    }
+                    get_ip_address(&client_addr, ipstr);
+                    DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, sock);
+                }
             }
         }
-        //if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
-        //    /* Make sure a rehash event doesn't interrupt any of this stuff,
-        //       it will get handled the next time through the loop. */
-        //    canjump = 0;
 
-        //    /* Check the listening sockets first. */
-        //    if (FD_ISSET(socket, &readfds)) {
+        /* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
+           the middle of a TAILQ_FOREACH, and destroy_connection does indeed
+           use TAILQ_REMOVE). */
+        canjump = 0;
+        i = TAILQ_FIRST(&clients);
 
-        //        len = sizeof(struct sockaddr_storage);
+        while (i) {
+            tmp = TAILQ_NEXT(i, qentry);
 
-        //        if ((sock = accept(socket, addr_p, &len)) < 0) {
-        //            perror("accept");
-        //        }
-        //        else {
-        //            len = sizeof(addr);
+            if (i->disconnected) {
+                ERR_LOG("断开端口 %d 创建连接", i->sock);
+                destroy_connection(i);
+            }
 
-        //            if (!create_connection(sock, 1, addr_p, len)) {
-        //                close(sock);
-        //            }
-        //            else {
-        //                ++client_count;
-        //                DNS_LOG("允许 %s:%d 客户端获取数据", ipstr, sock);
-        //            }
-        //        }
-        //    }
-
-        //    TAILQ_FOREACH(i, &clients, qentry) {
-        //        /* Check if this connection was trying to send us something. */
-        //        if (FD_ISSET(i->sock, &readfds)) {
-        //            if ((rlen = recvfrom(socket, inbuf, 1024, 0, (struct sockaddr*)&addr, &len)) > sizeof(dnsmsg_t)) {
-        //                rv = process_query(sock, rlen, &addr);
-        //                if (rv) {
-        //                    ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
-        //                    i->disconnected = 1;
-        //                }
-        //                ERR_LOG("i->disconnected %d", i->disconnected);
-        //            }
-        //        }
-
-        //        if (FD_ISSET(i->sock, &exceptfds)) {
-        //            ERR_LOG("客户端端口 %d 套接字异常", i->sock);
-        //            i->disconnected = 1;
-        //        }
-
-        //        /* If we have anything to write, check if we can right now. */
-        //        if (FD_ISSET(i->sock, &writefds)) {
-        //            ERR_LOG("i->disconnected %d", i->disconnected);
-        //            if (i->sendbuf_cur) {
-        //                ERR_LOG("i->disconnected %d", i->disconnected);
-        //                sent = send(i->sock, (PCHAR)i->sendbuf + i->sendbuf_start,
-        //                    i->sendbuf_cur - i->sendbuf_start, 0);
-
-        //                /* If we fail to send, and the error isn't EAGAIN,
-        //                   bail. */
-        //                if (sent == -1) {
-        //                    if (errno != EAGAIN) {
-        //                        i->disconnected = 1;
-        //                    }
-        //                }
-        //                else {
-        //                    i->sendbuf_start += sent;
-
-        //                    /* If we've sent everything, free the buffer. */
-        //                    if (i->sendbuf_start == i->sendbuf_cur) {
-        //                        free_safe(i->sendbuf);
-        //                        i->sendbuf = NULL;
-        //                        i->sendbuf_cur = 0;
-        //                        i->sendbuf_size = 0;
-        //                        i->sendbuf_start = 0;
-        //                    }
-        //                }
-        //            }
-        //            //else if (i->sending_data) {
-        //            //    if (handle_list_done(i)) {
-        //            //        i->disconnected = 1;
-        //            //    }
-        //            //}
-        //        }
-        //    }
-        //}
-        ////else if (select_result == -1) {
-        ////    ERR_LOG("select 套接字 = -1");
-        ////}
-
-        ///* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
-        //   the middle of a TAILQ_FOREACH, and destroy_connection does indeed
-        //   use TAILQ_REMOVE). */
-        //canjump = 0;
-        //i = TAILQ_FIRST(&clients);
-
-        //while (i) {
-        //    tmp = TAILQ_NEXT(i, qentry);
-
-        //    if (i->disconnected) {
-        //        destroy_connection(i);
-
-        //        --client_count;
-        //    }
-
-        //    i = tmp;
-        //}
+            i = tmp;
+        }
     }
 }
 
 int __cdecl main(int argc, char** argv) {
-    //struct sockaddr_in addr = { 0 };
-    //socklen_t len;
-    //ssize_t rlen;
-    //int rv = 0;
-    SOCKET sock;
+    int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX] = { 0 };
 
     initialization();
 
-    __try {
+    server_name_num = DNS_SERVER;
 
-        server_name_num = DNS_SERVER;
+    __try {
 
         load_program_info(server_name[DNS_SERVER].name, DNS_SERVER_VERSION);
 
         /* Open the socket. We will probably need root for this on UNIX-like
            systems. */
-        if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
-            ERR_EXIT("open_sock 错误, 请检查端口 %u 是否被占用.", DNS_PORT);
-        }
+        //if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
+        //    ERR_EXIT("open_sock 错误, 请检查端口 %u 是否被占用.", DNS_PORT);
+        //}
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
         if (drop_privs()) {
@@ -1034,29 +1111,29 @@ int __cdecl main(int argc, char** argv) {
             ERR_EXIT("read_config 错误");
         }
 
-        /* Go ahead and loop forever... */
-        run_server(sock);
-        //for (;;) {
-        //    len = sizeof(addr);
+        /* 读取信号监听. */
+        HookupHandler();
 
-        //    /* Grab the next request from the socket. */
-        //    if ((rlen = recvfrom(sock, inbuf, 1024, 0, (struct sockaddr*)&addr, &len)) > sizeof(dnsmsg_t)) {
-        //        rv = process_query(sock, rlen, &addr);
-        //        if (rv) {
-        //            ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
-        //            close(sock);
-        //        }
-        //    }
-        //}
+        listen_sockets(sockets);
+
+        DNS_LOG("%s启动完成.", server_name[DNS_SERVER].name);
+        DNS_LOG("程序运行中...");
+        DNS_LOG("请用 <Ctrl-C> 关闭程序.");
+
+        /* Go ahead and loop forever... */
+        run_server(sockets);
 
         /* We'll never actually get here... */
 #ifndef _WIN32
         close(sock);
 #else
-        close(sock);
+        cleanup_sockets(sockets);
+
+        //close(sock);
         WSACleanup();
 #endif
 
+        UnhookHandler();
     }
 
     __except (crash_handler(GetExceptionInformation())) {

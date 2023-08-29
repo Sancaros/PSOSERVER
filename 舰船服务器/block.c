@@ -30,7 +30,7 @@
 #include <f_logs.h>
 #include <f_iconv.h>
 #include <psoconfig.h>
-#include <mtwist.h>
+#include <SFMT.h>
 #include <psomemory.h>
 #include <pso_menu.h>
 

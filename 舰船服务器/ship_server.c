@@ -40,7 +40,7 @@
 #include <WinSock_Defines.h>
 #include <windows.h>
 #include <urlmon.h>
-#include <mtwist.h>
+#include <SFMT.h>
 
 #include <gnutls/gnutls.h>
 #include <libxml/parser.h>

@@ -25,7 +25,7 @@
 #include <WinSock_Defines.h>
 
 #include <f_logs.h>
-#include <mtwist.h>
+#include <SFMT.h>
 
 #include <PRS.h>
 

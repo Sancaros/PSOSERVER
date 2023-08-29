@@ -36,11 +36,9 @@
 typedef struct battle_records {
     uint16_t place_counts[4];//8
     uint16_t disconnect_count;//2
-    union data
-    {
+    union data {
         uint8_t unknown_a1[0x0E];//14
-        struct MyStruct
-        {
+        struct MyStruct {
             uint8_t  data0;
             uint8_t  data1;
             uint8_t  data2;
@@ -55,9 +53,8 @@ typedef struct battle_records {
             uint8_t  data11;
             uint8_t  data12;
             uint8_t  data13;
-        };
-
-    };
+        }PACKED;
+    }PACKED;
 } PACKED battle_records_t;
 
 #define PSOCN_STRUCT_BATTLE
@@ -71,9 +68,9 @@ typedef struct dc_challenge_records {
             char title_tag;
             char title_tag2;
             char title_str[10];
-        };
+        }PACKED;
         char rank_title[12]; //備瘍
-    };
+    }PACKED;
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
     uint16_t grave_deaths;
@@ -83,9 +80,9 @@ typedef struct dc_challenge_records {
             char grave_team_tag;
             char grave_team_tag2;
             char grave_team_str[18];
-        };
+        }PACKED;
         char grave_team[20]; //備瘍
-    };
+    }PACKED;
     char grave_message[24];
     uint32_t times_ep1_offline[9];
     uint8_t battle[4];
@@ -107,9 +104,9 @@ typedef struct pc_challenge_records {
             uint16_t title_tag;
             uint16_t title_tag2;
             uint16_t title_str[10];
-        };
+        }PACKED;
         uint16_t rank_title[12]; //備瘍
-    };
+    }PACKED;
     uint32_t times_ep1_online[9];
     uint16_t grave_unk4;
     uint16_t grave_deaths;
@@ -119,9 +116,9 @@ typedef struct pc_challenge_records {
             uint16_t grave_team_tag;
             uint16_t grave_team_tag2;
             uint16_t grave_team_str[18];
-        };
+        }PACKED;
         uint16_t grave_team[20]; //備瘍
-    };
+    }PACKED;
     uint16_t grave_message[24];
     uint32_t times_ep1_offline[9];
     uint8_t battle[4];
@@ -150,9 +147,9 @@ typedef struct v3_challenge_records {
             char grave_team_tag;
             char grave_team_tag2;
             char grave_team_str[18];
-        };
+        }PACKED;
         char grave_team[20]; //備瘍
-    };
+    }PACKED;
     char grave_message[32];
     uint8_t unknown_m5[4];
     uint32_t unknown_t6[9];
@@ -161,9 +158,9 @@ typedef struct v3_challenge_records {
             char title_tag;
             char title_tag2;
             char title_str[10];
-        };
+        }PACKED;
         char rank_title[12]; //備瘍
-    };
+    }PACKED;
     uint32_t battle[7];
 } PACKED v3_challenge_records_t;
 
@@ -190,9 +187,9 @@ typedef struct bb_challenge_records {
             uint16_t grave_team_tag;
             uint16_t grave_team_tag2;
             uint16_t grave_team_str[18];
-        };
+        }PACKED;
         uint16_t grave_team[20]; //備瘍
-    };
+    }PACKED;
     uint16_t grave_message[32];
     uint8_t unk3[4];
     uint16_t string[18];
@@ -201,9 +198,9 @@ typedef struct bb_challenge_records {
             uint16_t title_tag;
             uint16_t title_tag2;
             uint16_t title_str[10];
-        };
+        }PACKED;
         uint16_t rank_title[12]; //備瘍
-    };
+    }PACKED;
     uint32_t battle[7];
 } PACKED bb_challenge_records_t;
 

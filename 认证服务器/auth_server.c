@@ -43,7 +43,7 @@
 
 #include <database.h>
 #include <encryption.h>
-#include <mtwist.h>
+#include <SFMT.h>
 #include <debug.h>
 #include <quest.h>
 #include <items.h>

@@ -24,7 +24,7 @@
 #include <f_logs.h>
 #include <debug.h>
 #include <f_iconv.h>
-#include <mtwist.h>
+#include <SFMT.h>
 #include <items.h>
 
 #include "subcmd.h"
@@ -2360,7 +2360,6 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_reward_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    //struct mt19937_state* rng = &l->block->rng;
     sfmt_t* rng = &l->block->sfmt_rng;
     uint32_t area = pkt->area;
     float x = pkt->x, z = pkt->z;

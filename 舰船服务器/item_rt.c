@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #include <f_logs.h>
-#include <mtwist.h>
+#include <SFMT.h>
 
 #include <AFS.h>
 #include <GSL.h>
@@ -449,7 +449,6 @@ int rt_bb_enabled(void) {
 
 uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
                              int area) {
-    //struct mt19937_state *rng = &c->cur_block->rng;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_set_t *set;
@@ -489,7 +488,6 @@ uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
 
 uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
                              int area) {
-    //struct mt19937_state *rng = &c->cur_block->rng;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_set_t *set;
@@ -529,7 +527,6 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
 
 uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
     int area) {
-    //struct mt19937_state *rng = &c->cur_block->rng;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
     double rnd;
     rt_table_t* set;

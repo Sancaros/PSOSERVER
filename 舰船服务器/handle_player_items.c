@@ -22,7 +22,7 @@
 
 #include <f_logs.h>
 #include <pso_text.h>
-#include <mtwist.h>
+#include <SFMT.h>
 
 #include "handle_player_items.h"
 #include "subcmd_send_bb.h"
@@ -776,7 +776,6 @@ void unwrap(item_t* item) {
 }
 
 int player_use_item(ship_client_t* src, uint32_t item_id) {
-    //struct mt19937_state* rng = &src->cur_block->rng;
     sfmt_t* rng = &src->cur_block->sfmt_rng;
     iitem_t* weapon = { 0 };
     iitem_t* armor = { 0 };

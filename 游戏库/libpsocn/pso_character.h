@@ -55,11 +55,8 @@ typedef struct dress_flag {
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
     //TODO 这是什么参数
-    union unkonw
-    {
-        struct unkonw1
-        {
-
+    union unkonw {
+        struct unkonw1 {
             uint8_t opt_flag1;
             uint8_t opt_flag2;
             uint8_t opt_flag3;
@@ -70,15 +67,12 @@ typedef struct psocn_disp_char {
             uint8_t opt_flag8;
             uint8_t opt_flag9;
             uint8_t opt_flag10;
-        };
-
-        struct unkonw2
-        {
+        }PACKED;
+        struct unkonw2 {
             uint16_t unknown_a1;
             float unknown_a2;
             float unknown_a3;
-        };
-
+        }PACKED;
     };
     uint32_t level;
     uint32_t exp;
@@ -94,29 +88,24 @@ typedef struct psocn_guildcard_string {
             uint16_t slot1;
             uint16_t slot2;
             uint16_t slot3;
-        };
-
+        }PACKED;
         char string[16];
-    };
+    }PACKED;
 } PACKED psocn_guildcard_string_t;
 
 typedef struct psocn_dress_data {
     psocn_guildcard_string_t guildcard_str;
-
     uint8_t unk1[8]; // 0x382-0x38F; 898 - 911 14 整数  // Same as E5 unknown2 和E5指令的 未知函数 2 一样
-
     //玩家名称颜色
     uint8_t name_color_b; // ARGB8888
     uint8_t name_color_g;
     uint8_t name_color_r;
     uint8_t name_color_transparency;
-
     //皮肤模型
     uint16_t model;
     uint8_t unk3[10];
     uint32_t create_code;
     uint32_t name_color_checksum;
-
     uint8_t section;
     uint8_t ch_class;
     uint8_t v2flags;
@@ -142,9 +131,9 @@ typedef struct psocn_bb_char_name {
             uint16_t name_tag;
             uint16_t name_tag2;
             uint16_t char_name[0x0A];
-        };
+        }PACKED;
         uint16_t all[0x0C];
-    };
+    }PACKED;
 } PACKED psocn_bb_char_name_t;
 
 /* 用于认证服务器的预览角色数据结构 */
@@ -209,9 +198,9 @@ typedef struct psocn_bb_guild {
             uint8_t guild_reward5;
             uint8_t guild_reward6;
             uint8_t guild_reward7;
-        };
+        }PACKED;
         uint8_t guild_reward[8];
-    };
+    }PACKED;
 } PACKED bb_guild_t;
 
 #define BB_GUILD_PRIV_LEVEL_MASTER 0x00000040
@@ -250,14 +239,18 @@ typedef struct psocn_bb_guild_card {
 /* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
 typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                                               // 玩家数据表               OK
-    char guildcard_string[16];                                               // not saved
+    //char guildcard_string1[16];                                            // not saved
+    /* 04DC */ uint32_t unknown_a1;
+    /* 04E0 */ uint32_t creation_timestamp;
+    /* 04E4 */ uint32_t signature; // == 0xA205B064 (see SaveFileFormats.hh)
+    /* 04E8 */ uint32_t play_time_seconds;
     uint32_t option_flags;                                                   // account
     uint8_t quest_data1[PSOCN_STLENGTH_BB_DB_QUEST_DATA1];                   // 玩家任务数据表1          OK
     psocn_bank_t bank;                                                       // 玩家银行数据表           OK
     psocn_bb_guild_card_t gc;                                                // 玩家GC数据表部分         OK
     uint32_t unk2;                                                           // not saved
     uint8_t symbol_chats[PSOCN_STLENGTH_BB_DB_SYMBOL_CHATS];                 // 选项数据表
-    uint8_t shortcuts[0x0A40];                                               // 选项数据表
+    uint8_t shortcuts[PSOCN_STLENGTH_BB_DB_SHORTCUTS];                                               // 选项数据表
     uint16_t autoreply[0x00AC];                                              // 玩家数据表
     uint16_t infoboard[0x00AC];
     battle_records_t b_records;                                              // 玩家对战数据表           TODO
@@ -270,6 +263,8 @@ typedef struct psocn_bb_full_char {
     bb_key_config_t key_cfg;                                                 // 选项数据表               OK
     bb_guild_t guild_data;                                                   // GUILD数据表              OK
 } PACKED psocn_bb_full_char_t;
+
+static int sdasd = sizeof(psocn_bb_full_char_t);
 
 /* 目前存储于数据库的角色数据结构. */
 typedef struct psocn_bb_db_char {

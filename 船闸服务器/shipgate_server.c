@@ -47,7 +47,7 @@
 
 #include <gnutls/gnutls.h>
 
-#include <mtwist.h>
+#include <SFMT.h>
 #include <psoconfig.h>
 #include <f_logs.h>
 #include <f_iconv.h>

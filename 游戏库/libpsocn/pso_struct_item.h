@@ -77,20 +77,17 @@ typedef struct item_data { // 0x14 bytes
     // 即使该物品实际上是小端序。
     // 这导致它与其他版本的 PSO（即所有其他版本）不兼容。
     // 我们需要在接收和发送数据之前手动对 data2 进行字节交换来解决这个问题。
-
     union {
         uint8_t datab[12];//字节
         uint16_t dataw[6];//宽字节
         uint32_t datal[3];//32位数值
-    };
-
+    }PACKED;
     uint32_t item_id;
-
     union {
         uint8_t data2b[4];
         uint16_t data2w[2];
         uint32_t data2l;
-    };
+    }PACKED;
 } PACKED item_t;
 
 //PSO V2在字符结构中存储了一些额外的数据，格式如下

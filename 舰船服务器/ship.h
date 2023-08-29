@@ -25,7 +25,7 @@
 #include <psoconfig.h>
 #include <quest.h>
 #include <items.h>
-#include <mtwist.h>
+#include <SFMT.h>
 
 #ifdef ENABLE_LUA
 #include <lua.h>

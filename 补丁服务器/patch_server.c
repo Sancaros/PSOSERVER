@@ -59,7 +59,6 @@
 
 #include <psoconfig.h>
 #include <debug.h>
-#include <mtwist.h>
 #include <SFMT.h>
 #include <encryption.h>
 #include <f_dirent.h>

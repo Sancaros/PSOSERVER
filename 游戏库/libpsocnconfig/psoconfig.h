@@ -96,6 +96,9 @@ static const char* Welcome_Files[] = {
 #define PSOCN_REG_XBOX          0x00000010
 #define PSOCN_REG_BB            0x00000020
 
+/* 用于区分DNS服务器中的客户端端口类型 */
+#define CLIENT_TYPE_DNS                0
+
 /* 用于区分补丁服务器中的客户端端口类型 */
 #define CLIENT_TYPE_PC_PATCH           0
 #define CLIENT_TYPE_PC_DATA            1

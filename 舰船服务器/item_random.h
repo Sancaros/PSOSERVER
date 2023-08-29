@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <mtwist.h>
+#include <SFMT.h>
 
 int load_ArmorRandomSet_data(const char* fn);
 

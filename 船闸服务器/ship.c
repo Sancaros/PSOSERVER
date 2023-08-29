@@ -38,7 +38,7 @@
 #include <debug.h>
 #include <database.h>
 #include <f_logs.h>
-#include <mtwist.h>
+#include <SFMT.h>
 #include <md5.h>
 #include <pso_menu.h>
 #include <pso_character.h>

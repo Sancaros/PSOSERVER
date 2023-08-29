@@ -156,7 +156,6 @@
     <ClCompile Include="psomemory.c" />
     <ClCompile Include="quest.c" />
     <ClCompile Include="debug.c" />
-    <ClCompile Include="mtwist.c" />
     <ClCompile Include="encryption.c" />
     <ClCompile Include="psobb-crypt.c" />
     <ClCompile Include="psogc-crypt.c" />
@@ -180,7 +179,6 @@
     <ClInclude Include="psomemory.h" />
     <ClInclude Include="quest.h" />
     <ClInclude Include="debug.h" />
-    <ClInclude Include="mtwist.h" />
     <ClInclude Include="encryption.h" />
     <ClInclude Include="psopipe.h" />
     <ClInclude Include="queue.h" />

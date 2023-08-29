@@ -2524,7 +2524,6 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, rarea, do_rare = 1;
-	//struct mt19937_state* rng = &c->cur_block->rng;
 	sfmt_t* rng = &c->cur_block->sfmt_rng;
 	uint16_t mid;
 	game_enemy_t* enemy;
@@ -2823,7 +2822,6 @@ int pt_generate_v2_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	int area, do_rare = 1;
 	uint32_t item[4] = { 0 };
 	float f1, f2;
-	//struct mt19937_state* rng = &c->cur_block->rng;
 	sfmt_t* rng = &c->cur_block->sfmt_rng;
 	int csr = 0;
 	uint32_t qdrop = 0xFFFFFFFF;
@@ -3105,7 +3103,6 @@ int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, darea, do_rare = 1;
-	//struct mt19937_state* rng = &c->cur_block->rng;
 	sfmt_t* rng = &c->cur_block->sfmt_rng;
 	uint16_t mid;
 	game_enemy_t* enemy;
@@ -3463,7 +3460,6 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	int area, darea, do_rare = 1;
 	uint32_t item[4] = { 0 };
 	float f1, f2;
-	//struct mt19937_state* rng = &c->cur_block->rng;
 	sfmt_t* rng = &c->cur_block->sfmt_rng;
 	int csr = 0;
 
@@ -3815,7 +3811,6 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
-	//struct mt19937_state* rng = &src->cur_block->rng;
 	sfmt_t* rng = &src->cur_block->sfmt_rng;
 	uint16_t mid;
 	game_enemy_t* enemy;
@@ -4184,7 +4179,6 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	int area, do_rare = 1;
 	uint32_t item[4] = { 0 };
 	float f1, f2;
-	//struct mt19937_state* rng = &src->cur_block->rng;
 	sfmt_t* rng = &src->cur_block->sfmt_rng;
 	int csr = 0;
 	uint8_t game_type = 0;
@@ -4534,7 +4528,6 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
-	//struct mt19937_state* rng = &src->cur_block->rng;
 	sfmt_t* rng = &src->sfmt_rng;
 	uint16_t mid;
 	game_enemy_t* enemy;
@@ -4872,7 +4865,6 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	int area, do_rare = 1;
 	uint32_t item[4] = { 0 };
 	float f1, f2;
-	//struct mt19937_state* rng = &src->cur_block->rng;
 	sfmt_t* rng = &src->sfmt_rng;
 	int csr = 0;
 	uint8_t game_type = 0;

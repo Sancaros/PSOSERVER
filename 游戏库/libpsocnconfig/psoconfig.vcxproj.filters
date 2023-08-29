@@ -30,9 +30,6 @@
     <ClCompile Include="debug.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mtwist.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="encryption.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -90,9 +87,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="debug.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="mtwist.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="encryption.h">

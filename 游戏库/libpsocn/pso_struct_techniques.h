@@ -95,9 +95,9 @@ typedef struct player_techniques {
             /* ªÿªÍ ı */ uint8_t reverser;
             /* À¿÷‰ ı */ uint8_t megid;
             /* ?????? */ uint8_t unused;
-        };
+        }PACKED;
         uint8_t all[0x14];
-    };
+    }PACKED;
 } PACKED techniques_t;
 
 #ifndef _WIN32

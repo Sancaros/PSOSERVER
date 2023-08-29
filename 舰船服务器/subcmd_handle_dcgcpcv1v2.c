@@ -23,7 +23,7 @@
 #include <f_logs.h>
 #include <debug.h>
 #include <f_iconv.h>
-#include <mtwist.h>
+#include <SFMT.h>
 #include <items.h>
 
 #include "subcmd.h"
@@ -1903,26 +1903,26 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
 
         switch (type) {
 
-        case SUBCMD60_ITEM_TAKE:
-            rv = handle_take_item(src, (subcmd_take_item_t*)pkt);
-            break;
+        //case SUBCMD60_ITEM_TAKE:
+        //    rv = handle_take_item(src, (subcmd_take_item_t*)pkt);
+        //    break;
 
-        case SUBCMD60_LEVEL_UP:
-            rv = handle_level_up(src, (subcmd_level_up_t*)pkt);
-            break;
+        //case SUBCMD60_LEVEL_UP:
+        //    rv = handle_level_up(src, (subcmd_level_up_t*)pkt);
+        //    break;
 
-        case SUBCMD60_USED_TECH:
-            rv = handle_used_tech(src, (subcmd_used_tech_t*)pkt);
-            break;
+        //case SUBCMD60_USED_TECH:
+        //    rv = handle_used_tech(src, (subcmd_used_tech_t*)pkt);
+        //    break;
 
-        case SUBCMD60_TAKE_DAMAGE1:
-        case SUBCMD60_TAKE_DAMAGE2:
-            rv = handle_take_damage(src, (subcmd_take_damage_t*)pkt);
-            break;
+        //case SUBCMD60_TAKE_DAMAGE1:
+        //case SUBCMD60_TAKE_DAMAGE2:
+        //    rv = handle_take_damage(src, (subcmd_take_damage_t*)pkt);
+        //    break;
 
-        case SUBCMD60_ITEM_DROP_BOX_ENEMY:
-            rv = handle_itemdrop(src, (subcmd_itemgen_t*)pkt);
-            break;
+        //case SUBCMD60_ITEM_DROP_BOX_ENEMY:
+        //    rv = handle_itemdrop(src, (subcmd_itemgen_t*)pkt);
+        //    break;
 
         //case SUBCMD60_SET_AREA_1F:
         //    rv = handle_set_area_1F(src, (subcmd_set_area_1F_t*)pkt);
@@ -1946,9 +1946,9 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         //    rv = handle_move(src, (subcmd_move_t*)pkt);
         //    break;
 
-        case SUBCMD60_ITEM_DELETE:
-            rv = handle_delete_inv(src, (subcmd_destroy_item_t*)pkt);
-            break;
+        //case SUBCMD60_ITEM_DELETE:
+        //    rv = handle_delete_inv(src, (subcmd_destroy_item_t*)pkt);
+        //    break;
 
         //case SUBCMD60_BUY:
         //    rv = handle_buy(src, (subcmd_buy_t*)pkt);
@@ -1958,51 +1958,51 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         //    rv = handle_use_item(src, (subcmd_use_item_t*)pkt);
         //    break;
 
-        case SUBCMD60_WORD_SELECT:
-            rv = handle_word_select(src, (subcmd_word_select_t*)pkt);
-            break;
+        //case SUBCMD60_WORD_SELECT:
+        //    rv = handle_word_select(src, (subcmd_word_select_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SYMBOL_CHAT:
-            rv = handle_symbol_chat(src, (subcmd_symbol_chat_t*)pkt);
-            break;
+        //case SUBCMD60_SYMBOL_CHAT:
+        //    rv = handle_symbol_chat(src, (subcmd_symbol_chat_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SET_C_GAME_MODE:
-            rv = handle_cmode_grave(src, pkt);
-            break;
+        //case SUBCMD60_SET_C_GAME_MODE:
+        //    rv = handle_cmode_grave(src, pkt);
+        //    break;
 
-        case SUBCMD60_HIT_MONSTER:
-            rv = handle_mhit(src, (subcmd_mhit_pkt_t*)pkt);
-            break;
+        //case SUBCMD60_HIT_MONSTER:
+        //    rv = handle_mhit(src, (subcmd_mhit_pkt_t*)pkt);
+        //    break;
 
-        case SUBCMD60_OBJHIT_PHYS:
-            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-            if (l->challenge || l->battle) {
-                sent = 0;
-                break;
-            }
+        //case SUBCMD60_OBJHIT_PHYS:
+        //    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+        //    if (l->challenge || l->battle) {
+        //        sent = 0;
+        //        break;
+        //    }
 
-            rv = handle_objhit_phys(src, (subcmd_objhit_phys_t*)pkt);
-            break;
+        //    rv = handle_objhit_phys(src, (subcmd_objhit_phys_t*)pkt);
+        //    break;
 
-        case SUBCMD60_OBJHIT_TECH:
-            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-            if (l->challenge || l->battle) {
-                sent = 0;
-                break;
-            }
+        //case SUBCMD60_OBJHIT_TECH:
+        //    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+        //    if (l->challenge || l->battle) {
+        //        sent = 0;
+        //        break;
+        //    }
 
-            rv = handle_objhit_tech(src, (subcmd_objhit_tech_t*)pkt);
-            break;
+        //    rv = handle_objhit_tech(src, (subcmd_objhit_tech_t*)pkt);
+        //    break;
 
-        case SUBCMD60_HIT_OBJ:
-            /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
-            if (l->challenge || l->battle) {
-                sent = 0;
-                break;
-            }
+        //case SUBCMD60_HIT_OBJ:
+        //    /* 甚至不要试图在战斗或挑战模式中处理这些问题. */
+        //    if (l->challenge || l->battle) {
+        //        sent = 0;
+        //        break;
+        //    }
 
-            rv = handle_objhit(src, (subcmd_bhit_pkt_t*)pkt);
-            break;
+        //    rv = handle_objhit(src, (subcmd_bhit_pkt_t*)pkt);
+        //    break;
 
         //case SUBCMD60_SPAWN_NPC:
         //    rv = handle_spawn_npc(src, pkt);
@@ -2020,33 +2020,33 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         //    rv = handle_set_pos24(src, pkt);
         //    break;
 
-        case SUBCMD60_MENU_REQ:
-            rv = handle_menu_req(src, pkt);
-            break;
+        //case SUBCMD60_MENU_REQ:
+        //    rv = handle_menu_req(src, pkt);
+        //    break;
 
-        case SUBCMD60_ITEM_DROP:
-            rv = handle_drop_item(src, (subcmd_drop_item_t*)pkt);
-            break;
+        //case SUBCMD60_ITEM_DROP:
+        //    rv = handle_drop_item(src, (subcmd_drop_item_t*)pkt);
+        //    break;
 
-        case SUBCMD60_DROP_STACK:
-            rv = handle_drop_stack(src, (subcmd_drop_stack_t*)pkt);
-            break;
+        //case SUBCMD60_DROP_STACK:
+        //    rv = handle_drop_stack(src, (subcmd_drop_stack_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SELECT_MENU:
-            rv = handle_talk_npc(src, (subcmd_select_menu_t*)pkt);
-            break;
+        //case SUBCMD60_SELECT_MENU:
+        //    rv = handle_talk_npc(src, (subcmd_select_menu_t*)pkt);
+        //    break;
 
-        case SUBCMD60_SELECT_DONE:
-            rv = handle_done_talk_npc(src, (subcmd_select_done_t*)pkt);
-            break;
+        //case SUBCMD60_SELECT_DONE:
+        //    rv = handle_done_talk_npc(src, (subcmd_select_done_t*)pkt);
+        //    break;
 
-        case SUBCMD60_BOSS_ACT_DRAGON:
-            rv = handle_dragon_act(src, (subcmd_dragon_act_t*)pkt);
-            break;
+        //case SUBCMD60_BOSS_ACT_DRAGON:
+        //    rv = handle_dragon_act(src, (subcmd_dragon_act_t*)pkt);
+        //    break;
 
-        case SUBCMD60_BOSS_ACT_GDRAGON:
-            rv = handle_gol_dragon_act(src, (subcmd_gol_dragon_act_t*)pkt);
-            break;
+        //case SUBCMD60_BOSS_ACT_GDRAGON:
+        //    rv = handle_gol_dragon_act(src, (subcmd_gol_dragon_act_t*)pkt);
+        //    break;
 
 //        default:
 //#ifdef LOG_UNKNOWN_SUBS
@@ -2069,20 +2069,30 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         //    }
 
         //case SUBCMD60_LOAD_22:
-        case SUBCMD60_LOAD_3B:
-        case SUBCMD60_WARP_55:
-        case SUBCMD60_LOBBY_ACT:
-        case SUBCMD60_GOGO_BALL:
-        case SUBCMD60_CHAIR_CREATE:
-        case SUBCMD60_CHAIR_TURN:
-        case SUBCMD60_CHAIR_MOVE:
-            sent = 0;
+        //case SUBCMD60_LOAD_3B:
+        //case SUBCMD60_WARP_55:
+        //case SUBCMD60_LOBBY_ACT:
+        //case SUBCMD60_GOGO_BALL:
+        //case SUBCMD60_CHAIR_CREATE:
+        //case SUBCMD60_CHAIR_TURN:
+        //case SUBCMD60_CHAIR_MOVE:
+        //    sent = 0;
         }
 
         ///* Broadcast anything we don't care to check anything about. */
         //if (!sent)
         //    rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 
+//[2023年08月27日 22:09:58:225] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x07 版本 gc(3) 的处理
+//[2023年08月27日 22:09:58:236] 调试(subcmd_handle_dcgcpcv1v2.c 2088): 未知 0x60 指令: 0x07
+//( 00000000 )   60 00 48 00 07 11 C0 00   00 00 00 00 28 00 00 00  `.H...?....(...
+//( 00000010 )   FF FF 0D 00 FF FF FF FF   05 18 1D 00 05 28 1D 01  .......(..
+//( 00000020 )   36 20 2A 00 3C 00 32 00   FF 00 00 00 FF 00 00 00  6 *.<.2.......
+//( 00000030 )   FF 00 00 00 FF 00 00 02   FF 00 00 02 FF 00 00 02  ............
+//( 00000040 )   FF 00 00 02 FF 00 00 02                           ......
+//[2023年08月27日 22:15:33:238] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x87 版本 bb(5) 的处理
+//[2023年08月27日 22:15:33:249] 调试(subcmd_handle_60.c 6180): 未知 0x60 指令: 0x87
+//( 00000000 )   10 00 60 00 00 00 00 00   87 02 00 00 CD CC CC 3E  ..`.....?..吞?
         if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
@@ -2199,11 +2209,11 @@ int subcmd_send_lobby_dc(lobby_t* l, ship_client_t* c, subcmd_pkt_t* pkt,
     return 0;
 }
 
-int subcmd_send_pos(ship_client_t* dst, ship_client_t* src) {
+int subcmd_send_pos(ship_client_t* dest, ship_client_t* src) {
     subcmd_set_pos_t dc = { 0 };
     subcmd_bb_set_pos_t bb = { 0 };
 
-    if (dst->version == CLIENT_VERSION_BB) {
+    if (dest->version == CLIENT_VERSION_BB) {
         bb.hdr.pkt_len = LE16(0x0020);
         bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
         bb.hdr.flags = 0;
@@ -2218,15 +2228,15 @@ int subcmd_send_pos(ship_client_t* dst, ship_client_t* src) {
         bb.y = src->z;                         /* Z */
         bb.z = 0.0f;                           /* Facing, perhaps? */
 
-        return send_pkt_bb(dst, (bb_pkt_hdr_t*)&bb);
+        return send_pkt_bb(dest, (bb_pkt_hdr_t*)&bb);
     }
     else {
         dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
         dc.hdr.flags = 0;
         dc.hdr.pkt_len = LE16(0x001C);
 
-        if (dst->version == CLIENT_VERSION_DCV1 &&
-            (dst->flags & CLIENT_FLAG_IS_NTE))
+        if (dest->version == CLIENT_VERSION_DCV1 &&
+            (dest->flags & CLIENT_FLAG_IS_NTE))
             dc.shdr.type = SUBCMD60_DESTORY_NPC;
         else
             dc.shdr.type = SUBCMD60_SET_AREA_20;
@@ -2240,6 +2250,6 @@ int subcmd_send_pos(ship_client_t* dst, ship_client_t* src) {
         dc.y = src->z;                         /* Z */
         dc.z = 0.0f;                           /* Facing, perhaps? */
 
-        return send_pkt_dc(dst, (dc_pkt_hdr_t*)&dc);
+        return send_pkt_dc(dest, (dc_pkt_hdr_t*)&dc);
     }
 }
