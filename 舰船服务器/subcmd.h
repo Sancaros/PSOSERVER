@@ -384,6 +384,15 @@ typedef struct subcmd_bb_bhit {
 
 // 0x0C: Add condition (poison/slow/etc.)
 // 0x0D: Remove condition (poison/slow/etc.)
+typedef struct subcmd_add_or_remove_condition {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t condition_type; // Probably condition type 0x01000000 0x00000000
+    uint32_t unknown_a2;// 0x00000000
+} PACKED subcmd_add_or_remove_condition_t;
+
+// 0x0C: Add condition (poison/slow/etc.)
+// 0x0D: Remove condition (poison/slow/etc.)
 typedef struct subcmd_bb_add_or_remove_condition {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -1179,6 +1188,20 @@ typedef struct subcmd_bb_Unknown_6x53 {
 
 // 0x54: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).
+
+// 0x55: Intra-map warp
+typedef struct subcmd_map_warp {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t area; //0x8000 为 总督府 0x0000 为先驱者2号
+    uint16_t unused;
+    float x1;
+    float y1;
+    float z1;
+    float x2;
+    float y2;
+    float z2;
+} PACKED subcmd_map_warp_t;
 
 // 0x55: Intra-map warp
 typedef struct subcmd_bb_map_warp {
@@ -3141,18 +3164,19 @@ typedef struct subcmd_bb_gallons_plan {
 
 // 0xE2: Coren actions (BB)
 // The client sends this when it executes an F960 quest opcode.
-struct G_CorenActions_BB_6xE2 {
+typedef struct subcmd_bb_coren_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    uint8_t unknown_a1[12]; // TODO: There might be uint16_ts and uint32_ts in here.
-} PACKED;
+    uint32_t menu_choice;
+    uint8_t unknown_a1[8]; // TODO: There might be uint16_ts and uint32_ts in here.
+} PACKED subcmd_bb_coren_act_t;
 
 // 0xE3: Coren actions result (BB)
-struct G_CorenActionsResult_BB_6xE3 {
+typedef struct subcmd_bb_coren_act_result {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t item_data;
-} PACKED;
+} PACKED subcmd_bb_coren_act_result_t;
 
 // 0xE4: Invalid subcommand
 // 0xE5: Invalid subcommand

@@ -811,6 +811,25 @@ static int sub60_0B_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_0C_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_add_or_remove_condition_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
+            src->guildcard, pkt->hdr.pkt_type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (!pkt->condition_type)
+        DBG_LOG("sub60_0C_bb 0x%zX", pkt->condition_type);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -828,6 +847,39 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
         DBG_LOG("sub60_0C_bb 0x%zX", pkt->condition_type);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_add_or_remove_condition_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
+            src->guildcard, pkt->hdr.pkt_type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    if (pkt->condition_type) {
+
+        if (src->game_data->err.error_cmd_type) {
+            send_msg(src, BB_SCROLL_MSG_TYPE,
+                "%s 错误指令:0x%zX 副指令:0x%zX",
+                __(src, "\tE\tC6数据出错,请联系管理员处理!"),
+                src->game_data->err.error_cmd_type,
+                src->game_data->err.error_subcmd_type
+            );
+            memset(&src->game_data->err, 0, sizeof(client_error_t));
+        }
+
+        if (l->flags & LOBBY_TYPE_GAME) {
+            lobby_print_info2(src);
+        }
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
@@ -859,6 +911,7 @@ static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
             lobby_print_info2(src);
         }
     }
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -3239,6 +3292,76 @@ static int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000000 )   0C 00 60 00 00 00 00 00   53 01 00 00             ..`.....S...
     //[2023年07月06日 13:23:40:484] 错误(iitems.c 0428): 未从背包中找已装备的玛古
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_55_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_map_warp_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    //if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08 || pkt->shdr.client_id != src->client_id) {
+    //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+    //        src->guildcard, pkt->shdr.type);
+    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
+
+//( 00000000 )   60 00 24 00 55 08 00 00   00 80 00 00 BA 7B 89 40  `.$.U....�..簕堾
+//( 00000010 )   FF FF 7F 3F C5 89 4E C2   04 00 A0 41 00 00 00 00  ?艍N?.燗....
+//[2023年08月29日 15:12:45:598] 调试(subcmd_handle_60.c 3265): area = 0x8000
+//[2023年08月29日 15:12:45:608] 调试(subcmd_handle_60.c 3269): area = 0x8000
+//( 00000000 )   60 00 24 00 55 08 00 00   00 80 00 00 BA 7B 89 40  `.$.U....�..簕堾
+//( 00000010 )   FF FF 7F 3F C5 89 4E C2   04 00 A0 41 00 00 00 00  ?艍N?.燗....
+//( 00000020 )   09 40 DD C4                                     .@菽
+//[2023年08月29日 15:12:45:675] 调试(subcmd_handle_60.c 3265): area = 0x8000
+//[2023年08月29日 15:12:45:683] 调试(subcmd_handle_60.c 3269): area = 0x8000
+//( 00000000 )   60 00 24 00 55 08 00 00   00 80 00 00 BA 7B 89 40  `.$.U....�..簕堾
+//( 00000010 )   FF FF 7F 3F C5 89 4E C2   00 00 E0 36 00 00 00 00  ?艍N?.?....
+//[2023年08月29日 15:12:45:753] 调试(subcmd_handle_60.c 3265): area = 0x8000
+//[2023年08月29日 15:12:45:761] 调试(subcmd_handle_60.c 3269): area = 0x8000
+//( 00000000 )   60 00 24 00 55 08 00 00   00 80 00 00 BA 7B 89 40  `.$.U....�..簕堾
+//( 00000010 )   FF FF 7F 3F C5 89 4E C2   00 00 E0 36 00 00 00 00  ?艍N?.?....
+//( 00000020 )   09 40 DD C4                                     .@菽
+//[2023年08月29日 15:12:45:831] 调试(subcmd_handle_60.c 3265): area = 0x8000
+//[2023年08月29日 15:12:45:841] 调试(subcmd_handle_60.c 3269): area = 0x8000
+    if (src->client_id == pkt->shdr.client_id) {
+
+#ifdef DEBUG
+
+        display_packet(pkt, pkt->hdr.pkt_len);
+
+        switch (pkt->area)
+        {
+            /* 总督府 实验室 */
+        case 0x8000:
+            //l->govorlab = 1;
+            DBG_LOG("进入总督府任务识别");
+            break;
+
+            /* EP1飞船 */
+        case 0x0000:
+
+            /* EP2飞船 */
+        case 0xC000:
+
+        default:
+            //l->govorlab = 0;
+            DBG_LOG("离开总督府任务识别");
+            break;
+        }
+
+#endif // DEBUG
+
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
@@ -7054,8 +7177,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SYMBOL_CHAT                , sub60_07_dc, sub60_07_dc, NULL,        NULL,        NULL,        sub60_07_bb },
     { SUBCMD60_HIT_MONSTER                , sub60_0A_dc, sub60_0A_dc, NULL,        NULL,        NULL,        sub60_0A_bb },
     { SUBCMD60_HIT_OBJ                    , sub60_0B_dc, sub60_0B_dc, NULL,        NULL,        NULL,        sub60_0B_bb },
-    { SUBCMD60_CONDITION_ADD              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0C_bb },
-    { SUBCMD60_CONDITION_REMOVE           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_0D_bb },
+    { SUBCMD60_CONDITION_ADD              , sub60_0C_dc, sub60_0C_dc, NULL,        NULL,        NULL,        sub60_0C_bb },
+    { SUBCMD60_CONDITION_REMOVE           , sub60_0D_dc, sub60_0D_dc, NULL,        NULL,        NULL,        sub60_0D_bb },
 
     //cmd_type 10 - 1F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_BOSS_ACT_DRAGON            , sub60_12_dc, sub60_12_dc, NULL,        NULL,        NULL,        sub60_12_bb },
@@ -7118,7 +7241,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_SWITCH_REQ                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
     { SUBCMD60_MENU_REQ                   , sub60_52_dc, sub60_52_dc, NULL,        sub60_52_dc, NULL,        sub60_52_bb },
     { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
-    { SUBCMD60_WARP_55                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_55_bb },
+    { SUBCMD60_WARP_55                    , sub60_55_dc, sub60_55_dc, NULL,        NULL,        NULL,        sub60_55_bb },
     { SUBCMD60_LOBBY_ACT                  , sub60_58_dc, sub60_58_dc, NULL,        sub60_58_dc, NULL,        sub60_58_bb },
     { SUBCMD60_DROP_STACK                 , sub60_5D_dc, sub60_5D_dc, NULL,        NULL,        NULL,        NULL        },
     { SUBCMD60_BUY                        , sub60_5E_dc, sub60_5E_dc, NULL,        NULL,        NULL,        NULL        },
@@ -7205,6 +7328,102 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_GALLON_PLAN                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_E1_bb },
 };
 
+/* 处理 DC GC PC V1 V2 0x60 来自客户端的数据包. */
+int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
+    __try {
+        uint8_t type = pkt->type;
+        lobby_t* l = src->cur_lobby;
+        int rv, sent = 1, i = 0;
+        ship_client_t* dest;
+        uint16_t len = 0, hdr_type = 0;
+        uint8_t dnum = 0;
+        if (src->version == CLIENT_VERSION_PC) {
+            len = pkt->hdr.pc.pkt_len;
+            hdr_type = pkt->hdr.pc.pkt_type;
+            dnum = pkt->hdr.pc.flags;
+        }
+        else {
+            len = pkt->hdr.dc.pkt_len;
+            hdr_type = pkt->hdr.dc.pkt_type;
+            dnum = pkt->hdr.dc.flags;
+        }
+
+        /* The DC NTE must be treated specially, so deal with that elsewhere... */
+        if (src->version == CLIENT_VERSION_DCV1 && (src->flags & CLIENT_FLAG_IS_NTE))
+            return subcmd_dcnte_handle_bcast(src, pkt);
+
+        /* 如果客户端不在大厅或者队伍中则忽略数据包. */
+        if (!l)
+            return 0;
+
+        pthread_mutex_lock(&l->mutex);
+
+        /* 搜索目标客户端. */
+        dest = l->clients[dnum];
+
+#ifdef DEBUG
+
+        DBG_LOG("0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
+        DBG_LOG("c version %d", c->version);
+
+        display_packet(pkt, pkt->hdr.dc.pkt_len);
+
+#endif // DEBUG
+
+        l->subcmd_handle = subcmd_get_handler(hdr_type, type, src->version);
+
+        /* If there's a burst going on in the lobby, delay most packets */
+        if (l->flags & LOBBY_FLAG_BURSTING) {
+            switch (type) {
+            case SUBCMD60_SET_POS_3F://大厅跃迁时触发 1
+            case SUBCMD60_SET_AREA_1F://大厅跃迁时触发 2
+            case SUBCMD60_LOAD_3B://大厅跃迁时触发 3
+            case SUBCMD60_BURST_DONE:
+                /* 0x7C 挑战模式 进入房间游戏未开始前触发*/
+            case SUBCMD60_SET_C_GAME_MODE:
+                rv = l->subcmd_handle(src, dest, pkt);
+                break;
+
+            default:
+                rv = lobby_enqueue_pkt(l, src, (dc_pkt_hdr_t*)pkt);
+            }
+        }
+        else {
+            //[2023年08月27日 22:09:58:225] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x07 版本 gc(3) 的处理
+            //[2023年08月27日 22:09:58:236] 调试(subcmd_handle_dcgcpcv1v2.c 2088): 未知 0x60 指令: 0x07
+            //( 00000000 )   60 00 48 00 07 11 C0 00   00 00 00 00 28 00 00 00  `.H...?....(...
+            //( 00000010 )   FF FF 0D 00 FF FF FF FF   05 18 1D 00 05 28 1D 01  .......(..
+            //( 00000020 )   36 20 2A 00 3C 00 32 00   FF 00 00 00 FF 00 00 00  6 *.<.2.......
+            //( 00000030 )   FF 00 00 00 FF 00 00 02   FF 00 00 02 FF 00 00 02  ............
+            //( 00000040 )   FF 00 00 02 FF 00 00 02                           ......
+            //[2023年08月27日 22:15:33:238] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x87 版本 bb(5) 的处理
+            //[2023年08月27日 22:15:33:249] 调试(subcmd_handle_60.c 6180): 未知 0x60 指令: 0x87
+            //( 00000000 )   10 00 60 00 00 00 00 00   87 02 00 00 CD CC CC 3E  ..`.....?..吞?
+            if (l->subcmd_handle == NULL) {
+#ifdef BB_LOG_UNKNOWN_SUBS
+                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+                display_packet(pkt, len);
+#endif /* BB_LOG_UNKNOWN_SUBS */
+                rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+            }
+            else {
+                rv = l->subcmd_handle(src, dest, pkt);
+            }
+        }
+
+        pthread_mutex_unlock(&l->mutex);
+        return rv;
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        ERR_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
+}
+
 /* 处理BB 0x60 数据包. */
 int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
     __try {
@@ -7258,25 +7477,26 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
                 break;
 
             default:
-                //DBG_LOG("LOBBY_FLAG_BURSTING 0x60 指令: 0x%02X", type);
+#ifdef DEBUG
+
+                DBG_LOG("lobby_enqueue_pkt_bb 0x60 指令: 0x%02X", type);
+
+#endif // DEBUG
                 rv = lobby_enqueue_pkt_bb(l, src, (bb_pkt_hdr_t*)pkt);
             }
-
-            pthread_mutex_unlock(&l->mutex);
-            return rv;
         }
-
-        if (l->subcmd_handle == NULL) {
+        else {
+            if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-            DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            display_packet(pkt, len);
+                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
+                display_packet(pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
-            rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-            pthread_mutex_unlock(&l->mutex);
-            return rv;
+                rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+            }
+            else {
+                rv = l->subcmd_handle(src, dest, pkt);
+            }
         }
-
-        rv = l->subcmd_handle(src, dest, pkt);
 
         pthread_mutex_unlock(&l->mutex);
         return rv;

@@ -2118,8 +2118,23 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    display_packet(pkt, LE16(pkt->hdr.pkt_len));
+    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
+        ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务物品奖励!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
+//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+//( 00000010 )   00 00 00 00 00 00 00 00   13 00 01 00 00 00 00 00  ................
+//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+//( 00000010 )   00 00 00 00 00 00 00 00   14 00 01 00 00 00 00 00  ................
+//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+//( 00000010 )   00 00 00 00 00 00 00 00   15 00 01 00 00 00 00 00  ................
+//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+//( 00000010 )   00 00 00 00 00 00 00 00   16 00 01 00 00 00 00 00  ................
+//( 00000000 )   20 00 62 00 00 00 00 00   CA 06 FF FF 03 03 00 00   .b.....?....
+//( 00000010 )   00 00 00 00 00 00 00 00   17 00 01 00 00 00 00 00  ................
     iitem_t ii;
     memset(&ii, 0, PSOCN_STLENGTH_IITEM);
     ii.data = pkt->item_data;
@@ -2505,6 +2520,36 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     return 0;
 }
 
+int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_coren_act_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    sfmt_t* rng = &l->block->sfmt_rng;
+
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    /*[2021年12月22日 02:35] 截获(15466) : 指令 0x"e2" 未被游戏进行接收处理. (数据如下)
+
+        [2021年12月22日 02:35] 截获(15466) :
+        (0000) 18 00 62 00 00 00 00 00 E2 04 01 00 00 00 00 00 ..b..... ? ......
+        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽
+
+
+        [2021年12月22日 02:36] 截获(15466) : 指令 0x"e2" 未被游戏进行接收处理. (数据如下)
+
+        [2021年12月22日 02:36] 截获(15466) :
+                                       08 09 0A 0B 0C
+        (0000) 18 00 62 00 00 00 00 00 E2 04 01 00 01 00 00 00 ..b..... ? ......
+               10 11 12 13 14 15 16 17
+        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽*/
+    display_packet(pkt, pkt->hdr.pkt_len);
+
+    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+}
+
 // 定义函数指针数组
 subcmd_handle_func_t subcmd62_handler[] = {
     //    cmd_type                         DC           GC           EP3          XBOX         PC           BB
@@ -2533,6 +2578,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_ITEM_WARP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
     { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },
+    { SUBCMD62_GANBLING                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E2_bb },
 };
 
 /* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */
@@ -2670,8 +2716,9 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             }
-            else
+            else {
                 rv = l->subcmd_handle(src, dest, pkt);
+            }
         }
 
         pthread_mutex_unlock(&l->mutex);
