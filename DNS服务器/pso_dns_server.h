@@ -116,7 +116,7 @@ typedef struct dns_client {
     int disconnected;
     int is_ipv6;
 
-    struct sockaddr_storage ip_addr;
+    struct sockaddr_in ip_addr;
 
     unsigned char* recvbuf;
     int pkt_cur;

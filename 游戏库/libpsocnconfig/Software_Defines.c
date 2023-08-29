@@ -15,15 +15,37 @@ void parse_version(uint8_t* maj, uint8_t* min, uint8_t* mic,
 	*mic = (uint8_t)v3;
 }
 
+int get_nonempty_length(const char* str) {
+	int length = 0;
+
+	// 遍历字符串，直到遇到字符串结束符'\0'
+	for (int i = 0; str[i] != '\0'; i++) {
+		// 判断字符是否为空格或制表符等非空字符
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n') {
+			length++;
+		}
+	}
+
+	return length;
+}
+
+void set_console_title(const char* fmt, ...) {
+	va_list args;
+
+	va_start(args, fmt);
+
+	memset(&windows[0], 0, sizeof(windows));
+	vsnprintf(&windows[0], 4096, fmt, args);
+	windows[4095] = '\0';
+
+	va_end(args);
+
+	SetConsoleTitle((LPCSTR)&windows[0]);
+}
+
 void load_program_info(const char* servername, const char* ver)
 {
-	memset(&windows[0], 0, sizeof(dp));
-	strcat(&windows[0], "梦幻之星中国 ");
-	strcat(&windows[0], servername);
-	strcat(&windows[0], " 版本 ");
-	strcat(&windows[0], ver);
-	strcat(&windows[0], " 作者 Sancaros");
-	SetConsoleTitle((LPCSTR)&windows[0]);
+	set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros", servername, PSOBBCN_PLATFORM_STR, ver);
 	//system("color F7");
 	printf(" <Ctrl-C> 关闭程序.\n");
 	printf(" ______                                ______\n");
@@ -57,4 +79,3 @@ void load_program_info(const char* servername, const char* ver)
 	printf("本地语言类型为 %s\n\n", localLanguage);
 
 }
-

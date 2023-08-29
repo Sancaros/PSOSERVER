@@ -692,7 +692,6 @@ static void initialization() {
     if (init_wsa()) {
         ERR_EXIT("WSAStartup 错误...");
     }
-#endif
 
     HINSTANCE hinst = GetModuleHandle(NULL);
     consoleHwnd = GetConsoleWindow();
@@ -729,6 +728,7 @@ static void initialization() {
 
     // 设置崩溃处理函数
     SetUnhandledExceptionFilter(crash_handler);
+#endif
 
 }
 
@@ -972,7 +972,7 @@ static void cleanup_sockets(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
 
 /* Create a new connection, storing it in the list of clients. */
 dns_client_t* create_connection(int sock, int type,
-    struct sockaddr* ip, socklen_t size) {
+    struct sockaddr_in* ip, socklen_t size) {
     dns_client_t* rv;
 
     /* Allocate the space for the new client. */
@@ -990,7 +990,7 @@ dns_client_t* create_connection(int sock, int type,
     memcpy(&rv->ip_addr, ip, size);
 
     /* Is the user on IPv6? */
-    if (ip->sa_family == AF_INET6) {
+    if (ip->sin_family == AF_INET6) {
         rv->is_ipv6 = 1;
     }
 
@@ -1007,14 +1007,13 @@ void get_ip_address(struct sockaddr_in* addr, char* ip_buffer) {
 
 static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
     struct sockaddr_in client_addr = { 0 };
-    struct sockaddr_storage addr = { 0 };
-    struct sockaddr* addr_p = (struct sockaddr*)&addr;
     char ipstr[INET6_ADDRSTRLEN];
     socklen_t len;
     ssize_t recive_len;
     dns_client_t* i = { 0 }, * tmp;
     int sock = SOCKET_ERROR, j;
     int rv = 0;
+    size_t client_count = 0;
 
     /* Go ahead and loop forever... */
     while (!should_exit) {
@@ -1045,18 +1044,24 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             }
             else {
                 sock = ntohs(client_addr.sin_port);
-                if (!create_connection(sock, dns_sockets[j].port_type, addr_p, sizeof(struct sockaddr_storage))) {
+                i = create_connection(sock, dns_sockets[j].port_type, &client_addr, len);
+                if (!i) {
                     ERR_LOG("断开端口 %d 创建连接", sock);
-                    i->disconnected = 1;
+                    close(sock);
                 }
                 else {
+                    ++client_count;
+                    set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
                     rv = process_query(sockets[j], recive_len, &client_addr);
                     if (rv) {
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
                         i->disconnected = 1;
                     }
-                    get_ip_address(&client_addr, ipstr);
-                    DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, sock);
+                    else {
+                        get_ip_address(&i->ip_addr, ipstr);
+                        DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
+                        i->disconnected = 1;
+                    }
                 }
             }
         }
@@ -1071,8 +1076,11 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             tmp = TAILQ_NEXT(i, qentry);
 
             if (i->disconnected) {
-                ERR_LOG("断开端口 %d 创建连接", i->sock);
+                get_ip_address(&i->ip_addr, ipstr);
+                DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
                 destroy_connection(i);
+                --client_count;
+                set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
             }
 
             i = tmp;
