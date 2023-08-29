@@ -57,6 +57,28 @@ uint8_t* get_sendbuf() {
     return sendbuf;
 }
 
+#define MAX_BUFFER_SIZE 1024
+
+// 发送消息
+static ssize_t send_message(ship_t* c, const char* message, size_t message_len) {
+    char compressed_msg[MAX_BUFFER_SIZE];
+    uLongf compressed_len = MAX_BUFFER_SIZE;
+
+    // 使用 zlib 进行数据压缩
+    compress2((Bytef*)compressed_msg, &compressed_len, (const Bytef*)message, message_len, Z_BEST_COMPRESSION);
+
+    // 发送压缩后的数据
+    ssize_t ret = gnutls_record_send(c->session, compressed_msg, compressed_len);
+    if (ret < 0) {
+        perror("gnutls_record_send");
+        return -1;
+    }
+
+    SGATE_LOG("Sent data: %d 字节", message_len);
+
+    return ret;
+}
+
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
     int ret;
     LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
@@ -67,60 +89,86 @@ static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 /* Send a raw packet away. */
 static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
     ssize_t rv, total = 0;
-    void* tmp;
-
     /* Keep trying until the whole thing's sent. */
-    if (!c->sendbuf_cur) {
+    if (c->sock >= 0 && !c->sendbuf_cur) {
         while (total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
-            if (rv < 0) {
-                /* Is it an error code that might be correctable? */
-                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-                    continue;
-                else
-                    return -1;
+            if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
+                /* Try again. */
+                continue;
+            }
+            else if (rv <= 0) {
+                return SOCKET_ERROR;
             }
 
             total += rv;
         }
     }
 
-    rv = len - total;
-
-    if (rv) {
-        /* Move out any already transferred data. */
-        if (c->sendbuf_start) {
-            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                c->sendbuf_cur - c->sendbuf_start);
-            c->sendbuf_cur -= c->sendbuf_start;
-        }
-
-        /* See if we need to reallocate the buffer. */
-        if (c->sendbuf_cur + rv > c->sendbuf_size) {
-            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-            /* If we can't allocate the space, bail. */
-            if (tmp == NULL)
-                return -1;
-
-            c->sendbuf_size = c->sendbuf_cur + rv;
-            c->sendbuf = (unsigned char*)tmp;
-        }
-
-        /* Copy what's left of the packet into the output buffer. */
-        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-        c->sendbuf_cur += rv;
-    }
-
-    if (sendbuf)
-        free_safe(sendbuf);
-
     return 0;
 }
+//
+///* Send a raw packet away. */
+//static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
+//    ssize_t rv, total = 0;
+//    void* tmp;
+//
+//    /* Keep trying until the whole thing's sent. */
+//    if (!c->sendbuf_cur) {
+//        while (total < len) {
+//            rv = send_message(c, sendbuf + total, len - total);
+//
+//            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
+//
+//            /* Did the data send? */
+//            if (rv < 0) {
+//                /* Is it an error code that might be correctable? */
+//                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+//                    continue;
+//                else
+//                    return -1;
+//            }
+//
+//            total += rv;
+//        }
+//    }
+//
+//    rv = len - total;
+//
+//    if (rv) {
+//        /* Move out any already transferred data. */
+//        if (c->sendbuf_start) {
+//            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+//                c->sendbuf_cur - c->sendbuf_start);
+//            c->sendbuf_cur -= c->sendbuf_start;
+//        }
+//
+//        /* See if we need to reallocate the buffer. */
+//        if (c->sendbuf_cur + rv > c->sendbuf_size) {
+//            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+//
+//            /* If we can't allocate the space, bail. */
+//            if (tmp == NULL)
+//                return -1;
+//
+//            c->sendbuf_size = c->sendbuf_cur + rv;
+//            c->sendbuf = (unsigned char*)tmp;
+//        }
+//
+//        /* Copy what's left of the packet into the output buffer. */
+//        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+//        c->sendbuf_cur += rv;
+//    }
+//
+//    if (sendbuf)
+//        free_safe(sendbuf);
+//
+//    return 0;
+//}
 
 /* Encrypt a packet, and send it away. */
 static int send_crypt(ship_t* c, int len, uint8_t* sendbuf) {

@@ -68,6 +68,59 @@ v2_level_table_t v2_char_stats;
 
 psocn_bb_mode_char_t default_mode_char;
 
+#define MAX_BUFFER_SIZE 1024
+
+// 发送消息
+static inline ssize_t send_message(shipgate_conn_t* c, const char* message, size_t message_len) {
+    char compressed_msg[MAX_BUFFER_SIZE];
+    uLongf compressed_len = MAX_BUFFER_SIZE;
+
+    // 使用 zlib 进行数据压缩
+    compress2((Bytef*)compressed_msg, &compressed_len, (const Bytef*)message, message_len, Z_BEST_COMPRESSION);
+
+    // 发送压缩后的数据
+    ssize_t ret = gnutls_record_send(c->session, compressed_msg, compressed_len);
+    if (ret < 0) {
+        perror("gnutls_record_send");
+        return -1;
+    }
+
+    SHIPS_LOG("Sent data: %d 字节", message_len);
+
+    return ret;
+}
+
+// 接收消息
+static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t buffer_size) {
+    size_t total_len = 0;
+    ssize_t ret;
+
+    while (1) {
+        // 接收数据
+        ret = gnutls_record_recv(c->session, buffer + total_len, buffer_size - total_len);
+        if (ret <= 0) {
+            perror("gnutls_record_recv");
+            return -1;
+        }
+
+        total_len += ret;
+
+        // 判断是否接收完整消息
+        if (ret < buffer_size - total_len) {
+            break;
+        }
+    }
+
+    // 解压缩接收到的数据
+    char* compressed_msg = buffer;
+    uLongf decompressed_len = buffer_size;
+    uncompress((Bytef*)buffer, &decompressed_len, (const Bytef*)compressed_msg, total_len);
+
+    SHIPS_LOG("Received data: %d 字节", decompressed_len);
+
+    return ret;
+}
+
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
     int ret;
     LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));

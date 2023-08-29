@@ -5633,6 +5633,37 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
     }
 }
 
+// 接收消息
+static ssize_t receive_message(ship_t* c, char* buffer, size_t buffer_size) {
+    size_t total_len = 0;
+    ssize_t ret;
+
+    while (1) {
+        // 接收数据
+        ret = gnutls_record_recv(c->session, buffer + total_len, buffer_size - total_len);
+        if (ret <= 0) {
+            perror("gnutls_record_recv");
+            return -1;
+        }
+
+        total_len += ret;
+
+        // 判断是否接收完整消息
+        if (ret < buffer_size - total_len) {
+            break;
+        }
+    }
+
+    // 解压缩接收到的数据
+    char* compressed_msg = buffer;
+    uLongf decompressed_len = buffer_size;
+    uncompress((Bytef*)buffer, &decompressed_len, (const Bytef*)compressed_msg, total_len);
+
+    SGATE_LOG("Received data: %d 字节", decompressed_len);
+
+    return ret;
+}
+
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
     int ret;
     LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
