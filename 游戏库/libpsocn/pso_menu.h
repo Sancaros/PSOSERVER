@@ -169,6 +169,11 @@ static pso_menu_t pso_block_list_menu_last[][4] = {
     {"¶Ï¿ªÁ¬½Ó", MENU_ID_BLOCK, ITEM_ID_DISCONNECT, 0x0000},
 };
 
+static pso_menu_t pso_block_list_menu_last_dc[][4] = {
+    {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_BLOCK, 0x0000},
+    {"SELECT SHIP", MENU_ID_BLOCK, ITEM_ID_LAST, 0x0000},
+    {"DISCONNECT", MENU_ID_BLOCK, ITEM_ID_DISCONNECT, 0x0000},
+};
 
 static pso_menu_t pso_guild_rank_list_bb[][4] = {
     {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_INITIAL, 0x0004},
