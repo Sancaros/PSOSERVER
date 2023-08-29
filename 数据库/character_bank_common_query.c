@@ -200,13 +200,13 @@ static int db_update_bank_common_param(psocn_bank_t* bank, uint32_t gc) {
         bank->meseta = 999999;
 
     _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "'"
-        " WHERE "
-        "guildcard = '%" PRIu32 "'",
-        CHARACTER_BANK_COMMON,
-        bank->item_count, bank->meseta, inv_crc32,
-        gc
-    );
+        "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "', "
+        "`full_data` = '", CHARACTER_BANK_COMMON, bank->item_count, bank->meseta, inv_crc32);
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
+        PSOCN_STLENGTH_BANK);
+
+    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE `guildcard` = '%u'", gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("psocn_db_real_query() Ê§°Ü: %s", psocn_db_error(&conn));
