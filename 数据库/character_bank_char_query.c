@@ -560,10 +560,13 @@ int db_update_char_bank(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
     }
 
     // 遍历银行数据，插入到数据库中
-    for (i; i < ic; i++) {
+    for (i = 0; i < ic; i++) {
         if (db_insert_bank_char_items(&bank->bitems[i], gc, slot, i)) {
+#ifdef DEBUG
+            SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行 %d 物品数据", gc, slot, bank->item_count);
+#endif // DEBUG
             if (db_update_bank_char_items(&bank->bitems[i], gc, slot, i)) {
-                SQLERR_LOG("无法新增(GC%" PRIu32 ":%" PRIu8 "槽)角色银行 %d 物品数据", gc, slot, bank->item_count);
+                SQLERR_LOG("无法更新(GC%" PRIu32 ":%" PRIu8 "槽)角色银行 %d 物品数据", gc, slot, bank->item_count);
                 return -1;
             }
         }

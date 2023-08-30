@@ -107,9 +107,11 @@ static int db_insert_bank_common_items(bitem_t* item, uint32_t gc, int item_inde
     );
 
     if (psocn_db_real_query(&conn, myquery)) {
-        //SQLERR_LOG("无法新增玩家银行数据 (GC %"
-        //    PRIu32 ", 槽位 %" PRIu8 "):\n%s", gc, slot,
-        //    psocn_db_error(&conn));
+#ifdef DEBUG
+        SQLERR_LOG("无法新增玩家银行数据 (GC %"
+            PRIu32 "):\n%s", gc,
+            psocn_db_error(&conn));
+#endif // DEBUG
         /* XXXX: 未完成给客户端发送一个错误信息 */
         return -1;
     }
@@ -574,10 +576,13 @@ int db_update_char_bank_common(psocn_bank_t* bank, uint32_t gc) {
     }
 
     // 遍历银行数据，插入到数据库中
-    for (i; i < ic; i++) {
+    for (i = 0; i < ic; i++) {
         if (db_insert_bank_common_items(&bank->bitems[i], gc, i)) {
+#ifdef DEBUG
+            SQLERR_LOG("无法新增(GC%" PRIu32 ")公共银行 %d 物品数据", gc, bank->item_count);
+#endif // DEBUG
             if (db_update_bank_common_items(&bank->bitems[i], gc, i)) {
-                SQLERR_LOG("无法新增(GC%" PRIu32 ")公共银行 %d 物品数据", gc, bank->item_count);
+                SQLERR_LOG("无法更新(GC%" PRIu32 ")公共银行 %d 物品数据", gc, bank->item_count);
                 return -1;
             }
         }
