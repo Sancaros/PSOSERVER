@@ -106,7 +106,7 @@ static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t b
         total_len += ret;
 
         // 判断是否接收完整消息
-        if (ret < buffer_size - total_len) {
+        if ((size_t)ret < buffer_size - total_len) {
             break;
         }
     }
@@ -1536,7 +1536,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         memcpy(c->pl, pkt->data, clen);
 
                         ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
+                        for (i = 0; i < c->pl->v1.character.inv.item_count; i++) {
                             print_iitem_data(&c->pl->v1.character.inv.iitems[i], i, c->version);
                         }
                         
@@ -1547,9 +1547,10 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         memcpy(c->bb_pl, pkt->data, clen);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; ++i) {
+                        for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
                             if (item_not_identification(&c->bb_pl->character.inv.iitems[i].data)) {
                                 ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
+                                print_item_data(&c->bb_pl->character.inv.iitems[i].data, c->version);
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]);
                                 continue;
                             }
@@ -1559,6 +1560,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                                 && c->bb_pl->character.inv.iitems[i].data.datab[2] == 0x00
                                 ) {
                                 ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
+                                print_item_data(&c->bb_pl->character.inv.iitems[i].data, c->version);
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]);
                                 continue;
                             }
@@ -1576,7 +1578,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         fix_equip_item(&c->bb_pl->character.inv);
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
-                        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; ++i) {
+                        for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
                             if (item_not_identification(&c->bb_pl->bank.bitems[i].data)) {
                                 ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
                                 clear_bitem(&c->bb_pl->bank.bitems[i]);
@@ -3559,6 +3561,11 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
         /* Read the packet size to see how much we're expecting. */
         pkt_sz = ntohs(c->pkt.pkt_len);
+
+        /* We'll always need a multiple of 8 bytes. */
+        if (pkt_sz & 0x07) {
+            pkt_sz = (pkt_sz & 0xFFF8) + 8;
+        }
 
         /* Do we have the whole packet? */
         if(sz >= (ssize_t)pkt_sz) {

@@ -521,7 +521,8 @@ static void* ship_thd(void* d) {
                 /* Check if this connection was trying to send us something. */
                 if (FD_ISSET(it->sock, &readfds)) {
                     if (rv = client_process_pkt(it)) {
-                        ERR_LOG("Check if this connection was trying to send us anything ERROR %d", rv);
+                        if (rv && rv != -1)
+                            ERR_LOG("检测这个端口 %d 是否有发送任何数据并处理发生错误 错误码 %d", it->sock, rv);
                         it->flags |= CLIENT_FLAG_DISCONNECTED;
                         continue;
                     }
@@ -543,7 +544,7 @@ static void* ship_thd(void* d) {
                                bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
-                                ERR_LOG(" fail to send %d ERROR %d", it->sock, sent);
+                                ERR_LOG("发送数据至端口 %d 失败 错误码 %d", it->sock, sent);
                                 it->flags |= CLIENT_FLAG_DISCONNECTED;
                                 continue;
                             }
@@ -576,7 +577,9 @@ static void* ship_thd(void* d) {
             tmp = TAILQ_NEXT(it, qentry);
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
-                ERR_LOG("Clean up %d dead connections", it->sock);
+#ifdef DEBUG
+                ERR_LOG("断开端口 %s 丢失的连接", it->sock);
+#endif // DEBUG
                 client_destroy_connection(it, s->clients);
             }
 

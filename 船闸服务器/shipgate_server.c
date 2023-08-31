@@ -607,7 +607,8 @@ void run_server(int tsock, int tsock6) {
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
                     if (rv = handle_pkt(i)) {
-                        ERR_LOG("Check if this ship was trying to send us anything ERROR %d", rv);
+                        if (rv && rv != -1)
+                            ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
                         i->disconnected = 1;
                         continue;
                     }
@@ -630,7 +631,7 @@ void run_server(int tsock, int tsock6) {
                            bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
-                                ERR_LOG(" fail to send %d ERROR %d", i->sock, sent);
+                                ERR_LOG("发送数据至端口 %d 失败 错误码 %d", i->sock, sent);
                                 i->disconnected = 1;
                             }
                         }
@@ -658,7 +659,9 @@ void run_server(int tsock, int tsock6) {
                 tmp = TAILQ_NEXT(i, qentry);
 
                 if (i->disconnected) {
-                    ERR_LOG("Clean up %s dead connections", i->name);
+#ifdef DEBUG
+                    ERR_LOG("断开 %s 丢失的连接", i->name);
+#endif // DEBUG
                     destroy_connection(i);
                 }
 

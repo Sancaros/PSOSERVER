@@ -732,6 +732,9 @@ int pt_read_bb(const char* fn) {
 					for (m = 0; m < 10; ++m) {
 						ent->tool_class_prob_table[l][m] =
 							ntohs(buf->tool_frequency[l][m]);
+#ifdef DEBUG
+						DBG_LOG("ep %d dif %d secid %d l %d m %d value 0x%04X %d", 章节, 难度, 颜色, l, m, ent->tool_class_prob_table[l][m], ent->tool_class_prob_table[l][m]);
+#endif // DEBUG
 					}
 				}
 
@@ -3934,8 +3937,6 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		default:
 			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
 			if (area > 10)
-				area = ep2_rtremap[(src->cur_area * 2) + 1];
-			else
 				area = 10; // tower
 
 			break;
@@ -3951,6 +3952,9 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		}
 
 		area = src->cur_area + 1;
+
+		if (area > 10)
+			area = 10;
 
 		break;
 	}

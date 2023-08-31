@@ -31,20 +31,105 @@ static int db_insert_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t sl
     // 插入玩家数据
     _snprintf(myquery, sizeof(myquery), "INSERT INTO %s ("
         "guildcard, slot, "
-        "item_count, meseta, bank_check_num"
+        "item_count, meseta, bank_check_num, "
+        "full_data"
         ") VALUES ("
         "'%" PRIu32 "', '%" PRIu8 "', "
-        "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "'"
-        ")",
+        "'%" PRIu32 "', '%" PRIu32 "','%" PRIu32 "', '"
+        /*")"*/,
         CHARACTER_BANK_CHAR,
         gc, slot,
         bank->item_count, bank->meseta, inv_crc32
     );
 
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
+        PSOCN_STLENGTH_BANK);
+
+    strcat(myquery, "')");
+
     if (psocn_db_real_query(&conn, myquery)) {
         //SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
         return -1;
     }
+
+    return 0;
+}
+
+static int db_update_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
+    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
+    memset(myquery, 0, sizeof(myquery));
+
+    if (bank->meseta > 999999)
+        bank->meseta = 999999;
+
+    _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
+        "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "', "
+        "`full_data` = '", 
+        CHARACTER_BANK_CHAR, bank->item_count, bank->meseta, inv_crc32
+    );
+
+    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
+        PSOCN_STLENGTH_BANK);
+
+    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'", gc, slot);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0;
+}
+
+/* 优先获取银行数据库中的物品数量 */
+static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    /* Build the query asking for the data. */
+    sprintf(myquery, "SELECT "
+        "item_count, meseta"
+        " FROM "
+        "%s"
+        " WHERE "
+        "guildcard = '%" PRIu32 "'"
+        " AND "
+        "slot = '%u'",
+        CHARACTER_BANK_CHAR,
+        gc, slot
+    );
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        if (check) {
+            SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
+            SQLERR_LOG("%s", psocn_db_error(&conn));
+        }
+        return -3;
+    }
+
+    bank->item_count = (uint32_t)strtoul(row[0], NULL, 10);
+    bank->meseta = (uint32_t)strtoul(row[1], NULL, 10);
+
+    if (bank->meseta > 999999)
+        bank->meseta = 999999;
+
+    psocn_db_result_free(result);
 
     return 0;
 }
@@ -192,30 +277,6 @@ static int db_update_bank_char_items(bitem_t* item, uint32_t gc, uint8_t slot, i
     return 0;
 }
 
-static int db_update_bank_char_param(psocn_bank_t* bank, uint32_t gc, uint8_t slot) {
-    uint32_t inv_crc32 = psocn_crc32((uint8_t*)bank, PSOCN_STLENGTH_BANK);
-    memset(myquery, 0, sizeof(myquery));
-
-    if (bank->meseta > 999999)
-        bank->meseta = 999999;
-
-    _snprintf(myquery, sizeof(myquery), "UPDATE %s SET "
-        "item_count = '%" PRIu32 "', meseta = '%" PRIu32 "', bank_check_num = '%" PRIu32 "', "
-        "`full_data` = '", CHARACTER_BANK_CHAR, bank->item_count, bank->meseta, inv_crc32);
-
-    psocn_db_escape_str(&conn, myquery + strlen(myquery), (char*)bank,
-        PSOCN_STLENGTH_BANK);
-
-    snprintf(myquery + strlen(myquery), sizeof(myquery) - strlen(myquery), "' WHERE guildcard = '%" PRIu32 "' AND slot = '%" PRIu8 "'", gc, slot);
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("psocn_db_real_query() 失败: %s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 备份并删除旧银行物品数据 */
 static int db_del_bank_char_items(uint32_t gc, uint8_t slot, int item_index, int del_count) {
     memset(myquery, 0, sizeof(myquery));
@@ -270,59 +331,6 @@ static int db_del_bank_char_items(uint32_t gc, uint8_t slot, int item_index, int
         psocn_db_result_free(result);
     }
 
-
-    return 0;
-}
-
-/* 优先获取银行数据库中的物品数量 */
-static int db_get_char_bank_param(uint32_t gc, uint8_t slot, psocn_bank_t* bank, int check) {
-    void* result;
-    char** row;
-
-    memset(myquery, 0, sizeof(myquery));
-
-    /* Build the query asking for the data. */
-    sprintf(myquery, "SELECT "
-        "item_count, meseta"
-        " FROM "
-        "%s"
-        " WHERE "
-        "guildcard = '%" PRIu32 "'"
-        " AND "
-        "slot = '%u'", 
-        CHARACTER_BANK_CHAR, 
-        gc, slot
-    );
-
-    if (psocn_db_real_query(&conn, myquery)) {
-        SQLERR_LOG("无法查询角色银行数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -1;
-    }
-
-    /* Grab the data we got. */
-    if ((result = psocn_db_result_store(&conn)) == NULL) {
-        SQLERR_LOG("未获取到角色银行数据 (%" PRIu32 ": %u)", gc, slot);
-        SQLERR_LOG("%s", psocn_db_error(&conn));
-        return -2;
-    }
-
-    if ((row = psocn_db_result_fetch(result)) == NULL) {
-        psocn_db_result_free(result);
-        if (check) {
-            SQLERR_LOG("未找到保存的角色银行数据 (%" PRIu32 ": %u)", gc, slot);
-            SQLERR_LOG("%s", psocn_db_error(&conn));
-        }
-        return -3;
-    }
-
-    bank->item_count = (uint32_t)strtoul(row[0], NULL, 10);
-    bank->meseta = (uint32_t)strtoul(row[1], NULL, 10);
-
-    if (bank->meseta > 999999)
-        bank->meseta = 999999;
-
-    psocn_db_result_free(result);
 
     return 0;
 }

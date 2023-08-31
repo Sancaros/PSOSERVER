@@ -26,7 +26,7 @@
 
 /* 初始化物品数据 */
 void clear_item(item_t* item) {
-	item->datal[0] = 0x0000FF00;
+	item->datal[0] = 0;
 	item->datal[1] = 0;
 	item->datal[2] = 0;
 	item->item_id = EMPTY_STRING;
@@ -147,7 +147,6 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
 	case ITEM_TYPE_TOOL:
 		switch (data1) {
-			/* 支持大量堆叠 99*/
 		case ITEM_SUBTYPE_MATE:
 		case ITEM_SUBTYPE_FLUID:
 		case ITEM_SUBTYPE_SOL_ATOMIZER:
@@ -156,6 +155,13 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_ANTI_TOOL:
 		case ITEM_SUBTYPE_TELEPIPE:
 		case ITEM_SUBTYPE_TRAP_VISION:
+			return 10;
+
+		case ITEM_SUBTYPE_DISK:
+		case ITEM_SUBTYPE_SCAPE_DOLL:
+			return 1;
+
+			/* 支持大量堆叠 99*/
 		case ITEM_SUBTYPE_GRINDER:
 		case ITEM_SUBTYPE_MATERIAL:
 		case ITEM_SUBTYPE_MAG_CELL1:
@@ -163,13 +169,6 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_MAG_CELL2:
 		case ITEM_SUBTYPE_ADD_SLOT:
 		case ITEM_SUBTYPE_PHOTON:
-			return 99;
-
-		case ITEM_SUBTYPE_DISK:
-			return 1;
-
-
-		default:
 			return 99;
 		}
 

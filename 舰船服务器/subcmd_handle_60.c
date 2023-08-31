@@ -3185,9 +3185,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("未从 GC %" PRIu32 " 背包中找已装备的玛古", src->guildcard);
 
 #endif // DEBUG
-        ERR_LOG("GC %" PRIu32 " 背包中寻找已装备的玛古错误 错误码 %d", src->guildcard, mag_index);
-
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+        return 0;
     }
     else {
         item_t* mag = &inv->iitems[mag_index].data;

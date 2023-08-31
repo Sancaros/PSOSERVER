@@ -62,24 +62,25 @@
 #define ITEM_SUBTYPE_UNIT               0x03
 
 /* ITEM_TYPE_TOOL subtype*/
-#define ITEM_SUBTYPE_MATE               0x00
-#define ITEM_SUBTYPE_FLUID              0x01
-#define ITEM_SUBTYPE_DISK               0x02
+#define ITEM_SUBTYPE_MATE               0x00 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_FLUID              0x01 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_DISK               0x02 /* 1  ¶Ñµþ */
 
-#define ITEM_SUBTYPE_SOL_ATOMIZER       0x03
-#define ITEM_SUBTYPE_MOON_ATOMIZER      0x04
-#define ITEM_SUBTYPE_STAR_ATOMIZER      0x05
-#define ITEM_SUBTYPE_ANTI_TOOL               0x06
-#define ITEM_SUBTYPE_TELEPIPE           0x07
-#define ITEM_SUBTYPE_TRAP_VISION        0x08
+#define ITEM_SUBTYPE_SOL_ATOMIZER       0x03 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_MOON_ATOMIZER      0x04 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_STAR_ATOMIZER      0x05 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_ANTI_TOOL          0x06 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_TELEPIPE           0x07 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_TRAP_VISION        0x08 /* 10 ¶Ñµþ */
+#define ITEM_SUBTYPE_SCAPE_DOLL         0x09 /* 1  ¶Ñµþ */
 
-#define ITEM_SUBTYPE_GRINDER            0x0A
-#define ITEM_SUBTYPE_MATERIAL           0x0B
-#define ITEM_SUBTYPE_MAG_CELL1          0x0C
-#define ITEM_SUBTYPE_MONSTER_LIMBS      0x0D
-#define ITEM_SUBTYPE_MAG_CELL2          0x0E
-#define ITEM_SUBTYPE_ADD_SLOT           0x0F
-#define ITEM_SUBTYPE_PHOTON             0x10
+#define ITEM_SUBTYPE_GRINDER            0x0A /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MATERIAL           0x0B /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MAG_CELL1          0x0C /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MONSTER_LIMBS      0x0D /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_MAG_CELL2          0x0E /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_ADD_SLOT           0x0F /* 99 ¶Ñµþ */
+#define ITEM_SUBTYPE_PHOTON             0x10 /* 99 ¶Ñµþ */
 #define ITEM_SUBTYPE_BOOK               0x11
 #define ITEM_SUBTYPE_SERVER_ITEM1       0x12/*todo player_use_item*/
 #define ITEM_SUBTYPE_PRESENT            0x13/*todo player_use_item*/
