@@ -138,28 +138,89 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
 /* Send a raw packet away. */
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     ssize_t rv, total = 0;
+    void* tmp;
+
     /* Keep trying until the whole thing's sent. */
-    if((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
-        while(total < len) {
-            rv = sg_send(c, sendbuf + total, len - total);
+    if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
+        /* Keep trying until the whole thing's sent. */
+        if (!c->sendbuf_cur) {
+            while (total < len) {
+                rv = sg_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
+                //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
-            /* Did the data send? */
-            if(rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
-                /* Try again. */
-                continue;
+                /* Did the data send? */
+                if (rv < 0) {
+                    /* Is it an error code that might be correctable? */
+                    if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+                        continue;
+                    else
+                        return -1;
+                }
+
+                total += rv;
             }
-            else if(rv <= 0) {
-                return SOCKET_ERROR;
-            }
-
-            total += rv;
         }
+
+        rv = len - total;
+
+        if (rv) {
+            /* Move out any already transferred data. */
+            if (c->sendbuf_start) {
+                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                    c->sendbuf_cur - c->sendbuf_start);
+                c->sendbuf_cur -= c->sendbuf_start;
+            }
+
+            /* See if we need to reallocate the buffer. */
+            if (c->sendbuf_cur + rv > c->sendbuf_size) {
+                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+
+                /* If we can't allocate the space, bail. */
+                if (tmp == NULL)
+                    return -1;
+
+                c->sendbuf_size = c->sendbuf_cur + rv;
+                c->sendbuf = (unsigned char*)tmp;
+            }
+
+            /* Copy what's left of the packet into the output buffer. */
+            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+            c->sendbuf_cur += rv;
+        }
+
+        //if (sendbuf)
+        //    free_safe(sendbuf);
     }
 
     return 0;
 }
+//
+///* Send a raw packet away. */
+//static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
+//    ssize_t rv, total = 0;
+//    /* Keep trying until the whole thing's sent. */
+//    if((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
+//        while(total < len) {
+//            rv = sg_send(c, sendbuf + total, len - total);
+//
+//            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
+//
+//            /* Did the data send? */
+//            if(rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
+//                /* Try again. */
+//                continue;
+//            }
+//            else if(rv <= 0) {
+//                return SOCKET_ERROR;
+//            }
+//
+//            total += rv;
+//        }
+//    }
+//
+//    return 0;
+//}
 
 /* Encrypt a packet, and send it away. */
 static int send_crypt(shipgate_conn_t *c, int len, uint8_t *sendbuf) {
@@ -3472,7 +3533,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
     sz = sg_recv(c, recvbuf + c->recvbuf_cur,
         65536 - c->recvbuf_cur);
 
-    //TEST_LOG("舰船端口 %d 接收数据 %d 字节", c->sock, sz);
+    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
     if (sz <= 0) {
@@ -3498,11 +3559,6 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
         /* Read the packet size to see how much we're expecting. */
         pkt_sz = ntohs(c->pkt.pkt_len);
-
-        /* We'll always need a multiple of 8 bytes. */
-        if(pkt_sz & 0x07) {
-            pkt_sz = (pkt_sz & 0xFFF8) + recv_size;
-        }
 
         /* Do we have the whole packet? */
         if(sz >= (ssize_t)pkt_sz) {
@@ -3569,7 +3625,7 @@ int shipgate_send_pkts(shipgate_conn_t* c) {
     /* Send as much as we can. */
     amt = sg_send(c, c->sendbuf, c->sendbuf_cur);
 
-    //DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
+    DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
 
     if (amt == SOCKET_ERROR) {
         perror("send");

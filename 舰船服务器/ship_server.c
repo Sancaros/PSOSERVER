@@ -295,7 +295,7 @@ static int setup_addresses(psocn_ship_t* cfg) {
     memset(ship_ip6, 0, 16);
     memset(cfg->ship_ip6, 0, 16);
 
-    SHIPS_LOG("获取舰船地址...");
+    CONFIG_LOG("获取舰船地址...");
 
     //CONFIG_LOG("检测域名获取: %s", host4);
 

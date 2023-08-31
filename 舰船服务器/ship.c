@@ -239,6 +239,7 @@ static void* ship_thd(void* d) {
             /* Otherwise, if we haven't heard from them in a minute, ping it. */
             else if (now > it->last_message + 60 && now > it->last_sent + 10) {
                 if (send_simple(it, PING_TYPE, 0)) {
+                    ERR_LOG("一分钟内未接收数据反馈,则断开其连接.");
                     it->flags |= CLIENT_FLAG_DISCONNECTED;
                     continue;
                 }
@@ -489,7 +490,7 @@ static void* ship_thd(void* d) {
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错1, 尝试重新对接!",
                             s->cfg->name);
-                        shipgate_connect(s, &s->sg);
+                        shipgate_reconnect(&s->sg);
 
                         //s->run = 0;
                     }
@@ -510,7 +511,7 @@ static void* ship_thd(void* d) {
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错2, 断开!",
                             s->cfg->name);
-                        shipgate_connect(s, &s->sg);
+                        shipgate_reconnect(&s->sg);
                     }
                 }
             }
@@ -519,13 +520,15 @@ static void* ship_thd(void* d) {
             TAILQ_FOREACH(it, s->clients, qentry) {
                 /* Check if this connection was trying to send us something. */
                 if (FD_ISSET(it->sock, &readfds)) {
-                    if (client_process_pkt(it)) {
+                    if (rv = client_process_pkt(it)) {
+                        ERR_LOG("Check if this connection was trying to send us anything ERROR %d", rv);
                         it->flags |= CLIENT_FLAG_DISCONNECTED;
                         continue;
                     }
                 }
 
                 if (FD_ISSET(it->sock, &exceptfds)) {
+                    ERR_LOG("客户端端口 %d 套接字异常", it->sock);
                     it->flags |= CLIENT_FLAG_DISCONNECTED;
                     continue;
                 }
@@ -536,14 +539,11 @@ static void* ship_thd(void* d) {
                         sent = send(it->sock, it->sendbuf + it->sendbuf_start,
                             it->sendbuf_cur - it->sendbuf_start, 0);
 
-                        /*ERR_LOG(
-                            "舰船writefds端口 %d 发送数据 = %d 字节 版本识别 = %d",
-                            it->sock, sent, it->version);*/
-
                             /* If we fail to send, and the error isn't EAGAIN,
                                bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
+                                ERR_LOG(" fail to send %d ERROR %d", it->sock, sent);
                                 it->flags |= CLIENT_FLAG_DISCONNECTED;
                                 continue;
                             }
@@ -576,6 +576,7 @@ static void* ship_thd(void* d) {
             tmp = TAILQ_NEXT(it, qentry);
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
+                ERR_LOG("Clean up %d dead connections", it->sock);
                 client_destroy_connection(it, s->clients);
             }
 

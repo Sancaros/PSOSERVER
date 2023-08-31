@@ -2259,6 +2259,40 @@ static int sub60_30_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
+static int sub60_33_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_revive_player_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
+            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    /* 合理性检查... Make sure the size of the subcommand matches with what we
+       expect. Disconnect the client if not. */
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+//[2023年08月31日 22:00:13:769] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x33 版本 bb(5) 的处理
+//[2023年08月31日 22:00:13:777] 调试(subcmd_handle_60.c 7491): 未知 0x60 指令: 0x33
+//( 00000000 )   10 00 60 00 00 00 00 00   33 02 00 00 01 00 00 00  ..`.....3.......
+//[2023年08月31日 22:01:07:912] 断连(0480): 客户端 Sancaros(10000000) 断开连接 Blue Brust
+//[2023年08月31日 22:04:22:443] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x33 版本 bb(5) 的处理
+//[2023年08月31日 22:04:22:452] 调试(subcmd_handle_60.c 7491): 未知 0x60 指令: 0x33
+//( 00000000 )   10 00 60 00 00 00 00 00   33 02 00 00 01 00 00 00  ..`.....3.......
+//[2023年08月31日 22:04:47:087] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x33 版本 bb(5) 的处理
+//[2023年08月31日 22:04:47:096] 调试(subcmd_handle_60.c 7491): 未知 0x60 指令: 0x33
+//( 00000000 )   10 00 60 00 00 00 00 00   33 02 00 00 01 00 00 00  ..`.....3.......
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_photon_blast_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3145,17 +3179,20 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     int mag_index = find_equipped_mag(inv);
 
     /* 没有找到MAG 直接发送出去 */
-    if (mag_index == -1) {
+    if (mag_index < 0) {
 #ifdef DEBUG
 
         ERR_LOG("未从 GC %" PRIu32 " 背包中找已装备的玛古", src->guildcard);
 
 #endif // DEBUG
+        ERR_LOG("GC %" PRIu32 " 背包中寻找已装备的玛古错误 错误码 %d", src->guildcard, mag_index);
+
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
-
-    item_t* mag = &inv->iitems[mag_index].data;
-    mag->data2b[0] = MAX((mag->data2b[0] - pkt->flag), 0);
+    else {
+        item_t* mag = &inv->iitems[mag_index].data;
+        mag->data2b[0] = MAX((mag->data2b[0] - pkt->flag), 0);
+    }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -7208,6 +7245,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 30 - 3F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP                   , sub60_30_dc, sub60_30_dc, NULL,        NULL,        NULL,        NULL        },
+    { SUBCMD60_REVIVE_PLAYER              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_33_bb },
     { SUBCMD60_MEDIC_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
     { SUBCMD60_MEDIC_DONE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_check_client_id_bb },
     { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },

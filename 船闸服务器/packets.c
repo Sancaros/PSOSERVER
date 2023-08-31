@@ -34,15 +34,9 @@
 #include <pso_pack.h>
 
 //static uint8_t sendbuf[65536];
-void safeFree(void** ptr) {
-    if (ptr != NULL && *ptr != NULL) {
-        free(*ptr);
-        *ptr = NULL;
-    }
-}
 
-/* 获取当前线程的 sendbuf 线程特定数据. */
-uint8_t* get_sendbuf() {
+/* 获取 sendbuf 动态内存数据. */
+uint8_t* get_sendbuf(void) {
     uint8_t* sendbuf = (uint8_t*)malloc(65536);
 
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
@@ -96,7 +90,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
         while (total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
             if (rv < 0) {

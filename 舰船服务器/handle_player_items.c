@@ -477,6 +477,7 @@ int find_equipped_mag(const inventory_t* inv) {
         }
         else {
             ERR_LOG("找到装备多件玛古");
+            ret = -2;
         }
     }
 #ifdef DEBUG

@@ -81,8 +81,8 @@ int check_size_v(size_t size, size_t min_size, size_t max_size);
 /* 加密并发送一个数据包. */
 int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf);
 
-/* Retrieve the thread-specific sendbuf for the current thread. */
-uint8_t *get_sendbuf();
+/* 获取当前线程的 sendbuf 线程特定内存空间. */
+uint8_t* get_sendbuf(void);
 
 /* Send a Dreamcast welcome packet to the given client. */
 int send_dc_welcome(ship_client_t *c, uint32_t svect, uint32_t cvect);

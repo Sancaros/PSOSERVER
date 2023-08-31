@@ -137,7 +137,7 @@
 #define SUBCMD60_LEVEL_UP                      0x30
 #define SUBCMD60_MEDIC_REQ                     0x31
 #define SUBCMD60_MEDIC_DONE                    0x32
-#define SUBCMD60_UNKNOW_33                     0x33
+#define SUBCMD60_REVIVE_PLAYER                 0x33
 #define SUBCMD60_UNKNOW_34                     0x34
 
 // 6x35: Invalid subcommand

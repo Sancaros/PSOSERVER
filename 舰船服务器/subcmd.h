@@ -884,12 +884,20 @@ typedef struct subcmd_bb_use_medical_center {
 } PACKED subcmd_bb_use_medical_center_t;
 
 // 0x33: Revive player (e.g. with moon atomizer)
-struct subcmd_RevivePlayer_6x33 {
+typedef struct subcmd_RevivePlayer_6x33 {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint16_t client_id2;
     uint16_t unused;
-} PACKED;
+} PACKED subcmd_RevivePlayer_6x33_t;
+
+// 0x33: Revive player (e.g. with moon atomizer)
+typedef struct subcmd_bb_revive_player {
+    bb_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t client_id2;
+    uint16_t unused;
+} PACKED subcmd_bb_revive_player_t;
 
 // 0x34: Unknown
 // This subcommand is completely ignored (at least, by PSO GC).

@@ -511,6 +511,7 @@ void run_server(int tsock, int tsock6) {
     fd_set readfds = { 0 }, writefds = { 0 }, exceptfds = { 0 };
     ship_t* i, * tmp;
     ssize_t sent;
+    int rv = -1;
     char ipstr[INET6_ADDRSTRLEN];
 
     for (;;) {
@@ -538,6 +539,7 @@ void run_server(int tsock, int tsock6) {
             /* 如果两分钟内未接收舰船的数据反馈,则断开其连接. */
             if (srv_time > i->last_message + 120 && i->last_ping &&
                 srv_time > i->last_ping + 60) {
+                ERR_LOG("两分钟内未接收舰船的数据反馈,则断开其连接.");
                 destroy_connection(i);
                 i = tmp;
                 continue;
@@ -562,7 +564,8 @@ void run_server(int tsock, int tsock6) {
 
             /* Check GnuTLS' buffer for the connection. */
             if (gnutls_record_check_pending(i->session)) {
-                if (handle_pkt(i)) {
+                if (rv = handle_pkt(i)) {
+                    ERR_LOG("Check GnuTLS' buffer for the connection ERROR %d", rv);
                     i->disconnected = 1;
                 }
             }
@@ -603,7 +606,8 @@ void run_server(int tsock, int tsock6) {
 
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
-                    if (handle_pkt(i)) {
+                    if (rv = handle_pkt(i)) {
+                        ERR_LOG("Check if this ship was trying to send us anything ERROR %d", rv);
                         i->disconnected = 1;
                         continue;
                     }
@@ -626,6 +630,7 @@ void run_server(int tsock, int tsock6) {
                            bail. */
                         if (sent == SOCKET_ERROR) {
                             if (errno != EAGAIN) {
+                                ERR_LOG(" fail to send %d ERROR %d", i->sock, sent);
                                 i->disconnected = 1;
                             }
                         }
@@ -652,8 +657,10 @@ void run_server(int tsock, int tsock6) {
             while (i) {
                 tmp = TAILQ_NEXT(i, qentry);
 
-                if (i->disconnected)
+                if (i->disconnected) {
+                    ERR_LOG("Clean up %s dead connections", i->name);
                     destroy_connection(i);
+                }
 
                 i = tmp;
             }
