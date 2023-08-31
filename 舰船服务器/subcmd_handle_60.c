@@ -5613,9 +5613,6 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
-        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
-
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 

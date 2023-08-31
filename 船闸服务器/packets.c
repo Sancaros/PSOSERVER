@@ -89,86 +89,60 @@ static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 /* Send a raw packet away. */
 static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
     ssize_t rv, total = 0;
+    void* tmp;
+
     /* Keep trying until the whole thing's sent. */
-    if (c->sock >= 0 && !c->sendbuf_cur) {
+    if (!c->sendbuf_cur) {
         while (total < len) {
             rv = ship_send(c, sendbuf + total, len - total);
 
-            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
+            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
 
             /* Did the data send? */
-            if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
-                /* Try again. */
-                continue;
-            }
-            else if (rv <= 0) {
-                return SOCKET_ERROR;
+            if (rv < 0) {
+                /* Is it an error code that might be correctable? */
+                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+                    continue;
+                else
+                    return -1;
             }
 
             total += rv;
         }
     }
 
+    rv = len - total;
+
+    if (rv) {
+        /* Move out any already transferred data. */
+        if (c->sendbuf_start) {
+            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                c->sendbuf_cur - c->sendbuf_start);
+            c->sendbuf_cur -= c->sendbuf_start;
+        }
+
+        /* See if we need to reallocate the buffer. */
+        if (c->sendbuf_cur + rv > c->sendbuf_size) {
+            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+
+            /* If we can't allocate the space, bail. */
+            if (tmp == NULL)
+                return -1;
+
+            c->sendbuf_size = c->sendbuf_cur + rv;
+            c->sendbuf = (unsigned char*)tmp;
+        }
+
+        /* Copy what's left of the packet into the output buffer. */
+        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+        c->sendbuf_cur += rv;
+    }
+
+    if (sendbuf)
+        free_safe(sendbuf);
+
     return 0;
 }
-//
-///* Send a raw packet away. */
-//static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
-//    ssize_t rv, total = 0;
-//    void* tmp;
-//
-//    /* Keep trying until the whole thing's sent. */
-//    if (!c->sendbuf_cur) {
-//        while (total < len) {
-//            rv = send_message(c, sendbuf + total, len - total);
-//
-//            //TEST_LOG("船闸端口 %d 发送数据 %d 字节", c->sock, rv);
-//
-//            /* Did the data send? */
-//            if (rv < 0) {
-//                /* Is it an error code that might be correctable? */
-//                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-//                    continue;
-//                else
-//                    return -1;
-//            }
-//
-//            total += rv;
-//        }
-//    }
-//
-//    rv = len - total;
-//
-//    if (rv) {
-//        /* Move out any already transferred data. */
-//        if (c->sendbuf_start) {
-//            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-//                c->sendbuf_cur - c->sendbuf_start);
-//            c->sendbuf_cur -= c->sendbuf_start;
-//        }
-//
-//        /* See if we need to reallocate the buffer. */
-//        if (c->sendbuf_cur + rv > c->sendbuf_size) {
-//            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-//
-//            /* If we can't allocate the space, bail. */
-//            if (tmp == NULL)
-//                return -1;
-//
-//            c->sendbuf_size = c->sendbuf_cur + rv;
-//            c->sendbuf = (unsigned char*)tmp;
-//        }
-//
-//        /* Copy what's left of the packet into the output buffer. */
-//        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-//        c->sendbuf_cur += rv;
-//    }
-//
-//    if (sendbuf)
-//        free_safe(sendbuf);
-//
-//    return 0;
-//}
 
 /* Encrypt a packet, and send it away. */
 static int send_crypt(ship_t* c, int len, uint8_t* sendbuf) {
@@ -1186,10 +1160,9 @@ int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
 }
 
 int send_player_max_tech_level_table_bb(ship_t* c) {
-    bb_max_tech_level_t* bb_max_tech_level = { 0 };
     int i;
 
-    bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
+    bb_max_tech_level_t* bb_max_tech_level = (bb_max_tech_level_t*)malloc(sizeof(bb_max_tech_level_t) * MAX_PLAYER_TECHNIQUES);
 
     if (!bb_max_tech_level)
         return 0;
@@ -1206,7 +1179,6 @@ int send_player_max_tech_level_table_bb(ship_t* c) {
 }
 
 int send_player_level_table_bb(ship_t* c) {
-    bb_level_table_t* bb_level_tb = { 0 };
     int i;
     Bytef* cmp_buf;
     uLong cmp_sz;
@@ -1214,7 +1186,7 @@ int send_player_level_table_bb(ship_t* c) {
     int compress_power = 9;
     size_t data_size = sizeof(bb_level_table_t);
 
-    bb_level_tb = (bb_level_table_t*)malloc(sizeof(bb_level_table_t));
+    bb_level_table_t* bb_level_tb = (bb_level_table_t*)malloc(data_size);
 
     if (!bb_level_tb) {
         ERR_LOG("给 bb_level_tb 分配内存失败!");
