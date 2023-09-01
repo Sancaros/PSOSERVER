@@ -3010,8 +3010,6 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             flags = dc->flags;
         }
         else {
-            //display_packet(pkt, pc->pkt_len);
-
             type = pc->pkt_type;
             len = LE16(pc->pkt_len);
             flags = pc->flags;
