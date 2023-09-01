@@ -26,7 +26,7 @@
 
 /* 初始化物品数据 */
 void clear_item(item_t* item) {
-	item->datal[0] = 0;
+	item->datal[0] = 0x0000FF00;
 	item->datal[1] = 0;
 	item->datal[2] = 0;
 	item->item_id = EMPTY_STRING;
