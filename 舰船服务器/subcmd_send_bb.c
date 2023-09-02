@@ -366,7 +366,7 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&gen, 0);
 
     /* Clear this out. */
-    clear_item(&c->new_item);
+    clear_inv_item(&c->new_item);
 
     return 0;
 }
@@ -733,7 +733,7 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
     shop.num_items = num_items;
 
     for (uint8_t i = 0; i < num_items; ++i) {
-        clear_item(&shop.items[i]);
+        clear_inv_item(&shop.items[i]);
         shop.items[i] = dest->game_data->shop_items[i];
     }
 

@@ -59,6 +59,6 @@
 #define DC_PATCH_HEADER_LENGTH          0x0014
 #define DC_PATCH_FOOTER_LENGTH          0x0018
 
-#define BB_FULL_CHAR_LENGTH             0x399C
+#define BB_FULL_CHAR_LENGTH             0x39A0
 
 #endif // !PSOCN_PACKET_LENGTH_H

@@ -106,7 +106,8 @@
 #define ITEM_VERSION_BB         0x10
 
 /* 初始化物品数据 */
-void clear_item(item_t* item);
+void clear_inv_item(item_t* item);
+void clear_bank_item(item_t* item);
 
 bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item);
 

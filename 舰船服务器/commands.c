@@ -533,7 +533,7 @@ static int handle_item(ship_client_t *src, const char *params) {
     }
 
     /* Clear the set item */
-    clear_item(&src->new_item);
+    clear_inv_item(&src->new_item);
 
     /* Copy over the item data. */
     src->new_item.datal[0] = SWAP32(item[0]);
@@ -3838,7 +3838,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
-    clear_item(&src->new_item);
+    clear_inv_item(&src->new_item);
 
     /* Copy over the item data. */
     src->new_item.datal[0] = SWAP32(item[0]);
@@ -3908,7 +3908,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     bb.two = dc.two = LE32(0x00000002);
 
     /* Clear the set item */
-    clear_item(&src->new_item);
+    clear_inv_item(&src->new_item);
 
     /* Send the packet to everyone in the lobby */
     pthread_mutex_unlock(&l->mutex);

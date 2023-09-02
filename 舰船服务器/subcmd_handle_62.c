@@ -83,7 +83,7 @@ static int handle_itemreq_gm(ship_client_t* src,
     }
 
     /* Clear this out. */
-    clear_item(&src->new_item);
+    clear_inv_item(&src->new_item);
 
     return 0;
 }

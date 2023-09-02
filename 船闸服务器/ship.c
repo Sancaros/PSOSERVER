@@ -5649,7 +5649,7 @@ static ssize_t receive_message(ship_t* c, char* buffer, size_t buffer_size) {
         total_len += ret;
 
         // 判断是否接收完整消息
-        if (ret < buffer_size - total_len) {
+        if ((size_t)ret < buffer_size - total_len) {
             break;
         }
     }

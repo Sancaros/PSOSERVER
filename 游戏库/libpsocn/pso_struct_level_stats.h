@@ -36,6 +36,7 @@
 #pragma pack(push, 1) 
 #endif
 
+/* 14 字节 */
 typedef struct psocn_pl_stats {
     uint16_t atp;//力量 初始3点 然后 1 : 1 增加
     uint16_t mst;//精神力 1 : 1

@@ -252,7 +252,7 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 	if (det >= 0x0D) {
 		return;
 	}
-	clear_item(item);
+	clear_inv_item(item);
 	item->datab[0] = 0x01;
 	item->datab[1] = 0x03;
 

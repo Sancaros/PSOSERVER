@@ -28,11 +28,6 @@
 #include "pso_struct_level_stats.h"
 #include "pso_struct_techniques.h"
 
-#define MAX_PLAYER_BANK_ITEMS           200
-#define MAX_PLAYER_INV_ITEMS            30
-#define MAX_PLAYER_TECHNIQUES           19
-#define MAX_TRADE_ITEMS                 200
-
 #ifdef PACKED
 #undef PACKED
 #endif
@@ -51,7 +46,7 @@ typedef struct dress_flag {
     time_t flagtime;
 } PACKED dress_flag_t;
 
-/* 角色信息数据结构 */
+/* 36字节 角色信息数据结构 */
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
     //TODO 这是什么参数
@@ -79,7 +74,7 @@ typedef struct psocn_disp_char {
     uint32_t meseta;
 } PACKED psocn_disp_char_t;
 
-/* 10字节 字符串 GC 含空格 16 字节 */
+/* 16 字节 */
 typedef struct psocn_guildcard_string {
     union guildcard_ {
         /* 仅用于数据库存取 分解 */
@@ -93,6 +88,7 @@ typedef struct psocn_guildcard_string {
     }PACKED;
 } PACKED psocn_guildcard_string_t;
 
+/* 108 字节*/
 typedef struct psocn_dress_data {
     psocn_guildcard_string_t guildcard_str;
     uint8_t unk1[8]; // 0x382-0x38F; 898 - 911 14 整数  // Same as E5 unknown2 和E5指令的 未知函数 2 一样
@@ -150,12 +146,12 @@ typedef struct psocn_bb_mini_char {
 /* 用于发送给大厅中其他玩家的数据结构,不包含背包数据. */
 /* BB 玩家数据结构 1244字节 */
 typedef struct psocn_bb_char {
-    inventory_t inv;
-    psocn_disp_char_t disp; //101
-    psocn_dress_data_t dress_data;
-    psocn_bb_char_name_t name;
-    uint16_t padding;
-    uint16_t unknown_a3; //4
+    inventory_t inv;//844
+    psocn_disp_char_t disp; //36
+    psocn_dress_data_t dress_data;//108
+    psocn_bb_char_name_t name;//24
+    uint16_t padding;//2
+    uint16_t unknown_a3; //2
     uint32_t play_time; //4
     uint8_t config[0xE8]; //232
     techniques_t tech; //20 /* 默认 FF 为空*/
@@ -175,6 +171,10 @@ typedef struct psocn_bb_key_config {
     uint8_t key_config[0x016C];           // 0114
     uint8_t joystick_config[0x0038];      // 0280
 } PACKED bb_key_config_t;
+
+#define BB_GUILD_PRIV_LEVEL_MASTER 0x00000040
+#define BB_GUILD_PRIV_LEVEL_ADMIN  0x00000030
+#define BB_GUILD_PRIV_LEVEL_MEMBER 0x00000000
 
 /* BB公会数据结构 TODO 2108字节 无法整除8倍数 缺8位 会导致数据无法传输 */
 typedef struct psocn_bb_guild {
@@ -202,10 +202,6 @@ typedef struct psocn_bb_guild {
         uint8_t guild_reward[8];
     }PACKED;
 } PACKED bb_guild_t;
-
-#define BB_GUILD_PRIV_LEVEL_MASTER 0x00000040
-#define BB_GUILD_PRIV_LEVEL_ADMIN  0x00000030
-#define BB_GUILD_PRIV_LEVEL_MEMBER 0x00000000
 
 typedef struct psocn_bb_db_guild {
     bb_guild_t data;
@@ -236,7 +232,7 @@ typedef struct psocn_bb_guild_card {
     uint8_t char_class;                 /* 1   人物职业 */
 } PACKED psocn_bb_guild_card_t;
 
-/* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节*/
+/* BB 完整角色数据 0x00E7 TODO 不含数据包头 8 字节 大小 14744*/
 typedef struct psocn_bb_full_char {
     psocn_bb_char_t character;                                               // 玩家数据表               OK
     //char guildcard_string1[16];                                            // not saved

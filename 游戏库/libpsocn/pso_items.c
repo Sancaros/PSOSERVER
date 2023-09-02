@@ -25,8 +25,16 @@
 #include "pso_character.h"
 
 /* 初始化物品数据 */
-void clear_item(item_t* item) {
-	item->datal[0] = 0x0000FF00;
+void clear_inv_item(item_t* item) {
+	item->datal[0] = 0;
+	item->datal[1] = 0;
+	item->datal[2] = 0;
+	item->item_id = 0;
+	item->data2l = 0;
+}
+
+void clear_bank_item(item_t* item) {
+	item->datal[0] = 0;
 	item->datal[1] = 0;
 	item->datal[2] = 0;
 	item->item_id = EMPTY_STRING;
@@ -50,7 +58,7 @@ bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item) {
 			tmp_item->datal[i] = 0;/* 默认值 */;
 		}
 	}
-	tmp_item->item_id = 0xFFFFFFFF;
+	tmp_item->item_id = 0;
 	tmp_item->data2l = item[3];
 
 	return true;
@@ -58,16 +66,16 @@ bool create_tmp_item(const uint32_t* item, size_t item_size, item_t* tmp_item) {
 
 /* 初始化玩家背包数据 */
 void clear_iitem(iitem_t* iitem) {
-	iitem->present = LE16(0x0000);
+	iitem->present = 0;
 	iitem->extension_data1 = 0;
 	iitem->extension_data2 = 0;
 	iitem->flags = 0;
-	clear_item(&iitem->data);
+	clear_inv_item(&iitem->data);
 }
 
 /* 初始化银行背包数据 */
 void clear_bitem(bitem_t* bitem) {
-	clear_item(&bitem->data);
+	clear_bank_item(&bitem->data);
 	bitem->show_flags = 0;
 	bitem->amount = 0;
 }

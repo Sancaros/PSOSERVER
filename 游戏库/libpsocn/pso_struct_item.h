@@ -32,7 +32,13 @@
 #pragma pack(push, 1) 
 #endif
 
-typedef struct item_data { // 0x14 bytes
+#define MAX_PLAYER_BANK_ITEMS           200
+#define MAX_PLAYER_INV_ITEMS            30
+#define MAX_PLAYER_TECHNIQUES           19
+#define MAX_TRADE_ITEMS                 200
+
+/* 20 字节 */
+typedef struct item_data {
     // 这是一个关于物品格式的参考注释，用于解释不同类型物品的数据格式。
     // 以下是各种物品类型及其相应的数据格式：
     // 武器（Weapon）  ：00ZZZZGG SS00AABB AABBAABB 00000000
@@ -114,7 +120,8 @@ typedef struct item_data { // 0x14 bytes
 //items[13]。extension_data2到items[15]。extension_data2：
 //未知。这些不是一个数组，但看起来确实是相关的。
 
-typedef struct psocn_iitem { // 0x1C bytes  
+/* 28 字节 */
+typedef struct psocn_iitem {
     uint16_t present; // 0x0001 = 物品槽使用中, 0xFF00 = 未使用
   // See note above about these fields
     uint8_t extension_data1;  //是否鉴定
@@ -123,24 +130,27 @@ typedef struct psocn_iitem { // 0x1C bytes
     item_t data;
 } PACKED iitem_t;
 
+/* 844 字节 */
 typedef struct psocn_inventory {
     uint8_t item_count;
     uint8_t hpmats_used;
     uint8_t tpmats_used;
     uint8_t language;
-    iitem_t iitems[30];
+    iitem_t iitems[MAX_PLAYER_INV_ITEMS];
 } PACKED inventory_t;
 
-typedef struct psocn_bitem { // 0x18 bytes
+/* 24 字节*/
+typedef struct psocn_bitem {
     item_t data;
     uint16_t amount;
     uint16_t show_flags; //是否显示
 } PACKED bitem_t;
 
+/* 4808 字节 */
 typedef struct psocn_bank {
     uint32_t item_count;
     uint32_t meseta;
-    bitem_t bitems[200];
+    bitem_t bitems[MAX_PLAYER_BANK_ITEMS];
 } PACKED psocn_bank_t;
 
 #ifndef _WIN32

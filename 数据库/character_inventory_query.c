@@ -446,7 +446,7 @@ static int db_get_char_inv_itemdata(uint32_t gc, uint8_t slot, inventory_t* inv)
 
 void clean_up_char_inv(inventory_t* inv, int item_index, int del_count) {
 	for (item_index; item_index < del_count; item_index++) {
-		inv->iitems[item_index].present = LE16(0x0000);
+		inv->iitems[item_index].present = 0;
 		inv->iitems[item_index].extension_data1 = 0;
 		inv->iitems[item_index].extension_data2 = 0;
 		inv->iitems[item_index].flags = 0;

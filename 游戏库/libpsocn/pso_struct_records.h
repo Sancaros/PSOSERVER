@@ -212,7 +212,7 @@ typedef struct psocn_bb_records_data {
 } PACKED psocn_bb_records_data_t;
 
 /* 玩家挑战 对战数据的 联合结构体 */
-typedef union record_data{
+typedef union record_data {
     psocn_dc_records_data_t v2;
     psocn_pc_records_data_t pc;
     psocn_v3_records_data_t v3;
