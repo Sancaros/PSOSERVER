@@ -112,6 +112,7 @@ typedef struct dns_client {
 
     int type;
     int sock;
+    int auth;
     int version;
     int disconnected;
     int is_ipv6;

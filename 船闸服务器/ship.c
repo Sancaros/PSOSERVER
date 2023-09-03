@@ -333,6 +333,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     rv = (ship_t*)malloc(sizeof(ship_t));
 
     if (!rv) {
+        ERR_LOG("malloc");
         perror("malloc");
         closesocket(sock);
         return NULL;
@@ -5676,6 +5677,7 @@ uint8_t* get_recvbuf(void) {
     uint8_t* recvbuf = (uint8_t*)malloc(65536);
 
     if (!recvbuf) {
+        ERR_LOG("malloc");
         perror("malloc");
         return NULL;
     }
@@ -5705,7 +5707,7 @@ int handle_pkt(ship_t* c) {
 
     /* Attempt to read, and if we don't get anything, punt. */
     sz = ship_recv(c, recvbuf + c->recvbuf_cur,
-        65536 - c->recvbuf_cur);
+                   65536 - c->recvbuf_cur);
 
     //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
@@ -5713,7 +5715,8 @@ int handle_pkt(ship_t* c) {
     if (sz <= 0) {
         if (sz == SOCKET_ERROR) {
             ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
-        }
+        }else
+            ERR_LOG("Gnutls *** 注意: ship_recv sz = %d", sz);
 
         goto end;
     }
@@ -5741,38 +5744,43 @@ int handle_pkt(ship_t* c) {
     rbp = recvbuf;
 
     /* As long as what we have is long enough, decrypt it. */
-    while (sz >= recv_size && rv == 0) {
-        /* Grab the packet header so we know what exactly we're looking
-           for, in terms of packet length. */
-        if (!c->hdr_read) {
-            memcpy(&c->pkt, rbp, recv_size);
-            c->hdr_read = 1;
-        }
+    if (sz >= recv_size) {
+        while (sz >= recv_size && rv == 0) {
+            /* Grab the packet header so we know what exactly we're looking
+               for, in terms of packet length. */
+            if (!c->hdr_read) {
+                memcpy(&c->pkt, rbp, recv_size);
+                c->hdr_read = 1;
+            }
 
-        pkt_sz = ntohs(c->pkt.pkt_len);
+            pkt_sz = ntohs(c->pkt.pkt_len);
 
-        /* Do we have the whole packet? */
-        if (sz >= (ssize_t)pkt_sz) {
-            /* Yep, copy it and process it */
-            memcpy(rbp, &c->pkt, recv_size);
+            /* Do we have the whole packet? */
+            if (sz >= (ssize_t)pkt_sz) {
+                /* Yep, copy it and process it */
+                memcpy(rbp, &c->pkt, recv_size);
 
-            /* Pass it onto the correct handler. */
-            c->last_message = time(NULL);
-            rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
+                /* Pass it onto the correct handler. */
+                c->last_message = time(NULL);
+                rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
+                if (rv)
+                    ERR_LOG("process_ship_pkt rv = %d", rv);
 
-            rbp += pkt_sz;
-            sz -= pkt_sz;
-            c->hdr_read = 0;
-        }
-        else {
-            /* Nope, we're missing part, break out of the loop, and buffer
-               the remaining data. */
-            break;
+                rbp += pkt_sz;
+                sz -= pkt_sz;
+
+                c->hdr_read = 0;
+            }
+            else {
+                /* Nope, we're missing part, break out of the loop, and buffer
+                   the remaining data. */
+                break;
+            }
         }
     }
 
     /* If we've still got something left here, buffer it for the next pass. */
-    if (sz && rv == 0) {
+    if (sz) {
         /* Reallocate the recvbuf for the client if its too small. */
         if (c->recvbuf_size < sz) {
             tmp = realloc(c->recvbuf, sz);
@@ -5789,7 +5797,7 @@ int handle_pkt(ship_t* c) {
         memcpy(c->recvbuf, rbp, sz);
         c->recvbuf_cur = sz;
     }
-    else if (c->recvbuf) {
+    else {
         /* Free the buffer, if we've got nothing in it. */
         free_safe(c->recvbuf);
         c->recvbuf = NULL;

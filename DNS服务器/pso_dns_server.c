@@ -391,6 +391,58 @@ static int read_config(const char* dir, const char* fn) {
 //    return sock;
 //}
 
+/* Destroy a connection, closing the socket and removing it from the list. */
+void destroy_connection(dns_client_t* c) {
+    TAILQ_REMOVE(&clients, c, qentry);
+
+    c->auth = 0;
+
+    if (c->sock >= 0) {
+        close(c->sock);
+    }
+
+    if (c->recvbuf) {
+        free_safe(c->recvbuf);
+    }
+
+    if (c->sendbuf) {
+        free_safe(c->sendbuf);
+    }
+
+    free_safe(c);
+}
+
+/* Create a new connection, storing it in the list of clients. */
+dns_client_t* create_connection(int sock,
+    struct sockaddr_in* ip, socklen_t size) {
+    dns_client_t* rv;
+
+    /* Allocate the space for the new client. */
+    rv = (dns_client_t*)malloc(sizeof(dns_client_t));
+
+    if (!rv) {
+        return NULL;
+    }
+
+    memset(rv, 0, sizeof(dns_client_t));
+
+    /* 将基础参数存储进客户端的结构. */
+    rv->sock = sock;
+    memcpy(&rv->ip_addr, ip, size);
+
+    /* Is the user on IPv6? */
+    if (ip->sin_family == AF_INET6) {
+        rv->is_ipv6 = 1;
+    }
+
+    /* Insert it at the end of our list, and we're done. */
+    TAILQ_INSERT_TAIL(&clients, rv, qentry);
+
+    rv->auth = 1;
+
+    return rv;
+}
+
 static host_info_t* find_host(const char* hostname) {
     int i;
 
@@ -505,7 +557,11 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
 
     /* 检查消息以确保它看起来像是来自PSO. */
     if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
+#ifdef DEBUG
+
         ERR_LOG("端口 %d 发送的DNS数据无效.", sock);
+
+#endif // DEBUG
         return -1;
     }
 
@@ -821,25 +877,6 @@ void UnhookHandler() {
     }
 }
 
-/* Destroy a connection, closing the socket and removing it from the list. */
-void destroy_connection(dns_client_t* c) {
-    TAILQ_REMOVE(&clients, c, qentry);
-
-    if (c->sock >= 0) {
-        close(c->sock);
-    }
-
-    if (c->recvbuf) {
-        free_safe(c->recvbuf);
-    }
-
-    if (c->sendbuf) {
-        free_safe(c->sendbuf);
-    }
-
-    free_safe(c);
-}
-
 const void* my_ntop(struct sockaddr_storage* addr,
     char str[INET6_ADDRSTRLEN]) {
     int family = addr->ss_family;
@@ -970,36 +1007,6 @@ static void cleanup_sockets(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
     }
 }
 
-/* Create a new connection, storing it in the list of clients. */
-dns_client_t* create_connection(int sock, int type,
-    struct sockaddr_in* ip, socklen_t size) {
-    dns_client_t* rv;
-
-    /* Allocate the space for the new client. */
-    rv = (dns_client_t*)malloc(sizeof(dns_client_t));
-
-    if (!rv) {
-        return NULL;
-    }
-
-    memset(rv, 0, sizeof(dns_client_t));
-
-    /* 将基础参数存储进客户端的结构. */
-    rv->sock = sock;
-    rv->type = type;
-    memcpy(&rv->ip_addr, ip, size);
-
-    /* Is the user on IPv6? */
-    if (ip->sin_family == AF_INET6) {
-        rv->is_ipv6 = 1;
-    }
-
-    /* Insert it at the end of our list, and we're done. */
-    TAILQ_INSERT_TAIL(&clients, rv, qentry);
-
-    return rv;
-}
-
 void get_ip_address(struct sockaddr_in* addr, char* ip_buffer) {
     const char* ip = inet_ntoa(addr->sin_addr);
     strncpy(ip_buffer, ip, INET_ADDRSTRLEN);
@@ -1040,28 +1047,34 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             len = sizeof(struct sockaddr);
 
             if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= sizeof(dnsmsg_t)) {
+                ERR_LOG("recvfrom");
                 perror("recvfrom");
             }
             else {
                 sock = ntohs(client_addr.sin_port);
-                i = create_connection(sock, dns_sockets[j].port_type, &client_addr, len);
-                if (!i) {
-                    ERR_LOG("断开端口 %d 创建连接", sock);
+                rv = process_query(sockets[j], recive_len, &client_addr);
+                if (rv) {
+#ifdef DEBUG
+
+                    ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
+
+#endif // DEBUG
                     close(sock);
                 }
                 else {
+                    i = create_connection(sock, &client_addr, len);
+
+                    if (!i) {
+                        ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
+                        close(sock);
+                    }
+
                     ++client_count;
                     set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
-                    rv = process_query(sockets[j], recive_len, &client_addr);
-                    if (rv) {
-                        ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
-                        i->disconnected = 1;
-                    }
-                    else {
-                        get_ip_address(&i->ip_addr, ipstr);
-                        DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
-                        i->disconnected = 1;
-                    }
+
+                    get_ip_address(&i->ip_addr, ipstr);
+                    DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
+                    i->disconnected = 1;
                 }
             }
         }
@@ -1075,12 +1088,12 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
         while (i) {
             tmp = TAILQ_NEXT(i, qentry);
 
-            if (i->disconnected) {
+            if (i->disconnected && i->auth) {
                 get_ip_address(&i->ip_addr, ipstr);
                 DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
-                destroy_connection(i);
                 --client_count;
                 set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                destroy_connection(i);
             }
 
             i = tmp;

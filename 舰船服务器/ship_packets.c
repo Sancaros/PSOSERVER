@@ -336,12 +336,13 @@ uint8_t *get_sendbuf() {
         sendbuf = (uint8_t *)malloc(65536);
 
         if(!sendbuf) {
+            ERR_LOG("malloc");
             perror("malloc");
             return NULL;
         }
 
         if(pthread_setspecific(sendbuf_key, sendbuf)) {
-            perror("pthread_setspecific");
+            ERR_LOG("pthread_setspecific");
             free_safe(sendbuf);
             return NULL;
         }
