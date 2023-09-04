@@ -37,7 +37,7 @@ typedef struct StringReader_s {
 char* read_file_all(const char* fn, size_t* sz);
 
 StringReader* StringReader_init();   // 初始化StringReader对象并返回指针
-StringReader* StringReader_byte(const void* data, size_t length);
+StringReader* StringReader_byte(const char* data, size_t length);
 StringReader* StringReader_file(const char* fn);
 void StringReader_destroy(StringReader* reader);   // 销毁StringReader对象
 void StringReader_setData(StringReader* reader, const char* data, size_t length, size_t offset);   // 设置StringReader对象的数据

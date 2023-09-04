@@ -1019,7 +1019,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
     ssize_t recive_len;
     dns_client_t* i = { 0 }, * tmp;
     int sock = SOCKET_ERROR, j;
-    int rv = 0;
+    int rv = 0, dns_size = sizeof(dnsmsg_t);
     size_t client_count = 0;
 
     /* Go ahead and loop forever... */
@@ -1046,7 +1046,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
         for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
             len = sizeof(struct sockaddr);
 
-            if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= sizeof(dnsmsg_t)) {
+            if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= dns_size) {
                 ERR_LOG("recvfrom");
                 perror("recvfrom");
             }

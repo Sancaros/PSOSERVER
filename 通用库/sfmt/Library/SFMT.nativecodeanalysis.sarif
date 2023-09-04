@@ -1,0 +1,67 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.36.32535.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/sfmt/sfmt.c"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "55429444017dfe292511bb5381e2207252027b22e0537a54e2da01e5b186534e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/sfmt/sfmt.h"
+          },
+          "hashes": {
+            "sha-256": "0e342b918bf38c06b2aca0f9c7dd3d23f57006503b2ec7a66b4df7310b338d9a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/sfmt/sfmt-params.h"
+          },
+          "hashes": {
+            "sha-256": "7afdb8b3389b82df5095d6bbbe5f8f7286ff8ac0988f6f1baaf1e8a10d9a5074"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/sfmt/sfmt-params19937.h"
+          },
+          "hashes": {
+            "sha-256": "7d7aa7d13a19b7328bf82302351552b6240d57fd81ce0bfa784e212b7ae96914"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///e:/梦幻之星项目/psoserver/通用库/sfmt/sfmt-common.h"
+          },
+          "hashes": {
+            "sha-256": "5e6b9e52b722602ab621e372d983d335c0392d55e335f378ba99c43927327821"
+          }
+        }
+      ]
+    }
+  ]
+}

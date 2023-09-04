@@ -156,12 +156,8 @@ void safe_free(const char* func, uint32_t line, void** ptr) {
         free(*ptr);
         *ptr = NULL;
     }
-#ifdef DEBUG
-
     else
         ERR_LOG("(%s[%04d])内存释放错误, 本身已为悬空指针", func, line);
-
-#endif // DEBUG
 }
 
 #ifndef  _WIN32

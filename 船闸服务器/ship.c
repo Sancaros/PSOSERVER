@@ -448,6 +448,15 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     /* Figure out what ship is connecting by the fingerprint */
     psocn_db_escape_str(&conn, fingerprint, (char*)hash, 20);
 
+#ifdef DEBUG
+
+    display_packet(fingerprint, 20);
+    db_upload_temp_data(hash, 20);
+    getchar();
+
+#endif // DEBUG
+
+research_cert:
     sprintf(query, "SELECT idx FROM %s WHERE sha1_fingerprint='%s'"
         , SERVER_SHIPS, fingerprint);
 
@@ -457,10 +466,20 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
         goto err_cert;
     }
 
-    if ((result = psocn_db_result_store(&conn)) == NULL ||
-        (row = psocn_db_result_fetch(result)) == NULL) {
-        SQLERR_LOG("未知舰船密钥");
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未从数据库中匹配到舰船密钥");
         goto err_cert;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        // 若指纹不存在，则执行插入操作
+        snprintf(query, sizeof(query), "INSERT INTO %s (sha1_fingerprint) VALUES ('%s')", SERVER_SHIPS, fingerprint);
+        if (psocn_db_real_query(&conn, query)) {
+            SQLERR_LOG("插入舰船密钥失败: %s\n", psocn_db_error(&conn));
+            goto err_cert;
+        }
+        SQLERR_LOG("未知舰船密钥");
+        goto research_cert;
     }
 
     /* Store the ship ID */
@@ -5786,24 +5805,24 @@ int handle_pkt(ship_t* c) {
         goto end;
     }
 
-    //if (sz == SOCKET_ERROR) {
-    //    DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
-    //    goto end;
-    //}
-    //else if (sz == 0) {
-    //    DBG_LOG("Gnutls *** 注意: 对等方已关闭TLS连接");
-    //    goto end;
-    //}
-    //else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-    //    ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
-    //    goto end;
-    //}
-    //else if (sz < 0) {
-    //    ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-    //    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
-    //    goto end;
-    //}
-    //else if (sz > 0) {
+    if (sz == SOCKET_ERROR) {
+        DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+        goto end;
+    }
+    else if (sz == 0) {
+        DBG_LOG("Gnutls *** 注意: 对等方已关闭TLS连接");
+        goto end;
+    }
+    else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+        ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+        goto end;
+    }
+    else if (sz < 0) {
+        ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+        ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
+        goto end;
+    }
+    else if (sz > 0) {
     sz += c->recvbuf_cur;
     c->recvbuf_cur = 0;
     rbp = recvbuf;
@@ -5864,13 +5883,14 @@ int handle_pkt(ship_t* c) {
     }
     else {
         /* Free the buffer, if we've got nothing in it. */
-        free_safe(c->recvbuf);
+        if (c->recvbuf)
+            free_safe(c->recvbuf);
         c->recvbuf = NULL;
         c->recvbuf_size = 0;
     }
 
     return rv;
-    /*}*/
+    }
 
 end:
     return sz;

@@ -53,6 +53,7 @@
 #include <f_iconv.h>
 #include <debug.h>
 #include <database.h>
+#include <pso_StringReader.h>
 
 #ifndef _WIN32
 #if HAVE_LIBUTIL_H == 1
@@ -280,15 +281,23 @@ static int init_gnutls() {
         return -1;
     }
 
-    if ((rv = gnutls_certificate_set_x509_trust_file(tls_cred, cfg->sgcfg.shipgate_ca,
+    gnutls_datum_t ca_cert = { 0 };
+    ca_cert.data = read_file_all(cfg->sgcfg.shipgate_ca, &ca_cert.size);
+
+    if ((rv = gnutls_certificate_set_x509_trust_mem(tls_cred, &ca_cert,
         GNUTLS_X509_FMT_PEM)) < 0) {
         ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS CA Certificate: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
         return -1;
     }
 
-    if ((rv = gnutls_certificate_set_x509_key_file(tls_cred, cfg->sgcfg.shipgate_cert,
-        cfg->sgcfg.shipgate_key,
+    gnutls_datum_t cert = { 0 };
+    cert.data = read_file_all(cfg->sgcfg.shipgate_cert, &cert.size);
+    gnutls_datum_t key = { 0 };
+    key.data = read_file_all(cfg->sgcfg.shipgate_key, &key.size);
+
+    if ((rv = gnutls_certificate_set_x509_key_mem(tls_cred, &cert,
+        &key,
         GNUTLS_X509_FMT_PEM))) {
         ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS key file: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
@@ -296,8 +305,8 @@ static int init_gnutls() {
     }
 
     /* Generate Diffie-Hellman parameters */
-    CONFIG_LOG("Generating Diffie-Hellman parameters..."
-        "This may take a little while.");
+    CONFIG_LOG("正在生成Diffie-Hellman参数..."
+        "请稍等.");
     if ((rv = gnutls_dh_params_init(&dh_params))) {
         ERR_LOG("GNUTLS *** 注意: Cannot initialize GnuTLS DH parameters: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
