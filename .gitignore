@@ -362,3 +362,18 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /settings
+/工具/gnutls key cert tool/ca-cert.pem
+/工具/gnutls key cert tool/ca-csr.pem
+/工具/gnutls key cert tool/ca-key.pem
+/工具/gnutls key cert tool/ca-template.conf
+/工具/gnutls key cert tool/client-cert.pem
+/工具/gnutls key cert tool/client-csr.pem
+/工具/gnutls key cert tool/client-key.pem
+/工具/gnutls key cert tool/client-template.conf
+/工具/gnutls key cert tool/server-cert.pem
+/工具/gnutls key cert tool/server-csr.pem
+/工具/gnutls key cert tool/server-key.pem
+/工具/gnutls key cert tool/server-template.conf
+/工具/gnutls key cert tool/ca-template.conf
+/工具/gnutls key cert tool/client-template.conf
+/工具/gnutls key cert tool/server-template.conf
