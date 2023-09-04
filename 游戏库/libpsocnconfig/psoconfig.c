@@ -414,8 +414,6 @@ static int handle_shipgate(xmlNode* n, psocn_config_t* cur) {
     cur->sgcfg.shipgate_key = (char*)key;
     cur->sgcfg.shipgate_ca = (char*)ca;
 
-    //ERR_LOG("%s", cur->shipgate_cert);
-
 err:
     if (rv < 0) {
         xmlFree(ca);

@@ -69,7 +69,7 @@
 extern psocn_dbconn_t conn;
 
 /* GnuTLS 加密数据交换... */
-extern gnutls_anon_server_credentials_t anoncred;
+extern gnutls_certificate_credentials_t tls_cred;
 extern gnutls_priority_t tls_prio;
 
 /* Events... */
@@ -324,9 +324,12 @@ static size_t my_strnlen(const uint8_t* str, size_t len) {
 ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     ship_t* rv;
     int tmp;
+    unsigned int peer_status, cert_list_size;
+    gnutls_x509_crt_t cert;
+    const gnutls_datum_t* cert_list;
+    uint8_t hash[20];
     size_t sz = 20;
-    char query[256];
-    //uint8_t rc4key[128];
+    char query[256], fingerprint[40];
     void* result;
     char** row;
 
@@ -348,21 +351,19 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
     /* Create the TLS session */
     gnutls_init(&rv->session, GNUTLS_SERVER);
-
     gnutls_priority_set(rv->session, tls_prio);
-
-    tmp = gnutls_credentials_set(rv->session, GNUTLS_CRD_ANON, anoncred);
-
+    tmp = gnutls_credentials_set(rv->session, GNUTLS_CRD_CERTIFICATE, tls_cred);
     if (tmp < 0) {
-        ERR_LOG("TLS 匿名凭据错误: %s", gnutls_strerror(tmp));
+        ERR_LOG("GNUTLS *** 注意: TLS 匿名凭据错误: %s", gnutls_strerror(tmp));
         goto err_tls;
     }
+
+    gnutls_certificate_server_set_request(rv->session, GNUTLS_CERT_REQUIRE);
 
 #if (SIZEOF_INT != SIZEOF_VOIDP) && (SIZEOF_LONG_INT == SIZEOF_VOIDP)
     gnutls_transport_set_ptr(rv->session, (gnutls_transport_ptr_t)((long)sock));
 #else
     gnutls_transport_set_ptr(rv->session, (gnutls_transport_ptr_t)sock);
-    //gnutls_transport_set_int(rv->session, sock);
 #endif
 
     /* Do the TLS handshake */
@@ -371,20 +372,84 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     } while (tmp < 0 && gnutls_error_is_fatal(tmp) == 0);
 
     if (tmp < 0) {
-        //ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(tmp));
+        ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(tmp));
         goto err_hs;
     }
-    //else {
-    //    SGATE_LOG("GNUTLS *** TLS 握手成功");
+    else {
+        SGATE_LOG("GNUTLS *** TLS 握手成功");
 
-    //    char* desc;
-    //    desc = gnutls_session_get_desc(rv->session);
-    //    SGATE_LOG("GNUTLS *** Session 信息: %d - %s", rv->sock, desc);
-    //    gnutls_free(desc);
-    //}
+        char* desc;
+        desc = gnutls_session_get_desc(rv->session);
+        SGATE_LOG("GNUTLS *** Session 信息: %d - %s", rv->sock, desc);
+        gnutls_free(desc);
+    }
 
-    sprintf(query, "SELECT idx FROM %s WHERE idx='%d'"
-        , SERVER_SHIPS, 1);
+    /* Verify that the peer has a valid certificate */
+    tmp = gnutls_certificate_verify_peers2(rv->session, &peer_status);
+
+    if (tmp < 0) {
+        ERR_LOG("GNUTLS *** 注意: 验证证书有效性失败: %s", gnutls_strerror(tmp));
+        goto err_cert;
+    }
+
+    /* Check whether or not the peer is trusted... */
+    if (peer_status & GNUTLS_CERT_INVALID) {
+        ERR_LOG("GNUTLS *** 注意: 不受信任的对等连接, 原因如下 (%08x):"
+            , peer_status);
+
+        if (peer_status & GNUTLS_CERT_SIGNER_NOT_FOUND)
+            ERR_LOG("未找到发卡机构");
+        if (peer_status & GNUTLS_CERT_SIGNER_NOT_CA)
+            ERR_LOG("发卡机构不是CA");
+        if (peer_status & GNUTLS_CERT_NOT_ACTIVATED)
+            ERR_LOG("证书尚未激活");
+        if (peer_status & GNUTLS_CERT_EXPIRED)
+            ERR_LOG("证书已过期");
+        if (peer_status & GNUTLS_CERT_REVOKED)
+            ERR_LOG("证书已吊销");
+        if (peer_status & GNUTLS_CERT_INSECURE_ALGORITHM)
+            ERR_LOG("不安全的证书签名");
+
+        goto err_cert;
+    }
+
+    /* Verify that we know the peer */
+    if (gnutls_certificate_type_get(rv->session) != GNUTLS_CRT_X509) {
+        ERR_LOG("GNUTLS *** 注意: 无效证书类型!");
+        goto err_cert;
+    }
+
+    tmp = gnutls_x509_crt_init(&cert);
+    if (tmp < 0) {
+        ERR_LOG("GNUTLS *** 注意: 无法初始化证书: %s", gnutls_strerror(tmp));
+        goto err_cert;
+    }
+
+    /* Get the peer's certificate */
+    cert_list = gnutls_certificate_get_peers(rv->session, &cert_list_size);
+    if (cert_list == NULL) {
+        ERR_LOG("GNUTLS *** 注意: No certs found for connection!?");
+        goto err_cert;
+    }
+
+    tmp = gnutls_x509_crt_import(cert, &cert_list[0], GNUTLS_X509_FMT_DER);
+    if (tmp < 0) {
+        ERR_LOG("GNUTLS *** 注意: Cannot parse certificate: %s", gnutls_strerror(tmp));
+        goto err_cert;
+    }
+
+    /* Get the SHA1 fingerprint */
+    tmp = gnutls_x509_crt_get_fingerprint(cert, GNUTLS_DIG_SHA1, hash, &sz);
+    if (tmp < 0) {
+        ERR_LOG("GNUTLS *** 注意: Cannot read hash: %s", gnutls_strerror(tmp));
+        goto err_cert;
+    }
+
+    /* Figure out what ship is connecting by the fingerprint */
+    psocn_db_escape_str(&conn, fingerprint, (char*)hash, 20);
+
+    sprintf(query, "SELECT idx FROM %s WHERE sha1_fingerprint='%s'"
+        , SERVER_SHIPS, fingerprint);
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法查询舰船密钥数据库");
@@ -401,7 +466,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     /* Store the ship ID */
     rv->key_idx = atoi(row[0]);
     psocn_db_result_free(result);
-    //gnutls_x509_crt_deinit(cert);
+    gnutls_x509_crt_deinit(cert);
 
     /* Send the client the welcome packet, or die trying. */
     if (send_welcome(rv)) {

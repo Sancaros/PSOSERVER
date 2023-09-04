@@ -52,8 +52,7 @@
 #include "pmtdata.h"
 
 /* TLS stuff -- from ship_server.c */
-extern gnutls_anon_client_credentials_t anoncred;
-//extern gnutls_certificate_credentials_t tls_cred;
+extern gnutls_certificate_credentials_t tls_cred;
 extern gnutls_priority_t tls_prio;
 
 extern int enable_ipv6;
@@ -290,12 +289,12 @@ int shipgate_send_common_bank(shipgate_conn_t* c,
    for communciation on success. */
 static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
     int sock = SOCKET_ERROR, irv;
-    //unsigned int peer_status;
+    unsigned int peer_status;
     miniship_t* i, * tmp;
     struct addrinfo hints;
     struct addrinfo* server, * j;
     char sg_port[16];
-    //char ipstr[INET6_ADDRSTRLEN];
+    char ipstr[INET6_ADDRSTRLEN] = { 0 };
     void* addr;
 
     if (reconn) {
@@ -352,8 +351,10 @@ reconnet:
             continue;
         }
 
-        //inet_ntop(j->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
-        //SHIPS_LOG("    地址 %s", ipstr);
+#ifdef DEBUG
+        inet_ntop(j->ai_family, addr, ipstr, INET6_ADDRSTRLEN);
+        SHIPS_LOG("    地址 %s", ipstr);
+#endif // DEBUG
 
         sock = socket(j->ai_family, SOCK_STREAM, IPPROTO_TCP);
 
@@ -379,43 +380,16 @@ reconnet:
     /* Did we connect? */
     if (sock == SOCKET_ERROR) {
         ERR_LOG("无法连接至船闸!");
-        /* 通知每一个客户端 舰闸掉线了. */
-        //TAILQ_FOREACH(it, s->clients, qentry) {
-        //    /* Check if this connection was trying to send us something. */
-
-        //    DBG_LOG("GC %u", it->guildcard);
-        //}
-        //it = TAILQ_FIRST(s->clients);
-        //DBG_LOG("GC %u", it->guildcard);
-        //while (it) {
-        //    DBG_LOG("GC %u", it->guildcard);
-        //    ittmp = TAILQ_NEXT(it, qentry);
-
-        //    if (it->guildcard)
-        //        send_txt(it, __(it, "\tE\tC4舰船脱离，请尽快联系管理员恢复！"));
-        //    //if (it->flags & CLIENT_FLAG_DISCONNECTED) {
-        //    //    client_destroy_connection(it, s->clients);
-        //    //}
-
-        //    it = ittmp;
-        //}
         goto reconnet;
-        //return -1;
     }
 
     /* Set up the TLS session */
     gnutls_init(&rv->session, GNUTLS_CLIENT);
-
-    /* Use default priorities */
-	gnutls_priority_set(rv->session, tls_prio);
-    //gnutls_priority_set_direct(rv->session,
-        //"PERFORMANCE:+ANON-ECDH:+ANON-DH",
-        //NULL);
-
-    irv = gnutls_credentials_set(rv->session, GNUTLS_CRD_ANON, anoncred);
+    gnutls_priority_set(rv->session, tls_prio);
+    irv = gnutls_credentials_set(rv->session, GNUTLS_CRD_CERTIFICATE, tls_cred);
 
     if (irv < 0) {
-        ERR_LOG("TLS 匿名凭据错误: %s", gnutls_strerror(irv));
+        ERR_LOG("GNUTLS *** 注意: TLS 匿名凭据错误: %s", gnutls_strerror(irv));
         goto err_tls;
     }
 
@@ -423,75 +397,71 @@ reconnet:
     gnutls_transport_set_ptr(rv->session, (gnutls_transport_ptr_t)((long)sock));
 #else
     gnutls_transport_set_ptr(rv->session, (gnutls_transport_ptr_t)sock);
-    //gnutls_transport_set_int(rv->session, sock);
 #endif
 
     /* Do the TLS handshake */
     irv = gnutls_handshake(rv->session);
 
     if (irv < 0) {
-        //ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(irv));
+        ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(irv));
         goto err_tls;
     }
-    //else {
-    //    SHIPS_LOG("GNUTLS *** TLS 握手成功");
+    else {
+        SHIPS_LOG("GNUTLS *** TLS 握手成功");
 
-    //    char* desc;
-    //    desc = gnutls_session_get_desc(rv->session);
-    //    SHIPS_LOG("GNUTLS *** Session 信息: %d - %s", sock, desc);
-    //    gnutls_free(desc);
-    //}
+        char* desc;
+        desc = gnutls_session_get_desc(rv->session);
+        SHIPS_LOG("GNUTLS *** Session 信息: %d - %s", sock, desc);
+        gnutls_free(desc);
+    }
 
-    ///* Verify that the peer has a valid certificate */
-    //irv = gnutls_certificate_verify_peers2(rv->session, &peer_status);
+    /* Verify that the peer has a valid certificate */
+    irv = gnutls_certificate_verify_peers2(rv->session, &peer_status);
 
-    //if(irv < 0) {
-    //    ERR_LOG("验证证书有效性失败: %s", gnutls_strerror(irv));
-    //    gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
-    //    closesocket(sock);
-    //    gnutls_deinit(rv->session);
-    //    return -4;
-    //}
+    if(irv < 0) {
+        ERR_LOG("GNUTLS *** 注意: 验证证书有效性失败: %s", gnutls_strerror(irv));
+        gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
+        closesocket(sock);
+        gnutls_deinit(rv->session);
+        return -4;
+    }
 
-    ///* Check whether or not the peer is trusted... */
-    //if(peer_status & GNUTLS_CERT_INVALID) {
-    //    ERR_LOG("不受信任的对等连接, 原因如下 (%08x):"
-    //        , peer_status);
-    //    
-    //    if (peer_status & GNUTLS_CERT_SIGNER_NOT_FOUND)
-    //        ERR_LOG("未找到发卡机构");
-    //    if (peer_status & GNUTLS_CERT_SIGNER_NOT_CA)
-    //        ERR_LOG("发卡机构不是CA");
-    //    if (peer_status & GNUTLS_CERT_NOT_ACTIVATED)
-    //        ERR_LOG("证书尚未激活");
-    //    if (peer_status & GNUTLS_CERT_EXPIRED)
-    //        ERR_LOG("证书已过期");
-    //    if (peer_status & GNUTLS_CERT_REVOKED)
-    //        ERR_LOG("证书已吊销");
-    //    if (peer_status & GNUTLS_CERT_INSECURE_ALGORITHM)
-    //        ERR_LOG("不安全的证书签名");
-    //    
-    //    goto err_cert;
-    //    gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
-    //    closesocket(sock);
-    //    gnutls_deinit(rv->session);
-    //    return -5;
-    //}
+    /* Check whether or not the peer is trusted... */
+    if(peer_status & GNUTLS_CERT_INVALID) {
+        ERR_LOG("GNUTLS *** 注意: 不受信任的对等连接, 原因如下 (%08x):"
+            , peer_status);
+        
+        if (peer_status & GNUTLS_CERT_SIGNER_NOT_FOUND)
+            ERR_LOG("未找到发卡机构");
+        if (peer_status & GNUTLS_CERT_SIGNER_NOT_CA)
+            ERR_LOG("发卡机构不是CA");
+        if (peer_status & GNUTLS_CERT_NOT_ACTIVATED)
+            ERR_LOG("证书尚未激活");
+        if (peer_status & GNUTLS_CERT_EXPIRED)
+            ERR_LOG("证书已过期");
+        if (peer_status & GNUTLS_CERT_REVOKED)
+            ERR_LOG("证书已吊销");
+        if (peer_status & GNUTLS_CERT_INSECURE_ALGORITHM)
+            ERR_LOG("不安全的证书签名");
+        
+        goto err_cert;
+    }
 
     /* Save a few other things in the struct */
     rv->sock = sock;
     rv->ship = s;
 
     return 0;
+
 err_tls:
     closesocket(sock);
     gnutls_deinit(rv->session);
     return -3;
-//err_cert:
-//    gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
-//    closesocket(sock);
-//    gnutls_deinit(rv->session);
-//    return -5;
+err_cert:
+    gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
+    closesocket(sock);
+    gnutls_deinit(rv->session);
+    return -5;
 }
 
 int shipgate_connect(ship_t* s, shipgate_conn_t* rv) {

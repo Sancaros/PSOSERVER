@@ -1,0 +1,1 @@
+gnutls-3.8.1-w32\bin\certtool --generate-request --load-privkey server.key --template 0.1-1csr_config.tmpl --outfile certificate.csr

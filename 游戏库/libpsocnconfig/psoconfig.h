@@ -241,9 +241,6 @@ typedef struct psocn_shipcfg {
     char* name;
     char* ship_cert;
     char* ship_key;
-    uint32_t ship_key_idx;
-    uint8_t ship_rc4key[128];
-    char* ship_dir;
     char* shipgate_ca;
     char* gm_file;
     psocn_limit_config_t* limits;

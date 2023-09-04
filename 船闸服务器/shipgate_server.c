@@ -120,11 +120,9 @@ psocn_dbconfig_t* dbcfg;
 psocn_dbconn_t conn;
 
 /* GnuTLS 加密数据交换... */
-gnutls_anon_server_credentials_t anoncred;
-//gnutls_certificate_credentials_t tls_cred;
+gnutls_certificate_credentials_t tls_cred;
 gnutls_priority_t tls_prio;
-//static gnutls_dh_params_t dh_params;
-//static gnutls_sec_param_t dh_params;
+static gnutls_dh_params_t dh_params;
 
 static volatile sig_atomic_t shutting_down = 0;
 static volatile sig_atomic_t resend_scripts = 0;
@@ -267,38 +265,69 @@ static psocn_config_t* load_config(void) {
 static int init_gnutls() {
     int rv;
 
-    if (gnutls_check_version("3.1.4") == NULL) {
-        fprintf(stderr, "GnuTLS 3.1.4 or later is required for this example\n");
-        return -1;
-    }
-
     /* Do the initial init */
     gnutls_global_init();
 
+    if (gnutls_check_version("3.8.0") == NULL) {
+        ERR_LOG("GNUTLS *** 注意: GnuTLS 3.8.0 or later is required for this example");
+        return -1;
+    }
+
     /* Set up our credentials */
-    if ((rv = gnutls_anon_allocate_server_credentials(&anoncred))) {
-        ERR_LOG("无法为匿名 GnuTLS 分配内存: %s (%s)",
+    if ((rv = gnutls_certificate_allocate_credentials(&tls_cred)) != GNUTLS_E_SUCCESS) {
+        ERR_LOG("GNUTLS *** 注意: Cannot allocate GnuTLS credentials: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
         return -1;
     }
+
+    if ((rv = gnutls_certificate_set_x509_trust_file(tls_cred, cfg->sgcfg.shipgate_ca,
+        GNUTLS_X509_FMT_PEM)) < 0) {
+        ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS CA Certificate: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    if ((rv = gnutls_certificate_set_x509_key_file(tls_cred, cfg->sgcfg.shipgate_cert,
+        cfg->sgcfg.shipgate_key,
+        GNUTLS_X509_FMT_PEM))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS key file: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    /* Generate Diffie-Hellman parameters */
+    CONFIG_LOG("Generating Diffie-Hellman parameters..."
+        "This may take a little while.");
+    if ((rv = gnutls_dh_params_init(&dh_params))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot initialize GnuTLS DH parameters: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    if ((rv = gnutls_dh_params_generate2(dh_params, 1024))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot generate GnuTLS DH parameters: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    CONFIG_LOG("Gnutls *** Tls 服务端设置完成!");
 
     /* Set our priorities */
-    if ((rv = gnutls_priority_init(&tls_prio, "PERFORMANCE:+ANON-ECDH:+ANON-DH", NULL))) {
-        ERR_LOG("无法初始化 GnuTLS 优先权: %s (%s)",
+    if ((rv = gnutls_priority_init(&tls_prio, "NORMAL:+COMP-DEFLATE", NULL))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot initialize GnuTLS priorities: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
         return -1;
     }
 
-    //gnutls_certificate_set_dh_params(anoncred, dh_params);
-
-    gnutls_anon_set_server_known_dh_params(anoncred, GNUTLS_SEC_PARAM_MEDIUM);
+    /* Set the Diffie-Hellman parameters */
+    gnutls_certificate_set_dh_params(tls_cred, dh_params);
 
     return 0;
 }
 
 static void cleanup_gnutls() {
-    //gnutls_dh_params_deinit(dh_params);
-    gnutls_anon_free_server_credentials(anoncred);
+    gnutls_dh_params_deinit(dh_params);
+    gnutls_certificate_free_credentials(tls_cred);
     gnutls_priority_deinit(tls_prio);
     gnutls_global_deinit();
 }
@@ -1019,7 +1048,7 @@ int __cdecl main(int argc, char** argv) {
         shutting_down = 0;
 
         /* Initialize GnuTLS */
-        if (init_gnutls(cfg))
+        if (init_gnutls())
             ERR_EXIT("无法设置 GnuTLS 证书");
 
         /* Initialize all the iconv contexts we'll need */

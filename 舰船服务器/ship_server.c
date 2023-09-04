@@ -113,17 +113,16 @@ uint32_t ship_ip4;
 uint8_t ship_ip6[16];
 
 /* TLS stuff */
-gnutls_anon_client_credentials_t anoncred;
-//gnutls_certificate_credentials_t tls_cred;
+gnutls_certificate_credentials_t tls_cred;
 gnutls_priority_t tls_prio;
-//static gnutls_dh_params_t dh_params;
+static gnutls_dh_params_t dh_params;
 
 static const char* config_file = NULL;
 static const char* custom_dir = NULL;
 static int dont_daemonize = 0;
 static int check_only = 0;
 static const char* pidfile_name = NULL;
-//static struct pidfh *pf = NULL;
+static struct pidfh *pf = NULL;
 static const char* runas_user = RUNAS_DEFAULT;
 
 /* Print help to the user to stdout. */
@@ -237,41 +236,74 @@ static psocn_ship_t* load_config(void) {
     return cfg;
 }
 
-static int init_gnutls() {
+static int init_gnutls(psocn_ship_t* cfg) {
     int rv;
-
-    if (gnutls_check_version("3.1.4") == NULL) {
-        fprintf(stderr, "GnuTLS 3.1.4 or later is required for this example\n");
-        return -1;
-    }
 
     /* Do the global init */
     gnutls_global_init();
 
+    if (gnutls_check_version("3.8.0") == NULL) {
+        ERR_LOG("GNUTLS *** 注意: GnuTLS 3.8.0 or later is required for this example");
+        return -1;
+    }
+
     /* Set up our credentials */
-    rv = gnutls_anon_allocate_client_credentials(&anoncred);
-    if (rv) {
-        ERR_LOG(
-            "无法为匿名 GnuTLS 分配内存: %s (%s)",
+    if ((rv = gnutls_certificate_allocate_credentials(&tls_cred)) != GNUTLS_E_SUCCESS) {
+        ERR_LOG("GNUTLS *** 注意: Cannot allocate GnuTLS credentials: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
         return -1;
     }
 
-    /* Set our priorities */
-    rv = gnutls_priority_init(&tls_prio, "PERFORMANCE:+ANON-ECDH:+ANON-DH", NULL);
-    if (rv) {
-        ERR_LOG(
-            "无法初始化 GnuTLS 优先权: %s (%s)",
+    DBG_LOG("%s %s %s", cfg->shipgate_ca, cfg->ship_cert, cfg->ship_key);
+
+    if ((rv = gnutls_certificate_set_x509_trust_file(tls_cred, cfg->shipgate_ca,
+                                                     GNUTLS_X509_FMT_PEM)) < 0) {
+        ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS CA Certificate: %s (%s)",
             gnutls_strerror(rv), gnutls_strerror_name(rv));
         return -1;
     }
+
+    if ((rv = gnutls_certificate_set_x509_key_file(tls_cred, cfg->ship_cert,
+                                                   cfg->ship_key,
+                                                   GNUTLS_X509_FMT_PEM))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot set GnuTLS key file: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    /* Generate Diffie-Hellman parameters */
+    CONFIG_LOG("Generating Diffie-Hellman parameters..."
+        "This may take a little while.");
+    if ((rv = gnutls_dh_params_init(&dh_params))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot initialize GnuTLS DH parameters: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    if ((rv = gnutls_dh_params_generate2(dh_params, 1024))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot generate GnuTLS DH parameters: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    CONFIG_LOG("Gnutls *** Tls 客户端设置完成!");
+
+    /* Set our priorities */
+    if ((rv = gnutls_priority_init(&tls_prio, "NORMAL:+COMP-DEFLATE", NULL))) {
+        ERR_LOG("GNUTLS *** 注意: Cannot initialize GnuTLS priorities: %s (%s)",
+            gnutls_strerror(rv), gnutls_strerror_name(rv));
+        return -1;
+    }
+
+    /* Set the Diffie-Hellman parameters */
+    gnutls_certificate_set_dh_params(tls_cred, dh_params);
 
     return 0;
 }
 
 static void cleanup_gnutls() {
-    //gnutls_dh_params_deinit(dh_params);
-    gnutls_anon_free_client_credentials(anoncred);
+    gnutls_dh_params_deinit(dh_params);
+    gnutls_certificate_free_credentials(tls_cred);
     gnutls_priority_deinit(tls_prio);
     gnutls_global_deinit();
 }
@@ -380,30 +412,6 @@ static int setup_addresses(psocn_ship_t* cfg) {
         ERR_LOG("无法获取到IPv6地址 (但设置了IPv6域名)!");
         return -1;
     }
-
-    return 0;
-}
-
-static int shipkey_init(psocn_ship_t* cfg) {
-    FILE* fp;
-    //char Ship_Keys_Dir[255] = "System\\ShipKey\\ship_key.bin";
-
-    //SHIPS_LOG("加载舰船密钥 %s", &Ship_Keys_Dir[0]);
-
-    errno_t err = fopen_s(&fp, cfg->ship_key, "rb");
-    if (err)
-    {
-        ERR_LOG("未找到 %s 文件!", cfg->ship_key);
-        ERR_LOG("按下 [回车键] 退出...");
-        gets_s(&dp[0], sizeof(dp));
-        return -1;
-    }
-
-    fread(&cfg->ship_key_idx, 1, 4, fp);
-    fread(&cfg->ship_rc4key[0], 1, 128, fp);
-    fclose(fp);
-
-    SHIPS_LOG("加载舰船密钥 %d 字节", sizeof(cfg->ship_rc4key));
 
     return 0;
 }
@@ -986,7 +994,7 @@ int __cdecl main(int argc, char** argv) {
 
         /* Initialize GnuTLS stuff... */
         if (!check_only) {
-            if (init_gnutls())
+            if (init_gnutls(cfg))
                 ERR_EXIT("无法设置 GnuTLS 证书");
 
             //if (shipkey_init(cfg))

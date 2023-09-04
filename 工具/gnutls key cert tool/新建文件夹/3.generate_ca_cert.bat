@@ -1,0 +1,1 @@
+gnutls-3.8.1-w32\bin\certtool --generate-self-signed --load-privkey server.key --template 0.certificate.cfg --infile certificate.csr --outfile certificate.crt

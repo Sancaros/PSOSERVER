@@ -54,7 +54,7 @@ static const char language_codes[LANGUAGE_CODE_COUNT][3] = {
 };
 
 static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
-    xmlChar* proto_ver, * ip, * port, * ca, * addr;
+    xmlChar* proto_ver, * addr, * ip, * port, * key, * cert, * ca;
     int rv;
     unsigned long rv2;
     uint32_t ip4 = 0;
@@ -62,15 +62,17 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
 
     /* Grab the attributes of the tag. */
     proto_ver = xmlGetProp(n, XC"proto_ver");
+    addr = xmlGetProp(n, XC"addr");
     ip = xmlGetProp(n, XC"ip");
     port = xmlGetProp(n, XC"port");
-    ca = xmlGetProp(n, XC"ca");
-    addr = xmlGetProp(n, XC"addr");
+    key = xmlGetProp(n, XC"key");
+    cert = xmlGetProp(n, XC"cert");
+    ca = xmlGetProp(n, XC"ca-cert");
 
     //ERR_LOG("handle_shipgate %s %s %s %s", (char*)ip, (char*)port, (char*)ca, (char*)addr);
 
     /* Make sure we have all of them... */
-    if (!port || !ca) {
+    if (!port || !key || !cert || !ca) {
         ERR_LOG("必须为船闸设置端口和ca");
         rv = -1;
         goto err;
@@ -114,7 +116,9 @@ static int handle_shipgate(xmlNode* n, psocn_ship_t* cfg) {
     cfg->shipgate_port = (uint16_t)rv2;
     cfg->shipgate_proto_ver = strtoul((char*)proto_ver, NULL, 0);
 
-    //printf("%d\n", cfg->shipgate_proto_ver);
+
+    cfg->ship_key = (char*)key;
+    cfg->ship_cert = (char*)cert;
     cfg->shipgate_ca = (char*)ca;
     rv = 0;
 
@@ -123,9 +127,11 @@ err:
     xmlFree(port);
 
     if (rv) {
-        xmlFree(ip);
-        xmlFree(ca);
         xmlFree(addr);
+        xmlFree(ip);
+        xmlFree(key);
+        xmlFree(cert);
+        xmlFree(ca);
     }
 
     return rv;
@@ -1015,7 +1021,7 @@ static int handle_mageditdata(xmlNode* n, psocn_ship_t* cur) {
 }
 
 static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
-    xmlChar* name, * blocks, * key, * gms, * menu, * gmonly, * cert, * priv;
+    xmlChar* name, * blocks, * gms, * menu, * gmonly, * priv;
     int rv;
     unsigned long rv2;
     xmlNode* n2;
@@ -1023,14 +1029,12 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
     /* Grab the attributes of the <ship> tag. */
     name = xmlGetProp(n, XC"name");
     blocks = xmlGetProp(n, XC"blocks");
-    key = xmlGetProp(n, XC"key");
     gms = xmlGetProp(n, XC"gms");
-    menu = xmlGetProp(n, XC"menu");
     gmonly = xmlGetProp(n, XC"gmonly");
-    cert = xmlGetProp(n, XC"cert");
+    menu = xmlGetProp(n, XC"menu");
     priv = xmlGetProp(n, XC"privileges");
 
-    if (!name || !blocks || !key || !gms || !gmonly || !menu || !cert) {
+    if (!name || !blocks|| !gms || !gmonly || !menu) {
         ERR_LOG("缺少舰船的必需设置");
         rv = -1;
         goto err;
@@ -1038,8 +1042,6 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
 
     /* Copy out the strings out that we need */
     cur->name = (char*)name;
-    cur->ship_key = (char*)key;
-    cur->ship_cert = (char*)cert;
     cur->gm_file = (char*)gms;
 
     /* Copy out the gmonly flag */
