@@ -309,11 +309,13 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
 
         rv->has_key = 0;
         rv->hdr_read = 0;
-        free_safe(rv->recvbuf);
+        if(rv->recvbuf)
+            free_safe(rv->recvbuf);
         rv->recvbuf = NULL;
         rv->recvbuf_cur = rv->recvbuf_size = 0;
 
-        free_safe(rv->sendbuf);
+        if (rv->sendbuf)
+            free_safe(rv->sendbuf);
         rv->sendbuf = NULL;
         rv->sendbuf_cur = rv->sendbuf_size = 0;
     }

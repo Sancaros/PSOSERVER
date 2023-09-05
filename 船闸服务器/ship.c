@@ -5796,14 +5796,14 @@ int handle_pkt(ship_t* c) {
     //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
-    if (sz <= 0) {
-        if (sz == SOCKET_ERROR) {
-            ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
-        }else
-            ERR_LOG("Gnutls *** 注意: ship_recv sz = %d", sz);
+    //if (sz <= 0) {
+    //    if (sz == SOCKET_ERROR) {
+    //        ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
+    //    }else
+    //        ERR_LOG("Gnutls *** 注意: ship_recv sz = %d", sz);
 
-        goto end;
-    }
+    //    goto end;
+    //}
 
     if (sz == SOCKET_ERROR) {
         DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
