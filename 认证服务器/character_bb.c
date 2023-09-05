@@ -1080,14 +1080,14 @@ int process_character_packet_bb(login_client_t *c, void *pkt) {
     bb_pkt_hdr_t *bb = (bb_pkt_hdr_t *)pkt;
     uint16_t type = LE16(bb->pkt_type);
 
-    //DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
-
+#ifdef DEBUG
+    DBG_LOG("BB角色指令: 0x%04X %s", type, c_cmd_name(type, 0));
     //display_packet(pkt, LE16(bb->pkt_len));
+#endif // DEBUG
 
     switch(type) {
             /* 0x0005 5*/
         case BURSTING_TYPE:
-            //c->disconnected = 1;
             return handle_bb_burst(c, (bb_burst_pkt*)pkt);
 
             /* 0x0009 9*/

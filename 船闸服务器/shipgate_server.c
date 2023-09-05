@@ -281,7 +281,8 @@ static int init_gnutls() {
         return -1;
     }
 
-    gnutls_datum_t ca_cert = { 0 };
+    gnutls_datum_t ca_cert = { 0 }, cert = { 0 }, key = { 0 };
+
     ca_cert.data = read_file_all(cfg->sgcfg.shipgate_ca, &ca_cert.size);
 
     if ((rv = gnutls_certificate_set_x509_trust_mem(tls_cred, &ca_cert,
@@ -291,9 +292,7 @@ static int init_gnutls() {
         return -1;
     }
 
-    gnutls_datum_t cert = { 0 };
     cert.data = read_file_all(cfg->sgcfg.shipgate_cert, &cert.size);
-    gnutls_datum_t key = { 0 };
     key.data = read_file_all(cfg->sgcfg.shipgate_key, &key.size);
 
     if ((rv = gnutls_certificate_set_x509_key_mem(tls_cred, &cert,

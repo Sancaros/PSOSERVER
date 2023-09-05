@@ -24,7 +24,6 @@ const static char* param_files[NUM_PARAM_FILES] = {
     "ItemPMT.prs",
     "BattleParamEntry.dat",
     "BattleParamEntry_on.dat",
-    //"BattleParamEntry_on2.dat",
     "BattleParamEntry_lab.dat",
     "BattleParamEntry_lab_on.dat",
     "BattleParamEntry_ep4.dat",

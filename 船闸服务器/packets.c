@@ -1179,15 +1179,9 @@ int send_player_level_table_bb(ship_t* c) {
     int compressed = ~Z_OK;
     int compress_power = 9;
     size_t data_size = sizeof(bb_level_table_t);
+    bb_level_table_t bb_level_tb = { 0 };
 
-    bb_level_table_t* bb_level_tb = (bb_level_table_t*)malloc(data_size);
-
-    if (!bb_level_tb) {
-        ERR_LOG("给 bb_level_tb 分配内存失败!");
-        return -1;
-    }
-
-    if (read_player_level_table_bb(bb_level_tb)) {
+    if (read_player_level_table_bb(&bb_level_tb)) {
         ERR_LOG("无法读取 Blue Burst 等级数据表");
         return -2;
     }
@@ -1196,7 +1190,7 @@ int send_player_level_table_bb(ship_t* c) {
     cmp_sz = compressBound((uLong)data_size);
 
     if ((cmp_buf = (Bytef*)malloc(cmp_sz))) {
-        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)bb_level_tb,
+        compressed = compress2(cmp_buf, &cmp_sz, (Bytef*)&bb_level_tb,
             (uLong)data_size, compress_power);
     }
 
@@ -1211,8 +1205,6 @@ int send_player_level_table_bb(ship_t* c) {
     }
 
     i = send_pl_lvl_data_bb(c, (uint8_t*)cmp_buf, cmp_sz);
-
-    free_safe(bb_level_tb);
 
     return i;
 }

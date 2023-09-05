@@ -255,9 +255,8 @@ static int init_gnutls(psocn_ship_t* cfg) {
         return -1;
     }
 
-    DBG_LOG("%s %s %s", cfg->shipgate_ca, cfg->ship_cert, cfg->ship_key);
+    gnutls_datum_t ca_cert = { 0 }, cert = { 0 }, key = { 0 };
 
-    gnutls_datum_t ca_cert = { 0 };
     ca_cert.data = read_file_all(cfg->shipgate_ca, &ca_cert.size);
 
     if ((rv = gnutls_certificate_set_x509_trust_mem(tls_cred, &ca_cert,
@@ -267,9 +266,7 @@ static int init_gnutls(psocn_ship_t* cfg) {
         return -1;
     }
 
-    gnutls_datum_t cert = { 0 };
     cert.data = read_file_all(cfg->ship_cert, &cert.size);
-    gnutls_datum_t key = { 0 };
     key.data = read_file_all(cfg->ship_key, &key.size);
 
     if ((rv = gnutls_certificate_set_x509_key_mem(tls_cred, &cert,
@@ -997,17 +994,10 @@ int __cdecl main(int argc, char** argv) {
         if (setup_addresses(cfg))
             ERR_EXIT("获取 IP 地址失败");
 
-        //if (setup_server_address(cfg, ship_host4, ship_host6, ship_ip4, ship_ip6)) {
-        //    ERR_EXIT("获取 IP 地址失败");
-        //}
-
         /* Initialize GnuTLS stuff... */
         if (!check_only) {
             if (init_gnutls(cfg))
                 ERR_EXIT("无法设置 GnuTLS 证书");
-
-            //if (shipkey_init(cfg))
-            //    ERR_EXIT("无法设置 舰船密钥");
 
             /* Set up things for clients to connect. */
             if (client_init(cfg))

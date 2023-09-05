@@ -176,9 +176,9 @@ int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect) {
 
 /* Send a Blue Burst Welcome packet to the given client. */
 int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
-                    const uint8_t cvect[48]) {
+                    const uint8_t cvect[48], uint8_t flags) {
     uint8_t* sendbuf = get_sendbuf();
-    bb_welcome_pkt *pkt = (bb_welcome_pkt *)sendbuf;
+    bb_welcome_pkt *pkt = (bb_welcome_pkt*)sendbuf;
 
     /* Scrub the buffer */
     memset(pkt, 0, sizeof(bb_welcome_pkt));
@@ -188,7 +188,11 @@ int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
     pkt->hdr.pkt_type = LE16(BB_WELCOME_TYPE);
 
     /* Fill in the required message */
-    memcpy(pkt->copyright, login_bb_welcome_copyright, 75);
+    if (flags & 0x01)
+        memcpy(pkt->copyright, login_bb_pm_server_copyright, 49);
+    else
+        memcpy(pkt->copyright, login_bb_game_server_copyright, 75);
+    //memcpy(pkt->copyright, login_bb_game_server_copyright, 75);
 
     /* Fill in the anti message */
     memcpy(pkt->after_message, anti_copyright, 188);

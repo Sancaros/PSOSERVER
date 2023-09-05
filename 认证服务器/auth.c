@@ -420,12 +420,12 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
             }
 
             CRYPT_CreateKeys(&rv->server_cipher, server_seed_bb,
-                CRYPT_BLUEBURST);
+                             CRYPT_BLUEBURST);
             CRYPT_CreateKeys(&rv->client_cipher, client_seed_bb,
-                CRYPT_BLUEBURST);
+                             CRYPT_BLUEBURST);
 
             /* Send the client the welcome packet, or die trying. */
-            if (send_bb_welcome(rv, server_seed_bb, client_seed_bb)) {
+            if (send_bb_welcome(rv, server_seed_bb, client_seed_bb, 0x01)) {
                 goto err;
             }
 
@@ -458,7 +458,7 @@ login_client_t *create_connection(int sock, int type, struct sockaddr *ip,
                              CRYPT_BLUEBURST);
 
             /* Send the client the welcome packet, or die trying. */
-            if(send_bb_welcome(rv, server_seed_bb, client_seed_bb)) {
+            if(send_bb_welcome(rv, server_seed_bb, client_seed_bb, 0x00)) {
                 goto err;
             }
 

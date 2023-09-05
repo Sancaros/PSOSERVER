@@ -32,21 +32,27 @@
 typedef u_long in_addr_t;
 
 /* This must be placed into the copyright field in the BB welcome packet. */
-const static char login_bb_welcome_copyright[] =
+const static char login_bb_game_server_copyright[] =
     "Phantasy Star Online Blue Burst Game Server. Copyright 1999-2004 SONICTEAM.";
+
+/* This must be placed into the pm copyright field in the BB welcome packet. */
+const static char login_bb_pm_server_copyright[] =
+    "PSO NEW PM Server. Copyright 1999-2002 SONICTEAM.";
 
 /* This must be placed into the copyright field in the DC welcome packet. */
 const static char login_dc_welcome_copyright[] =
     "DreamCast Port Map. Copyright SEGA Enterprises. 1999";
 
-const static char anti_copyright[] = "This server is in no way affiliated, sponsored, or supported by SEGA Enterprises or SONICTEAM. The preceding message exists only in order to remain compatible with programs that expect it.";
+const static char anti_copyright[] = "This server is in no way affiliated, sponsored, "
+"or supported by SEGA Enterprises or SONICTEAM. "
+"The preceding message exists only in order to remain compatible with programs that expect it.";
 
 /* Send a Dreamcast Welcome packet to the given client. */
 int send_dc_welcome(login_client_t *c, uint32_t svect, uint32_t cvect);
 
 /* Send a Blue Burst Welcome packet to the given client. */
-int send_bb_welcome(login_client_t *c, const uint8_t svect[48],
-                    const uint8_t cvect[48]);
+int send_bb_welcome(login_client_t* c, const uint8_t svect[48],
+                    const uint8_t cvect[48], uint8_t flags);
 
 /* Send a large message packet to the given client. */
 int send_large_msg(login_client_t *c, const char* fmt, ...);
