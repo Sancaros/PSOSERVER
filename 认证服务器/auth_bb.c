@@ -275,7 +275,7 @@ int process_login_packet_bb(login_client_t* c, void* pkt) {
 
 #ifdef DEBUG
         DBG_LOG("BB½ÇÉ«Ö¸Áî: 0x%04X %s", type, c_cmd_name(type, 0));
-        //display_packet(pkt, LE16(bb->pkt_len));
+        display_packet(pkt, LE16(bb->pkt_len));
 #endif // DEBUG
 
         switch (type) {

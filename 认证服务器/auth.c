@@ -513,6 +513,10 @@ int read_from_client(login_client_t *c) {
         /* Read in a new header... */
         sz = recv(c->sock, (char*)&tmp_hdr, hs, 0);
 
+#ifdef DEBUG
+        DBG_LOG("从 %d(%d:%s) 接收 %d 字节数据", c->sock, c->type, client_type[c->type].ver_name, sz);
+#endif // DEBUG
+
         if(sz < hs) {
             /* If we have an error, disconnect the client */
             if(sz <= 0) {
@@ -538,6 +542,12 @@ int read_from_client(login_client_t *c) {
         /* Try to finish reading the header */
         sz = recv(c->sock, c->recvbuf + pkt_cur, hs - pkt_cur, 0);
 
+#ifdef DEBUG
+
+        DBG_LOG("从 %d(%d:%s) 接收 %d 字节数据", c->sock, c->type, client_type[c->type].ver_name, sz);
+
+#endif // DEBUG
+
         if(sz < hs - pkt_cur) {
             /* If we have an error, disconnect the client */
             if(sz <= 0) {
@@ -556,6 +566,12 @@ int read_from_client(login_client_t *c) {
         c->pkt_cur = 0;
         free(c->recvbuf);
     }
+
+#ifdef DEBUG
+
+    DBG_LOG("从 %d(%d:%s) 接收数据", c->sock, c->type, client_type[c->type].ver_name);
+
+#endif // DEBUG
 
     /* If we haven't decrypted the packet header, do so now, since we definitely
        have the whole thing at this point. */
@@ -621,6 +637,12 @@ int read_from_client(login_client_t *c) {
 
         sz = (pkt_sz & (hs - 1)) ? (pkt_sz & hsm) + hs : pkt_sz;
 
+#ifdef DEBUG
+
+        DBG_LOG("从 %d(%d:%s) 接收数据 pkt_sz %d", c->sock, c->type, client_type[c->type].ver_name, pkt_sz);
+
+#endif // DEBUG
+
         /* Allocate space for the packet */
         if(!(c->recvbuf = (unsigned char *)malloc(sz)))  {
             ERR_LOG("malloc: %s", strerror(errno));
@@ -659,11 +681,17 @@ int read_from_client(login_client_t *c) {
             return -1;
         }
 
+#ifdef DEBUG
+        DBG_LOG("从 %d(%d:%s) 接收数据 sz %d %d %d", c->sock, c->type, client_type[c->type].ver_name, sz, pkt_sz, pkt_sz - pkt_cur);
+#endif // DEBUG
         /* Didn't get it all, return for now... */
         c->pkt_cur += sz;
         return 0;
     }
 
+#ifdef DEBUG
+    DBG_LOG("从 %d(%d:%s) 接收数据", c->sock, c->type, client_type[c->type].ver_name);
+#endif // DEBUG
     /* If we get this far, we've got the whole packet, so process it. */
     CRYPT_CryptData(&c->client_cipher, c->recvbuf + hs, pkt_sz - hs, 0);
 
@@ -697,6 +725,10 @@ process:
     }
     c->recvbuf = NULL;
     c->pkt_cur = c->pkt_sz = 0;
+
+#ifdef DEBUG
+    DBG_LOG("从 %d(%d:%s) 接收数据", c->sock, c->type, client_type[c->type].ver_name);
+#endif // DEBUG
     return rv;
 }
 
