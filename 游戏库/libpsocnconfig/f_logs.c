@@ -50,6 +50,7 @@ int32_t blocks_log_console_show;
 int32_t lobbys_log_console_show;
 int32_t sgate_log_console_show;
 int32_t dns_log_console_show;
+int32_t crash_log_console_show;
 
 int32_t login_log_console_show;
 int32_t item_log_console_show;
@@ -67,8 +68,8 @@ int32_t disconnect_log_console_show;
 int32_t dont_send_log_console_show;
 int32_t test_log_console_show;
 int32_t monster_error_log_console_show;
-int32_t script_log_console_show;
 int32_t config_log_console_show;
+int32_t script_log_console_show;
 
 void packet_to_text(uint8_t* buf, size_t len, bool show) {
 	static const char hex_digits[] = "0123456789ABCDEF";
@@ -226,7 +227,7 @@ void load_log_config(void)
 					login_log_console_show = atoi(&config_data[0]);
 					break;
 
-				case ITEM_LOG:
+				case ITEMS_LOG:
 					// 控制台LOG显示开关
 					item_log_console_show = atoi(&config_data[0]);
 					break;
@@ -311,6 +312,11 @@ void load_log_config(void)
 					dns_log_console_show = atoi(&config_data[0]);
 					break;
 
+				case CRASH_LOG:
+					// 控制台LOG显示开关
+					crash_log_console_show = atoi(&config_data[0]);
+					break;
+
 				case LOG:
 					console_log_hide_or_show = atoi(&config_data[0]);
 					break;
@@ -369,6 +375,70 @@ void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char
 	va_end(args);
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Log\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	if (!_mkdir(logdir)) {
+		//printf("%u年%02u月%02u日 日志目录创建成功", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	else
+	{
+		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
+	}
+	strcpy(logfile, logdir);
+	strcat(logfile, "\\");
+	strcat(logfile, server_name[server_name_num].name);
+	strcat(logfile, "_");
+	strcat(logfile, log_header[files_num].name);
+	strcat(logfile, ".log");
+	errno_t err = fopen_s(&fp, logfile, "a");
+	if (err) {
+		color(4);
+		printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
+		printf("代码 %d 行,存储 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
+	}
+	else
+	{
+		if (!fprintf(fp, "[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+			rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, server_name[server_name_num].name, log_header[files_num].name, codeline, mes))
+		{
+			color(files_num);
+			printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour,
+				rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
+			printf("代码 %d 行,记录 %s.log 日志发生错误\n", codeline, log_header[files_num].name);
+		}
+
+		if (console_log_hide_or_show)
+		{
+			if (consoleshow)
+			{
+				color(files_num);
+				printf("[%u年%02u月%02u日 %02u:%02u:%02u:%03u] %s(%04d): %s", rawtime.wYear, rawtime.wMonth, rawtime.wDay,
+					rawtime.wHour, rawtime.wMinute, rawtime.wSecond, rawtime.wMilliseconds, log_header[files_num].name, codeline, mes);
+			}
+		}
+		color(16);
+		fclose(fp);
+	}
+}
+
+void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...) {
+	va_list args;
+	char mes[4096] = { 0 };
+	//char headermes[128] = { 0 };
+	//char text[4096] = { 0 };
+	SYSTEMTIME rawtime;
+
+	FILE* fp;
+	char logdir[64] = { 0 };
+	char logfile[256] = { 0 };
+	GetLocalTime(&rawtime);
+
+	//snprintf(headermes, sizeof(headermes), "[%u年%02u月%02u日 %02u:%02u] ", rawtime.wYear, rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
+	//strcat(headermes, log_header[files]);
+	va_start(args, fmt);
+	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	va_end(args);
+	//strcpy(logfile, "Log\\");
+	sprintf(logdir, "%s\\%u年%02u月%02u日.", file, rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	if (!_mkdir(logdir)) {
 		//printf("%u年%02u月%02u日 日志目录创建成功", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}

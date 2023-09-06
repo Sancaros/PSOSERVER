@@ -18,6 +18,9 @@
 #pragma once
 #pragma warning (disable:4819)
 
+#ifndef PSOCN_LOG
+#define PSOCN_LOG
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -37,7 +40,7 @@ enum Log_files_Num {
 	LOBBY_LOG, //½¢´¬
 	SGATE_LOG, //½¢´¬
 	LOGIN_LOG, //µÇÂ½ ½¢´¬
-	ITEM_LOG, //½¢´¬
+	ITEMS_LOG, //½¢´¬
 	MYSQLERR_LOG, //µÇÂ½
 	QUESTERR_LOG, //½¢´¬
 	GM_LOG, //½¢´¬
@@ -54,6 +57,7 @@ enum Log_files_Num {
 	CONFIG_LOG, //½¢´¬
 	SCRIPT_LOG,
 	DNS_LOG,
+	CRASH_LOG,
 	LOG,
 	LOG_FILES_MAX,
 };
@@ -64,32 +68,33 @@ typedef struct log_map {
 } log_map_st;
 
 static log_map_st log_header[] = {
-	{ PATCH_LOG, "²¹¶¡" },
-	{ AUTH_LOG, "ÈÏÖ¤" }, //µÇÂ½
-	{ SHIPS_LOG, "½¢´¬" }, //½¢´¬
-	{ BLOCK_LOG, "½¢²Ö" }, //½¢´¬
-	{ ERR_LOG, "´íÎó" }, //µÇÂ½ ½¢´¬
-	{ LOBBY_LOG, "´óÌü" }, //½¢´¬
-	{ SGATE_LOG, "´¬Õ¢" }, //½¢´¬
-	{ LOGIN_LOG, "µÇÂ½" }, //µÇÂ½ ½¢´¬
-	{ ITEM_LOG, "ÎïÆ·" }, //½¢´¬
-	{ MYSQLERR_LOG, "Êý¾Ý" }, //µÇÂ½
-	{ QUESTERR_LOG, "ÈÎÎñ" }, //½¢´¬
-	{ GM_LOG, "¹ÜÀí" }, //½¢´¬
-	{ DEBUG_LOG, "µ÷ÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
-	{ FILE_LOG, "ÎÄ¼þ" }, //²¹¶¡ µÇÂ½ ½¢´¬
-	{ HOST_LOG, "ÍøÂç" }, //²¹¶¡ µÇÂ½ ½¢´¬
-	{ UNKNOW_PACKET_LOG, "½Ø»ñ" }, //µÇÂ½ ½¢´¬
-	{ UNDONE_PACKET_LOG, "È±Ê§" }, //µÇÂ½ ½¢´¬
-	{ UNUSED, "Î´ÆôÓÃ" }, //µÇÂ½ ½¢´¬
-	{ DC_LOG, "¶ÏÁ¬" }, //µÇÂ½ ½¢´¬
-	{ DONT_SEND_LOG, "½Ø¶Ï" }, //½¢´¬
-	{ TEST_LOG, "²âÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
-	{ MONSTERID_ERR_LOG, "¹ÖÎï" }, //½¢´¬
-	{ CONFIG_LOG, "ÉèÖÃ" }, //½¢´¬
-	{ SCRIPT_LOG, "½Å±¾" },
-	{ DNS_LOG, "DNS" },
-	{ LOG, "ÈÕÖ¾" },
+	{ PATCH_LOG,			"²¹¶¡" },
+	{ AUTH_LOG,				"ÈÏÖ¤" }, //µÇÂ½
+	{ SHIPS_LOG,			"½¢´¬" }, //½¢´¬
+	{ BLOCK_LOG,			"½¢²Ö" }, //½¢´¬
+	{ ERR_LOG,				"´íÎó" }, //µÇÂ½ ½¢´¬
+	{ LOBBY_LOG,			"´óÌü" }, //½¢´¬
+	{ SGATE_LOG,			"´¬Õ¢" }, //½¢´¬
+	{ LOGIN_LOG,			"µÇÂ½" }, //µÇÂ½ ½¢´¬
+	{ ITEMS_LOG,			"ÎïÆ·" }, //½¢´¬
+	{ MYSQLERR_LOG,			"Êý¾Ý" }, //µÇÂ½
+	{ QUESTERR_LOG,			"ÈÎÎñ" }, //½¢´¬
+	{ GM_LOG,				"¹ÜÀí" }, //½¢´¬
+	{ DEBUG_LOG,			"µ÷ÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
+	{ FILE_LOG,				"ÎÄ¼þ" }, //²¹¶¡ µÇÂ½ ½¢´¬
+	{ HOST_LOG,				"ÍøÂç" }, //²¹¶¡ µÇÂ½ ½¢´¬
+	{ UNKNOW_PACKET_LOG,	"½Ø»ñ" }, //µÇÂ½ ½¢´¬
+	{ UNDONE_PACKET_LOG,	"È±Ê§" }, //µÇÂ½ ½¢´¬
+	{ UNUSED,				"Î´ÆôÓÃ" }, //µÇÂ½ ½¢´¬
+	{ DC_LOG,				"¶ÏÁ¬" }, //µÇÂ½ ½¢´¬
+	{ DONT_SEND_LOG,		"½Ø¶Ï" }, //½¢´¬
+	{ TEST_LOG,				"²âÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
+	{ MONSTERID_ERR_LOG,	"¹ÖÎï" }, //½¢´¬
+	{ CONFIG_LOG,			"ÉèÖÃ" }, //½¢´¬
+	{ SCRIPT_LOG,			"½Å±¾" },
+	{ DNS_LOG,				"DNS" },
+	{ CRASH_LOG,			"±ÀÀ£" },
+	{ LOG,					"ÈÕÖ¾" },
 	{ LOG_FILES_MAX, "Î´ÖªÈÕÖ¾´íÎó" },
 };
 
@@ -104,6 +109,7 @@ extern int32_t blocks_log_console_show;
 extern int32_t lobbys_log_console_show;
 extern int32_t sgate_log_console_show;
 extern int32_t dns_log_console_show;
+extern int32_t crash_log_console_show;
 
 extern int32_t login_log_console_show;
 extern int32_t item_log_console_show;
@@ -219,7 +225,7 @@ extern int32_t script_log_console_show;
 
 #define LOBBY_LOG(...) flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__)
 #define SGATE_LOG(...) flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__)
-#define ITEM_LOG(...) flog(__LINE__, item_log_console_show, ITEM_LOG, __VA_ARGS__)
+#define ITEM_LOG(...) flog(__LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__)
 #define SQLERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
 #define QERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
 #define GM_LOG(...) flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__)
@@ -242,6 +248,7 @@ extern int32_t script_log_console_show;
 #define MERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
 #define CONFIG_LOG(...) flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
 #define SCRIPT_LOG(...) flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)
+#define CRASH_LOG(...) flog_file(__LINE__, crash_log_console_show, CRASH_LOG, "Crash", __VA_ARGS__)
 #define LOG_LOG(...) flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__)
 
 #define CHECK3(...) { printf(__VA_ARGS__); }
@@ -273,14 +280,16 @@ extern void packet_to_text(uint8_t* buf, size_t len, bool show);
 extern void display_packet(const void* buf, size_t len);
 
 extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
+extern void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...);
 extern void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_undone(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
 extern void flog_unknow(int32_t codeline, uint32_t consoleshow, const char* files_name, const char* fmt, ...);
-
 
 extern void unk_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void udone_spd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
+
+#endif // !PSOCN_LOG

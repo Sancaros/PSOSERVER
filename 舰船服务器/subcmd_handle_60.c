@@ -730,10 +730,12 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
         flags = SWAP32(flags);
 
     if (enemy_id2 > l->map_enemies->count) {
+#ifdef DEBUG
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!", src->guildcard, enemy_id2, l->map_enemies->count);
+#endif // DEBUG
+
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-        //return -1;
     }
 
     /* Save the hit, assuming the enemy isn't already dead. */
@@ -924,8 +926,8 @@ static int sub60_12_dc(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " reported Dragon action in "
-            "lobby!\n", src->guildcard);
+        ERR_LOG("Guild card %" PRIu32 " reported Dragon action in "
+            "lobby!", src->guildcard);
         return -1;
     }
 
@@ -961,7 +963,7 @@ static int sub60_12_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " reported Dragon action in "
+        ERR_LOG("Guild card %" PRIu32 " reported Dragon action in "
             "lobby!\n", src->guildcard);
         return -1;
     }
@@ -997,7 +999,7 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1022,7 +1024,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1047,7 +1049,7 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1071,7 +1073,7 @@ static int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1095,7 +1097,7 @@ static int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1116,7 +1118,7 @@ static int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1140,7 +1142,7 @@ static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1164,7 +1166,7 @@ static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅触发游戏指令!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
         return -1;
     }
 
@@ -1362,7 +1364,7 @@ static int sub60_22_dc(ship_client_t* src, ship_client_t* dest,
     int i, rv;
 
     if (pkt->shdr.client_id != src->client_id) {
-        DBG_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        ERR_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -1386,7 +1388,7 @@ static int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
     int i, rv;
 
     if (pkt->shdr.client_id != src->client_id) {
-        DBG_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        ERR_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -3258,7 +3260,7 @@ static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (pkt->shdr.client_id != src->client_id) {
-        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+        ERR_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -3498,9 +3500,13 @@ static int sub60_58_dc(ship_client_t* src, ship_client_t* dest,
         //return -1;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("DC 动作ID %d", pkt->act_id);
 
     // pkt->act_id 大厅动作的对应ID
+
+#endif // DEBUG
 
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
@@ -4411,6 +4417,8 @@ static int sub60_7A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
     //[2023年08月14日 21:39 : 46 : 011] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7A 版本 bb(5) 的处理
     //[2023年08月14日 21:39 : 46 : 021] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7A
     //(00000000)   0C 00 60 00 00 00 00 00   7A 01 00 00             ..`.....z...
@@ -4427,6 +4435,8 @@ static int sub60_7A_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
+#endif // DEBUG
+
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -4440,6 +4450,8 @@ static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
+
+#ifdef DEBUG
 
     //[2023年08月14日 21:43 : 59 : 219] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x7B 版本 bb(5) 的处理
     //[2023年08月14日 21:43 : 59 : 229] 调试(subcmd_handle_60.c 4842) : 未知 0x60 指令 : 0x7B
@@ -4458,6 +4470,8 @@ static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
 
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5115,6 +5129,35 @@ static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_85_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_Unknown_6x85_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅中触发了房间指令!",
+            src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
+        ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+#ifdef DEBUG
+[2023年09月06日 21:54 : 52 : 356] 错误(subcmd_handle.c 0113) : subcmd_get_handler 未完成对 0x60 0x85 版本 bb(5) 的处理
+[2023年09月06日 21:54 : 52 : 363] 调试(subcmd_handle_60.c 7550) : 未知 0x60 指令 : 0x85
+(00000000)   1C 00 60 00 00 00 00 00   85 05 00 00 00 00 2D 00  ..`..... ? .... - .
+(00000010)   16 00 26 00 EC E8 43 00   E5 74 00 00             .. & .扈C.錿..
+#endif // DEBUG
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_HitDestructibleObject_6x86_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -5450,10 +5493,14 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000010 )   7A 00 00 00 00 00 01 00   00 00 00 02             z...........
 
 
-    DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
-        pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+#ifdef DEBUG
 
-        //display_packet(pkt, pkt->hdr.pkt_len);
+DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
+    pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+//display_packet(pkt, pkt->hdr.pkt_len);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5477,9 +5524,11 @@ static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-//[2023年08月25日 11:25:01:636] 调试(subcmd_handle_60.c 5097): 未知 0x60 指令: 0x92
-//( 00000000 )   14 00 60 00 00 00 00 00   92 03 00 00 00 00 00 00  ..`.....?......
-//( 00000010 )   3A 6D 20 3E                                     :m >
+#ifdef DEBUG
+
+    //[2023年08月25日 11:25:01:636] 调试(subcmd_handle_60.c 5097): 未知 0x60 指令: 0x92
+    //( 00000000 )   14 00 60 00 00 00 00 00   92 03 00 00 00 00 00 00  ..`.....?......
+    //( 00000010 )   3A 6D 20 3E                                     :m >
     DBG_LOG("指令 0x%04X (0x%02X 0x%04X) GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, pkt->shdr.unused, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
     DBG_LOG("动作:0x%04X 位置:unk %f.",
@@ -5488,6 +5537,8 @@ static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
     send_txt(src, "动作:0x%04X\n位置:unk %f.", pkt->unknown_a1, pkt->unknown_a2);
 
     //display_packet(pkt, pkt->hdr.pkt_len);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5633,10 +5684,14 @@ static int sub60_9B_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+#ifdef DEBUG
+
     DBG_LOG("GC %u CID %d = %d Die %d", src->guildcard, src->client_id, pkt->shdr.client_id, pkt->die_count);
 
     //[2023年07月18日 19:49 : 50 : 092] 调试(subcmd_handle_60.c 3757) : 未知 0x60 指令 : 0x9B
     //(00000000)   10 00 60 00 00 00 00 00   9B 02 01 00 01 00 00 00  ..`..... ? ......
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -5842,8 +5897,9 @@ static int sub60_A8_dc(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " reported Gol Dragon action in "
-            "lobby!\n", src->guildcard);
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -5881,6 +5937,7 @@ static int sub60_A8_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6286,9 +6343,10 @@ static int sub60_AB_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in lobbies without someone messing with something
    that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6314,9 +6372,12 @@ static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
     //    return -1;
     //}
 
+#ifdef DEBUG
 
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
+
+#endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -6328,9 +6389,10 @@ static int sub60_AF_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in lobbies without someone messing with something
    that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6344,9 +6406,10 @@ static int sub60_B0_bb(ship_client_t* src, ship_client_t* dest,
 
     /* We can't get these in lobbies without someone messing with something
    that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在游戏中触发了大厅房间指令!",
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6363,6 +6426,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6410,8 +6474,9 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅丢弃了物品!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6488,8 +6553,9 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅使用医疗中心!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6525,8 +6591,9 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
     int i;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6624,8 +6691,11 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
                 ERR_LOG("未获取到经验新值 %d bp %d 倍率 %d", exp_amount, bp, l->exp_mult);
                 return client_give_exp(src, 1);
             }
+#ifdef DEBUG
 
             DBG_LOG("exp_amount %d", exp_amount);
+
+#endif // DEBUG
 
             return client_give_exp(src, exp_amount);
         }
@@ -6642,8 +6712,9 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6677,8 +6748,9 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中获取经验!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6770,6 +6842,13 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     uint32_t ex_item_id = pkt->ex_item_id, point_add = pkt->point_add_amount;
 
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
     if (pkt->shdr.client_id != src->client_id) {
         DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6804,10 +6883,10 @@ static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_start_battle_mode_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (!l->battle) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    if (!l->battle || l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6963,8 +7042,9 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中触发任务指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -7030,8 +7110,9 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -7077,8 +7158,9 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -7136,8 +7218,9 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
+        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -7341,6 +7424,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_TRIGGER_TRAP               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_80_bb },
     { SUBCMD60_PLACE_TRAP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_83_bb },
     { SUBCMD60_BOSS_ACT_OFP_U_SP          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_84_bb },
+    { SUBCMD60_UNKNOW_85                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_85_bb },
     { SUBCMD60_HIT_DESTRUCTIBLE_OBJECT    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_86_bb },
     { SUBCMD60_ARROW_CHANGE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
     { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
@@ -7477,7 +7561,7 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }
@@ -7564,7 +7648,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }

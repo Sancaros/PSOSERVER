@@ -135,7 +135,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }
@@ -181,8 +181,10 @@ int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt) {
             return 0;
         }
 
-        if (!(sendbuf = (uint8_t*)malloc(len)))
+        if (!(sendbuf = (uint8_t*)malloc(len))) {
+            ERR_LOG("sendbuf malloc error");
             return -1;
+        }
 
         memcpy(sendbuf, pkt, len);
         pkt = (subcmd_pkt_t*)sendbuf;
@@ -196,7 +198,7 @@ int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }
@@ -242,8 +244,10 @@ int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
             return 0;
         }
 
-        if (!(sendbuf = (uint8_t*)malloc(len)))
+        if (!(sendbuf = (uint8_t*)malloc(len))) {
+            ERR_LOG("sendbuf malloc error");
             return -1;
+        }
 
         memcpy(sendbuf, pkt, len);
         pkt = (subcmd_bb_pkt_t*)sendbuf;
@@ -257,7 +261,7 @@ int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }
@@ -303,8 +307,10 @@ int subcmd_translate_nte_to_dc(ship_client_t* c, subcmd_pkt_t* pkt) {
             return 0;
         }
 
-        if (!(sendbuf = (uint8_t*)malloc(len)))
+        if (!(sendbuf = (uint8_t*)malloc(len))) {
+            ERR_LOG("sendbuf malloc error");
             return -1;
+        }
 
         memcpy(sendbuf, pkt, len);
         pkt = (subcmd_pkt_t*)sendbuf;
@@ -318,7 +324,7 @@ int subcmd_translate_nte_to_dc(ship_client_t* c, subcmd_pkt_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }

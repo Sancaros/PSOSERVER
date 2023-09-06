@@ -68,15 +68,15 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
     IMAGEHLP_LINE64 line = { 0 };
     line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
 
-    ERR_LOG("由于发生异常程序崩溃了");
+    CRASH_LOG("由于发生异常程序崩溃了");
 
     // 获取异常信息
     PEXCEPTION_RECORD exception_record = exception_info->ExceptionRecord;
     DWORD exception_code = exception_record->ExceptionCode;
     PVOID exception_address = exception_record->ExceptionAddress;
 
-    ERR_LOG("异常码: 0x%X", exception_code);
-    ERR_LOG("异常内存地址: 0x%p", exception_address);
+    CRASH_LOG("异常码: 0x%X", exception_code);
+    CRASH_LOG("异常内存地址: 0x%p", exception_address);
 
     // 获取异常地址
     DWORD64 exceptionAddress = (DWORD64)exception_info->ExceptionRecord->ExceptionAddress;
@@ -86,14 +86,14 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
 
     // 解析异常地址对应的函数名称和代码行信息
     if (SymGetLineFromAddr64(GetCurrentProcess(), exceptionAddress, &displacement, &line)) {
-        ERR_LOG("异常发生位置:");
-        ERR_LOG("文件: %s", line.FileName);
-        ERR_LOG("第 %u 行", line.LineNumber);
+        CRASH_LOG("异常发生位置:");
+        CRASH_LOG("文件: %s", line.FileName);
+        CRASH_LOG("第 %u 行", line.LineNumber);
     }
     else
-        ERR_LOG("无法定位到异常发生位置的函数和行号");
+        CRASH_LOG("无法定位到异常发生位置的函数和行号");
 
-    ERR_LOG("调用堆栈:");
+    CRASH_LOG("调用堆栈:");
 
     int frameIndex = 0;
     for (; frameIndex < MAX_BACKTRACE_DEPTH; frameIndex++) {
@@ -110,10 +110,10 @@ LONG WINAPI crash_handler(EXCEPTION_POINTERS* exception_info) {
         symbol->MaxNameLen = MAX_SYM_NAME;
 
         if (SymFromAddr(process, address, NULL, symbol)) {
-            ERR_LOG("函数[%d]: %s", frameIndex, symbol->Name);
+            CRASH_LOG("函数[%d]: %s", frameIndex, symbol->Name);
         }
         else {
-            ERR_LOG("函数[%d]: 无法获取函数名称", frameIndex);
+            CRASH_LOG("函数[%d]: 无法获取函数名称", frameIndex);
         }
     }
 

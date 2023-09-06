@@ -66,18 +66,18 @@ pthread_key_t recvbuf_key;
 pthread_key_t sendbuf_key;
 
 /* Destructor for the thread-specific receive buffer */
-static void buf_dtor(void *rb) {
+static void buf_dtor(void* rb) {
     free_safe(rb);
 }
 
 /* Initialize the clients system, allocating any thread specific keys */
-int client_init(psocn_ship_t *cfg) {
-    if(pthread_key_create(&recvbuf_key, &buf_dtor)) {
+int client_init(psocn_ship_t* cfg) {
+    if (pthread_key_create(&recvbuf_key, &buf_dtor)) {
         perror("pthread_key_create");
         return -1;
     }
 
-    if(pthread_key_create(&sendbuf_key, &buf_dtor)) {
+    if (pthread_key_create(&sendbuf_key, &buf_dtor)) {
         perror("pthread_key_create");
         return -1;
     }
@@ -92,104 +92,122 @@ void client_shutdown(void) {
 }
 
 /* Create a new connection, storing it in the list of clients. */
-ship_client_t *client_create_connection(int sock, int version, int type,
-                                        struct client_queue *clients,
-                                        ship_t *ship, block_t *block,
-                                        struct sockaddr *ip, socklen_t size) {
-    ship_client_t *rv = (ship_client_t *)malloc(sizeof(ship_client_t));
-    uint32_t client_seed_dc, server_seed_dc;
-    uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
-    int i;
-    pthread_mutexattr_t attr;
-    //struct mt19937_state *rng;
+ship_client_t* client_create_connection(int sock, int version, int type,
+    struct client_queue* clients,
+    ship_t* ship, block_t* block,
+    struct sockaddr* ip, socklen_t size) {
+    __try {
+        ship_client_t* rv = (ship_client_t*)malloc(sizeof(ship_client_t));
+        uint32_t client_seed_dc, server_seed_dc;
+        uint8_t client_seed_bb[48] = { 0 }, server_seed_bb[48] = { 0 };
+        int i;
+        pthread_mutexattr_t attr;
+        //struct mt19937_state *rng;
 
-    /* Disable Nagle's algorithm */
-    i = 1;
-    if(setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (PCHAR)&i, sizeof(int)) < 0) {
-        perror("setsockopt");
-    }
+        /* Disable Nagle's algorithm */
+        i = 1;
+        if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (PCHAR)&i, sizeof(int)) < 0) {
+            perror("setsockopt");
+        }
 
-    /* For the DC versions, set up friendly receive buffers that should ensure
-       that we don't try to negotiate window scaling.
-       XXXX: Should we do this on GC too? It definitely shouldn't be needed on
-             PC/BB, and most likely not on Xbox either. */
-    switch(version) {
+        /* For the DC versions, set up friendly receive buffers that should ensure
+           that we don't try to negotiate window scaling.
+           XXXX: Should we do this on GC too? It definitely shouldn't be needed on
+                 PC/BB, and most likely not on Xbox either. */
+        switch (version) {
         case CLIENT_VERSION_DCV1:
         case CLIENT_VERSION_DCV2:
             i = 32767;
-            if(setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
+            if (setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (PCHAR)&i, sizeof(int)) < 0) {
                 perror("setsockopt");
             }
             break;
-    }
+        }
 
-    if(!rv) {
-        perror("malloc");
-        return NULL;
-    }
-
-    memset(rv, 0, sizeof(ship_client_t));
-
-    if(type == CLIENT_TYPE_BLOCK) {
-        rv->pl = (player_t *)malloc(sizeof(player_t));
-
-        if(!rv->pl) {
+        if (!rv) {
+            ERR_LOG("malloc 分配内存错误");
             perror("malloc");
-            free_safe(rv);
-            closesocket(sock);
             return NULL;
         }
 
-        memset(rv->pl, 0, sizeof(player_t));
+        memset(rv, 0, sizeof(ship_client_t));
 
-        rv->enemy_kills = (uint32_t*)malloc(sizeof(uint32_t) * 0x60);
+        if (type == CLIENT_TYPE_BLOCK) {
+            rv->pl = (player_t*)malloc(sizeof(player_t));
 
-        if(!rv->enemy_kills) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
+            if (!rv->pl) {
+                perror("malloc");
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
 
-        memset(rv->enemy_kills, 0, sizeof(uint32_t) * 0x60);
+            memset(rv->pl, 0, sizeof(player_t));
 
-        rv->game_data =
-            (client_game_data_t*)malloc(sizeof(client_game_data_t));
+            rv->enemy_kills = (uint32_t*)malloc(sizeof(uint32_t) * 0x60);
 
-        if (!rv->game_data) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv->enemy_kills);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
+            if (!rv->enemy_kills) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
 
-        memset(rv->game_data, 0, sizeof(client_game_data_t));
+            memset(rv->enemy_kills, 0, sizeof(uint32_t) * 0x60);
 
-        if (version == CLIENT_VERSION_BB) {
-            rv->game_data->pending_item_trade =
-                (trade_item_t*)malloc(sizeof(trade_item_t));
+            rv->game_data =
+                (client_game_data_t*)malloc(sizeof(client_game_data_t));
 
             if (!rv->game_data) {
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
             }
 
-            memset(rv->game_data->pending_item_trade, 0, sizeof(trade_item_t));
-        }
+            memset(rv->game_data, 0, sizeof(client_game_data_t));
 
-        if (version == CLIENT_VERSION_EP3) {
-            rv->game_data->pending_card_trade =
-                (trade_card_t*)malloc(sizeof(trade_card_t));
+            if (version == CLIENT_VERSION_BB) {
+                rv->game_data->pending_item_trade =
+                    (trade_item_t*)malloc(sizeof(trade_item_t));
 
-            if (!rv->game_data) {
+                if (!rv->game_data) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->game_data->pending_item_trade, 0, sizeof(trade_item_t));
+            }
+
+            if (version == CLIENT_VERSION_EP3) {
+                rv->game_data->pending_card_trade =
+                    (trade_card_t*)malloc(sizeof(trade_card_t));
+
+                if (!rv->game_data) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
+            }
+
+            rv->mode_pl =
+                (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
+
+            if (!rv->mode_pl) {
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
@@ -199,80 +217,45 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 return NULL;
             }
 
-            memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
-        }
+            memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
 
-        rv->mode_pl =
-            (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
+            rv->records =
+                (record_data_t*)malloc(sizeof(record_data_t));
 
-        if (!rv->mode_pl) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv->enemy_kills);
-            free_safe(rv->game_data);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
+            if (!rv->records) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
 
-        memset(rv->mode_pl, 0, sizeof(psocn_mode_char_t));
+            memset(rv->records, 0, sizeof(record_data_t));
 
-        rv->records =
-            (record_data_t*)malloc(sizeof(record_data_t));
+            rv->common_bank =
+                (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
 
-        if (!rv->records) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv->enemy_kills);
-            free_safe(rv->game_data);
-            free_safe(rv->mode_pl);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
+            if (!rv->common_bank) {
+                perror("malloc");
+                free_safe(rv->pl);
+                free_safe(rv->enemy_kills);
+                free_safe(rv->game_data);
+                free_safe(rv->mode_pl);
+                free_safe(rv->records);
+                free_safe(rv);
+                closesocket(sock);
+                return NULL;
+            }
 
-        memset(rv->records, 0, sizeof(record_data_t));
+            memset(rv->common_bank, 0, sizeof(psocn_bank_t));
 
-        rv->common_bank =
-            (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
+            rv->char_bank =
+                (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
 
-        if (!rv->common_bank) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv->enemy_kills);
-            free_safe(rv->game_data);
-            free_safe(rv->mode_pl);
-            free_safe(rv->records);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
-
-        memset(rv->common_bank, 0, sizeof(psocn_bank_t));
-
-        rv->char_bank =
-            (psocn_bank_t*)malloc(sizeof(psocn_bank_t));
-
-        if (!rv->char_bank) {
-            perror("malloc");
-            free_safe(rv->pl);
-            free_safe(rv->enemy_kills);
-            free_safe(rv->game_data);
-            free_safe(rv->mode_pl);
-            free_safe(rv->records);
-            free_safe(rv->common_bank);
-            free_safe(rv);
-            closesocket(sock);
-            return NULL;
-        }
-
-        memset(rv->char_bank, 0, sizeof(psocn_bank_t));
-
-        if(version == CLIENT_VERSION_BB) {
-            rv->bb_pl =
-                (psocn_bb_db_char_t *)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
-
-            if(!rv->bb_pl) {
+            if (!rv->char_bank) {
                 perror("malloc");
                 free_safe(rv->pl);
                 free_safe(rv->enemy_kills);
@@ -280,128 +263,147 @@ ship_client_t *client_create_connection(int sock, int version, int type,
                 free_safe(rv->mode_pl);
                 free_safe(rv->records);
                 free_safe(rv->common_bank);
-                free_safe(rv->char_bank);
                 free_safe(rv);
                 closesocket(sock);
                 return NULL;
             }
 
-            memset(rv->bb_pl, 0, PSOCN_STLENGTH_BB_DB_CHAR);
-            rv->bb_opts =
-                (psocn_bb_db_opts_t *)malloc(PSOCN_STLENGTH_BB_DB_OPTS);
+            memset(rv->char_bank, 0, sizeof(psocn_bank_t));
 
-            if(!rv->bb_opts) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv->records);
-                free_safe(rv->common_bank);
-                free_safe(rv->char_bank);
-                free_safe(rv->bb_pl);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
+            if (version == CLIENT_VERSION_BB) {
+                rv->bb_pl =
+                    (psocn_bb_db_char_t*)malloc(PSOCN_STLENGTH_BB_DB_CHAR);
+
+                if (!rv->bb_pl) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv->mode_pl);
+                    free_safe(rv->records);
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->bb_pl, 0, PSOCN_STLENGTH_BB_DB_CHAR);
+                rv->bb_opts =
+                    (psocn_bb_db_opts_t*)malloc(PSOCN_STLENGTH_BB_DB_OPTS);
+
+                if (!rv->bb_opts) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv->mode_pl);
+                    free_safe(rv->records);
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
+                    free_safe(rv->bb_pl);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->bb_opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
+                rv->bb_guild =
+                    (psocn_bb_db_guild_t*)malloc(PSOCN_STLENGTH_BB_GUILD);
+
+                if (!rv->bb_guild) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv->mode_pl);
+                    free_safe(rv->records);
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
+                    free_safe(rv->bb_pl);
+                    free_safe(rv->bb_opts);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->bb_guild, 0, PSOCN_STLENGTH_BB_GUILD);
             }
+            else if (version == CLIENT_VERSION_XBOX) {
 
-            memset(rv->bb_opts, 0, PSOCN_STLENGTH_BB_DB_OPTS);
-            rv->bb_guild =
-                (psocn_bb_db_guild_t *)malloc(PSOCN_STLENGTH_BB_GUILD);
+                rv->xbl_ip = (xbox_ip_t*)malloc(sizeof(xbox_ip_t));
 
-            if (!rv->bb_guild) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv->records);
-                free_safe(rv->common_bank);
-                free_safe(rv->char_bank);
-                free_safe(rv->bb_pl);
-                free_safe(rv->bb_opts);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
+                if (!rv->xbl_ip) {
+                    perror("malloc");
+                    free_safe(rv->pl);
+                    free_safe(rv->enemy_kills);
+                    free_safe(rv->game_data);
+                    free_safe(rv->mode_pl);
+                    free_safe(rv->common_bank);
+                    free_safe(rv->char_bank);
+                    free_safe(rv->records);
+                    free_safe(rv);
+                    closesocket(sock);
+                    return NULL;
+                }
+
+                memset(rv->xbl_ip, 0, sizeof(xbox_ip_t));
             }
-
-            memset(rv->bb_guild, 0, PSOCN_STLENGTH_BB_GUILD);
         }
-        else if(version == CLIENT_VERSION_XBOX) {
 
-            rv->xbl_ip = (xbox_ip_t*)malloc(sizeof(xbox_ip_t));
+        /* 将基础参数存储进客户端的结构. */
+        rv->sock = sock;
+        rv->version = version;
+        rv->cur_block = block;
+        rv->arrow_color = 1;
+        rv->last_message = rv->login_time = time(NULL);
+        rv->hdr_size = 4;
 
-            if(!rv->xbl_ip) {
-                perror("malloc");
-                free_safe(rv->pl);
-                free_safe(rv->enemy_kills);
-                free_safe(rv->game_data);
-                free_safe(rv->mode_pl);
-                free_safe(rv->common_bank);
-                free_safe(rv->char_bank);
-                free_safe(rv->records);
-                free_safe(rv);
-                closesocket(sock);
-                return NULL;
-            }
+        rv->isvip = 0;
+        rv->mode = 0;
+        rv->need_save_data = 0;
+        rv->bank_type = false;
 
-            memset(rv->xbl_ip, 0, sizeof(xbox_ip_t));
+        /* Create the mutex */
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&rv->mutex, &attr);
+        pthread_mutexattr_destroy(&attr);
+
+        memcpy(&rv->ip_addr, ip, size);
+
+        if (ip->sa_family == AF_INET6) {
+            rv->flags |= CLIENT_FLAG_IPV6;
         }
-    }
 
-    /* 将基础参数存储进客户端的结构. */
-    rv->sock = sock;
-    rv->version = version;
-    rv->cur_block = block;
-    rv->arrow_color = 1;
-    rv->last_message = rv->login_time = time(NULL);
-    rv->hdr_size = 4;
+        /* Make sure any packets sent early bail... */
+        rv->ckey.type = 0xFF;
+        rv->skey.type = 0xFF;
 
-    rv->isvip = 0;
-    rv->mode = 0;
-    rv->need_save_data = 0;
-    rv->bank_type = false;
+        /* TODO 客户端是否也要自带随机数 */
+        uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
+        sfmt_init_gen_rand(&rv->sfmt_rng, rng_seed);
+        sfmt_t* rng/* = &rv->sfmt_rng*/;
 
-    /* Create the mutex */
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&rv->mutex, &attr);
-    pthread_mutexattr_destroy(&attr);
-
-    memcpy(&rv->ip_addr, ip, size);
-
-    if(ip->sa_family == AF_INET6) {
-        rv->flags |= CLIENT_FLAG_IPV6;
-    }
-
-    /* Make sure any packets sent early bail... */
-    rv->ckey.type = 0xFF;
-    rv->skey.type = 0xFF;
-
-    /* TODO 客户端是否也要自带随机数 */
-    uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
-    sfmt_init_gen_rand(&rv->sfmt_rng, rng_seed);
-    sfmt_t* rng/* = &rv->sfmt_rng*/;
-
-    if(type == CLIENT_TYPE_SHIP) {
-        rv->flags |= CLIENT_FLAG_TYPE_SHIP;
-        rng = &ship->sfmt_rng;
-    }
-    //else if (type == CLIENT_TYPE_BLOCK) {
-    //    rng = &block->sfmt_rng;
-    //}
-    else {
-        rng = &block->sfmt_rng;
-        //rng = &rv->sfmt_rng;
-    }
+        if (type == CLIENT_TYPE_SHIP) {
+            rv->flags |= CLIENT_FLAG_TYPE_SHIP;
+            rng = &ship->sfmt_rng;
+        }
+        //else if (type == CLIENT_TYPE_BLOCK) {
+        //    rng = &block->sfmt_rng;
+        //}
+        else {
+            rng = &block->sfmt_rng;
+            //rng = &rv->sfmt_rng;
+        }
 
 #ifdef ENABLE_LUA
-    /* Initialize the script table */
-    lua_newtable(ship->lstate);
-    rv->script_ref = luaL_ref(ship->lstate, LUA_REGISTRYINDEX);
+        /* Initialize the script table */
+        lua_newtable(ship->lstate);
+        rv->script_ref = luaL_ref(ship->lstate, LUA_REGISTRYINDEX);
 #endif
 
-    switch(version) {
+        switch (version) {
         case CLIENT_VERSION_DCV1:
         case CLIENT_VERSION_DCV2:
         case CLIENT_VERSION_PC:
@@ -413,7 +415,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             CRYPT_CreateKeys(&rv->ckey, &client_seed_dc, CRYPT_PC);
 
             /* Send the client the welcome packet, or die trying. */
-            if(send_dc_welcome(rv, server_seed_dc, client_seed_dc)) {
+            if (send_dc_welcome(rv, server_seed_dc, client_seed_dc)) {
                 goto err;
             }
 
@@ -430,7 +432,7 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             CRYPT_CreateKeys(&rv->ckey, &client_seed_dc, CRYPT_GAMECUBE);
 
             /* Send the client the welcome packet, or die trying. */
-            if(send_dc_welcome(rv, server_seed_dc, client_seed_dc)) {
+            if (send_dc_welcome(rv, server_seed_dc, client_seed_dc)) {
                 goto err;
             }
 
@@ -438,16 +440,16 @@ ship_client_t *client_create_connection(int sock, int version, int type,
 
         case CLIENT_VERSION_BB:
             /* Generate the encryption keys for the client and server. */
-            for(i = 0; i < 48; i += 4) {
+            for (i = 0; i < 48; i += 4) {
                 client_seed_dc = sfmt_genrand_uint32(rng);
                 server_seed_dc = sfmt_genrand_uint32(rng);
 
-                client_seed_bb[i + 0] = (uint8_t)(client_seed_dc >>  0);
-                client_seed_bb[i + 1] = (uint8_t)(client_seed_dc >>  8);
+                client_seed_bb[i + 0] = (uint8_t)(client_seed_dc >> 0);
+                client_seed_bb[i + 1] = (uint8_t)(client_seed_dc >> 8);
                 client_seed_bb[i + 2] = (uint8_t)(client_seed_dc >> 16);
                 client_seed_bb[i + 3] = (uint8_t)(client_seed_dc >> 24);
-                server_seed_bb[i + 0] = (uint8_t)(server_seed_dc >>  0);
-                server_seed_bb[i + 1] = (uint8_t)(server_seed_dc >>  8);
+                server_seed_bb[i + 0] = (uint8_t)(server_seed_dc >> 0);
+                server_seed_bb[i + 1] = (uint8_t)(server_seed_dc >> 8);
                 server_seed_bb[i + 2] = (uint8_t)(server_seed_dc >> 16);
                 server_seed_bb[i + 3] = (uint8_t)(server_seed_dc >> 24);
             }
@@ -457,276 +459,305 @@ ship_client_t *client_create_connection(int sock, int version, int type,
             rv->hdr_size = 8;
 
             /* Send the client the welcome packet, or die trying. */
-            if(send_bb_welcome(rv, server_seed_bb, client_seed_bb)) {
+            if (send_bb_welcome(rv, server_seed_bb, client_seed_bb)) {
                 goto err;
             }
 
             break;
-    }
-
-    /* Insert it at the end of our list, and we're done. */
-    if(type == CLIENT_TYPE_BLOCK) {
-        pthread_rwlock_wrlock(&block->lock);
-        TAILQ_INSERT_TAIL(clients, rv, qentry);
-        ++block->num_clients;
-        pthread_rwlock_unlock(&block->lock);
-    }
-    else {
-        TAILQ_INSERT_TAIL(clients, rv, qentry);
-    }
-
-    /* 加载客户端其他函数 */
-    rv->pkt_size = pkt_size;
-
-    ship_inc_clients(ship);
-
-    return rv;
-
-err:
-#ifdef ENABLE_LUA
-    /* Remove the table from the registry */
-    luaL_unref(ship->lstate, LUA_REGISTRYINDEX, rv->script_ref);
-#endif
-
-    closesocket(sock);
-
-    if(type == CLIENT_TYPE_BLOCK) {
-        if(version == CLIENT_VERSION_XBOX) {
-            free_safe(rv->xbl_ip);
         }
 
-        free_safe(rv->enemy_kills);
-        free_safe(rv->pl);
+        /* Insert it at the end of our list, and we're done. */
+        if (type == CLIENT_TYPE_BLOCK) {
+            pthread_rwlock_wrlock(&block->lock);
+            TAILQ_INSERT_TAIL(clients, rv, qentry);
+            ++block->num_clients;
+            pthread_rwlock_unlock(&block->lock);
+        }
+        else {
+            TAILQ_INSERT_TAIL(clients, rv, qentry);
+        }
+
+        /* 加载客户端其他函数 */
+        rv->pkt_size = pkt_size;
+
+        ship_inc_clients(ship);
+
+        return rv;
+
+    err:
+#ifdef ENABLE_LUA
+        /* Remove the table from the registry */
+        luaL_unref(ship->lstate, LUA_REGISTRYINDEX, rv->script_ref);
+#endif
+
+        closesocket(sock);
+
+        if (type == CLIENT_TYPE_BLOCK) {
+            if (version == CLIENT_VERSION_XBOX) {
+                free_safe(rv->xbl_ip);
+            }
+
+            free_safe(rv->enemy_kills);
+            free_safe(rv->pl);
+        }
+
+        pthread_mutex_destroy(&rv->mutex);
+
+        free_safe(rv);
+        return NULL;
     }
 
-    pthread_mutex_destroy(&rv->mutex);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    free_safe(rv);
-    return NULL;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return NULL;
+    }
 }
 
 /* Destroy a connection, closing the socket and removing it from the list. This
    must always be called with the appropriate lock held for the list! */
-void client_destroy_connection(ship_client_t *c,
-                               struct client_queue *clients) {
-    time_t now = time(NULL);
-    char tstr[26];
-    script_action_t action = ScriptActionClientShipLogout;
+void client_destroy_connection(ship_client_t* c,
+    struct client_queue* clients) {
+    __try {
+        time_t now = time(NULL);
+        char tstr[26];
+        script_action_t action = ScriptActionClientShipLogout;
 
-    if(!(c->flags & CLIENT_FLAG_TYPE_SHIP))
-        action = ScriptActionClientBlockLogout;
+        if (!(c->flags & CLIENT_FLAG_TYPE_SHIP))
+            action = ScriptActionClientBlockLogout;
 
-    TAILQ_REMOVE(clients, c, qentry);
+        TAILQ_REMOVE(clients, c, qentry);
 
-    /* If the client was on Blue Burst, update their db character */
-    if(c->version == CLIENT_VERSION_BB &&
-       !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
+        /* If the client was on Blue Burst, update their db character */
+        if (c->version == CLIENT_VERSION_BB &&
+            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
 
-        /* 将游戏时间存储入人物数据 */
-        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+            /* 将游戏时间存储入人物数据 */
+            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-        /* 将玩家数据存入数据库 */
-        shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-                            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-                            c->cur_block->b);
+            /* 将玩家数据存入数据库 */
+            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                c->cur_block->b);
 
-        /* 将玩家选项数据存入数据库 */
-        shipgate_send_bb_opts(&ship->sg, c);
-    }
+            /* 将玩家选项数据存入数据库 */
+            shipgate_send_bb_opts(&ship->sg, c);
+        }
 
-    script_execute(action, c, SCRIPT_ARG_PTR, c, 0);
+        script_execute(action, c, SCRIPT_ARG_PTR, c, 0);
 
 #ifdef ENABLE_LUA
-    /* Remove the table from the registry */
-    luaL_unref(ship->lstate, LUA_REGISTRYINDEX, c->script_ref);
+        /* Remove the table from the registry */
+        luaL_unref(ship->lstate, LUA_REGISTRYINDEX, c->script_ref);
 #endif
 
-    /* If the user was on a block, notify the shipgate */
-    if(c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.guildcard_str.string[0]) {
-        shipgate_send_block_login(&ship->sg, 0, c->guildcard,
-                                  c->cur_block->b, c->pl->v1.character.dress_data.guildcard_str.string);
+        /* If the user was on a block, notify the shipgate */
+        if (c->version != CLIENT_VERSION_BB && c->pl && c->pl->v1.character.dress_data.guildcard_str.string[0]) {
+            shipgate_send_block_login(&ship->sg, 0, c->guildcard,
+                c->cur_block->b, c->pl->v1.character.dress_data.guildcard_str.string);
+        }
+        else if (c->version == CLIENT_VERSION_BB && c->bb_pl) {
+            shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
+                c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
+        }
+
+        ship_dec_clients(ship);
+
+        //TODO 与目前存在空房间的设定冲突 待适配
+        /* If the client has a lobby sitting around that was created but not added
+           to the list of lobbies, destroy it */
+           //if(c->create_lobby) {
+           //    lobby_destroy_noremove(c->create_lobby);
+           //}
+
+           /* If we were logging the user, closesocket the file */
+        if (c->logfile) {
+            ctime_s(tstr, sizeof(tstr), &now);
+            tstr[strlen(tstr) - 1] = 0;
+            fprintf(c->logfile, "[%s] 关闭连接\n", tstr);
+            fclose(c->logfile);
+        }
+
+        if (c->sock >= 0) {
+            closesocket(c->sock);
+        }
+
+        if (c->limits)
+            release(c->limits);
+
+        if (c->recvbuf) {
+            free_safe(c->recvbuf);
+        }
+
+        if (c->sendbuf) {
+            free_safe(c->sendbuf);
+        }
+
+        if (c->autoreply) {
+            free_safe(c->autoreply);
+        }
+
+        if (c->enemy_kills) {
+            free_safe(c->enemy_kills);
+        }
+
+        if (c->pl) {
+            free_safe(c->pl);
+        }
+
+        if (c->game_data) {
+            free_safe(c->game_data);
+        }
+
+        if (c->mode_pl) {
+            free_safe(c->mode_pl);
+        }
+
+        if (c->records) {
+            free_safe(c->records);
+        }
+
+        if (c->common_bank) {
+            free_safe(c->common_bank);
+        }
+
+        if (c->char_bank) {
+            free_safe(c->char_bank);
+        }
+
+        if (c->bb_pl) {
+            free_safe(c->bb_pl);
+        }
+
+        if (c->bb_opts) {
+            free_safe(c->bb_opts);
+        }
+
+        if (c->bb_guild) {
+            free_safe(c->bb_guild);
+        }
+
+        if (c->next_maps) {
+            free_safe(c->next_maps);
+        }
+
+        if (c->xbl_ip) {
+            free_safe(c->xbl_ip);
+        }
+
+        pthread_mutex_destroy(&c->mutex);
+
+        free_safe(c);
     }
-    else if(c->version == CLIENT_VERSION_BB && c->bb_pl) {
-        shipgate_send_block_login_bb(&ship->sg, 0, c->guildcard, c->sec_data.slot,
-                                     c->cur_block->b, (uint16_t*)&c->bb_pl->character.name);
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
-
-    ship_dec_clients(ship);
-
-    //TODO 与目前存在空房间的设定冲突 待适配
-    /* If the client has a lobby sitting around that was created but not added
-       to the list of lobbies, destroy it */
-    //if(c->create_lobby) {
-    //    lobby_destroy_noremove(c->create_lobby);
-    //}
-
-    /* If we were logging the user, closesocket the file */
-    if(c->logfile) {
-        ctime_s(tstr, sizeof(tstr), &now);
-        tstr[strlen(tstr) - 1] = 0;
-        fprintf(c->logfile, "[%s] 关闭连接\n", tstr);
-        fclose(c->logfile);
-    }
-
-    if(c->sock >= 0) {
-        closesocket(c->sock);
-    }
-
-    if(c->limits)
-        release(c->limits);
-
-    if(c->recvbuf) {
-        free_safe(c->recvbuf);
-    }
-
-    if(c->sendbuf) {
-        free_safe(c->sendbuf);
-    }
-
-    if(c->autoreply) {
-        free_safe(c->autoreply);
-    }
-
-    if(c->enemy_kills) {
-        free_safe(c->enemy_kills);
-    }
-
-    if(c->pl) {
-        free_safe(c->pl);
-    }
-
-    if (c->game_data) {
-        free_safe(c->game_data);
-    }
-
-    if (c->mode_pl) {
-        free_safe(c->mode_pl);
-    }
-
-    if (c->records) {
-        free_safe(c->records);
-    }
-
-    if (c->common_bank) {
-        free_safe(c->common_bank);
-    }
-
-    if (c->char_bank) {
-        free_safe(c->char_bank);
-    }
-
-    if(c->bb_pl) {
-        free_safe(c->bb_pl);
-    }
-
-    if(c->bb_opts) {
-        free_safe(c->bb_opts);
-    }
-
-    if (c->bb_guild) {
-        free_safe(c->bb_guild);
-    }
-
-    if(c->next_maps) {
-        free_safe(c->next_maps);
-    }
-
-    if(c->xbl_ip) {
-        free_safe(c->xbl_ip);
-    }
-
-    pthread_mutex_destroy(&c->mutex);
-
-    free_safe(c);
 }
 
 void client_send_bb_data(ship_client_t* c) {
-    time_t now = time(NULL);
+    __try {
+        time_t now = time(NULL);
 
-    uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
+        uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
 
-    /* If the client was on Blue Burst, update their db character */
-    if (c->version == CLIENT_VERSION_BB) {
-        /* 将游戏时间存储入人物数据 */
-        c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
+        /* If the client was on Blue Burst, update their db character */
+        if (c->version == CLIENT_VERSION_BB) {
+            /* 将游戏时间存储入人物数据 */
+            c->bb_pl->character.play_time += (uint32_t)now - (uint32_t)c->login_time;
 
-        c->save_time = now;
+            c->save_time = now;
 
 #ifdef DEBUG
-        DBG_LOG("mode %d", c->mode);
-        fix_client_inv(&c->bb_pl->character.inv);
-        fix_equip_item(&c->bb_pl->character.inv);
+            DBG_LOG("mode %d", c->mode);
+            fix_client_inv(&c->bb_pl->character.inv);
+            fix_equip_item(&c->bb_pl->character.inv);
 
 #endif // DEBUG
 
-        /* 将玩家数据存入数据库 */
-        shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
-            c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
-            c->cur_block->b);
+            /* 将玩家数据存入数据库 */
+            shipgate_send_cdata(&ship->sg, c->guildcard, c->sec_data.slot,
+                c->bb_pl, PSOCN_STLENGTH_BB_DB_CHAR,
+                c->cur_block->b);
 
-        /* 将玩家选项数据存入数据库 */
-        shipgate_send_bb_opts(&ship->sg, c);
+            /* 将玩家选项数据存入数据库 */
+            shipgate_send_bb_opts(&ship->sg, c);
 
-        send_simple(c, PING_TYPE, 0);
+            send_simple(c, PING_TYPE, 0);
 
 #ifdef DEBUG
 
-        DBG_LOG("%d 秒", num_seconds);
+            DBG_LOG("%d 秒", num_seconds);
 
 #endif // DEBUG
+        }
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
 }
 
 /* Read data from a client that is connected to any port. */
-int client_process_pkt(ship_client_t *c) {
-    ssize_t sz;
-    uint16_t pkt_sz;
-    int rv = 0;
-    unsigned char *rbp;
-    void *tmp;
-    uint8_t *recvbuf = get_recvbuf();
-    const int hsz = client_type[c->version].hdr_size, hsm = 0x10000 - hsz;
+int client_process_pkt(ship_client_t* c) {
 
-    /* Make sure we got the recvbuf, otherwise, bail. */
-    if(!recvbuf) {
-        return -1;
-    }
+    __try {
+        ssize_t sz;
+        uint16_t pkt_sz;
+        int rv = 0;
+        unsigned char* rbp;
+        void* tmp;
+        uint8_t* recvbuf = get_recvbuf();
+        const int hsz = client_type[c->version].hdr_size, hsm = 0x10000 - hsz;
 
-    /* If we've got anything buffered, copy it out to the main buffer to make
-       the rest of this a bit easier. */
-    if(c->recvbuf_cur) {
-        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-    }
-
-    /* Attempt to read, and if we don't get anything, punt. */
-    sz = recv(c->sock, recvbuf + c->recvbuf_cur, 65536 - c->recvbuf_cur, 0);
-
-    //TEST_LOG("客户端接收端口 %d 接收数据 = %d 字节 版本识别 = %d", c->sock, sz, c->version);
-
-    if(sz <= 0) {
-        //if(sz == SOCKET_ERROR) {
-            //ERR_LOG("客户端接收数据错误: %s", strerror(errno));
-        //}
-
-        return -1;
-    }
-
-    sz += c->recvbuf_cur;
-    c->recvbuf_cur = 0;
-    rbp = recvbuf;
-
-    /* As long as what we have is long enough, decrypt it. */
-    while(sz >= hsz && rv == 0) {
-        /* Decrypt the packet header so we know what exactly we're looking
-           for, in terms of packet length. */
-        if(!(c->flags & CLIENT_FLAG_HDR_READ)) {
-            memcpy(&c->pkt, rbp, hsz);
-            CRYPT_CryptData(&c->ckey, &c->pkt, hsz, 0);
-            c->flags |= CLIENT_FLAG_HDR_READ;
+        /* Make sure we got the recvbuf, otherwise, bail. */
+        if (!recvbuf) {
+            return -1;
         }
 
-        /* Read the packet size to see how much we're expecting. */
-        switch(c->version) {
+        /* If we've got anything buffered, copy it out to the main buffer to make
+           the rest of this a bit easier. */
+        if (c->recvbuf_cur) {
+            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+        }
+
+        /* Attempt to read, and if we don't get anything, punt. */
+        sz = recv(c->sock, recvbuf + c->recvbuf_cur, 65536 - c->recvbuf_cur, 0);
+
+        //TEST_LOG("客户端接收端口 %d 接收数据 = %d 字节 版本识别 = %d", c->sock, sz, c->version);
+
+        if (sz <= 0) {
+            //if(sz == SOCKET_ERROR) {
+                //ERR_LOG("客户端接收数据错误: %s", strerror(errno));
+            //}
+
+            return -1;
+        }
+
+        sz += c->recvbuf_cur;
+        c->recvbuf_cur = 0;
+        rbp = recvbuf;
+
+        /* As long as what we have is long enough, decrypt it. */
+        while (sz >= hsz && rv == 0) {
+            /* Decrypt the packet header so we know what exactly we're looking
+               for, in terms of packet length. */
+            if (!(c->flags & CLIENT_FLAG_HDR_READ)) {
+                memcpy(&c->pkt, rbp, hsz);
+                CRYPT_CryptData(&c->ckey, &c->pkt, hsz, 0);
+                c->flags |= CLIENT_FLAG_HDR_READ;
+            }
+
+            /* Read the packet size to see how much we're expecting. */
+            switch (c->version) {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
             case CLIENT_VERSION_GC:
@@ -745,101 +776,110 @@ int client_process_pkt(ship_client_t *c) {
 
             default:
                 return -1;
-        }
-
-        /* A packet with a size less than that of it's header is obviously bad.
-           Quite possibly, malicious. Boot the user and log it. */
-        if(pkt_sz < hsz) {
-            if(c->guildcard)
-                ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据 0x%02X 0x%02X!", c->guildcard, pkt_sz, hsz);
-            else
-                ERR_LOG("从未知客户端处接收到无效长度数据包.");
-
-            return -1;
-        }
-
-        /* We'll always need a multiple of 8 or 4 (depending on the type of
-           the client) bytes. */
-        if(pkt_sz & (hsz - 1)) {
-            pkt_sz = (pkt_sz & hsm) + hsz;
-        }
-
-        /* Do we have the whole packet? */
-        if(sz >= (ssize_t)pkt_sz) {
-            /* Yes, we do, decrypt it. */
-            CRYPT_CryptData(&c->ckey, rbp + hsz, pkt_sz - hsz, 0);
-            memcpy(rbp, &c->pkt, hsz);
-            c->last_message = time(NULL);
-
-            /* If we're logging the client, write into the log */
-            if(c->logfile) {
-                fprint_packet(c->logfile, rbp, pkt_sz, 1);
             }
 
-            /* Pass it onto the correct handler. */
-            if(c->flags & CLIENT_FLAG_TYPE_SHIP) {
-                rv = ship_process_pkt(c, rbp);
-            }
-            else {
-                rv = block_process_pkt(c, rbp);
-            }
+            /* A packet with a size less than that of it's header is obviously bad.
+               Quite possibly, malicious. Boot the user and log it. */
+            if (pkt_sz < hsz) {
+                if (c->guildcard)
+                    ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据 0x%02X 0x%02X!", c->guildcard, pkt_sz, hsz);
+                else
+                    ERR_LOG("从未知客户端处接收到无效长度数据包.");
 
-            rbp += pkt_sz;
-            sz -= pkt_sz;
-
-            c->flags &= ~CLIENT_FLAG_HDR_READ;
-        }
-        else {
-            //ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据2!", c->guildcard);
-            /* Nope, we're missing part, break out of the loop, and buffer
-               the remaining data.不，我们缺少一部分，中断循环，并缓冲剩余的数据 */
-            break;
-        }
-    }
-
-    /* If we've still got something left here, buffer it for the next pass. */
-    if(sz && rv == 0) {
-        /* Reallocate the recvbuf for the client if its too small. */
-        if(c->recvbuf_size < sz) {
-            tmp = realloc(c->recvbuf, sz);
-
-            if(!tmp) {
-                perror("realloc");
                 return -1;
             }
 
-            c->recvbuf = (unsigned char *)tmp;
-            c->recvbuf_size = sz;
+            /* We'll always need a multiple of 8 or 4 (depending on the type of
+               the client) bytes. */
+            if (pkt_sz & (hsz - 1)) {
+                pkt_sz = (pkt_sz & hsm) + hsz;
+            }
+
+            /* Do we have the whole packet? */
+            if (sz >= (ssize_t)pkt_sz) {
+                /* Yes, we do, decrypt it. */
+                CRYPT_CryptData(&c->ckey, rbp + hsz, pkt_sz - hsz, 0);
+                memcpy(rbp, &c->pkt, hsz);
+                c->last_message = time(NULL);
+
+                /* If we're logging the client, write into the log */
+                if (c->logfile) {
+                    fprint_packet(c->logfile, rbp, pkt_sz, 1);
+                }
+
+                /* Pass it onto the correct handler. */
+                if (c->flags & CLIENT_FLAG_TYPE_SHIP) {
+                    rv = ship_process_pkt(c, rbp);
+                }
+                else {
+                    rv = block_process_pkt(c, rbp);
+                }
+
+                rbp += pkt_sz;
+                sz -= pkt_sz;
+
+                c->flags &= ~CLIENT_FLAG_HDR_READ;
+            }
+            else {
+                //ERR_LOG("玩家 %" PRIu32 " 发送无效长度数据2!", c->guildcard);
+                /* Nope, we're missing part, break out of the loop, and buffer
+                   the remaining data.不，我们缺少一部分，中断循环，并缓冲剩余的数据 */
+                break;
+            }
         }
 
-        memcpy(c->recvbuf, rbp, sz);
-        c->recvbuf_cur = sz;
-    }
-    else if(c->recvbuf) {
-        /* Free the buffer, if we've got nothing in it. */
-        free_safe(c->recvbuf);
-        c->recvbuf = NULL;
-        c->recvbuf_size = 0;
+        /* If we've still got something left here, buffer it for the next pass. */
+        if (sz && rv == 0) {
+            /* Reallocate the recvbuf for the client if its too small. */
+            if (c->recvbuf_size < sz) {
+                tmp = realloc(c->recvbuf, sz);
+
+                if (!tmp) {
+                    perror("realloc");
+                    return -1;
+                }
+
+                c->recvbuf = (unsigned char*)tmp;
+                c->recvbuf_size = sz;
+            }
+
+            memcpy(c->recvbuf, rbp, sz);
+            c->recvbuf_cur = sz;
+        }
+        else if (c->recvbuf) {
+            /* Free the buffer, if we've got nothing in it. */
+            free_safe(c->recvbuf);
+            c->recvbuf = NULL;
+            c->recvbuf_size = 0;
+        }
+
+        return rv;
     }
 
-    return rv;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
-uint8_t *get_recvbuf(void) {
-    uint8_t *recvbuf = (uint8_t *)pthread_getspecific(recvbuf_key);
+uint8_t* get_recvbuf(void) {
+    uint8_t* recvbuf = (uint8_t*)pthread_getspecific(recvbuf_key);
 
     /* If we haven't initialized the recvbuf pointer yet for this thread, then
        we need to do that now. */
-    if(!recvbuf) {
-        recvbuf = (uint8_t *)malloc(65536);
+    if (!recvbuf) {
+        recvbuf = (uint8_t*)malloc(65536);
 
-        if(!recvbuf) {
+        if (!recvbuf) {
             perror("malloc");
             return NULL;
         }
 
-        if(pthread_setspecific(recvbuf_key, recvbuf)) {
+        if (pthread_setspecific(recvbuf_key, recvbuf)) {
             perror("pthread_setspecific");
             free_safe(recvbuf);
             return NULL;
@@ -850,37 +890,37 @@ uint8_t *get_recvbuf(void) {
 }
 
 /* Set up a simple mail autoreply. */
-int client_set_autoreply(ship_client_t *c, void *buf, uint16_t len) {
-    char *tmp;
+int client_set_autoreply(ship_client_t* c, void* buf, uint16_t len) {
+    char* tmp;
 
     /* Make space for the new autoreply and copy it in. */
-    if(!(tmp = malloc(len))) {
+    if (!(tmp = malloc(len))) {
         ERR_LOG("分配动态内存给 autoreply (%" PRIu32
-              "):\n%s", c->guildcard, strerror(errno));
+            "):\n%s", c->guildcard, strerror(errno));
         return -1;
     }
 
     memcpy(tmp, buf, len);
 
-    switch(c->version) {
-        case CLIENT_VERSION_PC:
-            c->pl->pc.autoreply_enabled = LE32(1);
-            c->autoreply_on = 1;
-            break;
+    switch (c->version) {
+    case CLIENT_VERSION_PC:
+        c->pl->pc.autoreply_enabled = LE32(1);
+        c->autoreply_on = 1;
+        break;
 
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
-            c->pl->v3.autoreply_enabled = LE32(1);
-            c->autoreply_on = 1;
-            break;
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        c->pl->v3.autoreply_enabled = LE32(1);
+        c->autoreply_on = 1;
+        break;
 
-        case CLIENT_VERSION_BB:
-            c->pl->bb.autoreply_enabled = LE32(1);
-            c->autoreply_on = 1;
-            memcpy(c->bb_pl->autoreply, buf, len);
-            memset(((uint8_t *)c->bb_pl->autoreply) + len, 0, 0x158 - len);
-            break;
+    case CLIENT_VERSION_BB:
+        c->pl->bb.autoreply_enabled = LE32(1);
+        c->autoreply_on = 1;
+        memcpy(c->bb_pl->autoreply, buf, len);
+        memset(((uint8_t*)c->bb_pl->autoreply) + len, 0, 0x158 - len);
+        break;
     }
 
     /* Clean up and set the new autoreply in place */
@@ -892,41 +932,41 @@ int client_set_autoreply(ship_client_t *c, void *buf, uint16_t len) {
 }
 
 /* Disable the user's simple mail autoreply (if set). */
-int client_disable_autoreply(ship_client_t *c) {
-    switch(c->version) {
-        case CLIENT_VERSION_PC:
-            c->pl->pc.autoreply_enabled = 0;
-            c->autoreply_on = 0;
-            break;
+int client_disable_autoreply(ship_client_t* c) {
+    switch (c->version) {
+    case CLIENT_VERSION_PC:
+        c->pl->pc.autoreply_enabled = 0;
+        c->autoreply_on = 0;
+        break;
 
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_EP3:
-        case CLIENT_VERSION_XBOX:
-            c->pl->v3.autoreply_enabled = 0;
-            c->autoreply_on = 0;
-            break;
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        c->pl->v3.autoreply_enabled = 0;
+        c->autoreply_on = 0;
+        break;
 
-        case CLIENT_VERSION_BB:
-            c->pl->bb.autoreply_enabled = 0;
-            c->autoreply_on = 0;
-            break;
+    case CLIENT_VERSION_BB:
+        c->pl->bb.autoreply_enabled = 0;
+        c->autoreply_on = 0;
+        break;
     }
 
     return 0;
 }
 
 /* Check if a client has blacklisted someone. */
-int client_has_blacklisted(ship_client_t *c, uint32_t gc) {
+int client_has_blacklisted(ship_client_t* c, uint32_t gc) {
     uint32_t rgc = LE32(gc);
     int i;
 
     /* If the user doesn't have a blacklist, this is easy. */
-    if(c->version < CLIENT_VERSION_PC)
+    if (c->version < CLIENT_VERSION_PC)
         return 0;
 
     /* Look through each blacklist entry. */
-    for(i = 0; i < 30; ++i) {
-        if(c->blacklist[i] == rgc) {
+    for (i = 0; i < 30; ++i) {
+        if (c->blacklist[i] == rgc) {
             return 1;
         }
     }
@@ -936,12 +976,12 @@ int client_has_blacklisted(ship_client_t *c, uint32_t gc) {
 }
 
 /* Check if a client has /ignore'd someone. */
-int client_has_ignored(ship_client_t *c, uint32_t gc) {
+int client_has_ignored(ship_client_t* c, uint32_t gc) {
     int i;
 
     /* Look through the ignore list... */
-    for(i = 0; i < CLIENT_IGNORE_LIST_SIZE; ++i) {
-        if(c->ignore_list[i] == gc) {
+    for (i = 0; i < CLIENT_IGNORE_LIST_SIZE; ++i) {
+        if (c->ignore_list[i] == gc) {
             return 1;
         }
     }
@@ -951,23 +991,23 @@ int client_has_ignored(ship_client_t *c, uint32_t gc) {
 }
 
 /* Send a message to a client telling them that a friend has logged on/off */
-void client_send_friendmsg(ship_client_t *c, int on, const char *fname,
-                           const char *ship, uint32_t block, const char *nick) {
-    if(fname[0] != '\t') {
+void client_send_friendmsg(ship_client_t* c, int on, const char* fname,
+    const char* ship, uint32_t block, const char* nick) {
+    if (fname[0] != '\t') {
         send_txt(c, "%s%s %s\n%s %s\n%s 舰仓%02d",
-                 on ? __(c, "\tE\tC2") : __(c, "\tE\tC4"), nick,
-                 on ? __(c, "在线") : __(c, "离线"), __(c, "角色:"),
-                 fname, ship, (int)block);
+            on ? __(c, "\tE\tC2") : __(c, "\tE\tC4"), nick,
+            on ? __(c, "在线") : __(c, "离线"), __(c, "角色:"),
+            fname, ship, (int)block);
     }
     else {
         send_txt(c, "%s%s %s\n%s %s\n%s 舰仓%02d",
-                 on ? __(c, "\tE\tC2") : __(c, "\tE\tC4"), nick,
-                 on ? __(c, "在线") : __(c, "离线"), __(c, "角色:"),
-                 fname + 2, ship, (int)block);
+            on ? __(c, "\tE\tC2") : __(c, "\tE\tC4"), nick,
+            on ? __(c, "在线") : __(c, "离线"), __(c, "角色:"),
+            fname + 2, ship, (int)block);
     }
 }
 
-static void give_stats(psocn_pl_stats_t *dest, psocn_lvl_stats_t *ent) {
+static void give_stats(psocn_pl_stats_t* dest, psocn_lvl_stats_t* ent) {
     uint16_t tmp;
 
     tmp = LE16(dest->atp) + ent->atp;
@@ -993,9 +1033,9 @@ static void give_stats(psocn_pl_stats_t *dest, psocn_lvl_stats_t *ent) {
 }
 
 /* 给予Blue Burst客户端经验. */
-int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
+int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
     uint32_t exp_total;
-    psocn_lvl_stats_t *ent;
+    psocn_lvl_stats_t* ent;
     int need_lvlup = 0;
     int cl;
     uint32_t level;
@@ -1008,7 +1048,7 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
     psocn_bb_char_t* character = get_client_char_bb(dest);
 
     /* No need if they've already maxed out. */
-    if(character->disp.level >= 199)
+    if (character->disp.level >= 199)
         return 0;
 
     /* Add in the experience to their total so far. */
@@ -1019,24 +1059,24 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
     level = LE32(character->disp.level);
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(dest, exp_amount))
+    if (subcmd_send_bb_exp(dest, exp_amount))
         return -1;
 
     /* See if they got any level ups. */
     do {
         ent = &bb_char_stats.levels[cl][level + 1];
 
-        if(exp_total >= ent->exp) {
+        if (exp_total >= ent->exp) {
             need_lvlup = 1;
             give_stats(&character->disp.stats, ent);
             ++level;
         }
-    } while(exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
+    } while (exp_total >= ent->exp && level < (MAX_PLAYER_LEVEL - 1));
 
     /* If they got any level ups, send out the packet that says so. */
-    if(need_lvlup) {
+    if (need_lvlup) {
         character->disp.level = LE32(level);
-        if(subcmd_send_bb_level(dest))
+        if (subcmd_send_bb_level(dest))
             return -1;
     }
 
@@ -1044,19 +1084,19 @@ int client_give_exp(ship_client_t *dest, uint32_t exp_amount) {
 }
 
 /* 给予Blue Burst客户端等级提升. */
-int client_give_level(ship_client_t *dest, uint32_t level_req) {
+int client_give_level(ship_client_t* dest, uint32_t level_req) {
     uint32_t exp_total;
-    psocn_lvl_stats_t *ent;
+    psocn_lvl_stats_t* ent;
     int cl;
     uint32_t exp_gained;
 
-    if(dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl) || level_req > 199)
+    if (dest->version != CLIENT_VERSION_BB || (!dest->bb_pl) && (!dest->mode_pl) || level_req > 199)
         return -1;
 
     psocn_bb_char_t* character = get_client_char_bb(dest);
 
     /* No need if they've already at that level. */
-    if(character->disp.level >= level_req)
+    if (character->disp.level >= level_req)
         return 0;
 
     /* Grab the entry for that level... */
@@ -1072,18 +1112,18 @@ int client_give_level(ship_client_t *dest, uint32_t level_req) {
         character->disp.exp = bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp;
 
     /* Send the packet telling them they've gotten experience. */
-    if(subcmd_send_bb_exp(dest, exp_gained))
+    if (subcmd_send_bb_exp(dest, exp_gained))
         return -1;
 
     /* Send the level-up packet. */
     character->disp.level = LE32(level_req);
-    if(subcmd_send_bb_level(dest))
+    if (subcmd_send_bb_level(dest))
         return -1;
 
     return 0;
 }
 
-static void give_stats_v2(psocn_disp_char_t* disp, psocn_lvl_stats_t *ent) {
+static void give_stats_v2(psocn_disp_char_t* disp, psocn_lvl_stats_t* ent) {
     uint16_t tmp;
 
     tmp = LE16(disp->stats.atp) + ent->atp;
@@ -1108,24 +1148,24 @@ static void give_stats_v2(psocn_disp_char_t* disp, psocn_lvl_stats_t *ent) {
 }
 
 /* 给予PSOv2客户端等级提升. */
-int client_give_level_v2(ship_client_t *dest, uint32_t level_req) {
-    psocn_lvl_stats_t *ent;
+int client_give_level_v2(ship_client_t* dest, uint32_t level_req) {
+    psocn_lvl_stats_t* ent;
     int cl, i;
 
-    if(dest->version != CLIENT_VERSION_DCV2 && dest->version != CLIENT_VERSION_PC)
+    if (dest->version != CLIENT_VERSION_DCV2 && dest->version != CLIENT_VERSION_PC)
         return -1;
 
-    if(!dest->pl || level_req > (MAX_PLAYER_LEVEL - 1))
+    if (!dest->pl || level_req > (MAX_PLAYER_LEVEL - 1))
         return -1;
 
     /* No need if they've already at that level. */
-    if(dest->pl->v1.character.disp.level >= level_req)
+    if (dest->pl->v1.character.disp.level >= level_req)
         return 0;
 
     /* Give all the stat boosts for the intervening levels... */
     cl = dest->pl->v1.character.dress_data.ch_class;
 
-    for(i = dest->pl->v1.character.disp.level + 1; i <= (int)level_req; ++i) {
+    for (i = dest->pl->v1.character.disp.level + 1; i <= (int)level_req; ++i) {
         ent = &v2_char_stats.levels[cl][i];
         give_stats_v2(&dest->pl->v1.character.disp, ent);
     }
@@ -1138,42 +1178,42 @@ int client_give_level_v2(ship_client_t *dest, uint32_t level_req) {
     return 0;
 }
 
-static int check_char_v1(ship_client_t *src, player_t *pl) {
+static int check_char_v1(ship_client_t* src, player_t* pl) {
     bitfloat_t f1 = { 0 }, f2 = { 0 };
 
     /* Check some stuff that shouldn't ever change first... For these ones,
        we don't have to worry about byte ordering. */
-    if(src->pl->v1.character.dress_data.model != pl->v1.character.dress_data.model)
+    if (src->pl->v1.character.dress_data.model != pl->v1.character.dress_data.model)
         return -10;
 
-    if(src->pl->v1.character.dress_data.section != pl->v1.character.dress_data.section)
+    if (src->pl->v1.character.dress_data.section != pl->v1.character.dress_data.section)
         return -11;
 
-    if(src->pl->v1.character.dress_data.ch_class != pl->v1.character.dress_data.ch_class)
+    if (src->pl->v1.character.dress_data.ch_class != pl->v1.character.dress_data.ch_class)
         return -12;
 
-    if(src->pl->v1.character.dress_data.costume != pl->v1.character.dress_data.costume)
+    if (src->pl->v1.character.dress_data.costume != pl->v1.character.dress_data.costume)
         return -13;
 
-    if(src->pl->v1.character.dress_data.skin != pl->v1.character.dress_data.skin)
+    if (src->pl->v1.character.dress_data.skin != pl->v1.character.dress_data.skin)
         return -14;
 
-    if(src->pl->v1.character.dress_data.face != pl->v1.character.dress_data.face)
+    if (src->pl->v1.character.dress_data.face != pl->v1.character.dress_data.face)
         return -15;
 
-    if(src->pl->v1.character.dress_data.head != pl->v1.character.dress_data.head)
+    if (src->pl->v1.character.dress_data.head != pl->v1.character.dress_data.head)
         return -16;
 
-    if(src->pl->v1.character.dress_data.hair != pl->v1.character.dress_data.hair)
+    if (src->pl->v1.character.dress_data.hair != pl->v1.character.dress_data.hair)
         return -17;
 
-    if(src->pl->v1.character.dress_data.hair_r != pl->v1.character.dress_data.hair_r)
+    if (src->pl->v1.character.dress_data.hair_r != pl->v1.character.dress_data.hair_r)
         return -18;
 
-    if(src->pl->v1.character.dress_data.hair_g != pl->v1.character.dress_data.hair_g)
+    if (src->pl->v1.character.dress_data.hair_g != pl->v1.character.dress_data.hair_g)
         return -19;
 
-    if(src->pl->v1.character.dress_data.hair_b != pl->v1.character.dress_data.hair_b)
+    if (src->pl->v1.character.dress_data.hair_b != pl->v1.character.dress_data.hair_b)
         return -20;
 
     /* Floating point stuff... Ugh. Pay careful attention to these, just in case
@@ -1181,32 +1221,32 @@ static int check_char_v1(ship_client_t *src, player_t *pl) {
        ordering or whatnot). */
     f1.f = src->pl->v1.character.dress_data.prop_x;
     f2.f = pl->v1.character.dress_data.prop_x;
-    if(f1.b != f2.b)
+    if (f1.b != f2.b)
         return -21;
 
     f1.f = src->pl->v1.character.dress_data.prop_y;
     f2.f = pl->v1.character.dress_data.prop_y;
-    if(f1.b != f2.b)
+    if (f1.b != f2.b)
         return -22;
 
-    if(memcmp(src->pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.dress_data.guildcard_str.string, 16))
+    if (memcmp(src->pl->v1.character.dress_data.guildcard_str.string, pl->v1.character.dress_data.guildcard_str.string, 16))
         return -23;
 
     /* Now make sure that nothing has decreased that should never decrease.
        Since these aren't equality comparisons, we have to deal with byte
        ordering here... The hp/tp materials count are 8-bits each, but
        everything else is multi-byte. */
-    if(src->pl->v1.character.inv.hpmats_used > pl->v1.character.inv.hpmats_used)
+    if (src->pl->v1.character.inv.hpmats_used > pl->v1.character.inv.hpmats_used)
         return -24;
 
-    if(src->pl->v1.character.inv.tpmats_used > pl->v1.character.inv.tpmats_used)
+    if (src->pl->v1.character.inv.tpmats_used > pl->v1.character.inv.tpmats_used)
         return -25;
 
-    if(LE32(src->pl->v1.character.disp.exp) > LE32(pl->v1.character.disp.exp))
+    if (LE32(src->pl->v1.character.disp.exp) > LE32(pl->v1.character.disp.exp))
         return -26;
 
     /* Why is the level 32-bits?... */
-    if(LE32(src->pl->v1.character.disp.level) > LE32(pl->v1.character.disp.level))
+    if (LE32(src->pl->v1.character.disp.level) > LE32(pl->v1.character.disp.level))
         return -27;
 
     /* Other stats omitted for now... */
@@ -1215,19 +1255,19 @@ static int check_char_v1(ship_client_t *src, player_t *pl) {
     return 0;
 }
 
-static int check_char_v2(ship_client_t *src, player_t *pl) {
+static int check_char_v2(ship_client_t* src, player_t* pl) {
     return check_char_v1(src, pl);
 }
 
-static int check_char_pc(ship_client_t *src, player_t *pl) {
+static int check_char_pc(ship_client_t* src, player_t* pl) {
     return check_char_v1(src, pl);
 }
 
-static int check_char_gc(ship_client_t *src, player_t *pl) {
+static int check_char_gc(ship_client_t* src, player_t* pl) {
     return 0;
 }
 
-static int check_char_xbox(ship_client_t *src, player_t *pl) {
+static int check_char_xbox(ship_client_t* src, player_t* pl) {
     return 0;
 }
 
@@ -1387,110 +1427,110 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     return 0;
 }
 
-int client_check_character(ship_client_t *c, player_t*pl, int ver) {
+int client_check_character(ship_client_t* c, player_t* pl, int ver) {
 
     /*DBG_LOG("%s(%d): client_check_character for GC %" PRIu32
         " 版本 = %d", ship->cfg->name, c->cur_block->b,
         c->guildcard, ver);*/
 
-    switch(ver) {
-        case CLIENT_VERSION_DCV1:
-        case CLIENT_VERSION_DCV2:
-            if(c->version == CLIENT_VERSION_DCV1) {
-                if((c->flags & CLIENT_FLAG_IS_NTE))
-                    /* XXXX */
-                    return 0;
-                else
-                    return check_char_v1(c, pl);
-            }
-            else
-                /* This shouldn't happen... */
-                return -1;
-
-        case CLIENT_VERSION_PC:
-            if(c->version == CLIENT_VERSION_DCV2)
-                return check_char_v2(c, pl);
-            else if(c->version == CLIENT_VERSION_PC) {
-                if(!(c->flags & CLIENT_FLAG_IS_NTE))
-                    return check_char_pc(c, pl);
-                else
-                    /* XXXX */
-                    return 0;
-            }
-            else
-                /* This shouldn't happen... */
-                return -1;
-
-        case CLIENT_VERSION_GC:
-            if(c->version == CLIENT_VERSION_GC)
-                return check_char_gc(c, pl);
-            else if(c->version == CLIENT_VERSION_XBOX)
-                return check_char_xbox(c, pl);
-            else if(c->version == CLIENT_VERSION_EP3)
+    switch (ver) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+        if (c->version == CLIENT_VERSION_DCV1) {
+            if ((c->flags & CLIENT_FLAG_IS_NTE))
                 /* XXXX */
                 return 0;
             else
-                /* This shouldn't happen... */
-                return -1;
+                return check_char_v1(c, pl);
+        }
+        else
+            /* This shouldn't happen... */
+            return -1;
 
-        case CLIENT_VERSION_EP3:
-            if(c->version == CLIENT_VERSION_BB)
+    case CLIENT_VERSION_PC:
+        if (c->version == CLIENT_VERSION_DCV2)
+            return check_char_v2(c, pl);
+        else if (c->version == CLIENT_VERSION_PC) {
+            if (!(c->flags & CLIENT_FLAG_IS_NTE))
+                return check_char_pc(c, pl);
+            else
                 /* XXXX */
                 return 0;
-            else
-                /* This shouldn't happen... */
-                return -1;
+        }
+        else
+            /* This shouldn't happen... */
+            return -1;
 
-        case CLIENT_VERSION_BB:
-            return check_char_bb(c, pl);
+    case CLIENT_VERSION_GC:
+        if (c->version == CLIENT_VERSION_GC)
+            return check_char_gc(c, pl);
+        else if (c->version == CLIENT_VERSION_XBOX)
+            return check_char_xbox(c, pl);
+        else if (c->version == CLIENT_VERSION_EP3)
+            /* XXXX */
+            return 0;
+        else
+            /* This shouldn't happen... */
+            return -1;
 
-        default:
-            ERR_LOG("角色数据检测: 未知版本 %d", ver);
+    case CLIENT_VERSION_EP3:
+        if (c->version == CLIENT_VERSION_BB)
+            /* XXXX */
+            return 0;
+        else
+            /* This shouldn't happen... */
+            return -1;
+
+    case CLIENT_VERSION_BB:
+        return check_char_bb(c, pl);
+
+    default:
+        ERR_LOG("角色数据检测: 未知版本 %d", ver);
     }
 
     /* XXXX */
     return 0;
 }
 
-int client_legit_check(ship_client_t *c, psocn_limits_t *limits) {
+int client_legit_check(ship_client_t* c, psocn_limits_t* limits) {
     uint32_t v;
-    iitem_t *item;
+    iitem_t* item;
     int j, irv;
 
     /* Figure out what version they're on. */
-    switch(c->version) {
-        case CLIENT_VERSION_DCV1:
-            v = ITEM_VERSION_V1;
-            break;
+    switch (c->version) {
+    case CLIENT_VERSION_DCV1:
+        v = ITEM_VERSION_V1;
+        break;
 
-        case CLIENT_VERSION_DCV2:
-        case CLIENT_VERSION_PC:
-            v = ITEM_VERSION_V2;
-            break;
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+        v = ITEM_VERSION_V2;
+        break;
 
-        case CLIENT_VERSION_GC:
-        case CLIENT_VERSION_XBOX: /* XXXX */
-            v = ITEM_VERSION_GC;
-            break;
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_XBOX: /* XXXX */
+        v = ITEM_VERSION_GC;
+        break;
 
-        case CLIENT_VERSION_BB:
-            v = ITEM_VERSION_BB; /* TODO */
-        case CLIENT_VERSION_EP3:
-        default:
-            /* XXXX */
-            return 0;
+    case CLIENT_VERSION_BB:
+        v = ITEM_VERSION_BB; /* TODO */
+    case CLIENT_VERSION_EP3:
+    default:
+        /* XXXX */
+        return 0;
     }
 
     /* Make sure the player qualifies for legit mode... */
-    for(j = 0; j < c->pl->v1.character.inv.item_count; ++j) {
-        item = (iitem_t *)&c->pl->v1.character.inv.iitems[j];
+    for (j = 0; j < c->pl->v1.character.inv.item_count; ++j) {
+        item = (iitem_t*)&c->pl->v1.character.inv.iitems[j];
         irv = psocn_limits_check_item(limits, item, v);
 
-        if(!irv) {
+        if (!irv) {
             SHIPS_LOG("Potentially non-legit found in inventory (GC: %"
-                  PRIu32"):\n%08x %08x %08x %08x", c->guildcard,
-                  LE32(item->data.datal[0]), LE32(item->data.datal[1]),
-                  LE32(item->data.datal[2]), LE32(item->data.data2l));
+                PRIu32"):\n%08x %08x %08x %08x", c->guildcard,
+                LE32(item->data.datal[0]), LE32(item->data.datal[1]),
+                LE32(item->data.datal[2]), LE32(item->data.data2l));
             return -1;
         }
     }
@@ -1555,7 +1595,7 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
         }
     }
 
-    if (i == l->max_clients)
+    if (i >= l->max_clients)
         ERR_LOG("GC %u 寻找的客户端ID %d 不存在", target_client_id);
 
     return NULL;
@@ -1563,11 +1603,11 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
 
 #ifdef ENABLE_LUA
 
-static int client_guildcard_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_guildcard_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->guildcard);
     }
     else {
@@ -1577,11 +1617,11 @@ static int client_guildcard_lua(lua_State *l) {
     return 1;
 }
 
-static int client_isOnBlock_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_isOnBlock_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushboolean(l, !(c->flags & CLIENT_FLAG_TYPE_SHIP));
     }
     else {
@@ -1591,23 +1631,23 @@ static int client_isOnBlock_lua(lua_State *l) {
     return 1;
 }
 
-static int client_disconnect_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_disconnect_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         c->flags |= CLIENT_FLAG_DISCONNECTED;
     }
 
     return 0;
 }
 
-static int client_addr_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_addr_lua(lua_State* l) {
+    ship_client_t* c;
     char str[INET6_ADDRSTRLEN];
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         my_ntop(&c->ip_addr, str);
         lua_pushstring(l, str);
     }
@@ -1618,11 +1658,11 @@ static int client_addr_lua(lua_State *l) {
     return 1;
 }
 
-static int client_version_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_version_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->version);
     }
     else {
@@ -1632,11 +1672,11 @@ static int client_version_lua(lua_State *l) {
     return 1;
 }
 
-static int client_clientID_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_clientID_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->client_id);
     }
     else {
@@ -1646,11 +1686,11 @@ static int client_clientID_lua(lua_State *l) {
     return 1;
 }
 
-static int client_privilege_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_privilege_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->privilege);
     }
     else {
@@ -1660,34 +1700,34 @@ static int client_privilege_lua(lua_State *l) {
     return 1;
 }
 
-static int client_send_lua(lua_State *l) {
-    ship_client_t *c;
-    const uint8_t *s;
+static int client_send_lua(lua_State* l) {
+    ship_client_t* c;
+    const uint8_t* s;
     size_t len;
     uint16_t len2;
 
-    if(lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
-        s = (const uint8_t *)lua_tolstring(l, 2, &len);
+    if (lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
+        s = (const uint8_t*)lua_tolstring(l, 2, &len);
 
-        if(!s) {
+        if (!s) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
         /* Check it for sanity. */
-        if(len < 4 || (len & 0x03)) {
+        if (len < 4 || (len & 0x03)) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
         len2 = s[2] | (s[3] << 8);
-        if(len2 != len) {
+        if (len2 != len) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
-        if(send_pkt_dc(c, (const dc_pkt_hdr_t *)s)) {
+        if (send_pkt_dc(c, (const dc_pkt_hdr_t*)s)) {
             lua_pushinteger(l, -1);
             return 1;
         }
@@ -1701,13 +1741,13 @@ static int client_send_lua(lua_State *l) {
     }
 }
 
-static int client_lobby_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_lobby_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
-        if(c->cur_lobby)
+        if (c->cur_lobby)
             lua_pushlightuserdata(l, c->cur_lobby);
         else
             lua_pushnil(l);
@@ -1719,13 +1759,13 @@ static int client_lobby_lua(lua_State *l) {
     return 1;
 }
 
-static int client_block_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_block_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
-        if(c->cur_block)
+        if (c->cur_block)
             lua_pushlightuserdata(l, c->cur_block);
         else
             lua_pushnil(l);
@@ -1737,17 +1777,17 @@ static int client_block_lua(lua_State *l) {
     return 1;
 }
 
-static int client_sendSData_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_sendSData_lua(lua_State* l) {
+    ship_client_t* c;
     uint32_t event;
-    const uint8_t *s;
+    const uint8_t* s;
     size_t len;
     lua_Integer rv = -1;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) && lua_isstring(l, 3)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2) && lua_isstring(l, 3)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         event = (uint32_t)lua_tointeger(l, 2);
-        s = (const uint8_t *)lua_tolstring(l, 3, &len);
+        s = (const uint8_t*)lua_tolstring(l, 3, &len);
 
         rv = shipgate_send_sdata(&ship->sg, c, event, s, (uint32_t)len);
     }
@@ -1756,14 +1796,14 @@ static int client_sendSData_lua(lua_State *l) {
     return 1;
 }
 
-static int client_sendMsg_lua(lua_State *l) {
-    ship_client_t *c;
-    const char *s;
+static int client_sendMsg_lua(lua_State* l) {
+    ship_client_t* c;
+    const char* s;
     size_t len;
 
-    if(lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
-        s = (const char *)lua_tolstring(l, 2, &len);
+    if (lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
+        s = (const char*)lua_tolstring(l, 2, &len);
 
         send_txt(c, "\tE\tC7%s", s);
     }
@@ -1772,11 +1812,11 @@ static int client_sendMsg_lua(lua_State *l) {
     return 1;
 }
 
-static int client_getTable_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_getTable_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_rawgeti(l, LUA_REGISTRYINDEX, c->script_ref);
     }
     else {
@@ -1786,11 +1826,11 @@ static int client_getTable_lua(lua_State *l) {
     return 1;
 }
 
-static int client_area_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_area_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->cur_area);
     }
     else {
@@ -1800,13 +1840,13 @@ static int client_area_lua(lua_State *l) {
     return 1;
 }
 
-static int client_name_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_name_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
-        if(c->pl)
+        if (c->pl)
             lua_pushstring(l, c->pl->v1.character.dress_data.guildcard_str.string);
         else
             lua_pushnil(l);
@@ -1818,11 +1858,11 @@ static int client_name_lua(lua_State *l) {
     return 1;
 }
 
-static int client_flags_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_flags_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->flags);
     }
     else {
@@ -1832,13 +1872,13 @@ static int client_flags_lua(lua_State *l) {
     return 1;
 }
 
-static int client_level_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_level_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
-        if(c->pl)
+        if (c->pl)
             lua_pushinteger(l, (lua_Integer)(c->pl->v1.character.disp.level + 1));
         else
             lua_pushinteger(l, -1);
@@ -1850,36 +1890,36 @@ static int client_level_lua(lua_State *l) {
     return 1;
 }
 
-static int client_sendMenu_lua(lua_State *l) {
-    ship_client_t *c;
-    gen_menu_entry_t *ents;
+static int client_sendMenu_lua(lua_State* l) {
+    ship_client_t* c;
+    gen_menu_entry_t* ents;
     lua_Integer count, i;
     int tp;
-    const char *str;
+    const char* str;
     uint32_t menu_id;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
-       lua_isinteger(l, 3) && lua_istable(l, 4) && lua_istable(l, 5)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
+        lua_isinteger(l, 3) && lua_istable(l, 4) && lua_istable(l, 5)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         menu_id = (uint32_t)lua_tointeger(l, 2);
         count = lua_tointeger(l, 3);
 
         /* Make sure we've got a sane count for the menu. */
-        if(count <= 0) {
+        if (count <= 0) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
-        ents = (gen_menu_entry_t *)malloc(sizeof(gen_menu_entry_t) * (size_t)count);
-        if(!ents) {
+        ents = (gen_menu_entry_t*)malloc(sizeof(gen_menu_entry_t) * (size_t)count);
+        if (!ents) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
         /* Read each element from the tables passed in */
-        for(i = 1; i <= count; ++i) {
+        for (i = 1; i <= count; ++i) {
             tp = lua_rawgeti(l, 4, i);
-            if(tp != LUA_TNUMBER) {
+            if (tp != LUA_TNUMBER) {
                 lua_pop(l, 1);
                 free_safe(ents);
                 lua_pushinteger(l, -1);
@@ -1890,7 +1930,7 @@ static int client_sendMenu_lua(lua_State *l) {
             lua_pop(l, 1);
 
             tp = lua_rawgeti(l, 5, i);
-            if(tp != LUA_TSTRING) {
+            if (tp != LUA_TSTRING) {
                 lua_pop(l, 1);
                 free_safe(ents);
                 lua_pushinteger(l, -1);
@@ -1913,40 +1953,40 @@ static int client_sendMenu_lua(lua_State *l) {
     return 1;
 }
 
-static int client_dropItem_lua(lua_State *l) {
-    ship_client_t *c;
-    lobby_t *lb;
+static int client_dropItem_lua(lua_State* l) {
+    ship_client_t* c;
+    lobby_t* lb;
     //uint32_t item[4] = { 0, 0, 0, 0 };
     item_t item = { 0 };
     subcmd_drop_stack_t p2 = { 0 };
 
     /* We need at least the client itself and the first dword of the item */
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lb = c->cur_lobby;
         item.datal[0] = (uint32_t)lua_tointeger(l, 2);
 
         /* Make sure we're in a team, not a regular lobby... */
-        if(lb->type != LOBBY_TYPE_GAME) {
+        if (lb->type != LOBBY_TYPE_GAME) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
         /* Check all the optional arguments */
-        if(lua_isinteger(l, 3)) {
+        if (lua_isinteger(l, 3)) {
             item.datal[1] = (uint32_t)lua_tointeger(l, 3);
 
-            if(lua_isinteger(l, 4)) {
+            if (lua_isinteger(l, 4)) {
                 item.datal[2] = (uint32_t)lua_tointeger(l, 4);
 
-                if(lua_isinteger(l, 5)) {
+                if (lua_isinteger(l, 5)) {
                     item.data2l = (uint32_t)lua_tointeger(l, 5);
                 }
             }
         }
 
         /* Do some basic checks of the item... */
-        if(is_stackable(&item) && !(item.datal[1] & 0x0000FF00)) {
+        if (is_stackable(&item) && !(item.datal[1] & 0x0000FF00)) {
             /* If the item is stackable and doesn't have a quantity, give one
                of it. */
             item.datal[1] |= (1 << 8);
@@ -1971,7 +2011,7 @@ static int client_dropItem_lua(lua_State *l) {
         p2.two = LE32(0x00000002);
         ++lb->item_lobby_id;
 
-        lobby_send_pkt_dc(lb, NULL, (dc_pkt_hdr_t *)&p2, 0);
+        lobby_send_pkt_dc(lb, NULL, (dc_pkt_hdr_t*)&p2, 0);
         lua_pushinteger(l, 0);
     }
     else {
@@ -1981,14 +2021,14 @@ static int client_dropItem_lua(lua_State *l) {
     return 1;
 }
 
-static int client_sendMsgBox_lua(lua_State *l) {
-    ship_client_t *c;
-    const char *s;
+static int client_sendMsgBox_lua(lua_State* l) {
+    ship_client_t* c;
+    const char* s;
     size_t len;
 
-    if(lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
-        s = (const char *)lua_tolstring(l, 2, &len);
+    if (lua_islightuserdata(l, 1) && lua_isstring(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
+        s = (const char*)lua_tolstring(l, 2, &len);
 
         send_msg(c, MSG1_TYPE, "\tE%s", s);
         lua_pushinteger(l, 0);
@@ -2000,14 +2040,14 @@ static int client_sendMsgBox_lua(lua_State *l) {
     return 1;
 }
 
-static int client_numItems_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_numItems_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
         /* Make sure we have character data first. */
-        if(!c->pl) {
+        if (!c->pl) {
             lua_pushinteger(l, -1);
             return 1;
         }
@@ -2021,22 +2061,22 @@ static int client_numItems_lua(lua_State *l) {
     return 1;
 }
 
-static int client_item_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_item_lua(lua_State* l) {
+    ship_client_t* c;
     int index;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         index = (int)lua_tointeger(l, 2);
 
         /* Make sure we have character data first. */
-        if(!c->pl) {
+        if (!c->pl) {
             lua_pushnil(l);
             return 1;
         }
 
         /* Make sure the index is sane */
-        if(index < 0 || index >= c->pl->v1.character.inv.item_count) {
+        if (index < 0 || index >= c->pl->v1.character.inv.item_count) {
             lua_pushnil(l);
             return 1;
         }
@@ -2063,16 +2103,16 @@ static int client_item_lua(lua_State *l) {
     return 1;
 }
 
-static int client_find_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_find_lua(lua_State* l) {
+    ship_client_t* c;
     uint32_t gc;
     uint32_t i;
 
-    if(lua_isinteger(l, 1)) {
+    if (lua_isinteger(l, 1)) {
         gc = (uint32_t)lua_tointeger(l, 1);
 
-        for(i = 0; i < ship->cfg->blocks; ++i) {
-            if((c = block_find_client(ship->blocks[i], gc))) {
+        for (i = 0; i < ship->cfg->blocks; ++i) {
+            if ((c = block_find_client(ship->blocks[i], gc))) {
                 lua_pushlightuserdata(l, c);
                 return 1;
             }
@@ -2087,13 +2127,13 @@ static int client_find_lua(lua_State *l) {
     return 1;
 }
 
-static int client_syncRegister_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_syncRegister_lua(lua_State* l) {
+    ship_client_t* c;
     lua_Integer reg, value;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
-       lua_isinteger(l, 3)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
+        lua_isinteger(l, 3)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         reg = lua_tointeger(l, 2);
         value = lua_tointeger(l, 3);
 
@@ -2107,27 +2147,27 @@ static int client_syncRegister_lua(lua_State *l) {
     return 1;
 }
 
-static int client_hasItem_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_hasItem_lua(lua_State* l) {
+    ship_client_t* c;
     lua_Integer ic;
     uint32_t val;
     int i;
-    iitem_t *item;
+    iitem_t* item;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         ic = lua_tointeger(l, 2);
 
-        for(i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
-            item = (iitem_t *)&c->pl->v1.character.inv.iitems[i];
+        for (i = 0; i < c->pl->v1.character.inv.item_count; ++i) {
+            item = (iitem_t*)&c->pl->v1.character.inv.iitems[i];
             val = item->data.datal[0];
 
             /* Grab the real item type, if its a v2 item.
                Note: Gamecube uses this byte for wrapping paper design. */
-            if(c->version < ITEM_VERSION_GC && item->data.datab[5])
+            if (c->version < ITEM_VERSION_GC && item->data.datab[5])
                 val = (item->data.datab[5] << 8);
 
-            if((val & 0x00FFFFFF) == ic) {
+            if ((val & 0x00FFFFFF) == ic) {
                 lua_pushboolean(l, 1);
                 return 1;
             }
@@ -2140,12 +2180,12 @@ static int client_hasItem_lua(lua_State *l) {
     return 1;
 }
 
-static int client_legitCheck_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_legitCheck_lua(lua_State* l) {
+    ship_client_t* c;
     int rv;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
 
         rv = client_legit_check(c, ship->def_limits);
         lua_pushboolean(l, !rv);
@@ -2156,15 +2196,15 @@ static int client_legitCheck_lua(lua_State *l) {
     return 1;
 }
 
-static int client_legitCheckItem_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_legitCheckItem_lua(lua_State* l) {
+    ship_client_t* c;
     lua_Integer ic1, ic2, ic3, ic4, v;
     iitem_t item = { 0 };
     int rv;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
-       lua_isinteger(l, 3) && lua_isinteger(l, 4) && lua_isinteger(l, 5)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
+        lua_isinteger(l, 3) && lua_isinteger(l, 4) && lua_isinteger(l, 5)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         ic1 = lua_tointeger(l, 2);
         ic2 = lua_tointeger(l, 3);
         ic3 = lua_tointeger(l, 4);
@@ -2175,33 +2215,33 @@ static int client_legitCheckItem_lua(lua_State *l) {
         item.data.datal[2] = (uint32_t)ic3;
         item.data.data2l = (uint32_t)ic4;
 
-        switch(c->version) {
-            case CLIENT_VERSION_DCV1:
-                v = ITEM_VERSION_V1;
-                break;
+        switch (c->version) {
+        case CLIENT_VERSION_DCV1:
+            v = ITEM_VERSION_V1;
+            break;
 
-            case CLIENT_VERSION_DCV2:
-            case CLIENT_VERSION_PC:
-                v = ITEM_VERSION_V2;
-                break;
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            v = ITEM_VERSION_V2;
+            break;
 
-            case CLIENT_VERSION_GC:
-            case CLIENT_VERSION_XBOX:
-                v = ITEM_VERSION_GC;
-                break;
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_GC;
+            break;
 
-            default:
-                lua_pushboolean(l, 1);
-                return 1;
+        default:
+            lua_pushboolean(l, 1);
+            return 1;
         }
 
         rv = psocn_limits_check_item(ship->def_limits, &item, (uint32_t)v);
 
-        if(!rv) {
+        if (!rv) {
             SHIPS_LOG("legitCheckItem failed for GC %" PRIu32 " with "
-                  "item %08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32
-                  "", c->guildcard, item.data.datal[0], item.data.datal[1],
-                  item.data.datal[2], item.data.data2l);
+                "item %08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32
+                "", c->guildcard, item.data.datal[0], item.data.datal[1],
+                item.data.datal[2], item.data.data2l);
         }
 
         lua_pushboolean(l, !!rv);
@@ -2212,11 +2252,11 @@ static int client_legitCheckItem_lua(lua_State *l) {
     return 1;
 }
 
-static int client_coords_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_coords_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushnumber(l, c->x);
         lua_pushnumber(l, c->y);
         lua_pushnumber(l, c->z);
@@ -2230,18 +2270,18 @@ static int client_coords_lua(lua_State *l) {
     return 3;
 }
 
-static int client_distance_lua(lua_State *l) {
-    ship_client_t *c, *c2;
+static int client_distance_lua(lua_State* l) {
+    ship_client_t* c, * c2;
     double x, y, z, d;
 
-    if(lua_islightuserdata(l, 1) && lua_islightuserdata(l, 2)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
-        c2 = (ship_client_t *)lua_touserdata(l, 2);
+    if (lua_islightuserdata(l, 1) && lua_islightuserdata(l, 2)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
+        c2 = (ship_client_t*)lua_touserdata(l, 2);
 
-        if(c->cur_lobby != c2->cur_lobby)
+        if (c->cur_lobby != c2->cur_lobby)
             goto err;
 
-        if(c->cur_area != c2->cur_area)
+        if (c->cur_area != c2->cur_area)
             goto err;
 
         /* 计算欧氏距离. */
@@ -2259,11 +2299,11 @@ err:
     return 1;
 }
 
-static int client_language_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_language_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->language_code);
         return 1;
     }
@@ -2272,11 +2312,11 @@ static int client_language_lua(lua_State *l) {
     return 1;
 }
 
-static int client_qlang_lua(lua_State *l) {
-    ship_client_t *c;
+static int client_qlang_lua(lua_State* l) {
+    ship_client_t* c;
 
-    if(lua_islightuserdata(l, 1)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         lua_pushinteger(l, c->q_lang);
         return 1;
     }
@@ -2285,36 +2325,36 @@ static int client_qlang_lua(lua_State *l) {
     return 1;
 }
 
-static int client_sendMenu2_lua(lua_State *l) {
-    ship_client_t *c;
-    gen_menu_entry_t *ents;
+static int client_sendMenu2_lua(lua_State* l) {
+    ship_client_t* c;
+    gen_menu_entry_t* ents;
     lua_Integer count, i;
     int tp;
-    const char *str;
+    const char* str;
     uint32_t menu_id;
 
-    if(lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
-       lua_isinteger(l, 3) && lua_istable(l, 4)) {
-        c = (ship_client_t *)lua_touserdata(l, 1);
+    if (lua_islightuserdata(l, 1) && lua_isinteger(l, 2) &&
+        lua_isinteger(l, 3) && lua_istable(l, 4)) {
+        c = (ship_client_t*)lua_touserdata(l, 1);
         menu_id = (uint32_t)lua_tointeger(l, 2);
         count = lua_tointeger(l, 3);
 
         /* Make sure we've got a sane count for the menu. */
-        if(count <= 0) {
+        if (count <= 0) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
-        ents = (gen_menu_entry_t *)malloc(sizeof(gen_menu_entry_t) * (size_t)count);
-        if(!ents) {
+        ents = (gen_menu_entry_t*)malloc(sizeof(gen_menu_entry_t) * (size_t)count);
+        if (!ents) {
             lua_pushinteger(l, -1);
             return 1;
         }
 
         /* Read each element from the tables passed in */
-        for(i = 1; i <= count; ++i) {
+        for (i = 1; i <= count; ++i) {
             tp = lua_rawgeti(l, 4, i);
-            if(tp != LUA_TTABLE) {
+            if (tp != LUA_TTABLE) {
                 lua_pop(l, 1);
                 free_safe(ents);
                 lua_pushinteger(l, -1);
@@ -2322,7 +2362,7 @@ static int client_sendMenu2_lua(lua_State *l) {
             }
 
             tp = lua_rawgeti(l, -1, 1);
-            if(tp != LUA_TNUMBER) {
+            if (tp != LUA_TNUMBER) {
                 lua_pop(l, 2);
                 free_safe(ents);
                 lua_pushinteger(l, -1);
@@ -2333,7 +2373,7 @@ static int client_sendMenu2_lua(lua_State *l) {
             lua_pop(l, 1);
 
             tp = lua_rawgeti(l, -1, 2);
-            if(tp != LUA_TSTRING) {
+            if (tp != LUA_TSTRING) {
                 lua_pop(l, 2);
                 free_safe(ents);
                 lua_pushinteger(l, -1);
@@ -2393,7 +2433,7 @@ static const luaL_Reg clientlib[] = {
     { NULL, NULL }
 };
 
-int client_register_lua(lua_State *l) {
+int client_register_lua(lua_State* l) {
     luaL_newlib(l, clientlib);
     return 1;
 }

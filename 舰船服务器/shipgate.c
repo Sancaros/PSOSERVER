@@ -136,63 +136,73 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
 
 /* Send a raw packet away. */
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
-    ssize_t rv, total = 0;
-    void* tmp;
+    __try {
+        ssize_t rv, total = 0;
+        void* tmp;
 
-    /* Keep trying until the whole thing's sent. */
-    if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
         /* Keep trying until the whole thing's sent. */
-        if (!c->sendbuf_cur) {
-            while (total < len) {
-                rv = sg_send(c, sendbuf + total, len - total);
+        if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
+            /* Keep trying until the whole thing's sent. */
+            if (!c->sendbuf_cur) {
+                while (total < len) {
+                    rv = sg_send(c, sendbuf + total, len - total);
 
-                //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
+                    //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
-                /* Did the data send? */
-                if (rv < 0) {
-                    /* Is it an error code that might be correctable? */
-                    if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-                        continue;
-                    else
-                        return -1;
+                    /* Did the data send? */
+                    if (rv < 0) {
+                        /* Is it an error code that might be correctable? */
+                        if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+                            continue;
+                        else
+                            return -1;
+                    }
+
+                    total += rv;
+                }
+            }
+
+            rv = len - total;
+
+            if (rv) {
+                /* Move out any already transferred data. */
+                if (c->sendbuf_start) {
+                    memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                        c->sendbuf_cur - c->sendbuf_start);
+                    c->sendbuf_cur -= c->sendbuf_start;
                 }
 
-                total += rv;
+                /* See if we need to reallocate the buffer. */
+                if (c->sendbuf_cur + rv > c->sendbuf_size) {
+                    tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+
+                    /* If we can't allocate the space, bail. */
+                    if (tmp == NULL)
+                        return -1;
+
+                    c->sendbuf_size = c->sendbuf_cur + rv;
+                    c->sendbuf = (unsigned char*)tmp;
+                }
+
+                /* Copy what's left of the packet into the output buffer. */
+                memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+                c->sendbuf_cur += rv;
             }
+
+            //if (sendbuf)
+            //    free_safe(sendbuf);
         }
 
-        rv = len - total;
-
-        if (rv) {
-            /* Move out any already transferred data. */
-            if (c->sendbuf_start) {
-                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                    c->sendbuf_cur - c->sendbuf_start);
-                c->sendbuf_cur -= c->sendbuf_start;
-            }
-
-            /* See if we need to reallocate the buffer. */
-            if (c->sendbuf_cur + rv > c->sendbuf_size) {
-                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-                /* If we can't allocate the space, bail. */
-                if (tmp == NULL)
-                    return -1;
-
-                c->sendbuf_size = c->sendbuf_cur + rv;
-                c->sendbuf = (unsigned char*)tmp;
-            }
-
-            /* Copy what's left of the packet into the output buffer. */
-            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-            c->sendbuf_cur += rv;
-        }
-
-        //if (sendbuf)
-        //    free_safe(sendbuf);
+        return 0;
     }
 
-    return 0;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 //
 ///* Send a raw packet away. */
@@ -3265,360 +3275,390 @@ static int handle_default_mode_char_data_bb(shipgate_conn_t* conn, shipgate_defa
 }
 
 static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
-    uint16_t type = ntohs(pkt->pkt_type);
-    uint16_t flags = ntohs(pkt->flags);
+    __try {
+        uint16_t type = ntohs(pkt->pkt_type);
+        uint16_t flags = ntohs(pkt->flags);
 
 #ifdef DEBUG
 
-    DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
-        , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
+        DBG_LOG("S->G指令: 0x%04X %s 标识 = %d 密钥 = %d 失败代码 %d"
+            , type, s_cmd_name(type, 0), flags, conn->has_key, flags & SHDR_FAILURE);
 
 #endif // DEBUG
 
-    if (!conn->has_key) {
-        /* Silently ignore non-login packets when we're without a key
-         当我们没有密钥时，自动忽略非登录数据包 
-        . */
-        if (type != SHDR_TYPE_LOGIN && type != SHDR_TYPE_LOGIN6) {
-            return 0;
-        }
-
-        if (type == SHDR_TYPE_LOGIN && !(flags & SHDR_RESPONSE)) {
-            return handle_login(conn, (shipgate_login_pkt*)pkt);
-        }
-        else if (type == SHDR_TYPE_LOGIN6 && (flags & SHDR_RESPONSE)) {
-            return handle_login_reply(conn, (shipgate_error_pkt*)pkt);
-        }
-        else {
-            return 0;
-        }
-    }
-
-    /* See if this is an error packet */
-    if (flags & SHDR_FAILURE) {
-        switch (type) {
-        case SHDR_TYPE_DC:
-        case SHDR_TYPE_PC:
-        case SHDR_TYPE_BB:
-            /* Ignore these for now, we shouldn't get them. */
-            handle_bb_guild_err(conn, (shipgate_error_pkt*)pkt);
-            return 0;
-
-        case SHDR_TYPE_CDATA:
-            return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
-
-        case SHDR_TYPE_CREQ:
-        case SHDR_TYPE_CBKUP:
-            return handle_char_data_req_err(conn, (shipgate_cdata_err_pkt*)pkt);
-
-        case SHDR_TYPE_USRLOGIN:
-            return handle_usrlogin_err(conn, (shipgate_gm_err_pkt*)pkt);
-
-        case SHDR_TYPE_IPBAN:
-        case SHDR_TYPE_GCBAN:
-            return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
-
-        case SHDR_TYPE_BLKLOGIN:
-        case SHDR_TYPE_BLKLOGOUT:
-            return handle_blogin_err(conn, (shipgate_blogin_err_pkt*)pkt);
-
-        case SHDR_TYPE_ADDFRIEND:
-            return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
-
-        case SHDR_TYPE_DELFRIEND:
-            return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
-
-        case SHDR_TYPE_QFLAG_SET:
-        case SHDR_TYPE_QFLAG_GET:
-            return handle_qflag_err(conn, (shipgate_qflag_err_pkt*)pkt);
-
-        default:
-            ERR_LOG("%s: 船闸发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
-                , conn->ship->cfg->name, type, flags, conn->has_key);
-            return -1;
-        }
-    }
-    else {
-        switch (type) {
-        case SHDR_TYPE_DC:
-            return handle_dc(conn, (shipgate_fw_9_pkt*)pkt);
-
-        case SHDR_TYPE_PC:
-            return handle_pc(conn, (shipgate_fw_9_pkt*)pkt);
-
-        case SHDR_TYPE_BB:
-            return handle_bb(conn, (shipgate_fw_9_pkt*)pkt);
-
-        case SHDR_TYPE_SSTATUS:
-            return handle_sstatus(conn, (shipgate_ship_status6_pkt*)pkt);
-
-        case SHDR_TYPE_PING:
-            /* Ignore responses for now... we don't send these just yet. */
-            if (flags & SHDR_RESPONSE) {
+        if (!conn->has_key) {
+            /* Silently ignore non-login packets when we're without a key
+             当我们没有密钥时，自动忽略非登录数据包
+            . */
+            if (type != SHDR_TYPE_LOGIN && type != SHDR_TYPE_LOGIN6) {
                 return 0;
             }
 
-            return shipgate_send_ping(conn, 1);
-
-        case SHDR_TYPE_CREQ:
-            return handle_char_data_req(conn, (shipgate_char_data_pkt*)pkt);
-
-        case SHDR_TYPE_USRLOGIN:
-            return handle_usrlogin(conn, (shipgate_usrlogin_reply_pkt*)pkt);
-
-        case SHDR_TYPE_COUNT:
-            return handle_count(conn, (shipgate_cnt_pkt*)pkt);
-
-        case SHDR_TYPE_CDATA:
-            return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
-
-        case SHDR_TYPE_IPBAN:
-        case SHDR_TYPE_GCBAN:
-            return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
-
-        case SHDR_TYPE_BLKLOGIN:
-            return 0;
-
-        case SHDR_TYPE_BLKLOGOUT:
-            return 0;
-
-        case SHDR_TYPE_FRLOGIN:
-        case SHDR_TYPE_FRLOGOUT:
-            return handle_friend(conn, (shipgate_friend_login_4_pkt*)pkt);
-
-        case SHDR_TYPE_ADDFRIEND:
-            return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
-
-        case SHDR_TYPE_DELFRIEND:
-            return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
-
-        case SHDR_TYPE_KICK:
-            return handle_kick(conn, (shipgate_kick_pkt*)pkt);
-
-        case SHDR_TYPE_FRLIST:
-            return handle_frlist(conn, (shipgate_friend_list_pkt*)pkt);
-
-        case SHDR_TYPE_GLOBALMSG:
-            return handle_globalmsg(conn, (shipgate_global_msg_pkt*)pkt);
-
-        case SHDR_TYPE_USEROPT:
-            /* We really should notify the user either way... but for now,
-               punt. */
-            if (flags & (SHDR_RESPONSE | SHDR_FAILURE)) {
+            if (type == SHDR_TYPE_LOGIN && !(flags & SHDR_RESPONSE)) {
+                return handle_login(conn, (shipgate_login_pkt*)pkt);
+            }
+            else if (type == SHDR_TYPE_LOGIN6 && (flags & SHDR_RESPONSE)) {
+                return handle_login_reply(conn, (shipgate_error_pkt*)pkt);
+            }
+            else {
                 return 0;
             }
+        }
 
-            return handle_useropt(conn, (shipgate_user_opt_pkt*)pkt);
+        /* See if this is an error packet */
+        if (flags & SHDR_FAILURE) {
+            switch (type) {
+            case SHDR_TYPE_DC:
+            case SHDR_TYPE_PC:
+            case SHDR_TYPE_BB:
+                /* Ignore these for now, we shouldn't get them. */
+                handle_bb_guild_err(conn, (shipgate_error_pkt*)pkt);
+                return 0;
 
-        case SHDR_TYPE_BBOPTS:
-            return handle_bbopts(conn, (shipgate_bb_opts_pkt*)pkt);
+            case SHDR_TYPE_CDATA:
+                return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
 
-        case SHDR_TYPE_BBMAXTECH:
-            return handle_max_tech_level_bb(conn, (shipgate_max_tech_lvl_bb_pkt*)pkt);
+            case SHDR_TYPE_CREQ:
+            case SHDR_TYPE_CBKUP:
+                return handle_char_data_req_err(conn, (shipgate_cdata_err_pkt*)pkt);
 
-        case SHDR_TYPE_BBLVLDATA:
-            return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
+            case SHDR_TYPE_USRLOGIN:
+                return handle_usrlogin_err(conn, (shipgate_gm_err_pkt*)pkt);
 
-        case SHDR_TYPE_BBDEFAULT_MODE_DATA:
-            return handle_default_mode_char_data_bb(conn, (shipgate_default_mode_char_data_bb_pkt*)pkt);
+            case SHDR_TYPE_IPBAN:
+            case SHDR_TYPE_GCBAN:
+                return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
 
-        case SHDR_TYPE_CBKUP:
-            if (!(flags & SHDR_RESPONSE)) {
-                /* We should never get a non-response version of this. */
+            case SHDR_TYPE_BLKLOGIN:
+            case SHDR_TYPE_BLKLOGOUT:
+                return handle_blogin_err(conn, (shipgate_blogin_err_pkt*)pkt);
+
+            case SHDR_TYPE_ADDFRIEND:
+                return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
+
+            case SHDR_TYPE_DELFRIEND:
+                return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
+
+            case SHDR_TYPE_QFLAG_SET:
+            case SHDR_TYPE_QFLAG_GET:
+                return handle_qflag_err(conn, (shipgate_qflag_err_pkt*)pkt);
+
+            default:
+                ERR_LOG("%s: 船闸发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
+                    , conn->ship->cfg->name, type, flags, conn->has_key);
                 return -1;
             }
-
-            /* No need really to notify the user. */
-            return 0;
-
-        case SHDR_TYPE_SCHUNK:
-            return handle_schunk(conn, (shipgate_schunk_pkt*)pkt);
-
-        case SHDR_TYPE_SSET:
-            return handle_sset(conn, (shipgate_sset_pkt*)pkt);
-
-        case SHDR_TYPE_SDATA:
-            return handle_sdata(conn, (shipgate_sdata_pkt*)pkt);
-
-        case SHDR_TYPE_QFLAG_SET:
-        case SHDR_TYPE_QFLAG_GET:
-            return handle_qflag(conn, (shipgate_qflag_pkt*)pkt);
-
-        case SHDR_TYPE_SHIP_CTL:
-            return handle_sctl(conn, (shipgate_shipctl_pkt*)pkt);
-
-        case SHDR_TYPE_UBLOCKS:
-            return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
-            /*
-        case SHDR_TYPE_8000:
-            return 0;
-
-        default:
-            ERR_LOG(
-                "%s: 船闸发送未知错误2! 指令 = 0x%04X 标识 = %d 密钥 = %d"
-                , conn->ship->cfg->name, type, flags, conn->has_key
-            );
-            return 0;*/
-
-        case SHDR_TYPE_CHECK_PLONLINE:
-            DBG_LOG("测试");
-            return 0;
-
-        case SHDR_TYPE_BB_COMMON_BANK_DATA:
-            DBG_LOG("测试公共仓库数据获取");
-            return 0;
-
-        case SHDR_TYPE_COMPLETE_DATA:
-            SHIPS_LOG("舰闸数据接收完成.");
-            /* Ignore responses for now... we don't send these just yet. */
-            if (flags & SHDR_RESPONSE) {
-                return 0;
-            }
-
-            return shipgate_send_ping(conn, 1);
-
-        default:
-            DBG_LOG("未知测试数据获取指令 0x%04X", type);
-
         }
+        else {
+            switch (type) {
+            case SHDR_TYPE_DC:
+                return handle_dc(conn, (shipgate_fw_9_pkt*)pkt);
+
+            case SHDR_TYPE_PC:
+                return handle_pc(conn, (shipgate_fw_9_pkt*)pkt);
+
+            case SHDR_TYPE_BB:
+                return handle_bb(conn, (shipgate_fw_9_pkt*)pkt);
+
+            case SHDR_TYPE_SSTATUS:
+                return handle_sstatus(conn, (shipgate_ship_status6_pkt*)pkt);
+
+            case SHDR_TYPE_PING:
+                /* Ignore responses for now... we don't send these just yet. */
+                if (flags & SHDR_RESPONSE) {
+                    return 0;
+                }
+
+                return shipgate_send_ping(conn, 1);
+
+            case SHDR_TYPE_CREQ:
+                return handle_char_data_req(conn, (shipgate_char_data_pkt*)pkt);
+
+            case SHDR_TYPE_USRLOGIN:
+                return handle_usrlogin(conn, (shipgate_usrlogin_reply_pkt*)pkt);
+
+            case SHDR_TYPE_COUNT:
+                return handle_count(conn, (shipgate_cnt_pkt*)pkt);
+
+            case SHDR_TYPE_CDATA:
+                return handle_char_data_db_save(conn, (shipgate_cdata_err_pkt*)pkt);
+
+            case SHDR_TYPE_IPBAN:
+            case SHDR_TYPE_GCBAN:
+                return handle_ban(conn, (shipgate_ban_err_pkt*)pkt);
+
+            case SHDR_TYPE_BLKLOGIN:
+                return 0;
+
+            case SHDR_TYPE_BLKLOGOUT:
+                return 0;
+
+            case SHDR_TYPE_FRLOGIN:
+            case SHDR_TYPE_FRLOGOUT:
+                return handle_friend(conn, (shipgate_friend_login_4_pkt*)pkt);
+
+            case SHDR_TYPE_ADDFRIEND:
+                return handle_addfriend(conn, (shipgate_friend_err_pkt*)pkt);
+
+            case SHDR_TYPE_DELFRIEND:
+                return handle_delfriend(conn, (shipgate_friend_err_pkt*)pkt);
+
+            case SHDR_TYPE_KICK:
+                return handle_kick(conn, (shipgate_kick_pkt*)pkt);
+
+            case SHDR_TYPE_FRLIST:
+                return handle_frlist(conn, (shipgate_friend_list_pkt*)pkt);
+
+            case SHDR_TYPE_GLOBALMSG:
+                return handle_globalmsg(conn, (shipgate_global_msg_pkt*)pkt);
+
+            case SHDR_TYPE_USEROPT:
+                /* We really should notify the user either way... but for now,
+                   punt. */
+                if (flags & (SHDR_RESPONSE | SHDR_FAILURE)) {
+                    return 0;
+                }
+
+                return handle_useropt(conn, (shipgate_user_opt_pkt*)pkt);
+
+            case SHDR_TYPE_BBOPTS:
+                return handle_bbopts(conn, (shipgate_bb_opts_pkt*)pkt);
+
+            case SHDR_TYPE_BBMAXTECH:
+                return handle_max_tech_level_bb(conn, (shipgate_max_tech_lvl_bb_pkt*)pkt);
+
+            case SHDR_TYPE_BBLVLDATA:
+                return handle_pl_level_bb(conn, (shipgate_pl_level_bb_pkt*)pkt);
+
+            case SHDR_TYPE_BBDEFAULT_MODE_DATA:
+                return handle_default_mode_char_data_bb(conn, (shipgate_default_mode_char_data_bb_pkt*)pkt);
+
+            case SHDR_TYPE_CBKUP:
+                if (!(flags & SHDR_RESPONSE)) {
+                    /* We should never get a non-response version of this. */
+                    return -1;
+                }
+
+                /* No need really to notify the user. */
+                return 0;
+
+            case SHDR_TYPE_SCHUNK:
+                return handle_schunk(conn, (shipgate_schunk_pkt*)pkt);
+
+            case SHDR_TYPE_SSET:
+                return handle_sset(conn, (shipgate_sset_pkt*)pkt);
+
+            case SHDR_TYPE_SDATA:
+                return handle_sdata(conn, (shipgate_sdata_pkt*)pkt);
+
+            case SHDR_TYPE_QFLAG_SET:
+            case SHDR_TYPE_QFLAG_GET:
+                return handle_qflag(conn, (shipgate_qflag_pkt*)pkt);
+
+            case SHDR_TYPE_SHIP_CTL:
+                return handle_sctl(conn, (shipgate_shipctl_pkt*)pkt);
+
+            case SHDR_TYPE_UBLOCKS:
+                return handle_ubl(conn, (shipgate_user_blocklist_pkt*)pkt);
+                /*
+            case SHDR_TYPE_8000:
+                return 0;
+
+            default:
+                ERR_LOG(
+                    "%s: 船闸发送未知错误2! 指令 = 0x%04X 标识 = %d 密钥 = %d"
+                    , conn->ship->cfg->name, type, flags, conn->has_key
+                );
+                return 0;*/
+
+            case SHDR_TYPE_CHECK_PLONLINE:
+                DBG_LOG("测试");
+                return 0;
+
+            case SHDR_TYPE_BB_COMMON_BANK_DATA:
+                DBG_LOG("测试公共仓库数据获取");
+                return 0;
+
+            case SHDR_TYPE_COMPLETE_DATA:
+                SHIPS_LOG("舰闸数据接收完成.");
+                /* Ignore responses for now... we don't send these just yet. */
+                if (flags & SHDR_RESPONSE) {
+                    return 0;
+                }
+
+                return shipgate_send_ping(conn, 1);
+
+            default:
+                DBG_LOG("未知测试数据获取指令 0x%04X", type);
+
+            }
+        }
+
+        return -1;
     }
 
-    return -1;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* 从船闸服务器读取数据流. */
 int shipgate_process_pkt(shipgate_conn_t* c) {
-    ssize_t sz;
-    ssize_t pkt_sz;
-    int rv = 0;
-    unsigned char* rbp;
-    uint8_t* recvbuf = get_recvbuf();
-    void* tmp;
-    /* 确保8字节的倍数传输 */
-    int recv_size = 8;
+    __try {
+        ssize_t sz;
+        ssize_t pkt_sz;
+        int rv = 0;
+        unsigned char* rbp;
+        uint8_t* recvbuf = get_recvbuf();
+        void* tmp;
+        /* 确保8字节的倍数传输 */
+        int recv_size = 8;
 
-    /* If we've got anything buffered, copy it out to the main buffer to make
-       the rest of this a bit easier. */
-    if (c->recvbuf_cur) {
-        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-    }
-
-    /* Attempt to read, and if we don't get anything, punt. */
-    sz = sg_recv(c, recvbuf + c->recvbuf_cur,
-        65536 - c->recvbuf_cur);
-
-    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-
-    /* Attempt to read, and if we don't get anything, punt. */
-    if (sz <= 0) {
-        if (sz == SOCKET_ERROR) {
-            ERR_LOG("舰船接收数据错误: %s", strerror(errno));
+        /* If we've got anything buffered, copy it out to the main buffer to make
+           the rest of this a bit easier. */
+        if (c->recvbuf_cur) {
+            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
         }
 
-        goto end;
-    }
+        /* Attempt to read, and if we don't get anything, punt. */
+        sz = sg_recv(c, recvbuf + c->recvbuf_cur,
+            65536 - c->recvbuf_cur);
 
-    sz += c->recvbuf_cur;
-    c->recvbuf_cur = 0;
-    rbp = recvbuf;
+        //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
-    /* As long as what we have is long enough, decrypt it. */
-    while(sz >= recv_size && rv == 0) {
-        /* Copy out the packet header so we know what exactly we're looking
-           for, in terms of packet length. */
-        if(!c->hdr_read) {
-            memcpy(&c->pkt, rbp, recv_size);
-            c->hdr_read = 1;
+        /* Attempt to read, and if we don't get anything, punt. */
+        if (sz <= 0) {
+            if (sz == SOCKET_ERROR) {
+                ERR_LOG("舰船接收数据错误: %s", strerror(errno));
+            }
+
+            goto end;
         }
 
-        /* Read the packet size to see how much we're expecting. */
-        pkt_sz = ntohs(c->pkt.pkt_len);
+        sz += c->recvbuf_cur;
+        c->recvbuf_cur = 0;
+        rbp = recvbuf;
 
-        /* We'll always need a multiple of 8 bytes. */
-        if (pkt_sz & 0x07) {
-            pkt_sz = (pkt_sz & 0xFFF8) + 8;
-        }
+        /* As long as what we have is long enough, decrypt it. */
+        while (sz >= recv_size && rv == 0) {
+            /* Copy out the packet header so we know what exactly we're looking
+               for, in terms of packet length. */
+            if (!c->hdr_read) {
+                memcpy(&c->pkt, rbp, recv_size);
+                c->hdr_read = 1;
+            }
 
-        /* Do we have the whole packet? */
-        if(sz >= (ssize_t)pkt_sz) {
-            /* Yes, we do, copy it out. */
-            memcpy(rbp, &c->pkt, recv_size);
+            /* Read the packet size to see how much we're expecting. */
+            pkt_sz = ntohs(c->pkt.pkt_len);
 
-            /* Pass it on. */
-            rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
-            if(rv) {
+            /* We'll always need a multiple of 8 bytes. */
+            if (pkt_sz & 0x07) {
+                pkt_sz = (pkt_sz & 0xFFF8) + 8;
+            }
+
+            /* Do we have the whole packet? */
+            if (sz >= (ssize_t)pkt_sz) {
+                /* Yes, we do, copy it out. */
+                memcpy(rbp, &c->pkt, recv_size);
+
+                /* Pass it on. */
+                rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+                if (rv) {
+                    break;
+                }
+
+                rbp += pkt_sz;
+                sz -= pkt_sz;
+                c->hdr_read = 0;
+            }
+            else {
+                /* Nope, we're missing part, break out of the loop, and buffer
+                   the remaining data. */
                 break;
             }
-
-            rbp += pkt_sz;
-            sz -= pkt_sz;
-            c->hdr_read = 0;
         }
-        else {
-            /* Nope, we're missing part, break out of the loop, and buffer
-               the remaining data. */
-            break;
-        }
-    }
 
-    /* If we've still got something left here, buffer it for the next pass. */
-    if(sz && rv == 0) {
-        /* Reallocate the recvbuf for the client if its too small. */
-        if(c->recvbuf_size < sz) {
-            tmp = realloc(c->recvbuf, sz);
+        /* If we've still got something left here, buffer it for the next pass. */
+        if (sz && rv == 0) {
+            /* Reallocate the recvbuf for the client if its too small. */
+            if (c->recvbuf_size < sz) {
+                tmp = realloc(c->recvbuf, sz);
 
-            if(!tmp) {
-                perror("realloc");
-                return -1;
+                if (!tmp) {
+                    perror("realloc");
+                    return -1;
+                }
+
+                c->recvbuf = (unsigned char*)tmp;
+                c->recvbuf_size = sz;
             }
 
-            c->recvbuf = (unsigned char *)tmp;
-            c->recvbuf_size = sz;
+            memcpy(c->recvbuf, rbp, sz);
+            c->recvbuf_cur = sz;
+        }
+        else if (c->recvbuf) {
+            /* Free the buffer, if we've got nothing in it. */
+            free_safe(c->recvbuf);
+            c->recvbuf = NULL;
+            c->recvbuf_size = 0;
         }
 
-        memcpy(c->recvbuf, rbp, sz);
-        c->recvbuf_cur = sz;
-    }
-    else if(c->recvbuf) {
-        /* Free the buffer, if we've got nothing in it. */
-        free_safe(c->recvbuf);
-        c->recvbuf = NULL;
-        c->recvbuf_size = 0;
+        return rv;
+
+    end:
+        return sz;
     }
 
-    return rv;
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-end:
-    return sz;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* Send any piled up data. */
 int shipgate_send_pkts(shipgate_conn_t* c) {
-    ssize_t amt;
+    __try {
+        ssize_t amt;
 
-    /* Don't even try if there's not a connection. */
-    if (!c->has_key || c->sock < 0) {
+        /* Don't even try if there's not a connection. */
+        if (!c->has_key || c->sock < 0) {
+            return 0;
+        }
+
+        /* Send as much as we can. */
+        amt = sg_send(c, c->sendbuf, c->sendbuf_cur);
+
+        DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
+
+        if (amt == SOCKET_ERROR) {
+            perror("send");
+            return -1;
+        }
+        else if (amt == c->sendbuf_cur) {
+            c->sendbuf_cur = 0;
+        }
+        else {
+            memmove(c->sendbuf, c->sendbuf + amt, c->sendbuf_cur - amt);
+            c->sendbuf_cur -= amt;
+        }
+
         return 0;
     }
 
-    /* Send as much as we can. */
-    amt = sg_send(c, c->sendbuf, c->sendbuf_cur);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    DBG_LOG("零碎数据端口 %d 发送数据 %d 字节", c->sock, amt);
-
-    if (amt == SOCKET_ERROR) {
-        perror("send");
-        return -1;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
     }
-    else if (amt == c->sendbuf_cur) {
-        c->sendbuf_cur = 0;
-    }
-    else {
-        memmove(c->sendbuf, c->sendbuf + amt, c->sendbuf_cur - amt);
-        c->sendbuf_cur -= amt;
-    }
-
-    return 0;
 }
 
 /* Packets are below here. */

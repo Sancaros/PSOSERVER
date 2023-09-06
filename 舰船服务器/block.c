@@ -2747,10 +2747,23 @@ static int dc_process_arrow(ship_client_t* c, uint8_t flag) {
 /* Process a client's trade request. */
 static int process_trade(ship_client_t* c, gc_trade_pkt* pkt) {
     lobby_t* l = c->cur_lobby;
+    uint32_t target_client_id = pkt->who;
     ship_client_t* dest;
 
+    if (!l || l->type != LOBBY_TYPE_GAME) {
+        ERR_LOG("GC %u : %d 不在游戏或房间中", c->guildcard, c->sec_data.slot);
+        return 0;
+    }
+
     /* 搜索目标客户端. */
-    dest = l->clients[pkt->who];
+    dest = ge_target_client_by_id(l, target_client_id);
+
+    if (dest == NULL) {
+        ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
+            c->guildcard);
+        return send_msg(c, MSG1_TYPE, "%s",
+            __(c, "\tE未找到需要交易的玩家."));
+    }
 
     send_simple(dest, TRADE_1_TYPE, 0);
     pkt->hdr.pkt_type = TRADE_3_TYPE;
@@ -2833,6 +2846,113 @@ static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
         }
         return 0;
     }
+}
+
+/* Process a 0xCA packet. */
+static int on_CA_Ep3(ship_client_t* c, uint8_t* pkt) {
+    lobby_t* l = c->cur_lobby;
+    dc_pkt_hdr_t* hdr = (dc_pkt_hdr_t*)pkt;
+    uint16_t len = LE16(hdr->pkt_len);
+    uint16_t tmp = 0;
+
+    ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
+        c->guildcard);
+    display_packet(pkt, len);
+
+    return 0;
+    //try {
+    //    l = s->find_lobby(c->lobby_id);
+    //}
+    //catch (const out_of_range&) {
+    //    // In rare cases (e.g. when two players end a tournament's match results
+    //    // screens at exactly the same time), the client can send a server data
+    //    // command when it's not in any lobby at all. We just ignore such commands.
+    //    return;
+    //}
+    //if (!l->is_game() || !l->is_ep3()) {
+    //    throw runtime_error("Episode 3 server data request sent outside of Episode 3 game");
+    //}
+
+    //const auto& header = check_size_t<G_CardServerDataCommandHeader>(data, 0xFFFF);
+    //if (header.subcommand != 0xB3) {
+    //    throw runtime_error("unknown Episode 3 server data request");
+    //}
+
+    //if (!l->ep3_server_base || l->ep3_server_base->server->battle_finished) {
+    //    if (!l->ep3_server_base) {
+    //        l->log.info("Creating Episode 3 server state");
+    //    }
+    //    else {
+    //        l->log.info("Recreating Episode 3 server state");
+    //    }
+    //    auto tourn = l->tournament_match ? l->tournament_match->tournament.lock() : nullptr;
+    //    bool is_trial = (l->flags & Lobby::Flag::IS_EP3_TRIAL);
+    //    l->ep3_server_base = make_shared<Episode3::ServerBase>(
+    //        l,
+    //        is_trial ? s->ep3_card_index_trial : s->ep3_card_index,
+    //        s->ep3_map_index,
+    //        s->ep3_behavior_flags,
+    //        l->random_crypt,
+    //        tourn ? tourn->get_map() : nullptr);
+    //    l->ep3_server_base->init();
+
+    //    if (s->ep3_behavior_flags & Episode3::BehaviorFlag::ENABLE_STATUS_MESSAGES) {
+    //        for (size_t z = 0; z < l->max_clients; z++) {
+    //            if (l->clients[z]) {
+    //                send_text_message_printf(l->clients[z], "Your client ID: $C6%zu", z);
+    //            }
+    //        }
+    //    }
+
+    //    if (s->ep3_behavior_flags & Episode3::BehaviorFlag::ENABLE_RECORDING) {
+    //        if (l->battle_record) {
+    //            l->prev_battle_record = l->battle_record;
+    //            l->prev_battle_record->set_battle_end_timestamp();
+    //        }
+    //        l->battle_record.reset(new Episode3::BattleRecord(s->ep3_behavior_flags));
+    //        for (auto existing_c : l->clients) {
+    //            if (existing_c) {
+    //                PlayerLobbyDataDCGC lobby_data;
+    //                lobby_data.name = encode_sjis(existing_c->game_data.player()->disp.name);
+    //                lobby_data.player_tag = 0x00010000;
+    //                lobby_data.guild_card = existing_c->license->serial_number;
+    //                l->battle_record->add_player(lobby_data,
+    //                    existing_c->game_data.player()->inventory,
+    //                    existing_c->game_data.player()->disp.to_dcpcv3());
+    //            }
+    //        }
+    //        if (l->prev_battle_record) {
+    //            send_text_message(l, u"$C6Recording complete");
+    //        }
+    //        send_text_message(l, u"$C6Recording enabled");
+    //    }
+    //}
+    //l->ep3_server_base->server->on_server_data_input(data);
+    //if (l->tournament_match &&
+    //    l->ep3_server_base->server->setup_phase == Episode3::SetupPhase::BATTLE_ENDED &&
+    //    !l->ep3_server_base->server->tournament_match_result_sent) {
+    //    int8_t winner_team_id = l->ep3_server_base->server->get_winner_team_id();
+    //    if (winner_team_id == -1) {
+    //        throw runtime_error("match complete, but winner team not specified");
+    //    }
+
+    //    auto tourn = l->tournament_match->tournament.lock();
+    //    tourn->print_bracket(stderr);
+
+    //    if (winner_team_id == 0) {
+    //        l->tournament_match->set_winner_team(l->tournament_match->preceding_a->winner_team);
+    //    }
+    //    else if (winner_team_id == 1) {
+    //        l->tournament_match->set_winner_team(l->tournament_match->preceding_b->winner_team);
+    //    }
+    //    else {
+    //        throw logic_error("invalid winner team id");
+    //    }
+    //    send_ep3_tournament_match_result(s, l, l->tournament_match);
+
+    //    on_tournament_bracket_updated(s, tourn);
+    //    l->ep3_server_base->server->tournament_match_result_sent = true;
+    //}
 }
 
 static int process_qload_done(ship_client_t* c) {
@@ -3261,10 +3381,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return process_ep3_command(c, pkt);
 
         case EP3_SERVER_DATA_TYPE:
-            ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
-                c->guildcard);
-            display_packet(pkt, len);
-            return 0;
+            return on_CA_Ep3(c, pkt);
 
         case EP3_MENU_CHANGE_TYPE:
             if (dc->flags != 0) {
@@ -3292,7 +3409,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }

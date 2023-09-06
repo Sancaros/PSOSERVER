@@ -599,7 +599,6 @@ int team_log_write(lobby_t *l, uint32_t msg_type, const char *fmt, ...) {
 
 void *xmalloc(size_t size) {
     void *rv = malloc(size);
-
     if(!rv)
         ERR_EXIT("malloc");
 

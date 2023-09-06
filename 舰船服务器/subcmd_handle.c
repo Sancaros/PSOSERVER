@@ -57,23 +57,37 @@ subcmd_handle_t subcmd_search_handler(
     for (size_t i = 0; i < max_src; i++) {
         if (handler[i].subcmd_type == subcmd_type) {
 
+            //switch (version)
+            //{
+            //case CLIENT_VERSION_DCV1:
+            //case CLIENT_VERSION_DCV2:
+            //    return handler[i].dc;
+
+            //case CLIENT_VERSION_PC:
+            //    return handler[i].pc;
+
+            //case CLIENT_VERSION_GC:
+            //    return handler[i].gc;
+
+            //case CLIENT_VERSION_EP3:
+            //    return handler[i].ep3;
+
+            //case CLIENT_VERSION_XBOX:
+            //    return handler[i].xb;
+
+            //case CLIENT_VERSION_BB:
+            //    return handler[i].bb;
+            //}
+
             switch (version)
             {
             case CLIENT_VERSION_DCV1:
             case CLIENT_VERSION_DCV2:
-                return handler[i].dc;
-
             case CLIENT_VERSION_PC:
-                return handler[i].pc;
-
             case CLIENT_VERSION_GC:
-                return handler[i].gc;
-
             case CLIENT_VERSION_EP3:
-                return handler[i].ep3;
-
             case CLIENT_VERSION_XBOX:
-                return handler[i].xb;
+                return handler[i].dc;
 
             case CLIENT_VERSION_BB:
                 return handler[i].bb;
@@ -118,7 +132,7 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return NULL;
     }

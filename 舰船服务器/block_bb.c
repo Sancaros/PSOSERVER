@@ -3345,7 +3345,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-        ERR_LOG("出现错误, 程序将退出.");
+        CRASH_LOG("出现错误, 程序将退出.");
         (void)getchar();
         return -4;
     }

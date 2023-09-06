@@ -1628,8 +1628,10 @@ void bb_free_params(void) {
                     free_safe(o->data[l].objs);
                 }
 
-                free_safe(m->data);
-                free_safe(o->data);
+                if (m->data)
+                    free_safe(m->data);
+                if (o->data)
+                    free_safe(o->data);
                 m->data = NULL;
                 m->map_count = m->variation_count = 0;
                 o->data = NULL;
@@ -1655,8 +1657,10 @@ void v2_free_params(void) {
             free_safe(o->data[l].objs);
         }
 
-        free_safe(m->data);
-        free_safe(o->data);
+        if (m->data)
+            free_safe(m->data);
+        if (o->data)
+            free_safe(o->data);
         m->data = NULL;
         m->map_count = m->variation_count = 0;
         o->data = NULL;
@@ -1681,8 +1685,10 @@ void gc_free_params(void) {
                 free_safe(o->data[l].objs);
             }
 
-            free_safe(m->data);
-            free_safe(o->data);
+            if (m->data)
+                free_safe(m->data);
+            if (o->data)
+                free_safe(o->data);
             m->data = NULL;
             m->map_count = m->variation_count = 0;
             o->data = NULL;

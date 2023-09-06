@@ -1416,7 +1416,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
             __except (crash_handler(GetExceptionInformation())) {
                 // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-                ERR_LOG("使用物品合成出现错误.");
+                CRASH_LOG("使用物品合成出现错误.");
             }
         }
 

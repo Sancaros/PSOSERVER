@@ -36,6 +36,7 @@ uint8_t* get_sendbuf() {
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
     if (!sendbuf) {
+        ERR_LOG("malloc");
         perror("malloc");
         return NULL;
     }
