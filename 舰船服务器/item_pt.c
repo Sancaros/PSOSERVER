@@ -763,9 +763,9 @@ int pt_read_bb(const char* fn) {
 
 				ent->armor_level = ntohl(buf->armor_level);
 
+#ifdef DEBUG
 				//memcpy(ent, buf, sz);
 
-#ifdef DEBUG
 				//display_packet(buf, sz);
 
 				//if (уб╫з == 4) {
@@ -907,8 +907,8 @@ bool are_rare_drops_allowed(lobby_t* l) {
 static int generate_weapon_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 	sfmt_t* rng, int picked, int v1,
 	lobby_t* l) {
-	uint32_t rnd, upcts = 0;
-	int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
+	uint32_t rnd, upcts = 0, wchance = 0;
+	int i, j = 0, k, warea = 0, npcts = 0;
 	int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
 	uint8_t* item_b = (uint8_t*)item;
 	int semirare = 0, rare = 0;
@@ -974,7 +974,7 @@ static int generate_weapon_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 	/* Roll the dice! */
 	rnd = sfmt_genrand_uint32(rng) % wchance;
 	for (i = 0; i < j; ++i) {
-		if ((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
+		if ((rnd -= ent->weapon_ratio[wtypes[i]]) > wchance) {
 			item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
 			/* Save off the grind pattern to use... */
@@ -1054,7 +1054,7 @@ already_picked:
 	   to this weapon, or if its rare and we need to set the flag. */
 	if (!semirare && ent->element_ranking[area]) {
 		rnd = sfmt_genrand_uint32(rng) % 100;
-		if (rnd < (uint32_t)ent->element_probability[area]) {
+		if (rnd < ent->element_probability[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
 				attr_count[ent->element_ranking[area] - 1];
 			item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
@@ -1070,8 +1070,8 @@ already_picked:
 static int generate_weapon_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 	sfmt_t* rng, int picked, int bb,
 	lobby_t* l) {
-	uint32_t rnd, upcts = 0;
-	int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
+	uint32_t rnd, upcts = 0, wchance = 0;
+	int i, j = 0, k, warea = 0, npcts = 0;
 	int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
 	uint8_t* item_b = (uint8_t*)item;
 	int semirare = 0, rare = 0;
@@ -1140,7 +1140,7 @@ static int generate_weapon_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 	/* Roll the dice! */
 	rnd = sfmt_genrand_uint32(rng) % wchance;
 	for (i = 0; i < j; ++i) {
-		if ((rnd -= ent->weapon_ratio[wtypes[i]]) > (uint32_t)wchance) {
+		if ((rnd -= ent->weapon_ratio[wtypes[i]]) > wchance) {
 			item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
 			/* Save off the grind pattern to use... */
@@ -1220,7 +1220,7 @@ already_picked:
 	   to this weapon, or if its rare and we need to set the flag. */
 	if (!semirare && ent->element_ranking[area]) {
 		rnd = sfmt_genrand_uint32(rng) % 100;
-		if (rnd < (uint32_t)ent->element_probability[area]) {
+		if (rnd < ent->element_probability[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
 				attr_count[ent->element_ranking[area] - 1];
 			item[1] = 0x80 | attr_list[ent->element_ranking[area] - 1][rnd];
@@ -1236,8 +1236,8 @@ already_picked:
 static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	sfmt_t* rng, int picked,
 	lobby_t* l) {
-	uint32_t rnd, upcts = 0;
-	int i, j = 0, k, wchance = 0, warea = 0, npcts = 0;
+	uint32_t rnd, upcts = 0, wchance = 0;
+	int i, j = 0, k, warea = 0, npcts = 0;
 	int wtypes[12] = { 0 }, wranks[12] = { 0 }, gptrn[12] = { 0 };
 	uint8_t* item_b = (uint8_t*)item;
 	int semirare = 0, rare = 0;
@@ -1307,7 +1307,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 	/* Roll the dice! */
 	rnd = sfmt_genrand_uint32(rng) % wchance;
 	for (i = 0; i < j; ++i) {
-		if ((rnd -= ent->base_weapon_type_prob_table[wtypes[i]]) > (uint32_t)wchance) {
+		if ((rnd -= ent->base_weapon_type_prob_table[wtypes[i]]) > wchance) {
 			item[0] = ((wtypes[i] + 1) << 8) | (wranks[i] << 16);
 
 			/* Save off the grind pattern to use... */
@@ -1401,7 +1401,7 @@ already_picked:
 	   to this weapon, or if its rare and we need to set the flag. */
 	if (!semirare && ent->special_mult[area]) {
 		rnd = sfmt_genrand_uint32(rng) % 100;
-		if (rnd < (uint32_t)ent->special_percent[area]) {
+		if (rnd < ent->special_percent[area]) {
 			rnd = sfmt_genrand_uint32(rng) %
 				attr_count[ent->special_mult[area] - 1];
 			item[1] = 0x80 | attr_list[ent->special_mult[area] - 1][rnd];

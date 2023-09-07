@@ -312,7 +312,7 @@ typedef struct pt_v2_entry {
     int8_t area_pattern[3][10];             /* 0x00BB */
     int8_t percent_attachment[6][10];       /* 0x00D9 */
     int8_t element_ranking[10];             /* 0x0115 */
-    int8_t element_probability[10];         /* 0x011F */
+    uint8_t element_probability[10];        /* 0x011F */
     int8_t armor_ranking[5];                /* 0x0129 */
     int8_t slot_ranking[5];                 /* 0x012E */
     int8_t unit_level[10];                  /* 0x0133 */

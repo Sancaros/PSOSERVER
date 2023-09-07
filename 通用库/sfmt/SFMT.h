@@ -147,6 +147,10 @@ inline static uint32_t sfmt_genrand_uint32(sfmt_t * sfmt) {
     r = psfmt32[sfmt->idx++];
     return r;
 }
+
+inline static int sfmt_genrand_int32(sfmt_t* sfmt) {
+    return (int)sfmt_genrand_uint32(sfmt);
+}
 #endif
 /**
  * This function generates and returns 64-bit pseudorandom number.
@@ -180,6 +184,10 @@ inline static uint64_t sfmt_genrand_uint64(sfmt_t * sfmt) {
     sfmt->idx += 2;
     return r;
 #endif
+}
+
+inline static int sfmt_genrand_int64(sfmt_t* sfmt) {
+    return (int)sfmt_genrand_uint64(sfmt);
 }
 
 /* =================================================

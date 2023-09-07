@@ -2761,13 +2761,6 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {

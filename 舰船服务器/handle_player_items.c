@@ -797,6 +797,13 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     }
     iitem_t* iitem = &character->inv.iitems[index];
 
+#ifdef DEBUG
+
+    DBG_LOG("player_use_item");
+    print_item_data(&iitem->data, src->version);
+
+#endif // DEBUG
+
     if (is_common_consumable(primary_identifier(&iitem->data))) { // Monomate, etc.
         // Nothing to do (it should be deleted)
         goto done;
@@ -805,9 +812,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         // Unwrap present
         unwrap(&iitem->data);
         should_delete_item = false;
-
+        goto done;
     }
-    else if (iitem->data.datab[0] == ITEM_TYPE_WEAPON) {
+
+    switch (iitem->data.datab[0])
+    {
+    case ITEM_TYPE_WEAPON:
         switch (iitem->data.datab[1]) {
         case 0x33:
             // Unseal Sealed J-Sword => Tsumikiri J-Sword
@@ -820,10 +830,13 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             iitem->data.datab[1] = 0xAC;
             should_delete_item = false;
             break;
-        }
 
-    }
-    else if (iitem->data.datab[0] == ITEM_TYPE_GUARD) {
+        default:
+            goto combintion_other;
+        }
+        break;
+
+    case ITEM_TYPE_GUARD:
         switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_UNIT:
             switch (iitem->data.datab[2]) {
@@ -838,12 +851,18 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 iitem->data.datab[2] = 0x50;
                 should_delete_item = false;
                 break;
+
+            default:
+                goto combintion_other;
             }
             break;
+
+        default:
+            goto combintion_other;
         }
-    }
-    /* 已经修复ITEMPMT的读取顺序 但是保留 后期可以进一步开发 ??? */
-    else if (iitem->data.datab[0] == ITEM_TYPE_MAG) {
+        break;
+
+    case ITEM_TYPE_MAG:
         switch (iitem->data.datab[1]) {
         case 0x2B:
             weapon = &character->inv.iitems[find_equipped_weapon(&character->inv)];
@@ -864,9 +883,13 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 armor->data.datab[2] = 0x2C; // Chuchu Fever
             }
             break;
+
+        default:
+            goto combintion_other;
         }
-    }
-    else if (iitem->data.datab[0] == ITEM_TYPE_TOOL) {
+        break;
+
+    case ITEM_TYPE_TOOL:
         switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_DISK: // Technique disk
             uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[character->dress_data.ch_class];
@@ -1024,7 +1047,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                         weapon->data.datab[ai] += 0x0A;
                         if (weapon->data.datab[ai] > 100)
                             weapon->data.datab[ai] = 100;
-                    } else {
+                    }
+                    else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
                             weapon->data.datab[6 + (num_attribs * 2)] = 0x01;
@@ -1065,7 +1089,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                         weapon->data.datab[ai] += 0x0A;
                         if (weapon->data.datab[ai] > 100)
                             weapon->data.datab[ai] = 100;
-                    } else {
+                    }
+                    else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
                             weapon->data.datab[6 + (num_attribs * 2)] = 0x02;
@@ -1106,7 +1131,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                         weapon->data.datab[ai] += 0x0A;
                         if (weapon->data.datab[ai] > 100)
                             weapon->data.datab[ai] = 100;
-                    } else {
+                    }
+                    else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
                             weapon->data.datab[6 + (num_attribs * 2)] = 0x03;
@@ -1148,7 +1174,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                         weapon->data.datab[ai] += 0x0A;
                         if (weapon->data.datab[ai] > 100)
                             weapon->data.datab[ai] = 100;
-                    } else {
+                    }
+                    else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
                             weapon->data.datab[6 + (num_attribs * 2)] = 0x04;
@@ -1189,7 +1216,8 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                         weapon->data.datab[ai] += 0x05;
                         if (weapon->data.datab[ai] > 100)
                             weapon->data.datab[ai] = 100;
-                    } else {
+                    }
+                    else {
                         // Attribute not on weapon, add it if there isn't already 3 attributes
                         if (num_attribs < 3) {
                             weapon->data.datab[6 + (num_attribs * 2)] = 0x05;
@@ -1211,7 +1239,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 //アイテムIDの7,8文字目が0,7のとき。（0x031207のとき　つまりウェポンズバッジ骨のとき）
                 if (eq_wep != -1) {    //詳細不明、武器装備時？
                     switch (weapon->data.datab[1]) { //スイッチにキャラクターの装備している武器のアイテムIDの3,4文字目をスイッチに使う
-                       
+
                     case 0x22:
                         //キャラクターの装備している武器のアイテムIDの3,4文字目が2,2のとき（0x002200のとき　つまりカジューシース）
                         if (weapon->data.datab[3] == 0x09)
@@ -1230,6 +1258,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     }
                 }
                 break;
+
+            default:
+                goto combintion_other;
             }
             break;
 
@@ -1251,7 +1282,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[0] = 0xA3963C02;
                 new_item.datal[1] = 0;
                 new_item.datal[2] = 0x3A980000;
-                new_item.data2l   = 0x0407C878;
+                new_item.data2l = 0x0407C878;
 
                 new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
@@ -1267,7 +1298,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[0] = 0x00280101;
                 new_item.datal[1] = 0x00000400;
                 new_item.datal[2] = 0x00000000;
-                new_item.data2l   = 0x00000000;
+                new_item.data2l = 0x00000000;
 
                 new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
@@ -1277,7 +1308,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[0] = 0x2C050100;
                 new_item.datal[1] = 0x32050000;
                 new_item.datal[2] = 0x64046403;
-                new_item.data2l   = 0x00000000;
+                new_item.data2l = 0x00000000;
 
                 new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
@@ -1287,7 +1318,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[0] = 0x00260201;
                 new_item.datal[1] = 0x00000000;
                 new_item.datal[2] = 0x00000000;
-                new_item.data2l   = 0x00000000;
+                new_item.data2l = 0x00000000;
 
                 new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
@@ -1295,6 +1326,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
                 pthread_mutex_unlock(&src->mutex);
                 break;
+
+            default:
+                goto combintion_other;
             }
             break;
 
@@ -1349,9 +1383,14 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 break;
             }
             break;
+
+        default:
+            goto combintion_other;
         }
-    }
-    else {
+        break;
+
+    default:
+combintion_other:
         // Use item combinations table from ItemPMT
         bool combo_applied = false;
         pmt_itemcombination_bb_t combo = { 0 };
@@ -1407,11 +1446,21 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 #endif // DEBUG
                 combo_applied = true;
 
+#ifdef DEBUG
+
+                print_item_data(&inv_item->data, src->version);
+
+#endif // DEBUG
                 inv_item->data.datab[0] = combo.result_item[0];
                 inv_item->data.datab[1] = combo.result_item[1];
                 inv_item->data.datab[2] = combo.result_item[2];
                 inv_item->data.datab[3] = 0; // Grind
                 inv_item->data.datab[4] = 0; // Flags + special
+
+#ifdef DEBUG
+                DBG_LOG("result_item 0x%02X 0x%02X 0x%02X", combo.result_item[0], combo.result_item[1], combo.result_item[2]);
+                print_item_data(&inv_item->data, src->version);
+#endif // DEBUG
             }
 
             __except (crash_handler(GetExceptionInformation())) {
@@ -1424,6 +1473,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         if (!combo_applied) {
             ERR_LOG("不适用任何合成");
         }
+        break;
     }
 
 done:
