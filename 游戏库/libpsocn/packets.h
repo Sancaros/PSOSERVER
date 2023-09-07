@@ -3278,6 +3278,12 @@ typedef struct bb_autoreply_set {
 // is expected to respond to the command appropriately instead of forwarding it.
 // Because the formats are shared, the 6xB3 commands are also referred to as CAx
 // commands in the comments and structure names.
+//CA（C->S）：服务器数据请求（第3集）
+//CA命令格式与6xB3命令格式相同
+//子命令格式也是共享的。与6x命令不同，服务器
+//期望适当地响应该命令而不是转发该命令。
+//因为格式是共享的，所以6xB3命令也被称为CAx
+//注释和结构名称中的命令。
 
 // CB: Broadcast command (Episode 3)
 // Same as 60, but only send to Episode 3 clients.

@@ -117,6 +117,7 @@ void clear_iitem(iitem_t* iitem);
 /* 初始化银行物品数据 */
 void clear_bitem(bitem_t* bitem);
 
+size_t isUnique(size_t* numbers, size_t size, size_t num);
 size_t primary_code_identifier(const uint32_t code);
 size_t primary_identifier(const item_t* i);
 

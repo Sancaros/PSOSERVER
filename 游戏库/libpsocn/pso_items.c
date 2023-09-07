@@ -80,6 +80,15 @@ void clear_bitem(bitem_t* bitem) {
 	bitem->amount = 0;
 }
 
+size_t isUnique(size_t* numbers, size_t size, size_t num) {
+	for (size_t i = 0; i < size; i++) {
+		if (numbers[i] == num) {
+			return 0;  // 数字不唯一
+		}
+	}
+	return 1;  // 数字唯一
+}
+
 size_t primary_code_identifier(const uint32_t code) {
 	uint8_t parts[4] = { 0 };
 

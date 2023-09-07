@@ -1448,6 +1448,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4);
     size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
     bool create = true;
+    uint8_t i = 0;
+    uint32_t uniqueNumbers[20] = { 0 };  // 用于保存已生成的唯一数据
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1455,66 +1457,60 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * shop_item_count);
+    memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * ARRAYSIZE(src->game_data->shop_items));
 
     for (size_t x = 0; x < ARRAYSIZE(src->game_data->shop_items_price); x++) {
         src->game_data->shop_items_price[x] = 0;
     }
 
-    for (uint8_t i = 0; i < num_item_count; i++) {
+    while (i < num_item_count) {
         if (num_item_count > shop_item_count) {
             ERR_LOG("GC %" PRIu32 " 商店物品生成错误 num_items %d > shop_size %d",
                 src->guildcard, num_item_count, shop_item_count);
             break;
         }
 
-        item_t item = { 0 };
+        item_t item = create_bb_shop_items(shop_type, l->difficulty, i, &b->sfmt_rng);
 
-        switch (shop_type) {
-        case BB_SHOPTYPE_TOOL:// 工具商店
-            if (i < 2)
-                item = create_bb_shop_tool_common_item(l->difficulty, ITEM_TYPE_TOOL, i);
-            else
-                item = create_bb_shop_item(l->difficulty, ITEM_TYPE_TOOL, &b->sfmt_rng);
-            break;
-
-        case BB_SHOPTYPE_WEAPON:// 武器商店
-            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_WEAPON, &b->sfmt_rng);
-            break;
-
-        case BB_SHOPTYPE_ARMOR:// 装甲商店
-            item = create_bb_shop_item(l->difficulty, ITEM_TYPE_GUARD, &b->sfmt_rng);
-            break;
-
-        default:
+        if (&item == NULL) {
             create = false;
             send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4商店生成错误,菜单类型缺失,请联系管理员处理!"));
             break;
         }
 
         if (create) {
-            size_t shop_price = price_for_item(&item);
-            if (shop_price <= 0) {
-                ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d",
-                    src->guildcard, src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
-                continue;
-            }
-            //item.data2l = shop_price;
+            if (isUnique(uniqueNumbers, i, item.datal[0])) {  // 检查是否已经生成过该数
+                uniqueNumbers[i] = item.datal[0];  // 将生成的唯一数据添加到数组中
+#ifdef DEBUG
+                DBG_LOG("生成独一无二的物品: 0x%08X", item.datal[0]);
+#endif // DEBUG
 
-            item.item_id = generate_item_id(l, src->client_id);
+                size_t shop_price = price_for_item(&item);
+                if (shop_price <= 0) {
+                    ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d",
+                        src->guildcard, src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
+                    continue;
+                }
+
+                item.item_id = generate_item_id(l, src->client_id);
 #ifdef DEBUG
 
-            print_item_data(&item_data, src->version);
-            DBG_LOG("price_for_item %d", item_data.data2l);
+                print_item_data(&item_data, src->version);
+                DBG_LOG("price_for_item %d", item_data.data2l);
 
 #endif // DEBUG
-            src->game_data->shop_items[i] = item;
-            src->game_data->shop_items_price[i] = shop_price;
+                src->game_data->shop_items[i] = item;
+                src->game_data->shop_items_price[i] = shop_price;
+
+                i++;
+            }
         }
     }
 
-    if (!create)
+    if (!create) {
         ERR_LOG("菜单类型缺失 shop_type = %d", shop_type);
+        return -4;
+    }
 
     return subcmd_bb_send_shop(src, shop_type, num_item_count, create);
 }

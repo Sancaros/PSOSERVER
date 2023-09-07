@@ -4068,6 +4068,17 @@ static int handle_resetquest(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
 }
 
+/* 用法: /qr */
+static int handle_quick_return(ship_client_t* c, const char* params) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l->flags & LOBBY_FLAG_QUESTING) {
+        return send_warp(c, 1, false);
+    }
+
+    return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
+}
+
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug       },
     { "swarp"    , handle_shipwarp      },
@@ -4177,6 +4188,7 @@ static command_t cmds[] = {
     { "cmdc"     , handle_cmdcheck      },
     { "bank"     , handle_bank          },
     { "rsquest"  , handle_resetquest    },
+    { "qr"       , handle_quick_return  },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 

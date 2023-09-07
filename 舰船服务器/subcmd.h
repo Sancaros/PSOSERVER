@@ -2566,9 +2566,13 @@ typedef struct subcmd_bb_Unknown_6xB2 {
 } PACKED subcmd_bb_Unknown_6xB2_t;
 
 // 0xB3: Unknown (XBOX)
+// 
 // 0xB3: CARD battle server data request (Episode 3)
-// These commands have multiple subcommands; see the Episode 3 subsubcommand
-// table after this table. The common format is:
+// CARD battle subcommands have multiple subsubcommands, which we name 6xBYxZZ,
+// where Y = 3, 4, 5, or 6, and ZZ is any byte. The formats of these
+// subsubcommands are described at the end of this file.
+
+// The common format for CARD battle subcommand headers is:
 typedef struct subcmd_EP3_CardBattleCommandHeader {
     dc_pkt_hdr_t hdr;
     unused_hdr_t shdr;
@@ -2576,18 +2580,30 @@ typedef struct subcmd_EP3_CardBattleCommandHeader {
     uint8_t sender_client_id;
     // If mask_key is nonzero, the remainder of the data (after unused2 in this
     // struct) is encrypted using a simple algorithm, which is implemented in
-    // set_mask_for_ep3_game_command in SendCommands.cc.
+    // set_mask_for_ep3_game_command in SendCommands.cc. The Episode 3 client
+    // never sends commands that have a nonzero value in this field, but it does
+    // properly handle received commands with nonzero values in this field.
     uint8_t mask_key;
     uint8_t unused2;
 } PACKED subcmd_EP3_CardBattleCommandHeader_t;
 
+// Unlike all other 6x subcommands, the 6xB3 subcommand is sent to the server in
+// a CA command instead of a 6x, C9, or CB command. (For this reason, we refer
+// to 6xB3xZZ commands as CAxZZ commands as well.) The server is expected to
+// reply to CA commands instead of forwarding them. The logic for doing so is
+// primarily implemented in Episode3/Server.cc and the surrounding classes.
+
+// The 0xB3 subcommand has a longer header than 0xB4 and 0xB5. This header is
+// common to all 6xB3x (CAx) subcommands.
 typedef struct subcmd_EP3_CardServerDataCommandHeader {
     unused_hdr_t shdr;
     uint8_t subsubcommand; // See 0xBx subcommand table (after this table)
     uint8_t sender_client_id;
     // If mask_key is nonzero, the remainder of the data (after unused2 in this
     // struct) is encrypted using a simple algorithm, which is implemented in
-    // set_mask_for_ep3_game_command in SendCommands.cc.
+    // set_mask_for_ep3_game_command in SendCommands.cc. The Episode 3 client
+    // never sends commands that have a nonzero value in this field, but it does
+    // properly handle received commands with nonzero values in this field.
     uint8_t mask_key;
     uint8_t unused2;
     //be_uint32_t sequence_num;

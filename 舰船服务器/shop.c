@@ -263,7 +263,7 @@ item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t i
     return item;
 }
 
-item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型/*, struct mt19937_state* 随机因子*/, sfmt_t* 随机因子) {
+item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
     static const uint8_t max_quantity[4] =  { 1,  1,  2,  2 };
     static const uint8_t max_tech_lvl[4] =  { 8, 15, 23, 30 };
@@ -431,11 +431,27 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型/*, struct mt19937_stat
     return item;
 }
 
-double floor(double x) {
-    int32_t integerPart = (int32_t)x;
-    if (x >= 0.0 && x != (double)integerPart)
-        return integerPart + 1;
-    return integerPart;
+item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子) {
+    item_t item = { 0 };
+
+    switch (商店类型) {
+    case BB_SHOPTYPE_TOOL:// 工具商店
+        if (物品索引 < 2)
+            item = create_bb_shop_tool_common_item(难度, ITEM_TYPE_TOOL, 物品索引);
+        else
+            item = create_bb_shop_item(难度, ITEM_TYPE_TOOL, 随机因子);
+        break;
+
+    case BB_SHOPTYPE_WEAPON:// 武器商店
+        item = create_bb_shop_item(难度, ITEM_TYPE_WEAPON, 随机因子);
+        break;
+
+    case BB_SHOPTYPE_ARMOR:// 装甲商店
+        item = create_bb_shop_item(难度, ITEM_TYPE_GUARD, 随机因子);
+        break;
+    }
+
+    return item;
 }
 
 size_t price_for_item(const item_t* item) {
