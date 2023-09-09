@@ -355,13 +355,13 @@ const enum Character_Classes {
     CLASS_HUNEWEARL, //新人类女猎人
     CLASS_HUCAST, //机器男猎人
     CLASS_RAMAR, //人类男枪手
-    CLASS_RACAST, //机器人男枪手
-    CLASS_RACASEAL, //机器人女枪手
-    CLASS_FOMARL, //人类女法师
-    CLASS_FONEWM, //新人类男法师
-    CLASS_FONEWEARL, //新人类女法师
-    CLASS_HUCASEAL, //机器人女猎人
-    CLASS_FOMAR, //人类男法师
+    CLASS_RACAST, //机械男枪手
+    CLASS_RACASEAL, //机械女枪手
+    CLASS_FOMARL, //人类女魔法师
+    CLASS_FONEWM, //新人类男魔法师
+    CLASS_FONEWEARL, //新人类女魔法师
+    CLASS_HUCASEAL, //机械女猎人
+    CLASS_FOMAR, //人类男魔法师
     CLASS_RAMARL, //人类女枪手
     CLASS_MAX, // 最大职业数量
     CLASS_FULL_CHAR = 12
@@ -371,21 +371,21 @@ typedef struct full_class {
     uint32_t class_code;
     char cn_name[24];
     char en_name[16];
-    char class_file[64];
+    char class_file[64];//unused
 } full_class_t;
 
 static full_class_t pso_class[] = {
     {CLASS_HUMAR,     "人类男猎人",    "HUmar",     "0_默认_人类男猎人.nsc"  },
     {CLASS_HUNEWEARL, "新人类女猎人",  "HUnewearl", "1_默认_新人类女猎人.nsc"},
-    {CLASS_HUCAST,    "机器人男猎人",  "HUcast",    "2_默认_机器人男猎人.nsc"},
+    {CLASS_HUCAST,    "机械男猎人",  "HUcast",    "2_默认_机械男猎人.nsc"},
     {CLASS_RAMAR,     "人类男枪手",    "RAmar",     "3_默认_人类男枪手.nsc"  },
-    {CLASS_RACAST,    "机器人男枪手",  "RAcast",    "4_默认_机器人男枪手.nsc"},
-    {CLASS_RACASEAL,  "机器人女枪手",  "RAcaseal",  "5_默认_机器人女枪手.nsc"},
-    {CLASS_FOMARL,    "人类女法师",    "FOmarl",    "6_默认_人类女法师.nsc"  },
-    {CLASS_FONEWM,    "新人类男法师",  "FOnewm",    "7_默认_新人类男法师.nsc"},
-    {CLASS_FONEWEARL, "新人类女法师",  "FOnewearl", "8_默认_新人类女法师.nsc"},
-    {CLASS_HUCASEAL,  "机器人女猎人",  "HUcaseal",  "9_默认_机器人女猎人.nsc"},
-    {CLASS_FOMAR,     "人类男法师",    "FOmar",     "10_默认_人类男法师.nsc" },
+    {CLASS_RACAST,    "机械男枪手",  "RAcast",    "4_默认_机械男枪手.nsc"},
+    {CLASS_RACASEAL,  "机械女枪手",  "RAcaseal",  "5_默认_机械女枪手.nsc"},
+    {CLASS_FOMARL,    "人类女魔法师",    "FOmarl",    "6_默认_人类女魔法师.nsc"  },
+    {CLASS_FONEWM,    "新人类男魔法师",  "FOnewm",    "7_默认_新人类男魔法师.nsc"},
+    {CLASS_FONEWEARL, "新人类女魔法师",  "FOnewearl", "8_默认_新人类女魔法师.nsc"},
+    {CLASS_HUCASEAL,  "机械女猎人",  "HUcaseal",  "9_默认_机械女猎人.nsc"},
+    {CLASS_FOMAR,     "人类男魔法师",    "FOmar",     "10_默认_人类男魔法师.nsc" },
     {CLASS_RAMARL,    "人类女枪手",    "RAmarl",    "11_默认_人类女枪手.nsc" },
     {CLASS_FULL_CHAR, "完整角色",      "Full_char", "默认_完整角色.bin"      },
 };
