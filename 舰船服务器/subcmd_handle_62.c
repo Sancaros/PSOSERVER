@@ -1445,7 +1445,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     block_t* b = src->cur_block;
     uint32_t shop_type = LE32(req->shop_type);
     //uint8_t num_item_count = 9 + (mt19937_genrand_int32(&b->rng) % 4);
-    uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4) + l->difficulty;
+    uint8_t num_item_count = 9 + (sfmt_genrand_uint32(&b->sfmt_rng) % 4);
     size_t shop_item_count = ARRAYSIZE(src->game_data->shop_items);
     bool create = true;
     uint8_t i = 0;
