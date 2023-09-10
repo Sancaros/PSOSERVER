@@ -2781,7 +2781,7 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     //for (i = 0; i < pkt->shdr.size - 2; ++i)
     //    handle_bb_objhit_common(src, l, LE16(pkt->objects[i].obj_id));
 
-    size_t allowed_count = MIN(pkt->shdr.size - 2, 11);
+    size_t allowed_count = min(pkt->shdr.size - 2, 11);
     if (hit_count > allowed_count) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
             src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
@@ -2937,7 +2937,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    size_t allowed_count = MIN(pkt->shdr.size - 2, 10);
+    size_t allowed_count = min(pkt->shdr.size - 2, 10);
 
     if (pkt->target_count > allowed_count) {
         ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
@@ -3032,7 +3032,7 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    size_t allowed_count = MIN(size - 3, 14);
+    size_t allowed_count = min(size - 3, 14);
 
     if (entry_count > allowed_count) {
         ERR_LOG("无效 subtract PB energy 指令");
@@ -3220,7 +3220,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         item_t* mag = &inv->iitems[mag_index].data;
-        mag->data2b[0] = MAX((mag->data2b[0] - pkt->flag), 0);
+        mag->data2b[0] = max((mag->data2b[0] - pkt->flag), 0);
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);

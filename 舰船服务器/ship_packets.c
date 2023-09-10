@@ -11596,7 +11596,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
-        sub_amount = MIN(amt, 0xFF);
+        sub_amount = min(amt, 0xFF);
 
         pkt->shdr.type = SUBCMD60_CHANGE_STAT;
         pkt->shdr.size = 0x02;
@@ -11645,7 +11645,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
 
     /* Fill in the main part of the packet */
     while(amt > 0) {
-        sub_amount = MIN(amt, 0xFF);
+        sub_amount = min(amt, 0xFF);
 
         pkt->shdr.type = SUBCMD60_CHANGE_STAT;
         pkt->shdr.size = 0x02;

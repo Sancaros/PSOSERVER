@@ -120,7 +120,7 @@ static const char* Welcome_Files[] = {
 #define NUM_AUTH_GC_SOCKS  6
 #define NUM_AUTH_EP3_SOCKS 3
 #define NUM_AUTH_WEB_SOCKS 1
-#define NUM_AUTH_BB_SOCKS  4
+#define NUM_AUTH_BB_SOCKS  6
 #define NUM_AUTH_XB_SOCKS  1
 #else
 #define NUM_AUTH_DC_SOCKS  6
@@ -128,7 +128,7 @@ static const char* Welcome_Files[] = {
 #define NUM_AUTH_GC_SOCKS  12
 #define NUM_AUTH_EP3_SOCKS 6
 #define NUM_AUTH_WEB_SOCKS 2
-#define NUM_AUTH_BB_SOCKS  8
+#define NUM_AUTH_BB_SOCKS  12
 #define NUM_AUTH_XB_SOCKS  2
 #endif
 

@@ -96,7 +96,7 @@ uint16_t compute_mag_strength_flags(const item_t* item) {
 		ret |= 0x020;
 	}
 
-	uint16_t highest = MAX(dex, MAX(pow, mind));
+	uint16_t highest = max(dex, max(pow, mind));
 
 	if ((pow == highest) + (dex == highest) + (mind == highest) > 1) {
 		ret |= 0x100;

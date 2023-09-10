@@ -505,7 +505,7 @@ int add_character_meseta(psocn_bb_char_t* character, uint32_t amount) {
 
 #endif // DEBUG
 
-    character->disp.meseta = MIN(character->disp.meseta + amount, max_meseta);
+    character->disp.meseta = min(character->disp.meseta + amount, max_meseta);
 
     return 0;
 }

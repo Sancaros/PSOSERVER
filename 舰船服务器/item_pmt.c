@@ -3048,7 +3048,7 @@ uint8_t get_item_adjusted_stars(const item_t* item) {
             }
         }
     }
-    return MIN(ret, 12);
+    return min(ret, 12);
 }
 
 bool is_item_rare(const item_t* item) {

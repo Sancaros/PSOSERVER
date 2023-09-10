@@ -978,7 +978,7 @@ static int generate_weapon_v2(pt_v2_entry_t* ent, int area, uint32_t item[4],
 				warea -= ent->weapon_upgfloor[i];
 			}
 
-			gptrn[j] = MIN(warea, 3);
+			gptrn[j] = min(warea, 3);
 			++j;
 		}
 	}
@@ -1142,7 +1142,7 @@ static int generate_weapon_v3(pt_v3_entry_t* ent, int area, uint32_t item[4],
 				warea -= ent->weapon_upgfloor[i];
 			}
 
-			gptrn[j] = MIN(warea, 3);
+			gptrn[j] = min(warea, 3);
 			++j;
 		}
 	}
@@ -1311,7 +1311,7 @@ static int generate_weapon_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 				warea -= ent->subtype_area_length_table[i];
 			}
 
-			gptrn[j] = MIN(warea, 3);
+			gptrn[j] = min(warea, 3);
 			++j;
 		}
 	}

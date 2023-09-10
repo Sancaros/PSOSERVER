@@ -167,11 +167,15 @@ psocn_srvsockets_t bb_sockets[NUM_AUTH_BB_SOCKS] = {
     { PF_INET , 12001 , 1, "BB数据端口1"},
     { PF_INET , 12002 , 2, "BB数据端口2"},
     { PF_INET , 12003 , 3, "BB数据端口3"},
+    { PF_INET , 14000 , 4, "BB数据端口4"},
+    { PF_INET , 14001 , 5, "BB数据端口5"},
 #ifdef PSOCN_ENABLE_IPV6
     { PF_INET6 , 12000 , 0, "BB认证端口"},
     { PF_INET6 , 12001 , 1, "BB数据端口1"},
     { PF_INET6 , 12002 , 2, "BB数据端口2"},
     { PF_INET6 , 12003 , 3, "BB数据端口3"}
+    { PF_INET6 , 14000 , 4, "BB数据端口4"},
+    { PF_INET6 , 14001 , 5, "BB数据端口5"},
 #endif
 };
 
