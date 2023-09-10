@@ -558,7 +558,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
     case MENU_ID_GM_GAME_EVENT:
         if (item_id < 7) {
             ship->game_event = (uint8_t)item_id;
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7Game Event set."));
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7房间节日事件已设置."));
         }
 
         break;
@@ -567,7 +567,7 @@ static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_
         if (item_id < 15) {
             ship->lobby_event = (uint8_t)item_id;
             update_lobby_event();
-            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7Event set."));
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7大厅节日事件已设置."));
         }
 
         break;

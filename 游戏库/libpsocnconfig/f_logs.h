@@ -253,7 +253,7 @@ extern int32_t script_log_console_show;
 
 #define CHECK3(...) { printf(__VA_ARGS__); }
 
-#define free_safe(EXP) safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP)
+#define free_safe(EXP) if(EXP)safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP)
 
 //#define free_safe2(EXP)  if((EXP)!=NULL && \
 //                        (unsigned int)(EXP)>(unsigned int)0x00000000 && \

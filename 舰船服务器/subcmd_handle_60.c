@@ -6334,12 +6334,11 @@ static int sub60_AB_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    /* We can't get these in lobbies without someone messing with something
-   that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6380,12 +6379,11 @@ static int sub60_AF_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    /* We can't get these in lobbies without someone messing with something
-   that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
@@ -6397,12 +6395,11 @@ static int sub60_B0_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    /* We can't get these in lobbies without someone messing with something
-   that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
+        pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 

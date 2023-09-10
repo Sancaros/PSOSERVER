@@ -762,11 +762,13 @@ static int read_units_bb(const uint8_t *pmt, uint32_t sz,
     memcpy(units_bb, pmt + values.offset, sizeof(pmt_unit_bb_t) * values.count);
 
     for(i = 0; i < values.count; ++i) {
+
 #ifdef DEBUG
 
-        DBG_LOG("index %d", units_bb[i].base.index);
+        DBG_LOG("index %d base.index %d", i, units_bb[i].base.index);
         DBG_LOG("stat %d", units_bb[i].stat);
         DBG_LOG("amount %d", units_bb[i].amount);
+        DBG_LOG("pm_range %d", units_bb[i].pm_range);
 
 #endif // DEBUG
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)

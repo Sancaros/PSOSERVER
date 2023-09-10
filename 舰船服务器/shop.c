@@ -265,12 +265,13 @@ item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t i
 
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
-    static const uint8_t max_quantity[4] =  { 1,  1,  2,  2 };
-    static const uint8_t max_tech_lvl[4] =  { 8, 15, 23, 30 };
-    static const uint8_t max_anti_lvl[4] =  { 2,  4,  6,  7 };
+    static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
+    static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
+    static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
     item_t item = { 0 };
     uint32_t tmp_value = 0;
     item.datab[0] = 物品类型;
+    errno_t err = 0;
 
     while (item.datab[0] == ITEM_TYPE_MAG) {
         item.datab[0] = sfmt_genrand_uint32(随机因子) % 3;
@@ -279,69 +280,150 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     /* 检索物品类型 */
     switch (item.datab[0]) {
     case ITEM_TYPE_WEAPON: // 武器
-        item.datab[1] = (sfmt_genrand_uint32(随机因子) % 12) + 1;
+        item.datab[1] = (sfmt_genrand_uint32(随机因子) % 12) + 1; /* 01 - 0C 普通物品*/
 
+        /* 9 以下都是 0/1 + 难度 9以上则 0-3（难度）类型ID*/
         if (item.datab[1] > 9) {
             item.datab[2] = 难度;
         }
         else
             item.datab[2] = (sfmt_genrand_uint32(随机因子) & 1) + 难度;
 
+        /* 打磨值 0 - 10*/
         item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
-        item.datab[4] = sfmt_genrand_uint32(随机因子) % 11;
+        /* 特殊攻击 0 - 10 配合难度 0 - 3*/
+        item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
+        /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
+        /* 生成属性*/
         size_t num_percentages = 0;
-        for (size_t x = 0; (x < 5) && (num_percentages < 3); x++) {
-            if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
-                item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-                item.datab[(num_percentages * 2) + 7] = sfmt_genrand_uint32(随机因子) % (max_percentages[难度] + 1);
-                num_percentages++;
+        while (num_percentages < 3) {
+            /*0-5 涵盖所有属性*/
+            for (size_t x = 0; x < 6; x++) {
+                if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
+                    /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
+                    item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+                    item.datab[(num_percentages * 2) + 7] = sfmt_genrand_uint32(随机因子) % (max_percentages[难度] + 1);
+                    num_percentages++;
+                }
             }
         }
 
         break;
 
     case ITEM_TYPE_GUARD: // 装甲
+        pmt_guard_bb_t pmt_guard = { 0 };
+        pmt_unit_bb_t pmt_unit = { 0 };
         item.datab[1] = 0;
 
+        /* 必须是1或2 对应护甲或者护盾*/
         while (item.datab[1] == 0)
             item.datab[1] = sfmt_genrand_uint32(随机因子) & 3;
 
         switch (item.datab[1]) {
         case ITEM_SUBTYPE_FRAME://护甲
+            /*护甲物品子类型*/
             item.datab[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 6);
+            if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
+                ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                break;
+            }
+
+            /*随机槽位 0 - 4 */
             item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
+
+            /* DFP值 */
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range;
+            if (tmp_value < 0)
+                tmp_value = 0;
+            item.datab[6] = tmp_value;
+
+            /* EVP值 */
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range;
+            if (tmp_value < 0)
+                tmp_value = 0;
+            item.datab[8] = tmp_value;
             break;
 
         case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
-            item.datab[2] = (sfmt_genrand_uint32(随机因子) % 5) + (难度 * 5);//TODO 价格加个控制
 
-            item.datab[6] = (sfmt_genrand_uint32(随机因子) % 9) - 4;
-            //if (tmp_value < 0)
-            //    item.data_b[6] -= tmp_value;
-            //else
-            //    item.data_b[6] = tmp_value;
+            /*护盾物品子类型*/
+            item.datab[2] = (sfmt_genrand_uint32(随机因子) % 5) + (难度 * 5);
+            if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
+                ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                break;
+            }
 
-            item.datab[8] = sfmt_genrand_uint32(随机因子) % 5;
-            //if (tmp_value < 0)
-            //    item.data_b[8] -= tmp_value;
-            //else
-            //    item.data_b[8] = tmp_value;
+            /* DFP值 */
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range;
+            if (tmp_value < 0)
+                tmp_value = 0;
+            item.datab[6] = tmp_value;
 
-            //item.costb[2] = (sfmt_genrand_uint32(随机因子) % 6) + (难度 * 5);//TODO 价格加个控制
+            /* EVP值 */
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range;
+            if (tmp_value < 0)
+                tmp_value = 0;
+            item.datab[8] = tmp_value;
             break;
 
         case ITEM_SUBTYPE_UNIT://插件 不生成带属性的 省的麻烦 TODO 以后再做更详细的
             item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2);
+            if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
+                break;
+            }
 
-            //item.data_b[6] = (sfmt_genrand_uint32(随机因子) % 3) - 2;
+            //tmp_value = sfmt_genrand_uint32(随机因子) % pmt_unit.pm_range;
+            //int randomIndex = 0;
 
-            //DBG_LOG("%02X %d %d", item.data_b[6], (sfmt_genrand_uint32(随机因子) % 3) - 2, 难度);
+            //item.dataw[3] = 0;
 
-            //if (item.data_b[6] > 1)
-                //item.data_b[7] = 0xFF;
+            //switch (tmp_value) {
+            //case 1:
+            //    randomIndex = sfmt_genrand_uint32(随机因子) % 3; // 随机生成一个0-2范围内的整数
 
-            //item.costb[2] = sfmt_genrand_uint32(随机因子) % 0x3B;
+            //    switch (randomIndex) {
+            //    case 0:
+            //        item.dataw[3] = LE16(0xFFFF);
+            //        break;
+
+            //    case 1:
+            //        item.dataw[3] = LE16(0x0000);
+            //        break;
+
+            //    case 2:
+            //        item.dataw[3] = LE16(0x0001);
+            //        break;
+            //    }
+            //    break;
+
+            //case 2:
+            //    randomIndex = sfmt_genrand_uint32(随机因子) % 5; // 随机生成一个0-4范围内的整数
+
+            //    switch (randomIndex) {
+            //    case 0:
+            //        item.dataw[3] = LE16(0xFFFE);
+            //        break;
+
+            //    case 1:
+            //        item.dataw[3] = LE16(0xFFFF);
+            //        break;
+
+            //    case 2:
+            //        item.dataw[3] = LE16(0x0000);
+            //        break;
+
+            //    case 3:
+            //        item.dataw[3] = LE16(0x0001);
+            //        break;
+
+            //    case 4:
+            //        item.dataw[3] = LE16(0x0002);
+            //        break;
+            //    }
+            //    break;
+            //}
             break;
         }
         break;
@@ -349,26 +431,26 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     case ITEM_TYPE_TOOL: // 药品工具
         item.datab[1] = sfmt_genrand_uint32(随机因子) % 9 + 2;
         switch (item.datab[1]) {
-        //case ITEM_SUBTYPE_MATE:
-        //case ITEM_SUBTYPE_FLUID:
-        //    switch (难度) {
-        //    case GAME_TYPE_DIFFICULTY_NORMARL:
-        //        item.datab[2] = 0;
-        //        break;
+            //case ITEM_SUBTYPE_MATE:
+            //case ITEM_SUBTYPE_FLUID:
+            //    switch (难度) {
+            //    case GAME_TYPE_DIFFICULTY_NORMARL:
+            //        item.datab[2] = 0;
+            //        break;
 
-        //    case GAME_TYPE_DIFFICULTY_HARD:
-        //        item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
-        //        break;
+            //    case GAME_TYPE_DIFFICULTY_HARD:
+            //        item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
+            //        break;
 
-        //    case GAME_TYPE_DIFFICULTY_VERY_HARD:
-        //        item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2) + 1;
-        //        break;
+            //    case GAME_TYPE_DIFFICULTY_VERY_HARD:
+            //        item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2) + 1;
+            //        break;
 
-        //    case GAME_TYPE_DIFFICULTY_ULTIMATE:
-        //        item.datab[2] = 2;
-        //        break;
-        //    }
-        //    break;
+            //    case GAME_TYPE_DIFFICULTY_ULTIMATE:
+            //        item.datab[2] = 2;
+            //        break;
+            //    }
+            //    break;
 
         case ITEM_SUBTYPE_ANTI_TOOL:
             item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
@@ -378,9 +460,9 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             item.datab[2] = sfmt_genrand_uint32(随机因子) % 3;
             break;
 
-        //case ITEM_SUBTYPE_MATERIAL:
-        //    item.datab[2] = sfmt_genrand_uint32(随机因子) % 7;
-        //    break;
+            //case ITEM_SUBTYPE_MATERIAL:
+            //    item.datab[2] = sfmt_genrand_uint32(随机因子) % 7;
+            //    break;
         }
 
         switch (item.datab[1]) {
@@ -414,8 +496,8 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
                 break;
             }
             break;
-        //case ITEM_SUBTYPE_MATE:
-        //case ITEM_SUBTYPE_FLUID:
+            //case ITEM_SUBTYPE_MATE:
+            //case ITEM_SUBTYPE_FLUID:
         case ITEM_SUBTYPE_SOL_ATOMIZER:
         case ITEM_SUBTYPE_MOON_ATOMIZER:
         case ITEM_SUBTYPE_STAR_ATOMIZER:
@@ -552,7 +634,7 @@ size_t price_for_item(const item_t* item) {
         size_t price_num = 1;
 
         if (item->datab[1] == ITEM_SUBTYPE_DISK)
-            if(item->datab[4] < 0x13)
+            if (item->datab[4] < 0x13)
                 price_num = item->datab[2] + 1;
 
         price = pmt_tool.cost * price_num;
@@ -575,81 +657,81 @@ size_t price_for_item(const item_t* item) {
 
 /* 加载商店数据 */
 int load_shop_data() {
-	uint32_t shop_checksum;
-	uint32_t ch;
-	FILE* fp;
-	int rv = 0;
-	if (file_log_console_show) {
-		CONFIG_LOG("读取 Blue Burst 商店数据 %s ", shop_files[0]);
-	}
+    uint32_t shop_checksum;
+    uint32_t ch;
+    FILE* fp;
+    int rv = 0;
+    if (file_log_console_show) {
+        CONFIG_LOG("读取 Blue Burst 商店数据 %s ", shop_files[0]);
+    }
 
-	if (fopen_s(&fp, shop_files[0], "rb"))
-	{
-		ERR_LOG("Blue Burst 商店数据 %s 文件已缺失.", shop_files[0]);
-		rv = -1;
-		goto err;
-	}
+    if (fopen_s(&fp, shop_files[0], "rb"))
+    {
+        ERR_LOG("Blue Burst 商店数据 %s 文件已缺失.", shop_files[0]);
+        rv = -1;
+        goto err;
+    }
 
-	if (fread(&shops[0], 1, 7000 * sizeof(shop_data_t), fp) != (7000 * sizeof(shop_data_t)))
-	{
-		ERR_LOG("Blue Burst 商店数据文件大小有误...");
-		rv = -1;
-		goto err;
-	}
+    if (fread(&shops[0], 1, 7000 * sizeof(shop_data_t), fp) != (7000 * sizeof(shop_data_t)))
+    {
+        ERR_LOG("Blue Burst 商店数据文件大小有误...");
+        rv = -1;
+        goto err;
+    }
 
-	fclose(fp);
+    fclose(fp);
 
-	shop_checksum = psocn_crc32(&shops[0], 7000 * sizeof(shop_data_t));
+    shop_checksum = psocn_crc32(&shops[0], 7000 * sizeof(shop_data_t));
 
-	if (file_log_console_show) {
-		CONFIG_LOG("读取 Blue Burst 商店数据2 %s", shop_files[1]);
-	}
+    if (file_log_console_show) {
+        CONFIG_LOG("读取 Blue Burst 商店数据2 %s", shop_files[1]);
+    }
 
-	if (fopen_s(&fp, shop_files[1], "rb"))
-	{
-		ERR_LOG("Blue Burst 商店数据2 %s 文件已缺失.", shop_files[1]);
-		rv = -1;
-		goto err;
-	}
+    if (fopen_s(&fp, shop_files[1], "rb"))
+    {
+        ERR_LOG("Blue Burst 商店数据2 %s 文件已缺失.", shop_files[1]);
+        rv = -1;
+        goto err;
+    }
 
-	fread(&equip_prices[0], 1, sizeof(equip_prices), fp);
-	fclose(fp);
+    fread(&equip_prices[0], 1, sizeof(equip_prices), fp);
+    fclose(fp);
 
-	// 基于玩家的等级设置商店基础物品...
+    // 基于玩家的等级设置商店基础物品...
 
-	for (ch = 0; ch < MAX_PLAYER_LEVEL; ch++)
-	{
-		switch (ch / 20L)
-		{
-		case 0:	// Levels 1-20
-			shopidx[ch] = 0;
-			break;
-		case 1: // Levels 21-40
-			shopidx[ch] = 1000;
-			break;
-		case 2: // Levels 41-80
-		case 3:
-			shopidx[ch] = 2000;
-			break;
-		case 4: // Levels 81-120
-		case 5:
-			shopidx[ch] = 3000;
-			break;
-		case 6: // Levels 121-160
-		case 7:
-			shopidx[ch] = 4000;
-			break;
-		case 8: // Levels 161-180
-			shopidx[ch] = 5000;
-			break;
-		default: // Levels 180+
-			shopidx[ch] = 6000;
-			break;
-		}
-	}
+    for (ch = 0; ch < MAX_PLAYER_LEVEL; ch++)
+    {
+        switch (ch / 20L)
+        {
+        case 0:	// Levels 1-20
+            shopidx[ch] = 0;
+            break;
+        case 1: // Levels 21-40
+            shopidx[ch] = 1000;
+            break;
+        case 2: // Levels 41-80
+        case 3:
+            shopidx[ch] = 2000;
+            break;
+        case 4: // Levels 81-120
+        case 5:
+            shopidx[ch] = 3000;
+            break;
+        case 6: // Levels 121-160
+        case 7:
+            shopidx[ch] = 4000;
+            break;
+        case 8: // Levels 161-180
+            shopidx[ch] = 5000;
+            break;
+        default: // Levels 180+
+            shopidx[ch] = 6000;
+            break;
+        }
+    }
 
-	return 0;
+    return 0;
 err:
-	fclose(fp);
-	return rv;
+    fclose(fp);
+    return rv;
 }

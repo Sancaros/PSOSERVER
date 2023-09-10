@@ -2181,9 +2181,7 @@ typedef struct bbitem_map_s {
 typedef struct bb_item_wp {
     union data_l {
         uint32_t data_l[3];//32位数值
-        struct data_w {
-            uint16_t data_w[6];//宽字节
-        };
+        uint16_t data_w[6];//宽字节
         struct data_b {
             //物品类型
             uint8_t type;
@@ -2222,12 +2220,8 @@ typedef struct bb_item_wp {
 
     union data2_l {
         uint32_t amt;
-        struct data2_w {
-            uint16_t data2_w[2];
-        };
-        struct data2_b {
-            uint8_t data2_b[4];
-        };
+        uint16_t data2_w[2];
+        uint8_t data2_b[4];
     };
 } bb_item_wp_t;
 
