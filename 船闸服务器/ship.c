@@ -320,6 +320,26 @@ static size_t my_strnlen(const uint8_t* str, size_t len) {
     return rv;
 }
 
+static const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]) {
+    int family = addr->ss_family;
+
+    switch (family) {
+    case PF_INET:
+    {
+        struct sockaddr_in* a = (struct sockaddr_in*)addr;
+        return inet_ntop(family, &a->sin_addr, str, INET6_ADDRSTRLEN);
+    }
+
+    case PF_INET6:
+    {
+        struct sockaddr_in6* a = (struct sockaddr_in6*)addr;
+        return inet_ntop(family, &a->sin6_addr, str, INET6_ADDRSTRLEN);
+    }
+    }
+
+    return NULL;
+}
+
 /* 创建一个新的协议连接, 认证后并将其列入舰船清单. */
 ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     ship_t* rv;
@@ -332,6 +352,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     char query[256], fingerprint[40];
     void* result;
     char** row;
+    char ipstr[INET6_ADDRSTRLEN];
 
     rv = (ship_t*)malloc(sizeof(ship_t));
     if (!rv) {
@@ -347,6 +368,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     rv->sock = sock;
     rv->last_message = time(NULL);
     memcpy(&rv->conn_addr, addr, size);
+    my_ntop(&rv->conn_addr, ipstr);
 
     /* Create the TLS session */
     gnutls_init(&rv->session, GNUTLS_SERVER);
@@ -371,7 +393,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
     } while (tmp < 0 && gnutls_error_is_fatal(tmp) == 0);
 
     if (tmp < 0) {
-        ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(tmp));
+        ERR_LOG("GNUTLS *** 注意: 地址 %s:%d TLS 握手失败 %s", ipstr, sock, gnutls_strerror(tmp));
         goto err_hs;
     }
     else {
@@ -379,7 +401,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
         char* desc;
         desc = gnutls_session_get_desc(rv->session);
-        SGATE_LOG("GNUTLS *** Session 信息: %d - %s", rv->sock, desc);
+        SGATE_LOG("GNUTLS *** Session %s:%d\n信息:%s", ipstr, sock, desc);
         gnutls_free(desc);
     }
 
@@ -5542,10 +5564,15 @@ static int handle_ship_ping(ship_t* c, shipgate_ping_t* pkt) {
 
     if (!(flags & SHDR_RESPONSE)) {
         ERR_LOG("舰船发送了无效的PING响应");
-        return -1;
+        return send_ping(c, 1);
     }
 
-    //DBG_LOG("handle_ship_ping %s", p->host4);
+    if (p->host4) {
+        //DBG_LOG("handle_ship_ping %s %d", p->host4, c->key_idx);
+
+        memcpy(c->remote_host4, p->host4, sizeof(c->remote_host4));
+        update_ship_ipv4(c);
+    }
 
     return 0;
 }
@@ -5593,19 +5620,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
             return handle_bb(c, (shipgate_fw_9_pkt*)pkt);
 
         case SHDR_TYPE_PING:
-
-            if (handle_ship_ping(c, (shipgate_ping_t*)pkt)) {
-                ERR_LOG("handle_ship_ping");
-                return -1;
-            }
-
-            /* If this is a ping request, reply. Otherwise, ignore it, the work
-               has already been done. */
-            if (!(flags & SHDR_RESPONSE)) {
-                return send_ping(c, 1);
-            }
-
-            return 0;
+            return handle_ship_ping(c, (shipgate_ping_t*)pkt);
 
         case SHDR_TYPE_CDATA:
             return handle_char_data_save(c, (shipgate_char_data_pkt*)pkt);
@@ -5996,6 +6011,12 @@ int handle_pkt(ship_t* c) {
     }
 
 end:
+    /* Free the buffer, if we've got nothing in it. */
+    if (c->recvbuf)
+        free_safe(c->recvbuf);
+
+    c->recvbuf = NULL;
+    c->recvbuf_size = 0;
     if (recvbuf)
         free_safe(recvbuf);
     return sz;

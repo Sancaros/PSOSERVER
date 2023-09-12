@@ -491,7 +491,7 @@ static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
                 }
             }
             else {
-                ERR_LOG( "从 %s 获取 IPv4 地址失败", h->host4);
+                ERR_LOG("从 %s 获取 IPv4 地址失败", h->host4);
                 return -3;
             }
         }
@@ -1013,91 +1013,102 @@ void get_ip_address(struct sockaddr_in* addr, char* ip_buffer) {
 }
 
 static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
-    struct sockaddr_in client_addr = { 0 };
-    char ipstr[INET6_ADDRSTRLEN];
-    socklen_t len;
-    ssize_t recive_len;
-    dns_client_t* i = { 0 }, * tmp;
-    int sock = SOCKET_ERROR, j;
-    int rv = 0, dns_size = sizeof(dnsmsg_t);
-    size_t client_count = 0;
+    __try {
 
-    /* Go ahead and loop forever... */
-    while (!should_exit) {
+        struct sockaddr_in client_addr = { 0 };
+        char ipstr[INET6_ADDRSTRLEN];
+        socklen_t len;
+        ssize_t recive_len;
+        dns_client_t* i = { 0 }, * tmp;
+        int sock = SOCKET_ERROR, j;
+        int rv = 0, dns_size = sizeof(dnsmsg_t);
+        size_t client_count = 0;
 
-        /* Set this up in case a signal comes in during the time between calling
-           this and the select(). */
-        if (!_setjmp(jmpbuf)) {
-            canjump = 1;
-        }
+        /* Go ahead and loop forever... */
+        while (!should_exit) {
 
-        /* If we need to, rehash the patches and welcome message. */
-        if (rehash) {
-            canjump = 0;
-            rehash = 0;
-            canjump = 1;
-        }
-
-        /* Make sure a rehash event doesn't interrupt any of this stuff,
-               it will get handled the next time through the loop. */
-        canjump = 0;
-
-        /* Check the listening sockets first. */
-        for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
-            len = sizeof(struct sockaddr);
-
-            if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= dns_size) {
-                ERR_LOG("recvfrom");
-                perror("recvfrom");
+            /* Set this up in case a signal comes in during the time between calling
+               this and the select(). */
+            if (!_setjmp(jmpbuf)) {
+                canjump = 1;
             }
-            else {
-                sock = ntohs(client_addr.sin_port);
-                rv = process_query(sockets[j], recive_len, &client_addr);
-                if (rv) {
-#ifdef DEBUG
 
-                    ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
+            /* If we need to, rehash the patches and welcome message. */
+            if (rehash) {
+                canjump = 0;
+                rehash = 0;
+                canjump = 1;
+            }
 
-#endif // DEBUG
-                    close(sock);
+            /* Make sure a rehash event doesn't interrupt any of this stuff,
+                   it will get handled the next time through the loop. */
+            canjump = 0;
+
+            /* Check the listening sockets first. */
+            for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
+                len = sizeof(struct sockaddr);
+
+                if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= dns_size) {
+                    ERR_LOG("recvfrom");
+                    perror("recvfrom");
                 }
                 else {
-                    i = create_connection(sock, &client_addr, len);
+                    sock = ntohs(client_addr.sin_port);
+                    rv = process_query(sockets[j], recive_len, &client_addr);
+                    if (rv) {
+#ifdef DEBUG
 
-                    if (!i) {
-                        ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
+                        ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
+
+#endif // DEBUG
                         close(sock);
                     }
+                    else {
+                        i = create_connection(sock, &client_addr, len);
 
-                    ++client_count;
-                    set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                        if (!i) {
+                            ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
+                            close(sock);
+                        }
 
-                    get_ip_address(&i->ip_addr, ipstr);
-                    DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
-                    i->disconnected = 1;
+                        ++client_count;
+                        set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+
+                        get_ip_address(&i->ip_addr, ipstr);
+                        DNS_LOG("允许 %s:%u 客户端获取DNS数据", ipstr, i->sock);
+                        i->disconnected = 1;
+                    }
                 }
             }
-        }
 
-        /* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
-           the middle of a TAILQ_FOREACH, and destroy_connection does indeed
-           use TAILQ_REMOVE). */
-        canjump = 0;
-        i = TAILQ_FIRST(&clients);
+            /* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
+               the middle of a TAILQ_FOREACH, and destroy_connection does indeed
+               use TAILQ_REMOVE). */
+            canjump = 0;
+            i = TAILQ_FIRST(&clients);
 
-        while (i) {
-            tmp = TAILQ_NEXT(i, qentry);
+            while (i) {
+                tmp = TAILQ_NEXT(i, qentry);
 
-            if (i->disconnected && i->auth) {
-                get_ip_address(&i->ip_addr, ipstr);
-                DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
-                --client_count;
-                set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
-                destroy_connection(i);
+                if (i->disconnected && i->auth) {
+                    get_ip_address(&i->ip_addr, ipstr);
+                    DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
+                    --client_count;
+                    set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                    destroy_connection(i);
+                }
+
+                i = tmp;
             }
-
-            i = tmp;
         }
+
+    }
+
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
     }
 }
 
@@ -1114,9 +1125,9 @@ int __cdecl main(int argc, char** argv) {
 
         /* Open the socket. We will probably need root for this on UNIX-like
            systems. */
-        //if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
-        //    ERR_EXIT("open_sock 错误, 请检查端口 %u 是否被占用.", DNS_PORT);
-        //}
+           //if ((sock = open_sock(DNS_PORT)) == INVALID_SOCKET) {
+           //    ERR_EXIT("open_sock 错误, 请检查端口 %u 是否被占用.", DNS_PORT);
+           //}
 
 #if !defined(_WIN32) && !defined(_arch_dreamcast)
         if (drop_privs()) {
