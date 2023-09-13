@@ -5910,15 +5910,6 @@ int handle_pkt(ship_t* c) {
     //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
 
     /* Attempt to read, and if we don't get anything, punt. */
-    if (sz <= 0) {
-        if (sz == SOCKET_ERROR) {
-            ERR_LOG("Gnutls *** 注意: SOCKET_ERROR");
-        }else
-            ERR_LOG("Gnutls *** 注意: ship_recv sz = %d", sz);
-
-        goto end;
-    }
-
     if (sz == SOCKET_ERROR) {
         DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
         goto end;
@@ -5936,8 +5927,7 @@ int handle_pkt(ship_t* c) {
         ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
         goto end;
     }
-    else 
-        if (sz > 0) {
+    else if (sz > 0) {
         sz += c->recvbuf_cur;
         c->recvbuf_cur = 0;
         rbp = recvbuf;
