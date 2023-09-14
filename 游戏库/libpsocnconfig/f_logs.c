@@ -872,3 +872,46 @@ void spd_log(int32_t codeline, int code, void* data, int flag) {
 		break;
 	}
 }
+
+int remove_directory(const char* path) {
+	WIN32_FIND_DATA find_data;
+	HANDLE find_handle = INVALID_HANDLE_VALUE;
+	char file_path[MAX_PATH];
+
+	snprintf(file_path, MAX_PATH, "%s\\*", path);
+
+	find_handle = FindFirstFile(file_path, &find_data);
+	if (find_handle == INVALID_HANDLE_VALUE) {
+		ERR_LOG("无法打开文件夹：%s", path);
+		return -1;
+	}
+
+	do {
+		if (strcmp(find_data.cFileName, ".") != 0 && strcmp(find_data.cFileName, "..") != 0) {
+			snprintf(file_path, MAX_PATH, "%s\\%s", path, find_data.cFileName);
+			if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				remove_directory(file_path);
+			}
+			else {
+				if (!DeleteFile(file_path)) {
+					ERR_LOG("无法删除文件：%s", file_path);
+					return -1;
+				}
+			}
+		}
+	} while (FindNextFile(find_handle, &find_data) != 0);
+
+	FindClose(find_handle);
+
+	if (!RemoveDirectory(path)) {
+		ERR_LOG("无法删除文件夹：%s", path);
+		return -1;
+	}
+
+#ifdef DEBUG
+
+	DBG_LOG("成功删除文件夹：%s", path);
+
+#endif // DEBUG
+	return 0;
+}

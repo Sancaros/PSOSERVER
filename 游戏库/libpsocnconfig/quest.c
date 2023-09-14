@@ -1149,13 +1149,13 @@ void psocn_quests_destroy(psocn_quest_list_t *list) {
         }
 
         /* Free the list of quests. */
-        //if(cat->quests)
-        //    free_safe(cat->quests);
+        if(cat->quests)
+            free_safe(cat->quests);
     }
 
     /* Free the list of categories, and we're done. */
-    //if (list->cats)
-    //    free_safe(list->cats);
+    if (list->cats)
+        free_safe(list->cats);
     list->cats = NULL;
     list->cat_count = 0;
 }

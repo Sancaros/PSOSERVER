@@ -95,8 +95,8 @@ int kill_guildcard(ship_client_t *c, uint32_t gc, const char *reason) {
 }
 
 int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
-    psocn_quest_list_t qlist[CLIENT_VERSION_ALL][CLIENT_LANG_ALL];
-    quest_map_t qmap;
+    psocn_quest_list_t qlist[CLIENT_VERSION_ALL][CLIENT_LANG_ALL] = { 0 };
+    quest_map_t qmap = { 0 };
     int i, j;
     char fn[512];
 
@@ -112,8 +112,10 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
                 if (_access(fn, 0) == 0) {
                     if (!psocn_quests_read(fn, &qlist[i][j])) {
                         if (!quest_map(&qmap, &qlist[i][j], i, j)) {
+#ifdef DEBUG
                             SHIPS_LOG("读取 %s 任务语言 %s",
                                 client_type[i].ver_name_file, language_codes[j]);
+#endif // DEBUG
                         }
                         else {
                             SHIPS_LOG("无法索引 %s 任务语言 %s",
@@ -155,7 +157,7 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
         s->qmap = qmap;
 
         /* XXXX: Hopefully this doesn't fail... >_> */
-        if(quest_cache_maps(s, &s->qmap, cfg->quests_dir))
+        if(quest_cache_maps(s, &s->qmap, cfg->quests_dir, initial))
             SHIPS_LOG("无法建立任务索引缓存!");
 
         /* Unlock the lock, we're done. */

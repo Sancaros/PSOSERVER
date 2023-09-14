@@ -292,4 +292,5 @@ extern void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filen
 extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 
+int remove_directory(const char* path);
 #endif // !PSOCN_LOG

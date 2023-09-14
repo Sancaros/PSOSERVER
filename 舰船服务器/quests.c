@@ -245,40 +245,48 @@ static uint8_t *decompress_dat(uint8_t *inbuf, uint32_t insz, uint32_t *osz) {
 }
 
 static uint8_t *read_and_dec_dat(const char *fn, uint32_t *osz) {
-    FILE *fp;
-    off_t sz;
-    uint8_t *buf, *rv;
-
+    //FILE *fp;
+    //off_t sz;
+    uint8_t /**buf, */*rv;
     /* Read the file in. */
-    if(!(fp = fopen(fn, "rb"))) {
-        QERR_LOG("无法打开任务文件 \"%s\": %s", fn,
-              strerror(errno));
+    StringReader* r = StringReader_file(fn);
+
+    if (!r) {
+        QERR_LOG("任务文件 \"%s\" 不存在.", fn);
         return NULL;
     }
 
-    _fseeki64(fp, 0, SEEK_END);
-    sz = (off_t)_ftelli64(fp);
-    _fseeki64(fp, 0, SEEK_SET);
+    ///* Read the file in. */
+    //if(!(fp = fopen(fn, "rb"))) {
+    //    QERR_LOG("无法打开任务文件 \"%s\": %s", fn,
+    //          strerror(errno));
+    //    return NULL;
+    //}
 
-    if(!(buf = (uint8_t *)malloc(sz))) {
-        QERR_LOG("无法分配内存去读取 dat : %s",
-              strerror(errno));
-        fclose(fp);
-        return NULL;
-    }
+    //_fseeki64(fp, 0, SEEK_END);
+    //sz = (off_t)_ftelli64(fp);
+    //_fseeki64(fp, 0, SEEK_SET);
 
-    if(fread(buf, 1, sz, fp) != sz) {
-        QERR_LOG("无法读取 dat\n错误信息: %s", strerror(errno));
-        free_safe(buf);
-        fclose(fp);
-        return NULL;
-    }
+    //if(!(buf = (uint8_t *)malloc(sz))) {
+    //    QERR_LOG("无法分配内存去读取 dat : %s",
+    //          strerror(errno));
+    //    fclose(fp);
+    //    return NULL;
+    //}
 
-    fclose(fp);
+    //if(fread(buf, 1, sz, fp) != sz) {
+    //    QERR_LOG("无法读取 dat\n错误信息: %s", strerror(errno));
+    //    free_safe(buf);
+    //    fclose(fp);
+    //    return NULL;
+    //}
+
+    //fclose(fp);
 
     /* Return it decompressed. */
-    rv = decompress_dat(buf, (uint32_t)sz, osz);
-    free_safe(buf);
+    rv = decompress_dat(r->data, r->length, osz);
+    //free_safe(buf);
+    StringReader_destroy(r);
     return rv;
 }
 
@@ -517,6 +525,11 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
     uint32_t dsz;
     StringReader* r = StringReader_file(fn);
 
+    if (!r) {
+        QERR_LOG("%s 任务文件 \"%s\" 不存在.", client_type[ver].ver_name_file, fn);
+        return NULL;
+    }
+
     /* Make sure the file's size is sane. */
     if(r->length < 120) {
         QERR_LOG("任务文件 \"%s\" 大小错误 %d < 120", fn, r->length);
@@ -590,10 +603,9 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
 }
 
 /* Build/rebuild the quest enemy/object data cache. */
-int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
+int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial) {
     quest_map_elem_t *i;
     size_t dlen = strlen(dir);
-    char* mdir;
     char *fn1, *fn2;
     int j, k;
     psocn_quest_t *q;
@@ -601,10 +613,25 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
     uint8_t *dat;
     uint32_t dat_sz, tmp;
 
-    mdir = (char*)malloc(sizeof(dlen) + 20);
+    char* mdir = (char*)malloc(sizeof(dlen) + 20);
+
+    if (!mdir) {
+        ERR_LOG("malloc");
+        return 0;
+    }
 
     /* Make sure we have all the directories we'll need. */
     sprintf(mdir, "%s\\.mapcache", dir);
+
+    if (initial) {
+        if (remove_directory(mdir)) {
+            QERR_LOG("删除地图缓存文件夹错误: %s",
+                strerror(errno));
+            free_safe(mdir);
+            return 0;
+        }
+    }
+
     if(_mkdir(mdir) != 0 && errno != EEXIST) {
         QERR_LOG("创建地图缓存文件夹错误: %s",
               strerror(errno));
@@ -659,30 +686,44 @@ int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir) {
                     //DBG_LOG("%s  -  %s 后缀 %s", fn1, fn2, exts[q->format]);
 
                     if(check_cache_age(fn1, fn2)) {
-                        QERR_LOG("任务缓存 %s 语言 %s %d 需要更新!",
-                            client_type[j].ver_name_file, language_codes[k], q->qid);
-                    }
-
-                    if(q->format == PSOCN_QUEST_BINDAT) {
-                        if((dat = read_and_dec_dat(fn1, &dat_sz))) {
-                            cache_quest_enemies(fn2, dat, dat_sz, q->episode);
-                            free_safe(dat);
-                        }
-                    }
-                    else {
-                        if((dat = read_and_dec_qst(fn1, &dat_sz, j))) {
 #ifdef DEBUG
-                            //q->episod (1 2 4) 3???
-                            //DBG_LOG("q->episode %d", q->episode);
+
+                        QERR_LOG("任务缓存 %s 语言 %s 任务ID %d 需要立即更新!",
+                            client_type[j].ver_name_file, language_codes[k], q->qid);
+
 #endif // DEBUG
-                            cache_quest_enemies(fn2, dat, dat_sz, q->episode);
-                            free_safe(dat);
+                        if (q->format == PSOCN_QUEST_BINDAT) {
+                            if ((dat = read_and_dec_dat(fn1, &dat_sz))) {
+                                cache_quest_enemies(fn2, dat, dat_sz, q->episode);
+                                free_safe(dat);
+                                if (!initial)
+                                    QERR_LOG("任务缓存 %s 语言 %s 任务ID %d 更新完成!",
+                                        client_type[j].ver_name_file, language_codes[k], q->qid);
+                            }
+                            else {
+                                ERR_LOG("解析任务文件 %s 失败", fn1);
+                            }
+                        }
+                        else {
+                            if ((dat = read_and_dec_qst(fn1, &dat_sz, j))) {
+#ifdef DEBUG
+                                //q->episod (1 2 4) 3???
+                                //DBG_LOG("q->episode %d", q->episode);
+#endif // DEBUG
+                                cache_quest_enemies(fn2, dat, dat_sz, q->episode);
+                                free_safe(dat);
+                                if (!initial)
+                                    QERR_LOG("任务缓存 %s 语言 %s 任务ID %d 更新完成!",
+                                        client_type[j].ver_name_file, language_codes[k], q->qid);
+                            }
                         }
                     }
 
                     free_safe(fn2);
                     free_safe(fn1);
-                    //free_safe(mdir);
+                    mdir = NULL;
+                    //if(mdir )
+                    //    free_safe(mdir);
 
                     break;
                 }

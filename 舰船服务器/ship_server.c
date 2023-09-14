@@ -112,6 +112,7 @@ char ship_host4[32];
 char ship_host6[128];
 uint32_t ship_ip4;
 uint8_t ship_ip6[16];
+psocn_ship_t* cfg;
 
 /* TLS stuff */
 gnutls_certificate_credentials_t tls_cred;
@@ -970,7 +971,6 @@ int read_param_file(psocn_ship_t* cfg) {
 
 int __cdecl main(int argc, char** argv) {
     void* tmp;
-    psocn_ship_t* cfg;
 
     initialization();
 
@@ -983,7 +983,10 @@ int __cdecl main(int argc, char** argv) {
         /* Parse the command line... */
         parse_command_line(argc, argv);
 
-        cfg = load_config();
+        //cfg = load_config();
+        if (psocn_read_ship_config(psocn_ship_cfg, &cfg)) {
+            ERR_EXIT("无法读取设置文件 %s", psocn_ship_cfg);
+        }
 
         open_log(cfg);
 

@@ -38,6 +38,7 @@
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
 extern v2_level_table_t v2_char_stats;
+extern psocn_ship_t* cfg;
 
 void print_entry(const bb_battle_param_t* entry) {
     printf("atp: %u\n", entry->atp);
@@ -287,6 +288,141 @@ static const uint32_t sp_maps[3][0x20] = {
     {1,1,1,3,1,3,3,1,3,1,3,1,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
     {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,1,2,1,1,1,1,1,1,1,1,1},
     {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+};
+
+typedef struct AreaMapFileIndex {
+    const char* name_token;
+    int variation1_values_size;
+    int variation1_values[3];
+    int variation2_values_size;
+    int variation2_values[5];
+} AreaMapFileIndex_t;
+
+// These are indexed as [episode][is_solo][area], where episode is 0-2
+static const AreaMapFileIndex_t map_file_info[3][2][16] = {
+    {
+        // Episode 1
+        {
+            // Non-solo
+            {"city00", 1, {-1}, 1, {0}},
+            {"forest01", 1, {-1}, 5, {0, 1, 2, 3, 4}},
+            {"forest02", 1, {-1}, 5, {0, 1, 2, 3, 4}},
+            {"cave01", 3, {0, 1, 2}, 2, {0, 1}},
+            {"cave02", 3, {0, 1, 2}, 2, {0, 1}},
+            {"cave03", 3, {0, 1, 2}, 2, {0, 1}},
+            {"machine01", 3, {0, 1, 2}, 2, {0, 1}},
+            {"machine02", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient01", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient02", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient03", 3, {0, 1, 2}, 2, {0, 1}},
+            {"boss01", 1, {-1}, 1, {-1}},
+            {"boss02", 1, {-1}, 1, {-1}},
+            {"boss03", 1, {-1}, 1, {-1}},
+            {"boss04", 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+        },
+        {
+            // Solo
+            {"city00", 1, {-1}, 1, {0}},
+            {"forest01", 1, {-1}, 3, {0, 2, 4}},
+            {"forest02", 1, {-1}, 3, {0, 3, 4}},
+            {"cave01", 3, {0, 1, 2}, 1, {0}},
+            {"cave02", 3, {0, 1, 2}, 1, {0}},
+            {"cave03", 3, {0, 1, 2}, 1, {0}},
+            {"machine01", 3, {0, 1, 2}, 2, {0, 1}},
+            {"machine02", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient01", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient02", 3, {0, 1, 2}, 2, {0, 1}},
+            {"ancient03", 3, {0, 1, 2}, 2, {0, 1}},
+            {"boss01", 1, {-1}, 1, {-1}},
+            {"boss02", 1, {-1}, 1, {-1}},
+            {"boss03", 1, {-1}, 1, {-1}},
+            {"boss04", 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+        },
+    },
+    {
+        // Episode 2
+        {
+            // Non-solo
+            {"labo00", 1, {-1}, 1, {0}},
+            {"ruins01", 2, {0, 1}, 1, {0}},
+            {"ruins02", 2, {0, 1}, 1, {0}},
+            {"space01", 2, {0, 1}, 1, {0}},
+            {"space02", 2, {0, 1}, 1, {0}},
+            {"jungle01", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle02", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle03", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle04", 2, {0, 1}, 2, {0, 1}},
+            {"jungle05", 1, {-1}, 3, {0, 1, 2}},
+            {"seabed01", 2, {0, 1}, 2, {0, 1}},
+            {"seabed02", 2, {0, 1}, 2, {0, 1}},
+            {"boss05", 1, {-1}, 1, {-1}},
+            {"boss06", 1, {-1}, 1, {-1}},
+            {"boss07", 1, {-1}, 1, {-1}},
+            {"boss08", 1, {-1}, 1, {-1}},
+        },
+        {
+            // Solo
+            {"labo00", 1, {-1}, 1, {0}},
+            {"ruins01", 2, {0, 1}, 1, {0}},
+            {"ruins02", 2, {0, 1}, 1, {0}},
+            {"space01", 2, {0, 1}, 1, {0}},
+            {"space02", 2, {0, 1}, 1, {0}},
+            {"jungle01", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle02", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle03", 1, {-1}, 3, {0, 1, 2}},
+            {"jungle04", 2, {0, 1}, 2, {0, 1}},
+            {"jungle05", 1, {-1}, 3, {0, 1, 2}},
+            {"seabed01", 2, {0, 1}, 2, {0, 1}},
+            {"seabed02", 2, {0, 1}, 2, {0, 1}},
+            {"boss05", 1, {-1}, 1, {-1}},
+            {"boss06", 1, {-1}, 1, {-1}},
+            {"boss07", 1, {-1}, 1, {-1}},
+            {"boss08", 1, {-1}, 1, {-1}},
+        },
+    },
+    {
+        // Episode 4
+        {
+            // Non-solo
+            {"city02", 1, {0}, 1, {0}},
+            {"wilds01", 1, {0}, 3, {0, 1, 2}},
+            {"wilds01", 1, {1}, 3, {0, 1, 2}},
+            {"wilds01", 1, {2}, 3, {0, 1, 2}},
+            {"wilds01", 1, {3}, 3, {0, 1, 2}},
+            {"crater01", 1, {0}, 3, {0, 1, 2}},
+            {"desert01", 3, {0, 1, 2}, 1, {0}},
+            {"desert02", 1, {0}, 3, {0, 1, 2}},
+            {"desert03", 3, {0, 1, 2}, 1, {0}},
+            {"boss09", 1, {0}, 1, {0}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+        },
+        {
+            // Solo
+            {"city02", 1, {0}, 1, {0}},
+            {"wilds01", 1, {0}, 3, {0, 1, 2}},
+            {"wilds01", 1, {1}, 3, {0, 1, 2}},
+            {"wilds01", 1, {2}, 3, {0, 1, 2}},
+            {"wilds01", 1, {3}, 3, {0, 1, 2}},
+            {"crater01", 1, {0}, 3, {0, 1, 2}},
+            {"desert01", 3, {0, 1, 2}, 1, {0}},
+            {"desert02", 1, {0}, 3, {0, 1, 2}},
+            {"desert03", 3, {0, 1, 2}, 1, {0}},
+            {"boss09", 1, {0}, 1, {0}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+            {NULL, 1, {-1}, 1, {-1}},
+        },
+    },
 };
 
 static const int max_area[3] = { 0x0E, 0x0F, 0x09 };
@@ -816,29 +952,26 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
 }
 
 static int read_bb_map_set(int solo, int episode, int area, char* dir) {
-    int srv;
-    char fn[256];
-    int k, l, nmaps, nvars, m;
+    char fn[256] = { 0 };
+    char fn2[256] = { 0 };
+    char fn3[3][256] = { 0 };
+    int size = ARRAYSIZE(fn3), i = 0;
+    int srv[3] = { 0 };
+    static const char map_suffix[3][12] = { "_offe.dat", "e_s.dat", "e.dat" };
+    static const char obj_suffix[3][12] = { "_offo.dat", "_offo.dat", "o.dat" };
+    int k, l, nmaps=0, nvars, m;
     FILE *fp;
+    //FILE* fp2;
     long sz;
     map_enemy_t *en;
     map_object_t *obj;
     game_object_t *gobj;
     game_enemies_t *tmp;
     game_objs_t *tmp2;
+    const AreaMapFileIndex_t* a = &map_file_info[episode][solo][area];
 
-    if(!solo) {
-        /* 多人模式 */
-        nmaps = maps[episode][area << 1];
-        nvars = maps[episode][(area << 1) + 1];
-        //printf("mult nmaps = %d (%d %d %d) nvars = %d\n", nmaps, episode, area << 1, (area << 1) + 1, nvars);
-    }
-    else {
-        /* 单人模式 */
-        nmaps = sp_maps[episode][area << 1];
-        nvars = sp_maps[episode][(area << 1) + 1];
-        //printf("solo nmaps = %d (%d %d %d) nvars = %d\n", nmaps, episode, area << 1, (area << 1) + 1, nvars);
-    }
+    nmaps = a->variation1_values_size;
+    nvars = a->variation2_values_size;
 
     bb_parsed_maps[solo][episode][area].map_count = nmaps;
     bb_parsed_maps[solo][episode][area].variation_count = nvars;
@@ -867,33 +1000,55 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             tmp[k * nvars + l].count = 0;
             fp = NULL;
 
-            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） . 
-            * 单人 章节 区域 K 
-            s%d%X%d%d.dat
-            */
-            if(solo) {
-                srv = snprintf(fn, 256, "%s\\map\\solo\\s%d%X%d%d.dat", dir, episode + 1, area, k, l);
-                if(srv >= 256) {
-                    return 1;
-                }
-                //printf("bbmapsolo %s \n", fn);
-
-                fp = fopen(fn, "rb");
+            snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
+            if (a->variation1_values[k] != -1) {
+                char variation1_str[16];  // 根据需要调整大小
+                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->variation1_values[k]);
+                strcat(fn2, variation1_str);
+            }
+            if (a->variation2_values[l] != -1) {
+                char variation2_str[16];  // 根据需要调整大小
+                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->variation2_values[l]);
+                strcat(fn2, variation2_str);
             }
 
-            if(!fp) {
-                srv = snprintf(fn, 256, "%s\\map\\mult\\m%d%X%d%d.dat", dir, episode + 1, area, k, l);
-                if(srv >= 256) {
+            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
+            if (solo) {
+                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, map_suffix[0]);
+                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, map_suffix[1]);
+            }
+            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, map_suffix[2]);
+
+            i = 0;
+            while (i < size)
+            {
+                if (srv[i] >= 256) {
+                    ERR_LOG("文件夹名称太长,超出文本限制 %d >= 256", srv[i]);
                     return 1;
                 }
 
-                //printf("bbmapmult %s \n", fn);
-
-                if(!(fp = fopen(fn, "rb"))) {
-                    ERR_LOG("无法读取 map 文件 \"%s\": %s", fn,
-                          strerror(errno));
-                    return 2;
+                if (!(fp = fopen(fn3[i], "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取地图文件 \"%s\": %s", fn3[i],
+                        strerror(errno));
+#endif // DEBUG
+                    i++;
+                    continue;
                 }
+
+#ifdef DEBUG
+                printf("章节 %s %s 区域 %d 地图对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+
+#endif // DEBUG
+                break;
+            }
+
+            if (i == size) {
+                for (int o = 0; o < i; o++) {
+                    ERR_LOG("无法读取 %d 地图文件 \"%s\": %s", o, fn3[o], strerror(errno));
+                }
+                return -1;
             }
 
             /* Figure out how long the file is, so we know what to read in... */
@@ -952,33 +1107,39 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
                 return 9;
             }
 
-            /* Clean up, we're done with this for now... */
+            /* 清理一下,地图模型读取已经结束了... */
             free_safe(en);
             fp = NULL;
 
             /* 获取对象 */
-            if(solo) {
-                srv = snprintf(fn, 256, "%s\\objs\\solo\\s%d%X%d%d_o.dat", dir, episode + 1, area, k, l);
-                if(srv >= 256) {
-                    return 1;
-                }
-                //printf("bbobjsolo %s \n", fn);
-
-                fp = fopen(fn, "rb");
+            if (solo) {
+                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, obj_suffix[0]);
+                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, obj_suffix[1]);
             }
+            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, obj_suffix[2]);
 
-            if(!fp) {
-                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%d%X%d%d_o.dat", dir, episode + 1, area, k, l);
-                if(srv >= 256) {
+            i = 0;
+            while (i < size)
+            {
+                if (srv[i] >= 256) {
+                    ERR_LOG("文件夹名称太长,超出文本限制 %d >= 256", srv[i]);
                     return 1;
                 }
-                //printf("bbobjmult %s \n", fn);
-
-                if(!(fp = fopen(fn, "rb"))) {
-                    ERR_LOG("无法读取 objects 文件 \"%s\": %s",
-                          fn, strerror(errno));
-                    return 2;
+                if (!(fp = fopen(fn3[i], "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取实例文件 \"%s\": %s", fn3[i],
+                        strerror(errno));
+#endif // DEBUG
+                    i++;
+                    continue;
                 }
+
+#ifdef DEBUG
+                printf("章节 %s %s 区域 %d 实例对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+
+#endif // DEBUG
+                break;
             }
 
             /* Figure out how long the file is, so we know what to read in... */
@@ -1277,6 +1438,7 @@ static int read_bb_map_files(char* fn) {
     for (solo = 0; solo < 2;++solo) {
         //printf("k = %d \n", k);
         for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
+
             for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
                 /* 读取多人和单人模式地图. */
                 srv = read_bb_map_set(solo, episode, area, fn);
@@ -1288,6 +1450,7 @@ static int read_bb_map_files(char* fn) {
         }
     }
 
+    //getchar();
     return srv;
 }
 
@@ -1712,6 +1875,12 @@ int bb_load_game_enemies(lobby_t *l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
+        if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir)) {
+            DBG_LOG("area %d 不存在", i >> 1);
+            sets[i >> 1] = NULL;
+            break;
+        }
+
         maps = &bb_parsed_maps[solo][l->episode - 1][i >> 1];
         objs = &bb_parsed_objs[solo][l->episode - 1][i >> 1];
 
@@ -2467,142 +2636,4 @@ done:
     l->flags = flags;
 
     return 0;
-}
-
-typedef struct AreaMapFileIndex {
-    const char* name_token;
-    uint32_t variation1_values[3];
-    uint32_t variation2_values[5];
-} AreaMapFileIndex_t;
-
-// These are indexed as [episode][is_solo][area], where episode is 0-2
-static const AreaMapFileIndex_t map_file_info[3][2][16] = {
-    {
-        // Episode 1
-        {
-            // Non-solo
-            {"city00", {0}, {0}},
-            {"forest01", {0}, {0, 1, 2, 3, 4}},
-            {"forest02", {0}, {0, 1, 2, 3, 4}},
-            {"cave01", {0, 1, 2}, {0, 1}},
-            {"cave02", {0, 1, 2}, {0, 1}},
-            {"cave03", {0, 1, 2}, {0, 1}},
-            {"machine01", {0, 1, 2}, {0, 1}},
-            {"machine02", {0, 1, 2}, {0, 1}},
-            {"ancient01", {0, 1, 2}, {0, 1}},
-            {"ancient02", {0, 1, 2}, {0, 1}},
-            {"ancient03", {0, 1, 2}, {0, 1}},
-            {"boss01", {0}, {0}},
-            {"boss02", {0}, {0}},
-            {"boss03", {0}, {0}},
-            {"boss04", {0}, {0}},
-            {NULL, {0}, {0}},
-        },
-        {
-            // Solo
-            {"city00", {0}, {0}},
-            {"forest01", {0}, {0, 2, 4}},
-            {"forest02", {0}, {0, 3, 4}},
-            {"cave01", {0, 1, 2}, {0}},
-            {"cave02", {0, 1, 2}, {0}},
-            {"cave03", {0, 1, 2}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-        },
-    },
-    {
-        // Episode 2
-        {
-            // Non-solo
-            {"labo00", {0}, {0}},
-            {"ruins01", {0, 1}, {0}},
-            {"ruins02", {0, 1}, {0}},
-            {"space01", {0, 1}, {0}},
-            {"space02", {0, 1}, {0}},
-            {"jungle01", {0}, {0, 1, 2}},
-            {"jungle02", {0}, {0, 1, 2}},
-            {"jungle03", {0}, {0, 1, 2}},
-            {"jungle04", {0, 1}, {0, 1}},
-            {"jungle05", {0}, {0, 1, 2}},
-            {"seabed01", {0, 1}, {0, 1}},
-            {"seabed02", {0, 1}, {0, 1}},
-            {"boss05", {0}, {0}},
-            {"boss06", {0}, {0}},
-            {"boss07", {0}, {0}},
-            {"boss08", {0}, {0}},
-        },
-        {
-            // Solo
-            {"labo00", {0}, {0}},
-            {"ruins01", {0, 1}, {0}},
-            {"ruins02", {0, 1}, {0}},
-            {"space01", {0, 1}, {0}},
-            {"space02", {0, 1}, {0}},
-            {"jungle01", {0}, {0, 1, 2}},
-            {"jungle02", {0}, {0, 1, 2}},
-            {"jungle03", {0}, {0, 1, 2}},
-            {"jungle04", {0, 1}, {0, 1}},
-            {"jungle05", {0}, {0, 1, 2}},
-            {"seabed01", {0, 1}, {0}},
-            {"seabed02", {0, 1}, {0}},
-            {"boss05", {0}, {0}},
-            {"boss06", {0}, {0}},
-            {"boss07", {0}, {0}},
-            {"boss08", {0}, {0}},
-        },
-    },
-    {
-        // Episode 4
-        {
-            // Non-solo
-            {"city02", {0}, {0}},
-            {"wilds01", {0}, {0, 1, 2}},
-            {"wilds01", {1}, {0, 1, 2}},
-            {"wilds01", {2}, {0, 1, 2}},
-            {"wilds01", {3}, {0, 1, 2}},
-            {"crater01", {0}, {0, 1, 2}},
-            {"desert01", {0, 1, 2}, {0}},
-            {"desert02", {0}, {0, 1, 2}},
-            {"desert03", {0, 1, 2}, {0}},
-            {"boss09", {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-        },
-        {
-            // Solo
-            {"city02", {0}, {0}},
-            {"wilds01", {0}, {0, 1, 2}},
-            {"wilds01", {1}, {0, 1, 2}},
-            {"wilds01", {2}, {0, 1, 2}},
-            {"wilds01", {3}, {0, 1, 2}},
-            {"crater01", {0}, {0, 1, 2}},
-            {"desert01", {0, 1, 2}, {0}},
-            {"desert02", {0}, {0, 1, 2}},
-            {"desert03", {0, 1, 2}, {0}},
-            {"boss09", {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-            {NULL, {0}, {0}},
-        },
-    },
-};
-
-
-const AreaMapFileIndex_t* map_file_info_for_episode(int episode) {
-    return &map_file_info[episode];
 }

@@ -156,7 +156,7 @@ int quest_map(quest_map_t *map, psocn_quest_list_t *list, int version,
               int language);
 
 /* Build/rebuild the quest enemy/object data cache. */
-int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir);
+int quest_cache_maps(ship_t *s, quest_map_t *map, const char *dir, int initial);
 
 /* Search an enemy list from a quest for an entry. */
 uint32_t quest_search_enemy_list(uint32_t id, qenemy_t *list, int len, int sd);

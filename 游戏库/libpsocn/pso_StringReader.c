@@ -245,7 +245,13 @@ StringReader* StringReader_file(const char* fn) {
     if (reader != NULL) {
         reader->data = read_file_all(fn, &reader->length);
         if (reader->data == NULL) {
+#ifdef DEBUG
+
             ERR_LOG("读取 \"%s\" 出错,数据为空或文件不存在", fn);
+
+#endif // DEBUG
+            StringReader_destroy(reader);
+            return NULL;
         }
     }
     pthread_mutex_unlock(&reader->mutex);  // 解锁

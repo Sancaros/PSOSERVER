@@ -1498,26 +1498,41 @@ static int bb_process_qload_done(ship_client_t* c) {
 
 static int bb_process_qlist(ship_client_t* c, uint32_t flags) {
     lobby_t* l = c->cur_lobby;
-    int rv;
+    int rv, done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME)
         return -1;
 
-    pthread_rwlock_rdlock(&ship->qlock);
-    pthread_mutex_lock(&l->mutex);
+    if (!load_quests(ship, ship->cfg, 0)) {
+#ifdef DEBUG
 
-    /* Do we have quests configured? */
-    if (!TAILQ_EMPTY(&ship->qmap)) {
-        l->flags |= LOBBY_FLAG_QUESTSEL;
-        l->govorlab = flags;
-        rv = send_quest_categories(c, c->q_lang);
-    }
-    else {
-        rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未设置任务."));
-    }
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新所有任务文件."));
 
-    pthread_mutex_unlock(&l->mutex);
-    pthread_rwlock_unlock(&ship->qlock);
+#endif // DEBUG
+        done = 1;
+    }
+    else
+        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC7未设置任务文件清单,请联系管理员处理."));
+
+    if (done) {
+
+        pthread_rwlock_rdlock(&ship->qlock);
+        pthread_mutex_lock(&l->mutex);
+
+        /* Do we have quests configured? */
+        if (!TAILQ_EMPTY(&ship->qmap)) {
+            l->flags |= LOBBY_FLAG_QUESTSEL;
+            l->govorlab = flags;
+            rv = send_quest_categories(c, c->q_lang);
+        }
+        else {
+            rv = send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4未设置任务."));
+        }
+
+        pthread_mutex_unlock(&l->mutex);
+        pthread_rwlock_unlock(&ship->qlock);
+
+    }
 
     return rv;
 }
