@@ -1506,16 +1506,15 @@ static int bb_process_qlist(ship_client_t* c, uint32_t flags) {
     if (!load_quests(ship, ship->cfg, 0)) {
 #ifdef DEBUG
 
-        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC7成功刷新所有任务文件."));
+        send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC8成功刷新所有任务文件."));
 
 #endif // DEBUG
         done = 1;
     }
     else
-        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC7未设置任务文件清单,请联系管理员处理."));
+        return send_msg(c, BB_SCROLL_MSG_TYPE, "%s", __(c, "\tE\tC4未设置任务文件清单,请联系管理员处理."));
 
     if (done) {
-
         pthread_rwlock_rdlock(&ship->qlock);
         pthread_mutex_lock(&l->mutex);
 
@@ -1531,7 +1530,6 @@ static int bb_process_qlist(ship_client_t* c, uint32_t flags) {
 
         pthread_mutex_unlock(&l->mutex);
         pthread_rwlock_unlock(&ship->qlock);
-
     }
 
     return rv;
