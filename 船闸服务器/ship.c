@@ -5896,121 +5896,244 @@ int handle_pkt(ship_t* c) {
     /* 确保8字节的倍数传输 */
     int recv_size = 8;
 
+    /* If we can't allocate the space, bail. */
+    if (recvbuf == NULL) {
+        ERR_LOG("malloc");
+        return -1;
+    }
+
     /* If we've got anything buffered, copy it out to the main buffer to make
        the rest of this a bit easier. */
     if (c->recvbuf_cur) {
         memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-
     }
 
     /* Attempt to read, and if we don't get anything, punt. */
-    sz = ship_recv(c, recvbuf + c->recvbuf_cur,
-        65536 - c->recvbuf_cur);
+    if ((sz = ship_recv(c, recvbuf + c->recvbuf_cur,
+        65536 - c->recvbuf_cur)) <= 0) {
 
-    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
-
-    /* Attempt to read, and if we don't get anything, punt. */
-    if (sz == SOCKET_ERROR) {
-        DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
-        goto end;
-    }
-    else if (sz == 0) {
-        DBG_LOG("Gnutls *** 注意: 对等方已关闭TLS连接");
-        goto end;
-    }
-    else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-        ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
-        goto end;
-    }
-    else if (sz < 0) {
-        ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-        ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
-        goto end;
-    }
-    else if (sz > 0) {
-        sz += c->recvbuf_cur;
-        c->recvbuf_cur = 0;
-        rbp = recvbuf;
-
-        /* As long as what we have is long enough, decrypt it. */
-        if (sz >= recv_size) {
-            while (sz >= recv_size && rv == 0) {
-                /* Grab the packet header so we know what exactly we're looking
-                   for, in terms of packet length. */
-                if (!c->hdr_read) {
-                    memcpy(&c->pkt, rbp, recv_size);
-                    c->hdr_read = 1;
-                }
-
-                pkt_sz = ntohs(c->pkt.pkt_len);
-
-                /* Do we have the whole packet? */
-                if (sz >= (ssize_t)pkt_sz) {
-                    /* Yep, copy it and process it */
-                    memcpy(rbp, &c->pkt, recv_size);
-
-                    /* Pass it onto the correct handler. */
-                    c->last_message = time(NULL);
-                    rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
-                    if (rv)
-                        ERR_LOG("process_ship_pkt rv = %d", rv);
-
-                    rbp += pkt_sz;
-                    sz -= pkt_sz;
-
-                    c->hdr_read = 0;
-                }
-                else {
-                    /* Nope, we're missing part, break out of the loop, and buffer
-                       the remaining data. */
-                    break;
-                }
-            }
+        if (sz == SOCKET_ERROR) {
+            DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+        }
+        else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+            ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+        }
+        else if (sz < 0) {
+            ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+            ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
         }
 
-        /* If we've still got something left here, buffer it for the next pass. */
-        if (sz) {
-            /* Reallocate the recvbuf for the client if its too small. */
-            if (c->recvbuf_size < sz) {
-                tmp = realloc(c->recvbuf, sz);
-
-                if (!tmp) {
-                    perror("realloc");
-                    return -1;
-                }
-
-                c->recvbuf = (unsigned char*)tmp;
-                c->recvbuf_size = sz;
-            }
-
-            memcpy(c->recvbuf, rbp, sz);
-            c->recvbuf_cur = sz;
-        }
-        else {
-            /* Free the buffer, if we've got nothing in it. */
-            if (c->recvbuf)
-                free_safe(c->recvbuf);
-
-            c->recvbuf = NULL;
-            c->recvbuf_size = 0;
-        }
-
-        if (recvbuf)
-            free_safe(recvbuf);
-        return rv;
-    }
-
-end:
-    /* Free the buffer, if we've got nothing in it. */
-    if (c->recvbuf)
-        free_safe(c->recvbuf);
-
-    c->recvbuf = NULL;
-    c->recvbuf_size = 0;
-    if (recvbuf)
         free_safe(recvbuf);
-    return sz;
+        return -1;
+    }
+
+    sz += c->recvbuf_cur;
+    c->recvbuf_cur = 0;
+    rbp = recvbuf;
+
+    /* As long as what we have is long enough, decrypt it. */
+    if (sz >= recv_size) {
+        while (sz >= recv_size && rv == 0) {
+            /* Grab the packet header so we know what exactly we're looking
+               for, in terms of packet length. */
+            if (!c->hdr_read) {
+                memcpy(&c->pkt, rbp, recv_size);
+                c->hdr_read = 1;
+            }
+
+            pkt_sz = htons(c->pkt.pkt_len);
+
+            /* Do we have the whole packet? */
+            if (sz >= (ssize_t)pkt_sz) {
+                /* Yep, copy it and process it */
+                memcpy(rbp, &c->pkt, recv_size);
+
+                /* Pass it onto the correct handler. */
+                c->last_message = time(NULL);
+                rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
+                if (rv)
+                    ERR_LOG("process_ship_pkt rv = %d", rv);
+
+                rbp += pkt_sz;
+                sz -= pkt_sz;
+
+                c->hdr_read = 0;
+            }
+            else {
+                /* Nope, we're missing part, break out of the loop, and buffer
+                   the remaining data. */
+                break;
+            }
+        }
+    }
+
+    /* If we've still got something left here, buffer it for the next pass. */
+    if (sz) {
+        /* Reallocate the recvbuf for the client if its too small. */
+        if (c->recvbuf_size < sz) {
+            tmp = realloc(c->recvbuf, sz);
+
+            if (!tmp) {
+                ERR_LOG("realloc");
+                free_safe(recvbuf);
+                return -1;
+            }
+
+            c->recvbuf = (unsigned char*)tmp;
+            c->recvbuf_size = sz;
+        }
+
+        memcpy(c->recvbuf, rbp, sz);
+        c->recvbuf_cur = sz;
+    }
+    else {
+        /* Free the buffer, if we've got nothing in it. */
+        free_safe(c->recvbuf);
+        c->recvbuf = NULL;
+        c->recvbuf_size = 0;
+    }
+
+    free_safe(recvbuf);
+
+    return rv;
 }
+//
+///* Handle incoming data to the shipgate. */
+//int handle_pkt(ship_t* c) {
+//    ssize_t sz;
+//    uint16_t pkt_sz;
+//    int rv = 0;
+//    unsigned char* rbp;
+//    uint8_t* recvbuf = get_recvbuf();
+//    void* tmp;
+//    /* 确保8字节的倍数传输 */
+//    int recv_size = 8;
+//
+//    /* If we've got anything buffered, copy it out to the main buffer to make
+//       the rest of this a bit easier. */
+//    if (c->recvbuf_cur) {
+//        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+//
+//    }
+//
+//    /* Attempt to read, and if we don't get anything, punt. */
+//    sz = ship_recv(c, recvbuf + c->recvbuf_cur,
+//        65536 - c->recvbuf_cur);
+//
+//    //DBG_LOG("从端口 %d 接收数据 %d 字节", c->sock, sz);
+//
+//    /* Attempt to read, and if we don't get anything, punt. */
+//    //if (sz == SOCKET_ERROR) {
+//    //    DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+//    //    goto end;
+//    //}
+//    //else if (sz == 0) {
+//    //    DBG_LOG("Gnutls *** 注意: 对等方已关闭TLS连接");
+//    //    goto end;
+//    //}
+//    //else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+//    //    ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+//    //    goto end;
+//    //}
+//    //else if (sz < 0) {
+//    //    ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+//    //    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
+//    //    goto end;
+//    //}
+//    //else 
+//        if (sz > 0) {
+//        sz += c->recvbuf_cur;
+//        c->recvbuf_cur = 0;
+//        rbp = recvbuf;
+//
+//        /* As long as what we have is long enough, decrypt it. */
+//        if (sz >= recv_size) {
+//            while (sz >= recv_size && rv == 0) {
+//                /* Grab the packet header so we know what exactly we're looking
+//                   for, in terms of packet length. */
+//                if (!c->hdr_read) {
+//                    memcpy(&c->pkt, rbp, recv_size);
+//                    c->hdr_read = 1;
+//                }
+//
+//                pkt_sz = ntohs(c->pkt.pkt_len);
+//
+//                /* Do we have the whole packet? */
+//                if (sz >= (ssize_t)pkt_sz) {
+//                    /* Yep, copy it and process it */
+//                    memcpy(rbp, &c->pkt, recv_size);
+//
+//                    /* Pass it onto the correct handler. */
+//                    c->last_message = time(NULL);
+//                    rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
+//                    if (rv)
+//                        ERR_LOG("process_ship_pkt rv = %d", rv);
+//
+//                    rbp += pkt_sz;
+//                    sz -= pkt_sz;
+//
+//                    c->hdr_read = 0;
+//                }
+//                else {
+//                    /* Nope, we're missing part, break out of the loop, and buffer
+//                       the remaining data. */
+//                    break;
+//                }
+//            }
+//        }
+//
+//        /* If we've still got something left here, buffer it for the next pass. */
+//        if (sz) {
+//            /* Reallocate the recvbuf for the client if its too small. */
+//            if (c->recvbuf_size < sz) {
+//                tmp = realloc(c->recvbuf, sz);
+//
+//                if (!tmp) {
+//                    perror("realloc");
+//                    return -1;
+//                }
+//
+//                c->recvbuf = (unsigned char*)tmp;
+//                c->recvbuf_size = sz;
+//            }
+//
+//            memcpy(c->recvbuf, rbp, sz);
+//            c->recvbuf_cur = sz;
+//        }
+//        else {
+//            /* Free the buffer, if we've got nothing in it. */
+//            if (c->recvbuf)
+//                free_safe(c->recvbuf);
+//
+//            c->recvbuf = NULL;
+//            c->recvbuf_size = 0;
+//        }
+//
+//        if (recvbuf)
+//            free_safe(recvbuf);
+//        return rv;
+//    }
+//
+//        /* Free the buffer, if we've got nothing in it. */
+//        if (c->recvbuf)
+//            free_safe(c->recvbuf);
+//
+//        c->recvbuf = NULL;
+//        c->recvbuf_size = 0;
+//        if (recvbuf)
+//            free_safe(recvbuf);
+//        return 0;
+//end:
+//    /* Free the buffer, if we've got nothing in it. */
+//    if (c->recvbuf)
+//        free_safe(c->recvbuf);
+//
+//    c->recvbuf = NULL;
+//    c->recvbuf_size = 0;
+//    if (recvbuf)
+//        free_safe(recvbuf);
+//    return sz;
+//}
 
 #ifdef ENABLE_LUA
 

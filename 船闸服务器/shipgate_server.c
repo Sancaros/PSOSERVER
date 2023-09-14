@@ -647,7 +647,7 @@ void run_server(int tsock, int tsock6) {
                         if (rv && rv != -1)
                             ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
                         send_ping(i, 0);
-                        //i->disconnected = 1;
+                        i->disconnected = 1;
                         continue;
                     }
 

@@ -42,7 +42,7 @@ uint8_t* get_sendbuf(void) {
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
     if (!sendbuf) {
-        perror("malloc");
+        ERR_LOG("malloc");
         return NULL;
     }
 
@@ -120,8 +120,10 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
 
             /* If we can't allocate the space, bail. */
-            if (tmp == NULL)
+            if (tmp == NULL) {
+                ERR_LOG("realloc");
                 return -1;
+            }
 
             c->sendbuf_size = c->sendbuf_cur + rv;
             c->sendbuf = (unsigned char*)tmp;

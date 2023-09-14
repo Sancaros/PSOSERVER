@@ -2468,3 +2468,141 @@ done:
 
     return 0;
 }
+
+typedef struct AreaMapFileIndex {
+    const char* name_token;
+    uint32_t variation1_values[3];
+    uint32_t variation2_values[5];
+} AreaMapFileIndex_t;
+
+// These are indexed as [episode][is_solo][area], where episode is 0-2
+static const AreaMapFileIndex_t map_file_info[3][2][16] = {
+    {
+        // Episode 1
+        {
+            // Non-solo
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 1, 2, 3, 4}},
+            {"forest02", {0}, {0, 1, 2, 3, 4}},
+            {"cave01", {0, 1, 2}, {0, 1}},
+            {"cave02", {0, 1, 2}, {0, 1}},
+            {"cave03", {0, 1, 2}, {0, 1}},
+            {"machine01", {0, 1, 2}, {0, 1}},
+            {"machine02", {0, 1, 2}, {0, 1}},
+            {"ancient01", {0, 1, 2}, {0, 1}},
+            {"ancient02", {0, 1, 2}, {0, 1}},
+            {"ancient03", {0, 1, 2}, {0, 1}},
+            {"boss01", {0}, {0}},
+            {"boss02", {0}, {0}},
+            {"boss03", {0}, {0}},
+            {"boss04", {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // Solo
+            {"city00", {0}, {0}},
+            {"forest01", {0}, {0, 2, 4}},
+            {"forest02", {0}, {0, 3, 4}},
+            {"cave01", {0, 1, 2}, {0}},
+            {"cave02", {0, 1, 2}, {0}},
+            {"cave03", {0, 1, 2}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+    {
+        // Episode 2
+        {
+            // Non-solo
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0, 1}},
+            {"seabed02", {0, 1}, {0, 1}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+        {
+            // Solo
+            {"labo00", {0}, {0}},
+            {"ruins01", {0, 1}, {0}},
+            {"ruins02", {0, 1}, {0}},
+            {"space01", {0, 1}, {0}},
+            {"space02", {0, 1}, {0}},
+            {"jungle01", {0}, {0, 1, 2}},
+            {"jungle02", {0}, {0, 1, 2}},
+            {"jungle03", {0}, {0, 1, 2}},
+            {"jungle04", {0, 1}, {0, 1}},
+            {"jungle05", {0}, {0, 1, 2}},
+            {"seabed01", {0, 1}, {0}},
+            {"seabed02", {0, 1}, {0}},
+            {"boss05", {0}, {0}},
+            {"boss06", {0}, {0}},
+            {"boss07", {0}, {0}},
+            {"boss08", {0}, {0}},
+        },
+    },
+    {
+        // Episode 4
+        {
+            // Non-solo
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+        {
+            // Solo
+            {"city02", {0}, {0}},
+            {"wilds01", {0}, {0, 1, 2}},
+            {"wilds01", {1}, {0, 1, 2}},
+            {"wilds01", {2}, {0, 1, 2}},
+            {"wilds01", {3}, {0, 1, 2}},
+            {"crater01", {0}, {0, 1, 2}},
+            {"desert01", {0, 1, 2}, {0}},
+            {"desert02", {0}, {0, 1, 2}},
+            {"desert03", {0, 1, 2}, {0}},
+            {"boss09", {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+            {NULL, {0}, {0}},
+        },
+    },
+};
+
+
+const AreaMapFileIndex_t* map_file_info_for_episode(int episode) {
+    return &map_file_info[episode];
+}
