@@ -1554,15 +1554,10 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
                             tmpi = &c->bb_pl->character.inv.iitems[i].data;
                             if (item_not_identification(tmpi)) {
+#ifdef DEBUG
                                 ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
                                 print_item_data(tmpi, c->version);
-                                clear_iitem(&c->bb_pl->character.inv.iitems[i]);
-                                continue;
-                            }
-
-                            if (tmpi->datab[0] == 0x01 && tmpi->datab[1] == 0x00 && tmpi->datab[2] == 0x00) {
-                                ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_item_data(tmpi, c->version);
+#endif // DEBUG
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]);
                                 continue;
                             }
@@ -1583,13 +1578,10 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
                             tmpi = &c->bb_pl->bank.bitems[i].data;
                             if (item_not_identification(tmpi)) {
+#ifdef DEBUG
                                 ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                clear_bitem(&c->bb_pl->bank.bitems[i]);
-                                continue;
-                            }
-
-                            if(tmpi->datab[0] == 0x01 && tmpi->datab[1] == 0x00 && tmpi->datab[2] == 0x00){
-                                ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
+                                print_bitem_data(&c->bb_pl->bank.bitems[i], i, c->version);
+#endif // DEBUG
                                 clear_bitem(&c->bb_pl->bank.bitems[i]);
                                 continue;
                             }

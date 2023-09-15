@@ -2919,6 +2919,13 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
     switch (parts[0]) {
     case ITEM_TYPE_WEAPON:
         pmt_weapon_bb_t weapon = { 0 };
+        /* 确保我们正在查找 weapon */
+        if (datal1 == 0x00000000) {
+            /* 光剑0没有任何意义 */
+            item_base_check.err = -1;
+            break;
+        }
+
         if (err = pmt_lookup_weapon_bb(datal1, &weapon)) {
             ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
             item_base_check.err = err;
@@ -2979,8 +2986,11 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
         break;
 
     case ITEM_TYPE_MESETA:
+#ifdef DEBUG
+
         ERR_LOG("美赛塔之类的物品没有定义");
-        item_base_check.err = -2;
+
+#endif // DEBUG
         break;
 
     default:
