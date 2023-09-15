@@ -58,7 +58,7 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt, i
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 单人掉落堆叠物品*/
-int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t area, float x, float z, item_t item, uint32_t amount) {
+int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t* litem) {
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
 
@@ -71,6 +71,63 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
     dc.shdr.size = 0x0A;
     dc.shdr.client_id = drop_src_id;
 
+    bb.hdr.pkt_len = LE16(0x2C);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
+    bb.hdr.flags = 0;
+
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x0A;
+    bb.shdr.client_id = drop_src_id;
+
+    dc.area = LE16(litem->area);
+    bb.area = LE32(litem->area);
+    bb.x = dc.x = litem->x;
+    bb.z = dc.z = litem->z;
+
+    bb.data = dc.data = litem->iitem.data;
+
+    if (litem->iitem.data.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = litem->iitem.data.data2l;
+
+    if (is_stackable(&litem->iitem.data))
+        bb.data.datab[5] = dc.data.datab[5] = litem->iitem.data.datab[5];
+
+    bb.two = dc.two = LE32(0x00000002);
+
+    if (src->version == CLIENT_VERSION_GC)
+        bswap_data2_if_mag(&dc.data);
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return send_pkt_dc(src, (dc_pkt_hdr_t*)&dc);
+
+    case CLIENT_VERSION_BB:
+        return send_pkt_bb(src, (bb_pkt_hdr_t*)&bb);
+
+    default:
+        return 0;
+    }
+}
+
+/* 0x5D SUBCMD60_DROP_STACK DC 单人掉落堆叠物品*/
+int subcmd_send_drop_stack_dc(ship_client_t* src, 
+    uint16_t drop_src_id, item_t item, uint8_t area, float x, float z) {
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
+
+    /* 填充数据并准备发送.. */
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
+
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = drop_src_id;
 
     bb.hdr.pkt_len = LE16(0x2C);
     bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
@@ -91,7 +148,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
         bb.data.data2l = dc.data.data2l = item.data2l;
 
     if (is_stackable(&item))
-        bb.data.datab[5] = dc.data.datab[5] = amount;
+        bb.data.datab[5] = dc.data.datab[5] = item.datab[5];
 
     bb.two = dc.two = LE32(0x00000002);
 
@@ -116,7 +173,7 @@ int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t ar
 }
 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
-int subcmd_send_lobby_drop_stack(ship_client_t* src, uint16_t drop_src_id, ship_client_t* nosend, uint32_t area, float x, float z, item_t item, uint32_t amount) {
+int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, ship_client_t* nosend, litem_t* litem) {
     lobby_t* l = src->cur_lobby;
 
     if (!l) {
@@ -125,22 +182,125 @@ int subcmd_send_lobby_drop_stack(ship_client_t* src, uint16_t drop_src_id, ship_
         return -1;
     }
 
-    for (int i = 0; i < l->max_clients; ++i) {
-        if (!l->clients[i])
-            continue;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
 
-        if (l->clients[i] == nosend)
-            continue;
+    /* 填充数据并准备发送.. */
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
 
-        /* If we're supposed to check the ignore list, and this client is on
-           it, don't send the packet. */
-        if (client_has_ignored(l->clients[i], src->guildcard))
-            continue;
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = drop_src_id;
 
-        subcmd_send_drop_stack(l->clients[i], drop_src_id, area, x, z, item, amount);
+    bb.hdr.pkt_len = LE16(0x2C);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
+    bb.hdr.flags = 0;
+
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x0A;
+    bb.shdr.client_id = drop_src_id;
+
+    dc.area = LE16(litem->area);
+    bb.area = LE32(litem->area);
+    bb.x = dc.x = litem->x;
+    bb.z = dc.z = litem->z;
+
+    bb.data = dc.data = litem->iitem.data;
+
+    if (litem->iitem.data.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = litem->iitem.data.data2l;
+
+    if (is_stackable(&litem->iitem.data))
+        bb.data.datab[5] = dc.data.datab[5] = litem->iitem.data.datab[5];
+
+    bb.two = dc.two = LE32(0x00000002);
+
+    if (src->version == CLIENT_VERSION_GC)
+        bswap_data2_if_mag(&dc.data);
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return lobby_send_pkt_dc(l, nosend, (dc_pkt_hdr_t*)&dc, 0);
+
+    case CLIENT_VERSION_BB:
+        return lobby_send_pkt_bb(l, nosend, (bb_pkt_hdr_t*)&bb, 0);
+
+    default:
+        return 0;
+    }
+}
+
+/* 0x5D SUBCMD60_DROP_STACK DC 大厅掉落堆叠物品*/
+int subcmd_send_lobby_drop_stack_dc(ship_client_t* src, 
+    uint16_t drop_src_id, ship_client_t* nosend, item_t item, uint8_t area, float x, float z) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l) {
+        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
+            src->guildcard);
+        return -1;
     }
 
-    return 0;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
+
+    /* 填充数据并准备发送.. */
+    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
+    dc.hdr.pkt_len = LE16(sizeof(subcmd_drop_stack_t));
+    dc.hdr.flags = 0;
+
+    dc.shdr.type = SUBCMD60_DROP_STACK;
+    dc.shdr.size = 0x0A;
+    dc.shdr.client_id = drop_src_id;
+
+    bb.hdr.pkt_len = LE16(0x2C);
+    bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
+    bb.hdr.flags = 0;
+
+    bb.shdr.type = SUBCMD60_DROP_STACK;
+    bb.shdr.size = 0x0A;
+    bb.shdr.client_id = drop_src_id;
+
+    dc.area = LE16(area);
+    bb.area = LE32(area);
+    bb.x = dc.x = x;
+    bb.z = dc.z = z;
+
+    bb.data = dc.data = item;
+
+    if (item.datab[0] == ITEM_TYPE_MESETA)
+        bb.data.data2l = dc.data.data2l = item.data2l;
+
+    if (is_stackable(&item))
+        bb.data.datab[5] = dc.data.datab[5] = item.datab[5];
+
+    bb.two = dc.two = LE32(0x00000002);
+
+    if (src->version == CLIENT_VERSION_GC)
+        bswap_data2_if_mag(&dc.data);
+
+    switch (src->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_PC:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX:
+        return lobby_send_pkt_dc(l, nosend, (dc_pkt_hdr_t*)&dc, 0);
+
+    case CLIENT_VERSION_BB:
+        return lobby_send_pkt_bb(l, nosend, (bb_pkt_hdr_t*)&bb, 0);
+
+    default:
+        return 0;
+    }
 }
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
@@ -305,8 +465,8 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
         tmp_meseta.data.data2l = amount;
 
         /* 当获得物品... 将其新增入房间物品背包. */
-        iitem_t* ii_meseta = add_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z);
-        if (!ii_meseta) {
+        litem_t* li_meseta = add_litem_locked(l, &tmp_meseta, c->drop_area, c->x, c->z);
+        if (!li_meseta) {
             /* *大厅里可能是烤面包... 至少确保该用户仍然（大部分）安全... */
             ERR_LOG("无法将物品添加至游戏房间!");
             err = -1;
@@ -316,7 +476,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
         /* 现在我们有两个数据包要发送.首先,发送一个数据包,告诉每个人有一个物品掉落.
         然后,发送一个从客户端的库存中删除物品的人.第一个必须发给每个人,
         第二个必须发给除了最初发送这个包裹的人以外的所有人. */
-        if (err = subcmd_send_lobby_drop_stack(c, c->client_id, NULL, c->drop_area, c->x, c->z, ii_meseta->data, amount)) {
+        if (err = subcmd_send_lobby_drop_stack_bb(c, c->client_id, NULL, li_meseta)) {
             ERR_LOG("玩家掉落美赛塔失败 %d < %d", character->disp.meseta, amount);
             return err;
         }

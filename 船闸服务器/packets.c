@@ -55,7 +55,7 @@ uint8_t* get_sendbuf(void) {
 
 // 发送消息
 static ssize_t send_message(ship_t* c, const char* message, size_t message_len) {
-    char compressed_msg[MAX_BUFFER_SIZE];
+    char compressed_msg[MAX_BUFFER_SIZE] = { 0 };
     uLongf compressed_len = MAX_BUFFER_SIZE;
 
     // 使用 zlib 进行数据压缩
@@ -74,10 +74,10 @@ static ssize_t send_message(ship_t* c, const char* message, size_t message_len) 
 }
 
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_send(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */
@@ -92,9 +92,9 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
 
             //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
 
-            /* Did the data send? */
+            /* 检测数据是否以发送完成? */
             if (rv < 0) {
-                /* Is it an error code that might be correctable? */
+                /* 这是一个可以纠正的错误代码吗? */
                 if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
                     continue;
                 else

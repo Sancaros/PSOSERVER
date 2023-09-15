@@ -82,7 +82,8 @@ typedef struct lobby_item {
     float x;
     float z;
     uint8_t area;
-} lobby_item_t;
+    uint32_t amount;
+} litem_t;
 
 TAILQ_HEAD(lobby_item_queue, lobby_item);
 

@@ -649,6 +649,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 
 /* Generate an item drop from the PT data. This version uses the v3 PT data set.
    This function only works for PSOBB. */
+pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section);
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r);
 int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 
@@ -656,5 +657,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
    This function only works for PSOBB PSO2 style. */
 int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r);
 int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r);
+
+uint16_t get_random_value(rang_16bit_t range);
 
 #endif /* !PTDATA_H */

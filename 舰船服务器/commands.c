@@ -43,6 +43,7 @@
 #include "mapdata.h"
 #include "rtdata.h"
 #include "scripts.h"
+#include "subcmd_send_bb.h"
 
 extern int sub62_06_dc(ship_client_t *s, ship_client_t *d,
                      subcmd_dc_gcsend_t *pkt);
@@ -518,10 +519,19 @@ static int handle_login(ship_client_t *c, const char *params) {
 static int handle_item(ship_client_t *src, const char *params) {
     uint32_t item[4] = {0, 0, 0, 0};
     int count;
+    lobby_t* l = src->cur_lobby;
+    litem_t* litem;
+    subcmd_drop_stack_t dc = { 0 };
+    subcmd_bb_drop_stack_t bb = { 0 };
 
     /* Make sure the requester is a GM. */
     if(!LOCAL_GM(src)) {
         return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Copy over the item data. */
@@ -532,8 +542,6 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
-
-
     /* Clear the set item */
     clear_inv_item(&src->new_item);
 
@@ -543,132 +551,22 @@ static int handle_item(ship_client_t *src, const char *params) {
     src->new_item.datal[2] = SWAP32(item[2]);
     src->new_item.data2l = SWAP32(item[3]);
 
-    return send_txt(src, "%s %s %s",
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(src->new_item.datal[0], src->new_item.datal[1]);
+    if (item_base_check.err) {
+        clear_inv_item(&src->new_item);
+        return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
+    }
+
+    /*return */send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
         item_get_name(&src->new_item, src->version),
-        __(src, "\tE\tC6 new_item 设置成功."));
-}
-
-/* 用法 /item1 item1 */
-static int handle_item1(ship_client_t* src, const char* params) {
-    uint32_t item;
-    int count;
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    }
-
-    /* Copy over the item data. */
-    count = sscanf(params, "%X", &item);
-
-    if (count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效 item1 物品代码."));
-    }
-
-    src->new_item.datal[0] = LE32(item);
-
-    return send_txt(src, "%s", __(src, "\tE\tC7next_item item1 设置成功."));
-}
-
-/* 用法 /item2 item2 */
-static int handle_item2(ship_client_t* src, const char* params) {
-    uint32_t item;
-    int count;
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    }
-
-    /* Copy over the item data. */
-    count = sscanf(params, "%X", &item);
-
-    if (count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效 item2 物品代码."));
-    }
-
-    src->new_item.datal[1] = LE32(item);
-
-    return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
-}
-
-/* 用法 /item3 item3 */
-static int handle_item3(ship_client_t* src, const char* params) {
-    uint32_t item;
-    int count;
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    }
-
-    /* Copy over the item data. */
-    count = sscanf(params, "%X", &item);
-
-    if (count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效 item3 物品代码."));
-    }
-
-    src->new_item.datal[2] = LE32(item);
-
-    return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
-}
-
-/* 用法 /item4 item4 */
-static int handle_item4(ship_client_t *src, const char *params) {
-    uint32_t item;
-    int count;
-
-    /* Make sure the requester is a GM. */
-    if(!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    }
-
-    /* Copy over the item data. */
-    count = sscanf(params, "%X", &item);
-
-    if(count == EOF || count == 0) {
-        return send_txt(src, "%s", __(src, "\tE\tC7无效 item4 物品代码."));
-    }
-
-    src->new_item.data2l = LE32(item);
-
-    return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));
-}
-
-/* 用法: /miitem */
-static int handle_miitem(ship_client_t* src, const char* params) {
-    lobby_t* l = src->cur_lobby;
-    iitem_t* iitem;
-    subcmd_drop_stack_t dc = { 0 };
-    subcmd_bb_drop_stack_t bb = { 0 };
-
-    /* Make sure the requester is a GM. */
-    if (!LOCAL_GM(src)) {
-        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
-    }
-
-    //pthread_mutex_lock(&l->mutex);
-
-    /* Make sure that the requester is in a team, not a lobby. */
-    if (l->type != LOBBY_TYPE_GAME) {
-        //pthread_mutex_unlock(&l->mutex);
-        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
-    }
-
-    /* Make sure there's something set with /item */
-    if (!src->new_item.datal[0]) {
-        //pthread_mutex_unlock(&l->mutex);
-        return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
-            __(src, "\tE\tC7/item code1,code2,code3,code4."));
-    }
+        __(src, "\tE\tC6 new_item 设置成功, 立即生成."));
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        iitem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
-        if (!iitem) {
+        if (!litem) {
             //pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }
@@ -727,6 +625,175 @@ static int handle_miitem(ship_client_t* src, const char* params) {
 
     default:
         return 0;
+    }
+}
+
+/* 用法 /item1 item1 */
+static int handle_item1(ship_client_t* src, const char* params) {
+    uint32_t item;
+    lobby_t* l = src->cur_lobby;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item1 物品代码."));
+    }
+
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item, src->new_item.datal[1]);
+    if (item_base_check.err) {
+        clear_inv_item(&src->new_item);
+        return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
+    }
+
+    src->new_item.datal[0] = SWAP32(item);
+
+    print_item_data(&src->new_item, src->version);
+
+    return send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version),
+        __(src, "\tE\tC6 new_item item1 设置成功, 立即生成."));
+}
+
+/* 用法 /item2 item2 */
+static int handle_item2(ship_client_t* src, const char* params) {
+    uint32_t item;
+    lobby_t* l = src->cur_lobby;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item2 物品代码."));
+    }
+
+    src->new_item.datal[1] = SWAP32(item);
+
+    print_item_data(&src->new_item, src->version);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
+}
+
+/* 用法 /item3 item3 */
+static int handle_item3(ship_client_t* src, const char* params) {
+    uint32_t item;
+    lobby_t* l = src->cur_lobby;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if (count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item3 物品代码."));
+    }
+
+    src->new_item.datal[2] = SWAP32(item);
+
+    print_item_data(&src->new_item, src->version);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
+}
+
+/* 用法 /item4 item4 */
+static int handle_item4(ship_client_t *src, const char *params) {
+    uint32_t item;
+    lobby_t* l = src->cur_lobby;
+    int count;
+
+    /* Make sure the requester is a GM. */
+    if(!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Copy over the item data. */
+    count = sscanf(params, "%X", &item);
+
+    if(count == EOF || count == 0) {
+        return send_txt(src, "%s", __(src, "\tE\tC7无效 item4 物品代码."));
+    }
+
+    src->new_item.data2l = SWAP32(item);
+
+    print_item_data(&src->new_item, src->version);
+
+    return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));
+}
+
+/* 用法: /miitem */
+static int handle_miitem(ship_client_t* src, const char* params) {
+    lobby_t* l = src->cur_lobby;
+    litem_t* litem;
+
+    /* Make sure the requester is a GM. */
+    if (!LOCAL_GM(src)) {
+        return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
+    }
+
+    /* Make sure that the requester is in a team, not a lobby. */
+    if (l->type != LOBBY_TYPE_GAME) {
+        return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
+    }
+
+    /* Make sure there's something set with /item */
+    if (!src->new_item.datal[0]) {
+        return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
+            __(src, "\tE\tC7/item code1,code2,code3,code4."));
+    }
+
+    /* If we're on Blue Burst, add the item to the lobby's inventory first. */
+    if (l->version == CLIENT_VERSION_BB) {
+        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+
+        if (!litem) {
+            return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
+        }
+
+        /* Generate the packet to drop the item */
+        return subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
+    }
+    else {
+        ++l->item_player_id[src->client_id];
+
+        /* Generate the packet to drop the item */
+        return subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
     }
 }
 
@@ -1661,7 +1728,7 @@ static void dumpinv_internal(ship_client_t *src) {
 /* 用法: /dbginv [l/client_id/guildcard] */
 static int handle_dbginv(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
-    lobby_item_t* j;
+    litem_t* j;
     int do_lobby;
     uint32_t client;
 
@@ -3815,7 +3882,7 @@ static int handle_clean(ship_client_t* c, const char* params) {
 /* 用法: /pso2 item1,item2,item3,item4*/
 static int handle_pso2(ship_client_t* src, const char* params) {
     lobby_t* l = src->cur_lobby;
-    iitem_t* iitem;
+    litem_t* litem;
     subcmd_drop_stack_t dc = { 0 };
     subcmd_bb_drop_stack_t bb = { 0 };
     uint32_t item[4] = { 0, 0, 0, 0 };
@@ -3855,27 +3922,22 @@ static int handle_pso2(ship_client_t* src, const char* params) {
         item_get_name(&src->new_item, src->version),
         __(src, "\tE\tC6 new_item 设置成功."));
 
-    pthread_mutex_lock(&l->mutex);
-
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
     if (!src->new_item.datal[0]) {
-        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."),
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
-        iitem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
+        litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
-        if (!iitem) {
-            pthread_mutex_unlock(&l->mutex);
+        if (!litem) {
             return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
         }
     }
@@ -3913,8 +3975,6 @@ static int handle_pso2(ship_client_t* src, const char* params) {
     clear_inv_item(&src->new_item);
 
     /* Send the packet to everyone in the lobby */
-    pthread_mutex_unlock(&l->mutex);
-
     switch (src->version) {
     case CLIENT_VERSION_DCV1:
     case CLIENT_VERSION_DCV2:

@@ -101,17 +101,25 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-iitem_t* add_new_litem_locked(lobby_t* l, const item_t* new_item, uint8_t area, float x, float z) {
+litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    lobby_item_t* litem = (lobby_item_t*)malloc(sizeof(lobby_item_t));
-
-    if (!litem)
+    if (item_not_identification(new_item)) {
+        ERR_LOG("0x%08X 是未识别物品", new_item->datal[0]);
+        print_item_data(new_item, l->version);
         return NULL;
+    }
 
-    memset(litem, 0, sizeof(lobby_item_t));
+    litem_t* litem = (litem_t*)malloc(sizeof(litem_t));
+
+    if (!litem) {
+        ERR_LOG("malloc");
+        return NULL;
+    }
+
+    memset(litem, 0, sizeof(litem_t));
 
     /* Copy the item data in. */
     litem->iitem.present = LE16(0x0001);
@@ -125,6 +133,7 @@ iitem_t* add_new_litem_locked(lobby_t* l, const item_t* new_item, uint8_t area, 
     litem->x = x;
     litem->z = z;
     litem->area = area;
+    litem->amount = get_litem_amount(new_item);
 
 #ifdef DEBUG
 
@@ -135,32 +144,41 @@ iitem_t* add_new_litem_locked(lobby_t* l, const item_t* new_item, uint8_t area, 
     /* Increment the item ID, add it to the queue, and return the new item */
     ++l->item_lobby_id;
     TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
-    return &litem->iitem;
+    return litem;
 }
 
 /* 玩家丢出的 取出的 购买的物品 */
-iitem_t* add_litem_locked(lobby_t* l, const iitem_t* iitem, uint8_t area, float x, float z) {
+litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, float z) {
     
     /* 合理性检查... */
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    lobby_item_t* litem = (lobby_item_t*)malloc(sizeof(lobby_item_t));
-
-    if (!litem)
+    if (item_not_identification(&iitem->data)) {
+        ERR_LOG("0x%08X 是未识别物品", &iitem->data.datal[0]);
+        print_item_data(&iitem->data, l->version);
         return NULL;
+    }
 
-    memset(litem, 0, sizeof(lobby_item_t));
+    litem_t* litem = (litem_t*)malloc(sizeof(litem_t));
+
+    if (!litem) {
+        ERR_LOG("malloc");
+        return NULL;
+    }
+
+    memset(litem, 0, sizeof(litem_t));
 
     /* Copy the item data in. */
     memcpy(&litem->iitem, iitem, PSOCN_STLENGTH_IITEM);
     litem->x = x;
     litem->z = z;
     litem->area = area;
+    litem->amount = get_litem_amount(&iitem->data);
 
     /* Add it to the queue, and return the new item */
     TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
-    return &litem->iitem;
+    return litem;
 }
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
@@ -173,9 +191,9 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv) {
     //memset(rv, 0, PSOCN_STLENGTH_IITEM);
     //rv->data.datal[0] = LE32(Item_NoSuchItem);
 
-    lobby_item_t* litem = TAILQ_FIRST(&l->item_queue);
+    litem_t* litem = TAILQ_FIRST(&l->item_queue);
     while (litem) {
-        lobby_item_t* tmp = TAILQ_NEXT(litem, qentry);
+        litem_t* tmp = TAILQ_NEXT(litem, qentry);
 
         if (litem->iitem.data.item_id == item_id) {
             memcpy(rv, &litem->iitem, PSOCN_STLENGTH_IITEM);
@@ -1266,7 +1284,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
         case ITEM_SUBTYPE_SERVER_ITEM2:
             item_t new_item = { 0 };
-            iitem_t* new_iitem;
+            litem_t* new_litem;
 
             switch (iitem->data.datab[2]) {
             case 0x03: // WeaponsSilverBadge 031403
@@ -1284,9 +1302,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[2] = 0x3A980000;
                 new_item.data2l = 0x0407C878;
 
-                new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
-                subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, src->x, src->z, new_iitem->data, 1);
+                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
                 pthread_mutex_unlock(&src->mutex);
                 break;
@@ -1300,9 +1318,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[2] = 0x00000000;
                 new_item.data2l = 0x00000000;
 
-                new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
-                subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, src->x, src->z, new_iitem->data, 1);
+                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
                 //DB剣 Machine 100% Ruin 100% Hit 50%
                 new_item.datal[0] = 0x2C050100;
@@ -1310,9 +1328,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[2] = 0x64046403;
                 new_item.data2l = 0x00000000;
 
-                new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
-                subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, src->x, src->z, new_iitem->data, 1);
+                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
                 //DB盾
                 new_item.datal[0] = 0x00260201;
@@ -1320,9 +1338,9 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.datal[2] = 0x00000000;
                 new_item.data2l = 0x00000000;
 
-                new_iitem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
 
-                subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, src->x, src->z, new_iitem->data, 1);
+                subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
                 pthread_mutex_unlock(&src->mutex);
                 break;

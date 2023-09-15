@@ -126,6 +126,8 @@ bool is_stackable(const item_t* item);
 size_t stack_size(const item_t* item);
 size_t max_stack_size(const item_t* item);
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
+/* 仅用于房间物品数量 */
+uint32_t get_litem_amount(item_t* item);
 
 bool is_common_consumable(uint32_t primary_identifier);
 

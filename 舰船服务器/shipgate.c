@@ -71,7 +71,7 @@ psocn_bb_mode_char_t default_mode_char;
 
 // 发送消息
 static inline ssize_t send_message(shipgate_conn_t* c, const char* message, size_t message_len) {
-    char compressed_msg[MAX_BUFFER_SIZE];
+    char compressed_msg[MAX_BUFFER_SIZE] = { 0 };
     uLongf compressed_len = MAX_BUFFER_SIZE;
 
     // 使用 zlib 进行数据压缩
@@ -121,17 +121,17 @@ static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t b
 }
 
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_recv(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_recv(c->session, buffer, len);
 }
 
 static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_send(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */
@@ -1518,6 +1518,7 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
     uint16_t flags = ntohs(pkt->hdr.flags);
     uint16_t plen = ntohs(pkt->hdr.pkt_len);
     int clen = plen - sizeof(shipgate_char_data_pkt);
+    item_t* tmpi = NULL;
 
     /* Make sure the packet looks sane */
     if(!(flags & SHDR_RESPONSE)) {
@@ -1551,26 +1552,24 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_INV_ITEMS; i++) {
-                            if (item_not_identification(&c->bb_pl->character.inv.iitems[i].data)) {
+                            tmpi = &c->bb_pl->character.inv.iitems[i].data;
+                            if (item_not_identification(tmpi)) {
                                 ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_item_data(&c->bb_pl->character.inv.iitems[i].data, c->version);
+                                print_item_data(tmpi, c->version);
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]);
                                 continue;
                             }
 
-                            if (c->bb_pl->character.inv.iitems[i].data.datab[0] == 0x01
-                                && c->bb_pl->character.inv.iitems[i].data.datab[1] == 0x00
-                                && c->bb_pl->character.inv.iitems[i].data.datab[2] == 0x00
-                                ) {
+                            if (tmpi->datab[0] == 0x01 && tmpi->datab[1] == 0x00 && tmpi->datab[2] == 0x00) {
                                 ERR_LOG("GC %u:%d 背包索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
-                                print_item_data(&c->bb_pl->character.inv.iitems[i].data, c->version);
+                                print_item_data(tmpi, c->version);
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]);
                                 continue;
                             }
 
                             if (c->bb_pl->character.inv.iitems[i].present) {
-                                fix_inv_bank_item(&c->bb_pl->character.inv.iitems[i].data);
-                                c->bb_pl->character.inv.iitems[i].data.item_id = EMPTY_STRING;
+                                fix_inv_bank_item(tmpi);
+                                tmpi->item_id = EMPTY_STRING;
                             }
                             else
                                 clear_iitem(&c->bb_pl->character.inv.iitems[i]); /* 初始化无效的背包物品 以免数据错误 */
@@ -1582,23 +1581,21 @@ static int handle_char_data_req(shipgate_conn_t *conn, shipgate_char_data_pkt *p
 
                         //ITEM_LOG("////////////////////////////////////////////////////////////");
                         for (i = 0; i < MAX_PLAYER_BANK_ITEMS; i++) {
-                            if (item_not_identification(&c->bb_pl->bank.bitems[i].data)) {
+                            tmpi = &c->bb_pl->bank.bitems[i].data;
+                            if (item_not_identification(tmpi)) {
                                 ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
                                 clear_bitem(&c->bb_pl->bank.bitems[i]);
                                 continue;
                             }
 
-                            if(c->bb_pl->bank.bitems[i].data.datab[0] == 0x01 
-                                && c->bb_pl->bank.bitems[i].data.datab[1] == 0x00
-                                && c->bb_pl->bank.bitems[i].data.datab[2] == 0x00
-                                ){
+                            if(tmpi->datab[0] == 0x01 && tmpi->datab[1] == 0x00 && tmpi->datab[2] == 0x00){
                                 ERR_LOG("GC %u:%d 银行索引 i %d 是未识别物品", c->guildcard, c->sec_data.slot, i);
                                 clear_bitem(&c->bb_pl->bank.bitems[i]);
                                 continue;
                             }
 
                             if (c->bb_pl->bank.bitems[i].show_flags && c->bb_pl->bank.bitems[i].amount) {
-                                fix_inv_bank_item(&c->bb_pl->bank.bitems[i].data);
+                                fix_inv_bank_item(tmpi);
                             }
                             else
                                 clear_bitem(&c->bb_pl->bank.bitems[i]); /* 初始化无效的银行物品 以免数据错误 */

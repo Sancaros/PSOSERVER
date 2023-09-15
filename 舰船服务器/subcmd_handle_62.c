@@ -2289,15 +2289,15 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     drop_item.datab[1] = pkt->item_subtype;
     drop_item.datab[5] = pkt->drop_amount;
 
-    iitem_t* new_iitem = add_new_litem_locked(l, &drop_item, src->cur_area, x, z);
+    litem_t* new_litem = add_new_litem_locked(l, &drop_item, src->cur_area, x, z);
 
-    if (new_iitem == NULL) {
+    if (new_litem == NULL) {
         return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足或生成失败."));
     }
 
     send_pkt_bb(dest, (bb_pkt_hdr_t*)&pkt);
 
-    return subcmd_send_lobby_drop_stack(src, 0xFBFF, NULL, src->cur_area, x, z, new_iitem->data, 1);
+    return subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 }
 
 int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
@@ -2384,7 +2384,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     display_packet(pkt, pkt->hdr.pkt_len);
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
-        uint32_t bp, bp_list_count, new_item;
+        uint32_t bp, bp_list_count, new_value;
 
         if (area > 0x03)
             bp_list_count = 1;
@@ -2392,7 +2392,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             bp_list_count = l->difficulty + 1;
 
         for (bp = 0; bp < bp_list_count; bp++) {
-            new_item = 0;
+            new_value = 0;
 
             switch (area)
             {
@@ -2401,16 +2401,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_dorphon_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_normal) / 4)];
+                    new_value = bp_dorphon_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_dorphon_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_hard) / 4)];
+                    new_value = bp_dorphon_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_dorphon_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
+                    new_value = bp_dorphon_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_dorphon_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
+                    new_value = bp_dorphon_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_dorphon_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2419,16 +2419,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_rappy_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_normal) / 4)];
+                    new_value = bp_rappy_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_rappy_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_hard) / 4)];
+                    new_value = bp_rappy_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_rappy_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_vhard) / 4)];
+                    new_value = bp_rappy_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_rappy_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
+                    new_value = bp_rappy_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_rappy_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2437,16 +2437,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp_zu_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_normal) / 4)];
+                    new_value = bp_zu_normal[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp_zu_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_hard) / 4)];
+                    new_value = bp_zu_hard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp_zu_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_vhard) / 4)];
+                    new_value = bp_zu_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp_zu_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_ultimate) / 4)];
+                    new_value = bp_zu_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp_zu_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2455,16 +2455,16 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
                 switch (l->difficulty)
                 {
                 case GAME_TYPE_DIFFICULTY_NORMARL:
-                    new_item = bp2_normal[sfmt_genrand_uint32(rng) % (sizeof(bp2_normal) / 4)];
+                    new_value = bp2_normal[sfmt_genrand_uint32(rng) % (sizeof(bp2_normal) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_HARD:
-                    new_item = bp2_hard[sfmt_genrand_uint32(rng) % (sizeof(bp2_hard) / 4)];
+                    new_value = bp2_hard[sfmt_genrand_uint32(rng) % (sizeof(bp2_hard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_VERY_HARD:
-                    new_item = bp2_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp2_vhard) / 4)];
+                    new_value = bp2_vhard[sfmt_genrand_uint32(rng) % (sizeof(bp2_vhard) / 4)];
                     break;
                 case GAME_TYPE_DIFFICULTY_ULTIMATE:
-                    new_item = bp2_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp2_ultimate) / 4)];
+                    new_value = bp2_ultimate[sfmt_genrand_uint32(rng) % (sizeof(bp2_ultimate) / 4)];
                     break;
                 }
                 break;
@@ -2472,43 +2472,31 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
 
             l->questE0 = 1;
 
-            subcmd_bb_drop_stack_t bb = { 0 };
+            item_t item = { 0 };
 
-            bb.hdr.pkt_len = LE16(sizeof(subcmd_bb_drop_stack_t));
-            bb.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
-            bb.hdr.flags = 0;
+            item.datal[0] = new_value;
 
-            bb.shdr.type = SUBCMD60_DROP_STACK;
-            bb.shdr.size = 0x09;
-            bb.shdr.client_id = 0xFBFF;
-
-            bb.area = area;
-            bb.x = x;
-            bb.z = z;
-
-            bb.data.datal[0] = new_item;
-
-            if (bb.data.item_id == 0xFFFFFFFF) {
-                bb.data.item_id = generate_item_id(l, 0xFF);
+            if (new_value == 0x04) {
+                pt_bb_entry_t* ent = get_pt_data_bb(l, src->bb_pl->character.dress_data.section);
+                if (!ent) {
+                    ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, src->bb_pl->character.dress_data.section);
+                    return 0;
+                }
+                new_value = get_random_value(ent->enemy_meseta_ranges[0x2E]);
+                new_value += sfmt_genrand_uint32(rng) % 100;
+                item.data2l = new_value;
             }
 
-            if (new_item == 0x04) {
-                /* TODO 解析PT怪物美赛塔掉落 */
-                //new_item = pt_tables_ep1[client->character.sectionID][l->difficulty].enemy_meseta[0x2E][0];
-                new_item += sfmt_genrand_uint32(rng) % 100;
-                bb.data.data2l = new_item;
-            }
+            if (new_value == 0x00)
+                item.datab[4] = 0x80;
 
-            if (new_item == 0x00)
-                bb.data.datab[4] = 0x80;
-
-            iitem_t* litem = add_new_litem_locked(l, &bb.data, area, x, z);
+            litem_t* litem = add_new_litem_locked(l, &item, area, x, z);
 
             if (!litem) {
                 return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
             }
 
-            return subcmd_send_drop_stack(src, 0xFBFF, area, x, z, litem->data, 1);
+            return subcmd_send_drop_stack_bb(src, 0xFBFF, litem);
         }
 
     }

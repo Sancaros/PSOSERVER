@@ -81,6 +81,7 @@ uint64_t bswap64ff(double a);
 
 /* 32位数字转8位数组 */
 void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size);
+void u32_to_u8(uint32_t value, uint8_t parts[4], bool big_endian);
 
 bool safe_memcpy(uint8_t* dst, const uint8_t* src, size_t len, const uint8_t* start, const uint8_t* end);
 void safe_free(const char* func, uint32_t line, void** ptr);

@@ -122,6 +122,21 @@ void u32_to_u8_array(uint32_t value, uint8_t* array, size_t size) {
     }
 }
 
+void u32_to_u8(uint32_t value, uint8_t parts[4], bool big_endian) {
+    if (big_endian) {
+        parts[0] = (uint8_t)((value >> 24) & 0xFF);
+        parts[1] = (uint8_t)((value >> 16) & 0xFF);
+        parts[2] = (uint8_t)((value >> 8) & 0xFF);
+        parts[3] = (uint8_t)(value & 0xFF);
+    }
+    else {
+        parts[0] = (uint8_t)(value & 0xFF);
+        parts[1] = (uint8_t)((value >> 8) & 0xFF);
+        parts[2] = (uint8_t)((value >> 16) & 0xFF);
+        parts[3] = (uint8_t)((value >> 24) & 0xFF);
+    }
+}
+
 bool between(const uint8_t* start, const uint8_t* end, const uint8_t* p) {
     return (p < end) && (p >= start);
 }

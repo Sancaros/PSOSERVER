@@ -6543,7 +6543,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id, amount = pkt->amount, area = pkt->area;
     float x = pkt->x, z = pkt->z;
-    iitem_t* it;
+    litem_t* lt;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -6579,15 +6579,15 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* We have the item... Add it to the lobby's inventory. */
-    it = add_litem_locked(l, &iitem, area, x, z);
-    if (!it) {
+    lt = add_litem_locked(l, &iitem, area, x, z);
+    if (!lt) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品添加至游戏房间!");
         return -1;
     }
 
-    return subcmd_send_lobby_drop_stack(src, src->client_id, NULL, area, x, z, it->data, amount);
+    return subcmd_send_lobby_drop_stack_bb(src, src->client_id, NULL, lt);
 }
 
 static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
@@ -6935,10 +6935,9 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 捐赠不存在的装备物品! 错误码 %d", src->guildcard, i);
         return i;
     }
-
-    pmt_item_base_t item_base = get_item_definition_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]);
-    if (!&item_base) {
-        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4公会捐赠的物品无效."));
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]);
+    if (item_base_check.err) {
+        return send_msg(src, MSG1_TYPE, "%s 错误码 %d", __(src, "\tE\tC4公会捐赠的物品无效."), item_base_check.err);
     }
 
     iitem_t iitem = remove_iitem(src, pkt->ex_item_id, ex_amount, src->version != CLIENT_VERSION_BB);
@@ -6947,15 +6946,15 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    src->guild_points_personal_donation += item_base.team_points;
-    src->bb_guild->data.guild_points_rest += item_base.team_points;
+    src->guild_points_personal_donation += item_base_check.base.team_points;
+    src->bb_guild->data.guild_points_rest += item_base_check.base.team_points;
 
 #ifdef DEBUG
 
     DBG_LOG("sub60_CC_bb %d", src->guild_points_personal_donation);
 
 #endif // DEBUG
-    shipgate_send_bb_guild_points(&ship->sg, src->guildcard, src->cur_block->b, item_base.team_points);
+    shipgate_send_bb_guild_points(&ship->sg, src->guildcard, src->cur_block->b, item_base_check.base.team_points);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

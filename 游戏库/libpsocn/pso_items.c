@@ -195,6 +195,22 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 	return 1;
 }
 
+/* 仅用于房间物品数量 */
+uint32_t get_litem_amount(item_t* item) {
+	if (is_stackable(item)) {
+		if (item->datab[5] <= 0) {
+			item->datab[5] = 1;
+		}
+		else if (item->datab[5] > (uint8_t)max_stack_size(item)) {
+			item->datab[5] = (uint8_t)max_stack_size(item);
+		}
+
+		return item->datab[5];
+	}
+
+	return 1;
+}
+
 bool is_common_consumable(uint32_t primary_identifier) {
 	if (primary_identifier == 0x030200) {
 		return false;

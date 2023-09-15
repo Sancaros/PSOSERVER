@@ -29,10 +29,18 @@ int subcmd_send_lobby_bb(lobby_t* l, ship_client_t* src, subcmd_bb_pkt_t* pkt,
     int ignore_check);
 
 /* 0x5D SUBCMD60_DROP_STACK BB 单人掉落堆叠物品*/
-int subcmd_send_drop_stack(ship_client_t* src, uint16_t drop_src_id, uint32_t area, float x, float z, item_t item, uint32_t amount);
+int subcmd_send_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, litem_t* litem);
+
+/* 0x5D SUBCMD60_DROP_STACK DC 单人掉落堆叠物品*/
+int subcmd_send_drop_stack_dc(ship_client_t* src,
+    uint16_t drop_src_id, item_t item, uint8_t area, float x, float z);
 
 /* 0x5D SUBCMD60_DROP_STACK BB 大厅掉落堆叠物品*/
-int subcmd_send_lobby_drop_stack(ship_client_t* src, uint16_t drop_src_id, ship_client_t* nosend, uint32_t area, float x, float z, item_t item, uint32_t amount);
+int subcmd_send_lobby_drop_stack_bb(ship_client_t* src, uint16_t drop_src_id, ship_client_t* nosend, litem_t* litem);
+
+/* 0x5D SUBCMD60_DROP_STACK DC 大厅掉落堆叠物品*/
+int subcmd_send_lobby_drop_stack_dc(ship_client_t* src,
+    uint16_t drop_src_id, ship_client_t* nosend, item_t item, uint8_t area, float x, float z);
 
 /* 0x59 SUBCMD60_DEL_MAP_ITEM BB 拾取物品 */
 int subcmd_send_bb_del_map_item(ship_client_t* c, uint32_t area, uint32_t item_id);

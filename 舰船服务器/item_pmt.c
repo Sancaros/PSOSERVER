@@ -1430,7 +1430,7 @@ static int build_units_v2(int norestrict) {
         units_by_stars = (uint64_t *)tmp;
     }
     else {
-        SHIPS_LOG("Cannot resize units_by_stars table: %s",
+        SHIPS_LOG("无法调整units_by_stars表的大小: %s",
               strerror(errno));
     }
 
@@ -1514,7 +1514,7 @@ static int build_units_gc(int norestrict) {
         units_by_stars_gc = (uint64_t *)tmp;
     }
     else {
-        SHIPS_LOG("Cannot resize units_by_stars_gc table: %s",
+        SHIPS_LOG("无法调整units_by_stars_gc表的大小: %s",
               strerror(errno));
     }
 
@@ -2318,7 +2318,7 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
 }
 
 int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2326,11 +2326,18 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 weapon */
+    if (code == 0x00000000) {
+        /* 光剑0没有任何意义 */
+        return 0;
+    }
+
     if(parts[0] != ITEM_TYPE_WEAPON) {
         return -2;
     }
@@ -2350,7 +2357,7 @@ int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
 }
 
 int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2358,9 +2365,11 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 guard item */
     if(parts[0] != ITEM_TYPE_GUARD) {
@@ -2387,7 +2396,7 @@ int pmt_lookup_guard_bb(uint32_t code, pmt_guard_bb_t *rv) {
 }
 
 int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2395,9 +2404,11 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 unit */
     if(parts[0] != ITEM_TYPE_GUARD || parts[1] != ITEM_SUBTYPE_UNIT) {
@@ -2414,7 +2425,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t *rv) {
 }
 
 int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2422,9 +2433,11 @@ int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 guard item */
     if (parts[0] != ITEM_TYPE_MAG) {
@@ -2451,15 +2464,18 @@ int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code1 & 0xFF);
-    parts[1] = (uint8_t)((code1 >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code1 >> 16) & 0xFF);
-    parts[3] = (uint8_t)((code1 >> 24) & 0xFF);
+    u32_to_u8(code1, parts, false);
+    u32_to_u8(code2, parts2, false);
 
-    parts2[0] = (uint8_t)(code2 & 0xFF);
-    parts2[1] = (uint8_t)((code2 >> 8) & 0xFF);
-    parts2[2] = (uint8_t)((code2 >> 16) & 0xFF);
-    parts2[3] = (uint8_t)((code2 >> 24) & 0xFF);
+    //parts[0] = (uint8_t)(code1 & 0xFF);
+    //parts[1] = (uint8_t)((code1 >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code1 >> 16) & 0xFF);
+    //parts[3] = (uint8_t)((code1 >> 24) & 0xFF);
+
+    //parts2[0] = (uint8_t)(code2 & 0xFF);
+    //parts2[1] = (uint8_t)((code2 >> 8) & 0xFF);
+    //parts2[2] = (uint8_t)((code2 >> 16) & 0xFF);
+    //parts2[3] = (uint8_t)((code2 >> 24) & 0xFF);
 
 #ifdef DEBUG
     DBG_LOG("物品, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
@@ -2497,7 +2513,7 @@ int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv) {
 
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv) {
     size_t i = 0;
-    uint8_t parts[3] = { 0 }, eparts[3] = { 0 };
+    uint8_t parts[4] = { 0 }, eparts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2505,13 +2521,16 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+    u32_to_u8(equip_code, eparts, false);
 
-    eparts[0] = (uint8_t)(equip_code & 0xFF);
-    eparts[1] = (uint8_t)((equip_code >> 8) & 0xFF);
-    eparts[2] = (uint8_t)((equip_code >> 16) & 0xFF);
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
+
+    //eparts[0] = (uint8_t)(equip_code & 0xFF);
+    //eparts[1] = (uint8_t)((equip_code >> 8) & 0xFF);
+    //eparts[2] = (uint8_t)((equip_code >> 16) & 0xFF);
 
 #ifdef DEBUG
     DBG_LOG("物品1, used_item 0x%08X 0x%02X 0x%02X 0x%02X",
@@ -2627,7 +2646,7 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
 }
 
 int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2635,9 +2654,10 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 圣诞物品 */
     if (parts[0] != ITEM_TYPE_TOOL) {
@@ -2660,7 +2680,7 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
 }
 
 int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t item_index, pmt_mag_feed_result_t* rv) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
@@ -2668,9 +2688,10 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
         return -1;
     }
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     /* 确保我们正在查找 圣诞物品 */
     if (parts[0] != ITEM_TYPE_MAG) {
@@ -2724,7 +2745,7 @@ float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2) {
 }
 
 uint8_t pmt_lookup_stars_bb(uint32_t code) {
-    uint8_t parts[3] = { 0 };
+    uint8_t parts[4] = { 0 };
     pmt_weapon_bb_t weap;
     pmt_guard_bb_t guard;
     pmt_unit_bb_t unit;
@@ -2733,9 +2754,11 @@ uint8_t pmt_lookup_stars_bb(uint32_t code) {
     if(!have_bb_pmt)
         return (uint8_t)-1;
 
-    parts[0] = (uint8_t)(code & 0xFF);
-    parts[1] = (uint8_t)((code >> 8) & 0xFF);
-    parts[2] = (uint8_t)((code >> 16) & 0xFF);
+    u32_to_u8(code, parts, false);
+
+    //parts[0] = (uint8_t)(code & 0xFF);
+    //parts[1] = (uint8_t)((code >> 8) & 0xFF);
+    //parts[2] = (uint8_t)((code >> 16) & 0xFF);
 
     switch(parts[0]) {
         case ITEM_TYPE_WEAPON:                        /* Weapons */
@@ -2886,25 +2909,23 @@ int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     return 0;
 }
 
-pmt_item_base_t get_item_definition_bb(const uint32_t datal1, const uint32_t datal2) {
+pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32_t datal2) {
     errno_t err = 0;
-    pmt_item_base_t item_base = { 0 };
+    pmt_item_base_check_t item_base_check = { 0 };
     uint8_t parts[4] = { 0 };
 
-    parts[0] = (uint8_t)(datal1 & 0xFF);
-    parts[1] = (uint8_t)((datal1 >> 8) & 0xFF);
-    parts[2] = (uint8_t)((datal1 >> 16) & 0xFF);
-    parts[3] = (uint8_t)((datal1 >> 24) & 0xFF);
+    u32_to_u8(datal1, parts, false);
 
     switch (parts[0]) {
     case ITEM_TYPE_WEAPON:
         pmt_weapon_bb_t weapon = { 0 };
         if (err = pmt_lookup_weapon_bb(datal1, &weapon)) {
             ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
-            return item_base;
+            item_base_check.err = err;
+            break;
         }
-        memcpy(&item_base, &weapon.base, sizeof(pmt_item_base_t));
-        return item_base;
+        memcpy(&item_base_check.base, &weapon.base, sizeof(pmt_item_base_t));
+        break;
 
     case ITEM_TYPE_GUARD:
         switch (parts[1]) {
@@ -2913,62 +2934,83 @@ pmt_item_base_t get_item_definition_bb(const uint32_t datal1, const uint32_t dat
             pmt_guard_bb_t guard = { 0 };
             if (err = pmt_lookup_guard_bb(datal1, &guard)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-                return item_base;
+                item_base_check.err = err;
+                break;
             }
-            memcpy(&item_base, &guard.base, sizeof(pmt_item_base_t));
-            return item_base;
+            memcpy(&item_base_check.base, &guard.base, sizeof(pmt_item_base_t));
+            break;
 
         case ITEM_SUBTYPE_UNIT:
             pmt_unit_bb_t unit = { 0 };
             if (err = pmt_lookup_unit_bb(datal1, &unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-                return item_base;
+                item_base_check.err = err;
+                break;
             }
-            memcpy(&item_base, &unit.base, sizeof(pmt_item_base_t));
-            return item_base;
+            memcpy(&item_base_check.base, &unit.base, sizeof(pmt_item_base_t));
+            break;
+
+        default:
+            ERR_LOG("无效物品 CODE 0x%08X,0x%08X", datal1, datal2);
+            item_base_check.err = -1;
+            break;
         }
-        ERR_LOG("无效物品 0x%08X", datal1);
         break;
 
     case ITEM_TYPE_MAG:
         pmt_mag_bb_t mag = { 0 };
         if (err = pmt_lookup_mag_bb(datal1, &mag)) {
             ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-            return item_base;
+            item_base_check.err = err;
+            break;
         }
-        memcpy(&item_base, &mag.base, sizeof(pmt_item_base_t));
-        return item_base;
+        memcpy(&item_base_check.base, &mag.base, sizeof(pmt_item_base_t));
+        break;
 
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t tool = { 0 };
         if (err = pmt_lookup_tools_bb(datal1, datal2, &tool)) {
             ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-            return item_base;
-        }
-
-        if (!&tool) {
-            ERR_LOG("发生错误 0x%08X", datal1);
+            item_base_check.err = err;
             break;
         }
 
-        memcpy(&item_base, &tool.base, sizeof(pmt_item_base_t));
-        return item_base;
+        memcpy(&item_base_check.base, &tool.base, sizeof(pmt_item_base_t));
+        break;
 
     case ITEM_TYPE_MESETA:
         ERR_LOG("美赛塔之类的物品没有定义");
+        item_base_check.err = -2;
         break;
 
     default:
-        ERR_LOG("无效物品 0x%08X", datal1);
+        ERR_LOG("无效物品 CODE 0x%08X,0x%08X", datal1, datal2);
+        item_base_check.err = -3;
         break;
     }
 
+    return item_base_check;
+}
+
+pmt_item_base_t get_item_base_bb(const item_t* item) {
+    pmt_item_base_t item_base = { 0 };
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
+    if (item_base_check.err) {
+        DBG_LOG("物品基础信息错误 错误码 %d", item_base_check.err);
+        print_item_data(item, 5);
+    }
+    item_base = item_base_check.base;
     return item_base;
 }
 
-bool item_not_identification(const item_t* item) {
-    pmt_item_base_t item_base = get_item_definition_bb(item->datal[0], item->datal[1]);
-    return (&item_base == NULL);
+int item_not_identification(const item_t* item) {
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
+    return item_base_check.err;
+}
+
+uint32_t get_item_index(const item_t* item) {
+    pmt_item_base_t base = get_item_base_bb(item);
+    return base.index;
 }
 
 uint8_t get_item_stars(uint16_t index) {
@@ -2988,15 +3030,7 @@ uint8_t get_item_base_stars(const item_t* item) {
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
-        pmt_item_base_t base = get_item_definition_bb(item->datal[0], item->datal[1]);
-        if (!&base) {
-            DBG_LOG("物品基础信息错误");
-            print_item_data(item, 5);
-            return 0;
-        }
-
-        uint32_t id = base.index;
-        star = get_item_stars(id);
+        star = get_item_stars(get_item_index(item));
         break;
 
     case ITEM_TYPE_MAG:

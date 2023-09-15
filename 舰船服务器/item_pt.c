@@ -2473,7 +2473,7 @@ ok:
 static int check_and_send_bb_lobby(ship_client_t* dest, lobby_t* l, uint32_t item[4],
 	int area, subcmd_bb_itemreq_t* req, int csr) {
 	int rv;
-	iitem_t* it;
+	litem_t* lt;
 
 	if (!l)
 		return 0;
@@ -2495,8 +2495,8 @@ static int check_and_send_bb_lobby(ship_client_t* dest, lobby_t* l, uint32_t ite
 	//print_item_data(&c->new_item, c->version);
 
 	pthread_mutex_lock(&dest->mutex);
-	it = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
-	rv = subcmd_send_bb_lobby_drop_item(dest, NULL, req, it);
+	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+	rv = subcmd_send_bb_lobby_drop_item(dest, NULL, req, &lt->iitem);
 	pthread_mutex_unlock(&dest->mutex);
 
 	return rv;
@@ -2506,7 +2506,7 @@ static int check_and_send_bb_lobby(ship_client_t* dest, lobby_t* l, uint32_t ite
 static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
 	int area, subcmd_bb_itemreq_t* req, int csr) {
 	int rv;
-	iitem_t* it;
+	litem_t* lt;
 	lobby_t* l = dest->cur_lobby;
 
 	if (!l)
@@ -2529,8 +2529,8 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
 	//print_item_data(&dest->new_item, dest->version);
 
 	pthread_mutex_lock(&dest->mutex);
-	it = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
-	rv = subcmd_send_bb_drop_item(dest, req, it);
+	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+	rv = subcmd_send_bb_drop_item(dest, req, &lt->iitem);
 	pthread_mutex_unlock(&dest->mutex);
 
 	return rv;
@@ -3825,19 +3825,8 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	return 0;
 }
 
-int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
-	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
-	pt_bb_entry_t* ent;
-	uint32_t rnd;
-	uint32_t item[4] = { 0 };
-	int area, do_rare = 1;
-	sfmt_t* rng = &src->cur_block->sfmt_rng;
-	uint16_t mid;
-	game_enemy_t* enemy;
-	int csr = 0;
-	uint8_t game_type = 0;
-	uint8_t pt_index = req->pt_index;
+pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section) {
+	uint8_t game_type;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
@@ -3864,7 +3853,27 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		break;
 	}
 
-	ent = &bb_ptdata[game_type][l->difficulty][section];
+	return &bb_ptdata[game_type][l->difficulty][section];
+}
+
+int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
+	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
+	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+	uint32_t rnd;
+	uint32_t item[4] = { 0 };
+	int area, do_rare = 1;
+	sfmt_t* rng = &src->cur_block->sfmt_rng;
+	uint16_t mid;
+	game_enemy_t* enemy;
+	int csr = 0;
+	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
+
+	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
+		return 0;
+	}
 
 #ifdef DEBUG
 	display_packet(ent, sizeof(pt_bb_entry_t));
@@ -4193,7 +4202,6 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)r;
 	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
-	pt_bb_entry_t* ent;
 	uint16_t obj_id;
 	game_object_t* gobj;
 	map_object_t* obj;
@@ -4206,32 +4214,11 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
 
-	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-
-	switch (l->episode)
-	{
-	case GAME_TYPE_EPISODE_1:
-		if (l->challenge)
-			game_type = 2;
-		else
-			game_type = 0;
-		break;
-	case GAME_TYPE_EPISODE_2:
-		if (l->challenge)
-			game_type = 3;
-		else
-			game_type = 1;
-		break;
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		game_type = 4;
-		break;
-	default:
-		game_type = 0;
-		break;
+	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
+		return 0;
 	}
-
-	ent = &bb_ptdata[game_type][l->difficulty][section];
 
 	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
@@ -4546,7 +4533,6 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 
 int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, void* r) {
 	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
-	pt_bb_entry_t* ent;
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
@@ -4557,33 +4543,11 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
 
-	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-
-	switch (l->episode)
-	{
-	case GAME_TYPE_EPISODE_1:
-		if (l->challenge)
-			game_type = 2;
-		else
-			game_type = 0;
-		break;
-	case GAME_TYPE_EPISODE_2:
-		if (l->challenge)
-			game_type = 3;
-		else
-			game_type = 1;
-		break;
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		game_type = 4;
-		break;
-	default:
-		game_type = 0;
-		break;
+	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
+		return 0;
 	}
-
-	ent = &bb_ptdata[game_type][l->difficulty][section];
-	//ent = &bb_ptdata[l->episode - 1][l->difficulty][section];
 
 	/* Make sure the PT index in the packet is sane */
 	//if(req->pt_index > 0x33)
@@ -4879,7 +4843,6 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r) {
 	subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)r;
-	pt_bb_entry_t* ent;
 	uint16_t obj_id;
 	game_object_t* gobj;
 	map_object_t* obj;
@@ -4892,32 +4855,11 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
 
-	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
-
-	switch (l->episode)
-	{
-	case GAME_TYPE_EPISODE_1:
-		if (l->challenge)
-			game_type = 2;
-		else
-			game_type = 0;
-		break;
-	case GAME_TYPE_EPISODE_2:
-		if (l->challenge)
-			game_type = 3;
-		else
-			game_type = 1;
-		break;
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		game_type = 4;
-		break;
-	default:
-		game_type = 0;
-		break;
+	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
+		return 0;
 	}
-
-	ent = &bb_ptdata[game_type][l->difficulty][section];
 
 	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
 
@@ -5251,3 +5193,13 @@ int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r) {
 	return 0;
 }
 
+uint16_t get_random_value(rang_16bit_t range) {
+	uint16_t random_value;
+	uint16_t value_range = range.max - range.min + 1;
+
+	// 生成 [0, value_range) 范围内的随机数
+	random_value = rand() % value_range;
+
+	// 将随机数加上 min 得到最终的区间随机值
+	return random_value + range.min;
+}

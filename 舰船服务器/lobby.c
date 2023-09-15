@@ -747,7 +747,7 @@ static void lobby_empty_pkt_queue(lobby_t *l) {
 
 static void lobby_destroy_locked(lobby_t *l, int remove) {
     pthread_mutex_t m = l->mutex;
-    lobby_item_t *i, *tmp;
+    litem_t *i, *tmp;
 
 #ifdef DEBUG
     pthread_mutex_lock(&log_mutex);

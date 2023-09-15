@@ -5784,10 +5784,10 @@ static ssize_t receive_message(ship_t* c, char* buffer, size_t buffer_size) {
 }
 
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
-    int ret;
-    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    return ret;
-    //return gnutls_record_recv(c->session, buffer, len);
+    //int ret;
+    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    //return ret;
+    return gnutls_record_recv(c->session, buffer, len);
 }
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
@@ -5940,7 +5940,7 @@ int handle_pkt(ship_t* c) {
         }
         else if (sz < 0) {
             ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-            ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 关闭连接.", sz);
+            ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
         }
 
         free_safe(recvbuf);
