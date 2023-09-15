@@ -749,25 +749,23 @@ typedef struct subcmd_bb_drop_item {
 
 // 0x2B: Create item in inventory (e.g. via tekker or bank withdraw)
 // Packet used to take an item from the bank.
-typedef struct subcmd_take_item {
+typedef struct subcmd_create_item {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t data;
     uint32_t unk; //DC°æ±¾²»´æÔÚ
-} PACKED subcmd_take_item_t;
+} PACKED subcmd_create_item_t;
 
 // 0x2B: Create item in inventory (e.g. via tekker or bank withdraw)
 // Packet used to take an item from the bank.
-// BB should never send this command - inventory items should only be
-// created by the server in response to shop buy / bank withdraw / etc. reqs
-typedef struct subcmd_bb_take_item {
+typedef struct subcmd_bb_create_2B_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t data;
     uint8_t unused1;
     uint8_t unknown_a2;
     uint16_t unused2;
-} PACKED subcmd_bb_take_item_t;
+} PACKED subcmd_bb_create_2B_item_t;
 
 // 0x2C: Talk to NPC
 // Packet sent when talking to an NPC on Pioneer 2 (and other purposes).
@@ -2964,7 +2962,7 @@ typedef struct subcmd_bb_guild_ex_item {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t ex_item_id;
-    uint32_t point_add_amount;
+    uint32_t ex_amount;
 } PACKED subcmd_bb_guild_ex_item_t;
 
 // 0xCD: subcmd_bb_guild_master_trans1

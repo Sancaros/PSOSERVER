@@ -2886,72 +2886,72 @@ int pmt_random_unit_bb(uint8_t max, uint32_t item[4],
     return 0;
 }
 
-pmt_item_base_t* get_item_definition_bb(const item_t* item) {
+pmt_item_base_t get_item_definition_bb(const uint32_t datal1, const uint32_t datal2) {
     errno_t err = 0;
+    pmt_item_base_t item_base = { 0 };
+    uint8_t parts[4] = { 0 };
 
-    pmt_item_base_t* item_base = (pmt_item_base_t*)malloc(sizeof(pmt_item_base_t));
+    parts[0] = (uint8_t)(datal1 & 0xFF);
+    parts[1] = (uint8_t)((datal1 >> 8) & 0xFF);
+    parts[2] = (uint8_t)((datal1 >> 16) & 0xFF);
+    parts[3] = (uint8_t)((datal1 >> 24) & 0xFF);
 
-    if (!item_base)
-        return NULL;
-
-    memset(item_base, 0, sizeof(pmt_item_base_t));
-
-    switch (item->datab[0]) {
+    switch (parts[0]) {
     case ITEM_TYPE_WEAPON:
         pmt_weapon_bb_t weapon = { 0 };
-        if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+        if (err = pmt_lookup_weapon_bb(datal1, &weapon)) {
             ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
-            return NULL;
+            return item_base;
         }
-        memcpy(item_base, &weapon.base, sizeof(pmt_item_base_t));
+        memcpy(&item_base, &weapon.base, sizeof(pmt_item_base_t));
         return item_base;
 
     case ITEM_TYPE_GUARD:
-        switch (item->datab[1]) {
+        switch (parts[1]) {
         case ITEM_SUBTYPE_FRAME:
         case ITEM_SUBTYPE_BARRIER:
             pmt_guard_bb_t guard = { 0 };
-            if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
+            if (err = pmt_lookup_guard_bb(datal1, &guard)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-                return NULL;
+                return item_base;
             }
-            memcpy(item_base, &guard.base, sizeof(pmt_item_base_t));
+            memcpy(&item_base, &guard.base, sizeof(pmt_item_base_t));
             return item_base;
 
         case ITEM_SUBTYPE_UNIT:
             pmt_unit_bb_t unit = { 0 };
-            if (err = pmt_lookup_unit_bb(item->datal[0], &unit)) {
+            if (err = pmt_lookup_unit_bb(datal1, &unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-                return NULL;
+                return item_base;
             }
-            memcpy(item_base, &unit.base, sizeof(pmt_item_base_t));
+            memcpy(&item_base, &unit.base, sizeof(pmt_item_base_t));
             return item_base;
         }
-        ERR_LOG("无效物品 0x%08X", item->datal[0]);
+        ERR_LOG("无效物品 0x%08X", datal1);
         break;
 
     case ITEM_TYPE_MAG:
         pmt_mag_bb_t mag = { 0 };
-        if (err = pmt_lookup_mag_bb(item->datal[0], &mag)) {
+        if (err = pmt_lookup_mag_bb(datal1, &mag)) {
             ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-            return NULL;
+            return item_base;
         }
-        memcpy(item_base, &mag.base, sizeof(pmt_item_base_t));
+        memcpy(&item_base, &mag.base, sizeof(pmt_item_base_t));
         return item_base;
 
     case ITEM_TYPE_TOOL:
         pmt_tool_bb_t tool = { 0 };
-        if (err = pmt_lookup_tools_bb(item->datal[0], item->datal[1], &tool)) {
+        if (err = pmt_lookup_tools_bb(datal1, datal2, &tool)) {
             ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-            return NULL;
+            return item_base;
         }
 
         if (!&tool) {
-            ERR_LOG("发生错误 0x%08X", item->datal[0]);
+            ERR_LOG("发生错误 0x%08X", datal1);
             break;
         }
 
-        memcpy(item_base, &tool.base, sizeof(pmt_item_base_t));
+        memcpy(&item_base, &tool.base, sizeof(pmt_item_base_t));
         return item_base;
 
     case ITEM_TYPE_MESETA:
@@ -2959,15 +2959,16 @@ pmt_item_base_t* get_item_definition_bb(const item_t* item) {
         break;
 
     default:
-        ERR_LOG("无效物品 0x%08X", item->datal[0]);
+        ERR_LOG("无效物品 0x%08X", datal1);
         break;
     }
 
-    return NULL;
+    return item_base;
 }
 
 bool item_not_identification(const item_t* item) {
-    return (get_item_definition_bb(item) == NULL);
+    pmt_item_base_t item_base = get_item_definition_bb(item->datal[0], item->datal[1]);
+    return (&item_base == NULL);
 }
 
 uint8_t get_item_stars(uint16_t index) {
@@ -2987,14 +2988,14 @@ uint8_t get_item_base_stars(const item_t* item) {
     switch (item->datab[0]) {
     case ITEM_TYPE_WEAPON:
     case ITEM_TYPE_GUARD:
-        pmt_item_base_t* base = get_item_definition_bb(item);
-        if (!base) {
+        pmt_item_base_t base = get_item_definition_bb(item->datal[0], item->datal[1]);
+        if (!&base) {
             DBG_LOG("物品基础信息错误");
             print_item_data(item, 5);
             return 0;
         }
 
-        uint32_t id = base->index;
+        uint32_t id = base.index;
         star = get_item_stars(id);
         break;
 

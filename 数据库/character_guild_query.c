@@ -275,7 +275,7 @@ int db_get_bb_char_guild_id(uint32_t gc) {
 
     memset(myquery, 0, sizeof(myquery));
 
-    sprintf(myquery, "SELECT guild_id FROM %s WHERE guildcard='%u'", AUTH_ACCOUNT, gc);
+    sprintf(myquery, "SELECT guild_id FROM %s WHERE guildcard = '%u'", AUTH_ACCOUNT, gc);
 
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("无法查询角色数据 (%u)", gc);
@@ -590,3 +590,71 @@ int db_update_bb_guild_points_personal_donation(uint32_t gc, uint32_t new_value)
     return 0; // 返回成功更新的标志
 }
 
+int db_get_bb_guild_points(uint32_t guild_id, uint32_t points[2]) {
+    void* result;
+    char** row;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "SELECT guild_points_rank, guild_points_rest FROM %s WHERE guild_id='%u'", CLIENTS_GUILD, guild_id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法查询公会数据 (%u)", guild_id);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    /* Grab the data we got. */
+    if ((result = psocn_db_result_store(&conn)) == NULL) {
+        SQLERR_LOG("未获取到公会数据 (%u)", guild_id);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -2;
+    }
+
+    if ((row = psocn_db_result_fetch(result)) == NULL) {
+        psocn_db_result_free(result);
+        SQLERR_LOG("未找到保存的公会数据 (%u)", guild_id);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -3;
+    }
+
+    points[0] = (uint32_t)strtol(row[0], NULL, 10);
+    points[1] = (uint32_t)strtol(row[1], NULL, 10);
+
+    psocn_db_result_free(result);
+
+    return 0;
+}
+
+int db_update_bb_guild_points(uint32_t gc, uint32_t add_value) {
+    uint32_t points[2] = { 0 };
+    int guild_id = -1;
+
+    guild_id = db_get_bb_char_guild_id(gc);
+
+    if (guild_id < 0) {
+        SQLERR_LOG("获取公会ID失败 %d", guild_id);
+        return 0;
+    }
+
+    if (db_get_bb_guild_points(guild_id, points)) {
+        SQLERR_LOG("未获取到公会数据 (%u)", guild_id);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    points[0] += add_value;
+    points[1] += add_value;
+
+    memset(myquery, 0, sizeof(myquery));
+
+    sprintf(myquery, "UPDATE %s SET guild_points_rank ='%u', guild_points_rest ='%u' WHERE guild_id='%d'", CLIENTS_GUILD, points[0], points[1], guild_id);
+
+    if (psocn_db_real_query(&conn, myquery)) {
+        SQLERR_LOG("无法更新公会数据 (%u)", guild_id);
+        SQLERR_LOG("%s", psocn_db_error(&conn));
+        return -1;
+    }
+
+    return 0; // 返回成功更新的标志
+}

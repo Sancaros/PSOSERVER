@@ -292,7 +292,28 @@ int shipgate_send_common_bank(shipgate_conn_t* c,
     memcpy(&pkt->data, bank, sizeof(psocn_bank_t));
 
     /* 加密并发送. */
-    return send_crypt(c, sizeof(shipgate_ping_t), sendbuf);
+    return send_crypt(c, sizeof(shipgate_common_bank_data_pkt), sendbuf);
+}
+
+/* Send a guild points packet to the server. */
+int shipgate_send_bb_guild_points(shipgate_conn_t* c, 
+    uint32_t guildcard, uint32_t block, uint32_t team_points_value) {
+    uint8_t* sendbuf = get_sendbuf();
+    shipgate_bb_guild_points_pkt* pkt = (shipgate_bb_guild_points_pkt*)sendbuf;
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* Build the packet up */
+    pkt->hdr.pkt_len = htons(sizeof(shipgate_bb_guild_points_pkt));
+    pkt->hdr.pkt_type = htons(SHDR_TYPE_BB_GUILD_POINTS);
+    pkt->guildcard = htonl(guildcard);
+    pkt->block = htonl(block);
+    pkt->team_points_value = htonl(team_points_value);
+
+    /* 加密并发送. */
+    return send_crypt(c, sizeof(shipgate_bb_guild_points_pkt), sendbuf);
 }
 
 /* Attempt to connect to the shipgate. Returns < 0 on error, returns the socket
@@ -3477,6 +3498,10 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
             case SHDR_TYPE_BB_COMMON_BANK_DATA:
                 DBG_LOG("测试公共仓库数据获取");
+                return 0;
+
+            case SHDR_TYPE_BB_GUILD_POINTS:
+                DBG_LOG("测试返回公会点数增加成功响应");
                 return 0;
 
             case SHDR_TYPE_COMPLETE_DATA:

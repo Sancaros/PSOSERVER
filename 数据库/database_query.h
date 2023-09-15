@@ -263,6 +263,10 @@ uint32_t db_get_bb_guild_points_personal_donation(uint32_t gc);
 
 int db_update_bb_guild_points_personal_donation(uint32_t gc, uint32_t new_value);
 
+int db_get_bb_guild_points(uint32_t guild_id, uint32_t points[2]);
+
+int db_update_bb_guild_points(uint32_t gc, uint32_t add_value);
+
 ///////////////////////////////////////////////////////////
 
 /* 更新BB角色选项数据 */

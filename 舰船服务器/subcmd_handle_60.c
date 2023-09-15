@@ -40,8 +40,11 @@
 #include "shipgate.h"
 #include "quest_functions.h"
 #include "mag_bb.h"
+#include "ship.h"
 
 #include "subcmd_handle.h"
+
+extern ship_t* ship;
 
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
@@ -817,15 +820,6 @@ static int sub60_0C_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            src->guildcard, pkt->hdr.pkt_type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
     if (!pkt->condition_type)
         DBG_LOG("sub60_0C_bb 0x%zX", pkt->condition_type);
 
@@ -836,15 +830,6 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            src->guildcard, pkt->hdr.pkt_type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
     if (!pkt->condition_type)
         DBG_LOG("sub60_0C_bb 0x%zX", pkt->condition_type);
 
@@ -854,15 +839,6 @@ static int sub60_0C_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            src->guildcard, pkt->hdr.pkt_type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
 
     if (pkt->condition_type) {
 
@@ -887,15 +863,6 @@ static int sub60_0D_dc(ship_client_t* src, ship_client_t* dest,
 static int sub60_0D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_add_or_remove_condition_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
-    /* 合理性检查... Make sure the size of the subcommand matches with what we
-       expect. Disconnect the client if not. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            src->guildcard, pkt->hdr.pkt_type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
 
     if (pkt->condition_type) {
 
@@ -1363,12 +1330,6 @@ static int sub60_22_dc(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int i, rv;
 
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
     if (l->type == LOBBY_TYPE_LOBBY) {
         for (i = 0; i < l->max_clients; ++i) {
             if (l->clients[i] && l->clients[i] != src &&
@@ -1386,12 +1347,6 @@ static int sub60_22_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_player_visibility_6x22_6x23_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int i, rv;
-
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("SUBCMD60_LOAD_22 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         for (i = 0; i < l->max_clients; ++i) {
@@ -1524,14 +1479,27 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    /*[2023年09月15日 04:00:53:707] 错误(subcmd_handle_60.c 1532): GC 10000000 发送错误装备数据!
+[2023年09月15日 04:00:53:710] 截获(1533): subcmd_handle_60.c [GAME_COMMAND0_TYPE - 玩家指令] 指令 0x0060 数据错误.
+代码 1533 行,存储 [GAME_COMMAND0_TYPE - 玩家指令].log 日志发生错误
+[2023年09月15日 04:00:53:713] 截获(1533):
+( 00000000 )   14 00 60 00 00 00 00 00   25 03 02 00 0D 00 01 00  ..`.....%.......
+( 00000010 )   00 00 00 00                                     ....*/
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误装备数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("GC %" PRIu32 " ID不一致!",
+            src->guildcard);
+#endif // DEBUG
+        return 0;
     }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
@@ -1720,8 +1688,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送错误使用物品数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1752,8 +1719,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1835,8 +1801,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的物品掉落数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1918,8 +1883,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品掉落数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -1980,12 +1944,12 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 static int sub60_2B_dc(ship_client_t* src, ship_client_t* dest, 
-    subcmd_take_item_t* pkt) {
+    subcmd_create_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t item = { 0 };
     uint32_t v;
     int i;
-    subcmd_take_item_t tr;
+    subcmd_create_item_t tr;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -2099,7 +2063,7 @@ send_pkt:
         /* If we have a mag and the user is on GC or Xbox, we have to swap the
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
-        memcpy(&tr, pkt, sizeof(subcmd_take_item_t));
+        memcpy(&tr, pkt, sizeof(subcmd_create_item_t));
         tr.data.data2l = SWAP32(tr.data.data2l);
 
         for (i = 0; i < l->max_clients; ++i) {
@@ -2109,6 +2073,148 @@ send_pkt:
                 }
                 else {
                     send_pkt_dc(l->clients[i], (dc_pkt_hdr_t*)&tr);
+                }
+            }
+        }
+
+        return 0;
+    }
+}
+
+static int sub60_2B_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_create_2B_item_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    iitem_t item = { 0 };
+    uint32_t v;
+    int i;
+    subcmd_bb_create_2B_item_t tr;
+//[2023年09月15日 00:16:17:638] 错误(subcmd_handle.c 0127): subcmd_get_handler 未完成对 0x60 0x2B 版本 bb(5) 的处理
+//[2023年09月15日 00:16:17:645] 调试(subcmd_handle_60.c 7624): 未知 0x60 指令: 0x2B
+//( 00000000 )   24 00 60 00 00 00 00 00   2B 07 01 00 00 0E 02 00  $.`.....+.......
+//( 00000010 )   00 00 00 00 00 00 00 00   12 00 01 00 00 00 00 00  ................
+//( 00000020 )   02 00 00 00                                     ....
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY)
+        return -1;
+
+    /* 合理性检查... Make sure the size of the subcommand is valid, and
+       disconnect the client if it isn't. */
+    if (pkt->shdr.size != 0x07)
+        return -1;
+
+    /* If we have multiple clients in the team, make sure that the client id in
+       the packet matches the user sending the packet.
+       Note: We don't do this in single player teams because NPCs do weird
+       things if you change their equipment in quests. */
+    if (l->num_clients != 1 && pkt->shdr.client_id != src->client_id)
+        return -1;
+
+    /* Outside of quests, we shouldn't be able to get these unless the shopping
+       flag is set... Log any we get. */
+    if (!(l->flags & LOBBY_FLAG_QUESTING) &&
+        !(src->flags & CLIENT_FLAG_SHOPPING)) {
+        ERR_LOG("GC %" PRIu32 " 尝试在未打开银行的情况下取出物品!", src->guildcard);
+    }
+
+    /* Run the bank action script, if any. */
+    if (script_execute(ScriptActionBankAction, src, SCRIPT_ARG_PTR, src,
+        SCRIPT_ARG_INT, 1, SCRIPT_ARG_UINT32, pkt->data.datal[0],
+        SCRIPT_ARG_UINT32, pkt->data.datal[1], SCRIPT_ARG_UINT32,
+        pkt->data.datal[2], SCRIPT_ARG_UINT32, pkt->data.data2l,
+        SCRIPT_ARG_UINT32, pkt->data.item_id, SCRIPT_ARG_END) < 0) {
+        return -1;
+    }
+
+    /* If we're in legit mode, we need to check the newly taken item. */
+    if ((l->flags & LOBBY_FLAG_LEGIT_MODE) && l->limits_list) {
+        switch (src->version) {
+        case CLIENT_VERSION_DCV1:
+            v = ITEM_VERSION_V1;
+            break;
+
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+            v = ITEM_VERSION_V2;
+            break;
+
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_XBOX:
+            v = ITEM_VERSION_GC;
+            break;
+
+        case CLIENT_VERSION_BB:
+            v = ITEM_VERSION_BB;
+            break;
+
+        default:
+            return -1;
+        }
+
+        /* Fill in the item structure so we can check it. */
+        memcpy(&item.data.datal[0], &pkt->data.datal[0], sizeof(uint32_t) * 5);
+
+        if (!psocn_limits_check_item(l->limits_list, &item, v)) {
+            DBG_LOG("Potentially non-legit item in legit mode:\n"
+                "%08x %08x %08x %08x", LE32(pkt->data.datal[0]),
+                LE32(pkt->data.datal[1]), LE32(pkt->data.datal[2]),
+                LE32(pkt->data.data2l));
+
+            /* The item failed the check, so kick the user. */
+            send_msg(src, MSG_BOX_TYPE, "%s\n\n%s\n%s",
+                __(src, "\tE您已被踢出服务器."),
+                __(src, "原因:"),
+                __(src, "Attempt to remove a non-legit item from\n"
+                    "the bank in a legit-mode game."));
+            return -1;
+        }
+    }
+
+    /* 如果我们到了这里, either the game is not in legit mode, or the item is
+       actually legit, so make a note of the ID, add it to the inventory and
+       forward the packet on. */
+    l->item_player_id[src->client_id] = (uint16_t)LE32(pkt->data.item_id);
+    v = LE32(pkt->data.datal[0]);
+
+    if (!(src->flags & CLIENT_FLAG_TRACK_INVENTORY))
+        goto send_pkt;
+
+    /* See if its a stackable item, since we have to treat them differently. */
+    if (is_stackable(&pkt->data)) {
+        /* Its stackable, so see if we have any in the inventory already */
+        for (i = 0; i < src->item_count; ++i) {
+            /* Found it, add what we're adding in */
+            if (src->iitems[i].data.datal[0] == pkt->data.datal[0]) {
+                src->iitems[i].data.datal[1] += pkt->data.datal[1];
+                goto send_pkt;
+            }
+        }
+    }
+
+    memcpy(&src->iitems[src->item_count++].data.datal[0], &pkt->data.datal[0],
+        sizeof(uint32_t) * 5);
+
+send_pkt:
+    /* If the item isn't a mag, or the client isn't Xbox or GC, then just
+       send the packet away now. */
+    if ((v & 0xff) != ITEM_TYPE_MAG ||
+        (src->version != CLIENT_VERSION_XBOX && src->version != CLIENT_VERSION_GC)) {
+        return subcmd_send_lobby_bb(src->cur_lobby, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+    else {
+        /* If we have a mag and the user is on GC or Xbox, we have to swap the
+           last dword when sending to the other of those two versions to make
+           things work correctly in cross-play teams. */
+        memcpy(&tr, pkt, sizeof(subcmd_create_item_t));
+        tr.data.data2l = SWAP32(tr.data.data2l);
+
+        for (i = 0; i < l->max_clients; ++i) {
+            if (l->clients[i] && l->clients[i] != src) {
+                if (l->clients[i]->version == src->version) {
+                    send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)pkt);
+                }
+                else {
+                    send_pkt_bb(l->clients[i], (bb_pkt_hdr_t*)&tr);
                 }
             }
         }
@@ -2265,15 +2371,6 @@ static int sub60_31_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_medical_center_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 在触发了游戏房间内 %s 指令! 且Client ID不一致",
-            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
     //UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -2282,15 +2379,6 @@ static int sub60_31_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_32_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_medical_center_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 在触发了游戏房间内 %s 指令! 且Client ID不一致",
-            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
 
     //UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
 
@@ -2925,8 +3013,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->shdr.client_id != src->client_id ||
-        src->equip_flags & EQUIP_FLAGS_DROID ||
+    if (src->equip_flags & EQUIP_FLAGS_DROID ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
         max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
         ) {
@@ -2935,6 +3022,14 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
             max_tech_level[pkt->technique_number].tech_name);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("GC %" PRIu32 " ID不一致!",
+            src->guildcard);
+#endif // DEBUG
+        return 0;
     }
 
     size_t allowed_count = min(pkt->shdr.size - 2, 10);
@@ -2989,7 +3084,6 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0010) ||
         pkt->shdr.size != 0x02 ||
-        src->client_id != pkt->shdr.client_id ||
         src->equip_flags & EQUIP_FLAGS_DROID ||
         pkt->technique_number >= MAX_PLAYER_TECHNIQUES ||
         max_tech_level[pkt->technique_number].max_lvl[src->pl->bb.character.dress_data.ch_class] == -1
@@ -2998,6 +3092,14 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("GC %" PRIu32 " ID不一致!",
+            src->guildcard);
+#endif // DEBUG
+        return 0;
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3053,7 +3155,7 @@ static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中释放了法术!",
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏指令!",
             src->guildcard);
         return -1;
     }
@@ -3099,14 +3201,18 @@ static int sub60_4B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        return -1;
-    }
-
-    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("GC %" PRIu32 " ID不一致!",
+            src->guildcard);
+#endif // DEBUG
+        return 0;
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3150,14 +3256,18 @@ static int sub60_4C_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        return -1;
-    }
-
-    if (pkt->shdr.client_id != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("GC %" PRIu32 " ID不一致!",
+            src->guildcard);
+#endif // DEBUG
+        return 0;
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3252,11 +3362,11 @@ static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_player_saved_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
+    //if (pkt->shdr.client_id != src->client_id) {
+    //    ERR_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    return -1;
+    //}
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -3340,8 +3450,7 @@ static int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (pkt->hdr.pkt_len != LE16(0x000C) ||
-        pkt->shdr.size != 0x01 ||
-        pkt->shdr.client_id != src->client_id) {
+        pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -3442,7 +3551,7 @@ static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08 || pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -3486,7 +3595,7 @@ static int sub60_58_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_lobby_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -3508,7 +3617,7 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_lobby_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -5806,8 +5915,11 @@ static int sub60_A1_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_save_player_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (pkt->shdr.client_id != src->client_id) {
-        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
+    /* We can't get these in lobbies without someone messing with something
+       that they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
+            src->guildcard);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -5828,12 +5940,6 @@ static int sub60_A3_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (pkt->shdr.client_id != src->client_id) {
-    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
-
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -5850,12 +5956,6 @@ static int sub60_A4_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (pkt->shdr.client_id != src->client_id) {
-    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
-
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
@@ -5871,12 +5971,6 @@ static int sub60_A5_bb(ship_client_t* src, ship_client_t* dest,
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
-    //if (pkt->shdr.client_id != src->client_id) {
-    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -6334,8 +6428,7 @@ static int sub60_AB_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6358,12 +6451,6 @@ static int sub60_AD_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    //if (pkt->shdr.client_id != src->client_id) {
-    //    DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
-    //    UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
-
 #ifdef DEBUG
 
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
@@ -6379,8 +6466,7 @@ static int sub60_AF_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6395,8 +6481,7 @@ static int sub60_B0_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6423,8 +6508,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0014) ||
-        pkt->shdr.size != 0x03 ||
-        pkt->shdr.client_id != src->client_id) {
+        pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6472,8 +6556,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6551,8 +6634,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送错误的医疗中心数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6710,8 +6792,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 ||
-        pkt->shdr.client_id != src->client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
@@ -6830,17 +6911,11 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_guild_ex_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t ex_item_id = pkt->ex_item_id, point_add = pkt->point_add_amount;
+    uint32_t ex_item_id = pkt->ex_item_id, ex_amount = pkt->ex_amount;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
             src->guildcard);
-        UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
-
-    if (pkt->shdr.client_id != src->client_id) {
-        DBG_LOG("错误 0x60 指令: 0x%02X", pkt->hdr.pkt_type);
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -6851,20 +6926,36 @@ static int sub60_CC_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem_t iitem = remove_iitem(src, pkt->ex_item_id, 1, src->version != CLIENT_VERSION_BB);
+    inventory_t* inv = get_client_inv_bb(src);
+
+    int i = find_iitem_index(inv, ex_item_id);
+
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (i < 0) {
+        ERR_LOG("GC %" PRIu32 " 捐赠不存在的装备物品! 错误码 %d", src->guildcard, i);
+        return i;
+    }
+
+    pmt_item_base_t item_base = get_item_definition_bb(inv->iitems[i].data.datal[0], inv->iitems[i].data.datal[1]);
+    if (!&item_base) {
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4公会捐赠的物品无效."));
+    }
+
+    iitem_t iitem = remove_iitem(src, pkt->ex_item_id, ex_amount, src->version != CLIENT_VERSION_BB);
     if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
         ERR_LOG("无法从玩家背包中移除 ID 0x%08X 物品!", pkt->ex_item_id);
         return -1;
     }
 
-    src->guild_points_personal_donation += point_add;
-    src->bb_guild->data.guild_points_rest += point_add;
+    src->guild_points_personal_donation += item_base.team_points;
+    src->bb_guild->data.guild_points_rest += item_base.team_points;
 
 #ifdef DEBUG
 
     DBG_LOG("sub60_CC_bb %d", src->guild_points_personal_donation);
 
 #endif // DEBUG
+    shipgate_send_bb_guild_points(&ship->sg, src->guildcard, src->cur_block->b, item_base.team_points);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -7345,7 +7436,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_FEED_MAG                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_28_bb },
     { SUBCMD60_ITEM_DELETE                , sub60_29_dc, sub60_29_dc, NULL,        sub60_29_dc, sub60_29_dc, sub60_29_bb },
     { SUBCMD60_ITEM_DROP                  , sub60_2A_dc, sub60_2A_dc, NULL,        sub60_2A_dc, sub60_2A_dc, sub60_2A_bb },
-    { SUBCMD60_ITEM_TAKE                  , sub60_2B_dc, sub60_2B_dc, NULL,        sub60_2B_dc, sub60_2B_dc, NULL        },
+    { SUBCMD60_ITEM_TAKE                  , sub60_2B_dc, sub60_2B_dc, NULL,        sub60_2B_dc, sub60_2B_dc, sub60_2B_bb },
     { SUBCMD60_SELECT_MENU                , sub60_2C_dc, sub60_2C_dc, NULL,        sub60_2C_dc, sub60_2C_dc, sub60_2C_bb },
     { SUBCMD60_SELECT_DONE                , sub60_2D_dc, sub60_2D_dc, NULL,        sub60_2D_dc, sub60_2D_dc, sub60_2D_bb },
     { SUBCMD60_HIT_BY_ENEMY               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_2F_bb },

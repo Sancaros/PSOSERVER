@@ -242,6 +242,14 @@ typedef struct shipgate_common_bank_data {
     psocn_bank_t data;
 } PACKED shipgate_common_bank_data_pkt;
 
+/* A packet sent from clients to save guild points. */
+typedef struct shipgate_bb_guild_points {
+    shipgate_hdr_t hdr;
+    uint32_t guildcard;
+    uint32_t block;
+    uint32_t team_points_value;
+} PACKED shipgate_bb_guild_points_pkt;
+
 typedef struct sg_char_bkup {
     uint32_t guildcard;
     uint8_t slot;

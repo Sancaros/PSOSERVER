@@ -71,12 +71,12 @@ static int handle_level_up(ship_client_t* c, subcmd_level_up_t* pkt) {
     return subcmd_send_lobby_dc(l, c, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int handle_take_item(ship_client_t* c, subcmd_take_item_t* pkt) {
+static int handle_take_item(ship_client_t* c, subcmd_create_item_t* pkt) {
     lobby_t* l = c->cur_lobby;
     iitem_t item = { 0 };
     uint32_t v;
     int i;
-    subcmd_take_item_t tr;
+    subcmd_create_item_t tr;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -190,7 +190,7 @@ send_pkt:
         /* If we have a mag and the user is on GC or Xbox, we have to swap the
            last dword when sending to the other of those two versions to make
            things work correctly in cross-play teams. */
-        memcpy(&tr, pkt, sizeof(subcmd_take_item_t));
+        memcpy(&tr, pkt, sizeof(subcmd_create_item_t));
         tr.data.data2l = SWAP32(tr.data.data2l);
 
         for (i = 0; i < l->max_clients; ++i) {

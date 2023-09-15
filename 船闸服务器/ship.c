@@ -5586,8 +5586,24 @@ static int handle_char_common_bank_req(ship_t* c, shipgate_common_bank_data_pkt*
     DBG_LOG("%s", (common_bank_req ? "请求" :"存储"));
 
 
-        /* 加密并发送 */
+    /* 加密并发送 */
     return forward_bb(c, (bb_pkt_hdr_t*)&pkt, c->key_idx, sender, sender_block);
+}
+
+static int handle_bb_guild_points(ship_t* c, shipgate_bb_guild_points_pkt* pkt) {
+    uint32_t sender = ntohl(pkt->guildcard);
+    uint32_t sender_block = ntohl(pkt->block);
+    uint32_t team_points_value = ntohl(pkt->team_points_value);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
+
+    //DBG_LOG("增加 %d 点", team_points_value);
+    if (db_update_bb_guild_points(sender, team_points_value)) {
+
+        ERR_LOG("增加 %d 点公会点数失败", team_points_value);
+    }
+
+    /* 无需给客户端响应，可以考虑返回一个条幅 发送 */
+    return 0;
 }
 
 /* Process one ship packet. */
@@ -5716,6 +5732,10 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
         case SHDR_TYPE_BB_COMMON_BANK_DATA:
             DBG_LOG("收到公共仓库查询指令");
             return handle_char_common_bank_req(c, (shipgate_common_bank_data_pkt*)pkt);
+
+        case SHDR_TYPE_BB_GUILD_POINTS:
+            //DBG_LOG("收到公会增加点数");
+            return handle_bb_guild_points(c, (shipgate_bb_guild_points_pkt*)pkt);
 
         default:
             //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);

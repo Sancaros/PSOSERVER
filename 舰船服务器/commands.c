@@ -532,6 +532,8 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
+
+
     /* Clear the set item */
     clear_inv_item(&src->new_item);
 
