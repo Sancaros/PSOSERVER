@@ -1078,6 +1078,7 @@ int psocn_web_server_loadfile2(const char* onlinefile, uint16_t* dest) {
         if (filesize > 4096)
             filesize = 4096;
         fread(&msgdata[0], 1, filesize, fp);
+        msgdata[4095] = '\0';
         fclose(fp);
         w = (uint16_t*)&msgdata[0];
         w2 = dest;
