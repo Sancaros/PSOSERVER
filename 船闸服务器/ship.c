@@ -552,19 +552,19 @@ void db_remove_client(ship_t* s) {
             send_ship_status(i, s, 0);
         }
 
-        db_delete_online_clients(s->name, s->key_idx);
+        db_delete_online_clients(s->ship_name, s->key_idx);
 
-        db_delete_transient_clients(s->name, s->key_idx);
+        db_delete_transient_clients(s->ship_name, s->key_idx);
 
-        db_delete_online_ships(s->name, s->key_idx);
+        db_delete_online_ships(s->ship_name, s->key_idx);
 
     }
 }
 
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(ship_t* s) {
-    if (s->name[0]) {
-        DC_LOG("关闭与 %s 的连接", s->name);
+    if (s->ship_name[0]) {
+        DC_LOG("关闭与 %s 的连接", s->ship_name);
     }
     else {
         DC_LOG("取消与未认证舰船的连接");
@@ -712,17 +712,22 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     s->games = ntohs(pkt->games);
     s->flags = ntohl(pkt->flags);
     s->menu_code = menu_code;
-    memcpy(s->name, pkt->name, 12);
+    memcpy(s->ship_name, pkt->ship_name, 12);
+    memcpy(s->ship_cn_name, pkt->ship_cn_name, 12);
     s->ship_number = ship_number;
     s->privileges = ntohl(pkt->privileges);
 
     pack_ipv6(&s->remote_addr6, &ip6_hi, &ip6_lo);
 
-    sprintf(query, "INSERT INTO %s(name, players, ship_host4, ship_host6, ip, port, int_ip, "
+    char tmp_name[13] = { 0 };
+
+    istrncpy(ic_gbk_to_utf8, tmp_name, s->ship_cn_name, 12);
+
+    sprintf(query, "INSERT INTO %s(name, cn_name, players, ship_host4, ship_host6, ip, port, int_ip, "
         "ship_id, gm_only, games, menu_code, flags, ship_number, "
         "ship_ip6_high, ship_ip6_low, protocol_ver, privileges) VALUES "
-        "('%s', '%hu', '%s', '%s', '%lu', '%hu', '%u', '%u', '%d', '%hu', '%hu', '%u', "
-        "'%d', '%llu', '%llu', '%u', '%u')", SERVER_SHIPS_ONLINE, s->name, s->clients,
+        "('%s', '%s', '%hu', '%s', '%s', '%lu', '%hu', '%u', '%u', '%d', '%hu', '%hu', '%u', "
+        "'%d', '%llu', '%llu', '%u', '%u')", SERVER_SHIPS_ONLINE, s->ship_name, tmp_name, s->clients,
         s->remote_host4, s->remote_host6, ntohl(s->remote_addr4), s->port, 0, s->key_idx,
         !!(s->flags & LOGIN_FLAG_GMONLY), s->games, s->menu_code, s->flags,
         ship_number, (unsigned long long)ip6_hi,
@@ -730,7 +735,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法将 %s 新增至在线舰船列表.",
-            s->name);
+            s->ship_name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, NULL, 0);
@@ -792,7 +797,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
         }
     }
 
-    SGATE_LOG("%s: 舰船与船闸完成对接", s->name);
+    SGATE_LOG("%s: 舰船与船闸完成对接", s->ship_name);
     return 0;
 }
 
@@ -809,7 +814,7 @@ static int handle_count(ship_t* s, shipgate_cnt_pkt* pkt) {
     sprintf(query, "UPDATE %s SET players='%hu', games='%hu' WHERE "
         "ship_id='%u'", SERVER_SHIPS_ONLINE, s->clients, s->games, s->key_idx);
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("无法更新舰船 %s 玩家/游戏 数量", s->name);
+        SQLERR_LOG("无法更新舰船 %s 玩家/游戏 数量", s->ship_name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
     }
 
@@ -3441,12 +3446,12 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
        issue with the packet's sanity. */
     len = ntohs(pkt->hdr.pkt_len);
     if (len != sizeof(shipgate_usrlogin_req_pkt)) {
-        ERR_LOG("舰船 %s 发送了无效的客户端登录申请!?", c->name);
+        ERR_LOG("舰船 %s 发送了无效的客户端登录申请!?", c->ship_name);
         return -1;
     }
 
     if (pkt->username[31] != '\0' || pkt->password[31] != '\0') {
-        ERR_LOG("舰船 %s 发送了未认证的客户端登录申请", c->name);
+        ERR_LOG("舰船 %s 发送了未认证的客户端登录申请", c->ship_name);
         return -1;
     }
 
@@ -4949,12 +4954,12 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
        issue with the packet's sanity. */
     len = ntohs(pkt->hdr.pkt_len);
     if (len != sizeof(shipgate_usrlogin_req_pkt)) {
-        SQLERR_LOG("Ship %s sent invalid token Login!?", c->name);
+        SQLERR_LOG("Ship %s sent invalid token Login!?", c->ship_name);
         return -1;
     }
 
     if (pkt->username[31] != '\0' || pkt->password[31] != '\0') {
-        SQLERR_LOG("Ship %s sent unterminated token Login", c->name);
+        SQLERR_LOG("Ship %s sent unterminated token Login", c->ship_name);
         return -1;
     }
 
@@ -5249,7 +5254,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法存储未命名舰船 '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     memcpy(str, pkt->node, 64);
@@ -5261,7 +5266,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store uname node for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     memcpy(str, pkt->release, 64);
@@ -5274,7 +5279,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store uname release for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     memcpy(str, pkt->version, 64);
@@ -5287,7 +5292,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store uname version for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     memcpy(str, pkt->machine, 64);
@@ -5300,7 +5305,7 @@ static int handle_sctl_uname(ship_t* c, shipgate_sctl_uname_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store uname machine for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     return 0;
@@ -5326,7 +5331,7 @@ static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法存储舰船版本 '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     tmp[0] = pkt->flags;
@@ -5340,7 +5345,7 @@ static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("无法存储舰船 flags '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     psocn_db_escape_str(&conn, (char*)esc, (char*)pkt->commithash, 20);
@@ -5350,7 +5355,7 @@ static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store version hash for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     psocn_db_escape_str(&conn, (char*)esc, (char*)&pkt->committime, 8);
@@ -5360,14 +5365,14 @@ static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store version timestamp for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
 
     len -= sizeof(shipgate_sctl_ver_reply_pkt) - 1;
     esc2 = (uint8_t*)malloc(len * 2 + 1);
     if (!esc2) {
         SQLERR_LOG("Cannot allocate for version ref for ship '%s': %s",
-            c->name, strerror(errno));
+            c->ship_name, strerror(errno));
         return -1;
     }
 
@@ -5379,7 +5384,7 @@ static int handle_sctl_version(ship_t* c, shipgate_sctl_ver_reply_pkt* pkt,
 
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("Cannot store version ref for ship '%s': %s",
-            c->name, psocn_db_error(&conn));
+            c->ship_name, psocn_db_error(&conn));
     }
     free_safe(esc2);
 
@@ -5392,16 +5397,16 @@ static int handle_shipctl_reply(ship_t* c, shipgate_shipctl_pkt* pkt,
 
     /* Make sure the packet is at least safe to parse */
     if (len < sizeof(shipgate_shipctl_pkt)) {
-        ERR_LOG("%s 发送的 shipctl 回复太短", c->name);
+        ERR_LOG("%s 发送的 shipctl 回复太短", c->ship_name);
         return -1;
     }
 
     if (!(flags & SHDR_RESPONSE)) {
-        ERR_LOG("%s 发送未响应 shipctl", c->name);
+        ERR_LOG("%s 发送未响应 shipctl", c->ship_name);
         return -1;
     }
     else if ((flags & SHDR_FAILURE)) {
-        ERR_LOG("%s 发送失败的 shipctl 响应", c->name);
+        ERR_LOG("%s 发送失败的 shipctl 响应", c->ship_name);
         return -1;
     }
 
@@ -5413,18 +5418,18 @@ static int handle_shipctl_reply(ship_t* c, shipgate_shipctl_pkt* pkt,
     switch (ctl) {
     case SCTL_TYPE_RESTART:
     case SCTL_TYPE_SHUTDOWN:
-        ERR_LOG("%s 发送 关闭/重启 响应", c->name);
+        ERR_LOG("%s 发送 关闭/重启 响应", c->ship_name);
         return -1;
 
     case SCTL_TYPE_UNAME:
         if (pkt->hdr.version != 0) {
             ERR_LOG("%s 发送未知 sctl 未命名版本: %" PRIu8
-                "", c->name, pkt->hdr.version);
+                "", c->ship_name, pkt->hdr.version);
             return -1;
         }
 
         if (len < sizeof(shipgate_sctl_uname_reply_pkt)) {
-            ERR_LOG("%s 发送过短 sctl 未命名响应", c->name);
+            ERR_LOG("%s 发送过短 sctl 未命名响应", c->ship_name);
             return -1;
         }
 
@@ -5434,12 +5439,12 @@ static int handle_shipctl_reply(ship_t* c, shipgate_shipctl_pkt* pkt,
     case SCTL_TYPE_VERSION:
         if (pkt->hdr.version != 0) {
             ERR_LOG("%s 发送未知 sctl 版本号: %" PRIu8
-                "", c->name, pkt->hdr.version);
+                "", c->ship_name, pkt->hdr.version);
             return -1;
         }
 
         if (len < sizeof(shipgate_sctl_ver_reply_pkt)) {
-            ERR_LOG("%s 发送过短 sctl 版本响应", c->name);
+            ERR_LOG("%s 发送过短 sctl 版本响应", c->ship_name);
             return -1;
         }
 
@@ -5447,7 +5452,7 @@ static int handle_shipctl_reply(ship_t* c, shipgate_shipctl_pkt* pkt,
             len, flags);
 
     default:
-        ERR_LOG("%s 发送未知 shipctl (%" PRIu32 ")", c->name,
+        ERR_LOG("%s 发送未知 shipctl (%" PRIu32 ")", c->ship_name,
             ctl);
         return -1;
     }
@@ -5551,7 +5556,7 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
         /* 最终给舰船发送一个 数据完成的响应 */
         send_recive_data_complete(c);
 
-        SGATE_LOG("%s: 舰闸数据发送完成", c->name);
+        SGATE_LOG("%s: 舰闸数据发送完成", c->ship_name);
     }
 
     return rv;

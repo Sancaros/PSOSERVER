@@ -1025,13 +1025,15 @@ static int handle_mageditdata(xmlNode* n, psocn_ship_t* cur) {
 }
 
 static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
-    xmlChar* name, * blocks, * gms, * menu, * gmonly, * priv;
+    xmlChar* name, * cn_name, * blocks, * gms, * menu, * gmonly, * priv;
     int rv;
     unsigned long rv2;
     xmlNode* n2;
+    char tmp_name[12] = { 0 };
 
     /* Grab the attributes of the <ship> tag. */
     name = xmlGetProp(n, XC"name");
+    cn_name = xmlGetProp(n, XC"cn_name");
     blocks = xmlGetProp(n, XC"blocks");
     gms = xmlGetProp(n, XC"gms");
     gmonly = xmlGetProp(n, XC"gmonly");
@@ -1046,6 +1048,19 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
 
     /* Copy out the strings out that we need */
     cur->ship_name = (char*)name;
+    strncpy(tmp_name, convert_enc("utf-8", "gbk", (const char*)cn_name), 12);
+    cur->ship_cn_name = (char*)malloc(sizeof(tmp_name));
+    if (!cur->ship_cn_name) {
+        ERR_LOG("½¢´¬Ãû³ÆÄÚ´æÉêÇëÊ§°Ü");
+        rv = -1;
+        goto err;
+    }
+    memcpy(cur->ship_cn_name, tmp_name, sizeof(tmp_name));
+
+#ifdef DEBUG
+    DBG_LOG("cur->ship_cn_name %s", cur->ship_cn_name);
+#endif // DEBUG
+
     cur->gm_file = (char*)gms;
 
     /* Copy out the gmonly flag */

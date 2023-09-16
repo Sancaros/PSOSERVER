@@ -989,7 +989,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last[num_blocks]->menu_id);
     pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last[num_blocks]->item_id);
     pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last[num_blocks]->flag);
-    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, s->cfg->ship_name, len3);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, s->cfg->ship_cn_name, len3);
     ++num_blocks;
 
     /* Add each block to the list. */

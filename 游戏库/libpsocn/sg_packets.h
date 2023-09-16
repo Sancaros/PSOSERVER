@@ -155,7 +155,8 @@ typedef struct shipgate_login6_reply {
     shipgate_hdr_t hdr;
     uint32_t proto_ver;
     uint32_t flags;
-    uint8_t name[12];
+    uint8_t ship_name[12];
+    uint8_t ship_cn_name[12];
     char ship_host4[32];
     char ship_host6[128];
     uint32_t ship_addr4;                /* IPv4 address (required) */

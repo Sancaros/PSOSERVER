@@ -239,6 +239,7 @@ typedef struct psocn_shipcfg {
     uint16_t shipgate_port;
 
     char* ship_name;
+    char* ship_cn_name;
     char* ship_cert;
     char* ship_key;
     char* shipgate_ca;

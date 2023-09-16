@@ -324,7 +324,7 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
     shipgate_ship_status6_pkt* pkt = (shipgate_ship_status6_pkt*)sendbuf;
 
     /* If the ship hasn't finished logging in yet, don't send this. */
-    if (o->name[0] == 0)
+    if (o->ship_name[0] == 0)
         return 0;
 
     /* Scrub the buffer */
@@ -338,7 +338,7 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
     pkt->hdr.version = 0;
 
     /* Fill in the info */
-    memcpy(pkt->name, o->name, 12);
+    memcpy(pkt->name, o->ship_name, 12);
     pkt->ship_id = htonl(o->key_idx);
     memcpy(pkt->ship_host4, o->remote_host4, 32);
     memcpy(pkt->ship_host6, o->remote_host6, 128);
@@ -833,7 +833,7 @@ int send_script(ship_t* c, ship_script_t* scr) {
     if (c->proto_ver < 16 || !(c->flags & LOGIN_FLAG_LUA))
         return 0;
 
-    SGATE_LOG("正在发送 %s 舰船脚本文件 '%s' (%s)", c->name,
+    SGATE_LOG("正在发送 %s 舰船脚本文件 '%s' (%s)", c->ship_name,
         scr->remote_fn, scr->local_fn);
 
     pkt_len = sizeof(shipgate_schunk_pkt) + scr->len;

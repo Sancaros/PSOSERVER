@@ -3744,8 +3744,10 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     /* 填充数据并准备发送 */
     pkt->proto_ver = htonl(ship->cfg->shipgate_proto_ver);//htonl(SHIPGATE_PROTO_VER);
     pkt->flags = htonl(ship->cfg->shipgate_flags);
-    strncpy((char*)pkt->name, ship->cfg->ship_name, 11);
-    pkt->name[11] = 0;
+    strncpy((char*)pkt->ship_name, ship->cfg->ship_name, 11);
+    pkt->ship_name[11] = 0;
+    strncpy((char*)pkt->ship_cn_name, ship->cfg->ship_cn_name, 11);
+    pkt->ship_cn_name[11] = 0;
     strncpy((char*)pkt->ship_host4, ship->cfg->ship_host4, 31);
     pkt->ship_host4[31] = 0;
     pkt->ship_addr4 = ship_ip4;

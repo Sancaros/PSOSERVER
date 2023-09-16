@@ -1076,6 +1076,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
     uint32_t num_ships = 0;
     void* result;
     char** row;
+    char tmp_name[20] = { 0 };
     uint32_t ship_id, players, priv;
     int i, len = 0x30, gm_only, ship_num, flags = 0x40;
 
@@ -1102,7 +1103,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
 
     /* Get ready to query the database */
     sprintf(query, "SELECT ship_id, name, players, gm_only, ship_number, "
-        "privileges FROM %s WHERE menu_code='%"PRIu16"' AND "
+        "privileges, cn_name FROM %s WHERE menu_code='%"PRIu16"' AND "
         "(flags & 0x%04x) = 0 ORDER BY ship_number", SERVER_SHIPS_ONLINE, menu_code, flags);
 
     /* Query the database and see what we've got */
@@ -1133,6 +1134,7 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
         ship_id = (uint32_t)strtoul(row[0], NULL, 0);
         players = (uint32_t)strtoul(row[2], NULL, 0);
         ship_num = atoi(row[4]);
+        istrncpy(ic_utf8_to_gbk, tmp_name, (char*)row[6], 12);
 
         /* Fill in what we have */
         pkt->entries[num_ships].menu_id = LE32(MENU_ID_SHIP);
@@ -1142,9 +1144,9 @@ static int send_ship_list_pc(login_client_t* c, uint16_t menu_code) {
         /* Create the name string (UTF-8) */
         if (menu_code)
             sprintf(tmp, "%02X:%c%c/%s", ship_num, (char)menu_code,
-                (char)(menu_code >> 8), row[1]);
+                (char)(menu_code >> 8), tmp_name);
         else
-            sprintf(tmp, "%02X:%s", ship_num, row[1]);
+            sprintf(tmp, "%02X:%s", ship_num, tmp_name);
 
         /* And convert to UTF-16 */
         istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
@@ -1268,6 +1270,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
     void *result;
     char **row;
     uint32_t ship_id, players, priv;
+    char tmp_name[20] = { 0 };
     int i, len = 0x34, gm_only, ship_num;
 
     /* Clear the base packet */
@@ -1290,7 +1293,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
 
     /* Get ready to query the database */
     sprintf(query, "SELECT ship_id, name, players, gm_only, ship_number, "
-        "privileges FROM %s WHERE menu_code='%" PRIu16 "' AND "
+        "privileges, cn_name FROM %s WHERE menu_code='%" PRIu16 "' AND "
         "(flags & 0x200) = 0 ORDER BY ship_number", SERVER_SHIPS_ONLINE, menu_code);
 
     /* Query the database and see what we've got */
@@ -1321,6 +1324,7 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
         ship_id = (uint32_t)strtoul(row[0], NULL, 0);
         players = (uint32_t)strtoul(row[2], NULL, 0);
         ship_num = atoi(row[4]);
+        istrncpy(ic_utf8_to_gbk, tmp_name, (char*)row[6], 12);
 
         /* Fill in what we have */
         pkt->entries[num_ships].menu_id = LE32(MENU_ID_SHIP);
@@ -1330,9 +1334,9 @@ static int send_ship_list_bb(login_client_t *c, uint16_t menu_code) {
         /* Create the name string (UTF-8) */
         if(menu_code)
             sprintf(tmp, "%02X:%c%c/%s", ship_num, (char)menu_code,
-                    (char)(menu_code >> 8), row[1]);
+                    (char)(menu_code >> 8), tmp_name);
         else
-            sprintf(tmp, "%02X:%s", ship_num, row[1]);
+            sprintf(tmp, "%02X:%s", ship_num, tmp_name);
 
         /* And convert to UTF-16 */
         istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_ships].name, tmp, 0x22);
