@@ -62,7 +62,8 @@
 #define SUBCMD62_ITEM_WARP                     0xD6
 #define SUBCMD62_QUEST_BP_PHOTON_EX            0xDF    /* Blue Burst - black_paper_deal_photon_drop_exchange */
 #define SUBCMD62_QUEST_BP_REWARD               0xE0    /* Blue Burst - black_paper_deal_photon_drop_exchange */
-#define SUBCMD62_GANBLING                      0xE2
+#define SUBCMD62_COREN_ACT                     0xE2
+#define SUBCMD62_COREN_ACT_RESULT              0xE3
 
 ///////////////////////////////////////////////////////////////////////////////
 /* Subcommand types we might care about (0x60/0x6C). */

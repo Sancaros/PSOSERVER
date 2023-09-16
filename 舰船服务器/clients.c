@@ -39,7 +39,7 @@
 #include "ship_packets.h"
 #include "scripts.h"
 #include "subcmd.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 #include "mapdata.h"
 #include "handle_player_items.h"
 

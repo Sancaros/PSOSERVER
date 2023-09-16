@@ -50,7 +50,7 @@
 #include "smutdata.h"
 #include "handle_player_items.h"
 #include "records.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 
 extern int enable_ipv6;
 extern char ship_host4[32];

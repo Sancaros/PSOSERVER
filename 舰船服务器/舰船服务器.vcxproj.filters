@@ -102,7 +102,7 @@
     <ClCompile Include="mag_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_send_bb.c">
+    <ClCompile Include="subcmd_send.c">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="subcmd_handle_60.c">
@@ -221,7 +221,7 @@
     <ClInclude Include="subcmd_size_table.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="subcmd_send_bb.h">
+    <ClInclude Include="subcmd_send.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="测试.h">

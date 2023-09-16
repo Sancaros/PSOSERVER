@@ -28,7 +28,7 @@
 #include <items.h>
 
 #include "subcmd.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 #include "shop.h"
 #include "pmtdata.h"
 #include "clients.h"
@@ -2508,6 +2508,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_coren_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &l->block->sfmt_rng;
+    item_t result_item = { 0 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2536,7 +2537,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         */
     display_packet(pkt, pkt->hdr.pkt_len);
 
-    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+    return subcmd_bb_send_coren_reward(dest, result_item);
 }
 
 // 定义函数指针数组
@@ -2567,7 +2568,7 @@ subcmd_handle_func_t subcmd62_handler[] = {
     { SUBCMD62_ITEM_WARP                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_D6_bb },
     { SUBCMD62_QUEST_BP_PHOTON_EX        , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_DF_bb },
     { SUBCMD62_QUEST_BP_REWARD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E0_bb },
-    { SUBCMD62_GANBLING                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E2_bb },
+    { SUBCMD62_COREN_ACT                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub62_E2_bb },
 };
 
 /* 处理 DC GC PC V1 V2 0x62 来自客户端的数据包. */

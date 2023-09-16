@@ -49,6 +49,7 @@
     <ClInclude Include="pso_text.h" />
     <ClInclude Include="max_tech_level.h" />
     <ClInclude Include="pso_StringReader.h" />
+    <ClInclude Include="pso_items_coren_reward_list.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pso_crash_handle.c" />

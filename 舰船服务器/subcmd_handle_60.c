@@ -28,7 +28,7 @@
 #include <items.h>
 
 #include "subcmd.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 #include "shop.h"
 #include "pmtdata.h"
 #include "clients.h"

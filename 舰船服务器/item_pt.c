@@ -36,7 +36,7 @@
 #include "pmtdata.h"
 #include "rtdata.h"
 #include "subcmd.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 #include "handle_player_items.h"
 #include "utils.h"
 #include "quests.h"

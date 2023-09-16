@@ -43,7 +43,7 @@
 #include "mapdata.h"
 #include "rtdata.h"
 #include "scripts.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 
 extern int sub62_06_dc(ship_client_t *s, ship_client_t *d,
                      subcmd_dc_gcsend_t *pkt);

@@ -28,7 +28,7 @@
 #include <items.h>
 
 #include "subcmd.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 #include "subcmd_handle.h"
 #include "clients.h"
 #include "ship_packets.h"

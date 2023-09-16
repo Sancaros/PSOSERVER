@@ -25,7 +25,7 @@
 #include <SFMT.h>
 
 #include "handle_player_items.h"
-#include "subcmd_send_bb.h"
+#include "subcmd_send.h"
 
 /* We need LE32 down below... so get it from packets.h */
 #define PACKETS_H_HEADERS_ONLY
