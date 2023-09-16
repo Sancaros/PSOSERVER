@@ -463,7 +463,7 @@ static int bb_process_game_type(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_wrlock(&c->cur_block->lobby_lock);
             lobby_destroy(l);
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
-            return send_bb_game_create(c);
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4取消创建房间!"));
         }
 
         //TODO 这里要判断类型
@@ -3075,6 +3075,10 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             type, c_cmd_name(type, 0), len, flags, c->guildcard);
         display_packet(pkt, len);
 #endif // DEBUG
+
+        DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
+            type, c_cmd_name(type, 0), len, flags, c->guildcard);
+        display_packet(pkt, len);
 
         if (c->game_data->err.has_error) {
             send_msg(c, BB_SCROLL_MSG_TYPE,

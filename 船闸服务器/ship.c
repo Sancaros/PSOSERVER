@@ -5790,10 +5790,10 @@ static ssize_t receive_message(ship_t* c, char* buffer, size_t buffer_size) {
 }
 
 static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
-    //int ret;
-    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    //return ret;
-    return gnutls_record_recv(c->session, buffer, len);
+    int ret;
+    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    return ret;
+    //return gnutls_record_recv(c->session, buffer, len);
 }
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
@@ -5822,10 +5822,24 @@ int handle_pkt(ship_t* c) {
     /* 确保8字节的倍数传输 */
     int recv_size = 8;
 
+    memset(&c->pkt, 0, recv_size); // 清零 c->pkt
+
     /* If we can't allocate the space, bail. */
     if (recvbuf == NULL) {
         ERR_LOG("malloc");
         return -1;
+    }
+
+    if (c == NULL) {
+        ERR_LOG("非法舰船链接");
+        free_safe(recvbuf);
+        return -1; // 参数合法性检查
+    }
+
+    if (!c->session) {
+        ERR_LOG("非法舰船session");
+        free_safe(recvbuf);
+        return -1; // 错误检查，确保 c->session 不为空
     }
 
     /* If we've got anything buffered, copy it out to the main buffer to make
@@ -5835,22 +5849,20 @@ int handle_pkt(ship_t* c) {
     }
 
     /* Attempt to read, and if we don't get anything, punt. */
-    if ((sz = ship_recv(c, recvbuf + c->recvbuf_cur,
-        65536 - c->recvbuf_cur)) <= 0) {
+    sz = ship_recv(c, recvbuf + c->recvbuf_cur,
+        65536 - c->recvbuf_cur);
+
+    if (sz <= 0) {
 
         if (sz == SOCKET_ERROR) {
             DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
         }
         else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
             ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
-            free_safe(recvbuf);
-            return 0;
         }
         else if (sz < 0) {
             ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
             ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
-            free_safe(recvbuf);
-            return 0;
         }
 
         free_safe(recvbuf);
@@ -5881,8 +5893,10 @@ int handle_pkt(ship_t* c) {
                 /* Pass it onto the correct handler. */
                 c->last_message = time(NULL);
                 rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
-                if (rv)
+                if (rv) {
                     ERR_LOG("process_ship_pkt rv = %d", rv);
+                    break;
+                }
 
                 rbp += pkt_sz;
                 sz -= pkt_sz;

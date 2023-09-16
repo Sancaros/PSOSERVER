@@ -152,7 +152,7 @@ static pso_menu_t pso_game_create_menu_bb[][4] = {
     {"允许 PSOv2", MENU_ID_GAME_TYPE, 3, 0x0000},
     {"允许 PSODC", MENU_ID_GAME_TYPE, 4, 0x0000},
     {"允许 PSOGC", MENU_ID_GAME_TYPE, 5, 0x0000},
-    //{"返回上一级", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
+    {"返回上一级", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
 };
 
 static pso_menu_t pso_game_drop_menu_bb[][4] = {
@@ -160,7 +160,7 @@ static pso_menu_t pso_game_drop_menu_bb[][4] = {
     {"默认掉落模式", MENU_ID_GAME_DROP, 0, 0x0000},
     {"PSO2掉落模式", MENU_ID_GAME_DROP, 1, 0x0000},
     {"随机掉落模式", MENU_ID_GAME_DROP, 2, 0x0000},
-    //{"返回上一级", MENU_ID_GAME_DROP, 0xFF, 0x0000},
+    {"返回上一级", MENU_ID_GAME_DROP, 0xFF, 0x0000},
 };
 
 static pso_menu_t pso_block_list_menu_last[][4] = {

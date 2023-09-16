@@ -121,17 +121,17 @@ static inline ssize_t receive_message(shipgate_conn_t* c, char* buffer, size_t b
 }
 
 static inline ssize_t sg_recv(shipgate_conn_t *c, void *buffer, size_t len) {
-    //int ret;
-    //LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
-    //return ret;
-    return gnutls_record_recv(c->session, buffer, len);
+    int ret;
+    LOOP_CHECK(ret, gnutls_record_recv(c->session, buffer, len));
+    return ret;
+    //return gnutls_record_recv(c->session, buffer, len);
 }
 
 static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
-    //int ret;
-    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    //return ret;
-    return gnutls_record_send(c->session, buffer, len);
+    int ret;
+    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    return ret;
+    //return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */
@@ -3532,6 +3532,26 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         /* 确保8字节的倍数传输 */
         int recv_size = 8;
 
+        memset(&c->pkt, 0, recv_size); // 清零 c->pkt
+
+        /* If we can't allocate the space, bail. */
+        if (recvbuf == NULL) {
+            ERR_LOG("malloc");
+            return -1;
+        }
+
+        if (c == NULL) {
+            ERR_LOG("非法舰闸链接");
+            free_safe(recvbuf);
+            return -1; // 参数合法性检查
+        }
+
+        if (!c->session) {
+            ERR_LOG("非法舰闸session");
+            free_safe(recvbuf);
+            return -1; // 错误检查，确保 c->session 不为空
+        }
+
         /* If we've got anything buffered, copy it out to the main buffer to make
            the rest of this a bit easier. */
         if (c->recvbuf_cur) {
@@ -3547,7 +3567,14 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         /* Attempt to read, and if we don't get anything, punt. */
         if (sz <= 0) {
             if (sz == SOCKET_ERROR) {
-                ERR_LOG("舰船接收数据错误: %s", strerror(errno));
+                DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+            }
+            else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+                ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+            }
+            else if (sz < 0) {
+                ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+                ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
             }
 
             goto end;
@@ -3582,6 +3609,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 /* Pass it on. */
                 rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
+                    ERR_LOG("handle_pkt rv = %d", rv);
                     break;
                 }
 
@@ -3603,7 +3631,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 tmp = realloc(c->recvbuf, sz);
 
                 if (!tmp) {
-                    perror("realloc");
+                    ERR_LOG("realloc");
                     return -1;
                 }
 

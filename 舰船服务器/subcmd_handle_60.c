@@ -2559,6 +2559,29 @@ static int sub60_3E_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
+static int sub60_3E_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_set_pos_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint32_t area = pkt->area;
+    float w = pkt->w, x = pkt->x, y = pkt->y, z = pkt->z;
+
+    /* Save the new position and move along */
+    if (src->client_id == pkt->shdr.client_id) {
+        src->w = w;
+        src->x = x;
+        src->y = y;
+        src->z = z;
+
+        if ((l->flags & LOBBY_FLAG_QUESTING))
+            update_bb_qpos(src, l);
+    }
+
+    /* Clear this, in case we're at the lobby counter */
+    src->last_info_req = 0;
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_3F_dc(ship_client_t* src, ship_client_t* dest, 
     subcmd_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2580,26 +2603,6 @@ static int sub60_3F_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
-static int sub60_3E_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_set_pos_t* pkt) {
-    lobby_t* l = src->cur_lobby;
-    uint32_t area = pkt->area;
-    float w = pkt->w, x = pkt->x, y = pkt->y, z = pkt->z;
-
-    /* Save the new position and move along */
-    if (src->client_id == pkt->shdr.client_id) {
-        src->w = w;
-        src->x = x;
-        src->y = y;
-        src->z = z;
-
-        if ((l->flags & LOBBY_FLAG_QUESTING))
-            update_bb_qpos(src, l);
-    }
-
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-}
-
 static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_set_pos_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2616,6 +2619,9 @@ static int sub60_3F_bb(ship_client_t* src, ship_client_t* dest,
         if ((l->flags & LOBBY_FLAG_QUESTING))
             update_bb_qpos(src, l);
     }
+
+    /* Clear this, in case we're at the lobby counter */
+    src->last_info_req = 0;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }

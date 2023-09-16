@@ -74,10 +74,10 @@ static ssize_t send_message(ship_t* c, const char* message, size_t message_len) 
 }
 
 static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
-    //int ret;
-    //LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
-    //return ret;
-    return gnutls_record_send(c->session, buffer, len);
+    int ret;
+    LOOP_CHECK(ret, gnutls_record_send(c->session, buffer, len));
+    return ret;
+    //return gnutls_record_send(c->session, buffer, len);
 }
 
 /* Send a raw packet away. */

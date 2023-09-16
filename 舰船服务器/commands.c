@@ -4050,10 +4050,10 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
     /* See if we're turning the flag off. */
     if (opcode[0] && !opcode[1]) {
 
-        send_bb_cmd_test(src, opcode[0]);
-
         DBG_LOG("²âÊÔÖ¸Áî 0x%04X %s GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), src->guildcard);
+
+        send_bb_cmd_test(src, opcode[0]);
 
         pthread_mutex_unlock(&src->mutex);
 
@@ -4063,10 +4063,10 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
     /* See if we're turning the flag off. */
     if (opcode[0] && opcode[1]) {
 
-        send_bb_subcmd_test(src, opcode[0], opcode[1]);
-
         DBG_LOG("²âÊÔÖ¸Áî 0x%04X %s 0x%04X GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), isEmptyInt(opcode[1]) ? 0 : opcode[1], src->guildcard);
+
+        send_bb_subcmd_test(src, opcode[0], opcode[1]);
 
         pthread_mutex_unlock(&src->mutex);
 
