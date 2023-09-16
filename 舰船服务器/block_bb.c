@@ -3076,10 +3076,6 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         display_packet(pkt, len);
 #endif // DEBUG
 
-        DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
-            type, c_cmd_name(type, 0), len, flags, c->guildcard);
-        display_packet(pkt, len);
-
         if (c->game_data->err.has_error) {
             send_msg(c, BB_SCROLL_MSG_TYPE,
                 "%s 错误指令:0x%zX 副指令:0x%zX",

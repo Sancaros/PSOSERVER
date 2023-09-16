@@ -134,63 +134,99 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
     //return gnutls_record_send(c->session, buffer, len);
 }
 
+///* Send a raw packet away. */
+//static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
+//    __try {
+//        ssize_t rv, total = 0;
+//        void* tmp;
+//
+//        /* Keep trying until the whole thing's sent. */
+//        if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
+//            /* Keep trying until the whole thing's sent. */
+//            if (!c->sendbuf_cur) {
+//                while (total < len) {
+//                    rv = sg_send(c, sendbuf + total, len - total);
+//
+//                    //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
+//
+//                    /* Did the data send? */
+//                    if (rv < 0) {
+//                        /* Is it an error code that might be correctable? */
+//                        if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+//                            continue;
+//                        else
+//                            return -1;
+//                    }
+//
+//                    total += rv;
+//                }
+//            }
+//
+//            rv = len - total;
+//
+//            if (rv) {
+//                /* Move out any already transferred data. */
+//                if (c->sendbuf_start) {
+//                    memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+//                        c->sendbuf_cur - c->sendbuf_start);
+//                    c->sendbuf_cur -= c->sendbuf_start;
+//                }
+//
+//                /* See if we need to reallocate the buffer. */
+//                if (c->sendbuf_cur + rv > c->sendbuf_size) {
+//                    tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
+//
+//                    /* If we can't allocate the space, bail. */
+//                    if (tmp == NULL)
+//                        return -1;
+//
+//                    c->sendbuf_size = c->sendbuf_cur + rv;
+//                    c->sendbuf = (unsigned char*)tmp;
+//                }
+//
+//                /* Copy what's left of the packet into the output buffer. */
+//                memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+//                c->sendbuf_cur += rv;
+//            }
+//
+//            //if (sendbuf)
+//            //    free_safe(sendbuf);
+//        }
+//
+//        return 0;
+//    }
+//
+//    __except (crash_handler(GetExceptionInformation())) {
+//        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
+//
+//        CRASH_LOG("出现错误, 程序将退出.");
+//        (void)getchar();
+//        return -4;
+//    }
+//}
+
 /* Send a raw packet away. */
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
-        void* tmp;
-
         /* Keep trying until the whole thing's sent. */
         if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
-            /* Keep trying until the whole thing's sent. */
-            if (!c->sendbuf_cur) {
-                while (total < len) {
-                    rv = sg_send(c, sendbuf + total, len - total);
+            while (total < len) {
+                rv = sg_send(c, sendbuf + total, len - total);
 
-                    //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
+                //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
 
-                    /* Did the data send? */
-                    if (rv < 0) {
-                        /* Is it an error code that might be correctable? */
-                        if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-                            continue;
-                        else
-                            return -1;
-                    }
-
-                    total += rv;
+                /* Did the data send? */
+                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
+                    /* Try again. */
+                    continue;
                 }
+                else if (rv <= 0) {
+                    return SOCKET_ERROR;
+                }
+
+                total += rv;
             }
-
-            rv = len - total;
-
-            if (rv) {
-                /* Move out any already transferred data. */
-                if (c->sendbuf_start) {
-                    memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                        c->sendbuf_cur - c->sendbuf_start);
-                    c->sendbuf_cur -= c->sendbuf_start;
-                }
-
-                /* See if we need to reallocate the buffer. */
-                if (c->sendbuf_cur + rv > c->sendbuf_size) {
-                    tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-                    /* If we can't allocate the space, bail. */
-                    if (tmp == NULL)
-                        return -1;
-
-                    c->sendbuf_size = c->sendbuf_cur + rv;
-                    c->sendbuf = (unsigned char*)tmp;
-                }
-
-                /* Copy what's left of the packet into the output buffer. */
-                memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-                c->sendbuf_cur += rv;
-            }
-
-            //if (sendbuf)
-            //    free_safe(sendbuf);
         }
 
         return 0;
@@ -204,32 +240,6 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
         return -4;
     }
 }
-//
-///* Send a raw packet away. */
-//static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
-//    ssize_t rv, total = 0;
-//    /* Keep trying until the whole thing's sent. */
-//    if((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
-//        while(total < len) {
-//            rv = sg_send(c, sendbuf + total, len - total);
-//
-//            //TEST_LOG("舰船端口 %d 发送数据 %d 字节", c->sock, rv);
-//
-//            /* Did the data send? */
-//            if(rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
-//                /* Try again. */
-//                continue;
-//            }
-//            else if(rv <= 0) {
-//                return SOCKET_ERROR;
-//            }
-//
-//            total += rv;
-//        }
-//    }
-//
-//    return 0;
-//}
 
 /* Encrypt a packet, and send it away. */
 static int send_crypt(shipgate_conn_t *c, int len, uint8_t *sendbuf) {
