@@ -463,52 +463,58 @@ static void print_config(psocn_ship_t* cfg) {
     else
         CONFIG_LOG("菜单: 主菜单");
 
-    if (cfg->v2_map_dir)
-        CONFIG_LOG("v2 地图路径: %s", cfg->v2_map_dir);
-
-    if (cfg->gc_map_dir)
-        CONFIG_LOG("GC 地图路径: %s", cfg->bb_map_dir);
-
-    if (cfg->bb_param_dir)
-        CONFIG_LOG("BB 参数路径: %s", cfg->bb_param_dir);
+    CONFIG_LOG("写入 Ver2 文件路径/////////////////////////");
 
     if (cfg->v2_param_dir)
-        CONFIG_LOG("v2 参数路径: %s", cfg->v2_param_dir);
+        CONFIG_LOG("Ver2 参数路径: %s", cfg->v2_param_dir);
 
-    if (cfg->bb_map_dir)
-        CONFIG_LOG("BB 地图路径: %s", cfg->bb_map_dir);
+    if (cfg->v2_map_dir)
+        CONFIG_LOG("Ver2 地图路径: %s", cfg->v2_map_dir);
 
     if (cfg->v2_ptdata_file)
-        CONFIG_LOG("v2 ItemPT 文件: %s", cfg->v2_ptdata_file);
-
-    if (cfg->gc_ptdata_file)
-        CONFIG_LOG("GC ItemPT 文件: %s", cfg->gc_ptdata_file);
-
-    if (cfg->bb_ptdata_file)
-        CONFIG_LOG("BB ItemPT 文件: %s", cfg->bb_ptdata_file);
+        CONFIG_LOG("Ver2 ItemPT 文件: %s", cfg->v2_ptdata_file);
 
     if (cfg->v2_pmtdata_file)
-        CONFIG_LOG("v2 ItemPMT 文件: %s", cfg->v2_pmtdata_file);
+        CONFIG_LOG("Ver2 ItemPMT 文件: %s", cfg->v2_pmtdata_file);
+
+    if (cfg->v2_rtdata_file)
+        CONFIG_LOG("Ver2 ItemRT 文件: %s", cfg->v2_rtdata_file);
+
+    CONFIG_LOG("写入 GameCube 文件路径/////////////////////////");
+
+    if (cfg->gc_map_dir)
+        CONFIG_LOG("GameCube 地图路径: %s", cfg->bb_map_dir);
+
+    if (cfg->gc_ptdata_file)
+        CONFIG_LOG("GameCube ItemPT 文件: %s", cfg->gc_ptdata_file);
 
     if (cfg->gc_pmtdata_file)
-        CONFIG_LOG("GC ItemPMT 文件: %s", cfg->gc_pmtdata_file);
+        CONFIG_LOG("GameCube ItemPMT 文件: %s", cfg->gc_pmtdata_file);
+
+    if (cfg->gc_rtdata_file)
+        CONFIG_LOG("GameCube ItemRT 文件: %s", cfg->gc_rtdata_file);
+
+    CONFIG_LOG("写入 Blue Burst 文件路径/////////////////////////");
+
+    if (cfg->bb_param_dir)
+        CONFIG_LOG("Blue Burst 参数路径: %s", cfg->bb_param_dir);
+
+    if (cfg->bb_map_dir)
+        CONFIG_LOG("Blue Burst 地图路径: %s", cfg->bb_map_dir);
+
+    if (cfg->bb_ptdata_file)
+        CONFIG_LOG("Blue Burst ItemPT 文件: %s", cfg->bb_ptdata_file);
 
     if (cfg->bb_pmtdata_file)
-        CONFIG_LOG("BB ItemPMT 文件: %s", cfg->bb_pmtdata_file);
+        CONFIG_LOG("Blue Burst ItemPMT 文件: %s", cfg->bb_pmtdata_file);
+
+    if (cfg->bb_rtdata_file)
+        CONFIG_LOG("Blue Burst ItemRT 文件: %s", cfg->bb_rtdata_file);
 
     CONFIG_LOG("装置 +/- 限制: v2: %s, GC: %s, BB: %s",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITV2) ? "true" : "false",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITGC) ? "true" : "false",
         (cfg->local_flags & PSOCN_SHIP_PMT_LIMITBB) ? "true" : "false");
-
-    if (cfg->v2_rtdata_file)
-        CONFIG_LOG("v2 ItemRT 文件: %s", cfg->v2_rtdata_file);
-
-    if (cfg->gc_rtdata_file)
-        CONFIG_LOG("GC ItemRT 文件: %s", cfg->gc_rtdata_file);
-
-    if (cfg->bb_rtdata_file)
-        CONFIG_LOG("BB ItemRT 文件: %s", cfg->bb_rtdata_file);
 
     if (cfg->v2_rtdata_file || cfg->gc_rtdata_file || cfg->bb_rtdata_file) {
         CONFIG_LOG("任务稀有掉落: %s",
@@ -550,9 +556,9 @@ static void print_config(psocn_ship_t* cfg) {
     if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPC))
         CONFIG_LOG("PSO for PC PC网络版");
     if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP12))
-        CONFIG_LOG("Gamecube Episode I & II GC章节 1/2");
+        CONFIG_LOG("GameCube Episode I & II GC章节 1/2");
     if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOEP3))
-        CONFIG_LOG("Gamecube Episode III GC章节 3");
+        CONFIG_LOG("GameCube Episode III GC章节 3");
     if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOPSOX))
         CONFIG_LOG("Xbox Episode I & II XBOX章节 1/2");
     if (!(cfg->shipgate_flags & SHIPGATE_FLAG_NOBB))
@@ -777,59 +783,59 @@ static void initialization() {
 int read_param_file(psocn_ship_t* cfg) {
     int rv;
 
-    CONFIG_LOG("读取 v2 参数文件/////////////////////////");
+    CONFIG_LOG("读取 Ver2 参数文件/////////////////////////");
 
-    /* Try to read the v2 ItemPT data... */
+    /* Try to read the Ver2 ItemPT data... */
     if (cfg->v2_ptdata_file) {
-        CONFIG_LOG("读取 v2 ItemPT 文件: %s"
+        CONFIG_LOG("读取 Ver2 ItemPT 文件: %s"
             , cfg->v2_ptdata_file);
         if (pt_read_v2(cfg->v2_ptdata_file)) {
-            ERR_LOG("无法读取 v2 ItemPT 文件: %s"
-                ", 取消支持 v2 版本!", cfg->v2_ptdata_file);
+            ERR_LOG("无法读取 Ver2 ItemPT 文件: %s"
+                ", 取消支持 Ver2 版本!", cfg->v2_ptdata_file);
             cfg->shipgate_flags |= SHIPGATE_FLAG_NOV2;
         }
     }
     else {
-        ERR_LOG("未指定 v2 ItemPT 文件"
-            ", 取消支持 v2 版本!");
+        ERR_LOG("未指定 Ver2 ItemPT 文件"
+            ", 取消支持 Ver2 版本!");
         cfg->shipgate_flags |= SHIPGATE_FLAG_NOV2;
     }
 
-    /* Read the v2 ItemPMT file... */
+    /* Read the Ver2 ItemPMT file... */
     if (cfg->v2_pmtdata_file) {
-        CONFIG_LOG("读取 v2 ItemPMT 文件: %s"
+        CONFIG_LOG("读取 Ver2 ItemPMT 文件: %s"
             , cfg->v2_pmtdata_file);
         if (pmt_read_v2(cfg->v2_pmtdata_file,
             !(cfg->local_flags & PSOCN_SHIP_PMT_LIMITV2))) {
-            ERR_LOG("无法读取 v2 ItemPMT 文件: %s"
-                ", 取消支持 v2 版本!", cfg->v2_pmtdata_file);
+            ERR_LOG("无法读取 Ver2 ItemPMT 文件: %s"
+                ", 取消支持 Ver2 版本!", cfg->v2_pmtdata_file);
             cfg->shipgate_flags |= SHIPGATE_FLAG_NOV2;
         }
     }
     else {
-        ERR_LOG("未指定 v2 ItemPMT 文件"
-            ", 取消支持 v2 版本!");
+        ERR_LOG("未指定 Ver2 ItemPMT 文件"
+            ", 取消支持 Ver2 版本!");
         cfg->shipgate_flags |= SHIPGATE_FLAG_NOV2;
     }
 
-    /* If we have a v2 map dir set, try to read the maps. */
+    /* If we have a Ver2 map dir set, try to read the maps. */
     if (cfg->v2_map_dir) {
-        CONFIG_LOG("读取 v2 map 所在路径: %s"
+        CONFIG_LOG("读取 Ver2 map 所在路径: %s"
             , cfg->v2_map_dir);
 
         if (v2_read_params(cfg) < 0) {
-            ERR_LOG("无法读取 v2 map 路径: %s"
+            ERR_LOG("无法读取 Ver2 map 路径: %s"
                 , cfg->v2_map_dir);
             printf("行 %d \n", __LINE__);//ERR_EXIT();
         }
     }
 
-    /* Read the v2 ItemRT file... */
+    /* Read the Ver2 ItemRT file... */
     if (cfg->v2_rtdata_file) {
-        CONFIG_LOG("读取 v2 ItemRT 文件: %s"
+        CONFIG_LOG("读取 Ver2 ItemRT 文件: %s"
             , cfg->v2_rtdata_file);
         if (rt_read_v2(cfg->v2_rtdata_file)) {
-            ERR_LOG("无法读取 v2 ItemRT 文件: %s"
+            ERR_LOG("无法读取 Ver2 ItemRT 文件: %s"
                 , cfg->v2_rtdata_file);
         }
     }

@@ -9070,7 +9070,7 @@ static int is_ship_menu_empty(ship_client_t *c, ship_t *s, uint16_t menu_code) {
             else if((i->privileges & c->privilege) != i->privileges && !isgm)
                 continue;
 
-            /* 如果我们到了这里, then we found a ship the user can see, so the
+            /* 如果我们到了这里可看到该舰船,则舰船列表不为空 then we found a ship the user can see, so the
                menu isn't empty. */
             return 0;
         }

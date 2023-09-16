@@ -3026,7 +3026,7 @@ static int process_qlist_end(ship_client_t* c) {
 
 int send_motd(ship_client_t* c) {
     FILE* fp;
-    char buf[1024];
+    char buf[1024] = { 0 };
     long len;
     uint32_t lang = (1 << c->q_lang), ver;
     int i, found = 0;
@@ -3050,6 +3050,10 @@ int send_motd(ship_client_t* c) {
         ver = PSOCN_INFO_GC;
         break;
 
+    case CLIENT_VERSION_BB:
+        ver = PSOCN_INFO_BB;
+        break;
+
     default:
         return 0;
     }
@@ -3064,6 +3068,7 @@ int send_motd(ship_client_t* c) {
 
     /* No MOTD found for the given version/language combination. */
     if (!found) {
+        ERR_LOG("未找到 ver %d lang %d 的MOTD信息", ver, lang);
         return 0;
     }
 

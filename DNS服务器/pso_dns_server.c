@@ -1047,13 +1047,23 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             /* Check the listening sockets first. */
             for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
                 len = sizeof(struct sockaddr);
-
-                if ((recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len)) <= dns_size) {
+                recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len);
+                if (recive_len <= dns_size) {
                     ERR_LOG("recvfrom");
                     perror("recvfrom");
+                    continue; // 继续等待下一次接收
                 }
                 else {
                     sock = ntohs(client_addr.sin_port);
+
+                    i = create_connection(sock, &client_addr, len);
+
+                    if (!i) {
+                        ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
+                        close(sock);
+                        continue; // 继续等待下一次接收
+                    }
+
                     rv = process_query(sockets[j], recive_len, &client_addr);
                     if (rv) {
 #ifdef DEBUG
@@ -1061,16 +1071,11 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
 
 #endif // DEBUG
+                        ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
                         close(sock);
+                        continue; // 继续等待下一次接收
                     }
                     else {
-                        i = create_connection(sock, &client_addr, len);
-
-                        if (!i) {
-                            ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
-                            close(sock);
-                        }
-
                         ++client_count;
                         set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
 
@@ -1090,11 +1095,16 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             while (i) {
                 tmp = TAILQ_NEXT(i, qentry);
 
-                if (i->disconnected && i->auth) {
+                if (i->disconnected) {
                     get_ip_address(&i->ip_addr, ipstr);
-                    DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
-                    --client_count;
-                    set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                    if (i->auth) {
+                        DC_LOG("断开 %s:%u DNS连接", ipstr, i->sock);
+                        --client_count;
+                        set_console_title("梦幻之星中国 %s %s版本 Ver%s 作者 Sancaros [玩家 %d]", server_name[DNS_SERVER].name, PSOBBCN_PLATFORM_STR, DNS_SERVER_VERSION, client_count);
+                    }
+                    else {
+                        DC_LOG("断开 %s:%u DNS无效连接", ipstr, i->sock);
+                    }
                     destroy_connection(i);
                 }
 

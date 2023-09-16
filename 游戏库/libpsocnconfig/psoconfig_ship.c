@@ -494,7 +494,7 @@ err:
 }
 
 static int handle_info(xmlNode* n, psocn_ship_t* cur, int is_motd) {
-    xmlChar* fn, * desc, * v1, * v2, * pc, * gc, * lang;
+    xmlChar* fn, * desc, * v1, * v2, * pc, * gc, * bb, * lang;
     void* tmp;
     int rv = 0, count = cur->info_file_count, i, done = 0;
     char* lasts = { 0 }, * token = { 0 };
@@ -506,6 +506,7 @@ static int handle_info(xmlNode* n, psocn_ship_t* cur, int is_motd) {
     v2 = xmlGetProp(n, XC"v2");
     pc = xmlGetProp(n, XC"pc");
     gc = xmlGetProp(n, XC"gc");
+    bb = xmlGetProp(n, XC"bb");
     lang = xmlGetProp(n, XC"languages");
 
     /* Make sure we have all of them... */
@@ -549,6 +550,9 @@ static int handle_info(xmlNode* n, psocn_ship_t* cur, int is_motd) {
 
     if (!gc || !xmlStrcmp(gc, XC"true"))
         cur->info_files[count].versions |= PSOCN_INFO_GC;
+
+    if (!bb || !xmlStrcmp(gc, XC"true"))
+        cur->info_files[count].versions |= PSOCN_INFO_BB;
 
     /* Parse the languages string, if given. */
     if (lang) {

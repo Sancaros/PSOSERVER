@@ -548,8 +548,8 @@ static int handle_info(xmlNode* n, psocn_config_t* cur, int is_motd) {
     gc = xmlGetProp(n, XC"gc");
     ep3 = xmlGetProp(n, XC"ep3");
     bb = xmlGetProp(n, XC"bb");
-    lang = xmlGetProp(n, XC"languages");
     xb = xmlGetProp(n, XC"xbox");
+    lang = xmlGetProp(n, XC"languages");
 
     /* Make sure we have all of them... */
     if (!fn || !gc || !ep3 || !bb) {
