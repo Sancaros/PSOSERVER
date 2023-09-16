@@ -2528,7 +2528,12 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                                        08 09 0A 0B 0C
         (0000) 18 00 62 00 00 00 00 00 E2 04 01 00 01 00 00 00 ..b..... ? ......
                10 11 12 13 14 15 16 17
-        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽*/
+        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽
+
+        [2023年09月16日 16:01:27:161] 调试(block_bb.c 0517): GC 10000002:2 默认掉落模式
+( 00000000 )   18 00 62 00 00 00 00 00   E2 04 00 00 02 00 00 00  ..b.....?......
+( 00000010 )   B3 9B 09 C3 13 E6 C0 42                           硾.?胬B
+        */
     display_packet(pkt, pkt->hdr.pkt_len);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);

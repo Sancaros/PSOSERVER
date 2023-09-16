@@ -493,8 +493,9 @@ research_cert:
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
+        size_t row_count = (size_t)psocn_db_result_rows(result);
         // 若指纹不存在，则执行插入操作
-        snprintf(query, sizeof(query), "INSERT INTO %s (sha1_fingerprint) VALUES ('%s')", SERVER_SHIPS, fingerprint);
+        snprintf(query, sizeof(query), "INSERT INTO %s (ship_number, sha1_fingerprint) VALUES ('%d', '%s')", SERVER_SHIPS, row_count + 1, fingerprint);
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("插入舰船密钥失败: %s\n", psocn_db_error(&conn));
             goto err_cert;
