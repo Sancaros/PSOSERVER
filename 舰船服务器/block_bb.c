@@ -1052,7 +1052,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-                " 错误码 %d", ship->cfg->name, c->cur_block->b,
+                " 错误码 %d", ship->cfg->ship_name, c->cur_block->b,
                 c->guildcard, i);
             if (c->cur_lobby) {
                 ERR_LOG("        房间: %s (类型: 难度:%d,对战模式:%d,挑战模式:%d,V2:%d)",
@@ -1071,7 +1071,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
             "管理员处."));
         ERR_LOG("%s(%d): 检测到无效级别的角色!\n"
             "        GC %" PRIu32 ", 等级: %" PRIu32 "",
-            ship->cfg->name, c->cur_block->b,
+            ship->cfg->ship_name, c->cur_block->b,
             c->guildcard, v);
         return -1;
     }
@@ -1439,7 +1439,7 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     /* Log the connection. */
     my_ntop(&c->ip_addr, ipstr);
     BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->name
+        , ship->cfg->ship_name
         , c->cur_block->b
         , c->cur_block->num_clients
         , c->guildcard

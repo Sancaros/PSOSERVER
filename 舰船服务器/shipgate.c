@@ -357,7 +357,7 @@ static int shipgate_conn(ship_t* s, shipgate_conn_t* rv, int reconn) {
 
 reconnet:
 
-    SHIPS_LOG("%s: 搜寻船闸 (%s)...", s->cfg->name,
+    SHIPS_LOG("%s: 搜寻船闸 (%s)...", s->cfg->ship_name,
         s->cfg->shipgate_host);
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -366,12 +366,12 @@ reconnet:
     snprintf(sg_port, sizeof(sg_port), "%hu", s->cfg->shipgate_port);
 
     if (getaddrinfo(s->cfg->shipgate_host, sg_port, &hints, &server)) {
-        ERR_LOG("%s: 船闸地址无效: %s", s->cfg->name,
+        ERR_LOG("%s: 船闸地址无效: %s", s->cfg->ship_name,
             s->cfg->shipgate_host);
         return -1;
     }
 
-    SHIPS_LOG("%s: 连接船闸...", s->cfg->name);
+    SHIPS_LOG("%s: 连接船闸...", s->cfg->ship_name);
 
     for (j = server; j != NULL; j = j->ai_next) {
         if (j->ai_family == PF_INET) {
@@ -1662,7 +1662,7 @@ static int handle_login(shipgate_conn_t* conn, shipgate_login_pkt* pkt) {
     }
 
     SHIPS_LOG("%s: 成功对接船闸 版本 %d.%d.%d",
-        conn->ship->cfg->name, (int)pkt->ver_major, (int)pkt->ver_minor,
+        conn->ship->cfg->ship_name, (int)pkt->ver_major, (int)pkt->ver_minor,
         (int)pkt->ver_micro);
 
     /* Send our info to the shipgate so it can have things set up right. */
@@ -1942,25 +1942,25 @@ static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
         switch (err) {
         case ERR_LOGIN_BAD_PROTO:
             SHIPS_LOG("%s: 不支持的船闸协议版本!",
-                s->cfg->name);
+                s->cfg->ship_name);
             break;
 
         case ERR_BAD_ERROR:
             SHIPS_LOG("%s: 船闸连接出错, 稍后再尝试对接.",
-                s->cfg->name);
+                s->cfg->ship_name);
             break;
 
         case ERR_LOGIN_BAD_KEY:
-            SHIPS_LOG("%s: 无效舰船密钥!", s->cfg->name);
+            SHIPS_LOG("%s: 无效舰船密钥!", s->cfg->ship_name);
             break;
 
         case ERR_LOGIN_BAD_MENU:
-            SHIPS_LOG("%s: 无效菜单代码!", s->cfg->name);
+            SHIPS_LOG("%s: 无效菜单代码!", s->cfg->ship_name);
             break;
 
         case ERR_LOGIN_INVAL_MENU:
             SHIPS_LOG("%s: 请在配置中选择有效的菜单代码!",
-                s->cfg->name);
+                s->cfg->ship_name);
             break;
         }
 
@@ -1970,7 +1970,7 @@ static int handle_login_reply(shipgate_conn_t* conn, shipgate_error_pkt* pkt) {
     else {
         /* We have a response. Set the has key flag. */
         conn->has_key = 1;
-        SHIPS_LOG("%s: 舰船与船闸完成对接", s->cfg->name);
+        SHIPS_LOG("%s: 舰船与船闸完成对接", s->cfg->ship_name);
     }
 
     /* Send the burst of client data if we have any to send */
@@ -3355,7 +3355,7 @@ static int handle_pkt(shipgate_conn_t* conn, shipgate_hdr_t* pkt) {
 
             default:
                 ERR_LOG("%s: 船闸发送未知错误1! 指令 = 0x%04X 标识 = %d 密钥 = %d"
-                    , conn->ship->cfg->name, type, flags, conn->has_key);
+                    , conn->ship->cfg->ship_name, type, flags, conn->has_key);
                 return -1;
             }
         }
@@ -3744,7 +3744,7 @@ int shipgate_send_ship_info(shipgate_conn_t* c, ship_t* ship) {
     /* 填充数据并准备发送 */
     pkt->proto_ver = htonl(ship->cfg->shipgate_proto_ver);//htonl(SHIPGATE_PROTO_VER);
     pkt->flags = htonl(ship->cfg->shipgate_flags);
-    strncpy((char*)pkt->name, ship->cfg->name, 11);
+    strncpy((char*)pkt->name, ship->cfg->ship_name, 11);
     pkt->name[11] = 0;
     strncpy((char*)pkt->ship_host4, ship->cfg->ship_host4, 31);
     pkt->ship_host4[31] = 0;

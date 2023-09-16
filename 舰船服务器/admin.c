@@ -166,7 +166,7 @@ int load_quests(ship_t *s, psocn_ship_t *cfg, int initial) {
         return 0;
     }
 
-    SHIPS_LOG("%s: 未设置任务文件!", cfg->name);
+    SHIPS_LOG("%s: 未设置任务文件!", cfg->ship_name);
     s->qmap = qmap;
     return -1;
 }
@@ -236,26 +236,26 @@ int refresh_limits(ship_client_t *c, msgfunc f) {
     for(i = 0; i < s->limits_count; ++i) {
         if(psocn_read_limits(s->limits[i].filename, &l)) {
             ERR_LOG("%s: 无法读取 limits 文件 %s: %s",
-                  s->name, s->limits[i].name, s->limits[i].filename);
+                  s->ship_name, s->limits[i].name, s->limits[i].filename);
             goto err;
         }
 
         if(!(ent = malloc(sizeof(limits_entry_t)))) {
-            ERR_LOG("%s: %s", s->name, strerror(errno));
+            ERR_LOG("%s: %s", s->ship_name, strerror(errno));
             psocn_free_limits(l);
             goto err;
         }
 
         if(s->limits[i].name) {
             if(!(ent->name = _strdup(s->limits[i].name))) {
-                ERR_LOG("%s: %s", s->name, strerror(errno));
+                ERR_LOG("%s: %s", s->ship_name, strerror(errno));
                 psocn_free_limits(l);
                 free_safe(ent);
                 goto err;
             }
 
             if(!(l->name = _strdup(s->limits[i].name))) {
-                ERR_LOG("%s: %s", s->name, strerror(errno));
+                ERR_LOG("%s: %s", s->ship_name, strerror(errno));
                 psocn_free_limits(l);
                 free_safe(ent->name);
                 free_safe(ent);

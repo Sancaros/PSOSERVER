@@ -1071,7 +1071,6 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
 
 #endif // DEBUG
-                        ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
                         close(sock);
                         continue; // 继续等待下一次接收
                     }

@@ -155,7 +155,7 @@ static void* ship_thd(void* d) {
     }
 #endif
 
-    BLOCK_LOG("%s: 舰仓 (1 - %d) 启动中...", s->cfg->name, s->cfg->blocks);
+    BLOCK_LOG("%s: 舰仓 (1 - %d) 启动中...", s->cfg->ship_name, s->cfg->blocks);
 
     /* Fire up the threads for each block. */
     for (i = 1; i <= s->cfg->blocks; ++i) {
@@ -163,7 +163,7 @@ static void* ship_thd(void* d) {
             (i * 6));
     }
 
-    BLOCK_LOG("%s: 舰仓 (1 - %d) 已开启", s->cfg->name, i - 1);
+    BLOCK_LOG("%s: 舰仓 (1 - %d) 已开启", s->cfg->ship_name, i - 1);
 
     SHIPS_LOG("%s启动完成.", server_name[SHIPS_SERVER].name);
     SHIPS_LOG("程序运行中...");
@@ -479,7 +479,7 @@ static void* ship_thd(void* d) {
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &readfds)) {
                 if ((rv = shipgate_process_pkt(&s->sg))) {
                     ERR_LOG("%s: 失去与船闸的连接1 rv = %d",
-                        s->cfg->name, rv);
+                        s->cfg->ship_name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
                     gnutls_bye(s->sg.session, GNUTLS_SHUT_RDWR);
@@ -489,7 +489,7 @@ static void* ship_thd(void* d) {
 
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错1, 尝试重新对接!",
-                            s->cfg->name);
+                            s->cfg->ship_name);
                         shipgate_reconnect(&s->sg);
 
                         //s->run = 0;
@@ -500,7 +500,7 @@ static void* ship_thd(void* d) {
             if (s->sg.sock != SOCKET_ERROR && FD_ISSET(s->sg.sock, &writefds)) {
                 if (rv = shipgate_send_pkts(&s->sg)) {
                     ERR_LOG("%s: 失去与船闸的连接2 rv = %d",
-                        s->cfg->name, rv);
+                        s->cfg->ship_name, rv);
 
                     /* Close the connection so we can attempt to reconnect */
                     gnutls_bye(s->sg.session, GNUTLS_SHUT_RDWR);
@@ -510,7 +510,7 @@ static void* ship_thd(void* d) {
 
                     if (rv < -1) {
                         ERR_LOG("%s: 与船闸连接出错2, 断开!",
-                            s->cfg->name);
+                            s->cfg->ship_name);
                         shipgate_reconnect(&s->sg);
                     }
                 }
@@ -587,7 +587,7 @@ static void* ship_thd(void* d) {
         }
     }
 
-    SHIPS_LOG("%s: 关闭舰船服务器...", s->cfg->name);
+    SHIPS_LOG("%s: 关闭舰船服务器...", s->cfg->ship_name);
 
     /* Before we shut down, run the shutdown script, if one is configured. */
     script_execute(ScriptActionShutdown, NULL, SCRIPT_ARG_PTR, s, 0);
@@ -656,7 +656,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     psocn_limits_t* l;
     limits_entry_t* ent;
 
-    SHIPS_LOG("%s: 启动舰船...", s->name);
+    SHIPS_LOG("%s: 启动舰船...", s->ship_name);
 
     /* Create the sockets for listening for connections. */
     dcsock[0] = open_sock(PF_INET, s->base_port);
@@ -727,7 +727,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     rv = (ship_t*)malloc(sizeof(ship_t));
 
     if (!rv) {
-        ERR_LOG("%s: 无法分配内存!", s->name);
+        ERR_LOG("%s: 无法分配内存!", s->ship_name);
         goto err_close_all;
     }
 
@@ -736,7 +736,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
 
     /* Make the pipe */
     if (pipe(rv->pipes) == -1) {
-        ERR_LOG("%s: 无法创建通信管道!", s->name);
+        ERR_LOG("%s: 无法创建通信管道!", s->ship_name);
         goto err_free;
     }
 
@@ -744,7 +744,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     rv->blocks = (block_t**)malloc(sizeof(block_t*) * s->blocks);
 
     if (!rv->blocks) {
-        ERR_LOG("%s: 无法分配舰仓内存!", s->name);
+        ERR_LOG("%s: 无法分配舰仓内存!", s->ship_name);
         goto err_pipes;
     }
 
@@ -752,13 +752,13 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     rv->clients = (struct client_queue*)malloc(sizeof(struct client_queue));
 
     if (!rv->clients) {
-        ERR_LOG("%s: 无法为客户端分配内存!", s->name);
+        ERR_LOG("%s: 无法为客户端分配内存!", s->ship_name);
         goto err_blocks;
     }
 
     /* Attempt to read the quest list in. */
     if (s->quests_file && s->quests_file[0]) {
-        SHIPS_LOG("%s: 忽略旧任务设置!", s->name);
+        SHIPS_LOG("%s: 忽略旧任务设置!", s->ship_name);
     }
 
     /* Deal with loading the quest data... */
@@ -767,14 +767,14 @@ ship_t* ship_server_start(psocn_ship_t* s) {
 
     /* Attempt to read the GM list in. */
     if (s->gm_file) {
-        SHIPS_LOG("%s: 获取本地 GM 列表...", s->name);
+        SHIPS_LOG("%s: 获取本地 GM 列表...", s->ship_name);
 
         if (gm_list_read(s->gm_file, rv)) {
-            ERR_LOG("%s: 无法读取 GM 文件!", s->name);
+            ERR_LOG("%s: 无法读取 GM 文件!", s->ship_name);
             goto err_quests;
         }
 
-        SHIPS_LOG("%s: 读取到 %d 名本地GM", s->name, rv->gm_count);
+        SHIPS_LOG("%s: 读取到 %d 名本地GM", s->ship_name, rv->gm_count);
     }
 
     /* Read in all limits files. */
@@ -782,34 +782,34 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     pthread_rwlock_init(&rv->llock, NULL);
 
     for (i = 0; i < s->limits_count; ++i) {
-        SHIPS_LOG("%s: 解析 /legit 列表 %d...", s->name, i);
+        SHIPS_LOG("%s: 解析 /legit 列表 %d...", s->ship_name, i);
         /* Check if they've given us one of the reserved names... */
         if (s->limits[i].name && (!strcmp(s->limits[i].name, "default") ||
             !strcmp(s->limits[i].name, "list"))) {
             ERR_LOG("%s: 非法限制列表名称: %s",
-                s->name, s->limits[i].name);
+                s->ship_name, s->limits[i].name);
             goto err_limits;
         }
 
-        SHIPS_LOG("%s:     名称: %s", s->name, s->limits[i].name);
+        SHIPS_LOG("%s:     名称: %s", s->ship_name, s->limits[i].name);
 
         if (psocn_read_limits(s->limits[i].filename, &l)) {
             ERR_LOG("%s: 无法读取限制文件 %s: %s",
-                s->name, s->limits[i].name, s->limits[i].filename);
+                s->ship_name, s->limits[i].name, s->limits[i].filename);
             goto err_limits;
         }
 
-        SHIPS_LOG("%s:    完成解析!", s->name);
+        SHIPS_LOG("%s:    完成解析!", s->ship_name);
 
         if (!(ent = malloc(sizeof(limits_entry_t)))) {
-            ERR_LOG("%s: %s", s->name, strerror(errno));
+            ERR_LOG("%s: %s", s->ship_name, strerror(errno));
             psocn_free_limits(l);
             goto err_limits;
         }
 
         if (s->limits[i].name) {
             if (!(ent->name = _strdup(s->limits[i].name))) {
-                ERR_LOG("%s: %s", s->name, strerror(errno));
+                ERR_LOG("%s: %s", s->ship_name, strerror(errno));
                 psocn_free_limits(l);
                 free_safe(ent);
                 goto err_limits;
@@ -861,7 +861,7 @@ ship_t* ship_server_start(psocn_ship_t* s) {
     /* Attempt to read the ban list */
     if (s->bans_file) {
         if (ban_list_read(s->bans_file, rv)) {
-            SHIPS_LOG("%s: 无法读取封禁文件!", s->name);
+            SHIPS_LOG("%s: 无法读取封禁文件!", s->ship_name);
         }
     }
 
@@ -871,13 +871,13 @@ ship_t* ship_server_start(psocn_ship_t* s) {
 
     /* Connect to the shipgate. */
     if (shipgate_connect(rv, &rv->sg)) {
-        ERR_LOG("%s: 无法连接至船闸!", s->name);
+        ERR_LOG("%s: 无法连接至船闸!", s->ship_name);
         goto err_bans_locks;
     }
 
     /* Start up the thread for this ship. */
     if (pthread_create(&rv->thd, NULL, &ship_thd, rv)) {
-        ERR_LOG("%s: 无法开启舰船线程!", s->name);
+        ERR_LOG("%s: 无法开启舰船线程!", s->ship_name);
         goto err_shipgate;
     }
 
@@ -943,13 +943,13 @@ void ship_check_cfg(psocn_ship_t* s) {
     psocn_limits_t* l;
     limits_entry_t* ent;
 
-    SHIPS_LOG("检测舰船 %s 的设置...", s->name);
+    SHIPS_LOG("检测舰船 %s 的设置...", s->ship_name);
 
     /* Make space for the ship structure. */
     rv = (ship_t*)malloc(sizeof(ship_t));
 
     if (!rv) {
-        ERR_LOG("%s: 无法分配舰船内存空间!", s->name);
+        ERR_LOG("%s: 无法分配舰船内存空间!", s->ship_name);
         return;
     }
 
@@ -962,7 +962,7 @@ void ship_check_cfg(psocn_ship_t* s) {
 
     /* Attempt to read the quest list in. */
     if (s->quests_file && s->quests_file[0]) {
-        SHIPS_LOG("%s: 忽略旧的任务设置. 请更新设置!", s->name);
+        SHIPS_LOG("%s: 忽略旧的任务设置. 请更新设置!", s->ship_name);
     }
 
     if (s->quests_dir && s->quests_dir[0]) {
@@ -987,52 +987,52 @@ void ship_check_cfg(psocn_ship_t* s) {
 
     /* Attempt to read the GM list in. */
     if (s->gm_file) {
-        SHIPS_LOG("%s: 读取本地 GM 列表...", s->name);
+        SHIPS_LOG("%s: 读取本地 GM 列表...", s->ship_name);
 
         if (gm_list_read(s->gm_file, rv)) {
-            ERR_LOG("%s: 无法读取 GM 文件!", s->name);
+            ERR_LOG("%s: 无法读取 GM 文件!", s->ship_name);
         }
 
-        SHIPS_LOG("%s: 已获取 %d 名本地 GM", s->name, rv->gm_count);
+        SHIPS_LOG("%s: 已获取 %d 名本地 GM", s->ship_name, rv->gm_count);
     }
 
     /* Read in all limits files. */
     for (i = 0; i < s->limits_count; ++i) {
-        SHIPS_LOG("%s: 分析 /legit 列表 %d...", s->name, i);
+        SHIPS_LOG("%s: 分析 /legit 列表 %d...", s->ship_name, i);
 
         /* Check if they've given us one of the reserved names... */
         if (s->limits[i].name && (!strcmp(s->limits[i].name, "default") ||
             !strcmp(s->limits[i].name, "list"))) {
             ERR_LOG("%s: 跳过非法限制列表名称: %s",
-                s->name, s->limits[i].name);
+                s->ship_name, s->limits[i].name);
             continue;
         }
 
-        SHIPS_LOG("%s:     名称: %s", s->name, s->limits[i].name);
+        SHIPS_LOG("%s:     名称: %s", s->ship_name, s->limits[i].name);
 
         if (psocn_read_limits(s->limits[i].filename, &l)) {
             ERR_LOG("%s: 无法读取的限制文件 %s: %s",
-                s->name, s->limits[i].name, s->limits[i].filename);
+                s->ship_name, s->limits[i].name, s->limits[i].filename);
         }
 
-        SHIPS_LOG("%s:     解析完成!", s->name);
+        SHIPS_LOG("%s:     解析完成!", s->ship_name);
 
         if (!(ent = malloc(sizeof(limits_entry_t)))) {
-            ERR_LOG("%s: %s", s->name, strerror(errno));
+            ERR_LOG("%s: %s", s->ship_name, strerror(errno));
             psocn_free_limits(l);
             continue;
         }
 
         if (s->limits[i].name) {
             if (!(ent->name = _strdup(s->limits[i].name))) {
-                ERR_LOG("%s: %s", s->name, strerror(errno));
+                ERR_LOG("%s: %s", s->ship_name, strerror(errno));
                 free_safe(ent);
                 psocn_free_limits(l);
                 continue;
             }
 
             if (!(l->name = _strdup(s->limits[i].name))) {
-                ERR_LOG("%s: %s", s->name, strerror(errno));
+                ERR_LOG("%s: %s", s->ship_name, strerror(errno));
                 free_safe(ent->name);
                 free_safe(ent);
                 psocn_free_limits(l);
@@ -1057,7 +1057,7 @@ void ship_check_cfg(psocn_ship_t* s) {
     /* Attempt to read the ban list */
     if (s->bans_file) {
         if (ban_list_read(s->bans_file, rv)) {
-            SHIPS_LOG("%s: 无法读取封禁文件!", s->name);
+            SHIPS_LOG("%s: 无法读取封禁文件!", s->ship_name);
         }
     }
 
@@ -2064,7 +2064,7 @@ static int ship_name_lua(lua_State* l) {
 
     if (lua_islightuserdata(l, 1)) {
         sl = (ship_t*)lua_touserdata(l, 1);
-        lua_pushstring(l, sl->cfg->name);
+        lua_pushstring(l, sl->cfg->ship_name);
     }
     else {
         lua_pushstring(l, "");

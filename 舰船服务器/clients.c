@@ -1283,7 +1283,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.model != dress_data2.model)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎómodel %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎómodel %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.model, dress_data2.model);
         dress_data1.model = dress_data2.model;
         return -10;
@@ -1292,7 +1292,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.section != dress_data2.section)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎósection %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎósection %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.section, dress_data2.section);
         dress_data1.section = dress_data2.section;
         return -11;
@@ -1301,7 +1301,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.ch_class != dress_data2.ch_class)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóch_class %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.ch_class, dress_data2.ch_class);
         dress_data1.ch_class = dress_data2.ch_class;
         return -12;
@@ -1310,7 +1310,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.costume != dress_data2.costume)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎócostume %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎócostume %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.costume, dress_data2.costume);
         dress_data1.costume = dress_data2.costume;
         return -13;
@@ -1319,7 +1319,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.skin != dress_data2.skin)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóskin %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóskin %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.skin, dress_data2.skin);
         dress_data1.skin = dress_data2.skin;
         return -14;
@@ -1328,7 +1328,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.face != dress_data2.face)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóface %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóface %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.face, dress_data2.face);
         dress_data1.face = dress_data2.face;
         return -15;
@@ -1337,7 +1337,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.head != dress_data2.head)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóhead %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóhead %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.head, dress_data2.head);
         dress_data1.head = dress_data2.head;
         return -16;
@@ -1346,7 +1346,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.hair != dress_data2.hair)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóhair %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóhair %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.hair, dress_data2.hair);
         dress_data1.hair = dress_data2.hair;
         return -17;
@@ -1355,7 +1355,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.hair_r != dress_data2.hair_r)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóhair_r %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóhair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.hair_r, dress_data2.hair_r);
         dress_data1.hair_r = dress_data2.hair_r;
         return -18;
@@ -1364,7 +1364,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.hair_g != dress_data2.hair_g)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóhair_g %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóhair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.hair_g, dress_data2.hair_g);
         dress_data1.hair_g = dress_data2.hair_g;
         return -19;
@@ -1373,7 +1373,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (dress_data1.hair_b != dress_data2.hair_b)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎóhair_b %d %d", ship->cfg->name, src->cur_block->b,
+            " ´íÎóhair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, dress_data1.hair_b, dress_data2.hair_b);
         dress_data1.hair_b = dress_data2.hair_b;
         return -20;
@@ -1387,7 +1387,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (f1.b != f2.b)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎób %u %u", ship->cfg->name, src->cur_block->b,
+            " ´íÎób %u %u", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, f1.b, f2.b);
         f1.b = f2.b;
         return -21;
@@ -1398,7 +1398,7 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     if (f1.b != f2.b)
     {
         ERR_LOG("%s(%d): ½ÇÉ«Êı¾İ¼ì²éÊ§°Ü GC %" PRIu32
-            " ´íÎób %u %u", ship->cfg->name, src->cur_block->b,
+            " ´íÎób %u %u", ship->cfg->ship_name, src->cur_block->b,
             src->guildcard, f1.b, f2.b);
         f1.b = f2.b;
         return -22;

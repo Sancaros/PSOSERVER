@@ -1045,7 +1045,7 @@ static int handle_ship(xmlNode* n, psocn_ship_t* cur) {
     }
 
     /* Copy out the strings out that we need */
-    cur->name = (char*)name;
+    cur->ship_name = (char*)name;
     cur->gm_file = (char*)gms;
 
     /* Copy out the gmonly flag */
@@ -1409,15 +1409,15 @@ void psocn_free_ship_config(psocn_ship_t* cfg) {
             free_safe(cfg->limits);
         }
 
-        xmlFree(cfg->name);
+        xmlFree(cfg->ship_name);
+        xmlFree(cfg->ship_cert);
+        xmlFree(cfg->ship_key);
+        xmlFree(cfg->shipgate_ca);
         xmlFree(cfg->gm_file);
         xmlFree(cfg->quests_file);
         xmlFree(cfg->quests_dir);
         xmlFree(cfg->bans_file);
         xmlFree(cfg->scripts_file);
-        xmlFree(cfg->shipgate_ca);
-        xmlFree(cfg->ship_key);
-        xmlFree(cfg->ship_cert);
         xmlFree(cfg->bb_param_dir);
         xmlFree(cfg->v2_param_dir);
         xmlFree(cfg->bb_map_dir);

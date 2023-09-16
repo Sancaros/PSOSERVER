@@ -948,10 +948,10 @@ static uint32_t get_ship_name(ship_client_t *c, lobby_t *l) {
     if(c->q_stack[3] > 253)
         return QUEST_FUNC_RET_INVALID_REGISTER;
 
-    if(strlen(ship->cfg->name) < 12)
-        strcpy((char *)tmpname, ship->cfg->name);
+    if(strlen(ship->cfg->ship_name) < 12)
+        strcpy((char *)tmpname, ship->cfg->ship_name);
     else
-        memcpy(tmpname, ship->cfg->name, 12);
+        memcpy(tmpname, ship->cfg->ship_name, 12);
 
     /* Send the ship's name in 3 registers... */
     tmp = tmpname[0] | ((tmpname[1]) << 8) | (tmpname[2] << 16) |
@@ -982,10 +982,10 @@ static uint32_t get_ship_name_utf16(ship_client_t *c, lobby_t *l) {
     if(c->q_stack[3] > 250)
         return QUEST_FUNC_RET_INVALID_REGISTER;
 
-    if(strlen(ship->cfg->name) < 12)
-        strcpy((char *)tmpname, ship->cfg->name);
+    if(strlen(ship->cfg->ship_name) < 12)
+        strcpy((char *)tmpname, ship->cfg->ship_name);
     else
-        memcpy(tmpname, ship->cfg->name, 12);
+        memcpy(tmpname, ship->cfg->ship_name, 12);
 
     /* Send the ship's name in 6 registers... */
     tmp = tmpname[0] | (tmpname[1] << 16);

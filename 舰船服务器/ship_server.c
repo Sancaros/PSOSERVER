@@ -433,7 +433,7 @@ static void print_config(psocn_ship_t* cfg) {
     CONFIG_LOG("´¬Õ¢¶Ë¿Ú: %d", (int)cfg->shipgate_port);
 
     /* Print out the ship's information. */
-    CONFIG_LOG("½¢´¬Ãû³Æ: %s", cfg->name);
+    CONFIG_LOG("½¢´¬Ãû³Æ: %s", cfg->ship_name);
 
     CONFIG_LOG("½¢´¬ IPv4 ÓòÃû: %s", cfg->ship_host4);
 
@@ -569,7 +569,7 @@ static void open_log(psocn_ship_t* cfg) {
     char fn[64 + 32];
     FILE* dbgfp;
 
-    sprintf(fn, "Debug\\%s_debug.log", cfg->name);
+    sprintf(fn, "Debug\\%s_debug.log", cfg->ship_name);
     errno_t err = fopen_s(&dbgfp, fn, "a");
 
     if (err) {
@@ -584,7 +584,7 @@ static void reopen_log(void) {
     char fn[64 + 32];
     FILE* dbgfp, * ofp;
 
-    sprintf(fn, "Debug\\%s_debug.log", ship->cfg->name);
+    sprintf(fn, "Debug\\%s_debug.log", ship->cfg->ship_name);
     errno_t err = fopen_s(&dbgfp, fn, "a");
 
     if (err) {
