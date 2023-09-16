@@ -277,156 +277,6 @@ bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, si
     return is_rare;
 }
 
-/* 3个章节 32个地图*/
-static const uint32_t maps[3][0x20] = {
-    {1,1,1,5,1,5,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
-    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,2,2,2,1,1,1,1,1,1,1,1},
-    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-
-static const uint32_t sp_maps[3][0x20] = {
-    {1,1,1,3,1,3,3,1,3,1,3,1,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
-    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,1,2,1,1,1,1,1,1,1,1,1},
-    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-
-typedef struct AreaMapFileIndex {
-    const char* name_token;
-    int variation1_values_size;
-    int variation1_values[3];
-    int variation2_values_size;
-    int variation2_values[5];
-} AreaMapFileIndex_t;
-
-// These are indexed as [episode][is_solo][area], where episode is 0-2
-static const AreaMapFileIndex_t map_file_info[3][2][16] = {
-    {
-        // Episode 1
-        {
-            // Non-solo
-            {"city00", 1, {-1}, 1, {0}},
-            {"forest01", 1, {-1}, 5, {0, 1, 2, 3, 4}},
-            {"forest02", 1, {-1}, 5, {0, 1, 2, 3, 4}},
-            {"cave01", 3, {0, 1, 2}, 2, {0, 1}},
-            {"cave02", 3, {0, 1, 2}, 2, {0, 1}},
-            {"cave03", 3, {0, 1, 2}, 2, {0, 1}},
-            {"machine01", 3, {0, 1, 2}, 2, {0, 1}},
-            {"machine02", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient01", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient02", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient03", 3, {0, 1, 2}, 2, {0, 1}},
-            {"boss01", 1, {-1}, 1, {-1}},
-            {"boss02", 1, {-1}, 1, {-1}},
-            {"boss03", 1, {-1}, 1, {-1}},
-            {"boss04", 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-        },
-        {
-            // Solo
-            {"city00", 1, {-1}, 1, {0}},
-            {"forest01", 1, {-1}, 3, {0, 2, 4}},
-            {"forest02", 1, {-1}, 3, {0, 3, 4}},
-            {"cave01", 3, {0, 1, 2}, 1, {0}},
-            {"cave02", 3, {0, 1, 2}, 1, {0}},
-            {"cave03", 3, {0, 1, 2}, 1, {0}},
-            {"machine01", 3, {0, 1, 2}, 2, {0, 1}},
-            {"machine02", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient01", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient02", 3, {0, 1, 2}, 2, {0, 1}},
-            {"ancient03", 3, {0, 1, 2}, 2, {0, 1}},
-            {"boss01", 1, {-1}, 1, {-1}},
-            {"boss02", 1, {-1}, 1, {-1}},
-            {"boss03", 1, {-1}, 1, {-1}},
-            {"boss04", 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-        },
-    },
-    {
-        // Episode 2
-        {
-            // Non-solo
-            {"labo00", 1, {-1}, 1, {0}},
-            {"ruins01", 2, {0, 1}, 1, {0}},
-            {"ruins02", 2, {0, 1}, 1, {0}},
-            {"space01", 2, {0, 1}, 1, {0}},
-            {"space02", 2, {0, 1}, 1, {0}},
-            {"jungle01", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle02", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle03", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle04", 2, {0, 1}, 2, {0, 1}},
-            {"jungle05", 1, {-1}, 3, {0, 1, 2}},
-            {"seabed01", 2, {0, 1}, 2, {0, 1}},
-            {"seabed02", 2, {0, 1}, 2, {0, 1}},
-            {"boss05", 1, {-1}, 1, {-1}},
-            {"boss06", 1, {-1}, 1, {-1}},
-            {"boss07", 1, {-1}, 1, {-1}},
-            {"boss08", 1, {-1}, 1, {-1}},
-        },
-        {
-            // Solo
-            {"labo00", 1, {-1}, 1, {0}},
-            {"ruins01", 2, {0, 1}, 1, {0}},
-            {"ruins02", 2, {0, 1}, 1, {0}},
-            {"space01", 2, {0, 1}, 1, {0}},
-            {"space02", 2, {0, 1}, 1, {0}},
-            {"jungle01", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle02", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle03", 1, {-1}, 3, {0, 1, 2}},
-            {"jungle04", 2, {0, 1}, 2, {0, 1}},
-            {"jungle05", 1, {-1}, 3, {0, 1, 2}},
-            {"seabed01", 2, {0, 1}, 2, {0, 1}},
-            {"seabed02", 2, {0, 1}, 2, {0, 1}},
-            {"boss05", 1, {-1}, 1, {-1}},
-            {"boss06", 1, {-1}, 1, {-1}},
-            {"boss07", 1, {-1}, 1, {-1}},
-            {"boss08", 1, {-1}, 1, {-1}},
-        },
-    },
-    {
-        // Episode 4
-        {
-            // Non-solo
-            {"city02", 1, {0}, 1, {0}},
-            {"wilds01", 1, {0}, 3, {0, 1, 2}},
-            {"wilds01", 1, {1}, 3, {0, 1, 2}},
-            {"wilds01", 1, {2}, 3, {0, 1, 2}},
-            {"wilds01", 1, {3}, 3, {0, 1, 2}},
-            {"crater01", 1, {0}, 3, {0, 1, 2}},
-            {"desert01", 3, {0, 1, 2}, 1, {0}},
-            {"desert02", 1, {0}, 3, {0, 1, 2}},
-            {"desert03", 3, {0, 1, 2}, 1, {0}},
-            {"boss09", 1, {0}, 1, {0}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-        },
-        {
-            // Solo
-            {"city02", 1, {0}, 1, {0}},
-            {"wilds01", 1, {0}, 3, {0, 1, 2}},
-            {"wilds01", 1, {1}, 3, {0, 1, 2}},
-            {"wilds01", 1, {2}, 3, {0, 1, 2}},
-            {"wilds01", 1, {3}, 3, {0, 1, 2}},
-            {"crater01", 1, {0}, 3, {0, 1, 2}},
-            {"desert01", 3, {0, 1, 2}, 1, {0}},
-            {"desert02", 1, {0}, 3, {0, 1, 2}},
-            {"desert03", 3, {0, 1, 2}, 1, {0}},
-            {"boss09", 1, {0}, 1, {0}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-            {NULL, 1, {-1}, 1, {-1}},
-        },
-    },
-};
-
-static const int max_area[3] = { 0x0E, 0x0F, 0x09 };
-
 static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
                      int ep, int alt, int area) {
     int i, j;
@@ -957,8 +807,6 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     char fn3[3][256] = { 0 };
     int size = ARRAYSIZE(fn3), i = 0;
     int srv[3] = { 0 };
-    static const char map_suffix[3][12] = { "_offe.dat", "e_s.dat", "e.dat" };
-    static const char obj_suffix[3][12] = { "_offo.dat", "_offo.dat", "o.dat" };
     int k, l, nmaps=0, nvars, m;
     FILE *fp;
     //FILE* fp2;
@@ -970,8 +818,8 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     game_objs_t *tmp2;
     const AreaMapFileIndex_t* a = &map_file_info[episode][solo][area];
 
-    nmaps = a->variation1_values_size;
-    nvars = a->variation2_values_size;
+    nmaps = a->map_nums;
+    nvars = a->map_vars;
 
     bb_parsed_maps[solo][episode][area].map_count = nmaps;
     bb_parsed_maps[solo][episode][area].variation_count = nvars;
@@ -1001,14 +849,14 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             fp = NULL;
 
             snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
-            if (a->variation1_values[k] != -1) {
+            if (a->map_num[k] != -1) {
                 char variation1_str[16];  // 根据需要调整大小
-                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->variation1_values[k]);
+                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
                 strcat(fn2, variation1_str);
             }
-            if (a->variation2_values[l] != -1) {
+            if (a->map_var[l] != -1) {
                 char variation2_str[16];  // 根据需要调整大小
-                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->variation2_values[l]);
+                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
                 strcat(fn2, variation2_str);
             }
 
@@ -1023,7 +871,7 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
             while (i < size)
             {
                 if (srv[i] >= 256) {
-                    ERR_LOG("文件夹名称太长,超出文本限制 %d >= 256", srv[i]);
+                    ERR_LOG("文件名称太长,超出文本限制 %d >= 256", srv[i]);
                     return 1;
                 }
 
@@ -1215,10 +1063,240 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     return 0;
 }
 
-static int read_v2_map_set(int j, int gcep, char* dir) {
+///* 3个章节 16个区域*/
+//static const uint32_t maps[3][0x20] = {
+//    {1,1,1,5,1,5,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
+//    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,2,2,2,1,1,1,1,1,1,1,1},
+//    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+//};
+//
+//static int read_v2_map_set(int j, int gcep, char* dir) {
+//    int srv, ep;
+//    char fn[256];
+//    int k, l, nmaps, nvars, i;
+//    FILE* fp;
+//    long sz;
+//    map_enemy_t* en;
+//    map_object_t* obj;
+//    game_object_t* gobj;
+//    game_enemies_t* tmp;
+//    game_objs_t* tmp2;
+//
+//    if (!gcep) {
+//        nmaps = maps[0][j << 1];
+//        nvars = maps[0][(j << 1) + 1];
+//        ep = 1;
+//    }
+//    else {
+//        nmaps = maps[gcep - 1][j << 1];
+//        nvars = maps[gcep - 1][(j << 1) + 1];
+//        ep = gcep;
+//    }
+//
+//    if (!gcep) {
+//        v2_parsed_maps[j].map_count = nmaps;
+//        v2_parsed_maps[j].variation_count = nvars;
+//        v2_parsed_objs[j].map_count = nmaps;
+//        v2_parsed_objs[j].variation_count = nvars;
+//    }
+//    else {
+//        gc_parsed_maps[gcep - 1][j].map_count = nmaps;
+//        gc_parsed_maps[gcep - 1][j].variation_count = nvars;
+//        gc_parsed_objs[gcep - 1][j].map_count = nmaps;
+//        gc_parsed_objs[gcep - 1][j].variation_count = nvars;
+//    }
+//
+//    if (!(tmp = (game_enemies_t*)malloc(sizeof(game_enemies_t) * nmaps *
+//        nvars))) {
+//        ERR_LOG("内存空间分配错误 maps: %s", strerror(errno));
+//        return 10;
+//    }
+//
+//    if (!gcep)
+//        v2_parsed_maps[j].data = tmp;
+//    else
+//        gc_parsed_maps[gcep - 1][j].data = tmp;
+//
+//    if (!(tmp2 = (game_objs_t*)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
+//        ERR_LOG("内存空间分配错误 objs: %s", strerror(errno));
+//        return 11;
+//    }
+//
+//    if (!gcep)
+//        v2_parsed_objs[j].data = tmp2;
+//    else
+//        gc_parsed_objs[gcep - 1][j].data = tmp2;
+//
+//    for (k = 0; k < nmaps; ++k) {                /* 地图编号 */
+//        for (l = 0; l < nvars; ++l) {            /* 变化 */
+//            tmp[k * nvars + l].count = 0;
+//
+//            if (!gcep) {
+//                srv = snprintf(fn, 256, "%s\\map\\mult\\m%X%d%d.dat", dir, j, k, l);
+//                //printf("gcep = %d mult %s \n", gcep, fn);
+//            }
+//            else
+//                srv = snprintf(fn, 256, "%s\\map\\mult\\m%d%X%d%d.dat", dir, gcep, j, k, l);
+//
+//
+//            if (srv >= 256) {
+//                return 1;
+//            }
+//
+//            if (!(fp = fopen(fn, "rb"))) {
+//                ERR_LOG("无法读取 map %s: %s", fn,
+//                    strerror(errno));
+//                return 2;
+//            }
+//
+//            /* Figure out how long the file is, so we know what to read in... */
+//            if (fseek(fp, 0, SEEK_END) < 0) {
+//                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
+//                fclose(fp);
+//                return 3;
+//            }
+//
+//            if ((sz = ftell(fp)) < 0) {
+//                ERR_LOG("无法获取文件大小: %s", strerror(errno));
+//                fclose(fp);
+//                return 4;
+//            }
+//
+//            if (fseek(fp, 0, SEEK_SET) < 0) {
+//                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
+//                fclose(fp);
+//                return 5;
+//            }
+//
+//            /* Make sure the size is sane */
+//            if (sz % 0x48) {
+//                ERR_LOG("地图文件大小无效!");
+//                fclose(fp);
+//                return 6;
+//            }
+//
+//            /* Allocate memory and read in the file. */
+//            if (!(en = (map_enemy_t*)malloc(sz))) {
+//                ERR_LOG("分配内存错误: %s", strerror(errno));
+//                fclose(fp);
+//                return 7;
+//            }
+//
+//            if (fread(en, 1, sz, fp) != (size_t)sz) {
+//                ERR_LOG("无法读取 file!");
+//                free_safe(en);
+//                fclose(fp);
+//                return 8;
+//            }
+//
+//            /* We're done with the file, so close it */
+//            fclose(fp);
+//
+//            /* Parse */
+//            if (parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, j)) {
+//                free_safe(en);
+//                return 9;
+//            }
+//
+//            /* Clean up, we're done with this for now... */
+//            free_safe(en);
+//
+//            /* Now, grab the objects */
+//            if (!gcep) {
+//                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%X%d%d_o.dat", dir, j, k, l);
+//                //printf("gcep = %d objs %s \n", gcep, fn);
+//            }
+//            else
+//                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%d%X%d%d_o.dat", dir, gcep, j, k, l);
+//
+//
+//            if (srv >= 256) {
+//                return 1;
+//            }
+//
+//            if (!(fp = fopen(fn, "rb"))) {
+//                ERR_LOG("无法读取 objects: %s", strerror(errno));
+//                return 2;
+//            }
+//
+//            /* Figure out how long the file is, so we know what to read in... */
+//            if (fseek(fp, 0, SEEK_END) < 0) {
+//                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
+//                fclose(fp);
+//                return 3;
+//            }
+//
+//            if ((sz = ftell(fp)) < 0) {
+//                ERR_LOG("无法获取文件大小: %s", strerror(errno));
+//                fclose(fp);
+//                return 4;
+//            }
+//
+//            if (fseek(fp, 0, SEEK_SET) < 0) {
+//                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
+//                fclose(fp);
+//                return 5;
+//            }
+//
+//            /* Make sure the size is sane */
+//            if (sz % 0x44) {
+//                ERR_LOG("地图文件大小无效!");
+//                fclose(fp);
+//                return 6;
+//            }
+//
+//            /* Allocate memory and read in the file. */
+//            if (!(obj = (map_object_t*)malloc(sz))) {
+//                ERR_LOG("分配内存错误: %s", strerror(errno));
+//                fclose(fp);
+//                return 7;
+//            }
+//
+//            if (fread(obj, 1, sz, fp) != (size_t)sz) {
+//                ERR_LOG("无法读取文件!");
+//                free_safe(obj);
+//                fclose(fp);
+//                return 8;
+//            }
+//
+//            /* We're done with the file, so close it */
+//            fclose(fp);
+//
+//            /* Make space for the game object representation. */
+//            gobj = (game_object_t*)malloc((sz / 0x44) * sizeof(game_object_t));
+//            if (!gobj) {
+//                ERR_LOG("无法为 game objects 分配内存: %s",
+//                    strerror(errno));
+//                free_safe(obj);
+//                //fclose(fp);
+//                return 9;
+//            }
+//
+//            /* Store what we'll actually use later... */
+//            for (i = 0; i < sz / 0x44; ++i) {
+//                gobj[i].data = obj[i];
+//                gobj[i].flags = 0;
+//                gobj[i].area = j;
+//            }
+//
+//            /* Save it into the struct */
+//            tmp2[k * nvars + l].count = sz / 0x44;
+//            tmp2[k * nvars + l].objs = gobj;
+//
+//            free_safe(obj);
+//        }
+//    }
+//
+//    return 0;
+//}
+
+static int read_v2_map_set(int area, int gcep, char* dir) {
     int srv, ep;
-    char fn[256];
-    int k, l, nmaps, nvars, i;
+    char fn[256] = { 0 };
+    char fn2[256] = { 0 };
+    char fn3[256] = { 0 };
+    int size = ARRAYSIZE(fn3), i = 0;
+    int k, l, nmaps, nvars;
     FILE *fp;
     long sz;
     map_enemy_t *en;
@@ -1226,29 +1304,30 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
     game_object_t *gobj;
     game_enemies_t *tmp;
     game_objs_t *tmp2;
+    const AreaMapFileIndex_t* a = &map_file_info[0][0][area];
 
     if(!gcep) {
-        nmaps = maps[0][j << 1];
-        nvars = maps[0][(j << 1) + 1];
         ep = 1;
     }
     else {
-        nmaps = maps[gcep - 1][j << 1];
-        nvars = maps[gcep - 1][(j << 1) + 1];
+        a = &map_file_info[gcep - 1][0][area];
         ep = gcep;
     }
 
+    nmaps = a->map_nums;
+    nvars = a->map_vars;
+
     if(!gcep) {
-        v2_parsed_maps[j].map_count = nmaps;
-        v2_parsed_maps[j].variation_count = nvars;
-        v2_parsed_objs[j].map_count = nmaps;
-        v2_parsed_objs[j].variation_count = nvars;
+        v2_parsed_maps[area].map_count = nmaps;
+        v2_parsed_maps[area].variation_count = nvars;
+        v2_parsed_objs[area].map_count = nmaps;
+        v2_parsed_objs[area].variation_count = nvars;
     }
     else {
-        gc_parsed_maps[gcep - 1][j].map_count = nmaps;
-        gc_parsed_maps[gcep - 1][j].variation_count = nvars;
-        gc_parsed_objs[gcep - 1][j].map_count = nmaps;
-        gc_parsed_objs[gcep - 1][j].variation_count = nvars;
+        gc_parsed_maps[gcep - 1][area].map_count = nmaps;
+        gc_parsed_maps[gcep - 1][area].variation_count = nvars;
+        gc_parsed_objs[gcep - 1][area].map_count = nmaps;
+        gc_parsed_objs[gcep - 1][area].variation_count = nvars;
     }
 
     if(!(tmp = (game_enemies_t *)malloc(sizeof(game_enemies_t) * nmaps *
@@ -1258,9 +1337,9 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
     }
 
     if(!gcep)
-        v2_parsed_maps[j].data = tmp;
+        v2_parsed_maps[area].data = tmp;
     else
-        gc_parsed_maps[gcep - 1][j].data = tmp;
+        gc_parsed_maps[gcep - 1][area].data = tmp;
 
     if(!(tmp2 = (game_objs_t *)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
         ERR_LOG("内存空间分配错误 objs: %s", strerror(errno));
@@ -1268,30 +1347,61 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
     }
 
     if(!gcep)
-        v2_parsed_objs[j].data = tmp2;
+        v2_parsed_objs[area].data = tmp2;
     else
-        gc_parsed_objs[gcep - 1][j].data = tmp2;
+        gc_parsed_objs[gcep - 1][area].data = tmp2;
 
     for(k = 0; k < nmaps; ++k) {                /* 地图编号 */
         for(l = 0; l < nvars; ++l) {            /* 变化 */
             tmp[k * nvars + l].count = 0;
 
-            if (!gcep) {
-                srv = snprintf(fn, 256, "%s\\map\\mult\\m%X%d%d.dat", dir, j, k, l);
-                //printf("gcep = %d mult %s \n", gcep, fn);
+            snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
+            if (a->map_num[k] != -1) {
+                char variation1_str[16];  // 根据需要调整大小
+                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
+                strcat(fn2, variation1_str);
             }
-            else
-                srv = snprintf(fn, 256, "%s\\map\\mult\\m%d%X%d%d.dat", dir, gcep, j, k, l);
-
-
-            if(srv >= 256) {
-                return 1;
+            if (a->map_var[l] != -1) {
+                char variation2_str[16];  // 根据需要调整大小
+                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
+                strcat(fn2, variation2_str);
             }
 
-            if(!(fp = fopen(fn, "rb"))) {
-                ERR_LOG("无法读取 map %s: %s", fn,
-                      strerror(errno));
-                return 2;
+            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
+            srv = snprintf(fn3, 256, "%s%s", fn2, map_suffix[2]);
+
+            i = 0;
+            while (i < size)
+            {
+                if (srv >= 256) {
+                    ERR_LOG("文件名称太长,超出文本限制 %d >= 256", srv);
+                    return 1;
+                }
+
+                if (!(fp = fopen(fn3, "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取地图文件 \"%s\": %s", fn3,
+                        strerror(errno));
+#endif // DEBUG
+                    i++;
+                    continue;
+                }
+
+#ifdef DEBUG
+                printf("章节 %s 区域 %d 地图对应文件 %s\n", gcep == 1 ? "II" : "I", area, fn3);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+
+#endif // DEBUG
+                break;
+            }
+
+            if (i == size) {
+#ifdef DEBUG
+                for (int o = 0; o < i; o++) {
+                    ERR_LOG("无法读取 %d 地图文件 \"%s\": %s", o, fn3[o], strerror(errno));
+                }
+#endif // DEBUG
+                return -1;
             }
 
             /* Figure out how long the file is, so we know what to read in... */
@@ -1338,30 +1448,51 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
             fclose(fp);
 
             /* Parse */
-            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, j)) {
+            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, area)) {
                 free_safe(en);
                 return 9;
             }
 
             /* Clean up, we're done with this for now... */
             free_safe(en);
+            fp = NULL;
 
-            /* Now, grab the objects */
-            if (!gcep) {
-                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%X%d%d_o.dat", dir, j, k, l);
-                //printf("gcep = %d objs %s \n", gcep, fn);
+            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
+            srv = snprintf(fn3, 256, "%s%s", fn2, obj_suffix[2]);
+
+            i = 0;
+            while (i < size)
+            {
+                if (srv >= 256) {
+                    ERR_LOG("文件名称太长,超出文本限制 %d >= 256", srv);
+                    return 1;
+                }
+
+                if (!(fp = fopen(fn3, "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取实例文件 \"%s\": %s", fn3,
+                        strerror(errno));
+#endif // DEBUG
+                    ERR_LOG("无法读取实例文件 \"%s\": %s", fn3,
+                        strerror(errno));
+                    i++;
+                    continue;
+                }
+
+#ifdef DEBUG
+                printf("章节 %s 区域 %d 实例对应文件 %s\n", gcep == 1 ? "II" : "I", area, fn3);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+#endif // DEBUG
+                break;
             }
-            else
-                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%d%X%d%d_o.dat", dir, gcep, j, k, l);
 
-
-            if(srv >= 256) {
-                return 1;
-            }
-
-            if(!(fp = fopen(fn, "rb"))) {
-                ERR_LOG("无法读取 objects: %s", strerror(errno));
-                return 2;
+            if (i == size) {
+#ifdef DEBUG
+                for (int o = 0; o < i; o++) {
+                    ERR_LOG("无法读取 %d 实例文件 \"%s\": %s", o, fn3[o], strerror(errno));
+                }
+#endif // DEBUG
+                return -1;
             }
 
             /* Figure out how long the file is, so we know what to read in... */
@@ -1421,7 +1552,7 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
             for(i = 0; i < sz / 0x44; ++i) {
                 gobj[i].data = obj[i];
                 gobj[i].flags = 0;
-                gobj[i].area = j;
+                gobj[i].area = area;
             }
 
             /* Save it into the struct */
@@ -1438,29 +1569,24 @@ static int read_v2_map_set(int j, int gcep, char* dir) {
 static int read_bb_map_files(char* fn) {
     int srv, solo, episode, area;
     for (solo = 0; solo < 2;++solo) {
-        //printf("k = %d \n", k);
         for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
 
             for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
                 /* 读取多人和单人模式地图. */
-                srv = read_bb_map_set(solo, episode, area, fn);
-                /*if ((srv = read_bb_map_set(0, i, j, fn)))
+                if ((srv = read_bb_map_set(solo, episode, area, fn)))
                     return srv;
-                if ((srv = read_bb_map_set(1, i, j, fn)))
-                    return srv;*/
             }
         }
     }
 
-    //getchar();
-    return srv;
+    return 0;
 }
 
 static int read_v2_map_files(char* fn) {
-    int srv, j;
+    int srv, area;
 
-    for(j = 0; j < 16 && j <= max_area[0]; ++j) {
-        if((srv = read_v2_map_set(j, 0, fn)))
+    for(area = 0; area < 16 && area <= max_area[0]; ++area) {   /* 区域 */
+        if((srv = read_v2_map_set(area, 0, fn)))
             return srv;
     }
 
@@ -1468,16 +1594,13 @@ static int read_v2_map_files(char* fn) {
 }
 
 static int read_gc_map_files(char* fn) {
-    int srv, j;
+    int srv, episode, area;
 
-    for(j = 0; j < 16 && j <= max_area[0]; ++j) {
-        if((srv = read_v2_map_set(j, 1, fn)))
-            return srv;
-    }
-
-    for(j = 0; j < 16 && j <= max_area[1]; ++j) {
-        if((srv = read_v2_map_set(j, 2, fn)))
-            return srv;
+    for (episode = 0; episode < 2; ++episode) {                            /* 章节 */
+        for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
+            if ((srv = read_v2_map_set(area, episode + 1, fn)))
+                return srv;
+        }
     }
 
     return 0;
@@ -1814,7 +1937,7 @@ int bb_load_game_enemies(lobby_t *l) {
     }
 
     if(!(en->enemies = (game_enemy_t *)malloc(sizeof(game_enemy_t) * enemies))) {
-        ERR_LOG("分配敌人群体内存错误: %s", strerror(errno));
+        ERR_LOG("分配 %d 敌人群体内存错误: %s", enemies, strerror(errno));
         free_safe(en);
         return -3;
     }
@@ -2023,7 +2146,7 @@ int gc_load_game_enemies(lobby_t *l) {
     }
 
     if (!(en->enemies = (game_enemy_t*)malloc(sizeof(game_enemy_t) * enemies))) {
-        ERR_LOG("分配敌人群体内存错误: %s", strerror(errno));
+        ERR_LOG("分配 %d 敌人群体内存错误: %s", enemies, strerror(errno));
         free_safe(en);
         return -3;
     }

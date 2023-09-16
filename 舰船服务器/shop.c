@@ -218,7 +218,7 @@ uint32_t get_bb_shop_price(iitem_t* ci) {
 }
 
 item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index) {
-    static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
+    static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
     item_t item = { 0 };
     item.datab[0] = 物品类型;
 
@@ -248,7 +248,7 @@ item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t i
                 item.datab[2] = 2;
                 break;
             }
-            item.datab[5] = max_quantity[难度] + 1;
+            item.datab[5] = max_quantity[难度];
             break;
         }
 

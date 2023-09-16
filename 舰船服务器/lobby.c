@@ -213,23 +213,6 @@ static void lobby_setup_drops(ship_client_t *c, lobby_t *l, uint32_t rs) {
     }
 }
 
-/* This list of numbers was borrowed from newserv. Hopefully Fuzziqer won't
-   mind too much. */
-static const uint32_t maps[3][0x20] = {
-    {1,1,1,5,1,5,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
-    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,2,2,2,1,1,1,1,1,1,1,1},
-    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-
-static const uint32_t sp_maps[3][0x20] = {
-    {1,1,1,3,1,3,3,1,3,1,3,1,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
-    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,1,2,1,1,1,1,1,1,1,1,1},
-    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
-
-static const uint32_t dcnte_maps[0x20] =
-    {1,1,1,2,1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1};
-
 static void create_key(void) {
     pthread_key_create(&id_key, NULL);
 }
@@ -465,33 +448,48 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
            (c->flags & CLIENT_FLAG_IS_NTE)) {
             for(i = 0; i < 0x20; ++i) {
                 if(dcnte_maps[i] != 1) {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    dcnte_maps[i];
                     l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         dcnte_maps[i];
                 }
             }
         }
-        else if(!single_player) {
-            for(i = 0; i < 0x20; ++i) {
-                if(maps[episode - 1][i] != 1) {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
-                        maps[episode - 1][i];
-                }
-            }
-        }
         else {
-            for(i = 0; i < 0x20; ++i) {
-                if(sp_maps[episode - 1][i] != 1) {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    sp_maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
-                        sp_maps[episode - 1][i];
+            for (i = 0; i < 0x10; ++i) {
+                //DBG_LOG("map_file_info[%d][%d][%d] map_nums %d", episode - 1, single_player, i, map_file_info[episode - 1][single_player][i].map_nums);
+                if (map_file_info[episode - 1][single_player][i].map_nums != 1) {
+                    l->maps[i * 2] = sfmt_genrand_uint32(&c->sfmt_rng) %
+                        map_file_info[episode - 1][single_player][i].map_nums;
+                    //DBG_LOG("l->lmaps[%d].map_nums %d", i * 2, l->maps[i * 2]);
+                }
+                //DBG_LOG("map_file_info[%d][%d][%d] map_vars %d", episode - 1, single_player, i, map_file_info[episode - 1][single_player][i].map_vars);
+                if (map_file_info[episode - 1][single_player][i].map_vars != 1) {
+                    l->maps[i * 2 + 1] = sfmt_genrand_uint32(&c->sfmt_rng) %
+                        map_file_info[episode - 1][single_player][i].map_vars;
+                    //DBG_LOG("l->lmaps[%d].map_vars %d", i, i * 2 + 1, l->maps[i * 2 + 1]);
                 }
             }
+
+            //DBG_LOG("////////////////////////////");
         }
+        //    if(!single_player) {
+        //    for(i = 0; i < 0x20; ++i) {
+        //        DBG_LOG("maps[%d][%d] %d", episode - 1, i, maps[episode - 1][i]);
+        //        if(maps[episode - 1][i] != 1) {
+        //            l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
+        //                maps[episode - 1][i];
+        //            DBG_LOG("l->maps[%d] %d", i, l->maps[i]);
+        //        }
+        //    }
+        //    DBG_LOG("////////////////////////////");
+        //}
+        //else {
+        //    for(i = 0; i < 0x20; ++i) {
+        //        if(sp_maps[episode - 1][i] != 1) {
+        //            l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
+        //                sp_maps[episode - 1][i];
+        //        }
+        //    }
+        //}
     }
     else {
         if(c->version == CLIENT_VERSION_DCV1 &&
@@ -501,39 +499,51 @@ lobby_t *lobby_create_game(block_t *block, char *name, char *passwd,
                     l->maps[i] = c->next_maps[i];
                 }
                 else {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    dcnte_maps[i];
                     l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
                         dcnte_maps[i];
                 }
             }
         }
-        else if(!single_player) {
-            for(i = 0; i < 0x20; ++i) {
-                if(c->next_maps[i] < maps[episode - 1][i]) {
-                    l->maps[i] = c->next_maps[i];
-                }
-                else {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
-                        maps[episode - 1][i];
-                }
-            }
-        }
         else {
-            for(i = 0; i < 0x20; ++i) {
-                if(c->next_maps[i] < sp_maps[episode - 1][i]) {
-                    l->maps[i] = c->next_maps[i];
+            for (i = 0; i < 0x10; ++i) {
+                if (c->next_maps[i * 2] < map_file_info[episode - 1][single_player][i].map_nums) {
+                    l->maps[i * 2] = c->next_maps[i * 2];
                 }
                 else {
-                    //l->maps[i] = mt19937_genrand_int32(&block->rng) %
-                    //    sp_maps[episode - 1][i];
-                    l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
-                        sp_maps[episode - 1][i];
+                    l->maps[i * 2] = sfmt_genrand_uint32(&c->sfmt_rng) %
+                        map_file_info[episode - 1][single_player][i].map_nums;
+                }
+                if (c->next_maps[i * 2 + 1] < map_file_info[episode - 1][single_player][i].map_vars) {
+                    l->maps[i * 2 + 1] = c->next_maps[i * 2 + 1];
+                }
+                else {
+                    l->maps[i * 2 + 1] = sfmt_genrand_uint32(&c->sfmt_rng) %
+                        map_file_info[episode - 1][single_player][i].map_vars;
                 }
             }
         }
+        //    if(!single_player) {
+        //    for (i = 0; i < 0x20; ++i) {
+        //        if (c->next_maps[i] < maps[episode - 1][i]) {
+        //            l->maps[i] = c->next_maps[i];
+        //        }
+        //        else {
+        //            l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
+        //                maps[episode - 1][i];
+        //        }
+        //    }
+        //}
+        //else {
+        //    for(i = 0; i < 0x20; ++i) {
+        //        if(c->next_maps[i] < sp_maps[episode - 1][i]) {
+        //            l->maps[i] = c->next_maps[i];
+        //        }
+        //        else {
+        //            l->maps[i] = sfmt_genrand_uint32(&c->sfmt_rng) %
+        //                sp_maps[episode - 1][i];
+        //        }
+        //    }
+        //}
 
         free_safe(c->next_maps);
         c->next_maps = NULL;

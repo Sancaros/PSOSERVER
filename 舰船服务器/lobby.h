@@ -96,6 +96,11 @@ typedef struct lobby_qfunc {
     int nretvals;
 } lobby_qfunc_t;
 
+typedef struct Map_Size {
+    size_t map_nums;
+    size_t map_vars;
+} Map_Size_t;
+
 SLIST_HEAD(lobby_qfunc_list, lobby_qfunc);
 
 struct lobby {
@@ -148,7 +153,7 @@ struct lobby {
     char name[65];
     char passwd[65];
     uint32_t maps[0x20];
-    uint32_t bbmaps[128]; // 房间地图
+    //map_size_t lmaps[0x10]; 要改写的函数太多 暂时不启用 TODO
 
     uint32_t item_player_id[12]; //玩家背包物品id容器
     uint32_t bitem_player_id[12]; //玩家银行背包物品id容器

@@ -2857,10 +2857,10 @@ static int handle_maps(ship_client_t *c, const char *params) {
        at the end will give you a 0 in their place. */
     while(*params) {
         if(!isdigit(*params)) {
-            return send_txt(c, "%s", __(c, "\tE\tC7Invalid map entry."));
+            return send_txt(c, "%s", __(c, "\tE\tC7无效地图参数."));
         }
         else if(i > 31) {
-            return send_txt(c, "%s", __(c, "\tE\tC7Too many entries."));
+            return send_txt(c, "%s", __(c, "\tE\tC7地图参数数量超出限制."));
         }
 
         maps[i++] = *params - '0';
@@ -2875,13 +2875,13 @@ static int handle_maps(ship_client_t *c, const char *params) {
     /* Save the maps string into the client's struct. */
     c->next_maps = (uint32_t *)malloc(sizeof(uint32_t) * 32);
     if(!c->next_maps) {
-        return send_txt(c, "%s", __(c, "\tE\tC7Unknown error."));
+        return send_txt(c, "%s", __(c, "\tE\tC7未知错误.!c->next_maps"));
     }
 
     memcpy(c->next_maps, maps, sizeof(uint32_t) * 32);
 
     /* We're done. */
-    return send_txt(c, "%s", __(c, "\tE\tC7Set maps for next team."));
+    return send_txt(c, "%s", __(c, "\tE\tC7已设置下一个地图."));
 }
 
 /* 用法: /showmaps */
@@ -2905,7 +2905,7 @@ static int handle_showmaps(ship_client_t *c, const char *params) {
     string[32] = 0;
 
     pthread_mutex_unlock(&l->mutex);
-    return send_txt(c, "%s\n%s", __(c, "\tE\tC7Maps in use:"), string);
+    return send_txt(c, "%s\n%s", __(c, "\tE\tC7当前地图:"), string);
 }
 
 /* 用法: /restorebk */
