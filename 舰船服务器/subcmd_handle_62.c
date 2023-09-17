@@ -2510,7 +2510,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     sfmt_t* rng = &src->sfmt_rng;
     item_t result_item = { 0 };
-    litem_t* litem = { 0 };
     uint32_t menu_choice = pkt->menu_choice, reward_percent[3] = { 0 };
     Coren_Reward_List_t reward_list = { 0 };
 
@@ -2528,15 +2527,6 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
-    uint32_t price = menu_choice_price[menu_choice];
-
-    /* 只需要判断钱包是否充足即可 客户端内存已做扣除 */
-    if (character->disp.meseta < price) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
-            src->guildcard, pkt->shdr.type, character->disp.meseta, price);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return -1;
-    }
 
     // 获取当前系统时间
     SYSTEMTIME time;
@@ -2584,14 +2574,22 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         return subcmd_bb_send_coren_reward(dest, 1, result_item);
     }
 
+    //result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+    result_item.datab[5] = get_item_amount(&result_item, 1);
     /* 填充物品数据 */
-    litem = add_new_litem_locked(l, &result_item, src->cur_area, src->x, src->z);
+    result_item.item_id = generate_item_id(l, src->client_id);
 
-    if (!litem) {
-        ERR_LOG("GC %" PRIu32 " 房间中的物品列表内存空间已满!",
+    iitem_t iitem = player_iitem_init(result_item);
+
+    print_item_data(&iitem.data, src->version);
+
+    if (!add_iitem(src, &iitem)) {
+        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
-        return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足, 生成失败."));
+        return -1;
     }
+
+    subcmd_send_bb_create_inv_item(src, iitem.data, 1);
 
     switch (menu_choice)
     {
@@ -2613,7 +2611,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         break;
     }
 
-    return subcmd_bb_send_coren_reward(dest, 0, litem->iitem.data);
+    return subcmd_bb_send_coren_reward(dest, 0, iitem.data);
 }
 
 // 定义函数指针数组

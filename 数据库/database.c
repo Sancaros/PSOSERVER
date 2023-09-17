@@ -242,7 +242,7 @@ unsigned long psocn_db_str(psocn_dbconn_t* conn, char* q, const char* str, unsig
 
 const char* psocn_db_error(psocn_dbconn_t* conn) {
     if (!conn || !conn->conndata) {
-        return "No Connection";
+        return "数据库未连接";
     }
 
     return mysql_error((MYSQL*)conn->conndata);

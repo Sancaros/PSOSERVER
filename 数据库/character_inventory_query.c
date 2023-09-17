@@ -152,7 +152,7 @@ static int db_insert_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"'%08X', "
 		"'%02X', '%02X', '%02X', '%02X', "
 		"'%d', '%04X', '%02X', '%02X', '%08X', "
-		"'%s', "
+		"\'%s\', "
 		"'%" PRIu32 "', '%" PRIu8 "'"
 		")",
 		CHARACTER_INVENTORY_ITEMS,
@@ -191,7 +191,7 @@ static int db_update_inv_items(iitem_t* item, uint32_t gc, uint8_t slot, int ite
 		"item_id = '%08X', "
 		"data2_b0 = '%02X', data2_b1 = '%02X', data2_b2 = '%02X', data2_b3 = '%02X', "
 		"present = '%04X', extension_data1 = '%02X', extension_data2 = '%02X', flags = '%08X', "
-		"item_name = '%s'"
+		"item_name = \'%s\'"
 		" WHERE "
 		"(guildcard = '%" PRIu32 "') AND (slot = '%" PRIu8 "') AND (item_index = '%d')",
 		CHARACTER_INVENTORY_ITEMS,

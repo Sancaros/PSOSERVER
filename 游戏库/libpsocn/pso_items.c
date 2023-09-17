@@ -186,6 +186,7 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 		case ITEM_SUBTYPE_MAG_CELL2:
 		case ITEM_SUBTYPE_ADD_SLOT:
 		case ITEM_SUBTYPE_PHOTON:
+		case ITEM_SUBTYPE_DISK_MUSIC:
 			return 99;
 		}
 
@@ -196,19 +197,23 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 }
 
 /* 仅用于房间物品数量 */
-uint32_t get_litem_amount(item_t* item) {
+uint8_t get_item_amount(item_t* item, uint32_t amount) {
 	if (is_stackable(item)) {
 		if (item->datab[5] <= 0) {
 			item->datab[5] = 1;
 		}
-		else if (item->datab[5] > (uint8_t)max_stack_size(item)) {
+		else if (amount > (uint8_t)max_stack_size(item)) {
 			item->datab[5] = (uint8_t)max_stack_size(item);
 		}
-
-		return item->datab[5];
+		else if (amount > 0){
+			item->datab[5] = (uint8_t)amount;
+		}
+	}
+	else if(item->datab[0] == ITEM_TYPE_MESETA){
+		item->data2l = amount > 999999 ? 999999 : amount;
 	}
 
-	return 1;
+	return item->datab[5];
 }
 
 bool is_common_consumable(uint32_t primary_identifier) {

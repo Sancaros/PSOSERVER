@@ -5211,23 +5211,23 @@ static int handle_qflag_get(ship_t* c, shipgate_qflag_pkt* pkt) {
 
     /* Execute the query */
     if (psocn_db_real_query(&conn, query)) {
-        SQLERR_LOG("%s", psocn_db_error(&conn));
+        SQLERR_LOG("查询任务标志数据库失败 %s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, pkt->hdr.pkt_len - 8);
     }
 
     if (!(result = psocn_db_result_store(&conn))) {
-        SQLERR_LOG("%s", psocn_db_error(&conn));
+        SQLERR_LOG("未查询到任务标志 %s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, pkt->hdr.pkt_len - 8);
     }
 
     if (!(row = psocn_db_result_fetch(result))) {
-        SQLERR_LOG("%s", psocn_db_error(&conn));
+        SQLERR_LOG("未查询到匹配的任务标志结果 %s", psocn_db_error(&conn));
         psocn_db_result_free(result);
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
             ERR_QFLAG_NO_DATA, (uint8_t*)&pkt->guildcard,
-            16);
+            pkt->hdr.pkt_len - 8);
     }
 
     value = (uint32_t)strtoul(row[0], NULL, 0);

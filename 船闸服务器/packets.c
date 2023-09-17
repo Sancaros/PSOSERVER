@@ -36,7 +36,7 @@
 //static uint8_t sendbuf[65536];
 
 /* 获取 sendbuf 动态内存数据. */
-uint8_t* get_sendbuf(void) {
+uint8_t* get_sg_sendbuf(void) {
     uint8_t* sendbuf = (uint8_t*)malloc(65536);
 
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
@@ -82,62 +82,85 @@ static ssize_t ship_send(ship_t* c, const void* buffer, size_t len) {
 
 /* Send a raw packet away. */
 static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
-    ssize_t rv, total = 0;
-    void* tmp;
 
-    /* Keep trying until the whole thing's sent. */
-    if (!c->sendbuf_cur) {
-        while (total < len) {
-            rv = ship_send(c, sendbuf + total, len - total);
+    __try {
+        ssize_t rv, total = 0;
+        void* tmp;
 
-            //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
+        /* Keep trying until the whole thing's sent. */
+        if (!c->sendbuf_cur) {
+            while (total < len) {
+                rv = ship_send(c, sendbuf + total, len - total);
 
-            /* 检测数据是否以发送完成? */
-            if (rv < 0) {
-                /* 这是一个可以纠正的错误代码吗? */
-                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+                //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
+
+                /* 检测数据是否以发送完成? */
+                if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED) {
+                    /* Try again. */
                     continue;
-                else
+                }
+                else if (rv <= 0) {
+                    if (sendbuf)
+                        free_safe(sendbuf);
                     return -1;
+                }
+                //if (rv < 0) {
+                //    /* 这是一个可以纠正的错误代码吗? */
+                //    if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
+                //        continue;
+                //    else {
+                //        if (sendbuf)
+                //            free_safe(sendbuf);
+                //        return -1;
+                //    }
+                //}
+
+                total += rv;
+            }
+        }
+
+        rv = len - total;
+
+        if (rv) {
+            /* Move out any already transferred data. */
+            if (c->sendbuf_start) {
+                memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
+                    c->sendbuf_cur - c->sendbuf_start);
+                c->sendbuf_cur -= c->sendbuf_start;
             }
 
-            total += rv;
-        }
-    }
+            /* See if we need to reallocate the buffer. */
+            if (c->sendbuf_cur + rv > c->sendbuf_size) {
+                tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
 
-    rv = len - total;
+                /* If we can't allocate the space, bail. */
+                if (tmp == NULL) {
+                    ERR_LOG("realloc");
+                    return -1;
+                }
 
-    if (rv) {
-        /* Move out any already transferred data. */
-        if (c->sendbuf_start) {
-            memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-                c->sendbuf_cur - c->sendbuf_start);
-            c->sendbuf_cur -= c->sendbuf_start;
-        }
-
-        /* See if we need to reallocate the buffer. */
-        if (c->sendbuf_cur + rv > c->sendbuf_size) {
-            tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-
-            /* If we can't allocate the space, bail. */
-            if (tmp == NULL) {
-                ERR_LOG("realloc");
-                return -1;
+                c->sendbuf_size = c->sendbuf_cur + rv;
+                c->sendbuf = (unsigned char*)tmp;
             }
 
-            c->sendbuf_size = c->sendbuf_cur + rv;
-            c->sendbuf = (unsigned char*)tmp;
+            /* Copy what's left of the packet into the output buffer. */
+            memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
+            c->sendbuf_cur += rv;
         }
 
-        /* Copy what's left of the packet into the output buffer. */
-        memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-        c->sendbuf_cur += rv;
+        if (sendbuf)
+            free_safe(sendbuf);
+
+        return 0;
     }
 
-    if (sendbuf)
-        free_safe(sendbuf);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    return 0;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 /* Encrypt a packet, and send it away. */
@@ -154,7 +177,7 @@ static int send_crypt(ship_t* c, int len, uint8_t* sendbuf) {
 
 int forward_dreamcast(ship_t* c, dc_pkt_hdr_t* dc, uint32_t sender,
     uint32_t gc, uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int dc_len = LE16(dc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + dc_len;
@@ -200,7 +223,7 @@ int forward_dreamcast(ship_t* c, dc_pkt_hdr_t* dc, uint32_t sender,
 
 int forward_pc(ship_t* c, dc_pkt_hdr_t* pc, uint32_t sender, uint32_t gc,
     uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int pc_len = LE16(pc->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + pc_len;
@@ -246,7 +269,7 @@ int forward_pc(ship_t* c, dc_pkt_hdr_t* pc, uint32_t sender, uint32_t gc,
 
 int forward_bb(ship_t* c, bb_pkt_hdr_t* bb, uint32_t sender, uint32_t gc,
     uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_fw_9_pkt* pkt = (shipgate_fw_9_pkt*)sendbuf;
     int bb_len = LE16(bb->pkt_len);
     int full_len = sizeof(shipgate_fw_9_pkt) + bb_len;
@@ -292,7 +315,7 @@ int forward_bb(ship_t* c, bb_pkt_hdr_t* bb, uint32_t sender, uint32_t gc,
 
 /* Send a welcome packet to the given ship. */
 int send_welcome(ship_t* c) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_login_pkt* pkt = (shipgate_login_pkt*)sendbuf;
 
     /* Scrub the buffer */
@@ -320,7 +343,7 @@ int send_welcome(ship_t* c) {
 }
 
 int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_ship_status6_pkt* pkt = (shipgate_ship_status6_pkt*)sendbuf;
 
     /* If the ship hasn't finished logging in yet, don't send this. */
@@ -359,7 +382,7 @@ int send_ship_status(ship_t* c, ship_t* o, uint16_t status) {
 
 /* Send a ping packet to a client. */
 int send_ping(ship_t* c, int reply) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_ping_t* pkt = (shipgate_ping_t*)sendbuf;
 
     /* 填充数据头. */
@@ -382,7 +405,7 @@ int send_ping(ship_t* c, int reply) {
 /* Send the ship a character data restore. */
 int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
     uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
 
     /* 填充数据头. */
@@ -405,7 +428,7 @@ int send_cdata(ship_t* c, uint32_t gc, uint32_t slot, void* cdata, int sz,
 /* Send the ship a character common bank data restore. */
 int send_common_bank_data(ship_t* c, uint32_t gc, uint32_t slot, void* cbdata, int sz,
     uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_char_data_pkt* pkt = (shipgate_char_data_pkt*)sendbuf;
 
     /* 填充数据头. */
@@ -428,7 +451,7 @@ int send_common_bank_data(ship_t* c, uint32_t gc, uint32_t slot, void* cbdata, i
 /* Send a reply to a user login request. */
 int send_usrloginreply(ship_t* c, uint32_t gc, uint32_t block, int good,
     uint32_t p) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_usrlogin_reply_pkt* pkt = (shipgate_usrlogin_reply_pkt*)sendbuf;
     uint16_t flags = good ? SHDR_RESPONSE : SHDR_FAILURE;
 
@@ -458,7 +481,7 @@ int send_usrloginreply(ship_t* c, uint32_t gc, uint32_t block, int good,
 
 /* Send a client/game update packet. */
 int send_counts(ship_t* c, uint32_t ship_id, uint16_t clients, uint16_t games) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_cnt_pkt* pkt = (shipgate_cnt_pkt*)sendbuf;
 
     /* Clear the packet first */
@@ -481,7 +504,7 @@ int send_counts(ship_t* c, uint32_t ship_id, uint16_t clients, uint16_t games) {
 /* Send an error packet to a ship */
 int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
     const uint8_t* data, int data_sz) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_error_pkt* pkt = (shipgate_error_pkt*)sendbuf;
     uint16_t sz;
 
@@ -511,7 +534,7 @@ int send_friend_message(ship_t* c, int on, uint32_t dest_gc,
     uint32_t dest_block, uint32_t friend_gc,
     uint32_t friend_block, uint32_t friend_ship,
     const char* friend_name, const char* nickname) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_friend_login_4_pkt* pkt = (shipgate_friend_login_4_pkt*)sendbuf;
 
     /* Clear the packet */
@@ -544,7 +567,7 @@ int send_friend_message(ship_t* c, int on, uint32_t dest_gc,
 /* Send a kick packet */
 int send_kick(ship_t* c, uint32_t requester, uint32_t user, uint32_t block,
     const char* reason) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_kick_pkt* pkt = (shipgate_kick_pkt*)sendbuf;
 
     /* Scrub the buffer */
@@ -571,7 +594,7 @@ int send_kick(ship_t* c, uint32_t requester, uint32_t user, uint32_t block,
 /* Send a portion of a user's friendlist to the user */
 int send_friendlist(ship_t* c, uint32_t requester, uint32_t block,
     int count, const friendlist_data_t* entries) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_friend_list_pkt* pkt = (shipgate_friend_list_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_friend_list_pkt) +
         sizeof(friendlist_data_t) * count;
@@ -596,7 +619,7 @@ int send_friendlist(ship_t* c, uint32_t requester, uint32_t block,
 /* Send a global message packet to a ship */
 int send_global_msg(ship_t* c, uint32_t requester, const char* text,
     uint16_t text_len) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_global_msg_pkt* pkt = (shipgate_global_msg_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_global_msg_pkt) + text_len;
 
@@ -617,7 +640,7 @@ int send_global_msg(ship_t* c, uint32_t requester, const char* text,
 
 /* Begin an options packet */
 void* user_options_begin(uint32_t guildcard, uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
 
     /* 填充数据头 */
@@ -639,7 +662,7 @@ void* user_options_begin(uint32_t guildcard, uint32_t block) {
 /* Append an option value to the options packet */
 void* user_options_append(void* p, uint32_t opt, uint32_t len,
     const uint8_t* data) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
     shipgate_user_opt_t* o = (shipgate_user_opt_t*)p;
     int padding = 8 - (len & 7);
@@ -664,7 +687,7 @@ void* user_options_append(void* p, uint32_t opt, uint32_t len,
 
 /* Finish off a user options packet and send it along */
 int send_user_options(ship_t* c) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_opt_pkt* pkt = (shipgate_user_opt_pkt*)sendbuf;
     uint16_t len = pkt->hdr.pkt_len;
 
@@ -684,7 +707,7 @@ int send_user_options(ship_t* c) {
 int send_bb_opts(ship_t* c, uint32_t gc, uint32_t block,
     psocn_bb_db_opts_t* opts, psocn_bb_db_guild_t* guild, 
     uint32_t guild_points_personal_donation, psocn_bank_t* common_bank) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_bb_opts_pkt* pkt = (shipgate_bb_opts_pkt*)sendbuf;
 
     memset(pkt, 0, sizeof(shipgate_bb_opts_pkt));
@@ -749,7 +772,7 @@ int send_simple_mail(ship_t* c, uint32_t gc, uint32_t block, uint32_t sender,
 /* Send a chunk of scripting code to a ship. */
 int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
     uint8_t type, uint32_t file_len, uint32_t crc) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     FILE* fp;
 
@@ -798,7 +821,7 @@ int send_script_chunk(ship_t* c, const char* local_fn, const char* remote_fn,
 /* Send a packet to check if a particular script is in its current form on a
    ship. */
 int send_script_check(ship_t* c, ship_script_t* scr) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     uint8_t type = scr->module ? SCHUNK_TYPE_MODULE : SCHUNK_TYPE_SCRIPT;
 
@@ -824,7 +847,7 @@ int send_script_check(ship_t* c, ship_script_t* scr) {
 
 /* Send a packet to send a script to the a ship. */
 int send_script(ship_t* c, ship_script_t* scr) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_schunk_pkt* pkt = (shipgate_schunk_pkt*)sendbuf;
     FILE* fp;
     uint16_t pkt_len;
@@ -876,7 +899,7 @@ int send_script(ship_t* c, ship_script_t* scr) {
 }
 
 int send_sset(ship_t* c, uint32_t action, ship_script_t* scr) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_sset_pkt* pkt = (shipgate_sset_pkt*)sendbuf;
 
     /* Don't try to send these to a ship that won't know what to do with them */
@@ -903,7 +926,7 @@ int send_sset(ship_t* c, uint32_t action, ship_script_t* scr) {
 /* Send a script data packet */
 int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
     const uint8_t* data, uint32_t len) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_sdata_pkt* pkt = (shipgate_sdata_pkt*)sendbuf;
     uint16_t pkt_len;
 
@@ -938,7 +961,7 @@ int send_sdata(ship_t* c, uint32_t gc, uint32_t block, uint32_t event,
 /* Send a quest flag response */
 int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
     uint32_t fid, uint32_t qid, uint32_t value, uint32_t ctl) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_qflag_pkt* pkt = (shipgate_qflag_pkt*)sendbuf;
 
     /* Don't try to send these to a ship that won't know what to do with them */
@@ -963,7 +986,7 @@ int send_qflag(ship_t* c, uint16_t type, uint32_t gc, uint32_t block,
 
 /* Send a simple ship control request */
 int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_shipctl_pkt* pkt = (shipgate_shipctl_pkt*)sendbuf;
 
     /* This packet doesn't exist until protocol 19. */
@@ -984,7 +1007,7 @@ int send_sctl(ship_t* c, uint32_t ctl, uint32_t acc) {
 
 /* Send a shutdown/restart request */
 int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_sctl_shutdown_pkt* pkt = (shipgate_sctl_shutdown_pkt*)sendbuf;
 
     /* This packet doesn't exist until protocol 19. */
@@ -1010,7 +1033,7 @@ int send_shutdown(ship_t* c, int restart, uint32_t acc, uint32_t when) {
 
 /* Begin an blocklist packet */
 void user_blocklist_begin(uint32_t guildcard, uint32_t block) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
 
     /* 填充数据头 */
@@ -1028,7 +1051,7 @@ void user_blocklist_begin(uint32_t guildcard, uint32_t block) {
 
 /* Append a value to the blocklist packet */
 void user_blocklist_append(uint32_t gc, uint32_t flags) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
     uint32_t i = pkt->count;
 
@@ -1043,7 +1066,7 @@ void user_blocklist_append(uint32_t gc, uint32_t flags) {
 
 /* Finish off a user blocklist packet and send it along */
 int send_user_blocklist(ship_t* c) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_blocklist_pkt* pkt = (shipgate_user_blocklist_pkt*)sendbuf;
     uint16_t len = pkt->hdr.pkt_len;
 
@@ -1066,7 +1089,7 @@ int send_user_blocklist(ship_t* c) {
 
 int send_user_error(ship_t* c, uint16_t pkt_type, uint32_t err_code,
     uint32_t gc, uint32_t block, const char* message) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_user_err_pkt* pkt = (shipgate_user_err_pkt*)sendbuf;
     uint16_t len = (uint16_t)(message ? strlen(message) : 0);
     uint16_t fl = err_code != ERR_NO_ERROR ? SHDR_FAILURE : 0;
@@ -1097,7 +1120,7 @@ int send_user_error(ship_t* c, uint16_t pkt_type, uint32_t err_code,
 }
 
 int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_max_tech_lvl_bb_pkt* pkt = (shipgate_max_tech_lvl_bb_pkt*)sendbuf;
     uint16_t len = sizeof(shipgate_max_tech_lvl_bb_pkt);
 
@@ -1123,7 +1146,7 @@ int send_max_tech_lvl_bb(ship_t* c, bb_max_tech_level_t* data) {
 }
 
 int send_pl_lvl_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_pl_level_bb_pkt* pkt = (shipgate_pl_level_bb_pkt*)sendbuf;
     uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
 
@@ -1212,7 +1235,7 @@ int send_player_level_table_bb(ship_t* c) {
 }
 
 int send_def_mode_char_data_bb(ship_t* c, uint8_t* data, uint32_t compressed_size) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_default_mode_char_data_bb_pkt* pkt = (shipgate_default_mode_char_data_bb_pkt*)sendbuf;
     uint16_t len = (uint16_t)(compressed_size + 4 + sizeof(shipgate_hdr_t));
 
@@ -1284,7 +1307,7 @@ int send_default_mode_char_data_bb(ship_t* c) {
 }
 
 int send_recive_data_complete(ship_t* c) {
-    uint8_t* sendbuf = get_sendbuf();
+    uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_hdr_t* pkt = (shipgate_hdr_t*)sendbuf;
     uint16_t len = (uint16_t)(sizeof(shipgate_hdr_t));
 

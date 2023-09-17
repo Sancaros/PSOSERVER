@@ -133,7 +133,7 @@ litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
     litem->x = x;
     litem->z = z;
     litem->area = area;
-    litem->amount = get_litem_amount(new_item);
+    litem->amount = get_item_amount(new_item, new_item->datab[5]);
 
 #ifdef DEBUG
 
@@ -174,7 +174,7 @@ litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, flo
     litem->x = x;
     litem->z = z;
     litem->area = area;
-    litem->amount = get_litem_amount(&iitem->data);
+    litem->amount = get_item_amount(&iitem->data, iitem->data.datab[5]);
 
     /* Add it to the queue, and return the new item */
     TAILQ_INSERT_HEAD(&l->item_queue, litem, qentry);
@@ -1400,6 +1400,10 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 DBG_LOG("使用万圣节礼物");
                 break;
             }
+            break;
+
+        case ITEM_SUBTYPE_DISK_MUSIC:
+            should_delete_item = true;
             break;
 
         default:

@@ -4405,8 +4405,8 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* TODO: Probably should do some checking here... */
-    /* Run the register sync script, if one is set. If the script returns
-       non-zero, then assume that it has adequately handled the sync. */
+    /* 运行寄存器同步脚本（如果已设置）。如果脚本返回非零，
+    则假设它已经充分处理了同步. */
     if ((script_execute(ScriptActionQuestSyncRegister, src, SCRIPT_ARG_PTR, src,
         SCRIPT_ARG_PTR, l, SCRIPT_ARG_UINT8, register_number,
         SCRIPT_ARG_UINT32, val, SCRIPT_ARG_END))) {
@@ -4421,22 +4421,24 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
 
         /* Make sure the error or response bits aren't set. */
         if ((ctl & 0x06)) {
-            DBG_LOG("Quest set flag register with illegal ctl!\n");
+            DBG_LOG("任务使用非法ctl注册标志Quest set flag register with illegal ctl!");
             send_sync_register(src, register_number, 0x8000FFFE);
         }
         /* Make sure we don't have anything with any reserved ctl bits set
            (unless a script has already handled the sync). */
         else if ((val & 0x17000000)) {
-            DBG_LOG("Quest set flag register with reserved ctl!\n");
+            DBG_LOG("任务使用寄存器ctl注册标志Quest set flag register with reserved ctl!");
             send_sync_register(src, register_number, 0x8000FFFE);
         }
         else if ((val & 0x08000000)) {
             /* Delete the flag... */
+            DBG_LOG("删除任务注册标志!");
             shipgate_send_qflag(&ship->sg, src, 1, ((val >> 16) & 0xFF),
                 src->cur_lobby->qid, 0, QFLAG_DELETE_FLAG);
         }
         else {
             /* Send the request to the shipgate... */
+            DBG_LOG("发送任务注册标志至舰闸!");
             shipgate_send_qflag(&ship->sg, src, ctl & 0x01, (val >> 16) & 0xFF,
                 src->cur_lobby->qid, val & 0xFFFF, 0);
         }

@@ -86,7 +86,7 @@
 #define ITEM_SUBTYPE_PRESENT            0x13/*todo player_use_item*/
 #define ITEM_SUBTYPE_SERVER_ITEM2       0x14/*todo player_use_item*/
 #define ITEM_SUBTYPE_PRESENT_EVENT      0x15
-#define ITEM_SUBTYPE_DISK_MUSIC         0x16/*todo player_use_item*/
+#define ITEM_SUBTYPE_DISK_MUSIC         0x16 /* 99 堆叠 */
 #define ITEM_SUBTYPE_HUNTER_REPORT      0x17/*todo player_use_item*/
 #define ITEM_SUBTYPE_PART_OF_MAG_CELL   0x18
 #define ITEM_SUBTYPE_GUILD_REWARD       0x19/*todo player_use_item*/
@@ -127,7 +127,7 @@ size_t stack_size(const item_t* item);
 size_t max_stack_size(const item_t* item);
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
 /* 仅用于房间物品数量 */
-uint32_t get_litem_amount(item_t* item);
+uint8_t get_item_amount(item_t* item, uint32_t amount);
 
 bool is_common_consumable(uint32_t primary_identifier);
 

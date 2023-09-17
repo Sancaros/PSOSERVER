@@ -56,7 +56,7 @@ typedef struct shipgate_error {
     shipgate_hdr_t hdr;
     uint32_t error_code;
     uint32_t reserved;
-    uint8_t data[4096];
+    uint8_t data[512];
 } PACKED shipgate_error_pkt;
 
 /* Error packet in reply to character data send or character request */
