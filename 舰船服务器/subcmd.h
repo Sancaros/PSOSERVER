@@ -3190,7 +3190,7 @@ typedef struct subcmd_bb_coren_act {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t menu_choice;
-    uint8_t unknown_a1[8]; // TODO: There might be uint16_ts and uint32_ts in here.
+    uint8_t unknown_a1[8]; // TODO: There might be uint16_ts and uint32_ts in here. 可能是客户端产生的随机码
 } PACKED subcmd_bb_coren_act_t;
 
 // 0xE3: Coren actions result (BB)

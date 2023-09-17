@@ -44,6 +44,7 @@
 #include "ptdata.h"
 
 #include "subcmd_handle.h"
+#include <pso_items_coren_reward_list.h>
 
 static int handle_itemreq_gm(ship_client_t* src,
     subcmd_itemreq_t* req) {
@@ -2507,8 +2508,11 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_coren_act_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    sfmt_t* rng = &l->block->sfmt_rng;
+    sfmt_t* rng = &src->sfmt_rng;
     item_t result_item = { 0 };
+    litem_t* litem = { 0 };
+    uint32_t menu_choice = pkt->menu_choice, reward_percent[3] = { 0 };
+    Coren_Reward_List_t reward_list = { 0 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2516,28 +2520,100 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    /*[2021年12月22日 02:35] 截获(15466) : 指令 0x"e2" 未被游戏进行接收处理. (数据如下)
+    if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的物数据!",
+            src->guildcard);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
-        [2021年12月22日 02:35] 截获(15466) :
-        (0000) 18 00 62 00 00 00 00 00 E2 04 01 00 00 00 00 00 ..b..... ? ......
-        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽
+    psocn_bb_char_t* character = get_client_char_bb(src);
+    uint32_t price = menu_choice_price[menu_choice];
 
+    /* 只需要判断钱包是否充足即可 客户端内存已做扣除 */
+    if (character->disp.meseta < price) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
+            src->guildcard, pkt->shdr.type, character->disp.meseta, price);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
 
-        [2021年12月22日 02:36] 截获(15466) : 指令 0x"e2" 未被游戏进行接收处理. (数据如下)
+    // 获取当前系统时间
+    SYSTEMTIME time;
+    GetLocalTime(&time);
 
-        [2021年12月22日 02:36] 截获(15466) :
-                                       08 09 0A 0B 0C
-        (0000) 18 00 62 00 00 00 00 00 E2 04 01 00 01 00 00 00 ..b..... ? ......
-               10 11 12 13 14 15 16 17
-        (0010) F6 CC 0A C3 70 2F E9 42                         鎏.胮 / 锽
+    // 获取当前是星期几（星期天 = 0, 星期一 = 1, 星期二 = 2, ..., 星期六 = 6）
+    reward_list.wday = time.wDayOfWeek;
 
-        [2023年09月16日 16:01:27:161] 调试(block_bb.c 0517): GC 10000002:2 默认掉落模式
-( 00000000 )   18 00 62 00 00 00 00 00   E2 04 00 00 02 00 00 00  ..b.....?......
-( 00000010 )   B3 9B 09 C3 13 E6 C0 42                           硾.?胬B
-        */
-    display_packet(pkt, pkt->hdr.pkt_len);
+#ifdef DEBUG
 
-    return subcmd_bb_send_coren_reward(dest, result_item);
+    // 将数字转换为对应的星期几文本
+    const char* weekDays[] = { "星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+    const char* currentDayOfWeek = weekDays[reward_list.wday];
+
+    // 打印当前是星期几
+    DBG_LOG("今天是 %s.", currentDayOfWeek);
+
+#endif // DEBUG
+
+    reward_percent[0] = weekly_reward_percent[menu_choice][reward_list.wday][0];
+    reward_percent[1] = weekly_reward_percent[menu_choice][reward_list.wday][1];
+    reward_percent[2] = weekly_reward_percent[menu_choice][reward_list.wday][2];
+    reward_list.rewards = day_reward_list[reward_list.wday][menu_choice];
+
+    /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
+    uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
+    if ((rng_value <= reward_percent[0]) && (reward_percent[0] != 0)) {
+        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+    }
+    else if ((rng_value <= reward_percent[1]) && (reward_percent[1] != 0)) {
+        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+    }
+    else if ((rng_value <= reward_percent[2]) && (reward_percent[2] != 0)) {
+        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+    }
+    else {
+
+#ifdef DEBUG
+
+        DBG_LOG("没有奖励 menu_choice 0x%08X", menu_choice);
+        display_packet(pkt, pkt->hdr.pkt_len);
+
+#endif // DEBUG
+        result_item.datal[0] = BBItem_NoSuchItem;
+        return subcmd_bb_send_coren_reward(dest, 1, result_item);
+    }
+
+    /* 填充物品数据 */
+    litem = add_new_litem_locked(l, &result_item, src->cur_area, src->x, src->z);
+
+    if (!litem) {
+        ERR_LOG("GC %" PRIu32 " 房间中的物品列表内存空间已满!",
+            src->guildcard);
+        return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足, 生成失败."));
+    }
+
+    switch (menu_choice)
+    {
+        /* 1000 美赛塔选项 */
+    case 0:
+        break;
+
+        /* 10000 美赛塔选项 */
+    case 1:
+        break;
+
+        /* 100000 美赛塔选项 */
+    case 2:
+        break;
+
+    default:
+        DBG_LOG("未知选项 0x%08X", menu_choice);
+        display_packet(pkt, pkt->hdr.pkt_len);
+        break;
+    }
+
+    return subcmd_bb_send_coren_reward(dest, 0, litem->iitem.data);
 }
 
 // 定义函数指针数组

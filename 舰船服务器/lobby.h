@@ -33,6 +33,7 @@
 
 #include <pso_player.h>
 #include "mapdata.h"
+#include "pso_struct_item.h"
 
 #define LOBBY_MAX_CLIENTS   12
 #define LOBBY_MAX_IN_TEAM   4

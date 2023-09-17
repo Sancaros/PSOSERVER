@@ -901,7 +901,7 @@ int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_item
 }
 
 /* 0xE3 SUBCMD62_COREN_ACT_RESULT BB 向玩家发送科伦赌博结果 */
-int subcmd_bb_send_coren_reward(ship_client_t* dest, item_t item) {
+int subcmd_bb_send_coren_reward(ship_client_t* dest, uint32_t flags, item_t item) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_coren_act_result_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_coren_act_result_t);

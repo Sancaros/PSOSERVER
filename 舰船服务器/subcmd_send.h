@@ -93,7 +93,7 @@ int subcmd_send_bb_level(ship_client_t* dest);
 int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create);
 
 /* 0xE3 SUBCMD62_COREN_ACT_RESULT BB 向玩家发送科伦赌博结果 */
-int subcmd_bb_send_coren_reward(ship_client_t* dest, item_t item);
+int subcmd_bb_send_coren_reward(ship_client_t* dest, uint32_t flags, item_t item);
 
 int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt);
 

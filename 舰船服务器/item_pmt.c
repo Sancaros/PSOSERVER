@@ -3002,6 +3002,80 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
     return item_base_check;
 }
 
+bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2, 
+    pmt_weapon_bb_t* weapon, pmt_guard_bb_t* guard, pmt_unit_bb_t* unit, pmt_mag_bb_t* mag, pmt_tool_bb_t* tool) {
+    errno_t err = 0;
+    uint8_t parts[4] = { 0 };
+
+    u32_to_u8(datal1, parts, false);
+
+    switch (parts[0]) {
+    case ITEM_TYPE_WEAPON:
+        /* 确保我们正在查找 weapon */
+        if (datal1 == 0x00000000) {
+            /* 光剑0没有任何意义 */
+            return false;
+        }
+
+        if (err = pmt_lookup_weapon_bb(datal1, weapon)) {
+            ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+            return false;
+        }
+        break;
+
+    case ITEM_TYPE_GUARD:
+        switch (parts[1]) {
+        case ITEM_SUBTYPE_FRAME:
+        case ITEM_SUBTYPE_BARRIER:
+            if (err = pmt_lookup_guard_bb(datal1, guard)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                return false;
+            }
+            break;
+
+        case ITEM_SUBTYPE_UNIT:
+            if (err = pmt_lookup_unit_bb(datal1, unit)) {
+                ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+                return false;
+            }
+            break;
+
+        default:
+            ERR_LOG("无效物品 CODE 0x%08X,0x%08X", datal1, datal2);
+            return false;
+        }
+        break;
+
+    case ITEM_TYPE_MAG:
+        if (err = pmt_lookup_mag_bb(datal1, mag)) {
+            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            return false;
+        }
+        break;
+
+    case ITEM_TYPE_TOOL:
+        if (err = pmt_lookup_tools_bb(datal1, datal2, tool)) {
+            ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
+            return false;
+        }
+        break;
+
+    case ITEM_TYPE_MESETA:
+#ifdef DEBUG
+
+        ERR_LOG("美赛塔之类的物品没有定义");
+
+#endif // DEBUG
+        break;
+
+    default:
+        ERR_LOG("无效物品 CODE 0x%08X,0x%08X", datal1, datal2);
+        return false;
+    }
+
+    return true;
+}
+
 pmt_item_base_t get_item_base_bb(const item_t* item) {
     pmt_item_base_t item_base = { 0 };
     pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
