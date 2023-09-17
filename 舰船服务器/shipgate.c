@@ -69,6 +69,20 @@ psocn_bb_mode_char_t default_mode_char;
 
 #define MAX_BUFFER_SIZE 1024
 
+/* Retrieve the thread-specific recvbuf for the current thread. */
+uint8_t* get_sg_recvbuf(void) {
+    uint8_t* recvbuf = (uint8_t*)malloc(65536);
+
+    if (!recvbuf) {
+        ERR_LOG("malloc");
+        perror("malloc");
+        return NULL;
+    }
+
+    memset(recvbuf, 0, 65536);
+    return recvbuf;
+}
+
 /* 获取当前线程的 shipgate sendbuf 线程特定内存空间. */
 uint8_t* get_sg_sendbuf() {
     uint8_t* sendbuf = (uint8_t*)malloc(65536);
@@ -3589,7 +3603,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         ssize_t pkt_sz;
         int rv = 0;
         unsigned char* rbp;
-        uint8_t* recvbuf = get_recvbuf();
+        uint8_t* recvbuf = get_sg_recvbuf();
         void* tmp;
         /* 确保8字节的倍数传输 */
         int recv_size = 8;
@@ -3639,7 +3653,8 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
                 ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
             }
 
-            goto end;
+            free_safe(recvbuf);
+            return sz;
         }
 
         sz += c->recvbuf_cur;
@@ -3694,6 +3709,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
 
                 if (!tmp) {
                     ERR_LOG("realloc");
+                    free_safe(recvbuf);
                     return -1;
                 }
 
@@ -3711,10 +3727,9 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             c->recvbuf_size = 0;
         }
 
-        return rv;
+        free_safe(recvbuf);
 
-    end:
-        return sz;
+        return rv;
     }
 
     __except (crash_handler(GetExceptionInformation())) {

@@ -5191,6 +5191,8 @@ static int handle_qflag_get(ship_t* c, shipgate_qflag_pkt* pkt) {
     flag_id = (flag_id & 0x0000FFFF) | (ntohs(pkt->flag_id_hi) << 16);
     qid = ntohl(pkt->quest_id);
 
+    DBG_LOG("%u %u %u", gc, block, flag_id);
+
     /* Make sure the packet is sane... */
     if ((ctl & QFLAG_DELETE_FLAG)) {
         ERR_LOG("Ship sent delete flag bit on get flag packet!"
@@ -5797,7 +5799,7 @@ static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 }
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
-uint8_t* get_recvbuf(void) {
+uint8_t* get_sg_recvbuf(void) {
     uint8_t* recvbuf = (uint8_t*)malloc(65536);
 
     if (!recvbuf) {
@@ -5817,7 +5819,7 @@ int handle_pkt(ship_t* c) {
     uint16_t pkt_sz;
     int rv = 0;
     unsigned char* rbp;
-    uint8_t* recvbuf = get_recvbuf();
+    uint8_t* recvbuf = get_sg_recvbuf();
     void* tmp;
     /* 确保8字节的倍数传输 */
     int recv_size = 8;
@@ -5866,7 +5868,7 @@ int handle_pkt(ship_t* c) {
         }
 
         free_safe(recvbuf);
-        return -1;
+        return sz;
     }
 
     sz += c->recvbuf_cur;
@@ -5930,7 +5932,7 @@ int handle_pkt(ship_t* c) {
         memcpy(c->recvbuf, rbp, sz);
         c->recvbuf_cur = sz;
     }
-    else {
+    else if(c->recvbuf) {
         /* Free the buffer, if we've got nothing in it. */
         free_safe(c->recvbuf);
         c->recvbuf = NULL;
