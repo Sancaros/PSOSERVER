@@ -3571,34 +3571,39 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 }
 
 pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section) {
-	uint8_t game_type;
+	uint8_t game_type = 0;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
 	switch (l->episode)
 	{
+	case GAME_TYPE_NORMAL:
 	case GAME_TYPE_EPISODE_1:
 		if (l->challenge)
 			game_type = 2;
 		else
 			game_type = 0;
 		break;
+
 	case GAME_TYPE_EPISODE_2:
 		if (l->challenge)
 			game_type = 3;
 		else
 			game_type = 1;
 		break;
+
 	case GAME_TYPE_EPISODE_3:
 	case GAME_TYPE_EPISODE_4:
 		game_type = 4;
 		break;
-	default:
-		game_type = 0;
-		break;
 	}
 
 	return &bb_ptdata[game_type][l->difficulty][section];
+}
+
+int get_pt_index(uint8_t episode, uint8_t pt_index) {
+	uint8_t ep4_pt_index_offset = 0x57;//87 Item_PT EP4 enemy_index 差值
+	return episode == GAME_TYPE_EPISODE_3 ? pt_index - ep4_pt_index_offset : episode == GAME_TYPE_EPISODE_4 ? pt_index - ep4_pt_index_offset : pt_index;
 }
 
 int get_pt_data_area_bb(ship_client_t* src) {
@@ -3713,9 +3718,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
-	int ep_pt_index = l->episode == 3 ? pt_index - 87 : l->episode == 4 ? pt_index - 87 : pt_index;
+	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
 	if (!ent) {
@@ -3913,8 +3917,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d ep_pt_index %d gametype %d", ent->enemy_item_classes[ep_pt_index],
-				req->pt_index, ep_pt_index, game_type);
+				"%d ep_pt_index %d episode %d", ent->enemy_item_classes[ep_pt_index],
+				req->pt_index, ep_pt_index, l->episode);
 			return 0;
 		}
 
@@ -3955,7 +3959,6 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	float f1, f2;
 	sfmt_t* rng = &src->cur_block->sfmt_rng;
 	int csr = 0;
-	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
@@ -4190,9 +4193,8 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
-	int ep_pt_index = l->episode == 3 ? pt_index - 87 : l->episode == 4 ? pt_index - 87 : pt_index;
+	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
 	if (!ent) {
@@ -4410,7 +4412,6 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 	float f1, f2;
 	sfmt_t* rng = &src->sfmt_rng;
 	int csr = 0;
-	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l, section);

@@ -29,7 +29,7 @@
 #include "mageditdata.h"
 
 typedef struct {
-	uint32_t item_type;
+	uint32_t item_pid;
 	size_t result_index;
 } fed_item_t;
 
@@ -50,14 +50,14 @@ const fed_item_t result_index_for_fed_item[] = {
 size_t num_results = sizeof(result_index_for_fed_item) / sizeof(result_index_for_fed_item[0]);
 
 // Function to find the result index for a given fed item
-size_t find_result_index(uint32_t item_type) {
+size_t find_result_index(uint32_t item_pid) {
 	size_t i;
 	for (i = 0; i < num_results; ++i) {
-		if (result_index_for_fed_item[i].item_type == item_type) {
+		if (result_index_for_fed_item[i].item_pid == item_pid) {
 			return result_index_for_fed_item[i].result_index;
 		}
 	}
-	return 0;  // Default result index if item_type is not found
+	return 0;  // Default result index if item_pid is not found
 }
 
 uint16_t def_level(magitemstat_t* this) {

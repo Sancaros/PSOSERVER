@@ -113,7 +113,11 @@ uint32_t rt_generate_v2_rare(ship_client_t* c, lobby_t* l, int rt_index,
     int area);
 uint32_t rt_generate_gc_rare(ship_client_t* c, lobby_t* l, int rt_index,
     int area);
+/* block 随机值*/
 uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
+    int area, uint8_t section);
+/* src 随机值*/
+uint32_t rt_generate_bb_rare_style(ship_client_t* src, lobby_t* l, int rt_index,
     int area, uint8_t section);
 
 #endif /* !RTDATA_H */
