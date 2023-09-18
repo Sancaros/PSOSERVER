@@ -4182,8 +4182,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	return 0;
 }
 
-int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, void* r) {
-	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
+int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t section, subcmd_bb_itemreq_t* req) {
 	uint32_t rnd;
 	uint32_t item[4] = { 0 };
 	int area, do_rare = 1;
@@ -4207,7 +4206,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
 	if (pt_index == 0x30)
-		return pt_generate_bb_pso2_boxdrop(src, l, section, r);
+		return pt_generate_bb_pso2_boxdrop(src, l, section, req);
 
 	/* Figure out the area we'll be worried with */
 	area = get_pt_data_area_bb(src);
@@ -4250,7 +4249,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 			csr = 1;
 	}
 
-	item[0] = rt_generate_bb_rare(src, l, ep_pt_index, 0, section);
+	item[0] = rt_generate_bb_rare_style(src, l, ep_pt_index, 0, section);
 	/* See if the user is lucky today... */
 	if (do_rare && item[0] && !item_not_identification_bb(item[0], item[1])) {
 
@@ -4401,8 +4400,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	return 0;
 }
 
-int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r) {
-	subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)r;
+int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section, subcmd_bb_itemreq_t* req) {
 	uint16_t obj_id;
 	game_object_t* gobj;
 	map_object_t* obj;
@@ -4421,7 +4419,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 		return 0;
 	}
 
-	//ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品掉落", c->guildcard, l->episode, l->difficulty);
+	ITEM_LOG("GC %u 请求章节 %d 难度 %d 物品 %d 颜色掉落", src->guildcard, l->episode, l->difficulty, section);
 
 	/* Make sure this is actually a box drop... */
 	if (pt_index != 0x30)
@@ -4437,8 +4435,10 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 
 	/* Don't bother if the box has already been opened */
 	gobj = &l->map_objs->objs[obj_id];
-	if (gobj->flags & 0x00000001)
-		return 0;
+	if (gobj->flags & 0x00000001) {
+		DBG_LOG("箱子已经打开过一次了");
+		//return 0;
+	}
 
 	obj = &gobj->data;
 
@@ -4545,7 +4545,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 				break;
 
 			default:
-				ITEM_LOG("ItemRT generated an invalid item: "
+				ITEM_LOG("ItemRT 生成了一个无效的物品: "
 					"%08X", item[0]);
 				return 0;
 			}
@@ -4575,7 +4575,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 			break;
 
 		default:
-			ITEM_LOG("ItemRT generated an invalid item: %08X",
+			ITEM_LOG("ItemRT 生成了一个无效的物品: %08X",
 				item[0]);
 			return 0;
 		}
@@ -4646,6 +4646,8 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 }
 
 int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r) {
+	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
+	uint8_t section;
 
 	for (int i = 0; i < l->max_clients; ++i) {
 		if (l->clients[i]) {
@@ -4655,9 +4657,11 @@ int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r) {
 				continue;
 			}
 
-			//DBG_LOG("%d", l->clients[i]->bb_pl->character.dress_data.section);
+			section = l->clients[i]->bb_pl->character.dress_data.section;
 
-			pt_generate_bb_pso2_drop_style(l->clients[i], l, l->clients[i]->bb_pl->character.dress_data.section, r);
+			DBG_LOG("%d", section);
+
+			pt_generate_bb_pso2_drop_style(l->clients[i], l, section, req);
 		}
 	}
 

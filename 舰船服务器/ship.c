@@ -254,7 +254,7 @@ static void* ship_thd(void* d) {
                 FD_SET(it->sock, &writefds);
             }
 
-            nfds = max(nfds, (int)it->sock);
+            nfds = max(nfds, it->sock);
         }
 
         /* Add the listening sockets to the read fd_set. */
@@ -280,11 +280,11 @@ static void* ship_thd(void* d) {
         if (s->sg.sock != -1) {
             FD_SET(s->sg.sock, &readfds);
 
-            FD_SET(s->sg.sock, &exceptfds);
-
             if (s->sg.sendbuf_cur) {
                 FD_SET(s->sg.sock, &writefds);
             }
+
+            FD_SET(s->sg.sock, &exceptfds);
 
             nfds = max(nfds, s->sg.sock);
         }
@@ -520,18 +520,13 @@ static void* ship_thd(void* d) {
             TAILQ_FOREACH(it, s->clients, qentry) {
                 /* Check if this connection was trying to send us something. */
                 if (FD_ISSET(it->sock, &readfds)) {
-                    if (rv = client_process_pkt(it)) {
+                    rv = client_process_pkt(it);
+                    if (rv) {
                         if (rv && rv != -1)
                             ERR_LOG("检测这个端口 %d 是否有发送任何数据并处理发生错误 错误码 %d", it->sock, rv);
                         it->flags |= CLIENT_FLAG_DISCONNECTED;
                         continue;
                     }
-                }
-
-                if (FD_ISSET(it->sock, &exceptfds)) {
-                    ERR_LOG("客户端端口 %d 套接字异常", it->sock);
-                    it->flags |= CLIENT_FLAG_DISCONNECTED;
-                    continue;
                 }
 
                 /* If we have anything to write, check if we can right now. */
@@ -562,6 +557,12 @@ static void* ship_thd(void* d) {
                             }
                         }
                     }
+                }
+
+                if (FD_ISSET(it->sock, &exceptfds)) {
+                    ERR_LOG("客户端端口 %d 套接字异常", it->sock);
+                    it->flags |= CLIENT_FLAG_DISCONNECTED;
+                    continue;
                 }
             }
         }

@@ -526,7 +526,9 @@ static uint8_t *read_and_dec_qst(const char *fn, uint32_t *osz, int ver) {
     StringReader* r = StringReader_file(fn);
 
     if (!r) {
+#ifdef DEBUG
         QERR_LOG("%s 任务文件 \"%s\" 不存在.", client_type[ver].ver_name_file, fn);
+#endif // DEBUG
         return NULL;
     }
 

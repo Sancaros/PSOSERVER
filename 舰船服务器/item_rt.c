@@ -614,3 +614,49 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
 
     return 0;
 }
+
+/* ÓÃÓÚËæ»úµôÂä ¶ÀÁ¢µôÂä */
+uint32_t rt_generate_bb_rare_style(ship_client_t* src, lobby_t* l, int rt_index,
+    int area, uint8_t section) {
+    sfmt_t* rng = &src->sfmt_rng;
+    double rnd;
+    rt_table_t* set;
+    int i;
+
+    /* Make sure we read in a rare table and we have a sane index */
+    if (!have_bbrt)
+        return 0;
+
+    if (rt_index < -1 || rt_index > 100)
+        return -1;
+
+#ifdef DEBUG
+
+    DBG_LOG("rt_index %d episode %d challenge %d difficulty %d section %d", rt_index, l->episode, l->challenge, l->difficulty, section);
+
+#endif // DEBUG
+
+    set = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section);
+
+    /* Are we doing a drop for an enemy or a box? */
+    if (rt_index >= 0) {
+        rnd = sfmt_genrand_real1(rng);
+
+        if ((rnd < expand_rate(set->enemy_rares[rt_index].probability)) || src->game_data->gm_drop_rare)
+            return set->enemy_rares[rt_index].item_code[0] | (set->enemy_rares[rt_index].item_code[1] << 8) |
+            (set->enemy_rares[rt_index].item_code[2] << 16);
+    }
+    else {
+        for (i = 0; i < 30; ++i) {
+            if (set->box_areas[i] == area) {
+                rnd = sfmt_genrand_real1(rng);
+
+                if ((rnd < expand_rate(set->box_rares[i].probability)) || src->game_data->gm_drop_rare)
+                    return set->box_rares[i].item_code[0] | (set->box_rares[i].item_code[1] << 8) |
+                    (set->box_rares[i].item_code[2] << 16);
+            }
+        }
+    }
+
+    return 0;
+}

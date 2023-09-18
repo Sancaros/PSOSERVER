@@ -592,7 +592,6 @@ void run_server(int tsock, int tsock6) {
 
             FD_SET(i->sock, &readfds);
 
-
             if (i->sendbuf_cur) {
                 FD_SET(i->sock, &writefds);
             }
@@ -643,20 +642,16 @@ void run_server(int tsock, int tsock6) {
 
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
-                    if (rv = handle_pkt(i)) {
-                        if (rv && rv != -1)
-                            ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
-                        send_ping(i, 0);
+                    rv = handle_pkt(i);
+                    if (rv && rv != -1)
+                        ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
+
+                    if (rv) {
                         i->disconnected = 1;
                         continue;
                     }
 
                     i->last_ping = 0;
-                }
-
-                if (FD_ISSET(i->sock, &exceptfds)) {
-                    ERR_LOG("客户端端口 %d 套接字异常", i->sock);
-                    i->disconnected = 1;
                 }
 
                 /* If we have anything to write, check if we can. */
@@ -686,6 +681,11 @@ void run_server(int tsock, int tsock6) {
                             }
                         }
                     }
+                }
+
+                if (FD_ISSET(i->sock, &exceptfds)) {
+                    ERR_LOG("客户端端口 %d 套接字异常", i->sock);
+                    i->disconnected = 1;
                 }
             }
 
