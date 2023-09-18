@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "lobby.h"
+#include "subcmd.h"
 
 #ifdef PACKED
 #undef PACKED
@@ -656,7 +657,7 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 /* Generate an item drop from the PT data. This version uses the v3 PT data set.
    This function only works for PSOBB PSO2 style. */
 int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r);
-int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, void* r);
+int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section, subcmd_bb_itemreq_t* req);
 
 uint16_t get_random_value(rang_16bit_t range);
 

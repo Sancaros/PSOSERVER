@@ -20,10 +20,12 @@
 #ifndef PSOARCHIVE__GSL_H
 #define PSOARCHIVE__GSL_H
 
+#include "f_logs.h"
 #include "psoarchive-error.h"
 
 #include <stdint.h>
 #include <sys/types.h>
+#include "pso_StringReader.h"
 
 /* Opaque GSL structures. */
 struct pso_gsl_read;
