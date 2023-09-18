@@ -567,7 +567,7 @@ pmt_item_base_check_t get_item_definition_bb(const uint32_t datal1, const uint32
 bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2,
     pmt_weapon_bb_t* weapon, pmt_guard_bb_t* guard, pmt_unit_bb_t* unit, pmt_mag_bb_t* mag, pmt_tool_bb_t* tool);
 pmt_item_base_t get_item_base_bb(const item_t* item);
-int item_not_identification(const item_t* item);
+int item_not_identification_bb(const uint32_t code1, const uint32_t code2);
 uint32_t get_item_index(const item_t* item);
 
 uint8_t get_item_stars(uint16_t slot);

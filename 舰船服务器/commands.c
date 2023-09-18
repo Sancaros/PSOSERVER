@@ -568,7 +568,7 @@ static int handle_item(ship_client_t *src, const char *params) {
 
         if (!litem) {
             //pthread_mutex_unlock(&l->mutex);
-            return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
+            return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
     }
     else {
@@ -783,7 +783,7 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!litem) {
-            return send_txt(src, "%s", __(src, "\tE\tC7新物品空间不足."));
+            return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
         /* Generate the packet to drop the item */
@@ -3940,7 +3940,7 @@ static int handle_pso2(ship_client_t* src, const char* params) {
         if (!litem) {
             ERR_LOG("GC %" PRIu32 " 房间中的物品列表内存空间已满!",
                 src->guildcard);
-            return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足, 生成失败."));
+            return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或物品代码有误, 生成失败."));
         }
     }
     else {

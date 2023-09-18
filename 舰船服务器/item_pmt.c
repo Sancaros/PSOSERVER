@@ -3087,8 +3087,8 @@ pmt_item_base_t get_item_base_bb(const item_t* item) {
     return item_base;
 }
 
-int item_not_identification(const item_t* item) {
-    pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
+int item_not_identification_bb(const uint32_t code1, const uint32_t code2) {
+    pmt_item_base_check_t item_base_check = get_item_definition_bb(code1, code2);
     return item_base_check.err;
 }
 

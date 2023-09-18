@@ -503,7 +503,8 @@ int send_counts(ship_t* c, uint32_t ship_id, uint16_t clients, uint16_t games) {
 
 /* Send an error packet to a ship */
 int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
-    const uint8_t* data, int data_sz) {
+    const uint8_t* data, int data_sz, 
+    uint32_t guildcard, uint32_t slot, uint32_t block, uint32_t target_gc, uint32_t reserved) {
     uint8_t* sendbuf = get_sg_sendbuf();
     shipgate_error_pkt* pkt = (shipgate_error_pkt*)sendbuf;
     uint16_t sz;
@@ -522,6 +523,11 @@ int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
     pkt->hdr.flags = htons(flags);
     pkt->hdr.reserved = 0;
     pkt->hdr.version = 0;
+    pkt->guildcard = htonl(guildcard);
+    pkt->slot = htonl(slot);
+    pkt->block = htonl(block);
+    pkt->target_gc = htonl(target_gc);
+    pkt->reserved = htonl(reserved);
 
     pkt->error_code = htonl(err);
     memcpy(pkt->data, data, data_sz);

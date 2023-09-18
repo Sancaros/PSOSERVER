@@ -415,13 +415,27 @@ int rt_read_bb(const char* fn) {
 
                 memcpy(ent, buf, sz);
 
-                //for (size_t x = 0; x < 0x1E; x++) {
-                //    DBG_LOG("item_code0 0x%02X", ent->box_rares->item_code[0]);
-                //    DBG_LOG("item_code1 0x%02X", ent->box_rares->item_code[1]);
-                //    DBG_LOG("item_code2 0x%02X", ent->box_rares->item_code[2]);
-                //    DBG_LOG("probability %d", ent->box_rares->probability);
-                //    DBG_LOG("/////////////////");
-                //}
+#ifdef DEBUG
+
+                DBG_LOG("颜色 ID %d", 颜色);
+
+                for (size_t x = 0; x < 0x65; x++) {
+                    DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
+                    DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
+                    DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
+                    DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
+                    DBG_LOG("/////////////////");
+                }
+
+                for (size_t x = 0; x < 0x1E; x++) {
+                    DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+                    DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+                    DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+                    DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+                    DBG_LOG("/////////////////");
+                }
+
+#endif // DEBUG
 
             }
         }
@@ -453,7 +467,7 @@ uint32_t rt_generate_v2_rare(ship_client_t *src, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+    uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_v2rt)
@@ -492,7 +506,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
     double rnd;
     rt_set_t *set;
     int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+    uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 
     /* Make sure we read in a rare table and we have a sane index */
     if(!have_gcrt)
@@ -525,40 +539,21 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
     return 0;
 }
 
-uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
-    int area) {
-    sfmt_t* rng = &src->cur_block->sfmt_rng;
-    double rnd;
-    rt_table_t* set;
-    int i;
-    int section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
+rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
     uint8_t game_type = 0;//和游戏章节类型相关
-
-    /* Make sure we read in a rare table and we have a sane index */
-    if (!have_bbrt)
-        return 0;
-
-    if (src->game_data->gm_drop_rare) {
-        rt_index = sfmt_genrand_uint32(rng) % 100;
-        DBG_LOG("全红掉落已开启 rt_index %d", rt_index);
-    }
-
-    if (rt_index < -1 || rt_index > 100)
-        return -1;
-
-    /* Grab the rare set for the game */
+    /* Grab the rare table for the game */
     //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
-
-    switch (l->episode)
+    switch (episode)
     {
+    case GAME_TYPE_NORMAL:
     case GAME_TYPE_EPISODE_1:
-        if (l->challenge)
+        if (challenge)
             game_type = 2;
         else
             game_type = 0;
         break;
     case GAME_TYPE_EPISODE_2:
-        if (l->challenge)
+        if (challenge)
             game_type = 2;
         else
             game_type = 1;
@@ -572,28 +567,47 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
         break;
     }
 
-    set = &bb_rtdata[game_type][l->difficulty][section];
+    return &bb_rtdata[game_type][difficulty][section];
+}
+
+uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
+    int area, uint8_t section) {
+    sfmt_t* rng = &src->cur_block->sfmt_rng;
+    double rnd;
+    rt_table_t* set;
+    int i;
+
+    /* Make sure we read in a rare table and we have a sane index */
+    if (!have_bbrt)
+        return 0;
+
+    if (rt_index < -1 || rt_index > 100)
+        return -1;
+
+#ifdef DEBUG
+
+    DBG_LOG("rt_index %d episode %d challenge %d difficulty %d section %d", rt_index, l->episode, l->challenge, l->difficulty, section);
+
+#endif // DEBUG
+
+    set = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section);
 
     /* Are we doing a drop for an enemy or a box? */
     if (rt_index >= 0) {
         rnd = sfmt_genrand_real1(rng);
 
-        //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->enemy_rares[rt_index].probability));
-
         if ((rnd < expand_rate(set->enemy_rares[rt_index].probability)) || src->game_data->gm_drop_rare)
-            //return set->enemy_rares[rt_index].item_data;
-            return be_convert_to_le_uint32(set->enemy_rares[rt_index].item_code);
+            return set->enemy_rares[rt_index].item_code[0] | (set->enemy_rares[rt_index].item_code[1] << 8) |
+            (set->enemy_rares[rt_index].item_code[2] << 16);
     }
     else {
         for (i = 0; i < 30; ++i) {
             if (set->box_areas[i] == area) {
                 rnd = sfmt_genrand_real1(rng);
 
-                //DBG_LOG("rnd %d prob %d", rnd, expand_rate(set->box_rares[i].probability));
-
                 if ((rnd < expand_rate(set->box_rares[i].probability)) || src->game_data->gm_drop_rare)
-                    //return set->box_rares[i].item_data;
-                    return be_convert_to_le_uint32(set->box_rares[i].item_code);
+                    return set->box_rares[i].item_code[0] | (set->box_rares[i].item_code[1] << 8) |
+                    (set->box_rares[i].item_code[2] << 16);
             }
         }
     }

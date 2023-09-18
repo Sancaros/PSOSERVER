@@ -658,7 +658,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
         ERR_LOG("无效协议版本: %lu", pver);
 
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_LOGIN_BAD_PROTO, NULL, 0);
+            ERR_LOGIN_BAD_PROTO, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -670,7 +670,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
         SQLERR_LOG("无法查询舰船密钥数据库");
         SQLERR_LOG("%s", psocn_db_error(&conn));
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, NULL, 0);
+            ERR_BAD_ERROR, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -678,7 +678,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
         (row = psocn_db_result_fetch(result)) == NULL) {
         SQLERR_LOG("无效密钥idx索引 %d", s->key_idx);
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_LOGIN_BAD_KEY, NULL, 0);
+            ERR_LOGIN_BAD_KEY, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -686,7 +686,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     if (menu_code && (!isalpha(menu_code & 0xFF) | !isalpha(menu_code >> 8))) {
         SQLERR_LOG("菜单代码错误 idx: %d", s->key_idx);
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_LOGIN_BAD_MENU, NULL, 0);
+            ERR_LOGIN_BAD_MENU, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -694,7 +694,7 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
     if (!menu_code && !atoi(row[0])) {
         SQLERR_LOG("菜单代码无效 id: %d", s->key_idx);
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_LOGIN_INVAL_MENU, NULL, 0);
+            ERR_LOGIN_INVAL_MENU, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -738,12 +738,12 @@ static int handle_shipgate_login6t(ship_t* s, shipgate_login6_reply_pkt* pkt) {
             s->ship_name);
         SQLERR_LOG("%s", psocn_db_error(&conn));
         send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, NULL, 0);
+            ERR_BAD_ERROR, NULL, 0, 0, 0, 0, 0, 0);
         return -1;
     }
 
     /* Hooray for misusing functions! */
-    if (send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE, ERR_NO_ERROR, NULL, 0)) {
+    if (send_error(s, SHDR_TYPE_LOGIN6, SHDR_RESPONSE, ERR_NO_ERROR, NULL, 0, 0, 0, 0, 0, 0)) {
         ERR_LOG("滥用函数万岁!");
         return -1;
     }
@@ -1443,7 +1443,7 @@ static int handle_bb_gcadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1473,7 +1473,7 @@ static int handle_bb_gcdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1504,7 +1504,7 @@ static int handle_bb_gcsort(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1549,7 +1549,7 @@ static int handle_bb_blacklistadd(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1579,7 +1579,7 @@ static int handle_bb_blacklistdel(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1620,7 +1620,7 @@ static int handle_bb_set_comment(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)gc, len);
+            ERR_BAD_ERROR, (uint8_t*)gc, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1643,7 +1643,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1652,7 +1652,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
             c_cmd_name(type, 0), len, g_data->guildcard, sender);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1665,7 +1665,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (!guild) {
         ERR_LOG("分配公会数据内存错误.");
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -1683,7 +1683,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         if (send_bb_pkt_to_ship(c, sender, (uint8_t*)guild)) {
             guild->hdr.flags = sender;
             send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_GUILD_SENT_PKT, (uint8_t*)guild, len);
+                ERR_GUILD_SENT_PKT, (uint8_t*)guild, len, 0, 0, 0, 0, 0);
         }
 
         //DBG_LOG("创建GC %d (%s)公会数据成功.", sender, guild_name);
@@ -1694,7 +1694,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         guild->hdr.flags = sender;
         /* TODO 需要给客户端返回错误信息 */
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_GUILD_SQLERR, (uint8_t*)guild, len);
+            ERR_GUILD_SQLERR, (uint8_t*)guild, len, 0, 0, 0, 0, 0);
         break;
 
     case 0x02:
@@ -1702,7 +1702,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         guild->hdr.flags = sender;
         /* TODO 需要给客户端返回错误信息 */
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_GUILD_EXIST, (uint8_t*)guild, len);
+            ERR_GUILD_EXIST, (uint8_t*)guild, len, 0, 0, 0, 0, 0);
         break;
 
     case 0x03:
@@ -1710,7 +1710,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
         guild->hdr.flags = sender;
         /* TODO 需要给客户端返回错误信息 */
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_GUILD_ALREADY_IN, (uint8_t*)guild, len);
+            ERR_GUILD_ALREADY_IN, (uint8_t*)guild, len, 0, 0, 0, 0, 0);
         break;
     }
 
@@ -1731,7 +1731,7 @@ static int handle_bb_guild_unk_02EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1752,7 +1752,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1766,7 +1766,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1786,7 +1786,7 @@ static int handle_bb_guild_unk_04EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1808,13 +1808,13 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
     if (!target_gc || guild_id < 1)
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
 
     //display_packet((uint8_t*)g_data, len);
 
@@ -1828,7 +1828,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
         display_packet((uint8_t*)g_data, len);
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
     }
 
     return send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data);
@@ -1846,7 +1846,7 @@ static int handle_bb_guild_06EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -1901,7 +1901,7 @@ static int handle_bb_guild_member_chat(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
         if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
             send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)g_data, len);
+                ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
             return 0;
         }
     }
@@ -1951,7 +1951,7 @@ static int handle_bb_guild_member_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2002,7 +2002,7 @@ static int handle_bb_guild_unk_09EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2023,7 +2023,7 @@ static int handle_bb_guild_unk_0AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2043,7 +2043,7 @@ static int handle_bb_guild_unk_0BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2063,7 +2063,7 @@ static int handle_bb_guild_unk_0CEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2083,7 +2083,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2091,7 +2091,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2112,7 +2112,7 @@ static int handle_bb_guild_unk_0EEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2133,20 +2133,20 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return -1;
     }
 
     if (db_update_bb_guild_flag(g_data->guild_flag, guild_id)) {
         SQLERR_LOG("更新 BB %s 数据包 (%d) 失败!", c_cmd_name(type, 0), len);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return -1;
     }
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return -1;
     }
 
@@ -2167,7 +2167,7 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2176,14 +2176,14 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (res == 1) {
         ERR_LOG("GC %d 解散不存在的公会失败", sender);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
     if (res == 2) {
         ERR_LOG("GC %d 更新账户公会信息失败", sender);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2207,7 +2207,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2258,7 +2258,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2280,7 +2280,7 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2368,7 +2368,7 @@ static int handle_bb_guild_lobby_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2389,7 +2389,7 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2409,7 +2409,7 @@ static int handle_bb_guild_full_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2432,7 +2432,7 @@ static int handle_bb_guild_unk_16EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2452,7 +2452,7 @@ static int handle_bb_guild_unk_17EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2477,7 +2477,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
         SQLERR_LOG("更新公会排行榜失败");
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2485,7 +2485,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
         SQLERR_LOG("获取公会ID失败 %d", guild_id);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2508,7 +2508,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2552,7 +2552,7 @@ static int handle_bb_guild_buy_privilege_and_point_info(ship_t* c, shipgate_fw_9
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2571,7 +2571,7 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2579,7 +2579,7 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2598,7 +2598,7 @@ static int handle_bb_guild_buy_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2618,7 +2618,7 @@ static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2639,7 +2639,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         SQLERR_LOG("更新公会排行榜失败");
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2648,7 +2648,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2656,7 +2656,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2677,7 +2677,7 @@ static int handle_bb_guild_unk_1DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         display_packet((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)g_data, len);
+            ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -2811,7 +2811,7 @@ static int handle_dreamcast(ship_t* c, shipgate_fw_9_pkt* pkt) {
     default:
         /* Warn the ship that sent the packet, then drop it */
         send_error(c, SHDR_TYPE_DC, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
-            (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len));
+            (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len), 0, 0, 0, 0, 0);
         return 0;
     }
 }
@@ -2831,7 +2831,7 @@ static int handle_pc(ship_t* c, shipgate_fw_9_pkt* pkt) {
     default:
         /* Warn the ship that sent the packet, then drop it */
         send_error(c, SHDR_TYPE_PC, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
-            (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len));
+            (uint8_t*)pkt, ntohs(pkt->hdr.pkt_len), 0, 0, 0, 0, 0);
         return 0;
     }
 }
@@ -2934,7 +2934,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
         */
         UNK_SPD(type, (uint8_t*)pkt);
         send_error(c, SHDR_TYPE_BB, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
-            (uint8_t*)pkt, len);
+            (uint8_t*)pkt, len, 0, 0, 0, 0, 0);
         return 0;
     }
 }
@@ -2957,13 +2957,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (gc == 0) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
     if (db_update_char_inv(&char_data->character.inv, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家背包数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2971,7 +2971,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_disp(&char_data->character.disp, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2979,7 +2979,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_dress_data(&char_data->character.dress_data, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家外观数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2987,7 +2987,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_name(&char_data->character.name, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家名字数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -2995,7 +2995,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_techniques(&char_data->character.tech, gc, slot, PSOCN_DB_UPDATA_CHAR)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家科技数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3003,7 +3003,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
     if (db_update_char_bank(&char_data->bank, gc, slot)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         SQLERR_LOG("无法更新玩家银行数据 (GC %"
             PRIu32 ", 槽位 %" PRIu8 ")", gc, slot);
         return 0;
@@ -3014,7 +3014,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3023,7 +3023,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3032,13 +3032,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
     if (db_update_gc_login_state(gc, 0, -1, (char*)&char_data->character.name)) {
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3047,13 +3047,13 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
             "槽位 %" PRIu8 ")", CHARACTER, gc, slot);
 
         send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         return -6;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CDATA, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->guildcard, 8);
+        (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
 }
 
 static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, uint32_t gc,
@@ -3079,7 +3079,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3089,7 +3089,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3099,7 +3099,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_CREQ_NO_DATA, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_CREQ_NO_DATA, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3109,7 +3109,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
     if (dbversion != version) {
         psocn_db_result_free(result);
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         //SQLERR_LOG("角色备份数据版本不匹配 (%u: %s) 数据版本 %d 请求版本 %d", gc, name, dbversion, version);
 
         //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3120,7 +3120,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
     if (dbslot != slot) {
         psocn_db_result_free(result);
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         //SQLERR_LOG("角色备份数据不存在 (%u: %s) 数据槽位 %d 请求槽位 %d", gc, name, dbslot, slot);
 
         //send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
@@ -3133,7 +3133,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
         psocn_db_result_free(result);
         SQLERR_LOG("无法获取角色备份数据的长度 %s", psocn_db_error(&conn));
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
@@ -3151,7 +3151,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
             return 0;
         }
 
@@ -3161,7 +3161,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
             return 0;
         }
 
@@ -3175,7 +3175,7 @@ static int handle_char_data_backup_req(ship_t* c, shipgate_char_bkup_pkt* pkt, u
             psocn_db_result_free(result);
 
             send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
             return 0;
         }
 
@@ -3255,13 +3255,13 @@ static int handle_char_data_backup(ship_t* c, shipgate_char_bkup_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE | SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
         return 0;
     }
 
     /* Return success (yeah, bad use of this function, but whatever). */
     return send_error(c, SHDR_TYPE_CBKUP, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->game_info.guildcard, 8);
+        (uint8_t*)&pkt->game_info.guildcard, 8, 0, 0, 0, 0, 0);
 }
 
 void repair_client_character_data(psocn_bb_char_t* character) {
@@ -3346,7 +3346,7 @@ static int handle_char_data_req(ship_t* c, shipgate_char_req_pkt* pkt) {
             ERR_LOG("%s", strerror(errno));
 
             send_error(c, SHDR_TYPE_CREQ, SHDR_RESPONSE | SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
             return 0;
         }
 
@@ -3472,7 +3472,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Grab the data we got. */
@@ -3482,7 +3482,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
@@ -3491,7 +3491,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
             pkt->username, gc);
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
-            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8);
+            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     memcpy(&password, &pkt->password, sizeof(pkt->password));
@@ -3510,7 +3510,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         psocn_db_result_free(result);
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
-            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8);
+            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Grab the privilege level out of the packet */
@@ -3521,7 +3521,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     if (errno != 0) {
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
             ERR_USRLOGIN_BAD_PRIVS, (uint8_t*)&pkt->guildcard,
-            8);
+            8, 0, 0, 0, 0, 0);
     }
 
     /* Filter out any privileges that don't make sense. Can't have global GM
@@ -3536,7 +3536,7 @@ static int handle_usrlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
             ERR_USRLOGIN_BAD_PRIVS, (uint8_t*)&pkt->guildcard,
-            8);
+            8, 0, 0, 0, 0, 0);
     }
 
     /* The privilege field went to 32-bits in version 18. */
@@ -3581,7 +3581,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     /* Grab the data we got. */
@@ -3590,7 +3590,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
@@ -3598,7 +3598,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("用户数据不存在或没有GM (%u)", req);
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAN_NOT_GM,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     /* We've verified they're legit, continue on. */
@@ -3616,7 +3616,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     /* Grab the data we got. */
@@ -3625,7 +3625,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     if ((row = psocn_db_result_fetch(result))) {
@@ -3637,7 +3637,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
                 req, target);
 
             return send_error(c, type, SHDR_FAILURE, ERR_BAN_PRIVILEGE,
-                (uint8_t*)&pkt->req_gc, 16);
+                (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
         }
     }
 
@@ -3656,7 +3656,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     /* Now that we have that, add the ban to the right table... */
@@ -3673,7 +3673,7 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
 
     default:
         return send_error(c, type, SHDR_FAILURE, ERR_BAN_BAD_TYPE,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     if (psocn_db_real_query(&conn, query)) {
@@ -3681,12 +3681,12 @@ static int handle_ban(ship_t* c, shipgate_ban_req_pkt* pkt, uint16_t type) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, type, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->req_gc, 16);
+            (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
     }
 
     /* Another misuse of the error function, but whatever */
     return send_error(c, type, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->req_gc, 16);
+        (uint8_t*)&pkt->req_gc, 16, 0, 0, 0, 0, 0);
 }
 
 static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
@@ -3724,7 +3724,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         if (pkt->ch_name[31] != '\0') {
             return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
                 ERR_BLOGIN_INVAL_NAME, (uint8_t*)&pkt->guildcard,
-                8);
+                8, 0, 0, 0, 0, 0);
         }
 
         /* The name is ASCII, which is safe to use as UTF-8 */
@@ -3752,7 +3752,7 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
         SQLERR_LOG("新增客户端至 %s 数据表错误: %s", tbl_nm,
             psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* None of the rest of this applies to PC NTE clients at all... */
@@ -3762,13 +3762,13 @@ static int handle_blocklogin(ship_t* c, shipgate_block_login_pkt* pkt) {
     if (db_update_gc_char_last_block(gc, slot, bl)) {
         SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     if (db_update_gc_char_login_state(gc, 1)) {
         SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Find anyone that has the user in their friendlist so we can send a
@@ -4099,13 +4099,13 @@ static int handle_blocklogout(ship_t* c, shipgate_block_login_pkt* pkt) {
     if (db_update_gc_char_last_block(gc, slot, bl)) {
         SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     if (db_update_gc_char_login_state(gc, 0)) {
         SQLERR_LOG("GC %u 槽位 %d 存在非法玩家数据", (uint8_t*)&pkt->guildcard, slot);
         return send_error(c, SHDR_TYPE_BLKLOGIN, SHDR_FAILURE,
-            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8);
+            ERR_BLOGIN_ONLINE, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Delete the client from the online_clients table */
@@ -4182,7 +4182,7 @@ static int handle_friendlist_add(ship_t* c, shipgate_friend_add_pkt* pkt) {
     if ((ugc >= 500 && ugc < 600) || (fgc >= 500 && fgc < 600)) {
         /* There's no good way to support this, so respond with an error. */
         return send_error(c, SHDR_TYPE_ADDFRIEND, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->user_guildcard, 8);
+            (uint8_t*)&pkt->user_guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Escape the name string */
@@ -4198,12 +4198,12 @@ static int handle_friendlist_add(ship_t* c, shipgate_friend_add_pkt* pkt) {
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_ADDFRIEND, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->user_guildcard, 8);
+            (uint8_t*)&pkt->user_guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Return success to the ship */
     return send_error(c, SHDR_TYPE_ADDFRIEND, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->user_guildcard, 8);
+        (uint8_t*)&pkt->user_guildcard, 8, 0, 0, 0, 0, 0);
 }
 
 static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
@@ -4227,12 +4227,12 @@ static int handle_friendlist_del(ship_t* c, shipgate_friend_upd_pkt* pkt) {
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_DELFRIEND, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->user_guildcard, 8);
+            (uint8_t*)&pkt->user_guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Return success to the ship */
     return send_error(c, SHDR_TYPE_DELFRIEND, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->user_guildcard, 8);
+        (uint8_t*)&pkt->user_guildcard, 8, 0, 0, 0, 0, 0);
 }
 
 static int handle_lobby_chg(ship_t* c, shipgate_lobby_change_pkt* pkt) {
@@ -4713,12 +4713,12 @@ static int handle_useropt(ship_t* c, shipgate_user_opt_pkt* pkt) {
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_USEROPT, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 24);
+            (uint8_t*)&pkt->guildcard, 24, 0, 0, 0, 0, 0);
     }
 
     /* Return success to the ship */
     return send_error(c, SHDR_TYPE_USEROPT, SHDR_RESPONSE, ERR_NO_ERROR,
-        (uint8_t*)&pkt->guildcard, 24);
+        (uint8_t*)&pkt->guildcard, 24, 0, 0, 0, 0, 0);
 }
 
 static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
@@ -4746,7 +4746,7 @@ static int handle_bbopt_req(ship_t* c, shipgate_bb_opts_req_pkt* pkt) {
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     free_safe(common_bank);
@@ -4769,7 +4769,7 @@ static int handle_bbopts(ship_t* c, shipgate_bb_opts_pkt* pkt) {
 
     if (rv) {
         rv = send_error(c, SHDR_TYPE_BBOPTS, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     return rv;
@@ -4804,7 +4804,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 16);
+            (uint8_t*)&pkt->guildcard, 16, 0, 0, 0, 0, 0);
     }
 
     /* Grab the data we got. */
@@ -4813,7 +4813,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
@@ -4822,7 +4822,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* If their account id in the table is NULL, then bail. No need to report an
@@ -4847,7 +4847,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 16);
+            (uint8_t*)&pkt->guildcard, 16, 0, 0, 0, 0, 0);
     }
 
     /* Grab any data we got. */
@@ -4856,7 +4856,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* If there's a result row, then they're disqualified... */
@@ -4894,7 +4894,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
             if (psocn_db_real_query(&conn, query)) {
                 SQLERR_LOG("%s", psocn_db_error(&conn));
                 return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE,
-                    ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+                    ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
             }
         }
 
@@ -4920,7 +4920,7 @@ static int handle_mkill(ship_t* c, shipgate_mkill_pkt* pkt) {
         if (psocn_db_real_query(&conn, query)) {
             SQLERR_LOG("%s", psocn_db_error(&conn));
             return send_error(c, SHDR_TYPE_MKILL, SHDR_FAILURE, ERR_BAD_ERROR,
-                (uint8_t*)&pkt->guildcard, 8);
+                (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         }
     }
 
@@ -4947,7 +4947,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Check the sanity of the packet. Disconnect the ship if there's some odd
@@ -4994,7 +4994,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Grab the data we got. */
@@ -5004,7 +5004,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     if ((row = psocn_db_result_fetch(result)) == NULL) {
@@ -5013,7 +5013,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
             pkt->username, gc);
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
-            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8);
+            ERR_USRLOGIN_BAD_CRED, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* Grab the privilege level out of the packet */
@@ -5023,7 +5023,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
     if (errno != 0) {
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
             ERR_USRLOGIN_BAD_PRIVS, (uint8_t*)&pkt->guildcard,
-            8);
+            8, 0, 0, 0, 0, 0);
     }
 
     account_id = (uint32_t)strtoul(row[1], NULL, 0);
@@ -5039,7 +5039,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
         psocn_db_result_free(result);
 
         return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE, ERR_BAD_ERROR,
-            (uint8_t*)&pkt->guildcard, 8);
+            (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
     }
 
     /* We're done if we got this far. */
@@ -5056,7 +5056,7 @@ static int handle_tlogin(ship_t* c, shipgate_usrlogin_req_pkt* pkt) {
             SQLERR_LOG("%s", psocn_db_error(&conn));
 
             return send_error(c, SHDR_TYPE_USRLOGIN, SHDR_FAILURE,
-                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8);
+                ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 8, 0, 0, 0, 0, 0);
         }
     }
 
@@ -5170,7 +5170,7 @@ static int handle_qflag_set(ship_t* c, shipgate_qflag_pkt* pkt) {
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("%s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_QFLAG_SET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16, 0, 0, 0, 0, 0);
     }
 
     return send_qflag(c, SHDR_TYPE_QFLAG_SET, gc, block, flag_id, qid,
@@ -5198,7 +5198,7 @@ static int handle_qflag_get(ship_t* c, shipgate_qflag_pkt* pkt) {
         ERR_LOG("Ship sent delete flag bit on get flag packet!"
             "Dropping request.");
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16, gc, 0, block, 0, flag_id);
     }
 
     /* Build the db query */
@@ -5215,13 +5215,13 @@ static int handle_qflag_get(ship_t* c, shipgate_qflag_pkt* pkt) {
     if (psocn_db_real_query(&conn, query)) {
         SQLERR_LOG("查询任务标志数据库失败 %s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, pkt->hdr.pkt_len - 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16, gc, 0, block, 0, flag_id);
     }
 
     if (!(result = psocn_db_result_store(&conn))) {
         SQLERR_LOG("未查询到任务标志 %s", psocn_db_error(&conn));
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
-            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, pkt->hdr.pkt_len - 8);
+            ERR_BAD_ERROR, (uint8_t*)&pkt->guildcard, 16, gc, 0, block, 0, flag_id);
     }
 
     if (!(row = psocn_db_result_fetch(result))) {
@@ -5229,7 +5229,7 @@ static int handle_qflag_get(ship_t* c, shipgate_qflag_pkt* pkt) {
         psocn_db_result_free(result);
         return send_error(c, SHDR_TYPE_QFLAG_GET, SHDR_FAILURE,
             ERR_QFLAG_NO_DATA, (uint8_t*)&pkt->guildcard,
-            pkt->hdr.pkt_len - 8);
+            16, gc, 0, block, 0, flag_id);
     }
 
     value = (uint32_t)strtoul(row[0], NULL, 0);

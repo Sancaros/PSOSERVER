@@ -71,8 +71,9 @@ int send_usrloginreply(ship_t *c, uint32_t gc, uint32_t block, int good,
 int send_counts(ship_t *c, uint32_t ship_id, uint16_t clients, uint16_t games);
 
 /* Send an error packet to a ship */
-int send_error(ship_t *c, uint16_t type, uint16_t flags, uint32_t err,
-               const uint8_t *data, int data_sz);
+int send_error(ship_t* c, uint16_t type, uint16_t flags, uint32_t err,
+    const uint8_t* data, int data_sz,
+    uint32_t guildcard, uint32_t slot, uint32_t block, uint32_t target_gc, uint32_t reserved);
 
 /* Send a packet to tell a client that a friend has logged on or off */
 int send_friend_message(ship_t *c, int on, uint32_t dest_gc,

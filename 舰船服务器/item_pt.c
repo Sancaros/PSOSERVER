@@ -44,272 +44,6 @@
 #define LOG(team, ...) team_log_write(team, TLOG_DROPS, __VA_ARGS__)
 #define LOGV(team, ...) team_log_write(team, TLOG_DROPSV, __VA_ARGS__)
 
-static const uint8_t area_subs[] = {
-	0x01, // 13 (VR Temple Alpha)
-	0x02, // 14 (VR Temple Beta)
-	0x03, // 15 (VR Spaceship Alpha)
-	0x04, // 16 (VR Spaceship Beta)
-	0x08, // 17 (Central Control Area)
-	0x05, // 18 (Jungle North)
-	0x06, // 19 (Jungle South)
-	0x07, // 1A (Mountain)
-	0x08, // 1B (Seaside)
-	0x09, // 1C (Seabed Upper)
-	0x0A, // 1D (Seabed Lower)
-	0x09, // 1E (Gal Gryphon)
-	0x0A, // 1F (Olga Flow)
-	0x03, // 20 (Barba Ray)
-	0x05, // 21 (Gol Dragon)
-	0x08, // 22 (Seaside Night)
-	0x0A, // 23 (Tower)
-};
-
-uint32_t ep2_rtremap[] =
-{
-	0x00, 0x00, // Pioneer 2
-	0x01, 0x01, // VR Temple Alpha
-	0x02, 0x02, // VR Temple Beta
-	0x03, 0x03, // VR Spaceship Alpha
-	0x04, 0x04, // VR Spaceship Beta
-	0x05, 0x08, // CCA
-	0x06, 0x05, // Jungle North
-	0x07, 0x06, // Jungle East
-	0x08, 0x07, // Mountain
-	0x09, 0x08, // Seaside
-	0x0A, 0x09, // Seabed Upper
-	0x0B, 0x0A, // Seabed Lower
-};
-
-struct ItemDropSub {
-	uint8_t override_area;
-};
-
-uint8_t normalize_area_number(uint8_t episode, uint8_t area) {
-	if (/*!this->item_drop_sub || */(area < 0x10) || (area > 0x11)) {
-		switch (episode) {
-		case GAME_TYPE_EPISODE_1:
-			if (area >= 15) {
-				ERR_LOG("invalid Episode 1 area number");
-				return -1;
-			}
-			switch (area) {
-			case 11:
-				return 3; // Dragon -> Cave 1
-			case 12:
-				return 6; // De Rol Le -> Mine 1
-			case 13:
-				return 8; // Vol Opt -> Ruins 1
-			case 14:
-				return 10; // Dark Falz -> Ruins 3
-			default:
-				return area;
-			}
-			ERR_LOG("this should be impossible");
-			return -1;
-		case GAME_TYPE_EPISODE_2: {
-			if ((area >= 0x13) && (area < 0x24)) {
-				return area_subs[area - 0x13];
-			}
-			return area;
-		}
-		case GAME_TYPE_EPISODE_3:
-		case GAME_TYPE_EPISODE_4:
-			// TODO: Figure out remaps for Episode 4 (if there are any)
-			return area;
-		default:
-			ERR_LOG("invalid episode number");
-			return -1;
-		}
-
-	}
-	return -1;
-	//else {
-	//	return this->item_drop_sub->override_area;
-	//}
-}
-
-float rand_float_0_1_from_crypt(sfmt_t* rng) {
-	// 使用标准库中的rand函数和RAND_MAX宏来生成随机数
-	return ((float)sfmt_genrand_uint32(rng) / (float)RAND_MAX);
-}
-
-uint32_t rand_int(sfmt_t* rng, uint64_t max) {
-	return (uint32_t)(sfmt_genrand_uint32(rng) % max);
-}
-//
-//// Returns a weighted random result, indicating the chosen position in the
-//// weighted table.
-////
-//// For example, an input table of 40 40 40 40 would be equally likely to return
-//// 0, 1, 2, or 3. An input table of 40 40 80 would return 2 50% of the time, and
-//// 0 or 1 each 25% of the time.
-//template <typename IntT>
-//IntT ItemCreator::get_rand_from_weighted_tables(
-//	const IntT* tables, size_t offset, size_t num_values, size_t stride) {
-//	uint64_t rand_max = 0;
-//	for (size_t x = 0; x != num_values; x++) {
-//		rand_max += tables[x * stride + offset];
-//	}
-//	if (rand_max == 0) {
-//		throw runtime_error("weighted table is empty");
-//	}
-//
-//	uint32_t x = this->rand_int(rand_max);
-//	for (size_t z = 0; z < num_values; z++) {
-//		IntT table_value = tables[z * stride + offset];
-//		if (x < table_value) {
-//			return z;
-//		}
-//		x -= table_value;
-//	}
-//	throw logic_error("selector was not less than rand_max");
-//}
-
-void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus) {
-	item->dataw[3] = bonus;
-}
-
-void set_common_armor_evasion_bonus(item_t* item, int16_t bonus) {
-	item->dataw[4] = bonus;
-}
-
-void generate_common_armor_slot_count(item_t* item) {
-	//item->datab[5] = this->get_rand_from_weighted_tables_1d(
-	//	this->pt->armor_slot_count_prob_table);
-}
-
-void generate_common_armor_slots_and_bonuses(sfmt_t* rng, item_t* item) {
-	errno_t err = 0;
-
-	if ((item->datab[0] != 0x01) || (item->datab[1] < 1) || (item->datab[1] > 2)) {
-		return;
-	}
-
-	if (item->datab[1] == 1) {
-		generate_common_armor_slot_count(item);
-	}
-
-	pmt_guard_bb_t guard = { 0 };
-	if (err = pmt_lookup_guard_bb(item->datal[0], &guard)) {
-		ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-		return;
-	}
-
-	set_armor_or_shield_defense_bonus(item, (int16_t)(guard.dfp_range * rand_float_0_1_from_crypt(rng)));
-	set_common_armor_evasion_bonus(item, (int16_t)(guard.evp_range * rand_float_0_1_from_crypt(rng)));
-}
-
-void generate_common_armor_or_shield_type_and_variances(
-	sfmt_t* rng, char area_norm, item_t* item) {
-	generate_common_armor_slots_and_bonuses(rng, item);
-
-	uint8_t type = 0;//this->get_rand_from_weighted_tables_1d(
-	//	this->pt->armor_shield_type_index_prob_table);
-	item->datab[2] = area_norm + type /*+ this->pt->armor_or_shield_type_bias*/;
-	if (item->datab[2] < 3) {
-		item->datab[2] = 0;
-	}
-	else {
-		item->datab[2] -= 3;
-	}
-}
-
-void set_unit_bonus(item_t* item, int16_t bonus) {
-	item->dataw[3] = bonus;
-}
-
-void generate_unit_weights_tables() {
-	// Note: This part of the function was originally in a different function,
-	// since it had another callsite. Unlike the original code, we generate these
-	// tables only once at construction time, so we've inlined the function here.
-	uint16_t z;
-	for (z = 0; z < 0x10; z++) {
-		uint8_t v = get_item_stars(z + 0x37D);
-		unit_weights_table1[(z * 5) + 0] = v - 1;
-		unit_weights_table1[(z * 5) + 1] = v - 1;
-		unit_weights_table1[(z * 5) + 2] = v;
-		unit_weights_table1[(z * 5) + 3] = v + 1;
-		unit_weights_table1[(z * 5) + 4] = v + 1;
-	}
-	for (; z < 0x48; z++) {
-		unit_weights_table1[z + 0x50] = get_item_stars(z + 0x37D);
-	}
-	// Note: Inlining ends here
-
-	memset(&unit_weights_table2[0], 0, sizeof(unit_weights_table2));
-	for (size_t z = 0; z < ARRAY_SIZE(unit_weights_table1); z++) {
-		uint8_t index = unit_weights_table1[z];
-		if (index < ARRAY_SIZE(unit_weights_table2)) {
-			unit_weights_table2[index]++;
-		}
-		z = z + 1;
-	}
-}
-
-void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
-	errno_t err = 0;
-
-	if (det >= 0x0D) {
-		return;
-	}
-	clear_inv_item(item);
-	item->datab[0] = 0x01;
-	item->datab[1] = 0x03;
-
-	// Note: The original code calls generate_unit_weights_table1 here (which we
-	// have inlined into generate_unit_weights_tables above). This call seems
-	// unnecessary because the contents of the tables don't depend on anything
-	// except what appears in ItemPMT, which is essentially constant, so we
-	// don't bother regenerating the table here.
-
-	if (unit_weights_table2[det] == 0) {
-		return;
-	}
-
-	size_t which = rand_int(rng, unit_weights_table2[det]);
-	size_t current_index = 0;
-	for (uint8_t z = 0; z < ARRAY_SIZE(unit_weights_table1); z++) {
-		if (det != unit_weights_table1[z]) {
-			continue;
-		}
-		if (current_index != which) {
-			current_index++;
-		}
-		else {
-			if (z > 0x4F) {
-				if (det <= 0x87) {
-					item->datab[2] = z + 0xC0;
-				}
-			}
-			else {
-				item->datab[2] = z / 5;
-				pmt_unit_bb_t def = { 0 };
-				if (err = pmt_lookup_unit_bb(item->datal[0], &def)) {
-					ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d", err);
-					return;
-				}
-				switch (z % 5) {
-				case 0:
-					set_unit_bonus(item, -(def.pm_range * 2));
-					break;
-				case 1:
-					set_unit_bonus(item, -(def.pm_range));
-					break;
-				case 2:
-					break;
-				case 3:
-					set_unit_bonus(item, (def.pm_range));
-					break;
-				case 4:
-					set_unit_bonus(item, (def.pm_range * 2));
-					break;
-				}
-			}
-			break;
-		}
-	}
-}
-
 static const int tool_base[28] = {
 	Item_Monomate,
 	Item_Dimate,
@@ -2316,9 +2050,16 @@ static int generate_tool_bb(pt_bb_entry_t* ent, int area, uint32_t item[4],
 
 	/* This shouldn't happen happen, but just in case... */
 	if (item[0] == Item_NoSuchItem) {
-		ITEM_LOG("生成无效 v3 tool! Please check your "
-			"ItemPT.gsl 文件 是否有效!");
+		ITEM_LOG("生成无效 BB 工具! 请检查你的 "
+			"ItemPT.gsl 文件是否有效! 0x%08X ", item[0]);
 		return -1;
+	}
+
+	/* 如果生成无效物品 则默认无掉落 */
+	if (item_not_identification_bb(item[0], item[1])) {
+		//ITEM_LOG("生成无效 BB 工具! 请检查你的 "
+		//	"ItemPT.gsl 文件是否有效! 0x%08X ", item[0]);
+		return -2;
 	}
 
 	/* Clear the rest of the item. */
@@ -2496,6 +2237,8 @@ static int check_and_send_bb_lobby(ship_client_t* dest, lobby_t* l, uint32_t ite
 
 	pthread_mutex_lock(&dest->mutex);
 	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+	if (!lt)
+		return 0;
 	rv = subcmd_send_bb_lobby_drop_item(dest, NULL, req, &lt->iitem);
 	pthread_mutex_unlock(&dest->mutex);
 
@@ -2530,6 +2273,8 @@ static int check_and_send_bb(ship_client_t* dest, uint32_t item[4],
 
 	pthread_mutex_lock(&dest->mutex);
 	lt = add_new_litem_locked(l, &dest->new_item, req->area, req->x, req->z);
+	if (!lt)
+		return 0;
 	rv = subcmd_send_bb_drop_item(dest, req, &lt->iitem);
 	pthread_mutex_unlock(&dest->mutex);
 
@@ -3856,41 +3601,9 @@ pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section) {
 	return &bb_ptdata[game_type][l->difficulty][section];
 }
 
-int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
-	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
-	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
-	uint32_t rnd;
-	uint32_t item[4] = { 0 };
-	int area, do_rare = 1;
-	sfmt_t* rng = &src->cur_block->sfmt_rng;
-	uint16_t mid;
-	game_enemy_t* enemy;
-	int csr = 0;
-	uint8_t game_type = 0;
-	uint8_t pt_index = req->pt_index;
-
-	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
-	if (!ent) {
-		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
-		return 0;
-	}
-
-#ifdef DEBUG
-	display_packet(ent, sizeof(pt_bb_entry_t));
-#endif // DEBUG
-
-	/* If the PT index is 0x30, this is a box, not an enemy! */
-	if (pt_index == 0x30)
-		return pt_generate_bb_boxdrop(src, l, r);
-
-	/* Figure out the area we'll be worried with */
-	area = src->cur_area;
-
-#ifdef DEBUG
-
-	DBG_LOG("area %d", area);
-
-#endif // DEBUG
+int get_pt_data_area_bb(ship_client_t* src) {
+	lobby_t* l = src->cur_lobby;
+	int area = src->cur_area;
 
 	switch (l->episode) {
 	case GAME_TYPE_NORMAL:
@@ -3985,22 +3698,45 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		break;
 	}
-#ifdef DEBUG
-
-	DBG_LOG("area %d l->episode %d", area, l->episode);
-
-#endif // DEBUG
-
-	/* 修复EP4 错误的index 但是这样是不对的 应该修改原始pt文件 将怪物的index都增加87才是正确的位置 以后再说 */
-	if (game_type == 4)
-		pt_index -= 87;
 
 	/* Subtract one, since we want the index in the box_drop array */
-	--area;
+	return --area;
+}
+
+int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
+	subcmd_bb_itemreq_t* req = (subcmd_bb_itemreq_t*)r;
+	int section = l->clients[l->leader_id]->pl->bb.character.dress_data.section;
+	uint32_t rnd;
+	uint32_t item[4] = { 0 };
+	int area, do_rare = 1;
+	sfmt_t* rng = &src->cur_block->sfmt_rng;
+	uint16_t mid;
+	game_enemy_t* enemy;
+	int csr = 0;
+	uint8_t game_type = 0;
+	uint8_t pt_index = req->pt_index;
+	int ep_pt_index = l->episode == 3 ? pt_index - 87 : l->episode == 4 ? pt_index - 87 : pt_index;
+
+	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
+	if (!ent) {
+		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
+		return 0;
+	}
+
+#ifdef DEBUG
+	display_packet(ent, sizeof(pt_bb_entry_t));
+#endif // DEBUG
+
+	/* If the PT index is 0x30, this is a box, not an enemy! */
+	if (pt_index == 0x30)
+		return pt_generate_bb_boxdrop(src, l, r);
+
+	/* Figure out the area we'll be worried with */
+	area = get_pt_data_area_bb(src);
 
 #ifdef DEBUG
 
-	DBG_LOG("--area %d l->episode %d", area, l->episode);
+	DBG_LOG("area %d l->episode %d pt_index %d ep_pt_index %d", area, l->episode, pt_index, ep_pt_index);
 
 #endif // DEBUG
 
@@ -4022,12 +3758,14 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = sfmt_genrand_uint32(rng) % 100;
 
-	if ((rnd >= ent->enemy_type_drop_probs[pt_index]) && !src->game_data->gm_drop_rare) {
+	if (!src->game_data->gm_drop_rare) {
+		if ((rnd >= ent->enemy_type_drop_probs[ep_pt_index])) {
 #ifdef DEBUG
-		DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[pt_index]);
+			DBG_LOG("啥也没得到 rnd %d probs %d", rnd, ent->enemy_type_drop_probs[ep_pt_index]);
 #endif // DEBUG
-		/* Nope. You get nothing! */
-		return 0;
+			/* Nope. You get nothing! */
+			return 0;
+		}
 	}
 
 	/* See if we'll do a rare roll. */
@@ -4043,10 +3781,16 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		DBG_LOG("全红掉落已开启 %d", do_rare);
 	}
 
-	item[0] = rt_generate_bb_rare(src, l, pt_index, 0);
+#ifdef DEBUG
+
+	DBG_LOG("pt_index %d ep_pt_index %d episode %d challenge %d difficulty %d section %d", pt_index, ep_pt_index, l->episode, l->challenge, l->difficulty, section);
+
+#endif // DEBUG
+
+	item[0] = rt_generate_bb_rare(src, l, ep_pt_index, 0, section);
 
 	/* See if the user is lucky today... */
-	if (do_rare && item[0]) {
+	if (do_rare && item[0] && !item_not_identification_bb(item[0], item[1])) {
 
 #ifdef DEBUG
 
@@ -4118,14 +3862,14 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 #ifdef DEBUG
 
-	ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d pt_index %d emptID %d 随机 %d 物品掉落", src->guildcard, l->episode, l->difficulty, src->cur_area, req->pt_index, pt_index, ent->enemy_type_drop_probs[pt_index], rnd);
+	ITEM_LOG("GC %u 请求章节 %d 难度 %d 区域 %d ptID %d ep_pt_index %d emptID %d 随机 %d 物品掉落", src->guildcard, l->episode, l->difficulty, src->cur_area, req->pt_index, ep_pt_index, ent->enemy_type_drop_probs[ep_pt_index], rnd);
 
 #endif // DEBUG
 
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_item_classes[pt_index]) {
+		switch (ent->enemy_item_classes[ep_pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, l)) {
@@ -4169,8 +3913,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d pt_index %d gametype %d", ent->enemy_item_classes[pt_index],
-				req->pt_index, pt_index, game_type);
+				"%d ep_pt_index %d gametype %d", ent->enemy_item_classes[ep_pt_index],
+				req->pt_index, ep_pt_index, game_type);
 			return 0;
 		}
 
@@ -4186,8 +3930,8 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta_ranges[pt_index].min,
-			ent->enemy_meseta_ranges[pt_index].max,
+		if (generate_meseta(ent->enemy_meseta_ranges[ep_pt_index].min,
+			ent->enemy_meseta_ranges[ep_pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -4242,107 +3986,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	obj = &gobj->data;
 
 	/* Figure out the area we'll be worried with */
-	area = src->cur_area;
-
-	switch (l->episode) {
-	case GAME_TYPE_NORMAL:
-	case GAME_TYPE_EPISODE_1:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求敌箱子落", src->guildcard);
-			return -1;
-
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 11:
-			area = 3;
-			break;
-
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 12:
-			area = 6;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 13:
-			area = 8;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 14:
-			area = 10;
-			break;
-
-		default:
-			/* Everything after Dark Falz -> Ruins 3 */
-			if (area > 14)
-				area = 10;
-			else
-				area = 1;
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_2:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求箱子掉落", src->guildcard);
-			return -1;
-
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 12:
-			area = 9;
-			break;
-
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 13:
-			area = 10;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 14:
-			area = 3;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 15:
-			area = 6;
-			break;
-
-		default:
-			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-			if (area > 10)
-				area = ep2_rtremap[(src->cur_area * 2) + 1];
-			else
-				area = 1;
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		if (area == 0) {
-			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
-			return -1;
-		}
-
-		area = src->cur_area + 1;
-		///* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-		//if (area > 10)
-		//	area = 10;
-		//else
-		//	area = 10;
-
-		break;
-	}
-
-	/* Subtract one, since we want the index in the box_drop array */
-	--area;
+	area = get_pt_data_area_bb(src);
 
 	/* Mark the box as spent now... */
 	gobj->flags |= 0x00000001;
@@ -4381,6 +4025,10 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 				item[3] = t1 * 10;
 			}
 
+			if (item_not_identification_bb(item[0], item[1])) {
+				return 0;
+			}
+
 			return check_and_send_bb_lobby(src, l, item, src->cur_area,
 				(subcmd_bb_itemreq_t*)req, csr);
 		}
@@ -4405,8 +4053,11 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 		}
 	}
 
+	item[0] = rt_generate_bb_rare(src, l, -1, area + 1, section);
+
 	/* See if the user is lucky today... */
-	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, -1, area + 1))) {
+	if (do_rare && item[0] && !item_not_identification_bb(item[0], item[1])) {
+
 		switch (item[0] & 0xFF) {
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and
@@ -4542,10 +4193,11 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	int csr = 0;
 	uint8_t game_type = 0;
 	uint8_t pt_index = req->pt_index;
+	int ep_pt_index = l->episode == 3 ? pt_index - 87 : l->episode == 4 ? pt_index - 87 : pt_index;
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l, section);
 	if (!ent) {
-		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
+		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
 		return 0;
 	}
 
@@ -4558,108 +4210,13 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 		return pt_generate_bb_pso2_boxdrop(src, l, section, r);
 
 	/* Figure out the area we'll be worried with */
-	area = src->cur_area;
+	area = get_pt_data_area_bb(src);
 
-	switch (l->episode) {
-	case GAME_TYPE_NORMAL:
-	case GAME_TYPE_EPISODE_1:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
-			return -1;
+#ifdef DEBUG
 
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 11:
-			area = 3;
-			break;
+	DBG_LOG("area %d l->episode %d", area, l->episode);
 
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 12:
-			area = 6;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 13:
-			area = 8;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 14:
-			area = 10;
-			break;
-
-		default:
-			/* Everything after Dark Falz -> Ruins 3 */
-			if (area > 14)
-				area = 10;
-			else
-				area = 1;// unknown area
-
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_2:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
-			return -1;
-
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 12:
-			area = 9;
-			break;
-
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 13:
-			area = 10;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 14:
-			area = 3;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 15:
-			area = 6;
-			break;
-
-		default:
-			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-			if (area > 10)
-				area = ep2_rtremap[(src->cur_area * 2) + 1];
-			else
-				area = 10; // tower
-
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		if (area == 0) {
-			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
-			return -1;
-		}
-
-		area = src->cur_area + 1;
-
-		break;
-	}
-
-	/* 修复EP4 错误的index 但是这样是不对的 应该修改原始pt文件 将怪物的index都增加87才是正确的位置 以后再说 */
-	if (game_type == 4)
-		pt_index -= 87;
-
-	/* Subtract one, since we want the index in the box_drop array */
-	--area;
+#endif // DEBUG
 
 	/* Make sure the enemy's id is sane... */
 	mid = LE16(req->request_id);
@@ -4679,9 +4236,11 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	/* See if the enemy is going to drop anything at all this time... */
 	rnd = sfmt_genrand_uint32(rng) % 100;
 
-	if ((int8_t)rnd >= ent->enemy_type_drop_probs[pt_index])
-		/* Nope. You get nothing! */
-		return 0;
+	if (!src->game_data->gm_drop_rare) {
+		if ((rnd >= ent->enemy_type_drop_probs[ep_pt_index]))
+			/* Nope. You get nothing! */
+			return 0;
+	}
 
 	/* See if we'll do a rare roll. */
 	if (l->qid) {
@@ -4691,8 +4250,9 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 			csr = 1;
 	}
 
+	item[0] = rt_generate_bb_rare(src, l, ep_pt_index, 0, section);
 	/* See if the user is lucky today... */
-	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, pt_index, 0))) {
+	if (do_rare && item[0] && !item_not_identification_bb(item[0], item[1])) {
 
 #ifdef DEBUG
 
@@ -4767,7 +4327,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 	switch (rnd) {
 	case 0:
 		/* Drop the enemy's designated type of item. */
-		switch (ent->enemy_item_classes[pt_index]) {
+		switch (ent->enemy_item_classes[ep_pt_index]) {
 		case BOX_TYPE_WEAPON:
 			/* Drop a weapon */
 			if (generate_weapon_bb(ent, area, item, rng, 0, l)) {
@@ -4811,7 +4371,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
-				"%d", ent->enemy_item_classes[pt_index],
+				"%d", ent->enemy_item_classes[ep_pt_index],
 				pt_index);
 			return 0;
 		}
@@ -4828,8 +4388,8 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, int section, 
 
 	case 2:
 		/* Drop meseta */
-		if (generate_meseta(ent->enemy_meseta_ranges[pt_index].min,
-			ent->enemy_meseta_ranges[pt_index].max,
+		if (generate_meseta(ent->enemy_meseta_ranges[ep_pt_index].min,
+			ent->enemy_meseta_ranges[ep_pt_index].max,
 			item, rng, l)) {
 			return 0;
 		}
@@ -4883,101 +4443,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 	obj = &gobj->data;
 
 	/* Figure out the area we'll be worried with */
-	area = src->cur_area;
-
-	switch (l->episode) {
-	case GAME_TYPE_NORMAL:
-	case GAME_TYPE_EPISODE_1:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求敌箱子落", src->guildcard);
-			return -1;
-
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 11:
-			area = 3;
-			break;
-
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 12:
-			area = 6;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 13:
-			area = 8;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 14:
-			area = 10;
-			break;
-
-		default:
-			/* Everything after Dark Falz -> Ruins 3 */
-			if (area > 14)
-				area = 10;
-			else
-				area = 1;
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_2:
-	{
-		switch (area) {
-		case 0:
-			ITEM_LOG("GC %u 在先驱者2号请求箱子掉落", src->guildcard);
-			return -1;
-
-			/* Gal Gryphon -> SeaSide Daytime */
-		case 12:
-			area = 9;
-			break;
-
-			/* Olga Flow -> SeaBed Upper Levels */
-		case 13:
-			area = 10;
-			break;
-
-			/* Barba Ray -> VR Space Ship Alpha */
-		case 14:
-			area = 3;
-			break;
-
-			/* Gol Dragon -> Jungle North */
-		case 15:
-			area = 6;
-			break;
-
-		default:
-			/* All others after SeaBed Upper Levels -> SeaBed Upper Levels */
-			if (area > 10)
-				area = ep2_rtremap[(src->cur_area * 2) + 1];
-			else
-				area = 1;
-			break;
-
-		}
-	}
-	break;
-
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		if (area == 0) {
-			ITEM_LOG("GC %u 在先驱者2号请求敌人掉落", src->guildcard);
-			return -1;
-		}
-
-		area = src->cur_area + 1;
-		break;
-	}
-
-	/* Subtract one, since we want the index in the box_drop array */
-	--area;
+	area = get_pt_data_area_bb(src);
 
 	/* Mark the box as spent now... */
 	gobj->flags |= 0x00000001;
@@ -5020,6 +4486,10 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 				item[3] = t1 * 10;
 			}
 
+			if (item_not_identification_bb(item[0], item[1])) {
+				return 0;
+			}
+
 			return check_and_send_bb(src, item, src->cur_area,
 				(subcmd_bb_itemreq_t*)req, csr);
 		}
@@ -5044,8 +4514,9 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, int section, voi
 		}
 	}
 
+	item[0] = rt_generate_bb_rare(src, l, -1, area + 1, section);
 	/* See if the user is lucky today... */
-	if (do_rare && (item[0] = rt_generate_bb_rare(src, l, -1, area + 1))) {
+	if (do_rare && item[0] && !item_not_identification_bb(item[0], item[1])) {
 		switch (item[0] & 0xFF) {
 		case ITEM_TYPE_WEAPON:
 			/* Weapon -- add percentages and (potentially) grind values and

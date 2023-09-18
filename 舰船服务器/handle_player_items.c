@@ -106,7 +106,7 @@ litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float 
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    if (item_not_identification(new_item)) {
+    if (item_not_identification_bb(new_item->datal[0], new_item->datal[1])) {
         ERR_LOG("0x%08X 是未识别物品", new_item->datal[0]);
         print_item_data(new_item, l->version);
         return NULL;
@@ -154,8 +154,8 @@ litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, flo
     if (l->version != CLIENT_VERSION_BB)
         return NULL;
 
-    if (item_not_identification(&iitem->data)) {
-        ERR_LOG("0x%08X 是未识别物品", &iitem->data.datal[0]);
+    if (item_not_identification_bb(iitem->data.datal[0], iitem->data.datal[1])) {
+        ERR_LOG("0x%08X 是未识别物品", iitem->data.datal[0]);
         print_item_data(&iitem->data, l->version);
         return NULL;
     }
@@ -1295,7 +1295,6 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 break;
 
             case 0x04: // WeaponseGold→ルクミンM150
-                pthread_mutex_lock(&src->mutex);
 
                 new_item.datal[0] = 0xA3963C02;
                 new_item.datal[1] = 0;
@@ -1303,14 +1302,18 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.data2l = 0x0407C878;
 
                 new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                if (!new_litem) {
+                    /* *Gulp* The lobby is probably toast... At least make sure this user is
+                       still (mostly) safe... */
+                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    return -1;
+                }
 
                 subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
-                pthread_mutex_unlock(&src->mutex);
                 break;
 
             case 0x05: // WeaponseCrystal→DB全セット
-                pthread_mutex_lock(&src->mutex);
 
                 //DB鎧 スロット4
                 new_item.datal[0] = 0x00280101;
@@ -1319,6 +1322,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.data2l = 0x00000000;
 
                 new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                if (!new_litem) {
+                    /* *Gulp* The lobby is probably toast... At least make sure this user is
+                       still (mostly) safe... */
+                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    return -1;
+                }
 
                 subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
@@ -1329,6 +1338,12 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.data2l = 0x00000000;
 
                 new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                if (!new_litem) {
+                    /* *Gulp* The lobby is probably toast... At least make sure this user is
+                       still (mostly) safe... */
+                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    return -1;
+                }
 
                 subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
@@ -1339,10 +1354,15 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 new_item.data2l = 0x00000000;
 
                 new_litem = add_new_litem_locked(src->cur_lobby, &new_item, src->cur_area, src->x, src->z);
+                if (!new_litem) {
+                    /* *Gulp* The lobby is probably toast... At least make sure this user is
+                       still (mostly) safe... */
+                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    return -1;
+                }
 
                 subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, new_litem);
 
-                pthread_mutex_unlock(&src->mutex);
                 break;
 
             default:

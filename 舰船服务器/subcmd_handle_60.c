@@ -4438,7 +4438,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             /* Send the request to the shipgate... */
-            DBG_LOG("发送任务注册标志至舰闸!");
+            DBG_LOG("发送任务注册标志至舰闸! %d", ctl & 0x01);
             shipgate_send_qflag(&ship->sg, src, ctl & 0x01, (val >> 16) & 0xFF,
                 src->cur_lobby->qid, val & 0xFFFF, 0);
         }

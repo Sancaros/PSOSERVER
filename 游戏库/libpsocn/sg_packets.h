@@ -55,6 +55,10 @@ typedef struct shipgate_ping {
 typedef struct shipgate_error {
     shipgate_hdr_t hdr;
     uint32_t error_code;
+    uint32_t guildcard;
+    uint32_t slot;
+    uint32_t block;
+    uint32_t target_gc;
     uint32_t reserved;
     uint8_t data[4096];
 } PACKED shipgate_error_pkt;
@@ -510,6 +514,16 @@ typedef struct shipgate_sset {
     uint32_t reserved;
     char filename[32];
 } PACKED shipgate_sset_pkt;
+
+typedef struct shipgate_qflag_sub {
+    uint32_t guildcard;
+    uint32_t block;
+    uint32_t flag_id;
+    uint32_t quest_id;
+    uint16_t flag_id_hi;
+    uint16_t reserved;
+    uint32_t value;
+} PACKED shipgate_qflag_sub_pkt;
 
 /* Packet used to set a quest flag or to read one back. */
 typedef struct shipgate_qflag {
