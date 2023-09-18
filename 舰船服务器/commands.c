@@ -4143,6 +4143,11 @@ static int handle_quick_return(ship_client_t* c, const char* params) {
     return send_txt(c, "%s", __(c, "\tE\tC6当前不在任务中."));
 }
 
+/* 用法: /pl */
+static int handle_player_menu(ship_client_t* c, const char* params) {
+    return send_bb_player_menu_list(c);
+}
+
 static command_t cmds[] = {
     { "debug"    , handle_gmdebug       },
     { "swarp"    , handle_shipwarp      },
@@ -4253,6 +4258,7 @@ static command_t cmds[] = {
     { "bank"     , handle_bank          },
     { "rsquest"  , handle_resetquest    },
     { "qr"       , handle_quick_return  },
+    { "pl"       , handle_player_menu   },
     { ""         , NULL                 }     /* End marker -- DO NOT DELETE */
 };
 

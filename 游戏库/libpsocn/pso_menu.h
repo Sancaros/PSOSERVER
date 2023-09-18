@@ -58,6 +58,7 @@ typedef struct pso_menu {
 #define MENU_ID_GM              0x00000007
 #define MENU_ID_GAME_DROP       0x00000008
 #define MENU_ID_ERROR           0x00000010
+#define MENU_ID_PLAYER          0x00000020
 #define MENU_ID_NO_SHIP         0x000000EF
 #define MENU_ID_INFODESK        0x000000FF
 #define MENU_ID_DATABASE        0x00040000
@@ -81,6 +82,10 @@ typedef struct pso_menu {
 
 #define ITEM_ID_DISCONNECT      0xFFFFFFFE
 #define ITEM_ID_LAST            0xFFFFFFFF
+
+/* Submenus of the Player menu. */
+#define MENU_ID_PL_INFO         0x00000021
+#define MENU_ID_PL_SECTION      0x00000022
 
 /* GM Options Item IDs */
 #define ITEM_ID_GM_REF_QUESTS   0x00000001
@@ -141,7 +146,7 @@ static pso_menu_t pso_game_create_menu_pc[][4] = {
     {"允许 PSOv1", MENU_ID_GAME_TYPE, 0, 0x0000},
     {"PSOv2 独享", MENU_ID_GAME_TYPE, 1, 0x0000},
     {"PSOPC 独享", MENU_ID_GAME_TYPE, 2, 0x0000},
-    //{"返回上一级", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
+    //{"上级菜单", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
 };
 
 static pso_menu_t pso_game_create_menu_bb[][4] = {
@@ -152,7 +157,7 @@ static pso_menu_t pso_game_create_menu_bb[][4] = {
     {"允许 PSOv2", MENU_ID_GAME_TYPE, 3, 0x0000},
     {"允许 PSODC", MENU_ID_GAME_TYPE, 4, 0x0000},
     {"允许 PSOGC", MENU_ID_GAME_TYPE, 5, 0x0000},
-    {"返回上一级", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
+    {"上级菜单", MENU_ID_GAME_TYPE, 0xFF, 0x0000},
 };
 
 static pso_menu_t pso_game_drop_menu_bb[][4] = {
@@ -160,7 +165,7 @@ static pso_menu_t pso_game_drop_menu_bb[][4] = {
     {"默认掉落模式", MENU_ID_GAME_DROP, 0, 0x0000},
     {"PSO2掉落模式", MENU_ID_GAME_DROP, 1, 0x0000},
     {"随机掉落模式", MENU_ID_GAME_DROP, 2, 0x0000},
-    {"返回上一级", MENU_ID_GAME_DROP, 0xFF, 0x0000},
+    {"上级菜单", MENU_ID_GAME_DROP, 0xFF, 0x0000},
 };
 
 static pso_menu_t pso_block_list_menu_last[][4] = {
@@ -189,6 +194,38 @@ static pso_menu_t pso_error_menu[][4] = {
     {"请联系管理员", MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
     {"记得截图",     MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004},
     {"不然他不懂",   MENU_ID_ERROR, ITEM_ID_INIT_ERROR, 0x0004}
+};
+
+/* 玩家菜单 Item IDs */
+#define ITEM_ID_PL_INFO         0x00000001
+#define ITEM_ID_PL_SECTION      0x00000002
+#define ITEM_ID_PL_SHOP         0x00000003
+#define ITEM_ID_PL_EXCHAGE      0x00000004
+#define ITEM_ID_PL_LAST         0xFFFFFFFF
+
+static pso_menu_t pso_player_menu[][4] = {
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PLAYER, 0x0004},
+    {"玩家信息",     MENU_ID_PLAYER,   ITEM_ID_PL_INFO, 0x0004},
+    {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION, 0x0004},
+    {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP, 0x0004},
+    {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE, 0x0004},
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_PL_LAST, 0x0004}
+};
+
+static pso_menu_t pso_player_section_menu[][4] = {
+    {"DATABASE/US",  MENU_ID_DATABASE, MENU_ID_PL_SECTION   , 0x0004},
+    {"铬绿",   MENU_ID_PL_SECTION,   0, 0x0004},
+    {"翠绿",   MENU_ID_PL_SECTION,   1, 0x0004},
+    {"天青",   MENU_ID_PL_SECTION,   2, 0x0004},
+    {"纯蓝",   MENU_ID_PL_SECTION,   3, 0x0004},
+    {"淡紫",   MENU_ID_PL_SECTION,   4, 0x0004},
+    {"粉红",   MENU_ID_PL_SECTION,   5, 0x0004},
+    {"真红",   MENU_ID_PL_SECTION,   6, 0x0004},
+    {"橙黄",   MENU_ID_PL_SECTION,   7, 0x0004},
+    {"金黄",   MENU_ID_PL_SECTION,   8, 0x0004},
+    {"羽白",   MENU_ID_PL_SECTION,   9, 0x0004},
+    {"上级菜单",   MENU_ID_PLAYER,  ITEM_ID_LAST, 0x0000},
+    {"关闭菜单",     MENU_ID_PLAYER,  ITEM_ID_DISCONNECT, 0x0004}
 };
 
 #endif /* !PSO_MENU_HAVE_MENU */

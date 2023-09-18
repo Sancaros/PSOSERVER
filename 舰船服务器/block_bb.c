@@ -523,6 +523,58 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
     return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
 }
 
+static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
+    lobby_t* l = c->cur_lobby;
+
+    if (l) {
+        switch (item_id) {
+        case ITEM_ID_PL_SECTION:
+            send_bb_player_section_list(c);
+            return 0;
+
+        case ITEM_ID_LAST:
+            send_bb_player_menu_list(c);
+            break;
+
+        case ITEM_ID_DISCONNECT:
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7菜单关闭."));
+
+        default:
+            //DBG_LOG("返回上一级");
+            return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4菜单没写完!请联系程序员开工!"));
+        }
+
+        /* All's well in the world if we get here. */
+        return 0;
+    }
+
+    return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
+}
+
+static int bb_process_player_section_menu(ship_client_t* c, uint32_t item_id) {
+    lobby_t* l = c->cur_lobby;
+
+    if(!l)
+        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!请联系程序员!"));
+
+    psocn_bb_char_t* character = &c->bb_pl->character;
+
+    uint8_t new_section = (uint8_t)item_id;
+    if(new_section < 0 || new_section > 9)
+        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4发生错误!颜色ID超出界限!"));
+
+    if(new_section == character->dress_data.section)
+        return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7您当前已经是该颜色ID!"));
+
+    character->dress_data.section = new_section;
+
+    send_msg(c, MSG_BOX_TYPE, "%s%d \n请至大厅切换服务器后生效.", __(c, "\tE\tC7您当前颜色ID修改为 !")
+        , character->dress_data.section);
+
+    /* All's well in the world if we get here. */
+    return send_bb_player_section_list(c);
+}
+
 static int bb_process_gm_menu(ship_client_t* c, uint32_t menu_id, uint32_t item_id) {
     if (!LOCAL_GM(c)) {
         return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC7您的权限不足."));
@@ -860,6 +912,12 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
         /* Attempt to change the player's lobby. */
         return bb_join_game(c, ls);
+
+    case MENU_ID_PLAYER:
+        return bb_process_player_menu(c, item_id);
+
+    case MENU_ID_PL_SECTION:
+        return bb_process_player_section_menu(c, item_id);
 
     default:
         if (script_execute(ScriptActionUnknownMenu, c, SCRIPT_ARG_PTR, c,
