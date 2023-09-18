@@ -121,16 +121,6 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 	}
 }
 
-ssize_t clamp(ssize_t value, ssize_t min, ssize_t max) {
-	if (value < min) {
-		return min;
-	}
-	else if (value > max) {
-		return max;
-	}
-	return value;
-}
-
 void assign_mag_stats(item_t* item, magitemstat_t* mag) {
 	item->datab[2] = (uint8_t)level(mag);
 	item->datab[3] = mag->photon_blasts;

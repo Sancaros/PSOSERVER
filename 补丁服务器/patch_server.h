@@ -29,13 +29,6 @@
 
 #define PATCH_SERVER_VERSION VERSION(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH) 
 
-/* Define as a signed type of the same size as size_t. */
-#ifdef _WIN64
-typedef __int64 ssize_t;
-#else
-typedef int ssize_t;
-#endif
-
 static const int hdr_sizes[] = {
     4, 4, 4, 4, 8, 8, 4, 4
 };

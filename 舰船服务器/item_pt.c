@@ -573,6 +573,160 @@ bool are_rare_drops_allowed(lobby_t* l) {
 	return l->challenge != 1;
 }
 
+void deduplicate_weapon_bonuses(item_t* item) {
+	size_t x, y;
+
+	for (x = 0; x < 6; x += 2) {
+		for (y = 0; y < x; y += 2) {
+			if (item->datab[y + 6] == 0x00) {
+				item->datab[x + 6] = 0x00;
+			}
+			else if (item->datab[x + 6] == item->datab[y + 6]) {
+				item->datab[x + 6] = 0x00;
+			}
+		}
+		if (item->datab[x + 6] == 0x00) {
+			item->datab[x + 7] = 0x00;
+		}
+	}
+}
+
+uint8_t get_rand_from_weighted_tables(
+	const uint8_t* data, size_t offset, size_t num_values, size_t stride) {
+	uint64_t rand_max = 0;
+	for (size_t x = 0; x != num_values; x++) {
+		rand_max += data[x * stride + offset];
+	}
+	if (rand_max == 0) {
+		ERR_LOG("weighted table is empty");
+		return 0;
+	}
+
+	uint32_t x = rand() & rand_max;
+	for (size_t z = 0; z < num_values; z++) {
+		uint32_t table_value = data[z * stride + offset];
+		if (x < table_value) {
+			return z;
+		}
+		x -= table_value;
+	}
+	ERR_LOG("selector was not less than rand_max");
+	return 0;
+}
+
+uint8_t get_rand_from_weighted_tables_2d_vertical(
+	const uint8_t bonus_type_prob_tables[6][10], size_t offset, size_t X, size_t Y) {
+	return get_rand_from_weighted_tables(bonus_type_prob_tables[0],
+		offset, Y, X);
+}
+
+void generate_common_weapon_bonuses(
+	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
+	if (item->datab[0] == 0) {
+		for (size_t row = 0; row < 3; row++) {
+			uint8_t spec = ent->nonrare_bonus_prob_spec[row][area_norm];
+			if (spec != 0xFF) {
+				item->datab[(row * 2) + 6] = get_rand_from_weighted_tables_2d_vertical(
+					ent->bonus_type_prob_tables, area_norm, 6, 10);
+				int16_t amount = get_rand_from_weighted_tables_2d_vertical(
+					ent->bonus_value_prob_tables, spec, 23, 6);
+				item->datab[(row * 2) + 7] = amount * 5 - 10;
+			}
+			// Note: The original code has a special case here, which divides
+			// item->datab[z + 7] by 5 and multiplies it by 5 again if bonus_type is 5
+			// (Hit). Why this is done is unclear, because item->datab[z + 7] must
+			// already be a multiple of 5.
+		}
+		deduplicate_weapon_bonuses(item);
+	}
+}
+
+uint8_t get_rand_from_weighted_tables_1d(const uint8_t* weapon_type_prob_table, size_t X) {
+	return get_rand_from_weighted_tables(weapon_type_prob_table, 0, X, 1);
+}
+
+void generate_common_weapon_grind(
+	item_t* item, uint8_t offset_within_subtype_range, pt_bb_entry_t* ent) {
+	if (item->datab[0] == 0) {
+		uint8_t offset = (uint8_t)clamp(offset_within_subtype_range, 0, 3);
+		item->datab[3] = get_rand_from_weighted_tables_2d_vertical(
+			ent->grind_prob_tables, offset, 9, 4);
+	}
+}
+
+float rand_float_0_1_from_crypt() {
+	// This lacks some precision, but matches the original implementation.
+	return (double)((1 >> 16) / 65536.0);
+}
+
+void generate_common_weapon_special(
+	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
+	if (item->datab[0] != 0) {
+		return;
+	}
+	if (is_item_rare(item)) {
+		return;
+	}
+	uint8_t special_mult = ent->special_mult[area_norm];
+	if (special_mult == 0) {
+		return;
+	}
+	if (rand()&100 >= ent->special_percent[area_norm]) {
+		return;
+	}
+	item->datab[4] = choose_weapon_special(
+		special_mult * rand_float_0_1_from_crypt());
+}
+
+void set_item_unidentified_flag_if_challenge(lobby_t* l, item_t* item) {
+	if ((l->challenge) &&
+		(item->datab[0] == 0x00) &&
+		(is_item_rare(item) || (item->datab[4] != 0))) {
+		item->datab[4] |= 0x80;
+	}
+}
+
+void generate_common_weapon_variances(lobby_t* l, uint8_t area_norm, item_t* item, pt_bb_entry_t* ent) {
+	clear_inv_item(item);
+	item->datab[0] = 0x00;
+
+	uint8_t weapon_type_prob_table[0x0D];
+	weapon_type_prob_table[0] = 0;
+	memmove(
+		weapon_type_prob_table + 1,
+		ent->base_weapon_type_prob_table,
+		0x0C);
+
+	for (size_t z = 1; z < 13; z++) {
+		// Technically this should be `if (... < 0)`, but whatever
+		if ((area_norm + ent->subtype_base_table[z - 1]) & 0x80) {
+			weapon_type_prob_table[z] = 0;
+		}
+	}
+
+	item->datab[1] = get_rand_from_weighted_tables_1d(weapon_type_prob_table, 13);
+	if (item->datab[1] == 0) {
+		clear_inv_item(item);
+	}
+	else {
+		int8_t subtype_base = ent->subtype_base_table[item->datab[1] - 1];
+		uint8_t area_length = ent->subtype_area_length_table[item->datab[1] - 1];
+		if (subtype_base < 0) {
+			item->datab[2] = (area_norm + subtype_base) / area_length;
+			generate_common_weapon_grind(
+				item, (area_norm + subtype_base) - (item->datab[2] * area_length), ent);
+		}
+		else {
+			item->datab[2] = subtype_base + (area_norm / area_length);
+			generate_common_weapon_grind(
+				item, area_norm - (area_norm / area_length) * area_length, ent);
+		}
+		generate_common_weapon_bonuses(item, area_norm, ent);
+		generate_common_weapon_special(item, area_norm, ent);
+		set_item_unidentified_flag_if_challenge(l, item);
+	}
+}
+
 /*
    Generate a random weapon, based off of data for PSOv2. This is a rather ugly
    process, so here's a "short" description of how it actually works (note, the

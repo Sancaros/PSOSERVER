@@ -915,3 +915,13 @@ int remove_directory(const char* path) {
 #endif // DEBUG
 	return 0;
 }
+
+ssize_t clamp(ssize_t value, ssize_t min, ssize_t max) {
+	if (value < min) {
+		return min;
+	}
+	else if (value > max) {
+		return max;
+	}
+	return value;
+}

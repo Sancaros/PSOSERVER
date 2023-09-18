@@ -3183,5 +3183,24 @@ bool is_item_rare(const item_t* item) {
     return is_rare;
 }
 
+uint8_t choose_weapon_special(uint8_t det) {
+    if (det < 4) {
+        static const uint8_t maxes[4] = { 8, 10, 11, 11 };
+        uint8_t det2 = rand() & maxes[det];
+        size_t index = 0;
+        for (uint8_t z = 1; z < 0x29; z++) {
+            if (det + 1 == get_special_stars(z)) {
+                if (index == det2) {
+                    return z;
+                }
+                else {
+                    index++;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 
 

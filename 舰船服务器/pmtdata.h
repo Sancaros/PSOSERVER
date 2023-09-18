@@ -576,5 +576,6 @@ uint8_t get_special_stars(uint8_t det);
 uint8_t get_item_adjusted_stars(const item_t* item);
 
 bool is_item_rare(const item_t* item);
+uint8_t choose_weapon_special(uint8_t det);
 
 #endif /* !PMTDATA_H */

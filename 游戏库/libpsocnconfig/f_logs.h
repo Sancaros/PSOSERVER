@@ -31,6 +31,15 @@
 #include "pso_text.h"
 #include "Software_Defines.h"
 
+/* Get ssize_t. */
+# ifdef _MSC_VER
+#  include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#  include <sys/types.h>
+# else
+#  include <sys/types.h>
+# endif
+
 enum Log_files_Num {
 	PATCH_LOG, //²¹¶¡
 	AUTH_LOG, //µÇÂ½
@@ -293,4 +302,6 @@ extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filen
 extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 
 int remove_directory(const char* path);
+
+ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
 #endif // !PSOCN_LOG

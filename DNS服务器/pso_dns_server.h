@@ -49,20 +49,13 @@ typedef int SOCKET;
 #include <windows.h>
 #include <psoconfig.h>
 #include <f_logs.h>
-//#include <winsock2.h>
-//#include <ws2tcpip.h>
-
-typedef u_long in_addr_t;
 
 #ifdef _MSC_VER
-//#pragma comment(lib, "ws2_32.lib")
 
 #define MYWM_NOTIFYICON (WM_USER+2)
 int32_t program_hidden = 1;
 uint32_t window_hide_or_show = 1;
 HWND consoleHwnd;
-
-typedef int ssize_t;
 
 #endif
 
