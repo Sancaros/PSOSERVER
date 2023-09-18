@@ -329,9 +329,14 @@ uint8_t magedit_lookup_mag_evolution_number(iitem_t* iitem) {
         return -1;
     }
 
-    /* 确保我们正在查找 圣诞物品 */
+    /* 确保我们正在查找 玛古物品 */
     if (iitem->data.datab[0] != ITEM_TYPE_MAG) {
         return -2;
+    }
+
+    /* 确保不超出索引 */
+    if (iitem->data.datab[1] >= 0x53) {
+        return -3;
     }
 
     /* 获取数据 */
