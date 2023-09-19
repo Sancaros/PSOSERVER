@@ -492,7 +492,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
 int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     subcmd_bb_itemgen_t gen = { 0 };
     int pkt_size = sizeof(subcmd_bb_itemgen_t);
-    int r = LE16(req->request_id);
+    int r = LE16(req->entity_id);
     lobby_t* l = c->cur_lobby;
 
     /* 填充数据并准备发送. */
@@ -508,7 +508,7 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     /* 填充剩余数据 */
     gen.data.area = req->area;
     gen.data.from_enemy = /*0x02*/req->pt_index != 0x30;
-    gen.data.request_id = req->request_id;
+    gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
     gen.data.unk1 = LE32(0x00000010);
@@ -532,7 +532,7 @@ int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
 }
 
 int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest) {
-    uint32_t mid = LE16(req->request_id);
+    uint32_t mid = LE16(req->entity_id);
     uint32_t pti = req->pt_index;
     lobby_t* l = c->cur_lobby;
     uint32_t qdrop = 0xFFFFFFFF;
@@ -588,7 +588,7 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
     /* 填充剩余数据 */
     gen.data.area = req->area;
     gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
-    gen.data.request_id = req->request_id;
+    gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */
@@ -651,7 +651,7 @@ int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const ii
     /* 填充剩余数据 */
     gen.data.area = req->area;
     gen.data.from_enemy = req->pt_index != 0x30;   /* Probably not right... but whatever. */
-    gen.data.request_id = req->request_id;
+    gen.data.request_id = req->entity_id;
     gen.data.x = req->x;
     gen.data.z = req->z;
     gen.data.unk1 = LE32(tmp);       /* ??? */

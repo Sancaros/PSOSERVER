@@ -688,7 +688,9 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 
 /* Generate an item drop from the PT data. This version uses the v3 PT data set.
    This function only works for PSOBB. */
-pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section);
+pt_bb_entry_t* get_pt_data_bb(const char* fn, lobby_t* l, uint8_t section);
+int get_pt_index(uint8_t episode, uint8_t pt_index);
+int get_pt_data_area_bb(uint8_t episode, int cur_area);
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r);
 int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 
@@ -697,6 +699,10 @@ int pt_generate_bb_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 int pt_generate_bb_pso2_drop(ship_client_t* src, lobby_t* l, void* r);
 int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section, subcmd_bb_itemreq_t* req);
 
-uint16_t get_random_value(rang_16bit_t range);
+item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_id);
+item_t on_specialized_box_item_drop(uint32_t def0, uint32_t def1, uint32_t def2);
+item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t area, uint8_t section_id);
+
+uint16_t get_random_value(sfmt_t* rng, rang_16bit_t range);
 
 #endif /* !PTDATA_H */

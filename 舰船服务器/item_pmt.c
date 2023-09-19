@@ -3228,13 +3228,25 @@ int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
     return -1;
 }
 
+uint8_t convert_int16_to_uint8(int16_t value) {
+    if (value > UINT8_MAX) {
+        return UINT8_MAX;  // 处理大于 uint8_t 范围的情况
+    }
+    else if (value < 0) {
+        return (uint8_t)abs(value);  // 处理负数的情况，取绝对值并转换为 uint8_t
+    }
+    else {
+        return (uint8_t)value;  // 正常情况下的类型转换
+    }
+}
+
 void set_sealed_item_kill_count(item_t* item, int16_t v) {
     if (v > 0x7FFF) {
         item->dataw[5] = 0xFFFF;
     }
     else {
         item->datab[10] = (v >> 8) | 0x80;
-        item->datab[11] = v;
+        item->datab[11] = convert_int16_to_uint8(v);
     }
 }
 

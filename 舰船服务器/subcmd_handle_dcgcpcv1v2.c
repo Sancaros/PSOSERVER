@@ -1856,7 +1856,7 @@ int subcmd_send_lobby_item(lobby_t* l, subcmd_itemreq_t* req,
     const uint32_t item[4]) {
     subcmd_itemgen_t gen = { 0 };
     int i;
-    uint32_t tmp = LE32(req->unk2[0]) & 0x0000FFFF;
+    uint32_t tmp = /*LE32(req->unk2[0]) & 0x0000FFFF*/LE32(req->unk1);
 
     /* 填充数据并准备发送. */
     gen.hdr.pkt_type = GAME_SUBCMD60_TYPE;

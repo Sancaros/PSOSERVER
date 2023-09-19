@@ -25,7 +25,7 @@ const char* enum_for_name(EnemyType type) {
     switch (type) {
     case NONE:
         return "NONE";
-    case UNKNOWN:
+    case UNKNOWN_TYPE:
         return "UNKNOWN";
     case AL_RAPPY:
         return "AL_RAPPY";
@@ -277,10 +277,222 @@ const char* enum_for_name(EnemyType type) {
     }
 }
 
+uint8_t rare_table_index_for_enemy_type(EnemyType enemy_type) {
+    switch (enemy_type) {
+    case AL_RAPPY:
+        return 0x06;
+    case ASTARK:
+        return 0x01;
+    case BA_BOOTA:
+        return 0x0B;
+    case BARBA_RAY:
+        return 0x49;
+    case BARBAROUS_WOLF:
+        return 0x08;
+    case BOOMA:
+        return 0x09;
+    case BOOTA:
+        return 0x09;
+    case BULCLAW:
+        return 0x28;
+    case CANADINE:
+    case CANADINE_GROUP:
+        return 0x1C;
+    case CANANE:
+        return 0x1D;
+    case CHAOS_BRINGER:
+        return 0x24;
+    case CHAOS_SORCERER:
+        return 0x1F;
+    case CLAW:
+        return 0x26;
+    case DARK_BELRA:
+        return 0x25;
+    case DARK_FALZ_2:
+        return 0x2F;
+    case DARK_FALZ_3:
+        return 0x2F;
+    case DARK_GUNNER:
+        return 0x22;
+    case DE_ROL_LE:
+        return 0x2D;
+    case DEL_LILY:
+        return 0x53;
+    case DEL_RAPPY:
+    case DEL_RAPPY_ALT:
+        return 0x12;
+    case DELBITER:
+        return 0x48;
+    case DELDEPTH:
+        return 0x47;
+    case DELSABER:
+        return 0x1E;
+    case DIMENIAN:
+        return 0x29;
+    case DOLMDARL:
+        return 0x41;
+    case DOLMOLM:
+        return 0x40;
+    case DORPHON:
+        return 0x0C;
+    case DORPHON_ECLAIR:
+        return 0x0D;
+    case DRAGON:
+        return 0x2C;
+    case DUBCHIC:
+        return 0x18;
+    case EGG_RAPPY:
+        return 0x51;
+    case EPSILON:
+        return 0x54;
+    case EVIL_SHARK:
+        return 0x10;
+    case GAL_GRYPHON:
+        return 0x4D;
+    case GARANZ:
+        return 0x19;
+    case GEE:
+        return 0x36;
+    case GI_GUE:
+        return 0x37;
+    case GIBBLES:
+        return 0x3D;
+    case GIGOBOOMA:
+        return 0x0B;
+    case GILLCHIC:
+        return 0x32;
+    case GIRTABLULU:
+        return 0x06;
+    case GOBOOMA:
+        return 0x0A;
+    case GOL_DRAGON:
+        return 0x4C;
+    case GORAN:
+        return 0x0E;
+    case GORAN_DETONATOR:
+        return 0x0F;
+    case GRASS_ASSASSIN:
+        return 0x0C;
+    case GUIL_SHARK:
+        return 0x12;
+    case HALLO_RAPPY:
+        return 0x50;
+    case HIDOOM:
+        return 0x17;
+    case HILDEBEAR:
+        return 0x01;
+    case HILDEBLUE:
+        return 0x02;
+    case ILL_GILL:
+        return 0x52;
+    case KONDRIEU:
+        return 0x15;
+    case LA_DIMENIAN:
+        return 0x2A;
+    case LOVE_RAPPY:
+        return 0x33;
+    case MERICAROL:
+        return 0x38;
+    case MERICUS:
+        return 0x3A;
+    case MERIKLE:
+        return 0x39;
+    case MERILLIA:
+        return 0x34;
+    case MERILTAS:
+        return 0x35;
+    case MERISSA_A:
+        return 0x04;
+    case MERISSA_AA:
+        return 0x05;
+    case MIGIUM:
+        return 0x16;
+    case MONEST:
+        return 0x04;
+    case MORFOS:
+        return 0x42;
+    case MOTHMANT:
+        return 0x03;
+    case NANO_DRAGON:
+        return 0x0F;
+    case NAR_LILY:
+        return 0x0E;
+    case OLGA_FLOW_2:
+        return 0x4E;
+    case PAL_SHARK:
+        return 0x11;
+    case PAN_ARMS:
+        return 0x15;
+    case PAZUZU:
+    case PAZUZU_ALT:
+        return 0x08;
+    case POFUILLY_SLIME:
+        return 0x13;
+    case POUILLY_SLIME:
+        return 0x14;
+    case POISON_LILY:
+        return 0x0D;
+    case PYRO_GORAN:
+        return 0x10;
+    case RAG_RAPPY:
+        return 0x05;
+    case RECOBOX:
+        return 0x43;
+    case RECON:
+        return 0x44;
+    case SAINT_RAPPY:
+        return 0x4F;
+    case SAINT_MILLION:
+        return 0x13;
+    case SAND_RAPPY:
+    case SAND_RAPPY_ALT:
+        return 0x11;
+    case SATELLITE_LIZARD:
+    case SATELLITE_LIZARD_ALT:
+        return 0x03;
+    case SAVAGE_WOLF:
+        return 0x07;
+    case SHAMBERTIN:
+        return 0x14;
+    case SINOW_BEAT:
+        return 0x1A;
+    case SINOW_BERILL:
+        return 0x3E;
+    case SINOW_GOLD:
+        return 0x1B;
+    case SINOW_SPIGELL:
+        return 0x3F;
+    case SINOW_ZELE:
+        return 0x46;
+    case SINOW_ZOA:
+        return 0x45;
+    case SO_DIMENIAN:
+        return 0x2B;
+    case UL_GIBBON:
+        return 0x3B;
+    case VOL_OPT_2:
+        return 0x2E;
+    case YOWIE:
+    case YOWIE_ALT:
+        return 0x02;
+    case ZE_BOOTA:
+        return 0x0A;
+    case ZOL_GIBBON:
+        return 0x3C;
+    case ZU:
+    case ZU_ALT:
+        return 0x07;
+    default:
+        ERR_LOG("enemy_type %d %s does not have a rare table entry", enemy_type, enum_for_name(enemy_type));
+    }
+
+    return 0;
+}
+
 EnemyType name_for_enemy_type(const char* name) {
     static const EnemyTypeMapping names[] = {
       {"NONE", NONE},
-      {"UNKNOWN", UNKNOWN},
+      {"UNKNOWN_TYPE", UNKNOWN_TYPE},
       {"AL_RAPPY", AL_RAPPY},
       {"ASTARK", ASTARK},
       {"BA_BOOTA", BA_BOOTA},
@@ -414,8 +626,8 @@ EnemyType name_for_enemy_type(const char* name) {
         }
     }
 
-    fprintf(stderr, "Error: Unknown enemy type %s\n", name);
-    exit(1);
+    ERR_LOG("Error: Unknown enemy type %s", name);
+    return 0;
 }
 
 bool enemy_type_valid_for_episode(Episode episode, EnemyType enemy_type) {
@@ -863,215 +1075,3 @@ uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type)
     }
     ERR_LOG("fallthrough case in battle param lookup");
 }
-
-uint8_t rare_table_index_for_enemy_type(EnemyType enemy_type) {
-    switch (enemy_type) {
-    case AL_RAPPY:
-        return 0x06;
-    case ASTARK:
-        return 0x01;
-    case BA_BOOTA:
-        return 0x0B;
-    case BARBA_RAY:
-        return 0x49;
-    case BARBAROUS_WOLF:
-        return 0x08;
-    case BOOMA:
-        return 0x09;
-    case BOOTA:
-        return 0x09;
-    case BULCLAW:
-        return 0x28;
-    case CANADINE:
-    case CANADINE_GROUP:
-        return 0x1C;
-    case CANANE:
-        return 0x1D;
-    case CHAOS_BRINGER:
-        return 0x24;
-    case CHAOS_SORCERER:
-        return 0x1F;
-    case CLAW:
-        return 0x26;
-    case DARK_BELRA:
-        return 0x25;
-    case DARK_FALZ_2:
-        return 0x2F;
-    case DARK_FALZ_3:
-        return 0x2F;
-    case DARK_GUNNER:
-        return 0x22;
-    case DE_ROL_LE:
-        return 0x2D;
-    case DEL_LILY:
-        return 0x53;
-    case DEL_RAPPY:
-    case DEL_RAPPY_ALT:
-        return 0x12;
-    case DELBITER:
-        return 0x48;
-    case DELDEPTH:
-        return 0x47;
-    case DELSABER:
-        return 0x1E;
-    case DIMENIAN:
-        return 0x29;
-    case DOLMDARL:
-        return 0x41;
-    case DOLMOLM:
-        return 0x40;
-    case DORPHON:
-        return 0x0C;
-    case DORPHON_ECLAIR:
-        return 0x0D;
-    case DRAGON:
-        return 0x2C;
-    case DUBCHIC:
-        return 0x18;
-    case EGG_RAPPY:
-        return 0x51;
-    case EPSILON:
-        return 0x54;
-    case EVIL_SHARK:
-        return 0x10;
-    case GAL_GRYPHON:
-        return 0x4D;
-    case GARANZ:
-        return 0x19;
-    case GEE:
-        return 0x36;
-    case GI_GUE:
-        return 0x37;
-    case GIBBLES:
-        return 0x3D;
-    case GIGOBOOMA:
-        return 0x0B;
-    case GILLCHIC:
-        return 0x32;
-    case GIRTABLULU:
-        return 0x06;
-    case GOBOOMA:
-        return 0x0A;
-    case GOL_DRAGON:
-        return 0x4C;
-    case GORAN:
-        return 0x0E;
-    case GORAN_DETONATOR:
-        return 0x0F;
-    case GRASS_ASSASSIN:
-        return 0x0C;
-    case GUIL_SHARK:
-        return 0x12;
-    case HALLO_RAPPY:
-        return 0x50;
-    case HIDOOM:
-        return 0x17;
-    case HILDEBEAR:
-        return 0x01;
-    case HILDEBLUE:
-        return 0x02;
-    case ILL_GILL:
-        return 0x52;
-    case KONDRIEU:
-        return 0x15;
-    case LA_DIMENIAN:
-        return 0x2A;
-    case LOVE_RAPPY:
-        return 0x33;
-    case MERICAROL:
-        return 0x38;
-    case MERICUS:
-        return 0x3A;
-    case MERIKLE:
-        return 0x39;
-    case MERILLIA:
-        return 0x34;
-    case MERILTAS:
-        return 0x35;
-    case MERISSA_A:
-        return 0x04;
-    case MERISSA_AA:
-        return 0x05;
-    case MIGIUM:
-        return 0x16;
-    case MONEST:
-        return 0x04;
-    case MORFOS:
-        return 0x42;
-    case MOTHMANT:
-        return 0x03;
-    case NANO_DRAGON:
-        return 0x0F;
-    case NAR_LILY:
-        return 0x0E;
-    case OLGA_FLOW_2:
-        return 0x4E;
-    case PAL_SHARK:
-        return 0x11;
-    case PAN_ARMS:
-        return 0x15;
-    case PAZUZU:
-    case PAZUZU_ALT:
-        return 0x08;
-    case POFUILLY_SLIME:
-        return 0x13;
-    case POUILLY_SLIME:
-        return 0x14;
-    case POISON_LILY:
-        return 0x0D;
-    case PYRO_GORAN:
-        return 0x10;
-    case RAG_RAPPY:
-        return 0x05;
-    case RECOBOX:
-        return 0x43;
-    case RECON:
-        return 0x44;
-    case SAINT_RAPPY:
-        return 0x4F;
-    case SAINT_MILLION:
-        return 0x13;
-    case SAND_RAPPY:
-    case SAND_RAPPY_ALT:
-        return 0x11;
-    case SATELLITE_LIZARD:
-    case SATELLITE_LIZARD_ALT:
-        return 0x03;
-    case SAVAGE_WOLF:
-        return 0x07;
-    case SHAMBERTIN:
-        return 0x14;
-    case SINOW_BEAT:
-        return 0x1A;
-    case SINOW_BERILL:
-        return 0x3E;
-    case SINOW_GOLD:
-        return 0x1B;
-    case SINOW_SPIGELL:
-        return 0x3F;
-    case SINOW_ZELE:
-        return 0x46;
-    case SINOW_ZOA:
-        return 0x45;
-    case SO_DIMENIAN:
-        return 0x2B;
-    case UL_GIBBON:
-        return 0x3B;
-    case VOL_OPT_2:
-        return 0x2E;
-    case YOWIE:
-    case YOWIE_ALT:
-        return 0x02;
-    case ZE_BOOTA:
-        return 0x0A;
-    case ZOL_GIBBON:
-        return 0x3C;
-    case ZU:
-    case ZU_ALT:
-        return 0x07;
-    default:
-        ERR_LOG(string_printf("%s does not have a rare table entry", enum_for_name(enemy_type)));
-        return -1;
-    }
-}
-

@@ -19,7 +19,7 @@
 #define ENEMY_TYPE_H
 
 typedef enum {
-	UNKNOWN = -1,
+	UNKNOWN_TYPE = -1,
 	NONE = 0,
 	AL_RAPPY,
 	ASTARK,
@@ -160,14 +160,14 @@ typedef enum{
 	EP4 = 4,
 } Episode;
 
-const char* name_for_enum(EnemyType type);
+const char* enum_for_name(EnemyType type);
+
+uint8_t rare_table_index_for_enemy_type(EnemyType enemy_type);
 
 EnemyType name_for_enemy_type(const char* name);
 
 bool enemy_type_valid_for_episode(Episode episode, EnemyType enemy_type);
 
 uint8_t battle_param_index_for_enemy_type(Episode episode, EnemyType enemy_type);
-
-uint8_t rare_table_index_for_enemy_type(EnemyType enemy_type);
 
 #endif // !ENEMY_TYPE_H

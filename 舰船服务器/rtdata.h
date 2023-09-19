@@ -41,6 +41,7 @@ typedef struct rt_entry {
 } PACKED rt_entry_t;
 
 typedef struct PackedDrop {
+    /* 读出来的数值 是 0-255 用expand_rate之后 则是浮点数 0.000000000*/
     uint8_t probability;
     uint8_t item_code[3];
 } PACKED PackedDrop_t;
@@ -59,17 +60,17 @@ typedef struct rt_table {
     /* 0194 */ uint8_t box_areas[0x1E];
     /* 01B2 */ PackedDrop_t box_rares[0x1E];
     /* 022A */ uint8_t unknown_a1[2];
-    /* 022C */ uint32_t enemy_rares_offset; // == 0x0000
-    /* 0230 */ uint32_t box_count; // == 0x1E
-    /* 0234 */ uint32_t box_areas_offset; // == 0x0194
-    /* 0238 */ uint32_t box_rares_offset; // == 0x01B2
+    /* 022C */ uint32_t enemy_rares_offset; // == 0x00000000
+    /* 0230 */ uint32_t box_count; // == 0x1E000000
+    /* 0234 */ uint32_t box_areas_offset; // == 0x94010000
+    /* 0238 */ uint32_t box_rares_offset; // == 0xB2010000
     /* 023C */ uint32_t unused_offset1;
     /* 0240 */ uint16_t unknown_a2[0x10];
-    /* 0260 */ uint32_t unknown_a2_offset;
-    /* 0264 */ uint32_t unknown_a2_count;
-    /* 0268 */ uint32_t unknown_a3;
+    /* 0260 */ uint32_t unknown_a2_offset;// == 0x40020000
+    /* 0264 */ uint32_t unknown_a2_count;// == 0x03000000
+    /* 0268 */ uint32_t unknown_a3;// == 0x01000000
     /* 026C */ uint32_t unknown_a4;
-    /* 0270 */ uint32_t offset_table_offset; // == 0x022C
+    /* 0270 */ uint32_t offset_table_offset; // == 0x2C020000
     /* 0274 */ uint32_t unknown_a5[3];
     /* 0280 */
 } PACKED rt_table_t;
@@ -119,5 +120,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
 /* src 随机值*/
 uint32_t rt_generate_bb_rare_style(ship_client_t* src, lobby_t* l, int rt_index,
     int area, uint8_t section);
+
+rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section);
 
 #endif /* !RTDATA_H */

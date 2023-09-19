@@ -313,108 +313,361 @@ out:
     return rv;
 }
 
+// the format of a file entry in a GSL archive
+typedef struct {
+    char name[0x20];
+    DWORD offset;
+    DWORD size;
+    DWORD unused[2];
+} gsl_entry;
+
+// GSLs consist of 256 (0x100) file entries, then the file data. that's it. the HANDLE is not part of the actual archive header.
+typedef struct {
+    gsl_entry e[0x100];
+    HANDLE file;
+} gsl_header;
+
+// finds a file entry in a loaded GSL archive
+gsl_entry* GSL_FindEntry(gsl_header* gsl, char* filename) {
+    int x;
+    if (!gsl)
+        return NULL;
+    for (x = 0; x < 0x100; x++)
+        if (!strcmp(gsl->e[x].name, filename))
+            break;
+    if (x >= 0x100)
+        return NULL;
+    return &gsl->e[x];
+}
+
+// opens (loads) a GSL archive
+gsl_header* GSL_OpenArchive(const char* filename) {
+    HANDLE file;
+    DWORD x;
+    file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+    if (file == INVALID_HANDLE_VALUE)
+        return NULL;
+    gsl_header* gsl = (gsl_header*)malloc(sizeof(gsl_header));
+    if (!gsl) {
+        free(gsl);
+        return NULL;
+    }
+    ReadFile(file, gsl, 0x3000, &x, NULL);
+    gsl->file = file;
+    for (x = 0; x < 0x100; x++) {
+        gsl->e[x].offset = byteswap(gsl->e[x].offset);
+        gsl->e[x].size = byteswap(gsl->e[x].size);
+    }
+    return gsl;
+}
+
+// reads an entire file from a GSL archive
+bool GSL_ReadFile(gsl_header* gsl, char* filename, void* buffer) {
+    DWORD bytesread;
+    if (!gsl)
+        return false;
+    gsl_entry* e = GSL_FindEntry(gsl, filename);
+    if (!e)
+        return false;
+    SetFilePointer(gsl->file, e->offset * 0x800, NULL, FILE_BEGIN);
+    ReadFile(gsl->file, buffer, e->size, &bytesread, NULL);
+
+    // DEBUG
+    // printf("bytesread %i / offset %i\n", bytesread, e->offset);
+    return true;
+}
+
+// gets a file's size inside a GSL archive
+DWORD GSL_GetFileSize(gsl_header* gsl, char* filename) {
+    gsl_entry* ge = GSL_FindEntry(gsl, filename);
+    if (!ge)
+        return 0;
+    return ge->size;
+}
+
+// closes (unloads) a GSL archive
+void GSL_CloseArchive(gsl_header* gsl) {
+    if (gsl) {
+        CloseHandle(gsl->file);
+        free_safe(gsl);
+    }
+}
+
 int rt_read_bb(const char* fn) {
-    pso_gsl_read_t* a;
-    const char difficulties[4] = { 'n', 'h', 'v', 'u' };
+    //pso_gsl_read_t* a;
+    //const char difficulties[4] = { 'n', 'h', 'v', 'u' };
     //EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
     const char* game_type[4] = { "", "l" , "c", "bb" };
-    char filename[32];
-    uint32_t hnd;
-    const size_t sz = sizeof(rt_table_t);
-    pso_error_t err;
-    int rv = 0, 章节, 难度, 颜色/*, l, m*/;
-    rt_table_t* buf;
+    //char filename[32];
+    //uint32_t hnd;
+    size_t sz/* = sizeof(rt_table_t)*/;
+    //pso_error_t err;
+    int rv = 0, 章节, 难度, 颜色/*, z*/;
+    rt_table_t buf = { 0 };
     rt_table_t* ent;
 
-    if (!(buf = (rt_table_t*)malloc(sizeof(rt_table_t)))) {
-        ERR_LOG("无法为 ItemRT 数据条目分配内存空间!");
-        return -6;
-    }
+    //BYTE data[0x800];
+    char filename[0x20];
 
-    /* Open up the file and make sure it looks sane enough... */
-    if (!(a = pso_gsl_read_open(fn, 0, &err))) {
-        ERR_LOG("%d 无法读取 BB %s: %s", a, fn, pso_strerror(err));
-        free_safe(buf);
+    gsl_header* gsl = GSL_OpenArchive(fn);
+    if (!gsl)
         return -1;
-    }
 
-    /* Make sure the archive has the correct number of entries. */
-    if (pso_gsl_file_count(a) != 0xA0) {
-        ERR_LOG("%s 数据似乎不完整. 读取字节 0x%zX", fn, pso_gsl_file_count(a));
-        rv = -2;
-        goto out;
-    }
+    //char* prefixes[] = { "ItemRT", "ItemRTl", "ItemRTc", "ItemRTbb" };
+    //char diffs[] = "nhvu";
+    // episode
+    for (章节 = 0; 章节 < 4; 章节++) {
+        // difficulty
+        for (难度 = 0; 难度 < 4; 难度++) {
+            // sec id
+            for (颜色 = 0; 颜色 < 10; 颜色++) {
 
-    /* Now, parse each entry... */
-    for (章节 = 0; 章节 < 4; ++章节) {
-        for (难度 = 0; 难度 < 4; ++难度) {
-            for (颜色 = 0; 颜色 < 10; ++颜色) {
-                /* Figure out the name of the file in the archive that we're
-                   looking for... */
                 snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
                     tolower(abbreviation_for_difficulty(难度)), 颜色);
 
-                //DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+                //sprintf(filename, "%s%c%d.rel", prefixes[章节], diffs[难度], 颜色);
+                if ((sz = GSL_GetFileSize(gsl, filename)) > 0x800)
+                    return -2;
 
-                /* Grab a handle to that file. */
-                hnd = pso_gsl_file_lookup(a, filename);
-                if (hnd == PSOARCHIVE_HND_INVALID) {
-                    ERR_LOG("%s 缺少 %s 文件!", fn, filename);
-                    rv = -3;
-                    goto out;
-                }
+                if (!GSL_ReadFile(gsl, filename, &buf))
+                    return -3;
 
-                /* Make sure the size is correct. */
-                if ((err = pso_gsl_file_size(a, hnd)) != 0x280) {
-                    ERR_LOG("%s 文件 %s 大小无效! 期待大小 0x%zX", fn,
-                        filename, err);
-                    rv = -4;
-                    goto out;
-                }
+                ///* 复制怪物数据 */
+                //for (z = 0; z < 0x65; z++) // monster id
+                //    memcpy(&bb_rtdata[章节][难度][颜色].enemy_rares[z], &buf.enemy_rares[z], 4);
 
-                if (pso_gsl_file_read(a, hnd, buf, sz) != sz) {
-                    ERR_LOG("读取 %s 错误,路径 %s!",
-                        filename, fn);
-                    rv = -5;
-                    goto out;
-                }
+                ///* 复制箱子数据 */
+                //for (z = 0; z < 30; z++) {
+                //    memcpy(&bb_rtdata[章节][难度][颜色].box_rares[z], &buf.box_rares[z], 4);
+                //    bb_rtdata[章节][难度][颜色].box_areas[z] = data[z + 0x0194];
+                //}
 
-                /* Dump it into our nicer (not packed) structure. */
                 ent = &bb_rtdata[章节][难度][颜色];
 
-                memcpy(ent, buf, sz);
+                memcpy(ent, &buf, sz);
 
-#ifdef DEBUG
+                //if (章节 == 0) {
 
-                DBG_LOG("颜色 ID %d", 颜色);
+                //    DBG_LOG("章节 %s 难度 %c 颜色 ID %d", game_type[章节], abbreviation_for_difficulty(难度), 颜色);
 
-                for (size_t x = 0; x < 0x65; x++) {
-                    DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
-                    DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
-                    DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
-                    DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
-                    DBG_LOG("/////////////////");
-                }
+                //    //for (size_t x = 0; x < 0x65; x++) {
+                //    //    DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
+                //    //    DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
+                //    //    DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
+                //    //    DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
+                //    //    DBG_LOG("/////////////////");
+                //    //}
 
-                for (size_t x = 0; x < 0x1E; x++) {
-                    DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
-                    DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
-                    DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
-                    DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
-                    DBG_LOG("/////////////////");
-                }
+                //    //for (size_t x = 0; x < 0x1E; x++) {
+                //    //    DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+                //    //    DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+                //    //    DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+                //    //    DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+                //    //    DBG_LOG("/////////////////");
+                //    //}
 
-#endif // DEBUG
+                //    DBG_LOG("enemy_rares_offset 0x%08X", ent->enemy_rares_offset);
+                //    DBG_LOG("box_count 0x%08X", ent->box_count);
+                //    DBG_LOG("box_areas_offset 0x%08X", ent->box_areas_offset);
+                //    DBG_LOG("box_rares_offset 0x%08X", ent->box_rares_offset);
+                //    for (z = 0; z < 0x10; z++) {
+                //        DBG_LOG("unknown_a2 z %d 0x%04X", z, ent->unknown_a2[z]);
+                //    }
+                //    DBG_LOG("unknown_a2_offset 0x%08X", ent->unknown_a2_offset);
+                //    DBG_LOG("unknown_a2_count 0x%08X", ent->unknown_a2_count);
+                //    DBG_LOG("unknown_a3 0x%08X", ent->unknown_a3);
+                //    DBG_LOG("unknown_a4 0x%08X", ent->unknown_a4);
+                //    DBG_LOG("offset_table_offset 0x%08X", ent->offset_table_offset);
+                //    for (z = 0; z < 3; z++) {
+                //        DBG_LOG("unknown_a5 z %d 0x%04X", z, ent->unknown_a5[z]);
+                //    }
+                //}
 
             }
         }
     }
+    GSL_CloseArchive(gsl);
+
+    //getchar();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    if (!(buf = (rt_table_t*)malloc(sizeof(rt_table_t)))) {
+//        ERR_LOG("无法为 ItemRT 数据条目分配内存空间!");
+//        return -6;
+//    }
+//
+//    /* Open up the file and make sure it looks sane enough... */
+//    if (!(a = pso_gsl_read_open(fn, 0, &err))) {
+//        ERR_LOG("%d 无法读取 BB %s: %s", a, fn, pso_strerror(err));
+//        free_safe(buf);
+//        return -1;
+//    }
+//
+//    /* Make sure the archive has the correct number of entries. */
+//    if (pso_gsl_file_count(a) != 0xA0) {
+//        ERR_LOG("%s 数据似乎不完整. 读取字节 0x%zX", fn, pso_gsl_file_count(a));
+//        rv = -2;
+//        goto out;
+//    }
+//
+//    /* Now, parse each entry... */
+//    for (章节 = 0; 章节 < 4; ++章节) {
+//        for (难度 = 0; 难度 < 4; ++难度) {
+//            for (颜色 = 0; 颜色 < 10; ++颜色) {
+//                /* Figure out the name of the file in the archive that we're
+//                   looking for... */
+//                snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
+//                    tolower(abbreviation_for_difficulty(难度)), 颜色);
+//
+//                DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+//
+//                /* Grab a handle to that file. */
+//                hnd = pso_gsl_file_lookup(a, filename);
+//                if (hnd == PSOARCHIVE_HND_INVALID) {
+//                    ERR_LOG("%s 缺少 %s 文件!", fn, filename);
+//                    rv = -3;
+//                    goto out;
+//                }
+//
+//                /* Make sure the size is correct. */
+//                if ((err = pso_gsl_file_size(a, hnd)) != 0x280) {
+//                    ERR_LOG("%s 文件 %s 大小无效! 期待大小 0x%zX", fn,
+//                        filename, err);
+//                    rv = -4;
+//                    goto out;
+//                }
+//
+//                if (pso_gsl_file_read(a, hnd, buf, sz) != sz) {
+//                    ERR_LOG("读取 %s 错误,路径 %s!",
+//                        filename, fn);
+//                    rv = -5;
+//                    goto out;
+//                }
+//
+//                /* Dump it into our nicer (not packed) structure. */
+//                ent = &bb_rtdata[章节][难度][颜色];
+//
+//                /* Read in the enemy entries */
+//                //for (x = 0; x < 0x65; ++x) {
+//                //    ent->enemy_rares[x].probability = buf->enemy_rares[x].probability;
+//                //    ent->enemy_rares[x].item_code[0] = buf->enemy_rares[x].item_code[2];
+//                //    ent->enemy_rares[x].item_code[1] = buf->enemy_rares[x].item_code[1];
+//                //    ent->enemy_rares[x].item_code[2] = buf->enemy_rares[x].item_code[0];
+//                //}
+//
+//                //for (x = 0; x < 30; ++x) {
+//                //    ent->box_rares[x].probability = buf->box_rares[x].probability;
+//                //    ent->box_rares[x].item_code[0] = buf->box_rares[x].item_code[2];
+//                //    ent->box_rares[x].item_code[1] = buf->box_rares[x].item_code[1];
+//                //    ent->box_rares[x].item_code[2] = buf->box_rares[x].item_code[0];
+//                //}
+//
+//                memcpy(ent, buf, sz);
+//                if (章节 == 3) {
+//
+//                    DBG_LOG("颜色 ID %d", 颜色);
+//                    DBG_LOG("enemy_rares_offset 0x%08X", ent->enemy_rares_offset);
+//                    DBG_LOG("box_count 0x%08X", ent->box_count);
+//                    DBG_LOG("box_areas_offset 0x%08X", ent->box_areas_offset);
+//                    DBG_LOG("box_rares_offset 0x%08X", ent->box_rares_offset);
+//                    for (z = 0; z < 0x10; z++) {
+//                        DBG_LOG("unknown_a2 x %d 0x%04X", z, ent->unknown_a2[z]);
+//                    }
+//                    DBG_LOG("unknown_a2_offset 0x%08X", ent->unknown_a2_offset);
+//                    DBG_LOG("unknown_a2_count 0x%08X", ent->unknown_a2_count);
+//                    DBG_LOG("unknown_a3 0x%08X", ent->unknown_a3);
+//                    DBG_LOG("unknown_a4 0x%08X", ent->unknown_a4);
+//                    DBG_LOG("offset_table_offset 0x%08X", ent->offset_table_offset);
+//                    for (z = 0; z < 3; z++) {
+//                        DBG_LOG("unknown_a5 x %d 0x%04X", z, ent->unknown_a5[z]);
+//                    }
+//                    //for (size_t x = 0; x < 0x65; x++) {
+//                    //    DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
+//                    //    DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
+//                    //    DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
+//                    //    DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
+//                    //    DBG_LOG("/////////////////");
+//                    //}
+//
+//                    //for (size_t x = 0; x < 0x1E; x++) {
+//                    //    DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+//                    //    DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+//                    //    DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+//                    //    DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+//                    //    DBG_LOG("/////////////////");
+//                    //}
+//                    getchar();
+//                }
+//
+//#ifdef DEBUG
+//
+//                DBG_LOG("颜色 ID %d", 颜色);
+//
+//                for (size_t x = 0; x < 0x65; x++) {
+//                    DBG_LOG("enemy_rares item_code0 0x%02X", ent->enemy_rares[x].item_code[0]);
+//                    DBG_LOG("enemy_rares item_code1 0x%02X", ent->enemy_rares[x].item_code[1]);
+//                    DBG_LOG("enemy_rares item_code2 0x%02X", ent->enemy_rares[x].item_code[2]);
+//                    DBG_LOG("enemy_rares probability %d %lf", ent->enemy_rares[x].probability, expand_rate(ent->enemy_rares[x].probability));
+//                    DBG_LOG("/////////////////");
+//                }
+//
+//                for (size_t x = 0; x < 0x1E; x++) {
+//                    DBG_LOG("box_rares item_code0 0x%02X", ent->box_rares[x].item_code[0]);
+//                    DBG_LOG("box_rares item_code1 0x%02X", ent->box_rares[x].item_code[1]);
+//                    DBG_LOG("box_rares item_code2 0x%02X", ent->box_rares[x].item_code[2]);
+//                    DBG_LOG("box_rares probability %d %lf", ent->box_rares[x].probability, expand_rate(ent->box_rares[x].probability));
+//                    DBG_LOG("/////////////////");
+//                }
+//
+//#endif // DEBUG
+//
+//            }
+//        }
+//    }
 
     have_bbrt = 1;
 
-out:
-    pso_gsl_read_close(a);
-    free_safe(buf);
+//out:
+    //pso_gsl_read_close(a);
+    //free_safe(buf);
     return rv;
 }
 

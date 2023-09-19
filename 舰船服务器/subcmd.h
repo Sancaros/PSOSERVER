@@ -1374,7 +1374,9 @@ typedef struct subcmd_itemreq {
     uint16_t request_id;
     float x;
     float z;
-    uint32_t unk2[2];
+    uint16_t unk1;
+    uint16_t ignore_def;
+    float unk3;
 } PACKED subcmd_itemreq_t;
 
 //( 00000000 )   20 00 62 00 00 00 00 00   60 06 00 00 01 0A 71 00   .b.....`.....q.
@@ -1396,12 +1398,12 @@ typedef struct subcmd_bb_itemreq {
     unused_hdr_t shdr;
     uint8_t area;
     uint8_t pt_index;
-    uint16_t request_id;
+    uint16_t entity_id;
     float x;
     float z;
     uint16_t unk1;
-    uint16_t unk2;
-    uint32_t unk3;
+    uint16_t ignore_def;
+    float unk3;
 } PACKED subcmd_bb_itemreq_t;
 
 // 0x61: levelup_req
@@ -2322,8 +2324,8 @@ typedef struct subcmd_bb_save_player_act {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_save_player_act_t;
 
-// 0xA2: Request for item drop from box (不支持 PC; handled by server on BB)
-typedef struct subcmd_bb_BoxItemDropRequest_6xA2 {
+// 0xA2: Request for item drop from box (不支持 pre-V3; handled by server on BB)
+typedef struct subcmd_bb_box_item_drop_request {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t area;
@@ -2331,14 +2333,12 @@ typedef struct subcmd_bb_BoxItemDropRequest_6xA2 {
     uint16_t request_id;
     float x;
     float z;
-    uint16_t unknown_a2;
-    uint16_t unknown_a3;
-    uint8_t unknown_a4[4];
-    uint32_t unknown_a5;
-    uint32_t unknown_a6;
-    uint32_t unknown_a7;
-    uint32_t unknown_a8;
-} PACKED subcmd_bb_BoxItemDropRequest_6xA2_t;
+    uint16_t unk1;
+    uint16_t ignore_def;
+    float unknown_a4;
+    float def_a1;
+    uint32_t def[3];
+} PACKED subcmd_bb_box_item_drop_request_t;
 
 // 0xA2: Request for item drop from box (不支持 PC; handled by server on BB)
 // Request drop from box (GC)
@@ -2366,10 +2366,11 @@ typedef struct subcmd_bb_bitemreq {
     uint16_t request_id;
     float x;
     float z;
-    uint32_t unk2[2];
-    uint16_t unk3;
-    uint16_t object_id;                      /* 0x80 0x3F? */
-    uint32_t unused[3];                 /* All zeroes? */
+    uint16_t unk1;
+    uint16_t ignore_def;
+    float unk3;
+    float def_a1;
+    uint32_t def[3];
 } PACKED subcmd_bb_bitemreq_t;
 
 // 0xA3: Episode 2 boss actions (不支持 PC or Episode 3)
