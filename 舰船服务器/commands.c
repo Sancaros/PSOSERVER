@@ -542,6 +542,8 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
 
+    pthread_mutex_lock(&l->mutex);
+
     /* Clear the set item */
     clear_inv_item(&src->new_item);
 
@@ -567,7 +569,7 @@ static int handle_item(ship_client_t *src, const char *params) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!litem) {
-            //pthread_mutex_unlock(&l->mutex);
+            pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
     }
@@ -609,7 +611,7 @@ static int handle_item(ship_client_t *src, const char *params) {
     print_item_data(&bb.data, src->version);
 
     /* Send the packet to everyone in the lobby */
-    //pthread_mutex_unlock(&l->mutex);
+    pthread_mutex_unlock(&l->mutex);
 
     switch (src->version) {
     case CLIENT_VERSION_DCV1:

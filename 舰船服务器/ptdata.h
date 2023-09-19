@@ -651,7 +651,6 @@ static pt_v2_entry_t v2_ptdata[4][10];
 static pt_v3_entry_t gc_ptdata[4][4][10];
 //EP1 0 / EP2 1 /  CHALLENGE1 2/ CHALLENGE2 3/ EP4 4
 static pt_bb_entry_t bb_ptdata[5][4][10];
-
 static pt_bb_entry_t bb_dymnamic_ptdata[5][4][10];
 static Restrictions* restrictions = NULL;
 
@@ -688,7 +687,7 @@ int pt_generate_gc_boxdrop(ship_client_t *c, lobby_t *l, void *r);
 
 /* Generate an item drop from the PT data. This version uses the v3 PT data set.
    This function only works for PSOBB. */
-pt_bb_entry_t* get_pt_data_bb(const char* fn, lobby_t* l, uint8_t section);
+pt_bb_entry_t* get_pt_data_bb(const char* fn, uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section);
 int get_pt_index(uint8_t episode, uint8_t pt_index);
 int get_pt_data_area_bb(uint8_t episode, int cur_area);
 int pt_generate_bb_drop(ship_client_t *c, lobby_t *l, void *r);

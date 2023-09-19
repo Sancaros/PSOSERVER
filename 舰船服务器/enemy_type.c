@@ -272,7 +272,7 @@ const char* enum_for_name(EnemyType type) {
     case ZU_ALT:
         return "ZU_ALT";
     default:
-        ERR_LOG("invalid enemy type");
+        ERR_LOG("无效怪物类型");
         return NULL;
     }
 }

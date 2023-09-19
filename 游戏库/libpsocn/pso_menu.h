@@ -163,8 +163,8 @@ static pso_menu_t pso_game_create_menu_bb[][4] = {
 static pso_menu_t pso_game_drop_menu_bb[][4] = {
     {"DATABASE/US", MENU_ID_DATABASE, MENU_ID_GAME_DROP, 0x0000},
     {"默认掉落模式", MENU_ID_GAME_DROP, 0, 0x0000},
-    {"PSO2掉落模式", MENU_ID_GAME_DROP, 1, 0x0000},
-    {"随机掉落模式", MENU_ID_GAME_DROP, 2, 0x0000},
+    {"独立掉落模式", MENU_ID_GAME_DROP, 1, 0x0000},
+    {"随机颜色独立模式", MENU_ID_GAME_DROP, 2, 0x0000},
     {"上级菜单", MENU_ID_GAME_DROP, 0xFF, 0x0000},
 };
 

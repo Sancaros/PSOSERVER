@@ -725,23 +725,23 @@ int pt_bb_enabled(void) {
 	return have_bbpt;
 }
 
-pt_bb_entry_t* get_pt_data_bb(const char* fn, lobby_t* l, uint8_t section) {
+pt_bb_entry_t* get_pt_data_bb(const char* fn, uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
 	uint8_t game_type = 0;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
-	switch (l->episode)
+	switch (episode)
 	{
 	case GAME_TYPE_NORMAL:
 	case GAME_TYPE_EPISODE_1:
-		if (l->challenge)
+		if (challenge)
 			game_type = 2;
 		else
 			game_type = 0;
 		break;
 
 	case GAME_TYPE_EPISODE_2:
-		if (l->challenge)
+		if (challenge)
 			game_type = 3;
 		else
 			game_type = 1;
@@ -753,8 +753,11 @@ pt_bb_entry_t* get_pt_data_bb(const char* fn, lobby_t* l, uint8_t section) {
 		break;
 	}
 
-	//return &bb_ptdata[game_type][l->difficulty][section];
-	return pt_dynamics_read_bb(fn, game_type, l->difficulty, section);
+	pt_bb_entry_t* tmp = pt_dynamics_read_bb(fn, game_type, difficulty, section);
+	if (!tmp)
+		return &bb_ptdata[game_type][difficulty][section];
+
+	return tmp;
 }
 
 int get_pt_index(uint8_t episode, uint8_t pt_index) {
@@ -1101,7 +1104,7 @@ uint32_t choose_meseta_amount(sfmt_t* rng,
 		return 0xFFFF;
 	}
 	else if (min != max) {
-		return rand_int(rng, (max - min) + 1) + min;
+		return rand_int(rng, (uint64_t)((max - min) + 1)) + min;
 	}
 	return min;
 }
@@ -1228,7 +1231,7 @@ uint8_t generate_tech_disk_level(sfmt_t* rng, uint32_t tech_num, uint32_t area_n
 		return 0xFF;
 	}
 	else if (min != max) {
-		return rand_int(rng, (max - min) + 1) + min;
+		return rand_int(rng, (uint64_t)((max - min) + 1)) + min;
 	}
 	return min;
 }
@@ -1520,7 +1523,7 @@ item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, pt_bb_entry_t* ent,
 		return item;
 	}
 
-	rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
+	rt_table_t* rare_specs = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section_id);
 
 	for (size_t x = 0; x < rare_specs->box_count; x++) {
 		if (rare_specs->box_areas[x] == area_norm) {
@@ -1596,7 +1599,7 @@ item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_i
 #ifdef DEBUG
 	DBG_LOG("new_area %d", new_area);
 #endif // DEBUG
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section_id);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
 		return item;
@@ -1612,7 +1615,7 @@ item_t check_rare_spec_and_create_rare_enemy_item(lobby_t* l, pt_bb_entry_t* ent
 		// rare drop. In our implementation, they can have multiple rare drops if
 		// JSONRareItemSet is used (the other RareItemSet implementations never
 		// return multiple drops for an enemy type).
-		rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
+		rt_table_t* rare_specs = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section_id);
 
 		PackedDrop_t spec = rare_specs->enemy_rares[enemy_type];
 
@@ -1706,7 +1709,7 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 	item_t item = { 0 };
 	uint8_t new_area = normalize_area_number(l, area) - 1;
 	DBG_LOG("new_area %d 新area %d", new_area, area);
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section_id);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
 		return item;
@@ -4771,7 +4774,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint8_t pt_index = req->pt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
 		return 0;
@@ -5012,7 +5015,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	int csr = 0;
 	uint8_t pt_index = req->pt_index;
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
 		return 0;
@@ -5247,7 +5250,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 	uint8_t pt_index = req->pt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
 		return 0;
@@ -5465,7 +5468,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 	int csr = 0;
 	uint8_t pt_index = req->pt_index;
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
 		return 0;

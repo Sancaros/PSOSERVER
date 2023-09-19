@@ -101,6 +101,7 @@ static rt_set_t gc_rtdata[2][4][10];
 static int have_bbrt = 0;
 //static rt_set_t bb_rtdata[4][4][10];
 static rt_table_t bb_rtdata[4][4][10];
+static rt_table_t bb_dymnamic_rtdata[4][4][10];
 
 int rt_read_v2(const char *fn);
 int rt_read_gc(const char *fn);
@@ -121,6 +122,6 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
 uint32_t rt_generate_bb_rare_style(ship_client_t* src, lobby_t* l, int rt_index,
     int area, uint8_t section);
 
-rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section);
+rt_table_t* get_rt_table_bb(const char* fn, uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section);
 
 #endif /* !RTDATA_H */

@@ -1188,48 +1188,89 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     subcmd_bb_itemreq_t* cmd = (subcmd_bb_itemreq_t*)pkt;
+    int rv = 0;
 
-    if (!l)
+    if (l->type != LOBBY_TYPE_GAME) {
+        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
+            src->guildcard);
         return 0;
-
-    //if (l->challenge) {
-    //    send_txt(src, __(src, "\tE\tC6暂未探明挑战模式该掉什么东西."));
-    //    return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
-    //}
-
-    //if (l->battle) {
-    //    send_txt(src, __(src, "\tE\tC6暂未探明对战模式该掉什么东西."));
-    //    return send_pkt_bb(src, (bb_pkt_hdr_t*)pkt);
-    //}
+    }
 
     //display_packet(pkt, pkt->hdr.pkt_len);
 
     iitem_t iitem = { 0 };
-    uint8_t section = src->bb_pl->character.dress_data.section;
 
-    //if (!l->map_enemies) {
-    //    ERR_LOG("游戏并未载入地图敌人数据");
-    //}
-    //game_enemy_t* enemy = &l->map_enemies->enemies[cmd->unk1];
-    //uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
-    //if (cmd->rt_index != expected_rt_index) {
-    //    ERR_LOG("rt_index %02hhX from command does not match entity\'s expected index %02X %02X %04X",
-    //        cmd->rt_index, expected_rt_index, enemy->rt_index, cmd->entity_id);
-    //}
-    iitem.data = on_monster_item_drop(l, &src->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+    if (l->drop_pso2) {
+        int i;
 
-    if (is_item_empty(&iitem.data))
-        return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+        /* Send the packet to every connected client. */
+        for (i = 0; i < l->max_clients; ++i) {
+            if (!l->clients[i])
+                continue;
 
-    iitem.data.item_id = generate_item_id(l, 0xFF);
+            if (l->clients[i]->cur_area != src->cur_area) {
+                l->clients[i]->cur_area = src->cur_area;
+            }
 
-    print_item_data(&iitem.data, l->version);
+            ship_client_t* p2 = l->clients[i];
+            psocn_bb_char_t* p2_char = get_client_char_bb(p2);
+            uint8_t p2_section = p2_char->dress_data.section;
+            if (l->drop_psocn) {
+                DBG_LOG("原颜色ID %d ", p2_section);
+                p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
+                DBG_LOG("新颜色ID %d ", p2_section);
+            }
 
-    litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
-    if (!lt)
-        return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
 
-    return subcmd_send_bb_lobby_drop_item(src, NULL, cmd, &lt->iitem);
+            if (is_item_empty(&iitem.data))
+                continue;
+
+            iitem.data.item_id = generate_item_id(l, 0xFF);
+
+            print_item_data(&iitem.data, l->version);
+
+            pthread_mutex_lock(&p2->mutex);
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
+            if (!lt)
+                continue;
+
+            rv = subcmd_send_bb_drop_item(p2, cmd, &lt->iitem);
+            pthread_mutex_unlock(&p2->mutex);
+        }
+    }
+    else {
+        psocn_bb_char_t* character = get_client_char_bb(src);
+        uint8_t section = character->dress_data.section;
+
+        //if (!l->map_enemies) {
+        //    ERR_LOG("游戏并未载入地图敌人数据");
+        //}
+        //game_enemy_t* enemy = &l->map_enemies->enemies[cmd->unk1];
+        //uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
+        //if (cmd->rt_index != expected_rt_index) {
+        //    ERR_LOG("rt_index %02hhX from command does not match entity\'s expected index %02X %02X %04X",
+        //        cmd->rt_index, expected_rt_index, enemy->rt_index, cmd->entity_id);
+        //}
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+
+        if (is_item_empty(&iitem.data))
+            return 0;
+
+        iitem.data.item_id = generate_item_id(l, 0xFF);
+
+        print_item_data(&iitem.data, l->version);
+
+        pthread_mutex_lock(&src->mutex);
+        litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
+        if (!lt)
+            return 0;
+
+        rv = subcmd_send_bb_lobby_drop_item(src, NULL, cmd, &lt->iitem);
+        pthread_mutex_unlock(&src->mutex);
+    }
+
+    return rv;
     //return l->dropfunc(src, l, pkt);
 }
 
@@ -1285,49 +1326,88 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
     subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)pkt;
-    int rv;
+    int rv = 0;
 
-    //if (src->mode) {
-    //    send_txt(src, __(src, "\tE\tC6暂未探明挑战模式该掉什么东西."));
-    //    return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
-    //}
-
-    //if (l->drop_pso2) {
-    //    l->dropfunc = pt_generate_bb_pso2_drop;
-    //}
-
-    //if (l->drop_psocn) {
-    //    l->dropfunc = pt_generate_bb_pso2_drop;
-    //}
-
-    if (!l)
+    if (l->type != LOBBY_TYPE_GAME) {
+        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
+            src->guildcard);
         return 0;
+    }
 
     iitem_t iitem = { 0 };
-    uint8_t section = src->bb_pl->character.dress_data.section;
 
     DBG_LOG("req->ignore_def 0x%04X", req->ignore_def);
 
     //pthread_mutex_lock(&src->mutex);
+    if (l->drop_pso2) {
+        int i;
 
-    if (req->ignore_def) {
-        iitem.data = on_box_item_drop(l, &src->sfmt_rng, /*req->area*/get_pt_data_area_bb(l->episode, src->cur_area), section);
-    }else
-        iitem.data = on_specialized_box_item_drop(
-            req->def[0], req->def[1], req->def[2]);
+        /* Send the packet to every connected client. */
+        for (i = 0; i < l->max_clients; ++i) {
+            if (!l->clients[i])
+                continue;
 
-    if (is_item_empty(&iitem.data))
-        return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            if (l->clients[i]->cur_area != src->cur_area) {
+                l->clients[i]->cur_area = src->cur_area;
+            }
 
-    iitem.data.item_id = generate_item_id(l, 0xFF);
+            ship_client_t* p2 = l->clients[i];
+            psocn_bb_char_t* p2_char = get_client_char_bb(p2);
+            uint8_t p2_section = p2_char->dress_data.section;
+            if (l->drop_psocn) {
+                p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
+            }
 
-    print_item_data(&iitem.data, l->version);
+            if (req->ignore_def) {
+                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, /*req->area*/get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+            }
+            else
+                iitem.data = on_specialized_box_item_drop(
+                    req->def[0], req->def[1], req->def[2]);
 
-    litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
-    if (!lt)
-        return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
+            if (is_item_empty(&iitem.data))
+                continue;
 
-    rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)req, &lt->iitem);
+            iitem.data.item_id = generate_item_id(l, 0xFF);
+
+            print_item_data(&iitem.data, l->version);
+
+            pthread_mutex_lock(&p2->mutex);
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
+            if (!lt)
+                continue;
+
+            rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)req, &lt->iitem);
+            pthread_mutex_unlock(&p2->mutex);
+        }
+
+    }
+    else {
+        psocn_bb_char_t* character = get_client_char_bb(src);
+        uint8_t section = character->dress_data.section;
+
+        if (req->ignore_def) {
+            iitem.data = on_box_item_drop(l, &src->sfmt_rng, /*req->area*/get_pt_data_area_bb(l->episode, src->cur_area), section);
+        }
+        else
+            iitem.data = on_specialized_box_item_drop(
+                req->def[0], req->def[1], req->def[2]);
+
+        if (is_item_empty(&iitem.data))
+            return 0;
+
+        iitem.data.item_id = generate_item_id(l, 0xFF);
+
+        print_item_data(&iitem.data, l->version);
+
+        pthread_mutex_lock(&src->mutex);
+        litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
+        if (!lt)
+            return 0;
+
+        rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)req, &lt->iitem);
+        pthread_mutex_unlock(&src->mutex);
+    }
 
     //pthread_mutex_unlock(&src->mutex);
 
@@ -2545,7 +2625,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             item.datal[0] = new_value;
 
             if (new_value == 0x04) {
-                pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l, src->bb_pl->character.dress_data.section);
+                pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, src->bb_pl->character.dress_data.section);
                 if (!ent) {
                     ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, src->bb_pl->character.dress_data.section);
                     return 0;

@@ -495,6 +495,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             //l->v2 = 0;
             //l->version = CLIENT_VERSION_DCV1;
             //DBG_LOG("随机掉落模式");
+            l->drop_pso2 = true;
             l->drop_psocn = true;
             break;
 
@@ -514,7 +515,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
         }
 
-        DBG_LOG("GC %u:%d %s", c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? "PSO2掉落模式" : l->drop_psocn == true ? "随机掉落模式" : "默认掉落模式");
+        DBG_LOG("GC %u:%d %s", c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
         
         /* All's well in the world if we get here. */
         return 0;

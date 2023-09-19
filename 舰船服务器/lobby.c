@@ -272,8 +272,7 @@ void lobby_print_info2(ship_client_t* src) {
 
     if(l->lobby_create)
         send_msg(src, TEXT_MSG_TYPE, "掉落: %s"
-            , l->drop_pso2 == true ? __(src, "\tE\tC6PSO2") :
-            l->drop_psocn == true ? __(src, "\tE\tC8随机") :
+            , l->drop_pso2 == true ? l->drop_psocn == true ? __(src, "\tE\tC8随机") : __(src, "\tE\tC6独立") : 
             __(src, "\tE\tC7默认")
         );
     //send_msg(src, TEXT_MSG_TYPE, "当前地图:");
