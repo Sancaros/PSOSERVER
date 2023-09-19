@@ -834,14 +834,6 @@ void generate_common_weapon_grind(
 	}
 }
 
-//float rand_float_0_1_from_crypt() {
-//	sfmt_t rng;
-//	sfmt_init_gen_rand(&rng, (uint32_t)time(NULL));
-//	// This lacks some precision, but matches the original implementation.
-//	return sfmt_genrand_real1(&rng);
-//	//return (double)((sfmt_genrand_uint32(&rng) >> 16) / 65536.0);
-//}
-
 void generate_common_weapon_special(
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
 	if (item->datab[0] != 0) {
@@ -1135,44 +1127,6 @@ uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 	return 0;
 }
 
-void generate_common_item_variances(lobby_t* l, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent) {
-	switch (item->datab[0]) {
-	case ITEM_TYPE_WEAPON:
-		generate_common_weapon_variances(l, norm_area, item, ent);
-		break;
-	case ITEM_TYPE_GUARD:
-		if (item->datab[1] == 3) {
-			float f1 = (float)(1.0 + ent->unit_maxes[norm_area]);
-			float f2 = rand_float_0_1_from_crypt();
-			generate_common_unit_variances((uint32_t)(f1 * f2) & 0xFF, item);
-			if (item->datab[2] == 0xFF) {
-				clear_inv_item(item);
-			}
-		}
-		else {
-			generate_common_armor_or_shield_type_and_variances(norm_area, item, ent);
-		}
-		break;
-	case ITEM_TYPE_MAG:
-		generate_common_mag_variances(item);
-		break;
-	case ITEM_TYPE_TOOL:
-		generate_common_tool_variances(norm_area, item, ent);
-		break;
-	case ITEM_TYPE_MESETA:
-		item->data2l = choose_meseta_amount(ent->box_meseta_ranges, norm_area) & 0xFFFF;
-		break;
-	default:
-		// Note: The original code does the following here:
-		// clear_inv_item(&item);
-		// item->datab[0] = 0x05;
-		ERR_LOG("invalid item class");
-	}
-
-	//this->clear_item_if_restricted(item);
-	set_item_kill_count_if_unsealable(item);
-}
-
 void clear_item_if_restricted(lobby_t* l, item_t* item) {
 	if (is_item_rare(item) && !are_rare_drops_allowed(l)) {
 		ERR_LOG("Restricted: item is rare, but rares not allowed");
@@ -1268,6 +1222,44 @@ void clear_item_if_restricted(lobby_t* l, item_t* item) {
 			ERR_LOG("invalid item");
 		}
 	}
+}
+
+void generate_common_item_variances(lobby_t* l, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent) {
+	switch (item->datab[0]) {
+	case ITEM_TYPE_WEAPON:
+		generate_common_weapon_variances(l, norm_area, item, ent);
+		break;
+	case ITEM_TYPE_GUARD:
+		if (item->datab[1] == 3) {
+			float f1 = (float)(1.0 + ent->unit_maxes[norm_area]);
+			float f2 = rand_float_0_1_from_crypt();
+			generate_common_unit_variances((uint32_t)(f1 * f2) & 0xFF, item);
+			if (item->datab[2] == 0xFF) {
+				clear_inv_item(item);
+			}
+		}
+		else {
+			generate_common_armor_or_shield_type_and_variances(norm_area, item, ent);
+		}
+		break;
+	case ITEM_TYPE_MAG:
+		generate_common_mag_variances(item);
+		break;
+	case ITEM_TYPE_TOOL:
+		generate_common_tool_variances(norm_area, item, ent);
+		break;
+	case ITEM_TYPE_MESETA:
+		item->data2l = choose_meseta_amount(ent->box_meseta_ranges, norm_area) & 0xFFFF;
+		break;
+	default:
+		// Note: The original code does the following here:
+		// clear_inv_item(&item);
+		// item->datab[0] = 0x05;
+		ERR_LOG("invalid item class");
+	}
+
+	clear_item_if_restricted(l, item);
+	set_item_kill_count_if_unsealable(item);
 }
 
 void generate_rare_weapon_bonuses(pt_bb_entry_t* ent, item_t* item, uint32_t random_sample) {

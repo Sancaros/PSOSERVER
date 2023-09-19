@@ -568,9 +568,10 @@ void client_destroy_connection(ship_client_t* c,
         //TODO 与目前存在空房间的设定冲突 待适配
         /* If the client has a lobby sitting around that was created but not added
            to the list of lobbies, destroy it */
-        if (c->create_lobby) {
-            lobby_destroy_noremove(c->create_lobby);
-        }
+        //if (c->create_lobby && c->create_lobby->lobby_create) {
+        //    c->create_lobby->lobby_create = 0;
+        //    lobby_destroy_noremove(c->create_lobby);
+        //}
 
            /* If we were logging the user, closesocket the file */
         if (c->logfile) {
