@@ -282,6 +282,16 @@ extern int32_t script_log_console_show;
 int gettimeofday(struct timeval* timevaltmp, void* tzp);
 #endif
 
+/* This function based on information from a couple of different sources, namely
+   Fuzziqer's newserv and information from Lee (through Aleron Ives). */
+extern double expand_rate(uint8_t rate);
+
+extern uint32_t byteswap(uint32_t e);
+
+extern uint32_t be_convert_to_le_uint32(uint8_t item_code[3]);
+
+extern uint32_t little_endian_value(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
+
 extern void load_log_config(void);
 extern void color(uint32_t x);
 
@@ -301,7 +311,7 @@ extern void err_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filen
 extern void unk_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* filename);
 
-int remove_directory(const char* path);
+extern int remove_directory(const char* path);
 
-ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
+extern ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
 #endif // !PSOCN_LOG

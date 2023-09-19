@@ -87,6 +87,16 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
         ssize_t rv, total = 0;
         void* tmp;
 
+        /* Don't even try if there's not a connection. */
+        if (!c->has_key || c->sock < 0) {
+#ifdef DEBUG
+
+            ERR_LOG("不向未认证的接入发送任何数据");
+
+#endif // DEBUG
+            return 0;
+        }
+
         /* Keep trying until the whole thing's sent. */
         if (!c->sendbuf_cur) {
             while (total < len) {

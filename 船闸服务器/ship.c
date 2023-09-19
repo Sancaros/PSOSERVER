@@ -506,6 +506,7 @@ research_cert:
 
     /* Store the ship ID */
     rv->key_idx = atoi(row[0]);
+    rv->has_key = 1;
     psocn_db_result_free(result);
     gnutls_x509_crt_deinit(cert);
 
@@ -520,19 +521,10 @@ research_cert:
     TAILQ_INSERT_TAIL(&ships, rv, qentry);
     return rv;
 
-err_hs:
-    closesocket(sock);
-    gnutls_deinit(rv->session);
-    free_safe(rv);
-    return NULL;
+err_cert:
 err_tls:
     gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
-    closesocket(sock);
-    gnutls_deinit(rv->session);
-    free_safe(rv);
-    return NULL;
-err_cert:
-    gnutls_bye(rv->session, GNUTLS_SHUT_RDWR);
+err_hs:
     closesocket(sock);
     gnutls_deinit(rv->session);
     free_safe(rv);
@@ -563,7 +555,7 @@ void db_remove_client(ship_t* s) {
 
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(ship_t* s) {
-    if (s->ship_name[0]) {
+    if (s->has_key) {
         DC_LOG("关闭与 %s 的连接", s->ship_name);
     }
     else {
@@ -579,6 +571,8 @@ void destroy_connection(ship_t* s) {
         gnutls_deinit(s->session);
         s->sock = SOCKET_ERROR;
     }
+
+    s->has_key = 0;
 
     if (s->recvbuf) {
         free_safe(s->recvbuf);
@@ -5842,6 +5836,16 @@ int handle_pkt(ship_t* c) {
         ERR_LOG("非法舰船session");
         free_safe(recvbuf);
         return -1; // 错误检查，确保 c->session 不为空
+    }
+
+    /* Don't even try if there's not a connection. */
+    if (!c->has_key || c->sock < 0) {
+#ifdef DEBUG
+
+        ERR_LOG("不向未认证的接入发送任何数据");
+
+#endif // DEBUG
+        return 0;
     }
 
     /* If we've got anything buffered, copy it out to the main buffer to make

@@ -30,37 +30,6 @@
 #include "rtdata.h"
 #include "ship_packets.h"
 
-/* This function based on information from a couple of different sources, namely
-   Fuzziqer's newserv and information from Lee (through Aleron Ives). */
-static double expand_rate(uint8_t rate) {
-    int tmp = (rate >> 3) - 4;
-    uint32_t expd;
-
-    if(tmp < 0)
-        tmp = 0;
-
-    expd = (2 << tmp) * ((rate & 7) + 7);
-    return (double)expd / (double)0x100000000ULL;
-}
-
-uint32_t byteswap(uint32_t e) {
-    return (((e >> 24) & 0xFF) | (((e >> 16) & 0xFF) << 8) | (((e >> 8) & 0xFF) << 16) | ((e & 0xFF) << 24));
-}
-
-uint32_t be_convert_to_le_uint32(uint8_t item_code[3]) {
-    uint32_t result = 0;
-
-    result |= ((uint32_t)item_code[2]) << 16;
-    result |= ((uint32_t)item_code[1]) << 8;
-    result |= item_code[0];
-
-    return result;
-}
-
-uint32_t little_endian_value(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) {
-    return ((uint32_t)b4 << 24) | ((uint32_t)b3 << 16) | ((uint32_t)b2 << 8) | b1;
-}
-
 uint16_t key_for_params(uint32_t mode, uint32_t episode, uint8_t difficulty, uint8_t secid) {
     if (difficulty > 3) {
         // Å×³öÒì³£

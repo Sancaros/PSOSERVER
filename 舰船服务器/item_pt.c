@@ -1073,6 +1073,7 @@ void generate_common_tool_variances(uint32_t area_norm, item_t* item, pt_bb_entr
 	get_item_amount(item, 1);
 }
 
+/* drop_sub TODO */
 uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
 	if (/*!this->item_drop_sub || */(area < 0x10) || (area > 0x11)) {
 		switch (l->episode) {
@@ -1163,7 +1164,7 @@ void generate_common_item_variances(lobby_t* l, uint32_t norm_area, item_t* item
 		break;
 	default:
 		// Note: The original code does the following here:
-		// item.clear();
+		// clear_inv_item(&item);
 		// item->datab[0] = 0x05;
 		ERR_LOG("invalid item class");
 	}
@@ -1172,30 +1173,187 @@ void generate_common_item_variances(lobby_t* l, uint32_t norm_area, item_t* item
 	set_item_kill_count_if_unsealable(item);
 }
 
-//item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, uint8_t area_norm) {
-//	item_t item = { 0 };
-//	if (!are_rare_drops_allowed(l)) {
-//		return item;
-//	}
-//
-//	auto rare_specs = this->rare_item_set->get_box_specs(
-//		this->mode, this->episode, this->difficulty, this->section_id, area_norm + 1);
-//	for (const auto& spec : rare_specs) {
-//		item = check_rate_and_create_rare_item(spec);
-//		if (!is_item_empty(&item)) {
-//			DBG_LOG("Box spec %08" PRIX32 " produced item %02hhX%02hhX%02hhX",
-//				spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
-//			break;
-//		}
-//		DBG_LOG("Box spec %08" PRIX32 " did not produce item %02hhX%02hhX%02hhX",
-//			spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
-//	}
-//	return item;
-//}
+void clear_item_if_restricted(lobby_t* l, item_t* item) {
+	if (is_item_rare(item) && !are_rare_drops_allowed(l)) {
+		ERR_LOG("Restricted: item is rare, but rares not allowed");
+		clear_inv_item(item);
+		return;
+	}
 
-/* TODO 检查箱子中稀有的掉落 */
-item_t on_box_item_drop_with_norm_area(lobby_t* l, uint8_t area_norm, pt_bb_entry_t* ent) {
-	item_t item = { 0 }/* = check_rare_specs_and_create_rare_box_item(l, area_norm)*/;
+	if (l->challenge) {
+		// Forbid HP/TP-restoring units and meseta in challenge mode
+		// Note: PSO GC doesn't check for 0x61 or 0x62 here since those items
+		// (HP/Resurrection and TP/Resurrection) only exist on BB.
+		if (item->datab[0] == 1) {
+			if ((item->datab[1] == 3) && (((item->datab[2] >= 0x33) && (item->datab[2] <= 0x38)) || (item->datab[2] == 0x61) || (item->datab[2] == 0x62))) {
+				ERR_LOG("Restricted: restore units not allowed in Challenge mode");
+				clear_inv_item(item);
+				return;
+			}
+		}
+		else if (item->datab[0] == 4) {
+			ERR_LOG("Restricted: meseta not allowed in Challenge mode");
+			clear_inv_item(item);
+			return;
+		}
+	}
+
+	if (restrictions) {
+		switch (item->datab[0]) {
+		case 0:
+		case 1:
+			switch (restrictions->weapon_and_armor_mode) {
+			case WEAPON_AND_ARMOR_MODE_ALL_ON:
+			case WEAPON_AND_ARMOR_MODE_ONLY_PICKING:
+				break;
+			case WEAPON_AND_ARMOR_MODE_NO_RARE:
+				if (is_item_rare(item)) {
+					ERR_LOG("Restricted: rare items not allowed");
+					clear_inv_item(item);
+				}
+				break;
+			case WEAPON_AND_ARMOR_MODE_ALL_OFF:
+				ERR_LOG("Restricted: weapons and armors not allowed");
+				clear_inv_item(item);
+				break;
+			default:
+				ERR_LOG("invalid weapon and armor mode");
+			}
+			break;
+		case 2:
+			if (restrictions->forbid_mags) {
+				ERR_LOG("Restricted: mags not allowed");
+				clear_inv_item(item);
+			}
+			break;
+		case 3:
+			if (restrictions->tool_mode == TOOL_MODE_ALL_OFF) {
+				ERR_LOG("Restricted: tools not allowed");
+				clear_inv_item(item);
+			}
+			else if (item->datab[1] == 2) {
+				switch (restrictions->tech_disk_mode) {
+				case TECH_DISK_MODE_ON:
+					break;
+				case TECH_DISK_MODE_OFF:
+					ERR_LOG("Restricted: tech disks not allowed");
+					clear_inv_item(item);
+					break;
+				case TECH_DISK_MODE_LIMIT_LEVEL:
+					ERR_LOG("Restricted: tech disk level limited to %hhu",
+						(uint8_t)(restrictions->max_tech_disk_level + 1));
+					if (restrictions->max_tech_disk_level == 0) {
+						item->datab[2] = 0;
+					}
+					else {
+						item->datab[2] %= restrictions->max_tech_disk_level;
+					}
+					break;
+				default:
+					ERR_LOG("invalid tech disk mode");
+				}
+			}
+			else if ((item->datab[1] == 9) && restrictions->forbid_scape_dolls) {
+				ERR_LOG("Restricted: scape dolls not allowed");
+				clear_inv_item(item);
+			}
+			break;
+		case 4:
+			if (restrictions->meseta_drop_mode == MESETA_DROP_MODE_OFF) {
+				ERR_LOG("Restricted: meseta not allowed");
+				clear_inv_item(item);
+			}
+			break;
+		default:
+			ERR_LOG("invalid item");
+		}
+	}
+}
+
+void generate_rare_weapon_bonuses(pt_bb_entry_t* ent, item_t* item, uint32_t random_sample) {
+	if (item->datab[0] != 0) {
+		return;
+	}
+
+	for (size_t z = 0; z < 6; z += 2) {
+		uint8_t bonus_type = get_rand_from_weighted_tables_2d_vertical(
+			ent->bonus_type_prob_tables, random_sample, 6, 10);
+		int16_t bonus_value = get_rand_from_weighted_tables_2d_vertical(
+			ent->bonus_value_prob_tables, 5, 23, 6);
+		item->datab[z + 6] = bonus_type;
+		item->datab[z + 7] = bonus_value * 5 - 10;
+		// Note: The original code has a special case here, which divides
+		// item->datab[z + 7] by 5 and multiplies it by 5 again if bonus_type is 5
+		// (Hit). Why this is done is unclear, because item->datab[z + 7] must
+		// already be a multiple of 5.
+	}
+
+	deduplicate_weapon_bonuses(item);
+}
+
+item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, PackedDrop_t drop) {
+	item_t item = { 0 };
+	if (drop.probability == 0) {
+		return item;
+	}
+
+	// Note: The original code uses 0xFFFFFFFF as the maximum here. We use
+	// 0x100000000 instead, which makes all rare items SLIGHTLY more rare.
+	if (rand_int(0x100000000) >= expand_rate(drop.probability)) {
+		return item;
+	}
+
+	item.datab[0] = drop.item_code[0];
+	item.datab[1] = drop.item_code[1];
+	item.datab[2] = drop.item_code[2];
+	switch (item.datab[0]) {
+	case 0:
+		generate_rare_weapon_bonuses(ent, &item, rand_int(10));
+		set_item_unidentified_flag_if_challenge(l, &item);
+		break;
+	case 1:
+		generate_common_armor_slots_and_bonuses(&item, ent);
+		break;
+	case 2:
+		generate_common_mag_variances(&item);
+		break;
+	case 3:
+		clear_tool_item_if_invalid(&item);
+		get_item_amount(&item, 1);
+		break;
+	case 4:
+		break;
+	default:
+		ERR_LOG("invalid item class");
+	}
+
+	clear_item_if_restricted(l, &item);
+	set_item_kill_count_if_unsealable(&item);
+	return item;
+}
+
+item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, pt_bb_entry_t* ent, uint8_t area_norm, uint8_t section_id) {
+	item_t item = { 0 };
+	if (!are_rare_drops_allowed(l)) {
+		return item;
+	}
+	rt_table_t* rare_specs = &bb_rtdata[l->episode][l->difficulty][section_id];
+	for (size_t x = 0; x < rare_specs->box_count; x++) {
+		PackedDrop_t spec = rare_specs->box_rares[x];
+		item = check_rate_and_create_rare_item(l, ent, spec);
+		if (!is_item_empty(&item)) {
+			DBG_LOG("Box spec %08" PRIX32 " produced item %02hhX%02hhX%02hhX",
+				spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+			break;
+		}
+		DBG_LOG("Box spec %08" PRIX32 " did not produce item %02hhX%02hhX%02hhX",
+			spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+	}
+	return item;
+}
+
+item_t on_box_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, uint8_t area_norm, uint8_t section_id) {
+	item_t item = check_rare_specs_and_create_rare_box_item(l, ent, area_norm, section_id);
 
 	if (is_item_empty(&item)) {
 		uint8_t item_class = get_rand_from_weighted_tables_2d_vertical(
@@ -1225,19 +1383,18 @@ item_t on_box_item_drop_with_norm_area(lobby_t* l, uint8_t area_norm, pt_bb_entr
 		case 6: // Nothing
 			break;
 		default:
-			ERR_LOG("this should be impossible");
+			ERR_LOG("this should be impossible item_class %d", item_class);
 			return item;
 		}
 		generate_common_item_variances(l, area_norm, &item, ent);
-		print_item_data(&item, l->version);
 	}
 	return item;
 }
 
-item_t on_box_item_drop(lobby_t* l, uint8_t area, pt_bb_entry_t* ent) {
+item_t on_box_item_drop(lobby_t* l, pt_bb_entry_t* ent, uint8_t area, uint8_t section_id) {
 	uint8_t new_area = normalize_area_number(l, area) - 1;
 	DBG_LOG("new_area %d", new_area);
-	return on_box_item_drop_with_norm_area(l, new_area, ent);
+	return on_box_item_drop_with_norm_area(l, ent, new_area, section_id);
 }
 
 item_t on_specialized_box_item_drop(uint32_t def0, uint32_t def1, uint32_t def2) {
@@ -4446,7 +4603,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
 	if (pt_index == 0x30) {
-		item_t tmp_i = on_box_item_drop(l, src->cur_area, ent);
+		item_t tmp_i = on_box_item_drop(l, ent, src->cur_area, section);
 		print_item_data(&tmp_i, src->version);
 		return pt_generate_bb_boxdrop(src, l, r);
 	}

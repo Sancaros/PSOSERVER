@@ -3748,6 +3748,11 @@ int shipgate_send_pkts(shipgate_conn_t* c) {
 
         /* Don't even try if there's not a connection. */
         if (!c->has_key || c->sock < 0) {
+#ifdef DEBUG
+
+            ERR_LOG("不向未认证的接入发送任何数据");
+
+#endif // DEBUG
             return 0;
         }
 

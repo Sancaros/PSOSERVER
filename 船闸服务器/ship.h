@@ -75,6 +75,7 @@ typedef struct ship {
 
     int sock;
     int disconnected;
+    int has_key;
     uint32_t flags;
     uint32_t menu;
 

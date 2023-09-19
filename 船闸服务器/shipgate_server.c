@@ -600,7 +600,8 @@ void run_server(int tsock, int tsock6) {
 
             /* Check GnuTLS' buffer for the connection. */
             if (gnutls_record_check_pending(i->session)) {
-                if (rv = handle_pkt(i)) {
+                rv = handle_pkt(i);
+                if (rv) {
                     ERR_LOG("Check GnuTLS' buffer for the connection ERROR %d", rv);
                     i->disconnected = 1;
                 }
