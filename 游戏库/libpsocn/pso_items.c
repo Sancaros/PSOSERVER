@@ -209,11 +209,21 @@ uint8_t get_item_amount(item_t* item, uint32_t amount) {
 			item->datab[5] = (uint8_t)amount;
 		}
 	}
+	else if (item->datab[0] == 0x03) {
+		item->datab[5] = 0x00;
+	}
 	else if(item->datab[0] == ITEM_TYPE_MESETA){
 		item->data2l = amount > 999999 ? 999999 : amount;
 	}
 
 	return item->datab[5];
+}
+
+void clear_tool_item_if_invalid(item_t* item) {
+	if ((item->datab[1] == 2) &&
+		((item->datab[2] > 0x1D) || (item->datab[4] > 0x12))) {
+		clear_inv_item(item);
+	}
 }
 
 bool is_common_consumable(uint32_t primary_identifier) {
@@ -338,12 +348,31 @@ const char* item_get_name(const item_t* item, int version) {
 		return item_get_name_by_code((item_code_t)code, version);
 }
 
+bool is_item_empty(item_t* item) {
+	return (item->datal[0] == 0) &&
+		(item->datal[1] == 0) &&
+		(item->datal[2] == 0) &&
+		(item->data2l == 0);
+}
+
+void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus) {
+	item->dataw[3] = bonus;
+}
+
 int16_t get_armor_or_shield_defense_bonus(const item_t* item) {
 	return item->dataw[3];
 }
 
+void set_common_armor_evasion_bonus(item_t* item, int16_t bonus) {
+	item->dataw[4] = bonus;
+}
+
 int16_t get_common_armor_evasion_bonus(const item_t* item) {
 	return item->dataw[4];
+}
+
+void set_unit_bonus(item_t* item, int16_t bonus) {
+	item->dataw[3] = bonus;
 }
 
 int16_t get_unit_bonus(const item_t* item) {

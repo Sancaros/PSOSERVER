@@ -129,13 +129,17 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
 /* 仅用于房间物品数量 */
 uint8_t get_item_amount(item_t* item, uint32_t amount);
 
+void clear_tool_item_if_invalid(item_t* item);
 bool is_common_consumable(uint32_t primary_identifier);
 
 /* 获取物品名称 */
 const char* item_get_name(const item_t* item, int version);
-
+bool is_item_empty(item_t* item);
+void set_armor_or_shield_defense_bonus(item_t* item, int16_t bonus);
 int16_t get_armor_or_shield_defense_bonus(const item_t* item);
+void set_common_armor_evasion_bonus(item_t* item, int16_t bonus);
 int16_t get_common_armor_evasion_bonus(const item_t* item);
+void set_unit_bonus(item_t* item, int16_t bonus);
 int16_t get_unit_bonus(const item_t* item);
 
 /* 打印物品数据 */

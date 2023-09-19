@@ -3202,5 +3202,44 @@ uint8_t choose_weapon_special(uint8_t det) {
     return 0;
 }
 
+bool is_unsealable_item(const item_t* item) {
+    for (size_t z = 0; z < unsealableitems_max_bb; z++) {
+        if ((unsealableitems_bb[z].item[0] == item->datab[0]) &&
+            (unsealableitems_bb[z].item[1] == item->datab[1]) &&
+            (unsealableitems_bb[z].item[2] == item->datab[2])) {
+            return true;
+        }
+    }
+    return false;
+}
 
+int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
+    for (uint8_t z = 0; z < num_tool_types_bb; z++) {
+        uint32_t co = num_tools_bb[z];
+        for (uint8_t y = 0; y < num_tools_bb[z]; y++) {
+            if (tools_bb[z][y].base.index == tool_class) {
+                data[0] = z;
+                data[1] = y;
+                return 0;
+            }
+        }
+    }
+    ERR_LOG("invalid tool class");
+    return -1;
+}
 
+void set_sealed_item_kill_count(item_t* item, int16_t v) {
+    if (v > 0x7FFF) {
+        item->dataw[5] = 0xFFFF;
+    }
+    else {
+        item->datab[10] = (v >> 8) | 0x80;
+        item->datab[11] = v;
+    }
+}
+
+void set_item_kill_count_if_unsealable(item_t* item) {
+    if (is_unsealable_item(item)) {
+        set_sealed_item_kill_count(item, 0);
+    }
+}

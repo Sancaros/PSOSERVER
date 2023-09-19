@@ -40,6 +40,7 @@
 #include "handle_player_items.h"
 #include "utils.h"
 #include "quests.h"
+#include "mag_bb.h"
 
 #define LOG(team, ...) team_log_write(team, TLOG_DROPS, __VA_ARGS__)
 #define LOGV(team, ...) team_log_write(team, TLOG_DROPSV, __VA_ARGS__)
@@ -547,6 +548,167 @@ out:
 	return rv;
 }
 
+pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
+	pso_gsl_read_t* a;
+	const char difficulties[4] = { 'n', 'h', 'v', 'u' };
+	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+	const char* game_type[5] = { "", "l" , "c", "cl", "bb" };
+	char filename[32];
+	uint32_t hnd;
+	const size_t sz = sizeof(fpt_bb_entry_t);
+	pso_error_t err;
+	int rv = 0, l, m;
+	fpt_bb_entry_t* buf;
+	pt_bb_entry_t* ent;
+
+	if (!(buf = (fpt_bb_entry_t*)malloc(sizeof(fpt_bb_entry_t)))) {
+		ERR_LOG("无法为 ItemPT 数据条目分配内存空间!");
+		return NULL;
+	}
+
+	/* Open up the file and make sure it looks sane enough... */
+	if (!(a = pso_gsl_read_open(fn, 0, &err))) {
+		ERR_LOG("%d 无法读取 BB %s: %s", a, fn, pso_strerror(err));
+		goto out;
+	}
+
+	/* Make sure the archive has the correct number of entries. */
+	if (pso_gsl_file_count(a) != 0xC8) {
+		ERR_LOG("%s 数据似乎不完整. 读取字节 %d", fn, pso_gsl_file_count(a));
+		goto out;
+	}
+
+	/* 现在读取特定的章节... */
+				/* Figure out the name of the file in the archive that we're
+				   looking for... */
+	snprintf(filename, 32, "ItemPT%s%c%d.rel", game_type[章节],
+		tolower(abbreviation_for_difficulty(难度)), 颜色);
+
+	DBG_LOG("%s", filename);
+
+	/* Grab a handle to that file. */
+	hnd = pso_gsl_file_lookup(a, filename);
+	if (hnd == PSOARCHIVE_HND_INVALID) {
+		ERR_LOG("%s 缺少 %s 文件!", fn, filename);
+		goto out;
+	}
+
+	/* Make sure the size is correct. */
+	if (pso_gsl_file_size(a, hnd) != 0x9E0) {
+		ERR_LOG("%s 文件 %s 大小无效!", fn,
+			filename);
+		goto out;
+	}
+
+	if (pso_gsl_file_read(a, hnd, buf, sz) != sz) {
+		ERR_LOG("读取 %s 错误,路径 %s!",
+			filename, fn);
+		goto out;
+	}
+
+	/* Dump it into our nicer (not packed) structure. */
+	ent = &bb_dymnamic_ptdata[章节][难度][颜色];
+
+	memcpy(ent->base_weapon_type_prob_table, buf->weapon_ratio, 12);
+	memcpy(ent->subtype_base_table, buf->weapon_minrank, 12);
+	memcpy(ent->subtype_area_length_table, buf->weapon_upgfloor, 12);
+
+	for (l = 0; l < 9; ++l) {
+		memcpy(ent->grind_prob_tables[l], buf->power_pattern[l], 4);
+	}
+
+	for (l = 0; l < 23; ++l) {
+		for (m = 0; m < 6; ++m) {
+			ent->bonus_value_prob_tables[l][m] =
+				ntohs(buf->percent_pattern[l][m]);
+		}
+	}
+
+	for (l = 0; l < 3; ++l) {
+		memcpy(ent->nonrare_bonus_prob_spec[l], buf->area_pattern[l], 10);
+	}
+
+	for (l = 0; l < 6; ++l) {
+		memcpy(ent->bonus_type_prob_tables[l],
+			buf->percent_attachment[l], 10);
+	}
+
+	memcpy(ent->special_mult, buf->element_ranking, 10);
+	memcpy(ent->special_percent, buf->element_probability, 10);
+	memcpy(ent->armor_shield_type_index_prob_table, buf->armor_ranking, 5);
+	memcpy(ent->armor_slot_count_prob_table, buf->slot_ranking, 5);
+	memcpy(ent->unit_maxes, buf->unit_level, 10);
+
+	for (l = 0; l < 28; ++l) {
+		for (m = 0; m < 10; ++m) {
+			ent->tool_class_prob_table[l][m] =
+				ntohs(buf->tool_frequency[l][m]);
+#ifdef DEBUG
+			DBG_LOG("ep %d dif %d secid %d l %d m %d value 0x%04X %d", 章节, 难度, 颜色, l, m, ent->tool_class_prob_table[l][m], ent->tool_class_prob_table[l][m]);
+#endif // DEBUG
+		}
+	}
+
+	for (l = 0; l < 19; ++l) {
+		memcpy(ent->technique_index_prob_table[l], buf->tech_frequency[l], 10);
+		memcpy(ent->technique_level_ranges[l], buf->tech_levels[l], 20);
+	}
+
+	memcpy(ent->enemy_type_drop_probs, buf->enemy_dar, 100);
+
+	for (l = 0; l < 100; ++l) {
+		ent->enemy_meseta_ranges[l].min = ntohs(buf->enemy_meseta[l][0]);
+		ent->enemy_meseta_ranges[l].max = ntohs(buf->enemy_meseta[l][1]);
+	}
+
+	memcpy(ent->enemy_item_classes, buf->enemy_drop, 100);
+
+	for (l = 0; l < 10; ++l) {
+		ent->box_meseta_ranges[l].min = ntohs(buf->box_meseta[l][0]);
+		ent->box_meseta_ranges[l].max = ntohs(buf->box_meseta[l][1]);
+	}
+
+	for (l = 0; l < 7; ++l) {
+		memcpy(ent->box_drop[l], buf->box_drop[l], 10);
+	}
+
+	ent->armor_level = ntohl(buf->armor_level);
+
+
+#ifdef DEBUG
+
+	for (int x = 0; x < 12; x++) {
+		DBG_LOG("base_weapon_type_prob_table x %d 0x%02X", x, ent->base_weapon_type_prob_table[x]);
+	}
+
+	//memcpy(ent, buf, sz);
+
+	//display_packet(buf, sz);
+
+	//if (章节 == 4) {
+	//	DBG_LOG("%s", filename);
+	//	for (int x = 0; x < 100; x++) {
+	//		DBG_LOG("enemy_type_drop_probs x %d %d", x, ent->enemy_type_drop_probs[x]);
+	//	}
+
+	//	getchar();
+	//}
+	DBG_LOG("%s", filename);
+	for (int x = 0; x < 100; x++) {
+		DBG_LOG("enemy_drop x %d 0x%02X", x, ent->enemy_drop[x]);
+	}
+
+	getchar();
+#endif // DEBUG
+
+	have_bbpt = 1;
+
+out:
+	pso_gsl_read_close(a);
+	free_safe(buf);
+	return ent;
+}
+
 int pt_v2_enabled(void) {
 	return have_v2pt;
 }
@@ -591,8 +753,25 @@ void deduplicate_weapon_bonuses(item_t* item) {
 	}
 }
 
+uint32_t rand_int(uint64_t max) {
+	sfmt_t rng;
+	sfmt_init_gen_rand(&rng, (uint32_t)time(NULL));
+	return sfmt_genrand_uint32(&rng) % max;
+}
+
+float rand_float_0_1_from_crypt() {
+	sfmt_t rng;
+	sfmt_init_gen_rand(&rng, (uint32_t)time(NULL));
+	uint32_t next = sfmt_genrand_uint32(&rng);
+	next = next ^ (next << 11);
+	next = next ^ (next >> 8);
+	next = next ^ ((next << 19) & 0xffffffff);
+	next = next ^ ((next >> 4) & 0xffffffff);
+	return (float)(next >> 16) / 65536.0f;
+}
+
 uint8_t get_rand_from_weighted_tables(
-	const uint8_t* data, size_t offset, size_t num_values, size_t stride) {
+	uint8_t* data, size_t offset, size_t num_values, size_t stride) {
 	uint64_t rand_max = 0;
 	for (size_t x = 0; x != num_values; x++) {
 		rand_max += data[x * stride + offset];
@@ -602,11 +781,11 @@ uint8_t get_rand_from_weighted_tables(
 		return 0;
 	}
 
-	uint32_t x = rand() & rand_max;
+	uint32_t x = rand_int(rand_max);
 	for (size_t z = 0; z < num_values; z++) {
 		uint32_t table_value = data[z * stride + offset];
 		if (x < table_value) {
-			return z;
+			return (uint8_t)z;
 		}
 		x -= table_value;
 	}
@@ -615,8 +794,9 @@ uint8_t get_rand_from_weighted_tables(
 }
 
 uint8_t get_rand_from_weighted_tables_2d_vertical(
-	const uint8_t bonus_type_prob_tables[6][10], size_t offset, size_t X, size_t Y) {
-	return get_rand_from_weighted_tables(bonus_type_prob_tables[0],
+	void* tables, size_t offset, size_t X, size_t Y) {
+	uint8_t* table = (uint8_t*)tables;
+	return get_rand_from_weighted_tables(&table[0],
 		offset, Y, X);
 }
 
@@ -641,8 +821,8 @@ void generate_common_weapon_bonuses(
 	}
 }
 
-uint8_t get_rand_from_weighted_tables_1d(const uint8_t* weapon_type_prob_table, size_t X) {
-	return get_rand_from_weighted_tables(weapon_type_prob_table, 0, X, 1);
+uint8_t get_rand_from_weighted_tables_1d(uint8_t* data, size_t X) {
+	return get_rand_from_weighted_tables(data, 0, X, 1);
 }
 
 void generate_common_weapon_grind(
@@ -654,10 +834,13 @@ void generate_common_weapon_grind(
 	}
 }
 
-float rand_float_0_1_from_crypt() {
-	// This lacks some precision, but matches the original implementation.
-	return (double)((1 >> 16) / 65536.0);
-}
+//float rand_float_0_1_from_crypt() {
+//	sfmt_t rng;
+//	sfmt_init_gen_rand(&rng, (uint32_t)time(NULL));
+//	// This lacks some precision, but matches the original implementation.
+//	return sfmt_genrand_real1(&rng);
+//	//return (double)((sfmt_genrand_uint32(&rng) >> 16) / 65536.0);
+//}
 
 void generate_common_weapon_special(
 	item_t* item, uint8_t area_norm, pt_bb_entry_t* ent) {
@@ -671,11 +854,11 @@ void generate_common_weapon_special(
 	if (special_mult == 0) {
 		return;
 	}
-	if (rand()&100 >= ent->special_percent[area_norm]) {
+	if (rand_int(100) >= ent->special_percent[area_norm]) {
 		return;
 	}
 	item->datab[4] = choose_weapon_special(
-		special_mult * rand_float_0_1_from_crypt());
+		special_mult * (uint8_t)rand_float_0_1_from_crypt());
 }
 
 void set_item_unidentified_flag_if_challenge(lobby_t* l, item_t* item) {
@@ -690,7 +873,7 @@ void generate_common_weapon_variances(lobby_t* l, uint8_t area_norm, item_t* ite
 	clear_inv_item(item);
 	item->datab[0] = 0x00;
 
-	uint8_t weapon_type_prob_table[0x0D];
+	uint8_t weapon_type_prob_table[0x0D] = { 0 };
 	weapon_type_prob_table[0] = 0;
 	memmove(
 		weapon_type_prob_table + 1,
@@ -725,6 +908,381 @@ void generate_common_weapon_variances(lobby_t* l, uint8_t area_norm, item_t* ite
 		generate_common_weapon_special(item, area_norm, ent);
 		set_item_unidentified_flag_if_challenge(l, item);
 	}
+}
+
+uint32_t choose_meseta_amount(
+	const rang_16bit_t* ranges,
+	size_t table_index) {
+	uint16_t min = ranges[table_index].min;
+	uint16_t max = ranges[table_index].max;
+
+	// Note: The original code seems like it has a bug here: it compares to 0xFF
+	// instead of 0xFFFF (and returns 0xFF if either limit matches 0xFF).
+	if (((min == 0xFFFF) || (max == 0xFFFF)) || (max < min)) {
+		return 0xFFFF;
+	}
+	else if (min != max) {
+		return rand_int((max - min) + 1) + min;
+	}
+	return min;
+}
+
+void generate_common_armor_slot_count(item_t* item, pt_bb_entry_t* ent) {
+	item->datab[5] = get_rand_from_weighted_tables_1d(ent->armor_slot_count_prob_table, 5);
+}
+
+void generate_common_armor_slots_and_bonuses(item_t* item, pt_bb_entry_t* ent) {
+	if ((item->datab[0] != 0x01) || (item->datab[1] < 1) || (item->datab[1] > 2)) {
+		return;
+	}
+
+	if (item->datab[1] == 1) {
+		generate_common_armor_slot_count(item, ent);
+	}
+
+	pmt_guard_bb_t def;
+	pmt_lookup_guard_bb(item->datal[0], &def);
+	set_armor_or_shield_defense_bonus(item, (int16_t)(def.dfp_range * rand_float_0_1_from_crypt()));
+	set_common_armor_evasion_bonus(item, (int16_t)(def.evp_range * rand_float_0_1_from_crypt()));
+}
+
+void generate_common_armor_or_shield_type_and_variances(
+	char area_norm, item_t* item, pt_bb_entry_t* ent) {
+	generate_common_armor_slots_and_bonuses(item, ent);
+
+	uint8_t type = get_rand_from_weighted_tables_1d(
+		ent->armor_shield_type_index_prob_table, 5);
+	item->datab[2] = area_norm + type + ent->armor_level;
+	if (item->datab[2] < 3) {
+		item->datab[2] = 0;
+	}
+	else {
+		item->datab[2] -= 3;
+	}
+}
+
+void generate_common_unit_variances(uint8_t det, item_t* item) {
+	if (det >= 0x0D) {
+		return;
+	}
+	clear_inv_item(item);
+	item->datab[0] = 0x01;
+	item->datab[1] = 0x03;
+
+	// Note: The original code calls generate_unit_weights_table1 here (which we
+	// have inlined into generate_unit_weights_tables above). This call seems
+	// unnecessary because the contents of the tables don't depend on anything
+	// except what appears in ItemPMT, which is essentially constant, so we
+	// don't bother regenerating the table here.
+
+	if (unit_weights_table2[det] == 0) {
+		return;
+	}
+
+	size_t which = rand_int(unit_weights_table2[det]);
+	size_t current_index = 0;
+	for (size_t z = 0; z < ARRAYSIZE(unit_weights_table1); z++) {
+		if (det != unit_weights_table1[z]) {
+			continue;
+		}
+		if (current_index != which) {
+			current_index++;
+		}
+		else {
+			if (z > 0x4F) {
+				if (det <= 0x87) {
+					item->datab[2] = (uint8_t)(z + 0xC0);
+				}
+			}
+			else {
+				item->datab[2] = (uint8_t)(z / 5);
+				pmt_unit_bb_t def;
+				pmt_lookup_unit_bb(item->datab[2], &def);
+				switch (z % 5) {
+				case 0:
+					set_unit_bonus(item, -(def.pm_range * 2));
+					break;
+				case 1:
+					set_unit_bonus(item, -def.pm_range);
+					break;
+				case 2:
+					break;
+				case 3:
+					set_unit_bonus(item, def.pm_range);
+					break;
+				case 4:
+					set_unit_bonus(item, def.pm_range * 2);
+					break;
+				}
+			}
+			break;
+		}
+	}
+}
+
+void generate_common_mag_variances(item_t* item) {
+	if (item->datab[0] == ITEM_TYPE_MAG) {
+		item->datab[1] = 0x00;
+		magitemstat_t stats;
+		ItemMagStats_init(&stats);
+		assign_mag_stats(item, &stats);
+	}
+}
+
+void generate_common_tool_type(uint8_t tool_class, item_t* item) {
+	uint8_t data[2] = { 0 };
+	if (find_tool_by_class(tool_class, data)) {
+
+		ERR_LOG("invalid tool class 0x%02X", tool_class);
+		return;
+	}
+	item->datab[0] = 0x03;
+	item->datab[1] = data[0];
+	item->datab[2] = data[1];
+}
+
+uint8_t generate_tech_disk_level(uint32_t tech_num, uint32_t area_norm, pt_bb_entry_t* ent) {
+	uint8_t min = ent->technique_level_ranges[tech_num][area_norm];
+	uint8_t max = ent->technique_level_ranges[tech_num][area_norm + 1];
+
+	if (((min == 0xFF) || (max == 0xFF)) || (max < min)) {
+		return 0xFF;
+	}
+	else if (min != max) {
+		return rand_int((max - min) + 1) + min;
+	}
+	return min;
+}
+
+void generate_common_tool_variances(uint32_t area_norm, item_t* item, pt_bb_entry_t* ent) {
+	clear_inv_item(item);
+
+	uint8_t tool_class = get_rand_from_weighted_tables_2d_vertical(
+		&ent->tool_class_prob_table, area_norm, 28, 10);
+	if (tool_class == 0x1A) {
+		tool_class = 0x73;
+	}
+
+	generate_common_tool_type(tool_class, item);
+	if (item->datab[1] == 0x02) { // Tech disk
+		item->datab[4] = get_rand_from_weighted_tables_2d_vertical(
+			ent->technique_index_prob_table, area_norm, 19, 10);
+		item->datab[2] = generate_tech_disk_level(item->datab[4], area_norm, ent);
+		clear_tool_item_if_invalid(item);
+	}
+	get_item_amount(item, 1);
+}
+
+uint8_t normalize_area_number(lobby_t* l, uint8_t area) {
+	if (/*!this->item_drop_sub || */(area < 0x10) || (area > 0x11)) {
+		switch (l->episode) {
+		case GAME_TYPE_EPISODE_1:
+			if (area >= 15) {
+				ERR_LOG("invalid Episode 1 area number");
+			}
+			switch (area) {
+			case 11:
+				return 3; // Dragon -> Cave 1
+			case 12:
+				return 6; // De Rol Le -> Mine 1
+			case 13:
+				return 8; // Vol Opt -> Ruins 1
+			case 14:
+				return 10; // Dark Falz -> Ruins 3
+			default:
+				return area;
+			}
+			ERR_LOG("this should be impossible area %d", area);
+		case GAME_TYPE_EPISODE_2: {
+			static const uint8_t area_subs[] = {
+				0x01, // 13 (VR Temple Alpha)
+				0x02, // 14 (VR Temple Beta)
+				0x03, // 15 (VR Spaceship Alpha)
+				0x04, // 16 (VR Spaceship Beta)
+				0x08, // 17 (Central Control Area)
+				0x05, // 18 (Jungle North)
+				0x06, // 19 (Jungle South)
+				0x07, // 1A (Mountain)
+				0x08, // 1B (Seaside)
+				0x09, // 1C (Seabed Upper)
+				0x0A, // 1D (Seabed Lower)
+				0x09, // 1E (Gal Gryphon)
+				0x0A, // 1F (Olga Flow)
+				0x03, // 20 (Barba Ray)
+				0x05, // 21 (Gol Dragon)
+				0x08, // 22 (Seaside Night)
+				0x0A, // 23 (Tower)
+			};
+			if ((area >= 0x13) && (area < 0x24)) {
+				return area_subs[area - 0x13];
+			}
+			return area;
+		}
+		case GAME_TYPE_EPISODE_3:
+		case GAME_TYPE_EPISODE_4:
+			// TODO: Figure out remaps for Episode 4 (if there are any)
+			return area;
+		default:
+			ERR_LOG("invalid episode number %d", l->episode);
+		}
+
+	}
+	else {
+		return /*this->item_drop_sub->override_area*/0;
+	}
+
+	return 0;
+}
+
+void generate_common_item_variances(lobby_t* l, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent) {
+	switch (item->datab[0]) {
+	case ITEM_TYPE_WEAPON:
+		generate_common_weapon_variances(l, norm_area, item, ent);
+		break;
+	case ITEM_TYPE_GUARD:
+		if (item->datab[1] == 3) {
+			float f1 = (float)(1.0 + ent->unit_maxes[norm_area]);
+			float f2 = rand_float_0_1_from_crypt();
+			generate_common_unit_variances((uint32_t)(f1 * f2) & 0xFF, item);
+			if (item->datab[2] == 0xFF) {
+				clear_inv_item(item);
+			}
+		}
+		else {
+			generate_common_armor_or_shield_type_and_variances(norm_area, item, ent);
+		}
+		break;
+	case ITEM_TYPE_MAG:
+		generate_common_mag_variances(item);
+		break;
+	case ITEM_TYPE_TOOL:
+		generate_common_tool_variances(norm_area, item, ent);
+		break;
+	case ITEM_TYPE_MESETA:
+		item->data2l = choose_meseta_amount(ent->box_meseta_ranges, norm_area) & 0xFFFF;
+		break;
+	default:
+		// Note: The original code does the following here:
+		// item.clear();
+		// item->datab[0] = 0x05;
+		ERR_LOG("invalid item class");
+	}
+
+	//this->clear_item_if_restricted(item);
+	set_item_kill_count_if_unsealable(item);
+}
+
+//item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, uint8_t area_norm) {
+//	item_t item = { 0 };
+//	if (!are_rare_drops_allowed(l)) {
+//		return item;
+//	}
+//
+//	auto rare_specs = this->rare_item_set->get_box_specs(
+//		this->mode, this->episode, this->difficulty, this->section_id, area_norm + 1);
+//	for (const auto& spec : rare_specs) {
+//		item = check_rate_and_create_rare_item(spec);
+//		if (!is_item_empty(&item)) {
+//			DBG_LOG("Box spec %08" PRIX32 " produced item %02hhX%02hhX%02hhX",
+//				spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+//			break;
+//		}
+//		DBG_LOG("Box spec %08" PRIX32 " did not produce item %02hhX%02hhX%02hhX",
+//			spec.probability, spec.item_code[0], spec.item_code[1], spec.item_code[2]);
+//	}
+//	return item;
+//}
+
+/* TODO 检查箱子中稀有的掉落 */
+item_t on_box_item_drop_with_norm_area(lobby_t* l, uint8_t area_norm, pt_bb_entry_t* ent) {
+	item_t item = { 0 }/* = check_rare_specs_and_create_rare_box_item(l, area_norm)*/;
+
+	if (is_item_empty(&item)) {
+		uint8_t item_class = get_rand_from_weighted_tables_2d_vertical(
+			ent->box_drop, area_norm, 7, 10);
+		switch (item_class) {
+		case 0: // Weapon
+			item.datab[0] = 0;
+			break;
+		case 1: // Armor
+			item.datab[0] = 1;
+			item.datab[1] = 1;
+			break;
+		case 2: // Shield
+			item.datab[0] = 1;
+			item.datab[1] = 2;
+			break;
+		case 3: // Unit
+			item.datab[0] = 1;
+			item.datab[1] = 3;
+			break;
+		case 4: // Tool
+			item.datab[0] = 3;
+			break;
+		case 5: // Meseta
+			item.datab[0] = 4;
+			break;
+		case 6: // Nothing
+			break;
+		default:
+			ERR_LOG("this should be impossible");
+			return item;
+		}
+		generate_common_item_variances(l, area_norm, &item, ent);
+		print_item_data(&item, l->version);
+	}
+	return item;
+}
+
+item_t on_box_item_drop(lobby_t* l, uint8_t area, pt_bb_entry_t* ent) {
+	uint8_t new_area = normalize_area_number(l, area) - 1;
+	DBG_LOG("new_area %d", new_area);
+	return on_box_item_drop_with_norm_area(l, new_area, ent);
+}
+
+item_t on_specialized_box_item_drop(uint32_t def0, uint32_t def1, uint32_t def2) {
+	item_t item;
+	clear_inv_item(&item);
+	item.datab[0] = (def0 >> 0x18) & 0x0F;
+	item.datab[1] = (def0 >> 0x10) + ((item.datab[0] == 0x00) || (item.datab[0] == 0x01));
+	item.datab[2] = def0 >> 8;
+
+	switch (item.datab[0]) {
+	case 0x00:
+		item.datab[3] = (def1 >> 0x18) & 0xFF;
+		item.datab[4] = def0 & 0xFF;
+		item.datab[6] = (def1 >> 8) & 0xFF;
+		item.datab[7] = def1 & 0xFF;
+		item.datab[8] = (def2 >> 0x18) & 0xFF;
+		item.datab[9] = (def2 >> 0x10) & 0xFF;
+		item.datab[10] = (def2 >> 8) & 0xFF;
+		item.datab[11] = def2 & 0xFF;
+		break;
+	case 0x01:
+		item.datab[3] = (def1 >> 0x18) & 0xFF;
+		item.datab[4] = (def1 >> 0x10) & 0xFF;
+		item.datab[5] = def0 & 0xFF;
+		break;
+	case 0x02:
+		magitemstat_t stats;
+		ItemMagStats_init(&stats);
+		assign_mag_stats(&item, &stats);
+		break;
+	case 0x03:
+		if (item.datab[1] == 0x02) {
+			item.datab[4] = def0 & 0xFF;
+		}
+		item.datab[5] = get_item_amount(&item, 1);
+		break;
+	case 0x04:
+		item.data2l = ((def1 >> 0x10) & 0xFFFF) * 10;
+		break;
+
+	default:
+		ERR_LOG("invalid item class");
+	}
+
+	return item;
 }
 
 /*
@@ -3725,34 +4283,35 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 }
 
 pt_bb_entry_t* get_pt_data_bb(lobby_t* l, uint8_t section) {
-	uint8_t game_type = 0;
+	//uint8_t game_type = 0;
 
-	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
+	////EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
 
-	switch (l->episode)
-	{
-	case GAME_TYPE_NORMAL:
-	case GAME_TYPE_EPISODE_1:
-		if (l->challenge)
-			game_type = 2;
-		else
-			game_type = 0;
-		break;
+	//switch (l->episode)
+	//{
+	//case GAME_TYPE_NORMAL:
+	//case GAME_TYPE_EPISODE_1:
+	//	if (l->challenge)
+	//		game_type = 2;
+	//	else
+	//		game_type = 0;
+	//	break;
 
-	case GAME_TYPE_EPISODE_2:
-		if (l->challenge)
-			game_type = 3;
-		else
-			game_type = 1;
-		break;
+	//case GAME_TYPE_EPISODE_2:
+	//	if (l->challenge)
+	//		game_type = 3;
+	//	else
+	//		game_type = 1;
+	//	break;
 
-	case GAME_TYPE_EPISODE_3:
-	case GAME_TYPE_EPISODE_4:
-		game_type = 4;
-		break;
-	}
+	//case GAME_TYPE_EPISODE_3:
+	//case GAME_TYPE_EPISODE_4:
+	//	game_type = 4;
+	//	break;
+	//}
 
-	return &bb_ptdata[game_type][l->difficulty][section];
+	//return &bb_ptdata[game_type][l->difficulty][section];
+	return pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, l->episode, l->difficulty, section);
 }
 
 int get_pt_index(uint8_t episode, uint8_t pt_index) {
@@ -3886,8 +4445,11 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 #endif // DEBUG
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
-	if (pt_index == 0x30)
+	if (pt_index == 0x30) {
+		item_t tmp_i = on_box_item_drop(l, src->cur_area, ent);
+		print_item_data(&tmp_i, src->version);
 		return pt_generate_bb_boxdrop(src, l, r);
+	}
 
 	/* Figure out the area we'll be worried with */
 	area = get_pt_data_area_bb(src);
@@ -4828,7 +5390,7 @@ uint16_t get_random_value(rang_16bit_t range) {
 	uint16_t value_range = range.max - range.min + 1;
 
 	// 生成 [0, value_range) 范围内的随机数
-	random_value = rand() % value_range;
+	random_value = rand_int(value_range);
 
 	// 将随机数加上 min 得到最终的区间随机值
 	return random_value + range.min;

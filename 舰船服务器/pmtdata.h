@@ -577,5 +577,9 @@ uint8_t get_item_adjusted_stars(const item_t* item);
 
 bool is_item_rare(const item_t* item);
 uint8_t choose_weapon_special(uint8_t det);
+bool is_unsealable_item(const item_t* item);
+int find_tool_by_class(uint8_t tool_class, uint8_t data[2]);
+void set_sealed_item_kill_count(item_t* item, int16_t v);
+void set_item_kill_count_if_unsealable(item_t* item);
 
 #endif /* !PMTDATA_H */

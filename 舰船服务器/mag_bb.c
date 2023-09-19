@@ -121,17 +121,29 @@ void update_stat(item_t* data, size_t which, int8_t delta) {
 	}
 }
 
-void assign_mag_stats(item_t* item, magitemstat_t* mag) {
-	item->datab[2] = (uint8_t)level(mag);
-	item->datab[3] = mag->photon_blasts;
-	item->dataw[2] = mag->def & 0x7FFE;
-	item->dataw[3] = mag->pow & 0x7FFE;
-	item->dataw[4] = mag->dex & 0x7FFE;
-	item->dataw[5] = mag->mind & 0x7FFE;
-	item->data2b[0] = (uint8_t)mag->synchro;
-	item->data2b[1] = (uint8_t)mag->iq;
-	item->data2b[2] = mag->flags;
-	item->data2b[3] = mag->color;
+void ItemMagStats_init(magitemstat_t* stat) {
+	stat->iq = 0;
+	stat->synchro = 40;
+	stat->def = 500;
+	stat->pow = 0;
+	stat->dex = 0;
+	stat->mind = 0;
+	stat->flags = 0;
+	stat->photon_blasts = 0;
+	stat->color = 14;
+}
+
+void assign_mag_stats(item_t* item, magitemstat_t* stat) {
+	item->datab[2] = (uint8_t)level(stat);
+	item->datab[3] = stat->photon_blasts;
+	item->dataw[2] = stat->def & 0x7FFE;
+	item->dataw[3] = stat->pow & 0x7FFE;
+	item->dataw[4] = stat->dex & 0x7FFE;
+	item->dataw[5] = stat->mind & 0x7FFE;
+	item->data2b[0] = (uint8_t)stat->synchro;
+	item->data2b[1] = (uint8_t)stat->iq;
+	item->data2b[2] = stat->flags;
+	item->data2b[3] = stat->color;
 }
 
 void clear_mag_stats(item_t* item) {
