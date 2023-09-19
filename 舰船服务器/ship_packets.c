@@ -11610,7 +11610,7 @@ static int send_dc_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
         amt -= sub_amount;
     }
 
-    send_type = len > DATA_BLOCK_SIZE / (sizeof(subcmd_update_player_stat_t) - 4) ? GAME_SUBCMD6C_TYPE : GAME_SUBCMD60_TYPE;
+    send_type = (len > DATA_BLOCK_SIZE / (sizeof(subcmd_update_player_stat_t) - 4)) ? GAME_SUBCMD6C_TYPE : GAME_SUBCMD60_TYPE;
 
     /* 填充数据头 */
     if(d->version == CLIENT_VERSION_DCV1 || d->version == CLIENT_VERSION_DCV2 ||
@@ -11659,7 +11659,7 @@ static int send_bb_mod_stat(ship_client_t *d, ship_client_t *s, int stat_type,
         amt -= sub_amount;
     }
 
-    send_type = len > DATA_BLOCK_SIZE / (sizeof(subcmd_bb_update_player_stat_t) - 8) ? GAME_SUBCMD6C_TYPE : GAME_SUBCMD60_TYPE;
+    send_type = len > (DATA_BLOCK_SIZE / (sizeof(subcmd_bb_update_player_stat_t) - 8)) ? GAME_SUBCMD6C_TYPE : GAME_SUBCMD60_TYPE;
 
     /* 填充数据头 */
     pkt->hdr.pkt_len = LE16(len);
@@ -11680,7 +11680,7 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *src, int stat_type, int amt) 
 
     /* Make sure the request is sane */
     if(stat_type < SUBCMD60_STAT_HPDOWN || stat_type > SUBCMD60_STAT_TPUP || amt < 1
-       /* || amt > 2040*/) {
+        || amt > 2040) {
         return 0;
     }
 
