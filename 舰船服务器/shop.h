@@ -83,19 +83,6 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子);
 item_t create_bb_shop_items(uint32_t 商店类型, uint8_t 难度, uint8_t 物品索引, sfmt_t* 随机因子);
 size_t price_for_item(const item_t* item);
 
-const static char* shop_files[] = {
-    "System\\Shop\\shop.dat",
-    "System\\Shop\\shop2.dat",
-    "System\\Shop\\shop3.dat",
-};
-
-static shop_data_t shops[7000];
-//static uint32_t shop_checksum; 未做数据检测
-uint32_t shopidx[MAX_PLAYER_LEVEL];
-uint32_t equip_prices[2][13][24][80];
-
-int load_shop_data();
-
 // Item list for Good Luck quest...祝你好运任务的物品清单
 const static uint32_t good_luck[] = {
 	0x00004C00,

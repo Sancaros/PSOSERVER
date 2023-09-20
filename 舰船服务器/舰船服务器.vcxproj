@@ -57,7 +57,7 @@
     <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />
     <ClCompile Include="subcmd_send.c" />
-    <ClCompile Include="ItemPT_creator.c" />
+    <ClCompile Include="item_creator.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h" />
