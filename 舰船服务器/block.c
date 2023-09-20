@@ -235,8 +235,9 @@ static void* block_thd(void* d) {
             }
 
             /* 默认间隔5秒存储一次数据 */
-            if ((it->save_time < srv_time) && (it->need_save_data)) {
+            if ((it->save_time + 5 < srv_time) && (it->need_save_data)) {
                 client_send_bb_data(it);
+                it->need_save_data = 1;
             }
 
             /* Check if their timeout expired to login after getting a

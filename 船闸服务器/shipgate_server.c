@@ -644,10 +644,13 @@ void run_server(int tsock, int tsock6) {
                 /* Check if this ship was trying to send us anything. */
                 if (FD_ISSET(i->sock, &readfds)) {
                     rv = handle_pkt(i);
-                    if (rv && rv != -1)
+                    if (rv && rv != -1) {
                         ERR_LOG("检测舰船是否有发送任何数据并处理发生错误 错误码 %d", rv);
+                        i->err_inconnect = 1;
+                        continue;
+                    }
 
-                    if (rv) {
+                    if (rv == -1) {
                         i->disconnected = 1;
                         continue;
                     }
@@ -699,9 +702,14 @@ void run_server(int tsock, int tsock6) {
 
                 if (i->disconnected) {
 #ifdef DEBUG
-                    ERR_LOG("断开 %s 丢失的连接", i->name);
+                    ERR_LOG("断开 %s 丢失的连接", i->ship_name);
 #endif // DEBUG
                     destroy_connection(i);
+                }
+                else if (i->err_inconnect) {
+                    ERR_LOG("断开 %s 错误的连接", i->ship_name);
+
+                    destroy_connection_err(i);
                 }
 
                 i = tmp;

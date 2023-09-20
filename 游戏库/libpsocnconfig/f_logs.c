@@ -71,6 +71,58 @@ int32_t monster_error_log_console_show;
 int32_t config_log_console_show;
 int32_t script_log_console_show;
 
+bool is_all_zero(const char* data, size_t length) {
+	for (size_t i = 0; i < length; i++) {
+		if (data[i] != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void print_ascii_hex(const char* data, size_t length) {
+	if (data == NULL || length == 0 || length > 65536) {
+		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
+		return;
+	}
+
+	if (is_all_zero(data, length)) {
+		ERR_LOG("空数据包 长度 %d.", length);
+		return;
+	}
+
+	size_t i; 
+
+	for (i = 0; i < length; i++) {
+		if (i % 16 == 0) {
+			if (i != 0) {
+				strcat(dp, "\n");
+			}
+			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);
+		}
+		sprintf(dp + strlen(dp), " %02X", (unsigned char)data[i]);
+
+		if (i % 16 == 15 || i == length - 1) {
+			size_t j;
+			strcat(dp, "    ");
+			for (j = i - (i % 16); j <= i; j++) {
+				if (j >= length) {
+					strcat(dp, " ");
+				}
+				else if (data[j] >= ' ' && data[j] <= '~') {
+					char tmp_str[2] = { data[j], '\0' };
+					strcat(dp, tmp_str);
+				}
+				else {
+					strcat(dp, ".");
+				}
+			}
+		}
+	}
+
+	printf("%s", dp);
+}
+
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */
 double expand_rate(uint8_t rate) {
@@ -585,10 +637,11 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
-	char mes[4096] = { 0 };
+	char mes[65536] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;
+	int fmt_size = 0;
 
 	FILE* fp;
 	char logdir[64] = { 0 };
@@ -599,7 +652,9 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 	//strcat(headermes, log_header[files]);
 	va_start(args, fmt);
 	strcpy(mes + vsprintf(mes, fmt, args), "\r\n");
+	mes[4095] = '\0';
 	va_end(args);
+
 	//strcpy(logfile, "Log\\");
 	sprintf(logdir, "Debug\\%u年%02u月%02u日", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	if (!_mkdir(logdir)) {
@@ -610,11 +665,11 @@ void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32
 		//printf("%u年%02u月%02u日 日志目录已存在", rawtime.wYear, rawtime.wMonth, rawtime.wDay);
 	}
 	strcpy(logfile, logdir);
-	strcat(logfile, "\\");
-	strcat(logfile, server_name[server_name_num].name);
-	strcat(logfile, "_");
-	strcat(logfile, log_header[files_num].name);
-	strcat(logfile, ".log");
+	strncat_s(logfile, sizeof(logfile), "\\", 1);
+	strncat_s(logfile, sizeof(logfile), server_name[server_name_num].name, strlen(server_name[server_name_num].name));
+	strncat_s(logfile, sizeof(logfile), "_", 1);
+	strncat_s(logfile, sizeof(logfile), log_header[files_num].name, strlen(log_header[files_num].name));
+	strncat_s(logfile, sizeof(logfile), ".log", 4);
 	errno_t err = fopen_s(&fp, logfile, "a");
 	if (err) {
 		color(4);

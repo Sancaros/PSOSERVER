@@ -1507,12 +1507,13 @@ typedef struct subcmd_bb_Unknown_6x6A {
 
 // 0x6B: Sync enemy state (used while loading into game; same header format as 6E)
 // Decompressed format is a list of these
-struct G_SyncGameStateHeader_6x6B_6x6C_6x6D_6x6E {
+typedef struct subcmd_bb_sync_game_state_header_6x6B_6x6C_6x6D_6x6E {
+    bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint32_t decompressed_size;
     uint32_t compressed_size; // Must be <= subcommand_size - 0x10
     uint8_t data[0]; // BC0-compressed data follows here (see bc0_decompress)
-} PACKED;
+} PACKED subcmd_bb_sync_game_state_header_6x6B_6x6C_6x6D_6x6E_t;
 
 typedef struct subcmd_bb_G_SyncEnemyState_6x6B_Entry_Decompressed {
     // TODO: Verify this format on DC and PC. It appears correct for GC and BB.

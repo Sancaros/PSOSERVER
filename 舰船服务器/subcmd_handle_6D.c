@@ -86,7 +86,7 @@ int sub6D_6B_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub6D_6B_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_sync_game_state_header_6x6B_6x6C_6x6D_6x6E_t* pkt) {
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 

@@ -76,6 +76,7 @@ typedef struct ship {
     int sock;
     int disconnected;
     int has_key;
+    int err_inconnect;
     uint32_t flags;
     uint32_t menu;
 
@@ -125,6 +126,7 @@ extern struct ship_queue ships;
 ship_t *create_connection_tls(int sock, struct sockaddr *addr, socklen_t size);
 
 /* Destroy a connection, closing the socket and removing it from the list. */
+void destroy_connection_err(ship_t* s);
 void destroy_connection(ship_t *c);
 
 /* ¸üÐÂipv4 */

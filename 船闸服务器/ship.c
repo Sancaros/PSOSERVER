@@ -553,6 +553,53 @@ void db_remove_client(ship_t* s) {
     }
 }
 
+void remove_ship_in_err(ship_t* s) {
+    ship_t* i;
+
+    TAILQ_REMOVE(&ships, s, qentry);
+
+    if (s->key_idx) {
+        /* Send a status packet to everyone telling them its gone away
+         向每个人发送状态数据包，告诉他们它已经消失了
+        */
+        TAILQ_FOREACH(i, &ships, qentry) {
+            send_ship_status(i, s, 0);
+        }
+    }
+}
+
+/* Destroy a connection, closing the socket and removing it from the list. */
+void destroy_connection_err(ship_t* s) {
+    if (s->has_key) {
+        DC_LOG("关闭与 %s 的连接", s->ship_name);
+    }
+    else {
+        DC_LOG("取消与未认证舰船的连接");
+    }
+
+    remove_ship_in_err(s);
+
+    /* Clean up the TLS resources and the socket. */
+    if (s->sock >= 0) {
+        gnutls_bye(s->session, GNUTLS_SHUT_RDWR);
+        closesocket(s->sock);
+        gnutls_deinit(s->session);
+        s->sock = SOCKET_ERROR;
+    }
+
+    s->has_key = 0;
+
+    if (s->recvbuf) {
+        free_safe(s->recvbuf);
+    }
+
+    if (s->sendbuf) {
+        free_safe(s->sendbuf);
+    }
+
+    free_safe(s);
+}
+
 /* Destroy a connection, closing the socket and removing it from the list. */
 void destroy_connection(ship_t* s) {
     if (s->has_key) {
@@ -5869,6 +5916,7 @@ int handle_pkt(ship_t* c) {
         else if (sz < 0) {
             ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
             ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
+            print_ascii_hex(recvbuf, 65536 - c->recvbuf_cur);
         }
 
         free_safe(recvbuf);

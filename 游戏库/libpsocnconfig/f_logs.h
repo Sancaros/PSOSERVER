@@ -284,6 +284,9 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */
+
+extern void print_ascii_hex(const char* data, size_t length);
+
 extern double expand_rate(uint8_t rate);
 
 extern uint32_t byteswap(uint32_t e);
