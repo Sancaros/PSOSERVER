@@ -657,7 +657,7 @@ uint32_t rt_generate_gc_rare(ship_client_t *src, lobby_t *l, int rt_index,
     return 0;
 }
 
-rt_table_t* get_rt_table_bb(const char* fn, uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
+rt_table_t* get_rt_table_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
     uint8_t game_type = 0;//和游戏章节类型相关
     /* Grab the rare table for the game */
     //EP1 0  NULL / EP2 1  l /  CHALLENGE 2 c / EP4 3 bb
@@ -682,7 +682,7 @@ rt_table_t* get_rt_table_bb(const char* fn, uint8_t episode, uint8_t challenge, 
         break;
     }
 
-    rt_table_t* tmp = rt_dynamics_read_bb(fn, game_type, difficulty, section);
+    rt_table_t* tmp = rt_dynamics_read_bb(ship->cfg->bb_rtdata_file, game_type, difficulty, section);
     if(!tmp)
         return &bb_rtdata[game_type][difficulty][section];
 

@@ -648,7 +648,7 @@ out:
 	return ent;
 }
 
-pt_bb_entry_t* get_pt_data_bb(const char* fn, uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
+pt_bb_entry_t* get_pt_data_bb(uint8_t episode, uint8_t challenge, uint8_t difficulty, uint8_t section) {
 	uint8_t game_type = 0;
 
 	//EP1 0  NULL / EP2 1  l /  CHALLENGE1 2 c / CHALLENGE2 3 cl / EP4 4 bb
@@ -676,7 +676,7 @@ pt_bb_entry_t* get_pt_data_bb(const char* fn, uint8_t episode, uint8_t challenge
 		break;
 	}
 
-	pt_bb_entry_t* tmp = pt_dynamics_read_bb(fn, game_type, difficulty, section);
+	pt_bb_entry_t* tmp = pt_dynamics_read_bb(ship->cfg->bb_ptdata_file, game_type, difficulty, section);
 	if (!tmp)
 		return &bb_ptdata[game_type][difficulty][section];
 
@@ -3810,7 +3810,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint8_t pt_index = req->pt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
 		return 0;
@@ -4051,7 +4051,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	int csr = 0;
 	uint8_t pt_index = req->pt_index;
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
 		return 0;
@@ -4286,7 +4286,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 	uint8_t pt_index = req->pt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->episode, l->difficulty, section);
 		return 0;
@@ -4504,7 +4504,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 	int csr = 0;
 	uint8_t pt_index = req->pt_index;
 
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, section);
 		return 0;

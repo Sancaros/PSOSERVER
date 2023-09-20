@@ -657,7 +657,7 @@ item_t check_rare_specs_and_create_rare_box_item(lobby_t* l, pt_bb_entry_t* ent,
 		return item;
 	}
 
-	rt_table_t* rare_specs = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section_id);
+	rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
 
 	for (size_t x = 0; x < rare_specs->box_count; x++) {
 		if (rare_specs->box_areas[x] == area_norm) {
@@ -741,7 +741,7 @@ item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_i
 #ifdef DEBUG
 	DBG_LOG("new_area %d 新area %d", new_area, area);
 #endif // DEBUG
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section_id);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
 		return item;
@@ -757,7 +757,7 @@ item_t check_rare_spec_and_create_rare_enemy_item(lobby_t* l, pt_bb_entry_t* ent
 		// rare drop. In our implementation, they can have multiple rare drops if
 		// JSONRareItemSet is used (the other RareItemSet implementations never
 		// return multiple drops for an enemy type).
-		rt_table_t* rare_specs = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section_id);
+		rt_table_t* rare_specs = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section_id);
 
 		PackedDrop_t spec = rare_specs->enemy_rares[enemy_type];
 
@@ -869,7 +869,7 @@ item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_
 #ifdef DEBUG
 	DBG_LOG("new_area %d 新area %d", new_area, area);
 #endif // DEBUG
-	pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, section_id);
+	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section_id);
 	if (!ent) {
 		ERR_LOG("%s Item_PT 不存在章节 %d 难度 %d 颜色 %d 的掉落", client_type[l->version].ver_name, l->episode, l->difficulty, section_id);
 		return item;
