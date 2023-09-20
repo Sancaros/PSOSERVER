@@ -909,6 +909,14 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
     case ITEM_TYPE_TOOL:
         switch (iitem->data.datab[1]) {
+        case ITEM_SUBTYPE_TELEPIPE:
+            if (src->cur_area == 0) {
+                ERR_LOG("GC %u 尝试在先驱者2号释放传送门");
+                return -10;
+            }
+
+            break;
+
         case ITEM_SUBTYPE_DISK: // Technique disk
             uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[character->dress_data.ch_class];
             if (iitem->data.datab[2] > max_level) {
@@ -930,11 +938,11 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                     src->guildcard);
                 return -3;
             }
-            if (weapon->data.datab[3] >= weapon_def.max_grind) {
-                ERR_LOG("武器已达最大打磨值");
-                return -4;
-            }
+
             weapon->data.datab[3] += (iitem->data.datab[2] + 1);
+
+            if (weapon->data.datab[3] > weapon_def.max_grind)
+                weapon->data.datab[3] = weapon_def.max_grind;
             break;
 
         case ITEM_SUBTYPE_MATERIAL:

@@ -191,7 +191,6 @@ pso_gsl_read_t *pso_gsl_read_open(const char *fn, uint32_t flags, pso_error_t *e
     off_t total;
     pso_error_t erv = PSOARCHIVE_EFATAL;
     pso_gsl_read_t *rv;
-    StringReader* r = StringReader_file(fn);
 
     /* Open the file... */
     if(!(fd = fopen(fn, "rb"))) {  // 使用 fopen 函数打开文件

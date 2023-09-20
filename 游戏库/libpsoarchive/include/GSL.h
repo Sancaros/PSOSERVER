@@ -81,5 +81,33 @@ pso_error_t pso_gsl_write_add_fd(pso_gsl_write_t* a, const char* fn, FILE* fd,
 pso_error_t pso_gsl_write_add_file(pso_gsl_write_t* a, const char* afn,
     const char* fn);
 
+// the format of a file entry in a GSL archive
+typedef struct {
+    char name[0x20];
+    DWORD offset;
+    DWORD size;
+    DWORD unused[2];
+} gsl_entry;
+
+// GSLs consist of 256 (0x100) file entries, then the file data. that's it. the HANDLE is not part of the actual archive header.
+typedef struct {
+    gsl_entry e[0x100];
+    HANDLE file;
+} gsl_header;
+
+// finds a file entry in a loaded GSL archive
+gsl_entry* GSL_FindEntry(gsl_header* gsl, char* filename);
+
+// opens (loads) a GSL archive
+gsl_header* GSL_OpenArchive(const char* filename);
+
+// reads an entire file from a GSL archive
+bool GSL_ReadFile(gsl_header* gsl, char* filename, void* buffer);
+
+// gets a file's size inside a GSL archive
+DWORD GSL_GetFileSize(gsl_header* gsl, char* filename);
+
+// closes (unloads) a GSL archive
+void GSL_CloseArchive(gsl_header* gsl);
 
 #endif /* !PSOARCHIVE__GSL_H */

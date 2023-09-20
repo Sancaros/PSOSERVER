@@ -39,6 +39,7 @@
     <ClCompile Include="src\PRSD-comp.c" />
     <ClCompile Include="src\PRSD-crypt.c" />
     <ClCompile Include="src\PRSD-decomp.c" />
+    <ClCompile Include="GSL-Reader.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

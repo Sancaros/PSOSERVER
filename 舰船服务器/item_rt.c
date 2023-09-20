@@ -313,86 +313,6 @@ out:
     return rv;
 }
 
-// the format of a file entry in a GSL archive
-typedef struct {
-    char name[0x20];
-    DWORD offset;
-    DWORD size;
-    DWORD unused[2];
-} gsl_entry;
-
-// GSLs consist of 256 (0x100) file entries, then the file data. that's it. the HANDLE is not part of the actual archive header.
-typedef struct {
-    gsl_entry e[0x100];
-    HANDLE file;
-} gsl_header;
-
-// finds a file entry in a loaded GSL archive
-gsl_entry* GSL_FindEntry(gsl_header* gsl, char* filename) {
-    int x;
-    if (!gsl)
-        return NULL;
-    for (x = 0; x < 0x100; x++)
-        if (!strcmp(gsl->e[x].name, filename))
-            break;
-    if (x >= 0x100)
-        return NULL;
-    return &gsl->e[x];
-}
-
-// opens (loads) a GSL archive
-gsl_header* GSL_OpenArchive(const char* filename) {
-    HANDLE file;
-    DWORD x;
-    file = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-    if (file == INVALID_HANDLE_VALUE)
-        return NULL;
-    gsl_header* gsl = (gsl_header*)malloc(sizeof(gsl_header));
-    if (!gsl) {
-        free(gsl);
-        return NULL;
-    }
-    ReadFile(file, gsl, 0x3000, &x, NULL);
-    gsl->file = file;
-    for (x = 0; x < 0x100; x++) {
-        gsl->e[x].offset = byteswap(gsl->e[x].offset);
-        gsl->e[x].size = byteswap(gsl->e[x].size);
-    }
-    return gsl;
-}
-
-// reads an entire file from a GSL archive
-bool GSL_ReadFile(gsl_header* gsl, char* filename, void* buffer) {
-    DWORD bytesread;
-    if (!gsl)
-        return false;
-    gsl_entry* e = GSL_FindEntry(gsl, filename);
-    if (!e)
-        return false;
-    SetFilePointer(gsl->file, e->offset * 0x800, NULL, FILE_BEGIN);
-    ReadFile(gsl->file, buffer, e->size, &bytesread, NULL);
-
-    // DEBUG
-    // printf("bytesread %i / offset %i\n", bytesread, e->offset);
-    return true;
-}
-
-// gets a file's size inside a GSL archive
-DWORD GSL_GetFileSize(gsl_header* gsl, char* filename) {
-    gsl_entry* ge = GSL_FindEntry(gsl, filename);
-    if (!ge)
-        return 0;
-    return ge->size;
-}
-
-// closes (unloads) a GSL archive
-void GSL_CloseArchive(gsl_header* gsl) {
-    if (gsl) {
-        CloseHandle(gsl->file);
-        free_safe(gsl);
-    }
-}
-
 int rt_read_bb(const char* fn) {
     pso_gsl_read_t* a;
     const char difficulties[4] = { 'n', 'h', 'v', 'u' };
@@ -574,7 +494,11 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     snprintf(filename, 32, "ItemRT%s%c%d.rel", game_type[章节],
         tolower(abbreviation_for_difficulty(难度)), 颜色);
 
+#ifdef DEBUG
+
     DBG_LOG("%s | 章节 %d 难度 %d 颜色 %d", filename, 章节, 难度, 颜色);
+
+#endif // DEBUG
 
     /* Grab a handle to that file. */
     hnd = pso_gsl_file_lookup(a, filename);

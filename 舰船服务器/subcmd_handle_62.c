@@ -1228,7 +1228,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
             iitem.data.item_id = generate_item_id(l, 0xFF);
 
+#ifdef DEBUG
             print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
             pthread_mutex_lock(&p2->mutex);
             litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
@@ -1259,7 +1261,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
         iitem.data.item_id = generate_item_id(l, 0xFF);
 
+#ifdef DEBUG
         print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
         pthread_mutex_lock(&src->mutex);
         litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
@@ -1370,7 +1374,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
             iitem.data.item_id = generate_item_id(l, 0xFF);
 
+#ifdef DEBUG
             print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
             pthread_mutex_lock(&p2->mutex);
             litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
@@ -1398,7 +1404,9 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
         iitem.data.item_id = generate_item_id(l, 0xFF);
 
+#ifdef DEBUG
         print_item_data(&iitem.data, l->version);
+#endif // DEBUG
 
         pthread_mutex_lock(&src->mutex);
         litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);

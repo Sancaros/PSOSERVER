@@ -57,6 +57,7 @@
     <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />
     <ClCompile Include="subcmd_send.c" />
+    <ClCompile Include="ItemPT_creator.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="admin.h" />
@@ -98,6 +99,7 @@
     <ClInclude Include="word_select-bb.h" />
     <ClInclude Include="subcmd_size_table.h" />
     <ClInclude Include="subcmd_send.h" />
+    <ClInclude Include="itemrt_remap.h" />
     <ClInclude Include="测试.h" />
   </ItemGroup>
   <ItemGroup>

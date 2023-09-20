@@ -5927,5 +5927,4 @@ static bbitem_map_t bbitem_list_cn[] = {
     { BBItem_NoSuchItem, "物品不存在" }
 };
 
-
 #endif // !PSOCN_ITEM_LIST_H

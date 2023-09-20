@@ -71,5 +71,8 @@
     <ClCompile Include="QST-decomp.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="GSL-Reader.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
