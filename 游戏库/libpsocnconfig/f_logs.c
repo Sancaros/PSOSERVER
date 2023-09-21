@@ -108,6 +108,10 @@ void print_ascii_hex(const void* data, size_t length) {
 		}
 		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);
 
+		if (i % 8 == 7 && i % 16 != 15) {
+			strcat(dp, " "); // 在8个二进制后增加一个空格
+		}
+
 		if (i % 16 == 15 || i == length - 1) {
 			size_t j;
 			strcat(dp, "    ");
