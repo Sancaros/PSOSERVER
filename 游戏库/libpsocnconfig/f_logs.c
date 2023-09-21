@@ -80,13 +80,15 @@ bool is_all_zero(const char* data, size_t length) {
 	return true;
 }
 
-void print_ascii_hex(const char* data, size_t length) {
+void print_ascii_hex(const void* data, size_t length) {
 	if (data == NULL || length == 0 || length > 65536) {
 		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
 		return;
 	}
 
-	if (is_all_zero(data, length)) {
+	uint8_t* buff = (uint8_t*)data;
+
+	if (is_all_zero(buff, length)) {
 		ERR_LOG("空数据包 长度 %d.", length);
 		return;
 	}
@@ -100,7 +102,7 @@ void print_ascii_hex(const char* data, size_t length) {
 			}
 			sprintf(dp + strlen(dp), "(%08X)", (unsigned int)i);
 		}
-		sprintf(dp + strlen(dp), " %02X", (unsigned char)data[i]);
+		sprintf(dp + strlen(dp), " %02X", (unsigned char)buff[i]);
 
 		if (i % 16 == 15 || i == length - 1) {
 			size_t j;
@@ -109,8 +111,8 @@ void print_ascii_hex(const char* data, size_t length) {
 				if (j >= length) {
 					strcat(dp, " ");
 				}
-				else if (data[j] >= ' ' && data[j] <= '~') {
-					char tmp_str[2] = { data[j], '\0' };
+				else if (buff[j] >= ' ' && buff[j] <= '~') {
+					char tmp_str[2] = { buff[j], '\0' };
 					strcat(dp, tmp_str);
 				}
 				else {
@@ -225,7 +227,7 @@ void packet_to_text(uint8_t* buf, size_t len, bool show) {
 }
 
 //显示数据用
-void display_packet(const void* buf, size_t len) {
+void display_packet_old(const void* buf, size_t len) {
 	uint8_t* buff = (uint8_t*)buf;
 
 	if (!buff)

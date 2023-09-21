@@ -297,7 +297,7 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
 #ifdef DEBUG
     DBG_LOG("舰船：发送数据 指令 = 0x%04X %s 长度 = %d 字节 GC = %u",
         sendbuf[0x02], c_cmd_name(sendbuf[0x02], 0), len, c->guildcard);
-    display_packet(sendbuf, len);
+    print_ascii_hex(sendbuf, len);
 #endif // DEBUG
 
     /* Encrypt the packet */
@@ -7033,7 +7033,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     int i, len = sizeof(bb_pkt_hdr_t), entries = 0, max = INT_MAX, max2 = INT_MAX, j, k;
     psocn_quest_list_t *qlist, *qlisten;
     lobby_t *l = c->cur_lobby;
-    psocn_quest_category_t *cat, *caten;
+    psocn_quest_category_t *cat = NULL, *caten =NULL;
     psocn_quest_t *quest;
     quest_map_elem_t *elem;
     ship_client_t *tmp;
@@ -7197,7 +7197,7 @@ static int send_bb_quest_list(ship_client_t *c, int cn, int lang) {
     pkt->hdr.flags = LE32(entries);
     pkt->hdr.pkt_len = LE16(len);
 
-    //display_packet(sendbuf, len);
+    //print_ascii_hex(sendbuf, len);
 
     /* 加密并发送 */
     return crypt_send(c, len, sendbuf);
@@ -12808,7 +12808,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         pkt->hdr.flags = 0x00000000;
 
 
-        display_packet((uint8_t*)pkt, pkt->hdr.pkt_len);
+        print_ascii_hex((uint8_t*)pkt, pkt->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 
@@ -12873,7 +12873,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
         spec_item_list->hdr.pkt_type = cmd_code;
         spec_item_list->hdr.flags = num;
 
-        display_packet((uint8_t*)spec_item_list, spec_item_list->hdr.pkt_len);
+        print_ascii_hex(spec_item_list, spec_item_list->hdr.pkt_len);
 
         return send_pkt_bb(c, (bb_pkt_hdr_t*)spec_item_list);
 

@@ -551,7 +551,7 @@ static int process_query(SOCKET sock, size_t len, struct sockaddr_in* addr) {
 
 #ifdef DEBUG
 
-    display_packet(inmsg, sizeof(dnsmsg_t));
+    print_ascii_hex(inmsg, sizeof(dnsmsg_t));
 
 #endif // DEBUG
 

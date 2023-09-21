@@ -1732,7 +1732,7 @@ int pmt_read_bb(const char *fn, int norestrict) {
 
 #ifdef DEBUG
 
-    display_packet(&ucbuf, ucsz);
+    print_ascii_hex(&ucbuf, ucsz);
     DBG_LOG("%d", ucsz);
     getchar();
 
@@ -3215,7 +3215,6 @@ bool is_unsealable_item(const item_t* item) {
 
 int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
     for (uint8_t z = 0; z < num_tool_types_bb; z++) {
-        uint32_t co = num_tools_bb[z];
         for (uint8_t y = 0; y < num_tools_bb[z]; y++) {
             if (tools_bb[z][y].base.index == tool_class) {
                 data[0] = z;
@@ -3224,7 +3223,6 @@ int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
             }
         }
     }
-    ERR_LOG("无效物品类别 %d", tool_class);
     return -1;
 }
 

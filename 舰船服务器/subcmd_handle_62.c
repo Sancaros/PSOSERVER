@@ -1196,7 +1196,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
 
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     iitem_t iitem = { 0 };
 
@@ -1441,7 +1441,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     switch (trade_type) {
     case 0x00:
@@ -1536,7 +1536,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("交易数据未处理 trade_type 0x%02X trade_stage 0x%02X", trade_type, trade_stage);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2083,7 +2083,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             src->guildcard, action);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2112,7 +2112,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-    display_packet(pkt, len);
+    print_ascii_hex(pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2135,7 +2135,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x01:
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        display_packet(pkt, len);
+        print_ascii_hex(pkt, len);
         break;
     }
 
@@ -2165,7 +2165,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
         type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
-    display_packet(pkt, len);
+    print_ascii_hex(pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2199,7 +2199,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
             type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        display_packet(pkt, len);
+        print_ascii_hex(pkt, len);
         break;
     }
 
@@ -2314,7 +2314,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //display_packet(pkt, len);
+    //print_ascii_hex(pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", src->guildcard);
@@ -2348,7 +2348,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //display_packet(pkt, len);
+    //print_ascii_hex(pkt, len);
 
     switch (trans_cmd)
     {
@@ -2421,7 +2421,7 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     /* Make sure there's something set with /item */
     if (!pkt->drop_amount) {
@@ -2530,7 +2530,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
         uint32_t bp, bp_list_count, new_value;
@@ -2626,7 +2626,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
             item.datal[0] = new_value;
 
             if (new_value == 0x04) {
-                pt_bb_entry_t* ent = get_pt_data_bb(ship->cfg->bb_ptdata_file, l->episode, l->challenge, l->difficulty, src->bb_pl->character.dress_data.section);
+                pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, src->bb_pl->character.dress_data.section);
                 if (!ent) {
                     ERR_LOG("%s Item_PT 不存在难度 %d 颜色 %d 的掉落", client_type[src->version].ver_name, l->difficulty, src->bb_pl->character.dress_data.section);
                     return 0;
@@ -2715,7 +2715,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
 
         DBG_LOG("没有奖励 menu_choice 0x%08X", menu_choice);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
         result_item.datal[0] = BBItem_NoSuchItem;
@@ -2755,7 +2755,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         DBG_LOG("未知选项 0x%08X", menu_choice);
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2839,7 +2839,7 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                display_packet(pkt, LE16(pkt->hdr.dc.pkt_len));
+                print_ascii_hex(pkt, LE16(pkt->hdr.dc.pkt_len));
                 //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
@@ -2923,7 +2923,7 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                display_packet(pkt, len);
+                print_ascii_hex(pkt, len);
                 //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);

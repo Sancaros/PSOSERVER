@@ -563,7 +563,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             src->guildcard);
-        display_packet((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1126,6 +1126,27 @@ static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_1B_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_create_npc_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        return -1;
+    }
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        return -1;
+    }
+
+    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
 static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_destory_npc_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -1499,7 +1520,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
         DBG_LOG("GC %" PRIu32 " ID不一致!",
             src->guildcard);
 #endif // DEBUG
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
@@ -1592,7 +1613,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
         //ERR_LOG("GC %" PRIu32 " 其他任务触发的数据!",
         //    src->guildcard);
         //ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
 
@@ -1693,6 +1714,13 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -2;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+#ifdef DEBUG
+        DBG_LOG("是否是NPC用了物品？");
+#endif // DEBUG
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     if ((err = player_use_item(src, item_id))) {
@@ -2483,15 +2511,20 @@ static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+
     /* 这是一个用于通知其他玩家 该玩家离开了游戏  TODO*/
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2820,7 +2853,7 @@ static int sub60_46_dc(ship_client_t* src, ship_client_t* dest,
     if (LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             src->guildcard);
-        display_packet((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2911,7 +2944,7 @@ static int sub60_47_dc(ship_client_t* src, ship_client_t* dest,
     if (LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             src->guildcard);
-        display_packet((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3032,10 +3065,11 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-        DBG_LOG("GC %" PRIu32 " ID不一致!",
-            src->guildcard);
+
+        DBG_LOG("是否是NPC用了物品？");
+
 #endif // DEBUG
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     size_t allowed_count = min(pkt->shdr.size - 2, 10);
@@ -3099,13 +3133,12 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
+    
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-        DBG_LOG("GC %" PRIu32 " ID不一致!",
-            src->guildcard);
+        DBG_LOG("是否是NPC用了物品？");
 #endif // DEBUG
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3133,11 +3166,16 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0014) || size != 0x03 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0014) || size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     size_t allowed_count = min(size - 3, 14);
@@ -3215,10 +3253,9 @@ static int sub60_4B_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-        DBG_LOG("GC %" PRIu32 " ID不一致!",
-            src->guildcard);
+        DBG_LOG("是否是NPC用了物品？");
 #endif // DEBUG
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3267,13 +3304,12 @@ static int sub60_4C_bb(ship_client_t* src, ship_client_t* dest,
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
-
+    
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-        DBG_LOG("GC %" PRIu32 " ID不一致!",
-            src->guildcard);
+        DBG_LOG("是否是NPC用了物品？");
 #endif // DEBUG
-        return 0;
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     /* If we're in legit mode or the flag isn't set, then don't do anything. */
@@ -3299,11 +3335,16 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
 //[2023年08月24日 19:10:08:279] 调试(ship_packets.c 8302): GC 10000000 载入任务 quest118 (0 31)版本 Blue Brust
@@ -3315,7 +3356,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 
 #ifdef DEBUG
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     for (size_t x = 0; x < inv->item_count; x++) {
         print_iitem_data(&inv->iitems[x], x, src->version);
@@ -3354,11 +3395,16 @@ static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3389,11 +3435,16 @@ static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
     //(00000000)   10 00 60 00 00 00 00 00  50 02 00 00 A3 A6 00 00    ..`.....P.......
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -3516,7 +3567,7 @@ static int sub60_55_dc(ship_client_t* src, ship_client_t* dest,
 
 #ifdef DEBUG
 
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
         switch (pkt->area)
         {
@@ -3562,6 +3613,11 @@ static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+    
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     if (src->client_id == pkt->shdr.client_id) {
@@ -4174,7 +4230,7 @@ static int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     //                      01 00 01 00  (.`.....t.......
     //( 00000010 )   49 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  I.?
     //( 00000020 )   00 00 00 00 00 00 00 00   
-        //display_packet(pkt, pkt->hdr.pkt_len);
+        //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     return word_select_send_bb(src, pkt);
 }
@@ -4946,7 +5002,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
 
     case CLIENT_VERSION_BB:
         memcpy(&bb, pkt, sizeof(subcmd_bb_grave_t));
-        //display_packet((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
+        //print_ascii_hex((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
         break;
 
     default:
@@ -5029,7 +5085,7 @@ static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
 
     //DBG_LOG("GC %u", src->guildcard);
 
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
 //[2023年07月12日 20:08:18:088] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
 //[2023年07月12日 20:08:18:091] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
@@ -5081,15 +5137,18 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) ||
-        pkt->shdr.size != 0x02 ||
-        src->client_id != pkt->shdr.client_id
-        ) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    }
+
     //[2023年07月06日 13:21:22:702] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x83 版本 5 的处理
     //[2023年07月06日 13:21:22:717] 调试(subcmd_handle_60.c 3061): 未知 0x60 指令: 0x83
     //( 00000000 )   10 00 60 00 00 00 00 00   83 02 00 00 03 00 14 00  ..`.....?......
@@ -5232,7 +5291,7 @@ static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5311,11 +5370,16 @@ static int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     src->arrow_color = pkt->shdr.client_id;
@@ -5334,11 +5398,16 @@ static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的死亡数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -5366,7 +5435,7 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     switch (pkt->mode)
     {
     case 0x00:
-        display_packet(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.pkt_len);
         break;
 
     case 0x01:
@@ -5393,11 +5462,16 @@ static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     /*uint8_t tmp_level = pkt->level_upgrade;
@@ -5419,11 +5493,16 @@ static int sub60_8F_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02 || src->client_id != pkt->shdr.client_id) {
+    if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据!",
             src->guildcard);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
     DBG_LOG("CID %d 攻击了 CID %d 伤害 %d", pkt->shdr.client_id, pkt->target_client_id, pkt->damage);
@@ -5608,7 +5687,7 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
 DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
     pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
-//display_packet(pkt, pkt->hdr.pkt_len);
+//print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5646,7 +5725,7 @@ static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
 
     send_txt(src, "动作:0x%04X\n位置:unk %f.", pkt->unknown_a1, pkt->unknown_a2);
 
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5711,7 +5790,7 @@ static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000010 )   01 54 AB 10                                     .T?
 //( 00000000 )   14 00 60 00 00 00 00 00   93 03 AB 10 01 00 00 00  ..`.....??....
 //( 00000010 )   01 54 AB 10                                     .T?
-    //display_packet(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -7051,7 +7130,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000020 )   D0 00 C2 01                                     ??
 
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     iitem_t work_item = { 0 };
     item_t compare_item = { 0 };
@@ -7294,7 +7373,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     }
     subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
-    display_packet(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(pkt, pkt->hdr.pkt_len);
     send_bb_item_exchange_good_luck(src, 0x00000000, pkt->subcmd_code, pkt->flags);
     return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "物品兑换成功"));
 }
@@ -7428,6 +7507,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_TELEPORT                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_17_bb },
     { SUBCMD60_UNKNOW_18                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_18_bb },
     { SUBCMD60_BOSS_ACT_DARK_FALZ         , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_19_bb },
+    { SUBCMD60_CREATE_NPC                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1B_bb },
     { SUBCMD60_DESTORY_NPC                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_1C_bb },
     { SUBCMD60_SET_AREA_1F                , sub60_1F_dc, sub60_1F_dc, NULL,        sub60_1F_dc, sub60_1F_dc, sub60_1F_bb },
 
@@ -7597,7 +7677,7 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         DBG_LOG("0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
         DBG_LOG("c version %d", c->version);
 
-        display_packet(pkt, pkt->hdr.dc.pkt_len);
+        print_ascii_hex(pkt, pkt->hdr.dc.pkt_len);
 
 #endif // DEBUG
 
@@ -7633,7 +7713,7 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                display_packet(pkt, len);
+                print_ascii_hex(pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
             }
@@ -7720,7 +7800,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                display_packet(pkt, len);
+                print_ascii_hex(pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
             }

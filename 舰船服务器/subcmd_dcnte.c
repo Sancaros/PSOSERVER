@@ -105,7 +105,7 @@ int subcmd_dcnte_handle_bcast(ship_client_t* c, subcmd_pkt_t* pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             DBG_LOG("Î´Öª 0x60 Ö¸Áî: 0x%02X %s", type, c_cmd_name(type, 0));
-            display_packet((unsigned char*)pkt, LE16(pkt->hdr.dc.pkt_len));
+            print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.dc.pkt_len));
 #endif /* LOG_UNKNOWN_SUBS */
             sent = 0;
             break;
@@ -176,7 +176,7 @@ int subcmd_translate_dc_to_nte(ship_client_t* c, subcmd_pkt_t* pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate DC->NTE packet, dropping");
-            display_packet((unsigned char*)pkt, len);
+            print_ascii_hex((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
         }
@@ -239,7 +239,7 @@ int subcmd_translate_bb_to_nte(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate BB->NTE packet, dropping");
-            display_packet((unsigned char*)pkt, len);
+            print_ascii_hex((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
         }
@@ -302,7 +302,7 @@ int subcmd_translate_nte_to_dc(ship_client_t* c, subcmd_pkt_t* pkt) {
         default:
 #ifdef LOG_UNKNOWN_SUBS
             SHIPS_LOG("Cannot translate NTE->DC packet, dropping");
-            display_packet((unsigned char*)pkt, len);
+            print_ascii_hex((unsigned char*)pkt, len);
 #endif /* LOG_UNKNOWN_SUBS */
             return 0;
         }

@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#pragma warning (disable:4819)
 /* 物品代码清单. */
 typedef enum item_code_e {
     Item_Saber = 0x000100,

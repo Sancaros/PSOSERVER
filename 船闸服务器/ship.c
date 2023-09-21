@@ -471,7 +471,7 @@ ship_t* create_connection_tls(int sock, struct sockaddr* addr, socklen_t size) {
 
 #ifdef DEBUG
 
-    display_packet(fingerprint, 20);
+    print_ascii_hex(fingerprint, 20);
     db_upload_temp_data(hash, 20);
     getchar();
 
@@ -1681,7 +1681,7 @@ static int handle_bb_guild_create(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_create_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -1769,14 +1769,14 @@ static int handle_bb_guild_unk_02EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_02EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -1790,7 +1790,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_member_add_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -1804,7 +1804,7 @@ static int handle_bb_guild_member_add(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (db_update_bb_guild_member_add(guild_id, gc_target)) {
 
         SQLERR_LOG("新增 BB %s 数据包 (%d) 失败", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -1824,14 +1824,14 @@ static int handle_bb_guild_unk_04EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_04EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -1846,7 +1846,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_member_remove_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -1857,7 +1857,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
 
     //DBG_LOG("公会ID %u 移除的目标 %u", guild_id, target_gc);
 
@@ -1867,7 +1867,7 @@ static int handle_bb_guild_member_remove(ship_t* c, shipgate_fw_9_pkt* pkt) {
     if (psocn_db_real_query(&conn, myquery)) {
         SQLERR_LOG("未能找到GC %u 的公会成员信息", sender);
 
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
         return send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
     }
@@ -1884,14 +1884,14 @@ static int handle_bb_guild_06EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_06EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2040,14 +2040,14 @@ static int handle_bb_guild_unk_09EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_09EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2061,14 +2061,14 @@ static int handle_bb_guild_unk_0AEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_0AEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2081,14 +2081,14 @@ static int handle_bb_guild_unk_0BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_0BEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2101,14 +2101,14 @@ static int handle_bb_guild_unk_0CEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_0CEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2121,7 +2121,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_invite_0DEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2136,7 +2136,7 @@ static int handle_bb_guild_invite_0DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2150,14 +2150,14 @@ static int handle_bb_guild_unk_0EEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_0EEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2171,7 +2171,7 @@ static int handle_bb_guild_member_flag_setting(ship_t* c, shipgate_fw_9_pkt* pkt
 
     if (len != sizeof(bb_guild_member_flag_setting_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2205,7 +2205,7 @@ static int handle_bb_guild_dissolve(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_dissolve_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2245,7 +2245,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_member_promote_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2295,7 +2295,7 @@ static int handle_bb_guild_member_promote(ship_t* c, shipgate_fw_9_pkt* pkt) {
         psocn_db_real_query(&conn, myquery);
     }
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2318,7 +2318,7 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
 
     if (len != sizeof(bb_guild_unk_12EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2393,7 +2393,7 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
     //    return 0;
     //}
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2406,14 +2406,14 @@ static int handle_bb_guild_lobby_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_lobby_setting_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2427,14 +2427,14 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_member_tittle_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2447,7 +2447,7 @@ static int handle_bb_guild_full_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_full_guild_data_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2456,7 +2456,7 @@ static int handle_bb_guild_full_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     //用作以后验证
 
-    //display_packet((uint8_t*)g_data, len);
+    //print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2470,14 +2470,14 @@ static int handle_bb_guild_unk_16EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_16EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2490,14 +2490,14 @@ static int handle_bb_guild_unk_17EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_17EA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2609,14 +2609,14 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_privilege_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2636,14 +2636,14 @@ static int handle_bb_guild_buy_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_buy_special_item_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2656,14 +2656,14 @@ static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_1BEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2686,7 +2686,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_rank_list_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
@@ -2701,7 +2701,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2715,14 +2715,14 @@ static int handle_bb_guild_unk_1DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     if (len != sizeof(bb_guild_unk_1DEA_pkt)) {
         ERR_LOG("无效 BB %s 数据包 (%d)", c_cmd_name(type, 0), len);
-        display_packet((uint8_t*)g_data, len);
+        print_ascii_hex((uint8_t*)g_data, len);
 
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
             ERR_BAD_ERROR, (uint8_t*)g_data, len, 0, 0, 0, 0, 0);
         return 0;
     }
 
-    display_packet((uint8_t*)g_data, len);
+    print_ascii_hex((uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2886,7 +2886,7 @@ static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("Qid %d ch_class %d", qid, cmode_char->gc.char_class);
 
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[cmode_char->gc.char_class].cn_name, sizeof(char_class_name_text));
-    //display_packet(&cmode_char->character, sizeof(psocn_bb_char_t));
+    //print_ascii_hex(&cmode_char->character, sizeof(psocn_bb_char_t));
 
     if (db_insert_character_default_mode(&cmode_char->character, cmode_char->gc.char_class, qid, char_class_name_text)) {
         DBG_LOG("qid %d %s 数据已存在,进行更新操作", qid, pso_class[cmode_char->gc.char_class].cn_name);
@@ -2903,7 +2903,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 #ifdef DEBUG
     DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
-    display_packet(full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
+    print_ascii_hex(full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
 
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
@@ -2988,7 +2988,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
 #ifdef DEBUG
 
-    display_packet(&pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
+    print_ascii_hex(&pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
     DBG_LOG("数据存储");
 
 #endif // DEBUG
@@ -5665,7 +5665,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
 
 #ifdef DEBUG
         DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-        display_packet((unsigned char*)pkt, length);
+        print_ascii_hex((unsigned char*)pkt, length);
 #endif // DEBUG
 
         switch (type) {
@@ -5788,7 +5788,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
 
         default:
             //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-            //display_packet((unsigned char*)pkt, length);
+            //print_ascii_hex((unsigned char*)pkt, length);
             return -3;
         }
 

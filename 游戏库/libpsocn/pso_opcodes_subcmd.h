@@ -112,7 +112,7 @@
 
 // 6x1A: Invalid subcommand
 
-#define SUBCMD60_UNKNOW_1B                     0x1B
+#define SUBCMD60_CREATE_NPC                    0x1B
 #define SUBCMD60_DESTORY_NPC                   0x1C
 
 // 6x1D: Invalid subcommand

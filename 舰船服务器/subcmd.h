@@ -93,6 +93,16 @@ typedef struct subcmd_bb_pkt {
     uint8_t data[0];              /* 0x0A -  */
 } PACKED subcmd_bb_pkt_t;
 
+typedef struct subcmd_bb_pkt2 {
+    bb_pkt_hdr_t hdr;             /* 0x00 - 0x07 8 */
+    uint8_t type;                 /* 0x08 - 0x08 1 */
+    uint8_t size;                 /* 0x09 - 0x09 1 */
+    uint16_t param;               /* 0x0A - 0x0B 2 */
+    /* 数据头 + 数据信息 占用了 14 个字节 */
+    unused_hdr_t shdr;
+    uint8_t data[0];              /* 0x0A -  */
+} PACKED subcmd_bb_pkt2_t;
+
 static int char_bb_hdrsize2 = sizeof(subcmd_bb_pkt_t);
 
 // subcmd指令集通用数据头.
@@ -538,11 +548,11 @@ typedef struct subcmd_bb_DarkFalzActions_6x19 {
     uint32_t unused;
 } PACKED subcmd_bb_DarkFalzActions_6x19_t;
 
-// 0x1B: Unknown (不支持 Episode 3)
-typedef struct subcmd_bb_Unknown_6x1B {
+// 0x1B: 生成NPC (不支持 Episode 3)
+typedef struct subcmd_bb_create_npc {
     bb_pkt_hdr_t hdr;
-    client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x1B_t;
+    client_id_hdr_t shdr; /* 发送NPC生成的数据 */
+} PACKED subcmd_bb_create_npc_t;
 
 // 0x1C: 删除NPC (指令生效范围; 仅限游戏; 不支持 Episode 3)
 typedef struct subcmd_bb_destory_npc {

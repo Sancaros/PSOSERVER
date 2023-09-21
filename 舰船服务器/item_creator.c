@@ -344,8 +344,7 @@ void generate_common_mag_variances(item_t* item) {
 void generate_common_tool_type(uint8_t tool_class, item_t* item) {
 	uint8_t data[2] = { 0 };
 	if (find_tool_by_class(tool_class, data)) {
-
-		ERR_LOG("invalid tool class 0x%02X", tool_class);
+		ERR_LOG("无效物品类别 %d", tool_class);
 		return;
 	}
 	item->datab[0] = 0x03;

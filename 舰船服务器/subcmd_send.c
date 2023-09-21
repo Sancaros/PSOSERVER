@@ -1014,7 +1014,7 @@ int subcmd_bb_626Dsize_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
 
     //DBG_LOG("BB´¦Àí GC %" PRIu32 " 62/6DÖ¸Áî: 0x%02X", c->guildcard, type);
 
-    //display_packet(pkt, LE16(pkt->hdr.pkt_len));
+    //print_ascii_hex(pkt, LE16(pkt->hdr.pkt_len));
 
     sizecheck *= 4;
     sizecheck += 8;

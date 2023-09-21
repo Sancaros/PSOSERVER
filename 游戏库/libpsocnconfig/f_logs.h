@@ -216,7 +216,7 @@ extern int32_t script_log_console_show;
 //#define ERR_EXIT(m) (perror(m),exit(EXIT_FAILURE))
 #define CODE_LINE(LINE) fprintf(LINE,"%d",__LINE__)
 
-#define P_DATA(DATA, LENGTH) display_packet(DATA, LE16(LENGTH));
+#define P_DATA(DATA, LENGTH) print_ascii_hex(DATA, LE16(LENGTH));
 //#define qWiFiDebug(format, ...) qDebug("[WiFi] "format" File:%s, Line:%d, Function:%s", ##__VA_ARGS__, __FILE__, __LINE__ , __func__); 
 
 #define PATCH_LOG(...) flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__)
@@ -285,7 +285,7 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */
 
-extern void print_ascii_hex(const char* data, size_t length);
+extern void print_ascii_hex(const void* data, size_t length);
 
 extern double expand_rate(uint8_t rate);
 
@@ -299,7 +299,7 @@ extern void load_log_config(void);
 extern void color(uint32_t x);
 
 extern void packet_to_text(uint8_t* buf, size_t len, bool show);
-extern void display_packet(const void* buf, size_t len);
+extern void display_packet_old(const void* buf, size_t len);
 
 extern void flog(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...);
 extern void flog_file(int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* file, const char* fmt, ...);

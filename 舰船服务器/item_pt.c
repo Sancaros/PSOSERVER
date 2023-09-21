@@ -99,7 +99,7 @@ int pt_read_v2(const char* fn) {
 
 			//memcpy(ent, buf, sz);
 
-			//display_packet(buf, sz);
+			//print_ascii_hex(buf, sz);
 
 			//for (int x = 0; x < 12; x++) {
 			//	DBG_LOG("weapon_ratio 0x%02X", ent->weapon_ratio[x]);
@@ -454,7 +454,7 @@ int pt_read_bb(const char* fn) {
 #ifdef DEBUG
 				//memcpy(ent, buf, sz);
 
-				//display_packet(buf, sz);
+				//print_ascii_hex(buf, sz);
 
 				//if (章节 == 4) {
 				//	DBG_LOG("%s", filename);
@@ -622,7 +622,7 @@ pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色)
 
 	//memcpy(ent, buf, sz);
 
-	//display_packet(buf, sz);
+	//print_ascii_hex(buf, sz);
 
 	//if (章节 == 4) {
 	//	DBG_LOG("%s", filename);
@@ -3817,7 +3817,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	}
 
 #ifdef DEBUG
-	display_packet(ent, sizeof(pt_bb_entry_t));
+	print_ascii_hex(ent, sizeof(pt_bb_entry_t));
 #endif // DEBUG
 
 	/* If the PT index is 0x30, this is a box, not an enemy! */
