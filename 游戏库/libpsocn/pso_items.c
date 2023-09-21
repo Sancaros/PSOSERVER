@@ -379,6 +379,41 @@ int16_t get_unit_bonus(const item_t* item) {
 	return item->dataw[3];
 }
 
+bool is_s_rank_weapon(const item_t* item) {
+	if (item->datab[0] == 0) {
+		if ((item->datab[1] > 0x6F) && (item->datab[1] < 0x89)) {
+			return true;
+		}
+		if ((item->datab[1] > 0xA4) && (item->datab[1] < 0xAA)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
+	size_t z;
+	for (z = 0; z < 12; z++) {
+		if (itemDataA->datab[z] < itemDataB->datab[z]) {
+			return false;
+		}
+		else if (itemDataA->datab[z] > itemDataB->datab[z]) {
+			return true;
+		}
+	}
+
+	for (z = 0; z < 4; z++) {
+		if (itemDataA->data2b[z] < itemDataB->data2b[z]) {
+			return false;
+		}
+		else if (itemDataA->data2b[z] > itemDataB->data2b[z]) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /* 打印物品数据 */
 void print_item_data(const item_t* item, int version) {
 	ITEM_LOG("物品:(ID %d / %08X) %s",

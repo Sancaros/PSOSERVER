@@ -86,7 +86,7 @@ uint8_t get_rand_from_weighted_tables(sfmt_t* rng,
 		rand_max += data[x * stride + offset];
 	}
 	if (rand_max == 0) {
-		ERR_LOG("weighted table is empty");
+		ERR_LOG("权重表为空 offset 0x%08X num_values %d stride %d", offset, num_values, stride);
 		return 0;
 	}
 
@@ -98,13 +98,17 @@ uint8_t get_rand_from_weighted_tables(sfmt_t* rng,
 		}
 		x -= table_value;
 	}
-	ERR_LOG("selector was not less than rand_max");
+	ERR_LOG("选择器不小于 rand_max");
 	return 0;
 }
 
 uint8_t get_rand_from_weighted_tables_2d_vertical(sfmt_t* rng,
 	void* tables, size_t offset, size_t X, size_t Y) {
 	uint8_t* table = (uint8_t*)tables;
+	if (!table) {
+		ERR_LOG("数据表为空");
+		return 0;
+	}
 	return get_rand_from_weighted_tables(rng, &table[0],
 		offset, X, Y);
 }

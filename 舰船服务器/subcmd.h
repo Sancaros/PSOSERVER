@@ -2663,7 +2663,7 @@ typedef struct subcmd_bb_shop_inv {
     uint8_t num_items;
     uint16_t unused2;                   /* Set to 0 */
     // Note: costl of these entries should be the price
-    item_t items[0x14];
+    item_t items[BB_SHOP_SIZE];
 } PACKED subcmd_bb_shop_inv_t;
 
 // 0xB7: Unknown (Episode 3 Trial Edition)

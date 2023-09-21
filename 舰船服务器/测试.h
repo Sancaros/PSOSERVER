@@ -5,6 +5,21 @@
 #include <string.h>
 
 
+/* 商店结构 */
+typedef struct shop_data {
+    uint16_t pkt_len;
+    uint16_t pkt_type;
+    uint32_t flags;
+    uint8_t type;
+    uint8_t size;
+    uint16_t reserved;
+    uint8_t shop_type;
+    uint8_t num_items;
+    uint16_t reserved2;
+    item_t item[0x18];
+    uint8_t reserved4[16];
+} PACKED shop_data_t;
+
 const static char* shop_files[] = {
     "System\\Shop\\shop.dat",
     "System\\Shop\\shop2.dat",
@@ -15,6 +30,192 @@ static shop_data_t shops[7000];
 //static uint32_t shop_checksum; 未做数据检测
 uint32_t shopidx[MAX_PLAYER_LEVEL];
 uint32_t equip_prices[2][13][24][80];
+
+//获取商店价格
+uint32_t get_bb_shop_price(iitem_t* ci) {
+    pmt_weapon_bb_t pmt_weapon = { 0 };
+    pmt_guard_bb_t pmt_guard = { 0 };
+    pmt_tool_bb_t pmt_tool = { 0 };
+    uint32_t compare_item, ch;
+    int32_t percent_add;
+    uint32_t price = 10;
+    uint8_t variation;
+    float percent_calc;
+    float price_calc;
+
+    switch (ci->data.datab[0]) {
+    case ITEM_TYPE_WEAPON: // Weapons 武器
+        if (ci->data.datab[4] & 0x80)
+            price = 1; // Untekked = 1 meseta 取消选中 = 1美赛塔
+        else {
+            if ((ci->data.datab[1] < 0x0D) && (ci->data.datab[2] < 0x05)) {
+                if ((ci->data.datab[1] > 0x09) && (ci->data.datab[2] > 0x03)) // Canes, Rods, Wands become rare faster  拐杖、棍棒、魔杖越来越稀少 
+                    break;
+
+                if (pmt_lookup_weapon_bb(ci->data.datal[0], &pmt_weapon)) {
+                    ERR_LOG("从PMT未获取到准确的数据!");
+                    return -1;
+                }
+
+                price = pmt_weapon.atp_max + ci->data.datab[3];
+                price *= price;
+                price_calc = (float)price;
+                switch (ci->data.datab[1]) {
+                case 0x01:
+                    price_calc /= 5.0f;
+                    break;
+
+                case 0x02:
+                    price_calc /= 4.0f;
+                    break;
+
+                case 0x03:
+                case 0x04:
+                    price_calc *= 2.0f;
+                    price_calc /= 3.0f;
+                    break;
+
+                case 0x05:
+                    price_calc *= 4.0f;
+                    price_calc /= 5.0f;
+                    break;
+
+                case 0x06:
+                    price_calc *= 10.0f;
+                    price_calc /= 21.0f;
+                    break;
+
+                case 0x07:
+                    price_calc /= 3.0f;
+                    break;
+
+                case 0x08:
+                    price_calc *= 25.0f;
+                    break;
+
+                case 0x09:
+                    price_calc *= 10.0f;
+                    price_calc /= 9.0f;
+                    break;
+
+                case 0x0A:
+                    price_calc /= 2.0f;
+                    break;
+
+                case 0x0B:
+                    price_calc *= 2.0f;
+                    price_calc /= 5.0f;
+                    break;
+
+                case 0x0C:
+                    price_calc *= 4.0f;
+                    price_calc /= 3.0f;
+                    break;
+                }
+
+                percent_add = 0;
+
+                if (ci->data.datab[6])
+                    percent_add += LE32(ci->data.datab[7]);
+
+                if (ci->data.datab[8])
+                    percent_add += LE32(ci->data.datab[9]);
+
+                if (ci->data.datab[10])
+                    percent_add += LE32(ci->data.datab[11]);
+
+                if (percent_add != 0) {
+                    percent_calc = price_calc;
+                    percent_calc /= 300.0f;
+                    percent_calc *= percent_add;
+                    price_calc += percent_calc;
+                }
+
+                price_calc /= 8.0f;
+                price = (int32_t)(price_calc);
+                price += attrib[ci->data.datab[4]];
+            }
+        }
+        break;
+
+    case ITEM_TYPE_GUARD:
+        switch (ci->data.datab[1]) {
+        case ITEM_SUBTYPE_FRAME: // Armor 装备
+
+            if (pmt_lookup_guard_bb(ci->data.datal[0], &pmt_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", ci->data.datal[0]);
+                return -3;
+            }
+
+            if (ci->data.datab[2] < 0x18) {
+                // Calculate the amount to boost because of slots...
+                if (ci->data.datab[5] > 4)
+                    price = armor_prices[(ci->data.datab[2] * 5) + 4];
+                else
+                    price = armor_prices[(ci->data.datab[2] * 5) + ci->data.datab[5]];
+
+                price -= armor_prices[(ci->data.datab[2] * 5)];
+
+                if (ci->data.datab[6] > pmt_guard.dfp_range)
+                    variation = 0;
+                else
+                    variation = ci->data.datab[6];
+
+                if (ci->data.datab[8] <= pmt_guard.dfp_range)
+                    variation += ci->data.datab[8];
+
+                price += equip_prices[1][1][ci->data.datab[2]][variation];
+            }
+            break;
+        case ITEM_SUBTYPE_BARRIER: // Shield 盾牌
+
+            if (pmt_lookup_guard_bb(ci->data.datal[0], &pmt_guard)) {
+                ERR_LOG("未从PMT获取到 0x%04X 的数据!", ci->data.datal[0]);
+                return -3;
+            }
+
+            if (ci->data.datab[2] < 0x15) {
+                if (ci->data.datab[6] > pmt_guard.dfp_range)
+                    variation = 0;
+                else
+                    variation = ci->data.datab[6];
+
+                if (ci->data.datab[8] <= pmt_guard.evp_range)
+                    variation += ci->data.datab[8];
+
+                price = equip_prices[1][2][ci->data.datab[2]][variation];
+            }
+            break;
+        case ITEM_SUBTYPE_UNIT: // Units 插槽
+            if (ci->data.datab[2] < 0x40)
+                price = unit_prices[ci->data.datab[2]];
+            break;
+        }
+        break;
+
+    case ITEM_TYPE_TOOL:
+        // Tool 工具
+        if (ci->data.datab[1] == ITEM_SUBTYPE_DISK) { // Technique 魔法科技
+            if (ci->data.datab[4] < 0x13)
+                price = ((int32_t)(ci->data.datab[2] + 1) * tech_prices[ci->data.datab[4]]) / 100L;
+        }
+        else {
+            compare_item = 0;
+            memcpy(&compare_item, &ci->data.datab[0], 3);
+            for (ch = 0; ch < (sizeof(tool_prices) / 4); ch += 2)
+                if (compare_item == tool_prices[ch]) {
+                    price = tool_prices[ch + 1];
+                    break;
+                }
+        }
+        break;
+    }
+
+    if (price < 0)
+        price = 0;
+
+    return price;
+}
 
 /* 加载商店数据 */
 int load_shop_data() {

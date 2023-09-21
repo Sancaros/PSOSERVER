@@ -1216,9 +1216,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
             uint8_t p2_section = p2_char->dress_data.section;
             if (l->drop_psocn) {
-                DBG_LOG("原颜色ID %d ", p2_section);
                 p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
-                DBG_LOG("新颜色ID %d ", p2_section);
             }
 
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
@@ -1340,9 +1338,6 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
     iitem_t iitem = { 0 };
 
-    DBG_LOG("req->ignore_def 0x%04X", req->ignore_def);
-
-    //pthread_mutex_lock(&src->mutex);
     if (l->drop_pso2) {
         int i;
 
@@ -1416,8 +1411,6 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)req, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
     }
-
-    //pthread_mutex_unlock(&src->mutex);
 
     return rv;
 

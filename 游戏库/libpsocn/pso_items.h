@@ -141,6 +141,8 @@ void set_common_armor_evasion_bonus(item_t* item, int16_t bonus);
 int16_t get_common_armor_evasion_bonus(const item_t* item);
 void set_unit_bonus(item_t* item, int16_t bonus);
 int16_t get_unit_bonus(const item_t* item);
+bool is_s_rank_weapon(const item_t* item);
+bool compare_for_sort(item_t* itemDataA, item_t* itemDataB);
 
 /* 打印物品数据 */
 void print_item_data(const item_t* item, int version);

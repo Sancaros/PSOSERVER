@@ -26,6 +26,8 @@
 #include "packets.h"
 #undef PACKETS_H_HEADERS_ONLY
 
+#define BB_SHOP_SIZE               0x14
+
 #define BB_SHOPTYPE_TOOL           0
 #define BB_SHOPTYPE_WEAPON         1
 #define BB_SHOPTYPE_ARMOR          2
@@ -43,7 +45,7 @@
 
 /* 商店物品参数 */
 typedef struct shop_item_params {
-	struct mt19937_state* 随机因子;
+	sfmt_t* 随机因子;
 	uint8_t 难度;
 	uint8_t 玩家等级;
 	uint8_t 物品类型;
@@ -52,30 +54,12 @@ typedef struct shop_item_params {
 	uint8_t 保留3;
 } PACKED shop_item_params_t;
 
-/* 商店结构 */
-typedef struct shop_data {
-    uint16_t pkt_len;
-    uint16_t pkt_type;
-    uint32_t flags;
-    uint8_t type;
-    uint8_t size;
-    uint16_t reserved;
-    uint8_t shop_type;
-    uint8_t num_items;
-    uint16_t reserved2;
-	item_t item[0x18];
-    uint8_t reserved4[16];
-} PACKED shop_data_t;
-
 #ifndef _WIN32
 #else
 #pragma pack()
 #endif
 
 #undef PACKED
-
-/* 获取物品价格 */
-uint32_t get_bb_shop_price(iitem_t* ci);
 
 /* 生成商店物品 */
 item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t index);

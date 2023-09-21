@@ -709,7 +709,7 @@ uint32_t rt_generate_bb_rare(ship_client_t* src, lobby_t* l, int rt_index,
 
 #endif // DEBUG
 
-    set = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section);
+    set = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section);
 
     /* Are we doing a drop for an enemy or a box? */
     if (rt_index >= 0) {
@@ -755,7 +755,7 @@ uint32_t rt_generate_bb_rare_style(ship_client_t* src, lobby_t* l, int rt_index,
 
 #endif // DEBUG
 
-    set = get_rt_table_bb(ship->cfg->bb_rtdata_file, l->episode, l->challenge, l->difficulty, section);
+    set = get_rt_table_bb(l->episode, l->challenge, l->difficulty, section);
 
     /* Are we doing a drop for an enemy or a box? */
     if (rt_index >= 0) {

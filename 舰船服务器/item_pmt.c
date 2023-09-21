@@ -3224,7 +3224,7 @@ int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
             }
         }
     }
-    ERR_LOG("invalid tool class");
+    ERR_LOG("无效物品类别 %d", tool_class);
     return -1;
 }
 
