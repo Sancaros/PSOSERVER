@@ -95,6 +95,10 @@ void print_ascii_hex(const void* data, size_t length) {
 
 	size_t i; 
 
+	memset(&dp[0], 0, sizeof(dp));
+
+	strcpy(dp, "数据包如下:\n\r");
+
 	for (i = 0; i < length; i++) {
 		if (i % 16 == 0) {
 			if (i != 0) {
@@ -122,7 +126,14 @@ void print_ascii_hex(const void* data, size_t length) {
 		}
 	}
 
-	printf("%s", dp);
+	if (strlen(dp) + 2 + 1 <= 65536) { // 检查长度是否足够
+		strcat(dp, "\n\r"); // 添加两个换行符
+	}
+	else {
+		printf("不足以容纳换行符\n");
+	}
+
+	DBG_LOG("%s\n\r", dp);
 }
 
 /* This function based on information from a couple of different sources, namely

@@ -508,6 +508,7 @@ reconnet:
 
     /* Do the TLS handshake */
     irv = gnutls_handshake(rv->session);
+    my_ntop(addr, ipstr);
 
     if (irv < 0) {
         ERR_LOG("GNUTLS *** 注意: TLS 握手失败 %s", gnutls_strerror(irv));
@@ -518,7 +519,7 @@ reconnet:
 
         char* desc;
         desc = gnutls_session_get_desc(rv->session);
-        SHIPS_LOG("GNUTLS *** Session 信息: %d - %s", sock, desc);
+        SHIPS_LOG("GNUTLS *** Session %s:%d\n信息:%s", ipstr, sock, desc);
         gnutls_free(desc);
     }
 
