@@ -2433,7 +2433,7 @@ typedef struct subcmd_bb_trade {
     uint16_t menu_id;        /*0x0071(新增取消物品) 0x0000 0x00AC(开始交易) 0x00F6 0x008F(确认) */
     /* 当加入物品时 才会发送余下数据 否则获取都是乱码数据 */
     uint32_t item_id;
-    uint32_t trade_num;      /*目标序号为0001*/
+    uint32_t amount;      /*目标序号为0001*/
 } PACKED subcmd_bb_trade_t;
 
 // 0xA7: Unknown (不支持 PC)

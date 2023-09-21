@@ -39,6 +39,22 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////游戏房间操作
 
+bool check_structs_equal(const void* s1, const void* s2, size_t sz) {
+    if (s1 == NULL || s2 == NULL) {
+        return false;
+    }
+
+    // 使用 memcmp 比较二进制数据
+    if (memcmp(s1, s2, sz) != 0) {
+        ERR_LOG("不一致 ");
+        print_item_data((item_t*)s1, 5);
+        print_item_data((item_t*)s2, 5);
+        return false;
+    }
+
+    return true;
+}
+
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id) {
     size_t c_id = client_id, l_max_c_id = l->max_clients;
@@ -233,6 +249,70 @@ int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
 
     if (x == inv->item_count) {
         ERR_LOG("未从背包中找到ID 0x%08X 物品", item_id);
+        return -2;
+    }
+
+    return -3;
+}
+
+int find_titem_index(const trade_inv_t* trade, const uint32_t item_id) {
+    int x = 0;
+    int y = trade->item_count;
+
+    if (y > 0x20) {
+        ERR_LOG("交易物品数量超出限制 %d", y);
+        return -1;
+    }
+
+    for (x = 0; x < y; x++) {
+        if (trade->iitems[x].data.item_id != item_id)
+            continue;
+
+        return x;
+    }
+
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
+
+    if (x == y) {
+        ERR_LOG("未从交易背包中找到ID 0x%08X 物品", item_id);
+        return -2;
+    }
+
+    return -3;
+}
+
+int check_titem_id(const trade_inv_t* trade, const uint32_t item_id) {
+    int x = 0;
+    int y = trade->item_count;
+
+    if (y > 0x20) {
+        ERR_LOG("交易物品数量超出限制 %d", y);
+        return -1;
+    }
+
+    for (x = 0; x < y; x++) {
+        if (trade->iitems[x].data.item_id != item_id)
+            continue;
+
+        return trade->iitems[x].data.item_id;
+    }
+
+#ifdef DEBUG
+
+    for (x = 0; x < inv->item_count; x++) {
+        print_iitem_data(&inv->iitems[x], x, 5);
+    }
+
+#endif // DEBUG
+
+    if (x == y) {
+        ERR_LOG("未从交易背包中找到ID 0x%08X 物品", item_id);
         return -2;
     }
 
@@ -622,6 +702,45 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     return ret;
 }
 
+iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount) {
+    iitem_t ret = { 0 };
+
+    if (item_id == ITEM_ID_MESETA) {
+        trade->meseta = max(trade->meseta - amount, 0);
+        ret.data.datab[0] = ITEM_TYPE_MESETA;
+        ret.data.data2l = amount;
+        return ret;
+    }
+
+    int index = find_titem_index(trade, item_id);
+    if (index < 0) {
+        ERR_LOG("移除物品发生错误 错误码 %d", index);
+        return ret;
+    }
+
+    iitem_t* trade_item = &trade->iitems[index];
+
+    if (amount && is_stackable(&trade_item->data) && (amount < trade_item->data.datab[5])) {
+        ret = *trade_item;
+        ret.data.datab[5] = amount;
+        ret.data.item_id = EMPTY_STRING;
+        trade_item->data.datab[5] -= amount;
+        return ret;
+    }
+
+    // If we get here, then it's not meseta, and either it's not a combine item or
+    // we're removing the entire stack. Delete the item from the inventory slot
+    // and return the deleted item.
+    memcpy(&ret, trade_item, sizeof(iitem_t));
+    //ret = inventory_item;
+    trade->item_count--;
+    for (size_t x = index; x < trade->item_count; x++) {
+        trade->iitems[x] = trade->iitems[x + 1];
+    }
+    clear_iitem(&trade->iitems[trade->item_count]);
+    return ret;
+}
+
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount) {
     bitem_t ret = { 0 };
     psocn_bank_t* bank = get_client_bank_bb(src);
@@ -712,6 +831,47 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
     }
     character->inv.iitems[character->inv.item_count] = *iitem;
     character->inv.item_count++;
+    return true;
+}
+
+bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
+    uint32_t pid = primary_identifier(&iitem->data);
+
+    // 检查是否为meseta，如果是，则修改统计数据中的meseta值
+    if (pid == MESETA_IDENTIFIER) {
+        trade->meseta = min(trade->meseta + iitem->data.data2l, 999999);
+        return true;
+    }
+
+    // 处理可合并的物品
+    size_t combine_max = max_stack_size(&iitem->data);
+    if (combine_max > 1) {
+        // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
+        size_t y;
+        for (y = 0; y < trade->item_count; y++) {
+            if (primary_identifier(&trade->iitems[y].data) == pid) {
+                break;
+            }
+        }
+
+        // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
+        if (y < trade->item_count) {
+            trade->iitems[y].data.datab[5] += iitem->data.datab[5];
+            if (trade->iitems[y].data.datab[5] > (uint8_t)combine_max) {
+                trade->iitems[y].data.datab[5] = (uint8_t)combine_max;
+            }
+            return true;
+        }
+    }
+
+    // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
+    if (trade->item_count >= 0x20) {
+        ERR_LOG("交易物品数量超出最大值,当前 %d 个物品", trade->item_count);
+        return false;
+    }
+    trade->iitems[trade->item_count] = *iitem;
+    trade->item_ids[trade->item_count] = iitem->data.item_id;
+    trade->item_count++;
     return true;
 }
 
@@ -1698,6 +1858,25 @@ int initialize_cmode_iitem(ship_client_t* dest) {
 iitem_t player_iitem_init(const item_t item) {
     iitem_t iitem = { LE16(0x0001), 0, 0, 0, item };
     return iitem;
+}
+
+trade_inv_t* player_tinv_init(ship_client_t* src) {
+    trade_inv_t* tinv = NULL;
+    if (!src->game_data) {
+        ERR_LOG("GC %u 玩家游戏数据没有申请内存", src->guildcard);
+        return tinv;
+    }
+
+    tinv = &src->game_data->pending_item_trade;
+    tinv->other_client_id = LE16(0);
+    tinv->confirmed = false;
+    tinv->meseta = 0;
+    tinv->item_count = 0;
+    for (size_t x = 0; x < 0x20; x++) {
+        tinv->item_ids[x] = 0xFFFFFFFF;
+        clear_iitem(&tinv->iitems[x]);
+    }
+    return tinv;
 }
 
 bitem_t player_bitem_init(const item_t item) {

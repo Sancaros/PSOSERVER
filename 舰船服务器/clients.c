@@ -170,39 +170,39 @@ ship_client_t* client_create_connection(int sock, int version, int type,
 
             memset(rv->game_data, 0, sizeof(client_game_data_t));
 
-            if (version == CLIENT_VERSION_BB) {
-                rv->game_data->pending_item_trade =
-                    (trade_item_t*)malloc(sizeof(trade_item_t));
+            //if (version == CLIENT_VERSION_BB) {
+            //    rv->game_data->pending_item_trade =
+            //        (trade_inv_t*)malloc(sizeof(trade_inv_t));
 
-                if (!rv->game_data) {
-                    perror("malloc");
-                    free_safe(rv->pl);
-                    free_safe(rv->enemy_kills);
-                    free_safe(rv->game_data);
-                    free_safe(rv);
-                    closesocket(sock);
-                    return NULL;
-                }
+            //    if (!rv->game_data) {
+            //        perror("malloc");
+            //        free_safe(rv->pl);
+            //        free_safe(rv->enemy_kills);
+            //        free_safe(rv->game_data);
+            //        free_safe(rv);
+            //        closesocket(sock);
+            //        return NULL;
+            //    }
 
-                memset(rv->game_data->pending_item_trade, 0, sizeof(trade_item_t));
-            }
+            //    memset(rv->game_data->pending_item_trade, 0, sizeof(trade_inv_t));
+            //}
 
-            if (version == CLIENT_VERSION_EP3) {
-                rv->game_data->pending_card_trade =
-                    (trade_card_t*)malloc(sizeof(trade_card_t));
+            //if (version == CLIENT_VERSION_EP3) {
+            //    rv->game_data->pending_card_trade =
+            //        (trade_card_t*)malloc(sizeof(trade_card_t));
 
-                if (!rv->game_data) {
-                    perror("malloc");
-                    free_safe(rv->pl);
-                    free_safe(rv->enemy_kills);
-                    free_safe(rv->game_data);
-                    free_safe(rv);
-                    closesocket(sock);
-                    return NULL;
-                }
+            //    if (!rv->game_data) {
+            //        perror("malloc");
+            //        free_safe(rv->pl);
+            //        free_safe(rv->enemy_kills);
+            //        free_safe(rv->game_data);
+            //        free_safe(rv);
+            //        closesocket(sock);
+            //        return NULL;
+            //    }
 
-                memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
-            }
+            //    memset(rv->game_data->pending_card_trade, 0, sizeof(trade_card_t));
+            //}
 
             rv->mode_pl =
                 (psocn_mode_char_t*)malloc(sizeof(psocn_mode_char_t));
@@ -1565,6 +1565,13 @@ inventory_t* get_client_inv_bb(ship_client_t* src) {
     return src->mode == 0 ? &src->bb_pl->character.inv : &src->mode_pl->bb.inv;
 }
 
+trade_inv_t* get_client_trade_inv_bb(ship_client_t* src) {
+    if (src->mode) {
+        DBG_LOG("GC %u BB交易背包数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
+    }
+    return &src->game_data->pending_item_trade;
+}
+
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src) {
     if (src->mode) {
         DBG_LOG("GC %u BB角色数据获取模式 %d 任务编号 %d", src->guildcard, src->mode, src->cur_lobby->qid);
@@ -1593,6 +1600,9 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
     int i = 0;
 
     for (i = 0; i < l->max_clients; ++i) {
+        if (!l->clients[i])
+            continue;
+
         if (l->clients[i]->client_id == target_client_id) {
             return l->clients[i];
         }

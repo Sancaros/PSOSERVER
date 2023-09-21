@@ -25,6 +25,8 @@
 #include "clients.h"
 #include "shop.h"
 
+bool check_structs_equal(const void* s1, const void* s2, size_t sz);
+
 /* 生成物品ID */
 size_t generate_item_id(lobby_t* l, size_t client_id);
 size_t destroy_item_id(lobby_t* l, size_t client_id);
@@ -44,6 +46,8 @@ int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
 
 /* 获取背包中目标物品所在槽位 */
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id);
+int find_titem_index(const trade_inv_t* trade, const uint32_t item_id);
+int check_titem_id(const trade_inv_t* trade, const uint32_t item_id);
 int find_bitem_index(const psocn_bank_t* bank, const uint32_t item_id);
 size_t find_iitem_stack_item_id(const inventory_t* inv, const iitem_t* iitem);
 size_t find_iitem_code_stack_item_id(const inventory_t* inv, const uint32_t code);
@@ -62,8 +66,10 @@ int remove_character_meseta(psocn_bb_char_t* character, uint32_t amount, bool al
 /* 移除背包物品操作 */
 int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt);
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
+iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount);
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
 bool add_iitem(ship_client_t* src, const iitem_t* iitem);
+bool add_titem(trade_inv_t* trade, const iitem_t* iitem);
 bool add_bitem(ship_client_t* src, const bitem_t* bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 
@@ -72,6 +78,7 @@ int initialize_cmode_iitem(ship_client_t* dest);
 
 /* 蓝色脉冲物品管理 */
 iitem_t player_iitem_init(const item_t item);
+trade_inv_t* player_tinv_init(ship_client_t* src);
 bitem_t player_bitem_init(const item_t item);
 void cleanup_bb_inv(uint32_t client_id, inventory_t* inv);
 void regenerate_bank_item_id(uint32_t client_id, psocn_bank_t* bank, bool comoon_bank);

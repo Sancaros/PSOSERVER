@@ -12400,7 +12400,7 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
     return send_msg(c, MSG_BOX_TYPE, "%s", string);
 }
 
-int send_bb_execute_item_trade(ship_client_t* c, item_t* items, uint16_t item_count) {
+int send_bb_execute_item_trade(ship_client_t* c, iitem_t* iitems, uint16_t item_count) {
     uint8_t* sendbuf = get_sendbuf();
     bb_trade_D0_D3_pkt* pkt = (bb_trade_D0_D3_pkt*)sendbuf;
 
@@ -12413,18 +12413,11 @@ int send_bb_execute_item_trade(ship_client_t* c, item_t* items, uint16_t item_co
     pkt->target_client_id = c->client_id;
     pkt->item_count = item_count;
     for (size_t x = 0; x < item_count; x++) {
-        pkt->items[x] = items[x];
+        pkt->items[x] = iitems[x].data;
         if (c->version == CLIENT_VERSION_GC) {
             bswap_data2_if_mag(&pkt->items[x]);
         }
     }
-
-    lobby_t* l = c->cur_lobby;
-    ship_client_t* c2;
-    c2 = l->clients[pkt->target_client_id];
-    DBG_LOG("GC %" PRIu32 " 尝试交易 %d 件物品 给 %" PRIu32 "!",
-        c->guildcard, pkt->item_count, c2->guildcard);
-
     pkt->hdr.pkt_type = TRADE_3_TYPE;
     pkt->hdr.flags = 0x00;
 

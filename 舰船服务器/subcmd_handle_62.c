@@ -1422,6 +1422,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     uint8_t trade_type = pkt->trade_type, trade_stage = pkt->trade_stage;
     int rv = -1;
+    size_t item_id = 0;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1439,6 +1440,10 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     //send_msg(dest, BB_SCROLL_MSG_TYPE, "%s", __(dest, "\tE\tC6交易功能存在故障，暂时关闭"));
     //send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC6交易功能存在故障，暂时关闭"));
 
+    inventory_t* inv = get_client_inv_bb(src);
+    trade_inv_t* trade_inv_src = get_client_trade_inv_bb(src);
+    trade_inv_t* trade_inv_dest = get_client_trade_inv_bb(dest);
+
     DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
     print_ascii_hex(pkt, pkt->hdr.pkt_len);
@@ -1452,16 +1457,22 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         //[2023年08月14日 20:03:54:452] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
         //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 00 00 AC 00  ..b.....?....?
         //( 00000010 )   82 00 00 00 0E 87 01 00                           ?...?.
+            trade_inv_src = player_tinv_init(src);
+            trade_inv_src->other_client_id = dest->client_id;
         case 0x02:
             //交易开始确认
         //[2023年08月14日 20:07:19:815] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
         //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 00 02 11 0F  ..b.....?......
         //( 00000010 )   30 47 11 0F C7 C9 0C 00                           0G..巧..
+            trade_inv_src = player_tinv_init(src);
+            trade_inv_src->other_client_id = dest->client_id;
         case 0x03:
             //对方拒绝交易
         //[2023年08月14日 20:12:57:651] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
         //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 00 03 11 0F  ..b.....?......
         //( 00000010 )   30 47 11 0F C8 75 81 00                           0G..萿?
+            trade_inv_src = player_tinv_init(src);
+            trade_inv_dest = player_tinv_init(dest);
             break;
         }
         break;
@@ -1469,6 +1480,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     case 0x01:
         switch (trade_stage) {
         case 0x00:
+            //需要一个以双方的id来储存的一个物品ID容器
             //被交易方加入物品栏ID 0x00010000 物品
         //[2023年08月14日 20:15:20:984] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
         //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 01 00 71 00  ..b.....?....q.
@@ -1480,6 +1492,24 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
             //要判定加入得物品是否是堆叠得 如果是堆叠得物品 则相同交易物品的数量+1
             //0xFFFFFF01 是美赛塔？？？？ 不应该是FFFFFFFF吗
+            item_id = find_iitem_index(inv, pkt->item_id);
+            /* 如果找不到该物品，则将用户从船上推下. */
+            if (item_id < 0) {
+                ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+                return item_id;
+            }
+
+            iitem_t trade_ii = inv->iitems[item_id];
+
+            if (pkt->amount && is_stackable(&trade_ii.data) &&
+                (pkt->amount < trade_ii.data.datab[5])) {
+                trade_ii.data.datab[5] = pkt->amount;
+            }
+            
+            if (!add_titem(trade_inv_src, &trade_ii)) {
+                ERR_LOG("GC %" PRIu32 " 无法添加交易物品!", src->guildcard);
+                return -3;
+            }
 
             break;
         }
@@ -1492,11 +1522,26 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000010 )   00 00 01 00 01 00 00 00                           ........
         //减掉对应的交易物品 从客户端的“交易物品栏”中删除对应的物品ID
 
+        item_id = check_titem_id(trade_inv_src, pkt->item_id);
+        if (item_id != pkt->item_id) {
+            ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+            return item_id;
+        }
+
+        iitem_t tmp = remove_titem(trade_inv_src, item_id, pkt->amount);
+        if(item_not_identification_bb(tmp.data.datal[0], tmp.data.datal[1])) {
+            ERR_LOG("GC %" PRIu32 " 移除非法交易物品!", src->guildcard);
+            print_item_data(&tmp.data, src->version);
+            return -4;
+        }
+
         break;
 
     case 0x03:
         switch (trade_stage) {
         case 0x00:
+            /* 完成确认 */
+            trade_inv_src->confirmed = true;
             //交易方确认
         //[2023年08月14日 20:53:33:705] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
         //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 03 00 8F 00  ..b.....?....?
@@ -1507,11 +1552,31 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 03 00 8F 00  ..b.....?....?
         //( 00000010 )   FF FF FF FF 00 00 00 00                           ....
             break;
+
+        case 0x04:
+            /* 完成确认 */
+            trade_inv_src->confirmed = false;
+            //交易方取消确认
+//[2023年09月22日 00:00:42:249] 调试(subcmd_handle_62.c 1447): GC 10000000 sclient_id 0x00 -> 10000001 dclient_id 0x01
+//[2023年09月22日 00:00:42:252] 调试(f_logs.c 0140): 数据包如下:
+//(00000000) 18 00 62 00 01 00 00 00  A6 04 00 00 03 04 82 00    ..b.............
+//(00000010) D9 5B 82 00 60 70 5D 0D     .[..`p].
+
+            //被交易方取消确认
+//[2023年09月22日 00:00:44:415] 调试(subcmd_handle_62.c 1447): GC 10000001 sclient_id 0x01 -> 10000000 dclient_id 0x00
+//[2023年09月22日 00:00:44:419] 调试(f_logs.c 0140): 数据包如下:
+//(00000000) 18 00 62 00 00 00 00 00  A6 04 01 00 03 04 82 00    ..b.............
+//(00000010) D9 5B 82 00 60 50 5F 0D     .[..`P_.
+            break;
         }
         break;
     case 0x04:
         switch (trade_stage) {
         case 0x00:
+            if (!trade_inv_src->confirmed)
+                ERR_LOG("GC %u 根本没有确认", src->guildcard);
+
+            trade_inv_src->confirmed = true;
             //交易方确认交易
 //[2023年08月14日 21:01:06:843] 调试(subcmd_handle_62.c 1316): GC 10000001 -> 10000000
 //( 00000000 )   18 00 62 00 00 00 00 00   A6 04 01 00 04 00 1C 0F  ..b.....?......
@@ -1530,8 +1595,20 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     //[2023年08月14日 20:12:03:817] 调试(subcmd_handle_62.c 1316): GC 10000000 -> 10000001
     //( 00000000 )   18 00 62 00 01 00 00 00   A6 04 00 00 05 04 00 00  ..b.....?......
     //( 00000010 )   9D 3A 71 00 01 00 00 00                           ?q.....
+            trade_inv_src = player_tinv_init(src);
+            trade_inv_dest = player_tinv_init(dest);
             break;
         }
+        break;
+
+    case 0x07:
+        /* 其中一位玩家移动到了无法交易的区域 */
+        /*[2023年09月21日 22:41:03:355] 错误(subcmd_handle_62.c 1572): 交易数据未处理 trade_type 0x07 trade_stage 0x00
+[2023年09月21日 22:41:03:357] 调试(f_logs.c 0140): 数据包如下:
+(00000000) 18 00 62 00 01 00 00 00  A6 04 00 00 07 00 01 00    ..b.............
+(00000010) FF FF FF FF 00 00 00 00     ........*/
+        trade_inv_src = player_tinv_init(src);
+        trade_inv_dest = player_tinv_init(dest);
         break;
 
     default:

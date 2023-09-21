@@ -290,7 +290,7 @@ int send_lobby_sync_register(lobby_t *l, uint8_t n, uint32_t v);
 /* Send a message box to the user telling them that they are banned. */
 int send_ban_msg(ship_client_t *c, time_t until, const char *reason);
 
-int send_bb_execute_item_trade(ship_client_t* c, item_t* items, uint16_t item_count);
+int send_bb_execute_item_trade(ship_client_t* c, iitem_t* iitems, uint16_t item_count);
 
 int send_info_file(ship_client_t* c, ship_t* s, uint32_t entry);
 

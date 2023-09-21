@@ -71,12 +71,14 @@ typedef struct blocklist_entry {
     uint32_t flags;
 } blocklist_t;
 
-typedef struct trade_item {
+typedef struct trade_inv {
     uint16_t other_client_id;
     bool confirmed; // true if client has sent a D2 command
+    uint32_t meseta;
     uint32_t item_count;
-    item_t items[0x20];
-} trade_item_t;
+    uint32_t item_ids[0x20];
+    iitem_t iitems[0x20];
+} trade_inv_t;
 
 struct Pair {
     uint32_t first;
@@ -102,8 +104,8 @@ typedef struct client_game_data {
 
     int bursting;
 
-    trade_item_t *pending_item_trade;
-    trade_card_t *pending_card_trade;
+    trade_inv_t pending_item_trade;
+    trade_card_t pending_card_trade;
     iitem_t identify_result;
     item_t shop_items[0x14];
     size_t shop_items_price[0x14];
@@ -231,7 +233,7 @@ struct ship_client {
 
     uint8_t equip_flags;
     item_t new_item;
-    iitem_t iitems[30];
+    iitem_t iitems[30]; //通常用于存储非BB版本的物品数据
 
     int isvip;
 
@@ -473,6 +475,7 @@ int client_legit_check(ship_client_t *c, psocn_limits_t *limits);
 
 psocn_bank_t* get_client_bank_bb(ship_client_t* src);
 inventory_t* get_client_inv_bb(ship_client_t* src);
+trade_inv_t* get_client_trade_inv_bb(ship_client_t* src);
 psocn_bb_char_t* get_client_char_bb(ship_client_t* src);
 inventory_t* get_client_inv_nobb(ship_client_t* src);
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src);
