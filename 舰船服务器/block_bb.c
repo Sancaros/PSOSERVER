@@ -67,7 +67,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
 
     /* Make sure they don't have the protection flag on */
     if (c->flags & CLIENT_FLAG_GC_PROTECT) {
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7请先登录\n才可加入游戏."));
         return LOBBY_FLAG_ERROR_ADD_CLIENT;
     }
@@ -79,79 +79,79 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
 
     if (rv == LOBBY_FLAG_ERROR_GAME_V1_CLASS) {
         /* HUcaseal, FOmar, or RAmarl trying to join a v1 game */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Your class is\nnot allowed in a\n"
-                "PSOv1 game."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7你的职业无法进入\n"
+                "PSO V1 版本游戏."));
     }
     if (rv == LOBBY_FLAG_ERROR_SINGLEPLAYER/* && !c->reset_quest*/) {
         /* Single player mode */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7The game is\nin single player\nmode."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7无法进入单人模式房间."));
     }
     else if (rv == LOBBY_FLAG_ERROR_PC_ONLY) {
         /* PC only */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7The game is\nfor PSOPC only."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间仅限 PSOPC 版本进入."));
     }
     else if (rv == LOBBY_FLAG_ERROR_V1_ONLY) {
         /* V1 only */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7The game is\nfor PSOv1 only."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间仅限 PSOv1 版本进入."));
     }
     else if (rv == LOBBY_FLAG_ERROR_DC_ONLY) {
         /* DC only */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7The game is\nfor PSODC only."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间仅限 PSODC 版本进入."));
     }
     else if (rv == LOBBY_FLAG_ERROR_LEGIT_TEMP_UNAVAIL) {
         /* Temporarily unavailable */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7The game is\ntemporarily\nunavailable."));
     }
     else if (rv == LOBBY_FLAG_ERROR_LEGIT_MODE) {
         /* Legit check failed */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7Game mode is set\nto legit and you\n"
                 "failed the legit\ncheck!"));
     }
     else if (rv == LOBBY_FLAG_ERROR_QUESTSEL) {
         /* Quest selection in progress */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7Quest selection\nis in progress"));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间已在选择任务中."));
     }
     else if (rv == LOBBY_FLAG_ERROR_QUESTING) {
         /* Questing in progress */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7A quest is in\nprogress."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间已在任务中."));
     }
     else if (rv == LOBBY_FLAG_ERROR_DCV2_ONLY) {
         /* V1 client attempting to join a V2 only game */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7This game is for\nVersion 2 only."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7该房间仅限 DCV2 版本进入."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MAX_LEVEL) {
         /* Level is too high */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7你的等级太高了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_MIN_LEVEL) {
         /* Level is too high */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7你的等级太低了."));
     }
     else if (rv == LOBBY_FLAG_ERROR_BURSTING) {
         /* A client is bursting. */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7玩家正在跃迁中"));
     }
     else if (rv == LOBBY_FLAG_ERROR_REMOVE_CLIENT) {
         /* The lobby has disappeared. */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
-            __(c, "\tC7This game is\nnon-existant."));
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
+            __(c, "\tC7游戏已不存在."));
     }
     else if (rv == LOBBY_FLAG_ERROR_ADD_CLIENT) {
         /* The lobby is full. */
-        send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+        send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
             __(c, "\tC7游戏房间人数已满."));
     }
     else {
@@ -766,7 +766,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
         if (!l) {
             /* The lobby has disappeared. */
-            send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+            send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
                 __(c, "\tC7游戏已不存在."));
             return 0;
         }
@@ -774,7 +774,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         /* Check the provided password (if any). */
         if (!override) {
             if (l->passwd[0] && strcmp(passwd_cmp, l->passwd)) {
-                send_msg(c, MSG1_TYPE, "%s\n\n%s",
+                send_msg(c, MSG1_TYPE, "%s\n\n详情:%s",
                     __(c, "\tE\tC4无法加入游戏!"),
                     __(c, "\tC7密码错误."));
                 return 0;
@@ -906,7 +906,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
         if (!ls) {
             /* The lobby has disappeared. */
-            send_msg(c, MSG1_TYPE, "%s\n\n%s", __(c, "\tE\tC4无法加入游戏!"),
+            send_msg(c, MSG1_TYPE, "%s\n\n详情:%s", __(c, "\tE\tC4无法加入游戏!"),
                 __(c, "\tC7游戏已不存在."));
             return -1;
         }
