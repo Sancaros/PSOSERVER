@@ -134,7 +134,7 @@ void print_ascii_hex(const void* data, size_t length) {
 		strcat(dp, "\n\r"); // 添加两个换行符
 	}
 	else {
-		printf("不足以容纳换行符\n");
+		DBG_LOG("不足以容纳换行符\n");
 	}
 
 	DBG_LOG("%s\n\r", dp);

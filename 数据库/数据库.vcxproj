@@ -120,7 +120,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>..\通用库\sfmt;..\通用库\regex\include;..\通用库\libgnutls\include;..\Debug\Library;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;mariadbx86\win_build\libmariadb\Debug;mariadbx86\include;mariadbx86\win_build\include;..\通用库\md5\include;..\通用库\pthread_win32;..\游戏库\libpsocn;..\游戏库\libpsoarchive\include;..\游戏库\libpsocnconfig;..\船闸服务器;..\补丁服务器;..\舰船服务器;..\认证服务器</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\通用库\cvector;..\通用库\sfmt;..\通用库\regex\include;..\通用库\libgnutls\include;..\Debug\Library;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;mariadbx86\win_build\libmariadb\Debug;mariadbx86\include;mariadbx86\win_build\include;..\通用库\md5\include;..\通用库\pthread_win32;..\游戏库\libpsocn;..\游戏库\libpsoarchive\include;..\游戏库\libpsocnconfig;..\船闸服务器;..\补丁服务器;..\舰船服务器;..\认证服务器</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>

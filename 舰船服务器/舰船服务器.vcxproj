@@ -201,7 +201,7 @@
     <ClCompile>
       <PreprocessorDefinitions>ENABLE_LUA;WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;HAVE_LIBMINI18N;VERBOSE_DEBUGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\通用库\sfmt;..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\regex\include;..\通用库\pthread_win32;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\通用库\md5;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\通用库\cvector;..\通用库\sfmt;..\通用库\lua5.4.4\src;..\通用库\mini18n\src;..\通用库\libgnutls\include;..\通用库\regex\include;..\通用库\pthread_win32;..\通用库\libiconv-win-build\include;..\通用库\zlib-win-build;..\通用库\libxml2-win-build\include;..\数据库;..\数据库\mariadbx86\win_build\include;..\数据库\mariadbx86\include;..\通用库\md5;..\游戏库\libpsocn;..\游戏库\libpsocnconfig;..\游戏库\libpsoarchive\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpplatest</LanguageStandard>
