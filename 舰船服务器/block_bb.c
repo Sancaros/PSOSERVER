@@ -1747,8 +1747,8 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     trade_inv_t* src_trade = &src->game_data->pending_item_trade;
     src_trade->other_client_id = target_client_id;
     if (trade_item_count > 0) {
-        src_trade->item_count = trade_item_count;
-        for (size_t x = 0; x < src_trade->item_count; x++) {
+        src_trade->trade_item_count = trade_item_count;
+        for (size_t x = 0; x < src_trade->trade_item_count; x++) {
             src_trade->iitems[x].data = pkt->items[x];
             item_t* ti = &src_trade->iitems[x].data;
 

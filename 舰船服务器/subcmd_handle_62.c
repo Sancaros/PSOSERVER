@@ -1498,7 +1498,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                     player->disp.meseta = 0;
                 }
 
-                trade_inv_src->item_count++;
+                trade_inv_src->trade_item_count++;
                 trade_inv_src->meseta = min(pkt->amount, 999999);
                 trade_ii.data.datab[0] = 0x04;
                 trade_ii.data.item_id = 0xFFFFFFFF;
@@ -1542,7 +1542,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
             }
             else {
                 trade_inv_src->meseta = 0;
-                trade_inv_src->item_count--;
+                trade_inv_src->trade_item_count--;
             }
 
             trade_ii.data.datab[0] = 0x04;

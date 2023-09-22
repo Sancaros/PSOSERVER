@@ -257,7 +257,7 @@ int find_iitem_index(const inventory_t* inv, const uint32_t item_id) {
 
 int find_titem_index(const trade_inv_t* trade, const uint32_t item_id) {
     int x = 0;
-    int y = trade->item_count;
+    int y = trade->trade_item_count;
 
     if (y > 0x20) {
         ERR_LOG("交易物品数量超出限制 %d", y);
@@ -289,7 +289,7 @@ int find_titem_index(const trade_inv_t* trade, const uint32_t item_id) {
 
 int check_titem_id(const trade_inv_t* trade, const uint32_t item_id) {
     int x = 0;
-    int y = trade->item_count;
+    int y = trade->trade_item_count;
 
     if (y > 0x20) {
         ERR_LOG("交易物品数量超出限制 %d", y);
@@ -733,11 +733,11 @@ iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount) {
     // and return the deleted item.
     memcpy(&ret, trade_item, sizeof(iitem_t));
     //ret = inventory_item;
-    trade->item_count--;
-    for (size_t x = index; x < trade->item_count; x++) {
+    trade->trade_item_count--;
+    for (size_t x = index; x < trade->trade_item_count; x++) {
         trade->iitems[x] = trade->iitems[x + 1];
     }
-    clear_iitem(&trade->iitems[trade->item_count]);
+    clear_iitem(&trade->iitems[trade->trade_item_count]);
     return ret;
 }
 
@@ -848,14 +848,14 @@ bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
-        for (y = 0; y < trade->item_count; y++) {
+        for (y = 0; y < trade->trade_item_count; y++) {
             if (primary_identifier(&trade->iitems[y].data) == pid) {
                 break;
             }
         }
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
-        if (y < trade->item_count) {
+        if (y < trade->trade_item_count) {
             trade->iitems[y].data.datab[5] += iitem->data.datab[5];
             if (trade->iitems[y].data.datab[5] > (uint8_t)combine_max) {
                 trade->iitems[y].data.datab[5] = (uint8_t)combine_max;
@@ -865,13 +865,13 @@ bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
     }
 
     // 如果执行到这里，既不是meseta也不是可合并物品，因此需要放入一个空的库存槽位
-    if (trade->item_count >= 0x20) {
-        ERR_LOG("交易物品数量超出最大值,当前 %d 个物品", trade->item_count);
+    if (trade->trade_item_count >= 0x20) {
+        ERR_LOG("交易物品数量超出最大值,当前 %d 个物品", trade->trade_item_count);
         return false;
     }
-    trade->iitems[trade->item_count] = *iitem;
-    trade->item_ids[trade->item_count] = iitem->data.item_id;
-    trade->item_count++;
+    trade->iitems[trade->trade_item_count] = *iitem;
+    trade->item_ids[trade->trade_item_count] = iitem->data.item_id;
+    trade->trade_item_count++;
     return true;
 }
 
@@ -1871,7 +1871,7 @@ trade_inv_t* player_tinv_init(ship_client_t* src) {
     tinv->other_client_id = LE16(0);
     tinv->confirmed = false;
     tinv->meseta = 0;
-    tinv->item_count = 0;
+    tinv->trade_item_count = 0;
     for (size_t x = 0; x < 0x20; x++) {
         tinv->item_ids[x] = 0xFFFFFFFF;
         clear_iitem(&tinv->iitems[x]);
