@@ -529,8 +529,11 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_msg(src, TEXT_MSG_TYPE, "%s", __(src, "\tE\tC7权限不足."));
     }
 
+    pthread_mutex_lock(&l->mutex);
+
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
+        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
@@ -539,10 +542,9 @@ static int handle_item(ship_client_t *src, const char *params) {
         &item[3]);
 
     if(count == EOF || count == 0) {
+        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7无效物品代码."));
     }
-
-    pthread_mutex_lock(&l->mutex);
 
     /* Clear the set item */
     clear_inv_item(&src->new_item);
@@ -556,6 +558,7 @@ static int handle_item(ship_client_t *src, const char *params) {
     pmt_item_base_check_t item_base_check = get_item_definition_bb(src->new_item.datal[0], src->new_item.datal[1]);
     if (item_base_check.err) {
         clear_inv_item(&src->new_item);
+        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
     }
 
@@ -563,6 +566,8 @@ static int handle_item(ship_client_t *src, const char *params) {
         __(src, "\tE\tC8物品:"),
         item_get_name(&src->new_item, src->version),
         __(src, "\tE\tC6 new_item 设置成功, 立即生成."));
+
+    print_item_data(&src->new_item, l->version);
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
@@ -572,62 +577,72 @@ static int handle_item(ship_client_t *src, const char *params) {
             pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
+
+        /* Generate the packet to drop the item */
+        subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
     }
     else {
         ++l->item_player_id[src->client_id];
-    }
 
-    /* Generate the packet to drop the item */
-    dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
-    dc.hdr.pkt_len = 0x002C/* LE16(sizeof(subcmd_drop_stack_t))*/;
-    dc.hdr.flags = 0;
-
-    dc.shdr.type = SUBCMD60_DROP_STACK;
-    dc.shdr.size = 0x0A;
-    dc.shdr.client_id = 0xFBFF;
-
-
-    bb.hdr.pkt_len = 0x002C/*LE16(sizeof(subcmd_bb_drop_stack_t))*/;
-    bb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
-    bb.hdr.flags = 0;
-
-    bb.shdr.type = SUBCMD60_DROP_STACK;
-    bb.shdr.size = 0x09;
-    bb.shdr.client_id = 0xFBFF;
-
-    dc.area = LE16(src->cur_area);
-    bb.area = LE32(src->cur_area);
-    bb.x = dc.x = src->x;
-    bb.z = dc.z = src->z;
-    bb.data = dc.data = src->new_item;
-    bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
-
-    if (is_stackable(&src->new_item))
-        bb.data.datab[5] = dc.data.datab[5] = src->new_item.datab[5];
-
-
-    bb.two = dc.two = LE32(0x00000002);
-
-    print_item_data(&bb.data, src->version);
-
-    /* Send the packet to everyone in the lobby */
-    pthread_mutex_unlock(&l->mutex);
-
-    switch (src->version) {
-    case CLIENT_VERSION_DCV1:
-    case CLIENT_VERSION_DCV2:
-    case CLIENT_VERSION_PC:
-    case CLIENT_VERSION_GC:
-    case CLIENT_VERSION_EP3:
-    case CLIENT_VERSION_XBOX:
-        return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
-
-    case CLIENT_VERSION_BB:
-        return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
-
-    default:
+        /* Generate the packet to drop the item */
+        subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
+        pthread_mutex_unlock(&l->mutex);
         return 0;
     }
+
+    ///* Generate the packet to drop the item */
+    //dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
+    //dc.hdr.pkt_len = 0x002C/* LE16(sizeof(subcmd_drop_stack_t))*/;
+    //dc.hdr.flags = 0;
+
+    //dc.shdr.type = SUBCMD60_DROP_STACK;
+    //dc.shdr.size = 0x0A;
+    //dc.shdr.client_id = 0xFBFF;
+
+
+    //bb.hdr.pkt_len = 0x002C/*LE16(sizeof(subcmd_bb_drop_stack_t))*/;
+    //bb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
+    //bb.hdr.flags = 0;
+
+    //bb.shdr.type = SUBCMD60_DROP_STACK;
+    //bb.shdr.size = 0x09;
+    //bb.shdr.client_id = 0xFBFF;
+
+    //dc.area = LE16(src->cur_area);
+    //bb.area = LE32(src->cur_area);
+    //bb.x = dc.x = src->x;
+    //bb.z = dc.z = src->z;
+    //bb.data = dc.data = src->new_item;
+    //bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
+
+    //if (is_stackable(&src->new_item))
+    //    bb.data.datab[5] = dc.data.datab[5] = src->new_item.datab[5];
+
+
+    //bb.two = dc.two = LE32(0x00000002);
+
+    //print_item_data(&bb.data, src->version);
+
+    ///* Send the packet to everyone in the lobby */
+    //pthread_mutex_unlock(&l->mutex);
+
+    //switch (src->version) {
+    //case CLIENT_VERSION_DCV1:
+    //case CLIENT_VERSION_DCV2:
+    //case CLIENT_VERSION_PC:
+    //case CLIENT_VERSION_GC:
+    //case CLIENT_VERSION_EP3:
+    //case CLIENT_VERSION_XBOX:
+    //    return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
+
+    //case CLIENT_VERSION_BB:
+    //    return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
+
+    //default:
+    //    return 0;
+    //}
 }
 
 /* 用法 /item1 item1 */
@@ -769,13 +784,17 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         return send_txt(src, "%s", __(src, "\tE\tC7权限不足."));
     }
 
+    pthread_mutex_lock(&l->mutex);
+
     /* Make sure that the requester is in a team, not a lobby. */
     if (l->type != LOBBY_TYPE_GAME) {
+        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s", __(src, "\tE\tC7只在游戏房间中有效."));
     }
 
     /* Make sure there's something set with /item */
     if (!src->new_item.datal[0]) {
+        pthread_mutex_unlock(&l->mutex);
         return send_txt(src, "%s\n%s", __(src, "\tE\tC7请先输入物品的ID."), 
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
@@ -785,17 +804,22 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
 
         if (!litem) {
+            pthread_mutex_unlock(&l->mutex);
             return send_txt(src, "%s", __(src, "\tE\tC4新物品空间不足或不存在该物品."));
         }
 
         /* Generate the packet to drop the item */
-        return subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
+        subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
     }
     else {
         ++l->item_player_id[src->client_id];
 
         /* Generate the packet to drop the item */
-        return subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
+        subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
+        pthread_mutex_unlock(&l->mutex);
+        return 0;
     }
 }
 
@@ -1700,8 +1724,11 @@ static void dumpinv_internal(ship_client_t *src) {
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("等级: %u 经验: %u", character_v1->disp.level + 1, character_v1->disp.exp);
+        ITEM_LOG("钱包: %u", character_v1->disp.meseta);
         ITEM_LOG("数量: %u", character_v1->inv.item_count);
 
+        ITEM_LOG("------------------------------------------------------------");
         for(i = 0; i < character_v1->inv.item_count; ++i) {
             print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
         }
@@ -1715,8 +1742,10 @@ static void dumpinv_internal(ship_client_t *src) {
             get_player_name(src->pl, src->version, false), 
             src->guildcard, src->sec_data.slot);
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
+        ITEM_LOG("等级: %u 经验: %u", character_bb->disp.level + 1, character_bb->disp.exp);
+        ITEM_LOG("钱包: %u", character_bb->disp.meseta);
         ITEM_LOG("数量: %u", character_bb->inv.item_count);
-        ITEM_LOG("HPmats: %u TPmats: %u Lang: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
+        ITEM_LOG("HP药: %u TP药: %u 语言: %u", character_bb->inv.hpmats_used, character_bb->inv.tpmats_used, character_bb->inv.language);
 
         ITEM_LOG("------------------------------------------------------------");
         for (i = 0; i < character_bb->inv.item_count; ++i) {

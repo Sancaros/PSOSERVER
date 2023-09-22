@@ -668,7 +668,8 @@ void client_send_bb_data(ship_client_t* c) {
         uint32_t num_seconds = (uint32_t)now - (uint32_t)c->save_time;
 
         /* If the client was on Blue Burst, update their db character */
-        if (c->version == CLIENT_VERSION_BB) {
+        if (c->version == CLIENT_VERSION_BB &&
+            !(c->flags & CLIENT_FLAG_TYPE_SHIP)) {
             c->need_save_data = 0;
 
             /* 将游戏时间存储入人物数据 */
@@ -690,9 +691,6 @@ void client_send_bb_data(ship_client_t* c) {
 
             /* 将玩家选项数据存入数据库 */
             shipgate_send_bb_opts(&ship->sg, c);
-
-            send_simple(c, PING_TYPE, 0);
-
 #ifdef DEBUG
 
             DBG_LOG("%d 秒", num_seconds);
@@ -1612,6 +1610,15 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
         ERR_LOG("GC %u 寻找的客户端ID %d 不存在", target_client_id);
 
     return NULL;
+}
+
+lobby_t* get_client_lobby(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+    if (!l) {
+        ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
+        return NULL;
+    }
+    return l;
 }
 
 #ifdef ENABLE_LUA

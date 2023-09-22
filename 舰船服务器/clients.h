@@ -72,7 +72,7 @@ typedef struct blocklist_entry {
 } blocklist_t;
 
 typedef struct trade_inv {
-    uint16_t other_client_id;
+    uint8_t other_client_id;
     bool confirmed; // true if client has sent a D2 command
     uint32_t meseta;
     uint32_t trade_item_count;

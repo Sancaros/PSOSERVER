@@ -87,6 +87,11 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
         ssize_t rv, total = 0;
         void* tmp;
 
+        if (sendbuf == NULL || len == 0 || len > 65536) {
+            ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
+            return 0;
+        }
+
         /* Don't even try if there's not a connection. */
         if (!c->has_key || c->sock < 0) {
 #ifdef DEBUG
@@ -110,6 +115,11 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     continue;
                 }
                 else if (rv <= 0) {
+                    ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
+                    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
+
+                    print_ascii_hex(sendbuf, len - total);
+
                     if (sendbuf)
                         free_safe(sendbuf);
                     return -1;

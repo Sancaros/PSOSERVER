@@ -698,7 +698,6 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         character->inv.iitems[x] = character->inv.iitems[x + 1];
     }
     clear_iitem(&character->inv.iitems[character->inv.item_count]);
-    fix_client_inv(&character->inv);
     return ret;
 }
 
@@ -2353,7 +2352,7 @@ void fix_inv_bank_item(item_t* i) {
 
 //修复背包装备数据错误的物品代码
 void fix_equip_item(inventory_t* inv) {
-    uint32_t i, eq_weapon = 0, eq_armor = 0, eq_shield = 0, eq_mag = 0;
+    uint32_t i, eq_weapon = 0, eq_armor = 0, eq_unit = 0, eq_shield = 0, eq_mag = 0;
 
     /* 检查所有已装备的物品 */
     for (i = 0; i < inv->item_count; i++) {
@@ -2373,6 +2372,10 @@ void fix_equip_item(inventory_t* inv) {
 
                 case ITEM_SUBTYPE_BARRIER:
                     eq_shield++;
+                    break;
+
+                case ITEM_SUBTYPE_UNIT:
+                    eq_unit++;
                     break;
                 }
                 break;
@@ -2401,6 +2404,18 @@ void fix_equip_item(inventory_t* inv) {
             // 当装备了多个护甲时，取消装备所有护甲和槽道具。 
             if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
                 (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) &&
+                (inv->iitems[i].flags & LE32(0x00000008))) {
+
+                inv->iitems[i].data.datab[3] = 0x00;
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+            }
+        }
+    }
+
+    if (eq_unit > 4) {
+        for (i = 0; i < inv->item_count; i++) {
+            if ((inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD) &&
+                (inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) &&
                 (inv->iitems[i].flags & LE32(0x00000008))) {
 
                 inv->iitems[i].data.datab[3] = 0x00;

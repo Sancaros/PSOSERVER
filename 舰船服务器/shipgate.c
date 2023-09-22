@@ -162,82 +162,16 @@ static inline ssize_t sg_send(shipgate_conn_t *c, void *buffer, size_t len) {
     //return gnutls_record_send(c->session, buffer, len);
 }
 
-///* Send a raw packet away. */
-//static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
-//    __try {
-//        ssize_t rv, total = 0;
-//        void* tmp;
-//
-//        /* Keep trying until the whole thing's sent. */
-//        if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
-//            /* Keep trying until the whole thing's sent. */
-//            if (!c->sendbuf_cur) {
-//                while (total < len) {
-//                    rv = sg_send(c, sendbuf + total, len - total);
-//
-//                    //TEST_LOG("向端口 %d 发送数据 %d 字节", c->sock, rv);
-//
-//                    /* Did the data send? */
-//                    if (rv < 0) {
-//                        /* Is it an error code that might be correctable? */
-//                        if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-//                            continue;
-//                        else
-//                            return -1;
-//                    }
-//
-//                    total += rv;
-//                }
-//            }
-//
-//            rv = len - total;
-//
-//            if (rv) {
-//                /* Move out any already transferred data. */
-//                if (c->sendbuf_start) {
-//                    memmove(c->sendbuf, c->sendbuf + c->sendbuf_start,
-//                        c->sendbuf_cur - c->sendbuf_start);
-//                    c->sendbuf_cur -= c->sendbuf_start;
-//                }
-//
-//                /* See if we need to reallocate the buffer. */
-//                if (c->sendbuf_cur + rv > c->sendbuf_size) {
-//                    tmp = realloc(c->sendbuf, c->sendbuf_cur + rv);
-//
-//                    /* If we can't allocate the space, bail. */
-//                    if (tmp == NULL)
-//                        return -1;
-//
-//                    c->sendbuf_size = c->sendbuf_cur + rv;
-//                    c->sendbuf = (unsigned char*)tmp;
-//                }
-//
-//                /* Copy what's left of the packet into the output buffer. */
-//                memcpy(c->sendbuf + c->sendbuf_cur, sendbuf + total, rv);
-//                c->sendbuf_cur += rv;
-//            }
-//
-//            //if (sendbuf)
-//            //    free_safe(sendbuf);
-//        }
-//
-//        return 0;
-//    }
-//
-//    __except (crash_handler(GetExceptionInformation())) {
-//        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-//
-//        CRASH_LOG("出现错误, 程序将退出.");
-//        (void)getchar();
-//        return -4;
-//    }
-//}
-
 /* Send a raw packet away. */
 static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
     __try {
         ssize_t rv, total = 0;
         void* tmp;
+
+        if (sendbuf == NULL || len == 0 || len > 65536) {
+            ERR_LOG("空指针数据包或无效长度 %d 数据包.", len);
+            return 0;
+        }
 
         /* Keep trying until the whole thing's sent. */
         if ((!crypt || c->has_key) && c->sock >= 0 && !c->sendbuf_cur) {
@@ -252,6 +186,11 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                     continue;
                 }
                 else if (rv <= 0) {
+                    ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
+                    ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
+
+                    print_ascii_hex(sendbuf, len - total);
+
                     if (sendbuf)
                         free_safe(sendbuf);
                     return -1;
@@ -3652,6 +3591,11 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             else if (sz < 0) {
                 ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
                 ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
+                print_ascii_hex(recvbuf, 65536 - c->recvbuf_cur);
+                if (!recvbuf) {
+                    free_safe(recvbuf);
+                    return 0;
+                }
             }
 
             free_safe(recvbuf);
@@ -3663,42 +3607,46 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         rbp = recvbuf;
 
         /* As long as what we have is long enough, decrypt it. */
-        while (sz >= recv_size && rv == 0) {
-            /* Copy out the packet header so we know what exactly we're looking
-               for, in terms of packet length. */
-            if (!c->hdr_read) {
-                memcpy(&c->pkt, rbp, recv_size);
-                c->hdr_read = 1;
-            }
-
-            /* Read the packet size to see how much we're expecting. */
-            pkt_sz = ntohs(c->pkt.pkt_len);
-
-            /* We'll always need a multiple of 8 bytes. */
-            if (pkt_sz & 0x07) {
-                pkt_sz = (pkt_sz & 0xFFF8) + 8;
-            }
-
-            /* Do we have the whole packet? */
-            if (sz >= (ssize_t)pkt_sz) {
-                /* Yes, we do, copy it out. */
-                memcpy(rbp, &c->pkt, recv_size);
-
-                /* Pass it on. */
-                rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
-                if (rv) {
-                    ERR_LOG("handle_pkt rv = %d", rv);
-                    break;
+        if (sz >= recv_size) {
+            while (sz >= recv_size && rv == 0) {
+                /* Copy out the packet header so we know what exactly we're looking
+                   for, in terms of packet length. */
+                if (!c->hdr_read) {
+                    memcpy(&c->pkt, rbp, recv_size);
+                    c->hdr_read = 1;
                 }
 
-                rbp += pkt_sz;
-                sz -= pkt_sz;
-                c->hdr_read = 0;
-            }
-            else {
-                /* Nope, we're missing part, break out of the loop, and buffer
-                   the remaining data. */
-                break;
+                /* Read the packet size to see how much we're expecting. */
+                pkt_sz = ntohs(c->pkt.pkt_len);
+
+                /* We'll always need a multiple of 8 bytes. */
+                if (pkt_sz & 0x07) {
+                    pkt_sz = (pkt_sz & 0xFFF8) + 8;
+                }
+
+                /* Do we have the whole packet? */
+                if (sz >= (ssize_t)pkt_sz) {
+                    /* Yes, we do, copy it out. */
+                    memcpy(rbp, &c->pkt, recv_size);
+
+                    /* Pass it onto the correct handler. */
+                    c->last_message = time(NULL);
+                    /* Pass it on. */
+                    rv = handle_pkt(c, (shipgate_hdr_t*)rbp);
+                    if (rv) {
+                        ERR_LOG("handle_pkt rv = %d", rv);
+                        break;
+                    }
+
+                    rbp += pkt_sz;
+                    sz -= pkt_sz;
+                    c->hdr_read = 0;
+                }
+                else {
+                    /* Nope, we're missing part, break out of the loop, and buffer
+                       the remaining data. */
+                    break;
+                }
             }
         }
 

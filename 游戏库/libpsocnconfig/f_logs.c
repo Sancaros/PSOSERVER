@@ -137,7 +137,7 @@ void print_ascii_hex(const void* data, size_t length) {
 		DBG_LOG("²»×ãÒÔÈÝÄÉ»»ÐÐ·û\n");
 	}
 
-	DBG_LOG("%s\n\r", dp);
+	DBG_LOG("%s", dp);
 }
 
 /* This function based on information from a couple of different sources, namely

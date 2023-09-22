@@ -12400,20 +12400,20 @@ int send_ban_msg(ship_client_t *c, time_t until, const char *reason) {
     return send_msg(c, MSG_BOX_TYPE, "%s", string);
 }
 
-int send_bb_execute_item_trade(ship_client_t* c, iitem_t* iitems, uint16_t item_count) {
+int send_bb_execute_item_trade(ship_client_t* c, trade_inv_t* tinv) {
     uint8_t* sendbuf = get_sendbuf();
     bb_trade_D0_D3_pkt* pkt = (bb_trade_D0_D3_pkt*)sendbuf;
 
-    if (item_count > sizeof(pkt->items) / sizeof(pkt->items[0])) {
+    if (tinv->trade_item_count > ARRAYSIZE(pkt->items)) {
         ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
             c->guildcard);
         return -1;
     }
 
     pkt->target_client_id = c->client_id;
-    pkt->item_count = item_count;
-    for (size_t x = 0; x < item_count; x++) {
-        pkt->items[x] = iitems[x].data;
+    pkt->item_count = tinv->trade_item_count;
+    for (size_t x = 0; x < tinv->trade_item_count; x++) {
+        pkt->items[x] = tinv->iitems[x].data;
         if (c->version == CLIENT_VERSION_GC) {
             bswap_data2_if_mag(&pkt->items[x]);
         }

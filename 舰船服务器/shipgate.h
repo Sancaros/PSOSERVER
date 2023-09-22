@@ -60,6 +60,8 @@ struct shipgate_conn {
     int has_key;
 
     time_t login_attempt;
+    time_t last_message;
+    time_t last_ping;
     ship_t *ship;
 
     gnutls_session_t session;

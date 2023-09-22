@@ -5906,7 +5906,6 @@ int handle_pkt(ship_t* c) {
         65536 - c->recvbuf_cur);
 
     if (sz <= 0) {
-
         if (sz == SOCKET_ERROR) {
             DBG_LOG("Gnutls *** зЂвт: SOCKET_ERROR");
         }
@@ -5970,7 +5969,7 @@ int handle_pkt(ship_t* c) {
     }
 
     /* If we've still got something left here, buffer it for the next pass. */
-    if (sz) {
+    if (sz && rv == 0) {
         /* Reallocate the recvbuf for the client if its too small. */
         if (c->recvbuf_size < sz) {
             tmp = realloc(c->recvbuf, sz);
