@@ -3079,10 +3079,12 @@ bool get_item_pmt_bb(const uint32_t datal1, const uint32_t datal2,
 pmt_item_base_t get_item_base_bb(const item_t* item) {
     pmt_item_base_t item_base = { 0 };
     pmt_item_base_check_t item_base_check = get_item_definition_bb(item->datal[0], item->datal[1]);
+#ifdef DEBUG
     if (item_base_check.err) {
         DBG_LOG("物品基础信息错误 错误码 %d", item_base_check.err);
         print_item_data(item, 5);
     }
+#endif // DEBUG
     item_base = item_base_check.base;
     return item_base;
 }
