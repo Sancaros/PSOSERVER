@@ -593,7 +593,7 @@ void bswap_data2_if_mag(item_t* item) {
 }
 
 int add_character_meseta(psocn_bb_char_t* character, uint32_t amount) {
-    uint32_t max_meseta = 999999;
+    uint32_t max_meseta = MAX_PLAYER_MESETA;
 #ifdef DEBUG
 
     if (character->disp.meseta + amount > max_meseta) {
@@ -2202,6 +2202,19 @@ int item_class_tag_equip_flag(ship_client_t* c) {
     }
 
     return 0;
+}
+
+void remove_titem_equip_flags(iitem_t* trade_item) {
+    if (trade_item->flags & LE32(0x00000008)) {
+        switch (trade_item->data.datab[0])
+        {
+        case ITEM_TYPE_WEAPON:
+        case ITEM_TYPE_GUARD:
+        case ITEM_TYPE_MAG:
+            trade_item->flags &= LE32(0xFFFFFFF7);
+            break;
+        }
+    }
 }
 
 //修复背包银行数据错误的物品代码

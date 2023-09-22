@@ -51,6 +51,7 @@
 #include "handle_player_items.h"
 #include "records.h"
 #include "subcmd_send.h"
+#include "pmtdata.h"
 
 extern int enable_ipv6;
 extern char ship_host4[32];
@@ -1718,98 +1719,99 @@ static int bb_process_trade(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     uint32_t target_client_id = pkt->target_client_id;
     uint16_t trade_item_count = pkt->item_count;
     uint32_t item_amount = 0;
-    ship_client_t* c2 = { 0 };
-    int i = 0;
-    bool add_done = false;
+    int add_done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
         ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
-        return 0;
+        return -1;
     }
-
-    ERR_LOG("///////////////bb_process_trade start GC %" PRIu32 "", src->guildcard);
-
-    //print_ascii_hex(pkt, LE16(pkt->hdr.pkt_len));
-
-    //ERR_LOG("///////////////bb_process_trade start");
 
     if (trade_item_count > 0x20) {
         ERR_LOG("GC %" PRIu32 " 尝试交易的物品超出限制!",
             src->guildcard);
-        return 0;
+        return -2;
     }
 
-    inventory_t* c1_inv = get_client_inv_bb(src);
+    //ERR_LOG("///////////////bb_process_trade start GC %" PRIu32 "", src->guildcard);
 
     /* 搜索目标客户端. */
-    c2 = ge_target_client_by_id(l, target_client_id);
+    ship_client_t* dest = ge_target_client_by_id(l, target_client_id);
 
-    if (c2 == NULL) {
+    if (dest == NULL || !dest) {
         ERR_LOG("GC %" PRIu32 " 尝试与不存在的玩家交易!",
             src->guildcard);
         return send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
             __(src, "\tE未找到需要交易的玩家."));
     }
 
-    DBG_LOG("GC %" PRIu32 " 尝试交易 %d 件物品 给 %" PRIu32 "!",
-        src->guildcard, trade_item_count, c2->guildcard);
-
     trade_inv_t* src_trade = &src->game_data->pending_item_trade;
-
     src_trade->other_client_id = target_client_id;
     if (trade_item_count > 0) {
         src_trade->item_count = trade_item_count;
         for (size_t x = 0; x < src_trade->item_count; x++) {
             src_trade->iitems[x].data = pkt->items[x];
-            item_t* src_trade_item = &src_trade->iitems[x].data;
+            item_t* ti = &src_trade->iitems[x].data;
 
             if (src->version == CLIENT_VERSION_GC)
-                bswap_data2_if_mag(src_trade_item);
+                bswap_data2_if_mag(ti);
 
-            if (is_stackable(src_trade_item))
-                item_amount = src_trade_item->datab[5];
-            else
-                item_amount = 1;
+            if (ti->datab[0] == 0x04) {
+                ti->item_id = 0xFFFFFFFF;
+                src_trade->meseta = ti->data2l;
+            }
+
+            item_amount = get_item_amount(ti, src_trade->meseta);
+#ifdef DEBUG
+
+            DBG_LOG("索引 %d 数量 %d", x, item_amount);
+            print_item_data(ti, src->version);
+
+#endif // DEBUG
+
+            uint32_t item_id = ti->item_id;
 
             /* 客户端已经自动移除该物品 所以这里只需要进行内存操作即可 */
-            iitem_t iitem = remove_iitem(src, src_trade_item->item_id, item_amount, src->version != CLIENT_VERSION_BB);
-            if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
+            iitem_t iitem = remove_iitem(src, item_id, item_amount, src->version != CLIENT_VERSION_BB);
+            if (item_not_identification_bb(iitem.data.datal[0], iitem.data.datal[1])) {
                 ERR_LOG("GC %" PRIu32 " 交易物品失败!",
                     src->guildcard);
                 return -2;
             }
 
-            iitem.present = LE16(0x0001);
-            iitem.data.item_id = generate_item_id(l, c2->client_id);
+            if (iitem.data.datab[0] != 0x04) {
+                iitem.data.item_id = generate_item_id(l, dest->client_id);
+                remove_titem_equip_flags(&iitem);
+            }
 
-            if (!(add_done = add_iitem(c2, &iitem))) {
+            if (!(add_done = add_iitem(dest, &iitem))) {
                 ERR_LOG("GC %" PRIu32 " 获取交易物品失败! 错误码 %d",
-                    c2->guildcard, add_done);
+                    dest->guildcard, add_done);
                 return -3;
             }
 
             /* 新增内存后 需要给接收的客户端一个物品获取 就像拾取一样 */
-            subcmd_send_bb_create_inv_item(c2, iitem.data, item_amount);
+            subcmd_send_bb_create_inv_item(dest, iitem.data, item_amount);
         }
     }
 
-    DBG_LOG("GC %" PRIu32 " 完成交易 %d 件物品 给 %" PRIu32 "!",
-        src->guildcard, trade_item_count, c2->guildcard);
+    //ERR_LOG("///////////////bb_process_trade end GC %" PRIu32 "", src->guildcard);
 
-    ERR_LOG("///////////////bb_process_trade_excute end GC %" PRIu32 "", src->guildcard);
-
-    if (add_done || c2->game_data->pending_item_trade.confirmed)
+    if (dest->game_data->pending_item_trade.confirmed) {
         send_simple(src, TRADE_1_TYPE, 0x00);
+    }
 
-    return send_simple(c2, TRADE_1_TYPE, 0x00);
+    return send_simple(dest, TRADE_1_TYPE, 0x00);
 }
 
 static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
     lobby_t* l = src->cur_lobby;
+    uint32_t item_amount = 0;
+    size_t x = 0;
+    bool add_done = 0;
 
     if (!l || l->type != LOBBY_TYPE_GAME) {
         ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
-        return 0;
+        return -1;
     }
 
     uint32_t target_client_id = src->game_data->pending_item_trade.other_client_id;
@@ -1823,25 +1825,30 @@ static int bb_process_trade_excute(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) 
             __(src, "\tE未找到需要交易的玩家."));
     }
 
-    ERR_LOG("///////////////bb_process_trade_excute start GC %" PRIu32 "", src->guildcard);
+    //ERR_LOG("///////////////bb_process_trade_excute start GC %" PRIu32 "", src->guildcard);
 
     //print_ascii_hex(pkt, LE16(pkt->hdr.pkt_len));
 
 
-    trade_inv_t* dest_trade_item = get_client_trade_inv_bb(dest);
+    trade_inv_t* dest_trade_inv = get_client_trade_inv_bb(dest);
+    trade_inv_t* src_trade_inv = get_client_trade_inv_bb(src);
 
-    if (!dest_trade_item->confirmed) {
+    if (!dest_trade_inv->confirmed) {
         ERR_LOG("GC %" PRIu32 " 对方未确认交易!",
             src->guildcard);
         return send_msg(src, BB_SCROLL_MSG_TYPE, "%s",
             __(src, "\tE\tC4对方未确认交易."));
     }
 
-    send_bb_execute_item_trade(src, dest_trade_item->iitems, dest_trade_item->item_count);
+    src_trade_inv->confirmed = true;
+    if (dest_trade_inv->confirmed) {
+        send_simple(src, TRADE_4_TYPE, 0x01);
+        send_simple(dest, TRADE_4_TYPE, 0x01);
+    }
 
-    ERR_LOG("///////////////bb_process_trade_excute end GC %" PRIu32 "", src->guildcard);
+    //ERR_LOG("///////////////bb_process_trade_excute end GC %" PRIu32 "", src->guildcard);
 
-    return send_simple(dest, TRADE_4_TYPE, 0x01);
+    return 0;
 }
 
 static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
@@ -1854,7 +1861,7 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         return 0;
     }
 
-    ERR_LOG("///////////////bb_process_trade_error start GC %" PRIu32 "", src->guildcard);
+    //ERR_LOG("///////////////bb_process_trade_error start GC %" PRIu32 "", src->guildcard);
 
     //print_ascii_hex(pkt, LE16(pkt->hdr.pkt_len));
 
@@ -1862,7 +1869,7 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
 
     uint16_t other_client_id = src->game_data->pending_item_trade.other_client_id;
     trade_inv_t* trade_inv_src = player_tinv_init(src);
-    send_simple(src, TRADE_4_TYPE, 0);
+    send_simple(src, TRADE_4_TYPE, 0x00);
 
     /* 搜索目标客户端. */
     dest = ge_target_client_by_id(l, other_client_id);
@@ -1878,9 +1885,9 @@ static int bb_process_trade_error(ship_client_t* src, bb_trade_D0_D3_pkt* pkt) {
         return -2;
     }
 
-    DBG_LOG("交易完成 GC %" PRIu32 "", src->guildcard);
+    DBG_LOG("交易错误 GC %" PRIu32 " 至 GC %" PRIu32 "", src->guildcard, dest->guildcard);
     trade_inv_t* trade_inv_dest = player_tinv_init(dest);
-    return send_simple(dest, TRADE_4_TYPE, 0);
+    return send_simple(dest, TRADE_4_TYPE, 0x00);
 }
 
 static int bb_process_infoboard(ship_client_t* c, bb_write_info_pkt* pkt) {

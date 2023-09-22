@@ -160,7 +160,7 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 
 	switch (data0) {
 	case ITEM_TYPE_MESETA:
-		return 999999;
+		return MAX_PLAYER_MESETA;
 
 	case ITEM_TYPE_TOOL:
 		switch (data1) {
@@ -197,9 +197,13 @@ size_t max_stack_size_for_item(uint8_t data0, uint8_t data1) {
 }
 
 /* 仅用于房间物品数量 */
-uint8_t get_item_amount(item_t* item, uint32_t amount) {
+uint32_t get_item_amount(item_t* item, uint32_t amount) {
 	if (is_stackable(item)) {
-		if (item->datab[5] <= 0) {
+		if (item->datab[0] == ITEM_TYPE_MESETA) {
+			item->data2l = amount > MAX_PLAYER_MESETA ? MAX_PLAYER_MESETA : amount;
+			return item->data2l;
+		}
+		else if (item->datab[5] <= 0) {
 			item->datab[5] = 1;
 		}
 		else if (amount > (uint8_t)max_stack_size(item)) {
@@ -209,11 +213,8 @@ uint8_t get_item_amount(item_t* item, uint32_t amount) {
 			item->datab[5] = (uint8_t)amount;
 		}
 	}
-	else if (item->datab[0] == 0x03) {
+	else if (item->datab[0] == 0x03 && item->datab[1] == 0x02) {
 		item->datab[5] = 0x00;
-	}
-	else if(item->datab[0] == ITEM_TYPE_MESETA){
-		item->data2l = amount > 999999 ? 999999 : amount;
 	}
 
 	return item->datab[5];

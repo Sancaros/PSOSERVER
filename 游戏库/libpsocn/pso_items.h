@@ -127,7 +127,7 @@ size_t stack_size(const item_t* item);
 size_t max_stack_size(const item_t* item);
 size_t max_stack_size_for_item(uint8_t data0, uint8_t data1);
 /* 仅用于房间物品数量 */
-uint8_t get_item_amount(item_t* item, uint32_t amount);
+uint32_t get_item_amount(item_t* item, uint32_t amount);
 
 void clear_tool_item_if_invalid(item_t* item);
 bool is_common_consumable(uint32_t primary_identifier);

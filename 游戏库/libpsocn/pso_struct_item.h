@@ -36,6 +36,7 @@
 #define MAX_PLAYER_INV_ITEMS            30
 #define MAX_PLAYER_TECHNIQUES           19
 #define MAX_TRADE_ITEMS                 200
+#define MAX_PLAYER_MESETA               999999
 
 /* 20 ×Ö½Ú */
 typedef struct item_data {

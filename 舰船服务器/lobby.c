@@ -1814,6 +1814,9 @@ int lobby_handle_done_burst(lobby_t* l, ship_client_t* c) {
         /* As long as we haven't run into issues yet, continue sending the
            queued packets */
         if (rv == 0) {
+            if (!i->pkt)
+                return 0;
+
             switch (i->pkt->pkt_type) {
             case GAME_SUBCMD60_TYPE:
                 if (subcmd_handle_60(i->src, (subcmd_pkt_t*)i->pkt)) {

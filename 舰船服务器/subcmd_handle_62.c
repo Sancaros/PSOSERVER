@@ -1423,6 +1423,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t trade_type = pkt->trade_type, trade_stage = pkt->trade_stage;
     int rv = -1;
     size_t item_id = 0;
+    iitem_t trade_ii = { 0 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -1440,13 +1441,13 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     //send_msg(dest, BB_SCROLL_MSG_TYPE, "%s", __(dest, "\tE\tC6交易功能存在故障，暂时关闭"));
     //send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC6交易功能存在故障，暂时关闭"));
 
-    inventory_t* inv = get_client_inv_bb(src);
+    psocn_bb_char_t* player = get_client_char_bb(src);
     trade_inv_t* trade_inv_src = get_client_trade_inv_bb(src);
     trade_inv_t* trade_inv_dest = get_client_trade_inv_bb(dest);
 
-    DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
+    //DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
 
     switch (trade_type) {
     case 0x00:
@@ -1492,25 +1493,38 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
             //要判定加入得物品是否是堆叠得 如果是堆叠得物品 则相同交易物品的数量+1
             //0xFFFFFF01 是美赛塔？？？？ 不应该是FFFFFFFF吗
-            item_id = find_iitem_index(inv, pkt->item_id);
-            /* 如果找不到该物品，则将用户从船上推下. */
-            if (item_id < 0) {
-                ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
-                return item_id;
+            if (pkt->item_id == 0xFFFFFF01) {
+                if (player->disp.meseta < pkt->amount) {
+                    player->disp.meseta = 0;
+                }
+
+                trade_inv_src->item_count++;
+                trade_inv_src->meseta = min(pkt->amount, 999999);
+                trade_ii.data.datab[0] = 0x04;
+                trade_ii.data.item_id = 0xFFFFFFFF;
+                trade_ii.data.data2l = trade_inv_src->meseta;
+            }
+            else {
+
+                item_id = find_iitem_index(&player->inv, pkt->item_id);
+                /* 如果找不到该物品，则将用户从船上推下. */
+                if (item_id < 0) {
+                    ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+                    return item_id;
+                }
+
+                trade_ii = player->inv.iitems[item_id];
+
+                if (pkt->amount && is_stackable(&trade_ii.data) &&
+                    (pkt->amount < trade_ii.data.datab[5])) {
+                    trade_ii.data.datab[5] = pkt->amount;
+                }
             }
 
-            iitem_t trade_ii = inv->iitems[item_id];
-
-            if (pkt->amount && is_stackable(&trade_ii.data) &&
-                (pkt->amount < trade_ii.data.datab[5])) {
-                trade_ii.data.datab[5] = pkt->amount;
-            }
-            
             if (!add_titem(trade_inv_src, &trade_ii)) {
                 ERR_LOG("GC %" PRIu32 " 无法添加交易物品!", src->guildcard);
                 return -3;
             }
-
             break;
         }
         break;
@@ -1522,14 +1536,31 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     //( 00000010 )   00 00 01 00 01 00 00 00                           ........
         //减掉对应的交易物品 从客户端的“交易物品栏”中删除对应的物品ID
 
-        item_id = check_titem_id(trade_inv_src, pkt->item_id);
-        if (item_id != pkt->item_id) {
-            ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
-            return item_id;
+        if (pkt->item_id == 0xFFFFFF01) {
+            if (pkt->amount <= trade_inv_src->meseta) {
+                trade_inv_src->meseta -= pkt->amount;
+            }
+            else {
+                trade_inv_src->meseta = 0;
+                trade_inv_src->item_count--;
+            }
+
+            trade_ii.data.datab[0] = 0x04;
+            trade_ii.data.item_id = 0xFFFFFFFF;
+        }
+        else {
+
+            item_id = check_titem_id(trade_inv_src, pkt->item_id);
+            if (item_id != pkt->item_id) {
+                ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+                return item_id;
+            }
+
+            trade_ii.data.item_id = item_id;
         }
 
-        iitem_t tmp = remove_titem(trade_inv_src, item_id, pkt->amount);
-        if(item_not_identification_bb(tmp.data.datal[0], tmp.data.datal[1])) {
+        iitem_t tmp = remove_titem(trade_inv_src, trade_ii.data.item_id, pkt->amount);
+        if (item_not_identification_bb(tmp.data.datal[0], tmp.data.datal[1])) {
             ERR_LOG("GC %" PRIu32 " 移除非法交易物品!", src->guildcard);
             print_item_data(&tmp.data, src->version);
             return -4;
