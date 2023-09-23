@@ -27,6 +27,32 @@
 
 #include <SFMT.h>
 
+#ifdef PACKED
+#undef PACKED
+#endif
+
+#ifndef _WIN32
+#define PACKED __attribute__((packed))
+#else
+#define PACKED __declspec(align(1))
+#pragma pack(push, 1) 
+#endif
+
+typedef struct table_spec {
+    uint32_t offset;
+    uint8_t entries_per_table;
+    uint8_t unused[3];
+} PACKED table_spec_t;
+
+#ifndef _WIN32
+#else
+#pragma pack()
+#endif
+
+#undef PACKED
+
+static table_spec_t armorrandomset[3];
+
 int load_ArmorRandomSet_data(const char* fn);
 
 

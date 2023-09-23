@@ -1185,9 +1185,10 @@ int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_itemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    subcmd_bb_itemreq_t* cmd = (subcmd_bb_itemreq_t*)pkt;
+    game_enemy_t* en;
+    iitem_t iitem = { 0 };
     int rv = 0;
 
     if (l->type != LOBBY_TYPE_GAME) {
@@ -1195,11 +1196,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             src->guildcard);
         return 0;
     }
-
-    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-
-    iitem_t iitem = { 0 };
-
+    /* 独立掉落模式 */
     if (l->drop_pso2) {
         int i;
 
@@ -1215,11 +1212,12 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ship_client_t* p2 = l->clients[i];
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
             uint8_t p2_section = p2_char->dress_data.section;
+            /* 复用模式 独立 随机颜色ID */
             if (l->drop_psocn) {
                 p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
 
             if (is_item_empty(&iitem.data))
                 continue;
@@ -1231,11 +1229,11 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
             pthread_mutex_lock(&p2->mutex);
-            litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt)
                 continue;
 
-            rv = subcmd_send_bb_drop_item(p2, cmd, &lt->iitem);
+            rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
         }
     }
@@ -1243,17 +1241,17 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         psocn_bb_char_t* character = get_client_char_bb(src);
         uint8_t section = character->dress_data.section;
 
-        //if (!l->map_enemies) {
-        //    ERR_LOG("游戏并未载入地图敌人数据");
-        //}
-        //game_enemy_t* enemy = &l->map_enemies->enemies[cmd->unk1];
-        //uint32_t expected_rt_index = rare_table_index_for_enemy_type(enemy->rt_index);
-        //if (cmd->rt_index != expected_rt_index) {
-        //    ERR_LOG("rt_index %02hhX from command does not match entity\'s expected index %02X %02X %04X",
-        //        cmd->rt_index, expected_rt_index, enemy->rt_index, cmd->entity_id);
-        //}
-        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, cmd->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+        uint16_t enemy_id2 = LE16(pkt->entity_id);
+        if (!l->map_enemies) {
+            ERR_LOG("游戏并未载入地图敌人数据");
+        }
 
+        en = &l->map_enemies->enemies[enemy_id2];
+        if (pkt->pt_index != en->rt_index) {
+            ERR_LOG("rt_index %02hhX from command does not match entity\'s expected index %02X %04X",
+                pkt->pt_index, en->rt_index, pkt->entity_id);
+        }
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data))
             return 0;
 
@@ -1264,11 +1262,11 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
         pthread_mutex_lock(&src->mutex);
-        litem_t* lt = add_new_litem_locked(l, &iitem.data, cmd->area, cmd->x, cmd->z);
+        litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt)
             return 0;
 
-        rv = subcmd_send_bb_lobby_drop_item(src, NULL, cmd, &lt->iitem);
+        rv = subcmd_send_bb_lobby_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
     }
 
@@ -1325,9 +1323,8 @@ int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
-    subcmd_bb_pkt_t* pkt) {
+    subcmd_bb_bitemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    subcmd_bb_bitemreq_t* req = (subcmd_bb_bitemreq_t*)pkt;
     int rv = 0;
 
     if (l->type != LOBBY_TYPE_GAME) {
@@ -1357,12 +1354,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            if (req->ignore_def) {
-                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, /*req->area*/get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+            if (pkt->ignore_def) {
+                iitem.data = on_box_item_drop(l, &p2->sfmt_rng, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
             }
             else
                 iitem.data = on_specialized_box_item_drop(
-                    req->def[0], req->def[1], req->def[2]);
+                    pkt->def[0], pkt->def[1], pkt->def[2]);
 
             if (is_item_empty(&iitem.data))
                 continue;
@@ -1374,11 +1371,11 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
             pthread_mutex_lock(&p2->mutex);
-            litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
+            litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt)
                 continue;
 
-            rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)req, &lt->iitem);
+            rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
         }
 
@@ -1387,12 +1384,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         psocn_bb_char_t* character = get_client_char_bb(src);
         uint8_t section = character->dress_data.section;
 
-        if (req->ignore_def) {
-            iitem.data = on_box_item_drop(l, &src->sfmt_rng, /*req->area*/get_pt_data_area_bb(l->episode, src->cur_area), section);
+        if (pkt->ignore_def) {
+            iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, src->cur_area), section);
         }
         else
             iitem.data = on_specialized_box_item_drop(
-                req->def[0], req->def[1], req->def[2]);
+                pkt->def[0], pkt->def[1], pkt->def[2]);
 
         if (is_item_empty(&iitem.data))
             return 0;
@@ -1404,17 +1401,17 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
         pthread_mutex_lock(&src->mutex);
-        litem_t* lt = add_new_litem_locked(l, &iitem.data, req->area, req->x, req->z);
+        litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt)
             return 0;
 
-        rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)req, &lt->iitem);
+        rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
     }
 
     return rv;
 
-    //return l->dropfunc(src, l, req);
+    //return l->dropfunc(src, l, pkt);
 }
 
 int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,

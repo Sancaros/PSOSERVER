@@ -3204,6 +3204,18 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case LOBBY_INFO_TYPE:
             return send_info_list(c, ship);
 
+            /* 0x0022 34*/
+        case GAMECARD_CHECK_REQ:
+            /* 0x0122 290*/
+//[2023年09月24日 01:00:08:623] 舰船服务器 错误(f_logs.c 0084): 数据包如下:
+//
+//(00000000) 18 00 22 01 01 00 00 00  90 33 6B 00 FB 33 6B 00    .."......3k..3k.
+//(00000010) 98 19 0F 65 00 00 00 00     ...e....
+        case GAMECARD_CHECK_DONE:
+            DBG_LOG("BB未知数据! 指令 0x%04X", type);
+            print_ascii_hex(dbgl, pkt, len);
+            return 0;
+
             /* 0x0040 64*/
         case GUILD_SEARCH_TYPE:
             if (time_check(c->cmd_cooldown[type], 1))
@@ -3402,7 +3414,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
                 len)) {
                 DBG_LOG("BB未知数据! 指令 0x%04X", type);
-                print_ascii_hex(errl, pkt, len);
+                print_ascii_hex(dbgl, pkt, len);
                 return -3;
             }
             return 0;

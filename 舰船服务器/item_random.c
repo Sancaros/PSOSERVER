@@ -23,6 +23,7 @@
 #include <stdbool.h>
 
 #include <pthread.h>
+#include <GSL.h>
 
 #include <f_logs.h>
 #include <pso_StringReader.h>

@@ -990,16 +990,19 @@ typedef struct bb_write_quest_file_confirmation {
 // Format unknown
 
 // 22: GameGuard check (BB)
-
 // Command 0022 is a 16-byte challenge (sent in the data field) using the
 // following structure.
-
-struct SC_GameCardCheck_BB_0022 {
+typedef struct bb_gamecard_check_request {
+    bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
     uint32_t data[4];
-} PACKED;
+} PACKED bb_gamecard_check_request_pkt;
 
+// 22: GameGuard check (BB)
 // Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
 // This version of the command has no other arguments.
+typedef struct bb_gamecard_check_request {
+    bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
+} PACKED bb_gamecard_check_request_pkt;
 
 // 23 (S->C): Momoka Item Exchange result (BB)
 // Sent in response to a 6xD9 command from the client.

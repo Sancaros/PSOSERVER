@@ -85,10 +85,11 @@
 #define PING_TYPE                       0x001D //Ping pong 心跳数据包
 #define LOBBY_INFO_TYPE                 0x001F
 
+#define GAMECARD_CHECK_REQ              0x0022
+#define GAMECARD_CHECK_DONE             0x0122
 #define ITEM_EXCHANGE_STATE             0x0023 // PSOBB 1.0 服务端 副指令发送 S->C 8字节
 #define ITEM_EXCHANGE_GOOD_LUCK         0x0024 /* 0x2C字节数据包 服务器 -> 客户端 */
 #define ITEM_EXCHANGE_GALLON_RESULT     0x0025 /* 16字节数据包 服务器 -> 客户端 */
-
 
 #define GUILD_SEARCH_TYPE               0x0040
 #define GUILD_REPLY_TYPE                0x0041

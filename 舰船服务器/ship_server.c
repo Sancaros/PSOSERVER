@@ -783,6 +783,10 @@ static void initialization() {
 int read_param_file(psocn_ship_t* cfg) {
     int rv;
 
+    load_ArmorRandomSet_data("System\\ItemRandom\\ArmorRandom_GC.rel");
+
+    getchar();
+
     CONFIG_LOG("读取 Ver2 参数文件/////////////////////////");
 
     /* Try to read the Ver2 ItemPT data... */
