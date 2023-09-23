@@ -71,7 +71,7 @@ static int handle_bb_cmd_check_game_size(ship_client_t* c, subcmd_bb_pkt_t* pkt)
         return -1;
     }
 
-    print_ascii_hex((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+    print_ascii_hex(errl, (uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
 
     return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)pkt, 0);
 }

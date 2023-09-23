@@ -189,7 +189,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
 
-                    print_ascii_hex(sendbuf, len - total);
+                    print_ascii_hex(errl, sendbuf, len - total);
 
                     if (sendbuf)
                         free_safe(sendbuf);
@@ -248,8 +248,7 @@ static int send_raw(shipgate_conn_t* c, int len, uint8_t* sendbuf, int crypt) {
 static int send_crypt(shipgate_conn_t *c, int len, uint8_t *sendbuf) {
     /* Make sure its at least a header. */
     if(len < 8) {
-        ERR_LOG(
-            "send_crypt端口 %d 长度 = %d字节", c->sock, len);
+        ERR_LOG("send_crypt端口 %d 长度 = %d字节", c->sock, len);
         return -1;
     }
 
@@ -893,7 +892,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -906,7 +905,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
 #ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
 #endif // DEBUG
                         }
                         break;
@@ -915,7 +914,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -935,7 +934,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -968,7 +967,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -976,7 +975,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -984,7 +983,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1003,7 +1002,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
 #ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
 #endif // DEBUG
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1043,7 +1042,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == promote_pkt->target_guildcard) {
 #ifdef DEBUG
                             DBG_LOG("BB_GUILD_MEMBER_PROMOTE %d %d", dest->guildcard, dest->guild_master_exfer);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
 #endif // DEBUG
                             send_bb_guild_cmd(dest, BB_GUILD_FULL_DATA);
                             send_bb_guild_cmd(dest, BB_GUILD_INITIALIZATION_DATA);
@@ -1056,7 +1055,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             send_pkt_bb(dest, (bb_pkt_hdr_t*)g);
 #ifdef DEBUG
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
 #endif // DEBUG
                         }
                         break;
@@ -1078,7 +1077,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                     case BB_GUILD_FULL_DATA:
                         if (dest->guildcard == sender_gc) {
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1086,7 +1085,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1094,7 +1093,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1121,7 +1120,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1131,7 +1130,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                             /* 返回一个列表数据包 TODO */
                             send_bb_guild_cmd(dest, BB_GUILD_RANKING_LIST);
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -1139,7 +1138,7 @@ static int handle_bb_guild(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
                         if (dest->guildcard == sender_gc) {
 
                             DBG_LOG("handle_bb_guild 0x%04X %d %d", type, len, dest->guildcard);
-                            print_ascii_hex((uint8_t*)g, len);
+                            print_ascii_hex(dbgl, (uint8_t*)g, len);
                         }
                         break;
 
@@ -3548,8 +3547,6 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
         /* 确保8字节的倍数传输 */
         int recv_size = 8;
 
-        memset(&c->pkt, 0, recv_size); // 清零 c->pkt
-
         /* If we can't allocate the space, bail. */
         if (recvbuf == NULL) {
             ERR_LOG("malloc");
@@ -3591,7 +3588,7 @@ int shipgate_process_pkt(shipgate_conn_t* c) {
             else if (sz < 0) {
                 ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
                 ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
-                print_ascii_hex(recvbuf, 65536 - c->recvbuf_cur);
+                print_ascii_hex(errl, recvbuf, 65536 - c->recvbuf_cur);
                 if (!recvbuf) {
                     free_safe(recvbuf);
                     return 0;

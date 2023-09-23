@@ -536,6 +536,8 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
     uint16_t type = LE16(data->pkt_type);
     uint16_t len = LE16(data->pkt_len);
 
+    print_ascii_hex(errl, pkt, len);
+
     switch (type) {
     case PATCH_WELCOME_TYPE:
         return handle_patch_welcome(c);

@@ -29,4 +29,6 @@ typedef unsigned long DWORD;
 #define SOCKET_ERROR (-1)
 #endif
 
+#define MAX_DP_BUFF
+
 //WSADATA winsock_data;

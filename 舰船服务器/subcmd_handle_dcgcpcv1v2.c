@@ -872,7 +872,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             c->guildcard);
-        print_ascii_hex((uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (uint8_t*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1026,7 +1026,7 @@ static int handle_mhit(ship_client_t* c, subcmd_mhit_pkt_t* pkt) {
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             c->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1243,7 +1243,7 @@ static int handle_objhit_phys(ship_client_t* c, subcmd_objhit_phys_t* pkt) {
     if (LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             c->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -1299,7 +1299,7 @@ static int handle_objhit_tech(ship_client_t* c, subcmd_objhit_tech_t* pkt) {
     if (LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             c->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 

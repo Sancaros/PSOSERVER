@@ -691,8 +691,8 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
     // If we get here, then it's not meseta, and either it's not a combine item or
     // we're removing the entire stack. Delete the item from the inventory slot
     // and return the deleted item.
-    memcpy(&ret, inventory_item, sizeof(iitem_t));
-    //ret = inventory_item;
+    //memcpy(&ret, inventory_item, sizeof(iitem_t));
+    ret = *inventory_item;
     character->inv.item_count--;
     for (int x = index; x < character->inv.item_count; x++) {
         character->inv.iitems[x] = character->inv.iitems[x + 1];
@@ -730,8 +730,8 @@ iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount) {
     // If we get here, then it's not meseta, and either it's not a combine item or
     // we're removing the entire stack. Delete the item from the inventory slot
     // and return the deleted item.
-    memcpy(&ret, trade_item, sizeof(iitem_t));
-    //ret = inventory_item;
+    //memcpy(&ret, trade_item, sizeof(iitem_t));
+    ret = *trade_item;
     trade->trade_item_count--;
     for (size_t x = index; x < trade->trade_item_count; x++) {
         trade->iitems[x] = trade->iitems[x + 1];
@@ -779,9 +779,8 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
         return ret;
     }
 
-    //ret = *bank_item;
-
-    memcpy(&ret, bank_item, sizeof(bitem_t));
+    ret = *bank_item;
+    //memcpy(&ret, bank_item, sizeof(bitem_t));
     // 移除银行物品
     bank->item_count--;
     for (size_t x = bitem_index; x < bank->item_count; x++) {
@@ -791,18 +790,18 @@ bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index,
     return ret;
 }
 
-bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
-    uint32_t pid = primary_identifier(&iitem->data);
+bool add_iitem(ship_client_t* src, const iitem_t iitem) {
+    uint32_t pid = primary_identifier(&iitem.data);
     psocn_bb_char_t* character = get_client_char_bb(src);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        add_character_meseta(character, iitem->data.data2l);
+        add_character_meseta(character, iitem.data.data2l);
         return true;
     }
 
     // 处理可合并的物品
-    size_t combine_max = max_stack_size(&iitem->data);
+    size_t combine_max = max_stack_size(&iitem.data);
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
@@ -814,7 +813,7 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
         if (y < character->inv.item_count) {
-            character->inv.iitems[y].data.datab[5] += iitem->data.datab[5];
+            character->inv.iitems[y].data.datab[5] += iitem.data.datab[5];
             if (character->inv.iitems[y].data.datab[5] > (uint8_t)combine_max) {
                 character->inv.iitems[y].data.datab[5] = (uint8_t)combine_max;
             }
@@ -828,22 +827,22 @@ bool add_iitem(ship_client_t* src, const iitem_t* iitem) {
             src->guildcard, character->inv.item_count);
         return false;
     }
-    character->inv.iitems[character->inv.item_count] = *iitem;
+    character->inv.iitems[character->inv.item_count] = iitem;
     character->inv.item_count++;
     return true;
 }
 
-bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
-    uint32_t pid = primary_identifier(&iitem->data);
+bool add_titem(trade_inv_t* trade, const iitem_t iitem) {
+    uint32_t pid = primary_identifier(&iitem.data);
 
     // 检查是否为meseta，如果是，则修改统计数据中的meseta值
     if (pid == MESETA_IDENTIFIER) {
-        trade->meseta = min(trade->meseta + iitem->data.data2l, 999999);
+        trade->meseta = min(trade->meseta + iitem.data.data2l, 999999);
         return true;
     }
 
     // 处理可合并的物品
-    size_t combine_max = max_stack_size(&iitem->data);
+    size_t combine_max = max_stack_size(&iitem.data);
     if (combine_max > 1) {
         // 如果玩家库存中已经存在相同物品的堆叠，获取该物品的索引
         size_t y;
@@ -855,7 +854,7 @@ bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
 
         // 如果存在堆叠，则将数量相加，并限制最大堆叠数量
         if (y < trade->trade_item_count) {
-            trade->iitems[y].data.datab[5] += iitem->data.datab[5];
+            trade->iitems[y].data.datab[5] += iitem.data.datab[5];
             if (trade->iitems[y].data.datab[5] > (uint8_t)combine_max) {
                 trade->iitems[y].data.datab[5] = (uint8_t)combine_max;
             }
@@ -868,25 +867,25 @@ bool add_titem(trade_inv_t* trade, const iitem_t* iitem) {
         ERR_LOG("交易物品数量超出最大值,当前 %d 个物品", trade->trade_item_count);
         return false;
     }
-    trade->iitems[trade->trade_item_count] = *iitem;
-    trade->item_ids[trade->trade_item_count] = iitem->data.item_id;
+    trade->iitems[trade->trade_item_count] = iitem;
+    trade->item_ids[trade->trade_item_count] = iitem.data.item_id;
     trade->trade_item_count++;
     return true;
 }
 
-bool add_bitem(ship_client_t* src, const bitem_t* bitem) {
-    uint32_t pid = primary_identifier(&bitem->data);
+bool add_bitem(ship_client_t* src, const bitem_t bitem) {
+    uint32_t pid = primary_identifier(&bitem.data);
     psocn_bank_t* bank = get_client_bank_bb(src);
     
     if (pid == MESETA_IDENTIFIER) {
-        bank->meseta += bitem->data.data2l;
+        bank->meseta += bitem.data.data2l;
         if (bank->meseta > 999999) {
             bank->meseta = 999999;
         }
         return true;
     }
     
-    size_t combine_max = max_stack_size(&bitem->data);
+    size_t combine_max = max_stack_size(&bitem.data);
     if (combine_max > 1) {
         size_t y;
         for (y = 0; y < bank->item_count; y++) {
@@ -896,7 +895,7 @@ bool add_bitem(ship_client_t* src, const bitem_t* bitem) {
         }
 
         if (y < bank->item_count) {
-            bank->bitems[y].data.datab[5] += bitem->data.datab[5];
+            bank->bitems[y].data.datab[5] += bitem.data.datab[5];
             if (bank->bitems[y].data.datab[5] > (uint8_t)combine_max) {
                 bank->bitems[y].data.datab[5] = (uint8_t)combine_max;
             }
@@ -910,7 +909,7 @@ bool add_bitem(ship_client_t* src, const bitem_t* bitem) {
             src->guildcard);
         return false;
     }
-    bank->bitems[bank->item_count] = *bitem;
+    bank->bitems[bank->item_count] = bitem;
     bank->item_count++;
     return true;
 }

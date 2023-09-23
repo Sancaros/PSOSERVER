@@ -68,9 +68,9 @@ int remove_iitem_v1(iitem_t *inv, int inv_count, uint32_t item_id, uint32_t amt)
 iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount, bool allow_meseta_overdraft);
 iitem_t remove_titem(trade_inv_t* trade, uint32_t item_id, uint32_t amount);
 bitem_t remove_bitem(ship_client_t* src, uint32_t item_id, uint16_t bitem_index, uint32_t amount);
-bool add_iitem(ship_client_t* src, const iitem_t* iitem);
-bool add_titem(trade_inv_t* trade, const iitem_t* iitem);
-bool add_bitem(ship_client_t* src, const bitem_t* bitem);
+bool add_iitem(ship_client_t* src, const iitem_t iitem);
+bool add_titem(trade_inv_t* trade, const iitem_t iitem);
+bool add_bitem(ship_client_t* src, const bitem_t bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
 
 /* 挑战模式专用 */

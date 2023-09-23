@@ -284,8 +284,11 @@ int gettimeofday(struct timeval* timevaltmp, void* tzp);
 
 /* This function based on information from a couple of different sources, namely
    Fuzziqer's newserv and information from Lee (through Aleron Ives). */
+extern inline void errl(const char* message);
 
-extern void print_ascii_hex(const void* data, size_t length);
+extern inline void dbgl(const char* message);
+
+extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
 
 extern double expand_rate(uint8_t rate);
 

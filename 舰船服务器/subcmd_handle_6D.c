@@ -272,7 +272,7 @@ int subcmd_handle_6D(ship_client_t* src, subcmd_pkt_t* pkt) {
         if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
             DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-            print_ascii_hex(pkt, LE16(pkt->hdr.dc.pkt_len));
+            print_ascii_hex(dbgl, pkt, LE16(pkt->hdr.dc.pkt_len));
             //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
             rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
@@ -346,7 +346,7 @@ int subcmd_bb_handle_6D(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(dbgl, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
             }

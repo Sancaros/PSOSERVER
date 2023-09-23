@@ -1895,7 +1895,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             return send_block_list(c, ship);
 
         case GAME_SUBCMD60_TYPE:
-            print_ascii_hex(pkt, len);
+            print_ascii_hex(dbgl, pkt, len);
             /* Ignore these, since taking screenshots on PSOPC generates them
                for some reason. */
             return 0;
@@ -1904,7 +1904,7 @@ static int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
                 len)) {
                 ERR_LOG("未知数据包!");
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(errl, pkt, len);
                 return -3;
             }
             return 0;
@@ -1970,7 +1970,7 @@ static int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownShipPacket, c, pkt,
                 len)) {
                 ERR_LOG("未知数据包!");
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(errl, pkt, len);
                 return -3;
             }
             return 0;

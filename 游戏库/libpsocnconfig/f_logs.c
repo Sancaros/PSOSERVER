@@ -80,7 +80,15 @@ bool is_all_zero(const char* data, size_t length) {
 	return true;
 }
 
-void print_ascii_hex(const void* data, size_t length) {
+inline void errl(const char* message) {
+	ERR_LOG("%s", message);
+}
+
+inline void dbgl(const char* message) {
+	DBG_LOG("%s", message);
+}
+
+void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
 	if (data == NULL || length == 0 || length > 65536) {
 		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
 		return;
@@ -134,10 +142,10 @@ void print_ascii_hex(const void* data, size_t length) {
 		strcat(dp, "\n\r"); // 添加两个换行符
 	}
 	else {
-		DBG_LOG("不足以容纳换行符\n");
+		print_method("不足以容纳换行符");
 	}
 
-	DBG_LOG("%s", dp);
+	print_method(dp);
 }
 
 /* This function based on information from a couple of different sources, namely

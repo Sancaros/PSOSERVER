@@ -2798,7 +2798,7 @@ static int process_dc_update_quest_stats(ship_client_t* c,
     uint16_t len = LE16(pkt->hdr.pkt_len);
     lobby_t* l = c->cur_lobby;
 
-    print_ascii_hex(pkt, len);
+    print_ascii_hex(dbgl, pkt, len);
 
     if (!l || !(l->flags & LOBBY_FLAG_QUESTING))
         return -1;
@@ -2842,7 +2842,7 @@ static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
             ERR_LOG("GC %u 未知 Episode 3 指令: 0x%04X", c->guildcard, hdr->flags);
-            print_ascii_hex(pkt, len);
+            print_ascii_hex(dbgl, pkt, len);
             return -1;
         }
         return 0;
@@ -2858,7 +2858,7 @@ static int on_CA_Ep3(ship_client_t* c, uint8_t* pkt) {
 
     ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
         c->guildcard);
-    print_ascii_hex(pkt, len);
+    print_ascii_hex(dbgl, pkt, len);
 
     return 0;
     //try {
@@ -3405,7 +3405,7 @@ int dc_process_pkt(ship_client_t* c, uint8_t* pkt) {
             if (!script_execute_pkt(ScriptActionUnknownBlockPacket, c, pkt,
                 len)) {
                 ERR_LOG("GC %u 未知数 0x%X 据包!", c->guildcard, type);
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(dbgl, pkt, len);
                 return -3;
             }
             return 0;

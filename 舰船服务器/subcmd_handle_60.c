@@ -563,7 +563,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             src->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2524,7 +2524,7 @@ static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     /* 这是一个用于通知其他玩家 该玩家离开了游戏  TODO*/
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -2853,7 +2853,7 @@ static int sub60_46_dc(ship_client_t* src, ship_client_t* dest,
     if (LE16(pkt->hdr.pkt_len) != (sizeof(pkt->hdr) + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             src->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -2944,7 +2944,7 @@ static int sub60_47_dc(ship_client_t* src, ship_client_t* dest,
     if (LE16(pkt->hdr.pkt_len) != (4 + (pkt->shdr.size << 2)) || pkt->shdr.size < 0x02) {
         ERR_LOG("GC %" PRIu32 " sent bad objhit message!",
             src->guildcard);
-        print_ascii_hex((unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
+        print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
 
@@ -3356,7 +3356,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 
 #ifdef DEBUG
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     for (size_t x = 0; x < inv->item_count; x++) {
         print_iitem_data(&inv->iitems[x], x, src->version);
@@ -3567,7 +3567,7 @@ static int sub60_55_dc(ship_client_t* src, ship_client_t* dest,
 
 #ifdef DEBUG
 
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
         switch (pkt->area)
         {
@@ -4230,7 +4230,7 @@ static int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
     //                      01 00 01 00  (.`.....t.......
     //( 00000010 )   49 00 C7 02 FF FF FF FF   FF FF FF FF FF FF FF FF  I.?
     //( 00000020 )   00 00 00 00 00 00 00 00   
-        //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return word_select_send_bb(src, pkt);
 }
@@ -5002,7 +5002,7 @@ int handle_bb_challenge_mode_grave(ship_client_t* src,
 
     case CLIENT_VERSION_BB:
         memcpy(&bb, pkt, sizeof(subcmd_bb_grave_t));
-        //print_ascii_hex((unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
+        //print_ascii_hex(errl, (unsigned char*)&bb, LE16(pkt->hdr.pkt_len));
         break;
 
     default:
@@ -5085,7 +5085,7 @@ static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
 
     //DBG_LOG("GC %u", src->guildcard);
 
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
 //[2023年07月12日 20:08:18:088] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x7D 版本 5 的处理
 //[2023年07月12日 20:08:18:091] 调试(subcmd_handle_60.c 3493): 未知 0x60 指令: 0x7D
@@ -5291,7 +5291,7 @@ static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
         pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5435,7 +5435,7 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     switch (pkt->mode)
     {
     case 0x00:
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
 
     case 0x01:
@@ -5687,7 +5687,7 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
 DBG_LOG("指令 0x%04X 0x%02X GC %" PRIu32 ":%d 任务ID %d 区域 %d",
     pkt->hdr.pkt_type, pkt->shdr.type, src->guildcard, src->sec_data.slot, l->qid, src->cur_area);
 
-//print_ascii_hex(pkt, pkt->hdr.pkt_len);
+//print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5725,7 +5725,7 @@ static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
 
     send_txt(src, "动作:0x%04X\n位置:unk %f.", pkt->unknown_a1, pkt->unknown_a2);
 
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
 
@@ -5790,7 +5790,7 @@ static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000010 )   01 54 AB 10                                     .T?
 //( 00000000 )   14 00 60 00 00 00 00 00   93 03 AB 10 01 00 00 00  ..`.....??....
 //( 00000010 )   01 54 AB 10                                     .T?
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -6659,7 +6659,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
 
     iitem.data.item_id = generate_item_id(l, 0xFF);
 
-    if (!add_iitem(src, &iitem)) {
+    if (!add_iitem(src, iitem)) {
         ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
             src->guildcard);
         return -1;
@@ -7130,7 +7130,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000020 )   D0 00 C2 01                                     ??
 
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     iitem_t work_item = { 0 };
     item_t compare_item = { 0 };
@@ -7185,7 +7185,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         add_item.data = pkt->compare_item;
         add_item.data.item_id = generate_item_id(l, src->client_id);
 
-        if (!add_iitem(src, &add_item)) {
+        if (!add_iitem(src, add_item)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -3;
@@ -7256,7 +7256,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
         add_item.data = pkt->add_item;
         add_item.data.item_id = generate_item_id(l, src->client_id);
 
-        if (!add_iitem(src, &add_item)) {
+        if (!add_iitem(src, add_item)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -1;
@@ -7366,14 +7366,14 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     item.datal[0] = good_luck[sfmt_genrand_uint32(rng) % (sizeof(good_luck) >> 2)];
     item.item_id = generate_item_id(l, src->client_id);
     iitem_t add_item = player_iitem_init(item);
-    if (!add_iitem(src, &add_item)) {
+    if (!add_iitem(src, add_item)) {
         ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
             src->guildcard);
         return -5;
     }
     subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
     send_bb_item_exchange_good_luck(src, 0x00000000, pkt->subcmd_code, pkt->flags);
     return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "物品兑换成功"));
 }
@@ -7474,7 +7474,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     item.item_id = generate_item_id(l, src->client_id);
     iitem_t add_item = player_iitem_init(item);
-    if (!add_iitem(src, &add_item)) {
+    if (!add_iitem(src, add_item)) {
         ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
             src->guildcard);
         return -5;
@@ -7677,7 +7677,7 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
         DBG_LOG("0x%02X 指令: 0x%02X", pkt->hdr.dc.pkt_type, type);
         DBG_LOG("c version %d", c->version);
 
-        print_ascii_hex(pkt, pkt->hdr.dc.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.dc.pkt_len);
 
 #endif // DEBUG
 
@@ -7713,7 +7713,7 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(errl, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
             }
@@ -7800,7 +7800,7 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(errl, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
             }

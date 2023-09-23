@@ -1148,7 +1148,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     }
     else {
         /* Add the item to the client's inventory. */
-        if (!add_iitem(src, &iitem_data)) {
+        if (!add_iitem(src, iitem_data)) {
             ERR_LOG("GC %u 拾取物品出错", src->guildcard);
             print_item_data(&iitem_data.data, src->version);
             return -1;
@@ -1196,7 +1196,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         return 0;
     }
 
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     iitem_t iitem = { 0 };
 
@@ -1447,7 +1447,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     //DBG_LOG("GC %u sclient_id 0x%02X -> %u dclient_id 0x%02X ", src->guildcard, src->client_id, dest->guildcard, dest->client_id);
 
-    //print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     switch (trade_type) {
     case 0x00:
@@ -1521,7 +1521,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                 }
             }
 
-            if (!add_titem(trade_inv_src, &trade_ii)) {
+            if (!add_titem(trade_inv_src, trade_ii)) {
                 ERR_LOG("GC %" PRIu32 " 无法添加交易物品!", src->guildcard);
                 return -3;
             }
@@ -1644,7 +1644,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("交易数据未处理 trade_type 0x%02X trade_stage 0x%02X", trade_type, trade_stage);
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -1842,7 +1842,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    if (!add_iitem(src, &ii)) {
+    if (!add_iitem(src, ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
@@ -1975,14 +1975,14 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    iitem_t* id_result = &src->game_data->identify_result;
+    iitem_t id_result = src->game_data->identify_result;
 
-    if (!id_result->data.item_id) {
+    if (!id_result.data.item_id) {
         ERR_LOG("未获取到鉴定结果");
         return -1;
     }
 
-    if (id_result->data.item_id != pkt->item_id) {
+    if (id_result.data.item_id != pkt->item_id) {
         ERR_LOG("鉴定结果 item_id != 数据包 item_id");
         return -1;
     }
@@ -1995,7 +1995,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    subcmd_send_lobby_bb_create_inv_item(src, id_result->data, stack_size(&id_result->data), true);
+    subcmd_send_lobby_bb_create_inv_item(src, id_result.data, stack_size(&id_result.data), true);
 
     /* 初始化临时鉴定的物品数据 */
     memset(&src->game_data->identify_result, 0, PSOCN_STLENGTH_IITEM);
@@ -2121,7 +2121,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             bitem = player_bitem_init(iitem.data);
 
             /* 存入! */
-            if (!add_bitem(src, &bitem)) {
+            if (!add_bitem(src, bitem)) {
                 ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
                 return -5;
             }
@@ -2174,7 +2174,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             iitem = player_iitem_init(bitem.data);
 
             /* 新增至玩家背包中... */
-            if (!add_iitem(src, &iitem)) {
+            if (!add_iitem(src, iitem)) {
                 ERR_LOG("GC %" PRIu32 " 物品从玩家银行取出失败!",
                     src->guildcard);
                 return -11;
@@ -2191,7 +2191,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
             src->guildcard, action);
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2220,7 +2220,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, inviter_name_text, &pkt->inviter_name[2], 24, 12);
 
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-    print_ascii_hex(pkt, len);
+    print_ascii_hex(errl, pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2243,7 +2243,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     case 0x01:
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ", type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        print_ascii_hex(pkt, len);
+        print_ascii_hex(errl, pkt, len);
         break;
     }
 
@@ -2273,7 +2273,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
     TEST_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
         type, invite_cmd, src->guildcard, d->guildcard, target_guildcard);
-    print_ascii_hex(pkt, len);
+    print_ascii_hex(errl, pkt, len);
 #endif // DEBUG
 
     switch (invite_cmd)
@@ -2307,7 +2307,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("SUBCMD62_GUILD_INVITE 0x%02X 0x%08X c %u d %u 目标GC %u ",
             type, invite_cmd, src->guildcard, dest->guildcard, target_guildcard);
-        print_ascii_hex(pkt, len);
+        print_ascii_hex(errl, pkt, len);
         break;
     }
 
@@ -2349,7 +2349,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         ii.data.data2l = meseta_amount;
         ii.data.item_id = generate_item_id(l, 0xFF);
 
-        if (!add_iitem(src, &ii)) {
+        if (!add_iitem(src, ii)) {
             ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
                 src->guildcard);
             return -1;
@@ -2393,7 +2393,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     ii.data = pkt->item_data;
     ii.data.item_id = generate_item_id(l, 0xFF);
 
-    if (!add_iitem(src, &ii)) {
+    if (!add_iitem(src, ii)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
@@ -2422,7 +2422,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS1 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //print_ascii_hex(pkt, len);
+    //print_ascii_hex(errl, pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
         ERR_LOG("GC %u 公会权限不足", src->guildcard);
@@ -2456,7 +2456,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     istrncpy16_raw(ic_utf16_to_gb18030, master_name_text, &pkt->master_name[2], 24, 12);
 
     //TEST_LOG("SUBCMD62_GUILD_MASTER_TRANS2 0x%02X 0x%08X c %u d %u", type, trans_cmd, src->guildcard, dest->guildcard);
-    //print_ascii_hex(pkt, len);
+    //print_ascii_hex(errl, pkt, len);
 
     switch (trans_cmd)
     {
@@ -2529,7 +2529,7 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     /* Make sure there's something set with /item */
     if (!pkt->drop_amount) {
@@ -2582,8 +2582,8 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
         backup_item.data.datab[4] |= 0x40; // Wrap other
 
     /* 将物品新增至背包. */
-    if (!add_iitem(dest, &backup_item)) {
-        if (!add_iitem(src, &backup_item)) {
+    if (!add_iitem(dest, backup_item)) {
+        if (!add_iitem(src, backup_item)) {
             ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
                 src->guildcard);
             return -1;
@@ -2638,7 +2638,7 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    print_ascii_hex(pkt, pkt->hdr.pkt_len);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     if ((l->oneperson) && (l->flags & LOBBY_FLAG_QUESTING) && (l->drops_disabled) && (!l->questE0)) {
         uint32_t bp, bp_list_count, new_value;
@@ -2823,7 +2823,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
 
         DBG_LOG("没有奖励 menu_choice 0x%08X", menu_choice);
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
 #endif // DEBUG
         result_item.datal[0] = BBItem_NoSuchItem;
@@ -2839,7 +2839,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     print_item_data(&iitem.data, src->version);
 
-    if (!add_iitem(src, &iitem)) {
+    if (!add_iitem(src, iitem)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
             src->guildcard);
         return -1;
@@ -2863,7 +2863,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         DBG_LOG("未知选项 0x%08X", menu_choice);
-        print_ascii_hex(pkt, pkt->hdr.pkt_len);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
     }
 
@@ -2947,7 +2947,7 @@ int subcmd_handle_62(ship_client_t* src, subcmd_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(pkt, LE16(pkt->hdr.dc.pkt_len));
+                print_ascii_hex(errl, pkt, LE16(pkt->hdr.dc.pkt_len));
                 //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_dc(dest, (dc_pkt_hdr_t*)pkt);
@@ -3031,7 +3031,7 @@ int subcmd_bb_handle_62(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
                 DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(pkt, len);
+                print_ascii_hex(errl, pkt, len);
                 //UNK_CSPD(type, c->version, pkt);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
