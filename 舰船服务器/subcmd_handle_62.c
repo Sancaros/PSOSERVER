@@ -1868,7 +1868,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_tekk_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    block_t* b = src->cur_block;
+    sfmt_t* rng = &src->sfmt_rng;
     uint32_t id_item_index = 0, attrib = 0;
     uint32_t item_id = pkt->item_id;
     char percent_mod = 0;
@@ -1921,44 +1921,43 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
     }
 
+    /* 获取鉴定的物品结果 */
     src->game_data->identify_result = *id_result;
+    /* 用指针指向物品的数据内存 方便后续操作 */
+    item_t* ri = &src->game_data->identify_result.data;
 
     // 技能属性提取和随机数处理
     if (attrib < 0x29) {
-        src->game_data->identify_result.data.datab[4] = tekker_attributes[(attrib * 3) + 1];
-        if ((sfmt_genrand_uint32(&b->sfmt_rng) % 100) > 70)
-            src->game_data->identify_result.data.datab[4] += sfmt_genrand_uint32(&b->sfmt_rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+        ri->datab[4] = tekker_attributes[(attrib * 3) + 1];
+        if ((sfmt_genrand_uint32(rng) % 100) > 70)
+            ri->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
     }
     else
-        src->game_data->identify_result.data.datab[4] = 0;
-
-    // 百分比修正处理
-    uint32_t mt_result_2 = sfmt_genrand_uint32(&b->sfmt_rng) % 10;
-
-    if ((mt_result_2 > 0) && (mt_result_2 <= 7)) {
-        if (mt_result_2 > 5) {
-            percent_mod = sfmt_genrand_uint32(&b->sfmt_rng) % mt_result_2;
-        }
-        else if (mt_result_2 <= 5) {
-            percent_mod -= sfmt_genrand_uint32(&b->sfmt_rng) % mt_result_2;
-        }
-    }
+        ri->datab[4] = 0;
 
     // 各属性值修正处理
-    if (!(id_result->data.datab[6] & 128) && (id_result->data.datab[7] > 0))
-        (char)src->game_data->identify_result.data.datab[7] += percent_mod;
+    for (size_t x = 6; x < 0x0B; x+=2) {
+        // 百分比修正处理
+        uint32_t mt_result_2 = sfmt_genrand_uint32(rng) % 10;
 
-    if (!(id_result->data.datab[8] & 128) && (id_result->data.datab[9] > 0))
-        (char)src->game_data->identify_result.data.datab[9] += percent_mod;
+        if ((mt_result_2 > 0) && (mt_result_2 <= 7)) {
+            if (mt_result_2 > 5) {
+                percent_mod = sfmt_genrand_uint32(rng) % mt_result_2;
+            }
+            else if (mt_result_2 <= 5) {
+                percent_mod -= sfmt_genrand_uint32(rng) % mt_result_2;
+            }
+        }
 
-    if (!(id_result->data.datab[10] & 128) && (id_result->data.datab[11] > 0))
-        (char)src->game_data->identify_result.data.datab[11] += percent_mod;
+        if (!(id_result->data.datab[x] & 128) && (id_result->data.datab[x + 1] > 0))
+            (char)ri->datab[x + 1] += percent_mod;
+    }
 
     src->drop_item_id = id_result->data.item_id;
     src->drop_amt = 1;
 
     if (src->game_data->gm_debug)
-        print_item_data(&id_result->data, src->version);
+        print_item_data(ri, src->version);
 
     return subcmd_send_bb_create_tekk_item(src);
 }
