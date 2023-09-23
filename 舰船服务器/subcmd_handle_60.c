@@ -3065,9 +3065,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->shdr.client_id != src->client_id) {
 #ifdef DEBUG
-
         DBG_LOG("是否是NPC用了物品？");
-
 #endif // DEBUG
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
@@ -3245,8 +3243,6 @@ static int sub60_4B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -3299,8 +3295,6 @@ static int sub60_4C_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
         ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
