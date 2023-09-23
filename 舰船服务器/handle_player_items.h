@@ -39,11 +39,13 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c);
 
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
-size_t get_litem_index_from_lobby(lobby_t* l, item_t* item);
 litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z);
 litem_t* add_litem_locked(lobby_t* l, iitem_t* iitem, uint8_t area, float x, float z);
 
 int remove_litem_locked(lobby_t* l, uint32_t item_id, iitem_t* rv);
+
+/* 获取大厅中目标物品所在槽位 */
+size_t find_litem_index(lobby_t* l, item_t* item);
 
 /* 获取背包中目标物品所在槽位 */
 int find_iitem_index(const inventory_t* inv, const uint32_t item_id);

@@ -1740,7 +1740,7 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
         ITEM_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             ITEM_LOG("Î»ÖÃ²ÎÊý: x:%f z:%f area:%u", j->x, j->z, j->area);
-            print_iitem_data(&j->iitem, get_litem_index_from_lobby(l, &j->iitem.data), src->version);
+            print_iitem_data(&j->iitem, find_litem_index(l, &j->iitem.data), src->version);
         }
         ITEM_LOG("------------------------------------------------------------");
 
