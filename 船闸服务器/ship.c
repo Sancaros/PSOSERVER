@@ -2157,7 +2157,7 @@ static int handle_bb_guild_unk_0EEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2393,7 +2393,7 @@ static int handle_bb_guild_initialization_data(ship_t* c, shipgate_fw_9_pkt* pkt
     //    return 0;
     //}
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2413,7 +2413,7 @@ static int handle_bb_guild_lobby_setting(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //print_ascii_hex(errl, (uint8_t*)g_data, len);
+    //print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2434,7 +2434,7 @@ static int handle_bb_guild_member_tittle(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    //print_ascii_hex(errl, (uint8_t*)g_data, len);
+    //print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2456,7 +2456,7 @@ static int handle_bb_guild_full_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
     //用作以后验证
 
-    //print_ascii_hex(errl, (uint8_t*)g_data, len);
+    //print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2477,7 +2477,7 @@ static int handle_bb_guild_unk_16EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2497,7 +2497,7 @@ static int handle_bb_guild_unk_17EA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2616,7 +2616,7 @@ static int handle_bb_guild_privilege_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     if (send_bb_pkt_to_ship(c, sender, (uint8_t*)g_data)) {
         send_error(c, SHDR_TYPE_BB, SHDR_RESPONSE | SHDR_FAILURE,
@@ -2643,7 +2643,7 @@ static int handle_bb_guild_buy_special_item(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2663,7 +2663,7 @@ static int handle_bb_guild_unk_1BEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2701,7 +2701,7 @@ static int handle_bb_guild_rank_list(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
 
     return 0;
 }
@@ -2722,7 +2722,7 @@ static int handle_bb_guild_unk_1DEA(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return 0;
     }
 
-    print_ascii_hex(errl, (uint8_t*)g_data, len);
+    print_ascii_hex(dbgl, (uint8_t*)g_data, len);
     return 0;
 }
 
@@ -2886,7 +2886,7 @@ static int handle_bb_cmode_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
     DBG_LOG("Qid %d ch_class %d", qid, cmode_char->gc.char_class);
 
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[cmode_char->gc.char_class].cn_name, sizeof(char_class_name_text));
-    //print_ascii_hex(errl, &cmode_char->character, sizeof(psocn_bb_char_t));
+    //print_ascii_hex(dbgl, &cmode_char->character, sizeof(psocn_bb_char_t));
 
     if (db_insert_character_default_mode(&cmode_char->character, cmode_char->gc.char_class, qid, char_class_name_text)) {
         DBG_LOG("qid %d %s 数据已存在,进行更新操作", qid, pso_class[cmode_char->gc.char_class].cn_name);
@@ -2903,7 +2903,7 @@ static int handle_bb_full_char_data(ship_t* c, shipgate_fw_9_pkt* pkt) {
 
 #ifdef DEBUG
     DBG_LOG("slot %d ch_class %d", slot, full_data_pkt->data.gc.char_class);
-    print_ascii_hex(errl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
+    print_ascii_hex(dbgl, full_data_pkt, PSOCN_STLENGTH_BB_FULL_CHAR);
 #endif // DEBUG
 
     istrncpy(ic_gbk_to_utf8, char_class_name_text, pso_class[full_data_pkt->data.gc.char_class].cn_name, sizeof(char_class_name_text));
@@ -2988,7 +2988,7 @@ static int handle_char_data_save(ship_t* c, shipgate_char_data_pkt* pkt) {
 
 #ifdef DEBUG
 
-    print_ascii_hex(errl, &pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
+    print_ascii_hex(dbgl, &pkt->data[0], PSOCN_STLENGTH_BB_DB_CHAR);
     DBG_LOG("数据存储");
 
 #endif // DEBUG
@@ -5665,7 +5665,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
 
 #ifdef DEBUG
         DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-        print_ascii_hex(errl, (unsigned char*)pkt, length);
+        print_ascii_hex(dbgl, (unsigned char*)pkt, length);
 #endif // DEBUG
 
         switch (type) {
@@ -5788,7 +5788,7 @@ int process_ship_pkt(ship_t* c, shipgate_hdr_t* pkt) {
 
         default:
             //DBG_LOG("G->S指令: 0x%04X %s 标志 = %d 长度 = %d", type, s_cmd_name(type, 0), flags, length);
-            //print_ascii_hex(errl, (unsigned char*)pkt, length);
+            //print_ascii_hex(dbgl, (unsigned char*)pkt, length);
             return -3;
         }
 

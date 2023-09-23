@@ -99,7 +99,7 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
             ERR_LOG("不向未认证的接入发送任何数据");
 
 #endif // DEBUG
-            return 0;
+            return -1;
         }
 
         /* Keep trying until the whole thing's sent. */
@@ -114,26 +114,16 @@ static int send_raw(ship_t* c, int len, uint8_t* sendbuf) {
                     /* Try again. */
                     continue;
                 }
-                else if (rv <= 0) {
+                else if (rv < 0) {
                     ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(rv));
                     ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", rv);
 
-                    print_ascii_hex(dbgl, sendbuf, len - total);
+                    print_ascii_hex(errl, sendbuf, len - total);
 
                     if (sendbuf)
                         free_safe(sendbuf);
                     return -1;
                 }
-                //if (rv < 0) {
-                //    /* 这是一个可以纠正的错误代码吗? */
-                //    if (rv == GNUTLS_E_AGAIN || rv == GNUTLS_E_INTERRUPTED)
-                //        continue;
-                //    else {
-                //        if (sendbuf)
-                //            free_safe(sendbuf);
-                //        return -1;
-                //    }
-                //}
 
                 total += rv;
             }
