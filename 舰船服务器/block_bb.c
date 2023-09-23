@@ -1629,7 +1629,7 @@ static int bb_process_update_quest_stats(ship_client_t* c,
         return -1;
     }
 
-    return send_bb_confirm_update_quest_statistics(c, pkt->hdr.flags, 0, pkt->request_token);
+    return send_bb_confirm_update_quest_statistics(c, pkt->hdr.flags, pkt->function_id1);
 }
 
 /* Blue Burst 游戏房间创建 */

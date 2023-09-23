@@ -115,6 +115,21 @@ void regenerate_lobby_item_id(lobby_t* l, ship_client_t* c) {
     }
 }
 
+size_t get_litem_index_from_lobby(lobby_t* l, item_t* item) {
+    size_t index = 0;
+    litem_t* litem;
+
+    TAILQ_FOREACH(litem, &l->item_queue, qentry) {
+        if (&litem->iitem.data == item) {
+            return index;
+        }
+
+        index++;
+    }
+
+    return -1;
+}
+
 /* 新增一件物品至大厅背包中. 调用者在调用这个之前必须持有大厅的互斥锁.
 如果大厅的库存中没有新物品的空间,则返回NULL. */
 litem_t* add_new_litem_locked(lobby_t* l, item_t* new_item, uint8_t area, float x, float z) {
@@ -586,6 +601,58 @@ int find_equipped_mag(const inventory_t* inv) {
     return ret;
 }
 
+/* 用于移除物品时 移除物品原有的装备标志 */
+void remove_iitem_equiped_flags(inventory_t* inv, const item_t item) {
+    size_t i = find_iitem_index(inv, item.item_id);
+    /* 如果找不到该物品，则将用户从船上推下. */
+    if (i < 0) {
+        ERR_LOG("卸除无效装备物品! 错误码 %d", i);
+        return;
+    }
+
+    if (inv->iitems[i].flags & LE32(0x00000008)) {
+        switch (item.datab[0]) {
+        case ITEM_TYPE_WEAPON:
+            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+            break;
+
+        case ITEM_TYPE_GUARD:
+            switch (item.datab[1]) {
+            case ITEM_SUBTYPE_FRAME:
+                for (size_t j = 0; j < inv->item_count; j++) {
+                    if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
+                        inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_FRAME) {
+                        if (inv->iitems[j].data.datab[0] == ITEM_TYPE_GUARD &&
+                            inv->iitems[j].data.datab[1] == ITEM_SUBTYPE_UNIT) {
+                            inv->iitems[j].flags &= LE32(0xFFFFFFF7);
+
+                            DBG_LOG("%d", j);
+                        }
+
+                    }
+                }
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                break;
+
+            case ITEM_SUBTYPE_BARRIER:
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                break;
+
+            case ITEM_SUBTYPE_UNIT:
+                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+                break;
+
+            }
+            break;
+
+        case ITEM_TYPE_MAG:
+            inv->iitems[i].flags &= LE32(0xFFFFFFF7);
+            break;
+
+        }
+    }
+}
+
 void bswap_data2_if_mag(item_t* item) {
     if (item->datab[0] == ITEM_TYPE_MAG) {
         item->data2l = bswap32(item->data2l);
@@ -688,10 +755,8 @@ iitem_t remove_iitem(ship_client_t* src, uint32_t item_id, uint32_t amount,
         return ret;
     }
 
-    // If we get here, then it's not meseta, and either it's not a combine item or
-    // we're removing the entire stack. Delete the item from the inventory slot
-    // and return the deleted item.
-    //memcpy(&ret, inventory_item, sizeof(iitem_t));
+    remove_iitem_equiped_flags(&character->inv, inventory_item->data);
+
     ret = *inventory_item;
     character->inv.item_count--;
     for (int x = index; x < character->inv.item_count; x++) {

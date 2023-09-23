@@ -1932,38 +1932,19 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
 
     iitem_t* drop_iitem = &inv->iitems[index];
 
-    if (drop_iitem->data.datab[0] == ITEM_TYPE_GUARD &&
-        drop_iitem->data.datab[1] == ITEM_SUBTYPE_FRAME &&
-        (drop_iitem->flags & LE32(0x00000008))) {
-        isframe = 1;
-    }
-
-    /* 清理已装备的标签 */
-    drop_iitem->flags &= LE32(0xFFFFFFF7);
-
-    /* 卸掉所有已插入在这件装备的插件 */
-    if (isframe) {
-        for (int i = 0; i < inv->item_count; ++i) {
-            if (inv->iitems[i].data.datab[0] == ITEM_TYPE_GUARD &&
-                inv->iitems[i].data.datab[1] == ITEM_SUBTYPE_UNIT) {
-                inv->iitems[i].flags &= LE32(0xFFFFFFF7);
-            }
-        }
+    iitem_t iitem = remove_iitem(src, drop_iitem->data.item_id, drop_amount, src->version != CLIENT_VERSION_BB);
+    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
+        ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
+            src->guildcard);
+        return -1;
     }
 
     /* We have the item... Add it to the lobby's inventory.
     我们有这个物品…把它添加到大厅的背包中 */
-    if (!add_litem_locked(l, drop_iitem, (uint8_t)area, x, z)) {
+    if (!add_litem_locked(l, &iitem, (uint8_t)area, x, z)) {
         /* *Gulp* The lobby is probably toast... At least make sure this user is
            still (mostly) safe... */
         ERR_LOG("无法将物品新增游戏房间背包!");
-        return -1;
-    }
-
-    iitem_t iitem = remove_iitem(src, item_id, drop_amount, src->version != CLIENT_VERSION_BB);
-    if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
-        ERR_LOG("GC %" PRIu32 " 丢弃物品失败!",
-            src->guildcard);
         return -2;
     }
 
@@ -3359,17 +3340,8 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
     int mag_index = find_equipped_mag(inv);
-
     /* 没有找到MAG 直接发送出去 */
-    if (mag_index < 0) {
-#ifdef DEBUG
-
-        ERR_LOG("未从 GC %" PRIu32 " 背包中找已装备的玛古", src->guildcard);
-
-#endif // DEBUG
-        return 0;
-    }
-    else {
+    if (mag_index) {
         item_t* mag = &inv->iitems[mag_index].data;
         mag->data2b[0] = max((mag->data2b[0] - pkt->flag), 0);
     }
@@ -7123,14 +7095,11 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000010 )   00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00  ................
 //( 00000020 )   D0 00 C2 01                                     ??
 
-
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     iitem_t work_item = { 0 };
-    item_t compare_item = { 0 };
-    memcpy(&compare_item.datab[0], &pkt->compare_item.datab[0], 3);
     for (size_t x = 0; x < (sizeof(gallons_shop_hopkins) / 4); x += 2) {
-        if (compare_item.datal[0] == gallons_shop_hopkins[x]) {
+        if (pkt->compare_item.datal[0] == gallons_shop_hopkins[x]) {
             work_item.data.datab[0] = ITEM_TYPE_TOOL;
             work_item.data.datab[1] = ITEM_SUBTYPE_PHOTON;
             work_item.data.datab[2] = 0x00;
@@ -7139,7 +7108,6 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     if (work_item.data.datab[0] != ITEM_TYPE_TOOL) {
-
         ERR_LOG("兑换失败, 未找到对应物品");
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
@@ -7149,7 +7117,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if (work_item_id == 0) {
         ERR_LOG("GC %" PRIu32 " 兑换失败, 未找到对应物品", src->guildcard);
-        return -1;
+        return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换失败, 未找到对应物品"));
     }
     else {
         int index = find_iitem_index(inv, work_item_id);
@@ -7159,40 +7127,31 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
             return index;
         }
         iitem_t* del_item = &inv->iitems[index];
-        size_t max_count = stack_size(&del_item->data);
+        size_t max_count = get_item_amount(&del_item->data, 99);
         iitem_t pd = remove_iitem(src, del_item->data.item_id, max_count, src->version != CLIENT_VERSION_BB);
-        if (pd.data.datal[0] == 0 && pd.data.data2l == 0) {
+        if (item_not_identification_bb(pd.data.datal[0], pd.data.datal[1])) {
             ERR_LOG("删除PD %d ID 0x%08X 失败", max_count, del_item->data.item_id);
             return -2;
         }
 
         rv = subcmd_send_bb_destroy_item(src, del_item->data.item_id, max_count);
 
-        iitem_t add_item;
-        memset(&add_item, 0, PSOCN_STLENGTH_IITEM);
-
-        add_item.present = LE16(0x0001);
-        add_item.extension_data1 = 0;
-        add_item.extension_data2 = 0;
-        add_item.flags = 0;
-
-        add_item.data = pkt->compare_item;
+        iitem_t add_item = player_iitem_init(pkt->compare_item);
         add_item.data.item_id = generate_item_id(l, src->client_id);
 
-        if (!add_iitem(src, add_item)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                src->guildcard);
+        if (!(rv = add_iitem(src, add_item))) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品! 错误码 %d",
+                src->guildcard, rv);
             return -3;
         }
 
         rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
 
-        uint16_t confirm_token = pkt->confirm_token;
+        rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
 
-        rv = send_bb_confirm_update_quest_statistics(src, 1, confirm_token, 0);
+        rv = send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换成功"));
     }
 
-    rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     return rv;
 }
 

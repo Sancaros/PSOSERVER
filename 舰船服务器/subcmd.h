@@ -3073,6 +3073,19 @@ struct G_ExchangeItemInQuest_BB_6xD5 {
     uint16_t unknown_a4;
 } PACKED;
 
+// D6 (C->S): Large message box closed (V3)
+// No arguments
+// DC, PC, and BB do not send this command at all. GC US v1.00 and v1.01 will
+// send this command when any large message box (1A/D5) is closed; GC Plus and
+// Episode 3 will send D6 only for large message boxes that occur before the
+// client has joined a lobby. (After joining a lobby, large message boxes will
+// still be displayed if sent by the server, but the client won't send a D6 when
+// they are closed.) In some of these versions, there is a bug that sets an
+// incorrect interaction mode when the message box is closed while the player is
+// in the lobby; some servers (e.g. Schtserv) send a lobby welcome message
+// anyway, along with an 01 (lobby message box) which properly sets the
+// interaction mode when closed.
+
 // 0xD6: Wrap item (BB; handled by server)
 typedef struct subcmd_bb_warp_item {
     bb_pkt_hdr_t hdr;
@@ -3082,13 +3095,33 @@ typedef struct subcmd_bb_warp_item {
     uint8_t unused[3];
 } PACKED subcmd_bb_warp_item_t;
 
+// D7 (C->S): Request GBA game file (V3)
+// header.flag is used, but it's not clear for what.
+// The server should send the requested file using A6/A7 commands.
+// This command exists on XB as well, but it presumably is never sent by the
+// client.
+
+//struct C_GBAGameRequest_V3_D7 {
+//    ptext<char, 0x10> filename;
+//} __packed__;
+
 // 0xD7: Paganini Photon Drop exchange (BB; handled by server)
 // The client sends this when it executes an F955 quest opcode.
+// D7 (S->C): Unknown (V3/BB)
+// No arguments
+// This command is not valid on PSO GC Episodes 1&2 Trial Edition.
+// On PSO V3, this command does... something. The command isn't *completely*
+// ignored: it sets a global state variable, but it's not clear what that
+// variable does. The variable is set to 0 when the client requests a GBA game
+// (by sending a D7 command), and set to 1 when the client receives a D7
+// command. The S->C D7 command may be used for declining a download or
+// signaling an error of some sort.
+// PSO BB accepts but completely ignores this command.
 typedef struct subcmd_bb_item_exchange_pd {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t compare_item; // Only data1[0]-[2] are used
-    uint16_t confirm_token;
+    uint16_t function_id;
     uint16_t unknown_a3;
 } PACKED subcmd_bb_item_exchange_pd_t;
 

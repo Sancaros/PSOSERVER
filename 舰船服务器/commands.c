@@ -1733,16 +1733,16 @@ static int handle_dbginv(ship_client_t* src, const char* params) {
             return send_txt(src, "%s", __(src, "\tE\tC7无效请求或非BB版本客户端."));
         }
 
-        SHIPS_LOG("////////////////////////////////////////////////////////////");
-        SHIPS_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
+        ITEM_LOG("////////////////////////////////////////////////////////////");
+        ITEM_LOG("房间大厅背包数据转储 %s (%" PRIu32 ")", l->name,
             l->lobby_id);
 
-        SHIPS_LOG("------------------------------------------------------------");
+        ITEM_LOG("------------------------------------------------------------");
         TAILQ_FOREACH(j, &l->item_queue, qentry) {
             ITEM_LOG("位置参数: x:%f z:%f area:%u", j->x, j->z, j->area);
-            print_item_data(&j->iitem.data, src->version);
+            print_iitem_data(&j->iitem, get_litem_index_from_lobby(l, &j->iitem.data), src->version);
         }
-        SHIPS_LOG("------------------------------------------------------------");
+        ITEM_LOG("------------------------------------------------------------");
 
         pthread_mutex_unlock(&l->mutex);
     }

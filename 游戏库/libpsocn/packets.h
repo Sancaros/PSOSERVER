@@ -1000,9 +1000,9 @@ typedef struct bb_gamecard_check_request {
 // 22: GameGuard check (BB)
 // Command 0122 uses a 4-byte challenge sent in the header.flag field instead.
 // This version of the command has no other arguments.
-typedef struct bb_gamecard_check_request {
+typedef struct bb_gamecard_check_done {
     bb_pkt_hdr_t hdr; /* flags 0x00000000 Done 0x00000001 unDone*/
-} PACKED bb_gamecard_check_request_pkt;
+} PACKED bb_gamecard_check_done_pkt;
 
 // 23 (S->C): Momoka Item Exchange result (BB)
 // Sent in response to a 6xD9 command from the client.
@@ -2749,19 +2749,16 @@ typedef struct bb_login_9e {
 // probably all other private servers) ignores it.
 // Curiously, PSO GC sends uninitialized data in header.flag.
 
-// AA (C->S): Update quest statistics (V3/BB)
-// This command is used in Maximum Attack 2, but its format is unlikely to be
-// specific to that quest. The structure here represents the only instance I've
-// seen so far.
+// AA (C->S): Send quest statistic (V3/BB)
+// This command is generated when an opcode F92E is executed in a quest.
 // The server should respond with an AB command.
 // This command is likely never sent by PSO GC Episodes 1&2 Trial Edition,
 // because the following command (AB) is definitely not valid on that version.
-/* Gamecube quest statistics packet (from Maximum Attack 2). */
 typedef struct dc_update_quest_stats {
     dc_pkt_hdr_t hdr;
     uint32_t quest_internal_id;
-    uint16_t request_token;
-    uint16_t unknown_a1;
+    uint16_t function_id1;
+    uint16_t function_id2;
     uint32_t unknown_a2;
     uint32_t kill_count;
     uint32_t time_taken; // in seconds
@@ -2771,30 +2768,38 @@ typedef struct dc_update_quest_stats {
 typedef struct bb_update_quest_stats {
     bb_pkt_hdr_t hdr;
     uint32_t quest_internal_id;
-    uint16_t request_token;
-    uint16_t unknown_a1;
+    uint16_t function_id1;
+    uint16_t function_id2;
     uint32_t unknown_a2;
     uint32_t kill_count;
     uint32_t time_taken; // in seconds
     uint32_t unknown_a3[5];
 } PACKED bb_update_quest_stats_pkt;
 
-// AB (S->C): Confirm update quest statistics (V3/BB)
+//struct C_SendQuestStatistic_V3_BB_AA {
+//    le_uint16_t stat_id1 = 0;
+//    le_uint16_t unused = 0;
+//    le_uint16_t function_id1 = 0;
+//    le_uint16_t function_id2 = 0;
+//    parray<le_uint32_t, 8> params;
+//} __packed__;
+
+// AB (S->C): Confirm quest statistic (V3/BB)
 // This command is not valid on PSO GC Episodes 1&2 Trial Edition.
+// Upon receipt, the client starts a quest thread running the given function.
+// Probably this is supposed to be one of the function IDs previously sent in
+// the AA command, but the client does not check for this. The server can
+// presumably use this command to call any function at any time during a quest.
 typedef struct dc_confirm_update_quest_statistics {
     dc_pkt_hdr_t hdr;
-    uint16_t confirm_token; // 0
+    uint16_t function_id; // 0
     uint16_t unknown_a2; // Probably actually unused
-    uint16_t request_token; // Should match token sent in AA command
-    uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
 } PACKED dc_confirm_update_quest_statistics_pkt;
 
 typedef struct bb_confirm_update_quest_statistics {
     bb_pkt_hdr_t hdr;
-    uint16_t confirm_token; // 0
+    uint16_t function_id; // 0
     uint16_t unknown_a2; // Probably actually unused
-    uint16_t request_token; // Should match token sent in AA command
-    uint16_t unknown_a3; // Schtserv always sends 0xBFFF here
 } PACKED bb_confirm_update_quest_statistics_pkt;
 
 // AC: Quest barrier (V3/BB)

@@ -12938,7 +12938,7 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
     return 0;
 }
 
-int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token) {
+int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t function_id) {
     uint8_t* sendbuf = get_sendbuf();
     dc_confirm_update_quest_statistics_pkt* pkt = (dc_confirm_update_quest_statistics_pkt*)sendbuf;
     uint16_t pkt_size = sizeof(dc_confirm_update_quest_statistics_pkt);
@@ -12951,15 +12951,13 @@ int send_dc_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, ui
     pkt->hdr.pkt_len = pkt_size;
 
     /* Ìî³äÊ£ÓàÊý¾Ý */
-    pkt->confirm_token = confirm_token;
+    pkt->function_id = function_id;
     pkt->unknown_a2 = LE16(0);
-    pkt->request_token = request_token;
-    pkt->unknown_a3 = 0xBFFF;
 
     return send_pkt_dc(c, (dc_pkt_hdr_t*)pkt);
 }
 
-int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t confirm_token, uint16_t request_token) {
+int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, uint16_t function_id) {
     uint8_t* sendbuf = get_sendbuf();
     bb_confirm_update_quest_statistics_pkt* pkt = (bb_confirm_update_quest_statistics_pkt*)sendbuf;
     uint16_t pkt_size = sizeof(bb_confirm_update_quest_statistics_pkt);
@@ -12976,10 +12974,8 @@ int send_bb_confirm_update_quest_statistics(ship_client_t* c, uint32_t flags, ui
     pkt->hdr.flags = flags;
 
     /* Ìî³äÊ£ÓàÊý¾Ý */
-    pkt->confirm_token = confirm_token;
+    pkt->function_id = function_id;
     pkt->unknown_a2 = LE16(0);
-    pkt->request_token = request_token;
-    pkt->unknown_a3 = 0xBFFF;
 
     return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
