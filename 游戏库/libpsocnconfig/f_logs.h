@@ -288,6 +288,8 @@ extern inline void errl(const char* message);
 
 extern inline void dbgl(const char* message);
 
+extern inline void testl(const char* message);
+
 extern void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length);
 
 extern double expand_rate(uint8_t rate);

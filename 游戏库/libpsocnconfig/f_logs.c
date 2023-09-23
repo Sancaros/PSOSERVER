@@ -88,6 +88,10 @@ inline void dbgl(const char* message) {
 	DBG_LOG("%s", message);
 }
 
+inline void testl(const char* message) {
+	TEST_LOG("%s", message);
+}
+
 void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
 	if (data == NULL || length == 0 || length > 65536) {
 		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
