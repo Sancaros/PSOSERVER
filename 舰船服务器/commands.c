@@ -562,10 +562,10 @@ static int handle_item(ship_client_t *src, const char *params) {
         return send_txt(src, "%s \n错误码 %d", __(src, "\tE\tC4无效物品代码,代码物品不存在."), item_base_check.err);
     }
 
-    /*return */send_txt(src, "%s %s %s",
+    send_txt(src, "%s %s %s",
         __(src, "\tE\tC8物品:"),
         item_get_name(&src->new_item, src->version),
-        __(src, "\tE\tC6 new_item 设置成功, 立即生成."));
+        __(src, "\tE\tC6设置成功, 立即生成."));
 
     print_item_data(&src->new_item, l->version);
 
@@ -581,7 +581,6 @@ static int handle_item(ship_client_t *src, const char *params) {
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
         pthread_mutex_unlock(&l->mutex);
-        return 0;
     }
     else {
         ++l->item_player_id[src->client_id];
@@ -589,60 +588,9 @@ static int handle_item(ship_client_t *src, const char *params) {
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
         pthread_mutex_unlock(&l->mutex);
-        return 0;
     }
 
-    ///* Generate the packet to drop the item */
-    //dc.hdr.pkt_type = GAME_SUBCMD60_TYPE;
-    //dc.hdr.pkt_len = 0x002C/* LE16(sizeof(subcmd_drop_stack_t))*/;
-    //dc.hdr.flags = 0;
-
-    //dc.shdr.type = SUBCMD60_DROP_STACK;
-    //dc.shdr.size = 0x0A;
-    //dc.shdr.client_id = 0xFBFF;
-
-
-    //bb.hdr.pkt_len = 0x002C/*LE16(sizeof(subcmd_bb_drop_stack_t))*/;
-    //bb.hdr.pkt_type = GAME_SUBCMD60_TYPE;
-    //bb.hdr.flags = 0;
-
-    //bb.shdr.type = SUBCMD60_DROP_STACK;
-    //bb.shdr.size = 0x09;
-    //bb.shdr.client_id = 0xFBFF;
-
-    //dc.area = LE16(src->cur_area);
-    //bb.area = LE32(src->cur_area);
-    //bb.x = dc.x = src->x;
-    //bb.z = dc.z = src->z;
-    //bb.data = dc.data = src->new_item;
-    //bb.data.item_id = dc.data.item_id = LE32((l->item_lobby_id - 1));
-
-    //if (is_stackable(&src->new_item))
-    //    bb.data.datab[5] = dc.data.datab[5] = src->new_item.datab[5];
-
-
-    //bb.two = dc.two = LE32(0x00000002);
-
-    //print_item_data(&bb.data, src->version);
-
-    ///* Send the packet to everyone in the lobby */
-    //pthread_mutex_unlock(&l->mutex);
-
-    //switch (src->version) {
-    //case CLIENT_VERSION_DCV1:
-    //case CLIENT_VERSION_DCV2:
-    //case CLIENT_VERSION_PC:
-    //case CLIENT_VERSION_GC:
-    //case CLIENT_VERSION_EP3:
-    //case CLIENT_VERSION_XBOX:
-    //    return lobby_send_pkt_dc(l, NULL, (dc_pkt_hdr_t*)&dc, 0);
-
-    //case CLIENT_VERSION_BB:
-    //    return lobby_send_pkt_bb(l, NULL, (bb_pkt_hdr_t*)&bb, 0);
-
-    //default:
-    //    return 0;
-    //}
+    return 0;
 }
 
 /* 用法 /item1 item1 */
@@ -799,6 +747,13 @@ static int handle_miitem(ship_client_t* src, const char* params) {
             __(src, "\tE\tC7/item code1,code2,code3,code4."));
     }
 
+    send_txt(src, "%s %s %s",
+        __(src, "\tE\tC8物品:"),
+        item_get_name(&src->new_item, src->version),
+        __(src, "\tE\tC6生成成功."));
+
+    print_item_data(&src->new_item, l->version);
+
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
     if (l->version == CLIENT_VERSION_BB) {
         litem = add_new_litem_locked(l, &src->new_item, src->cur_area, src->x, src->z);
@@ -811,7 +766,6 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_bb(src, 0xFBFF, NULL, litem);
         pthread_mutex_unlock(&l->mutex);
-        return 0;
     }
     else {
         ++l->item_player_id[src->client_id];
@@ -819,8 +773,8 @@ static int handle_miitem(ship_client_t* src, const char* params) {
         /* Generate the packet to drop the item */
         subcmd_send_lobby_drop_stack_dc(src, 0xFBFF, NULL, src->new_item, src->cur_area, src->x, src->z);
         pthread_mutex_unlock(&l->mutex);
-        return 0;
     }
+    return 0;
 }
 
 /* 用法: /event number */

@@ -1936,18 +1936,15 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         ri->datab[4] = 0;
 
     // 各属性值修正处理
+    static const uint8_t delta_table[11] = {10, 5, 3, 2, 1, 0, 1, 2, 3, 5, 10};
     for (size_t x = 6; x < 0x0B; x+=2) {
         // 百分比修正处理
-        uint32_t mt_result_2 = sfmt_genrand_uint32(rng) % 10;
+        uint32_t mt_index = sfmt_genrand_uint32(rng) % 11;
 
-        if ((mt_result_2 > 0) && (mt_result_2 <= 7)) {
-            if (mt_result_2 > 5) {
-                percent_mod = sfmt_genrand_uint32(rng) % mt_result_2;
-            }
-            else if (mt_result_2 <= 5) {
-                percent_mod -= sfmt_genrand_uint32(rng) % mt_result_2;
-            }
-        }
+        if (mt_index > 5)
+            percent_mod += delta_table[mt_index];
+        else
+            percent_mod -= delta_table[mt_index];
 
         if (!(id_result->data.datab[x] & 128) && (id_result->data.datab[x + 1] > 0))
             (char)ri->datab[x + 1] += percent_mod;
