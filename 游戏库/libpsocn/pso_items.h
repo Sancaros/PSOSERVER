@@ -105,6 +105,20 @@
 #define ITEM_VERSION_XBOX       0x08
 #define ITEM_VERSION_BB         0x10
 
+/* 游戏固定武器属性加成 */
+static const int8_t weapon_bonus_values[20] = {
+    -50, -45, -40, -35, -30, -25, -20, -15, -10, -5, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
+};
+
+/* 游戏固定插件属性加成 */
+static const uint8_t unit_bonus_values[5][2] = {
+    {0xFE, 0xFF},
+    {0xFF, 0xFF},
+    {0x00, 0x00},
+    {0x01, 0x00},
+    {0x02, 0x00}
+};
+
 /* 初始化物品数据 */
 void clear_inv_item(item_t* item);
 void clear_bank_item(item_t* item);

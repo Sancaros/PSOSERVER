@@ -1187,7 +1187,6 @@ int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
 int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_itemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    game_enemy_t* en;
     iitem_t iitem = { 0 };
     int rv = 0;
 
@@ -1198,7 +1197,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     }
     /* 独立掉落模式 */
     if (l->drop_pso2) {
-        int i;
+        int i = 0;
 
         /* Send the packet to every connected client. */
         for (i = 0; i < l->max_clients; ++i) {
@@ -1245,11 +1244,11 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("游戏并未载入地图敌人数据");
         }
 
-        en = &l->map_enemies->enemies[pkt->entity_id];
-        if (pkt->pt_index != en->rt_index) {
-            ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
-                pkt->pt_index, pkt->entity_id, en->rt_index);
-        }
+        //game_enemy_t* en = &l->map_enemies->enemies[pkt->entity_id];
+        //if (pkt->pt_index != en->rt_index) {
+        //    ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
+        //        pkt->pt_index, pkt->entity_id, en->rt_index);
+        //}
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data))
             return 0;
@@ -1335,7 +1334,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
 
     if (l->drop_pso2) {
-        int i;
+        int i = 0;
 
         /* Send the packet to every connected client. */
         for (i = 0; i < l->max_clients; ++i) {
@@ -1357,7 +1356,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 iitem.data = on_box_item_drop(l, &p2->sfmt_rng, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
             }
             else
-                iitem.data = on_specialized_box_item_drop(
+                iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
             if (is_item_empty(&iitem.data))
@@ -1387,7 +1386,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             iitem.data = on_box_item_drop(l, &src->sfmt_rng, get_pt_data_area_bb(l->episode, src->cur_area), section);
         }
         else
-            iitem.data = on_specialized_box_item_drop(
+            iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
         if (is_item_empty(&iitem.data))
@@ -1886,7 +1885,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (character->disp.meseta < 100) {
         DBG_LOG("sub62_B8_bb 玩家没钱了 %d", character->disp.meseta);
-        return 0;
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4你没钱啦"));
     }
 
     id_item_index = find_iitem_index(&character->inv, item_id);
@@ -1919,40 +1918,20 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     /* 获取鉴定的物品结果 */
     src->game_data->identify_result = *id_result;
-    /* 用指针指向物品的数据内存 方便后续操作 */
-    item_t* ri = &src->game_data->identify_result.data;
 
-    // 技能属性提取和随机数处理
-    if (attrib < 0x29) {
-        ri->datab[4] = tekker_attributes[(attrib * 3) + 1];
-        if ((sfmt_genrand_uint32(rng) % 100) > 70)
-            ri->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
-    }
-    else
-        ri->datab[4] = 0;
-
-    // 各属性值修正处理
-    static const uint8_t delta_table[11] = {10, 5, 3, 2, 1, 0, 1, 2, 3, 5, 10};
-    for (size_t x = 6; x < 0x0B; x+=2) {
-        // 百分比修正处理
-        uint32_t mt_index = sfmt_genrand_uint32(rng) % 11;
-
-        if (mt_index > 5)
-            percent_mod += delta_table[mt_index];
-        else
-            percent_mod -= delta_table[mt_index];
-
-        if (!(id_result->data.datab[x] & 128) && (id_result->data.datab[x + 1] > 0))
-            (char)ri->datab[x + 1] += percent_mod;
+    if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
+        ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
+            src->guildcard);
+        return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
-    src->drop_item_id = id_result->data.item_id;
+    src->drop_item_id = src->game_data->identify_result.data.item_id;
     src->drop_amt = 1;
 
     if (src->game_data->gm_debug)
-        print_item_data(ri, src->version);
+        print_item_data(&src->game_data->identify_result.data, src->version);
 
-    return subcmd_send_bb_create_tekk_item(src);
+    return subcmd_send_bb_create_tekk_item(src, src->game_data->identify_result.data);
 }
 
 int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,

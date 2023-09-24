@@ -69,8 +69,9 @@ int read_player_max_tech_level_table_bb(bb_max_tech_level_t* bb_max_tech_level) 
             memcpy(&bb_max_tech_level[i].tech_name, (char*)row[2], sizeof(bb_max_tech_level[i].tech_name));
             bb_max_tech_level[i].tech_name[11] = 0x00;
             bb_max_tech_level[i].max_lvl[j] = (uint8_t)strtoul(row[j + 3], NULL, 10);
-            //DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
-
+#ifdef DEBUG
+            DBG_LOG("法术 %d.%s 职业 %d 等级 %d", i, bb_max_tech_level[i].tech_name, j, bb_max_tech_level[i].max_lvl[j]);
+#endif // DEBUG
             psocn_db_result_free(result);
         }
     }

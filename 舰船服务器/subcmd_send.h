@@ -52,7 +52,7 @@ int subcmd_send_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amo
 int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32_t amount, bool send_to_src);
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
-int subcmd_send_bb_create_tekk_item(ship_client_t* c);
+int subcmd_send_bb_create_tekk_item(ship_client_t* src, item_t item);
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
 int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt);

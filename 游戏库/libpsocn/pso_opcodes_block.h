@@ -15,17 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-////////////////////////////////////////////////////////////////////////////////
-// CommandServerInit: this function sends the command that initializes encryption
-
-// strings needed for various functions
-//const static char anti_copyright[] = "This server is in no way affiliated, sponsored, or supported by SEGA Enterprises or SONICTEAM. The preceding message exists only in order to remain compatible with programs that expect it.";
-//const static char dc_port_map_copyright[] = "DreamCast Port Map. Copyright SEGA Enterprises. 1999";
-//const static char dc_lobby_server_copyright[] = "DreamCast Lobby Server. Copyright SEGA Enterprises. 1999";
-//const static char bb_game_server_copyright[] = "Phantasy Star Online Blue Burst Game Server. Copyright 1999-2004 SONICTEAM.";
-//const static char bb_pm_server_copyright[] = "PSO NEW PM Server. Copyright 1999-2002 SONICTEAM.";
-//const static char patch_server_copyright[] = "Patch Server. Copyright SonicTeam, LTD. 2001";
-
 /*
 #define MSG1_TYPE                       0x0001 //右下角弹窗信息数据包 ok
 #define CHAT_TYPE                       0x0006 //聊天弹窗

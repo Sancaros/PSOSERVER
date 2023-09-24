@@ -1760,6 +1760,42 @@ done:
     return err;
 }
 
+int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item) {
+    char percent_mod = 0;
+    uint8_t attrib = item->datab[4];
+
+    if (item->datab[0] != ITEM_TYPE_WEAPON)
+        return -1;
+
+    // 技能属性提取和随机数处理
+    if (attrib < 0x29) {
+        item->datab[4] = tekker_attributes[(attrib * 3) + 1];
+        if ((sfmt_genrand_uint32(rng) % 100) > 70)
+            item->datab[4] += sfmt_genrand_uint32(rng) % ((tekker_attributes[(attrib * 3) + 2] - tekker_attributes[(attrib * 3) + 1]) + 1);
+    }
+    else if ((sfmt_genrand_uint32(rng) % 5 == 1)) {
+        item->datab[4] = sfmt_genrand_uint32(rng) % 10;
+    }else
+        item->datab[4] = 0;
+
+    // 各属性值修正处理
+    static const uint8_t delta_table[11] = { 10, 5, 3, 2, 1, 0, 1, 2, 3, 5, 10 };
+    for (size_t x = 6; x < 0x0B; x += 2) {
+        // 百分比修正处理
+        uint32_t mt_index = sfmt_genrand_uint32(rng) % 11;
+
+        if (mt_index > 5)
+            percent_mod += delta_table[mt_index];
+        else
+            percent_mod -= delta_table[mt_index];
+
+        if (!(item->datab[x] & 128) && (item->datab[x + 1] > 0))
+            (char)item->datab[x + 1] += percent_mod;
+    }
+
+    return 0;
+}
+
 int initialize_cmode_iitem(ship_client_t* dest) {
     size_t x = 0;
     lobby_t* l = dest->cur_lobby;

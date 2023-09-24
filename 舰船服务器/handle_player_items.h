@@ -75,6 +75,7 @@ bool add_iitem(ship_client_t* src, const iitem_t iitem);
 bool add_titem(trade_inv_t* trade, const iitem_t iitem);
 bool add_bitem(ship_client_t* src, const bitem_t bitem);
 int player_use_item(ship_client_t* src, uint32_t item_id);
+int player_tekker_item(ship_client_t* src, sfmt_t* rng, item_t* item);
 
 /* 挑战模式专用 */
 int initialize_cmode_iitem(ship_client_t* dest);

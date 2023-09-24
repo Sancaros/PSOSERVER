@@ -2351,7 +2351,7 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2550);
+    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
 }
 
 static int sub60_30_dc(ship_client_t* src, ship_client_t* dest, 

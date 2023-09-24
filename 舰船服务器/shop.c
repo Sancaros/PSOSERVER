@@ -78,12 +78,11 @@ item_t create_bb_shop_tool_common_item(uint8_t 难度, uint8_t 物品类型, uint8_t i
 }
 
 item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
-    static const uint8_t max_percentages[4] = { 20, 35, 45, 50 };
-    static const uint8_t max_quantity[4] = { 1,  1,  2,  2 };
+    static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
     static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
     item_t item = { 0 };
-    uint32_t tmp_value = 0;
+    int8_t tmp_value = 0;
     item.datab[0] = 物品类型;
     errno_t err = 0;
 
@@ -104,9 +103,11 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             item.datab[2] = (sfmt_genrand_uint32(随机因子) & 1) + 难度;
 
         /* 打磨值 0 - 10*/
-        item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
+        if (sfmt_genrand_uint32(随机因子) % 2)
+            item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
         /* 特殊攻击 0 - 10 配合难度 0 - 3*/
-        item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
+        if (sfmt_genrand_uint32(随机因子) % 2)
+            item.datab[4] = sfmt_genrand_uint32(随机因子) % 11 + 难度;
         /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
         /* 生成属性*/
@@ -117,7 +118,15 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
                 if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
                     /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
                     item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-                    item.datab[(num_percentages * 2) + 7] = sfmt_genrand_uint32(随机因子) % (max_percentages[难度] + 1);
+                    tmp_value = sfmt_genrand_uint32(随机因子) % 6 + weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
+
+                    if (tmp_value > 50)
+                        tmp_value = 50;
+
+                    if (tmp_value < -50)
+                        tmp_value = -50;
+
+                    item.datab[(num_percentages * 2) + 7] = tmp_value;
                     num_percentages++;
                 }
             }
@@ -147,13 +156,13 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
 
             /* DFP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range;
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
             if (tmp_value < 0)
                 tmp_value = 0;
             item.datab[6] = tmp_value;
 
             /* EVP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range;
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
             if (tmp_value < 0)
                 tmp_value = 0;
             item.datab[8] = tmp_value;
@@ -169,75 +178,27 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             }
 
             /* DFP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range;
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
             if (tmp_value < 0)
                 tmp_value = 0;
             item.datab[6] = tmp_value;
 
             /* EVP值 */
-            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range;
+            tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
             if (tmp_value < 0)
                 tmp_value = 0;
             item.datab[8] = tmp_value;
             break;
 
-        case ITEM_SUBTYPE_UNIT://插件 不生成带属性的 省的麻烦 TODO 以后再做更详细的
+        case ITEM_SUBTYPE_UNIT://插件
             item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2);
             if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
                 ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
                 break;
             }
-
-            //tmp_value = sfmt_genrand_uint32(随机因子) % pmt_unit.pm_range;
-            //int randomIndex = 0;
-
-            //item.dataw[3] = 0;
-
-            //switch (tmp_value) {
-            //case 1:
-            //    randomIndex = sfmt_genrand_uint32(随机因子) % 3; // 随机生成一个0-2范围内的整数
-
-            //    switch (randomIndex) {
-            //    case 0:
-            //        item.dataw[3] = LE16(0xFFFF);
-            //        break;
-
-            //    case 1:
-            //        item.dataw[3] = LE16(0x0000);
-            //        break;
-
-            //    case 2:
-            //        item.dataw[3] = LE16(0x0001);
-            //        break;
-            //    }
-            //    break;
-
-            //case 2:
-            //    randomIndex = sfmt_genrand_uint32(随机因子) % 5; // 随机生成一个0-4范围内的整数
-
-            //    switch (randomIndex) {
-            //    case 0:
-            //        item.dataw[3] = LE16(0xFFFE);
-            //        break;
-
-            //    case 1:
-            //        item.dataw[3] = LE16(0xFFFF);
-            //        break;
-
-            //    case 2:
-            //        item.dataw[3] = LE16(0x0000);
-            //        break;
-
-            //    case 3:
-            //        item.dataw[3] = LE16(0x0001);
-            //        break;
-
-            //    case 4:
-            //        item.dataw[3] = LE16(0x0002);
-            //        break;
-            //    }
-            //    break;
-            //}
+            tmp_value = sfmt_genrand_uint32(随机因子) % 5;
+            item.datab[6] = unit_bonus_values[tmp_value][0];
+            item.datab[7] = unit_bonus_values[tmp_value][1];
             break;
         }
         break;
@@ -245,26 +206,26 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     case ITEM_TYPE_TOOL: // 药品工具
         item.datab[1] = sfmt_genrand_uint32(随机因子) % 9 + 2;
         switch (item.datab[1]) {
-            //case ITEM_SUBTYPE_MATE:
-            //case ITEM_SUBTYPE_FLUID:
-            //    switch (难度) {
-            //    case GAME_TYPE_DIFFICULTY_NORMARL:
-            //        item.datab[2] = 0;
-            //        break;
+        case ITEM_SUBTYPE_MATE:
+        case ITEM_SUBTYPE_FLUID:
+            switch (难度) {
+            case GAME_TYPE_DIFFICULTY_NORMARL:
+                item.datab[2] = 0;
+                break;
 
-            //    case GAME_TYPE_DIFFICULTY_HARD:
-            //        item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
-            //        break;
+            case GAME_TYPE_DIFFICULTY_HARD:
+                item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
+                break;
 
-            //    case GAME_TYPE_DIFFICULTY_VERY_HARD:
-            //        item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2) + 1;
-            //        break;
+            case GAME_TYPE_DIFFICULTY_VERY_HARD:
+                item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2) + 1;
+                break;
 
-            //    case GAME_TYPE_DIFFICULTY_ULTIMATE:
-            //        item.datab[2] = 2;
-            //        break;
-            //    }
-            //    break;
+            case GAME_TYPE_DIFFICULTY_ULTIMATE:
+                item.datab[2] = 2;
+                break;
+            }
+            break;
 
         case ITEM_SUBTYPE_ANTI_TOOL:
             item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
@@ -277,9 +238,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
             //case ITEM_SUBTYPE_MATERIAL:
             //    item.datab[2] = sfmt_genrand_uint32(随机因子) % 7;
             //    break;
-        }
 
-        switch (item.datab[1]) {
         case ITEM_SUBTYPE_DISK:
             item.datab[4] = sfmt_genrand_uint32(随机因子) % 19;
             switch (item.datab[4]) {
@@ -315,11 +274,11 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
         case ITEM_SUBTYPE_SOL_ATOMIZER:
         case ITEM_SUBTYPE_MOON_ATOMIZER:
         case ITEM_SUBTYPE_STAR_ATOMIZER:
-        case ITEM_SUBTYPE_ANTI_TOOL:
+        //case ITEM_SUBTYPE_ANTI_TOOL:
         case ITEM_SUBTYPE_TELEPIPE:
         case ITEM_SUBTYPE_TRAP_VISION:
         case ITEM_SUBTYPE_PHOTON:
-            item.datab[5] = sfmt_genrand_uint32(随机因子) % (max_quantity[难度] + 1);
+            item.datab[5] = 1;
             break;
         }
     }

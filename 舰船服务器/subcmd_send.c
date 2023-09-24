@@ -396,7 +396,7 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
 }
 
 /* 0xB9 SUBCMD62_TEKKED_RESULT BB 单人获得鉴定物品 */
-int subcmd_send_bb_create_tekk_item(ship_client_t* src) {
+int subcmd_send_bb_create_tekk_item(ship_client_t* src, item_t item) {
     subcmd_bb_tekk_identify_result_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_tekk_identify_result_t);
 
@@ -416,7 +416,7 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* src) {
     pkt.shdr.client_id = src->client_id;
 
     /* 填充剩余数据 */
-    pkt.item = src->game_data->identify_result.data;
+    pkt.item = item;
 
     return send_pkt_bb(src, (bb_pkt_hdr_t*)&pkt);
 }

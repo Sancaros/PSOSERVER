@@ -11680,7 +11680,7 @@ int send_lobby_mod_stat(lobby_t *l, ship_client_t *src, int stat_type, int amt) 
 
     /* Make sure the request is sane */
     if(stat_type < SUBCMD60_STAT_HPDOWN || stat_type > SUBCMD60_STAT_TPUP || amt < 1
-        || amt > 2550) {
+        || amt > 2040) {
         return 0;
     }
 

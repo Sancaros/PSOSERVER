@@ -1601,7 +1601,7 @@ static int handle_smite(ship_client_t *c, const char *params) {
     }
 }
 
-/* 用法: /teleport client */
+/* 用法: /tp client */
 static int handle_teleport(ship_client_t *c, const char *params) {
     int client;
     lobby_t *l = c->cur_lobby;
@@ -2943,8 +2943,8 @@ static int handle_enablebk(ship_client_t *c, const char *params) {
 
     /* Make sure the user is logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7You must be logged in to "
-                                    "use this command."));
+        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+                                    "才可以使用该指令."));
     }
 
     /* Send the message to the shipgate */
@@ -2960,8 +2960,8 @@ static int handle_disablebk(ship_client_t *c, const char *params) {
 
     /* Make sure the user is logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7You must be logged in to "
-                                    "use this command."));
+        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+                                    "才可以使用该指令."));
     }
 
     /* Send the message to the shipgate */
@@ -3133,8 +3133,8 @@ static int handle_gcprotect(ship_client_t *c, const char *params) {
 
     /* Make sure they're logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7You must be logged in to "
-                                    "use this command."));
+        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+                                    "才可以使用该指令."));
     }
 
     /* See if we're turning the flag off. */
@@ -3176,8 +3176,8 @@ static int handle_trackkill(ship_client_t *c, const char *params) {
 
     /* Make sure they're logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7You must be logged in to "
-                                       "use this command."));
+        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+                                       "才可以使用该指令."));
     }
 
     /* See if we're turning the flag off. */
@@ -3193,7 +3193,7 @@ static int handle_trackkill(ship_client_t *c, const char *params) {
     shipgate_send_user_opt(&ship->sg, c->guildcard, c->cur_block->b,
                            USER_OPT_TRACK_KILLS, 1, &enable);
     c->flags |= CLIENT_FLAG_TRACK_KILLS;
-    return send_txt(c, "%s", __(c, "\tE\tC7Kill tracking enabled."));
+    return send_txt(c, "%s", __(c, "\tE\tC7已启用杀敌数跟踪."));
 }
 
 /* 用法: /ep3music value */
@@ -3540,8 +3540,8 @@ static int handle_autolegit(ship_client_t *c, const char *params) {
 
     /* Make sure they're logged in */
     if(!(c->flags & CLIENT_FLAG_LOGGED_IN)) {
-        return send_txt(c, "%s", __(c, "\tE\tC7You must be logged in to "
-                                       "use this command."));
+        return send_txt(c, "%s", __(c, "\tE\tC7你需要登录"
+                                       "才可以使用该指令."));
     }
 
     /* See if we're turning the flag off. */
@@ -4040,11 +4040,13 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
         DBG_LOG("测试指令 0x%04X %s GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), src->guildcard);
 
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC7cmd代码已执行."));
+
         send_bb_cmd_test(src, opcode[0]);
 
         pthread_mutex_unlock(&src->mutex);
 
-        return send_txt(src, "%s", __(src, "\tE\tC7cmd代码已执行."));
+        return 0;
     }
 
     /* See if we're turning the flag off. */
@@ -4052,12 +4054,14 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
 
         DBG_LOG("测试指令 0x%04X %s 0x%04X GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), isEmptyInt(opcode[1]) ? 0 : opcode[1], src->guildcard);
-
+        
+        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC7subcmd代码已执行."));
+        
         send_bb_subcmd_test(src, opcode[0], opcode[1]);
 
         pthread_mutex_unlock(&src->mutex);
 
-        return send_txt(src, "%s", __(src, "\tE\tC7subcmd代码已执行."));
+        return 0;
     }
 
     pthread_mutex_unlock(&src->mutex);
@@ -4179,7 +4183,7 @@ static command_t cmds[] = {
     { "invuln"   , handle_invuln        },
     { "inftp"    , handle_inftp         },
     { "smite"    , handle_smite         },
-    { "teleport" , handle_teleport      },
+    { "tp"       , handle_teleport      },
     { "dbginv"   , handle_dbginv        },
     { "dbgbank"  , handle_dbgbank       },
     { "showdcpc" , handle_showdcpc      },
@@ -4225,7 +4229,6 @@ static command_t cmds[] = {
     { "noevent"  , handle_noevent       },
     { "lflags"   , handle_lflags        },
     { "cflags"   , handle_cflags        },
-    { "stalk"    , handle_teleport      },    /* Happy, Aleron Ives? */
     { "showpos"  , handle_showpos       },
     { "t"        , handle_t             },    /* Short command = more precision. */
     { "info"     , handle_info          },
