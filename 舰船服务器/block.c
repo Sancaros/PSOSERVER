@@ -477,8 +477,21 @@ static void* block_thd(void* d) {
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->guildcard) {
-                    DC_LOG("客户端 %s(%d:%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
-                        it->guildcard, it->sec_data.slot, client_type[it->version].ver_name);
+                    char ipstr[INET6_ADDRSTRLEN];
+                    my_ntop(&it->ip_addr, ipstr);
+                    DC_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 断开连接 (%s:%d) %s"
+                        , ship->cfg->ship_name
+                        , it->cur_block->b
+                        , it->cur_block->num_clients
+                        , get_player_name(it->pl, it->version, false)
+                        , it->guildcard
+                        , it->sec_data.slot
+                        , ipstr
+                        , it->sock
+                        , client_type[it->version].ver_name
+                    );
+                    //DC_LOG("客户端 %s(%d:%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
+                    //    it->guildcard, it->sec_data.slot, client_type[it->version].ver_name);
                 }
 #ifdef DEBUG
                 else {
@@ -972,7 +985,6 @@ static int join_game(ship_client_t* c, lobby_t* l) {
 /* Process a login packet, sending security data, a lobby list, and a character
    data request. */
 static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
 
@@ -1022,25 +1034,12 @@ static int dcnte_process_login(ship_client_t* c, dcnte_login_8b_pkt* pkt) {
         return -3;
     }
 
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
-
     return 0;
 }
 
 /* Process a login packet, sending security data, a lobby list, and a character
    data request. */
 static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
@@ -1117,18 +1116,6 @@ static int dc_process_login(ship_client_t* c, dc_login_93_pkt* pkt) {
         return -3;
     }
 
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
-
     return 0;
 }
 
@@ -1146,7 +1133,6 @@ static int is_pctrial(dcv2_login_9d_pkt* pkt) {
 /* Process a v2 login packet, sending security data, a lobby list, and a
    character data request. */
 static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
@@ -1256,25 +1242,12 @@ static int dcv2_process_login(ship_client_t* c, dcv2_login_9d_pkt* pkt) {
         return -3;
     }
 
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
-
     return 0;
 }
 
 /* Process a GC login packet, sending security data, a lobby list, and a
    character data request. */
 static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
     uint16_t len;
@@ -1366,25 +1339,12 @@ static int gc_process_login(ship_client_t* c, gc_login_9e_pkt* pkt) {
         return -3;
     }
 
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
-
     return 0;
 }
 
 /* Process a Xbox login packet, sending security data, a lobby list, and a
    character data request. */
 static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
 
@@ -1433,18 +1393,6 @@ static int xb_process_login(ship_client_t* c, xb_login_9e_pkt* pkt) {
     if (send_simple(c, CHAR_DATA_REQUEST_TYPE, 0)) {
         return -3;
     }
-
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
 
     return 0;
 }
@@ -1632,6 +1580,21 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     }
 
     pthread_mutex_unlock(&c->mutex);
+
+    /* Log the connection. */
+    char ipstr[INET6_ADDRSTRLEN];
+    my_ntop(&c->ip_addr, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 已连接 (%s:%d) %s"
+        , ship->cfg->ship_name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , get_player_name(c->pl, c->version, false)
+        , c->guildcard
+        , c->sec_data.slot
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
 
     return 0;
 }
@@ -2841,7 +2804,7 @@ static int process_ep3_command(ship_client_t* c, uint8_t* pkt) {
 
     default:
         if (!script_execute_pkt(ScriptActionUnknownEp3Packet, c, pkt, len)) {
-            ERR_LOG("GC %u 未知 Episode 3 指令: 0x%04X", c->guildcard, hdr->flags);
+            DBG_LOG("GC %u 未知 Episode 3 指令: 0x%04X", c->guildcard, hdr->flags);
             print_ascii_hex(dbgl, pkt, len);
             return -1;
         }
@@ -2856,9 +2819,13 @@ static int on_CA_Ep3(ship_client_t* c, uint8_t* pkt) {
     uint16_t len = LE16(hdr->pkt_len);
     uint16_t tmp = 0;
 
-    ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.gc_string,
+    DBG_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.gc_string,
         c->guildcard);
     print_ascii_hex(dbgl, pkt, len);
+//[2023年09月24日 16:04:38:035] 调试(block.c 2823): Ep3 服务器数据来自 Sancaros (10000000)
+//[2023年09月24日 16:04:38:037] 调试(f_logs.c 0088): 数据包如下:
+//(00000000) CA 00 14 00 B3 04 42 01  40 00 00 10 FF FF FF FF    ......B.@.......
+//(00000010) 00 00 00 00    ....
 
     return 0;
     //try {

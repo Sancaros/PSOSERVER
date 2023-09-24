@@ -516,7 +516,8 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
         }
 
-        DBG_LOG("GC %u:%d %s", c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
+        DBG_LOG("客户端 %s(%d:%d) %s", get_player_name(c->pl, c->version, false),
+            c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
         
         /* All's well in the world if we get here. */
         return 0;
@@ -1247,6 +1248,21 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
         send_simple(c, PING_TYPE, 0);
     }
 
+    /* Log the connection. */
+    char ipstr[INET6_ADDRSTRLEN];
+    my_ntop(&c->ip_addr, ipstr);
+    BLOCK_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 已连接 (%s:%d) %s"
+        , ship->cfg->ship_name
+        , c->cur_block->b
+        , c->cur_block->num_clients
+        , get_player_name(c->pl, c->version, false)
+        , c->guildcard
+        , c->sec_data.slot
+        , ipstr
+        , c->sock
+        , client_type[c->version].ver_name
+    );
+
     pthread_mutex_unlock(&c->mutex);
 
     return 0;
@@ -1438,7 +1454,6 @@ static int bb_process_arrow(ship_client_t* c, uint8_t flag) {
 
 static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     uint32_t guild_id;
-    char ipstr[INET6_ADDRSTRLEN];
     char* ban_reason;
     time_t ban_end;
 
@@ -1495,18 +1510,6 @@ static int bb_process_login(ship_client_t* c, bb_login_93_pkt* pkt) {
     if (shipgate_send_bb_opt_req(&ship->sg, c->guildcard, c->cur_block->b)) {
         return -4;
     }
-
-    /* Log the connection. */
-    my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): GC %" PRIu32 " 已连接 (%s:%d) %s"
-        , ship->cfg->ship_name
-        , c->cur_block->b
-        , c->cur_block->num_clients
-        , c->guildcard
-        , ipstr
-        , c->sock
-        , client_type[c->version].ver_name
-    );
 
     return 0;
 }

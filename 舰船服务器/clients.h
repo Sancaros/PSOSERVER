@@ -393,13 +393,13 @@ extern pthread_key_t sendbuf_key;
 #define CLIENT_FLAG_ERR_TO_SHIP     0x20000000
 
 static client_type_t client_type[CLIENT_VERSION_ALL] = {
-    {CLIENT_VERSION_DCV1, "DreanCard V1", "v1", 4},
-    {CLIENT_VERSION_DCV2, "DreanCard V2", "v2", 4},
-    {CLIENT_VERSION_PC,   "PC EP1&EP2",   "pc", 4},
-    {CLIENT_VERSION_GC,   "GameCube",     "gc", 4},
-    {CLIENT_VERSION_EP3,  "Episode III",  "e3", 4},
-    {CLIENT_VERSION_BB,   "Blue Brust",   "bb", 8},
-    {CLIENT_VERSION_XBOX, "XBOX",         "xb", 4},
+    {CLIENT_VERSION_DCV1, "DC V1",  "v1", 4},
+    {CLIENT_VERSION_DCV2, "DC V2",  "v2", 4},
+    {CLIENT_VERSION_PC,   "PC",     "pc", 4},
+    {CLIENT_VERSION_GC,   "GC",     "gc", 4},
+    {CLIENT_VERSION_EP3,  "EP3",    "e3", 4},
+    {CLIENT_VERSION_BB,   "BB",     "bb", 8},
+    {CLIENT_VERSION_XBOX, "XBOX",   "xb", 4},
 };
 
 /* Language codes. */
