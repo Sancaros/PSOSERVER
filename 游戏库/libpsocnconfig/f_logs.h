@@ -95,7 +95,7 @@ static log_map_st log_header[] = {
 	{ UNKNOW_PACKET_LOG,	"½Ø»ñ" }, //µÇÂ½ ½¢´¬
 	{ UNDONE_PACKET_LOG,	"È±Ê§" }, //µÇÂ½ ½¢´¬
 	{ UNUSED,				"Î´ÆôÓÃ" }, //µÇÂ½ ½¢´¬
-	{ DC_LOG,				"¶ÏÁ¬" }, //µÇÂ½ ½¢´¬
+	{ DC_LOG,				"Á¬½Ó" }, //µÇÂ½ ½¢´¬
 	{ DONT_SEND_LOG,		"½Ø¶Ï" }, //½¢´¬
 	{ TEST_LOG,				"²âÊÔ" }, //²¹¶¡ µÇÂ½ ½¢´¬
 	{ MONSTERID_ERR_LOG,	"¹ÖÎï" }, //½¢´¬

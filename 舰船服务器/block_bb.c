@@ -1251,16 +1251,16 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
     /* Log the connection. */
     char ipstr[INET6_ADDRSTRLEN];
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 已连接 (%s:%d) %s"
+    DC_LOG("%s(舰仓%02d[%02d]):%s(%d:%d:%s)连接(%s:%d)"
         , ship->cfg->ship_name
         , c->cur_block->b
         , c->cur_block->num_clients
         , get_player_name(c->pl, c->version, false)
         , c->guildcard
         , c->sec_data.slot
+        , client_type[c->version].ver_name
         , ipstr
         , c->sock
-        , client_type[c->version].ver_name
     );
 
     pthread_mutex_unlock(&c->mutex);

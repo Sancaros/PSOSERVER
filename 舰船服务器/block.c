@@ -479,16 +479,16 @@ static void* block_thd(void* d) {
                 if (it->guildcard) {
                     char ipstr[INET6_ADDRSTRLEN];
                     my_ntop(&it->ip_addr, ipstr);
-                    DC_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 断开连接 (%s:%d) %s"
+                    DC_LOG("%s(舰仓%02d[%02d]):%s(%d:%d:%s)断开(%s:%d)"
                         , ship->cfg->ship_name
                         , it->cur_block->b
                         , it->cur_block->num_clients
                         , get_player_name(it->pl, it->version, false)
                         , it->guildcard
                         , it->sec_data.slot
+                        , client_type[it->version].ver_name
                         , ipstr
                         , it->sock
-                        , client_type[it->version].ver_name
                     );
                     //DC_LOG("客户端 %s(%d:%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
                     //    it->guildcard, it->sec_data.slot, client_type[it->version].ver_name);
@@ -1584,16 +1584,16 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     /* Log the connection. */
     char ipstr[INET6_ADDRSTRLEN];
     my_ntop(&c->ip_addr, ipstr);
-    BLOCK_LOG("%s(舰仓%02d[%02d]): %s(%d:%d) 已连接 (%s:%d) %s"
+    DC_LOG("%s(舰仓%02d[%02d]):%s(%d:%d:%s)连接(%s:%d)"
         , ship->cfg->ship_name
         , c->cur_block->b
         , c->cur_block->num_clients
         , get_player_name(c->pl, c->version, false)
         , c->guildcard
         , c->sec_data.slot
+        , client_type[c->version].ver_name
         , ipstr
         , c->sock
-        , client_type[c->version].ver_name
     );
 
     return 0;
