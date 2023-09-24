@@ -634,6 +634,7 @@ item_t check_rate_and_create_rare_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 	case 0:
 		generate_rare_weapon_bonuses(rng, ent, &item, rand_int(rng, 10));
 		set_item_unidentified_flag_if_challenge(l, &item);
+		set_rare_weapon_untekker(&item);
 		break;
 	case 1:
 		generate_common_armor_slots_and_bonuses(rng, &item, ent);

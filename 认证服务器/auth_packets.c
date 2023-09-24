@@ -2239,7 +2239,7 @@ int send_bb_char_dressing_room(psocn_bb_char_t *c, psocn_bb_mini_char_t *mc) {
     
     //DBG_LOG("更新角色更衣室");
 
-    memcpy(c->dress_data.guildcard_str.string, mc->dress_data.guildcard_str.string, sizeof(mc->dress_data.guildcard_str.string));
+    memcpy(c->dress_data.gc_string, mc->dress_data.gc_string, sizeof(mc->dress_data.gc_string));
 
     memcpy(c->dress_data.unk1, mc->dress_data.unk1, sizeof(mc->dress_data.unk1));
 

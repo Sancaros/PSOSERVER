@@ -3204,17 +3204,6 @@ uint8_t choose_weapon_special(uint8_t det) {
     return 0;
 }
 
-bool is_unsealable_item(const item_t* item) {
-    for (size_t z = 0; z < unsealableitems_max_bb; z++) {
-        if ((unsealableitems_bb[z].item[0] == item->datab[0]) &&
-            (unsealableitems_bb[z].item[1] == item->datab[1]) &&
-            (unsealableitems_bb[z].item[2] == item->datab[2])) {
-            return true;
-        }
-    }
-    return false;
-}
-
 int find_tool_by_class(uint8_t tool_class, uint8_t data[2]) {
     for (uint8_t z = 0; z < num_tool_types_bb; z++) {
         for (uint8_t y = 0; y < num_tools_bb[z]; y++) {
@@ -3240,6 +3229,17 @@ uint8_t convert_int16_to_uint8(int16_t value) {
     }
 }
 
+bool is_unsealable_item(const item_t* item) {
+    for (size_t z = 0; z < unsealableitems_max_bb; z++) {
+        if ((unsealableitems_bb[z].item[0] == item->datab[0]) &&
+            (unsealableitems_bb[z].item[1] == item->datab[1]) &&
+            (unsealableitems_bb[z].item[2] == item->datab[2])) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void set_sealed_item_kill_count(item_t* item, int16_t v) {
     if (v > 0x7FFF) {
         item->dataw[5] = 0xFFFF;
@@ -3253,5 +3253,36 @@ void set_sealed_item_kill_count(item_t* item, int16_t v) {
 void set_item_kill_count_if_unsealable(item_t* item) {
     if (is_unsealable_item(item)) {
         set_sealed_item_kill_count(item, 0);
+    }
+}
+
+/* 设置武器物品为未鉴定 */
+void set_weapon_tekker_value(item_t* item) {
+    pmt_weapon_bb_t weapon;
+    errno_t err;
+    /* 先确保他是一把武器 */
+    if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+        ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+        return;
+    }
+    else {
+        if (!(item->datab[4] & 0x80)) {
+            item->datab[4] |= 0x80;
+        }
+    }
+}
+
+/* 设置稀有武器物品为未鉴定 */
+void set_rare_weapon_untekker(item_t* item) {
+    pmt_weapon_bb_t weapon;
+    errno_t err;
+    /* 先确保他是一把武器 */
+    if (err = pmt_lookup_weapon_bb(item->datal[0], &weapon)) {
+        ERR_LOG("pmt_lookup_weapon_bb 不存在数据! 错误码 %d", err);
+        return;
+    }
+
+    if (is_item_rare(item)) {
+        set_weapon_tekker_value(item);
     }
 }

@@ -50,47 +50,37 @@ typedef struct dress_flag {
 typedef struct psocn_disp_char {
     psocn_pl_stats_t stats;
     //TODO 这是什么参数
-    union unkonw {
-        struct unkonw1 {
-            uint8_t opt_flag1;
-            uint8_t opt_flag2;
-            uint8_t opt_flag3;
-            uint8_t opt_flag4;
-            uint8_t opt_flag5;
-            uint8_t opt_flag6;
-            uint8_t opt_flag7;
-            uint8_t opt_flag8;
-            uint8_t opt_flag9;
-            uint8_t opt_flag10;
-        }PACKED;
-        struct unkonw2 {
-            uint16_t unknown_a1;
-            float unknown_a2;
-            float unknown_a3;
-        }PACKED;
-    };
+    //union unkonw {
+    //    struct unkonw1 {
+    //        uint8_t opt_flag1;
+    //        uint8_t opt_flag2;
+    //        uint8_t opt_flag3;
+    //        uint8_t opt_flag4;
+    //        uint8_t opt_flag5;
+    //        uint8_t opt_flag6;
+    //        uint8_t opt_flag7;
+    //        uint8_t opt_flag8;
+    //        uint8_t opt_flag9;
+    //        uint8_t opt_flag10;
+    //    }PACKED;
+    //    struct unkonw2 {
+    //        uint16_t unknown_a1;
+    //        float unknown_a2;
+    //        float unknown_a3;
+    //    }PACKED;
+    //};
+
+    uint16_t unknown_a1;
+    float unknown_a2;
+    float unknown_a3;
     uint32_t level;
     uint32_t exp;
     uint32_t meseta;
 } PACKED psocn_disp_char_t;
 
-/* 16 字节 */
-typedef struct psocn_guildcard_string {
-    union guildcard_ {
-        /* 仅用于数据库存取 分解 */
-        struct {
-            uint16_t str[5];
-            uint16_t slot1;
-            uint16_t slot2;
-            uint16_t slot3;
-        }PACKED;
-        char string[16];
-    }PACKED;
-} PACKED psocn_guildcard_string_t;
-
 /* 108 字节*/
 typedef struct psocn_dress_data {
-    psocn_guildcard_string_t guildcard_str;
+    char gc_string[16];
     uint8_t unk1[8]; // 0x382-0x38F; 898 - 911 14 整数  // Same as E5 unknown2 和E5指令的 未知函数 2 一样
     //玩家名称颜色
     uint8_t name_color_b; // ARGB8888

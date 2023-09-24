@@ -31,7 +31,7 @@
 #include "packets.h"
 #undef PACKETS_H_HEADERS_ONLY
 
-#include <pso_player.h>
+#include "pso_player.h"
 #include "mapdata.h"
 #include "pso_struct_item.h"
 

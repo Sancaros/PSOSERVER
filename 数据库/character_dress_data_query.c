@@ -40,10 +40,8 @@ static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO %s ("
-        "guildcard, slot, "
-        "gc_string, "//4
-        "gc_str, "//4
-        "slot1, slot2, slot3, "//3
+        "guildcard, slot, "//2
+        "gc_string, "//1
         "unk1, "
         "name_color_b, name_color_g, name_color_r, name_color_transparency, "//5
         "model, "
@@ -54,10 +52,8 @@ static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc
         "hair_r, hair_g, hair_b, "
         "prop_x, prop_y"//5
         ") VALUES ("
-        "'%" PRIu32 "', '%" PRIu8 "', "
-        "'%s', "//4
-        "'%s', "//4
-        "'%04X', '%04X', '%04X', "//3
+        "'%" PRIu32 "', '%" PRIu8 "', "//2
+        "'%s', "//1
         "'%s', "
         "'%d', '%d', '%d', '%d', "//5
         "'%d', "
@@ -70,9 +66,7 @@ static int db_insert_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc
         ")",//5
         TABLE1,
         gc, slot,
-        (char*)dress_data->guildcard_str.string,
-        (char*)dress_data->guildcard_str.str,
-        dress_data->guildcard_str.slot1, dress_data->guildcard_str.slot2, dress_data->guildcard_str.slot3,
+        (char*)dress_data->gc_string,
         (char*)dress_data->unk1,
         dress_data->name_color_b, dress_data->name_color_g, dress_data->name_color_r, dress_data->name_color_transparency,
         dress_data->model,
@@ -101,8 +95,6 @@ static int db_upd_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, u
     sprintf(myquery, "UPDATE %s SET "
         "guildcard =  '%" PRIu32 "', slot = '%" PRIu8 "', "
         "gc_string = '%s', "
-        "gc_str = '%s', "
-        "slot1 = '%04X', slot2 = '%04X', slot3 = '%04X', "
         "unk1 = '%s', "
         "name_color_b = '%d', name_color_g = '%d', name_color_r = '%d', name_color_transparency = '%d', "
         "model = '%d', "
@@ -115,9 +107,7 @@ static int db_upd_char_dress_data(psocn_dress_data_t* dress_data, uint32_t gc, u
         "WHERE guildcard = '%" PRIu32 "' AND slot =  '%" PRIu8 "'",
         TABLE1,
         gc, slot,
-        (char*)dress_data->guildcard_str.string,
-        (char*)dress_data->guildcard_str.str,
-        dress_data->guildcard_str.slot1, dress_data->guildcard_str.slot2, dress_data->guildcard_str.slot3,
+        (char*)dress_data->gc_string,
         (char*)dress_data->unk1,
         dress_data->name_color_b, dress_data->name_color_g, dress_data->name_color_r, dress_data->name_color_transparency,
         dress_data->model,
@@ -243,7 +233,7 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
         return -3;
     }
 
-    j = 3;
+    j = 2;
 
     if (isEmptyString(row[j])) {
         psocn_db_result_free(result);
@@ -252,16 +242,7 @@ int db_get_dress_data(uint32_t gc, uint8_t slot, psocn_dress_data_t* dress_data,
         return -4;
     }
 
-    memcpy(&dress_data->guildcard_str.str, row[j], sizeof(dress_data->guildcard_str.str));
-    j++;
-
-    dress_data->guildcard_str.slot1 = (uint16_t)strtoul(row[j], NULL, 10);
-    j++;
-
-    dress_data->guildcard_str.slot2 = (uint16_t)strtoul(row[j], NULL, 10);
-    j++;
-
-    dress_data->guildcard_str.slot3 = (uint16_t)strtoul(row[j], NULL, 10);
+    memcpy(&dress_data->gc_string, row[j], sizeof(dress_data->gc_string));
     j++;
 
     memcpy(&dress_data->unk1, row[j], sizeof(dress_data->unk1));

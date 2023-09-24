@@ -211,8 +211,8 @@ static void* block_thd(void* d) {
                probably dead. Disconnect it. */
             if (srv_time > it->last_message + 90) {
                 if (it->pl) {
-                    DC_LOG("Ping 超时: %s(%d)", get_player_name(it->pl, it->version, false),
-                        it->guildcard);
+                    DC_LOG("Ping 超时: %s(%d:%d)", get_player_name(it->pl, it->version, false), 
+                        it->guildcard, it->sec_data.slot);
                 }
 
                 it->flags |= CLIENT_FLAG_DISCONNECTED;
@@ -477,8 +477,8 @@ static void* block_thd(void* d) {
 
             if (it->flags & CLIENT_FLAG_DISCONNECTED) {
                 if (it->guildcard) {
-                    DC_LOG("客户端 %s(%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
-                        it->guildcard, client_type[it->version].ver_name);
+                    DC_LOG("客户端 %s(%d:%d) 断开连接 %s", get_player_name(it->pl, it->version, false),
+                        it->guildcard, it->sec_data.slot, client_type[it->version].ver_name);
                 }
 #ifdef DEBUG
                 else {
@@ -954,7 +954,7 @@ static int join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->pl->v1.character.dress_data.gc_string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     /* Try to backup their character data */
@@ -1465,7 +1465,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
     pthread_mutex_lock(&c->mutex);
 
     /* If they already had character data, then check if it's still sane. */
-    if (c->pl->v1.character.dress_data.guildcard_str.string[0]) {
+    if (c->pl->v1.character.dress_data.gc_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
@@ -1593,7 +1593,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
 
             /* Notify the shipgate */
             shipgate_send_block_login(&ship->sg, 1, c->guildcard,
-                c->cur_block->b, c->pl->v1.character.dress_data.guildcard_str.string);
+                c->cur_block->b, c->pl->v1.character.dress_data.gc_string);
 
             if (c->cur_lobby)
                 shipgate_send_lobby_chg(&ship->sg, c->guildcard,
@@ -2856,7 +2856,7 @@ static int on_CA_Ep3(ship_client_t* c, uint8_t* pkt) {
     uint16_t len = LE16(hdr->pkt_len);
     uint16_t tmp = 0;
 
-    ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.guildcard_str.string,
+    ERR_LOG("Ep3 服务器数据来自 %s (%d)", c->pl->v1.character.dress_data.gc_string,
         c->guildcard);
     print_ascii_hex(dbgl, pkt, len);
 

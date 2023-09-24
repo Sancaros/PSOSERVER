@@ -87,7 +87,7 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 	case CLIENT_VERSION_EP3:
 	case CLIENT_VERSION_XBOX:
 		istrncpy16_raw(ic_utf8_to_gb18030, player_name,
-			&pl->v1.character.dress_data.guildcard_str, 24, 16);
+			&pl->v1.character.dress_data.gc_string, 24, 16);
 		break;
 
 	case CLIENT_VERSION_BB:
@@ -101,7 +101,7 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 	}
 
 	if (player_name == NULL)
-		ERR_LOG("GC %s 玩家名称为空", pl->v1.character.dress_data.guildcard_str.string);
+		ERR_LOG("GC %s 玩家名称为空", pl->v1.character.dress_data.gc_string);
 
 	return player_name;
 }

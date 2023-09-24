@@ -330,7 +330,7 @@ int dc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.dress_data.guildcard_str.string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.gc_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -374,7 +374,7 @@ int pc_bug_report(ship_client_t *c, simple_mail_pkt *pkt) {
 
     /* Write the bug report out. */
     fprintf(fp, "来自 %s 的BUG报告 (%d) v%d @ %u.%02u.%02u %02u:%02u:%02u\n\n",
-            c->pl->v1.character.dress_data.guildcard_str.string, c->guildcard, c->version, rawtime.wYear,
+            c->pl->v1.character.dress_data.gc_string, c->guildcard, c->version, rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute,
         rawtime.wSecond);
 
@@ -804,21 +804,14 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->disp.stats.dfp = sp->character.disp.stats.dfp;
     c->disp.stats.ata = sp->character.disp.stats.ata;
     c->disp.stats.lck = sp->character.disp.stats.lck;
-    c->disp.opt_flag1 = sp->character.disp.opt_flag1;
-    c->disp.opt_flag2 = sp->character.disp.opt_flag2;
-    c->disp.opt_flag3 = sp->character.disp.opt_flag3;
-    c->disp.opt_flag4 = sp->character.disp.opt_flag4;
-    c->disp.opt_flag5 = sp->character.disp.opt_flag5;
-    c->disp.opt_flag6 = sp->character.disp.opt_flag6;
-    c->disp.opt_flag7 = sp->character.disp.opt_flag7;
-    c->disp.opt_flag8 = sp->character.disp.opt_flag8;
-    c->disp.opt_flag9 = sp->character.disp.opt_flag9;
-    c->disp.opt_flag10 = sp->character.disp.opt_flag10;
+    c->disp.unknown_a1 = sp->character.disp.unknown_a1;
+    c->disp.unknown_a2 = sp->character.disp.unknown_a2;
+    c->disp.unknown_a3 = sp->character.disp.unknown_a3;
     c->disp.level = sp->character.disp.level;
     c->disp.exp = sp->character.disp.exp;
     c->disp.meseta = sp->character.disp.meseta;
 
-    memcpy(c->dress_data.guildcard_str.string, sp->character.dress_data.guildcard_str.string, sizeof(sp->character.dress_data.guildcard_str.string));
+    memcpy(c->dress_data.gc_string, sp->character.dress_data.gc_string, sizeof(sp->character.dress_data.gc_string));
     memcpy(c->dress_data.unk1, sp->character.dress_data.unk1, sizeof(c->dress_data.unk1));
 
     c->dress_data.name_color_b = sp->character.dress_data.name_color_b;
@@ -852,7 +845,7 @@ static void convert_dcpcgc_to_bb(ship_client_t *s, uint8_t *buf) {
     c->name.name_tag2 = LE16('J');
 
     for(i = 0; i < BB_CHARACTER_CHAR_NAME_LENGTH; ++i) {
-        c->name.char_name[i] = LE16(sp->character.dress_data.guildcard_str.string[i]);
+        c->name.char_name[i] = LE16(sp->character.dress_data.gc_string[i]);
     }
 }
 
@@ -876,22 +869,15 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     c->character.disp.stats.ata = sp->disp.stats.ata;
     c->character.disp.stats.lck = sp->disp.stats.lck;
 
-    c->character.disp.opt_flag1 = sp->disp.opt_flag1;
-    c->character.disp.opt_flag2 = sp->disp.opt_flag2;
-    c->character.disp.opt_flag3 = sp->disp.opt_flag3;
-    c->character.disp.opt_flag4 = sp->disp.opt_flag4;
-    c->character.disp.opt_flag5 = sp->disp.opt_flag5;
-    c->character.disp.opt_flag6 = sp->disp.opt_flag6;
-    c->character.disp.opt_flag7 = sp->disp.opt_flag7;
-    c->character.disp.opt_flag8 = sp->disp.opt_flag8;
-    c->character.disp.opt_flag9 = sp->disp.opt_flag9;
-    c->character.disp.opt_flag10 = sp->disp.opt_flag10;
+    c->character.disp.unknown_a1 = sp->disp.unknown_a1;
+    c->character.disp.unknown_a2 = sp->disp.unknown_a2;
+    c->character.disp.unknown_a3 = sp->disp.unknown_a3;
 
     c->character.disp.level = sp->disp.level;
     c->character.disp.exp = sp->disp.exp;
     c->character.disp.meseta = sp->disp.meseta;
 
-    memcpy(c->character.dress_data.guildcard_str.string, sp->dress_data.guildcard_str.string, sizeof(sp->dress_data.guildcard_str.string));
+    memcpy(c->character.dress_data.gc_string, sp->dress_data.gc_string, sizeof(sp->dress_data.gc_string));
 
     memcpy(c->character.dress_data.unk1, sp->dress_data.unk1, sizeof(c->character.dress_data.unk1));
 
@@ -922,7 +908,7 @@ static void convert_bb_to_dcpcgc(ship_client_t *s, uint8_t *buf) {
     memcpy(&c->character.tech, &sp->tech, sizeof(sp->tech));
 
     /* Copy the name over */
-    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.guildcard_str.string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
+    istrncpy16_raw(ic_utf16_to_ascii, c->character.dress_data.gc_string, &sp->name.char_name[0], 16, BB_CHARACTER_CHAR_NAME_LENGTH);
 }
 
 void make_disp_data(ship_client_t* s, ship_client_t* d, void* buf) {

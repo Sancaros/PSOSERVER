@@ -25,23 +25,23 @@ static int db_insert_char_disp(psocn_disp_char_t* disp_data,
     memset(myquery, 0, sizeof(myquery));
 
     sprintf(myquery, "INSERT INTO "
-        "%s (guildcard, slot, "
+        "%s ("
+        "guildcard, slot, "
         "atp, mst, evp, hp, "
         "dfp, ata, lck, "
-        "opt_flags1, opt_flags2, opt_flags3, opt_flags4, opt_flags5, "
-        "opt_flags6, opt_flags7, opt_flags8, opt_flags9, opt_flags10, "
-        "level, exp, meseta) "
-        "VALUES ('%" PRIu32 "', '%" PRIu8 "', "
+        "unknown_a1, unknown_a2, unknown_a3, "
+        "level, exp, meseta"
+        ") VALUES ("
+        "'%" PRIu32 "', '%" PRIu8 "', "
         "'%d', '%d', '%d', '%d', "
         "'%d', '%d', '%d', "
-        "'%d', '%d', '%d', '%d', '%d',"
-        "'%d', '%d', '%d', '%d', '%d',"
-        "'%d', '%d', '%d')"
+        "'%d', '%f', '%f',"
+        "'%d', '%d', '%d'"
+        ")"
         , TABLE, gc, slot
         , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp
         , disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
-        , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
-        , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+        , disp_data->unknown_a1, disp_data->unknown_a2, disp_data->unknown_a3
         , disp_data->level + 1, disp_data->exp, disp_data->meseta
     );
 
@@ -62,13 +62,11 @@ static int db_upd_char_disp(psocn_disp_char_t* disp_data,
 
     sprintf(myquery, "UPDATE %s SET"
         " atp='%d', mst='%d', evp='%d', hp='%d', dfp='%d', ata='%d', lck='%d',"
-        " opt_flags1='%d', opt_flags2='%d', opt_flags3='%d', opt_flags4='%d', opt_flags5='%d',"
-        " opt_flags6='%d', opt_flags7='%d', opt_flags8='%d', opt_flags9='%d', opt_flags10='%d',"
+        " unknown_a1='%d', unknown_a2='%f', unknown_a3='%f',"
         " level='%d', exp='%d', meseta='%d'"
         " WHERE guildcard='%" PRIu32 "' AND slot='%" PRIu8 "'", TABLE
         , disp_data->stats.atp, disp_data->stats.mst, disp_data->stats.evp, disp_data->stats.hp, disp_data->stats.dfp, disp_data->stats.ata, disp_data->stats.lck
-        , disp_data->opt_flag1, disp_data->opt_flag2, disp_data->opt_flag3, disp_data->opt_flag4, disp_data->opt_flag5
-        , disp_data->opt_flag6, disp_data->opt_flag7, disp_data->opt_flag8, disp_data->opt_flag9, disp_data->opt_flag10
+        , disp_data->unknown_a1, disp_data->unknown_a2, disp_data->unknown_a3
         , disp_data->level + 1, disp_data->exp, disp_data->meseta
         , gc, slot
     );
@@ -197,25 +195,11 @@ int db_get_char_disp(uint32_t gc, uint8_t slot, psocn_disp_char_t* data, int che
     data->stats.lck = (uint16_t)strtoul(row[j], NULL, 10);
     j++;
 
-    data->opt_flag1 = (uint8_t)strtoul(row[j], NULL, 10);
+    data->unknown_a1 = (uint16_t)strtoul(row[j], NULL, 10);
     j++;
-    data->opt_flag2 = (uint8_t)strtoul(row[j], NULL, 10);
+    data->unknown_a2 = strtof(row[j], NULL);
     j++;
-    data->opt_flag3 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag4 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag5 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag6 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag7 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag8 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag9 = (uint8_t)strtoul(row[j], NULL, 10);
-    j++;
-    data->opt_flag10 = (uint8_t)strtoul(row[j], NULL, 10);
+    data->unknown_a3 = strtof(row[j], NULL);
     j++;
 
     data->level = (uint32_t)strtoul(row[j], NULL, 10) - 1;

@@ -64,7 +64,7 @@ static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
 
     DBG_LOG("未处理指令 0x%02X", pkt->hdr.pkt_type);
 
-    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -78,7 +78,7 @@ static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->param != src->client_id) {
         ERR_LOG("GC %" PRIu32 " 在触发了游戏房间内 %s 指令! 且Client ID不一致",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -96,7 +96,7 @@ static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -110,7 +110,7 @@ static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     //}
 
     DBG_LOG("玩家 0x%02X 指令: 0x%X", pkt->hdr.pkt_type, pkt->type);
-    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
@@ -442,7 +442,7 @@ static int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->data.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             src->guildcard, pkt->data.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年02月09日 22:51:33:981] 调试(subcmd-bb.c 4924): Unknown 0x60: 0x05
@@ -717,7 +717,7 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -973,7 +973,7 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -998,7 +998,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1023,7 +1023,7 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1047,7 +1047,7 @@ static int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1071,7 +1071,7 @@ static int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1092,7 +1092,7 @@ static int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1116,7 +1116,7 @@ static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1140,7 +1140,7 @@ static int sub60_1B_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1161,7 +1161,7 @@ static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1306,6 +1306,9 @@ static int sub60_21_dc(ship_client_t* src, ship_client_t* dest,
 
     /* Make sure the area is valid */
     if (pkt->area > 17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误数据!",
+            src->guildcard);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1329,6 +1332,9 @@ static int sub60_21_bb(ship_client_t* src, ship_client_t* dest,
 
     /* Make sure the area is valid */
     if (pkt->area > 17) {
+        ERR_LOG("GC %" PRIu32 " 发送错误数据!",
+            src->guildcard); 
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1465,7 +1471,7 @@ static int sub60_24_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1511,7 +1517,7 @@ static int sub60_25_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误装备数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1564,7 +1570,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误卸除装备数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
 
@@ -1612,7 +1618,7 @@ static int sub60_26_bb(ship_client_t* src, ship_client_t* dest,
 //( 00000010 )   00 00 00 00                                     ....
         //ERR_LOG("GC %" PRIu32 " 其他任务触发的数据!",
         //    src->guildcard);
-        //ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
     }
 
@@ -1712,7 +1718,7 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送错误使用物品数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
 
@@ -1750,7 +1756,7 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送错误数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1832,7 +1838,7 @@ static int sub60_29_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的物品掉落数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -1914,7 +1920,7 @@ static int sub60_2A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的物品掉落数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2267,7 +2273,7 @@ static int sub60_2C_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2309,7 +2315,7 @@ static int sub60_2D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2334,7 +2340,7 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2345,7 +2351,7 @@ static int sub60_2F_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
-    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
+    return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2550);
 }
 
 static int sub60_30_dc(ship_client_t* src, ship_client_t* dest, 
@@ -2403,7 +2409,7 @@ static int sub60_33_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2412,7 +2418,7 @@ static int sub60_33_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 //[2023年08月31日 22:00:13:769] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0x33 版本 bb(5) 的处理
@@ -2437,7 +2443,7 @@ static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2446,7 +2452,7 @@ static int sub60_37_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年07月15日 20:40 : 25 : 447] 错误(subcmd_handle.c 0112) : subcmd_get_handler 未完成对 0x60 0x37 版本 5 的处理
@@ -2464,7 +2470,7 @@ static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
             src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2473,7 +2479,7 @@ static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2495,7 +2501,7 @@ static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2738,7 +2744,7 @@ static int sub60_43_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2767,7 +2773,7 @@ static int sub60_44_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2796,7 +2802,7 @@ static int sub60_45_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2874,7 +2880,7 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt_size != (sizeof(bb_pkt_hdr_t) + (size << 2)) || size < 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
             src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -2893,7 +2899,7 @@ static int sub60_46_bb(ship_client_t* src, ship_client_t* dest,
     if (hit_count > allowed_count) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的普通攻击数据! %d %d hit_count %d",
             src->guildcard, pkt_size, (sizeof(bb_pkt_hdr_t) + (size << 2)), hit_count);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
 
@@ -3040,7 +3046,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
             src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
             max_tech_level[pkt->technique_number].tech_name);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3057,7 +3063,7 @@ static int sub60_47_bb(ship_client_t* src, ship_client_t* dest,
         ERR_LOG("GC %" PRIu32 " 职业 %s 发送损坏的 %s 法术攻击数据!",
             src->guildcard, pso_class[src->pl->bb.character.dress_data.ch_class].cn_name,
             max_tech_level[pkt->technique_number].tech_name);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3109,7 +3115,7 @@ static int sub60_48_bb(ship_client_t* src, ship_client_t* dest,
         ) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     
@@ -3148,7 +3154,7 @@ static int sub60_49_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3186,7 +3192,7 @@ static int sub60_4A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3224,7 +3230,7 @@ static int sub60_4B_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3276,7 +3282,7 @@ static int sub60_4C_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏房间指令!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     
@@ -3313,7 +3319,7 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3364,7 +3370,7 @@ static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3404,7 +3410,7 @@ static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3476,7 +3482,7 @@ static int sub60_53_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年07月06日 13:23:16:910] 错误(subcmd_handle.c 0111): subcmd_get_handler 未完成对 0x60 0x53 版本 5 的处理
@@ -3507,7 +3513,7 @@ static int sub60_55_dc(ship_client_t* src, ship_client_t* dest,
     //if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08 || pkt->shdr.client_id != src->client_id) {
     //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
     //        src->guildcard, pkt->shdr.type);
-    //    ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+    //    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
     //    return -1;
     //}
 
@@ -3577,7 +3583,7 @@ static int sub60_55_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0028) || pkt->shdr.size != 0x08) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     
@@ -3626,7 +3632,7 @@ static int sub60_58_dc(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         //return -1;
     }
 
@@ -3648,7 +3654,7 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3879,7 +3885,7 @@ static int sub60_61_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014)) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3900,7 +3906,7 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅中触发了游戏指令!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3909,7 +3915,7 @@ static int sub60_63_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3942,7 +3948,7 @@ static int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -3964,7 +3970,7 @@ static int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4018,7 +4024,7 @@ static int sub60_68_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0024) || pkt->shdr.size != 0x07) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4111,7 +4117,7 @@ static int sub60_6A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4222,7 +4228,7 @@ static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4267,7 +4273,7 @@ static int sub60_76_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的杀怪数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4422,7 +4428,7 @@ static int sub60_77_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的同步数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4529,7 +4535,7 @@ static int sub60_79_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4545,7 +4551,7 @@ static int sub60_7A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -4579,7 +4585,7 @@ static int sub60_7B_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5034,7 +5040,7 @@ static int sub60_7D_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5080,7 +5086,7 @@ static int sub60_80_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5106,7 +5112,7 @@ static int sub60_83_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5137,7 +5143,7 @@ static int sub60_84_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5279,7 +5285,7 @@ static int sub60_85_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5309,7 +5315,7 @@ static int sub60_86_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x04) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年07月12日 20:08:29:962] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x86 版本 5 的处理
@@ -5339,7 +5345,7 @@ static int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5367,7 +5373,7 @@ static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了损坏的死亡数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5394,7 +5400,7 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5431,7 +5437,7 @@ static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 释放了违规的法术!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5462,7 +5468,7 @@ static int sub60_8F_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5491,7 +5497,7 @@ static int sub60_91_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年07月29日 09:04:37:017] 错误(subcmd_handle.c 0112): subcmd_get_handler 未完成对 0x60 0x91 版本 bb(5) 的处理
@@ -5675,7 +5681,7 @@ static int sub60_92_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5713,7 +5719,7 @@ static int sub60_93_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5776,7 +5782,7 @@ static int sub60_97_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x001C) || pkt->shdr.size != 0x05) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5809,7 +5815,7 @@ static int sub60_9A_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5835,7 +5841,7 @@ static int sub60_9B_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5866,7 +5872,7 @@ static int sub60_9C_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5912,7 +5918,7 @@ static int sub60_9D_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5926,7 +5932,7 @@ static int sub60_9F_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0018)/* || pkt->shdr.size != 0x0A*/) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -5942,7 +5948,7 @@ static int sub60_A0_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0030) || pkt->shdr.size != 0x0A) {
         ERR_LOG("GC %" PRIu32 " 发送了错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6087,7 +6093,7 @@ static int sub60_A8_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6484,7 +6490,7 @@ static int sub60_AB_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6522,7 +6528,7 @@ static int sub60_AF_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6537,7 +6543,7 @@ static int sub60_B0_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6564,7 +6570,7 @@ static int sub60_C0_bb(ship_client_t* src, ship_client_t* dest,
         pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6612,7 +6618,7 @@ static int sub60_C3_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6660,7 +6666,7 @@ static int sub60_C4_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0084) || pkt->shdr.size != 0x1F) {
         ERR_LOG("GC %" PRIu32 " 发送错误的整理物品数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
 
@@ -6690,7 +6696,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x01) {
         ERR_LOG("GC %" PRIu32 " 发送错误的医疗中心数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6848,7 +6854,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送错误的数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -6883,7 +6889,7 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的经验获取数据包!",
             src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -7026,7 +7032,7 @@ static int sub60_CF_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x003C) || pkt->shdr.size != 0x0D) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -7051,7 +7057,7 @@ static int sub60_D2_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
     //[2023年02月09日 21:50:51:617] 调试(subcmd-bb.c 4858): Unknown 0x60: 0xD2
@@ -7239,7 +7245,7 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -7287,7 +7293,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
 
@@ -7308,7 +7314,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t remove_item = remove_iitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
     if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -3;
     }
     subcmd_send_bb_destroy_item(src, itemid, 1);
@@ -7347,7 +7353,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
             src->guildcard, pkt->shdr.type);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
 
@@ -7383,7 +7389,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据",src->guildcard);
-            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
@@ -7396,7 +7402,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
-            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
@@ -7409,7 +7415,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
-            ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
         subcmd_send_bb_destroy_item(src, pt_itemid, 99);
@@ -7419,7 +7425,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     default:
         ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
-        ERR_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -4;
     }
 

@@ -171,7 +171,7 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
     c->game_info.block = c->cur_block->b;
     c->game_info.c_version = c->version;
 
-    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.guildcard_str.string, sizeof(c->game_info.name));
+    strncpy((char*)c->game_info.name, c->bb_pl->character.dress_data.gc_string, sizeof(c->game_info.name));
     c->game_info.name[31] = 0;
 
     c->mode = 0;
@@ -1108,7 +1108,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
        TODO: This should probably be more thorough and done as part of the
        client_check_character() function. */
        /* If they already had character data, then check if it's still sane. */
-    if (c->pl->bb.character.dress_data.guildcard_str.string[0]) {
+    if (c->pl->bb.character.dress_data.gc_string[0]) {
         i = client_check_character(c, &pkt->data, version);
         if (i) {
             ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
