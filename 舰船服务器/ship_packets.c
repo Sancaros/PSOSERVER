@@ -5508,6 +5508,45 @@ int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) {
     return rv;
 }
 
+/* 发送不同类型的信息数据统一函数 (i.e, type/ for stuff related to commands). */
+int send_msg2(ship_client_t* c, uint16_t type, const char* fmt, va_list args) {
+    int rv = -1;
+
+    /* Call the appropriate function. */
+    switch (type)
+    {
+    case MSG_BOX_TYPE:
+        rv = send_message_type(c, type, fmt, args);
+        break;
+
+    default:
+        switch (c->version)
+        {
+        case CLIENT_VERSION_DCV1:
+            /* The NTE will crash if it gets the standard version of this
+               packet, so fake it in the easiest way possible... */
+            if (c->flags & CLIENT_FLAG_IS_NTE) {
+                rv = send_dcnte_txt(c, fmt, args);
+                break;
+            }
+
+        case CLIENT_VERSION_DCV2:
+        case CLIENT_VERSION_PC:
+        case CLIENT_VERSION_GC:
+        case CLIENT_VERSION_EP3:
+        case CLIENT_VERSION_XBOX:
+            rv = send_dc_message(c, type, fmt, args);
+            break;
+
+        case CLIENT_VERSION_BB:
+            rv = send_bb_message(c, type, fmt, args);
+            break;
+        }
+        break;
+    }
+    return rv;
+}
+
 uint32_t check_special_quest_type(lobby_t* l) {
     uint32_t type = PSOCN_QUEST_NORMAL;
 

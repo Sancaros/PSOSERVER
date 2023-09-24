@@ -896,10 +896,6 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 	errno_t err = 0;
 	uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
 
-	while (item.datab[0] == ITEM_TYPE_MAG) {
-		item.datab[0] = sfmt_genrand_uint32(随机因子) % 3;
-	}
-
 	/* 检索物品类型 */
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON: // 武器

@@ -436,6 +436,7 @@ static int handle_bcast(ship_client_t *c, const char *params) {
 
     return broadcast_message(c, params, 1);
 }
+
 /* 用法 /tmsg typecode,message */
 static int handle_tmsg(ship_client_t* c, const char* params) {
     uint16_t typecode = 0;
@@ -454,7 +455,7 @@ static int handle_tmsg(ship_client_t* c, const char* params) {
         return send_txt(c, "%s", __(c, "\tE\tC7无效参数代码."));
     }
 
-    return test_message(c, typecode, message, 1);
+    return global_message(c, typecode, 1, message);
 }
 
 /* 用法 /arrow color_number */
@@ -1686,7 +1687,7 @@ static void dumpinv_internal(ship_client_t *src) {
         for(i = 0; i < character_v1->inv.item_count; ++i) {
             print_iitem_data(&character_v1->inv.iitems[i], i, src->version);
         }
-        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("////////////////////////////////////////////////////////////");
     }
     else {
         psocn_bb_char_t* character_bb = get_client_char_bb(src);
@@ -1705,7 +1706,7 @@ static void dumpinv_internal(ship_client_t *src) {
         for (i = 0; i < character_bb->inv.item_count; ++i) {
             print_iitem_data(&character_bb->inv.iitems[i], i, src->version);
         }
-        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("////////////////////////////////////////////////////////////");
     }
     
 }
@@ -1814,7 +1815,7 @@ static void dumpbank_internal(ship_client_t* c) {
         for (i = 0; i < bank->item_count; ++i) {
             print_bitem_data(&bank->bitems[i], i, c->version);
         }
-        ITEM_LOG("------------------------------------------------------------");
+        ITEM_LOG("////////////////////////////////////////////////////////////");
     }
     else {
         send_txt(c, "%s", __(c, "\tE\tC7仅限于BB使用."));

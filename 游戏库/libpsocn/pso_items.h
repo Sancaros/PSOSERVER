@@ -119,6 +119,51 @@ static const uint8_t unit_bonus_values[5][2] = {
     {0x02, 0x00}
 };
 
+static inline const char* get_mag_color_name(int color) {
+	switch (color) {
+	case 0:
+		return "红色";
+	case 1:
+		return "蓝色";
+	case 2:
+		return "黄色";
+	case 3:
+		return "绿色";
+	case 4:
+		return "紫色";
+	case 5:
+		return "黑色";
+	case 6:
+		return "白色";
+	case 7:
+		return "青色";
+	case 8:
+		return "棕色";
+	case 9:
+		return "橙色";
+	case 10:
+		return "石蓝色";
+	case 11:
+		return "橄榄色";
+	case 12:
+		return "青绿色";
+	case 13:
+		return "洋红色";
+	case 14:
+		return "灰色";
+	case 15:
+		return "象牙色";
+	case 16:
+		return "粉红色";
+	case 17:
+		return "深绿色";
+	default:
+		return "未知颜色";
+	}
+}
+
+static char item_des[512];
+
 /* 初始化物品数据 */
 void clear_inv_item(item_t* item);
 void clear_bank_item(item_t* item);
@@ -168,5 +213,7 @@ void print_iitem_data(const iitem_t* iitem, int item_index, int version);
 void print_bitem_data(const bitem_t* iitem, int item_index, int version);
 
 void print_biitem_data(void* data, int item_index, int version, int inv, int err);
+
+char* get_item_describe(const item_t* item, int version);
 
 #endif /* !PSO_ITEMS_H */

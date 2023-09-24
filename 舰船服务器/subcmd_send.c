@@ -906,10 +906,16 @@ int subcmd_bb_send_coren_reward(ship_client_t* dest, uint32_t flags, item_t item
     subcmd_bb_coren_act_result_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_coren_act_result_t);
 
+    if (!l) {
+        ERR_LOG("GC %" PRIu32 " 不在任何房间中!",
+            dest->guildcard);
+        return -1;
+    }
+
     /* 填充数据并准备发送 */
     pkt.hdr.pkt_len = LE16(pkt_size);
-    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
-    pkt.hdr.flags = 0;
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD62_TYPE);
+    pkt.hdr.flags = flags;
 
     /* 填充副指令数据 */
     pkt.shdr.type = SUBCMD62_COREN_ACT_RESULT;

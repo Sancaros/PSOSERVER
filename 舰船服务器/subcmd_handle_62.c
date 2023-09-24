@@ -45,6 +45,7 @@
 #include "enemy_type.h"
 
 #include "subcmd_handle.h"
+#include "admin.h"
 #include <pso_items_coren_reward_list.h>
 
 static int handle_itemreq_gm(ship_client_t* src,
@@ -2739,6 +2740,14 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     item_t result_item = { 0 };
     uint32_t menu_choice = pkt->menu_choice, reward_percent[3] = { 0 };
     Coren_Reward_List_t reward_list = { 0 };
+    int8_t tmp_value = 0;
+    iitem_t iitem = { 0 };
+    errno_t err = 0;
+    uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
+
+    static const uint8_t max_quantity[4] = { 1,  1,  1,  1 };
+    static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
+    static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
         ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
@@ -2752,6 +2761,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
+
+    //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2773,6 +2784,13 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
+    // 将数字转换为对应的星期几文本
+    const char* weekDays[] = { "星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+    const char* currentDayOfWeek = weekDays[reward_list.wday];
+
+    // 打印当前是星期几
+    //DBG_LOG("今天是 %s.", currentDayOfWeek);
+
     reward_percent[0] = weekly_reward_percent[menu_choice][reward_list.wday][0];
     reward_percent[1] = weekly_reward_percent[menu_choice][reward_list.wday][1];
     reward_percent[2] = weekly_reward_percent[menu_choice][reward_list.wday][2];
@@ -2781,34 +2799,169 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
     uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
     if ((rng_value <= reward_percent[0]) && (reward_percent[0] != 0)) {
-        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
     }
     else if ((rng_value <= reward_percent[1]) && (reward_percent[1] != 0)) {
-        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
     }
     else if ((rng_value <= reward_percent[2]) && (reward_percent[2] != 0)) {
-        result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
     }
     else {
 
 #ifdef DEBUG
 
-        DBG_LOG("没有奖励 menu_choice 0x%08X", menu_choice);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-
 #endif // DEBUG
-        result_item.datal[0] = BBItem_NoSuchItem;
-        return subcmd_bb_send_coren_reward(dest, 1, result_item);
+        send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得奖励.",
+            currentDayOfWeek,
+            menu_choice_price[menu_choice],
+            get_player_name(src->pl, src->version, false)
+        );
+
+#ifdef DEBUG
+        DBG_LOG("美赛塔奖励 menu_choice 0x%08X rng_value %d", menu_choice, rng_value);
+
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+#endif // DEBUG
+
+        uint32_t amount = (sfmt_genrand_uint32(rng) % menu_choice_price[menu_choice] + 1) / 2;
+
+        result_item.datal[0] = BBItem_Meseta;
+        get_item_amount(&result_item, amount);
+
+        iitem = player_iitem_init(result_item);
+
+        if (!add_iitem(src, iitem)) {
+            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                src->guildcard);
+            return -1;
+        }
+
+        subcmd_send_bb_create_inv_item(src, iitem.data, amount);
+
+        return subcmd_bb_send_coren_reward(dest, 0, result_item);
     }
 
-    //result_item.datal[0] = reward_list.rewards[sfmt_genrand_uint32(rng) % 25];
-    result_item.datab[5] = get_item_amount(&result_item, 1);
+    //result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+
+    iitem = player_iitem_init(result_item);
+
+
     /* 填充物品数据 */
-    result_item.item_id = generate_item_id(l, src->client_id);
+    if (iitem.data.datal[0] == BBItem_Meseta) {
+        iitem.data.item_id = 0xFFFFFFFF;
+        get_item_amount(&iitem.data, menu_choice_price[menu_choice] * (sfmt_genrand_uint32(rng) % 2 + 1));
+    }
+    else {
+        /* 检索物品类型 */
+        switch (iitem.data.datab[0]) {
+        case ITEM_TYPE_WEAPON: // 武器
+            /* 打磨值 0 - 10*/
+            iitem.data.datab[3] = sfmt_genrand_uint32(rng) % 11;
+            /* 特殊攻击 0 - 10 配合难度 0 - 3*/
+            iitem.data.datab[4] = sfmt_genrand_uint32(rng) % 11 + 难度;
+            /* datab[5] 在这里不涉及 礼物 未鉴定*/
 
-    iitem_t iitem = player_iitem_init(result_item);
+            /* 生成属性*/
+            size_t num_percentages = 0;
+            while (num_percentages < 3) {
+                /*0-5 涵盖所有属性*/
+                for (size_t x = 0; x < 6; x++) {
+                    if ((sfmt_genrand_uint32(rng) % 4) == 1) {
+                        /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
+                        iitem.data.datab[(num_percentages * 2) + 6] = (uint8_t)x;
+                        tmp_value = sfmt_genrand_uint32(rng) % 6 + weapon_bonus_values[sfmt_genrand_uint32(rng) % 20];/* 0 - 5 % 0 - 19*/
 
-    print_item_data(&iitem.data, src->version);
+                        if (tmp_value > 50)
+                            tmp_value = 50;
+
+                        if (tmp_value < -50)
+                            tmp_value = -50;
+
+                        iitem.data.datab[(num_percentages * 2) + 7] = (sfmt_genrand_uint32(rng) % 50 + 1 ) + tmp_value;
+                        num_percentages++;
+                    }
+                }
+            }
+
+            break;
+
+        case ITEM_TYPE_GUARD: // 装甲
+            pmt_guard_bb_t pmt_guard = { 0 };
+            pmt_unit_bb_t pmt_unit = { 0 };
+
+            switch (iitem.data.datab[1]) {
+            case ITEM_SUBTYPE_FRAME://护甲
+                if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
+                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
+                    break;
+                }
+
+                /*随机槽位 0 - 4 */
+                iitem.data.datab[5] = sfmt_genrand_uint32(rng) % 5;
+
+                /* DFP值 */
+                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.dfp_range + 1;
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                iitem.data.datab[6] = tmp_value;
+
+                /* EVP值 */
+                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.evp_range + 1;
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                iitem.data.datab[8] = tmp_value;
+                break;
+
+            case ITEM_SUBTYPE_BARRIER://护盾
+                if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
+                    ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
+                    break;
+                }
+
+                /* DFP值 */
+                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.dfp_range + 1;
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                iitem.data.datab[6] = tmp_value;
+
+                /* EVP值 */
+                tmp_value = sfmt_genrand_uint32(rng) % pmt_guard.evp_range + 1;
+                if (tmp_value < 0)
+                    tmp_value = 0;
+                iitem.data.datab[8] = tmp_value;
+                break;
+
+            case ITEM_SUBTYPE_UNIT://插件
+                if (err = pmt_lookup_unit_bb(iitem.data.datal[0], &pmt_unit)) {
+                    ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
+                    break;
+                }
+
+                tmp_value = sfmt_genrand_uint32(rng) % 5;
+                iitem.data.datab[6] = unit_bonus_values[tmp_value][0];
+                iitem.data.datab[7] = unit_bonus_values[tmp_value][1];
+
+                break;
+            }
+            break;
+
+        case ITEM_TYPE_MAG:
+            magitemstat_t stats;
+            ItemMagStats_init(&stats);
+            assign_mag_stats(&iitem.data, &stats);
+            break;
+
+        case ITEM_TYPE_TOOL: // 药品工具
+            iitem.data.datab[5] = get_item_amount(&iitem.data, 1);
+            break;
+        }
+        
+        iitem.data.item_id = generate_item_id(l, src->client_id);
+
+    }
+
+    //print_item_data(&iitem.data, src->version);
 
     if (!add_iitem(src, iitem)) {
         ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
@@ -2818,27 +2971,24 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     subcmd_send_bb_create_inv_item(src, iitem.data, 1);
 
-    switch (menu_choice)
-    {
-        /* 1000 美赛塔选项 */
-    case 0:
-        break;
+    send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n恭喜 %s 抽奖获得了\n\tE\tC6%s.",
+        currentDayOfWeek,
+        menu_choice_price[menu_choice],
+        get_player_name(src->pl, src->version, false),
+        get_item_describe(&iitem.data, src->version)
+    );
 
-        /* 10000 美赛塔选项 */
-    case 1:
-        break;
+    if(is_item_rare(&iitem.data))
+        announce_message(src, BB_SCROLL_MSG_TYPE, "[%s轮盘赌]: "
+            "恭喜 %s 在 \tE\tC4%d \tE\tC7美赛塔档次抽奖获得了 "
+            "\tE\tC6%s.",
+            currentDayOfWeek,
+            get_player_name(src->pl, src->version, false), 
+            menu_choice_price[menu_choice], 
+            get_item_describe(&iitem.data, src->version)
+        );
 
-        /* 100000 美赛塔选项 */
-    case 2:
-        break;
-
-    default:
-        DBG_LOG("未知选项 0x%08X", menu_choice);
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
-        break;
-    }
-
-    return subcmd_bb_send_coren_reward(dest, 0, iitem.data);
+    return subcmd_bb_send_coren_reward(dest, 1, iitem.data);
 }
 
 // 定义函数指针数组

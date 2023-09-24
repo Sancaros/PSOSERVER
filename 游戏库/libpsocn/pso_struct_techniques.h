@@ -107,4 +107,49 @@ typedef struct player_techniques {
 
 #undef PACKED
 
+static inline const char* get_technique_comment(int index) {
+    switch (index) {
+    case TECHNIQUE_FOIE:
+        return "火球术";
+    case TECHNIQUE_GIFOIE:
+        return "火墙术";
+    case TECHNIQUE_RAFOIE:
+        return "炎狱术";
+    case TECHNIQUE_BARTA:
+        return "冻气术";
+    case TECHNIQUE_GIBARTA:
+        return "冰箭术";
+    case TECHNIQUE_RABARTA:
+        return "极冰术";
+    case TECHNIQUE_ZONDE:
+        return "闪电术";
+    case TECHNIQUE_GIZONDE:
+        return "群雷术";
+    case TECHNIQUE_RAZONDE:
+        return "雷爆术";
+    case TECHNIQUE_GRANTS:
+        return "圣光术";
+    case TECHNIQUE_DEBAND:
+        return "强体术";
+    case TECHNIQUE_JELLEN:
+        return "降攻术";
+    case TECHNIQUE_ZALURE:
+        return "降防术";
+    case TECHNIQUE_SHIFTA:
+        return "强攻术";
+    case TECHNIQUE_RYUKER:
+        return "瞬移术";
+    case TECHNIQUE_RESTA:
+        return "圣泉术";
+    case TECHNIQUE_ANTI:
+        return "状态术";
+    case TECHNIQUE_REVERSER:
+        return "回魂术";
+    case TECHNIQUE_MEGID:
+        return "死咒术";
+    default:
+        return "未知技能";
+    }
+}
+
 #endif // !PSO_STRUCT_TECHNIQUES_H

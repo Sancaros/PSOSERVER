@@ -417,24 +417,27 @@ bool compare_for_sort(item_t* itemDataA, item_t* itemDataB) {
 
 /* 打印物品数据 */
 void print_item_data(const item_t* item, int version) {
-	ITEM_LOG("物品:(ID %d / %08X) %s",
-		item->item_id, item->item_id, item_get_name(item, version));
+	ITEM_LOG("物品: %s", get_item_describe(item, version));
+	ITEM_LOG("编号: 0x%08X",
+		item->item_id);
 	ITEM_LOG("数据: %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X, %02X%02X%02X%02X",
 		item->datab[0], item->datab[1], item->datab[2], item->datab[3],
 		item->datab[4], item->datab[5], item->datab[6], item->datab[7],
 		item->datab[8], item->datab[9], item->datab[10], item->datab[11],
 		item->data2b[0], item->data2b[1], item->data2b[2], item->data2b[3]);
+	ITEM_LOG("------------------------------------------------------------");
 }
 
 /* 打印背包物品数据 */
 void print_iitem_data(const iitem_t* iitem, int item_index, int version) {
-	ITEM_LOG("背包物品:(ID %d / %08X) %s",
-		iitem->data.item_id, iitem->data.item_id, item_get_name(&iitem->data, version));
+	ITEM_LOG("物品: %s", get_item_describe(&iitem->data, version));
+	ITEM_LOG("编号: 0x%08X", iitem->data.item_id);
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
 		"鉴定 %d %d"
-		"(%s) Flags %08X",
+		"(%s) "
+		"Flags %08X",
 		item_index,
 		((iitem->present & LE32(0x0001)) ? "已占槽位" : "未占槽位"),
 		iitem->present,
@@ -448,16 +451,18 @@ void print_iitem_data(const iitem_t* iitem, int item_index, int version) {
 		iitem->data.datab[4], iitem->data.datab[5], iitem->data.datab[6], iitem->data.datab[7],
 		iitem->data.datab[8], iitem->data.datab[9], iitem->data.datab[10], iitem->data.datab[11],
 		iitem->data.data2b[0], iitem->data.data2b[1], iitem->data.data2b[2], iitem->data.data2b[3]);
+	ITEM_LOG("------------------------------------------------------------");
 }
 
 /* 打印银行物品数据 */
 void print_bitem_data(const bitem_t* bitem, int item_index, int version) {
-	ITEM_LOG("银行物品:(ID %d / %08X) %s",
-		bitem->data.item_id, bitem->data.item_id, item_get_name(&bitem->data, version));
+	ITEM_LOG("物品: %s", get_item_describe(&bitem->data, version));
+	ITEM_LOG("编号: 0x%08X", bitem->data.item_id);
 	ITEM_LOG(""
 		"槽位 (%d) "
 		"(%s) %04X "
-		"(%s) Flags %04X",
+		"(%s) "
+		"Flags %04X",
 		item_index,
 		((max_stack_size_for_item(bitem->data.datab[0], bitem->data.datab[1]) > 1) ? "堆叠" : "单独"),
 		bitem->amount,
@@ -469,6 +474,7 @@ void print_bitem_data(const bitem_t* bitem, int item_index, int version) {
 		bitem->data.datab[4], bitem->data.datab[5], bitem->data.datab[6], bitem->data.datab[7],
 		bitem->data.datab[8], bitem->data.datab[9], bitem->data.datab[10], bitem->data.datab[11],
 		bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
+	ITEM_LOG("------------------------------------------------------------");
 }
 
 void print_biitem_data(void* data, int item_index, int version, int inv, int err) {
@@ -528,4 +534,104 @@ void print_biitem_data(void* data, int item_index, int version, int inv, int err
 				bitem->data.data2b[0], bitem->data.data2b[1], bitem->data.data2b[2], bitem->data.data2b[3]);
 		}
 	}
+}
+
+const char* get_unit_bonus_describe(const item_t* item) {
+	const char* unit_attrib[5][2] = {
+		{ "\xFE", "--" },
+		{ "\xFF", "-" },
+		{ "\x00", "无" },
+		{ "\x01", "+" },
+		{ "\x02", "++" }
+	};
+
+	for (size_t x = 0; x < 5; x++) {
+		if (item->datab[6] == *unit_attrib[x][0]) {
+			return unit_attrib[x][1];
+		}
+	}
+
+	return NULL; // 如果没有匹配的项，返回NULL或其他适当的默认值
+}
+
+char* get_item_describe(const item_t* item, int version) {
+	char* weapon_attrib[6] = { "无", "原生", "变异", "机械", "暗黑", "命中" };
+
+	memset(item_des, 0, sizeof(item_des));
+
+	/* 检索物品类型 */
+	switch (item->datab[0]) {
+	case ITEM_TYPE_WEAPON: // 武器
+		sprintf(item_des, "%s+%d 属性%d [%s%d/%s%d/%s%d]"
+			, item_get_name(item, version)
+			, item->datab[3]
+			, item->datab[4]
+			, weapon_attrib[item->datab[6]], item->datab[7]
+			, weapon_attrib[item->datab[8]], item->datab[9]
+			, weapon_attrib[item->datab[10]], item->datab[11]
+		);
+		break;
+	case ITEM_TYPE_GUARD: // 装甲
+		switch (item->datab[1]) {
+		case ITEM_SUBTYPE_FRAME://护甲
+			sprintf(item_des, "%s %dS [%d+/%d+]"
+				, item_get_name(item, version)
+				, item->datab[5]
+				, item->datab[6]
+				, item->datab[8]
+			);
+			break;
+		case ITEM_SUBTYPE_BARRIER://护盾
+			sprintf(item_des, "%s [%d+/%d+]"
+				, item_get_name(item, version)
+				, item->datab[6]
+				, item->datab[8]
+			);
+			break;
+
+		case ITEM_SUBTYPE_UNIT://插件
+			const char* bonus_desc = get_unit_bonus_describe(item);
+			if (bonus_desc == NULL) {
+				sprintf(item_des, "%s", item_get_name(item, version));
+			}
+			else {
+				sprintf(item_des, "%s [%s]"
+					, item_get_name(item, version)
+					, bonus_desc
+				);
+			}
+			break;
+		}
+		break;
+
+	case ITEM_TYPE_MAG:
+		sprintf(item_des, "%s %s Lv%d [%d/%d/%d/%d]"
+			, item_get_name(item, version)
+			, get_mag_color_name(item->data2b[3])
+			, item->datab[2]
+			, item->dataw[2] / 100
+			, item->dataw[3] / 100
+			, item->dataw[4] / 100
+			, item->dataw[5] / 100
+		);
+		break;
+
+	case ITEM_TYPE_TOOL:
+		if (item->datab[1] == 0x02) {
+			sprintf(item_des, "%s Lv%d"
+				, get_technique_comment(item->datab[4])
+				, item->datab[2]
+			);
+		}
+		else {
+			sprintf(item_des, "%s x%d"
+				, item_get_name(item, version)
+				, item->datab[5]
+			);
+		}
+		break;
+
+	}
+
+	return item_des;
 }

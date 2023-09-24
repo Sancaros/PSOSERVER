@@ -23,6 +23,7 @@
 #include <io.h>
 
 #include <f_logs.h>
+#include <f_iconv.h>
 #include <debug.h>
 
 #include "admin.h"
@@ -293,11 +294,14 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
     block_t *b;
     uint32_t i;
     ship_client_t *i2;
+    char message2[4096] = { 0 };
 
     /* Make sure we don't have anyone trying to escalate their privileges. */
     if(c && !LOCAL_GM(c)) {
         return -1;
     }
+
+    istrncpy(ic_utf8_to_gbk, message2, message, 4096);
 
     /* Go through each block and send the message to anyone that is alive. */
     for(i = 0; i < ship->cfg->blocks; ++i) {
@@ -312,10 +316,9 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
 
                 if(i2->pl) {
                     if(prefix) {
-                        send_txt(i2, "%s", __(i2, "\tE\tC7全服消息:"));
-                    }
-
-                    send_txt(i2, "%s", message);
+                        send_txt(i2, "%s\n%s", __(i2, "\tE\tC7全服消息:"), message2);
+                    }else
+                        send_txt(i2, "%s", message2);
                 }
 
                 pthread_mutex_unlock(&i2->mutex);
@@ -328,15 +331,12 @@ int broadcast_message(ship_client_t *c, const char *message, int prefix) {
     return 0;
 }
 
-int test_message(ship_client_t* c, uint16_t type, const char* message, int prefix) {
+/* 发送全球消息 */
+int global_message(ship_client_t* c, uint16_t type, int prefix, const char* fmt, ...) {
     block_t* b;
     uint32_t i;
     ship_client_t* i2;
-
-    /* Make sure we don't have anyone trying to escalate their privileges. */
-    if (c && !LOCAL_GM(c)) {
-        return -1;
-    }
+    va_list args;
 
     /* Go through each block and send the message to anyone that is alive. */
     for (i = 0; i < ship->cfg->blocks; ++i) {
@@ -349,13 +349,52 @@ int test_message(ship_client_t* c, uint16_t type, const char* message, int prefi
             TAILQ_FOREACH(i2, b->clients, qentry) {
                 pthread_mutex_lock(&i2->mutex);
 
+                va_start(args, fmt);
+
                 if (i2->pl) {
                     if (prefix) {
-                        send_msg(i2, type, "%s", __(i2, "\tE\tC7全服消息:"));
-                    }
-
-                    send_msg(i2, type, "%s", message);
+                        send_msg(i2, type, "%s %s", __(i2, "\tE\tC7全服消息:"), fmt, args);
+                    }else
+                        send_msg(i2, type, "%s", fmt, args);
                 }
+
+                va_end(args);
+
+                pthread_mutex_unlock(&i2->mutex);
+            }
+
+            pthread_rwlock_unlock(&b->lock);
+        }
+    }
+
+    return 0;
+}
+
+/* 发送全球消息 */
+int announce_message(ship_client_t* c, uint16_t type, const char* fmt, ...) {
+    block_t* b;
+    uint32_t i;
+    ship_client_t* i2;
+    va_list args;
+
+    /* Go through each block and send the message to anyone that is alive. */
+    for (i = 0; i < ship->cfg->blocks; ++i) {
+        b = ship->blocks[i];
+
+        if (b && b->run) {
+            pthread_rwlock_rdlock(&b->lock);
+
+            /* Send the message to each player. */
+            TAILQ_FOREACH(i2, b->clients, qentry) {
+                pthread_mutex_lock(&i2->mutex);
+
+                va_start(args, fmt);
+
+                if (i2->pl) {
+                    send_msg2(i2, type, fmt, args);
+                }
+
+                va_end(args);
 
                 pthread_mutex_unlock(&i2->mutex);
             }
@@ -391,7 +430,7 @@ int schedule_shutdown(ship_client_t *c, uint32_t when, int restart, msgfunc f) {
 
                 if(i2->pl) {
                     if(i2 != c) {
-                        send_txt(i2, "%s %" PRIu32 " %s%s.",
+                        send_msg(i2, BB_SCROLL_MSG_TYPE, "%s %" PRIu32 " %s%s.",
                             __(i2, "\tE\tC7舰船将于"), when,
                             __(i2, "分钟后"), restart ? "重启" : "关闭");
                        /* if(restart) {

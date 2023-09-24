@@ -42,6 +42,7 @@
 typedef struct item_data {
     // 这是一个关于物品格式的参考注释，用于解释不同类型物品的数据格式。
     // 以下是各种物品类型及其相应的数据格式：
+    //                    0 1 2 3  4 5 6 7  8 9 A B  C D E F    
     // 武器（Weapon）  ：00ZZZZGG SS00AABB AABBAABB 00000000
     // 
     // 防具（Armor）   ：0101ZZ00 FFTTDDDD EEEE0000 00000000

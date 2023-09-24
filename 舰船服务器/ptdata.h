@@ -700,6 +700,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 
 uint32_t rand_int(sfmt_t* rng, uint64_t max);
 float rand_float_0_1_from_crypt(sfmt_t* rng);
+void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area, item_t* item, pt_bb_entry_t* ent);
 item_t on_box_item_drop(lobby_t* l, sfmt_t* rng, uint8_t area, uint8_t section_id);
 item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint32_t def0, uint32_t def1, uint32_t def2);
 item_t on_monster_item_drop(lobby_t* l, sfmt_t* rng, uint32_t enemy_type, uint8_t area, uint8_t section_id);

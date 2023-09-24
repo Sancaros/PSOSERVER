@@ -164,6 +164,7 @@ int send_msg1(ship_client_t *c, const char *fmt, ...) __printflike(2, 3);
 
 /* Send a text message to the client (i.e, for stuff related to commands). */
 int send_msg(ship_client_t* c, uint16_t type, const char* fmt, ...) __printflike(2, 3);
+int send_msg2(ship_client_t* c, uint16_t type, const char* fmt, va_list args);
 
 /* Send a text message to the client (i.e, for stuff related to commands). */
 int send_txt(ship_client_t *c, const char *fmt, ...) __printflike(2, 3);

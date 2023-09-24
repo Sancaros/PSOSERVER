@@ -59,168 +59,171 @@ uint32_t menu_choice_price[3] = {
 uint32_t weekly_reward_percent[3][7][3] = {
 	//1000 美赛塔
 	{
-		{4, 0, 0},  // Day 7
-		{4, 0, 0},  // Day 1，第一列物品概率为4%，第二列物品概率为0%，第三列物品概率为0%
-		{4, 0, 0},  // Day 2
-		{4, 0, 0},  // Day 3
-		{4, 0, 0},  // Day 4
-		{4, 0, 0},  // Day 5
-		{4, 0, 0}   // Day 6
+		{20, 0, 0},  // Day 7
+		{20, 0, 0},  // Day 1，第一列物品概率为4%，第二列物品概率为0%，第三列物品概率为0%
+		{20, 0, 0},  // Day 2
+		{20, 0, 0},  // Day 3
+		{20, 0, 0},  // Day 4
+		{20, 0, 0},  // Day 5
+		{20, 0, 0}   // Day 6
 	},
 	//10000 美赛塔
 	{
-		{8, 4, 0},  // Day 7
-		{8, 4, 0},  // Day 1，第一列物品概率为8%，第二列物品概率为8%，第三列物品概率为0%
-		{8, 4, 0},  // Day 2
-		{8, 4, 0},  // Day 3
-		{8, 4, 0},  // Day 4
-		{8, 4, 0},  // Day 5
-		{8, 4, 0}   // Day 6
+		{40, 20, 0},  // Day 7
+		{40, 20, 0},  // Day 1，第一列物品概率为8%，第二列物品概率为8%，第三列物品概率为0%
+		{40, 20, 0},  // Day 2
+		{40, 20, 0},  // Day 3
+		{40, 20, 0},  // Day 4
+		{40, 20, 0},  // Day 5
+		{40, 20, 0}   // Day 6
 	},
 	//100000 美赛塔
 	{
-		{12, 8, 4},  // Day 7
-		{12, 8, 4},  // Day 1，第一列物品概率为12%，第二列物品概率为8%，第三列物品概率为4%
-		{12, 8, 4},  // Day 2
-		{12, 8, 4},  // Day 3
-		{12, 8, 4},  // Day 4
-		{12, 8, 4},  // Day 5
-		{12, 8, 4}   // Day 6
+		{60, 40, 20},  // Day 7
+		{60, 40, 20},  // Day 1，第一列物品概率为12%，第二列物品概率为8%，第三列物品概率为4%
+		{60, 40, 20},  // Day 2
+		{60, 40, 20},  // Day 3
+		{60, 40, 20},  // Day 4
+		{60, 40, 20},  // Day 5
+		{60, 40, 20}   // Day 6
 	}
 };
 
+// 定义总共的物品数量
+#define TOTAL_COREN_ITEMS 25
+
 /* 科伦奖励列表 */
-uint32_t day_reward_list[7][3][25] = {
+uint32_t day_reward_list[7][3][TOTAL_COREN_ITEMS] = {
 	/* 星期天 */
 	{
-		//1000 美赛塔 奖励:杂物
+		//1000 美赛塔 奖励:杂物 最大奖励 7种药 扩展插槽 替身娃娃
 		{
-			0x00000003, 0x00010003, 0x00020003,
-			0x00000103, 0x00010103, 0x00020103,
-			0x00000303, 0x00000403, 0x00000503,
-			0x00000603, 0x00000703, 0x00000803,
-			0x00000903, 0x00000A03, 0x00010A03,
-			0x00020A03, 0x00000301, 0x00000B03,
-			0x00010B03, 0x00020B03, 0x00030B03,
-			0x00040B03, 0x00050B03, 0x00060B03,
-			0x00000F03
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_AddSlot
 		},
-		//10000 美赛塔 奖励:装甲类型
+		//10000 美赛塔 奖励:装甲类型 最大奖励 佛洛文之铠 猎人服 枪手服 魔导服 婚纱礼服 军用铠ver00 六芒星铠
 		{
-			0x00000101, 0x00010101, 0x00020101,
-			0x00030101, 0x00040101, 0x00050101,
-			0x00060101, 0x00070101, 0x00080101,
-			0x00090101, 0x000A0101, 0x000B0101,
-			0x000C0101, 0x000D0101, 0x000E0101,
-			0x000F0101, 0x00100101, 0x00110101,
-			0x00120101, 0x00130101, 0x00140101,
-			0x00150101, 0x00160101, 0x001E0101,
-			0x001F0101
+			BBItem_Frame, BBItem_Armor, BBItem_Psy_Armor,
+			BBItem_Hyper_Frame, BBItem_Grand_Armor, BBItem_Shock_Frame,
+			BBItem_Kings_Frame, BBItem_Dragon_Frame, BBItem_Absorb_Armor,
+			BBItem_Protect_Frame, BBItem_Soul_Frame, BBItem_Cross_Armor,
+			BBItem_Solid_Frame, BBItem_Holiness_Armor, BBItem_Guardian_Armor,
+			BBItem_Divinity_Armor, BBItem_Ultimate_Frame, BBItem_Celestial_Armor, 
+			BBItem_HUNTER_FIELD, BBItem_RANGER_FIELD, BBItem_FORCE_FIELD,
+			BBItem_CUSTOM_FRAME_ver_OO, BBItem_ATTRIBUTE_PLATE, BBItem_WEDDING_DRESS,
+			BBItem_FLOWENS_FRAME
 		},
-		//100000 美赛塔 奖励:物品 光盘 玛古
+		//100000 美赛塔 奖励:物品 音乐光盘 玛古细胞 天使之心细胞 恶魔之心细胞
 		{
-			0x00000903, 0x00000503, 0x00000B03,
-			0x00010B03, 0x00020B03, 0x00030B03,
-			0x00040B03, 0x00050B03, 0x00060B03,
-			0x00001603, 0x00011603, 0x00021603,
-			0x00031603, 0x00041603, 0x00051603,
-			0x00061603, 0x00071603, 0x00081603,
-			0x00091603, 0x000A1603, 0x000B1603,
-			0x00030C03, 0x00040C03, 0x00050C03,
-			0x00091803
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Parts_of_RoboChao,
+			BBItem_Cell_of_MAG_502, BBItem_Cell_of_MAG_213, BBItem_DISK_Vol1,
+			BBItem_DISK_Vol2, BBItem_DISK_Vol3, BBItem_DISK_Vol4,
+			BBItem_DISK_Vol5, BBItem_DISK_Vol6, BBItem_DISK_Vol7,
+			BBItem_DISK_Vol8, BBItem_DISK_Vol9, BBItem_DISK_Vol10,
+			BBItem_DISK_Vol1, BBItem_DISK_Vol2, BBItem_DISK_Vol3,
+			BBItem_Heart_of_Devil, BBItem_Heart_of_Pian, BBItem_Heart_of_Chao,
+			BBItem_Heart_of_Angel
 		}
 	},
 	/* 星期一 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 护盾 插件 猫耳发饰 封印之盾 优雅盾 兔儿发饰
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Knight_Power, BBItem_Priest_Mind, BBItem_Marksman_Arm,
+			BBItem_Thief_Legs, BBItem_Digger_HP, BBItem_Magician_TP,
+			BBItem_Cure_Poison, BBItem_Cure_Paralysis, BBItem_Cure_Slow,
+			BBItem_Cure_Confuse, BBItem_Cure_Freeze, BBItem_Cure_Shock,
+			BBItem_BUNNY_EARS, BBItem_GRATIA, BBItem_THREE_SEALS,
+			BBItem_CAT_EARS
 		},
-		//10000 美赛塔
+		//10000 美赛塔 武器剑类 剑魔之剑 石中剑 银剑之剑
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Delsabers_Right_Arm, BBItem_Delsabers_Left_Arm, BBItem_PROOF_OF_SWORD_SAINT,
+			BBItem_Sl_JORDSf_WJ_LORE, BBItem_FLAMBERGE, BBItem_LAME_DARGENT,
+			BBItem_EXCALIBUR, BBItem_OROTIAGITO_alt, BBItem_AGITO_1980,
+			BBItem_DELSABERS_BUSTER
 		},
-		//100000 美赛塔
+		//100000 美赛塔 武器剑类 PC 斩龙 最后的生还者 弗罗文大剑 魔法剑 红色大剑 红西诺兽剑 双圣剑拉维斯
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x000D0E03
+			BBItem_Photon_Crystal, BBItem_BLADE_DANCE, BBItem_Saber,
+			BBItem_Brand, BBItem_Buster, BBItem_Pallasch,
+			BBItem_Gladius, BBItem_DBS_SABER, BBItem_KALADBOLG,
+			BBItem_DURANDAL, BBItem_GALATINE, BBItem_PHOENIX_CLAW,
+			BBItem_DOUBLE_SABER, BBItem_STAG_CUTLERY, BBItem_DELSABERS_BUSTER,
+			BBItem_RED_SABER, BBItem_RED_DAGGER, BBItem_FLIGHT_CUTTER,
+			BBItem_DRAGON_SLAYER, BBItem_LAST_SURVIVOR, BBItem_LAVIS_BLADE,
+			BBItem_ELYSION, BBItem_RED_SWORD, BBItem_S_REDS_BLADE,
+			BBItem_FLOWENS_SWORD
 		}
 	},
 	/* 星期二 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 侵蚀遗传因子[佛罗文]
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Parasitic_gene_Flow
 		},
-		//10000 美赛塔
+		//10000 美赛塔 D型寄生细胞 增幅器
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Rappys_Ming, BBItem_Trap_Vision, BBItem_Telepipe,
+			BBItem_Monogrinder, BBItem_Digrinder, BBItem_Trigrinder,
+			BBItem_Scape_Doll, BBItem_Amplifier_of_Foie, BBItem_Amplifier_of_Barta,
+			BBItem_Amplifier_of_Zonde, BBItem_Amplifier_of_Gifoie, BBItem_Amplifier_of_Gibarta,
+			BBItem_Amplifier_of_Gizonde, BBItem_Amplifier_of_Resta, BBItem_Amplifier_of_Anti,
+			BBItem_Amplifier_of_Shift, BBItem_Amplifier_of_Deband, BBItem_Star_Amplifier,
+			BBItem_Amplifier_of_Rafoie, BBItem_Amplifier_of_Rabarta, BBItem_Amplifier_of_Razonde,
+			BBItem_Amplifier_of_Red, BBItem_Amplifier_of_Blue, BBItem_Amplifier_of_Yellow,
+			BBItem_Parasitic_cell_Type_D
 		},
-		//100000 美赛塔
+		//100000 美赛塔 V502 V501 V801 V101 上帝的守护 超能增幅器 限幅器
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Meseta, BBItem_God_Legs, BBItem_Dragon_HP,
+			BBItem_Angel_TP, BBItem_Metal_Body, BBItem_Angel_Luck,
+			BBItem_God_Luck, BBItem_God_Body, BBItem_God_Power,
+			BBItem_God_Mind, BBItem_God_Arm, BBItem_God_Legs,
+			BBItem_God_HP, BBItem_God_TP, BBItem_HP_Ressurection,
+			BBItem_TP_Ressurection, BBItem_PB_Increase, BBItem_DIVINE_PROTECTION,
+			BBItem_LIMITER, BBItem_ADEPT, BBItem_YASAKANI_MAGATAMA,
+			BBItem_V101, BBItem_V501, BBItem_V502,
+			BBItem_V801
 		}
 	},
 	/* 星期三 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 MARK3的零件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Kit_of_MARK3
 		},
 		//10000 美赛塔
 		{
@@ -249,17 +252,17 @@ uint32_t day_reward_list[7][3][25] = {
 	},
 	/* 星期四 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 MASTER SYSTEM的零件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Kit_of_MASTER_SYSTEM
 		},
 		//10000 美赛塔
 		{
@@ -288,17 +291,17 @@ uint32_t day_reward_list[7][3][25] = {
 	},
 	/* 星期五 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 GENESIS的零件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Trigrinder, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Kit_of_GENESIS
 		},
 		//10000 美赛塔
 		{
@@ -327,17 +330,17 @@ uint32_t day_reward_list[7][3][25] = {
 	},
 	/* 星期六 */
 	{
-		//1000 美赛塔
+		//1000 美赛塔 世嘉土星的零件 DREAMCAST的零件
 		{
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101, 0x00000101, 0x00000101,
-			0x00000101
+			BBItem_Monomate, BBItem_Dimate, BBItem_Trimate,
+			BBItem_Monofluid, BBItem_Difluid, BBItem_Trifluid,
+			BBItem_Sol_Atomizer, BBItem_Moon_Atomizer, BBItem_Star_Atomizer,
+			BBItem_Antidote, BBItem_Antiparalysis, BBItem_Telepipe,
+			BBItem_Trap_Vision, BBItem_Scape_Doll, BBItem_Monogrinder,
+			BBItem_Digrinder, BBItem_Kit_of_DREAMCAST, BBItem_Power_Material,
+			BBItem_Mind_Material, BBItem_Evade_Material, BBItem_HP_Material,
+			BBItem_TP_Material, BBItem_Def_Material, BBItem_Luck_Material,
+			BBItem_Kit_of_SEGA_SATURN
 		},
 		//10000 美赛塔
 		{
@@ -365,5 +368,47 @@ uint32_t day_reward_list[7][3][25] = {
 		}
 	}
 };
+
+// 抽奖函数
+static inline int lottery_num(sfmt_t* rng) {
+
+	// 计算权重总和
+	int totalWeight = 0;
+	for (int i = 0; i < TOTAL_COREN_ITEMS; i++) {
+		if (i < 7) {  // 前7个物品占比70%
+			totalWeight += 7;
+		}
+		else if (i < 17) {  // 接下来的10个物品占比20%
+			totalWeight += 2;
+		}
+		else {  // 剩下的8个物品占比10%
+			totalWeight += 1;
+		}
+	}
+
+	// 生成随机数（范围：0 到 totalWeight-1）
+	int randomNumber = sfmt_genrand_uint32(rng) % totalWeight;
+
+	// 根据随机数确定中奖物品
+	int winningItem = -1;
+	int cumulativeWeight = 0;
+	for (int i = 0; i < TOTAL_COREN_ITEMS; i++) {
+		if (i < 7) {
+			cumulativeWeight += 7;
+		}
+		else if (i < 17) {
+			cumulativeWeight += 2;
+		}
+		else {
+			cumulativeWeight += 1;
+		}
+		if (randomNumber < cumulativeWeight) {
+			winningItem = i;
+			break;
+		}
+	}
+
+	return winningItem;
+}
 
 #endif // !COREN_REWARD_LISH_H
