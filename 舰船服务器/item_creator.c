@@ -891,7 +891,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 	static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
 	static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 	item_t item = { 0 };
-	int8_t tmp_value = 0;
+	uint8_t tmp_value = 0;
 	item.datab[0] = 物品类型;
 	errno_t err = 0;
 	uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
@@ -919,16 +919,17 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 		while (num_percentages < 3) {
 			/*0-5 涵盖所有属性*/
 			for (size_t x = 0; x < 6; x++) {
-				if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
+				/* 后期设置调整 生成属性几率 TODO */
+				if ((sfmt_genrand_uint32(随机因子) % 6) == 1) {
 					/*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
 					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-					tmp_value = sfmt_genrand_uint32(随机因子) % 6 + weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
+					tmp_value = /*sfmt_genrand_uint32(随机因子) % 6 +*/ weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
 
-					if (tmp_value > 50)
-						tmp_value = 50;
+					//if (tmp_value > 50)
+					//	tmp_value = 50;
 
-					if (tmp_value < -50)
-						tmp_value = -50;
+					//if (tmp_value < -50)
+					//	tmp_value = -50;
 
 					item.datab[(num_percentages * 2) + 7] = tmp_value;
 					num_percentages++;
@@ -1100,7 +1101,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 
 item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uint32_t def1, uint32_t def2) {
 	item_t item = { 0 };
-	int8_t tmp_value = 0;
+	uint8_t tmp_value = 0;
 	errno_t err = 0;
 	uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
 	clear_inv_item(&item);
@@ -1135,16 +1136,17 @@ item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uin
 		while (num_percentages < 3) {
 			/*0-5 涵盖所有属性*/
 			for (size_t x = 0; x < 6; x++) {
-				if ((sfmt_genrand_uint32(随机因子) % 5) == 1) {
+				/* 后期设置调整 生成属性几率 TODO */
+				if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
 					/*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
 					item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-					tmp_value = sfmt_genrand_uint32(随机因子) % 6 + weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
+					tmp_value = /*sfmt_genrand_uint32(随机因子) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
 
-					if (tmp_value > 50)
-						tmp_value = 50;
+					//if (tmp_value > 50)
+					//	tmp_value = 50;
 
-					if (tmp_value < -50)
-						tmp_value = -50;
+					//if (tmp_value < -50)
+					//	tmp_value = -50;
 
 					item.datab[(num_percentages * 2) + 7] = tmp_value;
 					num_percentages++;

@@ -2740,7 +2740,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     item_t result_item = { 0 };
     uint32_t menu_choice = pkt->menu_choice, reward_percent[3] = { 0 };
     Coren_Reward_List_t reward_list = { 0 };
-    int8_t tmp_value = 0;
+    uint8_t tmp_value = 0;
     iitem_t iitem = { 0 };
     errno_t err = 0;
     uint8_t 难度 = l->difficulty, 章节 = l->episode, 挑战 = l->challenge;
@@ -2763,6 +2763,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     }
 
     //print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+    pthread_mutex_lock(&src->mutex);
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2797,55 +2799,59 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     reward_list.rewards = day_reward_list[reward_list.wday][menu_choice];
 
     /* 必须获取 1-100 大于0的数 这样就不会出现0这个数字了*/
-    uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
-    if ((rng_value <= reward_percent[0]) && (reward_percent[0] != 0)) {
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-    }
-    else if ((rng_value <= reward_percent[1]) && (reward_percent[1] != 0)) {
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-    }
-    else if ((rng_value <= reward_percent[2]) && (reward_percent[2] != 0)) {
-        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
-    }
-    else {
+    if (!src->game_data->gm_debug) {
+
+        uint32_t rng_value = sfmt_genrand_uint32(rng) % 100 + 1;
+        if ((rng_value <= reward_percent[0]) && (reward_percent[0] != 0)) {
+            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+        }
+        else if ((rng_value <= reward_percent[1]) && (reward_percent[1] != 0)) {
+            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+        }
+        else if ((rng_value <= reward_percent[2]) && (reward_percent[2] != 0)) {
+            result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+        }
+        else {
 
 #ifdef DEBUG
 
 #endif // DEBUG
-        send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得奖励.",
-            currentDayOfWeek,
-            menu_choice_price[menu_choice],
-            get_player_name(src->pl, src->version, false)
-        );
+            send_msg(src, MSG1_TYPE, "[%s轮盘赌]:\tE\tC4 %d \tE\tC7美赛塔档次\n很抱歉 %s 本次未获得奖励.",
+                currentDayOfWeek,
+                menu_choice_price[menu_choice],
+                get_player_name(src->pl, src->version, false)
+            );
 
 #ifdef DEBUG
-        DBG_LOG("美赛塔奖励 menu_choice 0x%08X rng_value %d", menu_choice, rng_value);
+            DBG_LOG("美赛塔奖励 menu_choice 0x%08X rng_value %d", menu_choice, rng_value);
 
-        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 #endif // DEBUG
 
-        uint32_t amount = (sfmt_genrand_uint32(rng) % menu_choice_price[menu_choice] + 1) / 2;
+            uint32_t amount = (sfmt_genrand_uint32(rng) % menu_choice_price[menu_choice] + 1) / 2;
 
-        result_item.datal[0] = BBItem_Meseta;
-        get_item_amount(&result_item, amount);
+            result_item.datal[0] = BBItem_Meseta;
+            get_item_amount(&result_item, amount);
 
-        iitem = player_iitem_init(result_item);
+            iitem = player_iitem_init(result_item);
 
-        if (!add_iitem(src, iitem)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                src->guildcard);
-            return -1;
+            if (!add_iitem(src, iitem)) {
+                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
+                    src->guildcard);
+                return -1;
+            }
+
+            subcmd_send_bb_create_inv_item(src, iitem.data, amount);
+
+            subcmd_bb_send_coren_reward(dest, 0, result_item);
+            pthread_mutex_unlock(&src->mutex);
+            return 0;
         }
 
-        subcmd_send_bb_create_inv_item(src, iitem.data, amount);
-
-        return subcmd_bb_send_coren_reward(dest, 0, result_item);
-    }
-
-    //result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
+    }else
+        result_item.datal[0] = reward_list.rewards[lottery_num(rng)];
 
     iitem = player_iitem_init(result_item);
-
 
     /* 填充物品数据 */
     if (iitem.data.datal[0] == BBItem_Meseta) {
@@ -2867,18 +2873,19 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             while (num_percentages < 3) {
                 /*0-5 涵盖所有属性*/
                 for (size_t x = 0; x < 6; x++) {
-                    if ((sfmt_genrand_uint32(rng) % 4) == 1) {
+                    /* 后期设置调整 生成属性几率 TODO */
+                    if ((sfmt_genrand_uint32(rng) % 5) == 1) {
                         /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
                         iitem.data.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-                        tmp_value = sfmt_genrand_uint32(rng) % 6 + weapon_bonus_values[sfmt_genrand_uint32(rng) % 20];/* 0 - 5 % 0 - 19*/
+                        tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 20];/* 0 - 5 % 0 - 19*/
 
-                        if (tmp_value > 50)
-                            tmp_value = 50;
+                        //if (tmp_value > 50)
+                        //    tmp_value = 50;
 
-                        if (tmp_value < -50)
-                            tmp_value = -50;
+                        //if (tmp_value < -50)
+                        //    tmp_value = -50;
 
-                        iitem.data.datab[(num_percentages * 2) + 7] = (sfmt_genrand_uint32(rng) % 50 + 1 ) + tmp_value;
+                        iitem.data.datab[(num_percentages * 2) + 7] = /*(sfmt_genrand_uint32(rng) % 50 + 1 ) +*/ tmp_value;
                         num_percentages++;
                     }
                 }
@@ -2988,7 +2995,9 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             get_item_describe(&iitem.data, src->version)
         );
 
-    return subcmd_bb_send_coren_reward(dest, 1, iitem.data);
+    subcmd_bb_send_coren_reward(dest, 1, iitem.data);
+    pthread_mutex_unlock(&src->mutex);
+    return 0;
 }
 
 // 定义函数指针数组
