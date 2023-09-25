@@ -1198,10 +1198,8 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     }
     /* 独立掉落模式 */
     if (l->drop_pso2) {
-        int i = 0;
-
         /* Send the packet to every connected client. */
-        for (i = 0; i < l->max_clients; ++i) {
+        for (int i = 0; i < l->max_clients; ++i) {
             if (!l->clients[i])
                 continue;
 
@@ -1210,6 +1208,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             ship_client_t* p2 = l->clients[i];
+            pthread_mutex_lock(&p2->mutex);
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
             uint8_t p2_section = p2_char->dress_data.section;
             /* 复用模式 独立 随机颜色ID */
@@ -1219,8 +1218,10 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
             iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
 
-            if (is_item_empty(&iitem.data))
+            if (is_item_empty(&iitem.data)) {
+                pthread_mutex_unlock(&p2->mutex);
                 continue;
+            }
 
             iitem.data.item_id = generate_item_id(l, 0xFF);
 
@@ -1228,16 +1229,19 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
 
-            pthread_mutex_lock(&p2->mutex);
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
-            if (!lt)
+            if (!lt) {
+                ERR_LOG("无法将物品添加至游戏房间!");
+                pthread_mutex_unlock(&p2->mutex);
                 continue;
+            }
 
             rv = subcmd_send_bb_drop_item(p2, pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
         }
     }
     else {
+        pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
         uint8_t section = character->dress_data.section;
 
@@ -1251,8 +1255,10 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         //        pkt->pt_index, pkt->entity_id, en->rt_index);
         //}
         iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
-        if (is_item_empty(&iitem.data))
+        if (is_item_empty(&iitem.data)) {
+            pthread_mutex_unlock(&src->mutex);
             return 0;
+        }
 
         iitem.data.item_id = generate_item_id(l, 0xFF);
 
@@ -1260,10 +1266,12 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
 
-        pthread_mutex_lock(&src->mutex);
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
-        if (!lt)
+        if (!lt) {
+            ERR_LOG("无法将物品添加至游戏房间!");
+            pthread_mutex_unlock(&src->mutex);
             return 0;
+        }
 
         rv = subcmd_send_bb_lobby_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
@@ -1335,10 +1343,8 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
 
     if (l->drop_pso2) {
-        int i = 0;
-
         /* Send the packet to every connected client. */
-        for (i = 0; i < l->max_clients; ++i) {
+        for (int i = 0; i < l->max_clients; ++i) {
             if (!l->clients[i])
                 continue;
 
@@ -1347,6 +1353,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             ship_client_t* p2 = l->clients[i];
+            pthread_mutex_lock(&p2->mutex);
             psocn_bb_char_t* p2_char = get_client_char_bb(p2);
             uint8_t p2_section = p2_char->dress_data.section;
             if (l->drop_psocn) {
@@ -1360,8 +1367,10 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
                 iitem.data = on_specialized_box_item_drop(l, &p2->sfmt_rng,
                     pkt->def[0], pkt->def[1], pkt->def[2]);
 
-            if (is_item_empty(&iitem.data))
+            if (is_item_empty(&iitem.data)) {
+                pthread_mutex_unlock(&p2->mutex);
                 continue;
+            }
 
             iitem.data.item_id = generate_item_id(l, 0xFF);
 
@@ -1369,10 +1378,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             print_item_data(&iitem.data, l->version);
 #endif // DEBUG
 
-            pthread_mutex_lock(&p2->mutex);
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
-            if (!lt)
+            if (!lt) {
+                ERR_LOG("无法将物品添加至游戏房间!");
+                pthread_mutex_unlock(&p2->mutex);
                 continue;
+            }
 
             rv = subcmd_send_bb_drop_item(p2, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
             pthread_mutex_unlock(&p2->mutex);
@@ -1380,6 +1391,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
     }
     else {
+        pthread_mutex_lock(&src->mutex);
         psocn_bb_char_t* character = get_client_char_bb(src);
         uint8_t section = character->dress_data.section;
 
@@ -1390,8 +1402,10 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             iitem.data = on_specialized_box_item_drop(l, &src->sfmt_rng,
                 pkt->def[0], pkt->def[1], pkt->def[2]);
 
-        if (is_item_empty(&iitem.data))
+        if (is_item_empty(&iitem.data)) {
+            pthread_mutex_unlock(&src->mutex);
             return 0;
+        }
 
         iitem.data.item_id = generate_item_id(l, 0xFF);
 
@@ -1399,10 +1413,12 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
         print_item_data(&iitem.data, l->version);
 #endif // DEBUG
 
-        pthread_mutex_lock(&src->mutex);
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
-        if (!lt)
+        if (!lt) {
+            ERR_LOG("无法将物品添加至游戏房间!");
+            pthread_mutex_unlock(&src->mutex);
             return 0;
+        }
 
         rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);

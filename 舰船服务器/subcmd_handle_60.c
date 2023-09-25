@@ -1741,7 +1741,6 @@ static int sub60_27_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_feed_mag_t* pkt) {
     lobby_t* l = src->cur_lobby;
-    uint32_t feed_mag_item_id = pkt->mag_item_id, feed_item_item_id = pkt->fed_item_id;
 
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
@@ -1760,14 +1759,19 @@ static int sub60_28_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
-    errno_t err = player_feed_mag(src, feed_mag_item_id, feed_item_item_id);
+    pthread_mutex_lock(&src->mutex);
+    errno_t err = player_feed_mag(src, pkt->mag_item_id, pkt->fed_item_id);
     if (err) {
         ERR_LOG("GC %" PRIu32 " ·¢ËÍ´íÎóÊı¾İ! ´íÎóÂë %d",
             src->guildcard, err);
+        pthread_mutex_unlock(&src->mutex);
         return -2;
     }
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    pthread_mutex_unlock(&src->mutex);
+
+    return 0;
 }
 
 static int sub60_29_dc(ship_client_t* src, ship_client_t* dest, 

@@ -250,6 +250,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	psocn_bb_char_t* character = get_client_char_bb(src);
 
+	/*获取喂养的玛古和喂养的物品*/
 	int mag_item_index = find_iitem_index(&character->inv, mag_item_id);
 	if (mag_item_index < 0) {
 		ERR_LOG("GC %" PRIu32 " 玛古不存在! 错误码 %d", src->guildcard, mag_item_index);
@@ -262,6 +263,8 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		return feed_item_index;
 	}
 	iitem_t* fed_item = &character->inv.iitems[feed_item_index];
+
+	/* 查找该玛古的喂养表 */
 	size_t result_index = find_result_index(primary_identifier(&fed_item->data));
 	pmt_mag_bb_t mag_table = { 0 };
 	if ((err = pmt_lookup_mag_bb(mag_item->data.datal[0], &mag_table))) {
