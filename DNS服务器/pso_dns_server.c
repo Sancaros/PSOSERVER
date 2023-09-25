@@ -25,6 +25,7 @@
 #include <time.h>
 #include <signal.h>
 #include <setjmp.h>
+#include <pthread.h>
 
 int host_line = 0;
 
@@ -412,35 +413,67 @@ void destroy_connection(dns_client_t* c) {
     free_safe(c);
 }
 
-/* Create a new connection, storing it in the list of clients. */
-dns_client_t* create_connection(int sock,
-    struct sockaddr_in* ip, socklen_t size) {
-    dns_client_t* rv;
+/* 创建一个新连接，并将它存储在客户端列表中。*/
+dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size) {
+    pthread_mutexattr_t attr;
+    uint16_t qdc, anc, nsc, arc;
 
-    /* Allocate the space for the new client. */
-    rv = (dns_client_t*)malloc(sizeof(dns_client_t));
-
+    /* 为新客户端分配内存空间。*/
+    dns_client_t* rv = (dns_client_t*)malloc(sizeof(dns_client_t));
     if (!rv) {
         return NULL;
     }
 
     memset(rv, 0, sizeof(dns_client_t));
 
-    /* 将基础参数存储进客户端的结构. */
+    /* 将基本参数存储到客户端结构中。*/
     rv->sock = sock;
-    memcpy(&rv->ip_addr, ip, size);
 
-    /* Is the user on IPv6? */
+    /* 检查用户是否使用IPv6。*/
     if (ip->sin_family == AF_INET6) {
         rv->is_ipv6 = 1;
     }
 
-    /* Insert it at the end of our list, and we're done. */
+    /* 创建互斥锁。*/
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&(rv->mutex), &attr);
+    pthread_mutexattr_destroy(&attr);
+
+    memcpy(&(rv->ip_addr), ip, size);
+
+    uint32_t rng_seed = (uint32_t)(time(NULL) ^ sock);
+    sfmt_init_gen_rand(&(rv->sfmt_rng), rng_seed);
+
+    /* 按需要更改所有字段的字节顺序。*/
+    qdc = ntohs(inmsg->qdcount);
+    anc = ntohs(inmsg->ancount);
+    nsc = ntohs(inmsg->nscount);
+    arc = ntohs(inmsg->arcount);
+
+#ifdef DEBUG
+    print_ascii_hex(inmsg, sizeof(dnsmsg_t));
+#endif // DEBUG
+
+    /* 检查消息以确保它似乎来自PSO。*/
+    if (qdc != 1 || anc != 0 || nsc != 0 || arc != 0) {
+#ifdef DEBUG
+        ERR_LOG("从端口 %d 发送的DNS数据无效。", sock);
+#endif // DEBUG
+        goto err;
+}
+
+    /* 将新客户端插入到列表末尾。*/
     TAILQ_INSERT_TAIL(&clients, rv, qentry);
 
     rv->auth = 1;
 
     return rv;
+
+err:
+    pthread_mutex_destroy(&(rv->mutex));
+    free_safe(rv);
+    return NULL;
 }
 
 static host_info_t* find_host(const char* hostname) {
@@ -1057,9 +1090,8 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                     sock = ntohs(client_addr.sin_port);
 
                     i = create_connection(sock, &client_addr, len);
-
                     if (!i) {
-                        ERR_LOG("端口 %d 创建DNS数据连接失败.", sock);
+                        ERR_LOG("创建DNS数据连接失败 端口号: %d", sock);
                         close(sock);
                         continue; // 继续等待下一次接收
                     }
@@ -1067,9 +1099,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                     rv = process_query(sockets[j], recive_len, &client_addr);
                     if (rv) {
 #ifdef DEBUG
-
                         ERR_LOG("断开端口 %d 数据接收. 错误码 %d", sock, rv);
-
 #endif // DEBUG
                         close(sock);
                         continue; // 继续等待下一次接收
@@ -1121,7 +1151,50 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
     }
 }
 
+// 定义线程运行的函数
+void* server_thread(void* arg) {
+    int* sockets = (int*)arg;
+
+    // 运行服务器代码
+    run_server(sockets);
+
+    return NULL;
+}
+
+/* The key for accessing our thread-specific receive buffer. */
+pthread_key_t recvbuf_key;
+
+/* The key for accessing our thread-specific send buffer. */
+pthread_key_t sendbuf_key;
+
+/* Destructor for the thread-specific receive buffer */
+static void buf_dtor(void* rb) {
+    free_safe(rb);
+}
+
+/* Initialize the clients system, allocating any thread specific keys */
+int client_init() {
+    if (pthread_key_create(&recvbuf_key, &buf_dtor)) {
+        perror("pthread_key_create");
+        return -1;
+    }
+
+    if (pthread_key_create(&sendbuf_key, &buf_dtor)) {
+        perror("pthread_key_create");
+        return -1;
+    }
+
+    return 0;
+}
+
+/* Clean up the clients system. */
+void client_shutdown(void) {
+    pthread_key_delete(recvbuf_key);
+    pthread_key_delete(sendbuf_key);
+}
+
 int __cdecl main(int argc, char** argv) {
+    void* tmp;
     int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX] = { 0 };
 
     initialization();
@@ -1155,6 +1228,10 @@ int __cdecl main(int argc, char** argv) {
         /* 读取信号监听. */
         HookupHandler();
 
+        /* Set up things for clients to connect. */
+        if (client_init())
+            ERR_EXIT("无法设置 客户端 接入");
+
         listen_sockets(sockets);
 
         DNS_LOG("%s启动完成.", server_name[DNS_SERVER].name);
@@ -1162,17 +1239,46 @@ int __cdecl main(int argc, char** argv) {
         DNS_LOG("请用 <Ctrl-C> 关闭程序.");
 
         /* Go ahead and loop forever... */
-        run_server(sockets);
+        // 创建线程
+        pthread_t server_tid;
+        pthread_create(&server_tid, NULL, server_thread, sockets);
+        //run_server(sockets);
 
-        /* We'll never actually get here... */
+//        /* We'll never actually get here... */
+//#ifndef _WIN32
+//        close(sock);
+//#else
+//        cleanup_sockets(sockets);
+//
+//        //close(sock);
+//        WSACleanup();
+//#endif
+        // 等待服务器线程结束
+        pthread_join(server_tid, NULL);
+
+        /* Clean up... */
+        tmp = pthread_getspecific(sendbuf_key);
+        if (tmp) {
+            free_safe(tmp);
+            pthread_setspecific(sendbuf_key, NULL);
+        }
+
+        tmp = pthread_getspecific(recvbuf_key);
+        if (tmp) {
+            free_safe(tmp);
+            pthread_setspecific(recvbuf_key, NULL);
+        }
+
+
+        // 释放资源
 #ifndef _WIN32
-        close(sock);
+        close(sockets[0]);
 #else
         cleanup_sockets(sockets);
-
-        //close(sock);
         WSACleanup();
 #endif
+
+        client_shutdown();
 
         UnhookHandler();
     }

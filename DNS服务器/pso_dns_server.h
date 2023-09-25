@@ -25,6 +25,8 @@
 #include <ctype.h>
 
 #include <queue.h>
+#include <pthread.h>
+#include <SFMT.h>
 #include <Software_Defines.h>
 #include "version.h"
 
@@ -102,6 +104,9 @@ typedef struct host_info {
 /* Patch server client structure. */
 typedef struct dns_client {
     TAILQ_ENTRY(dns_client) qentry;
+
+    pthread_mutex_t mutex;
+    sfmt_t sfmt_rng;
 
     int type;
     int sock;

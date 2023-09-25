@@ -1785,6 +1785,10 @@ int process_login_packet_dc(login_client_t* c, void* pkt) {
             /* XXXX: Hopefully nobody crashes, right? */
             return handle_patch_return(c, (patch_return_pkt*)pkt);
 
+        case PING_TYPE:
+            /* XXXX: The client sends these every so often. Just ignore them. */
+            return 0;
+
         default:
             DBG_LOG("DC角色指令: 0x%04X %u ver %d", type, c->guildcard, c->version);
             //DBG_LOG("未知 DC 认证 : 0x%02X\n", type);
