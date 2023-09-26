@@ -1675,7 +1675,7 @@ static void dumpinv_internal(ship_client_t *src) {
         psocn_v1v2v3pc_char_t* character_v1 = get_client_char_nobb(src);
 
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 背包数据转储", get_char_describe(src));
+        ITEM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_v1->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
         ITEM_LOG("等级: %u 经验: %u", character_v1->disp.level + 1, character_v1->disp.exp);
         ITEM_LOG("钱包: %u", character_v1->disp.meseta);
@@ -1691,7 +1691,7 @@ static void dumpinv_internal(ship_client_t *src) {
         psocn_bb_char_t* character_bb = get_client_char_bb(src);
 
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 背包数据转储", get_char_describe(src));
+        ITEM_LOG("玩家: %s 背包数据转储", get_player_describe(src));
         ITEM_LOG("职业: %s 房间模式: %s", pso_class[character_bb->dress_data.ch_class].cn_name, src->mode ? "模式" : "普通");
         ITEM_LOG("等级: %u 经验: %u", character_bb->disp.level + 1, character_bb->disp.exp);
         ITEM_LOG("钱包: %u", character_bb->disp.meseta);
@@ -1803,7 +1803,7 @@ static void dumpbank_internal(ship_client_t* src) {
         //istrncpy16_raw(ic_utf16_to_gb18030, name, &c->bb_pl->character.name.char_name[0], 64,
         //    BB_CHARACTER_CHAR_NAME_WLENGTH);
         ITEM_LOG("////////////////////////////////////////////////////////////");
-        ITEM_LOG("玩家: %s 银行数据转储", get_char_describe(src));
+        ITEM_LOG("玩家: %s 银行数据转储", get_player_describe(src));
         ITEM_LOG("职业: %s 银行: %s 模式: %s", pso_class[character->dress_data.ch_class].cn_name, src->bank_type ? "公共" : "角色", src->mode ? "模式" : "普通");
         ITEM_LOG("数量: %u 美赛塔 %u", bank->item_count, bank->meseta);
 

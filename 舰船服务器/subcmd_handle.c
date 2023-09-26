@@ -151,14 +151,14 @@ bool in_game(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
 
     if (!l) {
-        ERR_LOG("%s 不在有效大厅中!", get_char_describe(src));
+        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
         return false;
     }
 
     if (src->version != CLIENT_VERSION_EP3) {
 
         if (l->type != LOBBY_TYPE_GAME) {
-            ERR_LOG("%s 不在游戏房间中!", get_char_describe(src));
+            ERR_LOG("%s 不在游戏房间中!", get_player_describe(src));
             ERR_LOG("当前房间信息:");
             ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
             return false;
@@ -168,7 +168,7 @@ bool in_game(ship_client_t* src) {
     else {
 
         if (l->type != LOBBY_TYPE_EP3_GAME) {
-            ERR_LOG("%s 不在EP3游戏房间中!", get_char_describe(src));
+            ERR_LOG("%s 不在EP3游戏房间中!", get_player_describe(src));
             ERR_LOG("当前房间信息:");
             ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
             return false;
@@ -182,8 +182,12 @@ bool in_game(ship_client_t* src) {
 bool in_lobby(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
 
-    if (!l || l->type != LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 不在有效大厅中!", get_char_describe(src));
+    if (!l) {
+        ERR_LOG("%s 不在有效大厅中!", get_player_describe(src));
+        return false;
+    }
+
+    if (l->type != LOBBY_TYPE_LOBBY) {
         return false;
     }
 
@@ -191,39 +195,49 @@ bool in_lobby(ship_client_t* src) {
 }
 
 bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
+    uint16_t pkt_type = 0;
+    uint8_t pkt_subtype = 0, pkt_size = 0;
+    size_t pkt_len = 0;
+
     switch (src->version)
     {
     case CLIENT_VERSION_BB:
         subcmd_bb_pkt_t* pkt_bb = (subcmd_bb_pkt_t*)pkt;
-        if (pkt_bb->hdr.pkt_len != LE16(len) || pkt_bb->size != size) {
-            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_bb->type);
-            print_ascii_hex(errl, pkt_bb, pkt_bb->hdr.pkt_len);
-            return false;
-        }
-
+        pkt_type = pkt_bb->hdr.pkt_type, pkt_subtype = pkt_bb->type;
+        pkt_len = pkt_bb->hdr.pkt_len;
+        pkt_size = pkt_bb->size;
         break;
 
     case CLIENT_VERSION_PC:
         subcmd_pkt_t* pkt_pc = (subcmd_pkt_t*)pkt;
-        if (pkt_pc->hdr.pc.pkt_len != LE16(len) || pkt_pc->size != size) {
-            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_pc->type);
-            print_ascii_hex(errl, pkt_pc, pkt_pc->hdr.pc.pkt_len);
-            return false;
-        }
+        pkt_type = pkt_pc->hdr.pc.pkt_type, pkt_subtype = pkt_pc->type;
+        pkt_len = pkt_pc->hdr.pc.pkt_len;
+        pkt_size = pkt_pc->size;
         break;
 
 
     default:
         subcmd_pkt_t* pkt_dc = (subcmd_pkt_t*)pkt;
-        if (pkt_dc->hdr.dc.pkt_len != LE16(len) || pkt_dc->size != size) {
-            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_dc->type);
-            print_ascii_hex(errl, pkt_dc, pkt_dc->hdr.dc.pkt_len);
-            return false;
-        }
+        pkt_type = pkt_dc->hdr.dc.pkt_type, pkt_subtype = pkt_dc->type;
+        pkt_len = pkt_dc->hdr.dc.pkt_len;
+        pkt_size = pkt_dc->size;
         break;
     }
 
+    if (pkt_len != LE16(len) && len != 0) {
+        goto err_all;
+    }
+
+    if (pkt_size != size && size != 0xFF) {
+        goto err_all;
+    }
+
     return true;
+
+err_all:
+    ERR_LOG("%s 发送损坏的数据指令 0x%04X 0x%02X!", get_player_describe(src), pkt_type, pkt_subtype);
+    print_ascii_hex(errl, pkt, pkt_len);
+    return false;
 }
 
 char* prepend_command_header(

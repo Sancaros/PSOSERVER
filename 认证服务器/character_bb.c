@@ -73,8 +73,8 @@ static int handle_ignored_pkt(login_client_t* c, const char* cmd, void* pkt, int
     uint16_t type = LE16(bb->pkt_type);
 
     //DBG_LOG("忽略的BB数据包指令 0x%04X", type);
-    UDONE_CPD(type, c->version, pkt);
-    //print_ascii_hex(dbgl,pkt, LE16(bb->pkt_len));
+    //UDONE_CPD(type, c->version, pkt);
+    print_ascii_hex(dbgl, pkt, LE16(bb->pkt_len));
 
     return 0;
 }
@@ -157,6 +157,7 @@ static int handle_info_req(login_client_t* c, bb_select_pkt* pkt) {
 static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
     uint32_t menu_id = LE32(pkt->menu_id);
     uint32_t item_id = LE32(pkt->item_id);
+    uint16_t len = LE16(pkt->hdr.pkt_len);
 
     //DBG_LOG("handle_ship_select指令: 0x%08X item_id %d", menu_id & 0x000000FF, item_id);
 
@@ -256,7 +257,8 @@ static int handle_ship_select(login_client_t* c, bb_select_pkt* pkt) {
         return send_disconnect(c, c->auth);
 
     default:
-        UNK_CPD(menu_id & 0xFF, c->version, (uint8_t*)pkt);
+        ERR_LOG("未知数据包!");
+        print_ascii_hex(errl, pkt, len);
         return send_disconnect(c, c->auth);
     }
 }

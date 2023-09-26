@@ -1094,7 +1094,7 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
 
     if (src->cur_area != area) {
         ERR_LOG("%s picked up item in area they are "
-            "not currently in!", get_char_describe(src));
+            "not currently in!", get_player_describe(src));
     }
 
     /* Clear the list of dropped items. */
@@ -1122,7 +1122,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x14) || pkt->shdr.size != 0x03 ||
         pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送错误的拾取数据!", get_char_describe(src));
+        ERR_LOG("%s 发送错误的拾取数据!", get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -1139,7 +1139,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     else {
         /* Add the item to the client's inventory. */
         if (!add_iitem(src, iitem_data)) {
-            ERR_LOG("%s 拾取物品出错", get_char_describe(src));
+            ERR_LOG("%s 拾取物品出错", get_player_describe(src));
             print_item_data(&iitem_data.data, src->version);
             return -1;
         }
@@ -1221,7 +1221,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
-                ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(p2));
+                ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1236,7 +1236,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         uint8_t section = character->dress_data.section;
 
         if (!l->map_enemies) {
-            ERR_LOG("%s 游戏并未载入地图敌人数据", get_char_describe(src));
+            ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
         //game_enemy_t* en = &l->map_enemies->enemies[pkt->entity_id];
@@ -1258,7 +1258,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
-            ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(src));
+            ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1370,7 +1370,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
-                ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(p2));
+                ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(p2));
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1405,7 +1405,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
-            ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(src));
+            ERR_LOG("%s 无法将物品添加至游戏房间!", get_player_describe(src));
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1431,7 +1431,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         return rv;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1507,7 +1507,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                 item_id = find_iitem_index(&player->inv, pkt->item_id);
                 /* 如果找不到该物品，则将用户从船上推下. */
                 if (item_id < 0) {
-                    ERR_LOG("%s 交易无效物品! 错误码 %d", get_char_describe(src), item_id);
+                    ERR_LOG("%s 交易无效物品! 错误码 %d", get_player_describe(src), item_id);
                     return item_id;
                 }
 
@@ -1520,7 +1520,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             if (!add_titem(trade_inv_src, trade_ii)) {
-                ERR_LOG("%s 无法添加交易物品!", get_char_describe(src));
+                ERR_LOG("%s 无法添加交易物品!", get_player_describe(src));
                 return -3;
             }
             break;
@@ -1550,7 +1550,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
             item_id = check_titem_id(trade_inv_src, pkt->item_id);
             if (item_id != pkt->item_id) {
-                ERR_LOG("%s 交易无效物品! 错误码 %d", get_char_describe(src), item_id);
+                ERR_LOG("%s 交易无效物品! 错误码 %d", get_player_describe(src), item_id);
                 return item_id;
             }
 
@@ -1559,7 +1559,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
         iitem_t tmp = remove_titem(trade_inv_src, trade_ii.data.item_id, pkt->amount);
         if (item_not_identification_bb(tmp.data.datal[0], tmp.data.datal[1])) {
-            ERR_LOG("%s 移除非法交易物品!", get_char_describe(src));
+            ERR_LOG("%s 移除非法交易物品!", get_player_describe(src));
             print_item_data(&tmp.data, src->version);
             return -4;
         }
@@ -1603,7 +1603,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         switch (trade_stage) {
         case 0x00:
             if (!trade_inv_src->confirmed)
-                ERR_LOG("GC %u 根本没有确认", get_char_describe(src));
+                ERR_LOG("GC %u 根本没有确认", get_player_describe(src));
 
             trade_inv_src->confirmed = true;
             //交易方确认交易
@@ -1655,7 +1655,7 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1669,7 +1669,7 @@ int sub62_AE_pc(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1683,7 +1683,7 @@ int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_player_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1714,7 +1714,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
     while (i < num_item_count) {
         if (num_item_count > shop_item_count) {
-            ERR_LOG("%s 商店物品生成错误 num_items %d > shop_size %d", get_char_describe(src), num_item_count, shop_item_count);
+            ERR_LOG("%s 商店物品生成错误 num_items %d > shop_size %d", get_player_describe(src), num_item_count, shop_item_count);
             break;
         }
 
@@ -1736,7 +1736,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
                 size_t shop_price = price_for_item(&item);
                 if (shop_price <= 0) {
                     ERR_LOG("%s:%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d"
-                        , get_char_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
+                        , get_player_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
                     continue;
                 }
 
@@ -1775,7 +1775,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("%s 发送损坏的物品购买数据!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -1798,7 +1798,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             ERR_LOG("%s 发送损坏的物品购买数据!",
-                get_char_describe(src));
+                get_player_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             print_item_data(&ii.data, src->version);
             return -1;
@@ -1824,7 +1824,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     if (character->disp.meseta < price) {
         ERR_LOG("%s 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
-            get_char_describe(src), pkt->shdr.type, character->disp.meseta, price);
+            get_player_describe(src), pkt->shdr.type, character->disp.meseta, price);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         print_item_data(&ii.data, src->version);
         return -1;
@@ -1832,7 +1832,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!add_iitem(src, ii)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return -1;
     }
 
@@ -1866,7 +1866,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("%s 发送损坏的物品鉴定数据!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
@@ -1880,13 +1880,13 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     id_item_index = find_iitem_index(&character->inv, item_id);
     if (id_item_index < 0) {
-        ERR_LOG("%s 鉴定的物品无效! 错误码 %d", get_char_describe(src), id_item_index);
+        ERR_LOG("%s 鉴定的物品无效! 错误码 %d", get_player_describe(src), id_item_index);
         return id_item_index;
     }
 
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
         ERR_LOG("%s 发送无法鉴定的物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
@@ -1896,13 +1896,13 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (id_result->data.item_id == EMPTY_STRING) {
         ERR_LOG("%s 未发送需要鉴定的物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
     }
 
     if (id_result->data.item_id != item_id) {
         ERR_LOG("%s 接受的物品ID与以前请求的物品ID不匹配 !",
-            get_char_describe(src));
+            get_player_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
     }
 
@@ -1911,7 +1911,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
         ERR_LOG("%s 发送无法鉴定的物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
@@ -1936,12 +1936,12 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t id_result = src->game_data->identify_result;
 
     if (!id_result.data.item_id) {
-        ERR_LOG("%s 未获取到鉴定结果", get_char_describe(src));
+        ERR_LOG("%s 未获取到鉴定结果", get_player_describe(src));
         return -1;
     }
 
     if (id_result.data.item_id != pkt->item_id) {
-        ERR_LOG("%s 鉴定结果 item_id != 数据包 item_id", get_char_describe(src));
+        ERR_LOG("%s 鉴定结果 item_id != 数据包 item_id", get_player_describe(src));
         return -1;
     }
 
@@ -1949,7 +1949,7 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!add_iitem(src, id_result)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return -1;
     }
 
@@ -1975,7 +1975,7 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
        match with what we expect. Disconnect the client if not. */
     if (req->hdr.pkt_len != LE16(0x10) || req->shdr.size != 0x02) {
         ERR_LOG("%s 发送错误的银行数据包!",
-            get_char_describe(src));
+            get_player_describe(src));
         return -1;
     }
 
@@ -2010,7 +2010,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("%s 发送损坏的银行操作数据!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2044,13 +2044,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         if (item_id == 0xFFFFFFFF) {
             /* Make sure they aren't trying to do something naughty... */
             if (amt > c_mst_amt) {
-                ERR_LOG("%s 存入银行的美赛塔超出他所拥有的!amt %d c_mst_amt %d", get_char_describe(src), amt, c_mst_amt);
+                ERR_LOG("%s 存入银行的美赛塔超出他所拥有的!amt %d c_mst_amt %d", get_player_describe(src), amt, c_mst_amt);
                 return -1;
             }
 
             bank_amt = LE32(bank->meseta);
             if ((amt + bank_amt) > 999999) {
-                ERR_LOG("%s 存入银行的美赛塔超出限制!amt %d bank_amt %d", get_char_describe(src), amt, bank_amt);
+                ERR_LOG("%s 存入银行的美赛塔超出限制!amt %d bank_amt %d", get_player_describe(src), amt, bank_amt);
                 return -2;
             }
 
@@ -2061,7 +2061,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
             if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
-                ERR_LOG("%s 移除了不存在于背包的物品!", get_char_describe(src));
+                ERR_LOG("%s 移除了不存在于背包的物品!", get_player_describe(src));
                 return -3;
             }
 
@@ -2070,7 +2070,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* 存入! */
             if (!add_bitem(src, bitem)) {
-                ERR_LOG("%s 存物品进银行错误!", get_char_describe(src));
+                ERR_LOG("%s 存物品进银行错误!", get_player_describe(src));
                 return -5;
             }
 
@@ -2087,13 +2087,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         /* Are they taking meseta or an item? */
         if (item_id == ITEM_ID_MESETA) {
             if (amt > bank_amt) {
-                ERR_LOG("%s 从银行取出的美赛塔超出了银行库存!amt %d bank_amt %d", get_char_describe(src), amt, bank_amt);
+                ERR_LOG("%s 从银行取出的美赛塔超出了银行库存!amt %d bank_amt %d", get_player_describe(src), amt, bank_amt);
                 return -6;
             }
 
             /* Make sure they aren't trying to do something naughty... */
             if ((amt + c_mst_amt) > 999999) {
-                ERR_LOG("%s 从银行取出的美赛塔超出了存储限制!amt %d c_mst_amt %d", get_char_describe(src), amt, c_mst_amt);
+                ERR_LOG("%s 从银行取出的美赛塔超出了存储限制!amt %d c_mst_amt %d", get_player_describe(src), amt, c_mst_amt);
                 return -7;
             }
 
@@ -2105,14 +2105,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             if (pkt_bitem_index >= bank->item_count) {
-                ERR_LOG("%s 银行物品索引有误! pkt_bitem_index == %d", get_char_describe(src), pkt_bitem_index);
+                ERR_LOG("%s 银行物品索引有误! pkt_bitem_index == %d", get_player_describe(src), pkt_bitem_index);
                 return -8;
             }
 
             /* 尝试从银行中取出物品. */
             bitem = remove_bitem(src, item_id, pkt_bitem_index, pkt_item_amt);
             if (&bitem == NULL) {
-                ERR_LOG("%s 从银行中取出无效物品!", get_char_describe(src));
+                ERR_LOG("%s 从银行中取出无效物品!", get_player_describe(src));
                 return -9;
             }
 
@@ -2123,7 +2123,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
             /* 新增至玩家背包中... */
             if (!add_iitem(src, iitem)) {
                 ERR_LOG("%s 物品从玩家银行取出失败!",
-                    get_char_describe(src));
+                    get_player_describe(src));
                 return -11;
             }
 
@@ -2136,7 +2136,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         break;
 
     default:
-        ERR_LOG("%s 发送未知银行操作: %d!", get_char_describe(src), action);
+        ERR_LOG("%s 发送未知银行操作: %d!", get_player_describe(src), action);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
     }
@@ -2153,7 +2153,7 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("%s 发送错误的公会邀请数据包!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2208,7 +2208,7 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("%s 发送错误的公会邀请数据包!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2270,7 +2270,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("%s 尝试获取错误的任务美赛塔奖励!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2294,7 +2294,7 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
 
         if (!add_iitem(src, ii)) {
             ERR_LOG("%s 背包空间不足, 无法获得物品!",
-                get_char_describe(src));
+                get_player_describe(src));
             return -1;
         }
 
@@ -2313,7 +2313,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("%s 尝试获取错误的任务物品奖励!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2335,7 +2335,7 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!add_iitem(src, ii)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         return -1;
     }
 
@@ -2353,7 +2353,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("%s 发送错误的公会转让数据包!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2365,7 +2365,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     //print_ascii_hex(errl, pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
-        ERR_LOG("GC %u 公会权限不足", get_char_describe(src));
+        ERR_LOG("GC %u 公会权限不足", get_player_describe(src));
         return send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4公会权限不足!"),
             __(src, "\tC7您无权进行此操作."));
     }
@@ -2387,7 +2387,7 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
         ERR_LOG("%s 发送错误的公会转让数据包!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2502,7 +2502,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
     if (backup_item.data.datal[0] == 0 && backup_item.data.data2l == 0) {
-        ERR_LOG("%s 转换物品ID %d 失败!", get_char_describe(src), item_data.item_id);
+        ERR_LOG("%s 转换物品ID %d 失败!", get_player_describe(src), item_data.item_id);
         return -1;
     }
 
@@ -2515,7 +2515,7 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     if (!add_iitem(dest, backup_item)) {
         if (!add_iitem(src, backup_item)) {
             ERR_LOG("%s 物品返回玩家背包失败!",
-                get_char_describe(src));
+                get_player_describe(src));
             return -1;
         }
         return send_txt(src, __(src, "\tE\tC4转换物品失败"));
@@ -2540,7 +2540,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 如果找不到该物品，则将用户从船上推下. */
         if (item_id == 0) {
-            ERR_LOG("%s 没有兑换所需物品!", get_char_describe(src));
+            ERR_LOG("%s 没有兑换所需物品!", get_player_describe(src));
             return -1;
         }
 
@@ -2706,7 +2706,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("%s 发送损坏的物数据!",
-            get_char_describe(src));
+            get_player_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2786,7 +2786,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
             if (!add_iitem(src, iitem)) {
                 ERR_LOG("%s 背包空间不足, 无法获得物品!",
-                    get_char_describe(src));
+                    get_player_describe(src));
                 pthread_mutex_unlock(&src->mutex);
                 return -1;
             }
@@ -2925,7 +2925,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
 
     if (!add_iitem(src, iitem)) {
         ERR_LOG("%s 背包空间不足, 无法获得物品!",
-            get_char_describe(src));
+            get_player_describe(src));
         pthread_mutex_unlock(&src->mutex);
         return -1;
     }

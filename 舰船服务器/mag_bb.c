@@ -255,13 +255,13 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	/*获取喂养的玛古和喂养的物品*/
 	int mag_item_index = find_iitem_index(&character->inv, mag_item_id);
 	if (mag_item_index < 0) {
-		ERR_LOG("%s 玛古不存在! 错误码 %d", get_char_describe(src), mag_item_index);
+		ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 		return mag_item_index;
 	}
 	item_t* mag_item = &character->inv.iitems[mag_item_index].data;
 	int feed_item_index = find_iitem_index(&character->inv, feed_item_id);
 	if (feed_item_index < 0) {
-		ERR_LOG("%s 喂养物品不存在! 错误码 %d", get_char_describe(src), feed_item_index);
+		ERR_LOG("%s 喂养物品不存在! 错误码 %d", get_player_describe(src), feed_item_index);
 		return feed_item_index;
 	}
 	item_t* fed_item = &character->inv.iitems[feed_item_index].data;
@@ -270,7 +270,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	pmt_mag_bb_t mag_table = { 0 };
 	if ((err = pmt_lookup_mag_bb(mag_item->datal[0], &mag_table))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
-			get_char_describe(src), err);
+			get_player_describe(src), err);
 		return err;
 	}
 
@@ -280,7 +280,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 	pmt_mag_feed_result_t feed_result = { 0 };
 	if ((err = pmt_lookup_mag_feed_table_bb(mag_item->datal[0], mag_table.feed_table, result_index, &feed_result))) {
 		ERR_LOG("%s 喂养了不存在的玛古数据!错误码 %d",
-			get_char_describe(src), err);
+			get_player_describe(src), err);
 		return err;
 	}
 
@@ -510,7 +510,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		/* 进化后的玛古再次进行检索 */
 		mag_item_index = find_iitem_index(&character->inv, mag_item_id);
 		if (mag_item_index < 0) {
-			ERR_LOG("%s 玛古不存在! 错误码 %d", get_char_describe(src), mag_item_index);
+			ERR_LOG("%s 玛古不存在! 错误码 %d", get_player_describe(src), mag_item_index);
 			return mag_item_index;
 		}
 		mag_item = &character->inv.iitems[mag_item_index].data;
@@ -519,12 +519,12 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 		if (err = pmt_lookup_mag_bb(mag_item->datal[0], &new_mag_def)) {
 			ERR_LOG("%s 的背包中有不存在的MAG数据!错误码 %d",
-				get_char_describe(src), err);
+				get_player_describe(src), err);
 			return err;
 		}
 
 		if ((err = add_mag_photon_blast(mag_item, new_mag_def.photon_blast))) {
-			ERR_LOG("%s 玛古新增PB %d 出错! 错误码 %d", get_char_describe(src), new_mag_def.photon_blast, err);
+			ERR_LOG("%s 玛古新增PB %d 出错! 错误码 %d", get_player_describe(src), new_mag_def.photon_blast, err);
 		}
 	}
 
@@ -533,7 +533,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		//在银行中添加或删除meseta时通知。
 		iitem_t delete_item = remove_iitem(src, fed_item->item_id, 1, src->version != CLIENT_VERSION_BB);
 		if (item_not_identification_bb(delete_item.data.datal[0], delete_item.data.datal[1])) {
-			ERR_LOG("%s 删除 ID 0x%08X 失败", get_char_describe(src), fed_item->item_id);
+			ERR_LOG("%s 删除 ID 0x%08X 失败", get_player_describe(src), fed_item->item_id);
 			err = -5;
 		}
 	}

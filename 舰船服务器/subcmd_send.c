@@ -992,7 +992,7 @@ int subcmd_bb_60size_check(ship_client_t* c, subcmd_bb_pkt_t* pkt) {
         if (dont_send_60[(type * 2) + 1] == 1)
         {
             sent = 1;
-            UNK_CSPD(type, c->version, (uint8_t*)pkt);
+            print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
         }
     }
 

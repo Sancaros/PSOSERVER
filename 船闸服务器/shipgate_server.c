@@ -637,7 +637,13 @@ void run_server(int tsock, int tsock6) {
         if ((select_result = select(nfds + 1, &readfds, &writefds, &exceptfds, &timeout)) > 0) {
             /* Check each ship's socket for activity. */
             TAILQ_FOREACH(i, &ships, qentry) {
-                if (i->disconnected) {
+                if (i == NULL) {
+                    // 节点为空，处理错误
+                    i->disconnected = 1;
+                    continue; // 或者采取其他适当的操作
+                }
+
+                if (i->disconnected || i->err_inconnect) {
                     continue;
                 }
 
@@ -670,6 +676,7 @@ void run_server(int tsock, int tsock6) {
                             if (errno != EAGAIN) {
                                 ERR_LOG("发送数据至端口 %d 失败 错误码 %d", i->sock, sent);
                                 i->disconnected = 1;
+                                continue;
                             }
                         }
                         else {
@@ -690,6 +697,7 @@ void run_server(int tsock, int tsock6) {
                 if (FD_ISSET(i->sock, &exceptfds)) {
                     ERR_LOG("客户端端口 %d 套接字异常", i->sock);
                     i->disconnected = 1;
+                    continue;
                 }
             }
 
@@ -1051,6 +1059,8 @@ int __cdecl main(int argc, char** argv) {
     initialization();
 
     __try {
+        pthread_mutex_init(&log_mutex, NULL);
+        pthread_mutex_init(&pkt_mutex, NULL);
 
         server_name_num = SGATE_SERVER;
 
@@ -1117,11 +1127,15 @@ int __cdecl main(int argc, char** argv) {
             goto restart;
         }
 
+        pthread_mutex_destroy(&log_mutex);
+        pthread_mutex_destroy(&pkt_mutex);
     }
 
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
         CRASH_LOG("出现错误, 程序将退出.");
+        pthread_mutex_destroy(&log_mutex);
+        pthread_mutex_destroy(&pkt_mutex);
         (void)getchar();
     }
 

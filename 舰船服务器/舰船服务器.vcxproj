@@ -52,7 +52,6 @@
     <ClCompile Include="subcmd_handle_dcgcpcv1v2.c" />
     <ClCompile Include="utils.c" />
     <ClCompile Include="word_select.c" />
-    <ClCompile Include="subcmd_bb_unused.c" />
     <ClCompile Include="block_bb.c" />
     <ClCompile Include="shop.c" />
     <ClCompile Include="mag_bb.c" />

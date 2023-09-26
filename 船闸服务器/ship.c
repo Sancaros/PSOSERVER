@@ -565,6 +565,8 @@ void remove_ship_in_err(ship_t* s) {
         TAILQ_FOREACH(i, &ships, qentry) {
             send_ship_status(i, s, 0);
         }
+
+        db_delete_online_ships(s->ship_name, s->key_idx);
     }
 }
 
@@ -2826,7 +2828,7 @@ static int handle_bb_guild(ship_t* c, shipgate_fw_9_pkt* pkt) {
         return handle_bb_guild_unk_1DEA(c, pkt);
 
     default:
-        UDONE_CPD(type, 0, pkt);
+        print_ascii_hex(dbgl, pkt, len);
         break;
     }
 
@@ -2973,7 +2975,7 @@ static int handle_bb(ship_t* c, shipgate_fw_9_pkt* pkt) {
         /* Warn the ship that sent the packet, then drop it
          警告发送包裹的船，然后丢弃它
         */
-        UNK_SPD(type, (uint8_t*)pkt);
+        print_ascii_hex(dbgl, pkt, len);
         send_error(c, SHDR_TYPE_BB, SHDR_FAILURE, ERR_GAME_UNK_PACKET,
             (uint8_t*)pkt, len, 0, 0, 0, 0, 0);
         return 0;
@@ -5600,6 +5602,8 @@ static int handle_ship_login6(ship_t* c, shipgate_hdr_t* pkt) {
         send_recive_data_complete(c);
 
         SGATE_LOG("%s: 舰闸数据发送完成", c->ship_name);
+
+        return send_ping(c, 1);
     }
 
     return rv;
@@ -5648,7 +5652,7 @@ static int handle_bb_guild_points(ship_t* c, shipgate_bb_guild_points_pkt* pkt) 
     //DBG_LOG("增加 %d 点", team_points_value);
     if (db_update_bb_guild_points(sender, team_points_value)) {
 
-        ERR_LOG("增加 %d 点公会点数失败", team_points_value);
+        ERR_LOG("GC %u 增加 %d 点公会点数失败", sender, team_points_value);
     }
 
     /* 无需给客户端响应，可以考虑返回一个条幅 发送 */
@@ -5854,87 +5858,70 @@ uint8_t* get_sg_recvbuf(void) {
     return recvbuf;
 }
 
-/* Handle incoming data to the shipgate. */
+/* 从舰船服务器读取数据流. */
 int handle_pkt(ship_t* c) {
-    ssize_t sz;
-    uint16_t pkt_sz;
-    int rv = 0;
-    unsigned char* rbp;
-    uint8_t* recvbuf = get_sg_recvbuf();
-    void* tmp;
-    /* 确保8字节的倍数传输 */
-    int recv_size = 8;
+    __try {
+        ssize_t sz;
+        uint16_t pkt_sz;
+        int rv = 0;
+        unsigned char* rbp;
+        uint8_t* recvbuf = get_sg_recvbuf();
+        void* tmp;
+        /* 确保8字节的倍数传输 */
+        int recv_size = 8;
 
-    memset(&c->pkt, 0, recv_size); // 清零 c->pkt
+        memset(&c->pkt, 0, recv_size); // 清零 c->pkt
 
-    /* If we can't allocate the space, bail. */
-    if (recvbuf == NULL) {
-        ERR_LOG("malloc");
-        return -1;
-    }
-
-    if (c == NULL) {
-        ERR_LOG("非法舰船链接");
-        free_safe(recvbuf);
-        return -1; // 参数合法性检查
-    }
-
-    if (!c->session) {
-        ERR_LOG("非法舰船session");
-        free_safe(recvbuf);
-        return -1; // 错误检查，确保 c->session 不为空
-    }
-
-    /* Don't even try if there's not a connection. */
-    if (!c->has_key || c->sock < 0) {
-#ifdef DEBUG
-
-        ERR_LOG("不向未认证的接入发送任何数据");
-
-#endif // DEBUG
-        return 0;
-    }
-
-    /* If we've got anything buffered, copy it out to the main buffer to make
-       the rest of this a bit easier. */
-    if (c->recvbuf_cur) {
-        memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
-    }
-
-    /* Attempt to read, and if we don't get anything, punt. */
-    sz = ship_recv(c, recvbuf + c->recvbuf_cur,
-        65536 - c->recvbuf_cur);
-
-    if (sz <= 0) {
-        if (sz == SOCKET_ERROR) {
-            DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
+        /* 如果无法分配空间，则退出。 */
+        if (recvbuf == NULL) {
+            ERR_LOG("内存分配失败");
+            return -1;
         }
-        else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
-            ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+
+        if (c == NULL) {
+            ERR_LOG("非法舰船链接");
+            free_safe(recvbuf);
+            return -1; // 参数合法性检查
         }
-        else if (sz < 0) {
-            ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
-            ERR_LOG("Gnutls *** 接收到损坏的数据(%d). 取消响应.", sz);
-            print_ascii_hex(errl, recvbuf, 65536 - c->recvbuf_cur);
-            if (!recvbuf) {
-                free_safe(recvbuf);
-                return 0;
+
+        if (!c->session) {
+            ERR_LOG("非法舰船session");
+            free_safe(recvbuf);
+            return -1; // 错误检查，确保 c->session 不为空
+        }
+
+        /* 如果有缓冲区中已有数据，则将其复制到主缓冲区，以便后续处理。 */
+        if (c->recvbuf_cur) {
+            memcpy(recvbuf, c->recvbuf, c->recvbuf_cur);
+        }
+
+        /* 尝试读取数据，如果没有获取到，则结束处理。 */
+        sz = ship_recv(c, recvbuf + c->recvbuf_cur, 65536 - c->recvbuf_cur);
+
+        if (sz <= 0) {
+            if (sz == SOCKET_ERROR) {
+                DBG_LOG("Gnutls *** 注意: SOCKET_ERROR");
             }
+            else if (sz < 0 && gnutls_error_is_fatal(sz) == 0) {
+                ERR_LOG("Gnutls *** 警告: %s", gnutls_strerror(sz));
+            }
+            else if (sz < 0) {
+                ERR_LOG("Gnutls *** 错误: %s", gnutls_strerror(sz));
+                ERR_LOG("Gnutls *** 接收到损坏的数据长度(%d). 取消响应.", sz);
+                print_ascii_hex(errl, recvbuf, 65536 - c->recvbuf_cur);
+            }
+
+            free_safe(recvbuf);
+            return sz;
         }
 
-        free_safe(recvbuf);
-        return sz;
-    }
+        sz += c->recvbuf_cur;
+        c->recvbuf_cur = 0;
+        rbp = recvbuf;
 
-    sz += c->recvbuf_cur;
-    c->recvbuf_cur = 0;
-    rbp = recvbuf;
-
-    /* As long as what we have is long enough, decrypt it. */
-    if (sz >= recv_size) {
+        /* 只要我们拥有足够长的数据，就进行解密。 */
         while (sz >= recv_size && rv == 0) {
-            /* Grab the packet header so we know what exactly we're looking
-               for, in terms of packet length. */
+            /* 复制数据包头部，以便知道要处理的数据包的长度。 */
             if (!c->hdr_read) {
                 memcpy(&c->pkt, rbp, recv_size);
                 c->hdr_read = 1;
@@ -5942,12 +5929,12 @@ int handle_pkt(ship_t* c) {
 
             pkt_sz = htons(c->pkt.pkt_len);
 
-            /* Do we have the whole packet? */
+            /* 是否已接收完整的数据包？ */
             if (sz >= (ssize_t)pkt_sz) {
-                /* Yep, copy it and process it */
+                /* 是的，将其复制出来。 */
                 memcpy(rbp, &c->pkt, recv_size);
 
-                /* Pass it onto the correct handler. */
+                /* 将数据包传递给正确的处理程序。 */
                 c->last_message = time(NULL);
                 rv = process_ship_pkt(c, (shipgate_hdr_t*)rbp);
                 if (rv) {
@@ -5961,42 +5948,54 @@ int handle_pkt(ship_t* c) {
                 c->hdr_read = 0;
             }
             else {
-                /* Nope, we're missing part, break out of the loop, and buffer
-                   the remaining data. */
+                /* 没有，说明还缺少部分数据，跳出循环，将剩余数据缓冲起来。 */
                 break;
             }
         }
-    }
 
-    /* If we've still got something left here, buffer it for the next pass. */
-    if (sz && rv == 0) {
-        /* Reallocate the recvbuf for the client if its too small. */
-        if (c->recvbuf_size < sz) {
-            tmp = realloc(c->recvbuf, sz);
+        /* 如果还有剩余数据，则缓冲起来以备下一次处理。 */
+        if (sz && rv == 0) {
+            /* 如果缓冲区中有数据，则释放它。 */
+            free_safe(c->recvbuf);
+            c->recvbuf = NULL;
+            c->recvbuf_size = 0;
 
-            if (!tmp) {
-                ERR_LOG("realloc");
-                free_safe(recvbuf);
-                return -1;
+            /* 如果接收缓冲区大小不够，则重新分配。 */
+            if (c->recvbuf_size < sz) {
+                tmp = realloc(c->recvbuf, sz);
+
+                if (!tmp) {
+                    ERR_LOG("realloc");
+                    free_safe(recvbuf);
+                    return -1;
+                }
+
+                c->recvbuf = (unsigned char*)tmp;
+                c->recvbuf_size = sz;
             }
 
-            c->recvbuf = (unsigned char*)tmp;
-            c->recvbuf_size = sz;
+            memcpy(c->recvbuf, rbp, sz);
+            c->recvbuf_cur = sz;
+        }
+        else if (c->recvbuf) {
+            /* 如果接收缓冲区为空，则释放它。 */
+            free_safe(c->recvbuf);
+            c->recvbuf = NULL;
+            c->recvbuf_size = 0;
         }
 
-        memcpy(c->recvbuf, rbp, sz);
-        c->recvbuf_cur = sz;
-    }
-    else if(c->recvbuf) {
-        /* Free the buffer, if we've got nothing in it. */
-        free_safe(c->recvbuf);
-        c->recvbuf = NULL;
-        c->recvbuf_size = 0;
+        free_safe(recvbuf);
+
+        return rv;
     }
 
-    free_safe(recvbuf);
+    __except (crash_handler(GetExceptionInformation())) {
+        // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
-    return rv;
+        CRASH_LOG("出现错误, 程序将退出.");
+        (void)getchar();
+        return -4;
+    }
 }
 
 #ifdef ENABLE_LUA

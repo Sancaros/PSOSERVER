@@ -105,6 +105,8 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 		return;
 	}
 
+	pthread_mutex_lock(&pkt_mutex);
+
 	size_t i; 
 
 	memset(&dp[0], 0, sizeof(dp));
@@ -150,6 +152,8 @@ void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t
 	}
 
 	print_method(dp);
+
+	pthread_mutex_unlock(&pkt_mutex);
 }
 
 /* This function based on information from a couple of different sources, namely

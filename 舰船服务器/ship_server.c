@@ -985,6 +985,8 @@ int __cdecl main(int argc, char** argv) {
     initialization();
 
     __try {
+        pthread_mutex_init(&log_mutex, NULL);
+        pthread_mutex_init(&pkt_mutex, NULL);
 
         server_name_num = SHIPS_SERVER;
 
@@ -1097,12 +1099,16 @@ int __cdecl main(int argc, char** argv) {
 
         xmlCleanupParser();
 
+        pthread_mutex_destroy(&log_mutex);
+        pthread_mutex_destroy(&pkt_mutex);
     }
 
     __except (crash_handler(GetExceptionInformation())) {
         // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
 
         CRASH_LOG("出现错误, 程序将退出.");
+        pthread_mutex_destroy(&log_mutex);
+        pthread_mutex_destroy(&pkt_mutex);
         (void)getchar();
     }
 

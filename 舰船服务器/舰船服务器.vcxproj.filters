@@ -90,9 +90,6 @@
     <ClCompile Include="utils.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="subcmd_bb_unused.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="block_bb.c">
       <Filter>源文件</Filter>
     </ClCompile>

@@ -40,6 +40,11 @@ typedef SSIZE_T ssize_t;
 #  include <sys/types.h>
 # endif
 
+#include <pthread.h>
+
+pthread_mutex_t log_mutex;
+pthread_mutex_t pkt_mutex;
+
 enum Log_files_Num {
 	PATCH_LOG, //²¹¶¡
 	AUTH_LOG, //µÇÂ½
@@ -219,50 +224,185 @@ extern int32_t script_log_console_show;
 #define P_DATA(DATA, LENGTH) print_ascii_hex(DATA, LE16(LENGTH));
 //#define qWiFiDebug(format, ...) qDebug("[WiFi] "format" File:%s, Line:%d, Function:%s", ##__VA_ARGS__, __FILE__, __LINE__ , __func__); 
 
-#define PATCH_LOG(...) flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__)
-#define AUTH_LOG(...) flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__)
-#define SHIPS_LOG(...) flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__)
-#define BLOCK_LOG(...) flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__)
-#define DNS_LOG(...) flog(__LINE__, dns_log_console_show, DNS_LOG, __VA_ARGS__)
-#define ERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__)
+
+#define PATCH_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, patch_log_console_show, PATCH_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define AUTH_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, auth_log_console_show, AUTH_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define SHIPS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, ships_log_console_show, SHIPS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define BLOCK_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, blocks_log_console_show, BLOCK_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define DNS_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, dns_log_console_show, DNS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define ERR_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_err(logfilename(__FILE__), __LINE__, error_log_console_show, ERR_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define LOBBY_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define SGATE_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define ITEM_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define SQLERR_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define QERR_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_err(logfilename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define DBG_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define GM_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define FILE_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define HOST_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define DC_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define DSENT_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define TEST_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define MERR_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_err(logfilename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define CONFIG_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define SCRIPT_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define CRASH_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog_file(__LINE__, crash_log_console_show, CRASH_LOG, "Crash", __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
+#define LOG_LOG(...) \
+do { \
+    pthread_mutex_lock(&log_mutex); \
+    flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__); \
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
 #define ERR_EXIT(...) \
     do { \
         ERR_LOG(__VA_ARGS__); \
+        pthread_mutex_destroy(&log_mutex); \
 		(void*)getchar(); \
         exit(EXIT_FAILURE); \
     } while(0)
 
-#define LOBBY_LOG(...) flog(__LINE__, lobbys_log_console_show, LOBBY_LOG, __VA_ARGS__)
-#define SGATE_LOG(...) flog(__LINE__, sgate_log_console_show, SGATE_LOG, __VA_ARGS__)
-#define ITEM_LOG(...) flog(__LINE__, item_log_console_show, ITEMS_LOG, __VA_ARGS__)
-#define SQLERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, mysqlerr_log_console_show, MYSQLERR_LOG, __VA_ARGS__)
-#define QERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, questerr_log_console_show, QUESTERR_LOG, __VA_ARGS__)
-#define GM_LOG(...) flog(__LINE__, gm_log_console_show, GM_LOG, __VA_ARGS__)
-#define DBG_LOG(...) flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, DEBUG_LOG, __VA_ARGS__)
-#define FILE_LOG(...) flog(__LINE__, file_log_console_show, FILE_LOG, __VA_ARGS__)
-#define HOST_LOG(...) flog(__LINE__, host_log_console_show, HOST_LOG, __VA_ARGS__)
-
-#define UNK_CPD(CODE,VERSION,DATA) unk_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-#define UDONE_CPD(CODE,VERSION,DATA) udone_cpd(c_cmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-#define UNK_CSPD(CODE,VERSION,DATA) unk_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-#define UDONE_CSPD(CODE,VERSION,DATA) udone_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-#define ERR_CSPD(CODE,VERSION,DATA) err_cpd(c_subcmd_name(CODE, VERSION), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-
-#define UNK_SPD(CODE,DATA) unk_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-#define UDONE_SPD(CODE,DATA) udone_spd(s_cmd_name(CODE, 0), (unsigned char*)DATA, __LINE__, logfilename(__FILE__))
-
-#define DC_LOG(...) flog(__LINE__, disconnect_log_console_show, DC_LOG, __VA_ARGS__)
-#define DSENT_LOG(...) flog(__LINE__, dont_send_log_console_show, DONT_SEND_LOG, __VA_ARGS__)
-#define TEST_LOG(...) flog_debug(logfilename(__FILE__), __LINE__, debug_log_console_show, TEST_LOG, __VA_ARGS__)
-#define MERR_LOG(...) flog_err(logfilename(__FILE__), __LINE__, monster_error_log_console_show, MONSTERID_ERR_LOG, __VA_ARGS__)
-#define CONFIG_LOG(...) flog(__LINE__, config_log_console_show, CONFIG_LOG, __VA_ARGS__)
-#define SCRIPT_LOG(...) flog(__LINE__, script_log_console_show, SCRIPT_LOG, __VA_ARGS__)
-#define CRASH_LOG(...) flog_file(__LINE__, crash_log_console_show, CRASH_LOG, "Crash", __VA_ARGS__)
-#define LOG_LOG(...) flog(__LINE__, config_log_console_show, LOG, __VA_ARGS__)
-
 #define CHECK3(...) { printf(__VA_ARGS__); }
 
-#define free_safe(EXP) if(EXP)safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP)
+#define free_safe(EXP)\
+do {\
+    pthread_mutex_lock(&log_mutex); \
+    if(EXP)safe_free(logfilename(__FILE__), __LINE__, (void **)&EXP);\
+    pthread_mutex_unlock(&log_mutex); \
+} while (0)
+
 
 //#define free_safe2(EXP)  if((EXP)!=NULL && \
 //                        (unsigned int)(EXP)>(unsigned int)0x00000000 && \
@@ -322,4 +462,5 @@ extern void udone_cpd(const char* cmd, uint8_t* pkt, int32_t codeline, char* fil
 extern int remove_directory(const char* path);
 
 extern ssize_t clamp(ssize_t value, ssize_t min, ssize_t max);
+
 #endif // !PSOCN_LOG

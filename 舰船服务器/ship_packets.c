@@ -621,9 +621,13 @@ int send_redirect(ship_client_t *c, char* host4, in_addr_t ip, uint16_t port) {
         case CLIENT_VERSION_GC:
         case CLIENT_VERSION_EP3:
         case CLIENT_VERSION_XBOX:
+            c->sec_data.cfg.proxy_destination_address = ip;
+            c->sec_data.cfg.proxy_destination_port = port;
             return send_dc_redirect(c, ip, port);
 
         case CLIENT_VERSION_BB:
+            c->sec_data.cfg.proxy_destination_address = ip;
+            c->sec_data.cfg.proxy_destination_port = port;
             return send_bb_redirect(c, ip, port);
     }
 
@@ -13276,10 +13280,10 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
     c->game_data->err.error_cmd_type = cmd_type;
     c->game_data->err.error_subcmd_type = subcmd_type;
 
-    inventory_t* inv = get_client_inv_bb(c);
-    fix_client_inv(inv);
-    psocn_bank_t* bank = get_client_bank_bb(c);
-    fix_client_bank(bank);
+    //inventory_t* inv = get_client_inv_bb(c);
+    //fix_client_inv(inv);
+    //psocn_bank_t* bank = get_client_bank_bb(c);
+    //fix_client_bank(bank);
 
     if (l->flags & LOBBY_FLAG_QUESTING) {
 
@@ -13295,7 +13299,8 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
     }
     else {
         /* Attempt to change the player's lobby. */
-        return bb_join_game(c, l);
+        
+        return send_ship_list(c, ship, ship->cfg->menu_code);
     }
 }
 

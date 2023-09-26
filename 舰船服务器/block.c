@@ -1588,7 +1588,7 @@ static int dc_process_char(ship_client_t* c, dc_char_data_pkt* pkt) {
         , ship->cfg->ship_name
         , c->cur_block->b
         , c->cur_block->num_clients
-        , get_char_describe(c)
+        , get_player_describe(c)
         , ipstr
         , c->sock
     );

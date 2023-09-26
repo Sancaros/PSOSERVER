@@ -516,8 +516,7 @@ static int bb_process_game_drop_set(ship_client_t* c, uint32_t item_id) {
             pthread_rwlock_unlock(&c->cur_block->lobby_lock);
         }
 
-        DBG_LOG("客户端 %s(%d:%d) %s", get_player_name(c->pl, c->version, false),
-            c->guildcard, c->sec_data.slot, l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
+        DBG_LOG("%s %s", get_player_describe(c), l->drop_pso2 == true ? l->drop_psocn == true ? "随机颜色独立模式" : "独立掉落模式" : "默认掉落模式");
         
         /* All's well in the world if we get here. */
         return 0;
@@ -1255,7 +1254,7 @@ static int bb_process_char(ship_client_t* c, bb_char_data_pkt* pkt) {
         , ship->cfg->ship_name
         , c->cur_block->b
         , c->cur_block->num_clients
-        , get_char_describe(c)
+        , get_player_describe(c)
         , ipstr
         , c->sock
     );
@@ -3127,7 +3126,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
 #ifdef DEBUG
         DBG_LOG("舰仓:BB指令 0x%04X %s 长度 %d 字节 标志 %d GC %u",
             type, c_cmd_name(type, 0), len, flags, c->guildcard);
-        print_ascii_hex(errl, pkt, len);
+        print_ascii_hex(dbgl, pkt, len);
 #endif // DEBUG
 
         if (c->game_data->err.has_error) {
@@ -3235,7 +3234,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD60_TYPE:
             err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);
+                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
                 print_ascii_hex(errl, pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }
@@ -3252,7 +3251,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD6C_TYPE: //需要分离出来
             err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX ", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);
+                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX ", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
                 print_ascii_hex(errl, pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }
@@ -3262,7 +3261,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD6D_TYPE:
             err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("GC %u 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", c->guildcard, err_pkt->hdr.pkt_type, err_pkt->type);
+                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
                 print_ascii_hex(errl, pkt, len);
                 return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
             }

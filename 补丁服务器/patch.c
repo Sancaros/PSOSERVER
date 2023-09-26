@@ -551,7 +551,8 @@ int process_patch_packet(patch_client_t* c, void* pkt) {
         return handle_list_done(c);
 
     default:
-        UNK_CPD(type, c->version, (uint8_t*)pkt);
+        ERR_LOG("未知数据包!");
+        print_ascii_hex(errl, pkt, len);
         return -3;
     }
 
