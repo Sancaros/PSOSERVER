@@ -28,6 +28,8 @@
 #include <pthread.h>
 
 int host_line = 0;
+char ipv4[INET_ADDRSTRLEN];
+char ipv6[INET6_ADDRSTRLEN];
 
 static jmp_buf jmpbuf;
 static volatile sig_atomic_t rehash = 0;
@@ -221,7 +223,7 @@ static int read_config(const char* dir, const char* fn) {
     char* fullfn;
     FILE* fp;
     int entries = 0, lineno = 0;
-    char linebuf[1024], name[1024], host4[1024], host6[1024], ipv4[INET_ADDRSTRLEN], ipv6[INET6_ADDRSTRLEN];
+    char linebuf[1024], name[1024], host4[1024], host6[1024];
     in_addr_t addr;
     void* tmp;
 
@@ -445,6 +447,12 @@ bool isIPBlocked(const char* ipAddress, const char* fn) {
 bool addBlockedIP(const char* ipAddress, const char* fn) {
     FILE* file;
 
+    // 检查是否为本机地址
+    if (strcmp(ipAddress, "127.0.0.1") == 0 || strcmp(ipAddress, "::1") == 0 || strcmp(ipAddress, ipv4) == 0 || strcmp(ipAddress, ipv6) == 0) {
+        DBG_LOG("不封禁本机地址");
+        return false; // 不进行封禁，返回失败
+    }
+
     // 打开文件以追加模式
     file = fopen(fn, "a");
     if (file == NULL) {
@@ -548,7 +556,6 @@ static host_info_t* find_host(const char* hostname) {
 static int respond_to_query(SOCKET sock, size_t len, struct sockaddr_in* addr,
     host_info_t* h) {
     in_addr_t a;
-    char ipv4[INET_ADDRSTRLEN];
 
     /* DNS specifies that any UDP messages over 512 bytes are truncated. We
        don't bother sending them at all, since we should never approach that
