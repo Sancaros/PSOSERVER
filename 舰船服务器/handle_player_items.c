@@ -1031,7 +1031,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
     int index = find_iitem_index(&character->inv, item_id);
     if (index < 0) {
         err = index;
-        ERR_LOG("使用物品发生错误 错误码 %d", index);
+        ERR_LOG("%s 使用物品发生错误 错误码 %d", get_char_describe(src), index);
         return err;
     }
     iitem_t* iitem = &character->inv.iitems[index];
@@ -1132,7 +1132,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         switch (iitem->data.datab[1]) {
         case ITEM_SUBTYPE_TELEPIPE:
             if (src->cur_area == 0) {
-                ERR_LOG("GC %u 尝试在先驱者2号释放传送门");
+                ERR_LOG("%s 尝试在先驱者2号释放传送门", get_char_describe(src));
                 return -10;
             }
 
@@ -1141,7 +1141,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         case ITEM_SUBTYPE_DISK: // Technique disk
             uint8_t max_level = max_tech_level[iitem->data.datab[4]].max_lvl[character->dress_data.ch_class];
             if (iitem->data.datab[2] > max_level) {
-                ERR_LOG("法术科技光碟等级高于职业可用等级");
+                ERR_LOG("%s 法术科技光碟等级高于职业可用等级", get_char_describe(src));
                 return -1;
             }
             character->tech.all[iitem->data.datab[4]] = iitem->data.datab[2];
@@ -1149,14 +1149,13 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
 
         case ITEM_SUBTYPE_GRINDER: // Grinder
             if (iitem->data.datab[2] > 2) {
-                ERR_LOG("无效打磨物品值");
+                ERR_LOG("%s 无效打磨物品值", get_char_describe(src));
                 return -2;
             }
             weapon = &character->inv.iitems[find_equipped_weapon(&character->inv)];
             pmt_weapon_bb_t weapon_def = { 0 };
             if (pmt_lookup_weapon_bb(weapon->data.datal[0], &weapon_def)) {
-                ERR_LOG("GC %" PRIu32 " 装备了不存在的物品数据!",
-                    src->guildcard);
+                ERR_LOG("%s 装备了不存在的物品数据!", get_char_describe(src));
                 return -3;
             }
 
@@ -1197,7 +1196,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 break;
 
             default:
-                ERR_LOG("未知药物 0x%08X", iitem->data.datal[0]);
+                ERR_LOG("%s 未知药物 0x%08X", get_char_describe(src), iitem->data.datal[0]);
                 return -5;
             }
             break;
@@ -1205,7 +1204,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         case ITEM_SUBTYPE_MAG_CELL1:
             int mag_index = find_equipped_mag(&character->inv);
             if (mag_index == -1) {
-                ERR_LOG("玩家没有装备玛古,玛古细胞 0x%08X", iitem->data.datal[0]);
+                ERR_LOG("%s 没有装备玛古,玛古细胞 0x%08X", get_char_describe(src), iitem->data.datal[0]);
                 break;
             }
             mag = &character->inv.iitems[mag_index];
@@ -1242,7 +1241,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 break;
 
             default:
-                ERR_LOG("未知玛古细胞 0x%08X", iitem->data.datal[0]);
+                ERR_LOG("%s 未知玛古细胞 0x%08X", get_char_describe(src), iitem->data.datal[0]);
                 return -5;
             }
             break;
@@ -1251,7 +1250,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             armor = &character->inv.iitems[find_equipped_armor(&character->inv)];
 
             if (armor->data.datab[5] >= 4) {
-                ERR_LOG("物品已达最大插槽数量");
+                ERR_LOG("%s 物品已达最大插槽数量", get_char_describe(src));
                 return -6;
             }
             armor->data.datab[5]++;
@@ -1475,11 +1474,11 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 break;
 
             case 0x05:
-                DBG_LOG("Aluminum Weapons Badge");
+                DBG_LOG("%s Aluminum Weapons Badge", get_char_describe(src));
                 break;
 
             case 0x06:
-                DBG_LOG("Leather Weapons Badge");
+                DBG_LOG("%s Leather Weapons Badge", get_char_describe(src));
                 break;
 
             case 0x07: // weapons bone
@@ -1534,7 +1533,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 if (!new_litem) {
                     /* *Gulp* The lobby is probably toast... At least make sure this user is
                        still (mostly) safe... */
-                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_char_describe(src));
                     return -1;
                 }
 
@@ -1554,7 +1553,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 if (!new_litem) {
                     /* *Gulp* The lobby is probably toast... At least make sure this user is
                        still (mostly) safe... */
-                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_char_describe(src));
                     return -1;
                 }
 
@@ -1570,7 +1569,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 if (!new_litem) {
                     /* *Gulp* The lobby is probably toast... At least make sure this user is
                        still (mostly) safe... */
-                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_char_describe(src));
                     return -1;
                 }
 
@@ -1586,7 +1585,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 if (!new_litem) {
                     /* *Gulp* The lobby is probably toast... At least make sure this user is
                        still (mostly) safe... */
-                    ERR_LOG("无法将物品新增游戏房间背包!");
+                    ERR_LOG("%s 无法将物品新增游戏房间背包!", get_char_describe(src));
                     return -1;
                 }
 
@@ -1608,7 +1607,7 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             }
 
             if (sum == 0) {
-                ERR_LOG("节日事件没有可用的礼包结果");
+                ERR_LOG("%s 节日事件没有可用的礼包结果", get_char_describe(src));
                 return 0;
             }
 
@@ -1638,15 +1637,15 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
             /* TODO 出现的武器 装甲 增加随机属性 */
             switch (iitem->data.datab[2]) {
             case 0x00:
-                DBG_LOG("使用圣诞礼物");
+                DBG_LOG("%s 使用圣诞礼物", get_char_describe(src));
                 break;
 
             case 0x01:
-                DBG_LOG("使用复活节礼物");
+                DBG_LOG("%s 使用复活节礼物", get_char_describe(src));
                 break;
 
             case 0x02:
-                DBG_LOG("使用万圣节礼物");
+                DBG_LOG("%s 使用万圣节礼物", get_char_describe(src));
                 break;
             }
             break;
@@ -1675,44 +1674,44 @@ combintion_other:
             __try {
                 if (err = pmt_lookup_itemcombination_bb(iitem->data.datal[0], inv_item->data.datal[0], &combo)) {
 #ifdef DEBUG
-                    ERR_LOG("pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", err);
+                    ERR_LOG("%s pmt_lookup_itemcombination_bb 不存在数据! 错误码 %d", get_char_describe(src), err);
 #endif // DEBUG
                     continue;
                 }
 
                 if (combo.char_class != 0xFF && combo.char_class != character->dress_data.ch_class) {
-                    ERR_LOG("物品合成需要特定的玩家职业");
+                    ERR_LOG("%s 物品合成需要特定的玩家职业", get_char_describe(src));
                     ERR_LOG("combo.class %d player %d", combo.char_class, character->dress_data.ch_class);
                 }
                 if (combo.mag_level != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_MAG && find_equipped_mag(&character->inv) == -1) {
-                        ERR_LOG("物品合成适用于mag级别要求,但装备的物品不是mag");
+                        ERR_LOG("%s 物品合成适用于mag级别要求,但装备的物品不是mag", get_char_describe(src));
                         ERR_LOG("datab[0] 0x%02X", inv_item->data.datab[0]);
                         return -1;
                     }
                     if (compute_mag_level(&inv_item->data) < combo.mag_level) {
-                        ERR_LOG("物品合成适用于mag等级要求,但装备的mag等级过低");
+                        ERR_LOG("%s 物品合成适用于mag等级要求,但装备的mag等级过低", get_char_describe(src));
                         return -2;
                     }
                 }
                 if (combo.grind != 0xFF) {
                     if (inv_item->data.datab[0] != ITEM_TYPE_WEAPON && find_equipped_weapon(&character->inv) == -1) {
-                        ERR_LOG("物品合成适用于研磨要求,但装备的物品不是武器");
+                        ERR_LOG("%s 物品合成适用于研磨要求,但装备的物品不是武器", get_char_describe(src));
                         return -3;
                     }
                     if (inv_item->data.datab[3] < combo.grind) {
-                        ERR_LOG("物品合成适用于研磨要求,但装备的武器研磨过低");
+                        ERR_LOG("%s 物品合成适用于研磨要求,但装备的武器研磨过低", get_char_describe(src));
                         return -4;
                     }
                 }
                 if (combo.level != 0xFF && character->disp.level + 1 < combo.level) {
-                    ERR_LOG("物品合成适用于等级要求,但玩家等级过低");
+                    ERR_LOG("%s 物品合成适用于等级要求,但玩家等级过低", get_char_describe(src));
                     return -5;
                 }
                 // If we get here, then the combo applies
 #ifdef DEBUG
                 if (combo_applied) {
-                    DBG_LOG("multiple combinations apply");
+                    DBG_LOG("%s multiple combinations apply", get_char_describe(src));
                 }
 #endif // DEBUG
                 combo_applied = true;
@@ -1736,13 +1735,14 @@ combintion_other:
 
             __except (crash_handler(GetExceptionInformation())) {
                 // 在这里执行异常处理后的逻辑，例如打印错误信息或提供用户友好的提示。
-                CRASH_LOG("使用物品合成出现错误.");
+                CRASH_LOG("%s 使用物品合成出现错误.", get_char_describe(src));
             }
         }
 
 
         if (!combo_applied) {
-            ERR_LOG("不适用任何合成");
+            ERR_LOG("%s 不适用任何合成", get_char_describe(src));
+            print_item_data(&iitem->data, src->version);
         }
         break;
     }
@@ -1753,7 +1753,7 @@ done:
         // informed when meseta is added or removed from the bank.
         iitem_t delete_item = remove_iitem(src, iitem->data.item_id, 1, src->version != CLIENT_VERSION_BB);
         if (delete_item.data.datal[0] == 0 && delete_item.data.data2l == 0) {
-            ERR_LOG("物品 ID 0x%08X 已不存在", iitem->data.item_id);
+            ERR_LOG("%s 物品 ID 0x%08X 已不存在", get_char_describe(src), iitem->data.item_id);
         }
     }
 

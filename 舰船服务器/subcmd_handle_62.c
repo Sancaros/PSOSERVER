@@ -1084,12 +1084,8 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     uint32_t item_id = pkt->item_id;
     uint16_t area = pkt->area;
 
-    /* We can't get these in lobbies without someone messing with something
-       that they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s picked up item in lobby!", get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
@@ -1119,12 +1115,8 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     int pick_count;
     iitem_t iitem_data = { 0 };
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅中拾取了物品!", get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     /* Sanity check... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
@@ -1147,7 +1139,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     else {
         /* Add the item to the client's inventory. */
         if (!add_iitem(src, iitem_data)) {
-            ERR_LOG("GC %u 拾取物品出错", src->guildcard);
+            ERR_LOG("%s 拾取物品出错", get_char_describe(src));
             print_item_data(&iitem_data.data, src->version);
             return -1;
         }
@@ -1164,6 +1156,9 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
 int sub62_60_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
 
     if (src->new_item.datal[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
@@ -1188,11 +1183,9 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
     int rv = 0;
 
-    if (l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("%s 不在一个有效的大厅中!",
-            get_char_describe(src));
-        return 0;
-    }
+    if (!in_game(src))
+        return -1;
+
     /* 独立掉落模式 */
     if (l->drop_pso2) {
         /* Send the packet to every connected client. */
@@ -1228,7 +1221,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
-                ERR_LOG("无法将物品添加至游戏房间!");
+                ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(p2));
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1243,7 +1236,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
         uint8_t section = character->dress_data.section;
 
         if (!l->map_enemies) {
-            ERR_LOG("游戏并未载入地图敌人数据");
+            ERR_LOG("%s 游戏并未载入地图敌人数据", get_char_describe(src));
         }
 
         //game_enemy_t* en = &l->map_enemies->enemies[pkt->entity_id];
@@ -1265,7 +1258,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
-            ERR_LOG("无法将物品添加至游戏房间!");
+            ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(src));
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1309,6 +1302,9 @@ int sub62_A2_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
+    if (!in_game(src))
+        return -1;
+
     if (src->new_item.datal[0] &&
         !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
         return  handle_itemreq_gm(src, (subcmd_itemreq_t*)pkt);
@@ -1331,11 +1327,8 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int rv = 0;
 
-    if (l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("%s 不在一个有效的大厅中!",
-            get_char_describe(src));
-        return 0;
-    }
+    if (!in_game(src))
+        return -1;
 
     iitem_t iitem = { 0 };
 
@@ -1377,7 +1370,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
             litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
             if (!lt) {
-                ERR_LOG("无法将物品添加至游戏房间!");
+                ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(p2));
                 pthread_mutex_unlock(&p2->mutex);
                 continue;
             }
@@ -1412,7 +1405,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
 
         litem_t* lt = add_new_litem_locked(l, &iitem.data, pkt->area, pkt->x, pkt->z);
         if (!lt) {
-            ERR_LOG("无法将物品添加至游戏房间!");
+            ERR_LOG("%s 无法将物品添加至游戏房间!", get_char_describe(src));
             pthread_mutex_unlock(&src->mutex);
             return 0;
         }
@@ -1434,11 +1427,8 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     size_t item_id = 0;
     iitem_t trade_ii = { 0 };
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return rv;
-    }
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
         ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
@@ -1713,11 +1703,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t i = 0;
     uint32_t uniqueNumbers[20] = { 0 };  // 用于保存已生成的唯一数据
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     memset(src->game_data->shop_items, 0, PSOCN_STLENGTH_ITEM * ARRAYSIZE(src->game_data->shop_items));
 
@@ -1783,11 +1770,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t new_inv_item_id = pkt->new_inv_item_id;
     uint8_t shop_type = pkt->shop_type, shop_item_index = pkt->shop_item_index, num_bought = pkt->num_bought;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
         ERR_LOG("%s 发送损坏的物品购买数据!",
@@ -1877,11 +1861,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t item_id = pkt->item_id;
     char percent_mod = 0;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("%s 发送损坏的物品鉴定数据!",
@@ -1949,11 +1930,8 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t i = 0;
     int found = -1;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     iitem_t id_result = src->game_data->identify_result;
 
@@ -1990,13 +1968,8 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_bank_open_t* req) {
     lobby_t* l = src->cur_lobby;
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅打开了银行!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
@@ -2030,13 +2003,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t iitem = { 0 };
     bitem_t bitem = { 0 };
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅中操作银行!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
@@ -2297,11 +2265,8 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     int meseta_amount = pkt->amount;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
         ERR_LOG("%s 尝试获取错误的任务美赛塔奖励!",
@@ -2343,11 +2308,8 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_quest_reward_item_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
         ERR_LOG("%s 尝试获取错误的任务物品奖励!",
@@ -2470,11 +2432,8 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_battle_mode_level_up_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if ((l->battle) && (l->flags && LOBBY_FLAG_QUESTING))
     {
@@ -2501,11 +2460,8 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     float x = pkt->x, z = pkt->z;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
@@ -2540,11 +2496,8 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
     item_t item_data = pkt->item_data;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     iitem_t backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
@@ -2575,11 +2528,8 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_black_paper_deal_photon_drop_exchange_t* pkt) {
     lobby_t* l = src->cur_lobby;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
@@ -2609,11 +2559,8 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t area = pkt->area;
     float x = pkt->x, z = pkt->z;
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
@@ -2754,11 +2701,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("%s 在大厅触发了游戏房间指令!",
-            get_char_describe(src));
+    if (!in_game(src))
         return -1;
-    }
 
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
         ERR_LOG("%s 发送损坏的物数据!",

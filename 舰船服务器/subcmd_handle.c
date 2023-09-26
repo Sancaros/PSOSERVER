@@ -137,3 +137,160 @@ subcmd_handle_t subcmd_get_handler(int cmd_type, int subcmd_type, int version) {
         return NULL;
     }
 }
+//
+///* Possible values for the type parameter. */
+//#define LOBBY_TYPE_LOBBY              0x00000001
+//#define LOBBY_TYPE_GAME               0x00000002
+//#define LOBBY_TYPE_EP3_GAME           0x00000004
+//#define LOBBY_TYPE_PERSISTENT         0x00000008
+//// Flags used only for games
+//#define LOBBY_TYPE_CHEATS_ENABLED     0x00000100
+
+/* 检测玩家是否在有效的游戏房间中 */
+bool in_game(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l) {
+        ERR_LOG("%s 不在有效大厅中!", get_char_describe(src));
+        return false;
+    }
+
+    if (src->version != CLIENT_VERSION_EP3) {
+
+        if (l->type != LOBBY_TYPE_GAME) {
+            ERR_LOG("%s 不在游戏房间中!", get_char_describe(src));
+            ERR_LOG("当前房间信息:");
+            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+            return false;
+        }
+
+    }
+    else {
+
+        if (l->type != LOBBY_TYPE_EP3_GAME) {
+            ERR_LOG("%s 不在EP3游戏房间中!", get_char_describe(src));
+            ERR_LOG("当前房间信息:");
+            ERR_LOG("章节: %d 难度: %d 区域: %d", l->episode, l->difficulty, src->cur_area);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/* 检测玩家是否在有效的大厅中 */
+bool in_lobby(ship_client_t* src) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!l || l->type != LOBBY_TYPE_LOBBY) {
+        ERR_LOG("%s 不在有效大厅中!", get_char_describe(src));
+        return false;
+    }
+
+    return true;
+}
+
+bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
+    switch (src->version)
+    {
+    case CLIENT_VERSION_BB:
+        subcmd_bb_pkt_t* pkt2 = (subcmd_bb_pkt_t*)pkt;
+        if (pkt2->hdr.pkt_len != LE16(len) || pkt2->size != size) {
+            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt2->type);
+            print_ascii_hex(errl, pkt2, pkt2->hdr.pkt_len);
+            return false;
+        }
+
+        break;
+
+    case CLIENT_VERSION_PC:
+        subcmd_pkt_t* pkt_pc = (subcmd_pkt_t*)pkt;
+        if (pkt_pc->hdr.pc.pkt_len != LE16(len) || pkt_pc->size != size) {
+            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_pc->type);
+            print_ascii_hex(errl, pkt_pc, pkt_pc->hdr.pc.pkt_len);
+            return false;
+        }
+        break;
+
+
+    default:
+        subcmd_pkt_t* pkt_dc = (subcmd_pkt_t*)pkt;
+        if (pkt_dc->hdr.dc.pkt_len != LE16(len) || pkt_dc->size != size) {
+            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_dc->type);
+            print_ascii_hex(errl, pkt_dc, pkt_dc->hdr.dc.pkt_len);
+            return false;
+        }
+        break;
+    }
+
+    return true;
+}
+
+char* prepend_command_header(
+    int version,
+    bool encryption_enabled,
+    uint16_t cmd,
+    uint32_t flag,
+    const char* data) {
+    void* ret = NULL;
+    size_t data_size = strlen(data);
+
+    switch (version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX: {
+        dc_pkt_hdr_t header = { 0 };
+        if (encryption_enabled) {
+            header.pkt_len = (sizeof(header) + data_size + 3) & ~3;
+        }
+        else {
+            header.pkt_len = (uint16_t)(sizeof(header) + data_size);
+        }
+        header.pkt_type = (uint8_t)cmd;
+        header.flags = flag;
+
+        ret = malloc(header.pkt_len);
+        memcpy((uint8_t*)ret, &header, sizeof(header));
+        memcpy((uint8_t*)ret + sizeof(dc_pkt_hdr_t), data, data_size);
+        break;
+    }
+    case CLIENT_VERSION_PC: {
+        pc_pkt_hdr_t header = { 0 };
+        if (encryption_enabled) {
+            header.pkt_len = (sizeof(header) + data_size + 3) & ~3;
+        }
+        else {
+            header.pkt_len = (uint16_t)(sizeof(header) + data_size);
+        }
+        header.pkt_type = (uint8_t)cmd;
+        header.flags = flag;
+
+        ret = malloc(header.pkt_len);
+        memcpy((uint8_t*)ret, &header, sizeof(header));
+        memcpy((uint8_t*)ret + sizeof(pc_pkt_hdr_t), data, data_size);
+        break;
+    }
+    case CLIENT_VERSION_BB: {
+        bb_pkt_hdr_t header = { 0 };
+        if (encryption_enabled) {
+            header.pkt_len = (sizeof(header) + data_size + 3) & ~3;
+        }
+        else {
+            header.pkt_len = (uint16_t)(sizeof(header) + data_size);
+        }
+        header.pkt_type  = cmd;
+        header.flags = flag;
+
+        ret = malloc(header.pkt_len);
+        memcpy((uint8_t*)ret, &header, sizeof(header));
+        memcpy((uint8_t*)ret + sizeof(bb_pkt_hdr_t), data, data_size);
+        break;
+    }
+    default:
+        ERR_LOG("prepend_command_header 未解析该版本数据");
+    }
+
+    return ret;
+}

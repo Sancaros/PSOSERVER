@@ -161,13 +161,8 @@ int sub6D_70_dc(ship_client_t* src, ship_client_t* dest,
     iitem_t* item;
     lobby_t* l = src->cur_lobby;
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("Guild card %" PRIu32 " sent burst player data in "
-            "lobby!\n", src->guildcard);
+    if (!in_game(src))
         return -1;
-    }
 
     if ((src->version == CLIENT_VERSION_XBOX && dest->version == CLIENT_VERSION_GC) ||
         (dest->version == CLIENT_VERSION_XBOX && src->version == CLIENT_VERSION_GC)) {
@@ -191,12 +186,8 @@ int sub6D_70_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t* item;
     int i, rv = 0;
 
-    /* We can't get these in a lobby without someone messing with something that
-       they shouldn't be... Disconnect anyone that tries. */
-    if (l->type == LOBBY_TYPE_LOBBY) {
-        DBG_LOG("GC %" PRIu32 " 在大厅中触发传送中的玩家数据!", src->guildcard);
+    if (!in_game(src))
         return -1;
-    }
 
     if ((src->version == CLIENT_VERSION_XBOX && dest->version == CLIENT_VERSION_GC) ||
         (dest->version == CLIENT_VERSION_XBOX && src->version == CLIENT_VERSION_GC)) {
