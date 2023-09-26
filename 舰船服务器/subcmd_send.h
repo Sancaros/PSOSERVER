@@ -55,13 +55,13 @@ int subcmd_send_lobby_bb_create_inv_item(ship_client_t* src, item_t item, uint32
 int subcmd_send_bb_create_tekk_item(ship_client_t* src, item_t item);
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
-int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt);
+int subcmd_send_lobby_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt);
 
 /* BB 从客户端移除美赛塔 */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop);
+int subcmd_send_lobby_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req);
+int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req);
 
 int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, ship_client_t* dest);
 
@@ -69,16 +69,16 @@ int subcmd_send_bb_quest_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req, shi
 int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 大厅怪物掉落物品 */
-int subcmd_send_bb_lobby_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item);
+int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item);
+int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item);
 
 /* 0xBC SUBCMD60_BANK_INV BB 玩家银行 */
 int subcmd_send_bb_bank(ship_client_t* src, psocn_bank_t* bank);
 
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
-int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount);
+int subcmd_send_lobby_bb_exp(ship_client_t* dest, uint32_t exp_amount);
 
 /* 0xDD SUBCMD60_SET_EXP_RATE BB 设置游戏经验倍率 */
 int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
@@ -87,7 +87,7 @@ int subcmd_send_bb_set_exp_rate(ship_client_t* c, uint32_t exp_rate);
 int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, uint32_t amount);
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
-int subcmd_send_bb_level(ship_client_t* dest);
+int subcmd_send_lobby_bb_level(ship_client_t* dest);
 
 /* 0xB6 SUBCMD60_SHOP_INV BB 向玩家发送货物清单 */
 int subcmd_bb_send_shop(ship_client_t* dest, uint8_t shop_type, uint8_t num_items, bool create);

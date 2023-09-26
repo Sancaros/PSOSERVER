@@ -3129,7 +3129,7 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             type, c_cmd_name(type, 0), len, flags, c->guildcard);
         print_ascii_hex(errl, pkt, len);
 #endif // DEBUG
-        
+
         if (c->game_data->err.has_error) {
             send_msg(c, BB_SCROLL_MSG_TYPE,
                 "%s ¥ÌŒÛ÷∏¡Ó:0x%zX ∏±÷∏¡Ó:0x%zX",

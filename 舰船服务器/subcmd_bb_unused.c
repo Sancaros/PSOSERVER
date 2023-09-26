@@ -96,7 +96,7 @@ static int handle_bb_item_req(ship_client_t* c, ship_client_t* d, subcmd_bb_item
     }
     
     if (c->new_item.datal[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
+        rv = subcmd_send_lobby_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
         rv = l->dropfunc(c, l, pkt);
@@ -129,7 +129,7 @@ static int handle_bb_bitem_req(ship_client_t* c, ship_client_t* d, subcmd_bb_bit
     }
 
     if (c->new_item.datal[0] && !(l->flags & LOBBY_FLAG_LEGIT_MODE)) {
-        rv = subcmd_send_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
+        rv = subcmd_send_lobby_bb_gm_itemreq(c, (subcmd_bb_itemreq_t*)pkt);
     }
     else if (l->dropfunc && (l->flags & LOBBY_FLAG_SERVER_DROPS)) {
         rv = l->dropfunc(c, l, pkt);

@@ -1270,7 +1270,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        rv = subcmd_send_bb_lobby_drop_item(src, NULL, pkt, &lt->iitem);
+        rv = subcmd_send_lobby_bb_drop_item(src, NULL, pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
     }
 
@@ -1417,7 +1417,7 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
             return 0;
         }
 
-        rv = subcmd_send_bb_lobby_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
+        rv = subcmd_send_lobby_bb_drop_item(src, NULL, (subcmd_bb_itemreq_t*)pkt, &lt->iitem);
         pthread_mutex_unlock(&src->mutex);
     }
 
@@ -1858,7 +1858,7 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
 
 #endif // DEBUG
 
-    subcmd_send_bb_delete_meseta(src, character, price, false);
+    subcmd_send_lobby_bb_delete_meseta(src, character, price, false);
 
 #ifdef DEBUG
 
@@ -1909,7 +1909,7 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
-    subcmd_send_bb_delete_meseta(src, character, 100, false);
+    subcmd_send_lobby_bb_delete_meseta(src, character, 100, false);
     iitem_t* id_result = &character->inv.iitems[id_item_index];
     attrib = id_result->data.datab[4] & ~(0x80);
 
@@ -2106,7 +2106,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
                 return -5;
             }
 
-            subcmd_send_bb_destroy_item(src, iitem.data.item_id,
+            subcmd_send_lobby_bb_destroy_item(src, iitem.data.item_id,
                 pkt_item_amt);
 
             sort_client_bank(bank);

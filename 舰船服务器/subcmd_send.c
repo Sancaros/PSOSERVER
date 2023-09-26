@@ -422,33 +422,33 @@ int subcmd_send_bb_create_tekk_item(ship_client_t* src, item_t item) {
 }
 
 /* 0x29 SUBCMD60_DELETE_ITEM BB 消除物品 */
-int subcmd_send_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt) {
+int subcmd_send_lobby_bb_destroy_item(ship_client_t* c, uint32_t item_id, uint32_t amt) {
     lobby_t* l = c->cur_lobby;
-    subcmd_bb_destroy_item_t d = { 0 };
+    subcmd_bb_destroy_item_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_destroy_item_t);
 
     if (!l)
         return -1;
 
     /* 填充数据并准备发送 */
-    d.hdr.pkt_len = LE16(pkt_size);
-    d.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
-    d.hdr.flags = 0;
+    pkt.hdr.pkt_len = LE16(pkt_size);
+    pkt.hdr.pkt_type = LE16(GAME_SUBCMD60_TYPE);
+    pkt.hdr.flags = 0;
 
     /* 填充副指令数据 */
-    d.shdr.type = SUBCMD60_ITEM_DELETE;
-    d.shdr.size = pkt_size / 4;
-    d.shdr.client_id = c->client_id;
+    pkt.shdr.type = SUBCMD60_ITEM_DELETE;
+    pkt.shdr.size = (uint8_t)(pkt_size / 4);
+    pkt.shdr.client_id = c->client_id;
 
     /* 填充剩余数据 */
-    d.item_id = item_id;
-    d.amount = amt;
+    pkt.item_id = item_id;
+    pkt.amount = amt;
 
-    return subcmd_send_lobby_bb(l, c, (subcmd_bb_pkt_t*)&d, 0);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)&pkt, 0);
 }
 
 /* BB 从客户端移除美赛塔 */
-int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop) {
+int subcmd_send_lobby_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, uint32_t amount, bool drop) {
     lobby_t* l = c->cur_lobby;
     errno_t err = 0;
 
@@ -489,7 +489,7 @@ int subcmd_send_bb_delete_meseta(ship_client_t* c, psocn_bb_char_t* character, u
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
+int subcmd_send_lobby_bb_gm_itemreq(ship_client_t* c, subcmd_bb_itemreq_t* req) {
     subcmd_bb_itemgen_t gen = { 0 };
     int pkt_size = sizeof(subcmd_bb_itemgen_t);
     int r = LE16(req->entity_id);
@@ -605,7 +605,7 @@ int subcmd_send_bb_drop_item(ship_client_t* dest, subcmd_bb_itemreq_t* req, cons
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_lobby_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+int subcmd_send_lobby_bb_drop_item(ship_client_t* src, ship_client_t* nosend, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
     lobby_t* l = src->cur_lobby;
@@ -631,7 +631,7 @@ int subcmd_send_bb_lobby_drop_item(ship_client_t* src, ship_client_t* nosend, su
 }
 
 /* 0x5F SUBCMD60_BOX_ENEMY_ITEM_DROP BB 怪物掉落物品 */
-int subcmd_send_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
+int subcmd_send_lobby_bb_enemy_item_req(lobby_t* l, subcmd_bb_itemreq_t* req, const iitem_t* item) {
     subcmd_bb_itemgen_t gen = { 0 };
     uint32_t tmp = LE32(req->unk1)/* & 0x0000FFFF*/;
 
@@ -699,7 +699,7 @@ int subcmd_send_bb_bank(ship_client_t* src, psocn_bank_t* bank) {
 }
 
 /* 0xBF SUBCMD60_GIVE_EXP BB 玩家获得经验 */
-int subcmd_send_bb_exp(ship_client_t* dest, uint32_t exp_amount) {
+int subcmd_send_lobby_bb_exp(ship_client_t* dest, uint32_t exp_amount) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_exp_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_exp_t);
@@ -796,7 +796,7 @@ int subcmd_send_bb_exchange_item_in_quest(ship_client_t* c, uint32_t item_id, ui
 }
 
 /* 0x30 SUBCMD60_LEVEL_UP BB 玩家升级数值变化 */
-int subcmd_send_bb_level(ship_client_t* dest) {
+int subcmd_send_lobby_bb_level(ship_client_t* dest) {
     lobby_t* l = dest->cur_lobby;
     subcmd_bb_level_up_t pkt = { 0 };
     int pkt_size = sizeof(subcmd_bb_level_up_t);

@@ -6689,7 +6689,7 @@ static int sub60_C5_bb(ship_client_t* src, ship_client_t* dest,
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    subcmd_send_bb_delete_meseta(src, character, 10, false);
+    subcmd_send_lobby_bb_delete_meseta(src, character, 10, false);
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -6847,7 +6847,7 @@ static int sub60_C7_bb(ship_client_t* src, ship_client_t* dest,
 
     psocn_bb_char_t* character = get_client_char_bb(src);
 
-    subcmd_send_bb_delete_meseta(src, character, meseta_amount, false);
+    subcmd_send_lobby_bb_delete_meseta(src, character, meseta_amount, false);
 
     /* Send it along to the rest of the lobby. */
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
@@ -7075,6 +7075,11 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("%s ID不一致!", get_char_describe(src));
+        return -2;
+    }
+
     //[2023年08月13日 15:39:39:110] 错误(subcmd_handle.c 0113): subcmd_get_handler 未完成对 0x60 0xD7 版本 bb(5) 的处理
     //[2023年08月13日 15:39:39:121] 调试(subcmd_handle_60.c 4737): 未知 0x60 指令: 0xD7
     //( 00000000 )   24 00 60 00 00 00 00 00   D7 07 00 00/ 01 02 4B 00  $.`.....?....K.
@@ -7090,8 +7095,8 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     iitem_t work_item = { 0 };
-    for (size_t x = 0; x < (sizeof(gallons_shop_hopkins) / 4); x += 2) {
-        if (pkt->compare_item.datal[0] == gallons_shop_hopkins[x]) {
+    for (size_t x = 0; x < ARRAYSIZE(gallons_shop_hopkins); x += 2) {
+        if (pkt->add_item.datal[0] == gallons_shop_hopkins[x]) {
             work_item.data.datab[0] = ITEM_TYPE_TOOL;
             work_item.data.datab[1] = ITEM_SUBTYPE_PHOTON;
             work_item.data.datab[2] = 0x00;
@@ -7101,7 +7106,8 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 
     if (work_item.data.datab[0] != ITEM_TYPE_TOOL) {
         ERR_LOG("兑换失败, 未找到对应物品");
-        return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+        send_msg(src, BB_SCROLL_MSG_TYPE, __(src, "兑换失败,未找到对应兑换物品"));
+        return -2;
     }
 
     inventory_t* inv = get_client_inv_bb(src);
@@ -7109,9 +7115,11 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if (work_item_id == 0) {
         ERR_LOG("%s 兑换失败, 未找到对应物品", get_char_describe(src));
-        return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换失败, 未找到对应物品"));
+        send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换失败, 未找到对应物品"));
+        send_bb_item_exchange_state(src, 0x00000001);
     }
     else {
+        /* 找到PD物品 并删除全部数量 */
         int index = find_iitem_index(inv, work_item_id);
         if (index < 0) {
             ERR_LOG("%s 兑换物品失败! 错误码 %d", get_char_describe(src), index);
@@ -7125,24 +7133,50 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
             return -2;
         }
 
-        rv = subcmd_send_bb_destroy_item(src, del_item->data.item_id, max_count);
+        rv = subcmd_send_lobby_bb_destroy_item(src, del_item->data.item_id, max_count);
 
-        iitem_t add_item = player_iitem_init(pkt->compare_item);
+        /* 给玩家背包添加兑换完成的物品 */
+        iitem_t add_item = player_iitem_init(pkt->add_item);
         add_item.data.item_id = generate_item_id(l, src->client_id);
+        add_item.data.datab[5] = get_item_amount(&add_item.data, 1);
 
         if (!(rv = add_iitem(src, add_item))) {
             ERR_LOG("%s 背包空间不足, 无法获得物品! 错误码 %d", get_char_describe(src), rv);
             return -3;
         }
+        rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, 1, true);
 
-        rv = subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
-
+        /* 更新玩家任务状态 */
         rv = send_bb_confirm_update_quest_statistics(src, 1, pkt->function_id);
 
         rv = send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换成功"));
+
+        if (rv)
+            return -3;
     }
 
-    return rv;
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_D8_bb(ship_client_t* src, ship_client_t* dest,
+    subcmd_bb_item_add_srank_weapon_special_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    /* We can't get these in a lobby without someone messing with something that
+       they shouldn't be... Disconnect anyone that tries. */
+    if (l->type == LOBBY_TYPE_LOBBY) {
+        ERR_LOG("%s 在大厅中触发任务指令!", get_char_describe(src));
+        return -1;
+    }
+
+    if (pkt->shdr.client_id != src->client_id) {
+        ERR_LOG("%s ID不一致!", get_char_describe(src));
+        return 0;
+    }
+
+    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
@@ -7185,30 +7219,23 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 
         subcmd_send_bb_exchange_item_in_quest(src, compare_item_id, 1);
 
-        subcmd_send_bb_destroy_item(src, compare_item_id, 1);
+        subcmd_send_lobby_bb_destroy_item(src, compare_item_id, 1);
 
-        iitem_t add_item;
-        memset(&add_item, 0, PSOCN_STLENGTH_IITEM);
-
-        add_item.present = LE16(0x0001);
-        add_item.extension_data1 = 0;
-        add_item.extension_data2 = 0;
-        add_item.flags = 0;
-
-        add_item.data = pkt->add_item;
+        iitem_t add_item = player_iitem_init(pkt->add_item);
         add_item.data.item_id = generate_item_id(l, src->client_id);
+        add_item.data.datab[5] = get_item_amount(&add_item.data, 1);
 
         if (!add_iitem(src, add_item)) {
             ERR_LOG("%s 背包空间不足, 无法获得物品!", get_char_describe(src));
             return -1;
         }
 
-        subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
+        subcmd_send_lobby_bb_create_inv_item(src, add_item.data, get_item_amount(&add_item.data, 1), true);
 
         send_bb_item_exchange_state(src, 0x00000000);
     }
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    return subcmd_send_lobby_bb(l, NULL, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
 static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
@@ -7295,7 +7322,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -3;
     }
-    subcmd_send_bb_destroy_item(src, itemid, 1);
+    subcmd_send_lobby_bb_destroy_item(src, itemid, 1);
 
     subcmd_send_bb_exchange_item_in_quest(src, itemid, 1);
 
@@ -7332,6 +7359,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         return -1;
     }
 
+    pthread_mutex_lock(&src->mutex);
     inventory_t* inv = get_client_inv_bb(src);
 
     iitem_t remove_item = { 0 };
@@ -7340,7 +7368,10 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
     if (!pt_itemid) {
         ERR_LOG("%s !pt_itemid 玩家背包中没有光子票据", get_char_describe(src));
-        return send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
+        send_msg(src, MSG1_TYPE, __(src, "\tE\tC4您的背包中没有光子票据了!"));
+        send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
+        pthread_mutex_unlock(&src->mutex);
+        return 0;
     }
 
 //[2023年08月27日 00:55:19:592] 调试(ship_packets.c 8294): GC 10000001 载入任务 quest035 (0 31)版本 Blue Brust
@@ -7365,9 +7396,9 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
-        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 宽永通宝
         item.datal[0] = 0x0000D500;
         break;
@@ -7378,9 +7409,9 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
-        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 棒棒糖
         item.datal[0] = 0x00070A00;
         break;
@@ -7391,9 +7422,9 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
             ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+            pthread_mutex_unlock(&src->mutex);
             return -3;
         }
-        subcmd_send_bb_destroy_item(src, pt_itemid, 99);
         // 隐身衣
         item.datal[0] = 0x00570101;
         break;
@@ -7401,8 +7432,11 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     default:
         ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        pthread_mutex_unlock(&src->mutex);
         return -4;
     }
+
+    subcmd_send_lobby_bb_destroy_item(src, pt_itemid, 99);
 
     subcmd_send_bb_exchange_item_in_quest(src, pt_itemid, 0x05 + (pkt->unknown_a2 * 5));
 
@@ -7410,6 +7444,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t add_item = player_iitem_init(item);
     if (!add_iitem(src, add_item)) {
         ERR_LOG("%s 获取兑换物品失败!", get_char_describe(src));
+        pthread_mutex_unlock(&src->mutex);
         return -5;
     }
 
@@ -7418,7 +7453,11 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     // Gallon's Plan result
     send_bb_item_exchange_gallon_result(src, 0x00000000, pkt->subcmd_code, pkt->unknown_a2);
 
-    return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+    subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+
+    pthread_mutex_unlock(&src->mutex);
+
+    return 0;
 }
 
 // 定义函数指针数组
@@ -7574,6 +7613,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type D0 - DF                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_GALLON_AREA                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D2_bb },
     { SUBCMD60_ITEM_EXCHANGE_PD           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D7_bb },
+    { SUBCMD60_SRANK_ATTR                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D8_bb },
     { SUBCMD60_ITEM_EXCHANGE_MOMOKA       , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_D9_bb },
     { SUBCMD60_BOSS_ACT_SAINT_MILLION     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DC_bb },
     { SUBCMD60_GOOD_LUCK                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_DE_bb },

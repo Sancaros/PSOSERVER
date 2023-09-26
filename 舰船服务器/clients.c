@@ -1060,7 +1060,7 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
     level = LE32(character->disp.level);
 
     /* Send the packet telling them they've gotten experience. */
-    if (subcmd_send_bb_exp(dest, exp_amount))
+    if (subcmd_send_lobby_bb_exp(dest, exp_amount))
         return -1;
 
     /* See if they got any level ups. */
@@ -1077,7 +1077,7 @@ int client_give_exp(ship_client_t* dest, uint32_t exp_amount) {
     /* If they got any level ups, send out the packet that says so. */
     if (need_lvlup) {
         character->disp.level = LE32(level);
-        if (subcmd_send_bb_level(dest))
+        if (subcmd_send_lobby_bb_level(dest))
             return -1;
     }
 
@@ -1113,12 +1113,12 @@ int client_give_level(ship_client_t* dest, uint32_t level_req) {
         character->disp.exp = bb_char_stats.levels[character->dress_data.ch_class][character->disp.level].exp;
 
     /* Send the packet telling them they've gotten experience. */
-    if (subcmd_send_bb_exp(dest, exp_gained))
+    if (subcmd_send_lobby_bb_exp(dest, exp_gained))
         return -1;
 
     /* Send the level-up packet. */
     character->disp.level = LE32(level_req);
-    if (subcmd_send_bb_level(dest))
+    if (subcmd_send_lobby_bb_level(dest))
         return -1;
 
     return 0;

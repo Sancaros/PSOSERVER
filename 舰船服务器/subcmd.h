@@ -3120,14 +3120,14 @@ typedef struct subcmd_bb_warp_item {
 typedef struct subcmd_bb_item_exchange_pd {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-    item_t compare_item; // Only data1[0]-[2] are used
+    item_t add_item; // Only data1[0]-[2] are used
     uint16_t function_id;
     uint16_t unknown_a3;
 } PACKED subcmd_bb_item_exchange_pd_t;
 
 // 0xD8: Add S-rank weapon special (BB; handled by server)
 // The client sends this when it executes an F956 quest opcode.
-struct G_AddSRankWeaponSpecial_BB_6xD8 {
+typedef struct subcmd_bb_item_add_srank_weapon_special {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     item_t compare_item; // Only data1[0]-[2] are used
@@ -3135,7 +3135,7 @@ struct G_AddSRankWeaponSpecial_BB_6xD8 {
     uint32_t unknown_a3;
     uint16_t unknown_a4;
     uint16_t unknown_a5;
-} PACKED;
+} PACKED subcmd_bb_item_add_srank_weapon_special_t;
 
 // 0xD9: Momoka Item Exchange  MomokaŒÔ∆∑Ωªªª
 typedef struct subcmd_bb_item_exchange_momoka {
