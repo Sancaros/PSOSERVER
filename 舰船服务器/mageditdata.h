@@ -117,6 +117,6 @@ static mag_evolution_number_table_t mag_evolution_numbers_table;
 int have_bb_magedit;
 
 int magedit_read_bb(const char* fn, int norestrict);
-uint8_t magedit_lookup_mag_evolution_number(iitem_t* rv);
+uint8_t magedit_lookup_mag_evolution_number(item_t* item);
 
 #endif // !PSOCN_MAG_EDIT_DATA_H

@@ -321,25 +321,25 @@ int magedit_read_bb(const char* fn, int norestrict) {
     return 0;
 }
 
-uint8_t magedit_lookup_mag_evolution_number(iitem_t* iitem) {
+uint8_t magedit_lookup_mag_evolution_number(item_t* item) {
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
        to put the returned value */
-    if (!have_bb_magedit || !iitem) {
+    if (!have_bb_magedit || !item) {
         return -1;
     }
 
     /* 确保我们正在查找 玛古物品 */
-    if (iitem->data.datab[0] != ITEM_TYPE_MAG) {
+    if (item->datab[0] != ITEM_TYPE_MAG) {
         return -2;
     }
 
     /* 确保不超出索引 */
-    if (iitem->data.datab[1] >= 0x53) {
+    if (item->datab[1] >= 0x53) {
         return -3;
     }
 
     /* 获取数据 */
-    return mag_evolution_numbers_table.values[iitem->data.datab[1]];
+    return mag_evolution_numbers_table.values[item->datab[1]];
 }
 

@@ -105,4 +105,3 @@ char* get_player_name(player_t* pl, int version, bool raw) {
 
 	return player_name;
 }
-

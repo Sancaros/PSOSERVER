@@ -419,6 +419,9 @@ static const char language_codes[][3] = {
     "cn", "tc", "jp", "en", "de", "fr", "es", "kr"
 };
 
+/* 用于打印角色描述 */
+static char char_des[512];
+
 /* Initialize the clients system, allocating any thread specific keys */
 int client_init(psocn_ship_t *cfg);
 
@@ -480,6 +483,8 @@ psocn_bb_char_t* get_client_char_bb(ship_client_t* src);
 inventory_t* get_client_inv_nobb(ship_client_t* src);
 psocn_v1v2v3pc_char_t* get_client_char_nobb(ship_client_t* src);
 ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id);
+lobby_t* get_client_lobby(ship_client_t* src);
+char* get_char_describe(ship_client_t* src);
 
 #ifdef ENABLE_LUA
 #include <lua.h>

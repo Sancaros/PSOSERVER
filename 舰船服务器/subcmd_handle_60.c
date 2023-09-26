@@ -57,8 +57,7 @@ static int sub60_unimplement_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 尝试在大厅触发游戏指令!",
-            src->guildcard);
+        ERR_LOG("%s 尝试在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -76,8 +75,7 @@ static int sub60_check_client_id_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (pkt->param != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 在触发了游戏房间内 %s 指令! 且Client ID不一致",
-            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_LOG("%s 在触发了游戏房间内 %s 指令! 且Client ID不一致", get_char_describe(src), c_cmd_name(pkt->hdr.pkt_type, 0));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -94,20 +92,10 @@ static int sub60_check_lobby_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏 %s 指令!",
-            src->guildcard, c_cmd_name(pkt->hdr.pkt_type, 0));
+        ERR_LOG("%s 在大厅触发了游戏 %s 指令!", get_char_describe(src), c_cmd_name(pkt->hdr.pkt_type, 0));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
-
-    ///* 合理性检查... Make sure the size of the subcommand matches with what we
-    //   expect. Disconnect the client if not. */
-    //if (pkt->size != size) {
-    //    ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! size %02X",
-    //        c->guildcard, pkt->type, size);
-    //    ERR_CSPD(pkt->hdr.pkt_type, c->version, (uint8_t*)pkt);
-    //    return -1;
-    //}
 
     DBG_LOG("玩家 0x%02X 指令: 0x%X", pkt->hdr.pkt_type, pkt->type);
     print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
@@ -194,9 +182,9 @@ static void handle_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid) {
 
         /* Make sure the object is in range. */
         if (bid > l->map_objs->count) {
-            ERR_LOG("GC %" PRIu32 " hit invalid object "
+            ERR_LOG("%s hit invalid object "
                 "(%d -- max: %d)!\n"
-                "Episode: %d, Floor: %d, Map: (%d, %d)", src->guildcard,
+                "Episode: %d, Floor: %d, Map: (%d, %d)", get_char_describe(src),
                 bid, l->map_objs->count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1],
                 l->maps[(src->cur_area << 1) + 1]);
@@ -262,9 +250,9 @@ static void handle_bb_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid
         if (bid > l->map_objs->count) {
 #ifdef DEBUG
 
-            DBG_LOG("GC %" PRIu32 " 攻击了无效的实例 "
+            DBG_LOG("%s 攻击了无效的实例 "
                 "(%d -- 地图实例数量: %d)!\n"
-                "章节: %d, 层级: %d, 地图: (%d, %d)", src->guildcard,
+                "章节: %d, 层级: %d, 地图: (%d, %d)", get_char_describe(src),
                 bid, l->map_objs->count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1],
                 l->maps[(src->cur_area << 1) + 1]);
@@ -434,14 +422,12 @@ static int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅开启了机关!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅开启了机关!", get_char_describe(src));
         rv = -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->data.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X!",
-            src->guildcard, pkt->data.type);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt->data.type);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -553,16 +539,14 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅攻击了怪物!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅攻击了怪物!", get_char_describe(src));
         return -1;
     }
 
     /* 合理性检查... Make sure the size of the subcommand matches with what we
        expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的怪物攻击数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送损坏的怪物攻击数据!", get_char_describe(src));
         print_ascii_hex(errl, (unsigned char*)pkt, LE16(pkt->hdr.pkt_len));
         return -1;
     }
@@ -593,9 +577,9 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
     /* Make sure the enemy is in range. */
     if (mid > l->map_enemies->count) {
 #ifdef DEBUG
-        ERR_LOG("GC %" PRIu32 " hit invalid enemy (%d -- max: "
+        ERR_LOG("%s hit invalid enemy (%d -- max: "
             "%d)!\n"
-            "Episode: %d, Floor: %d, Map: (%d, %d)", c->guildcard, mid,
+            "Episode: %d, Floor: %d, Map: (%d, %d)", get_char_describe(src), mid,
             l->map_enemies->count, l->episode, c->cur_area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
 
@@ -604,9 +588,9 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
 #endif
 
         if (l->logfp) {
-            fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " hit invalid "
+            fdebug(l->logfp, DBG_WARN, "%s hit invalid "
                 "enemy (%d -- max: %d)!\n"
-                "Episode: %d, Floor: %d, Map: (%d, %d)\n", src->guildcard, mid,
+                "Episode: %d, Floor: %d, Map: (%d, %d)\n", get_char_describe(src), mid,
                 l->map_enemies->count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1], l->maps[(src->cur_area << 1) + 1]);
 
@@ -636,9 +620,9 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
 #ifdef DEBUG
     if (c->cur_area != l->map_enemies->enemies[mid].area && l->episode == 1 &&
         !(l->flags & LOBBY_FLAG_QUESTING)) {
-        ERR_LOG("GC %" PRIu32 " hit enemy in wrong area "
+        ERR_LOG("%s hit enemy in wrong area "
             "(%d -- max: %d)!\n Episode: %d, Area: %d, Enemy Area: %d "
-            "Map: (%d, %d)", c->guildcard, mid, l->map_enemies->count,
+            "Map: (%d, %d)", get_char_describe(src), mid, l->map_enemies->count,
             l->episode, c->cur_area, l->map_enemies->enemies[mid].area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
     }
@@ -646,9 +630,9 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
 
     if (l->logfp && src->cur_area != l->map_enemies->enemies[mid].area &&
         !(l->flags & LOBBY_FLAG_QUESTING)) {
-        fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " hit enemy in wrong "
+        fdebug(l->logfp, DBG_WARN, "%s hit enemy in wrong "
             "area (%d -- max: %d)!\n Episode: %d, Area: %d, Enemy Area: %d "
-            "Map: (%d, %d)", src->guildcard, mid, l->map_enemies->count,
+            "Map: (%d, %d)", get_char_describe(src), mid, l->map_enemies->count,
             l->episode, src->cur_area, l->map_enemies->enemies[mid].area,
             l->maps[src->cur_area << 1], l->maps[(src->cur_area << 1) + 1]);
     }
@@ -659,10 +643,9 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
             switch (src->cur_area) {
             case 5:     /* Cave 3 */
             case 12:    /* De Rol Le */
-                ERR_LOG("GC %" PRIu32 " hit enemy in area "
+                ERR_LOG("%s hit enemy in area "
                     "impossible to\nreach in a single-player team (%d)\n"
-                    "Team Flags: %08" PRIx32 "",
-                    src->guildcard, src->cur_area, l->flags);
+                    "Team Flags: %08" PRIx32 "", get_char_describe(src), src->cur_area, l->flags);
                 break;
             }
         }
@@ -966,7 +949,7 @@ static int sub60_13_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -991,7 +974,7 @@ static int sub60_14_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1016,7 +999,7 @@ static int sub60_15_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1040,7 +1023,7 @@ static int sub60_16_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1064,7 +1047,7 @@ static int sub60_17_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1085,7 +1068,7 @@ static int sub60_18_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1109,7 +1092,7 @@ static int sub60_19_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1133,7 +1116,7 @@ static int sub60_1B_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -1154,7 +1137,7 @@ static int sub60_1C_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发游戏指令!", src->guildcard);
+        ERR_LOG("%s 在大厅触发游戏指令!", get_char_describe(src));
         return -1;
     }
 
@@ -7088,8 +7071,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中触发任务指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅中触发任务指令!", get_char_describe(src));
         return -1;
     }
 
@@ -7126,14 +7108,13 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
 
     size_t work_item_id = find_iitem_stack_item_id(inv, &work_item);
     if (work_item_id == 0) {
-        ERR_LOG("GC %" PRIu32 " 兑换失败, 未找到对应物品", src->guildcard);
+        ERR_LOG("%s 兑换失败, 未找到对应物品", get_char_describe(src));
         return send_msg(src, MSG_BOX_TYPE, "%s", __(src, "兑换失败, 未找到对应物品"));
     }
     else {
         int index = find_iitem_index(inv, work_item_id);
         if (index < 0) {
-            ERR_LOG("GC %" PRIu32 " 兑换物品失败! 错误码 %d",
-                src->guildcard, index);
+            ERR_LOG("%s 兑换物品失败! 错误码 %d", get_char_describe(src), index);
             return index;
         }
         iitem_t* del_item = &inv->iitems[index];
@@ -7150,8 +7131,7 @@ static int sub60_D7_bb(ship_client_t* src, ship_client_t* dest,
         add_item.data.item_id = generate_item_id(l, src->client_id);
 
         if (!(rv = add_iitem(src, add_item))) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品! 错误码 %d",
-                src->guildcard, rv);
+            ERR_LOG("%s 背包空间不足, 无法获得物品! 错误码 %d", get_char_describe(src), rv);
             return -3;
         }
 
@@ -7172,8 +7152,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间的指令!", get_char_describe(src));
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
@@ -7192,7 +7171,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
 
     if (compare_item_id == 0) {
 
-        ERR_LOG("GC %" PRIu32 " 没有兑换卷物品!", src->guildcard);
+        ERR_LOG("%s 没有兑换卷物品!", get_char_describe(src));
 
         send_bb_item_exchange_state(src, 0x00000001);
     }
@@ -7220,8 +7199,7 @@ static int sub60_D9_bb(ship_client_t* src, ship_client_t* dest,
         add_item.data.item_id = generate_item_id(l, src->client_id);
 
         if (!add_iitem(src, add_item)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                src->guildcard);
+            ERR_LOG("%s 背包空间不足, 无法获得物品!", get_char_describe(src));
             return -1;
         }
 
@@ -7240,15 +7218,13 @@ static int sub60_DC_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间的指令!", get_char_describe(src));
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
+        ERR_LOG("%s 发送损坏的数据! 0x%02X", get_char_describe(src), pkt->shdr.type);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -7288,15 +7264,13 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间的指令!", get_char_describe(src));
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
+        ERR_LOG("%s 发送损坏的数据! 0x%02X", get_char_describe(src), pkt->shdr.type);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
@@ -7308,7 +7282,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
 
     size_t itemid = find_iitem_code_stack_item_id(inv, 0x00031003);
     if (!itemid) {
-        ERR_LOG("GC %" PRIu32 " !itemid 玩家背包中没有光子票据", src->guildcard);
+        ERR_LOG("%s !itemid 玩家背包中没有光子票据", get_char_describe(src));
         return send_bb_item_exchange_good_luck(src, 0x00000001, pkt->subcmd_code, pkt->flags);
     }
 //               00 01 02 03 04 05 06 07   08 09 0A 0B 0C 0D 0E 0F
@@ -7317,7 +7291,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
         /* 删除光子票据 10个 但是会全部删除 */
     iitem_t remove_item = remove_iitem(src, itemid, 1, src->version != CLIENT_VERSION_BB);
     if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+        ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -3;
     }
@@ -7330,8 +7304,7 @@ static int sub60_DE_bb(ship_client_t* src, ship_client_t* dest,
     item.item_id = generate_item_id(l, src->client_id);
     iitem_t add_item = player_iitem_init(item);
     if (!add_iitem(src, add_item)) {
-        ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
-            src->guildcard);
+        ERR_LOG("%s 获取兑换物品失败!", get_char_describe(src));
         return -5;
     }
     subcmd_send_lobby_bb_create_inv_item(src, add_item.data, stack_size(&add_item.data), true);
@@ -7348,15 +7321,13 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间的指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间的指令!", get_char_describe(src));
         UNK_CSPD(pkt->hdr.pkt_type, src->version, (uint8_t*)pkt);
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
-            src->guildcard, pkt->shdr.type);
+        ERR_LOG("%s 发送损坏的数据! 0x%02X", get_char_describe(src), pkt->shdr.type);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -7368,7 +7339,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 
     size_t pt_itemid = find_iitem_code_stack_item_id(inv, 0x00041003);
     if (!pt_itemid) {
-        ERR_LOG("GC %" PRIu32 " !pt_itemid 玩家背包中没有光子票据", src->guildcard);
+        ERR_LOG("%s !pt_itemid 玩家背包中没有光子票据", get_char_describe(src));
         return send_bb_item_exchange_gallon_result(src, 0x00000001, pkt->subcmd_code, pkt->unknown_a2);
     }
 
@@ -7392,7 +7363,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         /* 删除光子票据 10个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的数据",src->guildcard);
+            ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
@@ -7405,7 +7376,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         /* 删除光子票据 15个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+            ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
@@ -7418,7 +7389,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         /* 删除光子票据 20个 但是会全部删除 */
         remove_item = remove_iitem(src, pt_itemid, 99, src->version != CLIENT_VERSION_BB);
         if (remove_item.data.datal[0] == 0 && remove_item.data.data2l == 0) {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+            ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             return -3;
         }
@@ -7428,7 +7399,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
         break;
 
     default:
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据", src->guildcard);
+        ERR_LOG("%s 发送损坏的数据", get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -4;
     }
@@ -7438,8 +7409,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
     item.item_id = generate_item_id(l, src->client_id);
     iitem_t add_item = player_iitem_init(item);
     if (!add_iitem(src, add_item)) {
-        ERR_LOG("GC %" PRIu32 " 获取兑换物品失败!",
-            src->guildcard);
+        ERR_LOG("%s 获取兑换物品失败!", get_char_describe(src));
         return -5;
     }
 

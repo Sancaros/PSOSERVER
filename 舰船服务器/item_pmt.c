@@ -925,7 +925,7 @@ static int read_mags_bb(const uint8_t* pmt, uint32_t sz,
     //DBG_LOG("num_mag_types_bb %d", num_mags_bb);
 
     for (i = 0; i < values.count; ++i) {
-        //DBG_LOG("index %d", mags_bb[i].index);
+        //DBG_LOG("index %d", mags_bb[i].base.index);
 #if defined(__BIG_ENDIAN__) || defined(WORDS_BIGENDIAN)
         mags_bb[i].index = LE32(mags_bb[i].index);
         mags_bb[i].model = LE16(mags_bb[i].model);
@@ -1329,26 +1329,32 @@ static int read_mag_feed_results_bb(const uint8_t* pmt, uint32_t sz,
             return -5;
         }
 
-        memcpy(mag_feed_results_list[i], pmt + mag_feed_results_list_offsets->offsets[i], sizeof(pmt_mag_feed_results_list_t));
+        memcpy(mag_feed_results_list[i]->results, pmt + mag_feed_results_list_offsets->offsets[i], sizeof(pmt_mag_feed_results_list_t));
+
+    }
 
 #ifdef DEBUG
 
+
+    for (i = 0; i < cnt; ++i) {
         for (j = 0; j < 11; j++) {
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].def);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].pow);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].dex);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].mind);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].iq);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].synchro);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].unused[0]);
-            DBG_LOG("item %d", mag_feed_results_list[i]->results[j].unused[1]);
+            DBG_LOG("/////////////////////////////");
+            DBG_LOG("table index %d", i);
+            DBG_LOG("item index %d", j);
+            DBG_LOG("def %d", mag_feed_results_list[i]->results[j].def);
+            DBG_LOG("pow %d", mag_feed_results_list[i]->results[j].pow);
+            DBG_LOG("dex %d", mag_feed_results_list[i]->results[j].dex);
+            DBG_LOG("mind %d", mag_feed_results_list[i]->results[j].mind);
+            DBG_LOG("iq %d", mag_feed_results_list[i]->results[j].iq);
+            DBG_LOG("synchro %d", mag_feed_results_list[i]->results[j].synchro);
+            DBG_LOG("unused %d", mag_feed_results_list[i]->results[j].unused[0]);
+            DBG_LOG("unused %d", mag_feed_results_list[i]->results[j].unused[1]);
+            DBG_LOG("/////////////////////////////");
         }
-
-        if (i == 2)
-            getchar();
-#endif // DEBUG
-
     }
+    getchar();
+
+#endif // DEBUG
 
     return 0;
 }
@@ -2706,7 +2712,7 @@ int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t i
     }
 
     /* 获取数据并将其复制出来 */
-    memcpy(rv, &mag_feed_results_list[table_index][item_index], sizeof(pmt_mag_feed_result_t));
+    memcpy(rv, &mag_feed_results_list[table_index]->results[item_index], sizeof(pmt_mag_feed_result_t));
     return 0;
 }
 

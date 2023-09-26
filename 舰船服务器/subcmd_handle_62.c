@@ -1087,8 +1087,7 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in lobbies without someone messing with something
        that they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " picked up item in lobby!",
-            src->guildcard);
+        ERR_LOG("%s picked up item in lobby!", get_char_describe(src));
         return -1;
     }
 
@@ -1098,8 +1097,8 @@ int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
         return -1;
 
     if (src->cur_area != area) {
-        ERR_LOG("GC %" PRIu32 " picked up item in area they are "
-            "not currently in!", src->guildcard);
+        ERR_LOG("%s picked up item in area they are "
+            "not currently in!", get_char_describe(src));
     }
 
     /* Clear the list of dropped items. */
@@ -1123,8 +1122,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中拾取了物品!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅中拾取了物品!", get_char_describe(src));
         return -1;
     }
 
@@ -1132,8 +1130,7 @@ int sub62_5A_bb(ship_client_t* src, ship_client_t* dest,
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x14) || pkt->shdr.size != 0x03 ||
         pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的拾取数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的拾取数据!", get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -1192,8 +1189,8 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     int rv = 0;
 
     if (l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
-            src->guildcard);
+        ERR_LOG("%s 不在一个有效的大厅中!",
+            get_char_describe(src));
         return 0;
     }
     /* 独立掉落模式 */
@@ -1335,8 +1332,8 @@ int sub62_A2_bb(ship_client_t* src, ship_client_t* dest,
     int rv = 0;
 
     if (l->type != LOBBY_TYPE_GAME) {
-        ERR_LOG("GC %" PRIu32 " 不在一个有效的大厅中!",
-            src->guildcard);
+        ERR_LOG("%s 不在一个有效的大厅中!",
+            get_char_describe(src));
         return 0;
     }
 
@@ -1438,14 +1435,13 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
     iitem_t trade_ii = { 0 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return rv;
     }
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
-            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1521,7 +1517,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
                 item_id = find_iitem_index(&player->inv, pkt->item_id);
                 /* 如果找不到该物品，则将用户从船上推下. */
                 if (item_id < 0) {
-                    ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+                    ERR_LOG("%s 交易无效物品! 错误码 %d", get_char_describe(src), item_id);
                     return item_id;
                 }
 
@@ -1534,7 +1530,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
             }
 
             if (!add_titem(trade_inv_src, trade_ii)) {
-                ERR_LOG("GC %" PRIu32 " 无法添加交易物品!", src->guildcard);
+                ERR_LOG("%s 无法添加交易物品!", get_char_describe(src));
                 return -3;
             }
             break;
@@ -1564,7 +1560,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
             item_id = check_titem_id(trade_inv_src, pkt->item_id);
             if (item_id != pkt->item_id) {
-                ERR_LOG("GC %" PRIu32 " 交易无效物品! 错误码 %d", src->guildcard, item_id);
+                ERR_LOG("%s 交易无效物品! 错误码 %d", get_char_describe(src), item_id);
                 return item_id;
             }
 
@@ -1573,7 +1569,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
 
         iitem_t tmp = remove_titem(trade_inv_src, trade_ii.data.item_id, pkt->amount);
         if (item_not_identification_bb(tmp.data.datal[0], tmp.data.datal[1])) {
-            ERR_LOG("GC %" PRIu32 " 移除非法交易物品!", src->guildcard);
+            ERR_LOG("%s 移除非法交易物品!", get_char_describe(src));
             print_item_data(&tmp.data, src->version);
             return -4;
         }
@@ -1617,7 +1613,7 @@ int sub62_A6_bb(ship_client_t* src, ship_client_t* dest,
         switch (trade_stage) {
         case 0x00:
             if (!trade_inv_src->confirmed)
-                ERR_LOG("GC %u 根本没有确认", src->guildcard);
+                ERR_LOG("GC %u 根本没有确认", get_char_describe(src));
 
             trade_inv_src->confirmed = true;
             //交易方确认交易
@@ -1669,8 +1665,7 @@ int sub62_AE_dc(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
-            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1684,8 +1679,7 @@ int sub62_AE_pc(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
-            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1699,8 +1693,7 @@ int sub62_AE_bb(ship_client_t* src, ship_client_t* dest,
     int rv = -1;
 
     if (pkt->shdr.size != 0x04 || pkt->shdr.client_id != src->client_id) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据指令 0x%02X! 数据大小 %02X",
-            src->guildcard, pkt->shdr.type, pkt->shdr.size);
+        ERR_LOG("%s 发送损坏的数据指令 0x%02X! 数据大小 %02X", get_char_describe(src), pkt->shdr.type, pkt->shdr.size);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return rv;
     }
@@ -1721,8 +1714,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t uniqueNumbers[20] = { 0 };  // 用于保存已生成的唯一数据
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -1734,8 +1727,7 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
     while (i < num_item_count) {
         if (num_item_count > shop_item_count) {
-            ERR_LOG("GC %" PRIu32 " 商店物品生成错误 num_items %d > shop_size %d",
-                src->guildcard, num_item_count, shop_item_count);
+            ERR_LOG("%s 商店物品生成错误 num_items %d > shop_size %d", get_char_describe(src), num_item_count, shop_item_count);
             break;
         }
 
@@ -1756,8 +1748,8 @@ int sub62_B5_bb(ship_client_t* src, ship_client_t* dest,
 
                 size_t shop_price = price_for_item(&item);
                 if (shop_price <= 0) {
-                    ERR_LOG("GC %" PRIu32 ":%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d",
-                        src->guildcard, src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
+                    ERR_LOG("%s:%d 生成 ID 0x%08X %s(0x%08X) 发生错误 shop_price = %d"
+                        , get_char_describe(src), src->sec_data.slot, item.item_id, item_get_name(&item, src->version), item.datal[0], shop_price);
                     continue;
                 }
 
@@ -1792,14 +1784,14 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     uint8_t shop_type = pkt->shop_type, shop_item_index = pkt->shop_item_index, num_bought = pkt->num_bought;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0014) || pkt->shdr.size != 0x03) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送损坏的物品购买数据!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -1821,8 +1813,8 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
             ii.data.datab[5] = num_bought;
         }
         else {
-            ERR_LOG("GC %" PRIu32 " 发送损坏的物品购买数据!",
-                src->guildcard);
+            ERR_LOG("%s 发送损坏的物品购买数据!",
+                get_char_describe(src));
             print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
             print_item_data(&ii.data, src->version);
             return -1;
@@ -1847,16 +1839,16 @@ int sub62_B7_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t price = src->game_data->shop_items_price[shop_item_index] * num_bought;
 
     if (character->disp.meseta < price) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
-            src->guildcard, pkt->shdr.type, character->disp.meseta, price);
+        ERR_LOG("%s 发送损坏的数据! 0x%02X MESETA %d PRICE %d",
+            get_char_describe(src), pkt->shdr.type, character->disp.meseta, price);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         print_item_data(&ii.data, src->version);
         return -1;
     }
 
     if (!add_iitem(src, ii)) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            src->guildcard);
+        ERR_LOG("%s 背包空间不足, 无法获得物品!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -1886,14 +1878,14 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     char percent_mod = 0;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物品鉴定数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送损坏的物品鉴定数据!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -2;
     }
@@ -1907,13 +1899,13 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
 
     id_item_index = find_iitem_index(&character->inv, item_id);
     if (id_item_index < 0) {
-        ERR_LOG("GC %" PRIu32 " 鉴定的物品无效! 错误码 %d", src->guildcard, id_item_index);
+        ERR_LOG("%s 鉴定的物品无效! 错误码 %d", get_char_describe(src), id_item_index);
         return id_item_index;
     }
 
     if (character->inv.iitems[id_item_index].data.datab[0] != ITEM_TYPE_WEAPON) {
-        ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
-            src->guildcard);
+        ERR_LOG("%s 发送无法鉴定的物品!",
+            get_char_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
@@ -1922,14 +1914,14 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     attrib = id_result->data.datab[4] & ~(0x80);
 
     if (id_result->data.item_id == EMPTY_STRING) {
-        ERR_LOG("GC %" PRIu32 " 未发送需要鉴定的物品!",
-            src->guildcard);
+        ERR_LOG("%s 未发送需要鉴定的物品!",
+            get_char_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -4"));
     }
 
     if (id_result->data.item_id != item_id) {
-        ERR_LOG("GC %" PRIu32 " 接受的物品ID与以前请求的物品ID不匹配 !",
-            src->guildcard);
+        ERR_LOG("%s 接受的物品ID与以前请求的物品ID不匹配 !",
+            get_char_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -5"));
     }
 
@@ -1937,8 +1929,8 @@ int sub62_B8_bb(ship_client_t* src, ship_client_t* dest,
     src->game_data->identify_result = *id_result;
 
     if (player_tekker_item(src, &src->sfmt_rng, &src->game_data->identify_result.data)) {
-        ERR_LOG("GC %" PRIu32 " 发送无法鉴定的物品!",
-            src->guildcard);
+        ERR_LOG("%s 发送无法鉴定的物品!",
+            get_char_describe(src));
         return send_msg(src, MSG1_TYPE, "%s", __(src, "\tE\tC4鉴定物品出错 -3"));
     }
 
@@ -1958,28 +1950,28 @@ int sub62_BA_bb(ship_client_t* src, ship_client_t* dest,
     int found = -1;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     iitem_t id_result = src->game_data->identify_result;
 
     if (!id_result.data.item_id) {
-        ERR_LOG("未获取到鉴定结果");
+        ERR_LOG("%s 未获取到鉴定结果", get_char_describe(src));
         return -1;
     }
 
     if (id_result.data.item_id != pkt->item_id) {
-        ERR_LOG("鉴定结果 item_id != 数据包 item_id");
+        ERR_LOG("%s 鉴定结果 item_id != 数据包 item_id", get_char_describe(src));
         return -1;
     }
 
     //id_result->data.item_id = generate_item_id(l, src->client_id);
 
     if (!add_iitem(src, id_result)) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            src->guildcard);
+        ERR_LOG("%s 背包空间不足, 无法获得物品!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2001,16 +1993,16 @@ int sub62_BB_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅打开了银行!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅打开了银行!",
+            get_char_describe(src));
         return -1;
     }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if (req->hdr.pkt_len != LE16(0x10) || req->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的银行数据包!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的银行数据包!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2041,16 +2033,16 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
     /* We can't get these in a lobby without someone messing with something that
        they shouldn't be... Disconnect anyone that tries. */
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅中操作银行!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅中操作银行!",
+            get_char_describe(src));
         return -1;
     }
 
     /* 合理性检查... Make sure the size of the subcommand and the client id
        match with what we expect. Disconnect the client if not. */
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的银行操作数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送损坏的银行操作数据!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2084,13 +2076,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         if (item_id == 0xFFFFFFFF) {
             /* Make sure they aren't trying to do something naughty... */
             if (amt > c_mst_amt) {
-                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出他所拥有的!amt %d c_mst_amt %d", src->guildcard, amt, c_mst_amt);
+                ERR_LOG("%s 存入银行的美赛塔超出他所拥有的!amt %d c_mst_amt %d", get_char_describe(src), amt, c_mst_amt);
                 return -1;
             }
 
             bank_amt = LE32(bank->meseta);
             if ((amt + bank_amt) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 存入银行的美赛塔超出限制!amt %d bank_amt %d", src->guildcard, amt, bank_amt);
+                ERR_LOG("%s 存入银行的美赛塔超出限制!amt %d bank_amt %d", get_char_describe(src), amt, bank_amt);
                 return -2;
             }
 
@@ -2101,7 +2093,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         else {
             iitem = remove_iitem(src, item_id, pkt_item_amt, src->version != CLIENT_VERSION_BB);
             if (iitem.data.datal[0] == 0 && iitem.data.data2l == 0) {
-                ERR_LOG("GC %" PRIu32 " 移除了不存在于背包的物品!", src->guildcard);
+                ERR_LOG("%s 移除了不存在于背包的物品!", get_char_describe(src));
                 return -3;
             }
 
@@ -2110,7 +2102,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* 存入! */
             if (!add_bitem(src, bitem)) {
-                ERR_LOG("GC %" PRIu32 " 存物品进银行错误!", src->guildcard);
+                ERR_LOG("%s 存物品进银行错误!", get_char_describe(src));
                 return -5;
             }
 
@@ -2127,13 +2119,13 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         /* Are they taking meseta or an item? */
         if (item_id == ITEM_ID_MESETA) {
             if (amt > bank_amt) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了银行库存!amt %d bank_amt %d", src->guildcard, amt, bank_amt);
+                ERR_LOG("%s 从银行取出的美赛塔超出了银行库存!amt %d bank_amt %d", get_char_describe(src), amt, bank_amt);
                 return -6;
             }
 
             /* Make sure they aren't trying to do something naughty... */
             if ((amt + c_mst_amt) > 999999) {
-                ERR_LOG("GC %" PRIu32 " 从银行取出的美赛塔超出了存储限制!amt %d c_mst_amt %d", src->guildcard, amt, c_mst_amt);
+                ERR_LOG("%s 从银行取出的美赛塔超出了存储限制!amt %d c_mst_amt %d", get_char_describe(src), amt, c_mst_amt);
                 return -7;
             }
 
@@ -2145,15 +2137,14 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         }
         else {
             if (pkt_bitem_index >= bank->item_count) {
-                ERR_LOG("GC %" PRIu32 " 银行物品索引有误! pkt_bitem_index == %d",
-                    src->guildcard, pkt_bitem_index);
+                ERR_LOG("%s 银行物品索引有误! pkt_bitem_index == %d", get_char_describe(src), pkt_bitem_index);
                 return -8;
             }
 
             /* 尝试从银行中取出物品. */
             bitem = remove_bitem(src, item_id, pkt_bitem_index, pkt_item_amt);
             if (&bitem == NULL) {
-                ERR_LOG("GC %" PRIu32 " 从银行中取出无效物品!", src->guildcard);
+                ERR_LOG("%s 从银行中取出无效物品!", get_char_describe(src));
                 return -9;
             }
 
@@ -2163,8 +2154,8 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
 
             /* 新增至玩家背包中... */
             if (!add_iitem(src, iitem)) {
-                ERR_LOG("GC %" PRIu32 " 物品从玩家银行取出失败!",
-                    src->guildcard);
+                ERR_LOG("%s 物品从玩家银行取出失败!",
+                    get_char_describe(src));
                 return -11;
             }
 
@@ -2177,8 +2168,7 @@ int sub62_BD_bb(ship_client_t* src, ship_client_t* dest,
         break;
 
     default:
-        ERR_LOG("GC %" PRIu32 " 发送未知银行操作: %d!",
-            src->guildcard, action);
+        ERR_LOG("%s 发送未知银行操作: %d!", get_char_describe(src), action);
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         break;
     }
@@ -2194,8 +2184,8 @@ int sub62_C1_bb(ship_client_t* src, ship_client_t* dest,
     uint32_t target_guildcard = pkt->traget_guildcard;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的公会邀请数据包!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2249,8 +2239,8 @@ int sub62_C2_bb(ship_client_t* src, ship_client_t* dest,
     src->guild_accept = false;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会邀请数据包!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的公会邀请数据包!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2308,14 +2298,14 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
     int meseta_amount = pkt->amount;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0010) || pkt->shdr.size != 0x02) {
-        ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务美赛塔奖励!",
-            src->guildcard);
+        ERR_LOG("%s 尝试获取错误的任务美赛塔奖励!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2338,8 +2328,8 @@ int sub62_C9_bb(ship_client_t* src, ship_client_t* dest,
         ii.data.item_id = generate_item_id(l, 0xFF);
 
         if (!add_iitem(src, ii)) {
-            ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                src->guildcard);
+            ERR_LOG("%s 背包空间不足, 无法获得物品!",
+                get_char_describe(src));
             return -1;
         }
 
@@ -2354,14 +2344,14 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0020) || pkt->shdr.size != 0x06) {
-        ERR_LOG("GC %" PRIu32 " 尝试获取错误的任务物品奖励!",
-            src->guildcard);
+        ERR_LOG("%s 尝试获取错误的任务物品奖励!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2382,8 +2372,8 @@ int sub62_CA_bb(ship_client_t* src, ship_client_t* dest,
     ii.data.item_id = generate_item_id(l, 0xFF);
 
     if (!add_iitem(src, ii)) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            src->guildcard);
+        ERR_LOG("%s 背包空间不足, 无法获得物品!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2400,8 +2390,8 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     char master_name_text[24];
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的公会转让数据包!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2413,7 +2403,7 @@ int sub62_CD_bb(ship_client_t* src, ship_client_t* dest,
     //print_ascii_hex(errl, pkt, len);
 
     if (src->bb_guild->data.guild_priv_level != BB_GUILD_PRIV_LEVEL_MASTER) {
-        ERR_LOG("GC %u 公会权限不足", src->guildcard);
+        ERR_LOG("GC %u 公会权限不足", get_char_describe(src));
         return send_msg(src, MSG1_TYPE, "%s\n\n%s", __(src, "\tE\tC4公会权限不足!"),
             __(src, "\tC7您无权进行此操作."));
     }
@@ -2434,8 +2424,8 @@ int sub62_CE_bb(ship_client_t* src, ship_client_t* dest,
     dest->guild_master_exfer = false;
 
     if (pkt->hdr.pkt_len != LE16(0x0064) || pkt->shdr.size != 0x17) {
-        ERR_LOG("GC %" PRIu32 " 发送错误的公会转让数据包!",
-            src->guildcard);
+        ERR_LOG("%s 发送错误的公会转让数据包!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2481,8 +2471,8 @@ int sub62_D0_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2512,8 +2502,8 @@ int sub62_D1_bb(ship_client_t* src, ship_client_t* dest,
     float x = pkt->x, z = pkt->z;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2551,16 +2541,15 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     item_t item_data = pkt->item_data;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     iitem_t backup_item = remove_iitem(src, item_data.item_id, 1, src->version != CLIENT_VERSION_BB);
 
     if (backup_item.data.datal[0] == 0 && backup_item.data.data2l == 0) {
-        ERR_LOG("GC %" PRIu32 " 转换物品ID %d 失败!",
-            src->guildcard, item_data.item_id);
+        ERR_LOG("%s 转换物品ID %d 失败!", get_char_describe(src), item_data.item_id);
         return -1;
     }
 
@@ -2572,8 +2561,8 @@ int sub62_D6_bb(ship_client_t* src, ship_client_t* dest,
     /* 将物品新增至背包. */
     if (!add_iitem(dest, backup_item)) {
         if (!add_iitem(src, backup_item)) {
-            ERR_LOG("GC %" PRIu32 " 物品返回玩家背包失败!",
-                src->guildcard);
+            ERR_LOG("%s 物品返回玩家背包失败!",
+                get_char_describe(src));
             return -1;
         }
         return send_txt(src, __(src, "\tE\tC4转换物品失败"));
@@ -2587,8 +2576,8 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
     lobby_t* l = src->cur_lobby;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2601,7 +2590,7 @@ int sub62_DF_bb(ship_client_t* src, ship_client_t* dest,
 
         /* 如果找不到该物品，则将用户从船上推下. */
         if (item_id == 0) {
-            ERR_LOG("GC %" PRIu32 " 没有兑换所需物品!", src->guildcard);
+            ERR_LOG("%s 没有兑换所需物品!", get_char_describe(src));
             return -1;
         }
 
@@ -2621,8 +2610,8 @@ int sub62_E0_bb(ship_client_t* src, ship_client_t* dest,
     float x = pkt->x, z = pkt->z;
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
@@ -2766,14 +2755,14 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
 
     if (l->type == LOBBY_TYPE_LOBBY) {
-        ERR_LOG("GC %" PRIu32 " 在大厅触发了游戏房间指令!",
-            src->guildcard);
+        ERR_LOG("%s 在大厅触发了游戏房间指令!",
+            get_char_describe(src));
         return -1;
     }
 
     if (pkt->hdr.pkt_len != LE16(0x0018) || pkt->shdr.size != 0x04) {
-        ERR_LOG("GC %" PRIu32 " 发送损坏的物数据!",
-            src->guildcard);
+        ERR_LOG("%s 发送损坏的物数据!",
+            get_char_describe(src));
         print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
         return -1;
     }
@@ -2852,8 +2841,9 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             iitem = player_iitem_init(result_item);
 
             if (!add_iitem(src, iitem)) {
-                ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-                    src->guildcard);
+                ERR_LOG("%s 背包空间不足, 无法获得物品!",
+                    get_char_describe(src));
+                pthread_mutex_unlock(&src->mutex);
                 return -1;
             }
 
@@ -2917,7 +2907,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_FRAME://护甲
                 if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
                     ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    break;
+                    pthread_mutex_unlock(&src->mutex);
+                    return -1;
                 }
 
                 /*随机槽位 0 - 4 */
@@ -2939,7 +2930,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_BARRIER://护盾
                 if (err = pmt_lookup_guard_bb(iitem.data.datal[0], &pmt_guard)) {
                     ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    break;
+                    pthread_mutex_unlock(&src->mutex);
+                    return -1;
                 }
 
                 /* DFP值 */
@@ -2958,7 +2950,8 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
             case ITEM_SUBTYPE_UNIT://插件
                 if (err = pmt_lookup_unit_bb(iitem.data.datal[0], &pmt_unit)) {
                     ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, iitem.data.datal[0]);
-                    break;
+                    pthread_mutex_unlock(&src->mutex);
+                    return -1;
                 }
 
                 tmp_value = sfmt_genrand_uint32(rng) % 5;
@@ -2987,8 +2980,9 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
     //print_item_data(&iitem.data, src->version);
 
     if (!add_iitem(src, iitem)) {
-        ERR_LOG("GC %" PRIu32 " 背包空间不足, 无法获得物品!",
-            src->guildcard);
+        ERR_LOG("%s 背包空间不足, 无法获得物品!",
+            get_char_describe(src));
+        pthread_mutex_unlock(&src->mutex);
         return -1;
     }
 

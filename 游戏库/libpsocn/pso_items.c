@@ -605,10 +605,12 @@ char* get_item_describe(const item_t* item, int version) {
 		break;
 
 	case ITEM_TYPE_MAG:
-		sprintf(item_des, "%s %s Lv%d [%d/%d/%d/%d]"
+		sprintf(item_des, "%s %s Lv%d Í¬²½ %d ÖÇÉÌ %d [%d/%d/%d/%d]"
 			, item_get_name(item, version)
 			, get_mag_color_name(item->data2b[3])
 			, item->datab[2]
+			, item->data2b[0]
+			, item->data2b[1]
 			, item->dataw[2] / 100
 			, item->dataw[3] / 100
 			, item->dataw[4] / 100

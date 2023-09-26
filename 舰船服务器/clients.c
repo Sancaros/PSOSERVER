@@ -1283,99 +1283,88 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
        we don't have to worry about byte ordering. */
     if (dress_data1.model != dress_data2.model)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误model %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.model, dress_data2.model);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误model %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.model, dress_data2.model);
         dress_data1.model = dress_data2.model;
         return -10;
     }
 
     if (dress_data1.section != dress_data2.section)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误section %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.section, dress_data2.section);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误section %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.section, dress_data2.section);
         dress_data1.section = dress_data2.section;
         return -11;
     }
 
     if (dress_data1.ch_class != dress_data2.ch_class)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误ch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.ch_class, dress_data2.ch_class);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误ch_class %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.ch_class, dress_data2.ch_class);
         dress_data1.ch_class = dress_data2.ch_class;
         return -12;
     }
 
     if (dress_data1.costume != dress_data2.costume)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误costume %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.costume, dress_data2.costume);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误costume %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.costume, dress_data2.costume);
         dress_data1.costume = dress_data2.costume;
         return -13;
     }
 
     if (dress_data1.skin != dress_data2.skin)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误skin %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.skin, dress_data2.skin);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误skin %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.skin, dress_data2.skin);
         dress_data1.skin = dress_data2.skin;
         return -14;
     }
 
     if (dress_data1.face != dress_data2.face)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误face %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.face, dress_data2.face);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误face %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.face, dress_data2.face);
         dress_data1.face = dress_data2.face;
         return -15;
     }
 
     if (dress_data1.head != dress_data2.head)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误head %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.head, dress_data2.head);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误head %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.head, dress_data2.head);
         dress_data1.head = dress_data2.head;
         return -16;
     }
 
     if (dress_data1.hair != dress_data2.hair)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误hair %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.hair, dress_data2.hair);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.hair, dress_data2.hair);
         dress_data1.hair = dress_data2.hair;
         return -17;
     }
 
     if (dress_data1.hair_r != dress_data2.hair_r)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误hair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.hair_r, dress_data2.hair_r);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_r %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.hair_r, dress_data2.hair_r);
         dress_data1.hair_r = dress_data2.hair_r;
         return -18;
     }
 
     if (dress_data1.hair_g != dress_data2.hair_g)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误hair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.hair_g, dress_data2.hair_g);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_g %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.hair_g, dress_data2.hair_g);
         dress_data1.hair_g = dress_data2.hair_g;
         return -19;
     }
 
     if (dress_data1.hair_b != dress_data2.hair_b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误hair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, dress_data1.hair_b, dress_data2.hair_b);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误hair_b %d %d", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), dress_data1.hair_b, dress_data2.hair_b);
         dress_data1.hair_b = dress_data2.hair_b;
         return -20;
     }
@@ -1387,9 +1376,8 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     f2.f = dress_data2.prop_x;
     if (f1.b != f2.b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, f1.b, f2.b);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), f1.b, f2.b);
         f1.b = f2.b;
         return -21;
     }
@@ -1398,9 +1386,8 @@ static int check_char_bb(ship_client_t* src, player_t* pl) {
     f2.f = dress_data2.prop_y;
     if (f1.b != f2.b)
     {
-        ERR_LOG("%s(%d): 角色数据检查失败 GC %" PRIu32
-            " 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
-            src->guildcard, f1.b, f2.b);
+        ERR_LOG("%s(%d): 角色数据检查失败 %s 错误b %u %u", ship->cfg->ship_name, src->cur_block->b,
+            get_char_describe(src), f1.b, f2.b);
         f1.b = f2.b;
         return -22;
     }
@@ -1615,10 +1602,24 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id) {
 lobby_t* get_client_lobby(ship_client_t* src) {
     lobby_t* l = src->cur_lobby;
     if (!l) {
-        ERR_LOG("GC %u : %d 不在游戏或房间中", src->guildcard, src->sec_data.slot);
+        ERR_LOG("%s 不在游戏或房间中", get_char_describe(src));
         return NULL;
     }
     return l;
+}
+
+char* get_char_describe(ship_client_t* src) {
+    /* 初始化角色描述内存 */
+    memset(char_des, 0, sizeof(char_des));
+
+    sprintf(char_des, "%s(%d:%d:%s)"
+        , get_player_name(src->pl, src->version, false)
+        , src->guildcard
+        , src->sec_data.slot
+        , client_type[src->version].ver_name
+    );
+
+    return char_des;
 }
 
 #ifdef ENABLE_LUA
