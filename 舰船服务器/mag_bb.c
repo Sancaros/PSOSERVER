@@ -182,12 +182,12 @@ uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
 			}
 		}
 		// Failed to find unused photon blast number
-		ERR_LOG("Failed to find unused photon blast number.");
+		ERR_LOG("无法索引到空的光子爆发槽位.");
 		return -1;
 	}
 	else {
 		// Invalid slot index
-		ERR_LOG("Invalid slot index.");
+		ERR_LOG("无效光子爆发槽索引.");
 		return -2;
 	}
 }
@@ -206,10 +206,12 @@ int mag_has_photon_blast_in_any_slot(const item_t* item, uint8_t pb_num) {
 int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 
 	if (pb_num >= 6) {
+		ERR_LOG("玛古 %s 光子槽索引超出界限 %d", get_item_describe(item, 5), pb_num);
 		return -1;
 	}
 
 	if (mag_has_photon_blast_in_any_slot(item, pb_num)) {
+		ERR_LOG("玛古 %s 光子槽 %d 已有技能", get_item_describe(item, 5), pb_num);
 		return -2;
 	}
 
@@ -235,9 +237,9 @@ int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 		if (pb_num >= 4) {
 			// Left photon blast number is too high
 			ERR_LOG("Left photon blast number is too high.");
+			*pb_nums |= (pb_num << 6);
 			return -3;
 		}
-		*pb_nums |= (pb_num << 6);
 		*flags |= 4;
 	}
 
@@ -504,6 +506,15 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 
 	 //如果玛古进化了,则增加光子爆发
 	if (mag_number != mag_item->datab[1]) {
+
+		/* 进化后的玛古再次进行检索 */
+		mag_item_index = find_iitem_index(&character->inv, mag_item_id);
+		if (mag_item_index < 0) {
+			ERR_LOG("%s 玛古不存在! 错误码 %d", get_char_describe(src), mag_item_index);
+			return mag_item_index;
+		}
+		mag_item = &character->inv.iitems[mag_item_index].data;
+
 		pmt_mag_bb_t new_mag_def = { 0 };
 
 		if (err = pmt_lookup_mag_bb(mag_item->datal[0], &new_mag_def)) {
@@ -512,7 +523,9 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			return err;
 		}
 
-		err = add_mag_photon_blast(mag_item, new_mag_def.photon_blast);
+		if ((err = add_mag_photon_blast(mag_item, new_mag_def.photon_blast))) {
+			ERR_LOG("%s 玛古新增PB %d 出错! 错误码 %d", get_char_describe(src), new_mag_def.photon_blast, err);
+		}
 	}
 
 	if (should_delete_item) {
@@ -521,7 +534,7 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 		iitem_t delete_item = remove_iitem(src, fed_item->item_id, 1, src->version != CLIENT_VERSION_BB);
 		if (item_not_identification_bb(delete_item.data.datal[0], delete_item.data.datal[1])) {
 			ERR_LOG("%s 删除 ID 0x%08X 失败", get_char_describe(src), fed_item->item_id);
-			return -2;
+			err = -5;
 		}
 	}
 

@@ -194,10 +194,10 @@ bool check_pkt_size(ship_client_t* src, void* pkt, uint16_t len, uint8_t size) {
     switch (src->version)
     {
     case CLIENT_VERSION_BB:
-        subcmd_bb_pkt_t* pkt2 = (subcmd_bb_pkt_t*)pkt;
-        if (pkt2->hdr.pkt_len != LE16(len) || pkt2->size != size) {
-            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt2->type);
-            print_ascii_hex(errl, pkt2, pkt2->hdr.pkt_len);
+        subcmd_bb_pkt_t* pkt_bb = (subcmd_bb_pkt_t*)pkt;
+        if (pkt_bb->hdr.pkt_len != LE16(len) || pkt_bb->size != size) {
+            ERR_LOG("%s 发送损坏的数据指令 0x%02X!", get_char_describe(src), pkt_bb->type);
+            print_ascii_hex(errl, pkt_bb, pkt_bb->hdr.pkt_len);
             return false;
         }
 

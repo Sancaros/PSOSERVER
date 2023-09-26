@@ -2567,6 +2567,30 @@ static int sub60_42_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_43_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_normal_attack_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint16_t client_id = pkt->shdr.client_id;
+
+    if (!in_game(src))
+        return -1;
+
+    if (pkt->hdr.pkt_len != LE16(0x000C) || pkt->shdr.size != 0x02) {
+        ERR_LOG("GC %" PRIu32 " 发送损坏的数据! 0x%02X",
+            src->guildcard, pkt->shdr.type);
+        print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+        return -1;
+    }
+
+    /* Save the new area and move along */
+    if (src->client_id == client_id) {
+        if ((l->flags & LOBBY_TYPE_GAME))
+            update_bb_qpos(src, l);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_43_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_normal_attack_t* pkt) {
     lobby_t* l = src->cur_lobby;

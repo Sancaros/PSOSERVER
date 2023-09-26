@@ -31,11 +31,6 @@ int host_line = 0;
 char ipv4[INET_ADDRSTRLEN];
 char ipv6[INET6_ADDRSTRLEN];
 
-static jmp_buf jmpbuf;
-static volatile sig_atomic_t rehash = 0;
-static volatile sig_atomic_t should_exit = 0;
-static volatile sig_atomic_t canjump = 0;
-
 /* Storage for our client list. */
 struct client_queue clients = TAILQ_HEAD_INITIALIZER(clients);
 
@@ -883,95 +878,6 @@ static void initialization() {
 
 }
 
-void handle_signal(int signal) {
-    switch (signal) {
-#ifdef _WIN32 
-    case SIGTERM:
-        should_exit = 1;
-        break;
-    case SIGABRT:
-    case SIGBREAK:
-        break;
-#else 
-    case SIGHUP:
-        reopen_log();
-        break;
-#endif 
-    case SIGINT:
-        rehash = 1;
-
-        if (canjump) {
-            canjump = 0;
-            longjmp(jmpbuf, 1);
-        }
-        break;
-    }
-}
-
-bool already_hooked_up;
-
-void HookupHandler() {
-    if (already_hooked_up) {
-        /*PATCH_LOG(
-            "Tried to hookup signal handlers more than once.");
-        already_hooked_up = false;*/
-    }
-    else {
-        already_hooked_up = true;
-    }
-#ifdef _WIN32 
-    signal(SIGINT, handle_signal);
-    signal(SIGTERM, handle_signal);
-    signal(SIGABRT, handle_signal);
-#else 
-    struct sigaction sa;
-    // Setup the handler 
-    sa.sa_handler = &handle_signal;
-    // Restart the system call, if at all possible 
-    sa.sa_flags = SA_RESTART;
-    // Block every signal during the handler 
-    sigfillset(&sa.sa_mask);
-    // Intercept SIGHUP and SIGINT 
-    if (sigaction(SIGHUP, &sa, NULL) == -1) {
-        PATCH_LOG(
-            "Cannot install SIGHUP handler.");
-    }
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
-        PATCH_LOG(
-            "Cannot install SIGINT handler.");
-    }
-#endif 
-}
-
-void UnhookHandler() {
-    if (already_hooked_up) {
-#ifdef _WIN32 
-        signal(SIGINT, SIG_DFL);
-        signal(SIGTERM, SIG_DFL);
-        signal(SIGABRT, SIG_DFL);
-#else 
-        struct sigaction sa;
-        // Setup the sighub handler 
-        sa.sa_handler = SIG_DFL;
-        // Restart the system call, if at all possible 
-        sa.sa_flags = SA_RESTART;
-        // Block every signal during the handler 
-        sigfillset(&sa.sa_mask);
-        // Intercept SIGHUP and SIGINT 
-        if (sigaction(SIGHUP, &sa, NULL) == -1) {
-            PATCH_LOG(
-                "Cannot uninstall SIGHUP handler.");
-        }
-        if (sigaction(SIGINT, &sa, NULL) == -1) {
-            PATCH_LOG(
-                "Cannot uninstall SIGINT handler.");
-        }
-#endif 
-
-        already_hooked_up = false;
-    }
-}
-
 const void* my_ntop(struct sockaddr_storage* addr,
     char str[INET6_ADDRSTRLEN]) {
     int family = addr->ss_family;
@@ -1120,24 +1026,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
         size_t client_count = 0;
 
         /* Go ahead and loop forever... */
-        while (!should_exit) {
-
-            /* Set this up in case a signal comes in during the time between calling
-               this and the select(). */
-            if (!_setjmp(jmpbuf)) {
-                canjump = 1;
-            }
-
-            /* If we need to, rehash the patches and welcome message. */
-            if (rehash) {
-                canjump = 0;
-                rehash = 0;
-                canjump = 1;
-            }
-
-            /* Make sure a rehash event doesn't interrupt any of this stuff,
-                   it will get handled the next time through the loop. */
-            canjump = 0;
+        for (;;) {
 
             /* Check the listening sockets first. */
             for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
@@ -1159,8 +1048,7 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                 }
                 else {
                     i = create_connection(sock, &client_addr, len);
-                    if (!i) {
-                        addBlockedIP(ipstr, "dns_blocked_ips.txt");
+                    if (!i && addBlockedIP(ipstr, "dns_blocked_ips.txt")) {
                         ERR_LOG("创建DNS数据连接失败 来源: %s:%d", ipstr, sock);
                         close(sock);
                         continue; // 继续等待下一次接收
@@ -1185,10 +1073,6 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
                 }
             }
 
-            /* 清理无效的连接 (its not safe to do a TAILQ_REMOVE in
-               the middle of a TAILQ_FOREACH, and destroy_connection does indeed
-               use TAILQ_REMOVE). */
-            canjump = 0;
             i = TAILQ_FIRST(&clients);
 
             while (i) {
@@ -1295,9 +1179,6 @@ int __cdecl main(int argc, char** argv) {
             ERR_EXIT("read_config 错误");
         }
 
-        /* 读取信号监听. */
-        HookupHandler();
-
         /* Set up things for clients to connect. */
         if (client_init())
             ERR_EXIT("无法设置 客户端 接入");
@@ -1312,17 +1193,7 @@ int __cdecl main(int argc, char** argv) {
         // 创建线程
         pthread_t server_tid;
         pthread_create(&server_tid, NULL, server_thread, sockets);
-        //run_server(sockets);
 
-//        /* We'll never actually get here... */
-//#ifndef _WIN32
-//        close(sock);
-//#else
-//        cleanup_sockets(sockets);
-//
-//        //close(sock);
-//        WSACleanup();
-//#endif
         // 等待服务器线程结束
         pthread_join(server_tid, NULL);
 
@@ -1349,8 +1220,6 @@ int __cdecl main(int argc, char** argv) {
 #endif
 
         client_shutdown();
-
-        UnhookHandler();
     }
 
     __except (crash_handler(GetExceptionInformation())) {
