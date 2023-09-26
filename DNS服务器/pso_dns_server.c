@@ -413,6 +413,61 @@ void destroy_connection(dns_client_t* c) {
     free_safe(c);
 }
 
+#define MAX_IP_LENGTH 20 // 最大IP地址长度
+
+bool isIPBlocked(const char* ipAddress, const char* fn) {
+    FILE* file;
+    char line[MAX_IP_LENGTH];
+
+    // 打开文件以只读模式
+    file = fopen(fn, "r");
+    if (file == NULL) {
+        ERR_LOG("无法打开文件");
+        return 0; // 默认不屏蔽IP地址
+    }
+
+    // 逐行读取文件并与给定的IP地址进行比较
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\n")] = '\0'; // 移除换行符
+
+        if (strcmp(ipAddress, line) == 0) {
+            fclose(file);
+            return true; // IP地址被屏蔽
+        }
+    }
+
+    // 关闭文件
+    fclose(file);
+
+    return false; // 默认不屏蔽IP地址
+}
+
+bool addBlockedIP(const char* ipAddress, const char* fn) {
+    FILE* file;
+
+    // 打开文件以追加模式
+    file = fopen(fn, "a");
+    if (file == NULL) {
+        // 打开文件以读写模式，如果文件不存在则创建新文件
+        file = fopen(fn, "w+");
+        if (file == NULL) {
+            ERR_LOG("无法打开文件");
+            return false; // 写入失败
+        }
+
+        // 将文件指针移动到文件末尾
+        fseek(file, 0, SEEK_END);
+    }
+
+    // 将IP地址写入文件，每个IP地址一行
+    fprintf(file, "%s\n", ipAddress);
+
+    // 关闭文件
+    fclose(file);
+
+    return true; // 写入成功
+}
+
 /* 创建一个新连接，并将它存储在客户端列表中。*/
 dns_client_t* create_connection(int sock, struct sockaddr_in* ip, socklen_t size) {
     pthread_mutexattr_t attr;
@@ -1081,17 +1136,25 @@ static void run_server(int sockets[DNS_CLIENT_SOCKETS_TYPE_MAX]) {
             for (j = 0; j < DNS_CLIENT_SOCKETS_TYPE_MAX; ++j) {
                 len = sizeof(struct sockaddr);
                 recive_len = recvfrom(sockets[j], inbuf, 1024, 0, (struct sockaddr*)&client_addr, &len);
+                sock = ntohs(client_addr.sin_port);
+                get_ip_address(&client_addr, ipstr);
+                if (isIPBlocked(ipstr, "dns_blocked_ips.txt")) {
+                    //ERR_LOG("断开被屏蔽的连接 来源: %s:%d", ipstr, sock);
+                    memset(inbuf, 0, sizeof(inbuf));
+                    close(sock);
+                    continue; // 继续等待下一次接收
+                }
+
                 if (recive_len <= dns_size) {
                     ERR_LOG("recvfrom");
                     perror("recvfrom");
                     continue; // 继续等待下一次接收
                 }
                 else {
-                    sock = ntohs(client_addr.sin_port);
-
                     i = create_connection(sock, &client_addr, len);
                     if (!i) {
-                        ERR_LOG("创建DNS数据连接失败 端口号: %d", sock);
+                        addBlockedIP(ipstr, "dns_blocked_ips.txt");
+                        ERR_LOG("创建DNS数据连接失败 来源: %s:%d", ipstr, sock);
                         close(sock);
                         continue; // 继续等待下一次接收
                     }
