@@ -7135,8 +7135,8 @@ int subcmd_handle_60(ship_client_t* src, subcmd_pkt_t* pkt) {
             //( 00000000 )   10 00 60 00 00 00 00 00   87 02 00 00 CD CC CC 3E  ..`.....?..吞?
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(errl, pkt, len);
+                DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
+                print_ascii_hex(dbgl, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
             }
@@ -7222,8 +7222,8 @@ int subcmd_bb_handle_60(ship_client_t* src, subcmd_bb_pkt_t* pkt) {
         else {
             if (l->subcmd_handle == NULL) {
 #ifdef BB_LOG_UNKNOWN_SUBS
-                DBG_LOG("未知 0x%02X 指令: 0x%02X", hdr_type, type);
-                print_ascii_hex(errl, pkt, len);
+                DBG_LOG("未知 %s 0x%02X 指令: 0x%02X", client_type[src->version].ver_name, hdr_type, type);
+                print_ascii_hex(dbgl, pkt, len);
 #endif /* BB_LOG_UNKNOWN_SUBS */
                 rv = subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
             }
