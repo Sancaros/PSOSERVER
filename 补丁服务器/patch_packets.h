@@ -189,7 +189,7 @@ int send_simple(patch_client_t *c, uint16_t type);
 int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect);
 
 /* Send the packet containing the textual welcome message to the client. */
-int send_message(patch_client_t* c, uint16_t* msg, uint16_t size);
+int send_message(patch_client_t* c, uint16_t* msg, size_t size);
 
 /* Send the data server redirect packet to the given client.
    IP and port MUST both be in network byte-order. */

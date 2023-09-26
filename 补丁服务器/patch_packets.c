@@ -164,10 +164,10 @@ int send_welcome(patch_client_t *c, uint32_t svect, uint32_t cvect) {
 }
 
 /* Send the packet containing the textual welcome message to the client. */
-int send_message(patch_client_t *c, uint16_t *msg, uint16_t size) {
+int send_message(patch_client_t *c, uint16_t *msg, size_t size) {
     uint8_t* sendbuf = get_sendbuf();
     pkt_header_t *pkt = (pkt_header_t *)sendbuf;
-    uint16_t s = size + PACKET_HEADER_LENGTH;
+    uint16_t s = (uint16_t)(size + PACKET_HEADER_LENGTH);
 
     /* If we have a non-divisible-by-four number of bytes in the message, it
        must still be divisible by 2, so, add 2 and we'll have something
