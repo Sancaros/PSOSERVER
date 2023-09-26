@@ -292,7 +292,7 @@ patch:
     //memset(&patch_welcom_msg[0], 0, sizeof(patch_welcom_msg));
 
     psocn_web_server_getfile(cfg->w_motd.web_host, cfg->w_motd.web_port, cfg->w_motd.patch_welcom_file, Welcome_Files[0]);
-    msglen = psocn_web_server_loadfile2(Welcome_Files[0], &patch_welcom_msg[0]);
+    msglen = psocn_web_server_loadfile(Welcome_Files[0], (char*)&patch_welcom_msg[0]);
 
     if (send_message(c, &patch_welcom_msg[0], (uint16_t)msglen))
         //if (send_message(c, cfg->pc_welcome, cfg->pc_welcome_size))

@@ -200,9 +200,9 @@ typedef struct psocn_welcom_motd {
     char* web_host;
     uint16_t web_port;
     char* patch_welcom_file;
-    char patch_welcom[4096];
+    char patch_welcom[2048];
     char* login_welcom_file;
-    char login_welcom[4096];
+    char login_welcom[2048];
 } psocn_welcom_motd_t;
 
 typedef struct psocn_config {

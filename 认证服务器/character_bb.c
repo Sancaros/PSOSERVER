@@ -64,7 +64,7 @@ static psocn_bb_default_char_t default_chars;
 static bb_level_table_t bb_char_stats;
 static dress_flag_t dress_flags[MAX_DRESS_FLAGS];
 /* 认证信息板内存存储 */
-static char login_welcom_msg[4096];
+static char login_welcom_msg[2048];
 
 const void* my_ntop(struct sockaddr_storage* addr, char str[INET6_ADDRSTRLEN]);
 

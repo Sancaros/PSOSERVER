@@ -1021,9 +1021,9 @@ int psocn_web_server_loadfile(const char* onlinefile, char* dest) {
     uint16_t* w2;
     FILE* fp = { 0 };
 
-    uint8_t msgdata[4096] = { 0 };
+    uint8_t msgdata[2048] = { 0 };
 
-    memset(dest, 0, 4096);
+    memset(dest, 0, 2048);
 
     size_t len = 0;
     errno_t err = fopen_s(&fp, onlinefile, "rb");
@@ -1033,10 +1033,10 @@ int psocn_web_server_loadfile(const char* onlinefile, char* dest) {
         fseek(fp, 0, SEEK_END);
         filesize = ftell(fp);
         fseek(fp, 0, SEEK_SET);
-        if (filesize > 4096)
-            filesize = 4096;
+        if (filesize > 2048)
+            filesize = 2048;
         fread(&msgdata[0], 1, filesize, fp);
-        msgdata[4095] = '\0';
+        msgdata[2047] = '\0';
         fclose(fp);
         w = (uint16_t*)&msgdata[0];
         w2 = (uint16_t*)&dest[0];
@@ -1156,5 +1156,102 @@ int psocn_web_server_getfile(void* HostName, int32_t port, char* file, const cha
 
         closesocket(sock);
         WSACleanup();
+    }
+}
+
+// 回调函数，用于写入接收到的数据
+static size_t write_callback(void* contents, size_t size, size_t nmemb, void* userp) {
+    FILE* file = (FILE*)userp;
+    size_t written = fwrite(contents, size, nmemb, file);
+    return written;
+}
+
+int download_txt_from_network(const char* url, const char* filename) {
+    WSADATA wsaData;
+    SOCKET sock;
+    struct sockaddr_in serverAddr = { 0 };
+    char request[1024] = { 0 };
+    char response[8192] = { 0 };
+    int responseSize, recvSize, fileSize;
+    FILE* file;
+
+    // 初始化 WinSock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
+        fprintf(stderr, "Failed to initialize WinSock\n");
+        return -1;
+    }
+
+    // 创建套接字
+    sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock == INVALID_SOCKET) {
+        fprintf(stderr, "Failed to create socket\n");
+        WSACleanup();
+        return -1;
+    }
+
+    // 解析服务器 IP 地址和端口号
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(80);
+    serverAddr.sin_addr.s_addr = inet_addr(url);
+
+    // 连接服务器
+    if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr))) {
+        fprintf(stderr, "Failed to connect to server\n");
+        WSACleanup();
+        closesocket(sock);
+        return -1;
+    }
+
+    // 构造 HTTP 请求报文
+    sprintf(request, "GET /%s HTTP/1.1\r\n"
+        "Host: %s\r\n"
+        "Connection: close\r\n\r\n",
+        filename, url);
+
+    // 发送请求
+    if (send(sock, request, strlen(request), 0) == SOCKET_ERROR) {
+        fprintf(stderr, "Failed to send request\n");
+        WSACleanup();
+        closesocket(sock);
+        return -1;
+    }
+
+    // 接收响应
+    responseSize = 0;
+    fileSize = -1;
+    while ((recvSize = recv(sock, response + responseSize, sizeof(response) - responseSize - 1, 0)) > 0) {
+        responseSize += recvSize;
+        response[responseSize] = '\0';
+        if (fileSize == -1) {
+            char* headEnd = strstr(response, "\r\n\r\n");
+            if (headEnd) {
+                fileSize = responseSize - (headEnd - response) - 4;
+                file = fopen(filename, "wb");
+                if (!file) {
+                    fprintf(stderr, "Failed to open file for writing\n");
+                    WSACleanup();
+                    closesocket(sock);
+                    return -1;
+                }
+                fwrite(headEnd + 4, fileSize, 1, file);
+            }
+        }
+        else {
+            fwrite(response + responseSize - recvSize, recvSize, 1, file);
+        }
+    }
+
+    // 关闭套接字和文件
+    fclose(file);
+    WSACleanup();
+    closesocket(sock);
+
+    if (fileSize > 0) {
+        printf("File downloaded successfully\n");
+        return 0;
+    }
+    else {
+        printf("Failed to download file\n");
+        return -1;
     }
 }
