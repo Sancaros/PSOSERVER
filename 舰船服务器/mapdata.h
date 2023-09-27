@@ -65,38 +65,33 @@ typedef struct map_enemy {
     /* 02 */ uint16_t unknown_a0; // Overwritten by client at load time
     /* 04 */ uint16_t enemy_index; // Overwritten by client at load time
     /* 06 */ uint16_t num_children;
-    union reserves {
-        uint32_t reserved[10];
-        struct {
-            /* 08 */ uint16_t area;
-            /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
-            /* 0C */ uint16_t section;
-            /* 0E */ uint16_t wave_number;
-            /* 10 */ uint32_t wave_number2;
-            /* 14 */ float x;
-            /* 18 */ float y;
-            /* 1C */ float z;
-            /* 20 */ uint32_t x_angle;
-            /* 24 */ uint32_t y_angle;
-            /* 28 */ uint32_t z_angle;
-            /* 2C */ uint32_t unknown_a3;
-        };
-    };
+    /* 08 */ uint16_t area;
+    /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
+    /* 0C */ uint16_t section;
+    /* 0E */ uint16_t wave_number;
+    /* 10 */ uint32_t wave_number2;
+    /* 14 */ float x;
+    /* 18 */ float y;
+    /* 1C */ float z;
+    /* 20 */ uint32_t x_angle;
+    /* 24 */ uint32_t y_angle;
+    /* 28 */ uint32_t z_angle;
+    /* 2C */ uint32_t rare_rate;
     /* 30 */ float rareratio; // 4 怪物稀有率
     /* 34 */ float reserved12;
     /* 38 */ uint32_t reserved13;
     /* 3C */ uint32_t exp;// 4 该怪物可获取的经验值
     /* 40 */ uint32_t skin;// 4 检测相同类型怪物是否有皮肤 0 1
-    /* 44 */ uint32_t rt_index;// 4 随机掉落索引地址
+    /* 44 */ uint32_t rt_index;// 4 稀有掉落索引地址
     /* 48 */
 } PACKED map_enemy_t;
 
 typedef struct EnemyEntry {
     /* 00 */ uint16_t base_type;
     /* 02 */ uint16_t unknown_a0; // Overwritten by client at load time
-
     /* 04 */ uint16_t enemy_index; // Overwritten by client at load time
     /* 06 */ uint16_t num_children;
+
     /* 08 */ uint16_t area;
     /* 0A */ uint16_t entity_id; // == enemy_index + 0x1000
     /* 0C */ uint16_t section;
@@ -109,6 +104,7 @@ typedef struct EnemyEntry {
     /* 24 */ uint32_t y_angle;
     /* 28 */ uint32_t z_angle;
     /* 2C */ uint32_t unknown_a3;
+
     /* 30 */ uint32_t unknown_a4;   //rareratio
     /* 34 */ uint32_t unknown_a5;  //reserved12
     /* 38 */ uint32_t unknown_a6; //reserved13
@@ -212,16 +208,22 @@ typedef struct PSOEnemy {
 /* Enemy data as used in the game. */
 typedef struct game_enemy {
     uint32_t bp_entry;
-    uint8_t rt_index;
+    uint32_t rt_index;
     uint8_t clients_hit;
     uint8_t last_client;
     uint8_t drop_done;
     uint8_t area;
 } game_enemy_t;
 
+typedef struct game_rare_enemy {
+    uint32_t rare_monster_index;
+    uint16_t rare_monster_data[0x10];
+} game_rare_enemy_t;
+
 typedef struct game_enemies {
     uint32_t count;
     game_enemy_t* enemies;
+    game_rare_enemy_t rare_enemies;
 } game_enemies_t;
 
 typedef struct parsed_map {

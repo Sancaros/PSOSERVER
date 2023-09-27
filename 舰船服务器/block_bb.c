@@ -1295,16 +1295,16 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         c->flags &= ~CLIENT_FLAG_BURSTING;
 
         if (l->version == CLIENT_VERSION_BB) {
+            /* TODO 解析稀有怪物列表 */
+            if (l->map_enemies)
+                rv |= send_bb_rare_enemy_index_list(c, l->map_enemies->rare_enemies.rare_monster_data);
+            DBG_LOG("发送稀有怪物列表");
+
             send_lobby_end_burst(l);
 
             /* 将房间中的玩家公会数据发送至新进入的客户端 */
             send_bb_guild_cmd(c, BB_GUILD_FULL_DATA);
             send_bb_guild_cmd(c, BB_GUILD_INITIALIZATION_DATA);
-
-            /* TODO 解析稀有怪物列表 */
-            //if (l->map_enemies)
-            //    rv |= send_rare_enemy_index_list(c, l->map_enemies->rare_enemies);
-            //DBG_LOG("发送稀有怪物列表");
         }
 
         rv = send_simple(c, PING_TYPE, 0) | lobby_handle_done_burst_bb(l, c);
@@ -1340,9 +1340,10 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
        the rest of the lobby, and continue on. */
     pthread_mutex_lock(&l->mutex);
 
-    //send_bb_rare_monster_data(c); TODO
-
     if (l->version == CLIENT_VERSION_BB) {
+        /* TODO 解析稀有怪物列表 */
+        send_bb_rare_enemy_index_list(c, l->map_enemies->rare_enemies.rare_monster_data); //TODO 稀有怪物数据
+
         send_lobby_end_burst(l);
 
         /* 将房间中的玩家公会数据发送至新进入的客户端 */

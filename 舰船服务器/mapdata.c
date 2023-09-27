@@ -35,6 +35,8 @@
 #include "lobby.h"
 #include "clients.h"
 
+#define FLOAT_PRECISION 0.00001
+
 /* Player levelup data */
 extern bb_level_table_t bb_char_stats;
 extern v2_level_table_t v2_char_stats;
@@ -277,17 +279,539 @@ bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, si
     return is_rare;
 }
 
-static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
-                     int ep, int alt, int area) {
+//static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
+//                     int ep, int alt, int area) {
+//    int i, j;
+//    game_enemy_t *gen;
+//    void *tmp;
+//    uint32_t count = 0;
+//    uint16_t n_clones;
+//    int acc;
+//
+//    /* Allocate the space first */
+//    if(!(gen = (game_enemy_t *)malloc(sizeof(game_enemy_t) * 0xB50))) {
+//        ERR_LOG("无法分配敌人结构的内存: %s", strerror(errno));
+//        return -1;
+//    }
+//
+//    /* Clear it */
+//    memset(gen, 0, sizeof(game_enemy_t) * 0xB50);
+//
+//    /* Parse each enemy. */
+//    for(i = 0; i < en_ct; ++i) {
+//        map_enemy_t me = en[i];
+//        n_clones = me.num_children;
+//        gen[count].area = area;
+//
+//        switch(me.base_type) {
+//            case 0x0040:    /* Hildebear & Hildetorr */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x49 + acc;
+//                gen[count].rt_index = 0x01 + acc;
+//                break;
+//
+//            case 0x0041:    /* Rappies */
+//                acc = me.skin & 0x01;
+//                if(ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
+//                    if(alt) {
+//                        gen[count].bp_entry = 0x17 + acc;
+//                        gen[count].rt_index = 0x11 + acc;
+//                    }
+//                    else {
+//                        gen[count].bp_entry = 0x05 + acc;
+//                        gen[count].rt_index = 0x11 + acc;
+//                    }
+//                }
+//                else {
+//                    if(acc) { // Rag Rappy and Al Rappy (Love for Episode II)
+//                        gen[count].bp_entry = 0x19;
+//
+//                        if(ep == LOBBY_EPISODE_1) {
+//                            gen[count].rt_index = 0x06;
+//                        }
+//                        else {
+//                            /* We need to fill this in when we make the lobby,
+//                               since it's dependent on the event. */
+//                            gen[count].rt_index = (uint8_t)-1;
+//                        }
+//                    }
+//                    else {
+//                        gen[count].bp_entry = 0x18;
+//                        gen[count].rt_index = 0x05;
+//                    }
+//                }
+//                break;
+//
+//            case 0x0042:    /* Monest + 30 Mothmants */
+//                gen[count].bp_entry = 0x01;
+//                gen[count].rt_index = 0x04;
+//
+//                for(j = 0; j < 30; ++j) {
+//                    ++count;
+//                    gen[count].bp_entry = 0x00;
+//                    gen[count].rt_index = 0x03;
+//                    gen[count].area = area;
+//                }
+//                break;
+//
+//            case 0x0043:    /* Savage Wolf & Barbarous Wolf */
+//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+//                gen[count].bp_entry = 0x02 + acc;
+//                gen[count].rt_index = 0x07 + acc;
+//                break;
+//
+//            case 0x0044:    /* Booma family */
+//                acc = me.skin % 3;
+//                gen[count].bp_entry = 0x4B + acc;
+//                gen[count].rt_index = 0x09 + acc;
+//                break;
+//
+//            case 0x0060:    /* Grass Assassin */
+//                gen[count].bp_entry = 0x4E;
+//                gen[count].rt_index = 0x0C;
+//                break;
+//
+//            case 0x0061:    /* Del Lily, Poison Lily, Nar Lily */
+//                if(ep == 2 && alt) {
+//                    gen[count].bp_entry = 0x25;
+//                    gen[count].rt_index = 0x53;
+//                }
+//                else {
+//                    acc = (me.rare_rate & 0x800000) ? 1 : 0;
+//                    gen[count].bp_entry = 0x04 + acc;
+//                    gen[count].rt_index = 0x0D + acc;
+//                }
+//                break;
+//
+//            case 0x0062:    /* Nano Dragon */
+//                gen[count].bp_entry = 0x1A;
+//                gen[count].rt_index = 0x0F;
+//                break;
+//
+//            case 0x0063:    /* Shark Family */
+//                acc = me.skin % 3;
+//                gen[count].bp_entry = 0x4F + acc;
+//                gen[count].rt_index = 0x10 + acc;
+//                break;
+//
+//            case 0x0064:    /* Slime + 4 clones */
+//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+//                gen[count].bp_entry = 0x30 - acc;
+//                gen[count].rt_index = 0x13 + acc;
+//
+//                for(j = 0; j < 4; ++j) {
+//                    ++count;
+//                    gen[count].bp_entry = 0x30;
+//                    gen[count].rt_index = 0x13;
+//                    gen[count].area = area;
+//                }
+//                break;
+//
+//            case 0x0065:    /* Pan Arms, Migium, Hidoom */
+//                for(j = 0; j < 3; ++j) {
+//                    gen[count + j].bp_entry = 0x31 + j;
+//                    gen[count + j].rt_index = 0x15 + j;
+//                    gen[count + j].area = area;
+//                }
+//
+//                count += 2;
+//                break;
+//
+//            case 0x0080:    /* Dubchic & Gilchic */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x1B + acc;
+//                gen[count].rt_index = (0x18 + acc) << acc;
+//                break;
+//
+//            case 0x0081:    /* Garanz */
+//                gen[count].bp_entry = 0x1D;
+//                gen[count].rt_index = 0x19;
+//                break;
+//
+//            case 0x0082:    /* Sinow Beat & Sinow Gold */
+//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+//                if(acc) {
+//                    gen[count].bp_entry = 0x13;
+//                    gen[count].rt_index = 0x1B;
+//                }
+//                else {
+//                    gen[count].bp_entry = 0x06;
+//                    gen[count].rt_index = 0x1A;
+//                }
+//
+//                if(!n_clones)
+//                    n_clones = 4;
+//                break;
+//
+//            case 0x0083:    /* Canadine */
+//                gen[count].bp_entry = 0x07;
+//                gen[count].rt_index = 0x1C;
+//                break;
+//
+//            case 0x0084:    /* Canadine Group */
+//                gen[count].bp_entry = 0x09;
+//                gen[count].rt_index = 0x1D;
+//
+//                for(j = 0; j < 8; ++j) {
+//                    ++count;
+//                    gen[count].bp_entry = 0x08;
+//                    gen[count].rt_index = 0x1C;
+//                    gen[count].area = area;
+//                }
+//                break;
+//
+//            case 0x0085:    /* Dubwitch */
+//                break;
+//
+//            case 0x00A0:    /* Delsaber */
+//                gen[count].bp_entry = 0x52;
+//                gen[count].rt_index = 0x1E;
+//                break;
+//
+//            case 0x00A1:    /* Chaos Sorcerer */
+//                gen[count].bp_entry = 0x0A;
+//                gen[count].rt_index = 0x1F;
+//
+//                /* Bee L */
+//                gen[count + 1].bp_entry = 0x0B;
+//                gen[count + 1].rt_index = 0x00;
+//                gen[count + 1].area = area;
+//
+//                /* Bee R */
+//                gen[count + 2].bp_entry = 0x0C;
+//                gen[count + 2].rt_index = 0x00;
+//                gen[count + 2].area = area;
+//                count += 2;
+//                break;
+//
+//            case 0x00A2:    /* Dark Gunner */
+//                gen[count].bp_entry = 0x1E;
+//                gen[count].rt_index = 0x22;
+//                break;
+//
+//            case 0x00A3:    /* Death Gunner? */
+//                break;
+//
+//            case 0x00A4:    /* Chaos Bringer */
+//                gen[count].bp_entry = 0x0D;
+//                gen[count].rt_index = 0x24;
+//                break;
+//
+//            case 0x00A5:    /* Dark Belra */
+//                gen[count].bp_entry = 0x0E;
+//                gen[count].rt_index = 0x25;
+//                break;
+//
+//            case 0x00A6:    /* Dimenian Family */
+//                acc = me.skin % 3;
+//                gen[count].bp_entry = 0x53 + acc;
+//                gen[count].rt_index = 0x29 + acc;
+//                break;
+//
+//            case 0x00A7:    /* Bulclaw + 4 Claws */
+//                gen[count].bp_entry = 0x1F;
+//                gen[count].rt_index = 0x28;
+//
+//                for(j = 0; j < 4; ++j) {
+//                    ++count;
+//                    gen[count].bp_entry = 0x20;
+//                    gen[count].rt_index = 0x26;
+//                    gen[count].area = area;
+//                }
+//                break;
+//
+//            case 0x00A8:    /* Claw */
+//                gen[count].bp_entry = 0x20;
+//                gen[count].rt_index = 0x26;
+//                break;
+//
+//            case 0x00C0:    /* Dragon or Gal Gryphon */
+//                if(ep == 1) {
+//                    gen[count].bp_entry = 0x12;
+//                    gen[count].rt_index = 0x2C;
+//                }
+//                else {
+//                    gen[count].bp_entry = 0x1E;
+//                    gen[count].rt_index = 0x4D;
+//                }
+//                break;
+//
+//            case 0x00C1:    /* De Rol Le */
+//                gen[count].bp_entry = 0x0F;
+//                gen[count].rt_index = 0x2D;
+//                break;
+//
+//            case 0x00C2:    /* Vol Opt (form 1) */
+//                break;
+//
+//            case 0x00C5:    /* Vol Opt (form 2) */
+//                gen[count].bp_entry = 0x25;
+//                gen[count].rt_index = 0x2E;
+//                break;
+//
+//            case 0x00C8:    /* Dark Falz (3 forms) + 510 Darvants */
+//                /* Deal with the Darvants first. */
+//                for(j = 0; j < 510; ++j) {
+//                    gen[count].bp_entry = 0x35;
+//                    gen[count].area = area;
+//                    gen[count++].rt_index = 0;
+//                }
+//
+//                /* The forms are backwards in their ordering... */
+//                gen[count].bp_entry = 0x38;
+//                gen[count].area = area;
+//                gen[count++].rt_index = 0x2F;
+//
+//                gen[count].bp_entry = 0x37;
+//                gen[count].area = area;
+//                gen[count++].rt_index = 0x2F;
+//
+//                gen[count].bp_entry = 0x36;
+//                gen[count].area = area;
+//                gen[count].rt_index = 0x2F;
+//                break;
+//
+//            case 0x00CA:    /* Olga Flow */
+//                gen[count].bp_entry = 0x2C;
+//                gen[count].rt_index = 0x4E;
+//                count += 512;
+//                break;
+//
+//            case 0x00CB:    /* Barba Ray */
+//                gen[count].bp_entry = 0x0F;
+//                gen[count].rt_index = 0x49;
+//                count += 47;
+//                break;
+//
+//            case 0x00CC:    /* Gol Dragon */
+//                gen[count].bp_entry = 0x12;
+//                gen[count].rt_index = 0x4C;
+//                count += 5;
+//                break;
+//
+//            case 0x00D4:    /* Sinow Berill & Spigell */
+//                /* XXXX: How to do rare? Tethealla looks at skin, Newserv at the
+//                   rare_rate value... */
+//                acc = me.skin >= 0x01 ? 1 : 0;
+//                if(acc) {
+//                    gen[count].bp_entry = 0x13;
+//                    gen[count].rt_index = 0x3F;
+//                }
+//                else {
+//                    gen[count].bp_entry = 0x06;
+//                    gen[count].rt_index = 0x3E;
+//                }
+//
+//                count += 4; /* Add 4 clones which are never used... */
+//                break;
+//
+//            case 0x00D5:    /* Merillia & Meriltas */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x4B + acc;
+//                gen[count].rt_index = 0x34 + acc;
+//                break;
+//
+//            case 0x00D6:    /* Mericus, Merikle, or Mericarol */
+//                acc = me.skin % 3;
+//                if(acc)
+//                    gen[count].bp_entry = 0x44 + acc;
+//                else
+//                    gen[count].bp_entry = 0x3A;
+//
+//                gen[count].rt_index = 0x38 + acc;
+//                break;
+//
+//            case 0x00D7:    /* Ul Gibbon & Zol Gibbon */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x3B + acc;
+//                gen[count].rt_index = 0x3B + acc;
+//                break;
+//
+//            case 0x00D8:    /* Gibbles */
+//                gen[count].bp_entry = 0x3D;
+//                gen[count].rt_index = 0x3D;
+//                break;
+//
+//            case 0x00D9:    /* Gee */
+//                gen[count].bp_entry = 0x07;
+//                gen[count].rt_index = 0x36;
+//                break;
+//
+//            case 0x00DA:    /* Gi Gue */
+//                gen[count].bp_entry = 0x1A;
+//                gen[count].rt_index = 0x37;
+//                break;
+//
+//            case 0x00DB:    /* Deldepth */
+//                gen[count].bp_entry = 0x30;
+//                gen[count].rt_index = 0x47;
+//                break;
+//
+//            case 0x00DC:    /* Delbiter */
+//                gen[count].bp_entry = 0x0D;
+//                gen[count].rt_index = 0x48;
+//                break;
+//
+//            case 0x00DD:    /* Dolmolm & Dolmdarl */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x4F + acc;
+//                gen[count].rt_index = 0x40 + acc;
+//                break;
+//
+//            case 0x00DE:    /* Morfos */
+//                gen[count].bp_entry = 0x41;
+//                gen[count].rt_index = 0x42;
+//                break;
+//
+//            case 0x00DF:    /* Recobox & Recons */
+//                gen[count].bp_entry = 0x41;
+//                gen[count].rt_index = 0x43;
+//
+//                for(j = 1; j <= n_clones; ++j) {
+//                    ++count;
+//                    gen[count].bp_entry = 0x42;
+//                    gen[count].rt_index = 0x44;
+//                    gen[count].area = area;
+//                }
+//
+//                /* Don't double count them. */
+//                n_clones = 0;
+//                break;
+//
+//            case 0x00E0:    /* Epsilon, Sinow Zoa & Zele */
+//                if(ep == 2 && alt) {
+//                    gen[count].bp_entry = 0x23;
+//                    gen[count].rt_index = 0x54;
+//                    count += 4;
+//                }
+//                else {
+//                    acc = me.skin & 0x01;
+//                    gen[count].bp_entry = 0x43 + acc;
+//                    gen[count].rt_index = 0x45 + acc;
+//                }
+//                break;
+//
+//            case 0x00E1:    /* Ill Gill */
+//                gen[count].bp_entry = 0x26;
+//                gen[count].rt_index = 0x52;
+//                break;
+//
+//            case 0x0110:    /* Astark */
+//                gen[count].bp_entry = 0x09;
+//                gen[count].rt_index = 0x01;
+//                break;
+//
+//            case 0x0111:    /* Satellite Lizard & Yowie */
+//                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+//                if(alt)
+//                    gen[count].bp_entry = 0x0D + acc + 0x10;
+//                else
+//                    gen[count].bp_entry = 0x0D + acc;
+//
+//                gen[count].rt_index = 0x02 + acc;
+//                break;
+//
+//            case 0x0112:    /* Merissa A/AA */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x19 + acc;
+//                gen[count].rt_index = 0x04 + acc;
+//                break;
+//
+//            case 0x0113:    /* Girtablulu */
+//                gen[count].bp_entry = 0x1F;
+//                gen[count].rt_index = 0x06;
+//                break;
+//
+//            case 0x0114:    /* Zu & Pazuzu */
+//                acc = me.skin & 0x01;
+//                if(alt)
+//                    gen[count].bp_entry = 0x07 + acc + 0x14;
+//                else
+//                    gen[count].bp_entry = 0x07 + acc;
+//
+//                gen[count].rt_index = 7 + acc;
+//                break;
+//
+//            case 0x0115:    /* Boota Family */
+//                acc = me.skin % 3;
+//                gen[count].rt_index = 0x09 + acc;
+//                if(me.skin & 0x02)
+//                    gen[count].bp_entry = 0x03;
+//                else
+//                    gen[count].bp_entry = 0x00 + acc;
+//                break;
+//
+//            case 0x0116:    /* Dorphon & Eclair */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x0F + acc;
+//                gen[count].rt_index = 0x0C + acc;
+//                break;
+//
+//            case 0x0117:    /* Goran Family */
+//                acc = me.skin % 3;
+//                gen[count].bp_entry = 0x11 + acc;
+//                if(me.skin & 0x02)
+//                    gen[count].rt_index = 0x0F;
+//                else if(me.skin & 0x01)
+//                    gen[count].rt_index = 0x10;
+//                else
+//                    gen[count].rt_index = 0x0E;
+//                break;
+//
+//            case 0x119: /* Saint Million, Shambertin, & Kondrieu */
+//                acc = me.skin & 0x01;
+//                gen[count].bp_entry = 0x22;
+//                if(me.rare_rate & 0x800000)
+//                    gen[count].rt_index = 0x15;
+//                else
+//                    gen[count].rt_index = 0x13 + acc;
+//                break;
+//
+//            default:
+//                //gen[count].rt_index = me.base_type;
+//                //gen[count].bp_entry = 0x22;
+//#ifdef VERBOSE_DEBUGGING1
+//                ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
+//#endif
+//                break;
+//        }
+//
+//        /* Increment the counter, as needed */
+//        if(n_clones) {
+//            for(j = 0; j < n_clones; ++j, ++count) {
+//                gen[count + 1].rt_index = gen[count].rt_index;
+//                gen[count + 1].bp_entry = gen[count].bp_entry;
+//                gen[count + 1].area = area;
+//            }
+//        }
+//        ++count;
+//    }
+//
+//    /* Resize, so as not to waste space */
+//    if(!(tmp = realloc(gen, sizeof(game_enemy_t) * count))) {
+//        ERR_LOG("无法重置 %d 个敌人结构的内存大小: %s", count, strerror(errno));
+//        tmp = gen;
+//    }
+//
+//    game->enemies = (game_enemy_t *)tmp;
+//    game->count = count;
+//
+//    return 0;
+//}
+
+static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
+    int ep, int alt, int area, sfmt_t* sfmt) {
     int i, j;
-    game_enemy_t *gen;
-    void *tmp;
+    game_enemy_t* gen;
+    game_rare_enemy_t rare_gen = { 0 };
+    void* tmp;
     uint32_t count = 0;
     uint16_t n_clones;
     int acc;
+    bool rare_monster = false;
 
     /* Allocate the space first */
-    if(!(gen = (game_enemy_t *)malloc(sizeof(game_enemy_t) * 0xB50))) {
+    if (!(gen = (game_enemy_t*)malloc(sizeof(game_enemy_t) * 0xB50))) {
         ERR_LOG("无法分配敌人结构的内存: %s", strerror(errno));
         return -1;
     }
@@ -295,492 +819,595 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
     /* Clear it */
     memset(gen, 0, sizeof(game_enemy_t) * 0xB50);
 
+    /* 初始化稀有怪物的数据 */
+    for (i = 0; i < ARRAYSIZE(rare_gen.rare_monster_data); i++)
+        rare_gen.rare_monster_data[i] = 0xFFFF;
+
     /* Parse each enemy. */
-    for(i = 0; i < en_ct; ++i) {
-        n_clones = en[i].num_children;
+    for (i = 0; i < en_ct; ++i) {
+        map_enemy_t me = en[i];
+        n_clones = me.num_children;
         gen[count].area = area;
 
-        switch(en[i].base_type) {
-            case 0x0040:    /* Hildebear & Hildetorr */
-                acc = en[i].skin & 0x01;
-                //if (!acc && (game[count].rare_enemy_indexes < 0x1E) && (rand() < default_rare_rates.hildeblue)) {
-                //    game[count].rare_enemies[game[count].rare_enemy_indexes] = (uint16_t)count;
-                //    game[count].rare_enemy_indexes += 2;
-                //    acc = 1;
-                //}
-                gen[count].bp_entry = 0x49 + acc;
-                gen[count].rt_index = 0x01 + acc;
-                break;
+        switch (me.base_type) {
+        case 0x0040:    /* Hildebear & Hildetorr */
+            rare_monster = false;
+            acc = me.skin & 0x01;
+            if (acc)
+                rare_monster = true;
+            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            gen[count].bp_entry = 0x49 + acc;
+            gen[count].rt_index = 0x01 + acc;
+            break;
 
-            case 0x0041:    /* Rappies */
-                acc = en[i].skin & 0x01;
-                if(ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
-                    if(alt) {
-                        gen[count].bp_entry = 0x17 + acc;
-                        gen[count].rt_index = 0x11 + acc;
+        case 0x0041:    /* Rappies */
+            rare_monster = false;
+            acc = me.skin & 0x01;
+            if (acc)
+                rare_monster = true;
+            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            if (ep == LOBBY_EPISODE_4) {   /* Del Rappy & Sand Rappy */
+                if (alt) {
+                    gen[count].bp_entry = 0x17 + acc;
+                    gen[count].rt_index = 0x11 + acc;
+                }
+                else {
+                    gen[count].bp_entry = 0x05 + acc;
+                    gen[count].rt_index = 0x11 + acc;
+                }
+            }
+            else {
+                if (acc) { // Rag Rappy and Al Rappy (Love for Episode II)
+                    gen[count].bp_entry = 0x19;
+
+                    if (ep == LOBBY_EPISODE_1) {
+                        gen[count].rt_index = 0x06;
                     }
                     else {
-                        gen[count].bp_entry = 0x05 + acc;
-                        gen[count].rt_index = 0x11 + acc;
+                        if (ship != NULL) {
+                            switch (ship->game_event)
+                            {
+                            case 0x01:
+                                gen[count].rt_index = 0x4F; // St. Rappy
+                                break;
+                            case 0x04:
+                                gen[count].rt_index = 0x51; // Easter Rappy
+                                break;
+                            case 0x05:
+                                gen[count].rt_index = 0x50; // Halo Rappy
+                                break;
+                            default:
+                                gen[count].rt_index = 0x33; // Love Rappy
+                                break;
+                            }
+                        }
+                        else
+                            gen[count].rt_index = -1;
                     }
                 }
                 else {
-                    if(acc) { // Rag Rappy and Al Rappy (Love for Episode II)
-                        gen[count].bp_entry = 0x19;
-
-                        if(ep == LOBBY_EPISODE_1) {
-                            gen[count].rt_index = 0x06;
-                        }
-                        else {
-                            /* We need to fill this in when we make the lobby,
-                               since it's dependent on the event. */
-                            gen[count].rt_index = (uint8_t)-1;
-                        }
-                    }
-                    else {
-                        gen[count].bp_entry = 0x18;
-                        gen[count].rt_index = 0x05;
-                    }
+                    gen[count].bp_entry = 0x18;
+                    gen[count].rt_index = 0x05;
                 }
-                break;
+            }
+            break;
 
-            case 0x0042:    /* Monest + 30 Mothmants */
-                gen[count].bp_entry = 0x01;
-                gen[count].rt_index = 0x04;
+        case 0x0042:    /* Monest + 30 Mothmants */
+            gen[count].bp_entry = 0x01;
+            gen[count].rt_index = 0x04;
 
-                for(j = 0; j < 30; ++j) {
-                    ++count;
-                    gen[count].bp_entry = 0x00;
-                    gen[count].rt_index = 0x03;
-                    gen[count].area = area;
+            for (j = 0; j < 30; ++j) {
+                ++count;
+                gen[count].bp_entry = 0x00;
+                gen[count].rt_index = 0x03;
+                gen[count].area = area;
+            }
+            break;
+
+        case 0x0043:    /* Savage Wolf & Barbarous Wolf */
+            acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            gen[count].bp_entry = 0x02 + acc;
+            gen[count].rt_index = 0x07 + acc;
+            break;
+
+        case 0x0044:    /* Booma family */
+            acc = me.skin % 3;
+            gen[count].bp_entry = 0x4B + acc;
+            gen[count].rt_index = 0x09 + acc;
+            break;
+
+        case 0x0060:    /* Grass Assassin */
+            gen[count].bp_entry = 0x4E;
+            gen[count].rt_index = 0x0C;
+            break;
+
+        case 0x0061:    /* Del Lily, Poison Lily, Nar Lily */
+            rare_monster = false;
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
+                rare_monster = 1;
+            else if ((rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (ep == 2 && alt) {
+                gen[count].bp_entry = 0x25;
+                gen[count].rt_index = 0x53;
+            }
+            else {
+                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+                if (rare_monster)
+                    acc = 1;
+                gen[count].bp_entry = 0x04 + acc;
+                gen[count].rt_index = 0x0D + acc;
+            }
+            break;
+
+        case 0x0062:    /* Nano Dragon */
+            gen[count].bp_entry = 0x1A;
+            gen[count].rt_index = 0x0F;
+            break;
+
+        case 0x0063:    /* Shark Family */
+            acc = me.skin % 3;
+            gen[count].bp_entry = 0x4F + acc;
+            gen[count].rt_index = 0x10 + acc;
+            break;
+
+        case 0x0064:    /* Slime + 4 clones */
+            rare_monster = false;
+            acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
+                rare_monster = 1;
+            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            gen[count].bp_entry = 0x30 - acc;
+            gen[count].rt_index = 0x13 + acc;
+
+            for (j = 0; j < 4; ++j) {
+                ++count;
+                gen[count].area = area;
+                rare_monster = false;
+                if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
+                    rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                    rare_gen.rare_monster_index++;
+                    rare_monster = true;
                 }
-                break;
-
-            case 0x0043:    /* Savage Wolf & Barbarous Wolf */
-                acc = (en[i].reserved[10] & 0x800000) ? 1 : 0;
-                gen[count].bp_entry = 0x02 + acc;
-                gen[count].rt_index = 0x07 + acc;
-                break;
-
-            case 0x0044:    /* Booma family */
-                acc = en[i].skin % 3;
-                gen[count].bp_entry = 0x4B + acc;
-                gen[count].rt_index = 0x09 + acc;
-                break;
-
-            case 0x0060:    /* Grass Assassin */
-                gen[count].bp_entry = 0x4E;
-                gen[count].rt_index = 0x0C;
-                break;
-
-            case 0x0061:    /* Del Lily, Poison Lily, Nar Lily */
-                if(ep == 2 && alt) {
-                    gen[count].bp_entry = 0x25;
-                    gen[count].rt_index = 0x53;
-                }
-                else {
-                    acc = (en[i].reserved[10] & 0x800000) ? 1 : 0;
-                    gen[count].bp_entry = 0x04 + acc;
-                    gen[count].rt_index = 0x0D + acc;
-                }
-                break;
-
-            case 0x0062:    /* Nano Dragon */
-                gen[count].bp_entry = 0x1A;
-                gen[count].rt_index = 0x0F;
-                break;
-
-            case 0x0063:    /* Shark Family */
-                acc = en[i].skin % 3;
-                gen[count].bp_entry = 0x4F + acc;
-                gen[count].rt_index = 0x10 + acc;
-                break;
-
-            case 0x0064:    /* Slime + 4 clones */
-                acc = (en[i].reserved[10] & 0x800000) ? 1 : 0;
+                if (rare_monster)
+                    acc = 1;
                 gen[count].bp_entry = 0x30 - acc;
                 gen[count].rt_index = 0x13 + acc;
+            }
+            break;
 
-                for(j = 0; j < 4; ++j) {
-                    ++count;
-                    gen[count].bp_entry = 0x30;
-                    gen[count].rt_index = 0x13;
-                    gen[count].area = area;
-                }
-                break;
+        case 0x0065:    /* Pan Arms, Migium, Hidoom */
+            for (j = 0; j < 3; ++j) {
+                gen[count + j].bp_entry = 0x31 + j;
+                gen[count + j].rt_index = 0x15 + j;
+                gen[count + j].area = area;
+            }
 
-            case 0x0065:    /* Pan Arms, Migium, Hidoom */
-                for(j = 0; j < 3; ++j) {
-                    gen[count + j].bp_entry = 0x31 + j;
-                    gen[count + j].rt_index = 0x15 + j;
-                    gen[count + j].area = area;
-                }
+            count += 2;
+            break;
 
-                count += 2;
-                break;
+        case 0x0080:    /* Dubchic & Gilchic */
+            acc = me.skin & 0x01;
+            gen[count].bp_entry = 0x1B + acc;
+            gen[count].rt_index = (0x18 + acc) << acc;
+            break;
 
-            case 0x0080:    /* Dubchic & Gilchic */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x1B + acc;
-                gen[count].rt_index = (0x18 + acc) << acc;
-                break;
+        case 0x0081:    /* Garanz */
+            gen[count].bp_entry = 0x1D;
+            gen[count].rt_index = 0x19;
+            break;
 
-            case 0x0081:    /* Garanz */
-                gen[count].bp_entry = 0x1D;
-                gen[count].rt_index = 0x19;
-                break;
+        case 0x0082:    /* Sinow Beat & Sinow Gold */
+            acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
+                rare_monster = 1;
+            if (rare_monster)
+                acc = 1;
+            if (acc) {
+                gen[count].bp_entry = 0x13;
+                gen[count].rt_index = 0x1B;
+            }
+            else {
+                gen[count].bp_entry = 0x06;
+                gen[count].rt_index = 0x1A;
+            }
 
-            case 0x0082:    /* Sinow Beat & Sinow Gold */
-                acc = (en[i].reserved[10] & 0x800000) ? 1 : 0;
-                if(acc) {
-                    gen[count].bp_entry = 0x13;
-                    gen[count].rt_index = 0x1B;
-                }
-                else {
-                    gen[count].bp_entry = 0x06;
-                    gen[count].rt_index = 0x1A;
-                }
+            if (!n_clones)
+                n_clones = 4;
+            break;
 
-                if(!n_clones)
-                    n_clones = 4;
-                break;
+        case 0x0083:    /* Canadine */
+            gen[count].bp_entry = 0x07;
+            gen[count].rt_index = 0x1C;
+            break;
 
-            case 0x0083:    /* Canadine */
-                gen[count].bp_entry = 0x07;
+        case 0x0084:    /* Canadine Group */
+            gen[count].bp_entry = 0x09;
+            gen[count].rt_index = 0x1D;
+
+            for (j = 0; j < 8; ++j) {
+                ++count;
+                gen[count].bp_entry = 0x08;
                 gen[count].rt_index = 0x1C;
-                break;
+                gen[count].area = area;
+            }
+            break;
 
-            case 0x0084:    /* Canadine Group */
-                gen[count].bp_entry = 0x09;
-                gen[count].rt_index = 0x1D;
+        case 0x0085:    /* Dubwitch */
+            break;
 
-                for(j = 0; j < 8; ++j) {
-                    ++count;
-                    gen[count].bp_entry = 0x08;
-                    gen[count].rt_index = 0x1C;
-                    gen[count].area = area;
-                }
-                break;
+        case 0x00A0:    /* Delsaber */
+            gen[count].bp_entry = 0x52;
+            gen[count].rt_index = 0x1E;
+            break;
 
-            case 0x0085:    /* Dubwitch */
-                break;
+        case 0x00A1:    /* Chaos Sorcerer */
+            gen[count].bp_entry = 0x0A;
+            gen[count].rt_index = 0x1F;
 
-            case 0x00A0:    /* Delsaber */
-                gen[count].bp_entry = 0x52;
-                gen[count].rt_index = 0x1E;
-                break;
+            /* Bee L */
+            gen[count + 1].bp_entry = 0x0B;
+            gen[count + 1].rt_index = 0x00;
+            gen[count + 1].area = area;
 
-            case 0x00A1:    /* Chaos Sorcerer */
-                gen[count].bp_entry = 0x0A;
-                gen[count].rt_index = 0x1F;
+            /* Bee R */
+            gen[count + 2].bp_entry = 0x0C;
+            gen[count + 2].rt_index = 0x00;
+            gen[count + 2].area = area;
+            count += 2;
+            break;
 
-                /* Bee L */
-                gen[count + 1].bp_entry = 0x0B;
-                gen[count + 1].rt_index = 0x00;
-                gen[count + 1].area = area;
+        case 0x00A2:    /* Dark Gunner */
+            gen[count].bp_entry = 0x1E;
+            gen[count].rt_index = 0x22;
+            break;
 
-                /* Bee R */
-                gen[count + 2].bp_entry = 0x0C;
-                gen[count + 2].rt_index = 0x00;
-                gen[count + 2].area = area;
-                count += 2;
-                break;
+        case 0x00A3:    /* Death Gunner? */
+            break;
 
-            case 0x00A2:    /* Dark Gunner */
-                gen[count].bp_entry = 0x1E;
-                gen[count].rt_index = 0x22;
-                break;
+        case 0x00A4:    /* Chaos Bringer */
+            gen[count].bp_entry = 0x0D;
+            gen[count].rt_index = 0x24;
+            break;
 
-            case 0x00A3:    /* Death Gunner? */
-                break;
+        case 0x00A5:    /* Dark Belra */
+            gen[count].bp_entry = 0x0E;
+            gen[count].rt_index = 0x25;
+            break;
 
-            case 0x00A4:    /* Chaos Bringer */
-                gen[count].bp_entry = 0x0D;
-                gen[count].rt_index = 0x24;
-                break;
+        case 0x00A6:    /* Dimenian Family */
+            acc = me.skin % 3;
+            gen[count].bp_entry = 0x53 + acc;
+            gen[count].rt_index = 0x29 + acc;
+            break;
 
-            case 0x00A5:    /* Dark Belra */
-                gen[count].bp_entry = 0x0E;
-                gen[count].rt_index = 0x25;
-                break;
+        case 0x00A7:    /* Bulclaw + 4 Claws */
+            gen[count].bp_entry = 0x1F;
+            gen[count].rt_index = 0x28;
 
-            case 0x00A6:    /* Dimenian Family */
-                acc = en[i].skin % 3;
-                gen[count].bp_entry = 0x53 + acc;
-                gen[count].rt_index = 0x29 + acc;
-                break;
-
-            case 0x00A7:    /* Bulclaw + 4 Claws */
-                gen[count].bp_entry = 0x1F;
-                gen[count].rt_index = 0x28;
-
-                for(j = 0; j < 4; ++j) {
-                    ++count;
-                    gen[count].bp_entry = 0x20;
-                    gen[count].rt_index = 0x26;
-                    gen[count].area = area;
-                }
-                break;
-
-            case 0x00A8:    /* Claw */
+            for (j = 0; j < 4; ++j) {
+                ++count;
                 gen[count].bp_entry = 0x20;
                 gen[count].rt_index = 0x26;
-                break;
-
-            case 0x00C0:    /* Dragon or Gal Gryphon */
-                if(ep == 1) {
-                    gen[count].bp_entry = 0x12;
-                    gen[count].rt_index = 0x2C;
-                }
-                else {
-                    gen[count].bp_entry = 0x1E;
-                    gen[count].rt_index = 0x4D;
-                }
-                break;
-
-            case 0x00C1:    /* De Rol Le */
-                gen[count].bp_entry = 0x0F;
-                gen[count].rt_index = 0x2D;
-                break;
-
-            case 0x00C2:    /* Vol Opt (form 1) */
-                break;
-
-            case 0x00C5:    /* Vol Opt (form 2) */
-                gen[count].bp_entry = 0x25;
-                gen[count].rt_index = 0x2E;
-                break;
-
-            case 0x00C8:    /* Dark Falz (3 forms) + 510 Darvants */
-                /* Deal with the Darvants first. */
-                for(j = 0; j < 510; ++j) {
-                    gen[count].bp_entry = 0x35;
-                    gen[count].area = area;
-                    gen[count++].rt_index = 0;
-                }
-
-                /* The forms are backwards in their ordering... */
-                gen[count].bp_entry = 0x38;
                 gen[count].area = area;
-                gen[count++].rt_index = 0x2F;
+            }
+            break;
 
-                gen[count].bp_entry = 0x37;
-                gen[count].area = area;
-                gen[count++].rt_index = 0x2F;
+        case 0x00A8:    /* Claw */
+            gen[count].bp_entry = 0x20;
+            gen[count].rt_index = 0x26;
+            break;
 
-                gen[count].bp_entry = 0x36;
-                gen[count].area = area;
-                gen[count].rt_index = 0x2F;
-                break;
-
-            case 0x00CA:    /* Olga Flow */
-                gen[count].bp_entry = 0x2C;
-                gen[count].rt_index = 0x4E;
-                count += 512;
-                break;
-
-            case 0x00CB:    /* Barba Ray */
-                gen[count].bp_entry = 0x0F;
-                gen[count].rt_index = 0x49;
-                count += 47;
-                break;
-
-            case 0x00CC:    /* Gol Dragon */
+        case 0x00C0:    /* Dragon or Gal Gryphon */
+            if (ep == 1) {
                 gen[count].bp_entry = 0x12;
-                gen[count].rt_index = 0x4C;
-                count += 5;
-                break;
+                gen[count].rt_index = 0x2C;
+            }
+            else {
+                gen[count].bp_entry = 0x1E;
+                gen[count].rt_index = 0x4D;
+            }
+            break;
 
-            case 0x00D4:    /* Sinow Berill & Spigell */
-                /* XXXX: How to do rare? Tethealla looks at skin, Newserv at the
-                   reserved[10] value... */
-                acc = en[i].skin >= 0x01 ? 1 : 0;
-                if(acc) {
-                    gen[count].bp_entry = 0x13;
-                    gen[count].rt_index = 0x3F;
-                }
-                else {
-                    gen[count].bp_entry = 0x06;
-                    gen[count].rt_index = 0x3E;
-                }
+        case 0x00C1:    /* De Rol Le */
+            gen[count].bp_entry = 0x0F;
+            gen[count].rt_index = 0x2D;
+            break;
 
-                count += 4; /* Add 4 clones which are never used... */
-                break;
+        case 0x00C2:    /* Vol Opt (form 1) */
+            break;
 
-            case 0x00D5:    /* Merillia & Meriltas */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x4B + acc;
-                gen[count].rt_index = 0x34 + acc;
-                break;
+        case 0x00C5:    /* Vol Opt (form 2) */
+            gen[count].bp_entry = 0x25;
+            gen[count].rt_index = 0x2E;
+            break;
 
-            case 0x00D6:    /* Mericus, Merikle, or Mericarol */
-                acc = en[i].skin % 3;
-                if(acc)
-                    gen[count].bp_entry = 0x44 + acc;
-                else
-                    gen[count].bp_entry = 0x3A;
+        case 0x00C8:    /* Dark Falz (3 forms) + 510 Darvants */
+            /* Deal with the Darvants first. */
+            for (j = 0; j < 510; ++j) {
+                gen[count].bp_entry = 0x35;
+                gen[count].area = area;
+                gen[count++].rt_index = 0;
+            }
 
-                gen[count].rt_index = 0x38 + acc;
-                break;
+            /* The forms are backwards in their ordering... */
+            gen[count].bp_entry = 0x38;
+            gen[count].area = area;
+            gen[count++].rt_index = 0x2F;
 
-            case 0x00D7:    /* Ul Gibbon & Zol Gibbon */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x3B + acc;
-                gen[count].rt_index = 0x3B + acc;
-                break;
+            gen[count].bp_entry = 0x37;
+            gen[count].area = area;
+            gen[count++].rt_index = 0x2F;
 
-            case 0x00D8:    /* Gibbles */
-                gen[count].bp_entry = 0x3D;
-                gen[count].rt_index = 0x3D;
-                break;
+            gen[count].bp_entry = 0x36;
+            gen[count].area = area;
+            gen[count].rt_index = 0x2F;
+            break;
 
-            case 0x00D9:    /* Gee */
-                gen[count].bp_entry = 0x07;
-                gen[count].rt_index = 0x36;
-                break;
+        case 0x00CA:    /* Olga Flow */
+            gen[count].bp_entry = 0x2C;
+            gen[count].rt_index = 0x4E;
+            count += 512;
+            break;
 
-            case 0x00DA:    /* Gi Gue */
-                gen[count].bp_entry = 0x1A;
-                gen[count].rt_index = 0x37;
-                break;
+        case 0x00CB:    /* Barba Ray */
+            gen[count].bp_entry = 0x0F;
+            gen[count].rt_index = 0x49;
+            count += 47;
+            break;
 
-            case 0x00DB:    /* Deldepth */
-                gen[count].bp_entry = 0x30;
-                gen[count].rt_index = 0x47;
-                break;
+        case 0x00CC:    /* Gol Dragon */
+            gen[count].bp_entry = 0x12;
+            gen[count].rt_index = 0x4C;
+            count += 5;
+            break;
 
-            case 0x00DC:    /* Delbiter */
-                gen[count].bp_entry = 0x0D;
-                gen[count].rt_index = 0x48;
-                break;
+        case 0x00D4:    /* Sinow Berill & Spigell */
+            /* XXXX: How to do rare? Tethealla looks at skin, Newserv at the
+               rare_rate value... */
+            acc = me.skin >= 0x01 ? 1 : 0;
+            if (acc) {
+                gen[count].bp_entry = 0x13;
+                gen[count].rt_index = 0x3F;
+            }
+            else {
+                gen[count].bp_entry = 0x06;
+                gen[count].rt_index = 0x3E;
+            }
 
-            case 0x00DD:    /* Dolmolm & Dolmdarl */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x4F + acc;
-                gen[count].rt_index = 0x40 + acc;
-                break;
+            count += 4; /* Add 4 clones which are never used... */
+            break;
 
-            case 0x00DE:    /* Morfos */
-                gen[count].bp_entry = 0x41;
-                gen[count].rt_index = 0x42;
-                break;
+        case 0x00D5:    /* Merillia & Meriltas */
+            acc = me.skin & 0x01;
+            gen[count].bp_entry = 0x4B + acc;
+            gen[count].rt_index = 0x34 + acc;
+            break;
 
-            case 0x00DF:    /* Recobox & Recons */
-                gen[count].bp_entry = 0x41;
-                gen[count].rt_index = 0x43;
+        case 0x00D6:    /* Mericus, Merikle, or Mericarol */
+            acc = me.skin % 3;
+            if (acc)
+                gen[count].bp_entry = 0x44 + acc;
+            else
+                gen[count].bp_entry = 0x3A;
 
-                for(j = 1; j <= n_clones; ++j) {
-                    ++count;
-                    gen[count].bp_entry = 0x42;
-                    gen[count].rt_index = 0x44;
-                    gen[count].area = area;
-                }
+            gen[count].rt_index = 0x38 + acc;
+            break;
 
-                /* Don't double count them. */
-                n_clones = 0;
-                break;
+        case 0x00D7:    /* Ul Gibbon & Zol Gibbon */
+            acc = me.skin & 0x01;
+            gen[count].bp_entry = 0x3B + acc;
+            gen[count].rt_index = 0x3B + acc;
+            break;
 
-            case 0x00E0:    /* Epsilon, Sinow Zoa & Zele */
-                if(ep == 2 && alt) {
-                    gen[count].bp_entry = 0x23;
-                    gen[count].rt_index = 0x54;
-                    count += 4;
-                }
-                else {
-                    acc = en[i].skin & 0x01;
-                    gen[count].bp_entry = 0x43 + acc;
-                    gen[count].rt_index = 0x45 + acc;
-                }
-                break;
+        case 0x00D8:    /* Gibbles */
+            gen[count].bp_entry = 0x3D;
+            gen[count].rt_index = 0x3D;
+            break;
 
-            case 0x00E1:    /* Ill Gill */
-                gen[count].bp_entry = 0x26;
-                gen[count].rt_index = 0x52;
-                break;
+        case 0x00D9:    /* Gee */
+            gen[count].bp_entry = 0x07;
+            gen[count].rt_index = 0x36;
+            break;
 
-            case 0x0110:    /* Astark */
-                gen[count].bp_entry = 0x09;
-                gen[count].rt_index = 0x01;
-                break;
+        case 0x00DA:    /* Gi Gue */
+            gen[count].bp_entry = 0x1A;
+            gen[count].rt_index = 0x37;
+            break;
 
-            case 0x0111:    /* Satellite Lizard & Yowie */
-                acc = (en[i].reserved[10] & 0x800000) ? 1 : 0;
-                if(alt)
-                    gen[count].bp_entry = 0x0D + acc + 0x10;
-                else
-                    gen[count].bp_entry = 0x0D + acc;
+        case 0x00DB:    /* Deldepth */
+            gen[count].bp_entry = 0x30;
+            gen[count].rt_index = 0x47;
+            break;
 
-                gen[count].rt_index = 0x02 + acc;
-                break;
+        case 0x00DC:    /* Delbiter */
+            gen[count].bp_entry = 0x0D;
+            gen[count].rt_index = 0x48;
+            break;
 
-            case 0x0112:    /* Merissa A/AA */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x19 + acc;
-                gen[count].rt_index = 0x04 + acc;
-                break;
+        case 0x00DD:    /* Dolmolm & Dolmdarl */
+            acc = me.skin & 0x01;
+            gen[count].bp_entry = 0x4F + acc;
+            gen[count].rt_index = 0x40 + acc;
+            break;
 
-            case 0x0113:    /* Girtablulu */
-                gen[count].bp_entry = 0x1F;
-                gen[count].rt_index = 0x06;
-                break;
+        case 0x00DE:    /* Morfos */
+            gen[count].bp_entry = 0x41;
+            gen[count].rt_index = 0x42;
+            break;
 
-            case 0x0114:    /* Zu & Pazuzu */
-                acc = en[i].skin & 0x01;
-                if(alt)
-                    gen[count].bp_entry = 0x07 + acc + 0x14;
-                else
-                    gen[count].bp_entry = 0x07 + acc;
+        case 0x00DF:    /* Recobox & Recons */
+            gen[count].bp_entry = 0x41;
+            gen[count].rt_index = 0x43;
 
-                gen[count].rt_index = 7 + acc;
-                break;
+            for (j = 1; j <= n_clones; ++j) {
+                ++count;
+                gen[count].bp_entry = 0x42;
+                gen[count].rt_index = 0x44;
+                gen[count].area = area;
+            }
 
-            case 0x0115:    /* Boota Family */
-                acc = en[i].skin % 3;
-                gen[count].rt_index = 0x09 + acc;
-                if(en[i].skin & 0x02)
-                    gen[count].bp_entry = 0x03;
-                else
-                    gen[count].bp_entry = 0x00 + acc;
-                break;
+            /* Don't double count them. */
+            n_clones = 0;
+            break;
 
-            case 0x0116:    /* Dorphon & Eclair */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x0F + acc;
-                gen[count].rt_index = 0x0C + acc;
-                break;
+        case 0x00E0:    /* Epsilon, Sinow Zoa & Zele */
+            if (ep == 2 && alt) {
+                gen[count].bp_entry = 0x23;
+                gen[count].rt_index = 0x54;
+                count += 4;
+            }
+            else {
+                acc = me.skin & 0x01;
+                gen[count].bp_entry = 0x43 + acc;
+                gen[count].rt_index = 0x45 + acc;
+            }
+            break;
 
-            case 0x0117:    /* Goran Family */
-                acc = en[i].skin % 3;
-                gen[count].bp_entry = 0x11 + acc;
-                if(en[i].skin & 0x02)
-                    gen[count].rt_index = 0x0F;
-                else if(en[i].skin & 0x01)
-                    gen[count].rt_index = 0x10;
-                else
-                    gen[count].rt_index = 0x0E;
-                break;
+        case 0x00E1:    /* Ill Gill */
+            gen[count].bp_entry = 0x26;
+            gen[count].rt_index = 0x52;
+            break;
 
-            case 0x119: /* Saint Million, Shambertin, & Kondrieu */
-                acc = en[i].skin & 0x01;
-                gen[count].bp_entry = 0x22;
-                if(en[i].reserved[10] & 0x800000)
-                    gen[count].rt_index = 0x15;
-                else
-                    gen[count].rt_index = 0x13 + acc;
-                break;
+        case 0x0110:    /* Astark */
+            gen[count].bp_entry = 0x09;
+            gen[count].rt_index = 0x01;
+            break;
 
-            default:
-                //gen[count].rt_index = en[i].base_type;
-                //gen[count].bp_entry = 0x22;
+        case 0x0111:    /* Satellite Lizard & Yowie */
+            acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            if (alt)
+                gen[count].bp_entry = 0x0D + acc + 0x10;
+            else
+                gen[count].bp_entry = 0x0D + acc;
+
+            gen[count].rt_index = 0x02 + acc;
+            break;
+
+        case 0x0112:    /* Merissa A/AA */
+            acc = me.skin & 0x01;
+            rare_monster = false;
+            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.merissa_aa)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            gen[count].bp_entry = 0x19 + acc;
+            gen[count].rt_index = 0x04 + acc;
+            break;
+
+        case 0x0113:    /* Girtablulu */
+            gen[count].bp_entry = 0x1F;
+            gen[count].rt_index = 0x06;
+            break;
+
+        case 0x0114:    /* Zu & Pazuzu */
+            acc = me.skin & 0x01;
+            rare_monster = false;
+            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pazuzu)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            if (alt)
+                gen[count].bp_entry = 0x07 + acc + 0x14;
+            else
+                gen[count].bp_entry = 0x07 + acc;
+
+            gen[count].rt_index = 7 + acc;
+            break;
+
+        case 0x0115:    /* Boota Family */
+            acc = me.skin % 0x03;
+            gen[count].rt_index = 0x09 + acc;
+            if (me.skin & 0x02)
+                gen[count].bp_entry = 0x03;
+            else
+                gen[count].bp_entry = 0x00 + acc;
+            break;
+
+        case 0x0116:    /* Dorphon & Eclair */
+            acc = me.skin & 0x01;
+            rare_monster = false;
+            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.dorphon_eclair)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+            if (rare_monster)
+                acc = 1;
+            gen[count].bp_entry = 0x0F + acc;
+            gen[count].rt_index = 0x0C + acc;
+            break;
+
+        case 0x0117:    /* Goran Family */
+            acc = me.skin % 3;
+            gen[count].bp_entry = 0x11 + acc;
+            if (me.skin & 0x02)
+                gen[count].rt_index = 0x0F;
+            else if (me.skin & 0x01)
+                gen[count].rt_index = 0x10;
+            else
+                gen[count].rt_index = 0x0E;
+            break;
+
+        case 0x119: /* Saint Million, Shambertin, & Kondrieu */
+            acc = me.skin & 0x01;
+            gen[count].bp_entry = 0x22;
+
+            rare_monster = false;
+            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.kondrieu)) {
+                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
+                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            }
+
+            if (me.rare_rate & 0x800000 || rare_monster)
+                gen[count].rt_index = 0x15;
+            else
+                gen[count].rt_index = 0x13 + acc;
+            break;
+
+        default:
+            gen[count].rt_index = me.base_type;
+            gen[count].bp_entry = gen[count].rt_index;
 #ifdef VERBOSE_DEBUGGING1
-                ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", en[i].base_type, en[i].rt_index, en[i].skin, en[i].num_children);
+            ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
 #endif
-                break;
+            break;
         }
 
         /* Increment the counter, as needed */
-        if(n_clones) {
-            for(j = 0; j < n_clones; ++j, ++count) {
+        if (n_clones) {
+            for (j = 0; j < n_clones; ++j, ++count) {
                 gen[count + 1].rt_index = gen[count].rt_index;
                 gen[count + 1].bp_entry = gen[count].bp_entry;
                 gen[count + 1].area = area;
@@ -790,507 +1417,19 @@ static int parse_map(map_enemy_t *en, int en_ct, game_enemies_t *game,
     }
 
     /* Resize, so as not to waste space */
-    if(!(tmp = realloc(gen, sizeof(game_enemy_t) * count))) {
+    if (!(tmp = realloc(gen, sizeof(game_enemy_t) * count))) {
         ERR_LOG("无法重置 %d 个敌人结构的内存大小: %s", count, strerror(errno));
         tmp = gen;
     }
 
-    game->enemies = (game_enemy_t *)tmp;
+    game->enemies = (game_enemy_t*)tmp;
+    game->rare_enemies = rare_gen;
     game->count = count;
 
     return 0;
 }
 
-static int read_bb_map_set(int solo, int episode, int area, char* dir) {
-    char fn[256] = { 0 };
-    char fn2[256] = { 0 };
-    char fn3[3][256] = { 0 };
-    int size = ARRAYSIZE(fn3), i = 0;
-    int srv[3] = { 0 };
-    int k, l, nmaps=0, nvars, m;
-    FILE *fp;
-    //FILE* fp2;
-    long sz;
-    map_enemy_t *en;
-    map_object_t *obj;
-    game_object_t *gobj;
-    game_enemies_t *tmp;
-    game_objs_t *tmp2;
-    const AreaMapFileIndex_t* a = &map_file_info[episode][solo][area];
-
-    nmaps = a->map_nums;
-    nvars = a->map_vars;
-
-    bb_parsed_maps[solo][episode][area].map_count = nmaps;
-    bb_parsed_maps[solo][episode][area].variation_count = nvars;
-
-    bb_parsed_objs[solo][episode][area].map_count = nmaps;
-    bb_parsed_objs[solo][episode][area].variation_count = nvars;
-
-    if(!(tmp = (game_enemies_t *)malloc(sizeof(game_enemies_t) * nmaps *
-                                        nvars))) {
-        ERR_LOG("内存空间分配错误 bbmaps: %s",
-              strerror(errno));
-        return 10;
-    }
-
-    bb_parsed_maps[solo][episode][area].data = tmp;
-
-    if(!(tmp2 = (game_objs_t *)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
-        ERR_LOG("内存空间分配错误 bbobjs: %s", strerror(errno));
-        return 11;
-    }
-
-    bb_parsed_objs[solo][episode][area].data = tmp2;
-
-    for(k = 0; k < nmaps; ++k) {                /* 地图编号 */
-        for(l = 0; l < nvars; ++l) {            /* 变化 */
-            tmp[k * nvars + l].count = 0;
-            fp = NULL;
-
-            snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
-            if (a->map_num[k] != -1) {
-                char variation1_str[16];  // 根据需要调整大小
-                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
-                strcat(fn2, variation1_str);
-            }
-            if (a->map_var[l] != -1) {
-                char variation2_str[16];  // 根据需要调整大小
-                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
-                strcat(fn2, variation2_str);
-            }
-
-            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
-            if (solo) {
-                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, map_suffix[0]);
-                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, map_suffix[1]);
-            }
-            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, map_suffix[2]);
-
-            i = 0;
-            while (i < size)
-            {
-                if (srv[i] >= 256) {
-                    ERR_LOG("文件名称太长,超出文本限制 %d >= 256", srv[i]);
-                    return 1;
-                }
-
-                if (!(fp = fopen(fn3[i], "rb"))) {
-#ifdef DEBUG
-                    ERR_LOG("无法读取地图文件 \"%s\": %s", fn3[i],
-                        strerror(errno));
-#endif // DEBUG
-                    i++;
-                    continue;
-                }
-
-#ifdef DEBUG
-                printf("章节 %s %s 区域 %d 地图对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
-                printf("//////////////////////////////////////////////////////////////////////// \n");
-
-#endif // DEBUG
-                break;
-            }
-
-            if (i == size) {
-#ifdef DEBUG
-                for (int o = 0; o < i; o++) {
-                    ERR_LOG("无法读取 %d 地图文件 \"%s\": %s", o, fn3[o], strerror(errno));
-                }
-#endif // DEBUG
-                return -1;
-            }
-
-            /* Figure out how long the file is, so we know what to read in... */
-            if(fseek(fp, 0, SEEK_END) < 0) {
-                ERR_LOG("无法查找字符终点: %s", strerror(errno));
-                fclose(fp);
-                return 3;
-            }
-
-            if((sz = ftell(fp)) < 0) {
-                ERR_LOG("无法获取文件大小: %s", strerror(errno));
-                fclose(fp);
-                return 4;
-            }
-
-            if(fseek(fp, 0, SEEK_SET) < 0) {
-                ERR_LOG("无法查找字符起点: %s", strerror(errno));
-                fclose(fp);
-                return 5;
-            }
-
-            /* Make sure the size is sane */
-            if(sz % 0x48) {
-                ERR_LOG("无效地图大小!");
-                fclose(fp);
-                return 6;
-            }
-
-            /* Allocate memory and read in the file. */
-            if(!(en = (map_enemy_t*)malloc(sz))) {
-                ERR_LOG("分配地图怪物内存错误: %s", strerror(errno));
-                fclose(fp);
-                return 7;
-            }
-
-            if(fread(en, 1, sz, fp) != (size_t)sz) {
-                ERR_LOG("无法读取文件: %s", fn);
-                free_safe(en);
-                fclose(fp);
-                return 8;
-            }
-
-            /* We're done with the file, so close it */
-            fclose(fp);
-
-#ifdef DEBUG
-
-            DBG_LOG("episode %d", episode);
-
-#endif // DEBUG
-
-            /* Parse */
-            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], episode + 1,
-                         0, area)) {
-                free_safe(en);
-                return 9;
-            }
-
-            /* 清理一下,地图模型读取已经结束了... */
-            free_safe(en);
-            fp = NULL;
-
-            /* 获取对象 */
-            if (solo) {
-                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, obj_suffix[0]);
-                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, obj_suffix[1]);
-            }
-            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, obj_suffix[2]);
-
-            i = 0;
-            while (i < size)
-            {
-                if (srv[i] >= 256) {
-                    ERR_LOG("文件夹名称太长,超出文本限制 %d >= 256", srv[i]);
-                    return 1;
-                }
-                if (!(fp = fopen(fn3[i], "rb"))) {
-#ifdef DEBUG
-                    ERR_LOG("无法读取实例文件 \"%s\": %s", fn3[i],
-                        strerror(errno));
-#endif // DEBUG
-                    i++;
-                    continue;
-                }
-
-#ifdef DEBUG
-                printf("章节 %s %s 区域 %d 实例对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
-                printf("//////////////////////////////////////////////////////////////////////// \n");
-
-#endif // DEBUG
-                break;
-            }
-
-            /* Figure out how long the file is, so we know what to read in... */
-            if(fseek(fp, 0, SEEK_END) < 0) {
-                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
-                fclose(fp);
-                return 3;
-            }
-
-            if((sz = ftell(fp)) < 0) {
-                ERR_LOG("无法获取文件大小: %s", strerror(errno));
-                fclose(fp);
-                return 4;
-            }
-
-            if(fseek(fp, 0, SEEK_SET) < 0) {
-                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
-                fclose(fp);
-                return 5;
-            }
-
-            /* Make sure the size is sane */
-            if(sz % 0x44) {
-                ERR_LOG("无效!");
-                fclose(fp);
-                return 6;
-            }
-
-            /* Allocate memory and read in the file. */
-            if(!(obj = (map_object_t *)malloc(sz))) {
-                ERR_LOG("分配内存错误: %s", strerror(errno));
-                fclose(fp);
-                return 7;
-            }
-
-            if (fread(obj, 1, sz, fp) != (size_t)sz) {
-                ERR_LOG("无法读取文件 %s", fn);
-                free_safe(obj);
-                fclose(fp);
-                return 8;
-            }
-
-            /* We're done with the file, so close it */
-            fclose(fp);
-
-            /* Make space for the game object representation. */
-            gobj = (game_object_t *)malloc((sz / 0x44) * sizeof(game_object_t));
-            if(!gobj) {
-                ERR_LOG("无法为游戏 objects 分配内存空间: %s",
-                      strerror(errno));
-                free_safe(obj);
-                //fclose(fp);
-                return 9;
-            }
-
-            /* Store what we'll actually use later... */
-            for(m = 0; m < sz / 0x44; ++m) {
-                gobj[m].data = obj[m];
-                gobj[m].flags = 0;
-                gobj[m].area = area;
-            }
-
-            /* Save it into the struct */
-            tmp2[k * nvars + l].count = sz / 0x44;
-            tmp2[k * nvars + l].objs = gobj;
-
-            free_safe(obj);
-        }
-    }
-
-    return 0;
-}
-
-///* 3个章节 16个区域*/
-//static const uint32_t maps[3][0x20] = {
-//    {1,1,1,5,1,5,3,2,3,2,3,2,3,2,3,2,3,2,3,2,3,2,1,1,1,1,1,1,1,1,1,1},
-//    {1,1,2,1,2,1,2,1,2,1,1,3,1,3,1,3,2,2,1,3,2,2,2,2,1,1,1,1,1,1,1,1},
-//    {1,1,1,3,1,3,1,3,1,3,1,3,3,1,1,3,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-//};
-//
-//static int read_v2_map_set(int j, int gcep, char* dir) {
-//    int srv, ep;
-//    char fn[256];
-//    int k, l, nmaps, nvars, i;
-//    FILE* fp;
-//    long sz;
-//    map_enemy_t* en;
-//    map_object_t* obj;
-//    game_object_t* gobj;
-//    game_enemies_t* tmp;
-//    game_objs_t* tmp2;
-//
-//    if (!gcep) {
-//        nmaps = maps[0][j << 1];
-//        nvars = maps[0][(j << 1) + 1];
-//        ep = 1;
-//    }
-//    else {
-//        nmaps = maps[gcep - 1][j << 1];
-//        nvars = maps[gcep - 1][(j << 1) + 1];
-//        ep = gcep;
-//    }
-//
-//    if (!gcep) {
-//        v2_parsed_maps[j].map_count = nmaps;
-//        v2_parsed_maps[j].variation_count = nvars;
-//        v2_parsed_objs[j].map_count = nmaps;
-//        v2_parsed_objs[j].variation_count = nvars;
-//    }
-//    else {
-//        gc_parsed_maps[gcep - 1][j].map_count = nmaps;
-//        gc_parsed_maps[gcep - 1][j].variation_count = nvars;
-//        gc_parsed_objs[gcep - 1][j].map_count = nmaps;
-//        gc_parsed_objs[gcep - 1][j].variation_count = nvars;
-//    }
-//
-//    if (!(tmp = (game_enemies_t*)malloc(sizeof(game_enemies_t) * nmaps *
-//        nvars))) {
-//        ERR_LOG("内存空间分配错误 maps: %s", strerror(errno));
-//        return 10;
-//    }
-//
-//    if (!gcep)
-//        v2_parsed_maps[j].data = tmp;
-//    else
-//        gc_parsed_maps[gcep - 1][j].data = tmp;
-//
-//    if (!(tmp2 = (game_objs_t*)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
-//        ERR_LOG("内存空间分配错误 objs: %s", strerror(errno));
-//        return 11;
-//    }
-//
-//    if (!gcep)
-//        v2_parsed_objs[j].data = tmp2;
-//    else
-//        gc_parsed_objs[gcep - 1][j].data = tmp2;
-//
-//    for (k = 0; k < nmaps; ++k) {                /* 地图编号 */
-//        for (l = 0; l < nvars; ++l) {            /* 变化 */
-//            tmp[k * nvars + l].count = 0;
-//
-//            if (!gcep) {
-//                srv = snprintf(fn, 256, "%s\\map\\mult\\m%X%d%d.dat", dir, j, k, l);
-//                //printf("gcep = %d mult %s \n", gcep, fn);
-//            }
-//            else
-//                srv = snprintf(fn, 256, "%s\\map\\mult\\m%d%X%d%d.dat", dir, gcep, j, k, l);
-//
-//
-//            if (srv >= 256) {
-//                return 1;
-//            }
-//
-//            if (!(fp = fopen(fn, "rb"))) {
-//                ERR_LOG("无法读取 map %s: %s", fn,
-//                    strerror(errno));
-//                return 2;
-//            }
-//
-//            /* Figure out how long the file is, so we know what to read in... */
-//            if (fseek(fp, 0, SEEK_END) < 0) {
-//                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
-//                fclose(fp);
-//                return 3;
-//            }
-//
-//            if ((sz = ftell(fp)) < 0) {
-//                ERR_LOG("无法获取文件大小: %s", strerror(errno));
-//                fclose(fp);
-//                return 4;
-//            }
-//
-//            if (fseek(fp, 0, SEEK_SET) < 0) {
-//                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
-//                fclose(fp);
-//                return 5;
-//            }
-//
-//            /* Make sure the size is sane */
-//            if (sz % 0x48) {
-//                ERR_LOG("地图文件大小无效!");
-//                fclose(fp);
-//                return 6;
-//            }
-//
-//            /* Allocate memory and read in the file. */
-//            if (!(en = (map_enemy_t*)malloc(sz))) {
-//                ERR_LOG("分配内存错误: %s", strerror(errno));
-//                fclose(fp);
-//                return 7;
-//            }
-//
-//            if (fread(en, 1, sz, fp) != (size_t)sz) {
-//                ERR_LOG("无法读取 file!");
-//                free_safe(en);
-//                fclose(fp);
-//                return 8;
-//            }
-//
-//            /* We're done with the file, so close it */
-//            fclose(fp);
-//
-//            /* Parse */
-//            if (parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, j)) {
-//                free_safe(en);
-//                return 9;
-//            }
-//
-//            /* Clean up, we're done with this for now... */
-//            free_safe(en);
-//
-//            /* Now, grab the objects */
-//            if (!gcep) {
-//                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%X%d%d_o.dat", dir, j, k, l);
-//                //printf("gcep = %d objs %s \n", gcep, fn);
-//            }
-//            else
-//                srv = snprintf(fn, 256, "%s\\objs\\mult\\m%d%X%d%d_o.dat", dir, gcep, j, k, l);
-//
-//
-//            if (srv >= 256) {
-//                return 1;
-//            }
-//
-//            if (!(fp = fopen(fn, "rb"))) {
-//                ERR_LOG("无法读取 objects: %s", strerror(errno));
-//                return 2;
-//            }
-//
-//            /* Figure out how long the file is, so we know what to read in... */
-//            if (fseek(fp, 0, SEEK_END) < 0) {
-//                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
-//                fclose(fp);
-//                return 3;
-//            }
-//
-//            if ((sz = ftell(fp)) < 0) {
-//                ERR_LOG("无法获取文件大小: %s", strerror(errno));
-//                fclose(fp);
-//                return 4;
-//            }
-//
-//            if (fseek(fp, 0, SEEK_SET) < 0) {
-//                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
-//                fclose(fp);
-//                return 5;
-//            }
-//
-//            /* Make sure the size is sane */
-//            if (sz % 0x44) {
-//                ERR_LOG("地图文件大小无效!");
-//                fclose(fp);
-//                return 6;
-//            }
-//
-//            /* Allocate memory and read in the file. */
-//            if (!(obj = (map_object_t*)malloc(sz))) {
-//                ERR_LOG("分配内存错误: %s", strerror(errno));
-//                fclose(fp);
-//                return 7;
-//            }
-//
-//            if (fread(obj, 1, sz, fp) != (size_t)sz) {
-//                ERR_LOG("无法读取文件!");
-//                free_safe(obj);
-//                fclose(fp);
-//                return 8;
-//            }
-//
-//            /* We're done with the file, so close it */
-//            fclose(fp);
-//
-//            /* Make space for the game object representation. */
-//            gobj = (game_object_t*)malloc((sz / 0x44) * sizeof(game_object_t));
-//            if (!gobj) {
-//                ERR_LOG("无法为 game objects 分配内存: %s",
-//                    strerror(errno));
-//                free_safe(obj);
-//                //fclose(fp);
-//                return 9;
-//            }
-//
-//            /* Store what we'll actually use later... */
-//            for (i = 0; i < sz / 0x44; ++i) {
-//                gobj[i].data = obj[i];
-//                gobj[i].flags = 0;
-//                gobj[i].area = j;
-//            }
-//
-//            /* Save it into the struct */
-//            tmp2[k * nvars + l].count = sz / 0x44;
-//            tmp2[k * nvars + l].objs = gobj;
-//
-//            free_safe(obj);
-//        }
-//    }
-//
-//    return 0;
-//}
-
-static int read_v2_map_set(int area, int gcep, char* dir) {
+static int read_v2_map_set(int gcep, int area, char* dir) {
     int srv, ep;
     char fn[256] = { 0 };
     char fn2[256] = { 0 };
@@ -1305,6 +1444,8 @@ static int read_v2_map_set(int area, int gcep, char* dir) {
     game_enemies_t *tmp;
     game_objs_t *tmp2;
     const AreaMapFileIndex_t* a = &map_file_info[0][0][area];
+    sfmt_t sfmt = { 0 };
+    sfmt_init_gen_rand(&sfmt, (uint32_t)(time(NULL)));
 
     if(!gcep) {
         ep = 1;
@@ -1318,12 +1459,48 @@ static int read_v2_map_set(int area, int gcep, char* dir) {
     nvars = a->map_vars;
 
     if(!gcep) {
+        if (v2_parsed_maps[area].data) {
+#ifdef DEBUG
+            DBG_LOG("释放原有内存1，动态读取");
+#endif // DEBUG
+            v2_parsed_maps[area].map_count = 0;
+            v2_parsed_maps[area].variation_count = 0;
+            free_safe(v2_parsed_maps[area].data);
+        }
+
+        if (v2_parsed_objs[area].data) {
+#ifdef DEBUG
+            DBG_LOG("释放原有内存2，动态读取");
+#endif // DEBUG
+            v2_parsed_objs[area].map_count = 0;
+            v2_parsed_objs[area].variation_count = 0;
+            free_safe(v2_parsed_objs[area].data);
+        }
+
         v2_parsed_maps[area].map_count = nmaps;
         v2_parsed_maps[area].variation_count = nvars;
         v2_parsed_objs[area].map_count = nmaps;
         v2_parsed_objs[area].variation_count = nvars;
     }
     else {
+        if (gc_parsed_maps[gcep - 1][area].data) {
+#ifdef DEBUG
+            DBG_LOG("释放原有内存1，动态读取");
+#endif // DEBUG
+            gc_parsed_maps[gcep - 1][area].map_count = 0;
+            gc_parsed_maps[gcep - 1][area].variation_count = 0;
+            free_safe(gc_parsed_maps[gcep - 1][area].data);
+        }
+
+        if (gc_parsed_objs[gcep - 1][area].data) {
+#ifdef DEBUG
+            DBG_LOG("释放原有内存2，动态读取");
+#endif // DEBUG
+            gc_parsed_objs[gcep - 1][area].map_count = 0;
+            gc_parsed_objs[gcep - 1][area].variation_count = 0;
+            free_safe(gc_parsed_objs[gcep - 1][area].data);
+        }
+
         gc_parsed_maps[gcep - 1][area].map_count = nmaps;
         gc_parsed_maps[gcep - 1][area].variation_count = nvars;
         gc_parsed_objs[gcep - 1][area].map_count = nmaps;
@@ -1448,7 +1625,7 @@ static int read_v2_map_set(int area, int gcep, char* dir) {
             fclose(fp);
 
             /* Parse */
-            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, area)) {
+            if(parse_map(en, sz / 0x48, &tmp[k * nvars + l], ep, 0, area, &sfmt)) {
                 free_safe(en);
                 return 9;
             }
@@ -1566,16 +1743,282 @@ static int read_v2_map_set(int area, int gcep, char* dir) {
     return 0;
 }
 
-static int read_bb_map_files(char* fn) {
-    int srv, solo, episode, area;
-    for (solo = 0; solo < 2;++solo) {
-        for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
+static int read_bb_map_set(int solo, int episode, int area, char* dir) {
+    char fn[256] = { 0 };
+    char fn2[256] = { 0 };
+    char fn3[3][256] = { 0 };
+    int size = ARRAYSIZE(fn3), i = 0;
+    int srv[3] = { 0 };
+    int k, l, nmaps = 0, nvars, m;
+    FILE* fp;
+    //FILE* fp2;
+    long sz;
+    map_enemy_t* en;
+    map_object_t* obj;
+    game_object_t* gobj;
+    game_enemies_t* tmp;
+    game_objs_t* tmp2;
+    const AreaMapFileIndex_t* a = &map_file_info[episode][solo][area];
+    sfmt_t sfmt = { 0 };
+    sfmt_init_gen_rand(&sfmt, (uint32_t)(time(NULL)));
 
-            for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
-                /* 读取多人和单人模式地图. */
-                if ((srv = read_bb_map_set(solo, episode, area, fn)))
-                    return srv;
+    nmaps = a->map_nums;
+    nvars = a->map_vars;
+
+    if (bb_parsed_maps[solo][episode][area].data) {
+#ifdef DEBUG
+        DBG_LOG("释放原有内存1，动态读取");
+#endif // DEBUG
+        bb_parsed_maps[solo][episode][area].map_count = 0;
+        bb_parsed_maps[solo][episode][area].variation_count = 0;
+        free_safe(bb_parsed_maps[solo][episode][area].data);
+    }
+
+    if (bb_parsed_objs[solo][episode][area].data) {
+#ifdef DEBUG
+        DBG_LOG("释放原有内存2，动态读取");
+#endif // DEBUG
+        bb_parsed_objs[solo][episode][area].map_count = 0;
+        bb_parsed_objs[solo][episode][area].variation_count = 0;
+        free_safe(bb_parsed_objs[solo][episode][area].data);
+    }
+
+    bb_parsed_maps[solo][episode][area].map_count = nmaps;
+    bb_parsed_maps[solo][episode][area].variation_count = nvars;
+
+    bb_parsed_objs[solo][episode][area].map_count = nmaps;
+    bb_parsed_objs[solo][episode][area].variation_count = nvars;
+
+    if (!(tmp = (game_enemies_t*)malloc(sizeof(game_enemies_t) * nmaps *
+        nvars))) {
+        ERR_LOG("内存空间分配错误 bbmaps: %s",
+            strerror(errno));
+        return 10;
+    }
+
+    bb_parsed_maps[solo][episode][area].data = tmp;
+
+    if (!(tmp2 = (game_objs_t*)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
+        ERR_LOG("内存空间分配错误 bbobjs: %s", strerror(errno));
+        return 11;
+    }
+
+    bb_parsed_objs[solo][episode][area].data = tmp2;
+
+    for (k = 0; k < nmaps; ++k) {                /* 地图编号 */
+        for (l = 0; l < nvars; ++l) {            /* 变化 */
+            tmp[k * nvars + l].count = 0;
+            fp = NULL;
+
+            snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
+            if (a->map_num[k] != -1) {
+                char variation1_str[16];  // 根据需要调整大小
+                snprintf(variation1_str, sizeof(variation1_str), "_%02d", a->map_num[k]);
+                strcat(fn2, variation1_str);
             }
+            if (a->map_var[l] != -1) {
+                char variation2_str[16];  // 根据需要调整大小
+                snprintf(variation2_str, sizeof(variation2_str), "_%02d", a->map_var[l]);
+                strcat(fn2, variation2_str);
+            }
+
+            /*  对于单人模式，请先尝试单人特定地图，  然后尝试多人游戏（因为有些地图是共享的） .*/
+            if (solo) {
+                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, map_suffix[0]);
+                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, map_suffix[1]);
+            }
+            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, map_suffix[2]);
+
+            i = 0;
+            while (i < size)
+            {
+                if (srv[i] >= 256) {
+                    ERR_LOG("文件名称太长,超出文本限制 %d >= 256", srv[i]);
+                    return 1;
+                }
+
+                if (!(fp = fopen(fn3[i], "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取地图文件 \"%s\": %s", fn3[i],
+                        strerror(errno));
+#endif // DEBUG
+                    i++;
+                    continue;
+                }
+
+#ifdef DEBUG
+                printf("章节 %s %s 区域 %d 地图对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+
+#endif // DEBUG
+                break;
+            }
+
+            if (i == size) {
+#ifdef DEBUG
+                for (int o = 0; o < i; o++) {
+                    ERR_LOG("无法读取 %d 地图文件 \"%s\": %s", o, fn3[o], strerror(errno));
+                }
+#endif // DEBUG
+                return -1;
+            }
+
+            /* Figure out how long the file is, so we know what to read in... */
+            if (fseek(fp, 0, SEEK_END) < 0) {
+                ERR_LOG("无法查找字符终点: %s", strerror(errno));
+                fclose(fp);
+                return 3;
+            }
+
+            if ((sz = ftell(fp)) < 0) {
+                ERR_LOG("无法获取文件大小: %s", strerror(errno));
+                fclose(fp);
+                return 4;
+            }
+
+            if (fseek(fp, 0, SEEK_SET) < 0) {
+                ERR_LOG("无法查找字符起点: %s", strerror(errno));
+                fclose(fp);
+                return 5;
+            }
+
+            /* Make sure the size is sane */
+            if (sz % 0x48) {
+                ERR_LOG("无效地图大小!");
+                fclose(fp);
+                return 6;
+            }
+
+            /* Allocate memory and read in the file. */
+            if (!(en = (map_enemy_t*)malloc(sz))) {
+                ERR_LOG("分配地图怪物内存错误: %s", strerror(errno));
+                fclose(fp);
+                return 7;
+            }
+
+            if (fread(en, 1, sz, fp) != (size_t)sz) {
+                ERR_LOG("无法读取文件: %s", fn);
+                free_safe(en);
+                fclose(fp);
+                return 8;
+            }
+
+            /* We're done with the file, so close it */
+            fclose(fp);
+
+#ifdef DEBUG
+
+            DBG_LOG("episode %d", episode);
+
+#endif // DEBUG
+
+            /* Parse */
+            if (parse_map(en, sz / 0x48, &tmp[k * nvars + l], episode + 1,
+                0, area, &sfmt)) {
+                free_safe(en);
+                return 9;
+            }
+
+            /* 清理一下,地图模型读取已经结束了... */
+            free_safe(en);
+            fp = NULL;
+
+            /* 获取对象 */
+            if (solo) {
+                srv[0] = snprintf(fn3[0], 256, "%s%s", fn2, obj_suffix[0]);
+                srv[1] = snprintf(fn3[1], 256, "%s%s", fn2, obj_suffix[1]);
+            }
+            srv[2] = snprintf(fn3[2], 256, "%s%s", fn2, obj_suffix[2]);
+
+            i = 0;
+            while (i < size)
+            {
+                if (srv[i] >= 256) {
+                    ERR_LOG("文件夹名称太长,超出文本限制 %d >= 256", srv[i]);
+                    return 1;
+                }
+                if (!(fp = fopen(fn3[i], "rb"))) {
+#ifdef DEBUG
+                    ERR_LOG("无法读取实例文件 \"%s\": %s", fn3[i],
+                        strerror(errno));
+#endif // DEBUG
+                    i++;
+                    continue;
+                }
+
+#ifdef DEBUG
+                printf("章节 %s %s 区域 %d 实例对应文件 %s\n", episode == 2 ? "IV" : episode == 1 ? "II" : "I", solo == 1 ? "单人地图" : "多人地图", area, fn3[i]);
+                printf("//////////////////////////////////////////////////////////////////////// \n");
+
+#endif // DEBUG
+                break;
+            }
+
+            /* Figure out how long the file is, so we know what to read in... */
+            if (fseek(fp, 0, SEEK_END) < 0) {
+                ERR_LOG("无法查找到文件终点: %s", strerror(errno));
+                fclose(fp);
+                return 3;
+            }
+
+            if ((sz = ftell(fp)) < 0) {
+                ERR_LOG("无法获取文件大小: %s", strerror(errno));
+                fclose(fp);
+                return 4;
+            }
+
+            if (fseek(fp, 0, SEEK_SET) < 0) {
+                ERR_LOG("无法查找到文件起点: %s", strerror(errno));
+                fclose(fp);
+                return 5;
+            }
+
+            /* Make sure the size is sane */
+            if (sz % 0x44) {
+                ERR_LOG("无效!");
+                fclose(fp);
+                return 6;
+            }
+
+            /* Allocate memory and read in the file. */
+            if (!(obj = (map_object_t*)malloc(sz))) {
+                ERR_LOG("分配内存错误: %s", strerror(errno));
+                fclose(fp);
+                return 7;
+            }
+
+            if (fread(obj, 1, sz, fp) != (size_t)sz) {
+                ERR_LOG("无法读取文件 %s", fn);
+                free_safe(obj);
+                fclose(fp);
+                return 8;
+            }
+
+            /* We're done with the file, so close it */
+            fclose(fp);
+
+            /* Make space for the game object representation. */
+            gobj = (game_object_t*)malloc((sz / 0x44) * sizeof(game_object_t));
+            if (!gobj) {
+                ERR_LOG("无法为游戏 objects 分配内存空间: %s",
+                    strerror(errno));
+                free_safe(obj);
+                //fclose(fp);
+                return 9;
+            }
+
+            /* Store what we'll actually use later... */
+            for (m = 0; m < sz / 0x44; ++m) {
+                gobj[m].data = obj[m];
+                gobj[m].flags = 0;
+                gobj[m].area = area;
+            }
+
+            /* Save it into the struct */
+            tmp2[k * nvars + l].count = sz / 0x44;
+            tmp2[k * nvars + l].objs = gobj;
+
+            free_safe(obj);
         }
     }
 
@@ -1586,7 +2029,7 @@ static int read_v2_map_files(char* fn) {
     int srv, area;
 
     for(area = 0; area < 16 && area <= max_area[0]; ++area) {   /* 区域 */
-        if((srv = read_v2_map_set(area, 0, fn)))
+        if((srv = read_v2_map_set(0, area, fn)))
             return srv;
     }
 
@@ -1598,7 +2041,7 @@ static int read_gc_map_files(char* fn) {
 
     for (episode = 0; episode < 2; ++episode) {                            /* 章节 */
         for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
-            if ((srv = read_v2_map_set(area, episode + 1, fn)))
+            if ((srv = read_v2_map_set(episode + 1, area, fn)))
                 return srv;
         }
     }
@@ -1606,56 +2049,20 @@ static int read_gc_map_files(char* fn) {
     return 0;
 }
 
-int bb_read_params(psocn_ship_t *cfg) {
-    int rv = 0;
-    CONFIG_LOG("读取 Blue Burst 参数文件");
+static int read_bb_map_files(char* fn) {
+    int srv, solo, episode, area;
+    for (solo = 0; solo < 2; ++solo) {
+        for (episode = 0; episode < 3; ++episode) {                            /* 章节 */
 
-    /* Make sure we have a directory set... */
-    if(!cfg->bb_param_dir || !cfg->bb_map_dir) {
-        ERR_LOG("未找到 Blue Burst 参数文件 且/或 map 路径设置!"
-              "关闭 Blue Burst 版本支持.");
-        return 1;
+            for (area = 0; area < 16 && area <= max_area[episode]; ++area) {   /* 区域 */
+                /* 读取多人和单人模式地图. */
+                if ((srv = read_bb_map_set(solo, episode, area, fn)))
+                    return srv;
+            }
+        }
     }
 
-    /* Attempt to read all the files. */
-    CONFIG_LOG("读取 Blue Burst 战斗参数数据...");
-
-    int i = 0, j= 0, k = 0;
-    for (i; i < NUM_BPEntry;i++) {
-#ifdef DEBUG
-        printf("%s %s  %d %d\n", cfg->bb_param_dir, battle_params_emtry_files[i][0].file, j, k);
-#endif // DEBUG
-        rv += read_bb_battle_param_file(battle_params[j][k], cfg->bb_param_dir,
-            battle_params_emtry_files[i][0].file/*,
-            battle_params_emtry_files[i][0].check_sum.entry_num,
-            battle_params_emtry_files[i][0].check_sum.sum*/);
-        if (j < 1 && i >= 2)
-            j++;
-        if (k < 2)
-            k++;
-        if (i == 2)
-            k = 0;
-    }
-
-    /* Bail out early, if appropriate. */
-    if(rv) {
-        goto bail;
-    }
-
-    CONFIG_LOG("读取 Blue Burst 地图敌人数据...");
-    rv = read_bb_map_files(cfg->bb_map_dir);
-
-bail:
-    if(rv) {
-        ERR_LOG("读取 Blue Burst 数据错误, 取消 Blue Burst "
-              "版本支持!");
-    }
-    else {
-        have_bb_maps = 1;
-    }
-
-    /* Clean up and return. */
-    return rv;
+    return 0;
 }
 
 int v2_read_params(psocn_ship_t *cfg) {
@@ -1791,35 +2198,56 @@ int gc_read_params(psocn_ship_t *cfg) {
     return rv;
 }
 
-void bb_free_params(void) {
-    int i, j, k;
-    uint32_t l, nmaps;
-    parsed_map_t* m = { 0 };
-    parsed_objs_t *o = { 0 };
+int bb_read_params(psocn_ship_t* cfg) {
+    int rv = 0;
+    CONFIG_LOG("读取 Blue Burst 参数文件");
 
-    for(i = 0; i < 2; ++i) {
-        for(j = 0; j < 3; ++j) {
-            for(k = 0; k < 0x10; ++k) {
-                m = &bb_parsed_maps[i][j][k];
-                o = &bb_parsed_objs[i][j][k];
-                nmaps = m->map_count * m->variation_count;
-
-                for(l = 0; l < nmaps; ++l) {
-                    free_safe(m->data[l].enemies);
-                    free_safe(o->data[l].objs);
-                }
-
-                if (m->data)
-                    free_safe(m->data);
-                if (o->data)
-                    free_safe(o->data);
-                m->data = NULL;
-                m->map_count = m->variation_count = 0;
-                o->data = NULL;
-                o->map_count = o->variation_count = 0;
-            }
-        }
+    /* Make sure we have a directory set... */
+    if (!cfg->bb_param_dir || !cfg->bb_map_dir) {
+        ERR_LOG("未找到 Blue Burst 参数文件 且/或 map 路径设置!"
+            "关闭 Blue Burst 版本支持.");
+        return 1;
     }
+
+    /* Attempt to read all the files. */
+    CONFIG_LOG("读取 Blue Burst 战斗参数数据...");
+
+    int i = 0, j = 0, k = 0;
+    for (i; i < NUM_BPEntry; i++) {
+#ifdef DEBUG
+        printf("%s %s  %d %d\n", cfg->bb_param_dir, battle_params_emtry_files[i][0].file, j, k);
+#endif // DEBUG
+        rv += read_bb_battle_param_file(battle_params[j][k], cfg->bb_param_dir,
+            battle_params_emtry_files[i][0].file/*,
+            battle_params_emtry_files[i][0].check_sum.entry_num,
+            battle_params_emtry_files[i][0].check_sum.sum*/);
+        if (j < 1 && i >= 2)
+            j++;
+        if (k < 2)
+            k++;
+        if (i == 2)
+            k = 0;
+    }
+
+    /* Bail out early, if appropriate. */
+    if (rv) {
+        goto bail;
+    }
+
+    CONFIG_LOG("读取 Blue Burst 地图敌人数据...");
+    rv = read_bb_map_files(cfg->bb_map_dir);
+
+bail:
+    if (rv) {
+        ERR_LOG("读取 Blue Burst 数据错误, 取消 Blue Burst "
+            "版本支持!");
+    }
+    else {
+        have_bb_maps = 1;
+    }
+
+    /* Clean up and return. */
+    return rv;
 }
 
 void v2_free_params(void) {
@@ -1878,132 +2306,35 @@ void gc_free_params(void) {
     }
 }
 
-int bb_load_game_enemies(lobby_t *l) {
-    game_enemies_t *en;
-    game_objs_t *ob;
-    int solo = (l->flags & LOBBY_FLAG_SINGLEPLAYER) ? 1 : 0, i;
-    uint32_t enemies = 0, index, objects = 0, index2;
-    parsed_map_t *maps;
-    parsed_objs_t *objs;
-    game_enemies_t *sets[0x10] = { 0 };
-    game_objs_t *osets[0x10] = { 0 };
+void bb_free_params(void) {
+    int i, j, k;
+    uint32_t l, nmaps;
+    parsed_map_t* m = { 0 };
+    parsed_objs_t* o = { 0 };
 
-    /* Figure out the parameter set that will be in use first... */
-    l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
+    for (i = 0; i < 2; ++i) {
+        for (j = 0; j < 3; ++j) {
+            for (k = 0; k < 0x10; ++k) {
+                m = &bb_parsed_maps[i][j][k];
+                o = &bb_parsed_objs[i][j][k];
+                nmaps = m->map_count * m->variation_count;
 
-    /* Figure out the total number of enemies that the game will have... */
-    for(i = 0; i < 0x20; i += 2) {
-        if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir)) {
-#ifdef DEBUG
+                for (l = 0; l < nmaps; ++l) {
+                    free_safe(m->data[l].enemies);
+                    free_safe(o->data[l].objs);
+                }
 
-            DBG_LOG("area %d 不存在", i >> 1);
-
-#endif // DEBUG
-            sets[i >> 1] = NULL;
-            break;
-        }
-
-        maps = &bb_parsed_maps[solo][l->episode - 1][i >> 1];
-        objs = &bb_parsed_objs[solo][l->episode - 1][i >> 1];
-
-        /* If we hit zeroes, then we're done already... */
-        if(maps->map_count == 0 && maps->variation_count == 0) {
-            sets[i >> 1] = NULL;
-            break;
-        }
-#ifdef DEBUG
-        DBG_LOG("i %d :l->maps[i] %d > map_count %d  l->episode - 1 = %d", i, l->maps[i], maps->map_count, l->episode - 1);
-        DBG_LOG("i %d :l->maps[i + 1] %d > variation_count %d ", i, l->maps[i + 1], maps->variation_count);
-#endif // DEBUG
-        /* Sanity Check! */
-        if(l->maps[i] > maps->map_count ||
-           l->maps[i + 1] > maps->variation_count) {
-            ERR_LOG("创建地图等级 %d 无效(章节 %d): "
-                  "(%d %d)", i, l->episode, l->maps[i], l->maps[i + 1]);
-            return -1;
-        }
-
-        index = l->maps[i] * maps->variation_count + l->maps[i + 1];
-        enemies += maps->data[index].count;
-        objects += objs->data[index].count;
-        sets[i >> 1] = &maps->data[index];
-        osets[i >> 1] = &objs->data[index];
-    }
-
-    /* Allocate space for the enemy set and the enemies therein. */
-    if(!(en = (game_enemies_t *)malloc(sizeof(game_enemies_t)))) {
-        ERR_LOG("分配敌人设置内存错误: %s", strerror(errno));
-        return -2;
-    }
-
-    if(!(en->enemies = (game_enemy_t *)malloc(sizeof(game_enemy_t) * enemies))) {
-        ERR_LOG("分配 %d 敌人群体内存错误: %s", enemies, strerror(errno));
-        free_safe(en);
-        return -3;
-    }
-
-    /* Allocate space for the object set and the objects therein. */
-    if(!(ob = (game_objs_t *)malloc(sizeof(game_objs_t)))) {
-        ERR_LOG("分配实例设置内存错误: %s", strerror(errno));
-        free_safe(en->enemies);
-        free_safe(en);
-        return -4;
-    }
-
-    if(!(ob->objs = (game_object_t *)malloc(sizeof(game_object_t) * objects))) {
-        ERR_LOG("分配实例群体内存错误: %s", strerror(errno));
-        free_safe(ob);
-        free_safe(en->enemies);
-        free_safe(en);
-        return -5;
-    }
-
-    en->count = enemies;
-    ob->count = objects;
-    index = index2 = 0;
-
-    /* Copy in the enemy data. */
-    for(i = 0; i < 0x10; ++i) {
-        if(!sets[i] || !osets[i])
-            break;
-
-        memcpy(&en->enemies[index], sets[i]->enemies,
-               sizeof(game_enemy_t) * sets[i]->count);
-        index += sets[i]->count;
-        memcpy(&ob->objs[index2], osets[i]->objs,
-               sizeof(game_object_t) * osets[i]->count);
-        index2 += osets[i]->count;
-    }
-
-    /* Fixup Dark Falz' data for difficulties other than normal and the special
-       Rappy data too...
-       修正除正常数据和特殊Rappy数据之外的其他困难的Dark Falz数据*/
-    for(i = 0; i < (int)en->count; ++i) {
-        if(en->enemies[i].bp_entry == 0x37 && l->difficulty) {
-            en->enemies[i].bp_entry = 0x38;
-        }
-        else if(en->enemies[i].rt_index == (uint8_t)-1) {
-            switch(l->event) {
-                case LOBBY_EVENT_CHRISTMAS:
-                    en->enemies[i].rt_index = 79;
-                    break;
-                case LOBBY_EVENT_EASTER:
-                    en->enemies[i].rt_index = 81;
-                    break;
-                case LOBBY_EVENT_HALLOWEEN:
-                    en->enemies[i].rt_index = 80;
-                    break;
-                default:
-                    en->enemies[i].rt_index = 51;
-                    break;
+                if (m->data)
+                    free_safe(m->data);
+                if (o->data)
+                    free_safe(o->data);
+                m->data = NULL;
+                m->map_count = m->variation_count = 0;
+                o->data = NULL;
+                o->map_count = o->variation_count = 0;
             }
         }
     }
-
-    /* Done! */
-    l->map_enemies = en;
-    l->map_objs = ob;
-    return 0;
 }
 
 int v2_load_game_enemies(lobby_t *l) {
@@ -2018,6 +2349,16 @@ int v2_load_game_enemies(lobby_t *l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
+        if (read_v2_map_set(0, i >> 1, cfg->v2_map_dir)) {
+#ifdef DEBUG
+
+            DBG_LOG("area %d 不存在", i >> 1);
+
+#endif // DEBUG
+            sets[i >> 1] = NULL;
+            break;
+        }
+
         maps = &v2_parsed_maps[i >> 1];
         objs = &v2_parsed_objs[i >> 1];
 
@@ -2115,6 +2456,16 @@ int gc_load_game_enemies(lobby_t *l) {
 
     /* Figure out the total number of enemies that the game will have... */
     for(i = 0; i < 0x20; i += 2) {
+        if (read_v2_map_set(l->episode - 1, i >> 1, cfg->gc_map_dir)) {
+#ifdef DEBUG
+
+            DBG_LOG("area %d 不存在", i >> 1);
+
+#endif // DEBUG
+            sets[i >> 1] = NULL;
+            break;
+        }
+
         maps = &gc_parsed_maps[l->episode - 1][i >> 1];
         objs = &gc_parsed_objs[l->episode - 1][i >> 1];
 
@@ -2205,6 +2556,135 @@ int gc_load_game_enemies(lobby_t *l) {
                 default:
                     en->enemies[i].rt_index = 51;
                     break;
+            }
+        }
+    }
+
+    /* Done! */
+    l->map_enemies = en;
+    l->map_objs = ob;
+    return 0;
+}
+
+int bb_load_game_enemies(lobby_t* l) {
+    game_enemies_t* en;
+    game_objs_t* ob;
+    int solo = (l->flags & LOBBY_FLAG_SINGLEPLAYER) ? 1 : 0;
+    size_t i = 0;
+    uint32_t enemies = 0, index, objects = 0, index2;
+    parsed_map_t* maps;
+    parsed_objs_t* objs;
+    game_enemies_t* sets[0x10] = { 0 };
+    game_objs_t* osets[0x10] = { 0 };
+
+    /* Figure out the parameter set that will be in use first... */
+    l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
+
+    /* Figure out the total number of enemies that the game will have... */
+    for (i = 0; i < 0x20; i += 2) {
+        if (read_bb_map_set(solo, l->episode - 1, i >> 1, cfg->bb_map_dir)) {
+#ifdef DEBUG
+
+            DBG_LOG("area %d 不存在", i >> 1);
+
+#endif // DEBUG
+            sets[i >> 1] = NULL;
+            break;
+        }
+
+        maps = &bb_parsed_maps[solo][l->episode - 1][i >> 1];
+        objs = &bb_parsed_objs[solo][l->episode - 1][i >> 1];
+
+        /* If we hit zeroes, then we're done already... */
+        if (maps->map_count == 0 && maps->variation_count == 0) {
+            sets[i >> 1] = NULL;
+            break;
+        }
+#ifdef DEBUG
+        DBG_LOG("i %d :l->maps[i] %d > map_count %d  l->episode - 1 = %d", i, l->maps[i], maps->map_count, l->episode - 1);
+        DBG_LOG("i %d :l->maps[i + 1] %d > variation_count %d ", i, l->maps[i + 1], maps->variation_count);
+#endif // DEBUG
+        /* Sanity Check! */
+        if (l->maps[i] > maps->map_count ||
+            l->maps[i + 1] > maps->variation_count) {
+            ERR_LOG("创建地图等级 %d 无效(章节 %d): "
+                "(%d %d)", i, l->episode, l->maps[i], l->maps[i + 1]);
+            return -1;
+        }
+
+        index = l->maps[i] * maps->variation_count + l->maps[i + 1];
+        enemies += maps->data[index].count;
+        objects += objs->data[index].count;
+        sets[i >> 1] = &maps->data[index];
+        osets[i >> 1] = &objs->data[index];
+    }
+
+    /* Allocate space for the enemy set and the enemies therein. */
+    if (!(en = (game_enemies_t*)malloc(sizeof(game_enemies_t)))) {
+        ERR_LOG("分配敌人设置内存错误: %s", strerror(errno));
+        return -2;
+    }
+
+    if (!(en->enemies = (game_enemy_t*)malloc(sizeof(game_enemy_t) * enemies))) {
+        ERR_LOG("分配 %d 敌人群体内存错误: %s", enemies, strerror(errno));
+        free_safe(en);
+        return -3;
+    }
+
+    /* Allocate space for the object set and the objects therein. */
+    if (!(ob = (game_objs_t*)malloc(sizeof(game_objs_t)))) {
+        ERR_LOG("分配实例设置内存错误: %s", strerror(errno));
+        free_safe(en->enemies);
+        free_safe(en);
+        return -4;
+    }
+
+    if (!(ob->objs = (game_object_t*)malloc(sizeof(game_object_t) * objects))) {
+        ERR_LOG("分配实例群体内存错误: %s", strerror(errno));
+        free_safe(ob);
+        free_safe(en->enemies);
+        free_safe(en);
+        return -5;
+    }
+
+    en->count = enemies;
+    ob->count = objects;
+    index = index2 = 0;
+
+    /* Copy in the enemy data. */
+    for (i = 0; i < 0x10; ++i) {
+        if (!sets[i] || !osets[i])
+            break;
+
+        memcpy(&en->enemies[index], sets[i]->enemies,
+            sizeof(game_enemy_t) * sets[i]->count);
+        index += sets[i]->count;
+        memcpy(&ob->objs[index2], osets[i]->objs,
+            sizeof(game_object_t) * osets[i]->count);
+        index2 += osets[i]->count;
+    }
+
+    /* Fixup Dark Falz' data for difficulties other than normal and the special
+       Rappy data too...
+       修正除正常数据和特殊Rappy数据之外的其他困难的Dark Falz数据*/
+    for (i = 0; i < en->count; ++i) {
+        if (en->enemies[i].bp_entry == 0x37 && l->difficulty) {
+            en->enemies[i].bp_entry = 0x38;
+        }
+        else if (en->enemies[i].rt_index == (uint8_t)-1) {
+            switch (l->event) {
+            case LOBBY_EVENT_CHRISTMAS:
+                en->enemies[i].rt_index = 79;
+                break;
+            case LOBBY_EVENT_EASTER:
+                en->enemies[i].rt_index = 81;
+                break;
+            case LOBBY_EVENT_HALLOWEEN:
+                en->enemies[i].rt_index = 80;
+                break;
+            default:
+                en->enemies[i].rt_index = 51;
+                break;
             }
         }
     }
@@ -2309,6 +2789,8 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
     FILE *fp;
     const quest_dat_hdr_t *hdr;
     off_t offs = { 0 };
+    sfmt_t sfmt = { 0 };
+    sfmt_init_gen_rand(&sfmt, (uint32_t)(time(NULL)));
 
     /* 打开缓存文件... */
     if(!(fp = fopen(ofn, "wb"))) {
@@ -2374,7 +2856,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                 alt = 1;
 
             if(parse_map((map_enemy_t *)(hdr->data), sz / sizeof(map_enemy_t),
-                         &tmp_en, episode, alt, area)) {
+                         &tmp_en, episode, alt, area, &sfmt)) {
                 ERR_LOG("Canot parse map for cache!");
                 fclose(fp);
                 return -4;
