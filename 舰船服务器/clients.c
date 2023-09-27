@@ -1622,6 +1622,18 @@ char* get_player_describe(ship_client_t* src) {
     return char_des;
 }
 
+void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type) {
+    err->has_error = false;
+    err->error_cmd_type = 0;
+    err->error_subcmd_type = 0;
+}
+
+void clean_client_err(client_error_t* err) {
+    err->has_error = false;
+    err->error_cmd_type = 0;
+    err->error_subcmd_type = 0;
+}
+
 #ifdef ENABLE_LUA
 
 static int client_guildcard_lua(lua_State* l) {

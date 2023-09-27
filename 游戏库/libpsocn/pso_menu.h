@@ -209,7 +209,7 @@ static pso_menu_t pso_player_menu[][4] = {
     {"修改颜色ID",   MENU_ID_PLAYER,   ITEM_ID_PL_SECTION, 0x0004},
     {"玩家商店",     MENU_ID_PLAYER,   ITEM_ID_PL_SHOP, 0x0004},
     {"物品回收",     MENU_ID_PLAYER,   ITEM_ID_PL_EXCHAGE, 0x0004},
-    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_PL_LAST, 0x0004}
+    {"关闭菜单",     MENU_ID_PLAYER,   ITEM_ID_DISCONNECT, 0x0004}
 };
 
 static pso_menu_t pso_player_section_menu[][4] = {

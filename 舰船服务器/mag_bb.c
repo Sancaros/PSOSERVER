@@ -523,8 +523,8 @@ int player_feed_mag(ship_client_t* src, size_t mag_item_id, size_t feed_item_id)
 			return err;
 		}
 
-		if ((err = add_mag_photon_blast(mag_item, new_mag_def.photon_blast))) {
-			ERR_LOG("%s 玛古新增PB %d 出错! 错误码 %d", get_player_describe(src), new_mag_def.photon_blast, err);
+		if (add_mag_photon_blast(mag_item, new_mag_def.photon_blast)) {
+			ERR_LOG("%s 玛古新增PB %d 出错!", get_player_describe(src), new_mag_def.photon_blast);
 		}
 	}
 

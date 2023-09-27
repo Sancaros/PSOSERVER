@@ -334,7 +334,7 @@ int send_bb_lobby_guild_NULL_initialzation_data(ship_client_t* c, ship_client_t*
 /* Send BB lobby rare monster data to a client. */
 int send_rare_enemy_index_list(ship_client_t* c, const uint16_t* rare_enemies);
 
-int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16_t subcmd_type);
+int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data);
 
 int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1);
 

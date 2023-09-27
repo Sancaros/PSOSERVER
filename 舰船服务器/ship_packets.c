@@ -42,6 +42,7 @@
 #include "items.h"
 #include "records.h"
 #include "handle_player_items.h"
+#include "subcmd_handle.h"
 
 extern char ship_host4[32];
 extern char ship_host6[128];
@@ -13273,17 +13274,48 @@ int send_rare_enemy_index_list(ship_client_t* c, const uint16_t* rare_enemies) {
     return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);
 }
 
-int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16_t subcmd_type) {
+int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data) {
     lobby_t* l = c->cur_lobby;
+    uint16_t err_type = 0, err_len = 0;
+    uint8_t err_subtype = 0;
 
-    c->game_data->err.has_error = true;
-    c->game_data->err.error_cmd_type = cmd_type;
-    c->game_data->err.error_subcmd_type = subcmd_type;
+    switch (c->version) {
+    case CLIENT_VERSION_DCV1:
+    case CLIENT_VERSION_DCV2:
+    case CLIENT_VERSION_GC:
+    case CLIENT_VERSION_EP3:
+    case CLIENT_VERSION_XBOX: {
+        dc_pkt_hdr_t* dchdr = (dc_pkt_hdr_t*)data;
+        dc_err_pkt_hdr_t* dc_err_pkt = (dc_err_pkt_hdr_t*)prepend_command_header(c->version, false, dchdr->pkt_type, dchdr->flags, data);
+        err_type = dc_err_pkt->hdr.pkt_type;
+        err_len = dc_err_pkt->hdr.pkt_len;
+        err_subtype = dc_err_pkt->data[0];
+        break;
+    }
+    case CLIENT_VERSION_PC: {
+        pc_pkt_hdr_t* pchdr = (pc_pkt_hdr_t*)data;
+        pc_err_pkt_hdr_t* pc_err_pkt = (pc_err_pkt_hdr_t*)prepend_command_header(c->version, false, pchdr->pkt_type, pchdr->flags, data);
+        err_type = pc_err_pkt->hdr.pkt_type;
+        err_len = pc_err_pkt->hdr.pkt_len;
+        err_subtype = pc_err_pkt->data[0];
+        break;
+    }
+    case CLIENT_VERSION_BB: {
+        bb_err_pkt_hdr_t header = { 0 };
 
-    //inventory_t* inv = get_client_inv_bb(c);
-    //fix_client_inv(inv);
-    //psocn_bank_t* bank = get_client_bank_bb(c);
-    //fix_client_bank(bank);
+        bb_pkt_hdr_t* bbhdr = (bb_pkt_hdr_t*)data;
+        bb_err_pkt_hdr_t* bb_err_pkt = (bb_err_pkt_hdr_t*)prepend_command_header(c->version, false, bbhdr->pkt_type, bbhdr->flags, data);
+        err_type = bb_err_pkt->hdr.pkt_type;
+        err_len = bb_err_pkt->hdr.pkt_len;
+        err_subtype = bb_err_pkt->data[0];
+        break;
+    }
+    default:
+        ERR_LOG("prepend_command_header 未解析该版本数据");
+        goto err_null;
+    }
+
+    init_client_err(&c->game_data->err, true, err_type, err_subtype);
 
     if (l->flags & LOBBY_FLAG_QUESTING) {
 
@@ -13291,17 +13323,30 @@ int send_error_client_return_to_ship(ship_client_t* c, uint16_t cmd_type, uint16
 
 #ifdef DEBUG
 
-        DBG_LOG("0x%zX 0x%zX", c->game_data->err.error_cmd_type, c->game_data->err.error_subcmd_type);
+        DBG_LOG("0x%zX 0x%zX", err_type, err_subtype);
 
 #endif // DEBUG
 
-        return 0;
+        goto subcmd_err_handle;
     }
     else {
         /* Attempt to change the player's lobby. */
-        
-        return send_ship_list(c, ship, ship->cfg->menu_code);
+        bb_join_game(c, l);
     }
+
+    ERR_LOG("%s 玩家发生错误1 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
+    print_ascii_hex(errl, data, err_len);
+    return 0;
+
+subcmd_err_handle:
+    ERR_LOG("%s 玩家发生错误2 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_type, err_subtype);
+    print_ascii_hex(errl, data, err_len);
+    return 0;
+
+err_null:
+    ERR_LOG("%s 玩家发生错误3", get_player_describe(c));
+    return -1;
+
 }
 
 /* 物品兑换完成 */

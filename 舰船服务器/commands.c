@@ -568,6 +568,7 @@ static int handle_item(ship_client_t *src, const char *params) {
         item_get_name(&src->new_item, src->version),
         __(src, "\tE\tC6设置成功, 立即生成."));
 
+    ITEM_LOG("%s 使用权限制造:", get_player_describe(src));
     print_item_data(&src->new_item, l->version);
 
     /* If we're on Blue Burst, add the item to the lobby's inventory first. */
@@ -625,6 +626,7 @@ static int handle_item1(ship_client_t* src, const char* params) {
 
     src->new_item.datal[0] = SWAP32(item);
 
+    ITEM_LOG("%s 使用权限修改 item1:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s %s %s",
@@ -658,6 +660,7 @@ static int handle_item2(ship_client_t* src, const char* params) {
 
     src->new_item.datal[1] = SWAP32(item);
 
+    ITEM_LOG("%s 使用权限修改 item2:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item2 设置成功."));
@@ -688,6 +691,7 @@ static int handle_item3(ship_client_t* src, const char* params) {
 
     src->new_item.datal[2] = SWAP32(item);
 
+    ITEM_LOG("%s 使用权限修改 item3:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item3 设置成功."));
@@ -718,6 +722,7 @@ static int handle_item4(ship_client_t *src, const char *params) {
 
     src->new_item.data2l = SWAP32(item);
 
+    ITEM_LOG("%s 使用权限修改 item4:", get_player_describe(src));
     print_item_data(&src->new_item, src->version);
 
     return send_txt(src, "%s", __(src, "\tE\tC7next_item item4 设置成功."));

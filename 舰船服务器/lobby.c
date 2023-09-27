@@ -1214,19 +1214,19 @@ int lobby_change_lobby(ship_client_t *c, lobby_t *req) {
     /* 如果客户端不在房间中, 将他们新增至默认的可用的房间. */
     if(!l) {
         if(lobby_add_to_any(c, req)) {
-            ERR_LOG("GC %u lobby_add_to_any error", c->guildcard);
+            ERR_LOG("%s lobby_add_to_any error", get_player_describe(c));
             return -11;
         }
 
         l = c->cur_lobby;
 
         if(send_lobby_join(c, l)) {
-            ERR_LOG("GC %u send_lobby_join error", c->guildcard);
+            ERR_LOG("%s send_lobby_join error", get_player_describe(c));
             return -11;
         }
 
         if(send_lobby_add_player(l, c)) {
-            ERR_LOG("GC %u send_lobby_add_player error", c->guildcard);
+            ERR_LOG("%s send_lobby_add_player error", get_player_describe(c));
             return -11;
         }
 

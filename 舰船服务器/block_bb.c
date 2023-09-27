@@ -163,7 +163,8 @@ int bb_join_game(ship_client_t* c, lobby_t* l) {
                 release(c->limits);
         }
 
-        regenerate_lobby_item_id(l, c);
+        if (!c->game_data->err.has_error)
+            regenerate_lobby_item_id(l, c);
     }
 
     c->game_info.guildcard = c->guildcard;
@@ -535,7 +536,6 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
             return 0;
 
         case ITEM_ID_LAST:
-            send_bb_player_menu_list(c);
             break;
 
         case ITEM_ID_DISCONNECT:
@@ -543,6 +543,7 @@ static int bb_process_player_menu(ship_client_t* c, uint32_t item_id) {
 
         default:
             //DBG_LOG("返回上一级");
+            send_bb_player_menu_list(c);
             return send_msg(c, MSG1_TYPE, "%s", __(c, "\tE\tC4菜单没写完!请联系程序员开工!"));
         }
 
@@ -662,7 +663,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 
 #endif // DEBUG
 
-    /* Figure out what the client is selecting. */
+        /* Figure out what the client is selecting. */
     switch (menu_id & 0xFF) {
         /* Lobby Information Desk */
     case MENU_ID_INFODESK:
@@ -732,7 +733,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
 #endif
     }
 
-    /* Game Selection */
+        /* Game Selection */
     case MENU_ID_GAME:
     {
         char passwd_cmp[17] = { 0 };
@@ -786,7 +787,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return bb_join_game(c, l);
     }
 
-    /* Quest category */
+        /* Quest category */
     case MENU_ID_QCATEGORY:
     {
         int rv;
@@ -812,7 +813,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return rv;
     }
 
-    /* Quest */
+        /* Quest */
     case MENU_ID_QUEST:
     {
         int lang = (menu_id >> 24) & 0xFF;
@@ -826,7 +827,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
         return lobby_setup_quest(l, c, item_id, lang);
     }
 
-    /* Ship */
+        /* Ship */
     case MENU_ID_SHIP:
     {
         miniship_t* i;
@@ -888,7 +889,7 @@ static int bb_process_menu(ship_client_t* c, bb_select_pkt* pkt) {
             __(c, "\tE\tC4当前选择的舰船\n已离线."));
     }
 
-    /* Game type (PSOBB only) */
+        /* Game type (PSOBB only) */
     case MENU_ID_GAME_TYPE:
         return bb_process_game_type(c, item_id);
 
@@ -3117,7 +3118,6 @@ typedef void (*process_command_t)(ship_t s, ship_client_t* c,
 int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
     __try {
         bb_pkt_hdr_t* hdr = (bb_pkt_hdr_t*)pkt;
-        subcmd_bb_pkt_t* err_pkt = (subcmd_bb_pkt_t*)pkt;
         uint16_t type = LE16(hdr->pkt_type);
         uint16_t len = LE16(hdr->pkt_len);
         uint32_t flags = LE32(hdr->flags);
@@ -3136,9 +3136,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
                 c->game_data->err.error_cmd_type,
                 c->game_data->err.error_subcmd_type
             );
-            memset(&c->game_data->err, 0, sizeof(client_error_t));
 
-            c->game_data->err.has_error = false;
+            clean_client_err(&c->game_data->err);
         }
 
         /* 整合为综合指令集 */
@@ -3206,11 +3205,11 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
             /* 0x0022 34*/
         case GAMECARD_CHECK_REQ:
             /* 0x0122 290*/
-//[2023年09月24日 01:00:08:623] 舰船服务器 错误(f_logs.c 0084): 数据包如下:
-//
-//(00000000) 18 00 22 01 01 00 00 00  90 33 6B 00 FB 33 6B 00    .."......3k..3k.
-//(00000010) 98 19 0F 65 00 00 00 00     ...e....
         case GAMECARD_CHECK_DONE:
+            //[2023年09月24日 01:00:08:623] 舰船服务器 错误(f_logs.c 0084): 数据包如下:
+            //
+            //(00000000) 18 00 22 01 01 00 00 00  90 33 6B 00 FB 33 6B 00    .."......3k..3k.
+            //(00000010) 98 19 0F 65 00 00 00 00     ...e....
             DBG_LOG("BB未知数据! 指令 0x%04X", type);
             print_ascii_hex(dbgl, pkt, len);
             return 0;
@@ -3234,9 +3233,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD60_TYPE:
             err = subcmd_bb_handle_60(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
-                print_ascii_hex(errl, pkt, len);
-                return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+                /* 错误处理方案函数 */
+                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
             }
 
             return err;
@@ -3251,9 +3249,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD6C_TYPE: //需要分离出来
             err = subcmd_bb_handle_62(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX ", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
-                print_ascii_hex(errl, pkt, len);
-                return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+                /* 错误处理方案函数 */
+                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
             }
             return err;
 
@@ -3261,9 +3258,8 @@ int bb_process_pkt(ship_client_t* c, uint8_t* pkt) {
         case GAME_SUBCMD6D_TYPE:
             err = subcmd_bb_handle_6D(c, (subcmd_bb_pkt_t*)pkt);
             if (err) {
-                ERR_LOG("%s 玩家发生错误 错误指令:0x%zX 副指令:0x%zX", get_player_describe(c), err_pkt->hdr.pkt_type, err_pkt->type);
-                print_ascii_hex(errl, pkt, len);
-                return send_error_client_return_to_ship(c, err_pkt->hdr.pkt_type, err_pkt->type);
+                /* 错误处理方案函数 */
+                return send_subcmd_error_client_return_to_ship(c, (subcmd_bb_pkt_t*)pkt);
             }
             return err;
 

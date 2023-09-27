@@ -959,7 +959,8 @@ static int join_game(ship_client_t* c, lobby_t* l) {
                 release(c->limits);
         }
 
-        regenerate_lobby_item_id(l, c);
+        if (!c->game_data->err.has_error)
+            regenerate_lobby_item_id(l, c);
     }
 
     c->game_info.guildcard = c->guildcard;

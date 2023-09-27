@@ -486,6 +486,10 @@ ship_client_t* ge_target_client_by_id(lobby_t* l, uint32_t target_client_id);
 lobby_t* get_client_lobby(ship_client_t* src);
 char* get_player_describe(ship_client_t* src);
 
+void init_client_err(client_error_t* err, bool has_error, errno_t error_cmd_type, errno_t error_subcmd_type);
+
+void clean_client_err(client_error_t* err);
+
 #ifdef ENABLE_LUA
 #include <lua.h>
 
