@@ -847,6 +847,7 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     dc_block_list_pkt *pkt = (dc_block_list_pkt *)sendbuf;
     int len = 0x20, num_blocks = 0;
     uint32_t len2 = 0x1C, len3 = 0x10;
+    char tmp_shipname[0x10] = { 0 };
     uint32_t i;
 
     /* 确认已获得数据发送缓冲 */
@@ -861,7 +862,8 @@ static int send_dc_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last_dc[num_blocks]->menu_id);
     pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last_dc[num_blocks]->item_id);
     pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last_dc[num_blocks]->flag);
-    istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, s->cfg->ship_name, len3);
+    sprintf_s(tmp_shipname, sizeof(tmp_shipname), "%02d:%s", s->num_clients, s->cfg->ship_name);
+    istrncpy(ic_gbk_to_8859, pkt->entries[num_blocks].name, tmp_shipname, len3);
     ++num_blocks;
 
     /* Add each block to the list. */
@@ -914,6 +916,7 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
     int len = 0x30, num_blocks = 0;
     uint32_t len2 = 0x2C, len3 = 0x20;
     uint32_t i;
+    char tmp_shipname[0x20] = { 0 };
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf)
@@ -927,7 +930,8 @@ static int send_pc_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last[num_blocks]->menu_id);
     pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last[num_blocks]->item_id);
     pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last[num_blocks]->flag);
-    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, s->cfg->ship_name, len3);
+    sprintf_s(tmp_shipname, sizeof(tmp_shipname), "%02d:%s", s->num_clients, s->cfg->ship_cn_name);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, tmp_shipname, len3);
     ++num_blocks;
 
     /* Add each block to the list. */
@@ -980,6 +984,7 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     int len = 0x34, num_blocks = 0;
     uint32_t len2 = 0x2C, len3 = 0x20;
     uint32_t i;
+    char tmp_shipname[0x20] = { 0 };
 
     /* 确认已获得数据发送缓冲 */
     if(!sendbuf) {
@@ -994,7 +999,8 @@ static int send_bb_block_list(ship_client_t *c, ship_t *s) {
     pkt->entries[num_blocks].menu_id = LE32(pso_block_list_menu_last[num_blocks]->menu_id);
     pkt->entries[num_blocks].item_id = LE32(pso_block_list_menu_last[num_blocks]->item_id);
     pkt->entries[num_blocks].flags = LE16(pso_block_list_menu_last[num_blocks]->flag);
-    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, s->cfg->ship_cn_name, len3);
+    sprintf_s(tmp_shipname, sizeof(tmp_shipname), "%02d:%s", s->num_clients, s->cfg->ship_cn_name);
+    istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[num_blocks].name, tmp_shipname, len3);
     ++num_blocks;
 
     /* Add each block to the list. */
@@ -9728,7 +9734,7 @@ static int send_pc_choice_search(ship_client_t *c) {
         pkt->entries[i].item_id = LE16(cs_options[i].item_id);
 
         /* Convert the text to UTF-16 */
-        istrncpy(ic_8859_to_utf16, (char *)pkt->entries[i].text,
+        istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[i].text,
                  cs_options[i].text, 0x38);
     }
 
@@ -9757,7 +9763,7 @@ static int send_bb_choice_search(ship_client_t* c) {
         pkt->entries[i].item_id = LE16(cs_options[i].item_id);
 
         /* Convert the text to UTF-16 */
-        istrncpy(ic_utf16_to_gb18030, (char*)pkt->entries[i].text,
+        istrncpy(ic_gb18030_to_utf16, (char*)pkt->entries[i].text,
             cs_options[i].text, 0x38);
     }
 
@@ -9800,12 +9806,12 @@ static int fill_one_choice_entry(uint8_t *sendbuf, int version,
             pkt->entries[entry].guildcard = LE32(it->guildcard);
 
             /* All the text needs to be converted with iconv to UTF-16LE... */
-            istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].name,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entry].name,
                      it->pl->v1.character.dress_data.gc_string, 0x20);
 
             sprintf(tmp, "%s Lvl %d\n", pso_class[it->pl->v1.character.dress_data.ch_class].cn_name,
                     it->pl->v1.character.disp.level + 1);
-            istrncpy(ic_8859_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
+            istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entry].cl_lvl, tmp,
                      0x40);
 
             istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[entry].location,
@@ -10486,8 +10492,6 @@ static int send_bb_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     char *inptr;
     char *outptr;
     char timestamp[20];
-    //time_t rawtime;
-    //struct tm cooked;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
 
@@ -10529,8 +10533,6 @@ static int send_bb_simple_mail_dc(ship_client_t *c, simple_mail_pkt *p) {
     }
 
     /* Fill in the date/time */
-    //rawtime = time(NULL);
-    //gmtime_r(&rawtime, &cooked);
     sprintf(timestamp, "%04u.%02u.%02u %02u:%02uZ", rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 
@@ -10548,8 +10550,6 @@ static int send_bb_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     uint8_t *sendbuf = get_sendbuf();
     simple_mail_pkt *pkt = (simple_mail_pkt *)sendbuf;
     char timestamp[20];
-    //time_t rawtime;
-    //struct tm cooked;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
     int i;
@@ -10577,8 +10577,6 @@ static int send_bb_simple_mail_pc(ship_client_t *c, simple_mail_pkt *p) {
     memcpy(pkt->bbmaildata.message, p->pcmaildata.stuff, 0x0180);
 
     /* Fill in the date/time */
-    //rawtime = time(NULL);
-    //gmtime_r(&rawtime, &cooked);
     sprintf(timestamp, "%04u.%02u.%02u %02u:%02uZ", rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 
@@ -10594,8 +10592,6 @@ static int send_bb_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     uint8_t *sendbuf = get_sendbuf();
     simple_mail_pkt *pkt = (simple_mail_pkt *)sendbuf;
     char timestamp[20];
-    //time_t rawtime;
-    //struct tm cooked;
     SYSTEMTIME rawtime;
     GetLocalTime(&rawtime);
     int i;
@@ -10621,8 +10617,6 @@ static int send_bb_simple_mail_bb(ship_client_t *c, simple_mail_pkt *p) {
     memcpy(pkt->bbmaildata.message, p->bbmaildata.message, 0x0180);
 
     /* Fill in the date/time */
-    //rawtime = time(NULL);
-    //gmtime_r(&rawtime, &cooked);
     sprintf(timestamp, "%04u.%02u.%02u %02u:%02uZ", rawtime.wYear,
         rawtime.wMonth, rawtime.wDay, rawtime.wHour, rawtime.wMinute);
 
@@ -12205,7 +12199,7 @@ static int send_pc_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = 0;
 
-    istrncpy(ic_8859_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
              0x20);
 
     /* Add each info item to the list. */
@@ -12257,7 +12251,7 @@ static int send_bb_gen_menu(ship_client_t *c, uint32_t menu_id, size_t count,
     pkt->entries[0].item_id = 0;
     pkt->entries[0].flags = 0;
 
-    istrncpy(ic_8859_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
+    istrncpy(ic_gb18030_to_utf16, (char *)pkt->entries[0].name, ship->cfg->ship_name,
              0x20);
 
     /* Add each info item to the list. */

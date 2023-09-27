@@ -4292,8 +4292,7 @@ static int handle_lobby_chg(ship_t* c, shipgate_lobby_change_pkt* pkt) {
     lid = ntohl(pkt->lobby_id);
 
     /* Update the client's entry */
-    psocn_db_escape_str(&conn, tmp_lobby_name, pkt->lobby_name,
-        strlen(pkt->lobby_name));
+    istrncpy16_raw(ic_gbk_to_utf8, tmp_lobby_name, pkt->lobby_name, 128, 32);
 
     /* Is this a transient client (that is to say someone on the PC NTE)? */
     if (gc >= 500 && gc < 600)
