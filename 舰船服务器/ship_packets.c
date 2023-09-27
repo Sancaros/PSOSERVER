@@ -2955,7 +2955,7 @@ static int send_dc_guild_reply(ship_client_t *c, ship_client_t *s) {
     }
 
     /* Fill in the simple stuff */
-    pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
+    pkt->hdr.pkt_type = GUILD_SEARCH_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
     pkt->gc_searcher = LE32(c->guildcard);
@@ -3028,7 +3028,7 @@ static int send_pc_guild_reply(ship_client_t *c, ship_client_t *s) {
     memset(pkt, 0, PC_GUILD_REPLY_LENGTH);
 
     /* Fill in the simple stuff */
-    pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
+    pkt->hdr.pkt_type = GUILD_SEARCH_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
     pkt->gc_searcher = LE32(c->guildcard);
@@ -3093,7 +3093,7 @@ static int send_bb_guild_reply(ship_client_t *c, ship_client_t *s) {
     memset(pkt, 0, BB_GUILD_REPLY_LENGTH);
 
     /* Fill in the simple stuff */
-    pkt->hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
+    pkt->hdr.pkt_type = LE16(GUILD_SEARCH_REPLY_TYPE);
     pkt->hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
     pkt->gc_searcher = LE32(c->guildcard);
@@ -3460,7 +3460,7 @@ static int send_pc_guild_reply_sg(ship_client_t *c, dc_guild_reply_pkt *dc) {
     memset(pkt, 0, PC_GUILD_REPLY_LENGTH);
 
     /* Fill in the simple stuff */
-    pkt->hdr.pkt_type = GUILD_REPLY_TYPE;
+    pkt->hdr.pkt_type = GUILD_SEARCH_REPLY_TYPE;
     pkt->hdr.pkt_len = LE16(PC_GUILD_REPLY_LENGTH);
     pkt->player_tag = LE32(0x00010000);
     pkt->gc_searcher = dc->gc_searcher;
@@ -12790,27 +12790,27 @@ int send_bb_guild_cmd(ship_client_t* c, uint16_t cmd_code) {
                 lbs->entries[num].client_guildcard = c2->guildcard;
                 lbs->entries[num].client_id = c2->client_id;
                 memcpy(&lbs->entries[num].char_name, &c2->bb_pl->character.name, sizeof(c2->bb_pl->character.name));
-                if (c2->bb_guild->data.guild_id != 0) {
+                //if (c2->bb_guild->data.guild_id != 0) {
 
-                    lbs->entries[num].guild_reward[0] = c2->bb_guild->data.guild_reward[0];
-                    lbs->entries[num].guild_reward[1] = c2->bb_guild->data.guild_reward[1];
-                    lbs->entries[num].guild_reward[2] = c2->bb_guild->data.guild_reward[2];
-                    lbs->entries[num].guild_reward[3] = c2->bb_guild->data.guild_reward[3];
-                    lbs->entries[num].guild_reward[4] = c2->bb_guild->data.guild_reward[4];
-                    lbs->entries[num].guild_reward[5] = c2->bb_guild->data.guild_reward[5];
-                    lbs->entries[num].guild_reward[6] = c2->bb_guild->data.guild_reward[6];
-                    lbs->entries[num].guild_reward[7] = c2->bb_guild->data.guild_reward[7];
-                }
-                else {
-                    lbs->entries[num].guild_reward[0] = 0;
-                    lbs->entries[num].guild_reward[1] = 0;
-                    lbs->entries[num].guild_reward[2] = 0;
-                    lbs->entries[num].guild_reward[3] = 0;
-                    lbs->entries[num].guild_reward[4] = 0;
-                    lbs->entries[num].guild_reward[5] = 0;
-                    lbs->entries[num].guild_reward[6] = 0;
-                    lbs->entries[num].guild_reward[7] = 0;
-                }
+                //    lbs->entries[num].guild_reward[0] = c2->bb_guild->data.guild_reward[0];
+                //    lbs->entries[num].guild_reward[1] = c2->bb_guild->data.guild_reward[1];
+                //    lbs->entries[num].guild_reward[2] = c2->bb_guild->data.guild_reward[2];
+                //    lbs->entries[num].guild_reward[3] = c2->bb_guild->data.guild_reward[3];
+                //    lbs->entries[num].guild_reward[4] = c2->bb_guild->data.guild_reward[4];
+                //    lbs->entries[num].guild_reward[5] = c2->bb_guild->data.guild_reward[5];
+                //    lbs->entries[num].guild_reward[6] = c2->bb_guild->data.guild_reward[6];
+                //    lbs->entries[num].guild_reward[7] = c2->bb_guild->data.guild_reward[7];
+                //}
+                //else {
+                //    lbs->entries[num].guild_reward[0] = 0;
+                //    lbs->entries[num].guild_reward[1] = 0;
+                //    lbs->entries[num].guild_reward[2] = 0;
+                //    lbs->entries[num].guild_reward[3] = 0;
+                //    lbs->entries[num].guild_reward[4] = 0;
+                //    lbs->entries[num].guild_reward[5] = 0;
+                //    lbs->entries[num].guild_reward[6] = 0;
+                //    lbs->entries[num].guild_reward[7] = 0;
+                //}
                 memcpy(&lbs->entries[num].guild_flag, &c2->bb_guild->data.guild_flag, sizeof(c2->bb_guild->data.guild_flag));
                 num++;
             }
@@ -13175,8 +13175,8 @@ uint8_t* build_guild_full_data_pkt(ship_client_t* c) {
     pkt->entries.client_guildcard = c->guildcard;
     pkt->entries.client_id = c->client_id;
     memcpy(&pkt->entries.char_name, &c->bb_pl->character.name, BB_CHARACTER_CHAR_TAG_NAME_WLENGTH);
-    for (int i = 0; i < 8; i++)
-        pkt->entries.guild_reward[i] = c->bb_guild->data.guild_reward[i];
+    //for (int i = 0; i < 8; i++)
+    //    pkt->entries.guild_reward[i] = c->bb_guild->data.guild_reward[i];
     memcpy(&pkt->entries.guild_flag[0], &c->bb_guild->data.guild_flag[0], sizeof(c->bb_guild->data.guild_flag));
 
     /* 填充数据头 */
@@ -13363,6 +13363,29 @@ int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1) {
     pkt->pkt_type = LE16(opcode1);
     pkt->flags = 0;
 
+    print_ascii_hex(dbgl, pkt, 8);
+
+    return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
+}
+
+/* 物品兑换完成 */
+int send_bb_cmd_test2(ship_client_t* c, uint16_t opcode1, uint8_t* data) {
+    uint8_t* sendbuf = get_sendbuf();
+    bb_err_pkt_hdr_t* pkt = (bb_err_pkt_hdr_t*)sendbuf;
+
+    /* 确认已获得数据发送缓冲 */
+    if (!sendbuf)
+        return -1;
+
+    /* 填充数据并准备发送 */
+    pkt->hdr.pkt_len = LE16(520);
+    pkt->hdr.pkt_type = LE16(opcode1);
+    pkt->hdr.flags = 0;
+
+    memcpy(pkt->data, data, 512);
+
+    print_ascii_hex(dbgl, pkt, 520);
+
     return send_pkt_bb(c, (bb_pkt_hdr_t*)pkt);
 }
 
@@ -13385,6 +13408,8 @@ int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2)
     pkt->type = (uint8_t)opcode2;
     pkt->size = (pkt_size - 8) / 4;
     pkt->param = 0;
+
+    print_ascii_hex(dbgl, pkt, 12);
 
     return send_pkt_bb(dest, (bb_pkt_hdr_t*)pkt);
 }

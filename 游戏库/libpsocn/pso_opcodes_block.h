@@ -81,7 +81,7 @@
 #define ITEM_EXCHANGE_GALLON_RESULT     0x0025 /* 16字节数据包 服务器 -> 客户端 */
 
 #define GUILD_SEARCH_TYPE               0x0040
-#define GUILD_REPLY_TYPE                0x0041
+#define GUILD_SEARCH_REPLY_TYPE         0x0041
 #define QUEST_FILE_TYPE                 0x0044
 #define CLIENT_UNKNOW_4F                0x004F
 #define GAME_SUBCMD60_TYPE              0x0060  //来自1.0 BB服务端
@@ -213,6 +213,8 @@
 #define BB_DEL_BLOCKED_USER_TYPE        0x08E8
 #define BB_SET_GUILDCARD_COMMENT_TYPE   0x09E8
 #define BB_SORT_GUILDCARD_TYPE          0x0AE8
+//////////////////////////////////////////////////
+#define CLIENT_UNKNOW_E9                0x00E9  //BB无法使用
 //////////////////////////////////////////////////EA指令
 #define BB_GUILD_COMMAND                0x00EA  //来自1.0 BB服务端 单指令 以下都是组合指令
 #define BB_GUILD_CREATE                 0x01EA
@@ -269,6 +271,8 @@
 //////////////////////////////////////////////////
 #define BB_SCROLL_MSG_TYPE              0x00EE  //顶部公告数据包
 #define CLIENT_UNKNOW_F0                0x00F0
+#define CLIENT_UNKNOW_F1                0x00F1
+#define CLIENT_UNKNOW_F2                0x00F2
 
 /* Responses to login packets... */
 /* DC 网络测试版数据包 - Responses to Packet 0x88. */

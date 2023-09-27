@@ -4225,6 +4225,20 @@ typedef struct bb_guild_unk_09EA {
     uint8_t data[];
 } PACKED bb_guild_unk_09EA_pkt;
 
+// 09EA (S->C): Unknown
+struct S_Unknown_BB_09EA {
+    bb_pkt_hdr_t hdr;
+    uint32_t entry_count;
+    uint8_t unknown_a2[4];
+    struct Entry123 {
+        // This is displayed as "<%04d> %s" % (value, message)
+        uint32_t value;
+        uint32_t color; // 0x10 or 0x20 = green, 0x30 = blue, 0x40 = red, anything else = white
+        uint32_t unknown_a1;
+        uint16_t message[0x10];
+    } PACKED entries[0];// [entry_count] actually
+} PACKED;
+
 // 0AEA (S->C): UNKNOW
 typedef struct bb_guild_unk_0AEA {
     bb_pkt_hdr_t hdr;
@@ -4242,6 +4256,12 @@ typedef struct bb_guild_unk_0CEA {
     bb_pkt_hdr_t hdr;
     uint8_t data[];
 } PACKED bb_guild_unk_0CEA_pkt;
+
+// 0CEA (S->C): Unknown
+struct S_Unknown_BB_0CEA {
+    uint8_t unknown_a1[0x20];
+    uint16_t unknown_a2[0];
+} PACKED;
 
 // 0DEA (C->S): Unknown
 // No arguments
@@ -4300,7 +4320,7 @@ typedef struct bb_guild_member_promote {
 // 12EA (S->C): Unknown
 typedef struct bb_guild_unk_12EA {
     bb_pkt_hdr_t hdr;
-    uint32_t unk;//TODO ??
+    uint32_t unk; // Command is ignored unless this is 0
     uint32_t guildcard;
     uint32_t guild_id;
     uint8_t guild_info[8];
@@ -4320,7 +4340,7 @@ typedef struct bb_guild_lobby_client {
     uint32_t client_guildcard;
     uint32_t client_id;
     uint16_t char_name[BB_CHARACTER_NAME_LENGTH];
-    uint8_t guild_reward[8];
+    //uint8_t guild_reward[8];
     uint8_t guild_flag[0x0800];
 } PACKED bb_guild_lobby_client_t;
 

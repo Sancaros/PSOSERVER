@@ -4020,6 +4020,7 @@ static int handle_cheat(ship_client_t* c, const char* params) {
 static int handle_cmdcheck(ship_client_t* src, const char* params) {
     int count;
     uint16_t opcode[2] = { 0 };
+    uint8_t data[512] = { 0 };
 
     pthread_mutex_lock(&src->mutex);
 
@@ -4030,21 +4031,36 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
     //}
 
     /* Copy over the item data. */
-    count = sscanf(params, "%hX,%hX", &opcode[0], &opcode[1]);
+    count = sscanf(params, "%hX, %hX, %[0-9A-Fa-f]", &opcode[0], &opcode[1], data);
 
     if (count == EOF || count == 0) {
         return send_txt(src, "%s", __(src, "\tE\tC7无效参数代码."));
     }
 
     /* See if we're turning the flag off. */
-    if (opcode[0] && !opcode[1]) {
+    if (count == 1) {
 
         DBG_LOG("测试指令 0x%04X %s GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), src->guildcard);
 
-        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC7cmd代码已执行."));
-
         send_bb_cmd_test(src, opcode[0]);
+
+        send_msg(src, TEXT_MSG_TYPE, "%s \n0x%04X", __(src, "\tE\tC6cmd代码已执行1."), opcode[0]);
+
+        pthread_mutex_unlock(&src->mutex);
+
+        return 0;
+    }
+
+    /* See if we're turning the flag off. */
+    if (opcode[0] && data[0]) {
+
+        DBG_LOG("测试指令 0x%04X %s GC %u",
+            opcode[0], c_cmd_name(opcode[0], 0), src->guildcard);
+
+        send_bb_cmd_test2(src, opcode[0], data);
+
+        send_msg(src, TEXT_MSG_TYPE, "%s \n0x%04X", __(src, "\tE\tC4cmd代码已执行2."), opcode[0]);
 
         pthread_mutex_unlock(&src->mutex);
 
@@ -4057,9 +4073,9 @@ static int handle_cmdcheck(ship_client_t* src, const char* params) {
         DBG_LOG("测试指令 0x%04X %s 0x%04X GC %u",
             opcode[0], c_cmd_name(opcode[0], 0), isEmptyInt(opcode[1]) ? 0 : opcode[1], src->guildcard);
         
-        send_msg(src, BB_SCROLL_MSG_TYPE, "%s", __(src, "\tE\tC7subcmd代码已执行."));
-        
         send_bb_subcmd_test(src, opcode[0], opcode[1]);
+
+        send_msg(src, TEXT_MSG_TYPE, "%s \n0x%04X 0x%04X", __(src, "\tE\tC3subcmd代码已执行3."), opcode[0], opcode[1]);
 
         pthread_mutex_unlock(&src->mutex);
 

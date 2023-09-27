@@ -337,6 +337,7 @@ int send_rare_enemy_index_list(ship_client_t* c, const uint16_t* rare_enemies);
 int send_subcmd_error_client_return_to_ship(ship_client_t* c, void* data);
 
 int send_bb_cmd_test(ship_client_t* c, uint16_t opcode1);
+int send_bb_cmd_test2(ship_client_t* c, uint16_t opcode1, uint8_t* data);
 
 int send_bb_subcmd_test(ship_client_t* dest, uint16_t opcode1, uint16_t opcode2);
 

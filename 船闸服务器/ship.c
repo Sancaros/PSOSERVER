@@ -1174,7 +1174,7 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         memset(&reply6, 0, DC_GUILD_REPLY6_LENGTH);
 
         /* Fill it in */
-        reply6.hdr.pkt_type = GUILD_REPLY_TYPE;
+        reply6.hdr.pkt_type = GUILD_SEARCH_REPLY_TYPE;
         reply6.hdr.pkt_len = LE16(DC_GUILD_REPLY6_LENGTH);
         reply6.hdr.flags = 6;
         reply6.player_tag = LE32(0x00010000);
@@ -1227,7 +1227,7 @@ static int handle_guild_search(ship_t* c, dc_guild_search_pkt* pkt, uint32_t fla
         memset(&reply, 0, DC_GUILD_REPLY_LENGTH);
 
         /* Fill it in */
-        reply.hdr.pkt_type = GUILD_REPLY_TYPE;
+        reply.hdr.pkt_type = GUILD_SEARCH_REPLY_TYPE;
         reply.hdr.pkt_len = LE16(DC_GUILD_REPLY_LENGTH);
         reply.player_tag = LE32(0x00010000);
         reply.gc_searcher = pkt->gc_searcher;
@@ -1386,7 +1386,7 @@ static int handle_bb_guild_search(ship_t* c, shipgate_fw_9_pkt* pkt) {
     memset(&reply, 0, BB_GUILD_REPLY_LENGTH);
 
     /* Fill it in */
-    reply.hdr.pkt_type = LE16(GUILD_REPLY_TYPE);
+    reply.hdr.pkt_type = LE16(GUILD_SEARCH_REPLY_TYPE);
     reply.hdr.pkt_len = LE16(BB_GUILD_REPLY_LENGTH);
     reply.player_tag = LE32(0x00010000);
     reply.gc_searcher = p->gc_searcher;
@@ -2849,7 +2849,7 @@ static int handle_dreamcast(ship_t* c, shipgate_fw_9_pkt* pkt) {
     case SIMPLE_MAIL_TYPE:
         return handle_dc_mail(c, (simple_mail_pkt*)hdr);
 
-    case GUILD_REPLY_TYPE:
+    case GUILD_SEARCH_REPLY_TYPE:
         /* We shouldn't get these anymore (as of protocol v3)... */
     default:
         /* Warn the ship that sent the packet, then drop it */

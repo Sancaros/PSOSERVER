@@ -65,7 +65,7 @@ static cmd_map_st c_cmd_names[] = {
     { PING_TYPE, "PING_TYPE", "Ping pong 心跳数据包" },
     { LOBBY_INFO_TYPE, "LOBBY_INFO_TYPE", "客户端至服务器指令" },
     { GUILD_SEARCH_TYPE, "GUILD_SEARCH_TYPE", "客户端至服务器指令" },
-    { GUILD_REPLY_TYPE, "GUILD_REPLY_TYPE", "客户端至服务器指令" },
+    { GUILD_SEARCH_REPLY_TYPE, "GUILD_REPLY_TYPE", "客户端至服务器指令" },
     { QUEST_FILE_TYPE, "QUEST_FILE_TYPE", "客户端至服务器指令" },
     { CLIENT_UNKNOW_4F, "CLIENT_UNKNOW_4F", "客户端至服务器指令" },
     { GAME_SUBCMD60_TYPE, "GAME_COMMAND0_TYPE", "玩家指令" },

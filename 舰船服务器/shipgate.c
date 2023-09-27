@@ -1257,7 +1257,7 @@ static int handle_dc(shipgate_conn_t* conn, shipgate_fw_9_pkt* pkt) {
     uint8_t type = dc->pkt_type;
 
     switch (type) {
-    case GUILD_REPLY_TYPE:
+    case GUILD_SEARCH_REPLY_TYPE:
         return handle_dc_greply(conn, (dc_guild_reply_pkt*)dc);
 
     case GUILD_SEARCH_TYPE:
@@ -1308,7 +1308,7 @@ static int handle_bb(shipgate_conn_t *conn, shipgate_fw_9_pkt *pkt) {
     case SIMPLE_MAIL_TYPE:
         return handle_bb_mail(conn, (simple_mail_pkt*)bb);
 
-    case GUILD_REPLY_TYPE:
+    case GUILD_SEARCH_REPLY_TYPE:
         return handle_bb_greply(conn, (bb_guild_reply_pkt*)bb, block);
 
     default:
