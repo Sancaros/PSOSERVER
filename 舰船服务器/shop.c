@@ -82,7 +82,7 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
     static const uint8_t max_tech_lvl[4] = { 4, 7, 10, 15 };
     static const uint8_t max_anti_lvl[4] = { 2,  4,  6,  7 };
     item_t item = { 0 };
-    int8_t tmp_value = 0;
+    uint8_t tmp_value = 0;
     item.datab[0] = 物品类型;
     errno_t err = 0;
 
@@ -118,13 +118,13 @@ item_t create_bb_shop_item(uint8_t 难度, uint8_t 物品类型, sfmt_t* 随机因子) {
                 if ((sfmt_genrand_uint32(随机因子) % 4) == 1) {
                     /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
                     item.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-                    tmp_value = sfmt_genrand_uint32(随机因子) % 6 + weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 20];/* 0 - 5 % 0 - 19*/
+                    tmp_value = /*sfmt_genrand_uint32(随机因子) % 6 +*/ weapon_bonus_values[sfmt_genrand_uint32(随机因子) % 21];/* 0 - 5 % 0 - 19*/
 
-                    if (tmp_value > 50)
-                        tmp_value = 50;
+                    //if (tmp_value > 50)
+                    //    tmp_value = 50;
 
-                    if (tmp_value < -50)
-                        tmp_value = -50;
+                    //if (tmp_value < -50)
+                    //    tmp_value = -50;
 
                     item.datab[(num_percentages * 2) + 7] = tmp_value;
                     num_percentages++;

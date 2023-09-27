@@ -1079,7 +1079,7 @@ int sub62_06_bb(ship_client_t* src, ship_client_t* dest,
 }
 
 int sub62_5A_dc(ship_client_t* src, ship_client_t* dest,
-    subcmd_pick_up_t* pkt) {
+    subcmd_pick_up_item_req_t* pkt) {
     lobby_t* l = src->cur_lobby;
     uint32_t item_id = pkt->item_id;
     uint16_t area = pkt->area;
@@ -2827,7 +2827,7 @@ int sub62_E2_bb(ship_client_t* src, ship_client_t* dest,
                     if ((sfmt_genrand_uint32(rng) % 5) == 1) {
                         /*+6 对应属性槽（结果分别为 6 8 10） +7对应数值（结果分别为 随机数1-20 1-35 1-45 1-50）*/
                         iitem.data.datab[(num_percentages * 2) + 6] = (uint8_t)x;
-                        tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 20];/* 0 - 5 % 0 - 19*/
+                        tmp_value = /*sfmt_genrand_uint32(rng) % 6 + */weapon_bonus_values[sfmt_genrand_uint32(rng) % 21];/* 0 - 5 % 0 - 19*/
 
                         //if (tmp_value > 50)
                         //    tmp_value = 50;

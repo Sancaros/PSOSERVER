@@ -414,6 +414,38 @@ static int check_aoe_timer(ship_client_t* src,
     return 0;
 }
 
+static int sub60_05_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_switch_changed_pkt_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    int rv = 0;
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_switch_changed_pkt_t), 0x03))
+        return -2;
+
+//[2023年09月27日 19:49:59:564] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x05
+//
+//[2023年09月27日 19:49:59:572] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 10 00 05 03 6A 40  00 00 00 00 06 00 01 01    `.....j@........
+    rv = subcmd_send_lobby_dc(l, NULL, (subcmd_pkt_t*)pkt, 0);
+
+    if (pkt->data.flags && pkt->data.object_id != 0xFFFF) {
+        if ((l->flags & LOBBY_TYPE_CHEATS_ENABLED) && src->options.switch_assist &&
+            (src->last_switch_enabled_command.type == 0x05)) {
+            DBG_LOG("[机关助手] 重复启动上一个命令");
+            subcmd_switch_changed_pkt_t* gem = pkt;
+            gem->data = src->last_switch_enabled_command;
+            rv = subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)gem, 0);
+        }
+        src->last_switch_enabled_command = pkt->data;
+    }
+
+    return rv;
+}
+
 static int sub60_05_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_switch_changed_pkt_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2093,6 +2125,22 @@ static int sub60_30_dc(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
+static int sub60_31_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_use_medical_center_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
+//[2023年09月27日 19:51:08:741] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x31
+//
+//[2023年09月27日 19:51:08:749] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 08 00 31 01 01 00     `...1...
+    //UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_31_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_use_medical_center_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2103,6 +2151,22 @@ static int sub60_31_bb(ship_client_t* src, ship_client_t* dest,
     //UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_32_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_use_medical_center_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
+//[2023年09月27日 19:51:08:767] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x32
+//
+//[2023年09月27日 19:51:08:771] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 08 00 32 01 01 00     `...2...
+    //UNK_CSPD(pkt->type, c->version, (uint8_t*)pkt);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_32_bb(ship_client_t* src, ship_client_t* dest,
@@ -2167,6 +2231,31 @@ static int sub60_39_bb(ship_client_t* src, ship_client_t* dest,
         return -2;
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_3A_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_game_client_leave_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:50:56:667] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x3A
+//
+//[2023年09月27日 19:50:56:672] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 08 00 3A 01 01 00     `...:...
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_game_client_leave_t), 0x01))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    /* 这是一个用于通知其他玩家 该玩家离开了游戏  TODO*/
+    //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_3A_bb(ship_client_t* src, ship_client_t* dest,
@@ -2393,7 +2482,11 @@ static int sub60_42_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_43_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_normal_attack_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年09月27日 19:49:39:501] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x43
+//
+//[2023年09月27日 19:49:39:507] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 43 02 01 00  C7 CB 00 00    `...C.......
     if (!in_game(src))
         return -1;
 
@@ -2431,7 +2524,11 @@ static int sub60_43_bb(ship_client_t* src, ship_client_t* dest,
 static int sub60_44_dc(ship_client_t* src, ship_client_t* dest,
     subcmd_normal_attack_t* pkt) {
     lobby_t* l = src->cur_lobby;
-
+//[2023年09月27日 19:49:46:183] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x44
+//
+//[2023年09月27日 19:49:46:191] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 44 02 01 00  B6 4A 00 00    `...D....J..
     if (!in_game(src))
         return -1;
 
@@ -2930,6 +3027,51 @@ static int sub60_4C_bb(ship_client_t* src, ship_client_t* dest,
     return send_lobby_mod_stat(l, src, SUBCMD60_STAT_HPUP, 2000);
 }
 
+static int sub60_4D_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_death_sync_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_death_sync_t), 0x02))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+//[2023年09月27日 19:50:56:997] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x4D
+//
+//[2023年09月27日 19:50:57:005] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 4D 02 01 00  03 00 00 00    `...M.......
+
+    src->game_data->death = 1;
+
+//    inventory_t* inv = get_client_inv_bb(src);
+//
+//#ifdef DEBUG
+//
+//    print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
+//
+//    for (size_t x = 0; x < inv->item_count; x++) {
+//        print_iitem_data(&inv->iitems[x], x, src->version);
+//    }
+//
+//#endif // DEBUG
+//
+//    int mag_index = find_equipped_mag(inv);
+//    /* 没有找到MAG 直接发送出去 */
+//    if (mag_index) {
+//        item_t* mag = &inv->iitems[mag_index].data;
+//        mag->data2b[0] = max((mag->data2b[0] - pkt->flag), 0);
+//    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_death_sync_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -2972,6 +3114,28 @@ static int sub60_4D_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_4E_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_cmd_4e_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:50:59:102] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x4E
+//
+//[2023年09月27日 19:50:59:109] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 08 00 4E 01 01 00     `...N...
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_cmd_4e_t), 0x01))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_4E_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_cmd_4e_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3004,6 +3168,28 @@ static int sub60_4F_bb(ship_client_t* src, ship_client_t* dest,
     //}
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_50_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_switch_req_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:49:58:665] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x50
+//
+//[2023年09月27日 19:49:58:673] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 50 02 01 00  DA 0C 00 00    `...P.......
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_switch_req_t), 0x02))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_50_bb(ship_client_t* src, ship_client_t* dest,
@@ -3228,6 +3414,104 @@ static int sub60_58_bb(ship_client_t* src, ship_client_t* dest,
 #endif // DEBUG
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_59_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pick_up_item_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:49:41:804] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x59
+//
+//[2023年09月27日 19:49:41:811] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 10 00 59 03 01 00  01 00 01 00 73 01 01 06    `...Y.......s...
+//[2023年09月27日 19:49:52:191] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x59
+//
+//[2023年09月27日 19:49:52:198] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 10 00 59 03 01 00  01 00 01 00 71 01 01 06    `...Y.......q...
+//[2023年09月27日 19:50:23:958] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x59
+//
+//[2023年09月27日 19:50:23:964] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 10 00 59 03 01 00  01 00 01 00 7F 01 01 06    `...Y...........
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_pick_up_item_t), 0x03))
+        return -2;
+
+    ship_client_t* effective_c = l->clients[pkt->shdr.client_id];
+
+    if (!effective_c) {
+        return 0;
+    }
+
+    //if (l->flags & Lobby::Flag::ITEM_TRACKING_ENABLED) {
+    //    auto item = l->remove_item(cmd.item_id);
+    //    effective_c->game_data.player()->add_item(item);
+
+    //    auto name = item.data.name(false);
+    //    l->log.info("Player %hu picked up %08" PRIX32 " (%s)",
+    //        cmd.header.client_id.load(), cmd.item_id.load(), name.c_str());
+    //    if (c->options.debug) {
+    //        string name = item.data.name(true);
+    //        send_text_message_printf(c, "$C5PICK %08" PRIX32 "\n%s",
+    //            cmd.item_id.load(), name.c_str());
+    //    }
+    //    effective_c->game_data.player()->print_inventory(stderr);
+    //}
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
+static int sub60_5A_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_pick_up_item_req_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+
+    ship_client_t* effective_c = l->clients[pkt->shdr.client_id];
+
+    if (!effective_c) {
+        return 0;
+    }
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+    if (l->version == CLIENT_VERSION_BB) {
+        if (!in_game(src))
+            return -1;
+
+        if (!check_pkt_size(src, pkt, sizeof(subcmd_pick_up_item_req_t), 0x03))
+            return -2;
+
+    //    if (!l->is_game() || (cmd.header.client_id != c->lobby_client_id)) {
+    //        return;
+    //    }
+
+    //    if (!(l->flags & Lobby::Flag::ITEM_TRACKING_ENABLED)) {
+    //        throw logic_error("item tracking not enabled in BB game");
+    //    }
+
+    //    auto item = l->remove_item(cmd.item_id);
+    //    c->game_data.player()->add_item(item);
+
+    //    auto name = item.data.name(false);
+    //    l->log.info("Player %hu picked up %08" PRIX32 " (%s)",
+    //        cmd.header.client_id.load(), cmd.item_id.load(), name.c_str());
+    //    if (c->options.debug) {
+    //        string name = item.data.name(true);
+    //        send_text_message_printf(c, "$C5PICK/BB %08" PRIX32 "\n%s",
+    //            cmd.item_id.load(), name.c_str());
+    //    }
+    //    c->game_data.player()->print_inventory(stderr);
+
+    //    return send_pick_up_item(c, cmd.item_id, cmd.area);
+
+    //}
+    //else {
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_5D_dc(ship_client_t* src, ship_client_t* dest, 
@@ -3477,6 +3761,26 @@ static int sub60_66_bb(ship_client_t* src, ship_client_t* dest,
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
 }
 
+static int sub60_67_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_create_enemy_set_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:50:11:208] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x67
+//
+//[2023年09月27日 19:50:11:214] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 14 00 67 04 8B 40  01 00 00 00 6F 00 00 00    `...g..@....o...
+//(00000010) 01 00 00 00    ....
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_create_enemy_set_t), 0x04))
+        return -2;
+
+    /* 用于通知其他玩家此区域生成了什么怪物 */
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_67_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_create_enemy_set_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -3679,6 +3983,99 @@ static int sub60_74_bb(ship_client_t* src, ship_client_t* dest,
         //print_ascii_hex(errl, pkt, pkt->hdr.pkt_len);
 
     return word_select_send_bb(src, pkt);
+}
+
+static int sub60_75_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_set_flag_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+    uint16_t flag_index = pkt->flag;
+    uint16_t action = pkt->action;
+    uint16_t difficulty = l->difficulty;
+    int rv = 0;
+//[2023年09月27日 19:49:32:336] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x75
+//
+//[2023年09月27日 19:49:32:342] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 75 02 09 8C  14 00 00 00    `...u.......
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_set_flag_t), 0x02))
+        return -2;
+
+    if (flag_index >= 0x400) {
+        return 0;
+    }
+
+    DBG_LOG("%s 触发SET_FLAG指令! flag = 0x%02X action = 0x%02X episode = 0x%02X difficulty = 0x%02X",
+        get_player_describe(src), flag_index, action, l->episode, difficulty);
+
+    // The client explicitly checks for both 0 and 1 - any other value means no
+    // operation is performed.
+    size_t bit_index = (difficulty << 10) + flag_index;
+    size_t byte_index = bit_index >> 3;
+    uint8_t mask = 0x80 >> (bit_index & 7);
+    if (action == 0) {
+        src->bb_pl->quest_data1[byte_index] |= mask;
+    }
+    else if (action == 1) {
+        src->bb_pl->quest_data1[byte_index] &= (~mask);
+    }
+
+    subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+
+    if (src->version == CLIENT_VERSION_GC) {
+        bool should_send_boss_drop_req = false;
+        bool is_ep2 = (l->episode == GAME_TYPE_EPISODE_2);
+        if ((l->episode == GAME_TYPE_EPISODE_1) && (src->cur_area == 0x0E)) {
+            // On Normal, Dark Falz does not have a third phase, so send the drop
+            // request after the end of the second phase. On all other difficulty
+            // levels, send it after the third phase.
+            if (((difficulty == 0) && (flag_index == 0x0035)) ||
+                ((difficulty != 0) && (flag_index == 0x0037))) {
+                should_send_boss_drop_req = true;
+            }
+        }
+        else if (is_ep2 && (flag_index == 0x0057) && (src->cur_area == 0x0D)) {
+            should_send_boss_drop_req = true;
+        }
+
+        if (should_send_boss_drop_req) {
+            ship_client_t* c2 = l->clients[l->leader_id];
+            if (c2) {
+                subcmd_bitemreq_t req = { 0 };
+
+                req.hdr.pkt_type = 0x62;
+                req.hdr.pkt_len = sizeof(subcmd_bitemreq_t);
+                req.hdr.flags = 0;
+                req.shdr.type = 0x60;
+                req.shdr.size = 0x06;
+                req.shdr.object_id = 0x0000;
+
+                req.area = (uint8_t)(src->cur_area);
+                req.pt_index = (uint8_t)(is_ep2 ? 0x4E : 0x2F);
+                req.request_id = 0x0B4F;
+                req.x = is_ep2 ? -9999.0f : 10160.58984375f;
+                req.z = 0.0f;
+                req.unk2[0] = 2;
+                req.unk2[1] = 0;
+                //    req.
+                //    {
+                //        {0x60, 0x06, 0x0000},
+                //        (uint8_t)(src->cur_area),
+                //        (uint8_t)(is_ep2 ? 0x4E : 0x2F),
+                //        0x0B4F,
+                //        is_ep2 ? -9999.0f : 10160.58984375f,
+                //        0.0f,
+                //        2,
+                //        0,
+                //    },
+                //    0xE0AEDC01,
+                //};
+                //send_command_t(c, 0x62, l->leader_id, req);
+                return  l->dropfunc(c2, l, &req);
+            }
+        }
+    }
+
+    return 0;
 }
 
 static int sub60_75_bb(ship_client_t* src, ship_client_t* dest,
@@ -4773,6 +5170,28 @@ static int sub60_88_bb(ship_client_t* src, ship_client_t* dest,
     return send_lobby_arrows(l);
 }
 
+static int sub60_89_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_player_died_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:50:56:968] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x89
+//
+//[2023年09月27日 19:50:56:975] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 89 02 01 00  84 10 00 00    `...........
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_player_died_t), 0x02))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+}
+
 static int sub60_89_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_player_died_t* pkt) {
     lobby_t* l = src->cur_lobby;
@@ -4825,6 +5244,47 @@ static int sub60_8A_bb(ship_client_t* src, ship_client_t* dest,
     DBG_LOG("pkt->mode %d src->mode %d", pkt->mode, src->mode);
 
     return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
+}
+
+static int sub60_8D_dc(ship_client_t* src, ship_client_t* dest,
+    subcmd_set_technique_level_override_t* pkt) {
+    lobby_t* l = src->cur_lobby;
+//[2023年09月27日 19:49:36:198] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x8D
+//
+//[2023年09月27日 19:49:36:203] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 8D 02 01 00  00 00 00 00    `...........
+//[2023年09月27日 19:50:17:380] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x8D
+//
+//[2023年09月27日 19:50:17:387] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 8D 02 01 00  00 00 00 00    `...........
+//
+//
+//
+//[2023年09月27日 19:50:18:920] 舰船服务器 调试(subcmd_handle_60.c 6928): 未知 DCV2 0x60 指令: 0x8D
+//
+//[2023年09月27日 19:50:18:927] 舰船服务器 调试(f_logs.c 0088): 数据包如下:
+//
+//(00000000) 60 00 0C 00 8D 02 01 00  00 00 00 00    `...........
+    if (!in_game(src))
+        return -1;
+
+    if (!check_pkt_size(src, pkt, sizeof(subcmd_set_technique_level_override_t), 0x02))
+        return -2;
+
+    if (pkt->shdr.client_id != src->client_id) {
+        DBG_LOG("是否是NPC用了物品？");
+        return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
+    }
+
+    /*uint8_t tmp_level = pkt->level_upgrade;
+
+    pkt->level_upgrade = tmp_level+100;*/
+
+    print_ascii_hex(dbgl, pkt, pkt->hdr.pkt_len);
+
+    return subcmd_send_lobby_dc(l, src, (subcmd_pkt_t*)pkt, 0);
 }
 
 static int sub60_8D_bb(ship_client_t* src, ship_client_t* dest,
@@ -6703,7 +7163,7 @@ static int sub60_E1_bb(ship_client_t* src, ship_client_t* dest,
 // 定义函数指针数组
 subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 00 - 0F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SWITCH_CHANGED             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_05_bb },
+    { SUBCMD60_SWITCH_CHANGED             , sub60_05_dc, sub60_05_dc, NULL,        sub60_05_dc, sub60_05_dc, sub60_05_bb },
     { SUBCMD60_SYMBOL_CHAT                , sub60_07_dc, sub60_07_dc, NULL,        sub60_07_dc, sub60_07_dc, sub60_07_bb },
     { SUBCMD60_HIT_MONSTER                , sub60_0A_dc, sub60_0A_dc, NULL,        sub60_0A_dc, sub60_0A_dc, sub60_0A_bb },
     { SUBCMD60_HIT_OBJ                    , sub60_0B_dc, sub60_0B_dc, NULL,        sub60_0B_dc, sub60_0B_dc, sub60_0B_bb },
@@ -6742,8 +7202,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
 
     //cmd_type 30 - 3F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_LEVEL_UP                   , sub60_30_dc, sub60_30_dc, NULL,        sub60_30_dc, sub60_30_dc, NULL        },
-    { SUBCMD60_MEDIC_REQ                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_31_bb },
-    { SUBCMD60_MEDIC_DONE                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_32_bb },
+    { SUBCMD60_MEDIC_REQ                  , sub60_31_dc, sub60_31_dc, NULL,        sub60_31_dc, sub60_31_dc, sub60_31_bb },
+    { SUBCMD60_MEDIC_DONE                 , sub60_32_dc, sub60_32_dc, NULL,        sub60_32_dc, sub60_32_dc, sub60_32_bb },
     { SUBCMD60_REVIVE_PLAYER              , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_33_bb },
     { SUBCMD60_PB_BLAST                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_37_bb },
     { SUBCMD60_PB_BLAST_READY             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_39_bb },
@@ -6755,8 +7215,8 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 40 - 4F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_MOVE_SLOW                  , sub60_40_dc, sub60_40_dc, NULL,        sub60_40_dc, sub60_40_dc, sub60_40_bb },
     { SUBCMD60_MOVE_FAST                  , sub60_42_dc, sub60_42_dc, NULL,        sub60_42_dc, sub60_42_dc, sub60_42_bb },
-    { SUBCMD60_ATTACK1                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_43_bb },
-    { SUBCMD60_ATTACK2                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_44_bb },
+    { SUBCMD60_ATTACK1                    , sub60_43_dc, sub60_43_dc, NULL,        sub60_43_dc, sub60_43_dc, sub60_43_bb },
+    { SUBCMD60_ATTACK2                    , sub60_44_dc, sub60_44_dc, NULL,        sub60_44_dc, sub60_44_dc, sub60_44_bb },
     { SUBCMD60_ATTACK3                    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_45_bb },
     { SUBCMD60_OBJHIT_PHYS                , sub60_46_dc, sub60_46_dc, NULL,        sub60_46_dc, sub60_46_dc, sub60_46_bb },
     { SUBCMD60_OBJHIT_TECH                , sub60_47_dc, sub60_47_dc, NULL,        sub60_47_dc, sub60_47_dc, sub60_47_bb },
@@ -6765,16 +7225,18 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_DEFENSE_DAMAGE             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4A_bb },
     { SUBCMD60_TAKE_DAMAGE1               , sub60_4B_dc, sub60_4B_dc, NULL,        sub60_4B_dc, sub60_4B_dc, sub60_4B_bb },
     { SUBCMD60_TAKE_DAMAGE2               , sub60_4C_dc, sub60_4C_dc, NULL,        sub60_4C_dc, sub60_4C_dc, sub60_4C_bb },
-    { SUBCMD60_DEATH_SYNC                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4D_bb },
-    { SUBCMD60_UNKNOW_4E                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4E_bb },
+    { SUBCMD60_DEATH_SYNC                 , sub60_4D_dc, sub60_4D_dc, NULL,        sub60_4D_dc, sub60_4D_dc, sub60_4D_bb },
+    { SUBCMD60_UNKNOW_4E                  , sub60_4E_dc, sub60_4E_dc, NULL,        sub60_4E_dc, sub60_4E_dc, sub60_4E_bb },
     { SUBCMD60_PLAYER_SAVED               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_4F_bb },
 
     //cmd_type 50 - 5F                      DC           GC           EP3          XBOX         PC           BB
-    { SUBCMD60_SWITCH_REQ                 , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_50_bb },
+    { SUBCMD60_SWITCH_REQ                 , sub60_50_dc, sub60_50_dc, NULL,        sub60_50_dc, sub60_50_dc, sub60_50_bb },
     { SUBCMD60_MENU_REQ                   , sub60_52_dc, sub60_52_dc, NULL,        sub60_52_dc, sub60_52_dc, sub60_52_bb },
     { SUBCMD60_UNKNOW_53                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_53_bb },
     { SUBCMD60_WARP_55                    , sub60_55_dc, sub60_55_dc, NULL,        sub60_55_dc, sub60_55_dc, sub60_55_bb },
     { SUBCMD60_LOBBY_ACT                  , sub60_58_dc, sub60_58_dc, NULL,        sub60_58_dc, sub60_58_dc, sub60_58_bb },
+    { SUBCMD60_ITEM_DELETE_IN_MAP         , sub60_59_dc, sub60_59_dc, NULL,        sub60_59_dc, sub60_59_dc, NULL        },
+    { SUBCMD60_PICK_UP_ITEM               , sub60_5A_dc, sub60_5A_dc, NULL,        sub60_5A_dc, sub60_5A_dc, NULL        },
     { SUBCMD60_DROP_STACK                 , sub60_5D_dc, sub60_5D_dc, NULL,        sub60_5D_dc, sub60_5D_dc, NULL        },
     { SUBCMD60_BUY                        , sub60_5E_dc, sub60_5E_dc, NULL,        sub60_5E_dc, sub60_5E_dc, NULL        },
     { SUBCMD60_ITEM_DROP_BOX_ENEMY        , sub60_5F_dc, sub60_5F_dc, NULL,        sub60_5F_dc, sub60_5F_dc, NULL        },
@@ -6783,7 +7245,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_LEVEL_UP_REQ               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_61_bb },
     { SUBCMD60_ITEM_GROUND_DESTROY        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_63_bb },
     { SUBCMD60_USE_STAR_ATOMIZER          , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_66_bb },
-    { SUBCMD60_CREATE_ENEMY_SET           , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_67_bb },
+    { SUBCMD60_CREATE_ENEMY_SET           , sub60_67_dc, sub60_67_dc, NULL,        sub60_67_dc, sub60_67_dc, sub60_67_bb },
     { SUBCMD60_CREATE_PIPE                , sub60_68_dc, sub60_68_dc, NULL,        sub60_68_dc, sub60_68_dc, sub60_68_bb },
     { SUBCMD60_SPAWN_NPC                  , sub60_69_dc, sub60_69_dc, NULL,        sub60_69_dc, sub60_69_dc, sub60_69_bb },
     { SUBCMD60_UNKNOW_6A                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_6A_bb },
@@ -6791,7 +7253,7 @@ subcmd_handle_func_t subcmd60_handler[] = {
     //cmd_type 70 - 7F                      DC           GC           EP3          XBOX         PC           BB
     { SUBCMD60_BURST_DONE                 , sub60_72_dc, sub60_72_dc, NULL,        sub60_72_dc, sub60_72_dc, sub60_72_bb },
     { SUBCMD60_WORD_SELECT                , sub60_74_dc, sub60_74_dc, NULL,        sub60_74_dc, sub60_74_dc, sub60_74_bb },
-    { SUBCMD60_FLAG_SET                   , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_75_bb },
+    { SUBCMD60_FLAG_SET                   , sub60_75_dc, sub60_75_dc, NULL,        sub60_75_dc, sub60_75_dc, sub60_75_bb },
     { SUBCMD60_KILL_MONSTER               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_76_bb },
     { SUBCMD60_SYNC_REG                   , sub60_77_dc, sub60_77_dc, NULL,        sub60_77_dc, sub60_77_dc, sub60_77_bb },
     { SUBCMD60_GOGO_BALL                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_79_bb },
@@ -6807,9 +7269,9 @@ subcmd_handle_func_t subcmd60_handler[] = {
     { SUBCMD60_UNKNOW_85                  , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_85_bb },
     { SUBCMD60_HIT_DESTRUCTIBLE_OBJECT    , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_86_bb },
     { SUBCMD60_ARROW_CHANGE               , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_88_bb },
-    { SUBCMD60_PLAYER_DIED                , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_89_bb },
+    { SUBCMD60_PLAYER_DIED                , sub60_89_dc, sub60_89_dc, NULL,        sub60_89_dc, sub60_89_dc, sub60_89_bb },
     { SUBCMD60_CH_GAME_SELECT             , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8A_bb },
-    { SUBCMD60_OVERRIDE_TECH_LEVEL        , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8D_bb },
+    { SUBCMD60_OVERRIDE_TECH_LEVEL        , sub60_8D_dc, sub60_8D_dc, NULL,        sub60_8D_dc, sub60_8D_dc, sub60_8D_bb },
     { SUBCMD60_BATTLE_MODE_PLAYER_HIT     , NULL,        NULL,        NULL,        NULL,        NULL,        sub60_8F_bb },
 
     //cmd_type 90 - 9F                      DC           GC           EP3          XBOX         PC           BB

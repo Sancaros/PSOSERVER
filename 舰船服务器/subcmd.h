@@ -119,6 +119,16 @@ typedef struct subcmd_unknown_04 {
 // Some things that don't look like switches are implemented as switches using
 // this subcommand. For example, when all enemies in a room are defeated, this
 // subcommand is used to unlock the doors.
+typedef struct subcmd_switch_changed {
+    dc_pkt_hdr_t hdr;
+    bb_switch_changed_t data;
+} PACKED subcmd_switch_changed_pkt_t;
+
+// 注意: data.shdr.object_id 值为 0xFFFF 时 表示房间的怪物均被击败
+// 0x05: Switch state changed
+// Some things that don't look like switches are implemented as switches using
+// this subcommand. For example, when all enemies in a room are defeated, this
+// subcommand is used to unlock the doors.
 typedef struct subcmd_bb_switch_changed {
     bb_pkt_hdr_t hdr;
     bb_switch_changed_t data;
@@ -946,11 +956,11 @@ typedef struct subcmd_bb_photon_blast_ready {
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_photon_blast_ready_t;
 
-// 0x3A: Unknown (指令生效范围; 仅限游戏)
-typedef struct subcmd_bb_Unknown_6x3A {
-    bb_pkt_hdr_t hdr;
+// 0x3A: 通知其他玩家该玩家离开了游戏 (指令生效范围; 仅限游戏)
+typedef struct subcmd_game_client_leave {
+    dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
-} PACKED subcmd_bb_Unknown_6x3A_t;
+} PACKED subcmd_game_client_leave_t;
 
 // 0x3A: 通知其他玩家该玩家离开了游戏 (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_game_client_leave {
@@ -1160,12 +1170,26 @@ typedef struct subcmd_bb_take_damage {
 } PACKED subcmd_bb_take_damage_t;
 
 // 0x4D: death sync (指令生效范围; 大厅和游戏)
+typedef struct subcmd_death_sync {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t flag;
+    uint8_t unk2[3];
+} PACKED subcmd_death_sync_t;
+
+// 0x4D: death sync (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_death_sync {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint8_t flag;
     uint8_t unk2[3];
 } PACKED subcmd_bb_death_sync_t;
+
+// 0x4E: Unknown (指令生效范围; 大厅和游戏)
+typedef struct subcmd_cmd_4e {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+} PACKED subcmd_cmd_4e_t;
 
 // 0x4E: Unknown (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_cmd_4e {
@@ -1178,6 +1202,13 @@ typedef struct subcmd_bb_player_saved {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
 } PACKED subcmd_bb_player_saved_t;
+
+// 0x50: Unknown (指令生效范围; 大厅和游戏)
+typedef struct subcmd_switch_req {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint32_t unk2;
+} PACKED subcmd_switch_req_t;
 
 // 0x50: Unknown (指令生效范围; 大厅和游戏)
 typedef struct subcmd_bb_switch_req {
@@ -1272,6 +1303,15 @@ typedef struct subcmd_bb_destroy_map_item {
     uint32_t item_id;
 } PACKED subcmd_bb_destroy_map_item_t;
 
+// 6x59: Pick up item
+typedef struct subcmd_pick_up_item {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t client_id2;
+    uint16_t area;
+    uint32_t item_id;
+} PACKED subcmd_pick_up_item_t;
+
 // 0x5A: Request to pick up item
 typedef struct subcmd_bb_PickUpItemRequest_6x5A {
     bb_pkt_hdr_t hdr;
@@ -1282,13 +1322,13 @@ typedef struct subcmd_bb_PickUpItemRequest_6x5A {
 } PACKED subcmd_bb_PickUpItemRequest_6x5A_t;
 
 // 0x5A: Request to pick up item
-typedef struct subcmd_pick_up {
+typedef struct subcmd_pick_up_item_req {
     dc_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
     uint32_t item_id;
     uint16_t area;
     uint16_t unused;
-} PACKED subcmd_pick_up_t;
+} PACKED subcmd_pick_up_item_req_t;
 
 // 0x5A: Request to pick up item
 typedef struct subcmd_bb_pick_up {
@@ -1452,6 +1492,17 @@ typedef struct subcmd_bb_use_star_atomizer {
     unused_hdr_t shdr;
     uint16_t target_client_ids[4];
 } PACKED subcmd_bb_use_star_atomizer_t;
+
+// 0x67: 生成怪物设置 还需要完成一个数据包发送给每个玩家
+typedef struct subcmd_create_enemy_set {
+    dc_pkt_hdr_t hdr;
+    unused_hdr_t shdr;
+    // unused1 could be area; the client checks this againset a global but the
+    // logic is the same in both branches
+    uint32_t unused1;
+    uint32_t unknown_a1;
+    uint32_t unused2;
+} PACKED subcmd_create_enemy_set_t;
 
 // 0x67: 生成怪物设置 还需要完成一个数据包发送给每个玩家
 typedef struct subcmd_bb_create_enemy_set {
@@ -2135,6 +2186,14 @@ typedef struct subcmd_bb_arrow_change {
 } PACKED subcmd_bb_arrow_change_t;
 
 // 0x89: subcmd_bb_player_died (指令生效范围; 仅限游戏)
+typedef struct subcmd_player_died {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint16_t flag;
+    uint16_t unused;
+} PACKED subcmd_player_died_t;
+
+// 0x89: subcmd_bb_player_died (指令生效范围; 仅限游戏)
 typedef struct subcmd_bb_player_died {
     bb_pkt_hdr_t hdr;
     client_id_hdr_t shdr;
@@ -2154,6 +2213,15 @@ typedef struct subcmd_bb_ch_game_select {
     
 // 0x8C: Unknown (不支持 Episode 3)
 // This subcommand is completely ignored (at least, by PSO GC).
+
+// 0x8D: Set technique level override
+typedef struct subcmd_set_technique_level_override {
+    dc_pkt_hdr_t hdr;
+    client_id_hdr_t shdr;
+    uint8_t level_upgrade;
+    uint8_t unused1;
+    uint16_t unused2;
+} PACKED subcmd_set_technique_level_override_t;
 
 // 0x8D: Set technique level override
 typedef struct subcmd_bb_set_technique_level_override {

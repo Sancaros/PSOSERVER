@@ -191,7 +191,7 @@
 #define SUBCMD60_UNKNOW_57                     0x57
 #define SUBCMD60_LOBBY_ACT                     0x58
 #define SUBCMD60_ITEM_DELETE_IN_MAP            0x59    /* Sent by leader when item picked up */
-#define SUBCMD60_UNKNOW_5A                     0x5A
+#define SUBCMD60_PICK_UP_ITEM                  0x5A
 
 // 6x5B: Invalid subcommand
 #define SUBCMD60_UNKNOW_5B                     0x5B
