@@ -93,7 +93,7 @@ inline void testl(const char* message) {
 }
 
 void print_ascii_hex(void (*print_method)(const char*), const void* data, size_t length) {
-	if (data == NULL || length == 0 || length > 65536) {
+	if (data == NULL || length == 0 || length > MAX_TMP_BUFF) {
 		ERR_LOG("空指针数据包或无效长度 %d 数据包.", length);
 		return;
 	}
@@ -670,7 +670,7 @@ void flog_err(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t
 void flog_debug(const char* func, int32_t codeline, uint32_t consoleshow, uint32_t files_num, const char* fmt, ...)
 {
 	va_list args;
-	char mes[65536] = { 0 };
+	char mes[MAX_TMP_BUFF] = { 0 };
 	//char headermes[128] = { 0 };
 	//char text[4096] = { 0 };
 	SYSTEMTIME rawtime;

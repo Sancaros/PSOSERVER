@@ -5844,7 +5844,7 @@ static ssize_t ship_recv(ship_t* c, void* buffer, size_t len) {
 
 /* Retrieve the thread-specific recvbuf for the current thread. */
 uint8_t* get_sg_recvbuf(void) {
-    uint8_t* recvbuf = (uint8_t*)malloc(65536);
+    uint8_t* recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
     if (!recvbuf) {
         ERR_LOG("malloc");
@@ -5852,7 +5852,7 @@ uint8_t* get_sg_recvbuf(void) {
         return NULL;
     }
 
-    memset(recvbuf, 0, 65536);
+    memset(recvbuf, 0, MAX_PACKET_BUFF);
 
     return recvbuf;
 }

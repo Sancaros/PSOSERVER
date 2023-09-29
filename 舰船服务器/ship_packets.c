@@ -307,26 +307,6 @@ int crypt_send(ship_client_t *c, int len, uint8_t *sendbuf) {
     return send_raw(c, len, sendbuf);
 }
 
-///* 获取普通的 sendbuf 内存空间. */
-//uint8_t* get_normal_sendbuf() {
-//    uint8_t* sendbuf = (uint8_t*)malloc(65536);
-//
-//    if (!sendbuf) {
-//        perror("malloc");
-//        return NULL;
-//    }
-//
-//    if (pthread_setspecific(sendbuf_key, sendbuf)) {
-//        perror("pthread_setspecific");
-//        free_safe(sendbuf);
-//        return NULL;
-//    }
-//
-//    memset(sendbuf, 0, 65536);
-//
-//    return sendbuf;
-//}
-
 /* 获取当前线程的 sendbuf 线程特定内存空间. */
 uint8_t *get_sendbuf() {
     uint8_t *sendbuf = (uint8_t *)pthread_getspecific(sendbuf_key);
@@ -334,7 +314,7 @@ uint8_t *get_sendbuf() {
     /* If we haven't initialized the sendbuf pointer yet for this thread, then
        we need to do that now. */
     if(!sendbuf) {
-        sendbuf = (uint8_t *)malloc(65536);
+        sendbuf = (uint8_t *)malloc(MAX_TMP_BUFF);
 
         if(!sendbuf) {
             ERR_LOG("malloc");
@@ -342,13 +322,13 @@ uint8_t *get_sendbuf() {
             return NULL;
         }
 
+        memset(sendbuf, 0, MAX_TMP_BUFF);
+
         if(pthread_setspecific(sendbuf_key, sendbuf)) {
             ERR_LOG("pthread_setspecific");
             free_safe(sendbuf);
             return NULL;
         }
-
-        memset(sendbuf, 0, 65536);
     }
 
     return sendbuf;

@@ -731,7 +731,7 @@ int client_process_pkt(ship_client_t* c) {
         }
 
         /* Attempt to read, and if we don't get anything, punt. */
-        sz = recv(c->sock, recvbuf + c->recvbuf_cur, 65536 - c->recvbuf_cur, 0);
+        sz = recv(c->sock, recvbuf + c->recvbuf_cur, MAX_TMP_BUFF - c->recvbuf_cur, 0);
 
         //TEST_LOG("客户端接收端口 %d 接收数据 = %d 字节 版本识别 = %d", c->sock, sz, c->version);
 
@@ -873,14 +873,18 @@ uint8_t* get_recvbuf(void) {
     /* If we haven't initialized the recvbuf pointer yet for this thread, then
        we need to do that now. */
     if (!recvbuf) {
-        recvbuf = (uint8_t*)malloc(65536);
+        recvbuf = (uint8_t*)malloc(MAX_PACKET_BUFF);
 
         if (!recvbuf) {
+            ERR_LOG("malloc");
             perror("malloc");
             return NULL;
         }
 
+        memset(recvbuf, 0, MAX_PACKET_BUFF);
+
         if (pthread_setspecific(recvbuf_key, recvbuf)) {
+            ERR_LOG("pthread_setspecific");
             perror("pthread_setspecific");
             free_safe(recvbuf);
             return NULL;
