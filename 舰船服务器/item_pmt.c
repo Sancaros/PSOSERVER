@@ -2323,6 +2323,18 @@ uint8_t pmt_lookup_stars_gc(uint32_t code) {
     return (uint8_t)-1;
 }
 
+bool pmt_dynamics_read_bb(ship_t* ship) {
+    if (pmt_read_bb(ship->cfg->bb_pmtdata_file,
+        !(ship->cfg->local_flags & PSOCN_SHIP_PMT_LIMITBB))) {
+        ERR_LOG("无法读取 Blue Burst ItemPMT 文件: %s"
+            , ship->cfg->bb_pmtdata_file);
+        ship->cfg->shipgate_flags |= SHIPGATE_FLAG_NOBB;
+        return false;
+    }
+
+    return true;
+}
+
 int pmt_lookup_weapon_bb(uint32_t code, pmt_weapon_bb_t *rv) {
     uint8_t parts[4] = { 0 };
 

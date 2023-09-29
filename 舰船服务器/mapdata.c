@@ -801,13 +801,14 @@ bool updateEnemyRareness(RareEnemyRates* rare_rates, int* rare_enemy_indexes, si
 
 static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     int ep, int alt, int area, sfmt_t* sfmt) {
-    int i, j;
-    game_enemy_t* gen;
-    game_rare_enemy_t rare_gen = { 0 };
-    void* tmp;
+    int i = 0, j = 0;
+    game_enemy_t* gen = NULL;
+    uint32_t rare_enemy_count = 0;
+    uint16_t rare_enemy_data[0x10] = { 0 };
+    void* tmp = NULL;
     uint32_t count = 0;
-    uint16_t n_clones;
-    int acc;
+    uint16_t n_clones = 0;
+    int acc = 0;
     bool rare_monster = false;
 
     /* Allocate the space first */
@@ -820,8 +821,8 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     memset(gen, 0, sizeof(game_enemy_t) * 0xB50);
 
     /* 初始化稀有怪物的数据 */
-    for (i = 0; i < ARRAYSIZE(rare_gen.rare_monster_data); i++)
-        rare_gen.rare_monster_data[i] = 0xFFFF;
+    for (i = 0; i < 0x10; i++)
+        rare_enemy_data[i] = LE16(0xFFFF);
 
     /* Parse each enemy. */
     for (i = 0; i < en_ct; ++i) {
@@ -835,9 +836,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.hildeblue)*/) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -851,9 +853,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = me.skin & 0x01;
             if (acc)
                 rare_monster = true;
-            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.rappy)*/) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -918,6 +921,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0043:    /* Savage Wolf & Barbarous Wolf */
             acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
+                rare_monster = true;
+            if (rare_monster)
+                acc = 1;
             gen[count].bp_entry = 0x02 + acc;
             gen[count].rt_index = 0x07 + acc;
             break;
@@ -937,10 +945,11 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             rare_monster = false;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
-                rare_monster = 1;
-            else if ((rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            else if ((rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)*/) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (ep == 2 && alt) {
@@ -948,7 +957,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 gen[count].rt_index = 0x53;
             }
             else {
-                acc = (me.rare_rate & 0x800000) ? 1 : 0;
+                acc = (me.rare_rate & default_rare_rates.nar_lily) ? 1 : 0;
                 if (rare_monster)
                     acc = 1;
                 gen[count].bp_entry = 0x04 + acc;
@@ -969,13 +978,14 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0064:    /* Slime + 4 clones */
             rare_monster = false;
-            acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            acc = (me.rare_rate & default_rare_rates.pouilly_slime) ? 1 : 0;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
-                rare_monster = 1;
-            else if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+                rare_monster = true;
+            else if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)*/) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -987,9 +997,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 ++count;
                 gen[count].area = area;
                 rare_monster = false;
-                if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.nar_lily)) {
-                    rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                    rare_gen.rare_monster_index++;
+                if (!acc && (rare_enemy_count < 0x10)/* && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pouilly_slime)*/) {
+                    rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                    //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                    rare_enemy_count++;
                     rare_monster = true;
                 }
                 if (rare_monster)
@@ -1024,7 +1035,7 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
             acc = (me.rare_rate & 0x800000) ? 1 : 0;
             if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
                 ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
-                rare_monster = 1;
+                rare_monster = true;
             if (rare_monster)
                 acc = 1;
             if (acc) {
@@ -1300,6 +1311,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
 
         case 0x0111:    /* Satellite Lizard & Yowie */
             acc = (me.rare_rate & 0x800000) ? 1 : 0;
+            rare_monster = false;
+            if (((me.rareratio - FLOAT_PRECISION) < (float)1.00000) &&
+                ((me.rareratio + FLOAT_PRECISION) > (float)1.00000)) // set rare?
+                rare_monster = true;
+            if (rare_monster)
+                acc = 1;
             if (alt)
                 gen[count].bp_entry = 0x0D + acc + 0x10;
             else
@@ -1311,9 +1328,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0112:    /* Merissa A/AA */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.merissa_aa)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.merissa_aa)) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -1330,9 +1348,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0114:    /* Zu & Pazuzu */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pazuzu)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.pazuzu)) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -1357,9 +1376,10 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
         case 0x0116:    /* Dorphon & Eclair */
             acc = me.skin & 0x01;
             rare_monster = false;
-            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.dorphon_eclair)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.dorphon_eclair)) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
             if (rare_monster)
@@ -1379,25 +1399,26 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
                 gen[count].rt_index = 0x0E;
             break;
 
-        case 0x119: /* Saint Million, Shambertin, & Kondrieu */
+        case 0x0119: /* Saint Million, Shambertin, & Kondrieu */
             acc = me.skin & 0x01;
             gen[count].bp_entry = 0x22;
 
             rare_monster = false;
-            if (!acc && (rare_gen.rare_monster_index < 0x1E) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.kondrieu)) {
-                rare_gen.rare_monster_data[rare_gen.rare_monster_index] = (uint16_t)count;
-                rare_gen.rare_monster_index++;
+            if (!acc && (rare_enemy_count < 0x10) && (sfmt_genrand_uint32(sfmt) < default_rare_rates.kondrieu)) {
+                rare_enemy_data[rare_enemy_count] = (uint16_t)count;
+                //DBG_LOG("rare_enemy_data[%d] = 0x%04X", rare_enemy_count, rare_enemy_data[rare_enemy_count]);
+                rare_enemy_count++;
                 rare_monster = true;
             }
 
-            if (me.rare_rate & 0x800000 || rare_monster)
+            if (me.rare_rate & default_rare_rates.kondrieu || rare_monster)
                 gen[count].rt_index = 0x15;
             else
                 gen[count].rt_index = 0x13 + acc;
             break;
 
         default:
-            gen[count].rt_index = me.base_type;
+            gen[count].rt_index = (uint8_t)me.base_type;
             gen[count].bp_entry = gen[count].rt_index;
 #ifdef VERBOSE_DEBUGGING1
             ERR_LOG("未知敌人 ID: %04X RT_ID: %04X SKIN: %04X NUM_CLONES: %04X", me.base_type, me.rt_index, me.skin, me.num_children);
@@ -1423,8 +1444,12 @@ static int parse_map(map_enemy_t* en, int en_ct, game_enemies_t* game,
     }
 
     game->enemies = (game_enemy_t*)tmp;
-    game->rare_enemies = rare_gen;
-    game->count = count;
+    game->enemy_count = count;
+    game->rare_enemy_count = rare_enemy_count;
+    for (size_t z = 0; z < 0x10; z++) {
+        game->rare_enemy_data[z] = rare_enemy_data[z];
+        //DBG_LOG("game->rare_enemy_data[%d] = 0x%04X", z, game->rare_enemy_data[z]);
+    }
 
     return 0;
 }
@@ -1459,23 +1484,23 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
     nvars = a->map_vars;
 
     if(!gcep) {
-        if (v2_parsed_maps[area].data) {
-#ifdef DEBUG
-            DBG_LOG("释放原有内存1，动态读取");
-#endif // DEBUG
-            v2_parsed_maps[area].map_count = 0;
-            v2_parsed_maps[area].variation_count = 0;
-            free_safe(v2_parsed_maps[area].data);
-        }
-
-        if (v2_parsed_objs[area].data) {
-#ifdef DEBUG
-            DBG_LOG("释放原有内存2，动态读取");
-#endif // DEBUG
-            v2_parsed_objs[area].map_count = 0;
-            v2_parsed_objs[area].variation_count = 0;
-            free_safe(v2_parsed_objs[area].data);
-        }
+//        if (v2_parsed_maps[area].data) {
+//#ifdef DEBUG
+//            DBG_LOG("释放原有内存1，动态读取");
+//#endif // DEBUG
+//            v2_parsed_maps[area].map_count = 0;
+//            v2_parsed_maps[area].variation_count = 0;
+//            free_safe(v2_parsed_maps[area].data);
+//        }
+//
+//        if (v2_parsed_objs[area].data) {
+//#ifdef DEBUG
+//            DBG_LOG("释放原有内存2，动态读取");
+//#endif // DEBUG
+//            v2_parsed_objs[area].map_count = 0;
+//            v2_parsed_objs[area].variation_count = 0;
+//            free_safe(v2_parsed_objs[area].data);
+//        }
 
         v2_parsed_maps[area].map_count = nmaps;
         v2_parsed_maps[area].variation_count = nvars;
@@ -1483,23 +1508,23 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
         v2_parsed_objs[area].variation_count = nvars;
     }
     else {
-        if (gc_parsed_maps[gcep - 1][area].data) {
-#ifdef DEBUG
-            DBG_LOG("释放原有内存1，动态读取");
-#endif // DEBUG
-            gc_parsed_maps[gcep - 1][area].map_count = 0;
-            gc_parsed_maps[gcep - 1][area].variation_count = 0;
-            free_safe(gc_parsed_maps[gcep - 1][area].data);
-        }
-
-        if (gc_parsed_objs[gcep - 1][area].data) {
-#ifdef DEBUG
-            DBG_LOG("释放原有内存2，动态读取");
-#endif // DEBUG
-            gc_parsed_objs[gcep - 1][area].map_count = 0;
-            gc_parsed_objs[gcep - 1][area].variation_count = 0;
-            free_safe(gc_parsed_objs[gcep - 1][area].data);
-        }
+//        if (gc_parsed_maps[gcep - 1][area].data) {
+//#ifdef DEBUG
+//            DBG_LOG("释放原有内存1，动态读取");
+//#endif // DEBUG
+//            gc_parsed_maps[gcep - 1][area].map_count = 0;
+//            gc_parsed_maps[gcep - 1][area].variation_count = 0;
+//            free_safe(gc_parsed_maps[gcep - 1][area].data);
+//        }
+//
+//        if (gc_parsed_objs[gcep - 1][area].data) {
+//#ifdef DEBUG
+//            DBG_LOG("释放原有内存2，动态读取");
+//#endif // DEBUG
+//            gc_parsed_objs[gcep - 1][area].map_count = 0;
+//            gc_parsed_objs[gcep - 1][area].variation_count = 0;
+//            free_safe(gc_parsed_objs[gcep - 1][area].data);
+//        }
 
         gc_parsed_maps[gcep - 1][area].map_count = nmaps;
         gc_parsed_maps[gcep - 1][area].variation_count = nvars;
@@ -1514,9 +1539,9 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
     }
 
     if(!gcep)
-        v2_parsed_maps[area].data = tmp;
+        v2_parsed_maps[area].gen_data = tmp;
     else
-        gc_parsed_maps[gcep - 1][area].data = tmp;
+        gc_parsed_maps[gcep - 1][area].gen_data = tmp;
 
     if(!(tmp2 = (game_objs_t *)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
         ERR_LOG("内存空间分配错误 objs: %s", strerror(errno));
@@ -1524,13 +1549,15 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
     }
 
     if(!gcep)
-        v2_parsed_objs[area].data = tmp2;
+        v2_parsed_objs[area].gobj_data = tmp2;
     else
-        gc_parsed_objs[gcep - 1][area].data = tmp2;
+        gc_parsed_objs[gcep - 1][area].gobj_data = tmp2;
 
     for(k = 0; k < nmaps; ++k) {                /* 地图编号 */
         for(l = 0; l < nvars; ++l) {            /* 变化 */
-            tmp[k * nvars + l].count = 0;
+            tmp[k * nvars + l].enemy_count = 0;
+
+            fp = NULL;
 
             snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
             if (a->map_num[k] != -1) {
@@ -1727,13 +1754,13 @@ static int read_v2_map_set(int gcep, int area, char* dir) {
 
             /* Store what we'll actually use later... */
             for(i = 0; i < sz / 0x44; ++i) {
-                gobj[i].data = obj[i];
+                gobj[i].mobj_data = obj[i];
                 gobj[i].flags = 0;
                 gobj[i].area = area;
             }
 
             /* Save it into the struct */
-            tmp2[k * nvars + l].count = sz / 0x44;
+            tmp2[k * nvars + l].obj_count = sz / 0x44;
             tmp2[k * nvars + l].objs = gobj;
 
             free_safe(obj);
@@ -1765,23 +1792,23 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
     nmaps = a->map_nums;
     nvars = a->map_vars;
 
-    if (bb_parsed_maps[solo][episode][area].data) {
-#ifdef DEBUG
-        DBG_LOG("释放原有内存1，动态读取");
-#endif // DEBUG
-        bb_parsed_maps[solo][episode][area].map_count = 0;
-        bb_parsed_maps[solo][episode][area].variation_count = 0;
-        free_safe(bb_parsed_maps[solo][episode][area].data);
-    }
-
-    if (bb_parsed_objs[solo][episode][area].data) {
-#ifdef DEBUG
-        DBG_LOG("释放原有内存2，动态读取");
-#endif // DEBUG
-        bb_parsed_objs[solo][episode][area].map_count = 0;
-        bb_parsed_objs[solo][episode][area].variation_count = 0;
-        free_safe(bb_parsed_objs[solo][episode][area].data);
-    }
+//    if (bb_parsed_maps[solo][episode][area].data) {
+//#ifdef DEBUG
+//        DBG_LOG("释放原有内存1，动态读取");
+//#endif // DEBUG
+//        bb_parsed_maps[solo][episode][area].map_count = 0;
+//        bb_parsed_maps[solo][episode][area].variation_count = 0;
+//        free_safe(bb_parsed_maps[solo][episode][area].data);
+//    }
+//
+//    if (bb_parsed_objs[solo][episode][area].data) {
+//#ifdef DEBUG
+//        DBG_LOG("释放原有内存2，动态读取");
+//#endif // DEBUG
+//        bb_parsed_objs[solo][episode][area].map_count = 0;
+//        bb_parsed_objs[solo][episode][area].variation_count = 0;
+//        free_safe(bb_parsed_objs[solo][episode][area].data);
+//    }
 
     bb_parsed_maps[solo][episode][area].map_count = nmaps;
     bb_parsed_maps[solo][episode][area].variation_count = nvars;
@@ -1796,18 +1823,19 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
         return 10;
     }
 
-    bb_parsed_maps[solo][episode][area].data = tmp;
+    bb_parsed_maps[solo][episode][area].gen_data = tmp;
 
     if (!(tmp2 = (game_objs_t*)malloc(sizeof(game_objs_t) * nmaps * nvars))) {
         ERR_LOG("内存空间分配错误 bbobjs: %s", strerror(errno));
         return 11;
     }
 
-    bb_parsed_objs[solo][episode][area].data = tmp2;
+    bb_parsed_objs[solo][episode][area].gobj_data = tmp2;
 
     for (k = 0; k < nmaps; ++k) {                /* 地图编号 */
         for (l = 0; l < nvars; ++l) {            /* 变化 */
-            tmp[k * nvars + l].count = 0;
+            tmp[k * nvars + l].enemy_count = 0;
+
             fp = NULL;
 
             snprintf(fn2, 256, "%s\\map_%s", dir, a->name_token);
@@ -2009,13 +2037,13 @@ static int read_bb_map_set(int solo, int episode, int area, char* dir) {
 
             /* Store what we'll actually use later... */
             for (m = 0; m < sz / 0x44; ++m) {
-                gobj[m].data = obj[m];
+                gobj[m].mobj_data = obj[m];
                 gobj[m].flags = 0;
                 gobj[m].area = area;
             }
 
             /* Save it into the struct */
-            tmp2[k * nvars + l].count = sz / 0x44;
+            tmp2[k * nvars + l].obj_count = sz / 0x44;
             tmp2[k * nvars + l].objs = gobj;
 
             free_safe(obj);
@@ -2262,17 +2290,17 @@ void v2_free_params(void) {
         nmaps = m->map_count * m->variation_count;
 
         for(l = 0; l < nmaps; ++l) {
-            free_safe(m->data[l].enemies);
-            free_safe(o->data[l].objs);
+            free_safe(m->gen_data[l].enemies);
+            free_safe(o->gobj_data[l].objs);
         }
 
-        if (m->data)
-            free_safe(m->data);
-        if (o->data)
-            free_safe(o->data);
-        m->data = NULL;
+        if (m->gen_data)
+            free_safe(m->gen_data);
+        if (o->gobj_data)
+            free_safe(o->gobj_data);
+        m->gen_data = NULL;
         m->map_count = m->variation_count = 0;
-        o->data = NULL;
+        o->gobj_data = NULL;
         o->map_count = o->variation_count = 0;
     }
 }
@@ -2290,17 +2318,17 @@ void gc_free_params(void) {
             nmaps = m->map_count * m->variation_count;
 
             for(l = 0; l < nmaps; ++l) {
-                free_safe(m->data[l].enemies);
-                free_safe(o->data[l].objs);
+                free_safe(m->gen_data[l].enemies);
+                free_safe(o->gobj_data[l].objs);
             }
 
-            if (m->data)
-                free_safe(m->data);
-            if (o->data)
-                free_safe(o->data);
-            m->data = NULL;
+            if (m->gen_data)
+                free_safe(m->gen_data);
+            if (o->gobj_data)
+                free_safe(o->gobj_data);
+            m->gen_data = NULL;
             m->map_count = m->variation_count = 0;
-            o->data = NULL;
+            o->gobj_data = NULL;
             o->map_count = o->variation_count = 0;
         }
     }
@@ -2320,17 +2348,17 @@ void bb_free_params(void) {
                 nmaps = m->map_count * m->variation_count;
 
                 for (l = 0; l < nmaps; ++l) {
-                    free_safe(m->data[l].enemies);
-                    free_safe(o->data[l].objs);
+                    free_safe(m->gen_data[l].enemies);
+                    free_safe(o->gobj_data[l].objs);
                 }
 
-                if (m->data)
-                    free_safe(m->data);
-                if (o->data)
-                    free_safe(o->data);
-                m->data = NULL;
+                if (m->gen_data)
+                    free_safe(m->gen_data);
+                if (o->gobj_data)
+                    free_safe(o->gobj_data);
+                m->gen_data = NULL;
                 m->map_count = m->variation_count = 0;
-                o->data = NULL;
+                o->gobj_data = NULL;
                 o->map_count = o->variation_count = 0;
             }
         }
@@ -2377,10 +2405,10 @@ int v2_load_game_enemies(lobby_t *l) {
         }
 
         index = l->maps[i] * maps->variation_count + l->maps[i + 1];
-        enemies += maps->data[index].count;
-        objects += objs->data[index].count;
-        sets[i >> 1] = &maps->data[index];
-        osets[i >> 1] = &objs->data[index];
+        enemies += maps->gen_data[index].enemy_count;
+        objects += objs->gobj_data[index].obj_count;
+        sets[i >> 1] = &maps->gen_data[index];
+        osets[i >> 1] = &objs->gobj_data[index];
     }
 
     /* Allocate space for the enemy set and the enemies therein. */
@@ -2411,8 +2439,8 @@ int v2_load_game_enemies(lobby_t *l) {
         return -5;
     }
 
-    en->count = enemies;
-    ob->count = objects;
+    en->enemy_count = enemies;
+    ob->obj_count = objects;
     index = index2 = 0;
 
     /* Copy in the enemy data. */
@@ -2421,17 +2449,17 @@ int v2_load_game_enemies(lobby_t *l) {
             break;
 
         memcpy(&en->enemies[index], sets[i]->enemies,
-               sizeof(game_enemy_t) * sets[i]->count);
-        index += sets[i]->count;
+               sizeof(game_enemy_t) * sets[i]->enemy_count);
+        index += sets[i]->enemy_count;
 
         memcpy(&ob->objs[index2], osets[i]->objs,
-               sizeof(game_object_t) * osets[i]->count);
-        index2 += osets[i]->count;
+               sizeof(game_object_t) * osets[i]->obj_count);
+        index2 += osets[i]->obj_count;
     }
 
     /* Fixup Dark Falz' data for difficulties other than normal... */
     if(l->difficulty) {
-        for(i = 0; i < (int)en->count; ++i) {
+        for(i = 0; i < (int)en->enemy_count; ++i) {
             if(en->enemies[i].bp_entry == 0x37) {
                 en->enemies[i].bp_entry = 0x38;
             }
@@ -2484,10 +2512,10 @@ int gc_load_game_enemies(lobby_t *l) {
         }
 
         index = l->maps[i] * maps->variation_count + l->maps[i + 1];
-        enemies += maps->data[index].count;
-        objects += objs->data[index].count;
-        sets[i >> 1] = &maps->data[index];
-        osets[i >> 1] = &objs->data[index];
+        enemies += maps->gen_data[index].enemy_count;
+        objects += objs->gobj_data[index].obj_count;
+        sets[i >> 1] = &maps->gen_data[index];
+        osets[i >> 1] = &objs->gobj_data[index];
     }
 
     /* Allocate space for the enemy set and the enemies therein. */
@@ -2518,8 +2546,8 @@ int gc_load_game_enemies(lobby_t *l) {
         return -5;
     }
 
-    en->count = enemies;
-    ob->count = objects;
+    en->enemy_count = enemies;
+    ob->obj_count = objects;
     index = index2 = 0;
 
     /* Copy in the enemy data. */
@@ -2528,17 +2556,17 @@ int gc_load_game_enemies(lobby_t *l) {
             break;
 
         memcpy(&en->enemies[index], sets[i]->enemies,
-               sizeof(game_enemy_t) * sets[i]->count);
-        index += sets[i]->count;
+               sizeof(game_enemy_t) * sets[i]->enemy_count);
+        index += sets[i]->enemy_count;
 
         memcpy(&ob->objs[index2], osets[i]->objs,
-               sizeof(game_object_t) * osets[i]->count);
-        index2 += osets[i]->count;
+               sizeof(game_object_t) * osets[i]->obj_count);
+        index2 += osets[i]->obj_count;
     }
 
     /* Fixup Dark Falz' data for difficulties other than normal and the special
        Rappy data too... */
-    for(i = 0; i < (int)en->count; ++i) {
+    for(i = 0; i < (int)en->enemy_count; ++i) {
         if(en->enemies[i].bp_entry == 0x37 && l->difficulty) {
             en->enemies[i].bp_entry = 0x38;
         }
@@ -2571,11 +2599,12 @@ int bb_load_game_enemies(lobby_t* l) {
     game_objs_t* ob;
     int solo = (l->flags & LOBBY_FLAG_SINGLEPLAYER) ? 1 : 0;
     size_t i = 0;
-    uint32_t enemies = 0, index, objects = 0, index2;
+    uint32_t enemies = 0, rare_enemies = 0, index, objects = 0, index2;
     parsed_map_t* maps;
     parsed_objs_t* objs;
     game_enemies_t* sets[0x10] = { 0 };
     game_objs_t* osets[0x10] = { 0 };
+    uint16_t rare_enemy_data[0x10] = { 0 };
 
     /* Figure out the parameter set that will be in use first... */
     l->bb_params = battle_params[solo][l->episode - 1][l->difficulty];
@@ -2613,10 +2642,12 @@ int bb_load_game_enemies(lobby_t* l) {
         }
 
         index = l->maps[i] * maps->variation_count + l->maps[i + 1];
-        enemies += maps->data[index].count;
-        objects += objs->data[index].count;
-        sets[i >> 1] = &maps->data[index];
-        osets[i >> 1] = &objs->data[index];
+        enemies += maps->gen_data[index].enemy_count;
+        rare_enemies += maps->gen_data[index].rare_enemy_count;
+        objects += objs->gobj_data[index].obj_count;
+        sets[i >> 1] = &maps->gen_data[index];
+        osets[i >> 1] = &objs->gobj_data[index];
+        rare_enemy_data[i >> 1] = maps->gen_data[index].rare_enemy_data[i >> 1];
     }
 
     /* Allocate space for the enemy set and the enemies therein. */
@@ -2647,8 +2678,9 @@ int bb_load_game_enemies(lobby_t* l) {
         return -5;
     }
 
-    en->count = enemies;
-    ob->count = objects;
+    en->enemy_count = enemies;
+    en->rare_enemy_count = rare_enemies;
+    ob->obj_count = objects;
     index = index2 = 0;
 
     /* Copy in the enemy data. */
@@ -2657,17 +2689,17 @@ int bb_load_game_enemies(lobby_t* l) {
             break;
 
         memcpy(&en->enemies[index], sets[i]->enemies,
-            sizeof(game_enemy_t) * sets[i]->count);
-        index += sets[i]->count;
+            sizeof(game_enemy_t) * sets[i]->enemy_count);
+        index += sets[i]->enemy_count;
         memcpy(&ob->objs[index2], osets[i]->objs,
-            sizeof(game_object_t) * osets[i]->count);
-        index2 += osets[i]->count;
+            sizeof(game_object_t) * osets[i]->obj_count);
+        index2 += osets[i]->obj_count;
     }
 
     /* Fixup Dark Falz' data for difficulties other than normal and the special
        Rappy data too...
        修正除正常数据和特殊Rappy数据之外的其他困难的Dark Falz数据*/
-    for (i = 0; i < en->count; ++i) {
+    for (i = 0; i < en->enemy_count; ++i) {
         if (en->enemies[i].bp_entry == 0x37 && l->difficulty) {
             en->enemies[i].bp_entry = 0x38;
         }
@@ -2691,6 +2723,15 @@ int bb_load_game_enemies(lobby_t* l) {
 
     /* Done! */
     l->map_enemies = en;
+    for (size_t z = 0; z < 0x10; z++) {
+        //if (l->map_enemies->rare_enemies->rare_monster_data[z] != 0xFFFF)
+        l->rare_enemy_data[z] = rare_enemy_data[z];
+#ifdef DEBUG
+
+        DBG_LOG("l->rare_monster_data[%d] = 0x%04X", z, l->rare_enemy_data[z]);
+
+#endif // DEBUG
+    }
     l->map_objs = ob;
     return 0;
 }
@@ -2862,7 +2903,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                 return -4;
             }
 
-            sz = tmp_en.count * sizeof(game_enemy_t);
+            sz = tmp_en.enemy_count * sizeof(game_enemy_t);
             if(fwrite(tmp_en.enemies, 1, sz, fp) != sz) {
                 ERR_LOG("无法写入缓存文件 \"%s\": %s", ofn,
                       strerror(errno));
@@ -2871,7 +2912,7 @@ int cache_quest_enemies(const char *ofn, const uint8_t *dat, uint32_t sz,
                 return -5;
             }
 
-            index += tmp_en.count;
+            index += tmp_en.enemy_count;
             free_safe(tmp_en.enemies);
         }
     }
@@ -2966,7 +3007,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     memset(newob, 0, sizeof(game_objs_t));
 
     /* Allocate the objects array. */
-    newob->count = cnt = LE32(cnt);
+    newob->obj_count = cnt = LE32(cnt);
     if(!(tmp = malloc(cnt * sizeof(game_object_t)))) {
         ERR_LOG("无法为任务分配实例数组内存: %s",
               strerror(errno));
@@ -2983,7 +3024,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
 
     /* Read the objects in from the cache file. */
     for(i = 0; i < cnt; ++i) {
-        if((amt = fread(&newob->objs[i].data, 1, sizeof(map_object_t),
+        if((amt = fread(&newob->objs[i].mobj_data, 1, sizeof(map_object_t),
                         fp)) != sizeof(map_object_t)) {
 #ifdef DEBUG
 
@@ -3024,7 +3065,7 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     }
 
     /* Allocate the enemies array. */
-    newen->count = cnt = LE32(cnt);
+    newen->enemy_count = cnt = LE32(cnt);
     if(!(tmp = malloc(cnt * sizeof(game_enemy_t)))) {
         ERR_LOG("无法为任务分配敌人数组内存: %s",
               strerror(errno));
@@ -3044,8 +3085,8 @@ int load_quest_enemies(lobby_t *l, uint32_t qid, int ver) {
     if(fread(newen->enemies, sizeof(game_enemy_t), cnt, fp) != cnt) {
         ERR_LOG("无法读取地图缓存: %s", strerror(errno));
         ERR_LOG("任务 ID: %" PRIu32 " 版本: %d", qid, ver);
-        ERR_LOG("对象数量: %" PRIu32 "", newob->count);
-        ERR_LOG("敌人数量: %" PRIu32 "", newen->count);
+        ERR_LOG("对象数量: %" PRIu32 "", newob->obj_count);
+        ERR_LOG("敌人数量: %" PRIu32 "", newen->enemy_count);
         free_safe(newen->enemies);
         free_safe(newob->objs);
         free_safe(newob);

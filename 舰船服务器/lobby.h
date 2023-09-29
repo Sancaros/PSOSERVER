@@ -173,8 +173,8 @@ struct lobby {
 
     game_enemies_t *map_enemies;
     game_objs_t *map_objs;
-    uint32_t rare_monster_index;
-    uint8_t rare_monster_data[0x20];
+    uint32_t rare_enemy_count;
+    uint16_t rare_enemy_data[0x10];
     bb_battle_param_t *bb_params;
 
     int num_mtypes;

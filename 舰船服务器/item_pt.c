@@ -2570,7 +2570,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 
 	/* Make sure the enemy's id is sane... */
 	mid = LE16(req->request_id);
-	if (mid > l->map_enemies->count) {
+	if (mid > l->map_enemies->enemy_count) {
 #ifdef DEBUG
 		ITEM_LOG("GC %" PRIu32 " requested v2 drop for invalid "
 			"enemy (%d -- max: %d, quest=%" PRIu32 ")!", c->guildcard,
@@ -2579,7 +2579,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 
 		LOG(l, "GC %" PRIu32 " requested v2 drop for invalid enemy (%d "
 			"-- max: %d, quest=%" PRIu32 ")!\n", c->guildcard, mid,
-			l->map_enemies->count, l->qid);
+			l->map_enemies->enemy_count, l->qid);
 		return -1;
 	}
 
@@ -2589,7 +2589,7 @@ int pt_generate_v2_drop(ship_client_t* c, lobby_t* l, void* r) {
 	LOG(l, "GC %" PRIu32 " requested v2 drop...\n"
 		"mid: %d (max: %d), pt: %d (%d), area: %d (%d), quest: %" PRIu32
 		"section: %d, difficulty: %d\n",
-		c->guildcard, mid, l->map_enemies->count, req->pt_index,
+		c->guildcard, mid, l->map_enemies->enemy_count, req->pt_index,
 		enemy->rt_index, area + 1, rarea, l->qid, section, l->difficulty);
 
 	if (enemy->drop_done) {
@@ -2832,7 +2832,7 @@ int pt_generate_v2_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
 	obj_id = LE16(req->request_id);
-	if (obj_id > l->map_objs->count) {
+	if (obj_id > l->map_objs->obj_count) {
 		ITEM_LOG("GC %u requested drop from invalid box",
 			c->guildcard);
 		return -1;
@@ -2843,7 +2843,7 @@ int pt_generate_v2_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 	if (gobj->flags & 0x00000001)
 		return 0;
 
-	obj = &gobj->data;
+	obj = &gobj->mobj_data;
 
 	/* Figure out the area we'll be worried with */
 	area = c->cur_area;
@@ -3199,7 +3199,7 @@ int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 	/* We only really need this separate for debugging... */
 	area = darea;
 
-	if (mid > l->map_enemies->count) {
+	if (mid > l->map_enemies->enemy_count) {
 #ifdef DEBUG
 		ITEM_LOG("GC %" PRIu32 " requested GC drop for invalid "
 			"enemy (%d -- max: %d, quest=%" PRIu32 ")!", c->guildcard, mid,
@@ -3209,7 +3209,7 @@ int pt_generate_gc_drop(ship_client_t* c, lobby_t* l, void* r) {
 		if (l->logfp) {
 			fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " requested GC "
 				"drop for invalid enemy (%d -- max: %d, quest=%" PRIu32
-				")!\n", c->guildcard, mid, l->map_enemies->count, l->qid);
+				")!\n", c->guildcard, mid, l->map_enemies->enemy_count, l->qid);
 		}
 
 		return -1;
@@ -3469,7 +3469,7 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
 	obj_id = LE16(req->request_id);
-	if (obj_id > l->map_objs->count) {
+	if (obj_id > l->map_objs->obj_count) {
 		ITEM_LOG("Guildard %u requested drop from invalid box",
 			c->guildcard);
 		return -1;
@@ -3486,7 +3486,7 @@ int pt_generate_gc_boxdrop(ship_client_t* c, lobby_t* l, void* r) {
 		return 0;
 	}
 
-	obj = &gobj->data;
+	obj = &gobj->mobj_data;
 
 	/* Figure out the area we'll be worried with */
 	area = darea = c->cur_area;
@@ -3836,9 +3836,9 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 
 	/* Make sure the enemy's id is sane... */
 	mid = LE16(req->entity_id);
-	if (mid > l->map_enemies->count) {
+	if (mid > l->map_enemies->enemy_count) {
 		ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", src->guildcard, mid,
-			l->map_enemies->count, l->qid);
+			l->map_enemies->enemy_count, l->qid);
 		return -1;
 	}
 
@@ -4065,7 +4065,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
 	obj_id = LE16(req->request_id);
-	if (obj_id > l->map_objs->count) {
+	if (obj_id > l->map_objs->obj_count) {
 		ITEM_LOG("GC %u 请求的箱子掉落无效",
 			src->guildcard);
 		return -1;
@@ -4076,7 +4076,7 @@ int pt_generate_bb_boxdrop(ship_client_t* src, lobby_t* l, void* r) {
 	if (gobj->flags & 0x00000001)
 		return 0;
 
-	obj = &gobj->data;
+	obj = &gobj->mobj_data;
 
 	/* Figure out the area we'll be worried with */
 	area = get_pt_data_area_bb(l->episode, src->cur_area);
@@ -4311,9 +4311,9 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 
 	/* Make sure the enemy's id is sane... */
 	mid = LE16(req->entity_id);
-	if (mid > l->map_enemies->count) {
+	if (mid > l->map_enemies->enemy_count) {
 		ITEM_LOG("GC %" PRIu32 " 请求无效敌人掉落 (%d -- max: %d, 任务=%" PRIu32 ")!", src->guildcard, mid,
-			l->map_enemies->count, l->qid);
+			l->map_enemies->enemy_count, l->qid);
 		return -1;
 	}
 
@@ -4518,7 +4518,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 
 	/* Grab the object ID and make sure its sane, then grab the object itself */
 	obj_id = LE16(req->entity_id);
-	if (obj_id > l->map_objs->count) {
+	if (obj_id > l->map_objs->obj_count) {
 		ITEM_LOG("GC %u 请求的箱子掉落无效",
 			src->guildcard);
 		return -1;
@@ -4531,7 +4531,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 		//return 0;
 	}
 
-	obj = &gobj->data;
+	obj = &gobj->mobj_data;
 
 	/* Figure out the area we'll be worried with */
 	area = get_pt_data_area_bb(l->episode, src->cur_area);

@@ -899,7 +899,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
         return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
     }
 
-    if (enemy_id2 > l->map_enemies->count) {
+    if (enemy_id2 > l->map_enemies->enemy_count) {
 #ifdef DEBUG
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!"
@@ -914,7 +914,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
         if (l->logfp) {
             fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: %d)!\n"
                 "章节: %d, 层级: %d, 地图: (%d, %d)\n", c->guildcard, enemy_id2,
-                l->map_enemies->count, l->episode, c->cur_area,
+                l->map_enemies->enemy_count, l->episode, c->cur_area,
                 l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
 
             if ((l->flags & LOBBY_FLAG_QUESTING))
@@ -935,7 +935,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
             return send_lobby_mhit(l, c, enemy_id2, enemy_id, dmg, flags);
 
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
-            "%d)!", c->guildcard, enemy_id2, l->map_enemies->count);
+            "%d)!", c->guildcard, enemy_id2, l->map_enemies->enemy_count);
         return -1;
     }
 
@@ -957,7 +957,7 @@ static int handle_bb_mhit2(ship_client_t* c, subcmd_bb_mhit_pkt_t* pkt) {
         !(l->flags & LOBBY_FLAG_QUESTING)) {
         fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " 在无效区域攻击了怪物 "
             "(%d -- 地图怪物数量: %d)!\n 章节: %d, 区域: %d, 敌人数据区域: %d "
-            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->count,
+            "地图: (%d, %d)", c->guildcard, enemy_id2, l->map_enemies->enemy_count,
             l->episode, c->cur_area, l->map_enemies->enemies[enemy_id2].area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
     }
@@ -1054,7 +1054,7 @@ static int handle_mhit(ship_client_t* c, subcmd_mhit_pkt_t* pkt) {
     }
 
     /* Make sure the enemy is in range. */
-    if (mid > l->map_enemies->count) {
+    if (mid > l->map_enemies->enemy_count) {
 #ifdef DEBUG
         ERR_LOG("GC %" PRIu32 " hit invalid enemy (%d -- max: "
             "%d)!\n"
@@ -1070,7 +1070,7 @@ static int handle_mhit(ship_client_t* c, subcmd_mhit_pkt_t* pkt) {
             fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " hit invalid "
                 "enemy (%d -- max: %d)!\n"
                 "Episode: %d, Floor: %d, Map: (%d, %d)\n", c->guildcard, mid,
-                l->map_enemies->count, l->episode, c->cur_area,
+                l->map_enemies->enemy_count, l->episode, c->cur_area,
                 l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
 
             if ((l->flags & LOBBY_FLAG_QUESTING))
@@ -1111,7 +1111,7 @@ static int handle_mhit(ship_client_t* c, subcmd_mhit_pkt_t* pkt) {
         !(l->flags & LOBBY_FLAG_QUESTING)) {
         fdebug(l->logfp, DBG_WARN, "GC %" PRIu32 " hit enemy in wrong "
             "area (%d -- max: %d)!\n Episode: %d, Area: %d, Enemy Area: %d "
-            "Map: (%d, %d)", c->guildcard, mid, l->map_enemies->count,
+            "Map: (%d, %d)", c->guildcard, mid, l->map_enemies->enemy_count,
             l->episode, c->cur_area, l->map_enemies->enemies[mid].area,
             l->maps[c->cur_area << 1], l->maps[(c->cur_area << 1) + 1]);
     }
@@ -1169,11 +1169,11 @@ static void handle_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
         bid &= 0x0FFF;
 
         /* Make sure the object is in range. */
-        if (bid > l->map_objs->count) {
+        if (bid > l->map_objs->obj_count) {
             ERR_LOG("GC %" PRIu32 " hit invalid object "
                 "(%d -- max: %d)!\n"
                 "Episode: %d, Floor: %d, Map: (%d, %d)", c->guildcard,
-                bid, l->map_objs->count, l->episode, c->cur_area,
+                bid, l->map_objs->obj_count, l->episode, c->cur_area,
                 l->maps[c->cur_area << 1],
                 l->maps[(c->cur_area << 1) + 1]);
 
@@ -1191,7 +1191,7 @@ static void handle_objhit_common(ship_client_t* c, lobby_t* l, uint16_t bid) {
             return;
 
         /* Now, see if we care about the type of the object that was hit. */
-        obj_type = l->map_objs->objs[bid].data.base_type & 0xFFFF;
+        obj_type = l->map_objs->objs[bid].mobj_data.base_type & 0xFFFF;
 
         /* We'll probably want to do a bit more with this at some point, but
            for now this will do. */

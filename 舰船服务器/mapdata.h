@@ -179,17 +179,6 @@ typedef struct ObjectEntry {
     //}
 } PACKED ObjectEntry_t;
 
-typedef struct rare_enemy_rates {
-    uint32_t hildeblue; // HILDEBEAR -> HILDEBLUE
-    uint32_t rappy; // RAG_RAPPY -> {AL_RAPPY or seasonal rappies}; SAND_RAPPY -> DEL_RAPPY
-    uint32_t nar_lily; // POISON_LILY -> NAR_LILY
-    uint32_t pouilly_slime; // POFUILLY_SLIME -> POUILLY_SLIME
-    uint32_t merissa_aa; // MERISSA_A -> MERISSA_AA
-    uint32_t pazuzu; // ZU -> PAZUZU (and _ALT variants)
-    uint32_t dorphon_eclair; // DORPHON -> DORPHON_ECLAIR
-    uint32_t kondrieu; // {SAINT_MILLION, SHAMBERTIN} -> KONDRIEU
-} PACKED rare_enemy_rates_t;
-
 #ifndef _WIN32
 #else
 #pragma pack()
@@ -208,46 +197,48 @@ typedef struct PSOEnemy {
 /* Enemy data as used in the game. */
 typedef struct game_enemy {
     uint32_t bp_entry;
-    uint32_t rt_index;
+    uint8_t rt_index;
     uint8_t clients_hit;
     uint8_t last_client;
     uint8_t drop_done;
     uint8_t area;
 } game_enemy_t;
 
+/* Rare Enemy data as used in the game. */
 typedef struct game_rare_enemy {
-    uint32_t rare_monster_index;
-    uint16_t rare_monster_data[0x10];
+    uint32_t rare_enemy_count;
+    uint16_t rare_enemy_data;
 } game_rare_enemy_t;
 
 typedef struct game_enemies {
-    uint32_t count;
+    uint32_t enemy_count;
     game_enemy_t* enemies;
-    game_rare_enemy_t rare_enemies;
+    uint32_t rare_enemy_count;
+    uint16_t rare_enemy_data[0x10];
 } game_enemies_t;
 
 typedef struct parsed_map {
     uint32_t map_count;
     uint32_t variation_count;
-    game_enemies_t* data;
+    game_enemies_t* gen_data;
 } parsed_map_t;
 
 /* Object data as used in the game. */
 typedef struct game_object {
-    map_object_t data;
+    map_object_t mobj_data;
     uint32_t flags;
     uint8_t area;
 } game_object_t;
 
 typedef struct game_objects {
-    uint32_t count;
+    uint32_t obj_count;
     game_object_t* objs;
 } game_objs_t;
 
 typedef struct parsed_objects {
     uint32_t map_count;
     uint32_t variation_count;
-    game_objs_t* data;
+    game_objs_t* gobj_data;
 } parsed_objs_t;
 
 #undef PACKED

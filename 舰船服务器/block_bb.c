@@ -1297,8 +1297,8 @@ static int bb_process_done_burst(ship_client_t* c, bb_done_burst_pkt* pkt) {
         if (l->version == CLIENT_VERSION_BB) {
             /* TODO 解析稀有怪物列表 */
             if (l->map_enemies)
-                rv |= send_bb_rare_enemy_index_list(c, l->map_enemies->rare_enemies.rare_monster_data);
-            DBG_LOG("发送稀有怪物列表");
+                rv |= send_bb_rare_enemy_index_list(c, l->rare_enemy_data);
+            //DBG_LOG("发送稀有怪物列表");
 
             send_lobby_end_burst(l);
 
@@ -1342,7 +1342,9 @@ static int bb_process_done_quest_burst(ship_client_t* c, bb_done_quest_burst_pkt
 
     if (l->version == CLIENT_VERSION_BB) {
         /* TODO 解析稀有怪物列表 */
-        send_bb_rare_enemy_index_list(c, l->map_enemies->rare_enemies.rare_monster_data); //TODO 稀有怪物数据
+        if (l->map_enemies)
+            rv |= send_bb_rare_enemy_index_list(c, l->rare_enemy_data); //TODO 稀有怪物数据
+        //DBG_LOG("发送稀有怪物列表");
 
         send_lobby_end_burst(l);
 

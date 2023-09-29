@@ -181,11 +181,11 @@ static void handle_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid) {
         bid &= 0x0FFF;
 
         /* Make sure the object is in range. */
-        if (bid > l->map_objs->count) {
+        if (bid > l->map_objs->obj_count) {
             ERR_LOG("%s hit invalid object "
                 "(%d -- max: %d)!\n"
                 "Episode: %d, Floor: %d, Map: (%d, %d)", get_player_describe(src),
-                bid, l->map_objs->count, l->episode, src->cur_area,
+                bid, l->map_objs->obj_count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1],
                 l->maps[(src->cur_area << 1) + 1]);
 
@@ -203,7 +203,7 @@ static void handle_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid) {
             return;
 
         /* Now, see if we care about the type of the object that was hit. */
-        obj_type = l->map_objs->objs[bid].data.base_type & 0xFFFF;
+        obj_type = l->map_objs->objs[bid].mobj_data.base_type & 0xFFFF;
 
         /* We'll probably want to do a bit more with this at some point, but
            for now this will do. */
@@ -247,7 +247,7 @@ static void handle_bb_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid
         bid &= 0x0FFF;
 
         /* Make sure the object is in range. */
-        if (bid > l->map_objs->count) {
+        if (bid > l->map_objs->obj_count) {
 #ifdef DEBUG
 
             DBG_LOG("%s 攻击了无效的实例 "
@@ -278,7 +278,7 @@ static void handle_bb_objhit_common(ship_client_t* src, lobby_t* l, uint16_t bid
             return;
 
         /* Now, see if we care about the type of the object that was hit. */
-        obj_type = l->map_objs->objs[bid].data.base_type & 0xFFFF;
+        obj_type = l->map_objs->objs[bid].mobj_data.base_type & 0xFFFF;
 
         /* We'll probably want to do a bit more with this at some point, but
            for now this will do. */
@@ -592,7 +592,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
     }
 
     /* Make sure the enemy is in range. */
-    if (mid > l->map_enemies->count) {
+    if (mid > l->map_enemies->enemy_count) {
 #ifdef DEBUG
         ERR_LOG("%s hit invalid enemy (%d -- max: "
             "%d)!\n"
@@ -608,7 +608,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
             fdebug(l->logfp, DBG_WARN, "%s hit invalid "
                 "enemy (%d -- max: %d)!\n"
                 "Episode: %d, Floor: %d, Map: (%d, %d)\n", get_player_describe(src), mid,
-                l->map_enemies->count, l->episode, src->cur_area,
+                l->map_enemies->enemy_count, l->episode, src->cur_area,
                 l->maps[src->cur_area << 1], l->maps[(src->cur_area << 1) + 1]);
 
             if ((l->flags & LOBBY_FLAG_QUESTING))
@@ -649,7 +649,7 @@ static int sub60_0A_dc(ship_client_t* src, ship_client_t* dest,
         !(l->flags & LOBBY_FLAG_QUESTING)) {
         fdebug(l->logfp, DBG_WARN, "%s hit enemy in wrong "
             "area (%d -- max: %d)!\n Episode: %d, Area: %d, Enemy Area: %d "
-            "Map: (%d, %d)", get_player_describe(src), mid, l->map_enemies->count,
+            "Map: (%d, %d)", get_player_describe(src), mid, l->map_enemies->enemy_count,
             l->episode, src->cur_area, l->map_enemies->enemies[mid].area,
             l->maps[src->cur_area << 1], l->maps[(src->cur_area << 1) + 1]);
     }
@@ -721,7 +721,7 @@ static int sub60_0A_bb(ship_client_t* src, ship_client_t* dest,
     if (src->version == CLIENT_VERSION_GC)
         flags = SWAP32(flags);
 
-    if (enemy_id2 > l->map_enemies->count) {
+    if (enemy_id2 > l->map_enemies->enemy_count) {
 #ifdef DEBUG
         ERR_LOG("GC %" PRIu32 " 攻击了无效的怪物 (%d -- 地图怪物数量: "
             "%d)!", src->guildcard, enemy_id2, l->map_enemies->count);
@@ -6525,9 +6525,9 @@ static int sub60_C6_bb(ship_client_t* src, ship_client_t* dest,
             mid &= 0xFFF;
             //DBG_LOG("怪物编号新值 %02X map_enemies->count %02X", mid, l->map_enemies->count);
 
-            if (mid > l->map_enemies->count) {
+            if (mid > l->map_enemies->enemy_count) {
                 ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
-                    "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->count);
+                    "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->enemy_count);
                 return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
                 //return -1;
             }
@@ -6625,9 +6625,9 @@ static int sub60_C8_bb(ship_client_t* src, ship_client_t* dest,
     mid = LE16(pkt->enemy_id2);
     mid &= 0xFFF;
 
-    if (mid > l->map_enemies->count) {
+    if (mid > l->map_enemies->enemy_count) {
         ERR_LOG("GC %" PRIu32 " 杀掉了无效的敌人 (%d -- "
-            "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->count);
+            "敌人数量: %d)!", src->guildcard, mid, l->map_enemies->enemy_count);
         return subcmd_send_lobby_bb(l, src, (subcmd_bb_pkt_t*)pkt, 0);
         //return -1;
     }
