@@ -906,7 +906,7 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 			item.datab[2] = 难度;
 		}
 		else
-			item.datab[2] = (sfmt_genrand_uint32(随机因子) & 1) + 难度;
+			item.datab[2] = (sfmt_genrand_uint32(随机因子) & 2) + 难度;
 
 		/* 打磨值 0 - 10*/
 		item.datab[3] = sfmt_genrand_uint32(随机因子) % 11;
@@ -1017,35 +1017,41 @@ item_t create_bb_box_item(lobby_t* l, sfmt_t* 随机因子, uint8_t 颜色ID, uint8_t 
 		break;
 
 	case ITEM_TYPE_TOOL: // 药品工具
-		item.datab[1] = sfmt_genrand_uint32(随机因子) % 9 + 2;
+		item.datab[1] = sfmt_genrand_uint32(随机因子) % 12;
 		switch (item.datab[1]) {
 		case ITEM_SUBTYPE_MATE:
 		case ITEM_SUBTYPE_FLUID:
 			switch (难度) {
 			case GAME_TYPE_DIFFICULTY_NORMARL:
 				item.datab[2] = 0;
+				item.datab[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_HARD:
 				item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
+				item.datab[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_VERY_HARD:
 				item.datab[2] = (sfmt_genrand_uint32(随机因子) % 2) + 1;
+				item.datab[5] = get_item_amount(&item, 1);
 				break;
 
 			case GAME_TYPE_DIFFICULTY_ULTIMATE:
 				item.datab[2] = 2;
+				item.datab[5] = get_item_amount(&item, 1);
 				break;
 			}
 			break;
 
 		case ITEM_SUBTYPE_ANTI_TOOL:
 			item.datab[2] = sfmt_genrand_uint32(随机因子) % 2;
+			item.datab[5] = get_item_amount(&item, 1);
 			break;
 
 		case ITEM_SUBTYPE_GRINDER:
 			item.datab[2] = sfmt_genrand_uint32(随机因子) % 3;
+			item.datab[5] = get_item_amount(&item, 1);
 			break;
 
 			//case ITEM_SUBTYPE_MATERIAL:
@@ -1248,11 +1254,15 @@ item_t create_bb_box_waste_item(lobby_t* l, sfmt_t* 随机因子, uint32_t def0, uin
 	return item;
 }
 
+/* 特殊箱子掉落 */
 item_t on_specialized_box_item_drop(lobby_t* l, sfmt_t* rng, uint32_t def0, uint32_t def1, uint32_t def2) {
 	item_t item = { 0 };
+	/* 初始化物品数据 */
 	clear_inv_item(&item);
 	item.datab[0] = (def0 >> 0x18) & 0x0F;
+	/* 随机选择掉率普通物品还是稀有物品 */
 	int choice_rng = sfmt_genrand_uint32(rng) % 2;
+	/* 获取房主玩家的颜色ID */
 	uint8_t section = l->clients[l->leader_id]->pl->v1.character.dress_data.section;
 
 	if (choice_rng)

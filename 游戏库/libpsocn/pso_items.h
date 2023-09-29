@@ -61,7 +61,7 @@
 #define ITEM_SUBTYPE_BARRIER            0x02
 #define ITEM_SUBTYPE_UNIT               0x03
 
-/* ITEM_TYPE_TOOL subtype*/
+/* ITEM_TYPE_TOOL subtype */
 #define ITEM_SUBTYPE_MATE               0x00 /* 10 ¶Ñµþ */
 #define ITEM_SUBTYPE_FLUID              0x01 /* 10 ¶Ñµþ */
 #define ITEM_SUBTYPE_DISK               0x02 /* 1  ¶Ñµþ */
