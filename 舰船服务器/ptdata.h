@@ -27,6 +27,15 @@
 #undef PACKED
 #endif
 
+/* 怪物掉落物品类型 其他则为无掉落 */
+#define ENEMY_TYPE_WEAPON     0
+#define ENEMY_TYPE_ARMOR      1
+#define ENEMY_TYPE_SHIELD     2
+#define ENEMY_TYPE_UNIT       3
+#define ENEMY_TYPE_TOOL       4
+#define ENEMY_TYPE_MESETA     5
+
+/* 箱子掉落物品类型 6则为无掉落 */
 #define BOX_TYPE_WEAPON     0
 #define BOX_TYPE_ARMOR      1
 #define BOX_TYPE_SHIELD     2
@@ -155,7 +164,8 @@ typedef struct fpt_v2_entry {
     /* 08AC */ uint32_t tool_class_prob_table_offset;
     /* 08B0 */ uint32_t technique_index_prob_table_offset;
     /* 08B4 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x08B8 */
+    /* 08B8 */ uint8_t armor_level;
+    /* 08B9 */ uint8_t unused2[3];
     /* 08BC */ uint32_t unit_maxes_offset;
     /* 08D0 */ uint32_t box_item_class_prob_tables_offset;
     /* 08D4 */ uint32_t unused_offset2;
@@ -216,7 +226,8 @@ typedef struct fpt_v3_entry {
     /* 094C */ uint32_t tool_class_prob_table_offset;
     /* 0950 */ uint32_t technique_index_prob_table_offset;
     /* 0954 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x0958 */
+    /* 0958 */ uint8_t armor_level;
+    /* 0959 */ uint8_t unused2[3];
     /* 095C */ uint32_t unit_maxes_offset;
     /* 0960 */ uint32_t box_item_class_prob_tables_offset;
     /* 0964 */ uint32_t unused_offset2;
@@ -279,7 +290,8 @@ typedef struct fpt_bb_entry {
     /* 094C */ uint32_t tool_class_prob_table_offset;
     /* 0950 */ uint32_t technique_index_prob_table_offset;
     /* 0954 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x0958 */
+    /* 0958 */ uint8_t armor_level;
+    /* 0959 */ uint8_t unused2[3];
     /* 095C */ uint32_t unit_maxes_offset;
     /* 0960 */ uint32_t box_item_class_prob_tables_offset;
     /* 0964 */ uint32_t unused_offset2;
@@ -344,7 +356,8 @@ typedef struct pt_v2_entry {
     /* 08AC */ uint32_t tool_class_prob_table_offset;
     /* 08B0 */ uint32_t technique_index_prob_table_offset;
     /* 08B4 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x08B8 */
+    /* 08B8 */ uint8_t armor_level;
+    /* 08B9 */ uint8_t unused2[3];
     /* 08BC */ uint32_t unit_maxes_offset;
     /* 08D0 */ uint32_t box_item_class_prob_tables_offset;
     /* 08D4 */ uint32_t unused_offset2;
@@ -402,7 +415,8 @@ typedef struct pt_v3_entry {
     /* 094C */ uint32_t tool_class_prob_table_offset;
     /* 0950 */ uint32_t technique_index_prob_table_offset;
     /* 0954 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x0958 */
+    /* 0958 */ uint8_t armor_level;
+    /* 0959 */ uint8_t unused2[3];
     /* 095C */ uint32_t unit_maxes_offset;
     /* 0960 */ uint32_t box_item_class_prob_tables_offset;
     /* 0964 */ uint32_t unused_offset2;
@@ -591,7 +605,8 @@ typedef struct pt_bb_entry {
     /* 094C */ uint32_t tool_class_prob_table_offset;
     /* 0950 */ uint32_t technique_index_prob_table_offset;
     /* 0954 */ uint32_t technique_level_ranges_offset;
-    int32_t armor_level;                    /* 0x0958 armor_or_shield_type_bias */
+    /* 0958 */ uint8_t armor_level;
+    /* 0959 */ uint8_t unused2[3];
     /* 095C */ uint32_t unit_maxes_offset;
     /* 0960 */ uint32_t box_item_class_prob_tables_offset;
     /* 0964 */ uint32_t unused_offset2;
@@ -658,9 +673,6 @@ static pt_bb_entry_t bb_ptdata[5][4][10];
 static pt_bb_entry_t bb_dymnamic_ptdata[5][4][10];
 static Restrictions* restrictions = NULL;
 static ItemDropSub* item_drop_sub;
-
-uint8_t unit_weights_table1[0x88];
-int8_t unit_weights_table2[0x0D];
 
 /* Read the ItemPT data from a v2-style (ItemPT.afs) file. */
 int pt_read_v2(const char *fn);

@@ -422,108 +422,6 @@ typedef struct pmt_table_offsets_v3 {
 
 #undef PACKED
 
-/* PSOv1/PSOv2 data. */
-pmt_weapon_v2_t** weapons;
-uint32_t* num_weapons;
-uint32_t num_weapon_types;
-uint32_t weapon_lowest;
-
-pmt_guard_v2_t** guards;
-uint32_t* num_guards;
-uint32_t num_guard_types;
-uint32_t guard_lowest;
-
-pmt_unit_v2_t* units;
-uint32_t num_units;
-uint32_t unit_lowest;
-
-uint8_t* star_table;
-uint32_t star_max;
-
-/* These three are used in generating random units... */
-uint64_t* units_by_stars;
-uint32_t* units_with_stars;
-uint8_t unit_max_stars;
-
-/* PSOGC data. */
-pmt_table_offsets_v3_t* pmt_tb_offsets_gc;
-
-pmt_weapon_gc_t** weapons_gc;
-uint32_t* num_weapons_gc;
-uint32_t num_weapon_types_gc;
-uint32_t weapon_lowest_gc;
-
-pmt_guard_gc_t** guards_gc;
-uint32_t* num_guards_gc;
-uint32_t num_guard_types_gc;
-uint32_t guard_lowest_gc;
-
-pmt_unit_gc_t* units_gc;
-uint32_t num_units_gc;
-uint32_t unit_lowest_gc;
-
-uint8_t* star_table_gc;
-uint32_t star_max_gc;
-
-uint64_t* units_by_stars_gc;
-uint32_t* units_with_stars_gc;
-uint8_t unit_max_stars_gc;
-
-/* PSOBB data. */
-pmt_table_offsets_v3_t* pmt_tb_offsets_bb;
-
-pmt_weapon_bb_t** weapons_bb;
-uint32_t* num_weapons_bb;
-uint32_t num_weapon_types_bb;
-uint32_t weapon_lowest_bb;
-
-pmt_guard_bb_t** guards_bb;
-uint32_t* num_guards_bb;
-uint32_t num_guard_types_bb;
-uint32_t guard_lowest_bb;
-
-pmt_unit_bb_t* units_bb;
-uint32_t num_units_bb;
-uint32_t unit_lowest_bb;
-
-uint8_t* star_table_bb;
-uint32_t star_max_bb;
-
-uint64_t* units_by_stars_bb;
-uint32_t* units_with_stars_bb;
-uint8_t unit_max_stars_bb;
-
-pmt_mag_bb_t* mags_bb;
-uint32_t num_mags_bb;
-uint32_t mag_lowest_bb;
-
-pmt_tool_bb_t** tools_bb;
-uint32_t* num_tools_bb;
-uint32_t num_tool_types_bb;
-uint32_t tool_lowest_bb;
-
-pmt_itemcombination_bb_t* itemcombination_bb;
-uint32_t itemcombinations_max_bb;
-
-pmt_eventitem_bb_t** eventitem_bb;
-uint32_t* num_eventitems_bb;
-uint32_t num_eventitem_types_bb;
-uint32_t eventitem_lowest_bb;
-
-pmt_unsealableitem_bb_t* unsealableitems_bb;
-uint32_t unsealableitems_max_bb;
-
-pmt_mag_feed_results_list_t** mag_feed_results_list;
-pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
-
-static pmt_nonweaponsaledivisors_bb_t nonweaponsaledivisors_bb;
-
-float* weaponsaledivisors_bb;
-
-int have_v2_pmt;
-int have_gc_pmt;
-int have_bb_pmt;
-
 int pmt_read_v2(const char* fn, int norestrict);
 int pmt_read_gc(const char* fn, int norestrict);
 int pmt_read_bb(const char* fn, int norestrict);
@@ -555,7 +453,7 @@ int pmt_lookup_unit_bb(uint32_t code, pmt_unit_bb_t* rv);
 int pmt_lookup_mag_bb(uint32_t code, pmt_mag_bb_t* rv);
 int pmt_lookup_tools_bb(uint32_t code1, uint32_t code2, pmt_tool_bb_t* rv);
 int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemcombination_bb_t* rv);
-int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv);
+int pmt_lookup_eventitem_bb(uint32_t code, uint32_t index, pmt_eventitem_bb_t* rv);
 int pmt_lookup_mag_feed_table_bb(uint32_t code, uint32_t table_index, uint32_t item_index, pmt_mag_feed_result_t* rv);
 float pmt_lookup_sale_divisor_bb(uint8_t code1, uint8_t code2);
 
@@ -582,5 +480,10 @@ bool is_unsealable_item(const item_t* item);
 void set_sealed_item_kill_count(item_t* item, int16_t v);
 void set_item_kill_count_if_unsealable(item_t* item);
 void set_item_identified_flag(bool is_mode, item_t* item);
+void generate_unit_weights_tables(uint8_t unit_weights_table1[0x88], int8_t unit_weights_table2[0x0D]);
+uint8_t get_unit_weights_table1(size_t det);
+uint8_t get_unit_weights_table2(size_t det);
+size_t get_unit_weights_table1_size();
+size_t get_num_eventitems_bb(uint8_t datab2);
 
 #endif /* !PMTDATA_H */

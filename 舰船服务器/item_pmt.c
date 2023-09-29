@@ -35,8 +35,111 @@
 #include "packets.h"
 #include "handle_player_items.h"
 
-/* The parsing code in here is based on some code/information from Lee. Thanks
-   again! */
+/* PSOv1/PSOv2 data. */
+static pmt_weapon_v2_t** weapons;
+static uint32_t* num_weapons;
+static uint32_t num_weapon_types;
+static uint32_t weapon_lowest;
+
+static pmt_guard_v2_t** guards;
+static uint32_t* num_guards;
+static uint32_t num_guard_types;
+static uint32_t guard_lowest;
+
+static pmt_unit_v2_t* units;
+static uint32_t num_units;
+static uint32_t unit_lowest;
+
+static uint8_t* star_table;
+static uint32_t star_max;
+
+/* These three are used in generating random units... */
+static uint64_t* units_by_stars;
+static uint32_t* units_with_stars;
+static uint8_t unit_max_stars;
+
+/* PSOGC data. */
+static pmt_table_offsets_v3_t* pmt_tb_offsets_gc;
+
+static pmt_weapon_gc_t** weapons_gc;
+static uint32_t* num_weapons_gc;
+static uint32_t num_weapon_types_gc;
+static uint32_t weapon_lowest_gc;
+
+static pmt_guard_gc_t** guards_gc;
+static uint32_t* num_guards_gc;
+static uint32_t num_guard_types_gc;
+static uint32_t guard_lowest_gc;
+
+static pmt_unit_gc_t* units_gc;
+static uint32_t num_units_gc;
+static uint32_t unit_lowest_gc;
+
+static uint8_t* star_table_gc;
+static uint32_t star_max_gc;
+
+static uint64_t* units_by_stars_gc;
+static uint32_t* units_with_stars_gc;
+static uint8_t unit_max_stars_gc;
+
+/* PSOBB data. */
+static pmt_table_offsets_v3_t* pmt_tb_offsets_bb;
+
+static pmt_weapon_bb_t** weapons_bb;
+static uint32_t* num_weapons_bb;
+static uint32_t num_weapon_types_bb;
+static uint32_t weapon_lowest_bb;
+
+static pmt_guard_bb_t** guards_bb;
+static uint32_t* num_guards_bb;
+static uint32_t num_guard_types_bb;
+static uint32_t guard_lowest_bb;
+
+static pmt_unit_bb_t* units_bb;
+static uint32_t num_units_bb;
+static uint32_t unit_lowest_bb;
+
+static uint8_t* star_table_bb;
+static uint32_t star_max_bb;
+
+static uint64_t* units_by_stars_bb;
+static uint32_t* units_with_stars_bb;
+static uint8_t unit_max_stars_bb;
+
+static pmt_mag_bb_t* mags_bb;
+static uint32_t num_mags_bb;
+static uint32_t mag_lowest_bb;
+
+static pmt_tool_bb_t** tools_bb;
+static uint32_t* num_tools_bb;
+static uint32_t num_tool_types_bb;
+static uint32_t tool_lowest_bb;
+
+static pmt_itemcombination_bb_t* itemcombination_bb;
+static uint32_t itemcombinations_max_bb;
+
+static pmt_eventitem_bb_t** eventitem_bb;
+static uint32_t* num_eventitems_bb;
+static uint32_t num_eventitem_types_bb;
+static uint32_t eventitem_lowest_bb;
+
+static pmt_unsealableitem_bb_t* unsealableitems_bb;
+static uint32_t unsealableitems_max_bb;
+
+static pmt_mag_feed_results_list_t** mag_feed_results_list;
+static pmt_mag_feed_results_list_offsets_t* mag_feed_results_list_offsets;
+
+static pmt_nonweaponsaledivisors_bb_t nonweaponsaledivisors_bb;
+
+static float* weaponsaledivisors_bb;
+
+static uint8_t unit_weights_table1[0x88];
+static int8_t unit_weights_table2[0x0D];
+
+static int have_v2_pmt;
+static int have_gc_pmt;
+static int have_bb_pmt;
+
 static int read_v2ptr_tbl(const uint8_t *pmt, uint32_t sz, uint32_t ptrs[21]) {
     uint32_t tmp;
 #if defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__)
@@ -1837,6 +1940,8 @@ int pmt_read_bb(const char *fn, int norestrict) {
         return -23;
     }
 
+    generate_unit_weights_tables(unit_weights_table1, unit_weights_table2);
+
     have_bb_pmt = 1;
 
     return 0;
@@ -2663,7 +2768,7 @@ int pmt_lookup_itemcombination_bb(uint32_t code, uint32_t equip_code, pmt_itemco
     return 0;
 }
 
-int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
+int pmt_lookup_eventitem_bb(uint32_t code, uint32_t index, pmt_eventitem_bb_t* rv) {
     uint8_t parts[4] = { 0 };
 
     /* Make sure we loaded the PMT stuff to start with and that there is a place
@@ -2692,8 +2797,12 @@ int pmt_lookup_eventitem_bb(uint32_t code, pmt_eventitem_bb_t* rv) {
         return -4;
     }
 
+    if (index > get_num_eventitems_bb(code)) {
+        return -5;
+    }
+
     /* 获取数据并将其复制出来 */
-    memcpy(rv, &eventitem_bb[parts[2]], sizeof(pmt_eventitem_bb_t));
+    memcpy(rv, &eventitem_bb[parts[2]][index], sizeof(pmt_eventitem_bb_t));
     return 0;
 }
 
@@ -3305,4 +3414,50 @@ void set_item_identified_flag(bool is_mode, item_t* item) {
             }
         }
     }
+}
+
+void generate_unit_weights_tables(uint8_t unit_weights_table1[0x88], int8_t unit_weights_table2[0x0D]) {
+    // Note: This part of the function was originally in a different function,
+    // since it had another callsite. Unlike the original code, we generate these
+    // tables only once at construction time, so we've inlined the function here.
+    size_t z;
+    for (z = 0; z < 0x10; z++) {
+        uint8_t v = get_item_stars((uint16_t)(z + 0x37D));
+        unit_weights_table1[(z * 5) + 0] = v - 1;
+        unit_weights_table1[(z * 5) + 1] = v - 1;
+        unit_weights_table1[(z * 5) + 2] = v;
+        unit_weights_table1[(z * 5) + 3] = v + 1;
+        unit_weights_table1[(z * 5) + 4] = v + 1;
+    }
+    for (; z < 0x48; z++) {
+        unit_weights_table1[z + 0x50] = get_item_stars((uint16_t)(z + 0x37D));
+    }
+    // Note: Inlining ends here
+
+    for (size_t i = 0; i < 0x0D; i++) {
+        unit_weights_table2[i] = 0;
+    }
+
+    for (size_t i = 0; i < 0x88; i++) {
+        uint8_t index = unit_weights_table1[i];
+        if (index < 0x0D) {
+            unit_weights_table2[index]++;
+        }
+    }
+}
+
+uint8_t get_unit_weights_table1(size_t det) {
+    return unit_weights_table1[det];
+}
+
+uint8_t get_unit_weights_table2(size_t det) {
+    return unit_weights_table2[det];
+}
+
+size_t get_unit_weights_table1_size() {
+    return ARRAYSIZE(unit_weights_table1);
+}
+
+size_t get_num_eventitems_bb(uint8_t datab2) {
+    return num_eventitems_bb[datab2];
 }

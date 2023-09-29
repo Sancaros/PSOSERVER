@@ -96,8 +96,7 @@ int pt_read_v2(const char* fn) {
 
 			/* Dump it into our nicer (not packed) structure. */
 			ent = &v2_ptdata[i][j];
-
-			//memcpy(ent, buf, sz);
+			memcpy(ent, buf, sz);
 
 			//print_ascii_hex(buf, sz);
 
@@ -115,7 +114,11 @@ int pt_read_v2(const char* fn) {
 			memcpy(ent->unit_level, buf->unit_level, 10);
 			memcpy(ent->enemy_dar, buf->enemy_dar, 100);
 			memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-			ent->armor_level = LE32(buf->armor_level);
+			//ent->armor_level = LE32(buf->armor_level);
+			ent->armor_level = buf->armor_level;
+			for (k = 0; k < 3; ++k) {
+				ent->unused2[k] = buf->unused2[k];
+			}
 
 			for (k = 0; k < 9; ++k) {
 				memcpy(ent->power_pattern[k], buf->power_pattern[k], 4);
@@ -245,8 +248,7 @@ int pt_read_v3(const char* fn) {
 
 				/* Dump it into our nicer (not packed) structure. */
 				ent = &gc_ptdata[章节][难度][颜色];
-
-				//memcpy(ent, buf, sz);
+				memcpy(ent, buf, sz);
 
 				memcpy(ent->weapon_ratio, buf->weapon_ratio, 12);
 				memcpy(ent->weapon_minrank, buf->weapon_minrank, 12);
@@ -258,7 +260,10 @@ int pt_read_v3(const char* fn) {
 				memcpy(ent->unit_level, buf->unit_level, 10);
 				memcpy(ent->enemy_dar, buf->enemy_dar, 100);
 				memcpy(ent->enemy_drop, buf->enemy_drop, 100);
-				ent->armor_level = ntohl(buf->armor_level);
+				ent->armor_level = buf->armor_level;
+				for (l = 0; l < 3; ++l) {
+					ent->unused2[l] = buf->unused2[l];
+				}
 
 				for (l = 0; l < 9; ++l) {
 					memcpy(ent->power_pattern[l], buf->power_pattern[l], 4);
@@ -385,6 +390,7 @@ int pt_read_bb(const char* fn) {
 
 				/* Dump it into our nicer (not packed) structure. */
 				ent = &bb_ptdata[章节][难度][颜色];
+				memcpy(ent, buf, sz);
 
 				memcpy(ent->base_weapon_type_prob_table, buf->weapon_ratio, 12);
 				memcpy(ent->subtype_base_table, buf->weapon_minrank, 12);
@@ -449,7 +455,11 @@ int pt_read_bb(const char* fn) {
 					memcpy(ent->box_drop[l], buf->box_drop[l], 10);
 				}
 
-				ent->armor_level = ntohl(buf->armor_level);
+				//ent->armor_level = ntohl(buf->armor_level);
+				ent->armor_level = buf->armor_level;
+				for (l = 0; l < 3; ++l) {
+					ent->unused2[l] = buf->unused2[l];
+				}
 
 #ifdef DEBUG
 				//memcpy(ent, buf, sz);
@@ -547,6 +557,7 @@ pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色)
 
 	/* Dump it into our nicer (not packed) structure. */
 	ent = &bb_dymnamic_ptdata[章节][难度][颜色];
+	memcpy(ent, buf, sz);
 
 	memcpy(ent->base_weapon_type_prob_table, buf->weapon_ratio, 12);
 	memcpy(ent->subtype_base_table, buf->weapon_minrank, 12);
@@ -611,7 +622,11 @@ pt_bb_entry_t* pt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色)
 		memcpy(ent->box_drop[l], buf->box_drop[l], 10);
 	}
 
-	ent->armor_level = ntohl(buf->armor_level);
+	//ent->armor_level = ntohl(buf->armor_level);
+	ent->armor_level = buf->armor_level;
+	for (l = 0; l < 3; ++l) {
+		ent->unused2[l] = buf->unused2[l];
+	}
 
 
 #ifdef DEBUG
@@ -3807,7 +3822,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t pt_index = req->pt_index;
+	uint8_t pt_index = req->rt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
@@ -4008,7 +4023,7 @@ int pt_generate_bb_drop(ship_client_t* src, lobby_t* l, void* r) {
 		default:
 			ITEM_LOG("未知/无效怪物掉落 (%d) 索引 "
 				"%d ep_pt_index %d episode %d", ent->enemy_item_classes[ep_pt_index],
-				req->pt_index, ep_pt_index, l->episode);
+				req->rt_index, ep_pt_index, l->episode);
 			return 0;
 		}
 
@@ -4283,7 +4298,7 @@ int pt_generate_bb_pso2_drop_style(ship_client_t* src, lobby_t* l, uint8_t secti
 	uint16_t mid;
 	game_enemy_t* enemy;
 	int csr = 0;
-	uint8_t pt_index = req->pt_index;
+	uint8_t pt_index = req->rt_index;
 	int ep_pt_index = get_pt_index(l->episode, pt_index);
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
@@ -4502,7 +4517,7 @@ int pt_generate_bb_pso2_boxdrop(ship_client_t* src, lobby_t* l, uint8_t section,
 	float f1, f2;
 	sfmt_t* rng = &src->sfmt_rng;
 	int csr = 0;
-	uint8_t pt_index = req->pt_index;
+	uint8_t pt_index = req->rt_index;
 
 	pt_bb_entry_t* ent = get_pt_data_bb(l->episode, l->challenge, l->difficulty, section);
 	if (!ent) {

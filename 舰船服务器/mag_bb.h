@@ -195,7 +195,8 @@ enum pb_type {
 	PB_Golla,
 	PB_Pilla,
 	PB_Leilla,
-	PB_Mylla_Youlla
+	PB_Mylla_Youlla,
+	PB_MAX
 };
 
 // ¬Íπ≈¿‡–Õ

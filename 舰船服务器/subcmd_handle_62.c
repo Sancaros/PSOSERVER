@@ -1181,6 +1181,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
     subcmd_bb_itemreq_t* pkt) {
     lobby_t* l = src->cur_lobby;
     iitem_t iitem = { 0 };
+    uint16_t mid = pkt->entity_id;
     int rv = 0;
 
     if (!in_game(src))
@@ -1206,7 +1207,7 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
                 p2_section = sfmt_genrand_uint32(&p2->sfmt_rng) % 10;
             }
 
-            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
+            iitem.data = on_monster_item_drop(l, &p2->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, p2->cur_area), p2_section);
 
             if (is_item_empty(&iitem.data)) {
                 pthread_mutex_unlock(&p2->mutex);
@@ -1239,12 +1240,12 @@ int sub62_60_bb(ship_client_t* src, ship_client_t* dest,
             ERR_LOG("%s 游戏并未载入地图敌人数据", get_player_describe(src));
         }
 
-        //game_enemy_t* en = &l->map_enemies->enemies[pkt->entity_id];
-        //if (pkt->pt_index != en->rt_index) {
-        //    ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
-        //        pkt->pt_index, pkt->entity_id, en->rt_index);
-        //}
-        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->pt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
+        game_enemy_t* en = &l->map_enemies->enemies[mid];
+        if (pkt->rt_index != en->rt_index) {
+            ERR_LOG("命令参数 rt_index %02hhX entity_id %04X 与实体的预期不匹配 rt_index %02X",
+                pkt->rt_index, mid, en->rt_index);
+        }
+        iitem.data = on_monster_item_drop(l, &src->sfmt_rng, pkt->rt_index, get_pt_data_area_bb(l->episode, src->cur_area), section);
         if (is_item_empty(&iitem.data)) {
             pthread_mutex_unlock(&src->mutex);
             return 0;

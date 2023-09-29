@@ -253,12 +253,16 @@ void generate_common_armor_or_shield_type_and_variances(sfmt_t* rng,
 	uint8_t type = get_rand_from_weighted_tables_1d(rng,
 		ent->armor_shield_type_index_prob_table, 5);
 	item->datab[2] = area_norm + type + ent->armor_level;
-	if (item->datab[2] < 3) {
-		item->datab[2] = 0;
-	}
-	else {
-		item->datab[2] -= 3;
-	}
+
+	//DBG_LOG("0x%02X", item->datab[2]);
+	////if (item->datab[2] < 3) {
+	////	item->datab[2] = 0;
+	////}
+	////else {
+	////	item->datab[2] -= 3;
+	////}
+	////DBG_LOG("0x%02X", item->datab[2]);
+	//print_item_data(item, 5);
 }
 
 void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
@@ -266,8 +270,8 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 		return;
 	}
 	clear_inv_item(item);
-	item->datab[0] = 0x01;
-	item->datab[1] = 0x03;
+	item->datab[0] = ITEM_TYPE_GUARD;
+	item->datab[1] = ITEM_SUBTYPE_UNIT;
 
 	// Note: The original code calls generate_unit_weights_table1 here (which we
 	// have inlined into generate_unit_weights_tables above). This call seems
@@ -275,14 +279,14 @@ void generate_common_unit_variances(sfmt_t* rng, uint8_t det, item_t* item) {
 	// except what appears in ItemPMT, which is essentially constant, so we
 	// don't bother regenerating the table here.
 
-	if (unit_weights_table2[det] == 0) {
+	if (get_unit_weights_table1(det) == 0) {
 		return;
 	}
 
-	size_t which = rand_int(rng, unit_weights_table2[det]);
+	size_t which = rand_int(rng, get_unit_weights_table2(det));
 	size_t current_index = 0;
-	for (size_t z = 0; z < ARRAYSIZE(unit_weights_table1); z++) {
-		if (det != unit_weights_table1[z]) {
+	for (size_t z = 0; z < get_unit_weights_table1_size(); z++) {
+		if (det != get_unit_weights_table1(z)) {
 			continue;
 		}
 		if (current_index != which) {
@@ -538,28 +542,40 @@ void generate_common_item_variances(lobby_t* l, sfmt_t* rng, uint32_t norm_area,
 	case ITEM_TYPE_WEAPON:
 		generate_common_weapon_variances(l, rng, norm_area, item, ent);
 		break;
+
 	case ITEM_TYPE_GUARD:
-		if (item->datab[1] == 3) {
+		switch (item->datab[1]) {
+		case ITEM_SUBTYPE_FRAME:
+			generate_common_armor_or_shield_type_and_variances(rng, norm_area, item, ent);
+			break;
+
+		case ITEM_SUBTYPE_BARRIER:
+			generate_common_armor_or_shield_type_and_variances(rng, norm_area, item, ent);
+			break;
+
+		case ITEM_SUBTYPE_UNIT:
 			float f1 = (float)(1.0 + ent->unit_maxes[norm_area]);
 			float f2 = rand_float_0_1_from_crypt(rng);
 			generate_common_unit_variances(rng, (uint32_t)(f1 * f2) & 0xFF, item);
 			if (item->datab[2] == 0xFF) {
 				clear_inv_item(item);
 			}
-		}
-		else {
-			generate_common_armor_or_shield_type_and_variances(rng, norm_area, item, ent);
+			break;
 		}
 		break;
+
 	case ITEM_TYPE_MAG:
 		generate_common_mag_variances(item);
 		break;
+
 	case ITEM_TYPE_TOOL:
 		generate_common_tool_variances(rng, norm_area, item, ent);
 		break;
+
 	case ITEM_TYPE_MESETA:
 		item->data2l = choose_meseta_amount(rng, ent->box_meseta_ranges, norm_area) & 0xFFFF;
 		break;
+
 	default:
 		// Note: The original code does the following here:
 		// clear_inv_item(&item);
@@ -691,28 +707,28 @@ item_t on_box_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* r
 			ent->box_drop, area_norm, 7, 10);
 		/* 二维表 原始表格 X轴 7列 Y轴 10行*/
 		switch (item_class) {
-		case ITEM_TYPE_WEAPON: // 武器
+		case BOX_TYPE_WEAPON: // 武器
 			item.datab[0] = ITEM_TYPE_WEAPON;
 			break;
-		case ITEM_SUBTYPE_FRAME: // 盔甲
+		case BOX_TYPE_ARMOR: // 盔甲
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_FRAME;
 			break;
-		case ITEM_SUBTYPE_BARRIER: // 盾牌
+		case BOX_TYPE_SHIELD: // 盾牌
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_BARRIER;
 			break;
-		case ITEM_SUBTYPE_UNIT: // 插件
+		case BOX_TYPE_UNIT: // 插件
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_UNIT;
 			break;
-		case 4: // 工具
+		case BOX_TYPE_TOOL: // 工具
 			item.datab[0] = ITEM_TYPE_TOOL;
 			break;
-		case 5: // 美赛塔
+		case BOX_TYPE_MESETA: // 美赛塔
 			item.datab[0] = ITEM_TYPE_MESETA;
 			break;
-		case 6: // 无掉落
+		case BOX_TYPE_NOTHING: // 无掉落
 			break;
 		default:
 			ERR_LOG("发生严重错误 item_class %d 超出界限", item_class);
@@ -825,25 +841,25 @@ item_t on_monster_item_drop_with_norm_area(lobby_t* l, pt_bb_entry_t* ent, sfmt_
 #endif // DEBUG
 
 		switch (item_class) {
-		case ITEM_TYPE_WEAPON: // Weapon
+		case ENEMY_TYPE_WEAPON: // Weapon
 			item.datab[0] = ITEM_TYPE_WEAPON;
 			break;
-		case ITEM_SUBTYPE_FRAME: // Armor
+		case ENEMY_TYPE_ARMOR: // Armor
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_FRAME;
 			break;
-		case ITEM_SUBTYPE_BARRIER: // Shield
+		case ENEMY_TYPE_SHIELD: // Shield
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_BARRIER;
 			break;
-		case ITEM_SUBTYPE_UNIT: // Unit
+		case ENEMY_TYPE_UNIT: // Unit
 			item.datab[0] = ITEM_TYPE_GUARD;
 			item.datab[1] = ITEM_SUBTYPE_UNIT;
 			break;
-		case 4: // Tool
+		case ENEMY_TYPE_TOOL: // Tool
 			item.datab[0] = ITEM_TYPE_TOOL;
 			break;
-		case 5: // Meseta
+		case ENEMY_TYPE_MESETA: // Meseta
 			item.datab[0] = ITEM_TYPE_MESETA;
 			item.data2l = choose_meseta_amount(rng, ent->enemy_meseta_ranges, enemy_type) & 0xFFFF;
 			break;
@@ -951,20 +967,21 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 				break;
 			}
 
+			generate_common_armor_slot_count(随机因子, &item, ent);
+			generate_common_armor_slots_and_bonuses(随机因子, &item, ent);
 			/*随机槽位 0 - 4 */
-			item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
+			//item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
+			///* DFP值 */
+			//tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
+			//if (tmp_value < 0)
+			//	tmp_value = 0;
+			//item.datab[6] = tmp_value;
 
-			/* DFP值 */
-			tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-			if (tmp_value < 0)
-				tmp_value = 0;
-			item.datab[6] = tmp_value;
-
-			/* EVP值 */
-			tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-			if (tmp_value < 0)
-				tmp_value = 0;
-			item.datab[8] = tmp_value;
+			///* EVP值 */
+			//tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
+			//if (tmp_value < 0)
+			//	tmp_value = 0;
+			//item.datab[8] = tmp_value;
 			break;
 
 		case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
@@ -976,17 +993,19 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 				break;
 			}
 
-			/* DFP值 */
-			tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-			if (tmp_value < 0)
-				tmp_value = 0;
-			item.datab[6] = tmp_value;
+			generate_common_armor_slot_count(随机因子, &item, ent);
+			generate_common_armor_slots_and_bonuses(随机因子, &item, ent);
+			///* DFP值 */
+			//tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
+			//if (tmp_value < 0)
+			//	tmp_value = 0;
+			//item.datab[6] = tmp_value;
 
-			/* EVP值 */
-			tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-			if (tmp_value < 0)
-				tmp_value = 0;
-			item.datab[8] = tmp_value;
+			///* EVP值 */
+			//tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
+			//if (tmp_value < 0)
+			//	tmp_value = 0;
+			//item.datab[8] = tmp_value;
 			break;
 
 		case ITEM_SUBTYPE_UNIT://插件 不生成带属性的 省的麻烦 TODO 以后再做更详细的
@@ -996,9 +1015,15 @@ item_t create_bb_box_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子, uint
 				break;
 			}
 
-			tmp_value = sfmt_genrand_uint32(随机因子) % 5;
-			item.datab[6] = unit_bonus_values[tmp_value][0];
-			item.datab[7] = unit_bonus_values[tmp_value][1];
+			float f1 = (float)(1.0 + ent->unit_maxes[normarea]);
+			float f2 = rand_float_0_1_from_crypt(随机因子);
+			generate_common_unit_variances(随机因子, (uint32_t)(f1 * f2) & 0xFF, &item);
+			if (item.datab[2] == 0xFF) {
+				clear_inv_item(&item);
+			}
+			//tmp_value = sfmt_genrand_uint32(随机因子) % 5;
+			//item.datab[6] = unit_bonus_values[tmp_value][0];
+			//item.datab[7] = unit_bonus_values[tmp_value][1];
 
 			break;
 		}
@@ -1107,8 +1132,8 @@ item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子
 	clear_inv_item(&item);
 
 	item.datab[0] = (def0 >> 0x18) & 0x0F;
-	item.datab[1] = (def0 >> 0x10) + ((item.datab[0] == 0x00) || (item.datab[0] == 0x01));
-	item.datab[2] = def0 >> 8;
+	item.datab[1] = (def0 >> 0x10) + ((item.datab[0] == ITEM_TYPE_WEAPON) || (item.datab[0] == ITEM_TYPE_GUARD));
+	item.datab[2] = (def0 >> 8);
 
 	switch (item.datab[0]) {
 	case ITEM_TYPE_WEAPON:
@@ -1160,61 +1185,21 @@ item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子
 		break;
 
 	case ITEM_TYPE_GUARD:
-		pmt_guard_bb_t pmt_guard = { 0 };
-		pmt_unit_bb_t pmt_unit = { 0 };
-
 		switch (item.datab[1]) {
 		case ITEM_SUBTYPE_FRAME://护甲
-			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
-				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
-				break;
-			}
-
-			/*随机槽位 0 - 4 */
-			if (sfmt_genrand_uint32(随机因子) % 2)
-				item.datab[5] = sfmt_genrand_uint32(随机因子) % 5;
-
-			/* DFP值 */
-			if (sfmt_genrand_uint32(随机因子) % 2) {
-				tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-				if (tmp_value < 0)
-					tmp_value = 0;
-				item.datab[6] = tmp_value;
-			}
-
-			/* EVP值 */
-			if (sfmt_genrand_uint32(随机因子) % 2) {
-				tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-				if (tmp_value < 0)
-					tmp_value = 0;
-				item.datab[8] = tmp_value;
-			}
-
 		case ITEM_SUBTYPE_BARRIER://护盾 0 - 20 
+			pmt_guard_bb_t pmt_guard = { 0 };
 			if (err = pmt_lookup_guard_bb(item.datal[0], &pmt_guard)) {
 				ERR_LOG("pmt_lookup_guard_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
 			}
 
-			/* DFP值 */
-			if (sfmt_genrand_uint32(随机因子) % 2) {
-				tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.dfp_range + 1;
-				if (tmp_value < 0)
-					tmp_value = 0;
-				item.datab[6] = tmp_value;
-			}
-
-			/* EVP值 */
-			if (sfmt_genrand_uint32(随机因子) % 2) {
-				tmp_value = sfmt_genrand_uint32(随机因子) % pmt_guard.evp_range + 1;
-				if (tmp_value < 0)
-					tmp_value = 0;
-				item.datab[8] = tmp_value;
-			}
-
+			generate_common_armor_slot_count(随机因子, &item, ent);
+			generate_common_armor_slots_and_bonuses(随机因子, &item, ent);
 			break;
 
 		case ITEM_SUBTYPE_UNIT://插件
+			pmt_unit_bb_t pmt_unit = { 0 };
 			if (err = pmt_lookup_unit_bb(item.datal[0], &pmt_unit)) {
 				ERR_LOG("pmt_lookup_unit_bb 不存在数据! 错误码 %d 0x%08X", err, item.datal[0]);
 				break;
@@ -1236,7 +1221,7 @@ item_t create_bb_box_waste_item(lobby_t* l, pt_bb_entry_t* ent, sfmt_t* 随机因子
 		assign_mag_stats(&item, &stats);
 		break;
 	case ITEM_TYPE_TOOL:
-		if (item.datab[1] == 0x02) {
+		if (item.datab[1] == ITEM_SUBTYPE_DISK) {
 			item.datab[4] = def0 & 0xFF;
 		}
 		item.datab[5] = get_item_amount(&item, 1);

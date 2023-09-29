@@ -526,6 +526,7 @@ rt_table_t* rt_dynamics_read_bb(const char* fn, int 章节, int 难度, int 颜色) {
     /* Dump it into our nicer (not packed) structure. */
     ent = &bb_rtdata[章节][难度][颜色];
 
+    /* 直接获取子表数据 后面再做解析 */
     memcpy(ent, buf, sz);
 
     have_bbrt = 1;
@@ -535,7 +536,7 @@ out:
     return ent;
 }
 
-rt_table_t* rt_dynamics_read_bb_v2(const char* fn, int 章节, int 难度, int 颜色) {
+rt_table_t* rt_dynamics_read_v2(const char* fn, int 章节, int 难度, int 颜色) {
     const char* game_type[4] = { "", "l" , "c", "bb" };
     size_t sz = 0;
     int rv = 0;

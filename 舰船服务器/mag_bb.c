@@ -193,7 +193,7 @@ uint8_t mag_photon_blast_for_slot(const item_t* item, uint8_t slot) {
 }
 
 int mag_has_photon_blast_in_any_slot(const item_t* item, uint8_t pb_num) {
-	if (pb_num < 6) {
+	if (pb_num < PB_MAX) {
 		for (uint8_t slot = 0; slot < 3; slot++) {
 			if (mag_photon_blast_for_slot(item, slot) == pb_num) {
 				return 1;
@@ -205,7 +205,7 @@ int mag_has_photon_blast_in_any_slot(const item_t* item, uint8_t pb_num) {
 
 int add_mag_photon_blast(item_t* item, uint8_t pb_num) {
 
-	if (pb_num >= 6) {
+	if (pb_num >= PB_MAX) {
 		ERR_LOG("玛古 %s 光子槽索引超出界限 %d", get_item_describe(item, 5), pb_num);
 		return -1;
 	}

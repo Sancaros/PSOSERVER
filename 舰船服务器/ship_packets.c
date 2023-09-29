@@ -13240,6 +13240,8 @@ int send_bb_rare_enemy_index_list(ship_client_t* c, uint16_t* rare_enemies) {
         if (rare_enemies[z] != 0xFFFF)
             DBG_LOG("pkt->enemy_ids[%d] = 0x%04X", z, pkt->enemy_ids[z]);
 #endif // DEBUG
+        /*if (rare_enemies[z] != 0xFFFF)
+            DBG_LOG("pkt->enemy_ids[%d] = 0x%04X", z, pkt->enemy_ids[z]);*/
     }
 
     return crypt_send(c, sizeof(bb_rare_monster_list_pkt), sendbuf);

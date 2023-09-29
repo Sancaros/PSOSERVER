@@ -1601,9 +1601,15 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
         case ITEM_SUBTYPE_PRESENT_EVENT:
             // Present, etc. - use unwrap_table + probabilities therein
             size_t sum = 0, z = 0;
+            pmt_eventitem_bb_t entry;
 
-            for (z = 0; z < num_eventitems_bb[iitem->data.datab[2]]; z++) {
-                sum += eventitem_bb[iitem->data.datab[2]][z].probability;
+            for (z = 0; z < get_num_eventitems_bb(iitem->data.datab[2]); z++) {
+                if (pmt_lookup_eventitem_bb(iitem->data.datal[0], z, &entry)) {
+                    DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), iitem->data.datal[0]);
+                    break;
+                }
+
+                sum += entry.probability;
             }
 
             if (sum == 0) {
@@ -1611,11 +1617,13 @@ int player_use_item(ship_client_t* src, uint32_t item_id) {
                 return 0;
             }
 
-            //size_t det = mt19937_genrand_int32(rng) % sum;
             size_t det = sfmt_genrand_uint32(rng) % sum;
 
-            for (z = 0; z < num_eventitems_bb[iitem->data.datab[2]]; z++) {
-                pmt_eventitem_bb_t entry = eventitem_bb[iitem->data.datab[2]][z];
+            for (z = 0; z < get_num_eventitems_bb(iitem->data.datab[2]); z++) {
+                if (pmt_lookup_eventitem_bb(iitem->data.datal[0], z, &entry)) {
+                    DBG_LOG("%s 使用圣诞礼物 0x%08X 出错", get_player_describe(src), iitem->data.datal[0]);
+                    break;
+                }
                 if (det > entry.probability) {
                     det -= entry.probability;
                 }

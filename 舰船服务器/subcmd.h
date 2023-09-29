@@ -1447,7 +1447,7 @@ typedef struct subcmd_bb_itemreq {
     bb_pkt_hdr_t hdr;
     unused_hdr_t shdr;
     uint8_t area;
-    uint8_t pt_index;
+    uint8_t rt_index;
     uint16_t entity_id;
     float x;
     float z;
